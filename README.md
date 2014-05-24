@@ -1,0 +1,4 @@
+BitGoJS
+=======
+
+BitGo JavaScript SDK
