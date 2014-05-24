@@ -13,9 +13,9 @@ var request = require('superagent');
 //
 var BitGo = function(useProduction) {
   if (useProduction) {
-    this.baseUrl = 'https://beer.bitgo.com/api/v1';
-  } else {
     this.baseUrl = 'https://www.bitgo.com/api/v1';
+  } else {
+    this.baseUrl = 'https://beer.bitgo.com/api/v1';
   }
 };
 

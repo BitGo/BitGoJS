@@ -4,10 +4,10 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var BitGoJS = require('../src/index');
-
-var should = require('should');
 var assert = require('assert');
+var should = require('should');
+
+var BitGoJS = require('../src/index');
 
 describe('BitGo', function() {
 
