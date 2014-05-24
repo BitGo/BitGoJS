@@ -16,7 +16,6 @@
     "coveralls": "~2.10.0",
     "mocha-lcov-reporter": "0.0.1",
     "browserify": "~4.1.5",
-    "superagent": "0.18.0",
     "should": "3.3.2" 
   },
   "testling": {
@@ -33,15 +32,13 @@
     "files": "test/*.js"
   },
   "scripts": {
-    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --reporter list test/*.js `find test -maxdepth 1 -not -type d`",
+    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --reporter list test/*.js",
     "test": "npm run-script unit",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --reporter list test/*.js",
     "coveralls": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js"
   },
   "dependencies": {
+    "superagent": "0.18.0"
   }
 }
-
-
-
