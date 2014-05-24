@@ -6,4 +6,5 @@ node_js:
   - "0.10"
 env:
   - TEST_SUITE=unit
+  - TEST_SUITE=coveralls
 script: "npm run-script $TEST_SUITE"
