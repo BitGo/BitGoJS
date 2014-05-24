@@ -33,7 +33,7 @@
     "files": "test/*.js"
   },
   "scripts": {
-    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --reporter list `find test -maxdepth 1 -not -type d`",
+    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --reporter list test/*.js `find test -maxdepth 1 -not -type d`",
     "test": "npm run-script unit",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --reporter list test/*.js",
     "coveralls": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
