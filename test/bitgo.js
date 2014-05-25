@@ -29,6 +29,7 @@ describe('BitGo', function() {
         marketData.should.have.property('volume');
         marketData.should.have.property('high');
         marketData.should.have.property('low');
+        marketData.should.have.property('updateTime');
         done();
       });
     });
