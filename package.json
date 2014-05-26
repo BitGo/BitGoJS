@@ -32,10 +32,10 @@
     "files": "test/*.js"
   },
   "scripts": {
-    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- -t 10000 --reporter list test/*.js",
+    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js",
     "test": "npm run-script unit",
-    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- -t 10000 --reporter list test/*.js",
-    "coveralls": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -t 10000 --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js",
+    "coveralls": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --timeout 10000 --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js"
   },
   "dependencies": {
