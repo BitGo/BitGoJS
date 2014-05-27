@@ -1,0 +1,197 @@
+//
+// Tests for Bitcoin Transaction
+//
+// Copyright 2014, BitGo, Inc.  All Rights Reserved.
+//
+
+var Bitcoin = require('../../src/index');
+var assert = require('assert');
+var fixtureTx = require('./fixtures/transaction.json');
+
+describe('Transaction', function() {
+  describe('constructor', function() {
+    it("new transaction", function() {
+      Bitcoin.setNetwork('testnet');
+      var addrString = 'mgv5oJf5tv5YifH9xTuneRNEbRdG5ryocq';
+
+      var transaction = new Bitcoin.Transaction();
+      assert.ok(transaction, "create");
+      transaction.addOutput(new Bitcoin.Address(addrString), 50);
+      transaction.addOutput(new Bitcoin.Address(addrString), 50*1e8);
+      transaction.addOutput(new Bitcoin.Address(addrString), 500*1e8);
+      transaction.addOutput(new Bitcoin.Address(addrString), 5000*1e8);
+      transaction.addOutput(new Bitcoin.Address(addrString), 500000*1e8);
+      var bytes = transaction.serialize();
+      assert.ok(bytes, "serialize");
+      var tx2 = Bitcoin.Transaction.deserialize(bytes);
+      assert.ok(tx2, "deserialize");
+      assert.deepEqual(transaction.getHashBytes(), tx2.getHashBytes(), "deserialized matches tx");
+      assert.equal(transaction.outs[0].value, 50, '50 satoshi output');
+      assert.equal(transaction.outs[1].value, 50*1e8, '50 btc output');
+      assert.equal(transaction.outs[2].value, 500*1e8, '500 btc output');
+      assert.equal(transaction.outs[3].value, 5000*1e8, '5000 btc output');
+      assert.equal(transaction.outs[4].value, 500000*1e8, '500000 btc output');
+    });
+  });
+
+  var b2h = function(bytes) { return Bitcoin.Util.bytesToHex(bytes); }
+  var h2b = function(hex) { return Bitcoin.Util.hexToBytes(hex); }
+
+  describe('deserialize', function() {
+    var tx;
+    var serializedTx;
+    beforeEach(function() {
+      serializedTx = [
+        '0100000001344630cbff61fbc362f7e1ff2f11a344c29326e4ee96e78',
+        '7dc0d4e5cc02fd069000000004a493046022100ef89701f460e8660c8',
+        '0808a162bbf2d676f40a331a243592c36d6bd1f81d6bdf022100d29c0',
+        '72f1b18e59caba6e1f0b8cadeb373fd33a25feded746832ec179880c2',
+        '3901ffffffff0100f2052a010000001976a914dd40dedd8f7e3746662',
+        '4c4dacc6362d8e7be23dd88ac00000000'
+      ].join('');
+      tx = Bitcoin.Transaction.deserialize(h2b(serializedTx));
+    })
+
+    it('returns the original after serialized again', function() {
+      var actual = tx.serialize();
+      var expected = serializedTx;
+
+      assert.equal(b2h(actual), expected);
+    })
+
+    it('does not mutate the input buffer', function() {
+      var buffer = h2b(serializedTx);
+      Bitcoin.Transaction.deserialize(buffer);
+
+      assert.equal(b2h(buffer), serializedTx);
+    })
+
+    it('decodes version correctly', function(){
+      assert.equal(tx.version, 1);
+    })
+
+    it('decodes locktime correctly', function(){
+      assert.equal(tx.locktime, 0);
+    })
+
+    it('decodes inputs correctly', function(){
+      assert.equal(tx.ins.length, 1);
+
+      var input = tx.ins[0];
+      assert.equal(input.sequence, 4294967295);
+
+      assert.equal(input.outpoint.index, 0);
+      assert.equal(input.outpoint.hash, "69d02fc05c4e0ddc87e796eee42693c244a3112fffe1f762c3fb61ffcb304634");
+
+      assert.equal(b2h(input.script.buffer),
+                   "493046022100ef89701f460e8660c80808a162bbf2d676f40a331a243592c36d6bd1f81d6bdf022100d29c072f1b18e59caba6e1f0b8cadeb373fd33a25feded746832ec179880c23901");
+    })
+
+    it('decodes outputs correctly', function(){
+      assert.equal(tx.outs.length, 1);
+
+      var output = tx.outs[0];
+
+      assert.equal(output.value, 5000000000);
+      
+      var script = Bitcoin.Script.createOutputScript(new Bitcoin.Address('n1gqLjZbRH1biT5o4qiVMiNig8wcCPQeB9'));
+      assert.deepEqual(output.script, script);
+    })
+
+    it('assigns hash to deserialized object', function(){
+      var hashHex = "a9d4599e15b53f3eb531608ddb31f48c695c3d0b3538a6bda871e8b34f2f430c";
+      assert.equal(b2h(tx.getHashBytes().reverse()), hashHex);
+    })
+
+    it('decodes large inputs correctly', function() {
+      // transaction has only 1 input
+      var tx = new Bitcoin.Transaction();
+      var txInput = new Bitcoin.TransactionIn({
+        outpoint: {
+          hash: "0cb859105100ebc3344f749c835c7af7d7103ec0d8cbc3d8ccbd5d28c3c36b57",
+          index: 0
+        },
+        script: Bitcoin.Script.createOutputScript(new Bitcoin.Address('n1gqLjZbRH1biT5o4qiVMiNig8wcCPQeB9')),
+        sequence:  4294967295
+      });
+      tx.addInput(txInput);
+      var txOutput = new Bitcoin.TransactionOut({
+        value: 100,
+        script: Bitcoin.Script.createOutputScript(new Bitcoin.Address('n1gqLjZbRH1biT5o4qiVMiNig8wcCPQeB9'))
+      });
+      tx.addOutput(txOutput);
+
+      var buffer = tx.serialize();
+
+      // we're going to replace the 8bit VarInt for tx.ins.length with a stretched 32bit equivalent
+      var mutated = [].concat([
+        buffer.slice(0, 4),
+        [254, 1, 0, 0, 0],
+        buffer.slice(5)
+      ]);
+      mutated = Array.prototype.concat.apply([], mutated);
+
+      // the deserialized-serialized transaction should return to its non-mutated state (== tx)
+      var newTx = Bitcoin.Transaction.deserialize(mutated);
+      var buffer2 = newTx.serialize();
+      assert.deepEqual(buffer, buffer2);
+    });
+  });
+
+  describe('signing', function() {
+    it('standard tx', function() {
+      Bitcoin.setNetwork('prod');
+      var prevTxData = '0100000001e0214ebebb0fd3414d3fdc0dbf3b0f4b247a296cafc984558622c3041b0fcc9b010000008b48304502206becda98cecf7a545d1a640221438ff8912d9b505ede67e0138485111099f696022100ccd616072501310acba10feb97cecc918e21c8e92760cd35144efec7622938f30141040cd2d2ce17a1e9b2b3b2cb294d40eecf305a25b7e7bfdafae6bb2639f4ee399b3637706c3d377ec4ab781355add443ae864b134c5e523001c442186ea60f0eb8ffffffff03a0860100000000001976a91400ea3576c8fcb0bc8392f10e23a3425ae24efea888ac40420f00000000001976a91477890e8ec967c5fd4316c489d171fd80cf86997188acf07cd210000000001976a9146fb93c557ee62b109370fd9003e456917401cbfa88ac00000000';
+      var txData = '0100000001344630cbff61fbc362f7e1ff2f11a344c29326e4ee96e787dc0d4e5cc02fd069000000004a493046022100ef89701f460e8660c80808a162bbf2d676f40a331a243592c36d6bd1f81d6bdf022100d29c072f1b18e59caba6e1f0b8cadeb373fd33a25feded746832ec179880c23901ffffffff0100f2052a010000001976a914dd40dedd8f7e37466624c4dacc6362d8e7be23dd88ac00000000';
+      var tx = new Bitcoin.Transaction();
+      var prevTx = new Bitcoin.Transaction.deserialize(Bitcoin.Util.hexToBytes(prevTxData));
+
+      tx.addInput(prevTx, 0);
+      tx.addOutput(new Bitcoin.Address('15mMHKL96tWAUtqF3tbVf99Z8arcmnJrr3'), 40000);
+      tx.addOutput(new Bitcoin.Address('1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd'), 50000);
+
+      var key = new Bitcoin.ECKey('L44f7zxJ5Zw4EK9HZtyAnzCYz2vcZ5wiJf9AuwhJakiV4xVkxBeb');
+      tx.signWithKey(key);
+
+      var hexScript = Bitcoin.Util.bytesToHex(prevTx.outs[0].script.buffer);
+
+      assert.ok(tx.verifySignatures([hexScript]), 'signatures verify');
+    });
+
+    it('multisig tx', function() {
+      Bitcoin.setNetwork('prod');
+      // from: https://gist.github.com/gavinandresen/3966071
+      var key1 = new Bitcoin.ECKey('5JaTXbAUmfPYZFRwrYaALK48fN6sFJp4rHqq2QSXs8ucfpE4yQU');
+      assert.equal(key1.getPubKeyHex(), '0491BBA2510912A5BD37DA1FB5B1673010E43D2C6D812C514E91BFA9F2EB129E1C183329DB55BD868E209AAC2FBC02CB33D98FE74BF23F0C235D6126B1D8334F86', 'key1 is ok');
+      var key2 = new Bitcoin.ECKey('5Jb7fCeh1Wtm4yBBg3q3XbT6B525i17kVhy3vMC9AqfR6FH2qGk');
+      assert.equal(key2.getPubKeyHex(), '04865C40293A680CB9C020E7B1E106D8C1916D3CEF99AA431A56D253E69256DAC09EF122B1A986818A7CB624532F062C1D1F8722084861C5C3291CCFFEF4EC6874', 'key2 is ok');
+      var key3 = new Bitcoin.ECKey('5JFjmGo5Fww9p8gvx48qBYDJNAzR9pmH5S389axMtDyPT8ddqmw');
+      assert.equal(key3.getPubKeyHex(), '048D2455D2403E08708FC1F556002F1B6CD83F992D085097F9974AB08A28838F07896FBAB08F39495E15FA6FAD6EDBFB1E754E35FA1C7844C41F322A1863D46213', 'key3 is ok');
+
+      var multiSigAddress = Bitcoin.Address.createMultiSigAddress([key1.getPub(), key2.getPub(), key3.getPub()], 2);
+      assert.equal(multiSigAddress.toString(), '3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC', "Created multisig addr");
+      assert.equal(Bitcoin.Util.bytesToHex(multiSigAddress.redeemScript), '52410491bba2510912a5bd37da1fb5b1673010e43d2c6d812c514e91bfa9f2eb129e1c183329db55bd868e209aac2fbc02cb33d98fe74bf23f0c235d6126b1d8334f864104865c40293a680cb9c020e7b1e106d8c1916d3cef99aa431a56d253e69256dac09ef122b1a986818a7cb624532f062c1d1f8722084861c5c3291ccffef4ec687441048d2455d2403e08708fc1f556002f1b6cd83f992d085097f9974ab08a28838f07896fbab08f39495e15fa6fad6edbfb1e754e35fa1c7844c41f322a1863d4621353ae', "computed correct redeem script");
+
+      var txData = "010000000189632848f99722915727c5c75da8db2dbf194342a0429828f66ff88fab2af7d60000000000ffffffff0140420f000000000017a914f815b036d9bbbce5e9f2a00abd1bf3dc91e955108700000000"
+      var tx = Bitcoin.Transaction.deserialize(Bitcoin.Util.hexToBytes(txData));
+      assert.ok(tx, 'created unsigned tx');
+      assert.equal(tx.verifySignatures(['']), false, 'unsigned');
+      assert.equal(tx.ins.length, 1, '1 input');
+
+      // We need to add the script to the inputs so that signing can work.
+      tx.ins[0].script = new Bitcoin.Script(Bitcoin.Util.hexToBytes('a914f815b036d9bbbce5e9f2a00abd1bf3dc91e9551087'));
+
+      var sigCount = tx.signWithMultiSigScript([key1], new Bitcoin.Script(multiSigAddress.redeemScript));
+      assert.equal(sigCount, 1, 'applied first sig');
+
+      sigCount = tx.signWithMultiSigScript([key1], new Bitcoin.Script(multiSigAddress.redeemScript));
+      assert.equal(sigCount, 0, 'duplicate sig failed');
+
+      var sigCount = tx.signWithMultiSigScript([key2], new Bitcoin.Script(multiSigAddress.redeemScript));
+      assert.equal(sigCount, 1, 'applied second sig');
+    });
+  });
+
+});
+
+

@@ -12,19 +12,6 @@ module.exports = {
   },
 
   /**
-   * Create an array of a certain length filled with a specific value.
-   */
-  makeFilledArray: function (len, val)
-  {
-    var array = [];
-    var i = 0;
-    while (i < len) {
-      array[i++] = val;
-    }
-    return array;
-  },
-
-  /**
    * Turn an integer into a little-endian array of |length| bytes
    */
   numToBytes: function(num, length) {

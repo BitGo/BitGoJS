@@ -28,6 +28,7 @@ var BigInteger = require('./bitcoin/jsbn/jsbn2.js');
     $SRCDIR/src/bitcoin.js"
 */
 
+var Transactions = require('./bitcoin/transaction');
 
 module.exports = {
   Address: require('./bitcoin/address'),
@@ -40,6 +41,9 @@ module.exports = {
   Opcode: require('./bitcoin/opcode'),
   Script: require('./bitcoin/script'),
   SecureRandom: require('./bitcoin/jsbn/rng'),
+  Transaction: Transactions.Transaction,
+  TransactionIn: Transactions.TransactionIn,
+  TransactionOut: Transactions.TransactionOut,
   Util: require('./bitcoin/util')
 }
 
