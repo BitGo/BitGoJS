@@ -673,14 +673,13 @@ Transaction.prototype.signWithKey = function(key) {
 // intermediate, partially signed state.
 //
 // Returns the number of signnatures applied in this pass (kind of meaningless)
-Transaction.prototype.signWithMultiSigScript = function(keyArray, redeemScript) {
+Transaction.prototype.signWithMultiSigScript = function(key, redeemScript) {
   var hashType = 1;  // SIGHASH_ALL
   var signatureCount = 0;
 
-  if (!(keyArray instanceof Array) || !(redeemScript instanceof Script)) {
-    throw new Error('invalid argument');
+  if (!(key instanceof ECKey)) {
+    throw new Error('invalid key');
   }
-  keyArray.forEach(function(key) { if (!(key instanceof ECKey)) { throw new Error('invalid key'); } });
 
   // First figure out how many signatures we need.
   var numSigsRequired = redeemScript.chunks[0] - Opcode.map.OP_1 + 1;
@@ -689,12 +688,13 @@ Transaction.prototype.signWithMultiSigScript = function(keyArray, redeemScript) 
   }
 
   for (var index = 0; index < this.ins.length; ++index) {
+    var successfullySigned = false;
     if (this.ins[index].script.getOutType() == 'P2SH') {
-      var p2shProof = this.createP2SHProof(redeemScript);
-      this.signInput(index, p2shProof);
+      successfullySigned = this.signMultiSigWithKey(index, key, redeemScript);
+    } else {
+      successfullySigned = this.signInputWithKey(index, key);
     }
-    var proof = this.createStandardProof(keyArray[0]);
-    if (this.signInput(index, proof)) {
+    if (successfullySigned) {
       signatureCount++;
     }
   }

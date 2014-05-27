@@ -218,11 +218,30 @@ describe('Transaction', function() {
       tx.addOutput(new Bitcoin.Address('1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd'), 50000);
 
       var key = new Bitcoin.ECKey('L44f7zxJ5Zw4EK9HZtyAnzCYz2vcZ5wiJf9AuwhJakiV4xVkxBeb');
-      tx.signWithKey(key);
+      assert.equal(tx.signWithKey(key), 1);
 
       var hexScript = Bitcoin.Util.bytesToHex(prevTx.outs[0].script.buffer);
 
       assert.ok(tx.verifySignatures([hexScript]), 'signatures verify');
+    });
+
+    it('with wrong key', function() {
+      Bitcoin.setNetwork('prod');
+      var prevTxData = '0100000001e0214ebebb0fd3414d3fdc0dbf3b0f4b247a296cafc984558622c3041b0fcc9b010000008b48304502206becda98cecf7a545d1a640221438ff8912d9b505ede67e0138485111099f696022100ccd616072501310acba10feb97cecc918e21c8e92760cd35144efec7622938f30141040cd2d2ce17a1e9b2b3b2cb294d40eecf305a25b7e7bfdafae6bb2639f4ee399b3637706c3d377ec4ab781355add443ae864b134c5e523001c442186ea60f0eb8ffffffff03a0860100000000001976a91400ea3576c8fcb0bc8392f10e23a3425ae24efea888ac40420f00000000001976a91477890e8ec967c5fd4316c489d171fd80cf86997188acf07cd210000000001976a9146fb93c557ee62b109370fd9003e456917401cbfa88ac00000000';
+      var txData = '0100000001344630cbff61fbc362f7e1ff2f11a344c29326e4ee96e787dc0d4e5cc02fd069000000004a493046022100ef89701f460e8660c80808a162bbf2d676f40a331a243592c36d6bd1f81d6bdf022100d29c072f1b18e59caba6e1f0b8cadeb373fd33a25feded746832ec179880c23901ffffffff0100f2052a010000001976a914dd40dedd8f7e37466624c4dacc6362d8e7be23dd88ac00000000';
+      var tx = new Bitcoin.Transaction();
+      var prevTx = new Bitcoin.Transaction.deserialize(Bitcoin.Util.hexToBytes(prevTxData));
+
+      tx.addInput(prevTx, 0);
+      tx.addOutput(new Bitcoin.Address('15mMHKL96tWAUtqF3tbVf99Z8arcmnJrr3'), 40000);
+      tx.addOutput(new Bitcoin.Address('1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd'), 50000);
+
+      var key = new Bitcoin.ECKey();
+      assert.equal(tx.signWithKey(key), 0);
+
+      var hexScript = Bitcoin.Util.bytesToHex(prevTx.outs[0].script.buffer);
+
+      assert.equal(tx.verifySignatures([hexScript]), 0, 'unsigned');
     });
 
     it('multisig tx', function() {
@@ -248,13 +267,13 @@ describe('Transaction', function() {
       // We need to add the script to the inputs so that signing can work.
       tx.ins[0].script = new Bitcoin.Script(Bitcoin.Util.hexToBytes('a914f815b036d9bbbce5e9f2a00abd1bf3dc91e9551087'));
 
-      var sigCount = tx.signWithMultiSigScript([key1], new Bitcoin.Script(multiSigAddress.redeemScript));
+      var sigCount = tx.signWithMultiSigScript(key1, new Bitcoin.Script(multiSigAddress.redeemScript));
       assert.equal(sigCount, 1, 'applied first sig');
 
-      sigCount = tx.signWithMultiSigScript([key1], new Bitcoin.Script(multiSigAddress.redeemScript));
+      sigCount = tx.signWithMultiSigScript(key1, new Bitcoin.Script(multiSigAddress.redeemScript));
       assert.equal(sigCount, 0, 'duplicate sig failed');
 
-      var sigCount = tx.signWithMultiSigScript([key2], new Bitcoin.Script(multiSigAddress.redeemScript));
+      var sigCount = tx.signWithMultiSigScript(key2, new Bitcoin.Script(multiSigAddress.redeemScript));
       assert.equal(sigCount, 1, 'applied second sig');
     });
   });
