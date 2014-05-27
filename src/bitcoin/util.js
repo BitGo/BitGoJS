@@ -90,48 +90,6 @@ module.exports = {
   },
 
   /**
-   * Format a Bitcoin value as a string.
-   *
-   * Takes a BigInteger or byte-array and returns that amount of Bitcoins in a
-   * nice standard formatting.
-   *
-   * Examples:
-   * 12.3555
-   * 0.1234
-   * 900.99998888
-   * 34.00
-   */
-  formatValue: function (valueBuffer) {
-    var value = this.valueToBigInt(valueBuffer).toString();
-    var integerPart = value.length > 8 ? value.substr(0, value.length-8) : '0';
-    var decimalPart = value.length > 8 ? value.substr(value.length-8) : value;
-    while (decimalPart.length < 8) decimalPart = "0"+decimalPart;
-    decimalPart = decimalPart.replace(/0*$/, '');
-    while (decimalPart.length < 2) decimalPart += "0";
-    return integerPart+"."+decimalPart;
-  },
-
-  /**
-   * Parse a floating point string as a Bitcoin value.
-   *
-   * Keep in mind that parsing user input is messy. You should always display
-   * the parsed value back to the user to make sure we understood his input
-   * correctly.
-   */
-  parseValue: function (valueString) {
-    // TODO: Detect other number formats (e.g. comma as decimal separator)
-    var valueComp = valueString.split('.');
-    var integralPart = valueComp[0];
-    var fractionalPart = valueComp[1] || "0";
-    while (fractionalPart.length < 8) fractionalPart += "0";
-    fractionalPart = fractionalPart.replace(/^0+/g, '');
-    var value = BigInteger.valueOf(parseInt(integralPart));
-    value = value.multiply(BigInteger.valueOf(100000000));
-    value = value.add(BigInteger.valueOf(parseInt(fractionalPart)));
-    return value;
-  },
-
-  /**
    * Calculate RIPEMD160(SHA256(data)).
    *
    * Takes an arbitrary byte array as inputs and returns the hash as a byte
