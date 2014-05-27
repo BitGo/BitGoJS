@@ -560,6 +560,7 @@ BigInteger.prototype.modPowInt = bnModPowInt;
 
 // protected
 BigInteger.Montgomery = Montgomery;
+BigInteger.Classic = Classic;
 BigInteger.nbits = nbits;
 
 // "constants"

@@ -425,7 +425,7 @@ function bnModPow(e,m) {
   else if(i < 768) k = 5;
   else k = 6;
   if(i < 8)
-    z = new Classic(m);
+    z = new BigInteger.Classic(m);
   else if(m.isEven())
     z = new Barrett(m);
   else
