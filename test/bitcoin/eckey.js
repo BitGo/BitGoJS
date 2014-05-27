@@ -34,7 +34,7 @@ describe('ECKey', function() {
     assert.equal(eckey.getBitcoinAddress().toString(), addrString, "getBitcoinAddress");
   });
 
-  it("Chaining", function() {
+  it("chaining", function() {
     var eckey = new Bitcoin.ECKey();
     assert.ok(eckey, "created");
     var priv = eckey.priv;
@@ -64,6 +64,68 @@ describe('ECKey', function() {
     assert.ok(pubkeyChain, 'created chain from pubkey');
     assert.deepEqual(pubkeyChain, newkey.getPub(), 'chained public key derived from parent\'s public key matches that dervived from parent\'s private key');
     assert.notDeepEqual(pubkeyChain, eckey.getPub(), 'chained public key derived from parent\'s public key does not match parent');
+  });
+
+  it('parallel chaining', function() {
+    Object.associativeArraySize = function(obj) {
+      var size = 0, key;
+      for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+      }
+      return size;
+    };
+
+    var random = new Bitcoin.SecureRandom();
+
+    var kNumParallelChains = 6;
+    var eckey = new Bitcoin.ECKey();
+    var chainedKeys = {};
+    for (var index = 0; index < kNumParallelChains; ++index) {
+      var chain = new Array(32);
+      random.nextBytes(chain);
+      var newkey = Bitcoin.ECKey.createECKeyFromChain(eckey.priv.toByteArrayUnsigned(), chain);
+      chainedKeys[newkey.getBitcoinAddress().toString()] = { chain: chain, key: newkey };
+    }
+    assert.equal(Object.associativeArraySize(chainedKeys), kNumParallelChains, "generated unique keys");
+
+    for (var chainedKey in chainedKeys) {
+       var elt = chainedKeys[chainedKey];
+       var chain = elt.chain;
+       var expectedPubKey = elt.key.getPub();
+       var chainedPubKey = Bitcoin.ECKey.createPubKeyFromChain(eckey.getPub(), chain);
+       assert.deepEqual(chainedPubKey, expectedPubKey, 'derived pubkeys match for case: ' + chainedKey);
+    }
+  });
+
+  it('serial chaining', function() {
+    var random = new Bitcoin.SecureRandom();
+
+    var kNumSerialChains = 6;
+
+    var eckey = new Bitcoin.ECKey();
+    var chainedKeys = [];
+    var keyRoot = eckey;
+    for (var index = 0; index < kNumSerialChains; ++index) {
+      var chain = new Array(32);
+      random.nextBytes(chain);
+      var newkey = Bitcoin.ECKey.createECKeyFromChain(keyRoot.priv.toByteArrayUnsigned(), chain);
+      chainedKeys.push({ chain: chain, key: newkey });
+      keyRoot = newkey;
+    }
+    assert.equal(Object.associativeArraySize(chainedKeys), kNumSerialChains, "generated unique keys");
+
+    var chainHead = eckey.getPub();
+    for (var index = 0; index < kNumSerialChains; ++index) {
+       var elt = chainedKeys[index];
+       var chain = elt.chain;
+
+       var chainedPubKey = Bitcoin.ECKey.createPubKeyFromChain(chainHead, chain);
+       var expectedPubKey = elt.key.getPub();
+
+       var bitcoinAddress = Bitcoin.Address.fromPubKey(chainedPubKey);
+       assert.deepEqual(chainedPubKey, expectedPubKey, 'derived pubkeys match for case: ' + bitcoinAddress);
+       chainHead = chainedPubKey;
+    }
   });
 });
 

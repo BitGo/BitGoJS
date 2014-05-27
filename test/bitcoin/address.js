@@ -139,6 +139,33 @@ describe('Address', function() {
       assert.equal(script.chunks[0], Bitcoin.Opcode.map.OP_2);
       assert.equal(script.chunks[4], Bitcoin.Opcode.map.OP_3);
     });
+
+  });
+  describe("Standard Address", function() {
+    it("Prod network", function () {
+      assert.ok(Bitcoin.Address, "Bitcoin.Address");
+      Bitcoin.setNetwork('prod');
+      var addrString = '1Hinfhwcv3QGv2wYDyenQECR5QXnxBcz1w';
+      var address = new Bitcoin.Address(addrString);
+      assert.ok(address, "Address from string address");
+      assert.equal(address.toString(), addrString, "toString");
+      assert.equal(true, address.isPubKeyHashAddress(), 'isPubKeyHash');
+      assert.equal(false, address.isP2SHAddress(), 'isPubKeyHash');
+      assert.equal(true, Bitcoin.Address.validate(addrString), 'validate');
+      assert.equal(false, Bitcoin.Address.validate('xyzzy'), 'validate invalid string');
+    });
+
+    it("Test network", function () {
+      Bitcoin.setNetwork('testnet');
+      var addrString = 'mgv5oJf5tv5YifH9xTuneRNEbRdG5ryocq';
+      var address = new Bitcoin.Address(addrString);
+      assert.ok(address, "Address from string address");
+      assert.equal(address.toString(), addrString, "toString");
+      assert.equal(true, address.isPubKeyHashAddress(), 'isPubKeyHash');
+      assert.equal(false, address.isP2SHAddress(), 'isPubKeyHash');
+      assert.equal(true, Bitcoin.Address.validate(addrString), 'validate');
+      assert.equal(false, Bitcoin.Address.validate('xyzzy'), 'validate invalid string');
+    });
   });
 });
 
