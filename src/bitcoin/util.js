@@ -1,6 +1,7 @@
 // Bitcoin utility functions
 
 var Crypto = require('./crypto-js/index');
+var BigInteger = require('./jsbn/jsbn2');
 
 module.exports = {
   /**
@@ -76,17 +77,6 @@ module.exports = {
       hex.push((bytes[i] & 0xF).toString(16));
     }
     return hex.join("");
-  },
-
-  /**
-   * Parse a Bitcoin value byte array, returning a BigInteger.
-   */
-  valueToBigInt: function (valueBuffer)
-  {
-    if (valueBuffer instanceof BigInteger) return valueBuffer;
-
-    // Prepend zero byte to prevent interpretation as negative integer
-    return BigInteger.fromByteArrayUnsigned(valueBuffer);
   },
 
   /**

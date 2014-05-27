@@ -11,16 +11,22 @@ var fixtureTx = require('./fixtures/transaction.json');
 describe('Transaction', function() {
   describe('constructor', function() {
     it("new transaction", function() {
-      Bitcoin.setNetwork('testnet');
-      var addrString = 'mgv5oJf5tv5YifH9xTuneRNEbRdG5ryocq';
-
       var transaction = new Bitcoin.Transaction();
       assert.ok(transaction, "create");
+    });
+
+    it("addOutputs", function() {
+      Bitcoin.setNetwork('testnet');
+      var transaction = new Bitcoin.Transaction();
+      var addrString = 'mgv5oJf5tv5YifH9xTuneRNEbRdG5ryocq';
       transaction.addOutput(new Bitcoin.Address(addrString), 50);
       transaction.addOutput(new Bitcoin.Address(addrString), 50*1e8);
       transaction.addOutput(new Bitcoin.Address(addrString), 500*1e8);
       transaction.addOutput(new Bitcoin.Address(addrString), 5000*1e8);
       transaction.addOutput(new Bitcoin.Address(addrString), 500000*1e8);
+      assert.equal(transaction.outs.length, 5);
+      assert.equal(transaction.getTotalOutValue(), 50555000000050);
+
       var bytes = transaction.serialize();
       assert.ok(bytes, "serialize");
       var tx2 = Bitcoin.Transaction.deserialize(bytes);
@@ -31,6 +37,37 @@ describe('Transaction', function() {
       assert.equal(transaction.outs[2].value, 500*1e8, '500 btc output');
       assert.equal(transaction.outs[3].value, 5000*1e8, '5000 btc output');
       assert.equal(transaction.outs[4].value, 500000*1e8, '500000 btc output');
+
+      transaction.clearOutputs();
+      assert.equal(transaction.outs.length, 0);
+      assert.equal(transaction.getTotalOutValue(), 0);
+    });
+
+    it("addInputs", function() {
+      var tx = new Bitcoin.Transaction();
+      assert.throws(function() {
+        tx.addInput('0cb859105100ebc3344f749c835c7af7d7103ec0d8cbc3d8ccbd5d28c3c36b57', 1);
+      });
+      var txInput = new Bitcoin.TransactionIn({
+        outpoint: {
+          hash: "0cb859105100ebc3344f749c835c7af7d7103ec0d8cbc3d8ccbd5d28c3c36b57",
+          index: 0
+        },
+        script: Bitcoin.Script.createOutputScript(new Bitcoin.Address('n1gqLjZbRH1biT5o4qiVMiNig8wcCPQeB9')),
+        sequence:  4294967295
+      });
+      tx.addInput(txInput);
+      assert.equal(tx.ins.length, 1);
+
+      tx.clearInputs();
+      assert.equal(tx.ins.length, 0);
+    });
+
+    it("clone transaction", function() {
+      var txData = '0100000001d9fd76d600fdb6b172c133d908a388b8d8573a03f2d9241f06ec09b1f208e6ff00000000fd5d010047304402202d290d07917b6795d1871e01e5762f323a3a3de25c6ad4b22a9072a6add982b402201f32b6e04f01acfccf887f0573c4b14b06c7ed21c58817f1a9d7329c404873f801483045022100eb47049c291ea09041a489f9b1c6783765568503b4d60134f4d3d84024c5ef84022032c85b9d00b760dc909565ba09a6f2526b6ee474fa6f6048be2d954fdb993efd014cc9524104150fcc32bb54a665d000963c790696dccc47993e89ba9ddf3b5f647e54317fa38a0dec77d403ef89089d7ca92c7ac4978c0593496d8bac79239197aa44786c68410455caf1a8af431ebae5f0c533310d2ab18c49880dc03ce75d915fd895f232aa1dcc4fa63db14b9b0889225d5df956cf961413561d922605812b6b6f6969967f6a4104e444d30ec3d7316d21170a6a9d2c5ce22a2dd30ba4aa57b3d0dc33bd8df090ab85e6b7eaef3692b6fdf6b1a2b8b69b1b681613cef648ba7556ea9a0ac2102a1f53aeffffffff02bc080000000000001976a9148b887b2b49891e3eb53bab1c17b313db8a8b502288acb433df000000000017a91408dd67b4a5e221b5664564969d3bcc7520f5599b8700000000';
+      var tx = Bitcoin.Transaction.deserialize(Bitcoin.Util.hexToBytes(txData));
+      var newTx = new Bitcoin.Transaction(tx);
+      assert.equal(Bitcoin.Util.bytesToHex(newTx.serialize()), txData);
     });
   });
 
