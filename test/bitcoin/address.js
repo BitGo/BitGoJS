@@ -9,7 +9,7 @@ var assert = require('assert');
 var Bitcoin = require('../../src/index');
 
 describe('Address', function() {
-  describe('Constuctor', function() {
+  describe('Constructor', function() {
     it('throws without argument', function() {
       assert.throws(function() { new Bitcoin.Address() });
     });

@@ -5,6 +5,7 @@
 //
 
 var Bitcoin = require('../../src/index');
+var Crypto = require('../../src/bitcoin/crypto-js/index');
 var assert = require('assert');
 
 describe('Random', function() {
@@ -12,6 +13,11 @@ describe('Random', function() {
     var rng = new Bitcoin.SecureRandom();
     var randomArray = new Array(32);
     rng.nextBytes(randomArray);
+    assert.equal(randomArray.length, 32);
+  });
+
+  it("Crypto.util.randomBytes", function() {
+    var randomArray = Crypto.util.randomBytes(32);
     assert.equal(randomArray.length, 32);
   });
 
