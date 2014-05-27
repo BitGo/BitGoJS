@@ -95,7 +95,8 @@ Script.prototype.parse = function () {
  */
 Script.prototype.getOutType = function () {
   if (this.chunks[this.chunks.length-1] == ops.OP_CHECKMULTISIG &&
-      this.chunks[this.chunks.length-2] <= ops.OP_1 + 2) {
+      this.chunks[this.chunks.length-2] <= ops.OP_1 + 2 &&
+      this.chunks[0] >= ops.OP_1 && this.chunks[0] <= ops.OP_16) {
     // Transfer to M-OF-N
     return 'Multisig';
   } else if (this.chunks.length == 5 &&

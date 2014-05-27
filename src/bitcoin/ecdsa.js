@@ -1,7 +1,9 @@
+var BigInteger = require('./jsbn/jsbn2');
+var ECKey = require('./eckey');
+var SecureRandom = require('./jsbn/rng');
+var Util = require('./util');
 var ec = require('./jsbn/ec');
 var sec = require('./jsbn/sec');
-var SecureRandom = require('./jsbn/rng');
-var BigInteger = require('./jsbn/jsbn2');
 
 function integerToBytes(i, len) {
   var bytes = i.toByteArrayUnsigned();
@@ -63,7 +65,7 @@ ec.ECPointFp.decodeFrom = function (curve, enc) {
   var y = new BigInteger(yBa);
 
   // Return point
-  return new ECPointFp(curve, curve.fromBigInteger(x), curve.fromBigInteger(y));
+  return new ec.ECPointFp(curve, curve.fromBigInteger(x), curve.fromBigInteger(y));
 };
 
 ec.ECPointFp.prototype.add2D = function (b) {
@@ -86,7 +88,7 @@ ec.ECPointFp.prototype.add2D = function (b) {
   var x3 = gamma.square().subtract(this.x).subtract(b.x);
   var y3 = gamma.multiply(this.x.subtract(x3)).subtract(this.y);
 
-  return new ECPointFp(this.curve, x3, y3);
+  return new ec.ECPointFp(this.curve, x3, y3);
 };
 
 ec.ECPointFp.prototype.twice2D = function () {
@@ -104,7 +106,7 @@ ec.ECPointFp.prototype.twice2D = function () {
   var x3 = gamma.square().subtract(this.x.multiply(TWO));
   var y3 = gamma.multiply(this.x.subtract(x3)).subtract(this.y);
 
-  return new ECPointFp(this.curve, x3, y3);
+  return new ec.ECPointFp(this.curve, x3, y3);
 };
 
 ec.ECPointFp.prototype.multiply2D = function (k) {
@@ -251,7 +253,7 @@ var ECDSA = {
 
   verify: function (hash, sig, pubkey) {
     var r,s;
-    if (Bitcoin.Util.isArray(sig)) {
+    if (Util.isArray(sig)) {
       var obj = ECDSA.parseSig(sig);
       r = obj.r;
       s = obj.s;
@@ -265,7 +267,7 @@ var ECDSA = {
     var Q;
     if (pubkey instanceof ec.ECPointFp) {
       Q = pubkey;
-    } else if (Bitcoin.Util.isArray(pubkey)) {
+    } else if (Util.isArray(pubkey)) {
       Q = ec.ECPointFp.decodeFrom(ecparams.getCurve(), pubkey);
     } else {
       throw "Invalid format for pubkey value, must be byte array or ECPointFp";
@@ -445,7 +447,7 @@ var ECDSA = {
       throw "Pubkey recovery unsuccessful";
     }
 
-    var pubKey = new Bitcoin.ECKey();
+    var pubKey = new ECKey();
     pubKey.setPub(Q.getEncoded());
     return pubKey;
   },
@@ -465,7 +467,7 @@ var ECDSA = {
   {
     for (var i = 0; i < 4; i++) {
       try {
-        var pubkey = Bitcoin.ECDSA.recoverPubKey(r, s, hash, i);
+        var pubkey = ECDSA.recoverPubKey(r, s, hash, i);
         if (pubkey.getBitcoinAddress().toString() == address) {
           return i;
         }

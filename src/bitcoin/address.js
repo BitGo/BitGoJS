@@ -1,6 +1,5 @@
 var Base58 = require('./base58');
 var Crypto = require('./crypto-js/index');
-var Script = require('./script');
 var Util = require('./util');
 
 var Address = function (input, version) {
@@ -69,6 +68,8 @@ Address.prototype.fromString = function (string) {
 };
 
 Address.createMultiSigAddress = function(keys, numRequired) {
+  var Script = require('./script');
+
   if (numRequired <= 0 || numRequired > keys.length || numRequired > 16) { throw new Error("invalid number of keys required"); }
   if (Object.prototype.toString.call(keys) != '[object Array]') { throw new Error("pub keys should be an array"); }
   for (var index = 0; index < keys.length; ++index) {

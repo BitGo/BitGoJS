@@ -3,13 +3,14 @@ var BigInteger = require('./jsbn/jsbn2');
 var Crypto = require('./crypto-js/index');
 var ECDSA = require('./ecdsa');
 var Util = require('./util');
+var ec = require('./jsbn/ec');
 var sec = require('./jsbn/sec');
-
-// TODO:  Add BIP38
 
 var ecparams = sec.getSECCurveByName("secp256k1");
 
 var ECKey = function (input) {
+  this.compressed = false;
+
   if (!input) {
     // Generate new key
     var n = ecparams.getN();
@@ -27,12 +28,8 @@ var ECKey = function (input) {
     } else if (ECKey.isCompressedWalletImportFormat(input)) {
       bytes = ECKey.decodeCompressedWalletImportFormat(input);
       this.compressed = true;
-    } else if (ECKey.isMiniFormat(input)) {
-      bytes = Crypto.SHA256(input, { asBytes: true });
     } else if (ECKey.isHexFormat(input)) {
       bytes = Crypto.util.hexToBytes(input);
-    } else if (ECKey.isBase64Format(input)) {
-      bytes = Crypto.util.base64ToBytes(input);
     }
 
     if (bytes == null || bytes.length != 32) {
@@ -42,16 +39,9 @@ var ECKey = function (input) {
       this.priv = BigInteger.fromByteArrayUnsigned(bytes);
     }
   }
-
-  this.compressed = (this.compressed == undefined) ? !!ECKey.compressByDefault : this.compressed;
 };
 
 ECKey.privateKeyPrefix = 0x80; // mainnet 0x80    testnet 0xEF
-
-/**
- * Whether public keys should be returned compressed by default.
- */
-ECKey.compressByDefault = false;
 
 /**
  * Set whether the public key should be returned compressed or not.
@@ -146,7 +136,7 @@ ECKey.createPubKeyFromChain = function(pubKey, chainCode) {
       chainXor[i] ^= chainCode[i];
 
   var A = BigInteger.fromByteArrayUnsigned(chainXor);
-  var pt = ECPointFp.decodeFrom(ecparams.getCurve(), pubKey).multiply(A);
+  var pt = ec.ECPointFp.decodeFrom(ecparams.getCurve(), pubKey).multiply(A);
 
   var newPub = pt.getEncoded();
   return newPub;
@@ -224,24 +214,10 @@ ECKey.prototype.getWalletImportFormat = function () {
 };
 
 /**
- * Private key encoded per BIP-38 (password encrypted, checksum,  base58)
- */
-ECKey.prototype.getEncryptedFormat = function (passphrase) {
-  return BIP38.encode(this, passphrase);
-}
-
-/**
  * Private key encoded as hexadecimal string.
  */
 ECKey.prototype.getHexFormat = function () {
   return Crypto.util.bytesToHex(this.getPrivateKeyByteArray()).toString().toUpperCase();
-};
-
-/**
- * Private key encoded as Base64 string.
- */
-ECKey.prototype.getBase64Format = function () {
-  return Crypto.util.bytesToBase64(this.getPrivateKeyByteArray());
 };
 
 /**
@@ -257,12 +233,10 @@ ECKey.prototype.getPrivateKeyByteArray = function () {
 
 ECKey.prototype.toString = function (format) {
   format = format || "";
-  if (format.toString().toLowerCase() == "base64" || format.toString().toLowerCase() == "b64") {
-    return this.getBase64Format(); // Base 64
-  } else if (format.toString().toLowerCase() == "wif") {
+  if (format.toString().toLowerCase() == "wif") {
     return this.getWalletImportFormat(); // Wallet Import Format
   } else {
-    return this.getHexFormat(); // Hex
+    return this.getHexFormat();
   }
 };
 
@@ -322,13 +296,6 @@ ECKey.decodeCompressedWalletImportFormat = function (privStr) {
 };
 
 /**
- * Parse and decrypt a key encoded as a BIP38 string.
- */
-ECKey.decodeEncryptedFormat = function (base58Encrypted, passphrase) {
-  return BIP38.decode(base58Encrypted, passphrase);
-}
-
-/**
  * Detects keys in hex format (64 characters [0-9A-F]).
  */
 ECKey.isHexFormat = function (key) {
@@ -355,31 +322,5 @@ ECKey.isCompressedWalletImportFormat = function (key) {
     (/^[LK][123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(key)) :
     (/^c[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{51}$/.test(key));
 };
-
-/**
- * Detects keys in base64 format (44 characters)
- */
-ECKey.isBase64Format = function (key) {
-  key = key.toString();
-  return (/^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789=+\/]{44}$/.test(key));
-};
-
-/**
- * Detects keys in 'mini' format (22, 26 or 30 characters, always starts with an 'S')
- */
-ECKey.isMiniFormat = function (key) {
-  key = key.toString();
-  var validChars22 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{21}$/.test(key);
-  var validChars26 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{25}$/.test(key);
-  var validChars30 = /^S[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]{29}$/.test(key);
-  var testBytes = Crypto.SHA256(key + "?", { asBytes: true });
-
-  return ((testBytes[0] === 0x00 || testBytes[0] === 0x01) && (validChars22 || validChars26 || validChars30));
-};
-
-/**
- * Detects keys encrypted according to BIP-38 (58 base58 characters starting with 6P)
- */
-ECKey.isBIP38Format = function (string) { return BIP38.isBIP38Format(string); };
 
 module.exports = ECKey;
