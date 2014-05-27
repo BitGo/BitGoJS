@@ -36,7 +36,8 @@
     "test": "npm run-script unit",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js",
     "coveralls": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- --timeout 10000 -R spec test/*.js test/bitcoin/*.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs --beautify > BitGoJS-min.js"
+    "compile-dbg": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs --beautify > BitGoJS.js",
+    "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js"
   },
   "dependencies": {
     "speakeasy": "1.0.3",
