@@ -1,5 +1,4 @@
 var BigInteger = require('./jsbn/jsbn2');
-var ECKey = require('./eckey');
 var SecureRandom = require('./jsbn/rng');
 var Util = require('./util');
 var ec = require('./jsbn/ec');
@@ -393,6 +392,8 @@ var ECDSA = {
    * http://www.secg.org/download/aid-780/sec1-v2.pdf
    */
   recoverPubKey: function (r, s, hash, i) {
+    var ECKey = require('./eckey');
+
     // The recovery parameter i has two bits.
     i = i & 3;
 

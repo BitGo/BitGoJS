@@ -5,29 +5,6 @@
 //
 
 var BigInteger = require('./bitcoin/jsbn/jsbn2.js');
-
-// TODO:  CLEAN THIS UP.
-//   REMOVE THE UNNECESSARY GARBAGE
-/*
-    $SRCDIR/src/crypto-js/src/Crypto.js \
-    $SRCDIR/src/crypto-js/src/CryptoMath.js \
-    $SRCDIR/src/crypto-js/src/BlockModes.js \
-    $SRCDIR/src/crypto-js/src/SHA256.js \
-    $SRCDIR/src/crypto-js/src/AES.js \
-    $SRCDIR/src/crypto-js/src/PBKDF2.js \
-    $SRCDIR/src/crypto-js/src/HMAC.js \
-    $SRCDIR/src/sha512.js \
-
-    $SRCDIR/src/crypto-js-etc/ripemd160.js \
-
-    $SRCDIR/src/node-scrypt.js \
-
-    $SRCDIR/src/events/eventemitter.js \
-    $SRCDIR/src/bip38.js \
-    $SRCDIR/src/transaction.js \
-    $SRCDIR/src/bitcoin.js"
-*/
-
 var Transactions = require('./bitcoin/transaction');
 
 module.exports = {
@@ -38,6 +15,7 @@ module.exports = {
   BigInteger: BigInteger,
   ECDSA: require('./bitcoin/ecdsa'),
   ECKey: require('./bitcoin/eckey'),
+  Message: require('./bitcoin/message'),
   Opcode: require('./bitcoin/opcode'),
   Script: require('./bitcoin/script'),
   SecureRandom: require('./bitcoin/jsbn/rng'),
@@ -47,8 +25,9 @@ module.exports = {
   Util: require('./bitcoin/util')
 }
 
+//
 // Initialize the library
-
+//
 
 var Bitcoin = module.exports;
 
