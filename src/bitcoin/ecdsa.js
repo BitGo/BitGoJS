@@ -263,7 +263,7 @@ var ECDSA = {
     // signed message verification!? Probably an implementation
     // error!
     //var point = implShamirsTrick(G, u1, Q, u2);
-    var point = G.multiply(u1).add(Q.multiply(u2));
+    var point = G.multiplyTwo(u1, Q, u2)
 
     var v = point.getX().toBigInteger().mod(n);
 

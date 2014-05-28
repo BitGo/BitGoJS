@@ -34,6 +34,20 @@ describe('ECDSA', function() {
     assert.ok(P.validate(), "kG validates as a public key");
   });
 
+  it('point equals', function() {
+    var G = ecparams.getG();
+    var n = ecparams.getN();
+    var k1 = Bitcoin.ECDSA.getBigRandom(n);
+    var k2 = Bitcoin.ECDSA.getBigRandom(n);
+
+    var P1 = G.multiply(k1);
+    var P2 = G.multiply(k2);
+    var P3 = G.multiply(k1);
+
+    assert.equal(P1.equals(P2), false);
+    assert.equal(P1.equals(P3), true);
+  });
+
   it('key management', function() {
     var s1 = new Bitcoin.ECKey();
     var p1 = s1.getPub();
