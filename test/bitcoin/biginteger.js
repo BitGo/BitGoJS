@@ -5,11 +5,32 @@
 //
 
 var BigInteger = require('../../src/bitcoin/jsbn/jsbn');
+var SecureRandom = require('../../src/bitcoin/jsbn/rng');
 var assert = require('assert');
 var should = require('should');
 
 describe('JSBN', function() {
+
   describe('BigInteger', function() {
+
+    describe('constructor', function() {
+      it('null', function() {
+        var big = new BigInteger(null);
+        assert.equal(big.toString(), '0');
+      });
+
+      it('from number', function() {
+        // Not sure why these require a random number...
+        var big = new BigInteger(50, 0, new SecureRandom());
+        var big = new BigInteger(50, new SecureRandom());
+      });
+
+      it('from string', function() {
+        var big = new BigInteger('123123123');
+        assert.equal(big.toString(), '123123123');
+      });
+    });
+
     it('can execute common mathematical operations', function() {
       var a = new BigInteger(null);
       a.fromInt(25);
@@ -139,24 +160,28 @@ describe('JSBN', function() {
         var c = a.and(b);
         assert.equal(c.toString(), a.toString());
       });
+
       it('or', function() {
         var a = new BigInteger('1');
         var b = new BigInteger('16');
         var c = a.or(b);
         assert.equal(c.toString(), new BigInteger('17').toString());
       });
+
       it('xor', function() {
         var a = new BigInteger('1');
         var b = new BigInteger('17');
         var c = a.xor(b);
         assert.equal(c.toString(), new BigInteger('16').toString());
       });
+
       it('andNot', function() {
         var a = new BigInteger('1');
         var b = new BigInteger('9999999999999999');
         var c = a.andNot(b);
         assert.equal(c.toString(), BigInteger.ZERO);
       });
+
       it('shift right/left', function() {
         var a = new BigInteger('1267650600228229401496703205376');
         var b = a.shiftRight(100);
@@ -165,28 +190,43 @@ describe('JSBN', function() {
         var c = BigInteger.ONE.shiftLeft(100);
         assert.equal(a.toString(), c.toString());
       });
+
       it('flip bits', function() {
         var a = new BigInteger('4289396650');
         assert.equal(a.toString(16), 'ffaaffaa');
         assert.equal(a.bitCount(), 24);
+
         var a = a.flipBit(0);
         assert.equal(a.toString(16), 'ffaaffab');
+
         var a = a.setBit(2);
         assert.equal(a.toString(16), 'ffaaffaf');
         assert.equal(a.getLowestSetBit(), 0);
+
         var a = a.clearBit(0);
         assert.equal(a.toString(16), 'ffaaffae');
         assert.equal(a.getLowestSetBit(), 1);
       });
+
       it('mod', function() {
         var a = new BigInteger('1267650600228229401496703205376');
         var c = a.modInt(1000000);
         assert.equal(c.toString(), '205376');
       });
+
       it('not', function() {
         var a = new BigInteger('3');
         var c = a.not();
         assert.equal(c.toString(), '-4');
+      });
+
+      it('lowest set bit', function() {
+        var a = new BigInteger('4289396650');
+
+        assert.equal(a.getLowestSetBit(), 1);
+        var a = a.negate();
+        assert.equal(a.toString(16), '-ffaaffaa');
+        assert.equal(a.getLowestSetBit(), 1);
       });
     });
 
@@ -199,17 +239,20 @@ describe('JSBN', function() {
         var a = new BigInteger('11');
         assert.equal(a.isProbablePrime(), true);
       });
+
       it('divide and remainder', function() {
         var a = new BigInteger('12345678901234567890');
         var result = a.divideAndRemainder(new BigInteger('555'));
         assert.equal(result[0].toString(), '22244466488710933');
         assert.equal(result[1].toString(), '75');
       });
+
       it('common denominator', function() {
         var a = new BigInteger('78172398172398172937198371289378129738129372');
         var b = new BigInteger('7893178372193712937918746');
         assert.equal(a.gcd(b).toString(), '2');
       });
+
       it('modpow', function() {
         var a = new BigInteger('2');
 
@@ -234,12 +277,14 @@ describe('JSBN', function() {
         b = a.modPow(new BigInteger('8192'), new BigInteger('1000'));  // 2^8192 % 1000
         assert.equal(b.toString(), '896');
       });
+
       it('to/from byteArrayUnsigned', function() {
         var a1 = [1, 2, 3, 4, 5, 6, 7, 8, 255, 254, 253];
         var a = BigInteger.fromByteArrayUnsigned(a1);
         var a2 = a.toByteArrayUnsigned();
         assert.deepEqual(a1, a2);
       });
+
       it('to/from byteArraySigned', function() {
         var a1 = [1, 2, 3, 4, 5, 6, 7, 8, 255, 254, 253];
         var a = BigInteger.fromByteArraySigned(a1);
@@ -249,6 +294,17 @@ describe('JSBN', function() {
         var a1 = [0x80, 255, 2, 3, 4, 5, 6, 7, 8, 255, 254, 253];
         var a = BigInteger.fromByteArraySigned(a1);
         var a2 = a.toByteArraySigned();
+      });
+
+      it('intValue', function() {
+        var big = BigInteger.ZERO;
+        assert.equal(big.intValue(), 0);
+
+        var big = new BigInteger('50');
+        assert.equal(big.intValue(), 50);
+
+        var big = new BigInteger('5000000000');
+        assert.equal(big.intValue(), 705032704);  // overflows 32bit
       });
     });
   });
