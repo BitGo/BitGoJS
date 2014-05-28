@@ -6,7 +6,7 @@
 
 var assert = require('assert');
 var should = require('should');
-var speakeasy = require('speakeasy');
+var speakeasy = require('./speakeasy');
 
 var BitGoJS = require('../src/index');
 

@@ -16,7 +16,9 @@
     "coveralls": "~2.10.0",
     "mocha-lcov-reporter": "0.0.1",
     "browserify": "~4.1.5",
-    "should": "3.3.2" 
+    "should": "3.3.2",
+    "speakeasy": "1.0.3",
+    "thirty-two": "0.0.1"
   },
   "testling": {
     "browsers": [
@@ -29,7 +31,7 @@
       "android-browser/4.2..latest"
     ],
     "harness": "mocha",
-    "files": "test/*.js"
+    "files": [ "test/*.js", "test/bitcoin/*.js" ]
   },
   "scripts": {
     "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js",
@@ -40,7 +42,6 @@
     "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js"
   },
   "dependencies": {
-    "speakeasy": "1.0.3",
     "superagent": "https://github.com/mbelshe/superagent/archive/5c07efd9cf960a7db18a9c5cbc86beb68ae4deca.tar.gz"
   }
 }
