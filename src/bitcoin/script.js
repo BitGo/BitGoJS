@@ -199,60 +199,6 @@ Script.prototype.getInType = function ()
 };
 
 /**
- * Returns the affected public key for this input.
- *
- * This currently only works with payToPubKeyHash transactions. It will also
- * work in the future for standard payToScriptHash transactions that use a
- * single public key.
- *
- * However for multi-key and other complex transactions, this will only return
- * one of the keys or raise an error. Therefore, it is recommended for indexing
- * purposes to use Script#simpleInHash or Script#simpleOutHash instead.
- *
- * @deprecated
- */
-Script.prototype.simpleInPubKey = function ()
-{
-  switch (this.getInType()) {
-  case 'Address':
-    return this.chunks[1];
-  case 'Pubkey':
-    // TODO: Theoretically, we could recover the pubkey from the sig here.
-    //       See https://bitcointalk.org/?topic=6430.0
-    throw new Error("Script does not contain pubkey.");
-  default:
-    throw new Error("Encountered non-standard scriptSig");
-  }
-};
-
-/**
- * Returns the affected address hash for this input.
- *
- * For standard transactions, this will return the hash of the pubKey that
- * can spend this output.
- *
- * In the future, for standard payToScriptHash inputs, this will return the
- * scriptHash.
- *
- * Note: This function provided for convenience. If you have the corresponding
- * scriptPubKey available, you are urged to use Script#simpleOutHash instead
- * as it is more reliable for non-standard payToScriptHash transactions.
- *
- * This method is useful for indexing transactions.
- */
-Script.prototype.simpleInHash = function ()
-{
-  return Util.sha256ripe160(this.simpleInPubKey());
-};
-
-/**
- * Old name for Script#simpleInHash.
- *
- * @deprecated
- */
-Script.prototype.simpleInPubKeyHash = Script.prototype.simpleInHash;
-
-/**
  * Add an op code to the script.
  */
 Script.prototype.writeOp = function (opcode)
@@ -317,6 +263,9 @@ Script.createOutputScript = function (address)
  */
 Script.prototype.extractAddresses = function (addresses)
 {
+  if (!addresses || !Array.isArray(addresses)) {
+    throw new Error('addresses is not an array');
+  }
   switch (this.getOutType()) {
   case 'Address':
     addresses.push(new Address(this.chunks[2]));
@@ -333,9 +282,9 @@ Script.prototype.extractAddresses = function (addresses)
     for (var index = 0; index < pubKeys.length; ++index) {
       addresses.push(new Address(Util.sha256ripe160(pubKeys[index])));
     }
-    return count;
+    return addresses.length;
   default:
-    throw new Error("Encountered non-standard scriptPubKey");
+    throw new Error("non-standard script");
   }
 };
 

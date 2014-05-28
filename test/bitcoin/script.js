@@ -15,6 +15,15 @@ describe('Script', function() {
       assert.ok(new Bitcoin.Script([]));
     })
 
+    it('works for a string', function() {
+      assert.ok(new Bitcoin.Script('20d40e63ba05d60fab09f88786a86b2130b09dee3abb88d187ff256fa0f2229f0a'));
+    })
+
+    it('works for a script', function() {
+      var script = new Bitcoin.Script('20d40e63ba05d60fab09f88786a86b2130b09dee3abb88d187ff256fa0f2229f0a');
+      assert.ok(new Bitcoin.Script(script));
+    })
+
     it('works when nothing is passed in', function() {
       assert.ok(new Bitcoin.Script());
     })
@@ -63,6 +72,15 @@ describe('Script', function() {
     assert.equal(undefined, script.writeOp(Bitcoin.Opcode.OP_0), "writeOp");
     assert.equal(undefined, script.writeBytes('hello world'), "writeBytes");
     assert.equal('Strange', script.getOutType(), "getOutputType");
+  });
+
+  it("create output script sanity checks", function() {
+    var key = new Bitcoin.ECKey();
+    var address = new Bitcoin.Address(key);
+
+    assert.throws(function() { Bitcoin.Script.createOutputScript(address.toString()); });
+    address.version = 0x999;
+    assert.throws(function() { Bitcoin.Script.createOutputScript(address); });
   });
 
   it("pay to pubkey hash", function() {
@@ -137,6 +155,48 @@ describe('Script', function() {
     assert.equal(multisigAddress.toString(), '32vYjxBb7pHJJyXgNk8UoK3BdRDxBzny2v')
   });
 
+  describe('extractAddresses', function() {
+    before(function() {
+      Bitcoin.setNetwork('prod');
+    });
+    it('invalid arguments', function() {
+      var script = new Bitcoin.Script('410408ce279174b34c077c7b2043e3f3d45a588b85ef4ca466740f848ead7fb498f0a795c982552fdfa41616a7c0333a269d62108588e260fd5a48ac8e4dbf49e2bcac');
+      var addresses;
+      assert.throws(function() { script.extractAddresses(addresses); });
+    });
+
+    it('pubkey', function() {
+      // From blockchain: https://blockchain.info/tx/20251a76e64e920e58291a30d4b212939aae976baca40e70818ceaa596fb9d37
+      var script = new Bitcoin.Script('410408ce279174b34c077c7b2043e3f3d45a588b85ef4ca466740f848ead7fb498f0a795c982552fdfa41616a7c0333a269d62108588e260fd5a48ac8e4dbf49e2bcac');
+      var addresses = [];
+      assert.equal(script.extractAddresses(addresses), 1);
+      assert.equal(addresses[0].toString(), '1GkQmKAmHtNfnD3LHhTkewJxKHVSta4m2a');
+    });
+
+    it('p2sh', function() {
+      // From blockchain: https://blockchain.info/rawtx/837dea37ddc8b1e3ce646f1a656e79bbd8cc7f558ac56a169626d649ebe2a3ba
+      var script = new Bitcoin.Script('a914f815b036d9bbbce5e9f2a00abd1bf3dc91e9551087');
+      var addresses = [];
+      assert.equal(script.extractAddresses(addresses), 1);
+      assert.equal(addresses[0].toString(), '3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC');
+    });
+
+    it('multisig', function() {
+      // From blockchain: https://blockchain.info/tx/3f8bfbc08334de3c3c86b0cdbd7184cd3d8b8f0bb900464fa0d928a00c97ebb9
+      var script = new Bitcoin.Script('5121037953dbf08030f67352134992643d033417eaa6fcfb770c038f364ff40d7615882100e37b502529c1d879255683e2e585dfed81637c220890f0ad02007c3d812c89eb52ae');
+      var addresses = [];
+      assert.equal(script.extractAddresses(addresses), 2);
+      assert.equal(addresses[0].toString(), '13MH4zmU4UT4Ct6BhoRFGjigC8gN9a9FNn');
+      assert.equal(addresses[1].toString(), '14bXcQ7hacofs3oVMs86DWy5rGPuyNukHA');
+    });
+
+    it('error', function() {
+      // From blockchain: https://blockchain.info/tx/41836560e2439f440514af96ca394a38bad6f3d9d0d11dba667c886b16e504ec
+      var script = new Bitcoin.Script('20d40e63ba05d60fab09f88786a86b2130b09dee3abb88d187ff256fa0f2229f0a');
+      var addresses = [];
+      assert.throws(function() { script.extractAddresses(addresses) });
+    });
+  });
 });
 
 
