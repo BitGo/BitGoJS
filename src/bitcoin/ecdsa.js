@@ -16,10 +16,6 @@ function integerToBytes(i, len) {
   return bytes;
 };
 
-ec.ECFieldElementFp.prototype.getByteLength = function () {
-  return Math.floor((this.toBigInteger().bitLength() + 7) / 8);
-};
-
 ec.ECPointFp.prototype.getEncoded = function (compressed) {
   var x = this.getX().toBigInteger();
   var y = this.getY().toBigInteger();
@@ -108,31 +104,6 @@ ec.ECPointFp.prototype.twice2D = function () {
   return new ec.ECPointFp(this.curve, x3, y3);
 };
 
-ec.ECPointFp.prototype.multiply2D = function (k) {
-  if(this.isInfinity()) return this;
-  if(k.signum() == 0) return this.curve.getInfinity();
-
-  var e = k;
-  var h = e.multiply(new BigInteger("3"));
-
-  var neg = this.negate();
-  var R = this;
-
-  var i;
-  for (i = h.bitLength() - 2; i > 0; --i) {
-    R = R.twice();
-
-    var hBit = h.testBit(i);
-    var eBit = e.testBit(i);
-
-    if (hBit != eBit) {
-      R = R.add2D(hBit ? this : neg);
-    }
-  }
-
-  return R;
-};
-
 ec.ECPointFp.prototype.isOnCurve = function () {
   var x = this.getX().toBigInteger();
   var y = this.getY().toBigInteger();
@@ -187,11 +158,6 @@ ec.ECPointFp.prototype.validate = function () {
   }
 
   return true;
-};
-
-function dmp(v) {
-  if (!(v instanceof BigInteger)) v = v.toBigInteger();
-  return Crypto.util.bytesToHex(v.toByteArrayUnsigned());
 };
 
 var ecparams = sec.getSECCurveByName("secp256k1");
