@@ -22,12 +22,12 @@
   },
   "testling": {
     "browsers": [
-      "chrome/20..latest",
-      "firefox/21..latest",
+      "chrome/latest",
+      "firefox/latest",
       "safari/latest",
-      "opera/15..latest",
-      "iphone/6..latest",
-      "ipad/6..latest",
+      "opera/latest",
+      "iphone/latest",
+      "ipad/latest",
       "android-browser/4.2..latest"
     ],
     "harness": "mocha",
