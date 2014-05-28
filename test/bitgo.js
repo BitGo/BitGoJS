@@ -6,7 +6,7 @@
 
 var assert = require('assert');
 var should = require('should');
-var speakeasy = require('./speakeasy');
+var speakeasy = require('./lib/speakeasy');
 
 var BitGoJS = require('../src/index');
 
@@ -18,7 +18,7 @@ var TEST_OTP_KEY = 'KVVT4LS5O5ICMPB6LJTWMT2GGJ4SKTBW';
 var computeOTP = function() {
   var parameters = {
     key: TEST_OTP_KEY,
-    step: 60,
+    step: 600,
     time: Math.floor(new Date().getTime() / 1000)
   };
   return speakeasy.totp(parameters);
