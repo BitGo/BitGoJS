@@ -7,10 +7,7 @@ module.exports = {
   /**
    * Cross-browser compatibility version of Array.isArray.
    */
-  isArray: Array.isArray || function(o)
-  {
-    return Object.prototype.toString.call(o) === '[object Array]';
-  },
+  isArray: Array.isArray,
 
   /**
    * Turn an integer into a little-endian array of |length| bytes
@@ -57,27 +54,9 @@ module.exports = {
     }
   },
 
-  hexToBytes: function(hex) {
-    for (var bytes = [], c = 0; c < hex.length; c += 2) {
-      var byte = parseInt(hex.substr(c, 2), 16);
-      if (isNaN(byte)) {
-        throw 'illegal input';
-      }
-      bytes.push(byte);
-    }
-    return bytes;
-  },
+  hexToBytes: Crypto.util.hexToBytes,
 
-  bytesToHex: function (bytes) {
-    for (var hex = [], i = 0; i < bytes.length; i++) {
-      if (bytes[i] > 0xff) {
-        throw 'illegal input';
-      }
-      hex.push((bytes[i] >>> 4).toString(16));
-      hex.push((bytes[i] & 0xF).toString(16));
-    }
-    return hex.join("");
-  },
+  bytesToHex: Crypto.util.bytesToHex,
 
   /**
    * Calculate RIPEMD160(SHA256(data)).

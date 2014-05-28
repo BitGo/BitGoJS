@@ -43,9 +43,11 @@ describe('Crypto', function() {
     });
     it('bytesToHex', function() {
       assert.equal("48656c6c6f2c20576f726c6421", Crypto.util.bytesToHex([0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x2C, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x21]));
+      assert.throws(function() { Crypto.util.bytesToHex([0x0, 0x30, 0x100]) });
     });
     it('hexToBytes', function() {
       assert.equal([0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x2C, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x21].toString(), Crypto.util.hexToBytes("48656c6c6f2c20576f726c6421"));
+      assert.throws(function() { Crypto.util.hexToBytes("423243gg") });
     });
     it('bytesToBase64', function() {
       assert.equal("FPucA9l+", Crypto.util.bytesToBase64([0x14, 0xFB, 0x9C, 0x03, 0xD9, 0x7E]));

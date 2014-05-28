@@ -52,19 +52,27 @@ var util = {
 
 	// Convert a byte array to a hex string
 	bytesToHex: function (bytes) {
-		for (var hex = [], i = 0; i < bytes.length; i++) {
-			hex.push((bytes[i] >>> 4).toString(16));
-			hex.push((bytes[i] & 0xF).toString(16));
-		}
-		return hex.join("");
+        for (var hex = [], i = 0; i < bytes.length; i++) {
+            if (bytes[i] > 0xff) {
+                throw new Error('illegal input');
+            }
+            hex.push((bytes[i] >>> 4).toString(16));
+            hex.push((bytes[i] & 0xF).toString(16));
+        }
+        return hex.join("");
 	},
 
 	// Convert a hex string to a byte array
 	hexToBytes: function (hex) {
-		for (var bytes = [], c = 0; c < hex.length; c += 2)
-			bytes.push(parseInt(hex.substr(c, 2), 16));
-		return bytes;
-	},
+        for (var bytes = [], c = 0; c < hex.length; c += 2) {
+            var byte = parseInt(hex.substr(c, 2), 16);
+            if (isNaN(byte)) {
+                throw new Error('illegal input');
+            }
+            bytes.push(byte);
+        }
+        return bytes;
+    },
 
 	// Convert a byte array to a base-64 string
 	bytesToBase64: function (bytes) {
