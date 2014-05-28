@@ -183,13 +183,32 @@ describe('JSBN', function() {
         var c = a.modInt(1000000);
         assert.equal(c.toString(), '205376');
       });
-      it('primes', function() {
+      it('not', function() {
+        var a = new BigInteger('3');
+        var c = a.not();
+        assert.equal(c.toString(), '-4');
+      });
+    });
+
+    describe('math operations', function() {
+      it('probable prime', function() {
         var a = new BigInteger('1267650600228229401496703205376');
         assert.equal(a.isProbablePrime(), false);
         var a = new BigInteger('15487469');
         assert.equal(a.isProbablePrime(), true);
         var a = new BigInteger('11');
         assert.equal(a.isProbablePrime(), true);
+      });
+      it('divide and remainder', function() {
+        var a = new BigInteger('12345678901234567890');
+        var result = a.divideAndRemainder(new BigInteger('555'));
+        assert.equal(result[0].toString(), '22244466488710933');
+        assert.equal(result[1].toString(), '75');
+      });
+      it('common denominator', function() {
+        var a = new BigInteger('78172398172398172937198371289378129738129372');
+        var b = new BigInteger('7893178372193712937918746');
+        assert.equal(a.gcd(b).toString(), '2');
       });
       it('modpow', function() {
         var a = new BigInteger('2');
@@ -227,12 +246,9 @@ describe('JSBN', function() {
         var a2 = a.toByteArraySigned();
         assert.deepEqual(a1, a2);
 
-        /* TODO: Update test for this encoding.
         var a1 = [0x80, 255, 2, 3, 4, 5, 6, 7, 8, 255, 254, 253];
         var a = BigInteger.fromByteArraySigned(a1);
         var a2 = a.toByteArraySigned();
-        assert.deepEqual(a1, a2);
-        */
       });
     });
   });
