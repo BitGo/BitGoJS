@@ -51,6 +51,9 @@ describe('BitGo', function() {
     it('latest', function(done) {
       var bitgo = new BitGoJS.BitGo();
       bitgo.market(function(err, marketData) {
+        if (err) {
+          throw err;
+        }
         marketData.should.have.property('last');
         marketData.should.have.property('bid');
         marketData.should.have.property('ask');
@@ -77,8 +80,12 @@ describe('BitGo', function() {
       it('succeeds with OTP', function(done) {
         var bitgo = new BitGoJS.BitGo();
         bitgo.authenticate(TEST_USER, TEST_PASSWORD, computeOTP(), function(err, response) {
-          response.should.have.property('token'); 
-          response.should.have.property('user'); 
+          if (err) {
+            console.dir(err);   // Seeing an intermittent failure here.  Log if this occurs.
+            throw err;
+          }
+          response.should.have.property('token');
+          response.should.have.property('user');
           done();
         });
       });
@@ -88,7 +95,9 @@ describe('BitGo', function() {
       it('logout', function(done) {
         var bitgo = new BitGoJS.BitGo();
         bitgo.logout(function(err) {
-          assert.equal(err, null);
+          if (err) {
+            throw err;
+          }
           done();
         });
       });
@@ -98,6 +107,7 @@ describe('BitGo', function() {
       it('me', function(done) {
         var bitgo = new BitGoJS.BitGo();
         bitgo.me(function(err, user) {
+          // Expect an error
           assert.equal(err.message, 'not authenticated');
           done();
         });
@@ -109,8 +119,11 @@ describe('BitGo', function() {
     var bitgo = new BitGoJS.BitGo();
     before(function(done) {
       bitgo.authenticate(TEST_USER, TEST_PASSWORD, computeOTP(), function(err, response) {
-        response.should.have.property('token'); 
-        response.should.have.property('user'); 
+        if (err) {
+          throw err;
+        }
+        response.should.have.property('token');
+        response.should.have.property('user');
         done();
       });
     });
@@ -118,6 +131,7 @@ describe('BitGo', function() {
     describe('Authenticate', function() {
       it('already logged in', function(done) {
         bitgo.authenticate(TEST_USER, TEST_PASSWORD, 0, function(err, response) {
+          // Expect an error
           assert.equal(err.message, 'already logged in');
           done();
         });
@@ -127,7 +141,12 @@ describe('BitGo', function() {
     describe('me', function() {
       it('get', function(done) {
         bitgo.me(function(err, user) {
-          assert.equal(err, null);
+          if (err) {
+            throw err;
+          }
+          user.should.have.property('id');
+          user.name.full.should.equal(TEST_USER);
+          user.isActive.should.equal(true);
           done();
         });
       });
@@ -136,7 +155,9 @@ describe('BitGo', function() {
     describe('Logout', function() {
       it('logout', function(done) {
         bitgo.logout(function(err) {
-          assert.equal(err, null);
+          if (err) {
+            throw err;
+          }
           done();
         });
       });

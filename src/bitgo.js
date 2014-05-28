@@ -115,7 +115,7 @@ BitGo.prototype.me = function(callback) {
     if (res.status != 200) {
       return callback(new Error(res.body.error));
     }
-    callback(null, res.body);
+    callback(null, res.body.user);
   });
 };
 
