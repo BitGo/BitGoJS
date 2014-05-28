@@ -26,6 +26,7 @@ function BigInteger(a,b,c) {
 // return new, unset BigInteger
 function nbi() { return new BigInteger(null); }
 
+/*
 // am: Compute w_j += (x*this_i), propagate carries,
 // c is initial carry, returns final carry.
 // c < 3*dvalue, x < 2*dvalue, this_i < dvalue
@@ -57,6 +58,7 @@ function am2(i,x,w,j,c,n) {
   }
   return c;
 }
+*/
 // Alternately, set max digit bits to 28 since some
 // browsers slow down when dealing with 32-bit numbers.
 function am3(i,x,w,j,c,n) {
@@ -71,18 +73,18 @@ function am3(i,x,w,j,c,n) {
   }
   return c;
 }
-if(j_lm && (navigator.appName == "Microsoft Internet Explorer")) {
-  BigInteger.prototype.am = am2;
-  dbits = 30;
-}
-else if(j_lm && (navigator.appName != "Netscape")) {
-  BigInteger.prototype.am = am1;
-  dbits = 26;
-}
-else { // Mozilla/Netscape seems to prefer am3
+//if(j_lm && (navigator.appName == "Microsoft Internet Explorer")) {
+//  BigInteger.prototype.am = am2;
+//  dbits = 30;
+//}
+//else if(j_lm && (navigator.appName != "Netscape")) {
+//  BigInteger.prototype.am = am1;
+//  dbits = 26;
+//}
+//else { // Mozilla/Netscape seems to prefer am3
   BigInteger.prototype.am = am3;
   dbits = 28;
-}
+//}
 
 BigInteger.prototype.DB = dbits;
 BigInteger.prototype.DM = ((1<<dbits)-1);

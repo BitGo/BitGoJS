@@ -28,6 +28,9 @@ describe('JSBN', function() {
       it('from string', function() {
         var big = new BigInteger('123123123');
         assert.equal(big.toString(), '123123123');
+
+        var big = new BigInteger('-123123123');
+        assert.equal(big.toString(), '-123123123');
       });
     });
 
@@ -256,7 +259,7 @@ describe('JSBN', function() {
       it('modpow', function() {
         var a = new BigInteger('2');
 
-        var b = a.modPow(new BigInteger('2'), new BigInteger('10'));  // 2^4 % 10
+        var b = a.modPow(new BigInteger('2'), new BigInteger('10'));  // 2^2 % 10
         assert.equal(b.toString(), '4');
 
         b = a.modPow(new BigInteger('10'), new BigInteger('10'));  // 2^10 % 10
@@ -276,6 +279,19 @@ describe('JSBN', function() {
 
         b = a.modPow(new BigInteger('8192'), new BigInteger('1000'));  // 2^8192 % 1000
         assert.equal(b.toString(), '896');
+      });
+
+      it('mod pow int', function() {
+        var a = new BigInteger('2');
+
+        var b = a.modPowInt(2, new BigInteger('10'));  // 2^2 % 10
+        assert.equal(b.toString(), '4');
+
+        var b = a.modPowInt(255, new BigInteger('1000'));  // 2^255 % 1000
+        assert.equal(b.toString(), '968');
+
+        var b = a.modPowInt(256, new BigInteger('1000'));  // 2^256 % 1000
+        assert.equal(b.toString(), '936');
       });
 
       it('to/from byteArrayUnsigned', function() {
