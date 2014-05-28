@@ -165,12 +165,22 @@ describe('Script', function() {
       assert.throws(function() { script.extractAddresses(addresses); });
     });
 
+    it('address', function() {
+      // From blockchain: https://blockchain.info/tx/0edfa7207a98f9992e0fd25650b96a5183e0f895b6628373e205253771b6c06c
+      var script = new Bitcoin.Script('76a9142c8e90cf5c79f6be389749e2dfd17cf3dc19a5a088ac');
+      var addresses = [];
+      assert.equal(script.extractAddresses(addresses), 1);
+      assert.equal(addresses[0].toString(), '154bX5SU9kGFza7UXzf2RzsixxQJ8sWME2');
+      assert.equal(new Bitcoin.Address(script.simpleOutHash()).toString(), '154bX5SU9kGFza7UXzf2RzsixxQJ8sWME2');
+    });
+
     it('pubkey', function() {
       // From blockchain: https://blockchain.info/tx/20251a76e64e920e58291a30d4b212939aae976baca40e70818ceaa596fb9d37
       var script = new Bitcoin.Script('410408ce279174b34c077c7b2043e3f3d45a588b85ef4ca466740f848ead7fb498f0a795c982552fdfa41616a7c0333a269d62108588e260fd5a48ac8e4dbf49e2bcac');
       var addresses = [];
       assert.equal(script.extractAddresses(addresses), 1);
       assert.equal(addresses[0].toString(), '1GkQmKAmHtNfnD3LHhTkewJxKHVSta4m2a');
+      assert.equal(new Bitcoin.Address(script.simpleOutHash()).toString(), '1GkQmKAmHtNfnD3LHhTkewJxKHVSta4m2a');
     });
 
     it('p2sh', function() {
@@ -179,6 +189,7 @@ describe('Script', function() {
       var addresses = [];
       assert.equal(script.extractAddresses(addresses), 1);
       assert.equal(addresses[0].toString(), '3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC');
+      assert.equal(new Bitcoin.Address(script.simpleOutHash(), 5).toString(), '3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC');
     });
 
     it('multisig', function() {
@@ -188,6 +199,7 @@ describe('Script', function() {
       assert.equal(script.extractAddresses(addresses), 2);
       assert.equal(addresses[0].toString(), '13MH4zmU4UT4Ct6BhoRFGjigC8gN9a9FNn');
       assert.equal(addresses[1].toString(), '14bXcQ7hacofs3oVMs86DWy5rGPuyNukHA');
+      assert.throws(function() { script.simpleOutHash() });
     });
 
     it('error', function() {
