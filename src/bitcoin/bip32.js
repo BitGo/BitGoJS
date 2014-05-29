@@ -1,9 +1,9 @@
 var Crypto = require('./crypto-js/index');
 var Base58 = require('./base58');
 var ECKey = require('./eckey');
-var jsSHA = require('./sha512');
 var BigInteger = require('./jsbn/jsbn2');
 var sec = require('./jsbn/sec');
+var sjcl = require('./sjcl.min');
 
 var MAINNET_PUBLIC = 0x0488b21e;   // 'xpub'
 var MAINNET_PRIVATE = 0x0488ade4;  // 'xprv'
@@ -32,9 +32,9 @@ var BIP32 = function(bytes) {
 
 // Initialize from a bitcoin seed
 BIP32.prototype.initFromSeed = function(seedBytes) {
-    var sha = new jsSHA(seedBytes, "HEX");
-    var hash = sha.getHMAC('Bitcoin seed', "TEXT", "SHA-512", "HEX");
-    hash = Crypto.util.hexToBytes(hash);
+    var hmac = new sjcl.misc.hmac(sjcl.codec.utf8String.toBits('Bitcoin seed'), sjcl.hash.sha512);
+    hmac = hmac.mac(sjcl.codec.hex.toBits(seedBytes));
+    hash = sjcl.codec.bytes.fromBits(hmac);
     var masterKey = hash.slice(0, 32);
     var chainCode = hash.slice(32, 64);
     this.version = MAINNET_PRIVATE;
@@ -255,8 +255,10 @@ BIP32.prototype.derive_child = function(child_index) {
             data = this.eckey.getPub().concat(ib);
         }
 
-        var j = new jsSHA(Crypto.util.bytesToHex(data), 'HEX');
-        var hash = j.getHMAC(Crypto.util.bytesToHex(this.chain_code), "HEX", "SHA-512", "HEX");
+        var hmac = new sjcl.misc.hmac(sjcl.codec.bytes.toBits(this.chain_code), sjcl.hash.sha512);
+        hmac = hmac.mac(sjcl.codec.bytes.toBits(data));
+        hash = sjcl.codec.hex.fromBits(hmac);
+
         var il = new BigInteger(hash.slice(0, 64), 16);
         var ir = Crypto.util.hexToBytes(hash.slice(64, 128));
 
@@ -272,8 +274,11 @@ BIP32.prototype.derive_child = function(child_index) {
     } else {
         // Public-key derivation is the same whether we have private key or not.
         var data = this.eckey.getPub().concat(ib);
-        var j = new jsSHA(Crypto.util.bytesToHex(data), 'HEX');
-        var hash = j.getHMAC(Crypto.util.bytesToHex(this.chain_code), "HEX", "SHA-512", "HEX");
+
+        var hmac = new sjcl.misc.hmac(sjcl.codec.bytes.toBits(this.chain_code), sjcl.hash.sha512);
+        hmac = hmac.mac(sjcl.codec.bytes.toBits(data));
+        hash = sjcl.codec.hex.fromBits(hmac);
+
         var il = new BigInteger(hash.slice(0, 64), 16);
         var ir = Crypto.util.hexToBytes(hash.slice(64, 128));
 
