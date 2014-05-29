@@ -23,7 +23,7 @@ module.exports = {
   TransactionIn: Transactions.TransactionIn,
   TransactionOut: Transactions.TransactionOut,
   Util: require('./bitcoin/util')
-}
+};
 
 //
 // Initialize the library

@@ -5,6 +5,7 @@
 //
 
 var request = require('superagent');
+var Keychains = require('./keychains');
 
 //
 // Constructor for BitGo Object
@@ -13,17 +14,27 @@ var request = require('superagent');
 //                   testnet network.
 //
 var BitGo = function(useProduction) {
+  // By default, we operate on the test server.
   if (useProduction) {
-    this.baseUrl = 'https://www.bitgo.com/api/v1';
+    this._baseUrl = 'https://www.bitgo.com/api/v1';
   } else {
-    this.baseUrl = 'https://beer.bitgo.com/api/v1';
+    this._baseUrl = 'https://beer.bitgo.com/api/v1';
   }
+
+  // We use a browser session for repeated requests.
+  this._agent = request.agent();
+
+  // The keychains object for this user.
+  this._keychains = null;
+
+  // The user object for this user.
+  this._user = null;
 };
 
-// 
+//
 // version
 // Gets the version of the BitGoJS API
-// 
+//
 BitGo.prototype.version = function() {
   return '0.1.0';
 };
@@ -33,8 +44,8 @@ BitGo.prototype.version = function() {
 // Get the latest bitcoin prices.
 //
 BitGo.prototype.market = function(callback) {
-  var url = this.baseUrl + '/market/latest';
-  request
+  var url = this._baseUrl + '/market/latest';
+  this._agent
   .get(url)
   .end(function(err, res) {
     if (err) {
@@ -50,13 +61,13 @@ BitGo.prototype.market = function(callback) {
 //
 BitGo.prototype.authenticate = function(username, password, otp, callback) {
   var self = this;
-  var url = this.baseUrl + '/user/login/local';
+  var url = this._baseUrl + '/user/login/local';
 
-  if (this.user) {
+  if (this._user) {
     return callback(new Error('already logged in'));
   }
 
-  request
+  this._agent
   .post(url)
   .send({email: username, password: password, otp: otp})
   .end(function(err, res) {
@@ -66,8 +77,8 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
     if (res.status == 401 && res.body.needsOTP) {
       return callback({status: 401, needsOTP: true});
     }
-    self.user = res.body.user;
-    self.token = res.body.token;
+    self._user = res.body.user;
+    self._agent.saveToken(res.body.token);
     callback(null, res.body);
   });
 };
@@ -77,19 +88,17 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
 // Logout of BitGo
 //
 BitGo.prototype.logout = function(callback) {
-  if (!this.user) {
+  if (!this._user) {
     return callback(null);  // We're not logged in.
   }
 
   var self = this;
-  var url = this.baseUrl + '/user/logout';
-  request
+  var url = this._baseUrl + '/user/logout';
+  this._agent
   .get(url)
-  .set('Authorization', 'Bearer ' + this.token)
   .send()
   .end(function(err, res) {
-    delete self.user;
-    delete self.token;
+    delete self._user;
     callback(err);
   });
 };
@@ -99,14 +108,13 @@ BitGo.prototype.logout = function(callback) {
 // Get the current logged in user
 //
 BitGo.prototype.me = function(callback) {
-  if (!this.token) {
+  if (!this._user) {
     return callback(new Error('not authenticated'));
   }
 
-  var url = this.baseUrl + '/user/me';
-  request
+  var url = this._baseUrl + '/user/me';
+  this._agent
   .get(url)
-  .set('Authorization', 'Bearer ' + this.token)
   .send()
   .end(function(err, res) {
     if (err) {
@@ -118,5 +126,16 @@ BitGo.prototype.me = function(callback) {
     callback(null, res.body.user);
   });
 };
+
+//
+// keychains
+// get the user's keychains object.
+//
+BitGo.prototype.keychains = function() {
+  if (!this._keychains) {
+    this._keychains = new Keychains(this);
+  }
+  return this._keychains;
+}
 
 module.exports = BitGo;

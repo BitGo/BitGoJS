@@ -6,33 +6,15 @@
 
 var assert = require('assert');
 var should = require('should');
-var speakeasy = require('./lib/speakeasy');
 
 var BitGoJS = require('../src/index');
-
-var TEST_USER = 'mike+test@bitgo.com';
-var TEST_PASSWORD = 'itestutestwetest';
-var TEST_OTP_KEY = 'KVVT4LS5O5ICMPB6LJTWMT2GGJ4SKTBW';
-
-// Utility function to compute an OTP value.
-var computeOTP = function() {
-  var parameters = {
-    key: TEST_OTP_KEY,
-    step: 60,
-    time: Math.floor(new Date().getTime() / 1000)
-  };
-
-console.log("COMPUTED CODE: " + speakeasy.totp(parameters));
-  return speakeasy.totp(parameters);
-};
-
-
+var TestBitGo = require('./test_bitgo');
 
 describe('BitGo', function() {
 
   describe('Constuctor', function() {
     it('methods', function() {
-      var bitgo = new BitGoJS.BitGo();
+      var bitgo = new TestBitGo();
       bitgo.should.have.property('version');
       bitgo.should.have.property('market');
       bitgo.should.have.property('authenticate');
@@ -43,7 +25,7 @@ describe('BitGo', function() {
 
   describe('Version', function() {
     it('version', function() {
-      var bitgo = new BitGoJS.BitGo();
+      var bitgo = new TestBitGo();
       var version = bitgo.version();
       assert.equal(typeof(version), 'string');
     });
@@ -51,7 +33,7 @@ describe('BitGo', function() {
 
   describe('Market', function() {
     it('latest', function(done) {
-      var bitgo = new BitGoJS.BitGo();
+      var bitgo = new TestBitGo();
       bitgo.market(function(err, marketData) {
         if (err) {
           throw err;
@@ -71,8 +53,8 @@ describe('BitGo', function() {
   describe('Logged Out', function() {
     describe('Authenticate', function() {
       it('fails without OTP', function(done) {
-        var bitgo = new BitGoJS.BitGo();
-        bitgo.authenticate(TEST_USER, TEST_PASSWORD, 0, function(err, response) {
+        var bitgo = new TestBitGo();
+        bitgo.authenticateTestUser("0", function(err, response) {
           err.status.should.equal(401);
           err.needsOTP.should.equal(true);
           done();
@@ -80,8 +62,8 @@ describe('BitGo', function() {
       });
 
       it('succeeds with OTP', function(done) {
-        var bitgo = new BitGoJS.BitGo();
-        bitgo.authenticate(TEST_USER, TEST_PASSWORD, computeOTP(), function(err, response) {
+        var bitgo = new TestBitGo();
+        bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
           if (err) {
             console.dir(err);   // Seeing an intermittent failure here.  Log if this occurs.
             throw err;
@@ -95,7 +77,7 @@ describe('BitGo', function() {
 
     describe('Logout', function() {
       it('logout', function(done) {
-        var bitgo = new BitGoJS.BitGo();
+        var bitgo = new TestBitGo();
         bitgo.logout(function(err) {
           if (err) {
             throw err;
@@ -107,7 +89,7 @@ describe('BitGo', function() {
 
     describe('me', function() {
       it('me', function(done) {
-        var bitgo = new BitGoJS.BitGo();
+        var bitgo = new TestBitGo();
         bitgo.me(function(err, user) {
           // Expect an error
           assert.equal(err.message, 'not authenticated');
@@ -118,12 +100,10 @@ describe('BitGo', function() {
   });
 
   describe('Logged In', function() {
-    var bitgo = new BitGoJS.BitGo();
+    var bitgo = new TestBitGo();
     before(function(done) {
-      bitgo.authenticate(TEST_USER, TEST_PASSWORD, computeOTP(), function(err, response) {
+      bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
         if (err) {
-console.dir("authenticate error");
-console.dir(err);
           throw err;
         }
         response.should.have.property('token');
@@ -134,7 +114,7 @@ console.dir(err);
 
     describe('Authenticate', function() {
       it('already logged in', function(done) {
-        bitgo.authenticate(TEST_USER, TEST_PASSWORD, 0, function(err, response) {
+        bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
           // Expect an error
           assert.equal(err.message, 'already logged in');
           done();
@@ -149,7 +129,8 @@ console.dir(err);
             throw err;
           }
           user.should.have.property('id');
-          user.name.full.should.equal(TEST_USER);
+          user.should.have.property('name');
+          user.name.full.should.equal(TestBitGo.TEST_USER);
           user.isActive.should.equal(true);
           done();
         });

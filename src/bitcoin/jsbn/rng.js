@@ -1,8 +1,17 @@
+//
 // Use SJCL for our random source
+//
 
 var Crypto = require('../crypto-js/index');
 var sjcl = require('../sjcl.min');
 
+//
+// SecureRandom
+// An object for generating random data. Although this is a class,
+// each instance of the class uses the same underlying entropy.  So
+// callers can allocate a new SecureRandom() class repeatedly without
+// needing to re-seed the RNG.
+//
 function SecureRandom() {
   // Install new handler for Crypto.util.randomBytes, which is not a secure random generator.
   Crypto.util.randomBytes = function(n) {
