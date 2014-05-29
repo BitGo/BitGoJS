@@ -18,9 +18,11 @@ var TEST_OTP_KEY = 'KVVT4LS5O5ICMPB6LJTWMT2GGJ4SKTBW';
 var computeOTP = function() {
   var parameters = {
     key: TEST_OTP_KEY,
-    step: 600,
+    step: 60,
     time: Math.floor(new Date().getTime() / 1000)
   };
+
+console.log("COMPUTED CODE: " + speakeasy.totp(parameters));
   return speakeasy.totp(parameters);
 };
 
@@ -120,6 +122,8 @@ describe('BitGo', function() {
     before(function(done) {
       bitgo.authenticate(TEST_USER, TEST_PASSWORD, computeOTP(), function(err, response) {
         if (err) {
+console.dir("authenticate error");
+console.dir(err);
           throw err;
         }
         response.should.have.property('token');
