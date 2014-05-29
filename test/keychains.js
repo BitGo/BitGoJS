@@ -29,8 +29,13 @@ describe('Keychains', function() {
   describe('Create', function() {
     var keychainCount;
 
-    it('invalid', function(done) {
-      done();
+    it('arguments', function() {
+      assert.throws(function() { keychains.create('invalid'); }); 
+      assert.throws(function() { keychains.list(); }); 
+      assert.throws(function() { keychains.list('invalid'); }); 
+      assert.throws(function() { keychains.add(); }); 
+      assert.throws(function() { keychains.add('invalid'); }); 
+      assert.throws(function() { keychains.add({}, 0); }); 
     });
 
     it('keychains', function(done) {

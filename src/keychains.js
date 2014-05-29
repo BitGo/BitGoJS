@@ -28,6 +28,10 @@ Keychains.prototype.create = function(seed) {
   if (!seed) {
     seed = new Array(256);
     new SecureRandom().nextBytes(seed);
+  } else {
+    if (!Array.isArray(seed)) {
+      throw new Error('invalid argument');
+    }
   }
   var extendedKey = new BIP32().initFromSeed(Util.bytesToHex(seed));
   return {
@@ -41,6 +45,10 @@ Keychains.prototype.create = function(seed) {
 // List the user's keychains
 //
 Keychains.prototype.list = function(callback) {
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
   var url = this.bitgo._baseUrl + '/keychains';
   this.bitgo._agent
   .get(url)
@@ -57,6 +65,10 @@ Keychains.prototype.list = function(callback) {
 // Add a new keychain
 //
 Keychains.prototype.add = function(options, callback) {
+  if (typeof(options) != 'object' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
   var url = this.bitgo._baseUrl + '/keychains';
   this.bitgo._agent
   .post(url)

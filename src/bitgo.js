@@ -14,6 +14,10 @@ var Keychains = require('./keychains');
 //                   testnet network.
 //
 var BitGo = function(useProduction) {
+  if (useProduction && typeof(useProduction) != 'boolean') {
+    throw new Error('invalid argument');
+  }
+
   // By default, we operate on the test server.
   if (useProduction) {
     this._baseUrl = 'https://www.bitgo.com/api/v1';
@@ -44,6 +48,10 @@ BitGo.prototype.version = function() {
 // Get the latest bitcoin prices.
 //
 BitGo.prototype.market = function(callback) {
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
   var url = this._baseUrl + '/market/latest';
   this._agent
   .get(url)
@@ -60,6 +68,11 @@ BitGo.prototype.market = function(callback) {
 // Login to the bitgo system.
 //
 BitGo.prototype.authenticate = function(username, password, otp, callback) {
+  if (typeof(username) != 'string' || typeof(password) != 'string' ||
+      typeof(otp) != 'string' || typeof(callback) != 'function') {
+    throw new Error('illegal argument');
+  }
+
   var self = this;
   var url = this._baseUrl + '/user/login/local';
 
@@ -88,6 +101,10 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
 // Logout of BitGo
 //
 BitGo.prototype.logout = function(callback) {
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
   if (!this._user) {
     return callback(null);  // We're not logged in.
   }
@@ -108,6 +125,10 @@ BitGo.prototype.logout = function(callback) {
 // Get the current logged in user
 //
 BitGo.prototype.me = function(callback) {
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
   if (!this._user) {
     return callback(new Error('not authenticated'));
   }
