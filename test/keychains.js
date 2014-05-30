@@ -27,25 +27,47 @@ describe('Keychains', function() {
     });
   });
 
-  describe('Create', function() {
-    var keychainCount;
-
+  describe('List', function() {
     it('arguments', function() {
-      assert.throws(function() { keychains.create('invalid'); }); 
-      assert.throws(function() { keychains.list(); }); 
-      assert.throws(function() { keychains.list('invalid'); }); 
-      assert.throws(function() { keychains.add(); }); 
-      assert.throws(function() { keychains.add('invalid'); }); 
-      assert.throws(function() { keychains.add({}, 0); }); 
+      assert.throws(function() { keychains.list(); });
+      assert.throws(function() { keychains.list('invalid'); });
     });
 
-    it('keychains', function(done) {
+    it('all', function(done) {
       keychains.list(function(err, keychains) {
         assert.equal(err, null);
         assert.equal(Array.isArray(keychains), true);
-        keychainCount = keychains.length;
         done();
       });
+    });
+  });
+
+  describe('Get', function() {
+    it('arguments', function() {
+      assert.throws(function() { keychains.get('invalid'); });
+      assert.throws(function() { keychains.get({}, function() {}); });
+      assert.throws(function() { keychains.get({otp: 'foo'}); });
+    });
+
+    it('non existent keychain', function(done) {
+      var newKey = keychains.create();
+      var options = {
+        xpub: newKey.xpub,
+        otp: bitgo.testUserOTP()
+      };
+      keychains.get(options, function(err, keychain) {
+        assert.ok(err);
+        done();
+      });
+    });
+  });
+
+  describe('Add', function() {
+    it('arguments', function() {
+      assert.throws(function() { keychains.create('invalid'); });
+      assert.throws(function() { keychains.add(); });
+      assert.throws(function() { keychains.add('invalid'); });
+      assert.throws(function() { keychains.add({}, 0); });
     });
 
     describe('public', function() {
@@ -130,15 +152,20 @@ describe('Keychains', function() {
     });
   });
 
-  describe('Get', function() {
+  describe('Update', function() {
+    var newKey;
+
+    before(function() {
+      newKey = keychains.create();
+    });
+
     it('arguments', function() {
-      assert.throws(function() { keychains.get('invalid'); }); 
-      assert.throws(function() { keychains.get({}, function() {}); }); 
-      assert.throws(function() { keychains.get({otp: 'foo'}); }); 
+      assert.throws(function() { keychains.get('invalid'); });
+      assert.throws(function() { keychains.get({}, function() {}); });
+      assert.throws(function() { keychains.get({otp: 'foo'}); });
     });
 
     it('non existent keychain', function(done) {
-      var newKey = keychains.create();
       var options = {
         xpub: newKey.xpub,
         otp: bitgo.testUserOTP()
@@ -149,6 +176,36 @@ describe('Keychains', function() {
       });
     });
 
+    it('update ', function(done) {
+      var options = {
+        label: 'my keychain',
+        xpub: newKey.xpub,
+        otp: bitgo.testUserOTP()
+      };
+      keychains.add(options, function(err, keychain) {
+        assert.equal(err, null);
+        assert.equal(keychain.xpub, newKey.xpub);
+        assert.equal(keychain.label, 'my keychain');
+        assert.equal(keychain.index, 100);
+        assert.equal(keychain.path, 'm');
+
+        options.label = 'new label';
+        options.encryptedXprv = 'abracadabra';
+        options.otp = bitgo.testUserOTP();
+        keychains.update(options, function(err, keychain) {
+          assert.equal(err, null);
+          assert.equal(keychain.xpub, newKey.xpub);
+          assert.equal(keychain.label, 'new label');
+          assert.equal(keychain.encryptedXprv, 'abracadabra');
+          assert.equal(keychain.index, 100);
+          assert.equal(keychain.path, 'm');
+
+          done();
+        });
+      });
+    });
+
   });
+
 
 });

@@ -3,3 +3,4 @@
 [ ] Method to create a "standard" key?
 [ ] Documentation: Keychain.get is POST not GET
 [ ] HTTP methods:  checking err does not catch non-200ok responses. Add a better handler.
+[ ] Add key hardening to keychains (local)

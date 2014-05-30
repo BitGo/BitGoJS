@@ -115,5 +115,37 @@ Keychains.prototype.get = function(options, callback) {
   });
 };
 
+//
+// update
+// Update an existing keychain
+// Options include:
+//   xpub:  the xpub of the key to lookup (required)
+//   otp:  the OTP code for verification
+//
+Keychains.prototype.update = function(options, callback) {
+  if (typeof(options) != 'object' || typeof(options.xpub) != 'string' ||
+      typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  var url = this.bitgo._baseUrl + '/keychains/' + options.xpub;
+  this.bitgo._agent
+  .put(url)
+  .send({
+    label: options.label,
+    xprv: options.encryptedXprv,   // TODO: This field should be renamed to encryptedXprv
+    otp: options.otp
+  })
+  .end(function(err, res) {
+    if (err) {
+      return callback(err);
+    }
+    if (res.status != 200) {
+      return callback(new Error(res.body.error));
+    }
+    callback(null, res.body);
+  });
+};
+
 
 module.exports = Keychains;

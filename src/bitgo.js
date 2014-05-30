@@ -6,6 +6,7 @@
 
 var request = require('superagent');
 var Keychains = require('./keychains');
+var Wallets = require('./wallets');
 
 //
 // Constructor for BitGo Object
@@ -28,11 +29,9 @@ var BitGo = function(useProduction) {
   // We use a browser session for repeated requests.
   this._agent = request.agent();
 
-  // The keychains object for this user.
-  this._keychains = null;
-
-  // The user object for this user.
   this._user = null;
+  this._keychains = null;
+  this._wallets = null;
 };
 
 //
@@ -150,13 +149,24 @@ BitGo.prototype.me = function(callback) {
 
 //
 // keychains
-// get the user's keychains object.
+// Get the user's keychains object.
 //
 BitGo.prototype.keychains = function() {
   if (!this._keychains) {
     this._keychains = new Keychains(this);
   }
   return this._keychains;
+}
+
+//
+// wallets
+// Get the user's wallets object.
+//
+BitGo.prototype.wallets = function() {
+  if (!this._wallets) {
+    this._wallets = new Wallets(this);
+  }
+  return this._wallets;
 }
 
 module.exports = BitGo;
