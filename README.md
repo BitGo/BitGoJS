@@ -10,3 +10,20 @@ This project is a placeholder.
 [![Browser Support](https://ci.testling.com/BitGo/BitGoJS.png)](https://ci.testling.com/BitGo/BitGoJS)
 
 
+# Installation
+
+npm install
+
+# Test
+
+npm test
+
+# Compile
+
+Creates a single file of javascript for inclusion in your applications.
+
+npm run-script compile
+npm run-script compile-dbg
+
+# License
+

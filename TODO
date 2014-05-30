@@ -1,0 +1,5 @@
+[ ] Add encrypt/decrypt to BitGo utility
+[ ] Add Keychains.chain (locally chain a keychain) to BitGo utility
+[ ] Method to create a "standard" key?
+[ ] Documentation: Keychain.get is POST not GET
+[ ] HTTP methods:  checking err does not catch non-200ok responses. Add a better handler.
