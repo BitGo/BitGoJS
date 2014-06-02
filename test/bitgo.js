@@ -137,7 +137,7 @@ describe('BitGo', function() {
   describe('Logged In', function() {
     var bitgo;
     before(function(done) {
-      bitgo;
+      bitgo = new TestBitGo();
       bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
         if (err) {
           throw err;

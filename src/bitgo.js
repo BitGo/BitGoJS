@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var request = require('superagent');
+var superagent = require('superagent');
 var Keychains = require('./keychains');
 var Wallets = require('./wallets');
 
@@ -26,13 +26,33 @@ var BitGo = function(useProduction) {
     this._baseUrl = 'https://beer.bitgo.com/api/v1';
   }
 
-  // We use a browser session for repeated requests.
-  this._agent = request.agent();
-
   this._user = null;
   this._keychains = null;
   this._wallets = null;
+
+  // Create superagent methods specific to this BitGo instance.
+  this.request = {};
+  var methods = ['get', 'post', 'put', 'del'];
+
+  // This is a patching function which can apply our authorization
+  // headers to any outbound request.
+  var createPatch = function(method) {
+    return function() {
+      var req = superagent[method].apply(null, arguments);
+      if (self._token) {
+        req.set('Authorization', "Bearer " + self._token);
+      }
+      return req;
+    };
+  }
+
+  for (var index in methods) {
+    var self = this;
+    var method = methods[index];
+    self[method] = createPatch(method);
+  }
 };
+
 
 //
 // version
@@ -52,8 +72,7 @@ BitGo.prototype.market = function(callback) {
   }
 
   var url = this._baseUrl + '/market/latest';
-  this._agent
-  .get(url)
+  this.get(url)
   .end(function(err, res) {
     if (err) {
       return callback(err);
@@ -79,8 +98,7 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
     return callback(new Error('already logged in'));
   }
 
-  this._agent
-  .post(url)
+  this.post(url)
   .send({email: username, password: password, otp: otp})
   .end(function(err, res) {
     if (err) {
@@ -90,7 +108,7 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
       return callback({status: 401, needsOTP: true});
     }
     self._user = res.body.user;
-    self._agent.saveToken(res.body.token);
+    self._token = res.body.token;
     callback(null, res.body);
   });
 };
@@ -110,11 +128,11 @@ BitGo.prototype.logout = function(callback) {
 
   var self = this;
   var url = this._baseUrl + '/user/logout';
-  this._agent
-  .get(url)
+  this.get(url)
   .send()
   .end(function(err, res) {
     delete self._user;
+    delete self._token;
     callback(err);
   });
 };
@@ -133,8 +151,7 @@ BitGo.prototype.me = function(callback) {
   }
 
   var url = this._baseUrl + '/user/me';
-  this._agent
-  .get(url)
+  this.get(url)
   .send()
   .end(function(err, res) {
     if (err) {

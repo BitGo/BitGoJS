@@ -49,8 +49,7 @@ Keychains.prototype.list = function(callback) {
   }
 
   var url = this.bitgo._baseUrl + '/keychains';
-  this.bitgo._agent
-  .get(url)
+  this.bitgo.get(url)
   .end(function(err, res) {
     if (err) {
       return callback(err);
@@ -69,8 +68,7 @@ Keychains.prototype.add = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/keychains';
-  this.bitgo._agent
-  .post(url)
+  this.bitgo.post(url)
   .send({
     label: options.label,
     xpub: options.xpub,
@@ -98,8 +96,7 @@ Keychains.prototype.get = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/keychains/' + options.xpub;
-  this.bitgo._agent
-  .post(url)
+  this.bitgo.post(url)
   .send({
     otp: options.otp
   })
@@ -128,8 +125,7 @@ Keychains.prototype.update = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/keychains/' + options.xpub;
-  this.bitgo._agent
-  .put(url)
+  this.bitgo.put(url)
   .send({
     label: options.label,
     xprv: options.encryptedXprv,   // TODO: This field should be renamed to encryptedXprv

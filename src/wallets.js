@@ -25,8 +25,7 @@ Wallets.prototype.list = function(callback) {
   }
 
   var url = this.bitgo._baseUrl + '/addresses';
-  this.bitgo._agent
-  .get(url)
+  this.bitgo.get(url)
   .end(function(err, res) {
     if (err) {
       return callback(err);
@@ -68,8 +67,7 @@ Wallets.prototype.add = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/addresses/bitcoin';
-  this.bitgo._agent
-  .post(url)
+  this.bitgo.post(url)
   .send({
     label: options.label,
     type: 'safehd',
@@ -105,8 +103,7 @@ Wallets.prototype.get = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/addresses/' + options.type + '/' + options.address;
-  this.bitgo._agent
-  .post(url)
+  this.bitgo.post(url)
   .send({
     gpk: options.otp ? true : false,
     otp: options.otp
@@ -137,8 +134,7 @@ Wallets.prototype.chain = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/address/chain/' + options.type + '/' + options.address;
-  this.bitgo._agent
-  .post(url)
+  this.bitgo.post(url)
   .send({
     internal: options.internal
   })

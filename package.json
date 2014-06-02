@@ -42,6 +42,6 @@
     "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js"
   },
   "dependencies": {
-    "superagent": "https://github.com/mbelshe/superagent/archive/e564f452931ffe649b88092088eb0127116c5309.tar.gz"
+    "superagent": "0.18.0"
   }
 }
