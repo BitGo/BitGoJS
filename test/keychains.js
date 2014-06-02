@@ -27,6 +27,23 @@ describe('Keychains', function() {
     });
   });
 
+  describe('Local', function() {
+    it('isValid', function() {
+      assert.equal(keychains.isValid(''), false);
+      assert.equal(keychains.isValid('hello world'), false);
+      assert.equal(keychains.isValid('xpub123123'), false);
+      assert.equal(keychains.isValid('xprv123123'), false);
+
+      assert.equal(keychains.isValid('xpub661MyMwAqRbcH5xFjpBfCe74cj5tks4nxE8hSMepNfsMVsBkx8eT1m9mnR1tAMGdbbdsE8yMDcuZ3NgVJbTzCYDiu8rcc3sqLF6vzi9yfTB'), true);
+      assert.equal(keychains.isValid('xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw'), true);
+    });
+
+    it('create', function() {
+      var seed = BitGoJS.Util.hexToBytes('1234567890');
+      assert.equal(keychains.create(seed).xprv, 'xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw');
+    });
+  });
+
   describe('List', function() {
     it('arguments', function() {
       assert.throws(function() { keychains.list(); });

@@ -119,11 +119,8 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
   this.post(url)
   .send({email: username, password: password, otp: otp})
   .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
-    if (res.status == 401 && res.body.needsOTP) {
-      return callback({status: 401, needsOTP: true});
+    if (self.handleBitGoAPIError(err, res, callback)) {
+      return;
     }
     self._user = res.body.user;
     self._token = res.body.token;
@@ -169,14 +166,12 @@ BitGo.prototype.me = function(callback) {
   }
 
   var url = this._baseUrl + '/user/me';
+  var self = this;
   this.get(url)
   .send()
   .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
-    if (res.status != 200) {
-      return callback(new Error(res.body.error));
+    if (self.handleBitGoAPIError(err, res, callback)) {
+      return;
     }
     callback(null, res.body.user);
   });
@@ -203,5 +198,32 @@ BitGo.prototype.wallets = function() {
   }
   return this._wallets;
 };
+
+//
+// Handles HTTP errors from the BitGo API
+// Returns:
+//   true if an error was handled and the callback was called.  The caller should stop processing.
+//   false if the caller should continue.
+//
+BitGo.prototype.handleBitGoAPIError = function(err, res, callback) {
+  if (err) {
+    // TODO: assert type of err object?
+    callback(err);
+    return;
+  }
+
+  if (res.status == 200) {
+    return false;   // no error!
+  }
+
+  if (res.status == 401 && res.body.needsOTP) {
+    callback({status: 401, needsOTP: true});
+    return true;
+  }
+
+  var error = res.body.error ? res.body.error : res.status.toString();
+  callback({status: res.status, error: error, details: new Error(error)});
+  return true;
+}
 
 module.exports = BitGo;

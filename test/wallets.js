@@ -13,7 +13,7 @@ var TestBitGo = require('./lib/test_bitgo');
 describe('Wallets', function() {
   var bitgo;
   var wallets;
-  var walletId;        // Test will create this wallet
+  var testWallet;      // Test will create this wallet
   var keychains = [];  // Test will create these keychains
 
   before(function(done) {
@@ -85,17 +85,18 @@ describe('Wallets', function() {
           };
           wallets.add(options, function(err, wallet) {
             assert.equal(err, null);
-            walletId = wallet.id;
-            assert.equal(wallet.type, 'bitcoin');
-            assert.equal(wallet.isActive, true);
-            assert.equal(wallet.accountType, 'safehd');
-            assert.equal(wallet.private.userKeychain.xpub, keychains[0].xpub);
-            assert.equal(wallet.private.backupKeychain.xpub, keychains[1].xpub);
-            assert.equal(wallet.spendingAccount, true);
-            assert.equal(wallet.spendingAccount, true);
-            assert.equal(wallet.balance, 0);
-            assert.equal(wallet.pendingBalance, 0);
-            assert.equal(wallet.availableBalance, 0);
+            testWallet = wallet;
+
+            assert.equal(wallet.balance(), 0);
+            assert.equal(wallet.label(), 'my wallet');
+            assert.equal(wallet.pendingBalance(), 0);
+            assert.equal(wallet.availableBalance(), 0);
+            assert.equal(wallet.keychains.length, 3);
+            assert.equal(bitgo.keychains().isValid(wallet.keychains[0]), true);
+            assert.equal(bitgo.keychains().isValid(wallet.keychains[1]), true);
+            assert.equal(bitgo.keychains().isValid(wallet.keychains[2]), true);
+            assert.equal(wallet.keychains[0], keychains[0].xpub);
+            assert.equal(wallet.keychains[1], keychains[1].xpub);
             done();
           });
         });
@@ -118,13 +119,11 @@ describe('Wallets', function() {
         otp: bitgo.testUserOTP()
       };
       wallets.get(options, function(err, wallet) {
-        assert.equal(wallet.id, options.address);
-        assert.equal(wallet.spendingAccount, false);
-        assert.equal(wallet.isActive, false);
-        assert.equal(wallet.label, '');
-        assert.equal(wallet.balance, 0);
-        assert.equal(wallet.pendingBalance, 0);
-        assert.equal(wallet.availableBalance, 0);
+        assert.equal(wallet.address(), options.address);
+        assert.equal(wallet.balance(), 0);
+        assert.equal(wallet.label(), '');
+        assert.equal(wallet.pendingBalance(), 0);
+        assert.equal(wallet.availableBalance(), 0);
         done();
       });
     });
@@ -132,19 +131,16 @@ describe('Wallets', function() {
     it('get', function(done) {
       var options = {
         type: 'bitcoin',
-        address: walletId
+        address: testWallet.address()
       };
       wallets.get(options, function(err, wallet) {
         assert.equal(err, null);
-        assert.equal(wallet.type, 'bitcoin');
-        assert.equal(wallet.isActive, true);
-        assert.equal(wallet.accountType, 'safehd');
-        wallet.should.not.have.property('private');
-        assert.equal(wallet.spendingAccount, true);
-        assert.equal(wallet.spendingAccount, true);
-        assert.equal(wallet.balance, 0);
-        assert.equal(wallet.pendingBalance, 0);
-        assert.equal(wallet.availableBalance, 0);
+        assert.equal(wallet.address(), options.address);
+        assert.equal(wallet.balance(), 0);
+        assert.equal(wallet.label(), 'my wallet');
+        assert.equal(wallet.pendingBalance(), 0);
+        assert.equal(wallet.availableBalance(), 0);
+        assert.equal(wallet.keychains.length, 0);
         done();
       });
     });
@@ -152,21 +148,20 @@ describe('Wallets', function() {
     it('get private', function(done) {
       var options = {
         type: 'bitcoin',
-        address: walletId,
+        address: testWallet.address(),
         otp: bitgo.testUserOTP()
       };
       wallets.get(options, function(err, wallet) {
         assert.equal(err, null);
-        assert.equal(wallet.type, 'bitcoin');
-        assert.equal(wallet.isActive, true);
-        assert.equal(wallet.accountType, 'safehd');
-        assert.equal(wallet.private.userKeychain.xpub, keychains[0].xpub);
-        assert.equal(wallet.private.backupKeychain.xpub, keychains[1].xpub);
-        assert.equal(wallet.spendingAccount, true);
-        assert.equal(wallet.spendingAccount, true);
-        assert.equal(wallet.balance, 0);
-        assert.equal(wallet.pendingBalance, 0);
-        assert.equal(wallet.availableBalance, 0);
+        assert.equal(wallet.address(), options.address);
+        assert.equal(wallet.balance(), 0);
+        assert.equal(wallet.label(), 'my wallet');
+        assert.equal(wallet.pendingBalance(), 0);
+        assert.equal(wallet.availableBalance(), 0);
+        assert.equal(wallet.keychains.length, 3);
+        assert.equal(bitgo.keychains().isValid(wallet.keychains[0]), true);
+        assert.equal(bitgo.keychains().isValid(wallet.keychains[1]), true);
+        assert.equal(bitgo.keychains().isValid(wallet.keychains[2]), true);
         done();
       });
     });
@@ -183,22 +178,30 @@ describe('Wallets', function() {
     it('create', function(done) {
       var options = {
         type: 'bitcoin',
-        address: walletId
+        address: testWallet.address()
       };
       wallets.chain(options, function(err, wallet) {
         assert.equal(err, null);
         wallet.should.have.property('path');
         wallet.should.have.property('redeemScript');
         wallet.should.have.property('address');
-        assert.notEqual(wallet.address, walletId);
+        assert.notEqual(wallet.address, testWallet.address());
         done();
       });
     });
   });
 
+  describe('Delete', function() {
+    it('arguments', function(done) {
+      assert.throws(function() { testWallet.delete('invalid'); });
+      done();
+    });
 
-  // TODO:  Get a balance
-  // TODO:  Get unspents
-
-
+    it('delete', function(done) {
+      testWallet.delete(function(err, status) {
+        assert.equal(err, null);
+        done();
+      });
+    });
+  });
 });

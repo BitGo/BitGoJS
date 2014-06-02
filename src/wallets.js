@@ -7,6 +7,7 @@
 
 var request = require('superagent');
 var ECKey = require('./bitcoin/eckey');
+var Wallet = require('./wallet');
 
 //
 // Constructor
@@ -25,12 +26,17 @@ Wallets.prototype.list = function(callback) {
   }
 
   var url = this.bitgo._baseUrl + '/addresses';
+  var self = this;
   this.bitgo.get(url)
   .end(function(err, res) {
     if (err) {
       return callback(err);
     }
-    callback(null, res.body.addresses);
+    var wallets = {};
+    for (var address in res.body.addresses) {
+      wallets[address] = new Wallet(self.bitgo, res.body.addresses[address]);
+    }
+    callback(null, wallets);
   });
 };
 
@@ -67,6 +73,7 @@ Wallets.prototype.add = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/addresses/bitcoin';
+  var self = this;
   this.bitgo.post(url)
   .send({
     label: options.label,
@@ -79,13 +86,10 @@ Wallets.prototype.add = function(options, callback) {
     }
   })
   .end(function(err, res) {
-    if (err) {
-      return callback(err);
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
     }
-    if (res.status != 200) {
-      return callback(new Error(res.body.error));
-    }
-    callback(null, res.body);
+    callback(null, new Wallet(self.bitgo, res.body));
   });
 };
 
@@ -103,19 +107,17 @@ Wallets.prototype.get = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/addresses/' + options.type + '/' + options.address;
+  var self = this;
   this.bitgo.post(url)
   .send({
     gpk: options.otp ? true : false,
     otp: options.otp
   })
   .end(function(err, res) {
-    if (err) {
-      return callback(err);
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
     }
-    if (res.status != 200) {
-      return callback(new Error(res.body.error));
-    }
-    callback(null, res.body);
+    callback(null, new Wallet(self.bitgo, res.body));
   });
 };
 
@@ -134,17 +136,16 @@ Wallets.prototype.chain = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/address/chain/' + options.type + '/' + options.address;
+  var self = this;
   this.bitgo.post(url)
   .send({
     internal: options.internal
   })
   .end(function(err, res) {
-    if (err) {
-      return callback(err);
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
     }
-    if (res.status != 200) {
-      return callback(new Error(res.body.error));
-    }
+    // TODO:  Should we return a Wallet object here?
     callback(null, res.body);
   });
 };

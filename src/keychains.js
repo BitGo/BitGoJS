@@ -17,6 +17,19 @@ var Keychains = function(bitgo) {
 };
 
 //
+// isValid
+// Tests a xpub or xprv string to see if it is a valid keychain.
+//
+Keychains.prototype.isValid = function(string) {
+  try {
+    var bip32 = new BIP32(string);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+//
 // create
 // Create a new keychain locally.
 // Does not send the keychain to bitgo, only creates locally.
@@ -96,16 +109,14 @@ Keychains.prototype.get = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/keychains/' + options.xpub;
+  var self = this;
   this.bitgo.post(url)
   .send({
     otp: options.otp
   })
   .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
-    if (res.status != 200) {
-      return callback(new Error(res.body.error));
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
     }
     callback(null, res.body);
   });
@@ -125,6 +136,7 @@ Keychains.prototype.update = function(options, callback) {
   }
 
   var url = this.bitgo._baseUrl + '/keychains/' + options.xpub;
+  var self = this;
   this.bitgo.put(url)
   .send({
     label: options.label,
@@ -132,11 +144,8 @@ Keychains.prototype.update = function(options, callback) {
     otp: options.otp
   })
   .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
-    if (res.status != 200) {
-      return callback(new Error(res.body.error));
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
     }
     callback(null, res.body);
   });
