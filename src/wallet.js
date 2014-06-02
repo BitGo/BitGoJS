@@ -119,21 +119,53 @@ Wallet.prototype.delete = function(callback) {
 //
 // unspents
 // List the unspents for a given wallet
+// Options include:
+//   btcLimit:  the limit of unspents to collect in BTC.
 //
-Wallet.prototype.unspents = function(callback) {
-  throw new Error('not implemented');
+Wallet.prototype.unspents = function(options, callback) {
+  if (typeof(options) != 'object' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  var url = this.bitgo._baseUrl + '/transactions/unspents/' + this.type() + '/' + this.address();
+  if (options.btcLimit) {
+    if (typeof(options.btcLimit) != 'number') {
+      throw new Error('invalid argument');
+    }
+    url += '?limit=' + (options.btcLimit * 1e8);
+  }
+  var self = this;
+  this.bitgo.get(url)
+  .send()
+  .end(function(err, res) {
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
+    }
+    callback(null, res.body.unspents);
+  });
 };
 
 //
 // transactions
 // List the transactions for a given wallet
-// Inputs: {
-// }
-// Returns: {
-// }
-//
-Wallet.prototype.transactions = function() {
-  throw new Error('not implemented');
+// Options include:
+//     TODO:  Add iterators for start/count/etc
+Wallet.prototype.transactions = function(options, callback) {
+  if (typeof(options) != 'object' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  var url = this.bitgo._baseUrl + '/transactions/' + this.type() + '/' + this.address();
+  var self = this;
+  this.bitgo.get(url)
+  .send()
+  .end(function(err, res) {
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
+    }
+    // TODO:  Get the address labels and prettify these?
+    callback(null, res.body);
+  });
 };
 
 //

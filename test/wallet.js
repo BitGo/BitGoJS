@@ -63,16 +63,14 @@ describe('Wallet', function() {
     });
 
     it('create', function(done) {
-      var options = {
-        type: 'bitcoin',
-        address: wallet2.address()
-      };
-      wallet2.createAddress(options, function(err, wallet) {
+      wallet2.createAddress({}, function(err, wallet) {
         assert.equal(err, null);
         wallet.should.have.property('path');
         wallet.should.have.property('redeemScript');
         wallet.should.have.property('address');
         assert.notEqual(wallet.address, wallet2.address());
+
+        // TODO: Verify the chain?
         done();
       });
     });
@@ -80,14 +78,40 @@ describe('Wallet', function() {
 
 
   describe('Unspents', function() {
-    it('not implemented', function() {
-      assert.throws(function() { wallet1.unspents(function() {}); });
+    it('arguments', function(done) {
+      assert.throws(function() { wallet1.unspents('invalid', function() {}); });
+      assert.throws(function() { wallet1.unspents({btcLimit: 'a string!'}, function() {}); });
+      assert.throws(function() { wallet1.unspents({}); });
+      done();
+    });
+
+    it('list', function(done) {
+      var options = { limit: 0.5 * 1e8 };
+      wallet1.unspents(options, function(err, unspents) {
+        assert.equal(err, null);
+        assert.equal(Array.isArray(unspents), true);
+        done();
+      });
     });
   });
 
   describe('Transactions', function() {
-    it('not implemented', function() {
-      assert.throws(function() { wallet1.transactions(function() {}); });
+    it('arguments', function(done) {
+      assert.throws(function() { wallet1.transactions('invalid', function() {}); });
+      assert.throws(function() { wallet1.transactions({}); });
+      done();
+    });
+
+    it('list', function(done) {
+      var options = { };
+      wallet1.transactions(options, function(err, result) {
+        assert.equal(err, null);
+        assert.equal(Array.isArray(result.transactions), true);
+        assert.equal(result.start, 0);
+        result.should.have.property('total');
+        result.should.have.property('count');
+        done();
+      });
     });
   });
 
