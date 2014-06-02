@@ -24,6 +24,8 @@ describe('BitGo', function() {
       bitgo.should.have.property('authenticate');
       bitgo.should.have.property('logout');
       bitgo.should.have.property('me');
+      bitgo.should.have.property('encrypt');
+      bitgo.should.have.property('decrupt');
     });
   });
 
@@ -32,6 +34,23 @@ describe('BitGo', function() {
       var bitgo = new TestBitGo();
       var version = bitgo.version();
       assert.equal(typeof(version), 'string');
+    });
+  });
+
+  describe('Encrypt/Decrypt', function() {
+    var password = 'mickey mouse';
+    var secret = 'this is a secret';
+
+    it('invalid password', function() {
+      var bitgo = new TestBitGo();
+      var opaque = bitgo.encrypt(password, secret);
+      assert.throws(function() { bitgo.decrypt('hack hack', opaque); });
+    });
+
+    it('valid password', function() {
+      var bitgo = new TestBitGo();
+      var opaque = bitgo.encrypt(password, secret);
+      assert.equal(bitgo.decrypt(password, opaque), secret);
     });
   });
 

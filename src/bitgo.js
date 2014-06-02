@@ -7,6 +7,7 @@
 var superagent = require('superagent');
 var Keychains = require('./keychains');
 var Wallets = require('./wallets');
+var sjcl = require('./bitcoin/sjcl.min');
 
 //
 // Constructor for BitGo Object
@@ -60,6 +61,23 @@ var BitGo = function(useProduction) {
 //
 BitGo.prototype.version = function() {
   return '0.1.0';
+};
+
+//
+// encrypt
+// Utility function to encrypt locally.
+//
+BitGo.prototype.encrypt = function(password, string) {
+  var encryptOptions = { iter: 10000, ks: 256 };
+  return sjcl.encrypt(password, string, encryptOptions);
+};
+
+//
+// decrypt
+// Utility function to decrypt locally.
+//
+BitGo.prototype.decrypt = function(password, opaque) {
+  return sjcl.decrypt(password, opaque);
 };
 
 //
