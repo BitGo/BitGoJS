@@ -25,7 +25,7 @@ describe('BitGo', function() {
       bitgo.should.have.property('logout');
       bitgo.should.have.property('me');
       bitgo.should.have.property('encrypt');
-      bitgo.should.have.property('decrupt');
+      bitgo.should.have.property('decrypt');
     });
   });
 
