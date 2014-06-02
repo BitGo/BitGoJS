@@ -14,5 +14,5 @@ if (process.argv.length > 2) {
 var bitgo = new BitGoJS.BitGo();
 bitgo.wallets().get({type: 'bitcoin', address: addressToCheck}, function(err, wallet) {
   if (err) { console.log(err); process.exit(-1); }
-  console.log("Balance is: " + (wallet.balance / 1e8).toFixed(4));
+  console.log("Balance is: " + (wallet.balance() / 1e8).toFixed(4));
 });
