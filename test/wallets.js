@@ -8,7 +8,7 @@ var assert = require('assert');
 var should = require('should');
 
 var BitGoJS = require('../src/index');
-var TestBitGo = require('./test_bitgo');
+var TestBitGo = require('./lib/test_bitgo');
 
 describe('Wallets', function() {
   var bitgo;

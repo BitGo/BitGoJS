@@ -4,9 +4,9 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var speakeasy = require('./lib/speakeasy');
+var speakeasy = require('./speakeasy');
 
-var BitGo = require('../src/bitgo.js');
+var BitGo = require('../../src/bitgo.js');
 
 BitGo.TEST_USER = 'mike+test@bitgo.com';
 BitGo.TEST_PASSWORD = 'itestutestwetest';

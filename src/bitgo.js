@@ -156,7 +156,7 @@ BitGo.prototype.keychains = function() {
     this._keychains = new Keychains(this);
   }
   return this._keychains;
-}
+};
 
 //
 // wallets
@@ -167,6 +167,6 @@ BitGo.prototype.wallets = function() {
     this._wallets = new Wallets(this);
   }
   return this._wallets;
-}
+};
 
 module.exports = BitGo;

@@ -47,7 +47,8 @@ Bitcoin.setNetwork = function(network) {
     Bitcoin.Address.p2shVersion    = 0xc4;
     Bitcoin.ECKey.privateKeyPrefix = 0xef;
   }
-}
+};
+
 Bitcoin.setNetwork('testnet');
 
 // Add randomness from the OS if we're loaded in node.js.

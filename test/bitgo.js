@@ -8,7 +8,7 @@ var assert = require('assert');
 var should = require('should');
 
 var BitGoJS = require('../src/index');
-var TestBitGo = require('./test_bitgo');
+var TestBitGo = require('./lib/test_bitgo');
 
 describe('BitGo', function() {
 
@@ -135,8 +135,9 @@ describe('BitGo', function() {
   });
 
   describe('Logged In', function() {
-    var bitgo = new TestBitGo();
+    var bitgo;
     before(function(done) {
+      bitgo;
       bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
         if (err) {
           throw err;

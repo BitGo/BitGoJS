@@ -5,7 +5,6 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var request = require('superagent');
 var BIP32 = require('./bitcoin/bip32');
 var SecureRandom = require('./bitcoin/jsbn/rng');
 var Util = require('./bitcoin/util');
@@ -38,7 +37,7 @@ Keychains.prototype.create = function(seed) {
     xpub: extendedKey.extended_public_key_string(),
     xprv: extendedKey.extended_private_key_string()
   };
-}
+};
 
 //
 // list

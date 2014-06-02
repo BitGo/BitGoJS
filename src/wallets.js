@@ -48,7 +48,7 @@ Wallets.prototype.createKey = function() {
     address: key.getBitcoinAddress(),
     key: key.getWalletImportFormat()
   };
-}
+};
 
 //
 // add
@@ -57,7 +57,7 @@ Wallets.prototype.createKey = function() {
 //
 Wallets.prototype.add = function(options, callback) {
   if (typeof(options) != 'object' || typeof(callback) != 'function' ||
-    Array.isArray(options.keychains) == false || typeof(options.m) != 'number' ||
+    Array.isArray(options.keychains) === false || typeof(options.m) !== 'number' ||
     typeof(options.n) != 'number') {
     throw new Error('invalid argument');
   }
