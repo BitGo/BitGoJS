@@ -121,33 +121,4 @@ Wallets.prototype.get = function(options, callback) {
   });
 };
 
-//
-// chain
-// Chain an existing wallet
-// Options include:
-//   type: the type of address (only 'bitcoin' is supported)
-//   address: the address of the wallet
-//   internal: a flag if this should be an internal or external chain
-//
-Wallets.prototype.chain = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.address) != 'string' ||
-      typeof(options.type) != 'string' || typeof(callback) != 'function') {
-    throw new Error('invalid argument');
-  }
-
-  var url = this.bitgo._baseUrl + '/address/chain/' + options.type + '/' + options.address;
-  var self = this;
-  this.bitgo.post(url)
-  .send({
-    internal: options.internal
-  })
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    // TODO:  Should we return a Wallet object here?
-    callback(null, res.body);
-  });
-};
-
 module.exports = Wallets;

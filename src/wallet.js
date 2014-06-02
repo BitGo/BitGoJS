@@ -69,6 +69,33 @@ Wallet.prototype.availableBalance = function() {
 }
 
 //
+// createAddress
+// Creates a new address for use with this wallet.
+// Options include:
+//   internal: a flag if this should be an internal or external chain
+//
+Wallet.prototype.createAddress = function(options, callback) {
+  if (typeof(options) != 'object' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  var url = this.bitgo._baseUrl + '/address/chain/' + this.type() + '/' + this.address();
+  var self = this;
+  this.bitgo.post(url)
+  .send({
+    internal: options.internal
+  })
+  .end(function(err, res) {
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
+    }
+    // TODO:  Should we return a Wallet object here?
+    callback(null, res.body);
+  });
+};
+
+
+//
 // delete
 // Deletes the wallet
 //

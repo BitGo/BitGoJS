@@ -55,6 +55,30 @@ describe('Wallet', function() {
     });
   });
 
+  describe('CreateAddress', function() {
+    it('arguments', function(done) {
+      assert.throws(function() { wallet2.createAddress('invalid', function() {}); });
+      assert.throws(function() { wallet2.createAddress({}); });
+      done();
+    });
+
+    it('create', function(done) {
+      var options = {
+        type: 'bitcoin',
+        address: wallet2.address()
+      };
+      wallet2.createAddress(options, function(err, wallet) {
+        assert.equal(err, null);
+        wallet.should.have.property('path');
+        wallet.should.have.property('redeemScript');
+        wallet.should.have.property('address');
+        assert.notEqual(wallet.address, wallet2.address());
+        done();
+      });
+    });
+  });
+
+
   describe('Unspents', function() {
     it('not implemented', function() {
       assert.throws(function() { wallet1.unspents(function() {}); });

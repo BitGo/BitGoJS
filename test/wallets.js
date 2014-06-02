@@ -167,30 +167,6 @@ describe('Wallets', function() {
     });
   });
 
-  describe('Chain', function() {
-    it('arguments', function(done) {
-      assert.throws(function() { wallets.chain('invalid'); });
-      assert.throws(function() { wallets.chain({}, function() {}); });
-      assert.throws(function() { wallets.chain({otp: 'foo'}); });
-      done();
-    });
-
-    it('create', function(done) {
-      var options = {
-        type: 'bitcoin',
-        address: testWallet.address()
-      };
-      wallets.chain(options, function(err, wallet) {
-        assert.equal(err, null);
-        wallet.should.have.property('path');
-        wallet.should.have.property('redeemScript');
-        wallet.should.have.property('address');
-        assert.notEqual(wallet.address, testWallet.address());
-        done();
-      });
-    });
-  });
-
   describe('Delete', function() {
     it('arguments', function(done) {
       assert.throws(function() { testWallet.delete('invalid'); });
