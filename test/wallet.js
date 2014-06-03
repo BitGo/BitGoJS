@@ -247,47 +247,83 @@ describe('Wallet', function() {
       done();
     });
 
-    it('full transaction', function(done) {
-      // Go fetch the private key for our keychain
-      var options = {
-        xpub: wallet1.keychains[0].xpub,
-        otp: bitgo.testUserOTP()
-      };
-      bitgo.keychains().get(options, function(err, keychain) {
-        assert.equal(err, null);
-        keychain.xprv = bitgo.decrypt(TEST_WALLET1_PASSCODE, keychain.encryptedXprv);
-        wallet1.createTransaction(TEST_WALLET2_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, tx) {
+    describe('full transaction', function() {
+      var keychain;
+      var tx;
+
+      it('keychain', function(done) {
+        var options = {
+          xpub: wallet1.keychains[0].xpub,
+          otp: bitgo.testUserOTP()
+        };
+        bitgo.keychains().get(options, function(err, result) {
           assert.equal(err, null);
-          wallet1.send(tx, function(err, result) {
-            assert.equal(err, null);
-            result.should.have.property('transaction');
-            result.should.have.property('transactionHash');
-            done();
-          });
+          keychain = result;
+          done();
+        });
+      });
+
+      it('decrupt key', function(done) {
+        keychain.xprv = bitgo.decrypt(TEST_WALLET1_PASSCODE, keychain.encryptedXprv);
+        done();
+      });
+
+      it('create transaction', function(done) {
+        wallet1.createTransaction(TEST_WALLET2_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, transaction) {
+          assert.equal(err, null);
+          tx = transaction;
+          done();
+        });
+      });
+
+      it('send', function(done) {
+        wallet1.send(tx, function(err, result) {
+          assert.equal(err, null);
+          result.should.have.property('transaction');
+          result.should.have.property('transactionHash');
+          done();
         });
       });
     });
 
-    it('return transaction', function(done) {
-      // Send the money back so our next test has funds too
-      var options = {
-        xpub: wallet2.keychains[0].xpub,
-        otp: bitgo.testUserOTP()
-      };
-      bitgo.keychains().get(options, function(err, keychain) {
-        assert.equal(err, null);
-        keychain.xprv = bitgo.decrypt(TEST_WALLET2_PASSCODE, keychain.encryptedXprv);
-        wallet2.createTransaction(TEST_WALLET1_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, tx) {
+    // Now send the money back
+    describe('return transaction', function() {
+      var keychain;
+      var tx;
+
+      it('keychain', function(done) {
+        var options = {
+          xpub: wallet2.keychains[0].xpub,
+          otp: bitgo.testUserOTP()
+        };
+        bitgo.keychains().get(options, function(err, result) {
           assert.equal(err, null);
-          wallet2.send(tx, function(err, result) {
-            assert.equal(err, null);
-            result.should.have.property('transaction');
-            result.should.have.property('transactionHash');
-            done();
-          });
+          keychain = result;
+          done();
+        });
+      });
+
+      it('decrupt key', function(done) {
+        keychain.xprv = bitgo.decrypt(TEST_WALLET2_PASSCODE, keychain.encryptedXprv);
+        done();
+      });
+
+      it('create transaction', function(done) {
+        wallet2.createTransaction(TEST_WALLET1_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, transaction) {
+          assert.equal(err, null);
+          tx = transaction;
+          done();
+        });
+      });
+
+      it('send', function(done) {
+        wallet2.send(tx, function(err, result) {
+          assert.equal(err, null);
+          result.should.have.property('transaction');
+          result.should.have.property('transactionHash');
+          done();
         });
       });
     });
   });
-
 });
