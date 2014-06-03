@@ -9,17 +9,20 @@ var should = require('should');
 
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
+var TransactionBuilder = require('../src/transactionbuilder');
 
 var TEST_WALLET1_ADDRESS = '2N94kT4NtoGCbBfcfp3K1rEPYNohL3VV8rC';
-var TEST_WALLET1_KEY = 'test wallet #1 security';
+var TEST_WALLET1_PASSCODE = 'test wallet #1 security';
 var TEST_WALLET2_ADDRESS = '2MyGdUWZuxTNnvPZHJFmrpi4cSiSyEe3Ztp';
-var TEST_WALLET2_KEY = 'test wallet #2 security'
+var TEST_WALLET2_PASSCODE = 'test wallet #2 security'
 
 describe('Wallet', function() {
   var bitgo;
   var wallet1, wallet2;
 
   before(function(done) {
+    BitGoJS.setNetwork('testnet');
+
     bitgo = new TestBitGo();
     wallets = bitgo.wallets();
     bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
@@ -116,21 +119,109 @@ describe('Wallet', function() {
   });
 
   describe('TransactionBuilder', function() {
-    it('arguments', function() {
-      assert.throws(function() { new TransactionBuilder(); });
-      assert.throws(function() { new TransactionBuilder('should not be a string'); });
-      assert.throws(function() { new TransactionBuilder({}); });
-      assert.throws(function() { new TransactionBuilder({}, 'should not be a string'); });
-      assert.throws(function() { new TransactionBuilder({}, {}, 'should not be a string'); });
+    describe('check', function() {
+      it('arguments', function() {
+        assert.throws(function() { new TransactionBuilder(); });
+        assert.throws(function() { new TransactionBuilder('should not be a string'); });
+        assert.throws(function() { new TransactionBuilder({}); });
+        assert.throws(function() { new TransactionBuilder({}, 'should not be a string'); });
+        assert.throws(function() { new TransactionBuilder({}, {}, 'should not be a string'); });
+      });
+
+      it('recipient arguments', function() {
+        assert.throws(function() { new TransactionBuilder({}, {address: 123}); });
+        assert.throws(function() { new TransactionBuilder({}, {address: 'string', amount: 'should not be a string'}); });
+        assert.throws(function() { new TransactionBuilder({}, {address: 'string', amount: 'should not be a string'}); });
+        assert.throws(function() { new TransactionBuilder({}, {address: 'string', amount: 10000}); });
+      });
+
+      it('fee', function() {
+        assert.throws(function() { new TransactionBuilder({}, {address: TEST_WALLET1_ADDRESS, amount: 1e8 }, 0.5 * 1e8); });
+      });
     });
 
-    it('recipient arguments', function() {
-      assert.throws(function() { new TransactionBuilder({}, {address: 123}); });
-      assert.throws(function() { new TransactionBuilder({}, {address: 'string', satoshis: 'should not be a string'}); });
+    describe('prepare', function() {
+      it('insufficient funds', function(done) {
+        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.balance() + 1e8});
+        tb.prepare()
+          .catch(function(e) {
+            assert.equal(e.toString(), 'Insufficient funds');
+            done();
+          });
+      });
+
+      it('insufficient funds due to fees', function(done) {
+        // Attempt to spend the full balance - adding the default fee would be insufficient funds.
+        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.balance()});
+        tb.prepare()
+          .catch(function(e) {
+            assert.equal(e.toString(), 'Insufficient funds');
+            done();
+          });
+      });
+
+      it('no change required', function(done) {
+        // Attempt to spend the full balance without any fees.
+        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.balance()}, 0);
+        tb.prepare()
+          .then(function() {
+            done();
+          });
+      });
+
+      it('no inputs available', function(done) {
+        // TODO: implement me!
+        done();
+      });
+
+      it('ok', function(done) {
+        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 0.01 * 1e8 });
+        tb.prepare().then(function() {
+          done();
+        });
+      });
     });
 
-    it('fee check', function() {
-      assert.throws(function() { new TransactionBuilder({}, {address: 'string', satoshis: 0.5 * 1e8 }); });
+    describe('sign', function() {
+      var tb;
+      var keychain;
+      before(function(done) {
+
+        // Go fetch the private key for our keychain
+        var options = {
+          xpub: wallet1.keychains[0].xpub,
+          otp: bitgo.testUserOTP()
+        };
+        bitgo.keychains().get(options, function(err, result) {
+          assert.equal(err, null);
+          keychain = result;
+
+          // Now build a transaction
+          tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 });
+          tb.prepare().then(function() {
+            done();
+          });
+        });
+      });
+
+      it('arguments', function() {
+        assert.throws(function() { tb.sign(); });
+        assert.throws(function() { tb.sign('not a string'); });
+      });
+
+      it('invalid key', function(done) {
+        var bogusKey = 'xprv9s21ZrQH143K2EPMtV8YHh3UzYdidYbQyNgxAcEVg1374nZs7UWRvoPRT2tdYpN6dENTZbBNf4Af3ZJQbKDydh1BmZ6azhFeYKJ3knPPjND';
+        assert.throws(function() { tb.sign({path: 'm', xprv: bogusKey}); });
+        done();
+      });
+
+      it('valid key', function(done) {
+        // First we need to decrypt the xprv.
+        keychain.xprv = bitgo.decrypt(TEST_WALLET1_PASSCODE, keychain.encryptedXprv);
+        // Now we can go ahead and sign.
+        var tx = tb.sign(keychain);
+        done();
+      });
     });
   });
 

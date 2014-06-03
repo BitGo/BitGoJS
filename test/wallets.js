@@ -95,8 +95,8 @@ describe('Wallets', function() {
             assert.equal(bitgo.keychains().isValid(wallet.keychains[0]), true);
             assert.equal(bitgo.keychains().isValid(wallet.keychains[1]), true);
             assert.equal(bitgo.keychains().isValid(wallet.keychains[2]), true);
-            assert.equal(wallet.keychains[0], keychains[0].xpub);
-            assert.equal(wallet.keychains[1], keychains[1].xpub);
+            assert.equal(wallet.keychains[0].xpub, keychains[0].xpub);
+            assert.equal(wallet.keychains[1].xpub, keychains[1].xpub);
             done();
           });
         });

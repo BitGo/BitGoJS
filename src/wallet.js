@@ -15,9 +15,9 @@ var Wallet = function(bitgo, wallet) {
   this.wallet = wallet;
   this.keychains = [];
   if (wallet.private) {
-    this.keychains.push(wallet.private.userKeychain.xpub);
-    this.keychains.push(wallet.private.backupKeychain.xpub);
-    this.keychains.push(wallet.private.bitgoKeychain.xpub);
+    this.keychains.push(wallet.private.userKeychain);
+    this.keychains.push(wallet.private.backupKeychain);
+    this.keychains.push(wallet.private.bitgoKeychain);
   }
 };
 

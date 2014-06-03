@@ -6,6 +6,20 @@
 //
 
 var Q = require('q');
+var Address = require('./bitcoin/address');
+var BIP32 = require('./bitcoin/bip32');
+var Transactions = require('./bitcoin/transaction');
+var Script = require('./bitcoin/script');
+
+var Transaction = Transactions.Transaction;
+var TransactionIn = Transactions.TransactionIn;
+var TransactionOut = Transactions.TransactionOut;
+
+// Setup some fee constants.
+var MAX_FEE = 1e8 * 0.1;
+var DEFAULT_FEE = 0.0001 * 1e8;
+var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for less than this. (dust - give it to the miner)
+
 
 //
 // TransactionBuilder
@@ -28,10 +42,15 @@ var TransactionBuilder = function(wallet, recipient, fee) {
     throw new Error('invalid recipient');
   }
 
+  try {
+    var address = new Address(recipient.address);
+  } catch (e) {
+    throw new Error('invalid recipient address');
+  }
+
+
   // Sanity check the fee
-  var MAX_FEE = 1e8 * 0.1;
-  var DEFAULT_FEE = 0.0001 * 1e8;
-  if (!fee) {
+  if (typeof(fee) == 'undefined') {
     fee = DEFAULT_FEE;
   }
   if (fee > MAX_FEE) {
@@ -55,19 +74,22 @@ var TransactionBuilder = function(wallet, recipient, fee) {
   // The transaction.
   var _tx;
 
+  // If this transaction requires change, send it here.
+  var _changeAddress;
+
   // Prepare the transaction.
   // This is a multi-phase, multi-round trip operation.
   this.prepare = function() {
-    _tx = new Bitcoin.Transaction();
+    _tx = new Transaction();
 
-    var deferred = $q.defer();
+    var deferred = Q.defer();
 
     // Get the unspents for the sending wallet.
     var getUnspents = function() {
-      var deferred = $q.defer();
+      var deferred = Q.defer();
 
       var options = {
-        limit: totalSpendSatoshis
+        limit: _totalAmount
       };
       self.wallet.unspents(options, function(err, unspents) {
         if (err) {
@@ -96,21 +118,20 @@ var TransactionBuilder = function(wallet, recipient, fee) {
       _inputAmount = 0;
       _unspents.every(function(unspent) {
         _inputAmount += unspent.value;
-        var input = new Bitcoin.TransactionIn(
+        var input = new TransactionIn(
           {
             outpoint: { hash: unspent.tx_hash, index: unspent.tx_output_n },
-            sript: new Bitcoin.Script(unspent.script),
+            script: new Script(unspent.script),
             sequence: 4294967295
           }
         );
         _tx.addInput(input);
         return (_inputAmount < _totalAmount);
       });
-      if (totalSpendSatoshis > inputAmountSatoshis) {
-        return $q.reject('Insufficient funds');
+      if (_totalAmount > _inputAmount) {
+        return Q.reject('Insufficient funds');
       }
-      _inputs = { inputAmountSatoshis: inputAmountSatoshis, inputs: inputs };
-      return $q.when(self);
+      return Q.when(self);
     };
 
     // If change is needed for this transaction, compute a change address to
@@ -118,16 +139,16 @@ var TransactionBuilder = function(wallet, recipient, fee) {
     var getChangeAddress = function() {
       // Check if we need change.
       if (_inputAmount === _totalAmount) {
-        return $q.when(self);
+        return Q.when(self);
       }
 
-      var deferred = $q.defer();
+      var deferred = Q.defer();
       wallet.createAddress({}, function(err, newAddress) {
         if (err) {
           deferred.reject(err);
           return;
         }
-        _changeAddress = newAddress
+        _changeAddress = newAddress.address;
         deferred.resolve(self);
       });
       return deferred.promise;
@@ -135,42 +156,47 @@ var TransactionBuilder = function(wallet, recipient, fee) {
 
     // Add the outputs for this transaction.
     var collectOutputs = function() {
-      _tx.addOutput(new Bitcoin.Address(self.recipient.address, self.recipient.amount));
+      _tx.addOutput(new Address(self.recipient.address), self.recipient.amount);
       var remainder = _inputAmount - _totalAmount;
       // As long as the remainder is greater than dust we send it to our change
       // address.  Otherwise, let it go to the miners.
       if (remainder > MINIMUM_BTC_DUST) {
-        _tx.addOutput(new Bitcoin.Address(_changeAddress, remainder));
+        _tx.addOutput(new Address(_changeAddress), remainder);
       }
-      return $q.when(self);
+      return Q.when(self);
     };
 
     return getUnspents()
       .then(collectInputs)
       .then(getChangeAddress)
-      .then(collectOutputs)
-      .catch(function(error) {
-        deferred.reject(error);
-      });
+      .then(collectOutputs);
   };
 
+  //
+  // sign
   // Sign a transaction.
+  // Returns the signed transaction object.
+  //
   this.sign = function(keychain) {
     if (typeof(keychain) != 'object' || typeof(keychain.xprv) != 'string') {
       throw new Error('illegal argument');
     }
 
-    var address = self.sender.address;
-    var rootExtKey = new Bitcoin.BIP32(key).xprv;
+    if (keychain.xpub != self.wallet.keychains[0].xpub) {
+      throw new Error('incorrect keychain');
+    }
+
+    var rootExtKey = new BIP32(keychain.xprv);
     for (var index = 0; index < _tx.ins.length; ++index) {
-      var path = keychain.path + self.wallet.path + _unspents[index].chainPath;
+      var path = keychain.path + self.wallet.keychains[0].path + _unspents[index].chainPath;
       var extKey = rootExtKey.derive(path);
-      var redeemScript = new Bitcoin.Script(_unspents[index].redeemScript);
-      if (!_tx.signMultiSigWithKey(index2, extKey.eckey, redeemScript)) {
-        return $q.reject('Failed to sign input #' + index);
+      var redeemScript = new Script(_unspents[index].redeemScript);
+      if (!_tx.signMultiSigWithKey(index, extKey.eckey, redeemScript)) {
+        return Q.reject('Failed to sign input #' + index);
       }
       _tx.verifyInputSignatures(index, redeemScript);
     }
+    return _tx;
   };
 
 };

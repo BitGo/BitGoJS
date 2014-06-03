@@ -99,6 +99,7 @@ Wallets.prototype.add = function(options, callback) {
 // Options include:
 //   type: the type of address (only 'bitcoin' is supported)
 //   address: the address of the wallet
+//   otp: the one-time-password for unlocking the private data of the wallet
 //
 Wallets.prototype.get = function(options, callback) {
   if (typeof(options) != 'object' || typeof(options.address) != 'string' ||
