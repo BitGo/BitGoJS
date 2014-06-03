@@ -42,6 +42,7 @@
     "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js"
   },
   "dependencies": {
-    "superagent": "0.18.0"
+    "superagent": "0.18.0",
+    "q": "1.0.1"
   }
 }

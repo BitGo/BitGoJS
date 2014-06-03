@@ -5,6 +5,8 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
+var TransactionBuilder = require('./transactionbuilder');
+
 //
 // Constructor
 //
@@ -174,8 +176,7 @@ Wallet.prototype.transactions = function(options, callback) {
 // Inputs:
 // Returns:
 //
-Wallet.prototype.send = function() {
-  throw new Error('not implemented');
+Wallet.prototype.send = function(address, satoshis, fee, key) {
 }
 
 module.exports = Wallet;

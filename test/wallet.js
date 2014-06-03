@@ -115,10 +115,26 @@ describe('Wallet', function() {
     });
   });
 
-  describe('Send', function() {
-    it('not implemented', function() {
-      assert.throws(function() { wallet1.send(function() {}); });
+  describe('TransactionBuilder', function() {
+    it('arguments', function() {
+      assert.throws(function() { new TransactionBuilder(); });
+      assert.throws(function() { new TransactionBuilder('should not be a string'); });
+      assert.throws(function() { new TransactionBuilder({}); });
+      assert.throws(function() { new TransactionBuilder({}, 'should not be a string'); });
+      assert.throws(function() { new TransactionBuilder({}, {}, 'should not be a string'); });
     });
+
+    it('recipient arguments', function() {
+      assert.throws(function() { new TransactionBuilder({}, {address: 123}); });
+      assert.throws(function() { new TransactionBuilder({}, {address: 'string', satoshis: 'should not be a string'}); });
+    });
+
+    it('fee check', function() {
+      assert.throws(function() { new TransactionBuilder({}, {address: 'string', satoshis: 0.5 * 1e8 }); });
+    });
+  });
+
+  describe('Send', function() {
   });
 
 });
