@@ -40,8 +40,7 @@ describe('Message', function() {
     var message = "goodbyte, cruel world";
     var key = new Bitcoin.ECKey();
     var sig = Bitcoin.Message.signMessage(key, message, key.compressed);
-    // TODO: This test is not working
-    //assert.equal(Bitcoin.Message.verifyMessage(key, sig, message), true);
+    assert.equal(Bitcoin.Message.verifyMessage(key.getBitcoinAddress().toString(), sig, message), true);
   });
 
   it("verify signature", function() {

@@ -12,10 +12,14 @@ module.exports = {
   /**
    * Turn an integer into a little-endian array of |length| bytes
    */
-  numToBytes: function(num, length) {
+  numToBytes: function(num, length, big_endian) {
     if (length === undefined) length = 8;
     if (length === 0) return [];
-    return [num % 256].concat(this.numToBytes(Math.floor(num / 256), length - 1));
+    if (big_endian) {
+      return this.numToBytes(Math.floor(num / 256), length - 1).concat([num % 256]);
+    } else {
+      return [num % 256].concat(this.numToBytes(Math.floor(num / 256), length - 1));
+    }
   },
 
   bytesToNum: function(bytes) {
@@ -37,20 +41,19 @@ module.exports = {
    *
    * Returns a byte array.
    */
-  numToVarInt: function (i) {
-    if (i < 0xfd) {
+  numToVarInt: function (num, big_endian) {
+    if (num < 0xfd) {
       // unsigned char
-      return [i];
-    } else if (i < 0x10000) {
+      return [num];
+    } else if (num < 0x10000) {
       // unsigned short (LE)
-      return [0xfd, i & 255, i >>> 8];    // little endian!
-    } else if (i < 0x100000000) {
+      return [253].concat(this.numToBytes(num, 2, big_endian));
+    } else if (num < 0x100000000) {
       // unsigned int (LE)
-      return [0xfe].concat(Crypto.util.wordsToBytes([i]).reverse());  // little endian!
+      return [254].concat(this.numToBytes(num, 4, big_endian)); 
     } else {
-      throw "long long not implemented";
       // unsigned long long (LE)
-      //return [0xff].concat(Crypto.util.wordsToBytes([i >>> 32, i]).reverse());
+      return [255].concat(this.numToBytes(num, 8, big_endian));
     }
   },
 

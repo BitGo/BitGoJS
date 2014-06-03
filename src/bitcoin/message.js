@@ -15,9 +15,9 @@ Message.makeMagicMessage = function (message) {
   var messageBytes = Crypto.charenc.UTF8.stringToBytes(message);
 
   var buffer = [];
-  buffer = buffer.concat(Util.numToVarInt(magicBytes.length));
+  buffer = buffer.concat(Util.numToVarInt(magicBytes.length, true));
   buffer = buffer.concat(magicBytes);
-  buffer = buffer.concat(Util.numToVarInt(messageBytes.length));
+  buffer = buffer.concat(Util.numToVarInt(messageBytes.length, true));
   buffer = buffer.concat(messageBytes);
 
   return buffer;
