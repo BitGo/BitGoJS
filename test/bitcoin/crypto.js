@@ -18,6 +18,7 @@ describe('Crypto', function() {
     it('endian', function() {
       assert.equal(4041261184|0, Crypto.util.endian(2160124144));
       assert.equal(2160124144|0, Crypto.util.endian(Crypto.util.endian(2160124144)));
+      assert.deepEqual(Crypto.util.endian([0, 2160124144]), [Crypto.util.endian(0), Crypto.util.endian(2160124144)]);
     });
     it('randomBytes', function() {
       assert.equal(32, Crypto.util.randomBytes(32).length);
