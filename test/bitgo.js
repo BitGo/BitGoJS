@@ -37,6 +37,34 @@ describe('BitGo', function() {
     });
   });
 
+  describe('Verify Address', function() {
+    var bitgo;
+    before(function() {
+      bitgo = new BitGoJS.BitGo();
+    });
+
+    it('errors', function() {
+      assert.throws(function() {bitgo.verifyAddress(); });
+      assert.throws(function() {bitgo.verifyAddress({}); });
+
+      assert.equal(bitgo.verifyAddress('xyzzy'), false);
+    });
+
+    it('standard', function() {
+      BitGoJS.setNetwork('prod');
+      assert.equal(bitgo.verifyAddress('1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd'), true);
+      BitGoJS.setNetwork('testnet');
+      assert.equal(bitgo.verifyAddress('n4DNhSiEaodqaiF9tLYXTCh4kFbdUzxBHs'), true);
+    });
+
+    it('p2sh', function() {
+      BitGoJS.setNetwork('prod');
+      assert.equal(bitgo.verifyAddress('3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC'), true);
+      BitGoJS.setNetwork('testnet');
+      assert.equal(bitgo.verifyAddress('2NEeFWbfu4EA1rcKx48e82Mj8d6FKcWawZw'), true);
+    });
+  });
+
   describe('Encrypt/Decrypt', function() {
     var password = 'mickey mouse';
     var secret = 'this is a secret';

@@ -5,6 +5,7 @@
 //
 
 var superagent = require('superagent');
+var Address = require('./bitcoin/address');
 var Keychains = require('./keychains');
 var Wallets = require('./wallets');
 var sjcl = require('./bitcoin/sjcl.min');
@@ -63,6 +64,19 @@ BitGo.prototype.version = function() {
   return '0.1.0';
 };
 
+BitGo.prototype.verifyAddress = function(addr) {
+  if (typeof(addr) != 'string') {
+    throw new Error('invalid argument');
+  }
+  try {
+    var address = new Address(addr);
+    return true;
+  } catch(e) {
+console.log(e);
+    return false;
+  }
+};
+
 //
 // encrypt
 // Utility function to encrypt locally.
@@ -102,7 +116,11 @@ BitGo.prototype.market = function(callback) {
 //
 // authenticate
 // Login to the bitgo system.
-//
+// Returns:
+//   {
+//     token: <user's token>,
+//     user: <user object
+//   }
 BitGo.prototype.authenticate = function(username, password, otp, callback) {
   if (typeof(username) != 'string' || typeof(password) != 'string' ||
       typeof(otp) != 'string' || typeof(callback) != 'function') {
