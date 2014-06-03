@@ -89,7 +89,7 @@ describe('Wallet', function() {
     });
 
     it('list', function(done) {
-      var options = { limit: 0.5 * 1e8 };
+      var options = { btcLimit: 0.5 * 1e8 };
       wallet1.unspents(options, function(err, unspents) {
         assert.equal(err, null);
         assert.equal(Array.isArray(unspents), true);
@@ -152,8 +152,12 @@ describe('Wallet', function() {
 
       it('insufficient funds due to fees', function(done) {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
-        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.balance()});
+        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.pendingBalance()});
         tb.prepare()
+          .then(function() {
+            console.log("this should not have worked.");
+            done();
+          })
           .catch(function(e) {
             assert.equal(e.toString(), 'Insufficient funds');
             done();
@@ -230,6 +234,19 @@ describe('Wallet', function() {
   });
 
   describe('Send', function() {
+    it('arguments', function(done) {
+      assert.throws(function() { wallet1.createTransaction(); });
+      assert.throws(function() { wallet1.createTransaction(123); });
+      assert.throws(function() { wallet1.createTransaction('string'); });
+      assert.throws(function() { wallet1.createTransaction('string', 123); });
+      assert.throws(function() { wallet1.createTransaction('string', 123, 0); });
+      assert.throws(function() { wallet1.createTransaction('string', 123, 0, {}); });
+
+      assert.throws(function() { wallet1.send(); });
+      assert.throws(function() { wallet1.send({}); });
+      done();
+    });
+
     it('full transaction', function(done) {
       // Go fetch the private key for our keychain
       var options = {
