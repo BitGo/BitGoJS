@@ -166,10 +166,13 @@ describe('Wallet', function() {
 
       it('no change required', function(done) {
         // Attempt to spend the full balance without any fees.
-        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.balance()}, 0);
+        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.availableBalance()}, 0);
         tb.prepare()
           .then(function() {
             done();
+          })
+          .catch(function(e) {
+            assert.equal(e, null);
           });
       });
 
