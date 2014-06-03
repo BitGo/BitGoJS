@@ -176,9 +176,13 @@ describe('Wallet', function() {
 
       it('ok', function(done) {
         var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 0.01 * 1e8 });
-        tb.prepare().then(function() {
-          done();
-        });
+        tb.prepare()
+          .then(function() {
+            done();
+          })
+          .catch(function(e) {
+            assert.equal(e, null);
+          });
       });
     });
 
@@ -226,6 +230,47 @@ describe('Wallet', function() {
   });
 
   describe('Send', function() {
+    it('full transaction', function(done) {
+      // Go fetch the private key for our keychain
+      var options = {
+        xpub: wallet1.keychains[0].xpub,
+        otp: bitgo.testUserOTP()
+      };
+      bitgo.keychains().get(options, function(err, keychain) {
+        assert.equal(err, null);
+        keychain.xprv = bitgo.decrypt(TEST_WALLET1_PASSCODE, keychain.encryptedXprv);
+        wallet1.createTransaction(TEST_WALLET2_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, tx) {
+          assert.equal(err, null);
+          wallet1.send(tx, function(err, result) {
+            assert.equal(err, null);
+            result.should.have.property('transaction');
+            result.should.have.property('transactionHash');
+            done();
+          });
+        });
+      });
+    });
+
+    it('return transaction', function(done) {
+      // Send the money back so our next test has funds too
+      var options = {
+        xpub: wallet2.keychains[0].xpub,
+        otp: bitgo.testUserOTP()
+      };
+      bitgo.keychains().get(options, function(err, keychain) {
+        assert.equal(err, null);
+        keychain.xprv = bitgo.decrypt(TEST_WALLET2_PASSCODE, keychain.encryptedXprv);
+        wallet2.createTransaction(TEST_WALLET1_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, tx) {
+          assert.equal(err, null);
+          wallet2.send(tx, function(err, result) {
+            assert.equal(err, null);
+            result.should.have.property('transaction');
+            result.should.have.property('transactionHash');
+            done();
+          });
+        });
+      });
+    });
   });
 
 });

@@ -171,12 +171,58 @@ Wallet.prototype.transactions = function(options, callback) {
 };
 
 //
+// createTransaction
+// Create a transaction
+// Inputs:
+//   address  - the address to send to
+//   amount   - the amount to send, in satoshis
+//   fee      - the blockchain fee to send
+//   keychain - the keychain to use for signing
+// Returns:
+//   callback(err, transaction)
+//
+Wallet.prototype.createTransaction = function(address, amount, fee, keychain, callback) {
+  if (typeof(address) != 'string' || typeof(amount) != 'number' ||
+      typeof(fee) != 'number' || typeof(keychain) != 'object' ||
+      typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  var tb = new TransactionBuilder(this, { address: address, amount: amount }, fee);
+  tb.prepare()
+    .then(function() {
+      return tb.sign(keychain);
+    })
+    .then(function(tx) {
+      callback(null, tx.tx());
+    })
+    .catch(function(e) {
+      callback(e);
+    });
+}
+
+//
 // send
 // Create a transaction and send it.
 // Inputs:
+//   tx  - the hex encoded, signed transaction to send
 // Returns:
 //
-Wallet.prototype.send = function(address, satoshis, fee, key) {
+Wallet.prototype.send = function(tx, callback) {
+  if (typeof(tx) != 'string' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  var url = this.bitgo._baseUrl + '/transactions/' + this.type();
+  var self = this;
+  this.bitgo.post(url)
+  .send({ tx: tx })
+  .end(function(err, res) {
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
+    }
+    callback(null, res.body);
+  });
 }
 
 module.exports = Wallet;

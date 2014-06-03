@@ -10,6 +10,7 @@ var Address = require('./bitcoin/address');
 var BIP32 = require('./bitcoin/bip32');
 var Transactions = require('./bitcoin/transaction');
 var Script = require('./bitcoin/script');
+var Util = require('./bitcoin/util');
 
 var Transaction = Transactions.Transaction;
 var TransactionIn = Transactions.TransactionIn;
@@ -196,8 +197,16 @@ var TransactionBuilder = function(wallet, recipient, fee) {
       }
       _tx.verifyInputSignatures(index, redeemScript);
     }
-    return _tx;
+    return Q.when(this);
   };
+
+  //
+  // tx
+  // Get the created transaction in hex format
+  //
+  this.tx = function() {
+    return Util.bytesToHex(_tx.serialize());
+  }
 
 };
 
