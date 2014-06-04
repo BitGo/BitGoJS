@@ -17,8 +17,9 @@ var TransactionIn = Transactions.TransactionIn;
 var TransactionOut = Transactions.TransactionOut;
 
 // Setup some fee constants.
-var MAX_FEE = 1e8 * 0.1;
-var DEFAULT_FEE = 0.0001 * 1e8;
+var MAX_FEE = 1e8 * 0.1;        // The maximum fee we'll allow before declaring an error
+var FEE_PER_KB = 0.0001 * 1e8;  // The blockchain required fee-per-kb of transaction size
+var DEFAULT_FEE = 0.0001 * 1e8; // Our default fee
 var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for less than this. (dust - give it to the miner)
 
 
@@ -49,6 +50,8 @@ var TransactionBuilder = function(wallet, recipient, fee) {
     throw new Error('invalid recipient address');
   }
 
+  // Flag indicating whether this class will compute the fee
+  this.shouldComputeBestFee = (typeof(fee) == 'undefined');
 
   // Sanity check the fee
   if (typeof(fee) == 'undefined') {
@@ -75,6 +78,9 @@ var TransactionBuilder = function(wallet, recipient, fee) {
   // The transaction.
   var _tx;
 
+  // The serialized transaction.
+  var _txBytes;
+
   // If this transaction requires change, send it here.
   var _changeAddress;
 
@@ -97,21 +103,20 @@ var TransactionBuilder = function(wallet, recipient, fee) {
           deferred.reject(error);
           return;
         }
+
         _unspents = unspents;
         deferred.resolve(self);
       });
       return deferred.promise;
     };
 
-    /*
-    // Compute an approximated fee for this transaction
-    var approximateFee = function(tx) {
-      // Bitcoin fees are generally 0.0001 BTC per KB of transaction size.
-      var FEE_PER_KB = 0.0001 * 1e8;
-      var size = tx.serialize().length;
-      return Math.ceil(size / 1024) * FEE_PER_KB;
-    };
-    */
+    // Approximate the fee based on number of inputs
+    var approximateBlockchainFee = function() {
+      // Tx size is dominated by signatures.
+      // Use the rough formula of 6 signatures per KB.
+      var signaturesPerInput = 2;  // 2-of-3 wallets
+      return Math.ceil(_tx.ins.length * signaturesPerInput / 6) * FEE_PER_KB;
+    }
 
     // Iterate _unspents, sum the inputs, and save _inputs with the total
     // input amound and final list of inputs to use with the transaction.
@@ -131,6 +136,15 @@ var TransactionBuilder = function(wallet, recipient, fee) {
       });
       if (_totalAmount > _inputAmount) {
         return Q.reject('Insufficient funds');
+      }
+      if (self.shouldComputeBestFee) {
+        var approximateFee = approximateBlockchainFee();
+        if (approximateFee > self.fee) {
+          self.fee = approximateFee;
+          _inputAmount = 0;
+          _tx.clearInputs();
+          return collectInputs();
+        }
       }
       return Q.when(self);
     };
@@ -167,10 +181,17 @@ var TransactionBuilder = function(wallet, recipient, fee) {
       return Q.when(self);
     };
 
+    // Serialize the transaction into something usable.
+    var serialize = function() {
+      _txBytes = _tx.serialize();
+      return Q.when(self);
+    };
+
     return getUnspents()
       .then(collectInputs)
       .then(getChangeAddress)
-      .then(collectOutputs);
+      .then(collectOutputs)
+      .then(serialize);
   };
 
   //

@@ -193,8 +193,8 @@ Wallet.prototype.createTransaction = function(address, amount, fee, keychain, ca
     .then(function() {
       return tb.sign(keychain);
     })
-    .then(function(tx) {
-      callback(null, tx.tx());
+    .then(function() {
+      callback(null, { tx: tb.tx(), fee: tb.fee });
     })
     .catch(function(e) {
       callback(e);
@@ -221,7 +221,7 @@ Wallet.prototype.send = function(tx, callback) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;
     }
-    callback(null, res.body);
+    callback(null, { tx: res.body.transaction, hash: res.body.transactionHash });
   });
 }
 

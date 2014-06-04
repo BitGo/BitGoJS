@@ -10,6 +10,7 @@ var should = require('should');
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 var TransactionBuilder = require('../src/transactionbuilder');
+var unspentData = require('./fixtures/largeunspents.json');
 
 var TEST_WALLET1_ADDRESS = '2N94kT4NtoGCbBfcfp3K1rEPYNohL3VV8rC';
 var TEST_WALLET1_PASSCODE = 'test wallet #1 security';
@@ -193,6 +194,49 @@ describe('Wallet', function() {
       });
     });
 
+    describe('fees', function() {
+      var patch;
+      before(function() {
+        // Monkey patch wallet1 with simulated inputs
+        patch = wallet1.unspents;
+        wallet1.unspents = function(options, callback) {
+          callback(null, unspentData.unspents);
+        };
+      });
+
+      after(function() {
+        wallet1.unspents = patch;
+      });
+
+      it('approximate', function(done) {
+        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 10000 * 1e8 });
+        tb.prepare()
+          .then(function() {
+            var feeUsed = tb.fee;
+            // Note that the transaction size here will be fairly small, because the signatures have not
+            // been applied.  But we had to estimate our fees already.
+            assert.equal(feeUsed, 1360000);
+            done();
+          })
+          .catch(function(e) {
+            assert.equal(e, null);
+          });
+      });
+
+      it('do not override', function(done) {
+        var manualFee = 0.04 * 1e8;
+        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 10000 * 1e8}, manualFee);
+        tb.prepare()
+          .then(function() {
+            assert.equal(tb.fee, manualFee);
+            done();
+          })
+          .catch(function(e) {
+            assert.equal(e, null);
+          });
+      });
+    });
+
     describe('sign', function() {
       var tb;
       var keychain;
@@ -266,15 +310,18 @@ describe('Wallet', function() {
         });
       });
 
-      it('decrupt key', function(done) {
+      it('decrypt key', function(done) {
         keychain.xprv = bitgo.decrypt(TEST_WALLET1_PASSCODE, keychain.encryptedXprv);
         done();
       });
 
       it('create transaction', function(done) {
-        wallet1.createTransaction(TEST_WALLET2_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, transaction) {
+        wallet1.createTransaction(TEST_WALLET2_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, result) {
           assert.equal(err, null);
-          tx = transaction;
+          assert.equal(result.fee < 0.0005 * 1e8, true);
+          result.should.have.property('tx');
+          result.should.have.property('fee');
+          tx = result.tx;
           done();
         });
       });
@@ -282,8 +329,8 @@ describe('Wallet', function() {
       it('send', function(done) {
         wallet1.send(tx, function(err, result) {
           assert.equal(err, null);
-          result.should.have.property('transaction');
-          result.should.have.property('transactionHash');
+          result.should.have.property('tx');
+          result.should.have.property('hash');
           done();
         });
       });
@@ -306,15 +353,17 @@ describe('Wallet', function() {
         });
       });
 
-      it('decrupt key', function(done) {
+      it('decrypt key', function(done) {
         keychain.xprv = bitgo.decrypt(TEST_WALLET2_PASSCODE, keychain.encryptedXprv);
         done();
       });
 
       it('create transaction', function(done) {
-        wallet2.createTransaction(TEST_WALLET1_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, transaction) {
+        wallet2.createTransaction(TEST_WALLET1_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, result) {
           assert.equal(err, null);
-          tx = transaction;
+          result.should.have.property('tx');
+          result.should.have.property('fee');
+          tx = result.tx;
           done();
         });
       });
@@ -322,8 +371,8 @@ describe('Wallet', function() {
       it('send', function(done) {
         wallet2.send(tx, function(err, result) {
           assert.equal(err, null);
-          result.should.have.property('transaction');
-          result.should.have.property('transactionHash');
+          result.should.have.property('tx');
+          result.should.have.property('hash');
           done();
         });
       });
