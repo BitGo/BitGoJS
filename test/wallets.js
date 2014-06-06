@@ -109,6 +109,8 @@ describe('Wallets', function() {
       assert.throws(function() { wallets.get('invalid'); });
       assert.throws(function() { wallets.get({}, function() {}); });
       assert.throws(function() { wallets.get({otp: 'foo'}); });
+      assert.throws(function() { wallets.getWithPrivateInfo(); });
+      assert.throws(function() { wallets.getWithPrivateInfo({type: 'bitcoin', address: '2N94kT4NtoGCbBfcfp3K1rEPYNohL3VV8rC'}); });
     });
 
     it('non existent wallet', function(done) {
@@ -151,7 +153,7 @@ describe('Wallets', function() {
         address: testWallet.address(),
         otp: bitgo.testUserOTP()
       };
-      wallets.get(options, function(err, wallet) {
+      wallets.getWithPrivateInfo(options, function(err, wallet) {
         assert.equal(err, null);
         assert.equal(wallet.address(), options.address);
         assert.equal(wallet.balance(), 0);

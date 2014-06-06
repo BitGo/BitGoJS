@@ -122,4 +122,21 @@ Wallets.prototype.get = function(options, callback) {
   });
 };
 
+//
+// getWithPrivateInfo
+// Fetch an existing wallet with private info.
+// This is really just a convenience method to make it more obvious that fetching
+// a wallet with private info (which requires OTP) is different from fetching a wallet.
+// Options include:
+//   type: the type of address (only 'bitcoin' is supported)
+//   address: the address of the wallet
+//   otp: the one-time-password for unlocking the private data of the wallet
+//
+Wallets.prototype.getWithPrivateInfo = function(options, callback) {
+  if (typeof(options) != 'object' || typeof(options.otp) != 'string') {
+    throw new Error('invalid argument');
+  }
+  return this.get(options, callback);
+};
+
 module.exports = Wallets;
