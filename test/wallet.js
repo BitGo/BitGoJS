@@ -315,10 +315,21 @@ describe('Wallet', function() {
         done();
       });
 
-      it('create transaction', function(done) {
+      it('create transaction with fee', function(done) {
         wallet1.createTransaction(TEST_WALLET2_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, result) {
           assert.equal(err, null);
           assert.equal(result.fee < 0.0005 * 1e8, true);
+          result.should.have.property('tx');
+          result.should.have.property('fee');
+          tx = result.tx;
+          done();
+        });
+      });
+
+      it('create transaction with default fee', function(done) {
+        wallet1.createTransaction(TEST_WALLET2_ADDRESS, 0.001 * 1e8, undefined, keychain, function(err, result) {
+          assert.equal(err, null);
+          assert.equal(result.fee, 10000);
           result.should.have.property('tx');
           result.should.have.property('fee');
           tx = result.tx;

@@ -176,14 +176,14 @@ Wallet.prototype.transactions = function(options, callback) {
 // Inputs:
 //   address  - the address to send to
 //   amount   - the amount to send, in satoshis
-//   fee      - the blockchain fee to send
+//   fee      - the blockchain fee to send (use 'undefined' to have BitGo compute the fee)
 //   keychain - the keychain to use for signing
 // Returns:
 //   callback(err, transaction)
 //
 Wallet.prototype.createTransaction = function(address, amount, fee, keychain, callback) {
   if (typeof(address) != 'string' || typeof(amount) != 'number' ||
-      typeof(fee) != 'number' || typeof(keychain) != 'object' ||
+      (typeof(fee) != 'number' && typeof(fee) != 'undefined') || typeof(keychain) != 'object' ||
       typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
