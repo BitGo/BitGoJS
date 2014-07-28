@@ -128,7 +128,7 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
   }
 
   var self = this;
-  var url = this._baseUrl + '/user/login/local';
+  var url = this._baseUrl + '/user/login';
 
   if (this._user) {
     return callback(new Error('already logged in'));
@@ -141,7 +141,7 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
       return;
     }
     self._user = res.body.user;
-    self._token = res.body.token;
+    self._token = res.body.access_token;
     callback(null, res.body);
   });
 };

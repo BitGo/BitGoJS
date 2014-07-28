@@ -21,8 +21,6 @@ describe('Keychains', function() {
       if (err) {
         throw err;
       }
-      response.should.have.property('token');
-      response.should.have.property('user');
       done();
     });
   });

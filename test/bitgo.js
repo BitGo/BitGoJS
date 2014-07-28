@@ -140,8 +140,6 @@ describe('BitGo', function() {
             console.dir(err);   // Seeing an intermittent failure here.  Log if this occurs.
             throw err;
           }
-          response.should.have.property('token');
-          response.should.have.property('user');
           done();
         });
       });
@@ -189,8 +187,6 @@ describe('BitGo', function() {
         if (err) {
           throw err;
         }
-        response.should.have.property('token');
-        response.should.have.property('user');
         done();
       });
     });
