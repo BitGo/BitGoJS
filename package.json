@@ -10,14 +10,16 @@
     "url": "https://github.com/BitGo/BitGoJS.git"
   },
   "devDependencies": {
-    "mocha": "1.18.2",
-    "istanbul": "0.1.30",
-    "uglify-js": "2.4.13",
-    "coveralls": "~2.10.0",
-    "mocha-lcov-reporter": "0.0.1",
     "browserify": "~4.1.5",
+    "chain-node": "*",
+    "coveralls": "~2.10.0",
+    "istanbul": "0.1.30",
+    "minimist": "0.2.0",
+    "mocha": "1.18.2",
+    "mocha-lcov-reporter": "0.0.1",
     "should": "3.3.2",
-    "thirty-two": "0.0.1"
+    "thirty-two": "0.0.1",
+    "uglify-js": "2.4.13"
   },
   "testling": {
     "browsers": [
@@ -33,12 +35,12 @@
     "files": [ "test/*.js", "test/bitcoin/*.js" ]
   },
   "scripts": {
-    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js",
-    "test": "npm run-script unit",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js",
     "coveralls": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- --timeout 10000 -R spec test/*.js test/bitcoin/*.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js",
     "compile-dbg": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs --beautify > BitGoJS.js",
-    "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js"
+    "test": "npm run-script unit",
+    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js"
   },
   "dependencies": {
     "superagent": "0.18.0",

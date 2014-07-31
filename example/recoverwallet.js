@@ -122,12 +122,12 @@ var decryptKeys = function() {
 //
 var findBaseAddress = function() {
   var deferred = Q.defer();
-  var keys = [ 
+  var keys = [
     { key: userKey, path: 'm/100\'/101/0/0' },
     { key: backupKey, path: 'm/101/0/0' },
     { key: bitgoKey, path: '' },
   ];
-  var MAX_KEY_TO_TRY = 1000;
+  var MAX_KEY_TO_TRY = 200;
   var bitgoKeyIndexToTry = 101;
   var pubKeys;
 
@@ -143,7 +143,7 @@ var findBaseAddress = function() {
       keyData.derived = keyData.key.derive(keyData.path);
       keyData.derivedPubKey = keyData.derived.eckey.getPub();
       pubKeys.push(keyData.derivedPubKey);
-    } 
+    }
     baseAddress = BitGoJS.Address.createMultiSigAddress(pubKeys, 2);
 
     console.log("\tTrying address: " + baseAddress);
@@ -165,7 +165,7 @@ var findBaseAddress = function() {
         deferred.resolve();
       } else {
         if (++bitgoKeyIndexToTry >= MAX_KEY_TO_TRY) {
-          throw new Error('could not find address with balance');
+          throw new Error('could not find address with balance.  (Have your transactions been confirmed yet?)');
         }
         tryKey(bitgoKeyIndexToTry);
       }
@@ -196,7 +196,7 @@ var findSubAddresses = function() {
       keyData.derived = keyData.key.derive(path);
       keyData.derivedPubKey = keyData.derived.eckey.getPub();
       pubKeys.push(keyData.derivedPubKey);
-    } 
+    }
 
     var subAddress = BitGoJS.Address.createMultiSigAddress(pubKeys, 2);
     var subAddressString = subAddress.toString();
@@ -278,7 +278,7 @@ var createTransaction = function() {
   var approximateSize = transaction.serialize().length + (232 * unspents.length);
   var approximateFee = ((Math.floor(approximateSize / 1024)) + 1) * 0.0001 * 1e8;
   if (approximateFee > totalValue) {
-    throw new Error("Insufficient funds to recover");
+    throw new Error("Insufficient funds to recover (Have your transactions confirmed yet?)");
   }
   totalValue -= approximateFee;
 
