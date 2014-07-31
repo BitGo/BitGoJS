@@ -25,7 +25,7 @@ var BitGo = function(useProduction) {
   if (useProduction) {
     this._baseUrl = 'https://www.bitgo.com/api/v1';
   } else {
-    this._baseUrl = 'https://beer.bitgo.com/api/v1';
+    this._baseUrl = 'https://test.bitgo.com/api/v1';
   }
 
   this._user = null;
@@ -72,7 +72,6 @@ BitGo.prototype.verifyAddress = function(addr) {
     var address = new Address(addr);
     return true;
   } catch(e) {
-console.log(e);
     return false;
   }
 };
@@ -191,6 +190,7 @@ BitGo.prototype.me = function(callback) {
     if (self.handleBitGoAPIError(err, res, callback)) {
       return;
     }
+
     callback(null, res.body.user);
   });
 };
@@ -227,7 +227,7 @@ BitGo.prototype.handleBitGoAPIError = function(err, res, callback) {
   if (err) {
     // TODO: assert type of err object?
     callback(err);
-    return;
+    return true;
   }
 
   if (res.status == 200) {
