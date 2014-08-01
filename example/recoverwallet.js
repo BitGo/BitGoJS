@@ -80,11 +80,11 @@ var collectInputs = function() {
     inputs.nosend = true;
   }
 
-  return getVariable("userKey", "Enter value from Box A: 'User Key':")()
-    .then(getVariable("backupKey", "Enter value from Box B: 'Backup Key':"))
-    .then(getVariable("bitgoKey", "Enter value from Box C: 'BitGo Public Key':"))
-    .then(getVariable("password", "Enter your wallet passcode:"))
-    .then(getVariable("destination", "Enter the bitcoin address to receive the funds:"));
+  return getVariable("userKey", "Enter value from Box A: 'User Key': ")()
+    .then(getVariable("backupKey", "Enter value from Box B: 'Backup Key': "))
+    .then(getVariable("bitgoKey", "Enter value from Box C: 'BitGo Public Key': "))
+    .then(getVariable("password", "Enter your wallet passcode: "))
+    .then(getVariable("destination", "Enter the bitcoin address to receive the funds: "));
 };
 
 //
