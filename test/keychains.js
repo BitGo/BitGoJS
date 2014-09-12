@@ -95,14 +95,11 @@ describe('Keychains', function() {
 
       it('add', function(done) {
         var options = {
-          label: 'my keychain',
           xpub: extendedKey.xpub
         };
         keychains.add(options, function(err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, extendedKey.xpub);
-          assert.equal(keychain.label, 'my keychain');
-          assert.equal(keychain.index, 100);
           assert.equal(keychain.path, 'm');
           done();
         });
@@ -116,8 +113,6 @@ describe('Keychains', function() {
         keychains.get(options, function(err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, extendedKey.xpub);
-          assert.equal(keychain.label, 'my keychain');
-          assert.equal(keychain.index, 100);
           assert.equal(keychain.path, 'm');
           done();
         });
@@ -134,15 +129,12 @@ describe('Keychains', function() {
 
       it('add', function(done) {
         var options = {
-          label: 'my keychain',
           xpub: extendedKey.xpub,
-          encryptedXprv: 'xyzzy'    // TODO - add encryption!
+          encryptedXprv: 'xyzzy'
         };
         keychains.add(options, function(err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, extendedKey.xpub);
-          assert.equal(keychain.label, 'my keychain');
-          assert.equal(keychain.index, 100);
           assert.equal(keychain.path, 'm');
           assert.equal(keychain.encryptedXprv, 'xyzzy');
           done();
@@ -157,8 +149,6 @@ describe('Keychains', function() {
         keychains.get(options, function(err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, extendedKey.xpub);
-          assert.equal(keychain.label, 'my keychain');
-          assert.equal(keychain.index, 100);
           assert.equal(keychain.path, 'm');
           assert.equal(keychain.encryptedXprv, 'xyzzy');
           done();
@@ -193,15 +183,12 @@ describe('Keychains', function() {
 
     it('update ', function(done) {
       var options = {
-        label: 'my keychain',
         xpub: newKey.xpub,
         otp: bitgo.testUserOTP()
       };
       keychains.add(options, function(err, keychain) {
         assert.equal(err, null);
         assert.equal(keychain.xpub, newKey.xpub);
-        assert.equal(keychain.label, 'my keychain');
-        assert.equal(keychain.index, 100);
         assert.equal(keychain.path, 'm');
 
         options.label = 'new label';
@@ -210,11 +197,8 @@ describe('Keychains', function() {
         keychains.update(options, function(err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, newKey.xpub);
-          assert.equal(keychain.label, 'new label');
           assert.equal(keychain.encryptedXprv, 'abracadabra');
-          assert.equal(keychain.index, 100);
           assert.equal(keychain.path, 'm');
-
           done();
         });
       });

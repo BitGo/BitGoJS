@@ -27,7 +27,7 @@ Keychains.prototype.isValid = function(string) {
   } catch (e) {
     return false;
   }
-}
+};
 
 //
 // create
@@ -60,9 +60,7 @@ Keychains.prototype.list = function(callback) {
   if (typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/keychains';
-  this.bitgo.get(url)
+  this.bitgo.get(this.bitgo.url('/keychains'))
   .end(function(err, res) {
     if (err) {
       return callback(err);
@@ -79,14 +77,29 @@ Keychains.prototype.add = function(options, callback) {
   if (typeof(options) != 'object' || typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/keychains';
-  this.bitgo.post(url)
+  this.bitgo.post(this.bitgo.url('/keychains'))
   .send({
-    label: options.label,
     xpub: options.xpub,
-    xprv: options.encryptedXprv
+    encryptedXprv: options.encryptedXprv
   })
+  .end(function(err, res) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, res.body);
+  });
+};
+
+//
+// addBitGo
+// Add a new BitGo server keychain
+//
+Keychains.prototype.createBitGo = function(options, callback) {
+  if (typeof(options) != 'object' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+  this.bitgo.post(this.bitgo.url('/keychains/bitgo'))
+  .send({})
   .end(function(err, res) {
     if (err) {
       return callback(err);
@@ -107,10 +120,8 @@ Keychains.prototype.get = function(options, callback) {
       typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/keychains/' + options.xpub;
   var self = this;
-  this.bitgo.post(url)
+  this.bitgo.post(this.bitgo.url('/keychain/' + options.xpub))
   .send({
     otp: options.otp
   })
@@ -134,13 +145,10 @@ Keychains.prototype.update = function(options, callback) {
       typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/keychains/' + options.xpub;
   var self = this;
-  this.bitgo.put(url)
+  this.bitgo.put(this.bitgo.url('/keychain/' + options.xpub))
   .send({
-    label: options.label,
-    xprv: options.encryptedXprv,   // TODO: This field should be renamed to encryptedXprv
+    encryptedXprv: options.encryptedXprv,
     otp: options.otp
   })
   .end(function(err, res) {

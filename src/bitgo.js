@@ -93,6 +93,10 @@ BitGo.prototype.decrypt = function(password, opaque) {
   return sjcl.decrypt(password, opaque);
 };
 
+BitGo.prototype.url = function(path) {
+  return this._baseUrl + path;
+};
+
 //
 // market
 // Get the latest bitcoin prices.
@@ -102,8 +106,7 @@ BitGo.prototype.market = function(callback) {
     throw new Error('invalid argument');
   }
 
-  var url = this._baseUrl + '/market/latest';
-  this.get(url)
+  this.get(this.url('/market/latest'))
   .end(function(err, res) {
     if (err) {
       return callback(err);
@@ -127,13 +130,11 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
   }
 
   var self = this;
-  var url = this._baseUrl + '/user/login';
-
   if (this._user) {
     return callback(new Error('already logged in'));
   }
 
-  this.post(url)
+  this.post(this.url('/user/login'))
   .send({email: username, password: password, otp: otp})
   .end(function(err, res) {
     if (self.handleBitGoAPIError(err, res, callback)) {
@@ -159,8 +160,7 @@ BitGo.prototype.logout = function(callback) {
   }
 
   var self = this;
-  var url = this._baseUrl + '/user/logout';
-  this.get(url)
+  this.get(this.url('/user/login'))
   .send()
   .end(function(err, res) {
     delete self._user;
@@ -182,9 +182,8 @@ BitGo.prototype.me = function(callback) {
     return callback(new Error('not authenticated'));
   }
 
-  var url = this._baseUrl + '/user/me';
   var self = this;
-  this.get(url)
+  this.get(this.url('/user/me'))
   .send()
   .end(function(err, res) {
     if (self.handleBitGoAPIError(err, res, callback)) {
@@ -242,6 +241,6 @@ BitGo.prototype.handleBitGoAPIError = function(err, res, callback) {
   var error = res.body.error ? res.body.error : res.status.toString();
   callback({status: res.status, error: error, details: new Error(error)});
   return true;
-}
+};
 
 module.exports = BitGo;
