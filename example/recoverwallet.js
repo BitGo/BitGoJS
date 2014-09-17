@@ -125,17 +125,21 @@ var findBaseAddress = function() {
   var keys = [
     { key: userKey, path: 'm/100\'/101/0/0' },
     { key: backupKey, path: 'm/101/0/0' },
-    { key: bitgoKey, path: '' },
+    { key: bitgoKey, path: 'm/101/0/0' },
   ];
-  var MAX_KEY_TO_TRY = 200;
-  var bitgoKeyIndexToTry = 101;
+  var INITIAL_BITGO_KEY_TO_TRY = 101;
+  var MAX_BITGO_KEY_TO_TRY = 110;
+  var MAX_ADDRESS_INDEX_TO_TRY = 5;
+  var bitgoKeyIndexToTry = INITIAL_BITGO_KEY_TO_TRY;
   var pubKeys;
 
   console.log("Searching for HD Wallet base address...");
 
-  function tryKey(index) {
+  function tryKey(bitGoKeyIndex, addressIndex) {
     // Set the path to try.
-    keys[2].path = 'm/' + index + '/0/0';
+    keys[0].path = 'm/100\'/101/0/' + addressIndex;
+    keys[1].path = 'm/101/0/' + addressIndex;
+    keys[2].path = 'm/' + bitGoKeyIndex + '/0/' + addressIndex;
 
     pubKeys = [];
     for (var key in keys) {
@@ -164,14 +168,17 @@ var findBaseAddress = function() {
         };
         deferred.resolve();
       } else {
-        if (++bitgoKeyIndexToTry >= MAX_KEY_TO_TRY) {
-          throw new Error('could not find address with balance.  (Have your transactions been confirmed yet?)');
+        if (++addressIndex >= MAX_ADDRESS_INDEX_TO_TRY) {
+          if (++bitgoKeyIndexToTry >= MAX_BITGO_KEY_TO_TRY) {
+            throw new Error('could not find address with balance.  (Have your transactions been confirmed yet?)');
+          }
+          addressIndex = 0;
         }
-        tryKey(bitgoKeyIndexToTry);
+        tryKey(bitgoKeyIndexToTry, addressIndex);
       }
     });
   }
-  tryKey(bitgoKeyIndexToTry);
+  tryKey(bitgoKeyIndexToTry, 0);
 
   return deferred.promise;
 };
