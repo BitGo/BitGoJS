@@ -8,6 +8,7 @@ var BitGo = require('../../src/bitgo.js');
 
 BitGo.TEST_USER = 'mike+test@bitgo.com';
 BitGo.TEST_PASSWORD = 'itestutestwetest';
+BitGo.TEST_PASSWORD_HMAC = 'ce897c2ded122c6cbacf9084691f1d6f9eb8433d6b9a655f2698947889333fe3';
 
 //
 // testUserOTP

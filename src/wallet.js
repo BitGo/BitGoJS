@@ -15,9 +15,7 @@ var Wallet = function(bitgo, wallet) {
   this.wallet = wallet;
   this.keychains = [];
   if (wallet.private) {
-    this.keychains.push(wallet.private.userKeychain);
-    this.keychains.push(wallet.private.backupKeychain);
-    this.keychains.push(wallet.private.bitgoKeychain);
+    this.keychains = wallet.private.keychains;
   }
 };
 
@@ -27,7 +25,7 @@ var Wallet = function(bitgo, wallet) {
 //
 Wallet.prototype.address = function() {
   return this.wallet.id;
-}
+};
 
 //
 // type
@@ -35,7 +33,7 @@ Wallet.prototype.address = function() {
 //
 Wallet.prototype.type = function() {
   return this.wallet.type;
-}
+};
 
 
 //
@@ -44,7 +42,7 @@ Wallet.prototype.type = function() {
 //
 Wallet.prototype.label = function() {
   return this.wallet.label;
-}
+};
 
 //
 // balance
@@ -52,7 +50,7 @@ Wallet.prototype.label = function() {
 //
 Wallet.prototype.balance = function() {
   return this.wallet.balance;
-}
+};
 
 //
 // pendingBalance
@@ -60,7 +58,7 @@ Wallet.prototype.balance = function() {
 //
 Wallet.prototype.pendingBalance = function() {
   return this.wallet.pendingBalance;
-}
+};
 
 //
 // availableBalance
@@ -68,25 +66,25 @@ Wallet.prototype.pendingBalance = function() {
 //
 Wallet.prototype.availableBalance = function() {
   return this.wallet.availableBalance;
-}
+};
+
+Wallet.prototype.url = function(extra) {
+  extra = extra || '';
+  return this.bitgo.url('/wallet/' + this.address() + extra);
+};
 
 //
 // createAddress
 // Creates a new address for use with this wallet.
-// Options include:
-//   internal: a flag if this should be an internal or external chain
 //
 Wallet.prototype.createAddress = function(options, callback) {
   if (typeof(options) != 'object' || typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/address/chain/' + this.type() + '/' + this.address();
+  var chain = options.chain || 0;
   var self = this;
-  this.bitgo.post(url)
-  .send({
-    internal: options.internal
-  })
+  this.bitgo.post(this.url('/chain/' + chain))
+  .send({})
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;
@@ -105,10 +103,8 @@ Wallet.prototype.delete = function(callback) {
   if (typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/addresses/' + this.type() + '/' + this.address();
   var self = this;
-  this.bitgo.del(url)
+  this.bitgo.del(this.url())
   .send()
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
@@ -128,18 +124,18 @@ Wallet.prototype.unspents = function(options, callback) {
   if (typeof(options) != 'object' || typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/transactions/unspents/' + this.type() + '/' + this.address();
+  var url = this.url('/unspents');
   if (options.btcLimit) {
-    if (typeof(options.btcLimit) != 'number') {
+    if (typeof(options.limit) != 'number') {
       throw new Error('invalid argument');
     }
-    url += '?limit=' + (options.btcLimit * 1e8);
+    url += '?limit=' + (options.limit * 1e8);
   }
   var self = this;
   this.bitgo.get(url)
   .send()
   .end(function(err, res) {
+    console.log(res.body);
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;
     }
@@ -156,10 +152,8 @@ Wallet.prototype.transactions = function(options, callback) {
   if (typeof(options) != 'object' || typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/transactions/' + this.type() + '/' + this.address();
   var self = this;
-  this.bitgo.get(url)
+  this.bitgo.get(this.url('/tx'))
   .send()
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
@@ -187,7 +181,6 @@ Wallet.prototype.createTransaction = function(address, amount, fee, keychain, ca
       typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
   var tb = new TransactionBuilder(this, { address: address, amount: amount }, fee);
   tb.prepare()
     .then(function() {
@@ -199,7 +192,7 @@ Wallet.prototype.createTransaction = function(address, amount, fee, keychain, ca
     .catch(function(e) {
       callback(e);
     });
-}
+};
 
 //
 // send
@@ -212,10 +205,8 @@ Wallet.prototype.send = function(tx, callback) {
   if (typeof(tx) != 'string' || typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/transactions/' + this.type();
   var self = this;
-  this.bitgo.post(url)
+  this.bitgo.post(this.bitgo.url('/tx/send'))
   .send({ tx: tx })
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
@@ -223,6 +214,6 @@ Wallet.prototype.send = function(tx, callback) {
     }
     callback(null, { tx: res.body.transaction, hash: res.body.transactionHash });
   });
-}
+};
 
 module.exports = Wallet;

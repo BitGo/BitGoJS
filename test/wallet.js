@@ -37,7 +37,7 @@ describe('Wallet', function() {
         address: TEST_WALLET1_ADDRESS,
         otp: bitgo.testUserOTP()
       };
-      wallets.get(options, function(err, wallet) {
+      wallets.getWithPrivateInfo(options, function(err, wallet) {
         if (err) {
           throw err;
         }
@@ -49,7 +49,7 @@ describe('Wallet', function() {
           address: TEST_WALLET2_ADDRESS,
           otp: bitgo.testUserOTP()
         };
-        wallets.get(options, function(err, wallet) {
+        wallets.getWithPrivateInfo(options, function(err, wallet) {
           wallet2 = wallet;
           done();
         });
@@ -88,7 +88,7 @@ describe('Wallet', function() {
     });
 
     it('list', function(done) {
-      var options = { btcLimit: 0.5 * 1e8 };
+      var options = { limit: 0.5 * 1e8 };
       wallet1.unspents(options, function(err, unspents) {
         assert.equal(err, null);
         assert.equal(Array.isArray(unspents), true);

@@ -116,7 +116,7 @@ var TransactionBuilder = function(wallet, recipient, fee) {
       // Use the rough formula of 6 signatures per KB.
       var signaturesPerInput = 2;  // 2-of-3 wallets
       return Math.ceil(_tx.ins.length * signaturesPerInput / 6) * FEE_PER_KB;
-    }
+    };
 
     // Iterate _unspents, sum the inputs, and save _inputs with the total
     // input amound and final list of inputs to use with the transaction.
@@ -227,7 +227,7 @@ var TransactionBuilder = function(wallet, recipient, fee) {
   //
   this.tx = function() {
     return Util.bytesToHex(_tx.serialize());
-  }
+  };
 
 };
 

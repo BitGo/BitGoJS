@@ -43,12 +43,9 @@ describe('Wallets', function() {
   });
 
   describe('Add', function() {
-    var numKeychains = 3;
-
     before(function() {
-      for (var index = 0; index < numKeychains; ++index) {
-        keychains.push(bitgo.keychains().create());
-      }
+      keychains.push(bitgo.keychains().create());
+      keychains.push(bitgo.keychains().create());
     });
 
     it('arguments', function() {
@@ -59,43 +56,47 @@ describe('Wallets', function() {
 
     it('wallet', function(done) {
       var options = {
-        label: 'user keychain',
         xpub: keychains[0].xpub,
         encryptedXprv: keychains[0].xprv
       };
       bitgo.keychains().add(options, function(err, keychain) {
         assert.equal(err, null);
         assert.equal(keychain.xpub, keychains[0].xpub);
+        assert.equal(keychain.encryptedXprv, keychains[0].xprv);
 
         var options = {
-          label: 'backup keychain',
           xpub: keychains[1].xpub
         };
         bitgo.keychains().add(options, function(err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, keychains[1].xpub);
 
-          var options = {
-            label: 'my wallet',
-            m: 2,
-            n: 3,
-            keychains: [ keychains[0].xpub, keychains[1].xpub ]
-          };
-          wallets.add(options, function(err, wallet) {
-            assert.equal(err, null);
-            testWallet = wallet;
+          bitgo.keychains().createBitGo({}, function(err, keychain) {
+            assert(keychain.xpub);
+            keychains.push(keychain);
 
-            assert.equal(wallet.balance(), 0);
-            assert.equal(wallet.label(), 'my wallet');
-            assert.equal(wallet.pendingBalance(), 0);
-            assert.equal(wallet.availableBalance(), 0);
-            assert.equal(wallet.keychains.length, 3);
-            assert.equal(bitgo.keychains().isValid(wallet.keychains[0]), true);
-            assert.equal(bitgo.keychains().isValid(wallet.keychains[1]), true);
-            assert.equal(bitgo.keychains().isValid(wallet.keychains[2]), true);
-            assert.equal(wallet.keychains[0].xpub, keychains[0].xpub);
-            assert.equal(wallet.keychains[1].xpub, keychains[1].xpub);
-            done();
+            var options = {
+              label: 'my wallet',
+              m: 2,
+              n: 3,
+              keychains: keychains.map(function(k) { return {xpub: k.xpub}; })
+            };
+            wallets.add(options, function(err, wallet) {
+              assert.equal(err, null);
+              testWallet = wallet;
+
+              assert.equal(wallet.balance(), 0);
+              assert.equal(wallet.label(), 'my wallet');
+              assert.equal(wallet.pendingBalance(), 0);
+              assert.equal(wallet.availableBalance(), 0);
+              assert.equal(wallet.keychains.length, 3);
+              assert.equal(bitgo.keychains().isValid(wallet.keychains[0].xpub), true);
+              assert.equal(bitgo.keychains().isValid(wallet.keychains[1].xpub), true);
+              assert.equal(bitgo.keychains().isValid(wallet.keychains[2].xpub), true);
+              assert.equal(wallet.keychains[0].xpub, keychains[0].xpub);
+              assert.equal(wallet.keychains[1].xpub, keychains[1].xpub);
+              done();
+            });
           });
         });
       });
@@ -119,11 +120,7 @@ describe('Wallets', function() {
         otp: bitgo.testUserOTP()
       };
       wallets.get(options, function(err, wallet) {
-        assert.equal(wallet.address(), options.address);
-        assert.equal(wallet.balance(), 0);
-        assert.equal(wallet.label(), '');
-        assert.equal(wallet.pendingBalance(), 0);
-        assert.equal(wallet.availableBalance(), 0);
+        assert(!wallet);
         done();
       });
     });

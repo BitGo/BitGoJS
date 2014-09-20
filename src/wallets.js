@@ -24,17 +24,15 @@ Wallets.prototype.list = function(callback) {
   if (typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/addresses';
   var self = this;
-  this.bitgo.get(url)
+  this.bitgo.get(this.bitgo.url('/wallets'))
   .end(function(err, res) {
     if (err) {
       return callback(err);
     }
     var wallets = {};
-    for (var address in res.body.addresses) {
-      wallets[address] = new Wallet(self.bitgo, res.body.addresses[address]);
+    for (var wallet in res.body.wallets) {
+      wallets[wallet] = new Wallet(self.bitgo, res.body.wallets[wallet]);
     }
     callback(null, wallets);
   });
@@ -71,18 +69,16 @@ Wallets.prototype.add = function(options, callback) {
   if (options.m != 2 || options.n != 3) {
     throw new Error('unsupported multi-sig type');
   }
-
-  var url = this.bitgo._baseUrl + '/addresses/bitcoin';
   var self = this;
-  this.bitgo.post(url)
+  var keychains = options.keychains.map(function(k) { return {xpub: k.xpub}; });
+  this.bitgo.post(this.bitgo.url('/wallets'))
   .send({
     label: options.label,
     type: 'safehd',
     safehd: {
       m: options.m,
       n: options.n,
-      userKeychainXpub: options.keychains[0],
-      backupKeychainXpub: options.keychains[1]
+      keychains: keychains
     }
   })
   .end(function(err, res) {
@@ -106,12 +102,10 @@ Wallets.prototype.get = function(options, callback) {
       typeof(options.type) != 'string' || typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-
-  var url = this.bitgo._baseUrl + '/addresses/' + options.type + '/' + options.address;
   var self = this;
-  this.bitgo.post(url)
+  this.bitgo.post(this.bitgo.url('/wallet/' + options.address))
   .send({
-    gpk: options.otp ? true : false,
+    gpk: options.gpk,
     otp: options.otp
   })
   .end(function(err, res) {
@@ -133,9 +127,7 @@ Wallets.prototype.get = function(options, callback) {
 //   otp: the one-time-password for unlocking the private data of the wallet
 //
 Wallets.prototype.getWithPrivateInfo = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.otp) != 'string') {
-    throw new Error('invalid argument');
-  }
+  options.gpk = true;
   return this.get(options, callback);
 };
 
