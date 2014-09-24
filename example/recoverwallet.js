@@ -25,11 +25,16 @@ var unspents;          // The unspents from the HD wallet
 var transaction;       // The transaction to send
 var bitcoinNetwork = 'prod';
 
-console.log('This tool is used to recover BitGo wallets directly from the blockchain')
-console.log('without using the BitGo service.');
-console.log('');
-console.log('It will collect the two keys to your wallet, as well as your passcode and');
-console.log('then transfer your bitcoin to the address of your choice.');
+var info = '\n' +
+'**********************************\n' +
+'**  BitGo Wallet Recovery Tool  **\n' +
+'**********************************\n\n' +
+'This tool is used to recover BitGo wallets directly from the blockchain\n' +
+'without using the BitGo service.\n\n' +
+'It will collect the two keys to your wallet, as well as your passcode and\n' +
+'then transfer your bitcoin to the address of your choice.\n\n' +
+'Please enter a blank line after each input.\n';
+console.log(info);
 
 
 //
@@ -41,14 +46,21 @@ var collectInputs = function() {
 
   // Prompt the user for input
   var prompt = function(question) {
+    var answer = "";
     var rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout
     });
+
     var deferred = Q.defer();
-    rl.question(question, function(answer) {
-      rl.close();
-      deferred.resolve(answer);
+    rl.setPrompt(question);
+    rl.prompt();
+    rl.on('line', function(line) {
+      if (line.length === 0) {
+        rl.close();
+        return deferred.resolve(answer);
+      }
+      answer += line;
     });
     return deferred.promise;
   };
@@ -69,13 +81,13 @@ var collectInputs = function() {
     };
   };
 
-  if (argv['testnet']) {
+  if (argv.testnet) {
     bitcoinNetwork = 'testnet';
     chain.blockChain = 'testnet3';
   }
   BitGoJS.setNetwork(bitcoinNetwork);
 
-  if (argv['nosend']) {
+  if (argv.nosend) {
     inputs.nosend = true;
   }
 
@@ -94,11 +106,11 @@ var collectInputs = function() {
 var decryptKeys = function() {
   var keyToBIP32 = function(key, password, mustBePrivate) {
     try {
-       if (key.indexOf('x') != 0) {
+       if (key.indexOf('x') !== 0) {
          key = bitgo.decrypt(password, key);
        }
        if (mustBePrivate) {
-         if (key.indexOf('xprv') != 0) {
+         if (key.indexOf('xprv') !== 0) {
            throw new Error('must be xprv key');
          }
        }
@@ -194,7 +206,7 @@ var findBaseAddress = function() {
     keys[2].path = 'm/' + bitGoKeyIndex + '/0/' + addressIndex;
 
     tryPath().then(function(result) {
-      if (result != null) {
+      if (result) {
         tryOldKeysDeferred.resolve(result);
         return;
       }
@@ -219,7 +231,7 @@ var findBaseAddress = function() {
     keys[2].path = 'm/0/0/0/' + addressIndex;
 
     tryPath().then(function(result) {
-      if (result != null) {
+      if (result) {
         tryNewKeysDeferred.resolve(result);
         return;
       }
@@ -228,21 +240,21 @@ var findBaseAddress = function() {
         return;
       }
       tryNewKeys(addressIndex);
-    })
+    });
 
     return tryNewKeysDeferred.promise;
   }
 
   // First search the new HD wallet type.
   tryNewKeys(0).then(function(address) {
-    if (address != null) {
+    if (address) {
       // we found it!
       return findBaseAddressDeferred.resolve(address);
     }
 
     // Keep searching using the old hd wallet type
     tryOldKeys(INITIAL_BITGO_KEY_TO_TRY, 0).then(function(address) {
-      if (address == null) {
+      if (address) {
         throw new Error('could not find address with balance.  (Have your transactions been confirmed yet?)');
       }
       findBaseAddressDeferred.resolve(address);
@@ -315,7 +327,7 @@ var findUnspents = function() {
 
   var addressList = Object.keys(subAddresses);
 
-  if (addressList.length == 0) {
+  if (addressList.length === 0) {
     throw new Error("could not find any unspents for this address.  Try expanding your search.");
   }
 
@@ -367,7 +379,7 @@ var createTransaction = function() {
   // Create the output
   transaction.addOutput(new BitGoJS.Address(inputs.destination), totalValue);
 
-  for (var index in unspents) {
+  for (index in unspents) {
     var unspent = unspents[index];
     var redeemScript = new BitGoJS.Script(unspent.redeemScript);
 
@@ -404,7 +416,7 @@ var sendTransaction = function() {
   } else {
     console.log("[Transaction not sent to network]");
   }
-}
+};
 
 collectInputs()
   .then(decryptKeys)
