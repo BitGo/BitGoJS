@@ -672,7 +672,7 @@ Transaction.prototype.signWithKey = function(key) {
 // a valid, parseable transaction that can be passed around in this
 // intermediate, partially signed state.
 //
-// Returns the number of signnatures applied in this pass (kind of meaningless)
+// Returns the number of signatures applied in this pass (kind of meaningless)
 Transaction.prototype.signWithMultiSigScript = function(key, redeemScript) {
   var hashType = 1;  // SIGHASH_ALL
   var signatureCount = 0;
