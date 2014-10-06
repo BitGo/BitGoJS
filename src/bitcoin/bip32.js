@@ -181,7 +181,12 @@ BIP32.prototype.build_extended_private_key = function() {
 
     // Private key
     this.extended_private_key.push(0);
-    this.extended_private_key = this.extended_private_key.concat(this.eckey.priv.toByteArrayUnsigned());
+    var keyBytes = this.eckey.priv.toByteArrayUnsigned();
+    // We converted from a BigInteger back to an array.  Be careful to pad to 32 bytes for bip32 extended key.
+    while (keyBytes.length < 32) {
+      keyBytes.unshift(0);
+    }
+    this.extended_private_key = this.extended_private_key.concat(keyBytes);
 }
 
 BIP32.prototype.extended_private_key_string = function(format) {
