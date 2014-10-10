@@ -185,9 +185,9 @@ var findBaseAddress = function() {
         var result = {
           address: baseAddress,
           keys: [
-            { key: keys[0].key, path: keys[0].path.substring(0, keys[0].path.length - 2) },
-            { key: keys[1].key, path: keys[1].path.substring(0, keys[1].path.length - 2) },
-            { key: keys[2].key, path: keys[2].path.substring(0, keys[2].path.length - 2) },
+            { key: keys[0].key, path: keys[0].path.substring(0, keys[0].path.length - 4) },
+            { key: keys[1].key, path: keys[1].path.substring(0, keys[1].path.length - 4) },
+            { key: keys[2].key, path: keys[2].path.substring(0, keys[2].path.length - 4) },
           ],
         };
         tryPathDeferred.resolve(result);
@@ -275,11 +275,11 @@ var findSubAddresses = function(baseAddress) {
 
   console.log("Searching for non-empty HD Wallet sub-addresses...");
 
-  function tryAddress(index) {
+  function tryAddress(keyIndex, addressIndex) {
     pubKeys = [];
     for (var key in baseAddress.keys) {
       var keyData = baseAddress.keys[key];
-      var path = keyData.path + '/' + index;
+      var path = keyData.path + '/' + keyIndex + '/' + addressIndex;
       keyData.derived = keyData.key.derive(path);
       keyData.derivedPubKey = keyData.derived.eckey.getPub();
       pubKeys.push(keyData.derivedPubKey);
@@ -288,6 +288,7 @@ var findSubAddresses = function(baseAddress) {
     var subAddress = BitGoJS.Address.createMultiSigAddress(pubKeys, 2);
     var subAddressString = subAddress.toString();
 
+    console.log("Trying keyIndex " + keyIndex + " addressIndex " + addressIndex + ": " + subAddressString + "...");
     chain.getAddress(subAddressString, function(err, data) {
       if (err) {
         throw new Error("Chain.com error: " + err);
@@ -297,23 +298,29 @@ var findSubAddresses = function(baseAddress) {
         console.log('\tfound: ' + data.balance + ' at ' + subAddressString);
         subAddresses[subAddressString] = {
           address: subAddress,
-          index: index,
+          keyIndex: keyIndex,
+          addressIndex: addressIndex,
           keys: [
-            { key: baseAddress.keys[0].derived, path: baseAddress.keys[0].path + '/' + index },
-            { key: baseAddress.keys[1].derived, path: baseAddress.keys[1].path + '/' + index },
-            { key: baseAddress.keys[2].derived, path: baseAddress.keys[2].path + '/' + index },
+            { key: baseAddress.keys[0].derived, path: baseAddress.keys[0].path + '/' + keyIndex + '/' + addressIndex },
+            { key: baseAddress.keys[1].derived, path: baseAddress.keys[1].path + '/' + keyIndex + '/' + addressIndex },
+            { key: baseAddress.keys[2].derived, path: baseAddress.keys[2].path + '/' + keyIndex + '/' + addressIndex },
           ],
           redeemScript: BitGoJS.Util.bytesToHex(subAddress.redeemScript)
         };
       } else {
         if (++lookahead >= MAX_LOOKAHEAD_ADDRESSES) {
-          return deferred.resolve();
+          if (keyIndex === 0) {
+            lookahead = 0;
+            return tryAddress(1, 0);
+          } else {
+            return deferred.resolve();
+          }
         }
       }
-      tryAddress(index + 1);
+      tryAddress(keyIndex, addressIndex + 1);
     });
   }
-  tryAddress(0);
+  tryAddress(0, 0);
 
   return deferred.promise;
 };
@@ -383,7 +390,7 @@ var createTransaction = function() {
     var unspent = unspents[index];
     var redeemScript = new BitGoJS.Script(unspent.redeemScript);
 
-    console.log("Signing input " + index + " of " + unspents.length);
+    console.log("Signing input " + (parseInt(index) + 1) + " of " + unspents.length);
 
     if (!transaction.signMultiSigWithKey(index, unspent.keys[0].key.eckey, redeemScript)) {
       throw new Error('Signature failure for user key');
