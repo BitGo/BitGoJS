@@ -60,7 +60,7 @@ Keychains.prototype.list = function(callback) {
   if (typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-  this.bitgo.get(this.bitgo.url('/keychains'))
+  this.bitgo.get(this.bitgo.url('/keychain'))
   .end(function(err, res) {
     if (err) {
       return callback(err);
@@ -77,7 +77,7 @@ Keychains.prototype.add = function(options, callback) {
   if (typeof(options) != 'object' || typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-  this.bitgo.post(this.bitgo.url('/keychains'))
+  this.bitgo.post(this.bitgo.url('/keychain'))
   .send({
     xpub: options.xpub,
     encryptedXprv: options.encryptedXprv
@@ -98,7 +98,7 @@ Keychains.prototype.createBitGo = function(options, callback) {
   if (typeof(options) != 'object' || typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-  this.bitgo.post(this.bitgo.url('/keychains/bitgo'))
+  this.bitgo.post(this.bitgo.url('/keychain/bitgo'))
   .send({})
   .end(function(err, res) {
     if (err) {

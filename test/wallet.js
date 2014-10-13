@@ -12,10 +12,10 @@ var TestBitGo = require('./lib/test_bitgo');
 var TransactionBuilder = require('../src/transactionbuilder');
 var unspentData = require('./fixtures/largeunspents.json');
 
-var TEST_WALLET1_ADDRESS = '2N94kT4NtoGCbBfcfp3K1rEPYNohL3VV8rC';
+var TEST_WALLET1_ADDRESS = '2Mv4HFh1yaF5S9ma2E1hPTA4jw6RMPpqJi5';
 var TEST_WALLET1_PASSCODE = 'test wallet #1 security';
-var TEST_WALLET2_ADDRESS = '2MyGdUWZuxTNnvPZHJFmrpi4cSiSyEe3Ztp';
-var TEST_WALLET2_PASSCODE = 'test wallet #2 security'
+var TEST_WALLET2_ADDRESS = '2MyQeDjDgsVC6k1BR7m8kjveCPNErUoz6gc';
+var TEST_WALLET2_PASSCODE = 'test wallet #2 security';
 
 describe('Wallet', function() {
   var bitgo;
@@ -33,11 +33,9 @@ describe('Wallet', function() {
 
       // Fetch the first wallet.
       var options = {
-        type: 'bitcoin',
         address: TEST_WALLET1_ADDRESS,
-        otp: bitgo.testUserOTP()
       };
-      wallets.getWithPrivateInfo(options, function(err, wallet) {
+      wallets.get(options, function(err, wallet) {
         if (err) {
           throw err;
         }
@@ -45,11 +43,9 @@ describe('Wallet', function() {
 
         // Fetch the second wallet
         var options = {
-          type: 'bitcoin',
           address: TEST_WALLET2_ADDRESS,
-          otp: bitgo.testUserOTP()
         };
-        wallets.getWithPrivateInfo(options, function(err, wallet) {
+        wallets.get(options, function(err, wallet) {
           wallet2 = wallet;
           done();
         });

@@ -105,19 +105,15 @@ describe('Wallets', function() {
 
   describe('Get', function() {
     it('arguments', function() {
+      assert.throws(function() { wallets.get(); });
       assert.throws(function() { wallets.get('invalid'); });
       assert.throws(function() { wallets.get({}, function() {}); });
-      assert.throws(function() { wallets.get({otp: 'foo'}); });
-      assert.throws(function() { wallets.getWithPrivateInfo(); });
-      assert.throws(function() { wallets.getWithPrivateInfo({type: 'bitcoin', address: '2N94kT4NtoGCbBfcfp3K1rEPYNohL3VV8rC'}); });
     });
 
     it('non existent wallet', function(done) {
       var newKey = wallets.createKey();
       var options = {
-        type: 'bitcoin',
         address: newKey.address.toString(),
-        otp: bitgo.testUserOTP()
       };
       wallets.get(options, function(err, wallet) {
         assert(!wallet);
@@ -127,28 +123,9 @@ describe('Wallets', function() {
 
     it('get', function(done) {
       var options = {
-        type: 'bitcoin',
         address: testWallet.address()
       };
       wallets.get(options, function(err, wallet) {
-        assert.equal(err, null);
-        assert.equal(wallet.address(), options.address);
-        assert.equal(wallet.balance(), 0);
-        assert.equal(wallet.label(), 'my wallet');
-        assert.equal(wallet.pendingBalance(), 0);
-        assert.equal(wallet.availableBalance(), 0);
-        assert.equal(wallet.keychains.length, 0);
-        done();
-      });
-    });
-
-    it('get private', function(done) {
-      var options = {
-        type: 'bitcoin',
-        address: testWallet.address(),
-        otp: bitgo.testUserOTP()
-      };
-      wallets.getWithPrivateInfo(options, function(err, wallet) {
         assert.equal(err, null);
         assert.equal(wallet.address(), options.address);
         assert.equal(wallet.balance(), 0);
@@ -162,6 +139,7 @@ describe('Wallets', function() {
         done();
       });
     });
+
   });
 
   describe('Delete', function() {

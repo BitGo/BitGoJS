@@ -98,13 +98,15 @@ describe('BitGo', function() {
         if (err) {
           throw err;
         }
-        marketData.should.have.property('last');
-        marketData.should.have.property('bid');
-        marketData.should.have.property('ask');
-        marketData.should.have.property('volume');
-        marketData.should.have.property('high');
-        marketData.should.have.property('low');
-        marketData.should.have.property('updateTime');
+        marketData.should.have.property('latest');
+        marketData.latest.should.have.property('currencies');
+        marketData.latest.currencies.should.have.property('USD');
+        marketData.latest.currencies.USD.should.have.property('bid');
+        marketData.latest.currencies.USD.should.have.property('ask');
+        marketData.latest.currencies.USD.should.have.property('last');
+        marketData.latest.currencies.USD.should.have.property('volume');
+        marketData.latest.currencies.USD.should.have.property('high');
+        marketData.latest.currencies.USD.should.have.property('low');
         done();
       });
     });

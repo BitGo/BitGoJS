@@ -46,7 +46,7 @@ var BitGo = function(useProduction) {
       }
       return req;
     };
-  }
+  };
 
   for (var index in methods) {
     var self = this;

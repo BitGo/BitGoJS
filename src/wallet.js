@@ -28,15 +28,6 @@ Wallet.prototype.address = function() {
 };
 
 //
-// type
-// Get the type of this wallet (e.g. 'bitcoin').
-//
-Wallet.prototype.type = function() {
-  return this.wallet.type;
-};
-
-
-//
 // label
 // Get the label of this wallet.
 //
@@ -83,7 +74,7 @@ Wallet.prototype.createAddress = function(options, callback) {
   }
   var chain = options.chain || 0;
   var self = this;
-  this.bitgo.post(this.url('/chain/' + chain))
+  this.bitgo.post(this.url('/address/' + chain))
   .send({})
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
