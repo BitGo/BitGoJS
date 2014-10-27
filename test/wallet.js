@@ -236,19 +236,21 @@ describe('Wallet', function() {
       var keychain;
       before(function(done) {
 
-        // Go fetch the private key for our keychain
-        var options = {
-          xpub: wallet1.keychains[0].xpub,
-          otp: bitgo.testUserOTP()
-        };
-        bitgo.keychains().get(options, function(err, result) {
+        bitgo.unlock(bitgo.testUserOTP(), function(err) {
           assert.equal(err, null);
-          keychain = result;
+          // Go fetch the private key for our keychain
+          var options = {
+            xpub: wallet1.keychains[0].xpub,
+          };
+          bitgo.keychains().get(options, function(err, result) {
+            assert.equal(err, null);
+            keychain = result;
 
-          // Now build a transaction
-          tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 });
-          tb.prepare().then(function() {
-            done();
+            // Now build a transaction
+            tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 });
+            tb.prepare().then(function() {
+              done();
+            });
           });
         });
       });
@@ -295,7 +297,6 @@ describe('Wallet', function() {
       it('keychain', function(done) {
         var options = {
           xpub: wallet1.keychains[0].xpub,
-          otp: bitgo.testUserOTP()
         };
         bitgo.keychains().get(options, function(err, result) {
           assert.equal(err, null);
@@ -349,7 +350,6 @@ describe('Wallet', function() {
       it('keychain', function(done) {
         var options = {
           xpub: wallet2.keychains[0].xpub,
-          otp: bitgo.testUserOTP()
         };
         bitgo.keychains().get(options, function(err, result) {
           assert.equal(err, null);

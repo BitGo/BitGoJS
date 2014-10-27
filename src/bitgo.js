@@ -195,6 +195,54 @@ BitGo.prototype.me = function(callback) {
 };
 
 //
+// unlock
+// Unlock the session by providing Authy OTP
+//
+BitGo.prototype.unlock = function(otp, callback) {
+  if (typeof(otp) != 'string' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  if (!this._user) {
+    return callback(new Error('not authenticated'));
+  }
+
+  var self = this;
+  this.post(this.url('/user/unlock'))
+  .send({otp: otp})
+  .end(function(err, res) {
+    if (self.handleBitGoAPIError(err, res, callback)) {
+      return;
+    }
+    callback(null, {});
+  });
+};
+
+//
+// lock
+// Lock the session
+//
+BitGo.prototype.lock = function(callback) {
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  if (!this._user) {
+    return callback(new Error('not authenticated'));
+  }
+
+  var self = this;
+  this.post(this.url('/user/lock'))
+  .send()
+  .end(function(err, res) {
+    if (self.handleBitGoAPIError(err, res, callback)) {
+      return;
+    }
+    callback(null, {});
+  });
+};
+
+//
 // keychains
 // Get the user's keychains object.
 //

@@ -61,14 +61,12 @@ describe('Keychains', function() {
     it('arguments', function() {
       assert.throws(function() { keychains.get('invalid'); });
       assert.throws(function() { keychains.get({}, function() {}); });
-      assert.throws(function() { keychains.get({otp: 'foo'}); });
     });
 
     it('non existent keychain', function(done) {
       var newKey = keychains.create();
       var options = {
         xpub: newKey.xpub,
-        otp: bitgo.testUserOTP()
       };
       keychains.get(options, function(err, keychain) {
         assert.ok(err);
@@ -88,9 +86,14 @@ describe('Keychains', function() {
     describe('public', function() {
       var extendedKey;
 
-      before(function() {
+      before(function(done) {
         // Generate a new keychain
         extendedKey = keychains.create();
+
+        bitgo.unlock(bitgo.testUserOTP(), function(err) {
+          assert.equal(err, null);
+          done();
+        });
       });
 
       it('add', function(done) {
@@ -108,7 +111,6 @@ describe('Keychains', function() {
       it('get', function(done) {
         var options = {
           xpub: extendedKey.xpub,
-          otp: bitgo.testUserOTP()
         };
         keychains.get(options, function(err, keychain) {
           assert.equal(err, null);
@@ -144,7 +146,6 @@ describe('Keychains', function() {
       it('get', function(done) {
         var options = {
           xpub: extendedKey.xpub,
-          otp: bitgo.testUserOTP()
         };
         keychains.get(options, function(err, keychain) {
           assert.equal(err, null);
@@ -167,13 +168,11 @@ describe('Keychains', function() {
     it('arguments', function() {
       assert.throws(function() { keychains.get('invalid'); });
       assert.throws(function() { keychains.get({}, function() {}); });
-      assert.throws(function() { keychains.get({otp: 'foo'}); });
     });
 
     it('non existent keychain', function(done) {
       var options = {
         xpub: newKey.xpub,
-        otp: bitgo.testUserOTP()
       };
       keychains.get(options, function(err, keychain) {
         assert.ok(err);
@@ -184,7 +183,6 @@ describe('Keychains', function() {
     it('update ', function(done) {
       var options = {
         xpub: newKey.xpub,
-        otp: bitgo.testUserOTP()
       };
       keychains.add(options, function(err, keychain) {
         assert.equal(err, null);
@@ -193,7 +191,6 @@ describe('Keychains', function() {
 
         options.label = 'new label';
         options.encryptedXprv = 'abracadabra';
-        options.otp = bitgo.testUserOTP();
         keychains.update(options, function(err, keychain) {
           assert.equal(err, null);
           assert.equal(keychain.xpub, newKey.xpub);

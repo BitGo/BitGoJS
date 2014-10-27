@@ -113,7 +113,6 @@ Keychains.prototype.createBitGo = function(options, callback) {
 // Fetch an existing keychain
 // Options include:
 //   xpub:  the xpub of the key to lookup (required)
-//   otp:  the OTP code for verification
 //
 Keychains.prototype.get = function(options, callback) {
   if (typeof(options) != 'object' || typeof(options.xpub) != 'string' ||
@@ -122,9 +121,7 @@ Keychains.prototype.get = function(options, callback) {
   }
   var self = this;
   this.bitgo.post(this.bitgo.url('/keychain/' + options.xpub))
-  .send({
-    otp: options.otp
-  })
+  .send({})
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;
@@ -138,7 +135,6 @@ Keychains.prototype.get = function(options, callback) {
 // Update an existing keychain
 // Options include:
 //   xpub:  the xpub of the key to lookup (required)
-//   otp:  the OTP code for verification
 //
 Keychains.prototype.update = function(options, callback) {
   if (typeof(options) != 'object' || typeof(options.xpub) != 'string' ||
@@ -149,7 +145,6 @@ Keychains.prototype.update = function(options, callback) {
   this.bitgo.put(this.bitgo.url('/keychain/' + options.xpub))
   .send({
     encryptedXprv: options.encryptedXprv,
-    otp: options.otp
   })
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {

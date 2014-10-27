@@ -104,9 +104,9 @@ describe('BitGo', function() {
         marketData.latest.currencies.USD.should.have.property('bid');
         marketData.latest.currencies.USD.should.have.property('ask');
         marketData.latest.currencies.USD.should.have.property('last');
-        marketData.latest.currencies.USD.should.have.property('volume');
-        marketData.latest.currencies.USD.should.have.property('high');
-        marketData.latest.currencies.USD.should.have.property('low');
+        marketData.latest.currencies.USD.should.have.property('total_vol');
+        marketData.latest.currencies.USD.should.have.property('prevDayHigh');
+        marketData.latest.currencies.USD.should.have.property('prevDayLow');
         done();
       });
     });
