@@ -116,6 +116,25 @@ BitGo.prototype.market = function(callback) {
 };
 
 //
+// market data yesterday
+// Get market data from yesterday
+//
+BitGo.prototype.yesterday = function(callback) {
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  this.get(this.url('/market/yesterday'))
+  .end(function(err, res) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, res.body);
+  });
+};
+
+
+//
 // authenticate
 // Login to the bitgo system.
 // Returns:

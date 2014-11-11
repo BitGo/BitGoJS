@@ -22,29 +22,55 @@ var createWallet = function() {
     var userKey = bitgo.keychains().create();
     var backupKey = bitgo.keychains().create();
 
+    // First create the user key
     var options = {
       label: 'key1',
       xpub: userKey.xpub,
       encryptedXprv: bitgo.encrypt(password, userKey.xprv)
     };
     bitgo.keychains().add(options, function(err, keychain) {
-      if (err) { throw err; }
+      if (err) {
+        console.dir(err);
+        throw new Error("Could not create the user keychain");
+      }
+      console.log("User keychain xPub: " + userKey.xpub);
+
+      // Now create the backup key
       var options = {
         label: 'key2',
         xpub: backupKey.xpub
       };
       bitgo.keychains().add(options, function(err, keychain) {
-        if (err) { throw err; }
-        var options = {
-          label: 'new wallet',
-          m: 2,
-          n: 3,
-          keychains: [userKey.xpub, backupKey.xpub]
-        };
-        bitgo.wallets().add(options, function(err, wallet) {
-          if (err) { throw err; }
-          console.log("Wallet Created!");
-          console.dir(wallet);
+        if (err) {
+          console.dir(err);
+          throw new Error("Could not create the backup keychain");
+        }
+        console.log("Backup keychain xPub: " + backupKey.xpub);
+
+        // Now tell BitGo to create their server side key
+        bitgo.keychains().createBitGo({}, function(err, keychain) {
+          if (err) {
+            throw new Error("Could not create 3rd keychain on BitGo");
+          }
+          console.log("BitGo service keychain xPub: " + keychain.xpub);
+
+          var options = {
+            label: 'new wallet',
+            m: 2,
+            n: 3,
+            keychains: [
+              { xpub: userKey.xpub },
+              { xpub: backupKey.xpub },
+              { xpub: keychain.xpub} ]
+          };
+          bitgo.wallets().add(options, function (err, wallet) {
+            if (err) {
+              console.dir(err);
+              throw new Error("Could not add wallet on BitGo");
+            }
+            console.log("Wallet Created!");
+            console.dir(wallet);
+          });
         });
       });
     });
@@ -53,10 +79,23 @@ var createWallet = function() {
   }
 }
 
+// Authenticate first
 bitgo.authenticate(user, password, otp, function(err, result) {
   if (err) {
     console.dir(err);
+    throw new Error("Could not authenticate!");
   }
-  console.log("Creating wallet: " );
-  createWallet();
+
+  console.log("Unlock account: " );
+  bitgo.unlock(otp, function(err) {
+    if (err) {
+      console.dir(err);
+      throw new Error("Could not unlock!");
+    }
+
+    console.log("Creating wallet: " );
+    // Actually create wallet here
+    createWallet();
+  })
+
 });

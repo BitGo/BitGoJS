@@ -1,0 +1,9 @@
+.config.js
+.DS_Store
+.idea
+build
+build-chrome
+npm-debug.log
+node_modules
+coverage
+*.swp
