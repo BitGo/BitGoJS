@@ -9,7 +9,7 @@ var should = require('should');
 
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
-var TransactionBuilder = require('../src/transactionbuilder');
+var TransactionBuilder = require('../src/transactionBuilder');
 var unspentData = require('./fixtures/largeunspents.json');
 
 var TEST_WALLET1_ADDRESS = '2Mv4HFh1yaF5S9ma2E1hPTA4jw6RMPpqJi5';
@@ -28,12 +28,13 @@ describe('Wallet', function() {
     wallets = bitgo.wallets();
     bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
       if (err) {
+        console.log(err);
         throw err;
       }
 
       // Fetch the first wallet.
       var options = {
-        address: TEST_WALLET1_ADDRESS,
+        id: TEST_WALLET1_ADDRESS,
       };
       wallets.get(options, function(err, wallet) {
         if (err) {
@@ -43,7 +44,7 @@ describe('Wallet', function() {
 
         // Fetch the second wallet
         var options = {
-          address: TEST_WALLET2_ADDRESS,
+          id: TEST_WALLET2_ADDRESS
         };
         wallets.get(options, function(err, wallet) {
           wallet2 = wallet;

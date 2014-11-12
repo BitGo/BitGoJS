@@ -7,13 +7,18 @@
 var BitGoJS = require('../src/index.js');
 
 if (process.argv.length < 5) {
-  console.log("usage:\n\t" + process.argv[0] + " " + process.argv[1] + " <user> <pass> <otp>");
+  console.log("usage:\n\t" + process.argv[0] + " " + process.argv[1] + " <user> <pass> <otp> <label>");
   process.exit(-1);
 }
 
 var user = process.argv[2];
 var password = process.argv[3];
 var otp = process.argv[4];
+
+var label = 'New API Wallet';
+if (process.argv.length > 5) {
+   label = process.argv[5];
+}
 
 var bitgo = new BitGoJS.BitGo();
 
@@ -55,7 +60,7 @@ var createWallet = function() {
           console.log("BitGo service keychain xPub: " + keychain.xpub);
 
           var options = {
-            label: 'new wallet',
+            label: label,
             m: 2,
             n: 3,
             keychains: [

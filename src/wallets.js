@@ -93,12 +93,12 @@ Wallets.prototype.add = function(options, callback) {
 //   address: the address of the wallet
 //
 Wallets.prototype.get = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.address) != 'string' ||
+  if (typeof(options) != 'object' || typeof(options.id) != 'string' ||
       typeof(callback) != 'function') {
-    throw new Error('invalid argument');
+    throw new Error('invalid arguments: id and callback arguments required.');
   }
   var self = this;
-  this.bitgo.get(this.bitgo.url('/wallet/' + options.address))
+  this.bitgo.get(this.bitgo.url('/wallet/' + options.id))
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;

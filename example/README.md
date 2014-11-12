@@ -14,5 +14,5 @@ your own backup public key at wallet creation time, you will also need the priva
 of the backup key. It may be necessary to scan the QR codes from the KeyCard 
 with a mobile phone and email the resulting text to yourself.
 
-Run the tool using 'node recoverwallet.js'
+Run the tool using 'node recoverWallet.js'
 

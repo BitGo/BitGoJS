@@ -113,7 +113,7 @@ describe('Wallets', function() {
     it('non existent wallet', function(done) {
       var newKey = wallets.createKey();
       var options = {
-        address: newKey.address.toString(),
+        id: newKey.address.toString()
       };
       wallets.get(options, function(err, wallet) {
         assert(!wallet);
@@ -123,11 +123,11 @@ describe('Wallets', function() {
 
     it('get', function(done) {
       var options = {
-        address: testWallet.address()
+        id: testWallet.address()
       };
       wallets.get(options, function(err, wallet) {
         assert.equal(err, null);
-        assert.equal(wallet.address(), options.address);
+        assert.equal(wallet.address(), options.id);
         assert.equal(wallet.balance(), 0);
         assert.equal(wallet.label(), 'my wallet');
         assert.equal(wallet.pendingBalance(), 0);

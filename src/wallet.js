@@ -5,7 +5,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var TransactionBuilder = require('./transactionbuilder');
+var TransactionBuilder = require('./transactionBuilder');
 
 //
 // Constructor
