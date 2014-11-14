@@ -158,7 +158,7 @@ var TransactionBuilder = function(wallet, recipient, fee) {
       }
 
       var deferred = Q.defer();
-      wallet.createAddress({}, function(err, newAddress) {
+      wallet.createAddress({chain: 1}, function(err, newAddress) {
         if (err) {
           deferred.reject(err);
           return;

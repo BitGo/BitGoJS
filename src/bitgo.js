@@ -6,6 +6,7 @@
 
 var superagent = require('superagent');
 var Address = require('./bitcoin/address');
+var Blockchain = require('./blockchain');
 var Keychains = require('./keychains');
 var Wallets = require('./wallets');
 var sjcl = require('./bitcoin/sjcl.min');
@@ -259,6 +260,37 @@ BitGo.prototype.lock = function(callback) {
     }
     callback(null, {});
   });
+};
+
+//
+// ping
+// Test connectivity to the server
+//
+BitGo.prototype.ping = function(callback) {
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+
+  var self = this;
+  this.get(this.url('/ping'))
+  .send({})
+  .end(function(err, res) {
+    if (self.handleBitGoAPIError(err, res, callback)) {
+      return;
+    }
+    callback(null, res.body);
+  });
+};
+
+//
+// Blockchain
+// Get the blockchain object.
+//
+BitGo.prototype.blockchain = function() {
+  if (!this._blockchain) {
+    this._blockchain = new Blockchain(this);
+  }
+  return this._blockchain;
 };
 
 //

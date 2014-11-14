@@ -75,6 +75,53 @@ describe('Wallet', function() {
     });
   });
 
+  describe('GetAddresses', function() {
+    it('arguments', function(done) {
+      assert.throws(function() { wallet1.addresses(null, function() {}); });
+      assert.throws(function() { wallet1.addresses({}); });
+      done();
+    });
+
+    it('get', function(done) {
+      var options = { };
+      wallet1.addresses(options, function(err, addresses) {
+        assert.equal(err, null);
+        addresses.should.have.property('addresses');
+        addresses.should.have.property('start');
+        addresses.should.have.property('count');
+        addresses.should.have.property('total');
+        var firstAddress = addresses.addresses[0];
+        firstAddress.should.have.property('chain');
+        firstAddress.should.have.property('index');
+        firstAddress.should.have.property('path');
+
+        assert.equal(Array.isArray(addresses.addresses), true);
+        assert.equal(addresses.addresses.length, addresses.count);
+        done();
+      });
+    });
+
+    it('getWithLimit1', function(done) {
+      var options = { limit: 1 };
+      wallet1.addresses(options, function(err, addresses) {
+        assert.equal(err, null);
+        addresses.should.have.property('addresses');
+        addresses.should.have.property('start');
+        addresses.should.have.property('count');
+        addresses.should.have.property('total');
+        var firstAddress = addresses.addresses[0];
+        firstAddress.should.have.property('chain');
+        firstAddress.should.have.property('index');
+        firstAddress.should.have.property('path');
+
+        assert.equal(Array.isArray(addresses.addresses), true);
+        assert.equal(addresses.addresses.length, addresses.count);
+        assert.equal(addresses.addresses.length, 1);
+        done();
+      });
+    });
+  });
+
 
   describe('Unspents', function() {
     it('arguments', function(done) {

@@ -85,6 +85,37 @@ Wallet.prototype.createAddress = function(options, callback) {
   });
 };
 
+//
+// addresses
+// Gets the addresses of a HD wallet.
+// Options include:
+//  limit: the number of addresses to get
+//
+Wallet.prototype.addresses = function(options, callback) {
+  if (typeof(options) != 'object' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+  // TODO: Allow limits and starting from non-zero point in addresses list
+  var self = this;
+  var url = this.url('/addresses');
+
+  if (options.limit) {
+    if (typeof(options.limit) != 'number') {
+      throw new Error('invalid argument');
+    }
+    url += '?limit=' + (options.limit);
+  }
+
+  this.bitgo.get(url)
+  .send()
+  .end(function(err, res) {
+    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
+      return;
+    }
+    callback(null, res.body);
+  });
+};
+
 
 //
 // delete
@@ -109,7 +140,7 @@ Wallet.prototype.delete = function(callback) {
 // unspents
 // List the unspents for a given wallet
 // Options include:
-//   btcLimit:  the limit of unspents to collect in BTC.
+//   limit:  the limit of unspents to collect in BTC.
 //
 Wallet.prototype.unspents = function(options, callback) {
   if (typeof(options) != 'object' || typeof(callback) != 'function') {
@@ -126,7 +157,6 @@ Wallet.prototype.unspents = function(options, callback) {
   this.bitgo.get(url)
   .send()
   .end(function(err, res) {
-    console.log(res.body);
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;
     }

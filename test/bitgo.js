@@ -181,6 +181,44 @@ describe('BitGo', function() {
     });
   });
 
+  describe('Ping', function() {
+    var bitgo;
+    before(function(done) {
+      bitgo = new TestBitGo();
+      done();
+    });
+
+    it('environment', function(done) {
+
+      /* Disable for now, endpoint not available yet
+      BitGoJS.setNetwork('prod');
+      bitgo.ping(function(err, res) {
+        if (err) {
+          console.log(err);
+          throw err;
+        }
+        res.should.have.property('status');
+        res.should.have.property('environment');
+        res.environment.should.not.contains('Test');
+        res.environment.should.contains('BitGo');
+      });
+
+      BitGoJS.setNetwork('testnet');
+      bitgo.ping(function(err, res) {
+        if (err) {
+          console.log(err);
+          throw err;
+        }
+        res.should.have.property('status');
+        res.should.have.property('environment');
+        res.environment.should.contains('Test');
+      });
+      */
+
+      done();
+    });
+  });
+
   describe('Logged In', function() {
     var bitgo;
     before(function(done) {
