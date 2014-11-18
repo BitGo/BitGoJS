@@ -16,16 +16,17 @@ Please contact us at support@bitgo.com if you have questions or comments about t
 
 # Installation
 
-npm install
+`npm install`
 
 # Test
 
-npm test
+`npm test`
 
 # Compile
 
 Creates a single file of javascript for inclusion in your applications.
 
-npm run-script compile
-npm run-script compile-dbg
+`npm run-script compile`
+
+`npm run-script compile-dbg`
 

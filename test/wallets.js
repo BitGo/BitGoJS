@@ -9,6 +9,8 @@ var should = require('should');
 
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
+var TEST_WALLET_PASSCODE = 'shared lives are shared coins';
+var TEST_WALLET_LABEL = 'wallet management test';
 
 describe('Wallets', function() {
   var bitgo;
@@ -99,6 +101,88 @@ describe('Wallets', function() {
             });
           });
         });
+      });
+    });
+  });
+
+  describe('Create wallet with keychains', function() {
+    it('arguments', function() {
+      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TEST_WALLET_PASSCODE, "backupXpub": backupXpub}); });
+      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TEST_WALLET_PASSCODE, "label": TEST_WALLET_LABEL, "backupXpub": backupXpub}); });
+      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TEST_WALLET_PASSCODE, "label": TEST_WALLET_LABEL, "backupXpub": 123}); });
+      assert.throws(function() { wallets.createWalletWithKeychains({"label": TEST_WALLET_LABEL, "backupXpub": backupXpub}); });
+      assert.throws(function() { wallets.createWalletWithKeychains('invalid'); });
+      assert.throws(function() { wallets.createWalletWithKeychains(); });
+    });
+
+    it('default create', function(done) {
+      var options = {
+        "passphrase": TEST_WALLET_PASSCODE,
+        "label": TEST_WALLET_LABEL
+      };
+
+      bitgo.wallets().createWalletWithKeychains(options, function(err, result) {
+        assert.equal(err, null);
+        assert.notEqual(result, null);
+
+        result.should.have.property('wallet');
+        var wallet = result.wallet;
+
+        assert.equal(wallet.balance(), 0);
+        assert.equal(wallet.label(), TEST_WALLET_LABEL);
+        assert.equal(wallet.pendingBalance(), 0);
+        assert.equal(wallet.availableBalance(), 0);
+        assert.equal(wallet.keychains.length, 3);
+        assert.equal(bitgo.keychains().isValid(wallet.keychains[0].xpub), true);
+        assert.equal(bitgo.keychains().isValid(wallet.keychains[1].xpub), true);
+        assert.equal(bitgo.keychains().isValid(wallet.keychains[2].xpub), true);
+        assert.equal(wallet.keychains[0].xpub, result.userKeychain.xpub);
+        assert.equal(wallet.keychains[1].xpub, result.backupKeychain.xpub);
+
+        result.userKeychain.should.have.property('encryptedXprv');
+        result.backupKeychain.should.have.property('encryptedXprv');
+
+        wallet.delete(function() {});
+        done();
+      });
+    });
+
+    it('create with cold backup xpub', function(done) {
+
+      // Simulate a cold backup key
+      var coldBackupKey = bitgo.keychains().create();
+      var options = {
+        "passphrase": TEST_WALLET_PASSCODE,
+        "label": TEST_WALLET_LABEL,
+        "backupXpub": coldBackupKey.xpub
+      };
+
+      bitgo.wallets().createWalletWithKeychains(options, function(err, result) {
+        assert.equal(err, null);
+        assert.notEqual(result, null);
+
+        result.should.have.property('wallet');
+        var wallet = result.wallet;
+
+        console.log(result);
+        assert.equal(wallet.balance(), 0);
+        assert.equal(wallet.label(), TEST_WALLET_LABEL);
+        assert.equal(wallet.pendingBalance(), 0);
+        assert.equal(wallet.availableBalance(), 0);
+        assert.equal(wallet.keychains.length, 3);
+        assert.equal(bitgo.keychains().isValid(wallet.keychains[0].xpub), true);
+        assert.equal(bitgo.keychains().isValid(wallet.keychains[1].xpub), true);
+        assert.equal(bitgo.keychains().isValid(wallet.keychains[2].xpub), true);
+        assert.equal(wallet.keychains[0].xpub, result.userKeychain.xpub);
+        assert.equal(wallet.keychains[1].xpub, result.backupKeychain.xpub);
+
+        assert.equal(result.backupKeychain.xpub, coldBackupKey.xpub);
+
+        result.userKeychain.should.have.property('encryptedXprv');
+        result.backupKeychain.should.not.have.property('encryptedXprv');
+
+        wallet.delete(function() {});
+        done();
       });
     });
   });

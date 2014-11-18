@@ -6,6 +6,7 @@
 //
 
 var TransactionBuilder = require('./transactionBuilder');
+var Keychains = require('./keychains');
 
 //
 // Constructor
@@ -57,6 +58,14 @@ Wallet.prototype.pendingBalance = function() {
 //
 Wallet.prototype.availableBalance = function() {
   return this.wallet.availableBalance;
+};
+
+//
+// type
+// Get the type of this wallet, e.g. 'safehd'
+//
+Wallet.prototype.type = function() {
+  return this.wallet.type;
 };
 
 Wallet.prototype.url = function(extra) {
@@ -186,43 +195,85 @@ Wallet.prototype.transactions = function(options, callback) {
 };
 
 //
+// Key chains
+// Gets the user key chain for this wallet
+// The user key chain is typically the first keychain of the wallet and has the encrypted xpriv stored on BitGo.
+// Useful when trying to get the users' keychain from the server before decrypting to sign a transaction.
+Wallet.prototype.getEncryptedUserKeychain = function(options, callback) {
+  if (typeof(options) != 'object' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+  var self = this;
+
+  var tryKeyChain = function(index) {
+    if (!self.keychains || index >= self.keychains.length) {
+      return callback(new Error('No encrypted keychains on this wallet.'));
+    }
+
+    var options = { "xpub": self.keychains[index].xpub };
+    self.bitgo.keychains().get(options, function(err, keychain) {
+
+      if (err) {
+        return callback(err);
+      }
+
+      // If we find the xpriv, then this is probably the user keychain we're looking for
+      if (keychain.encryptedXprv) {
+        return callback(null, keychain);
+      } else {
+        // Try next index
+        tryKeyChain(index + 1);
+      }
+    });
+  };
+
+  tryKeyChain(0);
+};
+
+//
 // createTransaction
-// Create a transaction
+// Create and sign a transaction
+// TODO: Refactor into create and sign seperately after integrating with new bitcoinjs-lib
 // Inputs:
 //   address  - the address to send to
 //   amount   - the amount to send, in satoshis
 //   fee      - the blockchain fee to send (use 'undefined' to have BitGo compute the fee)
-//   keychain - the keychain to use for signing
+//   keychain - the decrypted keychain to use for signing
 // Returns:
 //   callback(err, transaction)
-//
 Wallet.prototype.createTransaction = function(address, amount, fee, keychain, callback) {
   if (typeof(address) != 'string' || typeof(amount) != 'number' ||
       (typeof(fee) != 'number' && typeof(fee) != 'undefined') || typeof(keychain) != 'object' ||
       typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
-  var tb = new TransactionBuilder(this, { address: address, amount: amount }, fee);
-  tb.prepare()
-    .then(function() {
-      return tb.sign(keychain);
-    })
-    .then(function() {
-      callback(null, { tx: tb.tx(), fee: tb.fee });
-    })
-    .catch(function(e) {
-      callback(e);
-    });
+  if (amount <= 0) {
+    throw new Error('must send positive number of Satoshis!');
+  }
+
+  new TransactionBuilder(this, { address: address, amount: amount }, fee).prepare()
+  .then(function(tb) {
+    return tb.sign(keychain);
+  })
+  .catch(function(e) {
+    return callback(e);
+  })
+  .then(function(tb) {
+    if (tb !== null) {
+      callback(null, {tx: tb.tx(), fee: tb.fee});
+    }
+  });
 };
 
 //
 // send
-// Create a transaction and send it.
+// Send a transaction to the Bitcoin network via BitGo.
+// One of the keys is typically signed, and BitGo will sign the other (if approved) and relay it to the P2P network.
 // Inputs:
 //   tx  - the hex encoded, signed transaction to send
 // Returns:
 //
-Wallet.prototype.send = function(tx, callback) {
+Wallet.prototype.sendTransaction = function(tx, callback) {
   if (typeof(tx) != 'string' || typeof(callback) != 'function') {
     throw new Error('invalid argument');
   }
@@ -234,6 +285,55 @@ Wallet.prototype.send = function(tx, callback) {
       return;
     }
     callback(null, { tx: res.body.transaction, hash: res.body.transactionHash });
+  });
+};
+
+//
+// sendCoins
+// Send coins to a destination address from this wallet using the user key.
+// 1. Gets the user keychain by checking the wallet for a key which has an encrypted xpriv
+// 2. Decrypts user key
+// 3. Creates the transaction with default fee
+// 4. Signs transaction with decrypted user key
+// 3. Sends the transaction to BitGo
+//
+// Inputs:
+//   address - the destination address
+//   amount - the amount in satoshis to be sent
+//   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+// Returns:
+//
+Wallet.prototype.sendCoins = function(address, amount, walletPassphrase, callback) {
+  if (typeof(address) != 'string' || typeof(amount) != 'number' ||
+    typeof(walletPassphrase) != 'string' || typeof(callback) != 'function') {
+    throw new Error('invalid argument');
+  }
+  if (amount <= 0) {
+    throw new Error('must send positive number of Satoshis!');
+  }
+
+  var self = this;
+  // Get the user keychain
+  this.getEncryptedUserKeychain({}, function(err, keychain) {
+    if (err) { return callback(err); }
+
+    // Decrypt the user key with a passphrase
+    try {
+      keychain.xprv = self.bitgo.decrypt(walletPassphrase, keychain.encryptedXprv);
+    } catch (e) {
+      return callback(new Error('Unable to decrypt user keychain'));
+    }
+
+    // Create and sign the transaction
+    self.createTransaction(address, amount, undefined, keychain, function(err, transaction) {
+      if (err) { return callback(err); }
+
+      // Send the transaction
+      self.sendTransaction(transaction.tx, function(err, result) {
+        if (err) { return callback(err); }
+        callback(null, {tx: result.tx, hash: result.hash, fee: transaction.fee});
+      });
+    });
   });
 };
 

@@ -1,0 +1,100 @@
+//
+// Send money from a wallet on BitGo
+// This is the advanced example using createTransction / sendTransaction,
+// which allows you to specify fees and the keychain used for signing the transaction.
+// Defaults to work on BitGo test environment at https://test.bitgo.com
+//
+// Copyright 2014, BitGo, Inc.  All Rights Reserved.
+//
+
+var BitGoJS = require('../src/index.js');
+
+if (process.argv.length < 9) {
+  console.log("usage:\n\t" + process.argv[0] + " " + process.argv[1] +
+    " <user> <pass> <otp> <walletId> <walletPassphrase> <destinationAddress> <amountSatoshis> <fee>");
+
+  console.log("user: user email (on test.bitgo.com)");
+  console.log("pass: password");
+  console.log("otp: one-time password, 0000000 on test");
+  console.log("walletId: wallet ID (first address on the wallet)");
+  console.log("walletPassphrase: passphrase to decrypt the user key");
+  console.log("destinationAddress: the bitcoin address to send coins to");
+  console.log("amountSatoshis: number of satoshis to send");
+  console.log("fee: fee to send to Bitcoin network (default 0.0001)");
+  process.exit(-1);
+}
+
+var user = process.argv[2];
+var password = process.argv[3];
+var otp = process.argv[4];
+var walletId = process.argv[5];
+var walletPassphrase = process.argv[6];
+var destinationAddress = process.argv[7];
+var amountSatoshis = parseInt(process.argv[8], 10);
+var fee = undefined; // required by bitcoin network
+
+if (process.argv.length > 9) {
+  fee = parseInt(process.argv[9], 10);
+}
+
+var bitgo = new BitGoJS.BitGo();
+
+var sendBitcoin = function() {
+  console.log("Getting wallet..");
+
+  // Now get the wallet
+  bitgo.wallets().get({id: walletId}, function(err, wallet) {
+    if (err) {
+      console.log("Error getting wallet!");
+      console.dir(err);
+      return process.exit(-1);
+    }
+    console.log("Balance is: " + (wallet.balance() / 1e8).toFixed(4));
+
+    if ((amountSatoshis + fee) > wallet.balance()) {
+      console.log("(" + amountSatoshis + "+" + fee + ") is > " + wallet.balance());
+      console.log("Not enough money in wallet to send transaction!");
+      return process.exit(-1);
+    }
+
+    wallet.getEncryptedUserKeychain({}, function(err, keychain) {
+      if (err) {
+        console.log("Error getting encrypted keychain!");
+        console.dir(err);
+        return process.exit(-1);
+      }
+      console.log("Got encrypted user keychain");
+
+      // Decrypt the user key with a passphrase
+      keychain.xprv = bitgo.decrypt(walletPassphrase, keychain.encryptedXprv);
+
+      console.log("Creating transaction");
+      wallet.createTransaction(destinationAddress, amountSatoshis, fee, keychain, function(err, transaction) {
+        if (err) {
+          console.log("Failed to create transaction!");
+          console.dir(err);
+          return process.exit(-1);
+        }
+
+        console.log("Sending transaction");
+        wallet.sendTransaction(transaction.tx, function(err, callback) {
+          console.log("Transaction sent: " + callback.tx);
+        });
+      });
+    });
+  });
+};
+
+// Authenticate first
+bitgo.authenticate(user, password, otp, function(err, result) {
+  if (err) {
+    console.dir(err);
+    throw new Error("Could not authenticate!");
+  }
+
+  console.log("Unlocking account.." );
+  bitgo.unlock(otp, function(err) {
+    if (err) { console.dir(err); throw new Error("Could not unlock!"); }
+    sendBitcoin();
+  });
+});

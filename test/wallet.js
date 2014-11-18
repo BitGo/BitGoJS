@@ -16,10 +16,12 @@ var TEST_WALLET1_ADDRESS = '2Mv4HFh1yaF5S9ma2E1hPTA4jw6RMPpqJi5';
 var TEST_WALLET1_PASSCODE = 'test wallet #1 security';
 var TEST_WALLET2_ADDRESS = '2MyQeDjDgsVC6k1BR7m8kjveCPNErUoz6gc';
 var TEST_WALLET2_PASSCODE = 'test wallet #2 security';
+var TEST_WALLET3_ADDRESS = '2NAEdoarGihKn9Wo2pRY1AqgNroRqokaAwm';
+var TEST_WALLET3_PASSCODE = 'test wallet #3 security';
 
 describe('Wallet', function() {
   var bitgo;
-  var wallet1, wallet2;
+  var wallet1, wallet2, wallet3;
 
   before(function(done) {
     BitGoJS.setNetwork('testnet');
@@ -48,7 +50,15 @@ describe('Wallet', function() {
         };
         wallets.get(options, function(err, wallet) {
           wallet2 = wallet;
-          done();
+
+          // Fetch the third wallet
+          var options = {
+            id: TEST_WALLET3_ADDRESS
+          };
+          wallets.get(options, function(err, wallet) {
+            wallet3 = wallet;
+            done();
+          });
         });
       });
     });
@@ -324,7 +334,96 @@ describe('Wallet', function() {
     });
   });
 
-  describe('Send', function() {
+  describe('Get wallet user encrypted key', function() {
+    it('arguments', function(done) {
+      assert.throws(function() { wallet1.getEncryptedUserKeychain(); });
+      assert.throws(function() { wallet1.getEncryptedUserKeychain({}); });
+      assert.throws(function() { wallet1.transactions('invalid', function() {}); });
+      done();
+    });
+
+    it('get key', function(done) {
+      var options = { };
+      wallet1.getEncryptedUserKeychain(options, function(err, result) {
+        assert.equal(err, null);
+        result.should.have.property('xpub');
+        assert.equal(result.xpub, 'xpub661MyMwAqRbcEvHxkJFVGwCw6AHithEVTQwMFzgURx8DcgqHv83ehKE9pqtdFzg2c23R9BH51iUrEgkQGrf5uL8Jutf6RDKfqibBEx4gipJ');
+        result.should.have.property('encryptedXprv');
+        done();
+      });
+    });
+  });
+
+  describe('Send coins', function() {
+    it('arguments', function (done) {
+      assert.throws(function () {
+        wallet1.sendCoins();
+      });
+      assert.throws(function () {
+        wallet1.sendCoins(123);
+      });
+      assert.throws(function () {
+        wallet1.sendCoins('string');
+      });
+      assert.throws(function () {
+        wallet1.sendCoins('string', 123);
+      });
+      assert.throws(function () {
+        wallet1.sendCoins('string', 123, 0);
+      });
+      assert.throws(function () {
+        wallet1.sendCoins('string', 123, 0, {});
+      });
+      assert.throws(function () {
+        wallet1.sendCoins(TEST_WALLET2_ADDRESS, 0, TEST_WALLET1_PASSCODE, function () {
+        });
+      });
+      assert.throws(function () {
+        wallet1.sendCoins(TEST_WALLET2_ADDRESS, 0, "badpasscode", function () {
+        });
+      });
+      assert.throws(function () {
+        wallet1.sendCoins("bad address", 0, TEST_WALLET1_PASSCODE, function () {
+        });
+      });
+      done();
+    });
+
+    describe('Bad input', function () {
+      it('send coins - insufficient funds', function (done) {
+        wallet1.sendCoins(TEST_WALLET2_ADDRESS, 22 * 1e8 * 1e8, TEST_WALLET1_PASSCODE, function (err, result) {
+          assert.notEqual(err, null);
+          done();
+        });
+      });
+    });
+
+    describe('Real transactions', function() {
+      it('send coins - wallet1 to wallet3', function (done) {
+        wallet1.sendCoins(TEST_WALLET3_ADDRESS, 0.001 * 1e8, TEST_WALLET1_PASSCODE, function (err, result) {
+          assert.equal(err, null);
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          assert.equal(result.fee, 0.0001 * 1e8);
+          done();
+        });
+      });
+
+      it('send coins - wallet3 to wallet1', function (done) {
+        wallet3.sendCoins(TEST_WALLET1_ADDRESS, 0.001 * 1e8, TEST_WALLET3_PASSCODE, function (err, result) {
+          assert.equal(err, null);
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          assert.equal(result.fee, 0.0001 * 1e8);
+          done();
+        });
+      });
+    });
+  });
+
+  describe('Create and Send Transactions (advanced)', function() {
     it('arguments', function(done) {
       assert.throws(function() { wallet1.createTransaction(); });
       assert.throws(function() { wallet1.createTransaction(123); });
@@ -333,8 +432,8 @@ describe('Wallet', function() {
       assert.throws(function() { wallet1.createTransaction('string', 123, 0); });
       assert.throws(function() { wallet1.createTransaction('string', 123, 0, {}); });
 
-      assert.throws(function() { wallet1.send(); });
-      assert.throws(function() { wallet1.send({}); });
+      assert.throws(function() { wallet1.sendTransaction(); });
+      assert.throws(function() { wallet1.sendTransaction({}); });
       done();
     });
 
@@ -381,7 +480,7 @@ describe('Wallet', function() {
       });
 
       it('send', function(done) {
-        wallet1.send(tx, function(err, result) {
+        wallet1.sendTransaction(tx, function(err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
           result.should.have.property('hash');
@@ -422,7 +521,7 @@ describe('Wallet', function() {
       });
 
       it('send', function(done) {
-        wallet2.send(tx, function(err, result) {
+        wallet2.sendTransaction(tx, function(err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
           result.should.have.property('hash');

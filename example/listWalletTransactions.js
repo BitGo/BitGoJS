@@ -36,7 +36,6 @@ bitgo.authenticate(user, password, otp, function(err, result) {
       if (err) { console.log(err); process.exit(-1); }
       for (var index = 0; index < result.transactions.length; ++index) {
         var tx = result.transactions[index];
-        var output = tx.date;
 
         var value = 0;
         for (var entriesIndex = 0; entriesIndex < tx.entries.length; ++entriesIndex) {
@@ -45,9 +44,9 @@ bitgo.authenticate(user, password, otp, function(err, result) {
           }
         }
 
-        var verb = (value > 0) ? 'received' : 'sent';
+        var verb = (value > 0) ? 'Received' : 'Sent';
 
-        output += ' ' + verb + ' ' + (value / 1e8).toFixed(8) + 'BTC';
+        var output = tx.id + ': ' + verb + ' ' + (value / 1e8).toFixed(8) + 'BTC on ' + tx.date;
         console.log(output);
       }
     });
