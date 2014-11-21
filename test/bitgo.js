@@ -15,6 +15,9 @@ describe('BitGo', function() {
   describe('Constructor', function() {
     it('arguments', function() {
       assert.throws(function() { new BitGoJS.BitGo('invalid'); });
+      assert.throws(function() { new BitGoJS.BitGo({useProduction: 'invalid'}); });
+      assert.throws(function() { new BitGoJS.BitGo({clientId: 'invalid'}); });
+      assert.throws(function() { new BitGoJS.BitGo({clientSecret: 'invalid'}); });
     });
 
     it('methods', function() {
@@ -130,6 +133,7 @@ describe('BitGo', function() {
 
       it('fails without OTP', function(done) {
         bitgo.authenticateTestUser("0", function(err, response) {
+          console.dir(err);
           err.status.should.equal(401);
           err.needsOTP.should.equal(true);
           done();
@@ -139,7 +143,7 @@ describe('BitGo', function() {
       it('succeeds with OTP', function(done) {
         bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
           if (err) {
-            console.dir(err);   // Seeing an intermittent failure here.  Log if this occurs.
+            console.dir(err); // Seeing an intermittent failure here.  Log if this occurs.
             throw err;
           }
           done();
@@ -190,19 +194,6 @@ describe('BitGo', function() {
 
     it('environment', function(done) {
 
-      /* Disable for now, endpoint not available yet
-      BitGoJS.setNetwork('prod');
-      bitgo.ping(function(err, res) {
-        if (err) {
-          console.log(err);
-          throw err;
-        }
-        res.should.have.property('status');
-        res.should.have.property('environment');
-        res.environment.should.not.contains('Test');
-        res.environment.should.contains('BitGo');
-      });
-
       BitGoJS.setNetwork('testnet');
       bitgo.ping(function(err, res) {
         if (err) {
@@ -211,9 +202,8 @@ describe('BitGo', function() {
         }
         res.should.have.property('status');
         res.should.have.property('environment');
-        res.environment.should.contains('Test');
+        res.environment.should.equal('BitGo Development');
       });
-      */
 
       done();
     });
@@ -267,5 +257,182 @@ describe('BitGo', function() {
       });
     });
 
+  });
+
+  describe('Oauth test', function() {
+    var bitgo;
+    var refreshToken;
+
+    before(function (done) {
+      bitgo = new BitGoJS.BitGo({clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET});
+      done();
+    });
+
+    describe('Authenticate with auth code', function () {
+      it('arguments', function() {
+        assert.throws(function() { bitgo.authenticateWithAuthCode(); });
+        assert.throws(function() { bitgo.authenticateWithAuthCode(123); });
+        assert.throws(function() { bitgo.authenticateWithAuthCode('foo', 123); });
+        var bitgoNoClientId = new BitGoJS.BitGo();
+        assert.throws(function() { bitgoNoClientId.authenticateWithAuthCode(TestBitGo.TEST_AUTHCODE, function() {}); });
+      });
+
+      it('bad code', function (done) {
+        bitgo.authenticateWithAuthCode('BADCODE', function (err, response) {
+          // Expect error
+          assert.notEqual(err, null);
+          assert.equal(err.error, 'invalid_grant');
+
+          err.should.have.property('status');
+          err.should.have.property('error');
+          err.should.have.property('details');
+          done();
+        });
+      });
+
+      it('use auth code to get me', function (done) {
+        bitgo.authenticateWithAuthCode(TestBitGo.TEST_AUTHCODE, function (err, response) {
+          // Expect no error
+          assert.equal(err, null);
+          response.should.have.property('token_type');
+          response.should.have.property('access_token');
+          response.should.have.property('expires_in');
+          response.should.have.property('refresh_token');
+
+          bitgo.me(function (err, me_result) {
+
+            me_result.should.have.property('username');
+            me_result.should.have.property('email');
+            me_result.should.have.property('phone');
+            done();
+          });
+        });
+      });
+    });
+
+    describe('Initialize with access token', function () {
+      it('arguments', function () {
+        assert.throws(function () {
+          bitgo.authenticateWithAuthCode({}, 123);
+        });
+      });
+
+      it('use bad access token', function (done) {
+        var bitgoAT = new BitGoJS.BitGo({
+          clientId: TestBitGo.TEST_CLIENTID,
+          clientSecret: TestBitGo.TEST_CLIENTSECRET,
+          accessToken: 'bad token'
+        });
+
+        bitgoAT.me(function (err, me_result) {
+          assert.notEqual(err, null);
+
+          err.should.have.property('status');
+          err.should.have.property('error');
+          err.should.have.property('details');
+          done();
+        });
+      });
+
+      it('use access token', function (done) {
+        var bitgoAT = new BitGoJS.BitGo({
+          clientId: TestBitGo.TEST_CLIENTID,
+          clientSecret: TestBitGo.TEST_CLIENTSECRET,
+          accessToken: TestBitGo.TEST_ACCESSTOKEN
+        });
+
+        bitgoAT.me(function (err, me_result) {
+          me_result.should.have.property('username');
+          me_result.should.have.property('email');
+          me_result.should.have.property('phone');
+          done();
+        });
+      });
+    });
+
+    describe('Use refresh token', function() {
+      it('arguments', function () {
+        assert.throws(function() { bitgo.refresh_token(); });
+        assert.throws(function() { bitgo.refresh_token(123); });
+        assert.throws(function() { bitgo.refresh_token('foo', 123); });
+        assert.throws(function() { bitgo.refresh_token(TestBitGo.TEST_REFRESHTOKEN, 123); });
+        var bitgoNoClientId = new BitGoJS.BitGo();
+        assert.throws(function() { bitgoNoClientId.refresh_token(TestBitGo.TEST_AUTHCODE, function() {}); });
+      });
+
+      it('bad token', function (done) {
+        bitgo.refreshToken('BADTOKEN', function (err, response) {
+          // Expect error
+          assert.notEqual(err, null);
+          assert.equal(err.error, 'invalid_grant');
+
+          err.should.have.property('status');
+          err.should.have.property('error');
+          err.should.have.property('details');
+          done();
+        });
+      });
+
+      it('use refresh token to get access token to get me', function (done) {
+        bitgo.refreshToken(TestBitGo.TEST_REFRESHTOKEN, function (err, response) {
+          // Expect no error
+          assert.equal(err, null);
+          response.should.have.property('token_type');
+          response.should.have.property('access_token');
+          response.should.have.property('expires_in');
+          response.should.have.property('refresh_token');
+
+          bitgoWithNewToken = new BitGoJS.BitGo({
+            clientId: TestBitGo.TEST_CLIENTID,
+            clientSecret: TestBitGo.TEST_CLIENTSECRET,
+            accessToken: response.access_token
+          });
+
+          bitgoWithNewToken.me(function (err, me_result) {
+
+            me_result.should.have.property('username');
+            me_result.should.have.property('email');
+            me_result.should.have.property('phone');
+            done();
+          });
+        });
+      });
+
+      it('login with auth code then refresh with no args', function (done) {
+
+        bitgo = new BitGoJS.BitGo({clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET});
+        bitgo.authenticateWithAuthCode(TestBitGo.TEST_AUTHCODE, function (err, response) {
+          // Expect no error
+          assert.equal(err, null);
+          response.should.have.property('token_type');
+          response.should.have.property('access_token');
+          response.should.have.property('expires_in');
+          response.should.have.property('refresh_token');
+
+          bitgo.refreshToken(undefined, function (err, response) {
+            // Expect no error
+            assert.equal(err, null);
+            response.should.have.property('token_type');
+            response.should.have.property('access_token');
+            response.should.have.property('expires_in');
+            response.should.have.property('refresh_token');
+
+            bitgoWithNewToken = new BitGoJS.BitGo({
+              clientId: TestBitGo.TEST_CLIENTID,
+              clientSecret: TestBitGo.TEST_CLIENTSECRET,
+              accessToken: response.access_token
+            });
+
+            bitgoWithNewToken.me(function (err, me_result) {
+
+              me_result.should.have.property('username');
+              me_result.should.have.property('email');
+              me_result.should.have.property('phone');
+              done();
+            });
+          });
+        });
+      });
+    });
   });
 });

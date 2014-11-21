@@ -10,6 +10,14 @@ BitGo.TEST_USER = 'tester@bitgo.com';
 BitGo.TEST_PASSWORD = 'testtesttest';
 BitGo.TEST_PASSWORD_HMAC = 'b160a6cc799280822912251d0a6b25f8ff32f0ad7e6dda7d9fda59ee1bc57080';
 
+BitGo.TEST_CLIENTID = 'test';
+BitGo.TEST_CLIENTSECRET = 'testclientsecret';
+
+// These auth tokens are modified in the db to expire in 2018
+BitGo.TEST_AUTHCODE = '37454416ba13e1be9fdc39cfc207df7f7a7f0953';
+BitGo.TEST_ACCESSTOKEN = '4cb440e353b5415e350a1e799bb1ad820fef4ead';
+BitGo.TEST_REFRESHTOKEN = '8519fcc7787d9d6971ed89a757e3309a72ddedc8';
+
 //
 // testUserOTP
 // Get an OTP code for the test user.

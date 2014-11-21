@@ -17,21 +17,36 @@ var sjcl = require('./bitcoin/sjcl.min');
 //   @useProduction: flag to use the production bitcoin network rather than the
 //                   testnet network.
 //
-var BitGo = function(useProduction) {
-  if (useProduction && typeof(useProduction) != 'boolean') {
+var BitGo = function(options) {
+  options = options || {};
+  if (typeof(options) != 'object' ||
+      (options.useProduction && typeof(options.useProduction) != 'boolean') ||
+      (options.clientId && typeof(options.clientId) != 'string') ||
+      (options.clientSecret && typeof(options.clientSecret) != 'string') ||
+      (options.refreshToken && typeof(options.refreshToken) != 'string') ||
+      (options.accessToken && typeof(options.accessToken) != 'string'))  {
     throw new Error('invalid argument');
   }
 
-  // By default, we operate on the test server.
-  if (useProduction) {
-    this._baseUrl = 'https://www.bitgo.com/api/v1';
-  } else {
-    this._baseUrl = 'https://test.bitgo.com/api/v1';
+  if (!options.clientId !== !options.clientSecret)
+    throw new Error('invalid argument - must provide both client id and secret');
   }
 
+  // By default, we operate on the test server.
+  if (options.useProduction) {
+    this._baseUrl = 'https://www.bitgo.com';
+  } else {
+    this._baseUrl = 'https://test.bitgo.com';
+  }
+
+  this._baseApiUrl = this._baseUrl + '/api/v1';
   this._user = null;
   this._keychains = null;
   this._wallets = null;
+  this._clientId = options.clientId;
+  this._clientSecret = options.clientSecret;
+  this._token = options.accessToken || null;
+  this._refreshToken = options.refreshToken || null;
 
   // Create superagent methods specific to this BitGo instance.
   this.request = {};
@@ -95,7 +110,7 @@ BitGo.prototype.decrypt = function(password, opaque) {
 };
 
 BitGo.prototype.url = function(path) {
-  return this._baseUrl + path;
+  return this._baseApiUrl + path;
 };
 
 //
@@ -150,7 +165,7 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
   }
 
   var self = this;
-  if (this._user) {
+  if (this._token) {
     return callback(new Error('already logged in'));
   }
 
@@ -167,16 +182,101 @@ BitGo.prototype.authenticate = function(username, password, otp, callback) {
 };
 
 //
+// authenticateWithAuthCode
+// Login to the bitgo system using an authcode generated via Oauth
+// Returns:
+//   {
+//     authCode: <authentication code sent from the BitGo OAuth redirect>
+//   }
+BitGo.prototype.authenticateWithAuthCode = function(authCode, callback) {
+  if (typeof(authCode) != 'string' || typeof(callback) != 'function') {
+    throw new Error('illegal argument');
+  }
+
+  if (!this._clientId || !this._clientSecret) {
+    throw new Error('Need client id and secret set first to use this');
+  }
+
+  var self = this;
+  if (this._token) {
+    return callback(new Error('already logged in'));
+  }
+
+  this.post(this._baseUrl + '/oauth/token')
+  .send({
+    grant_type: 'authorization_code',
+    code: authCode,
+    client_id: self._clientId,
+    client_secret: self._clientSecret
+  })
+  .end(function(err, token_result) {
+    if (self.handleBitGoAPIError(err, token_result, callback)) {
+      return;
+    }
+    self._token = token_result.body.access_token;
+    self._refreshToken = token_result.body.refresh_token;
+    self.me(function(err, me_result) {
+      if (err) {
+        callback(err);
+      }
+
+      self._user = me_result;
+      callback(null, token_result.body);
+    });
+  });
+};
+
+//
+// refreshToken
+// Use refresh token to get new access token.
+// If the refresh token is null/defined, then we use the stored token from auth
+// Returns:
+//   {
+//     refreshToken: <optional refresh code sent from a previous authcode>
+//   }
+BitGo.prototype.refreshToken = function(refreshToken, callback) {
+  if (refreshToken && (typeof(refreshToken) != 'string') ||
+    typeof(callback) != 'function') {
+    throw new Error('illegal argument');
+  }
+
+  if (!refreshToken) {
+    refreshToken = this._refreshToken;
+  }
+
+  if (!refreshToken) {
+    throw new Error('Must provide refresh token or have authenticated with Oauth before');
+  }
+
+  if (!this._clientId || !this._clientSecret) {
+    throw new Error('Need client id and secret set first to use this');
+  }
+
+  var self = this;
+  this.post(this._baseUrl + '/oauth/token')
+  .send({
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken,
+    client_id: self._clientId,
+    client_secret: self._clientSecret
+  })
+  .end(function(err, refresh_result) {
+    if (self.handleBitGoAPIError(err, refresh_result, callback)) {
+      return;
+    }
+    self._token = refresh_result.body.access_token;
+    self._refreshToken = refresh_result.body.refresh_token;
+    callback(null, refresh_result.body);
+  });
+};
+
+//
 // logout
 // Logout of BitGo
 //
 BitGo.prototype.logout = function(callback) {
   if (typeof(callback) != 'function') {
     throw new Error('invalid argument');
-  }
-
-  if (!this._user) {
-    return callback(null);  // We're not logged in.
   }
 
   var self = this;
@@ -198,7 +298,7 @@ BitGo.prototype.me = function(callback) {
     throw new Error('invalid argument');
   }
 
-  if (!this._user) {
+  if (!this._token) {
     return callback(new Error('not authenticated'));
   }
 
@@ -223,7 +323,7 @@ BitGo.prototype.unlock = function(otp, callback) {
     throw new Error('invalid argument');
   }
 
-  if (!this._user) {
+  if (!this._token) {
     return callback(new Error('not authenticated'));
   }
 
@@ -247,7 +347,7 @@ BitGo.prototype.lock = function(callback) {
     throw new Error('invalid argument');
   }
 
-  if (!this._user) {
+  if (!this._token) {
     return callback(new Error('not authenticated'));
   }
 
