@@ -28,7 +28,7 @@ var BitGo = function(options) {
     throw new Error('invalid argument');
   }
 
-  if (!options.clientId !== !options.clientSecret)
+  if (!options.clientId !== !options.clientSecret) {
     throw new Error('invalid argument - must provide both client id and secret');
   }
 
