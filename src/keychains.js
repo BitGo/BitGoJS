@@ -8,6 +8,7 @@
 var BIP32 = require('./bitcoin/bip32');
 var SecureRandom = require('./bitcoin/jsbn/rng');
 var Util = require('./bitcoin/util');
+var common = require('./common');
 
 //
 // Constructor
@@ -20,9 +21,16 @@ var Keychains = function(bitgo) {
 // isValid
 // Tests a xpub or xprv string to see if it is a valid keychain.
 //
-Keychains.prototype.isValid = function(string) {
+Keychains.prototype.isValid = function(params) {
+  params = params || {};
+  common.validateParams(params, [], []);
+
+  if (typeof(params.key) != 'string' && typeof(params.key) != 'object') {
+    throw new Error('key must be a string or object');
+  }
+
   try {
-    var bip32 = new BIP32(string);
+    var bip32 = new BIP32(params.key);
     return true;
   } catch (e) {
     return false;
@@ -36,16 +44,20 @@ Keychains.prototype.isValid = function(string) {
 // If |seed| is provided, used to seed the keychain.  Otherwise,
 // a random keychain is created.
 //
-Keychains.prototype.create = function(seed) {
-  if (!seed) {
-    seed = new Array(256);
-    new SecureRandom().nextBytes(seed);
+Keychains.prototype.create = function(params) {
+  params = params || {};
+  common.validateParams(params, [], []);
+
+  if (!params.seed) {
+    params.seed = new Array(256);
+    new SecureRandom().nextBytes(params.seed);
   } else {
-    if (!Array.isArray(seed)) {
+    if (!Array.isArray(params.seed)) {
       throw new Error('invalid argument');
     }
   }
-  var extendedKey = new BIP32().initFromSeed(Util.bytesToHex(seed));
+
+  var extendedKey = new BIP32().initFromSeed(Util.bytesToHex(params.seed));
   return {
     xpub: extendedKey.extended_public_key_string(),
     xprv: extendedKey.extended_private_key_string()
@@ -56,9 +68,12 @@ Keychains.prototype.create = function(seed) {
 // list
 // List the user's keychains
 //
-Keychains.prototype.list = function(callback) {
+Keychains.prototype.list = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], []);
+
   if (typeof(callback) != 'function') {
-    throw new Error('invalid argument');
+    throw new Error('invalid callback argument');
   }
   this.bitgo.get(this.bitgo.url('/keychain'))
   .end(function(err, res) {
@@ -73,14 +88,18 @@ Keychains.prototype.list = function(callback) {
 // add
 // Add a new keychain
 //
-Keychains.prototype.add = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(callback) != 'function') {
-    throw new Error('invalid argument');
+Keychains.prototype.add = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['xpub'], ['encryptedXprv']);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
+
   this.bitgo.post(this.bitgo.url('/keychain'))
   .send({
-    xpub: options.xpub,
-    encryptedXprv: options.encryptedXprv
+    xpub: params.xpub,
+    encryptedXprv: params.encryptedXprv
   })
   .end(function(err, res) {
     if (err) {
@@ -94,10 +113,14 @@ Keychains.prototype.add = function(options, callback) {
 // addBitGo
 // Add a new BitGo server keychain
 //
-Keychains.prototype.createBitGo = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(callback) != 'function') {
-    throw new Error('invalid argument');
+Keychains.prototype.createBitGo = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], []);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
+
   this.bitgo.post(this.bitgo.url('/keychain/bitgo'))
   .send({})
   .end(function(err, res) {
@@ -111,16 +134,19 @@ Keychains.prototype.createBitGo = function(options, callback) {
 //
 // get
 // Fetch an existing keychain
-// Options include:
+// Parameters include:
 //   xpub:  the xpub of the key to lookup (required)
 //
-Keychains.prototype.get = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.xpub) != 'string' ||
-      typeof(callback) != 'function') {
-    throw new Error('invalid argument');
+Keychains.prototype.get = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['xpub'], []);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
+
   var self = this;
-  this.bitgo.post(this.bitgo.url('/keychain/' + options.xpub))
+  this.bitgo.post(this.bitgo.url('/keychain/' + params.xpub))
   .send({})
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
@@ -133,18 +159,21 @@ Keychains.prototype.get = function(options, callback) {
 //
 // update
 // Update an existing keychain
-// Options include:
+// Parameters include:
 //   xpub:  the xpub of the key to lookup (required)
 //
-Keychains.prototype.update = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.xpub) != 'string' ||
-      typeof(callback) != 'function') {
-    throw new Error('invalid argument');
+Keychains.prototype.update = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['xpub'], ['encryptedXprv']);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
+
   var self = this;
-  this.bitgo.put(this.bitgo.url('/keychain/' + options.xpub))
+  this.bitgo.put(this.bitgo.url('/keychain/' + params.xpub))
   .send({
-    encryptedXprv: options.encryptedXprv,
+    encryptedXprv: params.encryptedXprv,
   })
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {

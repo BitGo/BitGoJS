@@ -66,34 +66,41 @@ var sendBitcoin = function() {
       console.log("Got encrypted user keychain");
 
       // Decrypt the user key with a passphrase
-      keychain.xprv = bitgo.decrypt(walletPassphrase, keychain.encryptedXprv);
+      keychain.xprv = bitgo.decrypt({ password: walletPassphrase, opaque: keychain.encryptedXprv });
 
       console.log("Creating transaction");
-      wallet.createTransaction(destinationAddress, amountSatoshis, fee, keychain, function(err, transaction) {
-        if (err) {
-          console.log("Failed to create transaction!");
-          console.dir(err);
-          return process.exit(-1);
-        }
+      wallet.createTransaction({
+        address: destinationAddress,
+        amount: amountSatoshis,
+        keychain: keychain,
+        fee: fee
+        },
+        function(err, transaction) {
+          if (err) {
+            console.log("Failed to create transaction!");
+            console.dir(err);
+            return process.exit(-1);
+          }
 
-        console.log("Sending transaction");
-        wallet.sendTransaction(transaction.tx, function(err, callback) {
-          console.log("Transaction sent: " + callback.tx);
-        });
+          console.log("Sending transaction");
+          wallet.sendTransaction({ tx: transaction.tx }, function(err, callback) {
+            console.log("Transaction sent: " + callback.tx);
+          }
+        );
       });
     });
   });
 };
 
 // Authenticate first
-bitgo.authenticate(user, password, otp, function(err, result) {
+bitgo.authenticate({ username: user, password: password, otp: otp }, function(err, result) {
   if (err) {
     console.dir(err);
     throw new Error("Could not authenticate!");
   }
 
   console.log("Unlocking account.." );
-  bitgo.unlock(otp, function(err) {
+  bitgo.unlock({ otp: otp }, function(err) {
     if (err) { console.dir(err); throw new Error("Could not unlock!"); }
     sendBitcoin();
   });

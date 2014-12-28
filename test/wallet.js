@@ -87,7 +87,7 @@ describe('Wallet', function() {
 
   describe('GetAddresses', function() {
     it('arguments', function(done) {
-      assert.throws(function() { wallet1.addresses(null, function() {}); });
+      assert.throws(function() { wallet1.addresses({}, null, function() {}); });
       assert.throws(function() { wallet1.addresses({}); });
       done();
     });
@@ -294,7 +294,7 @@ describe('Wallet', function() {
       var keychain;
       before(function(done) {
 
-        bitgo.unlock(bitgo.testUserOTP(), function(err) {
+        bitgo.unlock({ otp: bitgo.testUserOTP() }, function(err) {
           assert.equal(err, null);
           // Go fetch the private key for our keychain
           var options = {
@@ -326,7 +326,7 @@ describe('Wallet', function() {
 
       it('valid key', function(done) {
         // First we need to decrypt the xprv.
-        keychain.xprv = bitgo.decrypt(TEST_WALLET1_PASSCODE, keychain.encryptedXprv);
+        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET1_PASSCODE, opaque: keychain.encryptedXprv });
         // Now we can go ahead and sign.
         var tx = tb.sign(keychain);
         done();
@@ -360,65 +360,80 @@ describe('Wallet', function() {
         wallet1.sendCoins();
       });
       assert.throws(function () {
-        wallet1.sendCoins(123);
+        wallet1.sendCoins({ address: 123 });
       });
       assert.throws(function () {
-        wallet1.sendCoins('string');
+        wallet1.sendCoins({ address: 'string' });
       });
       assert.throws(function () {
-        wallet1.sendCoins('string', 123);
+        wallet1.sendCoins({ address: 'string', amount: 123 });
       });
       assert.throws(function () {
-        wallet1.sendCoins('string', 123, 0);
+        wallet1.sendCoins({ address: 'string', amount: 123, walletPassphrase: 0});
       });
       assert.throws(function () {
-        wallet1.sendCoins('string', 123, 0, {});
+        wallet1.sendCoins({ address: 'string', amount: 123, walletPassphrase: 'advanced1' }, {});
       });
       assert.throws(function () {
-        wallet1.sendCoins(TEST_WALLET2_ADDRESS, 0, TEST_WALLET1_PASSCODE, function () {
-        });
+        wallet1.sendCoins(
+          { address: TEST_WALLET2_ADDRESS, amount: 0, walletPassphrase: TEST_WALLET1_PASSCODE },
+          function () { }
+        );
       });
       assert.throws(function () {
-        wallet1.sendCoins(TEST_WALLET2_ADDRESS, 0, "badpasscode", function () {
-        });
+        wallet1.sendCoins(
+          { address: TEST_WALLET2_ADDRESS, amount: 0, walletPassphrase: "badpasscode" } ,
+          function () {}
+        );
       });
       assert.throws(function () {
-        wallet1.sendCoins("bad address", 0, TEST_WALLET1_PASSCODE, function () {
-        });
+        wallet1.sendCoins(
+          { address: "bad address", amount: 0, walletPassphrase: TEST_WALLET1_PASSCODE } ,
+          function () {}
+        );
       });
       done();
     });
 
     describe('Bad input', function () {
       it('send coins - insufficient funds', function (done) {
-        wallet1.sendCoins(TEST_WALLET2_ADDRESS, 22 * 1e8 * 1e8, TEST_WALLET1_PASSCODE, function (err, result) {
-          assert.notEqual(err, null);
-          done();
-        });
+        wallet1.sendCoins(
+          { address: TEST_WALLET2_ADDRESS, amount: 22 * 1e8 * 1e8, walletPassphrase: TEST_WALLET1_PASSCODE },
+          function (err, result) {
+            assert.notEqual(err, null);
+            done();
+          }
+        );
       });
     });
 
     describe('Real transactions', function() {
       it('send coins - wallet1 to wallet3', function (done) {
-        wallet1.sendCoins(TEST_WALLET3_ADDRESS, 0.001 * 1e8, TEST_WALLET1_PASSCODE, function (err, result) {
-          assert.equal(err, null);
-          result.should.have.property('tx');
-          result.should.have.property('hash');
-          result.should.have.property('fee');
-          assert.equal(result.fee, 0.0001 * 1e8);
-          done();
-        });
+        wallet1.sendCoins(
+          { address: TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TEST_WALLET1_PASSCODE },
+          function (err, result) {
+            assert.equal(err, null);
+            result.should.have.property('tx');
+            result.should.have.property('hash');
+            result.should.have.property('fee');
+            result.fee.should.equal(0.0001 * 1e8);
+            done();
+          }
+        );
       });
 
       it('send coins - wallet3 to wallet1', function (done) {
-        wallet3.sendCoins(TEST_WALLET1_ADDRESS, 0.001 * 1e8, TEST_WALLET3_PASSCODE, function (err, result) {
-          assert.equal(err, null);
-          result.should.have.property('tx');
-          result.should.have.property('hash');
-          result.should.have.property('fee');
-          assert.equal(result.fee, 0.0001 * 1e8);
-          done();
-        });
+        wallet3.sendCoins(
+          { address: TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TEST_WALLET3_PASSCODE },
+          function (err, result) {
+            assert.equal(err, null);
+            result.should.have.property('tx');
+            result.should.have.property('hash');
+            result.should.have.property('fee');
+            result.fee.should.equal(0.0001 * 1e8);
+            done();
+          }
+        );
       });
     });
   });
@@ -426,11 +441,11 @@ describe('Wallet', function() {
   describe('Create and Send Transactions (advanced)', function() {
     it('arguments', function(done) {
       assert.throws(function() { wallet1.createTransaction(); });
-      assert.throws(function() { wallet1.createTransaction(123); });
-      assert.throws(function() { wallet1.createTransaction('string'); });
-      assert.throws(function() { wallet1.createTransaction('string', 123); });
-      assert.throws(function() { wallet1.createTransaction('string', 123, 0); });
-      assert.throws(function() { wallet1.createTransaction('string', 123, 0, {}); });
+      assert.throws(function() { wallet1.createTransaction({ address: 123 }); });
+      assert.throws(function() { wallet1.createTransaction({ address: 'string' }); });
+      assert.throws(function() { wallet1.createTransaction({ address: 'string', amount: 123 }); });
+      assert.throws(function() { wallet1.createTransaction({ address: 'string', amount: 123, fee: 0}); });
+      assert.throws(function() { wallet1.createTransaction({ address: 'string', amount: 123, fee: 0, keychain: {} }); });
 
       assert.throws(function() { wallet1.sendTransaction(); });
       assert.throws(function() { wallet1.sendTransaction({}); });
@@ -453,12 +468,12 @@ describe('Wallet', function() {
       });
 
       it('decrypt key', function(done) {
-        keychain.xprv = bitgo.decrypt(TEST_WALLET1_PASSCODE, keychain.encryptedXprv);
+        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET1_PASSCODE, opaque: keychain.encryptedXprv });
         done();
       });
 
       it('create transaction with fee', function(done) {
-        wallet1.createTransaction(TEST_WALLET2_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, result) {
+        wallet1.createTransaction({ address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8, fee: 0.0001 * 1e8, keychain: keychain }, function(err, result) {
           assert.equal(err, null);
           assert.equal(result.fee < 0.0005 * 1e8, true);
           result.should.have.property('tx');
@@ -469,7 +484,7 @@ describe('Wallet', function() {
       });
 
       it('create transaction with default fee', function(done) {
-        wallet1.createTransaction(TEST_WALLET2_ADDRESS, 0.001 * 1e8, undefined, keychain, function(err, result) {
+        wallet1.createTransaction({ address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8, keychain: keychain }, function(err, result) {
           assert.equal(err, null);
           assert.equal(result.fee, 10000);
           result.should.have.property('tx');
@@ -480,7 +495,7 @@ describe('Wallet', function() {
       });
 
       it('send', function(done) {
-        wallet1.sendTransaction(tx, function(err, result) {
+        wallet1.sendTransaction({ tx: tx }, function(err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
           result.should.have.property('hash');
@@ -496,7 +511,7 @@ describe('Wallet', function() {
 
       it('keychain', function(done) {
         var options = {
-          xpub: wallet2.keychains[0].xpub,
+          xpub: wallet2.keychains[0].xpub
         };
         bitgo.keychains().get(options, function(err, result) {
           assert.equal(err, null);
@@ -506,12 +521,12 @@ describe('Wallet', function() {
       });
 
       it('decrypt key', function(done) {
-        keychain.xprv = bitgo.decrypt(TEST_WALLET2_PASSCODE, keychain.encryptedXprv);
+        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET2_PASSCODE, opaque: keychain.encryptedXprv });
         done();
       });
 
       it('create transaction', function(done) {
-        wallet2.createTransaction(TEST_WALLET1_ADDRESS, 0.001 * 1e8, 0.0001 * 1e8, keychain, function(err, result) {
+        wallet2.createTransaction({ address: TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, fee: 0.0001 * 1e8, keychain: keychain }, function(err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
           result.should.have.property('fee');
@@ -521,7 +536,7 @@ describe('Wallet', function() {
       });
 
       it('send', function(done) {
-        wallet2.sendTransaction(tx, function(err, result) {
+        wallet2.sendTransaction({ tx: tx }, function(err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
           result.should.have.property('hash');

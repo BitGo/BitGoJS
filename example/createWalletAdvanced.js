@@ -36,7 +36,7 @@ var createWallet = function() {
     var options = {
       label: 'key1',
       xpub: userKey.xpub,
-      encryptedXprv: bitgo.encrypt(password, userKey.xprv)
+      encryptedXprv: bitgo.encrypt({ password: password, input: userKey.xprv })
     };
     bitgo.keychains().add(options, function(err, keychain) {
       if (err) {
@@ -80,8 +80,8 @@ var createWallet = function() {
             console.log("Wallet Created!");
             console.dir(result.wallet);
             console.log("\n\nBACK THIS UP: ");
-            console.log("User keychain encrypted xPrv - WRITE IT DOWN: " + bitgo.encrypt(password, userKey.xprv));
-            console.log("Backup keychain encrypted xPrv - WRITE IT DOWN: " + bitgo.encrypt(password, backupKey.xprv));
+            console.log("User keychain encrypted xPrv - WRITE IT DOWN: " + bitgo.encrypt({ password: password, input: userKey.xprv }));
+            console.log("Backup keychain encrypted xPrv - WRITE IT DOWN: " + bitgo.encrypt({ password: password, input: userKey.xprv }));
           });
         });
       });
@@ -92,13 +92,13 @@ var createWallet = function() {
 };
 
 // Authenticate first
-bitgo.authenticate(user, password, otp, function(err, result) {
+bitgo.authenticate({ username: user, password: password, otp: otp }, function(err, result) {
   if (err) {
     console.dir(err);
     throw new Error("Could not authenticate!");
   }
   console.log("Unlocking account.. " );
-  bitgo.unlock(otp, function(err) {
+  bitgo.unlock({otp: otp}, function(err) {
     if (err) { console.dir(err); throw new Error("Could not unlock!"); }
     console.log("Creating wallet.. " );
     createWallet();

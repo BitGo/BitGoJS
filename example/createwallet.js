@@ -31,7 +31,7 @@ if (process.argv.length > 6) {
 var bitgo = new BitGoJS.BitGo();
 
 // Authenticate
-bitgo.authenticate(user, password, otp, function(err, result) {
+bitgo.authenticate({ username: user, password: password, otp: otp }, function(err, result) {
   if (err) { console.dir(err); throw new Error("Could not authenticate!"); }
 
   // Create the wallet

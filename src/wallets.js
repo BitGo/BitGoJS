@@ -8,6 +8,7 @@
 var request = require('superagent');
 var ECKey = require('./bitcoin/eckey');
 var Wallet = require('./wallet');
+var common = require('./common');
 
 //
 // Constructor
@@ -20,10 +21,14 @@ var Wallets = function(bitgo) {
 // list
 // List the user's wallets
 //
-Wallets.prototype.list = function(callback) {
+Wallets.prototype.list = function(params, callback) {
+  params = params || {};
+  common.validateParams(params);
+
   if (typeof(callback) != 'function') {
-    throw new Error('invalid argument');
+    throw new Error('invalid callback argument');
   }
+
   var self = this;
   this.bitgo.get(this.bitgo.url('/wallet'))
   .end(function(err, res) {
@@ -45,7 +50,10 @@ Wallets.prototype.list = function(callback) {
 //   address: <address>
 //   key: <key, in WIF format>
 // }
-Wallets.prototype.createKey = function() {
+Wallets.prototype.createKey = function(params) {
+  params = params || {};
+  common.validateParams(params);
+
   var key = new ECKey();
   return {
     address: key.getBitcoinAddress(),
@@ -65,8 +73,9 @@ Wallets.prototype.createKey = function() {
 // 4. Creates the BitGo key on the service
 // 5. Creates the wallet on BitGo with the 3 public keys above
 //
-// Options include:
+// Parameters include:
 //   "passphrase": wallet passphrase to encrypt user and backup keys with
+//   "label": wallet label, is shown in BitGo UI
 //   "backupXpub": backup keychain xpub, it is HIGHLY RECOMMENDED you generate this on a separate machine!
 //                 BITGO DOES NOT GUARANTEE SAFETY OF WALLETS WITH MULTIPLE KEYS CREATED ON THE SAME MACHINE **
 // Returns: {
@@ -77,42 +86,41 @@ Wallets.prototype.createKey = function() {
 // ** BE SURE TO BACK UP THE ENCRYPTED USER AND BACKUP KEYCHAINS!**
 //
 // }
-Wallets.prototype.createWalletWithKeychains = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(callback) != 'function' ||
-    typeof(options.passphrase) != 'string' || typeof(options.label) != 'string' ||
-    (options.backupXpub && typeof(options.backupXpub) != 'string')) {
-    throw new Error('invalid argument');
+Wallets.prototype.createWalletWithKeychains = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['passphrase'], ['label', 'backupXpub']);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
 
   var self = this;
-  var label = options.label;
+  var label = params.label;
 
   // Create the user and backup key.
   var userKeychain = this.bitgo.keychains().create();
-  userKeychain.encryptedXprv = this.bitgo.encrypt(options.passphrase, userKeychain.xprv);
-  var backupKeychain = { "xpub" : options.backupXpub };
-  if (!options.backupXpub) {
+  userKeychain.encryptedXprv = this.bitgo.encrypt({ password: params.passphrase, input: userKeychain.xprv });
+  var backupKeychain = { "xpub" : params.backupXpub };
+  if (!params.backupXpub) {
     backupKeychain = this.bitgo.keychains().create();
-    backupKeychain.encryptedXprv = this.bitgo.encrypt(options.passphrase, backupKeychain.xprv);
+    backupKeychain.encryptedXprv = this.bitgo.encrypt({ password: params.passphrase, input: backupKeychain.xprv });
   }
 
   // Add keychains to BitGo
-  var options = {
-    "label": "key1",
+  var key1Params = {
     "xpub": userKeychain.xpub,
     "encryptedXprv": userKeychain.encryptedXprv
   };
 
-  self.bitgo.keychains().add(options, function(err, keychain) {
+  self.bitgo.keychains().add(key1Params, function(err, keychain) {
     if (err) {
       callback(err);
     }
 
-    var options = {
-      "label": "key2",
+    var key2Params = {
       "xpub": backupKeychain.xpub
     };
-    self.bitgo.keychains().add(options, function(err, keychain) {
+    self.bitgo.keychains().add(key2Params, function(err, keychain) {
       if (err) { console.dir(err); throw new Error("Could not create the backup keychain"); }
 
       // Do the actual key creation here
@@ -121,7 +129,7 @@ Wallets.prototype.createWalletWithKeychains = function(options, callback) {
           callback(err);
         }
 
-        var options = {
+        var walletParams = {
           "label": label,
           "m": 2,
           "n": 3,
@@ -130,7 +138,7 @@ Wallets.prototype.createWalletWithKeychains = function(options, callback) {
             { "xpub": backupKeychain.xpub },
             { "xpub": bitGoKeychain.xpub} ]
         };
-        self.add(options, function (err, result) {
+        self.add(walletParams, function (err, result) {
           if (err) {
             return callback(err);
           }
@@ -150,30 +158,35 @@ Wallets.prototype.createWalletWithKeychains = function(options, callback) {
 // add
 // Add a new wallet (advanced mode).
 // This allows you to manually submit the keychains, type, m and n of the wallet
-// Options include:
+// Parameters include:
 //    "label": label of the wallet to be shown in UI
-//    "type": should be "safehd"
 //    "m": number of keys required to unlock wallet (2)
 //    "n": number of keys available on the wallet (3)
 //    "keychains": array of keychain xpubs
-Wallets.prototype.add = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(callback) != 'function' ||
-    Array.isArray(options.keychains) === false || typeof(options.m) !== 'number' ||
-    typeof(options.n) != 'number') {
+Wallets.prototype.add = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], ['label']);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
+  }
+
+  if (Array.isArray(params.keychains) === false || typeof(params.m) !== 'number' ||
+    typeof(params.n) != 'number') {
     throw new Error('invalid argument');
   }
 
   // TODO: support more types of multisig
-  if (options.m != 2 || options.n != 3) {
+  if (params.m != 2 || params.n != 3) {
     throw new Error('unsupported multi-sig type');
   }
   var self = this;
-  var keychains = options.keychains.map(function(k) { return {xpub: k.xpub}; });
+  var keychains = params.keychains.map(function(k) { return {xpub: k.xpub}; });
   this.bitgo.post(this.bitgo.url('/wallet'))
   .send({
-    label: options.label,
-    m: options.m,
-    n: options.n,
+    label: params.label,
+    m: params.m,
+    n: params.n,
     keychains: keychains
   })
   .end(function(err, res) {
@@ -187,16 +200,19 @@ Wallets.prototype.add = function(options, callback) {
 //
 // get
 // Fetch an existing wallet
-// Options include:
+// Parameters include:
 //   address: the address of the wallet
 //
-Wallets.prototype.get = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.id) != 'string' ||
-      typeof(callback) != 'function') {
-    throw new Error('invalid arguments: id and callback arguments required.');
+Wallets.prototype.get = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], []);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
+
   var self = this;
-  this.bitgo.get(this.bitgo.url('/wallet/' + options.id))
+  this.bitgo.get(this.bitgo.url('/wallet/' + params.id))
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;

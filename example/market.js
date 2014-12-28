@@ -11,14 +11,14 @@ var market = null;
 var yesterday = null;
 
 // Get latest market data
-bitgo.market(function(err, res) {
+bitgo.market({}, function(err, res) {
   if (err) {
     throw err;
   }
   market = res;
 
   // Get yesterday's data
-  bitgo.yesterday(function(err, res) {
+  bitgo.yesterday({}, function(err, res) {
     if (err) {
       throw err;
     }

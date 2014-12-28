@@ -27,18 +27,19 @@ describe('Keychains', function() {
 
   describe('Local', function() {
     it('isValid', function() {
-      assert.equal(keychains.isValid(''), false);
-      assert.equal(keychains.isValid('hello world'), false);
-      assert.equal(keychains.isValid('xpub123123'), false);
-      assert.equal(keychains.isValid('xprv123123'), false);
+      assert.throws(function() { keychains.isValid('') });
+      assert.throws(function() { keychains.isValid({}) });
+      assert.equal(keychains.isValid({ key: 'hello world' }), false);
+      assert.equal(keychains.isValid({ key: 'xpub123123' }), false);
+      assert.equal(keychains.isValid({ key: 'xprv123123' }), false);
 
-      assert.equal(keychains.isValid('xpub661MyMwAqRbcH5xFjpBfCe74cj5tks4nxE8hSMepNfsMVsBkx8eT1m9mnR1tAMGdbbdsE8yMDcuZ3NgVJbTzCYDiu8rcc3sqLF6vzi9yfTB'), true);
-      assert.equal(keychains.isValid('xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw'), true);
+      assert.equal(keychains.isValid({ key: 'xpub661MyMwAqRbcH5xFjpBfCe74cj5tks4nxE8hSMepNfsMVsBkx8eT1m9mnR1tAMGdbbdsE8yMDcuZ3NgVJbTzCYDiu8rcc3sqLF6vzi9yfTB' }), true);
+      assert.equal(keychains.isValid({ key: 'xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw' }), true);
     });
 
     it('create', function() {
       var seed = BitGoJS.Util.hexToBytes('1234567890');
-      assert.equal(keychains.create(seed).xprv, 'xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw');
+      assert.equal(keychains.create({ seed: seed }).xprv, 'xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw');
     });
   });
 
@@ -46,10 +47,11 @@ describe('Keychains', function() {
     it('arguments', function() {
       assert.throws(function() { keychains.list(); });
       assert.throws(function() { keychains.list('invalid'); });
+      assert.throws(function() { keychains.list('invalid', function() {}); });
     });
 
     it('all', function(done) {
-      keychains.list(function(err, keychains) {
+      keychains.list({}, function(err, keychains) {
         assert.equal(err, null);
         assert.equal(Array.isArray(keychains), true);
         done();
@@ -90,7 +92,7 @@ describe('Keychains', function() {
         // Generate a new keychain
         extendedKey = keychains.create();
 
-        bitgo.unlock(bitgo.testUserOTP(), function(err) {
+        bitgo.unlock({ otp: bitgo.testUserOTP() }, function(err) {
           assert.equal(err, null);
           done();
         });

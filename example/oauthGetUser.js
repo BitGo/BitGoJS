@@ -18,7 +18,7 @@ var authorizationCode = process.argv[4];
 var bitgo = new BitGoJS.BitGo({clientId:clientId, clientSecret:clientSecret});
 
 // First, Authenticate
-bitgo.authenticateWithAuthCode(authorizationCode, function(err, result) {
+bitgo.authenticateWithAuthCode({ authCode: authorizationCode }, function(err, result) {
   if (err) {
     console.dir(err);
     throw new Error("Could not auth!");
@@ -26,7 +26,7 @@ bitgo.authenticateWithAuthCode(authorizationCode, function(err, result) {
 
   console.dir(result);
   console.log('Successfully logged in with auth code!');
-  bitgo.me(function(err, response) {
+  bitgo.me({}, function(err, response) {
     if (err) {
       console.dir(err);
       throw new Error("Could not get user!");

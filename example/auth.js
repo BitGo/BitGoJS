@@ -17,7 +17,7 @@ var password = process.argv[3];
 var otp = process.argv[4];
 
 console.log("BitGoJS library version: " + bitgo.version());
-bitgo.authenticate(user, password, otp, function(err, result) {
+bitgo.authenticate({ username: user, password: password, otp: otp }, function(err, result) {
   if (err) {
     return console.dir(err);
   }

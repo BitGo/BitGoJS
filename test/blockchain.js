@@ -84,7 +84,7 @@ describe('Address', function() {
   describe('Get Address Unspents', function() {
     it('arguments', function(done) {
       assert.throws(function() { blockchain.getAddressUnspents('invalid', function() {}); });
-      assert.throws(function() { blockchain.getAddressUnspents({btcLimit: 'a string!'}, function() {}); });
+      assert.throws(function() { blockchain.getAddressUnspents({limit: 'a string!'}, function() {}); });
       assert.throws(function() { blockchain.getAddressUnspents({}); });
       done();
     });

@@ -33,10 +33,11 @@ describe('Wallets', function() {
     it('arguments', function() {
       assert.throws(function() { wallets.list(); });
       assert.throws(function() { wallets.list('invalid'); });
+      assert.throws(function() { wallets.list({}); });
     });
 
     it('all', function(done) {
-      wallets.list(function(err, wallets) {
+      wallets.list({}, function(err, wallets) {
         assert.equal(err, null);
         assert.equal(typeof(wallets), 'object');
         done();
@@ -92,9 +93,9 @@ describe('Wallets', function() {
               assert.equal(wallet.pendingBalance(), 0);
               assert.equal(wallet.availableBalance(), 0);
               assert.equal(wallet.keychains.length, 3);
-              assert.equal(bitgo.keychains().isValid(wallet.keychains[0].xpub), true);
-              assert.equal(bitgo.keychains().isValid(wallet.keychains[1].xpub), true);
-              assert.equal(bitgo.keychains().isValid(wallet.keychains[2].xpub), true);
+              assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0].xpub }), true);
+              assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1].xpub }), true);
+              assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[2].xpub }), true);
               assert.equal(wallet.keychains[0].xpub, keychains[0].xpub);
               assert.equal(wallet.keychains[1].xpub, keychains[1].xpub);
               done();
@@ -133,16 +134,16 @@ describe('Wallets', function() {
         assert.equal(wallet.pendingBalance(), 0);
         assert.equal(wallet.availableBalance(), 0);
         assert.equal(wallet.keychains.length, 3);
-        assert.equal(bitgo.keychains().isValid(wallet.keychains[0].xpub), true);
-        assert.equal(bitgo.keychains().isValid(wallet.keychains[1].xpub), true);
-        assert.equal(bitgo.keychains().isValid(wallet.keychains[2].xpub), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0].xpub }), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1].xpub }), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[2].xpub }), true);
         assert.equal(wallet.keychains[0].xpub, result.userKeychain.xpub);
         assert.equal(wallet.keychains[1].xpub, result.backupKeychain.xpub);
 
         result.userKeychain.should.have.property('encryptedXprv');
         result.backupKeychain.should.have.property('encryptedXprv');
 
-        wallet.delete(function() {});
+        wallet.delete({}, function() {});
         done();
       });
     });
@@ -170,9 +171,9 @@ describe('Wallets', function() {
         assert.equal(wallet.pendingBalance(), 0);
         assert.equal(wallet.availableBalance(), 0);
         assert.equal(wallet.keychains.length, 3);
-        assert.equal(bitgo.keychains().isValid(wallet.keychains[0].xpub), true);
-        assert.equal(bitgo.keychains().isValid(wallet.keychains[1].xpub), true);
-        assert.equal(bitgo.keychains().isValid(wallet.keychains[2].xpub), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0].xpub }), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1].xpub }), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[2].xpub }), true);
         assert.equal(wallet.keychains[0].xpub, result.userKeychain.xpub);
         assert.equal(wallet.keychains[1].xpub, result.backupKeychain.xpub);
 
@@ -181,7 +182,7 @@ describe('Wallets', function() {
         result.userKeychain.should.have.property('encryptedXprv');
         result.backupKeychain.should.not.have.property('encryptedXprv');
 
-        wallet.delete(function() {});
+        wallet.delete({}, function() {});
         done();
       });
     });
@@ -217,9 +218,9 @@ describe('Wallets', function() {
         assert.equal(wallet.pendingBalance(), 0);
         assert.equal(wallet.availableBalance(), 0);
         assert.equal(wallet.keychains.length, 3);
-        assert.equal(bitgo.keychains().isValid(wallet.keychains[0]), true);
-        assert.equal(bitgo.keychains().isValid(wallet.keychains[1]), true);
-        assert.equal(bitgo.keychains().isValid(wallet.keychains[2]), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0] }), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1] }), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[2] }), true);
         done();
       });
     });
@@ -228,12 +229,12 @@ describe('Wallets', function() {
 
   describe('Delete', function() {
     it('arguments', function(done) {
-      assert.throws(function() { testWallet.delete('invalid'); });
+      assert.throws(function() { testWallet.delete({}, 'invalid'); });
       done();
     });
 
     it('delete', function(done) {
-      testWallet.delete(function(err, status) {
+      testWallet.delete({}, function(err, status) {
         assert.equal(err, null);
         done();
       });

@@ -39,20 +39,22 @@ var sendBitcoin = function() {
     if (err) { console.log("Error getting wallet!"); console.dir(err); return process.exit(-1); }
     console.log("Balance is: " + (wallet.balance() / 1e8).toFixed(4));
 
-    wallet.sendCoins(destinationAddress, amountSatoshis, walletPassphrase, function(err, result) {
-      if (err) { console.log("Error sending coins!"); console.dir(err); return process.exit(-1); }
+    wallet.sendCoins({ address: destinationAddress, amount: amountSatoshis, walletPassphrase: walletPassphrase },
+      function(err, result) {
+        if (err) { console.log("Error sending coins!"); console.dir(err); return process.exit(-1); }
 
-      console.dir(result);
-      process.exit(0);
-    });
+        console.dir(result);
+        process.exit(0);
+      }
+    );
   });
 };
 
 // Authenticate first
-bitgo.authenticate(user, password, otp, function(err, result) {
+bitgo.authenticate({ username: user, password: password, otp: otp }, function(err, result) {
   if (err) { console.dir(err); throw new Error("Could not authenticate!"); }
   console.log("Unlocking account.." );
-  bitgo.unlock(otp, function(err) {
+  bitgo.unlock({ otp: otp }, function(err) {
     if (err) { console.dir(err); throw new Error("Could not unlock!"); }
     sendBitcoin();
   });

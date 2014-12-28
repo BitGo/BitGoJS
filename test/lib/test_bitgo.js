@@ -31,7 +31,7 @@ BitGo.prototype.testUserOTP = function() {
 // Authenticate the test user.
 //
 BitGo.prototype.authenticateTestUser = function(otp, callback) {
-  this.authenticate(BitGo.TEST_USER, BitGo.TEST_PASSWORD, otp, function(err, response) {
+  this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp }, function(err, response) {
     if (!err && response) {
       response.should.have.property('access_token');
       response.should.have.property('user');

@@ -7,6 +7,7 @@
 //
 
 var request = require('superagent');
+var common = require('./common');
 
 //
 // Constructor
@@ -20,16 +21,19 @@ var Blockchain = function(bitgo) {
 // Fetch an address summary information.
 // Includes balance and pending balance.
 //
-// Options include:
+// Parameters include:
 //   address: the address to get
 //
-Blockchain.prototype.getAddress = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.address) != 'string' ||
-  typeof(callback) != 'function') {
-    throw new Error('invalid arguments: address and callback arguments required.');
+Blockchain.prototype.getAddress = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['address'], []);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
+
   var self = this;
-  this.bitgo.get(this.bitgo.url("/address/" + options.address))
+  this.bitgo.get(this.bitgo.url("/address/" + params.address))
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;
@@ -41,18 +45,20 @@ Blockchain.prototype.getAddress = function(options, callback) {
 //
 // Get address transactions
 // List the transactions for a given address
-// Options include:
+// Parameters include:
 //   address: the address to get transactions for
 //
-Blockchain.prototype.getAddressTransactions = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.address) != 'string' ||
-  typeof(callback) != 'function') {
-    throw new Error('invalid arguments: address and callback arguments required.');
+Blockchain.prototype.getAddressTransactions = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['address'], []);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
 
   var self = this;
   // TODO: support start and limit params
-  this.bitgo.get(this.bitgo.url("/address/" + options.address + "/tx"))
+  this.bitgo.get(this.bitgo.url("/address/" + params.address + "/tx"))
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;
@@ -65,22 +71,24 @@ Blockchain.prototype.getAddressTransactions = function(options, callback) {
 //
 // Unspent Transactions
 // List the unspent outputs for a given address
-// Options include:
+// Parameters include:
 //   address: the address to get unspent transactions
 //   limit: return enough unspents to accumulate to at least this amount (in satoshis).
 //
-Blockchain.prototype.getAddressUnspents = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.address) != 'string' ||
-  typeof(callback) != 'function') {
-    throw new Error('invalid arguments: address and callback arguments required.');
+Blockchain.prototype.getAddressUnspents = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['address'], []);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
 
-  var url = this.bitgo.url("/address/" + options.address + '/unspents');
-  if (options.btcLimit) {
-    if (typeof(options.limit) != 'number') {
-      throw new Error('invalid argument');
+  var url = this.bitgo.url("/address/" + params.address + '/unspents');
+  if (params.limit) {
+    if (typeof(params.limit) != 'number') {
+      throw new Error('invalid limit - number expected');
     }
-    url += '?limit=' + (options.limit * 1e8);
+    url += '?limit=' + (params.limit * 1e8);
   }
 
   var self = this;
@@ -98,16 +106,19 @@ Blockchain.prototype.getAddressUnspents = function(options, callback) {
 // Get transaction
 // Fetch transaction details.
 //
-// Options include:
+// Parameters include:
 //   id: the transaction id to get
 //
-Blockchain.prototype.getTransaction = function(options, callback) {
-  if (typeof(options) != 'object' || typeof(options.id) != 'string' ||
-  typeof(callback) != 'function') {
-    throw new Error('invalid arguments: id and callback arguments required.');
+Blockchain.prototype.getTransaction = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], []);
+
+  if (typeof(callback) != 'function') {
+    throw new Error('invalid callback argument');
   }
+
   var self = this;
-  this.bitgo.get(this.bitgo.url("/tx/" + options.id))
+  this.bitgo.get(this.bitgo.url("/tx/" + params.id))
   .end(function(err, res) {
     if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
       return;
