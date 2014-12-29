@@ -70,18 +70,11 @@ Keychains.prototype.create = function(params) {
 //
 Keychains.prototype.list = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], []);
+  common.validateParams(params, [], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-  this.bitgo.get(this.bitgo.url('/keychain'))
-  .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, res.body.keychains);
-  });
+  return this.bitgo.get(this.bitgo.url('/keychain'))
+  .result('keychains')
+  .nodeify(callback);
 };
 
 //
@@ -90,23 +83,15 @@ Keychains.prototype.list = function(params, callback) {
 //
 Keychains.prototype.add = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['xpub'], ['encryptedXprv']);
+  common.validateParams(params, ['xpub'], ['encryptedXprv'], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  this.bitgo.post(this.bitgo.url('/keychain'))
+  return this.bitgo.post(this.bitgo.url('/keychain'))
   .send({
     xpub: params.xpub,
     encryptedXprv: params.encryptedXprv
   })
-  .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, res.body);
-  });
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -115,20 +100,12 @@ Keychains.prototype.add = function(params, callback) {
 //
 Keychains.prototype.createBitGo = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], []);
+  common.validateParams(params, [], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  this.bitgo.post(this.bitgo.url('/keychain/bitgo'))
+  return this.bitgo.post(this.bitgo.url('/keychain/bitgo'))
   .send({})
-  .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, res.body);
-  });
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -139,21 +116,12 @@ Keychains.prototype.createBitGo = function(params, callback) {
 //
 Keychains.prototype.get = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['xpub'], []);
+  common.validateParams(params, ['xpub'], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  var self = this;
-  this.bitgo.post(this.bitgo.url('/keychain/' + params.xpub))
+  return this.bitgo.post(this.bitgo.url('/keychain/' + params.xpub))
   .send({})
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, res.body);
-  });
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -164,23 +132,14 @@ Keychains.prototype.get = function(params, callback) {
 //
 Keychains.prototype.update = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['xpub'], ['encryptedXprv']);
+  common.validateParams(params, ['xpub'], ['encryptedXprv'], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  var self = this;
-  this.bitgo.put(this.bitgo.url('/keychain/' + params.xpub))
+  return this.bitgo.put(this.bitgo.url('/keychain/' + params.xpub))
   .send({
     encryptedXprv: params.encryptedXprv,
   })
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, res.body);
-  });
+  .result()
+  .nodeify(callback);
 };
 
 

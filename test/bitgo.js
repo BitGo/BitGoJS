@@ -88,12 +88,12 @@ describe('BitGo', function() {
   describe('Market', function() {
     var bitgo;
     before(function() {
-      bitgo = new TestBitGo();
+      bitgo = new BitGoJS.BitGo();
     });
 
     it('arguments', function() {
-      assert.throws(function() { bitgo.market(); });
       assert.throws(function() { bitgo.market('invalid'); });
+      assert.throws(function() { bitgo.market({}, 'invalid'); });
     });
 
     it('latest', function(done) {
@@ -126,15 +126,12 @@ describe('BitGo', function() {
         assert.throws(function() { bitgo.authenticate(); });
         assert.throws(function() { bitgo.authenticate(123); });
         assert.throws(function() { bitgo.authenticate('foo', 123); });
-        assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar' }); });
         assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar', otp: 0.01}); });
-        assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar', otp: 'baz'}); });
         assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar', otp: 'baz'}, 123); });
       });
 
       it('fails without OTP', function(done) {
         bitgo.authenticateTestUser("0", function(err, response) {
-          console.dir(err);
           err.status.should.equal(401);
           err.needsOTP.should.equal(true);
           done();
@@ -152,10 +149,11 @@ describe('BitGo', function() {
       });
     });
 
-    describe('Logout', function() {
-      it('arguments', function() {
+    describe('Logout API', function() {
+      it('arguments', function(done) {
         var bitgo = new TestBitGo();
-        assert.throws(function() { bitgo.logout(); });
+        assert.throws(function() { bitgo.logout({}, 'bad'); });
+        done();
       });
 
       it('logout', function(done) {
@@ -172,7 +170,7 @@ describe('BitGo', function() {
     describe('me', function() {
       it('arguments', function() {
         var bitgo = new TestBitGo();
-        assert.throws(function() { bitgo.me(); });
+        assert.throws(function() { bitgo.me({}, 'bad'); });
       });
 
       it('me', function(done) {
@@ -282,11 +280,8 @@ describe('BitGo', function() {
         bitgo.authenticateWithAuthCode({ authCode: 'BADCODE' }, function (err, response) {
           // Expect error
           assert.notEqual(err, null);
-          assert.equal(err.error, 'invalid_grant');
-
+          err.message.should.equal('invalid_grant');
           err.should.have.property('status');
-          err.should.have.property('error');
-          err.should.have.property('details');
           done();
         });
       });
@@ -327,10 +322,8 @@ describe('BitGo', function() {
 
         bitgoAT.me({}, function (err, me_result) {
           assert.notEqual(err, null);
-
+          err.message.should.equal('not found');
           err.should.have.property('status');
-          err.should.have.property('error');
-          err.should.have.property('details');
           done();
         });
       });
@@ -365,11 +358,8 @@ describe('BitGo', function() {
         bitgo.refreshToken({ refreshToken: 'BADTOKEN' }, function (err, response) {
           // Expect error
           assert.notEqual(err, null);
-          assert.equal(err.error, 'invalid_grant');
-
+          err.message.should.equal('invalid_grant');
           err.should.have.property('status');
-          err.should.have.property('error');
-          err.should.have.property('details');
           done();
         });
       });

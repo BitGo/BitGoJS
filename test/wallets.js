@@ -31,9 +31,8 @@ describe('Wallets', function() {
 
   describe('List', function() {
     it('arguments', function() {
-      assert.throws(function() { wallets.list(); });
+      assert.throws(function() { wallets.list({}, 'invalid'); });
       assert.throws(function() { wallets.list('invalid'); });
-      assert.throws(function() { wallets.list({}); });
     });
 
     it('all', function(done) {
@@ -106,7 +105,7 @@ describe('Wallets', function() {
     });
   });
 
-  describe('Create wallet with keychains', function() {
+  describe('Create wallet with createWalletWithKeychains', function() {
     it('arguments', function() {
       assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TEST_WALLET_PASSCODE, "backupXpub": backupXpub}); });
       assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TEST_WALLET_PASSCODE, "label": TEST_WALLET_LABEL, "backupXpub": backupXpub}); });
@@ -141,7 +140,7 @@ describe('Wallets', function() {
         assert.equal(wallet.keychains[1].xpub, result.backupKeychain.xpub);
 
         result.userKeychain.should.have.property('encryptedXprv');
-        result.backupKeychain.should.have.property('encryptedXprv');
+        result.backupKeychain.should.not.have.property('encryptedXprv');
 
         wallet.delete({}, function() {});
         done();
@@ -165,7 +164,6 @@ describe('Wallets', function() {
         result.should.have.property('wallet');
         var wallet = result.wallet;
 
-        console.log(result);
         assert.equal(wallet.balance(), 0);
         assert.equal(wallet.label(), TEST_WALLET_LABEL);
         assert.equal(wallet.pendingBalance(), 0);

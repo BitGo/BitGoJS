@@ -1,4 +1,4 @@
-//
+  //
 // Tests for Wallet
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
@@ -67,7 +67,7 @@ describe('Wallet', function() {
   describe('CreateAddress', function() {
     it('arguments', function(done) {
       assert.throws(function() { wallet2.createAddress('invalid', function() {}); });
-      assert.throws(function() { wallet2.createAddress({}); });
+      assert.throws(function() { wallet2.createAddress({}, 'invalid'); });
       done();
     });
 
@@ -87,8 +87,8 @@ describe('Wallet', function() {
 
   describe('GetAddresses', function() {
     it('arguments', function(done) {
-      assert.throws(function() { wallet1.addresses({}, null, function() {}); });
-      assert.throws(function() { wallet1.addresses({}); });
+      assert.throws(function() { wallet1.addresses('invalid', function() {}); });
+      assert.throws(function() { wallet1.addresses({}, 'invalid'); });
       done();
     });
 
@@ -137,7 +137,7 @@ describe('Wallet', function() {
     it('arguments', function(done) {
       assert.throws(function() { wallet1.unspents('invalid', function() {}); });
       assert.throws(function() { wallet1.unspents({btcLimit: 'a string!'}, function() {}); });
-      assert.throws(function() { wallet1.unspents({}); });
+      assert.throws(function() { wallet1.unspents({}, 'invalid'); });
       done();
     });
 
@@ -154,7 +154,7 @@ describe('Wallet', function() {
   describe('Transactions', function() {
     it('arguments', function(done) {
       assert.throws(function() { wallet1.transactions('invalid', function() {}); });
-      assert.throws(function() { wallet1.transactions({}); });
+      assert.throws(function() { wallet1.transactions({}, 'invalid'); });
       done();
     });
 
@@ -336,8 +336,8 @@ describe('Wallet', function() {
 
   describe('Get wallet user encrypted key', function() {
     it('arguments', function(done) {
-      assert.throws(function() { wallet1.getEncryptedUserKeychain(); });
-      assert.throws(function() { wallet1.getEncryptedUserKeychain({}); });
+      assert.throws(function() { wallet1.getEncryptedUserKeychain(undefined, 'invalid'); });
+      assert.throws(function() { wallet1.getEncryptedUserKeychain({}, 'invalid'); });
       assert.throws(function() { wallet1.transactions('invalid', function() {}); });
       done();
     });

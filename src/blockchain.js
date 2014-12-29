@@ -26,20 +26,11 @@ var Blockchain = function(bitgo) {
 //
 Blockchain.prototype.getAddress = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address'], []);
+  common.validateParams(params, ['address'], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  var self = this;
-  this.bitgo.get(this.bitgo.url("/address/" + params.address))
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, res.body);
-  });
+  return this.bitgo.get(this.bitgo.url("/address/" + params.address))
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -50,22 +41,12 @@ Blockchain.prototype.getAddress = function(params, callback) {
 //
 Blockchain.prototype.getAddressTransactions = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address'], []);
+  common.validateParams(params, ['address'], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  var self = this;
   // TODO: support start and limit params
-  this.bitgo.get(this.bitgo.url("/address/" + params.address + "/tx"))
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    // TODO:  Get the address labels and prettify these?
-    callback(null, res.body);
-  });
+  return this.bitgo.get(this.bitgo.url("/address/" + params.address + "/tx"))
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -77,11 +58,7 @@ Blockchain.prototype.getAddressTransactions = function(params, callback) {
 //
 Blockchain.prototype.getAddressUnspents = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address'], []);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, ['address'], [], callback);
 
   var url = this.bitgo.url("/address/" + params.address + '/unspents');
   if (params.limit) {
@@ -91,15 +68,12 @@ Blockchain.prototype.getAddressUnspents = function(params, callback) {
     url += '?limit=' + (params.limit * 1e8);
   }
 
-  var self = this;
-  this.bitgo.get(url)
-  .send()
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, res.body.unspents);
-  });
+  return this.bitgo.get(url)
+  .result()
+  .then(function(body) {
+    return body.unspents;
+  })
+  .nodeify(callback);
 };
 
 //
@@ -111,20 +85,11 @@ Blockchain.prototype.getAddressUnspents = function(params, callback) {
 //
 Blockchain.prototype.getTransaction = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['id'], []);
+  common.validateParams(params, ['id'], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  var self = this;
-  this.bitgo.get(this.bitgo.url("/tx/" + params.id))
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, res.body);
-  });
+  return this.bitgo.get(this.bitgo.url("/tx/" + params.id))
+  .result()
+  .nodeify(callback);
 };
 
 module.exports = Blockchain;

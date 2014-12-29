@@ -45,7 +45,7 @@ describe('Keychains', function() {
 
   describe('List', function() {
     it('arguments', function() {
-      assert.throws(function() { keychains.list(); });
+      assert.throws(function() { keychains.list({}, 'invalid'); });
       assert.throws(function() { keychains.list('invalid'); });
       assert.throws(function() { keychains.list('invalid', function() {}); });
     });

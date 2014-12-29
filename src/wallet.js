@@ -80,23 +80,13 @@ Wallet.prototype.url = function(extra) {
 //
 Wallet.prototype.createAddress = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, [], [], callback);
 
   var chain = params.chain || 0;
-  var self = this;
-  this.bitgo.post(this.url('/address/' + chain))
+  return this.bitgo.post(this.url('/address/' + chain))
   .send({})
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    // TODO:  Should we return a Wallet object here?
-    callback(null, res.body);
-  });
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -107,16 +97,9 @@ Wallet.prototype.createAddress = function(params, callback) {
 //
 Wallet.prototype.addresses = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
+  common.validateParams(params, [], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  // TODO: Allow limits and starting from non-zero point in addresses list
-  var self = this;
   var url = this.url('/addresses');
-
   if (params.limit) {
     if (typeof(params.limit) != 'number') {
       throw new Error('invalid limit argument, expecting number');
@@ -124,14 +107,9 @@ Wallet.prototype.addresses = function(params, callback) {
     url += '?limit=' + (params.limit);
   }
 
-  this.bitgo.get(url)
-  .send()
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, res.body);
-  });
+  return this.bitgo.get(url)
+  .result()
+  .nodeify(callback);
 };
 
 
@@ -141,21 +119,11 @@ Wallet.prototype.addresses = function(params, callback) {
 //
 Wallet.prototype.delete = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
+  common.validateParams(params, [], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  var self = this;
-  this.bitgo.del(this.url())
-  .send()
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, {});
-  });
+  return this.bitgo.del(this.url())
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -166,11 +134,7 @@ Wallet.prototype.delete = function(params, callback) {
 //
 Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, [], [], callback);
 
   var url = this.url('/unspents');
   if (params.btcLimit) {
@@ -179,15 +143,10 @@ Wallet.prototype.unspents = function(params, callback) {
     }
     url += '?limit=' + (params.limit * 1e8);
   }
-  var self = this;
-  this.bitgo.get(url)
-  .send()
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, res.body.unspents);
-  });
+
+  return this.bitgo.get(url)
+  .result('unspents')
+  .nodeify(callback);
 };
 
 //
@@ -197,22 +156,11 @@ Wallet.prototype.unspents = function(params, callback) {
 //     TODO:  Add iterators for start/count/etc
 Wallet.prototype.transactions = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
+  common.validateParams(params, [], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  var self = this;
-  this.bitgo.get(this.url('/tx'))
-  .send()
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    // TODO:  Get the address labels and prettify these?
-    callback(null, res.body);
-  });
+  return this.bitgo.get(this.url('/tx'))
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -222,37 +170,28 @@ Wallet.prototype.transactions = function(params, callback) {
 // Useful when trying to get the users' keychain from the server before decrypting to sign a transaction.
 Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
+  common.validateParams(params, [], [], callback);
   var self = this;
 
   var tryKeyChain = function(index) {
     if (!self.keychains || index >= self.keychains.length) {
-      return callback(new Error('No encrypted keychains on this wallet.'));
+      return self.reject('No encrypted keychains on this wallet.', callback);
     }
 
     var params = { "xpub": self.keychains[index].xpub };
-    self.bitgo.keychains().get(params, function(err, keychain) {
 
-      if (err) {
-        return callback(err);
-      }
-
+    return self.bitgo.keychains().get(params)
+    .then(function(keychain) {
       // If we find the xpriv, then this is probably the user keychain we're looking for
       if (keychain.encryptedXprv) {
-        return callback(null, keychain);
-      } else {
-        // Try next index
-        tryKeyChain(index + 1);
+        return keychain;
       }
-    });
+      return tryKeyChain(index + 1);
+    })
+    .nodeify(callback);
   };
 
-  tryKeyChain(0);
+  return tryKeyChain(0);
 };
 
 //
@@ -268,15 +207,11 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 //   callback(err, transaction)
 Wallet.prototype.createTransaction = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address'], []);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, ['address'], [], callback);
 
   if (typeof(params.amount) != 'number' ||
-    (typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined')
-    || typeof(params.keychain) != 'object') {
+    (typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
+    typeof(params.keychain) != 'object') {
     throw new Error('invalid argument');
   }
 
@@ -284,19 +219,19 @@ Wallet.prototype.createTransaction = function(params, callback) {
     throw new Error('must send positive number of Satoshis!');
   }
 
-  new TransactionBuilder(this, { address: params.address, amount: params.amount }, params.fee).prepare()
+  return new TransactionBuilder(this, { address: params.address, amount: params.amount }, params.fee).prepare()
   .then(function(tb) {
     return tb.sign(params.keychain);
   })
   .then(function(tb) {
     if (tb) {
-      callback(null, {tx: tb.tx(), fee: tb.fee});
+      return {
+        tx: tb.tx(),
+        fee: tb.fee
+      };
     }
   })
-  .catch(function(e) {
-    return callback(e);
-  })
-  .done();
+  .nodeify(callback);
 };
 
 //
@@ -309,21 +244,19 @@ Wallet.prototype.createTransaction = function(params, callback) {
 //
 Wallet.prototype.sendTransaction = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['tx'], []);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, ['tx'], [], callback);
 
   var self = this;
-  this.bitgo.post(this.bitgo.url('/tx/send'))
+  return this.bitgo.post(this.bitgo.url('/tx/send'))
   .send({ tx: params.tx })
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, { tx: res.body.transaction, hash: res.body.transactionHash });
-  });
+  .result()
+  .then(function(body) {
+    return {
+      tx: body.transaction,
+      hash: body.transactionHash
+    };
+  })
+  .nodeify(callback);
 };
 
 //
@@ -343,11 +276,7 @@ Wallet.prototype.sendTransaction = function(params, callback) {
 //
 Wallet.prototype.sendCoins = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address', 'walletPassphrase'], []);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, ['address', 'walletPassphrase'], [], callback);
 
   if (typeof(params.amount) != 'number') {
     throw new Error('invalid argument for amount - number expected');
@@ -358,31 +287,38 @@ Wallet.prototype.sendCoins = function(params, callback) {
   }
 
   var self = this;
-  // Get the user keychain
-  this.getEncryptedUserKeychain({}, function(err, keychain) {
-    if (err) { return callback(err); }
+  var transaction;
 
+  // Get the user keychain
+  return this.getEncryptedUserKeychain()
+  .then(function(keychain) {
     // Decrypt the user key with a passphrase
     try {
       keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, opaque: keychain.encryptedXprv });
     } catch (e) {
-      return callback(new Error('Unable to decrypt user keychain'));
+      return self.reject('Unable to decrypt user keychain', callback);
     }
 
     // Create and sign the transaction
-    self.createTransaction(
-      { address: params.address, amount: params.amount, keychain: keychain },
-      function(err, transaction) {
-        if (err) { return callback(err); }
-
-        // Send the transaction
-        self.sendTransaction({ tx: transaction.tx }, function(err, result) {
-          if (err) { return callback(err); }
-          callback(null, {tx: result.tx, hash: result.hash, fee: transaction.fee});
-        });
-      }
-    );
-  });
+    return self.createTransaction({
+      address: params.address,
+      amount: params.amount,
+      keychain: keychain
+    });
+  })
+  .then(function(result) {
+    transaction = result;
+    // Send the transaction
+    return self.sendTransaction({ tx: transaction.tx });
+  })
+  .then(function(result) {
+    return {
+      tx: result.tx,
+      hash: result.hash,
+      fee: transaction.fee
+    };
+  })
+  .nodeify(callback);
 };
 
 module.exports = Wallet;

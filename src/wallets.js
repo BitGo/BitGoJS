@@ -23,24 +23,19 @@ var Wallets = function(bitgo) {
 //
 Wallets.prototype.list = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, [], [], callback);
 
   var self = this;
-  this.bitgo.get(this.bitgo.url('/wallet'))
-  .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
+  return this.bitgo.get(this.bitgo.url('/wallet'))
+  .result()
+  .then(function(body) {
     var wallets = {};
-    for (var wallet in res.body.wallets) {
-      wallets[wallet] = new Wallet(self.bitgo, res.body.wallets[wallet]);
+    for (var wallet in body.wallets) {
+      wallets[wallet] = new Wallet(self.bitgo, body.wallets[wallet]);
     }
-    callback(null, wallets);
-  });
+    return wallets;
+  })
+  .nodeify(callback);
 };
 
 //
@@ -88,11 +83,7 @@ Wallets.prototype.createKey = function(params) {
 // }
 Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['passphrase'], ['label', 'backupXpub']);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, ['passphrase'], ['label', 'backupXpub'], callback);
 
   var self = this;
   var label = params.label;
@@ -100,11 +91,13 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   // Create the user and backup key.
   var userKeychain = this.bitgo.keychains().create();
   userKeychain.encryptedXprv = this.bitgo.encrypt({ password: params.passphrase, input: userKeychain.xprv });
+
   var backupKeychain = { "xpub" : params.backupXpub };
   if (!params.backupXpub) {
     backupKeychain = this.bitgo.keychains().create();
-    backupKeychain.encryptedXprv = this.bitgo.encrypt({ password: params.passphrase, input: backupKeychain.xprv });
   }
+
+  var bitgoKeychain;
 
   // Add keychains to BitGo
   var key1Params = {
@@ -112,46 +105,39 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
     "encryptedXprv": userKeychain.encryptedXprv
   };
 
-  self.bitgo.keychains().add(key1Params, function(err, keychain) {
-    if (err) {
-      callback(err);
-    }
-
+  return self.bitgo.keychains().add(key1Params)
+  .then(function(keychain) {
     var key2Params = {
       "xpub": backupKeychain.xpub
     };
-    self.bitgo.keychains().add(key2Params, function(err, keychain) {
-      if (err) { console.dir(err); throw new Error("Could not create the backup keychain"); }
-
-      // Do the actual key creation here
-      self.bitgo.keychains().createBitGo({}, function(err, bitGoKeychain) {
-        if (err) {
-          callback(err);
-        }
-
-        var walletParams = {
-          "label": label,
-          "m": 2,
-          "n": 3,
-          "keychains": [
-            { "xpub": userKeychain.xpub },
-            { "xpub": backupKeychain.xpub },
-            { "xpub": bitGoKeychain.xpub} ]
-        };
-        self.add(walletParams, function (err, result) {
-          if (err) {
-            return callback(err);
-          }
-
-          callback(null, {
-            "wallet": result,
-            "userKeychain": userKeychain,
-            "backupKeychain": backupKeychain
-          });
-        });
-      });
-    });
-  });
+    return self.bitgo.keychains().add(key2Params);
+  })
+  .then(function(keychain) {
+    return self.bitgo.keychains().createBitGo();
+  })
+  .then(function(keychain) {
+    bitgoKeychain = keychain;
+    var walletParams = {
+      "label": label,
+      "m": 2,
+      "n": 3,
+      "keychains": [
+        { "xpub": userKeychain.xpub },
+        { "xpub": backupKeychain.xpub },
+        { "xpub": bitgoKeychain.xpub} ]
+    };
+    return self.add(walletParams);
+  })
+  .then(function(result) {
+    return {
+      wallet: result,
+      userKeychain: userKeychain,
+      backupKeychain: backupKeychain,
+      bitgoKeychain: bitgoKeychain,
+      warning: 'Be sure to backup the backup keychain -- it is not stored anywhere else!'
+    };
+  })
+  .nodeify(callback);
 };
 
 //
@@ -165,11 +151,7 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
 //    "keychains": array of keychain xpubs
 Wallets.prototype.add = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['label']);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, [], ['label'], callback);
 
   if (Array.isArray(params.keychains) === false || typeof(params.m) !== 'number' ||
     typeof(params.n) != 'number') {
@@ -180,21 +162,21 @@ Wallets.prototype.add = function(params, callback) {
   if (params.m != 2 || params.n != 3) {
     throw new Error('unsupported multi-sig type');
   }
+
   var self = this;
   var keychains = params.keychains.map(function(k) { return {xpub: k.xpub}; });
-  this.bitgo.post(this.bitgo.url('/wallet'))
+  return this.bitgo.post(this.bitgo.url('/wallet'))
   .send({
     label: params.label,
     m: params.m,
     n: params.n,
     keychains: keychains
   })
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, new Wallet(self.bitgo, res.body));
-  });
+  .result()
+  .then(function(body) {
+    return new Wallet(self.bitgo, body);
+  })
+  .nodeify(callback);
 };
 
 //
@@ -205,20 +187,15 @@ Wallets.prototype.add = function(params, callback) {
 //
 Wallets.prototype.get = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['id'], []);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
+  common.validateParams(params, ['id'], [], callback);
 
   var self = this;
-  this.bitgo.get(this.bitgo.url('/wallet/' + params.id))
-  .end(function(err, res) {
-    if (self.bitgo.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, new Wallet(self.bitgo, res.body));
-  });
+  return this.bitgo.get(this.bitgo.url('/wallet/' + params.id))
+  .result()
+  .then(function(body) {
+    return new Wallet(self.bitgo, body);
+  })
+  .nodeify(callback);
 };
 
 module.exports = Wallets;

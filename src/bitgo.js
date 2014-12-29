@@ -11,6 +11,68 @@ var Keychains = require('./keychains');
 var Wallets = require('./wallets');
 var sjcl = require('./bitcoin/sjcl.min');
 var common = require('./common');
+var Q = require('q');
+
+// Patch superagent to return promises
+var _end = superagent.Request.prototype.end;
+superagent.Request.prototype.end = function() {
+  var self = this;
+
+  return new Q.Promise(function(resolve, reject) {
+    var error;
+    try {
+      return _end.call(self, function(error, response) {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(response);
+      });
+    } catch (_error) {
+      error = _error;
+      return reject(error);
+    }
+  });
+};
+
+// Shortcuts to avoid having to call end()
+superagent.Request.prototype.then = function() {
+  var _ref;
+  return (_ref = this.end()).then.apply(_ref, arguments);
+};
+superagent.Request.prototype["catch"] = function() {
+  var _ref;
+  return (_ref = this.end())["catch"].apply(_ref, arguments);
+};
+
+
+// Handle HTTP errors appropriately, returning the result body, or a named
+// field from the body, if the optionalField parameter is provided.
+superagent.Request.prototype.result = function(optionalField) {
+
+  var errFromResponse = function(res) {
+    var err = new Error(res.body.error ? res.body.error : res.status.toString());
+    err.status = res.status;
+    if (res.body.needsOTP) {
+      err.needsOTP = true;
+    }
+    return err;
+  };
+
+  return this.then(
+    function(res) {
+      if (res.status === 200) {
+        return optionalField ? res.body[optionalField] : res.body;
+      }
+      throw errFromResponse(res);
+    },
+    function(e) {
+      if (e.response) {
+        throw errFromResponse(e.response);
+      }
+      throw e;
+    }
+  );
+};
 
 //
 // Constructor for BitGo Object
@@ -25,7 +87,7 @@ var BitGo = function(params) {
     throw new Error('invalid argument');
   }
 
-  if (!params.clientId !== !params.clientSecret) {
+  if ((!params.clientId) !== (!params.clientSecret)) {
     throw new Error('invalid argument - must provide both client id and secret');
   }
 
@@ -66,8 +128,14 @@ var BitGo = function(params) {
     var method = methods[index];
     self[method] = createPatch(method);
   }
+
+
 };
 
+// Helper function to return a rejected promise or call callback with error
+BitGo.prototype.reject = function(msg, callback) {
+  return Q().thenReject(new Error(msg)).nodeify(callback);
+};
 
 //
 // version
@@ -107,7 +175,7 @@ BitGo.prototype.encrypt = function(params) {
 //
 BitGo.prototype.decrypt = function(params) {
   params = params || {};
-  common.validateParams(params, ['password', 'opaque']);
+  common.validateParams(params, ['password', 'opaque'], []);
 
   return sjcl.decrypt(params.password, params.opaque);
 };
@@ -118,19 +186,11 @@ BitGo.prototype.decrypt = function(params) {
 //
 BitGo.prototype.market = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
+  common.validateParams(params, [], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid argument');
-  }
-
-  this.get(this.url('/market/latest'))
-  .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, res.body);
-  });
+  return this.get(this.url('/market/latest'))
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -139,19 +199,11 @@ BitGo.prototype.market = function(params, callback) {
 //
 BitGo.prototype.yesterday = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
+  common.validateParams(params, [], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid argument');
-  }
-
-  this.get(this.url('/market/yesterday'))
-  .end(function(err, res) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, res.body);
-  });
+  return this.get(this.url('/market/yesterday'))
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -164,11 +216,7 @@ BitGo.prototype.yesterday = function(params, callback) {
 //   }
 BitGo.prototype.authenticate = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['username', 'password'], ['otp']);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('illegal callback argument');
-  }
+  common.validateParams(params, ['username', 'password'], ['otp'], callback);
 
   var username = params.username;
   var password = params.password;
@@ -185,19 +233,18 @@ BitGo.prototype.authenticate = function(params, callback) {
 
   var self = this;
   if (this._token) {
-    return callback(new Error('already logged in'));
+    return this.reject('already logged in', callback);
   }
 
-  this.post(this.url('/user/login'))
+  return this.post(this.url('/user/login'))
   .send(authParams)
-  .end(function(err, res) {
-    if (self.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    self._user = res.body.user;
-    self._token = res.body.access_token;
-    callback(null, res.body);
-  });
+  .result()
+  .then(function(body) {
+    self._user = body.user;
+    self._token = body.access_token;
+    return body;
+  })
+  .nodeify(callback);
 };
 
 //
@@ -209,11 +256,7 @@ BitGo.prototype.authenticate = function(params, callback) {
 //   }
 BitGo.prototype.authenticateWithAuthCode = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['authCode'], []);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('illegal callback argument');
-  }
+  common.validateParams(params, ['authCode'], [], callback);
 
   if (!this._clientId || !this._clientSecret) {
     throw new Error('Need client id and secret set first to use this');
@@ -223,31 +266,30 @@ BitGo.prototype.authenticateWithAuthCode = function(params, callback) {
 
   var self = this;
   if (this._token) {
-    return callback(new Error('already logged in'));
+    return this.reject('already logged in', callback);
   }
 
-  this.post(this._baseUrl + '/oauth/token')
+  var token_result;
+
+  return this.post(this._baseUrl + '/oauth/token')
   .send({
     grant_type: 'authorization_code',
     code: authCode,
     client_id: self._clientId,
     client_secret: self._clientSecret
   })
-  .end(function(err, token_result) {
-    if (self.handleBitGoAPIError(err, token_result, callback)) {
-      return;
-    }
-    self._token = token_result.body.access_token;
-    self._refreshToken = token_result.body.refresh_token;
-    self.me({}, function(err, me_result) {
-      if (err) {
-        callback(err);
-      }
-
-      self._user = me_result;
-      callback(null, token_result.body);
-    });
-  });
+  .result()
+  .then(function(body) {
+    token_result = body;
+    self._token = body.access_token;
+    self._refreshToken = body.refresh_token;
+    return self.me();
+  })
+  .then(function(user) {
+    self._user = user;
+    return token_result;
+  })
+  .nodeify(callback);
 };
 
 //
@@ -260,16 +302,9 @@ BitGo.prototype.authenticateWithAuthCode = function(params, callback) {
 //   }
 BitGo.prototype.refreshToken = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['refreshToken']);
+  common.validateParams(params, [], ['refreshToken'], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('illegal callback argument');
-  }
-
-  var refreshToken = params['refreshToken'];
-  if (!refreshToken) {
-    refreshToken = this._refreshToken;
-  }
+  var refreshToken = params.refreshToken || this._refreshToken;
 
   if (!refreshToken) {
     throw new Error('Must provide refresh token or have authenticated with Oauth before');
@@ -280,21 +315,20 @@ BitGo.prototype.refreshToken = function(params, callback) {
   }
 
   var self = this;
-  this.post(this._baseUrl + '/oauth/token')
+  return this.post(this._baseUrl + '/oauth/token')
   .send({
     grant_type: 'refresh_token',
     refresh_token: refreshToken,
     client_id: self._clientId,
     client_secret: self._clientSecret
   })
-  .end(function(err, refresh_result) {
-    if (self.handleBitGoAPIError(err, refresh_result, callback)) {
-      return;
-    }
-    self._token = refresh_result.body.access_token;
-    self._refreshToken = refresh_result.body.refresh_token;
-    callback(null, refresh_result.body);
-  });
+  .result()
+  .then(function(body) {
+    self._token = body.access_token;
+    self._refreshToken = body.refresh_token;
+    return body;
+  })
+  .nodeify(callback);
 };
 
 //
@@ -303,20 +337,16 @@ BitGo.prototype.refreshToken = function(params, callback) {
 //
 BitGo.prototype.logout = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid argument');
-  }
+  common.validateParams(params, [], [], callback);
 
   var self = this;
-  this.get(this.url('/user/login'))
-  .send()
-  .end(function(err, res) {
+  return this.get(this.url('/user/logout'))
+  .end()
+  .then(function() {
     delete self._user;
     delete self._token;
-    callback(err);
-  });
+  })
+  .nodeify(callback);
 };
 
 //
@@ -325,26 +355,15 @@ BitGo.prototype.logout = function(params, callback) {
 //
 BitGo.prototype.me = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid argument');
-  }
+  common.validateParams(params, [], [], callback);
 
   if (!this._token) {
-    return callback(new Error('not authenticated'));
+    return this.reject('not authenticated', callback);
   }
 
-  var self = this;
-  this.get(this.url('/user/me'))
-  .send()
-  .end(function(err, res) {
-    if (self.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-
-    callback(null, res.body.user);
-  });
+  return this.get(this.url('/user/me'))
+  .result('user')
+  .nodeify(callback);
 };
 
 //
@@ -353,26 +372,16 @@ BitGo.prototype.me = function(params, callback) {
 //
 BitGo.prototype.unlock = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['otp']);
+  common.validateParams(params, [], ['otp'], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid callback argument');
-  }
-
-  var otp = params['otp'];
   if (!this._token) {
-    return callback(new Error('not authenticated'));
+    return this.reject('not authenticated', callback);
   }
 
-  var self = this;
-  this.post(this.url('/user/unlock'))
+  return this.post(this.url('/user/unlock'))
   .send(params)
-  .end(function(err, res) {
-    if (self.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, {});
-  });
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -381,25 +390,15 @@ BitGo.prototype.unlock = function(params, callback) {
 //
 BitGo.prototype.lock = function(params, callback) {
   params = params || {};
-  common.validateParams(params);
-
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid argument');
-  }
+  common.validateParams(params, [], [], callback);
 
   if (!this._token) {
-    return callback(new Error('not authenticated'));
+    return this.reject('not authenticated', callback);
   }
 
-  var self = this;
-  this.post(this.url('/user/lock'))
-  .send()
-  .end(function(err, res) {
-    if (self.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, {});
-  });
+  return this.post(this.url('/user/lock'))
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -408,21 +407,11 @@ BitGo.prototype.lock = function(params, callback) {
 //
 BitGo.prototype.ping = function(params,callback) {
   params = params || {};
-  common.validateParams(params);
+  common.validateParams(params, [], [], callback);
 
-  if (typeof(callback) != 'function') {
-    throw new Error('invalid argument');
-  }
-
-  var self = this;
-  this.get(this.url('/ping'))
-  .send({})
-  .end(function(err, res) {
-    if (self.handleBitGoAPIError(err, res, callback)) {
-      return;
-    }
-    callback(null, res.body);
-  });
+  return this.get(this.url('/ping'))
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -456,33 +445,6 @@ BitGo.prototype.wallets = function() {
     this._wallets = new Wallets(this);
   }
   return this._wallets;
-};
-
-//
-// Handles HTTP errors from the BitGo API
-// Returns:
-//   true if an error was handled and the callback was called.  The caller should stop processing.
-//   false if the caller should continue.
-//
-BitGo.prototype.handleBitGoAPIError = function(err, res, callback) {
-  if (err) {
-    // TODO: assert type of err object?
-    callback(err);
-    return true;
-  }
-
-  if (res.status == 200) {
-    return false;   // no error!
-  }
-
-  if (res.status == 401 && res.body.needsOTP) {
-    callback({status: 401, needsOTP: true});
-    return true;
-  }
-
-  var error = res.body.error ? res.body.error : res.status.toString();
-  callback({status: res.status, error: error, details: new Error(error)});
-  return true;
 };
 
 BitGo.prototype.url = function(path) {
