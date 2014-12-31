@@ -1,9 +1,11 @@
 {
-  "name": "BitGoJS",
-  "version": "0.1.0",
+  "name": "bitgo",
+  "version": "0.9.0",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
+    "bitgo",
+    "bitcoin"
   ],
   "repository": {
     "type": "git",
