@@ -152,7 +152,7 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
 //    "keychains": array of keychain xpubs
 Wallets.prototype.add = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['label'], callback);
+  common.validateParams(params, [], ['label', 'enterprise'], callback);
 
   if (Array.isArray(params.keychains) === false || typeof(params.m) !== 'number' ||
     typeof(params.n) != 'number') {
@@ -166,13 +166,19 @@ Wallets.prototype.add = function(params, callback) {
 
   var self = this;
   var keychains = params.keychains.map(function(k) { return {xpub: k.xpub}; });
-  return this.bitgo.post(this.bitgo.url('/wallet'))
-  .send({
+  var walletParams = {
     label: params.label,
     m: params.m,
     n: params.n,
     keychains: keychains
-  })
+  };
+
+  if (params.enterprise) {
+    walletParams.enterprise = params.enterprise;
+  }
+
+  return this.bitgo.post(this.bitgo.url('/wallet'))
+  .send(walletParams)
   .result()
   .then(function(body) {
     return new Wallet(self.bitgo, body);
