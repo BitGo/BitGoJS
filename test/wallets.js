@@ -206,11 +206,11 @@ describe('Wallets', function() {
 
     it('get', function(done) {
       var options = {
-        id: testWallet.address()
+        id: testWallet.id()
       };
       wallets.get(options, function(err, wallet) {
         assert.equal(err, null);
-        assert.equal(wallet.address(), options.id);
+        assert.equal(wallet.id(), options.id);
         assert.equal(wallet.balance(), 0);
         assert.equal(wallet.label(), 'my wallet');
         assert.equal(wallet.pendingBalance(), 0);

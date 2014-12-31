@@ -159,9 +159,8 @@ describe('BitGo', function() {
       it('logout', function(done) {
         var bitgo = new TestBitGo();
         bitgo.logout({}, function(err) {
-          if (err) {
-            throw err;
-          }
+          // logout should fail when not logged in
+          assert(err);
           done();
         });
       });

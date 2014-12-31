@@ -77,7 +77,7 @@ describe('Wallet', function() {
         wallet.should.have.property('path');
         wallet.should.have.property('redeemScript');
         wallet.should.have.property('address');
-        assert.notEqual(wallet.address, wallet2.address());
+        assert.notEqual(wallet.address, wallet2.id());
 
         // TODO: Verify the chain?
         done();

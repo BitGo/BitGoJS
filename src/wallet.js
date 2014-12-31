@@ -22,10 +22,10 @@ var Wallet = function(bitgo, wallet) {
 };
 
 //
-// address
-// Get the address of this wallet.
+// id
+// Get the id of this wallet.
 //
-Wallet.prototype.address = function() {
+Wallet.prototype.id = function() {
   return this.wallet.id;
 };
 
@@ -71,7 +71,7 @@ Wallet.prototype.type = function() {
 
 Wallet.prototype.url = function(extra) {
   extra = extra || '';
-  return this.bitgo.url('/wallet/' + this.address() + extra);
+  return this.bitgo.url('/wallet/' + this.id() + extra);
 };
 
 //
@@ -80,11 +80,11 @@ Wallet.prototype.url = function(extra) {
 //
 Wallet.prototype.createAddress = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], [], callback);
+  common.validateParams(params, [], ['allowExisting'], callback);
 
   var chain = params.chain || 0;
   return this.bitgo.post(this.url('/address/' + chain))
-  .send({})
+  .send(params)
   .result()
   .nodeify(callback);
 };
@@ -99,13 +99,33 @@ Wallet.prototype.addresses = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var url = this.url('/addresses');
+  var args = [];
+  if (params.details) {
+    args.push('details=1');
+  }
+  if (typeof(params.chain) != 'undefined') {
+    if (params.chain !== 0 && params.chain !== 1) {
+      throw new Error('invalid chain argument, expecting 0 or 1');
+    }
+    args.push('chain=' + params.chain);
+  }
   if (params.limit) {
     if (typeof(params.limit) != 'number') {
       throw new Error('invalid limit argument, expecting number');
     }
-    url += '?limit=' + (params.limit);
+    args.push('limit=' + params.limit);
   }
+  if (params.skip) {
+    if (typeof(params.skip) != 'number') {
+      throw new Error('invalid skip argument, expecting number');
+    }
+    args.push('skip=' + params.skip);
+  }
+  var query = '';
+  if (args.length) {
+    query = '?' + args.join('&');
+  }
+  var url = this.url('/addresses' + query);
 
   return this.bitgo.get(url)
   .result()
@@ -175,7 +195,7 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 
   var tryKeyChain = function(index) {
     if (!self.keychains || index >= self.keychains.length) {
-      return self.reject('No encrypted keychains on this wallet.', callback);
+      return self.bitgo.reject('No encrypted keychains on this wallet.', callback);
     }
 
     var params = { "xpub": self.keychains[index].xpub };
@@ -244,11 +264,11 @@ Wallet.prototype.createTransaction = function(params, callback) {
 //
 Wallet.prototype.sendTransaction = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['tx'], [], callback);
+  common.validateParams(params, ['tx'], ['message'], callback);
 
   var self = this;
   return this.bitgo.post(this.bitgo.url('/tx/send'))
-  .send({ tx: params.tx })
+  .send(params)
   .result()
   .then(function(body) {
     return {
@@ -271,12 +291,13 @@ Wallet.prototype.sendTransaction = function(params, callback) {
 // Parameters:
 //   address - the destination address
 //   amount - the amount in satoshis to be sent
+//   message - optional message to attach to transaction
 //   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
 // Returns:
 //
 Wallet.prototype.sendCoins = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address', 'walletPassphrase'], [], callback);
+  common.validateParams(params, ['address', 'walletPassphrase'], ['message'], callback);
 
   if (typeof(params.amount) != 'number') {
     throw new Error('invalid argument for amount - number expected');
@@ -296,7 +317,7 @@ Wallet.prototype.sendCoins = function(params, callback) {
     try {
       keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, opaque: keychain.encryptedXprv });
     } catch (e) {
-      return self.reject('Unable to decrypt user keychain', callback);
+      return self.bitgo.reject('Unable to decrypt user keychain', callback);
     }
 
     // Create and sign the transaction
@@ -309,7 +330,7 @@ Wallet.prototype.sendCoins = function(params, callback) {
   .then(function(result) {
     transaction = result;
     // Send the transaction
-    return self.sendTransaction({ tx: transaction.tx });
+    return self.sendTransaction({ tx: transaction.tx, message: params.message });
   })
   .then(function(result) {
     return {

@@ -8,6 +8,7 @@ var superagent = require('superagent');
 var Address = require('./bitcoin/address');
 var Blockchain = require('./blockchain');
 var Keychains = require('./keychains');
+var Wallet = require('./wallet');
 var Wallets = require('./wallets');
 var sjcl = require('./bitcoin/sjcl.min');
 var common = require('./common');
@@ -128,8 +129,10 @@ var BitGo = function(params) {
     var method = methods[index];
     self[method] = createPatch(method);
   }
+};
 
-
+BitGo.prototype.clear = function() {
+  this._user = this._token = this._refreshToken = undefined;
 };
 
 // Helper function to return a rejected promise or call callback with error
@@ -143,6 +146,22 @@ BitGo.prototype.reject = function(msg, callback) {
 //
 BitGo.prototype.version = function() {
   return '0.1.0';
+};
+
+BitGo.prototype.toJSON = function() {
+  return {
+    user: this._user,
+    token: this._token
+  };
+};
+
+BitGo.prototype.fromJSON = function(json) {
+  this._user = json.user;
+  this._token = json.token;
+};
+
+BitGo.prototype.user = function() {
+  return this._user;
 };
 
 BitGo.prototype.verifyAddress = function(params) {
@@ -341,10 +360,9 @@ BitGo.prototype.logout = function(params, callback) {
 
   var self = this;
   return this.get(this.url('/user/logout'))
-  .end()
+  .result()
   .then(function() {
-    delete self._user;
-    delete self._token;
+    self.clear();
   })
   .nodeify(callback);
 };
@@ -402,6 +420,24 @@ BitGo.prototype.lock = function(params, callback) {
 };
 
 //
+// sendOTP
+// Trigger a push/sms for the OTP code
+//
+BitGo.prototype.sendOTP = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  if (!this._token) {
+    return this.reject('not authenticated', callback);
+  }
+
+  return this.post(this.url('/user/sendotp'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+//
 // ping
 // Test connectivity to the server
 //
@@ -445,6 +481,14 @@ BitGo.prototype.wallets = function() {
     this._wallets = new Wallets(this);
   }
   return this._wallets;
+};
+
+//
+// newWallet
+// A factory method to create a new Wallet object, initialized with the wallet id.
+//
+BitGo.prototype.newWalletObject = function(walletId) {
+  return new Wallet(this, { id: walletId });
 };
 
 BitGo.prototype.url = function(path) {

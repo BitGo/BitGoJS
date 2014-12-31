@@ -37,7 +37,7 @@ bitgo.authenticate({ username: user, password: password, otp: otp }, function(er
   // Create the wallet
   bitgo.wallets().createWalletWithKeychains({"passphrase": password, "label": label, "backupXpub": backupXpub}, function(err, result) {
     if (err) { console.dir(err); throw new Error("Could not create wallet!"); }
-    console.log("New Wallet: " + result.wallet.address());
+    console.log("New Wallet: " + result.wallet.id());
     console.dir(result.wallet.wallet);
 
     console.log("BACK THIS UP: ");

@@ -9,6 +9,7 @@ var request = require('superagent');
 var ECKey = require('./bitcoin/eckey');
 var Wallet = require('./wallet');
 var common = require('./common');
+var Q = require('q');
 
 //
 // Constructor

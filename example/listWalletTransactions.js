@@ -39,7 +39,7 @@ bitgo.authenticate({ username: user, password: password, otp: otp }, function(er
 
         var value = 0;
         for (var entriesIndex = 0; entriesIndex < tx.entries.length; ++entriesIndex) {
-          if (tx.entries[entriesIndex].account === wallet.address()) {
+          if (tx.entries[entriesIndex].account === wallet.id()) {
             value += tx.entries[entriesIndex].value;
           }
         }
