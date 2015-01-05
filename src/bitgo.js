@@ -241,9 +241,14 @@ BitGo.prototype.authenticate = function(params, callback) {
   var password = params.password;
   var otp = params.otp;
 
+  // Calculate the password HMAC so we don't send clear-text passwords
+  var key = sjcl.codec.utf8String.toBits(username);
+  var hmac = new sjcl.misc.hmac(key, sjcl.hash.sha256);
+  var hmacPassword = sjcl.codec.hex.fromBits(hmac.encrypt(password));
+
   var authParams = {
     email: username,
-    password: password
+    password: hmacPassword
   };
 
   if (otp) {

@@ -8,7 +8,9 @@ var BitGo = require('../../src/bitgo.js');
 
 BitGo.TEST_USER = 'tester@bitgo.com';
 BitGo.TEST_PASSWORD = 'testtesttest';
-BitGo.TEST_PASSWORD_HMAC = 'b160a6cc799280822912251d0a6b25f8ff32f0ad7e6dda7d9fda59ee1bc57080';
+
+BitGo.TEST_SHARED_KEY_USER = 'shared_key_test@bitgo.com';
+BitGo.TEST_SHARED_KEY_PASSWORD = 'sh4r3dKeysT3ts';
 
 BitGo.TEST_CLIENTID = 'test';
 BitGo.TEST_CLIENTSECRET = 'testclientsecret';
