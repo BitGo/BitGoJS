@@ -68,11 +68,13 @@ var sendBitcoin = function() {
       // Decrypt the user key with a passphrase
       keychain.xprv = bitgo.decrypt({ password: walletPassphrase, opaque: keychain.encryptedXprv });
 
+      // Set recipients
+      var recipients = {};
+      recipients[destinationAddress] = amountSatoshis;
+
       console.log("Creating transaction");
       wallet.createTransaction({
-        recipients: [
-          { address: destinationAddress, amount: amountSatoshis }
-        ],
+        recipients: recipients,
         keychain: keychain,
         fee: fee
         },

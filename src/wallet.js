@@ -212,7 +212,7 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 // TODO: Refactor into create and sign seperately after integrating with new bitcoinjs-lib
 // Parameters:
 //   address  - the address to send to
-//   recipients - array of { address, amount } to send to
+//   recipients - object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee      - the blockchain fee to send (optional)
 // Returns:
 //   callback(err, transaction)
@@ -231,18 +231,15 @@ Wallet.prototype.createTransaction = function(params, callback) {
     throw new Error('expecting recipients object');
   }
 
-  params.recipients.forEach(function(recipient) {
-    if (typeof(recipient.address) != 'string') {
-      throw new Error('expecting address string: ' + recipient.address);
+  Object.keys(params.recipients).forEach(function(destinationAddress) {
+    var amount = params.recipients[destinationAddress];
+
+    if (typeof(destinationAddress) != 'string' ||
+      !self.bitgo.verifyAddress({ address: destinationAddress })) {
+      throw new Error('invalid bitcoin address: ' + destinationAddress);
     }
-    if (!self.bitgo.verifyAddress({ address: recipient.address })) {
-      throw new Error('invalid bitcoin address: ' + recipient.address);
-    }
-    if (typeof(recipient.amount) != 'number') {
-      throw new Error('expecting amount number for recipient' + recipient.address + ': ' + recipient.amount);
-    }
-    if (recipient.amount <= 0) {
-      throw new Error('must send positive number of Satoshis!');
+    if (typeof(amount) != 'number' || isNaN(amount) || amount <= 0) {
+      throw new Error('invalid amount for ' + destinationAddress + ': ' + amount);
     }
   });
 
@@ -328,8 +325,11 @@ Wallet.prototype.sendCoins = function(params, callback) {
     }
 
     // Create and sign the transaction
+    var recipients = {};
+    recipients[params.address] = params.amount;
+
     return self.createTransaction({
-      recipients: [ { address: params.address, amount: params.amount } ],
+      recipients: recipients,
       keychain: keychain
     });
   })
@@ -372,18 +372,15 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('expecting recipients object');
   }
 
-  params.recipients.forEach(function(recipient) {
-    if (typeof(recipient.address) != 'string') {
-      throw new Error('expecting address string: ' + recipient.address);
+  Object.keys(params.recipients).forEach(function(destinationAddress) {
+    var amount = params.recipients[destinationAddress];
+
+    if (typeof(destinationAddress) != 'string' ||
+      !self.bitgo.verifyAddress({ address: destinationAddress })) {
+      throw new Error('invalid bitcoin address: ' + destinationAddress);
     }
-    if (!self.bitgo.verifyAddress({ address: recipient.address })) {
-      throw new Error('invalid bitcoin address: ' + recipient.address);
-    }
-    if (typeof(recipient.amount) != 'number') {
-      throw new Error('expecting amount number for recipient' + recipient.address + ': ' + recipient.amount);
-    }
-    if (recipient.amount <= 0) {
-      throw new Error('must send positive number of Satoshis!');
+    if (typeof(amount) != 'number' || isNaN(amount) || amount <= 0) {
+      throw new Error('invalid amount for ' + destinationAddress + ': ' + amount);
     }
   });
 

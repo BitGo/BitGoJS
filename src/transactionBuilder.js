@@ -27,16 +27,16 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 // TransactionBuilder
 // Inputs
 //   wallet:  a wallet object to send from
-//   recipients: array of recipients and the amount to send to each [{
-//     address:  the address to send to
-//     amount: the amount to send (in satoshis)
-//   }]
+//   recipients - object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
 var TransactionBuilder = function(wallet, recipients, fee) {
   // Sanity check the arguments passed in
-  if (typeof(wallet) != 'object' || typeof(recipients) != 'object' ||
-      (fee && typeof(fee) != 'number') ) {
+  if (typeof(wallet) != 'object' || (fee && typeof(fee) != 'number') ) {
     throw new Error('invalid argument');
+  }
+
+  if (typeof(recipients) != 'object' || recipients instanceof Array) {
+    throw new Error('recipients must be dictionary of destionationAddress:amount');
   }
 
   // Flag indicating whether this class will compute the fee
@@ -56,18 +56,24 @@ var TransactionBuilder = function(wallet, recipients, fee) {
   this.recipients = recipients;
 
   var _totalAmount = self.fee;
-  recipients.forEach(function (recipient) {
-    if (typeof(recipient.address) != 'string' || typeof(recipient.amount) != 'number') {
-      throw new Error('invalid recipient: ' + recipient.address + ' amount ' + recipient.amount);
+  Object.keys(recipients).forEach(function(destinationAddress) {
+    var amount = recipients[destinationAddress];
+
+    if (typeof(destinationAddress) != 'string') {
+      throw new Error('invalid bitcoin address: ' + destinationAddress);
+    }
+
+    if (typeof(amount) != 'number' || isNaN(amount) || amount <= 0) {
+      throw new Error('invalid amount for ' + destinationAddress + ': ' + amount);
     }
 
     try {
-      var address = new Address(recipient.address);
+      var address = new Address(destinationAddress);
     } catch (e) {
-      throw new Error('invalid recipient address');
+      throw new Error('invalid bitcoin address: ' + destinationAddress);
     }
 
-    _totalAmount += recipient.amount;
+    _totalAmount += amount;
   });
 
   // The total amount needed for this transaction.
@@ -119,7 +125,7 @@ var TransactionBuilder = function(wallet, recipients, fee) {
       // Use the rough formula of 6 signatures per KB.
       var signaturesPerInput = 2;  // 2-of-3 wallets
 
-      var outputSizeKb = self.recipients.length * 34 / 1000;
+      var outputSizeKb = Object.keys(self.recipients).length * 34 / 1000;
       var inputSizeKb = (_tx.ins.length * signaturesPerInput * 170) / 1000;
       
       return Math.ceil(inputSizeKb + outputSizeKb) * FEE_PER_KB;
@@ -141,6 +147,7 @@ var TransactionBuilder = function(wallet, recipients, fee) {
         _tx.addInput(input);
         return (_inputAmount < _totalAmount);
       });
+
       if (_totalAmount > _inputAmount) {
         return Q.reject('Insufficient funds');
       }
@@ -178,8 +185,8 @@ var TransactionBuilder = function(wallet, recipients, fee) {
 
     // Add the outputs for this transaction.
     var collectOutputs = function() {
-      self.recipients.forEach(function(recipient) {
-        _tx.addOutput(new Address(recipient.address), recipient.amount);
+      Object.keys(self.recipients).forEach(function(destinationAddress) {
+        _tx.addOutput(new Address(destinationAddress), self.recipients[destinationAddress]);
       });
 
       var remainder = _inputAmount - _totalAmount;
