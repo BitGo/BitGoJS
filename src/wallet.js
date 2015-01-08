@@ -170,7 +170,27 @@ Wallet.prototype.transactions = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return this.bitgo.get(this.url('/tx'))
+  var args = [];
+  if (params.limit) {
+    if (typeof(params.limit) != 'number') {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    args.push('limit=' + params.limit);
+  }
+  if (params.skip) {
+    if (typeof(params.skip) != 'number') {
+      throw new Error('invalid skip argument, expecting number');
+    }
+    args.push('skip=' + params.skip);
+  }
+  var query = '';
+  if (args.length) {
+    query = '?' + args.join('&');
+  }
+
+  var url = this.url('/tx' + query);
+
+  return this.bitgo.get(url)
   .result()
   .nodeify(callback);
 };

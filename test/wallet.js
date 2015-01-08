@@ -167,9 +167,44 @@ describe('Wallet', function() {
       wallet1.transactions(options, function(err, result) {
         assert.equal(err, null);
         assert.equal(Array.isArray(result.transactions), true);
-        assert.equal(result.start, 0);
         result.should.have.property('total');
         result.should.have.property('count');
+        result.start.should.eql(0);
+        done();
+      });
+    });
+
+    var limitedTxes;
+    var limitTestNumTx = 6;
+    it('list with limit', function(done) {
+
+      var options = { limit: limitTestNumTx };
+      wallet1.transactions(options, function(err, result) {
+        assert.equal(err, null);
+        assert.equal(Array.isArray(result.transactions), true);
+        result.should.have.property('total');
+        result.should.have.property('count');
+        result.start.should.eql(0);
+        result.count.should.eql(limitTestNumTx);
+        result.transactions.length.should.eql(result.count);
+        limitedTxes = result.transactions;
+        done();
+      });
+    });
+
+    it('list with limit and skip', function(done) {
+      var skipNum = 2;
+      var options = { limit: (limitTestNumTx - skipNum), skip: skipNum };
+      wallet1.transactions(options, function(err, result) {
+        assert.equal(err, null);
+        assert.equal(Array.isArray(result.transactions), true);
+        result.should.have.property('total');
+        result.should.have.property('count');
+        result.start.should.eql(skipNum);
+        result.count.should.eql(limitTestNumTx - skipNum);
+        result.transactions.length.should.eql(result.count);
+        limitedTxes = limitedTxes.slice(skipNum);
+        result.transactions.should.eql(limitedTxes);
         done();
       });
     });
