@@ -321,7 +321,7 @@ describe('BitGo', function() {
 
         bitgoAT.me({}, function (err, me_result) {
           assert.notEqual(err, null);
-          err.message.should.equal('not found');
+          err.message.should.equal('Authorization required');
           err.should.have.property('status');
           done();
         });

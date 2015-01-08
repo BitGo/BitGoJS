@@ -13,11 +13,15 @@ var TransactionBuilder = require('../src/transactionBuilder');
 var unspentData = require('./fixtures/largeunspents.json');
 
 var TEST_WALLET1_ADDRESS = '2Mv4HFh1yaF5S9ma2E1hPTA4jw6RMPpqJi5';
+var TEST_WALLET1_ADDRESS2 = '2MtJSreA9U5ATseKY9ENvkaWgJVqm5KDoXB';
+var TEST_WALLET1_ADDRESS3 = '2NDzrd16RzzQqW54Y5gHpcBHo2LgVn7MiHh';
 var TEST_WALLET1_PASSCODE = 'test wallet #1 security';
 var TEST_WALLET2_ADDRESS = '2MyQeDjDgsVC6k1BR7m8kjveCPNErUoz6gc';
 var TEST_WALLET2_PASSCODE = 'test wallet #2 security';
 var TEST_WALLET3_ADDRESS = '2NAEdoarGihKn9Wo2pRY1AqgNroRqokaAwm';
 var TEST_WALLET3_PASSCODE = 'test wallet #3 security';
+var TEST_WALLET3_ADDRESS2 = '2N993wdt2bgG2cCFd4q92LDLpopxJrGTfc1';
+var TEST_WALLET3_ADDRESS3 = '2N4UZ93ZehotnyJvpcUQ8ZATQUrph27JPU6';
 
 describe('Wallet', function() {
   var bitgo;
@@ -182,20 +186,21 @@ describe('Wallet', function() {
       });
 
       it('recipient arguments', function() {
-        assert.throws(function() { new TransactionBuilder({}, {address: 123}); });
-        assert.throws(function() { new TransactionBuilder({}, {address: 'string', amount: 'should not be a string'}); });
-        assert.throws(function() { new TransactionBuilder({}, {address: 'string', amount: 'should not be a string'}); });
-        assert.throws(function() { new TransactionBuilder({}, {address: 'string', amount: 10000}); });
+        assert.throws(function() { new TransactionBuilder({}, [{address: 123}]); });
+        assert.throws(function() { new TransactionBuilder({}, [{address: 'string', amount: 'should not be a string'}]); });
+        assert.throws(function() { new TransactionBuilder({}, [{address: 'string', amount: 'should not be a string'}]); });
+        assert.throws(function() { new TransactionBuilder({}, [{address: 'string', amount: 10000}]); });
+        assert.throws(function() { new TransactionBuilder({}, {address: TEST_WALLET1_ADDRESS, amount: 1e8 }); });
       });
 
       it('fee', function() {
-        assert.throws(function() { new TransactionBuilder({}, {address: TEST_WALLET1_ADDRESS, amount: 1e8 }, 0.5 * 1e8); });
+        assert.throws(function() { new TransactionBuilder({}, [{address: TEST_WALLET1_ADDRESS, amount: 1e8 }], 0.5 * 1e8); });
       });
     });
 
     describe('prepare', function() {
       it('insufficient funds', function(done) {
-        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.balance() + 1e8});
+        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: wallet1.balance() + 1e8}]);
         tb.prepare()
           .catch(function(e) {
             assert.equal(e.toString(), 'Insufficient funds');
@@ -205,7 +210,7 @@ describe('Wallet', function() {
 
       it('insufficient funds due to fees', function(done) {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
-        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.pendingBalance()});
+        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: wallet1.pendingBalance()}]);
         tb.prepare()
           .then(function() {
             console.log("this should not have worked.");
@@ -219,14 +224,12 @@ describe('Wallet', function() {
 
       it('no change required', function(done) {
         // Attempt to spend the full balance without any fees.
-        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: wallet1.availableBalance()}, 0);
+        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: wallet1.availableBalance()}], 0);
         tb.prepare()
           .then(function() {
             done();
           })
-          .catch(function(e) {
-            assert.equal(e, null);
-          });
+          .done();
       });
 
       it('no inputs available', function(done) {
@@ -235,14 +238,12 @@ describe('Wallet', function() {
       });
 
       it('ok', function(done) {
-        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 0.01 * 1e8 });
+        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: 0.01 * 1e8 }]);
         tb.prepare()
           .then(function() {
             done();
           })
-          .catch(function(e) {
-            assert.equal(e, null);
-          });
+          .done();
       });
     });
 
@@ -261,31 +262,27 @@ describe('Wallet', function() {
       });
 
       it('approximate', function(done) {
-        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 10000 * 1e8 });
+        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: 10000 * 1e8 }]);
         tb.prepare()
           .then(function() {
             var feeUsed = tb.fee;
             // Note that the transaction size here will be fairly small, because the signatures have not
             // been applied.  But we had to estimate our fees already.
-            assert.equal(feeUsed, 1360000);
+            assert.equal(feeUsed, 1390000);
             done();
           })
-          .catch(function(e) {
-            assert.equal(e, null);
-          });
+          .done();
       });
 
       it('do not override', function(done) {
         var manualFee = 0.04 * 1e8;
-        var tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 10000 * 1e8}, manualFee);
+        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: 10000 * 1e8}], manualFee);
         tb.prepare()
           .then(function() {
             assert.equal(tb.fee, manualFee);
             done();
           })
-          .catch(function(e) {
-            assert.equal(e, null);
-          });
+          .done();
       });
     });
 
@@ -305,7 +302,7 @@ describe('Wallet', function() {
             keychain = result;
 
             // Now build a transaction
-            tb = new TransactionBuilder(wallet1, { address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 });
+            tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 }]);
             tb.prepare().then(function() {
               done();
             });
@@ -438,14 +435,164 @@ describe('Wallet', function() {
     });
   });
 
+  describe('Send many', function() {
+    it('arguments', function (done) {
+      assert.throws(function () {
+        wallet1.sendMany();
+      });
+      assert.throws(function () {
+        wallet1.sendMany({ recipients: [ { address: 123 } ] } );
+      });
+      assert.throws(function () {
+        wallet1.sendMany({ recipients: [ { address: 'string' } ] } );
+      });
+      assert.throws(function () {
+        wallet1.sendMany({ recipients: [ { address: 'string', amount: 123 } ] });
+      });
+      assert.throws(function () {
+        wallet1.sendMany({ recipients: [ { address: 'string', amount: 123 } ], walletPassphrase: 0 });
+      });
+      assert.throws(function () {
+        wallet1.sendMany({ recipients: [ { address: 'string', amount: 123 } ], walletPassphrase: 'advanced1' }, {});
+      });
+      assert.throws(function () {
+        wallet1.sendMany(
+        { recipients: [ { address: TEST_WALLET2_ADDRESS, amount: 0 } ], walletPassphrase: TEST_WALLET1_PASSCODE },
+        function () { }
+        );
+      });
+      assert.throws(function () {
+        wallet1.sendMany(
+        { recipients: [ { address: TEST_WALLET2_ADDRESS, amount: 0 } ], walletPassphrase: "badpasscode" } ,
+        function () {}
+        );
+      });
+      assert.throws(function () {
+        wallet1.sendMany(
+        { recipients: [ { address: "bad address", amount: 0 } ], walletPassphrase: TEST_WALLET1_PASSCODE } ,
+        function () {}
+        );
+      });
+      assert.throws(function () {
+        wallet1.sendMany(
+        { recipients: [ { address: TEST_WALLET1_ADDRESS, amount: 0 }, { address: "bad address", amount: 0 } ], walletPassphrase: TEST_WALLET1_PASSCODE } ,
+        function () {}
+        );
+      });
+      done();
+    });
+
+    describe('Bad input', function () {
+      it('send many - insufficient funds', function (done) {
+        wallet1.sendMany(
+        { recipients: [ { address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 * 1e8 }, { address: TEST_WALLET2_ADDRESS, amount: 22 * 1e8 * 1e8 } ], walletPassphrase: TEST_WALLET1_PASSCODE },
+        function (err, result) {
+          assert.notEqual(err, null);
+          done();
+        }
+        );
+      });
+    });
+
+    describe('Real transactions', function() {
+      it('send many - wallet1 to wallet3 (single output)', function (done) {
+        wallet1.sendMany(
+        { recipients: [
+          { address: TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8 },
+        ],
+          walletPassphrase: TEST_WALLET1_PASSCODE },
+        function (err, result) {
+          assert.equal(err, null);
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          result.fee.should.equal(0.0001 * 1e8);
+          done();
+        }
+        );
+      });
+
+      it('send many - wallet3 to wallet1 (single output)', function (done) {
+        wallet3.sendMany(
+        { recipients: [
+          { address: TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8 }
+        ],
+          walletPassphrase: TEST_WALLET3_PASSCODE },
+        function (err, result) {
+          assert.equal(err, null);
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          result.fee.should.equal(0.0001 * 1e8);
+          done();
+        }
+        );
+      });
+
+      it('send many - wallet1 to wallet3', function (done) {
+        wallet1.sendMany(
+        { recipients: [
+            { address: TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8 },
+            { address: TEST_WALLET3_ADDRESS2, amount: 0.001 * 1e8 },
+            { address: TEST_WALLET3_ADDRESS3, amount: 0.001 * 1e8 }
+          ],
+          walletPassphrase: TEST_WALLET1_PASSCODE },
+        function (err, result) {
+          assert.equal(err, null);
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          done();
+        }
+        );
+      });
+
+      it('send many - wallet3 to wallet1', function (done) {
+        wallet3.sendMany(
+        { recipients: [
+          { address: TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8 },
+          { address: TEST_WALLET1_ADDRESS2, amount: 0.002 * 1e8 }
+        ],
+          walletPassphrase: TEST_WALLET3_PASSCODE },
+        function (err, result) {
+          assert.equal(err, null);
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          done();
+        }
+        );
+      });
+    });
+  });
+
   describe('Create and Send Transactions (advanced)', function() {
+    var keychain;
+    var tx;
+
+    before(function(done) {
+
+      // Set up keychain
+      var options = {
+        xpub: wallet1.keychains[0].xpub
+      };
+      bitgo.keychains().get(options, function(err, result) {
+        assert.equal(err, null);
+        keychain = result;
+        done();
+      });
+    });
+
     it('arguments', function(done) {
       assert.throws(function() { wallet1.createTransaction(); });
-      assert.throws(function() { wallet1.createTransaction({ address: 123 }); });
-      assert.throws(function() { wallet1.createTransaction({ address: 'string' }); });
-      assert.throws(function() { wallet1.createTransaction({ address: 'string', amount: 123 }); });
-      assert.throws(function() { wallet1.createTransaction({ address: 'string', amount: 123, fee: 0}); });
+      assert.throws(function() { wallet1.createTransaction({ recipients: [ { address: 123 } ] }); });
+      assert.throws(function() { wallet1.createTransaction({ recipients: [ { address: 'string' } ] }); });
+      assert.throws(function() { wallet1.createTransaction({ recipients: [ { address: 'string', amount: 123 } ] }); });
+      assert.throws(function() { wallet1.createTransaction({ recipients: [ { address: 'string', amount: 123 } ], fee: 0}); });
+      assert.throws(function() { wallet1.createTransaction({ recipients: [ { address: 'string', amount: 123 } ], fee: 0, keychain: {} }); });
       assert.throws(function() { wallet1.createTransaction({ address: 'string', amount: 123, fee: 0, keychain: {} }); });
+
+      assert.throws(function() { wallet1.createTransaction({ recipients: [ { address: 'invalidaddress', amount: 0.001 * 1e8, fee: 0.0001 * 1e8 } ], keychain: keychain }); })
 
       assert.throws(function() { wallet1.sendTransaction(); });
       assert.throws(function() { wallet1.sendTransaction({}); });
@@ -453,27 +600,13 @@ describe('Wallet', function() {
     });
 
     describe('full transaction', function() {
-      var keychain;
-      var tx;
-
-      it('keychain', function(done) {
-        var options = {
-          xpub: wallet1.keychains[0].xpub,
-        };
-        bitgo.keychains().get(options, function(err, result) {
-          assert.equal(err, null);
-          keychain = result;
-          done();
-        });
-      });
-
       it('decrypt key', function(done) {
         keychain.xprv = bitgo.decrypt({ password: TEST_WALLET1_PASSCODE, opaque: keychain.encryptedXprv });
         done();
       });
 
       it('create transaction with fee', function(done) {
-        wallet1.createTransaction({ address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8, fee: 0.0001 * 1e8, keychain: keychain }, function(err, result) {
+        wallet1.createTransaction({ recipients: [ { address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8, fee: 0.0001 * 1e8 } ], keychain: keychain }, function(err, result) {
           assert.equal(err, null);
           assert.equal(result.fee < 0.0005 * 1e8, true);
           result.should.have.property('tx');
@@ -484,7 +617,7 @@ describe('Wallet', function() {
       });
 
       it('create transaction with default fee', function(done) {
-        wallet1.createTransaction({ address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8, keychain: keychain }, function(err, result) {
+        wallet1.createTransaction({ recipients: [ { address: TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 } ], keychain: keychain }, function(err, result) {
           assert.equal(err, null);
           assert.equal(result.fee, 10000);
           result.should.have.property('tx');
@@ -526,7 +659,7 @@ describe('Wallet', function() {
       });
 
       it('create transaction', function(done) {
-        wallet2.createTransaction({ address: TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, fee: 0.0001 * 1e8, keychain: keychain }, function(err, result) {
+        wallet2.createTransaction({ recipients: [ { address: TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8 } ], fee: 0.0001 * 1e8, keychain: keychain }, function(err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
           result.should.have.property('fee');

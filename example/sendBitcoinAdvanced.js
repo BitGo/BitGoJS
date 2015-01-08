@@ -1,6 +1,6 @@
 //
 // Send money from a wallet on BitGo
-// This is the advanced example using createTransction / sendTransaction,
+// This is the advanced example using createTransaction / sendTransaction,
 // which allows you to specify fees and the keychain used for signing the transaction.
 // Defaults to work on BitGo test environment at https://test.bitgo.com
 //
@@ -70,8 +70,9 @@ var sendBitcoin = function() {
 
       console.log("Creating transaction");
       wallet.createTransaction({
-        address: destinationAddress,
-        amount: amountSatoshis,
+        recipients: [
+          { address: destinationAddress, amount: amountSatoshis }
+        ],
         keychain: keychain,
         fee: fee
         },

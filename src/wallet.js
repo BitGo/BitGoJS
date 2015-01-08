@@ -220,26 +220,41 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 // TODO: Refactor into create and sign seperately after integrating with new bitcoinjs-lib
 // Parameters:
 //   address  - the address to send to
-//   amount   - the amount to send, in satoshis
-//   keychain - the decrypted keychain to use for signing
+//   recipients - array of { address, amount } to send to
 //   fee      - the blockchain fee to send (optional)
 // Returns:
 //   callback(err, transaction)
 Wallet.prototype.createTransaction = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address'], [], callback);
+  common.validateParams(params, [], [], callback);
 
-  if (typeof(params.amount) != 'number' ||
-    (typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
+  var self = this;
+
+  if ((typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
     typeof(params.keychain) != 'object') {
     throw new Error('invalid argument');
   }
 
-  if (params.amount <= 0) {
-    throw new Error('must send positive number of Satoshis!');
+  if (typeof(params.recipients) != 'object') {
+    throw new Error('expecting recipients object');
   }
 
-  return new TransactionBuilder(this, { address: params.address, amount: params.amount }, params.fee).prepare()
+  params.recipients.forEach(function(recipient) {
+    if (typeof(recipient.address) != 'string') {
+      throw new Error('expecting address string: ' + recipient.address);
+    }
+    if (!self.bitgo.verifyAddress({ address: recipient.address })) {
+      throw new Error('invalid bitcoin address: ' + recipient.address);
+    }
+    if (typeof(recipient.amount) != 'number') {
+      throw new Error('expecting amount number for recipient' + recipient.address + ': ' + recipient.amount);
+    }
+    if (recipient.amount <= 0) {
+      throw new Error('must send positive number of Satoshis!');
+    }
+  });
+
+  return new TransactionBuilder(this, params.recipients, params.fee).prepare()
   .then(function(tb) {
     return tb.sign(params.keychain);
   })
@@ -322,8 +337,79 @@ Wallet.prototype.sendCoins = function(params, callback) {
 
     // Create and sign the transaction
     return self.createTransaction({
-      address: params.address,
-      amount: params.amount,
+      recipients: [ { address: params.address, amount: params.amount } ],
+      keychain: keychain
+    });
+  })
+  .then(function(result) {
+    transaction = result;
+    // Send the transaction
+    return self.sendTransaction({ tx: transaction.tx, message: params.message });
+  })
+  .then(function(result) {
+    return {
+      tx: result.tx,
+      hash: result.hash,
+      fee: transaction.fee
+    };
+  })
+  .nodeify(callback);
+};
+
+//
+// sendMany
+// Send coins to multiple destination addresses from this wallet using the user key.
+// 1. Gets the user keychain by checking the wallet for a key which has an encrypted xpriv
+// 2. Decrypts user key
+// 3. Creates the transaction with default fee
+// 4. Signs transaction with decrypted user key
+// 3. Sends the transaction to BitGo
+//
+// Parameters:
+//   address - the destination address
+//   recipients - array of { address, amount } to send to
+//   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+// Returns:
+//
+Wallet.prototype.sendMany = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletPassphrase'], ['message'], callback);
+  var self = this;
+
+  if (typeof(params.recipients) != 'object') {
+    throw new Error('expecting recipients object');
+  }
+
+  params.recipients.forEach(function(recipient) {
+    if (typeof(recipient.address) != 'string') {
+      throw new Error('expecting address string: ' + recipient.address);
+    }
+    if (!self.bitgo.verifyAddress({ address: recipient.address })) {
+      throw new Error('invalid bitcoin address: ' + recipient.address);
+    }
+    if (typeof(recipient.amount) != 'number') {
+      throw new Error('expecting amount number for recipient' + recipient.address + ': ' + recipient.amount);
+    }
+    if (recipient.amount <= 0) {
+      throw new Error('must send positive number of Satoshis!');
+    }
+  });
+
+  var transaction;
+
+  // Get the user keychain
+  return this.getEncryptedUserKeychain()
+  .then(function(keychain) {
+    // Decrypt the user key with a passphrase
+    try {
+      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, opaque: keychain.encryptedXprv });
+    } catch (e) {
+      return self.bitgo.reject('Unable to decrypt user keychain', callback);
+    }
+
+    // Create and sign the transaction
+    return self.createTransaction({
+      recipients: params.recipients,
       keychain: keychain
     });
   })

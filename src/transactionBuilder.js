@@ -27,27 +27,16 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 // TransactionBuilder
 // Inputs
 //   wallet:  a wallet object to send from
-//   recipient: {
+//   recipients: array of recipients and the amount to send to each [{
 //     address:  the address to send to
 //     amount: the amount to send (in satoshis)
-//   }
+//   }]
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
-var TransactionBuilder = function(wallet, recipient, fee) {
+var TransactionBuilder = function(wallet, recipients, fee) {
   // Sanity check the arguments passed in
-  if (typeof(wallet) != 'object' || typeof(recipient) != 'object' ||
+  if (typeof(wallet) != 'object' || typeof(recipients) != 'object' ||
       (fee && typeof(fee) != 'number') ) {
     throw new Error('invalid argument');
-  }
-
-  // Sanity check the recipient.
-  if (typeof(recipient.address) != 'string' || typeof(recipient.amount) != 'number') {
-    throw new Error('invalid recipient');
-  }
-
-  try {
-    var address = new Address(recipient.address);
-  } catch (e) {
-    throw new Error('invalid recipient address');
   }
 
   // Flag indicating whether this class will compute the fee
@@ -63,11 +52,25 @@ var TransactionBuilder = function(wallet, recipient, fee) {
 
   var self = this;
   this.wallet = wallet;
-  this.recipient = recipient;
   this.fee = fee;
+  this.recipients = recipients;
+
+  var _totalAmount = self.fee;
+  recipients.forEach(function (recipient) {
+    if (typeof(recipient.address) != 'string' || typeof(recipient.amount) != 'number') {
+      throw new Error('invalid recipient: ' + recipient.address + ' amount ' + recipient.amount);
+    }
+
+    try {
+      var address = new Address(recipient.address);
+    } catch (e) {
+      throw new Error('invalid recipient address');
+    }
+
+    _totalAmount += recipient.amount;
+  });
 
   // The total amount needed for this transaction.
-  var _totalAmount = self.fee + self.recipient.amount;
 
   // The list of unspent transactions being used in this transaction.
   var _unspents;
@@ -115,7 +118,11 @@ var TransactionBuilder = function(wallet, recipient, fee) {
       // Tx size is dominated by signatures.
       // Use the rough formula of 6 signatures per KB.
       var signaturesPerInput = 2;  // 2-of-3 wallets
-      return Math.ceil(_tx.ins.length * signaturesPerInput / 6) * FEE_PER_KB;
+
+      var outputSizeKb = self.recipients.length * 34 / 1000;
+      var inputSizeKb = (_tx.ins.length * signaturesPerInput * 170) / 1000;
+      
+      return Math.ceil(inputSizeKb + outputSizeKb) * FEE_PER_KB;
     };
 
     // Iterate _unspents, sum the inputs, and save _inputs with the total
@@ -171,7 +178,10 @@ var TransactionBuilder = function(wallet, recipient, fee) {
 
     // Add the outputs for this transaction.
     var collectOutputs = function() {
-      _tx.addOutput(new Address(self.recipient.address), self.recipient.amount);
+      self.recipients.forEach(function(recipient) {
+        _tx.addOutput(new Address(recipient.address), recipient.amount);
+      });
+
       var remainder = _inputAmount - _totalAmount;
       // As long as the remainder is greater than dust we send it to our change
       // address.  Otherwise, let it go to the miners.
