@@ -89,8 +89,7 @@ describe('Wallets', function() {
 
               assert.equal(wallet.balance(), 0);
               assert.equal(wallet.label(), 'my wallet');
-              assert.equal(wallet.pendingBalance(), 0);
-              assert.equal(wallet.availableBalance(), 0);
+              assert.equal(wallet.confirmedBalance(), 0);
               assert.equal(wallet.keychains.length, 3);
               assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0].xpub }), true);
               assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1].xpub }), true);
@@ -130,8 +129,7 @@ describe('Wallets', function() {
 
         assert.equal(wallet.balance(), 0);
         assert.equal(wallet.label(), TEST_WALLET_LABEL);
-        assert.equal(wallet.pendingBalance(), 0);
-        assert.equal(wallet.availableBalance(), 0);
+        assert.equal(wallet.confirmedBalance(), 0);
         assert.equal(wallet.keychains.length, 3);
         assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0].xpub }), true);
         assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1].xpub }), true);
@@ -166,8 +164,7 @@ describe('Wallets', function() {
 
         assert.equal(wallet.balance(), 0);
         assert.equal(wallet.label(), TEST_WALLET_LABEL);
-        assert.equal(wallet.pendingBalance(), 0);
-        assert.equal(wallet.availableBalance(), 0);
+        assert.equal(wallet.confirmedBalance(), 0);
         assert.equal(wallet.keychains.length, 3);
         assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0].xpub }), true);
         assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1].xpub }), true);
@@ -213,8 +210,7 @@ describe('Wallets', function() {
         assert.equal(wallet.id(), options.id);
         assert.equal(wallet.balance(), 0);
         assert.equal(wallet.label(), 'my wallet');
-        assert.equal(wallet.pendingBalance(), 0);
-        assert.equal(wallet.availableBalance(), 0);
+        assert.equal(wallet.confirmedBalance(), 0);
         assert.equal(wallet.keychains.length, 3);
         assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0] }), true);
         assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1] }), true);

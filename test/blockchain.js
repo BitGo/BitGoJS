@@ -39,7 +39,7 @@ describe('Address', function() {
         assert.equal(err, null);
         address.should.have.property('address');
         address.should.have.property('balance');
-        address.should.have.property('pendingBalance');
+        address.should.have.property('confirmedBalance');
 
         done();
       });

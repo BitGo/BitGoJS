@@ -210,7 +210,7 @@ describe('Wallet', function() {
 
       it('insufficient funds due to fees', function(done) {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
-        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: wallet1.pendingBalance()}]);
+        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: wallet1.balance()}]);
         tb.prepare()
           .then(function() {
             console.log("this should not have worked.");
@@ -224,7 +224,7 @@ describe('Wallet', function() {
 
       it('no change required', function(done) {
         // Attempt to spend the full balance without any fees.
-        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: wallet1.availableBalance()}], 0);
+        var tb = new TransactionBuilder(wallet1, [{ address: TEST_WALLET2_ADDRESS, amount: wallet1.confirmedBalance()}], 0);
         tb.prepare()
           .then(function() {
             done();

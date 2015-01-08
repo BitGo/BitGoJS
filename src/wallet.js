@@ -46,19 +46,11 @@ Wallet.prototype.balance = function() {
 };
 
 //
-// pendingBalance
-// Get the pendingBalance of this wallet.
+// confirmedBalance
+// Get the confirmedBalance of this wallet.
 //
-Wallet.prototype.pendingBalance = function() {
-  return this.wallet.pendingBalance;
-};
-
-//
-// availableBalance
-// Get the availableBalance of this wallet.
-//
-Wallet.prototype.availableBalance = function() {
-  return this.wallet.availableBalance;
+Wallet.prototype.confirmedBalance = function() {
+  return this.wallet.confirmedBalance;
 };
 
 //
