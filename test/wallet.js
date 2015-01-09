@@ -12,16 +12,15 @@ var TestBitGo = require('./lib/test_bitgo');
 var TransactionBuilder = require('../src/transactionBuilder');
 var unspentData = require('./fixtures/largeunspents.json');
 
-var TEST_WALLET1_ADDRESS = '2Mv4HFh1yaF5S9ma2E1hPTA4jw6RMPpqJi5';
-var TEST_WALLET1_ADDRESS2 = '2MtJSreA9U5ATseKY9ENvkaWgJVqm5KDoXB';
-var TEST_WALLET1_ADDRESS3 = '2NDzrd16RzzQqW54Y5gHpcBHo2LgVn7MiHh';
+var TEST_WALLET1_ADDRESS = '2N21Bt5ZjQg5eWJLGuggY2DfkHyxhPKaagB';
+var TEST_WALLET1_ADDRESS2 = '2NEtpyMqA2v8zf44KDyyhE814FKb59zTX3J';
 var TEST_WALLET1_PASSCODE = 'test wallet #1 security';
-var TEST_WALLET2_ADDRESS = '2MyQeDjDgsVC6k1BR7m8kjveCPNErUoz6gc';
+var TEST_WALLET2_ADDRESS = '2N1PtMP1FvPJxX8iUutbkxRVRC86xcxeF6h';
 var TEST_WALLET2_PASSCODE = 'test wallet #2 security';
-var TEST_WALLET3_ADDRESS = '2NAEdoarGihKn9Wo2pRY1AqgNroRqokaAwm';
+var TEST_WALLET3_ADDRESS = '2NEC139iJ3wTMeSC4GosKEYmpmGo729kBFN';
 var TEST_WALLET3_PASSCODE = 'test wallet #3 security';
-var TEST_WALLET3_ADDRESS2 = '2N993wdt2bgG2cCFd4q92LDLpopxJrGTfc1';
-var TEST_WALLET3_ADDRESS3 = '2N4UZ93ZehotnyJvpcUQ8ZATQUrph27JPU6';
+var TEST_WALLET3_ADDRESS2 = '2ND7sbcPS5DDD9b3FpwNs53uMTEKq4hLfxW';
+var TEST_WALLET3_ADDRESS3 = '2N7Dba7yr1XkoRQh7XVhGjNUKSEgLCiibJp';
 
 describe('Wallet', function() {
   var bitgo;
@@ -400,7 +399,7 @@ describe('Wallet', function() {
       wallet1.getEncryptedUserKeychain(options, function(err, result) {
         assert.equal(err, null);
         result.should.have.property('xpub');
-        assert.equal(result.xpub, 'xpub661MyMwAqRbcEvHxkJFVGwCw6AHithEVTQwMFzgURx8DcgqHv83ehKE9pqtdFzg2c23R9BH51iUrEgkQGrf5uL8Jutf6RDKfqibBEx4gipJ');
+        assert.equal(result.xpub, 'xpub661MyMwAqRbcFSjo1JiMfyKa9vbvMADQHRxUAGy5q6WTLWno94m9BTdJBPVJzFsP2e4wmdjzLGCUw5cD4xxw5F6J8iDrr2w3V7WfFth61oN');
         result.should.have.property('encryptedXprv');
         done();
       });
@@ -445,6 +444,11 @@ describe('Wallet', function() {
           function () {}
         );
       });
+      assert.throws(function () {
+        wallet1.sendMany(
+        { recipients: {}, walletPassphrase: TEST_WALLET1_PASSCODE }, function() {}
+        );
+      });
       done();
     });
 
@@ -453,6 +457,7 @@ describe('Wallet', function() {
         wallet1.sendCoins(
           { address: TEST_WALLET2_ADDRESS, amount: 22 * 1e8 * 1e8, walletPassphrase: TEST_WALLET1_PASSCODE },
           function (err, result) {
+            err.should.eql('Insufficient funds');
             assert.notEqual(err, null);
             done();
           }
@@ -646,6 +651,8 @@ describe('Wallet', function() {
 
       assert.throws(function() { wallet1.sendTransaction(); });
       assert.throws(function() { wallet1.sendTransaction({}); });
+
+      assert.throws(function () { wallet1.createTransaction({ recipients: {}, fee: 0.0001 * 1e8, keychain: keychain }, function() {} );});
       done();
     });
 

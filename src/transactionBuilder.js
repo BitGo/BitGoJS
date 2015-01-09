@@ -39,6 +39,10 @@ var TransactionBuilder = function(wallet, recipients, fee) {
     throw new Error('recipients must be dictionary of destionationAddress:amount');
   }
 
+  if (Object.keys(recipients).length === 0) {
+    throw new Error('must have at least one recipient');
+  }
+
   // Flag indicating whether this class will compute the fee
   this.shouldComputeBestFee = (typeof(fee) == 'undefined');
 
