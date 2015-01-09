@@ -231,7 +231,6 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 // Create and sign a transaction
 // TODO: Refactor into create and sign seperately after integrating with new bitcoinjs-lib
 // Parameters:
-//   address  - the address to send to
 //   recipients - object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee      - the blockchain fee to send (optional)
 // Returns:
@@ -378,7 +377,6 @@ Wallet.prototype.sendCoins = function(params, callback) {
 // 3. Sends the transaction to BitGo
 //
 // Parameters:
-//   address - the destination address
 //   recipients - array of { address, amount } to send to
 //   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
 // Returns:

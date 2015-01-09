@@ -55,7 +55,7 @@ var TransactionBuilder = function(wallet, recipients, fee) {
   this.fee = fee;
   this.recipients = recipients;
 
-  var _totalAmount = self.fee;
+  var _totalOutputs = 0;
   Object.keys(recipients).forEach(function(destinationAddress) {
     var amount = recipients[destinationAddress];
 
@@ -73,8 +73,9 @@ var TransactionBuilder = function(wallet, recipients, fee) {
       throw new Error('invalid bitcoin address: ' + destinationAddress);
     }
 
-    _totalAmount += amount;
+    _totalOutputs += amount;
   });
+  var _totalAmount = self.fee + _totalOutputs;
 
   // The total amount needed for this transaction.
 
@@ -127,7 +128,7 @@ var TransactionBuilder = function(wallet, recipients, fee) {
 
       var outputSizeKb = Object.keys(self.recipients).length * 34 / 1000;
       var inputSizeKb = (_tx.ins.length * signaturesPerInput * 170) / 1000;
-      
+
       return Math.ceil(inputSizeKb + outputSizeKb) * FEE_PER_KB;
     };
 
@@ -155,6 +156,7 @@ var TransactionBuilder = function(wallet, recipients, fee) {
         var approximateFee = approximateBlockchainFee();
         if (approximateFee > self.fee) {
           self.fee = approximateFee;
+          _totalAmount = self.fee + _totalOutputs;
           _inputAmount = 0;
           _tx.clearInputs();
           return collectInputs();

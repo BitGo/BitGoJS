@@ -256,7 +256,7 @@ describe('Wallet', function() {
         recipients[TEST_WALLET2_ADDRESS] = wallet1.balance();
         var tb = new TransactionBuilder(wallet1, recipients);
         tb.prepare()
-          .then(function() {
+          .then(function(res) {
             console.log("this should not have worked.");
             done();
           })
@@ -270,7 +270,7 @@ describe('Wallet', function() {
       it('no change required', function(done) {
         // Attempt to spend the full balance without any fees.
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = wallet1.confirmedBalance();
+        recipients[TEST_WALLET2_ADDRESS] = wallet1.balance();
         var tb = new TransactionBuilder(wallet1, recipients, 0);
         tb.prepare()
           .then(function() {
