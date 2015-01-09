@@ -250,6 +250,10 @@ Wallet.prototype.createTransaction = function(params, callback) {
     throw new Error('expecting recipients object');
   }
 
+  if (Object.keys(params.recipients).length === 0) {
+    throw new Error('must have at least one recipient');
+  }
+
   Object.keys(params.recipients).forEach(function(destinationAddress) {
     var amount = params.recipients[destinationAddress];
 
@@ -388,6 +392,10 @@ Wallet.prototype.sendMany = function(params, callback) {
 
   if (typeof(params.recipients) != 'object') {
     throw new Error('expecting recipients object');
+  }
+
+  if (Object.keys(params.recipients).length === 0) {
+    throw new Error('must have at least one recipient');
   }
 
   Object.keys(params.recipients).forEach(function(destinationAddress) {
