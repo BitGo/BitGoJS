@@ -149,11 +149,11 @@ Wallet.prototype.unspents = function(params, callback) {
   common.validateParams(params, [], [], callback);
 
   var url = this.url('/unspents');
-  if (params.btcLimit) {
-    if (typeof(params.limit) != 'number') {
+  if (params.target) {
+    if (typeof(params.target) != 'number') {
       throw new Error('invalid argument');
     }
-    url += '?limit=' + (params.limit * 1e8);
+    url += '?target=' + params.target;
   }
 
   return this.bitgo.get(url)

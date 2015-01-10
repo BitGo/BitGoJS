@@ -109,8 +109,9 @@ var TransactionBuilder = function(wallet, recipients, fee) {
     var getUnspents = function() {
       var deferred = Q.defer();
 
+      // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
       var options = {
-        limit: _totalAmount
+        target: _totalAmount + 1e8
       };
       self.wallet.unspents(options, function(err, unspents) {
         if (err) {

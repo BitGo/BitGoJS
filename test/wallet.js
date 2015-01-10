@@ -139,7 +139,7 @@ describe('Wallet', function() {
   describe('Unspents', function() {
     it('arguments', function(done) {
       assert.throws(function() { wallet1.unspents('invalid', function() {}); });
-      assert.throws(function() { wallet1.unspents({btcLimit: 'a string!'}, function() {}); });
+      assert.throws(function() { wallet1.unspents({target: 'a string!'}, function() {}); });
       assert.throws(function() { wallet1.unspents({}, 'invalid'); });
       done();
     });
