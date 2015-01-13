@@ -9,6 +9,7 @@ var request = require('superagent');
 var ECKey = require('./bitcoin/eckey');
 var Wallet = require('./wallet');
 var common = require('./common');
+var BIP32 = require('./bitcoin/bip32');
 var Q = require('q');
 
 //
@@ -35,6 +36,110 @@ Wallets.prototype.list = function(params, callback) {
       wallets[wallet] = new Wallet(self.bitgo, body.wallets[wallet]);
     }
     return wallets;
+  })
+  .nodeify(callback);
+};
+
+//
+// listShares
+// List the user's wallet shares
+//
+Wallets.prototype.listShares = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  var self = this;
+  return this.bitgo.get(this.bitgo.url('/walletshare'))
+  .result()
+  .nodeify(callback);
+};
+
+//
+// getShare
+// Gets a wallet share information, including the encrypted sharing keychain. requires unlock if keychain is present.
+// Params:
+//    walletShareId - the wallet share to get informatoin on
+//
+Wallets.prototype.getShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId'], [], callback);
+
+  var self = this;
+  return this.bitgo.get(this.bitgo.url('/walletshare/' + params.walletShareId))
+  .result()
+  .nodeify(callback);
+};
+
+
+//
+// acceptShare
+// Accepts a wallet share, adding the wallet to the user's list
+// Needs a user's password to decrypt the shared key
+// Params:
+//    walletShareId - the wallet share to accept
+//    userPassword - (required if more than view permissions are shared) user's password to decrypt the shared wallet
+//    newWalletPassphrase - new wallet passphrase for saving the shared wallet xprv.
+//                          If left blank and a wallet with more than view permissions was shared, then the userpassword is used.
+//
+Wallets.prototype.acceptShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId'], [], callback);
+
+  var self = this;
+  var encryptedSharedWalletXprv;
+
+  return this.getShare({walletShareId: params.walletShareId})
+  .then(function(walletShare) {
+    var permissions = walletShare.permissions.split(",");
+    if (permissions.length === 1 && permissions.indexOf("view") >= 0) {
+      // Only the view permission was needed, so just return the wallet share for acceptance
+      return walletShare;
+    }
+
+    // More than viewing was requested, so we need to process the wallet keys using the shared ecdh scheme
+    if (!params.userPassword) {
+      throw new Error("userPassword param must be provided to decrypt shared key");
+    }
+
+    return self.bitgo.getECDHSharingKeychain()
+    .then(function(sharingKeychain) {
+      if (!sharingKeychain.encryptedXprv) {
+        throw new Error('EncryptedXprv was not found on sharing keychain')
+      }
+
+      // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
+      sharingKeychain.xprv = self.bitgo.decrypt({ password: params.userPassword, opaque: sharingKeychain.encryptedXprv });
+      var rootExtKey = new BIP32(sharingKeychain.xprv);
+      // Derive key by path (which is used between these 2 users only)
+      var extKey = rootExtKey.derive(walletShare.keychain.path);
+      var secret = self.bitgo.getECDHSecret({ eckey: extKey.eckey, otherPubKeyHex: walletShare.keychain.fromPubKey });
+
+      // Yes! We got the secret successfully here, now decrypt the shared wallet xprv
+      var decryptedSharedWalletXprv = self.bitgo.decrypt({ password: secret, opaque: walletShare.keychain.encryptedXprv });
+
+      // We will now re-encrypt the wallet with our own password
+      var newWalletPassphrase = params.newWalletPassphrase || params.userPassword;
+      encryptedSharedWalletXprv = self.bitgo.encrypt({ password: newWalletPassphrase, input: decryptedSharedWalletXprv });
+
+      // Carry on to the next block where we will post the acceptance of the share with the encrypted xprv
+      return walletShare;
+    });
+  })
+  .then(function(walletShare) {
+    var postBody = {
+      'state': 'accepted'
+    };
+
+    if (encryptedSharedWalletXprv) {
+      postBody.encryptedXprv = encryptedSharedWalletXprv;
+    }
+
+    return self.bitgo.post(self.bitgo.url('/walletshare/' + params.walletShareId))
+    .send(postBody)
+    .result()
+    .then(function(res) {
+      return res;
+    });
   })
   .nodeify(callback);
 };
@@ -84,7 +189,7 @@ Wallets.prototype.createKey = function(params) {
 // }
 Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['passphrase'], ['label', 'backupXpub'], callback);
+  common.validateParams(params, ['passphrase'], ['label', 'backupXpub', 'enterprise'], callback);
 
   var self = this;
   var label = params.label;
@@ -127,6 +232,11 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
         { "xpub": backupKeychain.xpub },
         { "xpub": bitgoKeychain.xpub} ]
     };
+
+    if (params.enterprise) {
+      walletParams.enterprise = params.enterprise;
+    }
+
     return self.add(walletParams);
   })
   .then(function(result) {

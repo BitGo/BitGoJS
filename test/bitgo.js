@@ -176,7 +176,7 @@ describe('BitGo', function() {
         var bitgo = new TestBitGo();
         bitgo.me({}, function(err, user) {
           // Expect an error
-          assert.equal(err.message, 'not authenticated');
+          assert.equal(err.message, 'Authorization required');
           done();
         });
       });
@@ -255,6 +255,31 @@ describe('BitGo', function() {
       });
     });
 
+  });
+
+  describe('ECDH sharing keychain', function() {
+
+    before(function(done) {
+      bitgo = new TestBitGo();
+      bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
+        if (err) {
+          throw err;
+        }
+        done();
+      });
+    });
+
+    it('Get user ECDH sharing keychain', function(done) {
+      return bitgo.unlock({ otp: '0000000' })
+      .then (function() {
+        return bitgo.getECDHSharingKeychain();
+      })
+      .then(function (result) {
+        result.xpub.should.equal('xpub661MyMwAqRbcGn8KmC8qy9cNcLcmLo8aGtcHgiMmXw7R5drDHReavre767FausTZtZTw8vfych3J9jWw67eX8314ARTb3FczLdsPnqkQjyT');
+        done();
+      })
+      .done();
+    });
   });
 
   describe('Oauth test', function() {
@@ -425,4 +450,5 @@ describe('BitGo', function() {
       });
     });
   });
+
 });

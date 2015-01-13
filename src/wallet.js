@@ -7,6 +7,9 @@
 
 var TransactionBuilder = require('./transactionBuilder');
 var Keychains = require('./keychains');
+var ECKey = require('./bitcoin/eckey');
+var Util = require('./bitcoin/util');
+
 var common = require('./common');
 
 //
@@ -307,6 +310,25 @@ Wallet.prototype.sendTransaction = function(params, callback) {
   .nodeify(callback);
 };
 
+Wallet.prototype.createShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['user', 'permissions'], [], callback);
+
+  if (!params.keychain) {
+    throw new Error('requires keychain');
+  }
+  if (!params.keychain.xpub || !params.keychain.encryptedXprv || !params.keychain.fromPubKey ||
+    !params.keychain.toPubKey || !params.keychain.path) {
+    throw new Error('requires keychain parameters - xpub, encryptedXprv, fromPubKey, toPubKey, path');
+  }
+
+  var self = this;
+  return this.bitgo.post(this.url('/share'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
 //
 // sendCoins
 // Send coins to a destination address from this wallet using the user key.
@@ -442,6 +464,48 @@ Wallet.prototype.sendMany = function(params, callback) {
       hash: result.hash,
       fee: transaction.fee
     };
+  })
+  .nodeify(callback);
+};
+
+Wallet.prototype.shareWallet = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['email', 'walletPassphrase'], [], callback);
+
+  params.permissions = params.permissions || 'manage';
+
+  var self = this;
+  var sharing;
+  return this.bitgo.getSharingKey({email: params.email})
+  .then(function(result) {
+    sharing = result;
+    return self.getEncryptedUserKeychain({})
+  })
+  .then(function(keychain) {
+    // Decrypt the user key with a passphrase
+    try {
+      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, opaque: keychain.encryptedXprv });
+    } catch (e) {
+      return self.bitgo.reject('Unable to decrypt user keychain', callback);
+    }
+
+    var eckey = new ECKey();
+    var secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
+    var newEncryptedXprv = self.bitgo.encrypt({password: secret, input: keychain.xprv});
+
+    var options = {
+      user: sharing.userId,
+      permissions: params.permissions,
+      keychain: {
+        xpub: keychain.xpub,
+        encryptedXprv: newEncryptedXprv,
+        fromPubKey: eckey.getPubKeyHex(),
+        toPubKey: sharing.pubkey,
+        path: sharing.path
+      }
+    };
+
+    return self.createShare(options, callback);
   })
   .nodeify(callback);
 };

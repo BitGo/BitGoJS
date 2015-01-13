@@ -9,3 +9,4 @@ coverage
 *.swp
 BitGoJS-min.js
 BitGoJS.js
+example/sandbox.js

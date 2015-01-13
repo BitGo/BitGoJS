@@ -6,6 +6,7 @@
 
 var assert = require('assert');
 var should = require('should');
+var Q = require('q');
 
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
@@ -39,7 +40,7 @@ describe('Wallet', function() {
 
       // Fetch the first wallet.
       var options = {
-        id: TEST_WALLET1_ADDRESS,
+        id: TEST_WALLET1_ADDRESS
       };
       wallets.get(options, function(err, wallet) {
         if (err) {
@@ -64,6 +65,205 @@ describe('Wallet', function() {
           });
         });
       });
+    });
+  });
+
+  var walletShareIdWithViewPermissions, walletShareIdWithSpendPermissions;
+  describe('Share wallet', function() {
+    it('arguments', function (done) {
+      assert.throws(function () { bitgo.getSharingKey({}); });
+
+      assert.throws(function () { wallet1.shareWallet({}, function() {}); });
+      assert.throws(function () { wallet1.shareWallet({ email:'tester@bitgo.com' }, function() {}); });
+      // assert.throws(function () { wallet1.shareWallet({ email:'notfoundqery@bitgo.com', walletPassphrase:'wrong' }, function() {}); });
+      done();
+    });
+
+    it('get sharing key of user that does not exist', function(done) {
+
+      bitgo.getSharingKey({ email:'notfoundqery@bitgo.com' })
+      .done(
+        function(success) {
+          success.should.equal(null);
+        },
+        function(err) {
+          err.status.should.equal(404);
+          done();
+        }
+      );
+    });
+
+    it('sharing with user that does not exist', function(done) {
+
+      wallet1.shareWallet({ email:'notfoundqery@bitgo.com', walletPassphrase:'test' })
+      .done(
+      function(success) {
+        success.should.equal(null);
+      },
+      function(err) {
+        err.status.should.equal(404);
+        done();
+      }
+      );
+    });
+
+    it('trying to share with an incorrect passcode', function(done) {
+
+      bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        wallet1.shareWallet({ email: TestBitGo.TEST_SHARED_KEY_USER, walletPassphrase: 'wrong' })
+        .done(
+        function(success) {
+          success.should.equal(null);
+        },
+        function(err) {
+          err.message.should.include('Unable to decrypt user keychain');
+          done();
+        }
+        );
+      });
+    });
+
+    it('get sharing key for a user', function(done) {
+      var keychains = bitgo.keychains();
+      var newKey = keychains.create();
+
+      var options = {
+        xpub: newKey.xpub
+      };
+
+      bitgo.getSharingKey({ email: TestBitGo.TEST_SHARED_KEY_USER })
+      .done(function(result) {
+
+        result.should.have.property('userId');
+        result.should.have.property('pubkey');
+        result.userId.should.equal('549d0ee835aec81206004c082757570f');
+        result.pubkey.should.equal('03F19AAC9A533BDFDAC8CDAD2B71CD3993CECFA0112E12D428914633C203304CA9');
+        done();
+      })
+    });
+
+    it('share a wallet (view)', function(done) {
+      bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet1.shareWallet(
+        { email: TestBitGo.TEST_SHARED_KEY_USER, walletPassphrase: TEST_WALLET1_PASSCODE, permissions: 'view' }
+        )
+      })
+      .then(function(result){
+        result.should.have.property('walletId');
+        result.should.have.property('fromUser');
+        result.should.have.property('toUser');
+        result.should.have.property('state');
+        result.walletId.should.equal(wallet1.id());
+        result.fromUser.should.equal('543c11ed356d00cb7600000b98794503');
+        result.toUser.should.equal('549d0ee835aec81206004c082757570f');
+        result.state.should.equal('active');
+
+        result.should.have.property('id');
+        walletShareIdWithViewPermissions = result.id;
+        done();
+      })
+      .done();
+    });
+
+    it('share a wallet (spend)', function(done) {
+      bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet2.shareWallet(
+          { email: TestBitGo.TEST_SHARED_KEY_USER, walletPassphrase: TEST_WALLET2_PASSCODE, permissions: 'view,spend' }
+        )
+      })
+      .then(function(result){
+        result.should.have.property('walletId');
+        result.should.have.property('fromUser');
+        result.should.have.property('toUser');
+        result.should.have.property('state');
+        result.walletId.should.equal(wallet2.id());
+        result.fromUser.should.equal('543c11ed356d00cb7600000b98794503');
+        result.toUser.should.equal('549d0ee835aec81206004c082757570f');
+        result.state.should.equal('active');
+
+        result.should.have.property('id');
+        walletShareIdWithSpendPermissions = result.id;
+        done();
+      })
+      .done();
+    });
+  });
+
+  var bitgoSharedKeyUser;
+  describe('Get wallet share list', function() {
+    before(function(done) {
+      bitgoSharedKeyUser = new TestBitGo();
+      bitgoSharedKeyUser.authenticate({ username: TestBitGo.TEST_SHARED_KEY_USER, password: TestBitGo.TEST_SHARED_KEY_PASSWORD, otp: '0000000' })
+      .then(function(success) {
+        done();
+      })
+      .done();
+    });
+
+    it('wallet share should be in sender list', function(done) {
+      bitgo.wallets().listShares({})
+      .then(function(result){
+        result.outgoing.should.containDeep([{id: walletShareIdWithViewPermissions}]);
+        result.outgoing.should.containDeep([{id: walletShareIdWithSpendPermissions}]);
+        done();
+      })
+      .done();
+    });
+
+    it('wallet share should be in receiver list', function(done) {
+      bitgoSharedKeyUser.wallets().listShares({})
+      .then(function(result){
+        result.incoming.should.containDeep([{id: walletShareIdWithViewPermissions}]);
+        result.incoming.should.containDeep([{id: walletShareIdWithSpendPermissions}]);
+        done();
+      })
+      .done();
+    });
+  });
+
+  describe('Accept wallet share', function (){
+
+    it('accept a wallet share with only view permissions', function(done) {
+      bitgoSharedKeyUser.wallets().acceptShare({walletShareId: walletShareIdWithViewPermissions})
+      .then(function(result) {
+        result.should.have.property('state');
+        result.should.have.property('changed');
+        result.state.should.equal('accepted');
+        result.changed.should.equal(true);
+
+        // now check that the wallet share id is no longer there
+        return bitgoSharedKeyUser.wallets().listShares({})
+      })
+      .then(function(result) {
+        result.incoming.should.not.containDeep([{id: walletShareIdWithViewPermissions}]);
+        done();
+      })
+      .done();
+    });
+
+    it('accept a wallet share with spend permissions', function(done) {
+      bitgoSharedKeyUser.unlock({'otp': '0000000'})
+      .then(function() {
+        bitgoSharedKeyUser.wallets().acceptShare({walletShareId: walletShareIdWithSpendPermissions, userPassword: TestBitGo.TEST_SHARED_KEY_PASSWORD})
+        .then(function (result) {
+          result.should.have.property('state');
+          result.should.have.property('changed');
+          result.state.should.equal('accepted');
+          result.changed.should.equal(true);
+
+          // now check that the wallet share id is no longer there
+          return bitgoSharedKeyUser.wallets().listShares()
+        })
+        .then(function (result) {
+          result.incoming.should.not.containDeep([{id: walletShareIdWithSpendPermissions}]);
+          done();
+        })
+        .done();
+      })
+      .done();
     });
   });
 

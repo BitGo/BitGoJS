@@ -12,6 +12,8 @@ var Wallet = require('./wallet');
 var Wallets = require('./wallets');
 var sjcl = require('./bitcoin/sjcl.min');
 var common = require('./common');
+var ECKey = require('./bitcoin/eckey');
+var Util = require('./bitcoin/util');
 var Q = require('q');
 
 // Patch superagent to return promises
@@ -200,6 +202,46 @@ BitGo.prototype.decrypt = function(params) {
 };
 
 //
+// ecdhSecret
+// Construct an ECDH secret from a private key and other user's public key
+//
+BitGo.prototype.getECDHSecret = function(params) {
+  params = params || {};
+  common.validateParams(params, ['otherPubKeyHex'], []);
+
+  if (typeof(params.eckey) !== 'object') {
+    throw new Error('eckey object required');
+  }
+
+  var otherKey = new ECKey('0');
+  otherKey.setPub(params.otherPubKeyHex);
+  var secretPoint = otherKey.getPubPoint().multiply(params.eckey.priv);
+  var secret = secretPoint.getX().toBigInteger().toByteArrayUnsigned();
+  return Util.bytesToHex(secret).toLowerCase();
+};
+
+//
+// user sharing keychain
+// Gets the user's private keychain, used for receiving shares
+BitGo.prototype.getECDHSharingKeychain = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], []);
+
+  var self = this;
+
+  return this.get(this.url('/user/settings'))
+  .result()
+  .then(function(result) {
+    if (!result.settings.ecdhKeychain) {
+      return self.reject('ecdh keychain not found for user', callback);
+    }
+
+    return self.keychains().get({ xpub: result.settings.ecdhKeychain });
+  })
+  .nodeify(callback);
+};
+
+//
 // market
 // Get the latest bitcoin prices.
 //
@@ -380,10 +422,6 @@ BitGo.prototype.me = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  if (!this._token) {
-    return this.reject('not authenticated', callback);
-  }
-
   return this.get(this.url('/user/me'))
   .result('user')
   .nodeify(callback);
@@ -396,10 +434,6 @@ BitGo.prototype.me = function(params, callback) {
 BitGo.prototype.unlock = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['otp'], callback);
-
-  if (!this._token) {
-    return this.reject('not authenticated', callback);
-  }
 
   return this.post(this.url('/user/unlock'))
   .send(params)
@@ -415,10 +449,6 @@ BitGo.prototype.lock = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  if (!this._token) {
-    return this.reject('not authenticated', callback);
-  }
-
   return this.post(this.url('/user/lock'))
   .result()
   .nodeify(callback);
@@ -432,11 +462,21 @@ BitGo.prototype.sendOTP = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  if (!this._token) {
-    return this.reject('not authenticated', callback);
-  }
-
   return this.post(this.url('/user/sendotp'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+//
+// getSharingKey
+// Get a key for sharing a wallet with a user
+//
+BitGo.prototype.getSharingKey = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['email'], [], callback);
+
+  return this.post(this.url('/user/sharingkey'))
   .send(params)
   .result()
   .nodeify(callback);
