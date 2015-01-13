@@ -29,9 +29,11 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 //   wallet:  a wallet object to send from
 //   recipients - object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
-var TransactionBuilder = function(wallet, recipients, fee) {
+var TransactionBuilder = function(wallet, recipients, fee, minConfirms) {
+  minConfirms = minConfirms || 0;
+
   // Sanity check the arguments passed in
-  if (typeof(wallet) != 'object' || (fee && typeof(fee) != 'number') ) {
+  if (typeof(wallet) != 'object' || (fee && typeof(fee) != 'number') || typeof(minConfirms) != 'number') {
     throw new Error('invalid argument');
   }
 
@@ -119,7 +121,10 @@ var TransactionBuilder = function(wallet, recipients, fee) {
           return;
         }
 
-        _unspents = unspents;
+        _unspents = unspents.filter(function(u) {
+          var confirms = u.confirmations || 0;
+          return confirms >= minConfirms;
+        });
         deferred.resolve(self);
       });
       return deferred.promise;

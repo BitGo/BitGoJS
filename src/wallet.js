@@ -242,7 +242,8 @@ Wallet.prototype.createTransaction = function(params, callback) {
   var self = this;
 
   if ((typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
-    typeof(params.keychain) != 'object') {
+      (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
+      typeof(params.keychain) != 'object') {
     throw new Error('invalid argument');
   }
 
@@ -266,7 +267,7 @@ Wallet.prototype.createTransaction = function(params, callback) {
     }
   });
 
-  return new TransactionBuilder(this, params.recipients, params.fee).prepare()
+  return new TransactionBuilder(this, params.recipients, params.fee, params.minConfirms).prepare()
   .then(function(tb) {
     return tb.sign(params.keychain);
   })
@@ -353,7 +354,8 @@ Wallet.prototype.sendCoins = function(params, callback) {
 
     return self.createTransaction({
       recipients: recipients,
-      keychain: keychain
+      keychain: keychain,
+      minConfirms: params.minConfirms
     });
   })
   .then(function(result) {
@@ -425,7 +427,8 @@ Wallet.prototype.sendMany = function(params, callback) {
     // Create and sign the transaction
     return self.createTransaction({
       recipients: params.recipients,
-      keychain: keychain
+      keychain: keychain,
+      minConfirms: params.minConfirms
     });
   })
   .then(function(result) {

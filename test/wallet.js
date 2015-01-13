@@ -230,6 +230,12 @@ describe('Wallet', function() {
         assert.throws(function() { new TransactionBuilder({}, [recipients]); });
       });
 
+      it('minConfirms argument', function() {
+        var recipients = {};
+        recipients[TEST_WALLET1_ADDRESS] = 1e8;
+        assert.throws(function() { new TransactionBuilder({}, recipients, 0, 'string'); });
+      });
+
       it('fee', function() {
         var recipients = {};
         recipients[TEST_WALLET1_ADDRESS] = 1e8;
@@ -256,8 +262,23 @@ describe('Wallet', function() {
         var tb = new TransactionBuilder(wallet1, recipients);
         tb.prepare()
           .then(function(res) {
-            console.log("this should not have worked.");
+            throw new Error('succeeded');
+          })
+          .catch(function(e) {
+            assert.equal(e.toString(), 'Insufficient funds');
             done();
+          })
+          .done();
+      });
+
+      it('insufficient funds due to minConfirms', function(done) {
+        // Attempt to spend the full balance - adding the default fee would be insufficient funds.
+        var recipients = {};
+        recipients[TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
+        var tb = new TransactionBuilder(wallet1, recipients, 0, 1e6);
+        tb.prepare()
+          .then(function(res) {
+            throw new Error('succeeded');
           })
           .catch(function(e) {
             assert.equal(e.toString(), 'Insufficient funds');
