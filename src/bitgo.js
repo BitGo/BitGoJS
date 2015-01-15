@@ -530,10 +530,11 @@ BitGo.prototype.wallets = function() {
 
 //
 // newWallet
-// A factory method to create a new Wallet object, initialized with the wallet id.
+// A factory method to create a new Wallet object, initialized with the wallet params
+// Can be used to reconstitute a wallet from cached data
 //
-BitGo.prototype.newWalletObject = function(walletId) {
-  return new Wallet(this, { id: walletId });
+BitGo.prototype.newWalletObject = function(walletParams) {
+  return new Wallet(this, walletParams);
 };
 
 BitGo.prototype.url = function(path) {

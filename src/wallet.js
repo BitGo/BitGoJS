@@ -6,6 +6,8 @@
 //
 
 var TransactionBuilder = require('./transactionBuilder');
+var Address = require('./bitcoin/address');
+var BIP32 = require('./bitcoin/bip32');
 var Keychains = require('./keychains');
 var ECKey = require('./bitcoin/eckey');
 var Util = require('./bitcoin/util');
@@ -19,9 +21,14 @@ var Wallet = function(bitgo, wallet) {
   this.bitgo = bitgo;
   this.wallet = wallet;
   this.keychains = [];
+
   if (wallet.private) {
     this.keychains = wallet.private.keychains;
   }
+};
+
+Wallet.prototype.toJSON = function() {
+  return this.wallet;
 };
 
 //
@@ -74,14 +81,56 @@ Wallet.prototype.url = function(extra) {
 // Creates a new address for use with this wallet.
 //
 Wallet.prototype.createAddress = function(params, callback) {
+  var self = this;
   params = params || {};
   common.validateParams(params, [], ['allowExisting'], callback);
+
+  // Default to client-side address validation on, for safety. Use validate=false to disable.
+  var shouldValidate = true;
+  if (typeof(params.validate) === 'boolean') {
+    shouldValidate = params.validate;
+  }
 
   var chain = params.chain || 0;
   return this.bitgo.post(this.url('/address/' + chain))
   .send(params)
   .result()
+  .then(function(addr) {
+    if (shouldValidate) {
+      self.validateAddress(addr);
+    }
+    return addr;
+  })
   .nodeify(callback);
+};
+
+//
+// validateAddress
+// Validates an address and path by calculating it locally from the keychain xpubs
+//
+Wallet.prototype.validateAddress = function(params) {
+  common.validateParams(params, ['address', 'path'], []);
+  var self = this;
+
+  // Function to calculate the address locally, to validate that what the server
+  // gives us is an address in this wallet.
+  var calcAddress = function(path) {
+    var re = /^\/[01]\/\d+$/;
+    if (!path.match(re)) {
+      throw new Error('unsupported path: ' + path);
+    }
+    var pubKeys = self.keychains.map(function(k) {
+      var bip32 = new BIP32(k.xpub);
+      return bip32.derive('m' + k.path + path).eckey.getPub();
+    });
+    // TODO: use wallet 'm' value, when exposed
+    return Address.createMultiSigAddress(pubKeys, 2).toString();
+  };
+
+  var localAddress = calcAddress(params.path);
+  if (localAddress !== params.address) {
+    throw new Error('address validation failure: ' + params.address + ' vs. ' + localAddress);
+  }
 };
 
 //

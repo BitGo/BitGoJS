@@ -268,6 +268,8 @@ describe('Wallet', function() {
   });
 
   describe('CreateAddress', function() {
+    var addr;
+
     it('arguments', function(done) {
       assert.throws(function() { wallet2.createAddress('invalid', function() {}); });
       assert.throws(function() { wallet2.createAddress({}, 'invalid'); });
@@ -275,16 +277,28 @@ describe('Wallet', function() {
     });
 
     it('create', function(done) {
-      wallet2.createAddress({}, function(err, wallet) {
+      wallet2.createAddress({}, function(err, address) {
         assert.equal(err, null);
-        wallet.should.have.property('path');
-        wallet.should.have.property('redeemScript');
-        wallet.should.have.property('address');
-        assert.notEqual(wallet.address, wallet2.id());
+        address.should.have.property('path');
+        address.should.have.property('redeemScript');
+        address.should.have.property('address');
+        addr = address;
+        assert.notEqual(address.address, wallet2.id());
 
         // TODO: Verify the chain?
         done();
       });
+    });
+
+    it('validate address', function() {
+      assert.throws(function() {
+        wallet2.validateAddress({address: addr.address, path: '0/0'});
+      });
+      assert.throws(function() {
+        wallet2.validateAddress({address: addr.address, path: '/0/0'});
+      });
+      wallet2.validateAddress(addr);
+      wallet2.validateAddress({ address: TEST_WALLET2_ADDRESS, path: '/0/0' });
     });
   });
 
