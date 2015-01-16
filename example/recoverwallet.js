@@ -107,7 +107,7 @@ var decryptKeys = function() {
   var keyToBIP32 = function(key, password, mustBePrivate) {
     try {
        if (key.indexOf('x') !== 0) {
-         key = bitgo.decrypt({ password: password, opaque: key });
+         key = bitgo.decrypt({ password: password, input: key });
        }
        if (mustBePrivate) {
          if (key.indexOf('xprv') !== 0) {

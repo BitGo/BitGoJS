@@ -77,6 +77,25 @@ Wallet.prototype.url = function(extra) {
 };
 
 //
+// get
+// Refetches this wallet and returns it
+//
+Wallet.prototype.get = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  var self = this;
+
+  return this.bitgo.get(this.url())
+  .result()
+  .then(function(res) {
+    self.wallet = res;
+    return self;
+  })
+  .nodeify(callback);
+};
+
+//
 // createAddress
 // Creates a new address for use with this wallet.
 //
@@ -176,6 +195,27 @@ Wallet.prototype.addresses = function(params, callback) {
   .nodeify(callback);
 };
 
+//
+// freeze
+// Freeze the wallet for a duration of choice, stopping BitGo from signing any transactions
+// Parameters include:
+//   limit:  the duration to freeze the wallet for in seconds, defaults to 3600
+//
+Wallet.prototype.freeze = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  if (params.duration) {
+    if (typeof(params.duration) != 'number') {
+      throw new Error('invalid duration - should be number of seconds');
+    }
+  }
+
+  return this.bitgo.post(this.url('/freeze'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
 
 //
 // delete
@@ -414,9 +454,9 @@ Wallet.prototype.sendCoins = function(params, callback) {
   .then(function(keychain) {
     // Decrypt the user key with a passphrase
     try {
-      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, opaque: keychain.encryptedXprv });
+      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
     } catch (e) {
-      return self.bitgo.reject('Unable to decrypt user keychain', callback);
+      throw new Error('Unable to decrypt user keychain');
     }
 
     // Create and sign the transaction
@@ -490,9 +530,9 @@ Wallet.prototype.sendMany = function(params, callback) {
   .then(function(keychain) {
     // Decrypt the user key with a passphrase
     try {
-      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, opaque: keychain.encryptedXprv });
+      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
     } catch (e) {
-      return self.bitgo.reject('Unable to decrypt user keychain', callback);
+      throw new Error('Unable to decrypt user keychain');
     }
 
     // Create and sign the transaction
@@ -533,9 +573,9 @@ Wallet.prototype.shareWallet = function(params, callback) {
   .then(function(keychain) {
     // Decrypt the user key with a passphrase
     try {
-      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, opaque: keychain.encryptedXprv });
+      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
     } catch (e) {
-      return self.bitgo.reject('Unable to decrypt user keychain', callback);
+      throw new Error('Unable to decrypt user keychain');
     }
 
     var eckey = new ECKey();

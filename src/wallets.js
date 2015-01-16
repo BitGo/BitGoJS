@@ -108,14 +108,14 @@ Wallets.prototype.acceptShare = function(params, callback) {
       }
 
       // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
-      sharingKeychain.xprv = self.bitgo.decrypt({ password: params.userPassword, opaque: sharingKeychain.encryptedXprv });
+      sharingKeychain.xprv = self.bitgo.decrypt({ password: params.userPassword, input: sharingKeychain.encryptedXprv });
       var rootExtKey = new BIP32(sharingKeychain.xprv);
       // Derive key by path (which is used between these 2 users only)
       var extKey = rootExtKey.derive(walletShare.keychain.path);
       var secret = self.bitgo.getECDHSecret({ eckey: extKey.eckey, otherPubKeyHex: walletShare.keychain.fromPubKey });
 
       // Yes! We got the secret successfully here, now decrypt the shared wallet xprv
-      var decryptedSharedWalletXprv = self.bitgo.decrypt({ password: secret, opaque: walletShare.keychain.encryptedXprv });
+      var decryptedSharedWalletXprv = self.bitgo.decrypt({ password: secret, input: walletShare.keychain.encryptedXprv });
 
       // We will now re-encrypt the wallet with our own password
       var newWalletPassphrase = params.newWalletPassphrase || params.userPassword;

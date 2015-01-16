@@ -75,13 +75,13 @@ describe('BitGo', function() {
     it('invalid password', function() {
       var bitgo = new TestBitGo();
       var opaque = bitgo.encrypt({ password: password, input: secret });
-      assert.throws(function() { bitgo.decrypt({ password: 'hack hack', opaque: opaque }); });
+      assert.throws(function() { bitgo.decrypt({ password: 'hack hack', input: opaque }); });
     });
 
     it('valid password', function() {
       var bitgo = new TestBitGo();
       var opaque = bitgo.encrypt({ password: password, input: secret });
-      assert.equal(bitgo.decrypt({ password: password, opaque: opaque }), secret);
+      assert.equal(bitgo.decrypt({ password: password, input: opaque }), secret);
     });
   });
 

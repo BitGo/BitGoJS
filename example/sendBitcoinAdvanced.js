@@ -66,7 +66,7 @@ var sendBitcoin = function() {
       console.log("Got encrypted user keychain");
 
       // Decrypt the user key with a passphrase
-      keychain.xprv = bitgo.decrypt({ password: walletPassphrase, opaque: keychain.encryptedXprv });
+      keychain.xprv = bitgo.decrypt({ password: walletPassphrase, input: keychain.encryptedXprv });
 
       // Set recipients
       var recipients = {};

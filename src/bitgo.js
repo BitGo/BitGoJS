@@ -196,9 +196,9 @@ BitGo.prototype.encrypt = function(params) {
 //
 BitGo.prototype.decrypt = function(params) {
   params = params || {};
-  common.validateParams(params, ['password', 'opaque'], []);
+  common.validateParams(params, ['password', 'input'], []);
 
-  return sjcl.decrypt(params.password, params.opaque);
+  return sjcl.decrypt(params.password, params.input);
 };
 
 //

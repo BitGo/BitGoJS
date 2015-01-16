@@ -613,7 +613,7 @@ describe('Wallet', function() {
 
       it('valid key', function(done) {
         // First we need to decrypt the xprv.
-        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET1_PASSCODE, opaque: keychain.encryptedXprv });
+        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
         // Now we can go ahead and sign.
         var tx = tb.sign(keychain);
         done();
@@ -893,7 +893,7 @@ describe('Wallet', function() {
 
     describe('full transaction', function() {
       it('decrypt key', function(done) {
-        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET1_PASSCODE, opaque: keychain.encryptedXprv });
+        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
         done();
       });
 
@@ -950,7 +950,7 @@ describe('Wallet', function() {
       });
 
       it('decrypt key', function(done) {
-        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET2_PASSCODE, opaque: keychain.encryptedXprv });
+        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET2_PASSCODE, input: keychain.encryptedXprv });
         done();
       });
 
@@ -974,6 +974,48 @@ describe('Wallet', function() {
           done();
         });
       });
+    });
+  });
+
+  describe('Freeze Wallet', function() {
+    it('arguments', function (done) {
+      assert.throws(function () {
+        wallet2.freeze({duration: 'asdfasdasd'});
+      });
+      assert.throws(function () {
+        wallet2.freeze({duration: 5}, 'asdasdsa');
+      });
+      done();
+    });
+
+    it('perform freeze', function (done) {
+      wallet2.freeze({duration: 3}, function (err, freezeResult) {
+        freezeResult.should.have.property('time');
+        freezeResult.should.have.property('expires');
+        done();
+      });
+    });
+
+    it('get wallet should show freeze', function (done) {
+      wallet2.get({}, function (err, res) {
+        var wallet = res.wallet;
+        wallet.should.have.property('freeze');
+        wallet.freeze.should.have.property('time');
+        wallet.freeze.should.have.property('expires');
+        done();
+      });
+    });
+
+    it('attempt to send funds', function (done) {
+      wallet2.sendCoins(
+      {address: TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TEST_WALLET2_PASSCODE},
+      function (err, result) {
+        err.should.not.equal(null);
+        err.status.should.equal(403);
+        err.message.should.include('wallet is frozen');
+        done();
+      }
+      );
     });
   });
 });
