@@ -989,7 +989,7 @@ describe('Wallet', function() {
     });
 
     it('perform freeze', function (done) {
-      wallet2.freeze({duration: 3}, function (err, freezeResult) {
+      wallet2.freeze({duration: 6}, function (err, freezeResult) {
         freezeResult.should.have.property('time');
         freezeResult.should.have.property('expires');
         done();
