@@ -5,7 +5,8 @@
   "main": "./src/index.js",
   "keywords": [
     "bitgo",
-    "bitcoin"
+    "bitcoin",
+    "bitgojs"
   ],
   "repository": {
     "type": "git",
