@@ -10,9 +10,7 @@ Included in the SDK are examples for how to use the API to manage your multi-sig
 
 Please contact us at support@bitgo.com if you have questions or comments about this API.
 
-
 [![Build Status](https://travis-ci.org/BitGo/BitGoJS.png?branch=master)](https://travis-ci.org/BitGo/BitGoJS)
-[![Coverage Status](https://coveralls.io/repos/BitGo/BitGoJS/badge.png)](https://coveralls.io/r/BitGo/BitGoJS)
 
 # Installation
 
