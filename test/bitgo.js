@@ -216,7 +216,7 @@ describe('BitGo', function() {
         }
         res.should.have.property('status');
         res.should.have.property('environment');
-        res.environment.should.equal('BitGo Development');
+        res.environment.should.include('BitGo');
       });
 
       done();
