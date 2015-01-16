@@ -455,6 +455,19 @@ BitGo.prototype.lock = function(params, callback) {
 };
 
 //
+// me
+// Get the current session
+//
+BitGo.prototype.session = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  return this.get(this.url('/user/session'))
+  .result('session')
+  .nodeify(callback);
+};
+
+//
 // sendOTP
 // Trigger a push/sms for the OTP code
 //

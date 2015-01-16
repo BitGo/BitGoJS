@@ -181,6 +181,22 @@ describe('BitGo', function() {
         });
       });
     });
+
+    describe('session', function() {
+      it('arguments', function() {
+        var bitgo = new TestBitGo();
+        assert.throws(function() { bitgo.session({}, 'bad'); });
+      });
+
+      it('session', function(done) {
+        var bitgo = new TestBitGo();
+        bitgo.session({}, function(err, user) {
+          // Expect an error
+          assert.equal(err.message, 'Authorization required');
+          done();
+        });
+      });
+    });
   });
 
   describe('Ping', function() {
@@ -239,6 +255,21 @@ describe('BitGo', function() {
           user.should.have.property('name');
           user.name.full.should.equal(TestBitGo.TEST_USER);
           user.isActive.should.equal(true);
+          done();
+        });
+      });
+    });
+
+    describe('session', function() {
+      it('get', function(done) {
+        bitgo.session({}, function(err, session) {
+          if (err) {
+            throw err;
+          }
+          session.should.have.property('client');
+          session.should.have.property('user');
+          session.should.have.property('scope');
+          session.client.should.equal('bitgo');
           done();
         });
       });
