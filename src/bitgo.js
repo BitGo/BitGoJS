@@ -95,10 +95,29 @@ var BitGo = function(params) {
   }
 
   // By default, we operate on the test server.
+  // Deprecate useProduction in the future
   if (params.useProduction) {
-    this._baseUrl = 'https://www.bitgo.com';
+    if (params.env && params.env !== 'prod') {
+      throw new Error("Cannot set test environment and use production");
+    }
+    params.env = 'prod';
+  }
+
+  if (params.env) {
+    if (common.Environments[params.env]) {
+      this._baseUrl = common.Environments[params.env].uri;
+    } else {
+      throw new Error('invalid environment');
+    }
   } else {
-    this._baseUrl = 'https://test.bitgo.com';
+    params.env = 'test';
+  }
+  this.env = params.env;
+
+  common.setNetwork(common.Environments[params.env].network);
+
+  if (!this._baseUrl) {
+    this._baseUrl = common.Environments['test'].uri;
   }
 
   this._baseApiUrl = this._baseUrl + '/api/v1';
@@ -131,6 +150,10 @@ var BitGo = function(params) {
     var method = methods[index];
     self[method] = createPatch(method);
   }
+};
+
+BitGo.prototype.getEnv = function() {
+  return this.env;
 };
 
 BitGo.prototype.clear = function() {
@@ -184,7 +207,7 @@ BitGo.prototype.verifyAddress = function(params) {
 //
 BitGo.prototype.encrypt = function(params) {
   params = params || {};
-  common.validateParams(params, ['password', 'input'], []);
+  common.validateParams(params, ['input', 'password'], []);
 
   var encryptOptions = { iter: 10000, ks: 256 };
   return sjcl.encrypt(params.password, params.input, encryptOptions);
@@ -196,7 +219,7 @@ BitGo.prototype.encrypt = function(params) {
 //
 BitGo.prototype.decrypt = function(params) {
   params = params || {};
-  common.validateParams(params, ['password', 'input'], []);
+  common.validateParams(params, ['input', 'password'], []);
 
   return sjcl.decrypt(params.password, params.input);
 };

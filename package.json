@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "0.9.11",
+  "version": "0.9.12",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -22,7 +22,15 @@
     "mocha-lcov-reporter": "0.0.1",
     "should": "3.3.2",
     "thirty-two": "0.0.1",
-    "uglify-js": "2.4.13"
+    "uglify-js": "2.4.13",
+    "argparse": "^0.1.16",
+    "body-parser": "^1.10.2",
+    "express": "^4.11.1",
+    "http-proxy": "^1.8.1",
+    "q": "1.1.2",
+    "superagent": "0.18.0",
+    "supertest": "^0.15.0",
+    "url": "^0.10.2"
   },
   "testling": {
     "browsers": [
@@ -35,7 +43,10 @@
       "android-browser/4.2..latest"
     ],
     "harness": "mocha",
-    "files": [ "test/*.js", "test/bitcoin/*.js" ]
+    "files": [
+      "test/*.js",
+      "test/bitcoin/*.js"
+    ]
   },
   "scripts": {
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js",
@@ -44,9 +55,5 @@
     "compile-dbg": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs --beautify > BitGoJS.js",
     "test": "npm run-script unit",
     "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js"
-  },
-  "dependencies": {
-    "superagent": "0.18.0",
-    "q": "1.0.1"
   }
 }

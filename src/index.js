@@ -6,6 +6,7 @@
 
 var BigInteger = require('./bitcoin/jsbn/jsbn2.js');
 var Transactions = require('./bitcoin/transaction');
+var common = require('./common')
 
 module.exports = {
   Address: require('./bitcoin/address'),
@@ -35,18 +36,14 @@ var Bitcoin = module.exports;
  * BitGo additions for globally selecting network type
  */
 Bitcoin.setNetwork = function(network) {
-  if (network == 'prod') {
-    Bitcoin.network = 'prod';
-    Bitcoin.Address.pubKeyHashVersion = 0x00;
-    Bitcoin.Address.p2shVersion    = 0x5;
-    Bitcoin.ECKey.privateKeyPrefix = 0x80;
-  } else {
-    // test network
-    Bitcoin.network = 'testnet';
-    Bitcoin.Address.pubKeyHashVersion = 0x6f;
-    Bitcoin.Address.p2shVersion    = 0xc4;
-    Bitcoin.ECKey.privateKeyPrefix = 0xef;
-  }
+  common.setNetwork(network);
+};
+
+/*
+ * BitGo additions for globally selecting network type
+ */
+Bitcoin.getNetwork = function() {
+  return common.getNetwork();
 };
 
 Bitcoin.setNetwork('testnet');

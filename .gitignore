@@ -10,3 +10,5 @@ coverage
 BitGoJS-min.js
 BitGoJS.js
 example/sandbox.js
+bin/server.key
+bin/server.crt
