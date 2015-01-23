@@ -18,6 +18,8 @@ describe('BitGo', function() {
       assert.throws(function() { new BitGoJS.BitGo({useProduction: 'invalid'}); });
       assert.throws(function() { new BitGoJS.BitGo({clientId: 'invalid'}); });
       assert.throws(function() { new BitGoJS.BitGo({clientSecret: 'invalid'}); });
+      assert.throws(function() { new BitGoJS.BitGo({env: 'invalid'}); });
+      assert.throws(function() { new BitGoJS.BitGo({env: 'testnet', useProduction: true}); });
     });
 
     it('methods', function() {
@@ -29,6 +31,24 @@ describe('BitGo', function() {
       bitgo.should.have.property('me');
       bitgo.should.have.property('encrypt');
       bitgo.should.have.property('decrypt');
+    });
+  });
+
+  describe('Environments', function() {
+    it('production', function() {
+      BitGoJS.setNetwork('testnet');
+      var bitgo = new TestBitGo({env: 'prod'});
+      BitGoJS.getNetwork().should.equal('prod');
+    });
+    it('staging', function() {
+      BitGoJS.setNetwork('testnet');
+      var bitgo = new TestBitGo({env: 'staging'});
+      BitGoJS.getNetwork().should.equal('prod');
+    });
+    it('test', function() {
+      BitGoJS.setNetwork('prod');
+      var bitgo = new TestBitGo({env: 'test'});
+      BitGoJS.getNetwork().should.equal('testnet');
     });
   });
 
@@ -313,9 +333,9 @@ describe('BitGo', function() {
     });
   });
 
+  var refreshToken;
   describe('Oauth test', function() {
     var bitgo;
-    var refreshToken;
 
     before(function (done) {
       bitgo = new BitGoJS.BitGo({clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET});
@@ -349,6 +369,7 @@ describe('BitGo', function() {
           response.should.have.property('access_token');
           response.should.have.property('expires_in');
           response.should.have.property('refresh_token');
+          refreshToken = response.refresh_token;
 
           bitgo.me({}, function (err, me_result) {
 
@@ -420,7 +441,7 @@ describe('BitGo', function() {
       });
 
       it('use refresh token to get access token to get me', function (done) {
-        bitgo.refreshToken({ refreshToken: TestBitGo.TEST_REFRESHTOKEN }, function (err, response) {
+        bitgo.refreshToken({ refreshToken: refreshToken }, function (err, response) {
           // Expect no error
           assert.equal(err, null);
           response.should.have.property('token_type');

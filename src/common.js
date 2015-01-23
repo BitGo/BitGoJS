@@ -1,3 +1,33 @@
+var Address = require('./bitcoin/address');
+var ECKey = require('./bitcoin/eckey');
+
+exports.Environments = {
+  prod: { uri: 'https://www.bitgo.com', network: 'prod' },
+  staging: { uri: 'https://staging.bitgo.com', network: 'prod' },
+  test: { uri: 'https://test.bitgo.com', network: 'testnet' },
+  local: { uri: 'http://localhost:3000', network: 'testnet' },
+};
+
+var bitcoinNetwork;
+exports.setNetwork = function(network) {
+  if (network == 'prod') {
+    bitcoinNetwork = 'prod';
+    Address.pubKeyHashVersion = 0x00;
+    Address.p2shVersion    = 0x5;
+    ECKey.privateKeyPrefix = 0x80;
+  } else {
+    // test network
+    bitcoinNetwork = 'testnet';
+    Address.pubKeyHashVersion = 0x6f;
+    Address.p2shVersion    = 0xc4;
+    ECKey.privateKeyPrefix = 0xef;
+  }
+};
+
+exports.getNetwork = function() {
+  return bitcoinNetwork;
+};
+
 /**
  * Helper function to validate the input parameters to an SDK method.
  * Only validates for strings - if parameter is different, check that manually
