@@ -561,7 +561,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'walletPassphrase'], [], callback);
 
-  params.permissions = params.permissions || 'manage';
+  params.permissions = params.permissions || 'view,spend,admin';
 
   var self = this;
   var sharing;

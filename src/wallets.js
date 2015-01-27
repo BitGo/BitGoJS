@@ -58,18 +58,49 @@ Wallets.prototype.listShares = function(params, callback) {
 // getShare
 // Gets a wallet share information, including the encrypted sharing keychain. requires unlock if keychain is present.
 // Params:
-//    walletShareId - the wallet share to get informatoin on
+//    walletShareId - the wallet share to get information on
 //
 Wallets.prototype.getShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletShareId'], [], callback);
 
-  var self = this;
   return this.bitgo.get(this.bitgo.url('/walletshare/' + params.walletShareId))
   .result()
   .nodeify(callback);
 };
 
+//
+// updateShare
+// updates a wallet share
+// Params:
+//    walletShareId - the wallet share to update
+//    state - the new state of the wallet share
+//
+Wallets.prototype.updateShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId'], [], callback);
+
+  return this.bitgo.post(this.bitgo.url('/walletshare/' + params.walletShareId))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+//
+// cancelShare
+// cancels a wallet share
+// Params:
+//    walletShareId - the wallet share to update
+//
+Wallets.prototype.cancelShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId'], [], callback);
+
+  return this.bitgo.del(this.bitgo.url('/walletshare/' + params.walletShareId))
+  .send()
+  .result()
+  .nodeify(callback);
+};
 
 //
 // acceptShare
@@ -126,20 +157,16 @@ Wallets.prototype.acceptShare = function(params, callback) {
     });
   })
   .then(function(walletShare) {
-    var postBody = {
-      'state': 'accepted'
+    var updateParams = {
+      walletShareId: params.walletShareId,
+      state: 'accepted'
     };
 
     if (encryptedSharedWalletXprv) {
-      postBody.encryptedXprv = encryptedSharedWalletXprv;
+      updateParams.encryptedXprv = encryptedSharedWalletXprv;
     }
 
-    return self.bitgo.post(self.bitgo.url('/walletshare/' + params.walletShareId))
-    .send(postBody)
-    .result()
-    .then(function(res) {
-      return res;
-    });
+    return self.updateShare(updateParams);
   })
   .nodeify(callback);
 };

@@ -68,7 +68,7 @@ describe('Wallet', function() {
     });
   });
 
-  var walletShareIdWithViewPermissions, walletShareIdWithSpendPermissions;
+  var walletShareIdWithViewPermissions, walletShareIdWithSpendPermissions, cancelledWalletShareId;
   describe('Share wallet', function() {
     it('arguments', function (done) {
       assert.throws(function () { bitgo.getSharingKey({}); });
@@ -190,6 +190,33 @@ describe('Wallet', function() {
       })
       .done();
     });
+
+    it('share a wallet and then cancel the share', function(done) {
+      bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet3.shareWallet(
+        { email: TestBitGo.TEST_SHARED_KEY_USER, walletPassphrase: TEST_WALLET3_PASSCODE, permissions: 'view' }
+        )
+      })
+      .then(function(result){
+        result.should.have.property('walletId');
+        result.should.have.property('fromUser');
+        result.should.have.property('toUser');
+        result.should.have.property('state');
+        result.walletId.should.equal(wallet3.id());
+        cancelledWalletShareId = result.id;
+
+        return bitgo.wallets().cancelShare({ walletShareId: cancelledWalletShareId }, function(err, result) {
+
+          result.should.have.property('state');
+          result.should.have.property('changed');
+          result.state.should.equal('canceled');
+          result.changed.should.equal(true);
+          done();
+        });
+      })
+      .done();
+    });
   });
 
   var bitgoSharedKeyUser;
@@ -198,6 +225,16 @@ describe('Wallet', function() {
       bitgoSharedKeyUser = new TestBitGo();
       bitgoSharedKeyUser.authenticate({ username: TestBitGo.TEST_SHARED_KEY_USER, password: TestBitGo.TEST_SHARED_KEY_PASSWORD, otp: '0000000' })
       .then(function(success) {
+        done();
+      })
+      .done();
+    });
+
+    it('cancelled wallet share should not be in sender list', function(done) {
+
+      bitgo.wallets().listShares({})
+      .then(function(result){
+        result.outgoing.should.not.containDeep([{id: cancelledWalletShareId}]);
         done();
       })
       .done();
