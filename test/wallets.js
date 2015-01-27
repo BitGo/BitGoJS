@@ -9,8 +9,11 @@ var should = require('should');
 
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
+
 var TEST_WALLET_PASSCODE = 'shared lives are shared coins';
 var TEST_WALLET_LABEL = 'wallet management test';
+var TEST_WALLET1_ADDRESS = '2N21Bt5ZjQg5eWJLGuggY2DfkHyxhPKaagB';
+var TEST_WALLET1_LABEL = 'Better Test Wallet 1';
 
 describe('Wallets', function() {
   var bitgo;
@@ -36,9 +39,69 @@ describe('Wallets', function() {
     });
 
     it('all', function(done) {
-      wallets.list({}, function(err, wallets) {
+      wallets.list({}, function(err, result) {
         assert.equal(err, null);
-        assert.equal(typeof(wallets), 'object');
+
+        result.should.have.property('wallets');
+        result.should.have.property('start');
+        result.should.have.property('limit');
+        result.should.have.property('total');
+
+        result.start.should.equal(0);
+        result.limit.should.not.equal(0);
+        result.total.should.not.equal(0);
+        result.wallets.length.should.not.equal(0);
+        done();
+      });
+    });
+
+    it('limit', function(done) {
+      wallets.list({ limit: 2 }, function(err, result) {
+        assert.equal(err, null);
+
+        result.should.have.property('wallets');
+        result.should.have.property('start');
+        result.should.have.property('limit');
+        result.should.have.property('total');
+
+        result.start.should.equal(0);
+        result.limit.should.equal(2);
+        result.total.should.not.equal(0);
+        result.wallets.length.should.equal(2);
+        done();
+      });
+    });
+
+    it('skip', function(done) {
+      wallets.list({ limit: 1, skip: 2 }, function(err, result) {
+        assert.equal(err, null);
+
+        result.should.have.property('wallets');
+        result.should.have.property('start');
+        result.should.have.property('limit');
+        result.should.have.property('total');
+
+        result.start.should.equal(2);
+        result.limit.should.equal(1);
+        result.total.should.not.equal(0);
+        result.wallets.length.should.equal(1);
+        done();
+      });
+    });
+
+    it('limit and skip', function(done) {
+      wallets.list({ limit: 1, skip: 5 }, function(err, result) {
+        assert.equal(err, null);
+
+        result.should.have.property('wallets');
+        result.should.have.property('start');
+        result.should.have.property('limit');
+        result.should.have.property('total');
+
+        result.start.should.equal(5);
+        result.limit.should.equal(1);
+        result.total.should.not.equal(0);
+        result.wallets.length.should.equal(1);
         done();
       });
     });

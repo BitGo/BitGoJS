@@ -27,15 +27,32 @@ Wallets.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
+  var args = [];
+
+  if (params.limit) {
+    if (typeof(params.limit) != 'number') {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    args.push('limit=' + params.limit);
+  }
+  if (params.skip) {
+    if (typeof(params.skip) != 'number') {
+      throw new Error('invalid skip argument, expecting number');
+    }
+    args.push('skip=' + params.skip);
+  }
+
+  var query = '';
+  if (args.length) {
+    query = '?' + args.join('&');
+  }
+
   var self = this;
-  return this.bitgo.get(this.bitgo.url('/wallet'))
+  return this.bitgo.get(this.bitgo.url('/wallet' + query))
   .result()
   .then(function(body) {
-    var wallets = {};
-    for (var wallet in body.wallets) {
-      wallets[wallet] = new Wallet(self.bitgo, body.wallets[wallet]);
-    }
-    return wallets;
+    body.wallets = body.wallets.map(function(w) { return new Wallet(self.bitgo, w); });
+    return body;
   })
   .nodeify(callback);
 };

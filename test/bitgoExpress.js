@@ -52,7 +52,6 @@ describe('Bitgo Express', function() {
       });
     });
 
-    var walletId;
     it('get wallet list (authed)', function(done) {
       agent.get('/api/v1/wallet')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
@@ -62,8 +61,8 @@ describe('Bitgo Express', function() {
         if (err) { throw err; }
         res.should.have.status(200);
         res.body.should.have.property('wallets');
-        Object.keys(res.body.wallets).length.should.not.equal(0);
-        walletId = Object.keys(res.body.wallets)[0];
+        res.body.wallets.length.should.not.equal(0);
+        res.body.wallets[0].should.have.property('label');
         done();
       });
     });
@@ -83,7 +82,8 @@ describe('Bitgo Express', function() {
     });
 
     it('put label set (authed)', function(done) {
-      agent.put('/api/v1/labels/' + walletId + '/2MxCSYu2isiAPbUAoiqniZ8HSSEH1uMDruk')
+      var walletId = '2MtqQLrtPVfF4cDgYC2eXiruTpyq9ehiPse';
+      agent.put('/api/v1/labels/' + walletId + '/msj42CCGruhRsFrGATiUuh25dtxYtnpbTx')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
       .send({ label: 'testLabel' })
       .expect('Content-Type', /json/)
