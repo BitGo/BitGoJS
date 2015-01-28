@@ -201,6 +201,23 @@ BitGo.prototype.verifyAddress = function(params) {
   }
 };
 
+BitGo.prototype.verifyPassword = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['password'], []);
+
+  if (!this._user || !this._user.username) {
+    throw new Error('no current user');
+  }
+  var key = sjcl.codec.utf8String.toBits(this._user.username);
+  var hmac = new sjcl.misc.hmac(key, sjcl.hash.sha256);
+  var hmacPassword = sjcl.codec.hex.fromBits(hmac.encrypt(params.password));
+
+  return this.post(this.url('/user/verifypassword'))
+  .send({ password: hmacPassword })
+  .result('valid')
+  .nodeify(callback);
+};
+
 //
 // encrypt
 // Utility function to encrypt locally.
@@ -438,16 +455,24 @@ BitGo.prototype.logout = function(params, callback) {
 };
 
 //
+// getUser
+// Get a user by ID (name/email only)
+//
+BitGo.prototype.getUser = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], [], callback);
+
+  return this.get(this.url('/user/' + params.id))
+  .result('user')
+  .nodeify(callback);
+};
+
+//
 // me
 // Get the current logged in user
 //
 BitGo.prototype.me = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, [], [], callback);
-
-  return this.get(this.url('/user/me'))
-  .result('user')
-  .nodeify(callback);
+  return this.getUser({id: 'me'}, callback);
 };
 
 //

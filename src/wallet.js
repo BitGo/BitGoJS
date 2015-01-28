@@ -403,12 +403,11 @@ Wallet.prototype.createShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['user', 'permissions'], [], callback);
 
-  if (!params.keychain) {
-    throw new Error('requires keychain');
-  }
-  if (!params.keychain.xpub || !params.keychain.encryptedXprv || !params.keychain.fromPubKey ||
-    !params.keychain.toPubKey || !params.keychain.path) {
-    throw new Error('requires keychain parameters - xpub, encryptedXprv, fromPubKey, toPubKey, path');
+  if (params.keychain) {
+    if (!params.keychain.xpub || !params.keychain.encryptedXprv || !params.keychain.fromPubKey ||
+      !params.keychain.toPubKey || !params.keychain.path) {
+      throw new Error('requires keychain parameters - xpub, encryptedXprv, fromPubKey, toPubKey, path');
+    }
   }
 
   var self = this;
@@ -559,40 +558,55 @@ Wallet.prototype.sendMany = function(params, callback) {
 
 Wallet.prototype.shareWallet = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['email', 'walletPassphrase'], [], callback);
+  common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
 
-  params.permissions = params.permissions || 'view,spend,admin';
+  var needsKeychain = params.permissions.indexOf('spend') !== -1;
 
   var self = this;
   var sharing;
+  var sharedKeychain;
   return this.bitgo.getSharingKey({email: params.email})
   .then(function(result) {
     sharing = result;
-    return self.getEncryptedUserKeychain({})
-  })
-  .then(function(keychain) {
-    // Decrypt the user key with a passphrase
-    try {
-      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
-    } catch (e) {
-      throw new Error('Unable to decrypt user keychain');
+
+    if (needsKeychain) {
+      return self.getEncryptedUserKeychain({})
+      .then(function(keychain) {
+        // Decrypt the user key with a passphrase
+        if (keychain.encryptedXprv) {
+          if (!params.walletPassphrase) {
+            throw new Error('Missing walletPassphrase argument');
+          }
+          try {
+            keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+          } catch (e) {
+            throw new Error('Unable to decrypt user keychain');
+          }
+
+          var eckey = new ECKey();
+          var secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
+          var newEncryptedXprv = self.bitgo.encrypt({password: secret, input: keychain.xprv});
+
+          sharedKeychain = {
+            xpub: keychain.xpub,
+            encryptedXprv: newEncryptedXprv,
+            fromPubKey: eckey.getPubKeyHex(),
+            toPubKey: sharing.pubkey,
+            path: sharing.path
+          };
+        }
+      });
     }
-
-    var eckey = new ECKey();
-    var secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
-    var newEncryptedXprv = self.bitgo.encrypt({password: secret, input: keychain.xprv});
-
+  })
+  .then(function() {
     var options = {
       user: sharing.userId,
       permissions: params.permissions,
-      keychain: {
-        xpub: keychain.xpub,
-        encryptedXprv: newEncryptedXprv,
-        fromPubKey: eckey.getPubKeyHex(),
-        toPubKey: sharing.pubkey,
-        path: sharing.path
-      }
+      message: params.message
     };
+    if (sharedKeychain) {
+      options.keychain = sharedKeychain;
+    }
 
     return self.createShare(options, callback);
   })

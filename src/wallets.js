@@ -344,7 +344,7 @@ Wallets.prototype.add = function(params, callback) {
 // get
 // Fetch an existing wallet
 // Parameters include:
-//   address: the address of the wallet
+//   id: the id of the wallet
 //
 Wallets.prototype.get = function(params, callback) {
   params = params || {};
@@ -356,6 +356,22 @@ Wallets.prototype.get = function(params, callback) {
   .then(function(body) {
     return new Wallet(self.bitgo, body);
   })
+  .nodeify(callback);
+};
+
+//
+// remove
+// Remove an existing wallet.
+// Parameters include:
+//   id: the id of the wallet
+//
+Wallets.prototype.remove = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], [], callback);
+
+  var self = this;
+  return this.bitgo.del(this.bitgo.url('/wallet/' + params.id))
+  .result()
   .nodeify(callback);
 };
 

@@ -95,7 +95,11 @@ describe('Wallet', function() {
 
     it('sharing with user that does not exist', function(done) {
 
-      wallet1.shareWallet({ email:'notfoundqery@bitgo.com', walletPassphrase:'test' })
+      wallet1.shareWallet({
+        email:'notfoundqery@bitgo.com',
+        permissions: 'admin,spend,view',
+        walletPassphrase:'test'
+      })
       .done(
       function(success) {
         success.should.equal(null);
@@ -111,7 +115,11 @@ describe('Wallet', function() {
 
       bitgo.unlock({ otp: '0000000' })
       .then(function() {
-        wallet1.shareWallet({ email: TestBitGo.TEST_SHARED_KEY_USER, walletPassphrase: 'wrong' })
+        wallet1.shareWallet({
+          email: TestBitGo.TEST_SHARED_KEY_USER,
+          permissions: 'admin,spend,view',
+          walletPassphrase: 'wrong'
+        })
         .done(
         function(success) {
           success.should.equal(null);
@@ -146,9 +154,11 @@ describe('Wallet', function() {
     it('share a wallet (view)', function(done) {
       bitgo.unlock({ otp: '0000000' })
       .then(function() {
-        return wallet1.shareWallet(
-        { email: TestBitGo.TEST_SHARED_KEY_USER, walletPassphrase: TEST_WALLET1_PASSCODE, permissions: 'view' }
-        )
+        return wallet1.shareWallet({
+          email: TestBitGo.TEST_SHARED_KEY_USER,
+          walletPassphrase: TEST_WALLET1_PASSCODE,
+          permissions: 'view'
+        });
       })
       .then(function(result){
         result.should.have.property('walletId');
@@ -170,9 +180,11 @@ describe('Wallet', function() {
     it('share a wallet (spend)', function(done) {
       bitgo.unlock({ otp: '0000000' })
       .then(function() {
-        return wallet2.shareWallet(
-          { email: TestBitGo.TEST_SHARED_KEY_USER, walletPassphrase: TEST_WALLET2_PASSCODE, permissions: 'view,spend' }
-        )
+        return wallet2.shareWallet({
+          email: TestBitGo.TEST_SHARED_KEY_USER,
+          walletPassphrase: TEST_WALLET2_PASSCODE,
+          permissions: 'view,spend'
+        });
       })
       .then(function(result){
         result.should.have.property('walletId');
@@ -194,9 +206,11 @@ describe('Wallet', function() {
     it('share a wallet and then cancel the share', function(done) {
       bitgo.unlock({ otp: '0000000' })
       .then(function() {
-        return wallet3.shareWallet(
-        { email: TestBitGo.TEST_SHARED_KEY_USER, walletPassphrase: TEST_WALLET3_PASSCODE, permissions: 'view' }
-        )
+        return wallet3.shareWallet({
+          email: TestBitGo.TEST_SHARED_KEY_USER,
+          walletPassphrase: TEST_WALLET3_PASSCODE,
+          permissions: 'view'
+        });
       })
       .then(function(result){
         result.should.have.property('walletId');

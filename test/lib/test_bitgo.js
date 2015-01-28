@@ -11,6 +11,7 @@ BitGo.TEST_PASSWORD = 'testtesttest';
 
 BitGo.TEST_SHARED_KEY_USER = 'shared_key_test@bitgo.com';
 BitGo.TEST_SHARED_KEY_PASSWORD = 'sh4r3dKeysT3ts';
+BitGo.TEST_SHARED_KEY_USERID = '549d0ee835aec81206004c082757570f';
 
 BitGo.TEST_CLIENTID = 'test';
 BitGo.TEST_CLIENTSECRET = 'testclientsecret';

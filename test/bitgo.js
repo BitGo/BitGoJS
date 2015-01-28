@@ -167,6 +167,26 @@ describe('BitGo', function() {
           done();
         });
       });
+
+      it('verify password fails', function(done) {
+        bitgo.verifyPassword({ password: 'foobar'}, function(err, result) {
+          if (err) {
+            throw err;
+          }
+          assert.equal(result, false);
+          done();
+        });
+      });
+
+      it('verify password succeeds', function(done) {
+        bitgo.verifyPassword({ password: TestBitGo.TEST_PASSWORD }, function(err, result) {
+          if (err) {
+            throw err;
+          }
+          assert.equal(result, true);
+          done();
+        });
+      });
     });
 
     describe('Logout API', function() {
@@ -275,6 +295,18 @@ describe('BitGo', function() {
           user.should.have.property('name');
           user.name.full.should.equal(TestBitGo.TEST_USER);
           user.isActive.should.equal(true);
+          done();
+        });
+      });
+    });
+
+    describe('getUser', function() {
+      it('success', function(done) {
+        bitgo.getUser({ id: TestBitGo.TEST_SHARED_KEY_USERID}, function(err, user) {
+          if (err) { throw err; }
+          user.should.have.property('id');
+          user.should.have.property('email');
+          user.email.email.should.equal(TestBitGo.TEST_SHARED_KEY_USER);
           done();
         });
       });
