@@ -7,6 +7,8 @@
 var BitGoJS = require('../src/index.js');
 var readline = require('readline');
 var Q = require('q');
+var _ = require('lodash');
+_.string = require('underscore.string');
 
 if (process.argv.length <= 4) {
   console.log("usage:\n\t" + process.argv[0] + " " + process.argv[1] + " <user> <pass> <otp>");
@@ -21,115 +23,123 @@ inputs.otp = process.argv[4];
 
 //
 // collectInputs
-// Prompt the user for input
+// Function to collect inputs from stdin
 //
 var collectInputs = function() {
-    var argv = require('minimist')(process.argv.slice(2));
+  var argv = require('minimist')(process.argv.slice(2));
 
-    // Prompt the user for input
-    var prompt = function (question) {
-        var answer = "";
-        var rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout
-        });
+  // Prompt the user for input
+  var prompt = function(question) {
+    var rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
 
-        var deferred = Q.defer();
-        rl.setPrompt(question);
-        rl.prompt();
-        rl.on('line', function (line) {
-            if (line.length === 0) {
-                rl.close();
-                return deferred.resolve(answer);
-            }
-            answer += line;
+    var deferred = Q.defer();
+    rl.setPrompt(question);
+    rl.prompt();
+    rl.on('line', function(line) {
+        rl.close();
+        return deferred.resolve(line);
+    });
+    return deferred.promise;
+  };
+
+  var getVariable = function(variable, question) {
+    return function() {
+      var deferred = Q.defer();
+      if (argv[variable]) {
+        inputs[variable] = argv[variable];
+        return Q.when();
+      } else {
+        prompt(question).then(function(value) {
+          inputs[variable] = value;
+          deferred.resolve();
         });
         return deferred.promise;
+      }
     };
+  };
 
-    var getVariable = function (variable, question) {
-        return function () {
-            var deferred = Q.defer();
-            if (argv[variable]) {
-                inputs[variable] = argv[variable];
-                return Q.when();
-            } else {
-                prompt(question).then(function (value) {
-                    inputs[variable] = value;
-                    deferred.resolve();
-                });
-                return deferred.promise;
-            }
-        };
+  var getCreateOrDeleteVariables = function() {
+    return function() {
+        var deferred = Q.defer();
+        if (inputs.action == "create") {
+            return getVariable("address", "On which address are we setting the label: ")()
+                    .then(getVariable("label", "What label do you want to set on the address: "));
+        } else if (inputs.action == "delete") {
+            return getVariable("address", "From which address are we removing the label: ")();
+        } else {
+            deferred.resolve();
+            return deferred.promise;
+        }
     };
+  };
 
-    getVariable("walletId", "Enter the wallet ID: ")()
-        .then(getVariable("action", "Which action do you wish to perform? [list, create, delete]: "));
-
-    if(inputs.action == "create") {
-        getVariable("address", "On which address are we setting the label: ")()
-            .then(getVariable("label", "What label do you want to set on the address: "));
-    } else if (inputs.action == "delete") {
-        getVariable("address", "From which address are we removing the label: ");
-    }
+  return getVariable("walletId", "Enter the wallet ID: ")()
+        .then(getVariable("action", "Which label action do you wish to perform? [list, create, delete]: "))
+        .then(getCreateOrDeleteVariables());
 };
 
-var runCommands = function() {
+var authenticate = function() {
     bitgo.authenticate({username: inputs.user, password: inputs.password, otp: inputs.otp}, function (err, result) {
         if (err) {
             console.dir(err);
-            throw new Error("Could not auth!");
+            throw new Error("Authentication failure!");
         }
-        console.log("Logged in!");
+    });
+};
 
-        // Now get the wallet
-        bitgo.wallets().get({type: 'bitcoin', id: inputs.walletId}, function (err, wallet) {
-            if (err) {
-                console.log(err);
-                process.exit(-1);
-            }
+var runCommands = function() {
+    // Now get the wallet
+    bitgo.wallets().get({type: 'bitcoin', id: inputs.walletId}, function (err, wallet) {
+        if (err) {
+            console.log(err);
+            process.exit(-1);
+        }
 
-            switch (action) {
-                case 'list':
-                    // Get the labels for the addresses in this wallet
-                    wallet.labels({}, function (err, result) {
-                        if (err) {
-                            console.log(err);
-                            process.exit(-1);
-                        }
-                        if (result.labels) {
-                            result.labels.forEach(function (label) {
-                                var line = ' ' + label.address + ' : ' + label.label;
-                                console.log(line);
-                            });
-                        }
-                    });
-                    break;
-                case 'create':
-                    wallet.createLabel({label: inputs.label, address: inputs.address}, function (err, result) {
-                        if (err) {
-                            console.log(err);
-                            process.exit(-1);
-                        }
-                        console.log('Created label ' + result.label + ' on address ' + result.address);
-                    });
-                    break;
-                case 'delete':
-                    wallet.deleteLabel({address: inputs.address}, function (err, result) {
-                        if (err) {
-                            console.log(err);
-                            process.exit(-1);
-                        }
-                        console.log('Deleted label from address ' + result.address);
-                    });
-                    break;
-                default:
-                    console.log("Invalid action entered!");
-            }
-        });
+        switch (inputs.action) {
+            case 'list':
+                // Get the labels for the addresses in this wallet
+                wallet.labels({}, function (err, result) {
+                    if (err) {
+                        console.log(err);
+                        process.exit(-1);
+                    }
+                    if (result) {
+                        var sortedLabels = _.sortBy(result, function(label) { return label.label + label.address; });
+                        sortedLabels.forEach(function (label) {
+                            var line = ' ' + _.string.rpad(label.address, 38) + _.string.prune(label.label, 60);
+                            console.log(line);
+                        });
+                    }
+                });
+                break;
+            case 'create':
+                wallet.createLabel({label: inputs.label, address: inputs.address}, function (err, result) {
+                    if (err) {
+                        console.log(err);
+                        process.exit(-1);
+                    }
+                    console.log('Created label ' + result.label + ' on address ' + result.address);
+                });
+                break;
+            case 'delete':
+                wallet.deleteLabel({address: inputs.address}, function (err, result) {
+                    if (err) {
+                        console.log(err);
+                        process.exit(-1);
+                    }
+                    console.log('Deleted label from address ' + result.address);
+                });
+                break;
+            default:
+                console.log("Invalid action entered!");
+        }
     });
 }
 
+authenticate();
 collectInputs()
     .then(runCommands)
     .catch (function(e) {

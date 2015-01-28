@@ -295,19 +295,22 @@ Wallet.prototype.labels = function(params, callback) {
     params = params || {};
     common.validateParams(params, [], [], callback);
 
+    var self = this;
     var url = this.bitgo.url('/labels');
 
     // only return labels that belong to this wallet
     var walletLabels = [];
-    this.bitgo.get(url)
-        .result()
-        .labels.forEach(function (label) {
-            // validate address locally for current wallet
-            if (this.validateAddress(label.address, path)) {
-                walletLabels.push(label);
-            }
-        });
-    return walletLabels.nodeify(callback);
+    return this.bitgo.get(url)
+        .result('labels')
+        .then(function(labels) {
+            labels.forEach(function (label) {
+                if (label.walletId === self.id()) {
+                    walletLabels.push(label);
+                }
+            });
+            return walletLabels;
+        })
+        .nodeify(callback);
 };
 
 //
