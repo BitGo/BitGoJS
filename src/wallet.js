@@ -619,4 +619,34 @@ Wallet.prototype.shareWallet = function(params, callback) {
   .nodeify(callback);
 };
 
+Wallet.prototype.listWebhooks = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  return this.bitgo.get(this.url('/webhooks'))
+  .send()
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.addWebhook = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['url', 'type'], [], callback);
+
+  return this.bitgo.post(this.url('/webhooks'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.removeWebhook = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['url', 'type'], [], callback);
+
+  return this.bitgo.del(this.url('/webhooks'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
 module.exports = Wallet;
