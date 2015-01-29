@@ -318,7 +318,48 @@ describe('Wallet', function() {
     });
   });
 
-  describe('CreateAddress', function() {
+    describe('CreateLabel', function() {
+
+        it('arguments', function(done) {
+            assert.throws(function() { wallet1.createLabel({}, function() {}); });
+            assert.throws(function() { wallet1.createLabel({label: "testLabel"}, function() {}); });
+            assert.throws(function() { wallet1.createLabel({address: TEST_WALLET1_ADDRESS2}, function() {}); });
+            assert.throws(function() { wallet1.createLabel({label: "testLabel", address: "invalidAddress"}, function() {}); });
+            assert.throws(function() { wallet1.createLabel({label: "testLabel", address: TEST_WALLET2_ADDRESS2}, function() {}); });
+            done();
+        });
+
+        it('create', function(done) {
+            wallet1.createLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+                assert.equal(err, null);
+                label.should.have.property('label');
+                label.should.have.property('address');
+                assert.equal(label.label, "testLabel");
+                assert.equal(label.address, TEST_WALLET1_ADDRESS2);
+                done();
+            });
+        });
+    });
+
+    describe('DeleteLabel', function() {
+
+        it('arguments', function(done) {
+            assert.throws(function() { wallet1.deleteLabel({}, function() {}); });
+            assert.throws(function() { wallet1.deleteLabel({address: "invalidAddress"}, function() {}); });
+            done();
+        });
+
+        it('delete', function(done) {
+            wallet1.deleteLabel({address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+                assert.equal(err, null);
+                label.should.have.property('address');
+                assert.equal(label.address, TEST_WALLET1_ADDRESS2);
+                done();
+            });
+        });
+    });
+
+    describe('CreateAddress', function() {
     var addr;
 
     it('arguments', function(done) {

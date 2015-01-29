@@ -288,6 +288,71 @@ Wallet.prototype.transactions = function(params, callback) {
 };
 
 //
+// labels
+// List the labels for the addresses in a given wallet
+//
+Wallet.prototype.labels = function(params, callback) {
+    params = params || {};
+    common.validateParams(params, [], [], callback);
+
+    var self = this;
+    var url = this.bitgo.url('/labels');
+
+    // only return labels that belong to this wallet
+    var walletLabels = [];
+    return this.bitgo.get(url)
+        .result('labels')
+        .then(function(labels) {
+            labels.forEach(function (label) {
+                if (label.walletId === self.id()) {
+                    walletLabels.push(label);
+                }
+            });
+            return walletLabels;
+        })
+        .nodeify(callback);
+};
+
+//
+// createLabel
+// Sets a label on the provided address
+//
+Wallet.prototype.createLabel = function(params, callback) {
+    params = params || {};
+    common.validateParams(params, ['address', 'label'], [], callback);
+
+    if (!Address.validate(params.address)) {
+        return self.bitgo.reject('Invalid address.', callback);
+    }
+
+    var url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
+
+    return this.bitgo.put(url)
+        .send({'label': params.label})
+        .result()
+        .nodeify(callback);
+};
+
+//
+// deleteLabel
+// Deletes the label associated with the provided address
+//
+Wallet.prototype.deleteLabel = function(params, callback) {
+    params = params || {};
+    common.validateParams(params, ['address'], [], callback);
+
+    if (!Address.validate(params.address)) {
+        return self.bitgo.reject('Invalid address.', callback);
+    }
+
+    var url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
+
+    return this.bitgo.del(url)
+        .result()
+        .nodeify(callback);
+};
+
+//
 // Key chains
 // Gets the user key chain for this wallet
 // The user key chain is typically the first keychain of the wallet and has the encrypted xpriv stored on BitGo.
