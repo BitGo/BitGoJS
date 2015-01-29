@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "0.9.15",
+  "version": "0.9.16",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -14,24 +14,13 @@
   },
   "devDependencies": {
     "browserify": "~4.1.5",
-    "chain-node": "0.0.17",
     "coveralls": "~2.10.0",
     "istanbul": "0.1.30",
-    "minimist": "0.2.0",
     "mocha": "1.18.2",
     "mocha-lcov-reporter": "0.0.1",
     "should": "3.3.2",
-    "thirty-two": "0.0.1",
     "uglify-js": "2.4.13",
-    "argparse": "^0.1.16",
-    "body-parser": "^1.10.2",
-    "express": "^4.11.1",
-    "http-proxy": "^1.8.1",
-    "q": "1.1.2",
-    "superagent": "0.18.0",
-    "supertest": "^0.15.0",
-    "url": "^0.10.2",
-    "lodash": "2.4.1"
+    "supertest": "^0.15.0"
   },
   "testling": {
     "browsers": [
@@ -58,5 +47,14 @@
     "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js"
   },
   "dependencies": {
+    "chain-node": "0.0.17",
+    "minimist": "0.2.0",
+    "superagent": "0.18.0",
+    "q": "1.1.2",
+    "lodash": "2.4.1",
+    "argparse": "^0.1.16",
+    "body-parser": "^1.10.2",
+    "express": "^4.11.1",
+    "http-proxy": "^1.8.1"
   }
 }

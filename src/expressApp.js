@@ -1,6 +1,6 @@
 var express = require('express');
 var httpProxy = require('http-proxy');
-var url  = require('url');
+var url = require('url');
 var q = require('q');
 
 var common = require('./common');
