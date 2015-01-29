@@ -11,6 +11,7 @@ var BIP32 = require('./bitcoin/bip32');
 var Keychains = require('./keychains');
 var ECKey = require('./bitcoin/eckey');
 var Util = require('./bitcoin/util');
+var _ = require('lodash');
 
 var common = require('./common');
 
@@ -403,7 +404,7 @@ Wallet.prototype.createShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['user', 'permissions'], [], callback);
 
-  if (params.keychain) {
+  if (params.keychain && !_.isEmpty(params.keychain)) {
     if (!params.keychain.xpub || !params.keychain.encryptedXprv || !params.keychain.fromPubKey ||
       !params.keychain.toPubKey || !params.keychain.path) {
       throw new Error('requires keychain parameters - xpub, encryptedXprv, fromPubKey, toPubKey, path');
@@ -560,7 +561,10 @@ Wallet.prototype.shareWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
 
-  var needsKeychain = params.permissions.indexOf('spend') !== -1;
+  if (params.skipKeychain !== undefined && typeof(params.skipKeychain) != 'boolean') {
+    throw new Error('Expected skipKeychain to be a boolean. ');
+  }
+  var needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
 
   var self = this;
   var sharing;
@@ -606,6 +610,8 @@ Wallet.prototype.shareWallet = function(params, callback) {
     };
     if (sharedKeychain) {
       options.keychain = sharedKeychain;
+    } else if (params.skipKeychain) {
+      options.keychain = {};
     }
 
     return self.createShare(options, callback);

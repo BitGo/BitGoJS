@@ -125,22 +125,22 @@ Wallets.prototype.cancelShare = function(params, callback) {
 // Needs a user's password to decrypt the shared key
 // Params:
 //    walletShareId - the wallet share to accept
-//    userPassword - (required if more than view permissions are shared) user's password to decrypt the shared wallet
+//    userPassword - (required if more a keychain was shared) user's password to decrypt the shared wallet
 //    newWalletPassphrase - new wallet passphrase for saving the shared wallet xprv.
 //                          If left blank and a wallet with more than view permissions was shared, then the userpassword is used.
+//    overrideEncryptedXprv - set only if the xprv was received out-of-band.
 //
 Wallets.prototype.acceptShare = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['walletShareId'], [], callback);
+  common.validateParams(params, ['walletShareId'], ['overrideEncryptedXprv'], callback);
 
   var self = this;
-  var encryptedSharedWalletXprv;
+  var encryptedXprv = params.overrideEncryptedXprv;
 
   return this.getShare({walletShareId: params.walletShareId})
   .then(function(walletShare) {
-    var permissions = walletShare.permissions.split(",");
-    if (permissions.length === 1 && permissions.indexOf("view") >= 0) {
-      // Only the view permission was needed, so just return the wallet share for acceptance
+    // Return right away if there is no keychain to decrypt, or if explicit encryptedXprv was provided
+    if (!walletShare.keychain || !walletShare.keychain.encryptedXprv || encryptedXprv) {
       return walletShare;
     }
 
@@ -167,7 +167,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
 
       // We will now re-encrypt the wallet with our own password
       var newWalletPassphrase = params.newWalletPassphrase || params.userPassword;
-      encryptedSharedWalletXprv = self.bitgo.encrypt({ password: newWalletPassphrase, input: decryptedSharedWalletXprv });
+      encryptedXprv = self.bitgo.encrypt({ password: newWalletPassphrase, input: decryptedSharedWalletXprv });
 
       // Carry on to the next block where we will post the acceptance of the share with the encrypted xprv
       return walletShare;
@@ -179,8 +179,8 @@ Wallets.prototype.acceptShare = function(params, callback) {
       state: 'accepted'
     };
 
-    if (encryptedSharedWalletXprv) {
-      updateParams.encryptedXprv = encryptedSharedWalletXprv;
+    if (encryptedXprv) {
+      updateParams.encryptedXprv = encryptedXprv;
     }
 
     return self.updateShare(updateParams);

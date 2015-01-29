@@ -298,7 +298,7 @@ describe('Wallet', function() {
     it('accept a wallet share with spend permissions', function(done) {
       bitgoSharedKeyUser.unlock({'otp': '0000000'})
       .then(function() {
-        bitgoSharedKeyUser.wallets().acceptShare({walletShareId: walletShareIdWithSpendPermissions, userPassword: TestBitGo.TEST_SHARED_KEY_PASSWORD})
+        return bitgoSharedKeyUser.wallets().acceptShare({walletShareId: walletShareIdWithSpendPermissions, userPassword: TestBitGo.TEST_SHARED_KEY_PASSWORD})
         .then(function (result) {
           result.should.have.property('state');
           result.should.have.property('changed');
@@ -310,6 +310,58 @@ describe('Wallet', function() {
         })
         .then(function (result) {
           result.incoming.should.not.containDeep([{id: walletShareIdWithSpendPermissions}]);
+          done();
+        })
+        .done();
+      })
+      .done();
+    });
+  });
+
+  describe('Wallet shares with skip keychain', function () {
+
+    var walletShareId;
+    it('share a wallet (spend) without keychain', function(done) {
+      bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet2.shareWallet({
+          email: TestBitGo.TEST_SHARED_KEY_USER,
+          skipKeychain: true,
+          permissions: 'view,spend'
+        });
+      })
+      .then(function(result){
+        result.should.have.property('walletId');
+        result.should.have.property('fromUser');
+        result.should.have.property('toUser');
+        result.should.have.property('state');
+        result.walletId.should.equal(wallet2.id());
+        result.fromUser.should.equal('543c11ed356d00cb7600000b98794503');
+        result.toUser.should.equal('549d0ee835aec81206004c082757570f');
+        result.state.should.equal('active');
+
+        result.should.have.property('id');
+        walletShareId = result.id;
+        done();
+      })
+      .done();
+    });
+
+    it('accept a wallet share without password', function(done) {
+      bitgoSharedKeyUser.unlock({'otp': '0000000'})
+      .then(function() {
+        return bitgoSharedKeyUser.wallets().acceptShare({ walletShareId: walletShareId, overrideEncryptedXprv: 'test' })
+        .then(function (result) {
+          result.should.have.property('state');
+          result.should.have.property('changed');
+          result.state.should.equal('accepted');
+          result.changed.should.equal(true);
+
+          // now check that the wallet share id is no longer there
+          return bitgoSharedKeyUser.wallets().listShares()
+        })
+        .then(function (result) {
+          result.incoming.should.not.containDeep([{id: walletShareId}]);
           done();
         })
         .done();
