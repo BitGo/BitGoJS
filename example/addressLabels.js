@@ -15,7 +15,7 @@ if (process.argv.length <= 4) {
   process.exit(-1);
 }
 
-var bitgo = new BitGoJS.BitGo({useProduction: false, env: 'test'});
+var bitgo = new BitGoJS.BitGo();
 var inputs = {};       // Inputs collected from the user & command line.
 inputs.user = process.argv[2];
 inputs.password = process.argv[3];
