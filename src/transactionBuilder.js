@@ -117,7 +117,7 @@ var TransactionBuilder = function(wallet, recipients, fee, minConfirms) {
       };
       self.wallet.unspents(options, function(err, unspents) {
         if (err) {
-          deferred.reject(error);
+          deferred.reject(err);
           return;
         }
 
