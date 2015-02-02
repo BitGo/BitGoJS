@@ -1,8 +1,11 @@
 language: node_js
 before_install:
-  - "npm install npm -g"
+  - npm install npm -g
 node_js:
-  - "0.11"
+  - '0.11'
 env:
-  - TEST_SUITE=unit
-script: "npm run-script $TEST_SUITE"
+  matrix:
+    - TEST_SUITE=unit
+  global:
+    secure: gbQ8VqPQWU19sPvCQy0YUdgrdOK/zPPS9oBm0DQrL06mue5sd+IXGOUH/hqgSGNJxR/CbNQt7dTC6Ex0mTXHUasFlrrQUKn1Hr4Esqqqog1A2PgnuXK7AmHuXI18Cva4f8wU1h+HVMLfW9MJ+r1WtwyIg+DAdxWwDKUbIvCtIto=
+script: npm run-script $TEST_SUITE

@@ -7,7 +7,14 @@
 var BitGo = require('../../src/bitgo.js');
 
 BitGo.TEST_USER = 'tester@bitgo.com';
-BitGo.TEST_PASSWORD = 'testtesttest';
+
+if (process.env.BITGOJS_TEST_PASSWORD) {
+  BitGo.TEST_PASSWORD = process.env.BITGOJS_TEST_PASSWORD;
+} else {
+  // Test accounts are locked internally to prevent tampering
+  // Contact bencxr@fragnetics.com benchan for further help on how to fix this
+  throw new Error("Need to set BITGOJS_TEST_PASSWORD env variable - please see the developer setup docs.")
+}
 
 BitGo.TEST_SHARED_KEY_USER = 'shared_key_test@bitgo.com';
 BitGo.TEST_SHARED_KEY_PASSWORD = 'sh4r3dKeysT3ts';

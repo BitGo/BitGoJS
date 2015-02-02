@@ -16,10 +16,6 @@ Please contact us at support@bitgo.com if you have questions or comments about t
 
 `npm install`
 
-# Test
-
-`npm test`
-
 # Compile
 
 Creates a single file of javascript for inclusion in your applications.
