@@ -3,6 +3,9 @@ var bodyParser = require('body-parser');
 var BitGoJS = require('./index');
 var common = require('./common');
 var q = require('q');
+var pjson = require('../package.json');
+
+var BITGOEXPRESS_USER_AGENT = "BitGoExpress/" + pjson.version;
 
 var handleDecrypt = function(req) {
   return {
@@ -68,33 +71,78 @@ var handleAcceptShare = function(req) {
 var parseBody = bodyParser.json();
 
 // Create the bitgo object in the request
-var prepareBitGo = function(req, res, next){
-  // Get access token
-  var accessToken;
-  if (req.headers.authorization) {
-    var authSplit = req.headers.authorization.split(" ");
-    if (authSplit.length === 2 && authSplit[0].toLowerCase() === 'bearer') {
-      accessToken = authSplit[1];
+var prepareBitGo = function(args) {
+  return function(req, res, next){
+    // Get access token
+    var accessToken;
+    if (req.headers.authorization) {
+      var authSplit = req.headers.authorization.split(" ");
+      if (authSplit.length === 2 && authSplit[0].toLowerCase() === 'bearer') {
+        accessToken = authSplit[1];
+      }
     }
+
+    var userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + " " + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
+    req.bitgo = new BitGoJS.BitGo({ accessToken: accessToken, userAgent: userAgent, env: args.env });
+
+    next();
   }
-
-  req.bitgo = new BitGoJS.BitGo({accessToken: accessToken});
-
-  next();
 };
 
-exports = module.exports = function(app, wrapper) {
-  app.post('/api/v1/decrypt', parseBody, prepareBitGo, wrapper(handleDecrypt));
-  app.post('/api/v1/encrypt', parseBody, prepareBitGo, wrapper(handleEncrypt));
-  app.post('/api/v1/verifyaddress', parseBody, prepareBitGo, wrapper(handleVerifyAddress));
+// Promise handler wrapper to handle sending responses and error cases
+var promiseWrapper = function(promiseRequestHandler, args) {
+  return function (req, res, next) {
+    if (args.debug) {
+      console.log('handle: ' + url.parse(req.url).pathname);
+    }
+    q.fcall(promiseRequestHandler, req, res, next)
+    .then(function (result) {
+      var status = 200;
+      if (result.__redirect) {
+        res.redirect(result.url);
+        status = 302;
+      } else if (result.__render) {
+        res.render(result.template, result.params);
+      } else {
+        res.status(status).send(result);
+      }
+    })
+    .catch(function(caught) {
+      var err;
+      if (caught instanceof Error) {
+        err = caught;
+      } else if (typeof caught === 'string') {
+        err = new Error("(string_error) " + caught);
+      } else {
+        err = new Error("(object_error) " + JSON.stringify(caught));
+      }
 
-  app.post('/api/v1/keychain/local', parseBody, prepareBitGo, wrapper(handleCreateLocalKeyChain));
-  app.post('/api/v1/wallets/simplecreate', parseBody, prepareBitGo, wrapper(handleCreateWalletWithKeychains));
+      var message = err.message || 'local error';
+      // use attached result, or make one
+      var result = err.result || {error: message};
+      var status = err.status || 500;
+      console.log('error %s: %s', status, err.message);
+      if (status == 500) {
+        console.log(err.stack);
+      }
+      res.status(status).send(result);
+    })
+    .done();
+  };
+};
 
-  app.post('/api/v1/wallet/:id/sendcoins', parseBody, prepareBitGo, wrapper(handleSendCoins));
-  app.post('/api/v1/wallet/:id/sendmany', parseBody, prepareBitGo, wrapper(handleSendMany));
-  app.post('/api/v1/wallet/:id/createtransaction', parseBody, prepareBitGo, wrapper(handleCreateTransaction));
+exports = module.exports = function(app, args) {
+  app.post('/api/v1/decrypt', parseBody, prepareBitGo(args), promiseWrapper(handleDecrypt, args));
+  app.post('/api/v1/encrypt', parseBody, prepareBitGo(args), promiseWrapper(handleEncrypt, args));
+  app.post('/api/v1/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleVerifyAddress, args));
 
-  app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo, wrapper(handleShareWallet));
-  app.post('/api/v1/walletshare/:shareId/acceptShare', parseBody, prepareBitGo, wrapper(handleAcceptShare));
+  app.post('/api/v1/keychain/local', parseBody, prepareBitGo(args), promiseWrapper(handleCreateLocalKeyChain, args));
+  app.post('/api/v1/wallets/simplecreate', parseBody, prepareBitGo(args), promiseWrapper(handleCreateWalletWithKeychains, args));
+
+  app.post('/api/v1/wallet/:id/sendcoins', parseBody, prepareBitGo(args), promiseWrapper(handleSendCoins, args));
+  app.post('/api/v1/wallet/:id/sendmany', parseBody, prepareBitGo(args), promiseWrapper(handleSendMany, args));
+  app.post('/api/v1/wallet/:id/createtransaction', parseBody, prepareBitGo(args), promiseWrapper(handleCreateTransaction, args));
+
+  app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(args), promiseWrapper(handleShareWallet, args));
+  app.post('/api/v1/walletshare/:shareId/acceptShare', parseBody, prepareBitGo(args), promiseWrapper(handleAcceptShare, args));
 };

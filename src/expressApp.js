@@ -4,55 +4,16 @@ var url = require('url');
 var q = require('q');
 
 var common = require('./common');
+var pjson = require('../package.json');
+
+var BITGOEXPRESS_USER_AGENT = "BitGoExpress/" + pjson.version;
 
 module.exports = function(args) {
   // Create express app
   var app = express();
 
-  // Promise handler wrapper to handle sending responses and error cases
-  var wrapper = function(promiseRequestHandler) {
-    return function (req, res, next) {
-      if (args.debug) {
-        console.log('handle: ' + url.parse(req.url).pathname);
-      }
-      q.fcall(promiseRequestHandler, req, res, next)
-      .then(function (result) {
-        var status = 200;
-        if (result.__redirect) {
-          res.redirect(result.url);
-          status = 302;
-        } else if (result.__render) {
-          res.render(result.template, result.params);
-        } else {
-          res.status(status).send(result);
-        }
-      })
-      .catch(function(caught) {
-        var err;
-        if (caught instanceof Error) {
-          err = caught;
-        } else if (typeof caught === 'string') {
-          err = new Error("(string_error) " + caught);
-        } else {
-          err = new Error("(object_error) " + JSON.stringify(caught));
-        }
-
-        var message = err.message || 'local error';
-        // use attached result, or make one
-        var result = err.result || {error: message};
-        var status = err.status || 500;
-        console.log('error %s: %s', status, err.message);
-        if (status == 500) {
-          console.log(err.stack);
-        }
-        res.status(status).send(result);
-      })
-      .done();
-    };
-  };
-
   // Decorate the client routes
-  require('./clientRoutes')(app, wrapper);
+  require('./clientRoutes')(app, args);
 
   // Mount the proxy middleware
   var options = {};
@@ -66,6 +27,9 @@ module.exports = function(args) {
   proxy.on('proxyReq', function (proxyReq, req, res, options) {
     // Need to rewrite the host, otherwise cross-site protection kicks in
     proxyReq.setHeader('host', url.parse(common.Environments[args.env].uri).hostname);
+
+    var userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + " " + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
+    proxyReq.setHeader('User-Agent', userAgent);
   });
 
   app.use(function (req, res) {

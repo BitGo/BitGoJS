@@ -16,6 +16,19 @@ Please contact us at support@bitgo.com if you have questions or comments about t
 
 `npm install`
 
+# Documentation
+
+View our [Javascript SDK Documentation](https://www.bitgo.com/api/?javascript#authentication).
+
+# BitGo Express Local Signing Server (REST API)
+
+Suitable for developers working in a language without an official BitGo SDK.
+
+BitGo Express runs as a service in your own datacenter, and handles the client-side operations involving your own keys, such as partially signing transactions before submitting to BitGo.
+This ensures your keys never leave your network, and are not seen by BitGo. BitGo Express can also proxy the standard BitGo REST APIs, providing a unified interface to BitGo through a single REST API.
+
+`bin/bitgo-express`
+
 # Compile
 
 Creates a single file of javascript for inclusion in your applications.
