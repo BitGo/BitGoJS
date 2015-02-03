@@ -15,6 +15,7 @@ var common = require('./common');
 var ECKey = require('./bitcoin/eckey');
 var Util = require('./bitcoin/util');
 var Q = require('q');
+var pjson = require('../package.json');
 
 // Patch superagent to return promises
 var _end = superagent.Request.prototype.end;
@@ -85,7 +86,7 @@ superagent.Request.prototype.result = function(optionalField) {
 //
 var BitGo = function(params) {
   params = params || {};
-  if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken']) ||
+  if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent']) ||
       (params.useProduction && typeof(params.useProduction) != 'boolean')) {
     throw new Error('invalid argument');
   }
@@ -128,6 +129,7 @@ var BitGo = function(params) {
   this._clientSecret = params.clientSecret;
   this._token = params.accessToken || null;
   this._refreshToken = params.refreshToken || null;
+  this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
 
   // Create superagent methods specific to this BitGo instance.
   this.request = {};
@@ -141,6 +143,7 @@ var BitGo = function(params) {
       if (self._token) {
         req.set('Authorization', "Bearer " + self._token);
       }
+      req.set('User-Agent', self._userAgent);
       return req;
     };
   };
@@ -170,7 +173,7 @@ BitGo.prototype.reject = function(msg, callback) {
 // Gets the version of the BitGoJS API
 //
 BitGo.prototype.version = function() {
-  return '0.1.0';
+  return pjson.version;
 };
 
 BitGo.prototype.toJSON = function() {
