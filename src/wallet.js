@@ -232,6 +232,72 @@ Wallet.prototype.delete = function(params, callback) {
 };
 
 //
+// labels
+// List the labels for the addresses in a given wallet
+//
+Wallet.prototype.labels = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  var self = this;
+  var url = this.bitgo.url('/labels');
+
+  // only return labels that belong to this wallet
+  var walletLabels = [];
+  return this.bitgo.get(url)
+    .result('labels')
+    .then(function(labels) {
+      return _.filter(labels, function(label) { 
+        return label.walletId === self.id(); 
+      });
+    })
+    .nodeify(callback);
+};
+
+//
+// createLabel
+// Sets a label on the provided address
+//
+Wallet.prototype.createLabel = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['address', 'label'], [], callback);
+
+  var self = this;
+
+  if (!self.bitgo.verifyAddress({ address: params.address })) {
+    throw new Error('Invalid bitcoin address: ' + params.address);
+  }
+
+  var url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
+
+  return this.bitgo.put(url)
+    .send({'label': params.label})
+    .result()
+    .nodeify(callback);
+};
+
+//
+// deleteLabel
+// Deletes the label associated with the provided address
+//
+Wallet.prototype.deleteLabel = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['address'], [], callback);
+
+  var self = this;
+
+  if (!self.bitgo.verifyAddress({ address: params.address })) {
+    throw new Error('Invalid bitcoin address: ' + params.address);
+  }
+
+  var url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
+
+  return this.bitgo.del(url)
+    .result()
+    .nodeify(callback);
+};
+
+//
 // unspents
 // List the unspents for a given wallet
 // Parameters include:

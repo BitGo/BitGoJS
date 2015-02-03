@@ -452,6 +452,80 @@ describe('Wallet', function() {
     });
   });
 
+  describe('Labels', function() {
+    it('list', function(done) {
+      // delete all labels from wallet1
+      wallet1.labels({}, function(err, labels) {
+        if (labels == null) {
+          return;
+        }
+
+        labels.forEach (function(label) {
+          wallet1.deleteLabel({address: label.address}, function(err, label) {
+            assert.equal(err, null);
+          });
+        });
+      });
+
+      // create a single label on TEST_WALLET1_ADDRESS2 and check that it is returned
+      wallet1.createLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+        // create a label on wallet2's TEST_WALLET2_ADDRESS to ensure that it is not returned
+        wallet2.createLabel({label: "wallet2TestLabel", address: TEST_WALLET2_ADDRESS}, function(err, label2) {
+          wallet1.labels({}, function(err, labels) {
+            assert.equal(err, null);
+            labels.forEach (function(label) {
+              label.should.have.property('label');
+              label.should.have.property('address');
+              label.label.should.eql("testLabel");
+              label.address.should.eql(TEST_WALLET1_ADDRESS2);
+            });
+            done();
+          });
+        });
+      });
+    });
+  });
+
+  describe('CreateLabel', function() {
+
+    it('arguments', function(done) {
+      assert.throws(function() { wallet1.createLabel({}, function() {}); });
+      assert.throws(function() { wallet1.createLabel({label: "testLabel"}, function() {}); });
+      assert.throws(function() { wallet1.createLabel({address: TEST_WALLET1_ADDRESS2}, function() {}); });
+      assert.throws(function() { wallet1.createLabel({label: "testLabel", address: "invalidAddress"}, function() {}); });
+      assert.throws(function() { wallet1.createLabel({label: "testLabel", address: TEST_WALLET2_ADDRESS2}, function() {}); });
+      done();
+    });
+
+    it('create', function(done) {
+      wallet1.createLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+        assert.equal(err, null);
+        label.should.have.property('label');
+        label.should.have.property('address');
+        label.label.should.eql("testLabel");
+        label.address.should.eql(TEST_WALLET1_ADDRESS2);
+        done();
+      });
+    });
+  });
+
+  describe('DeleteLabel', function() {
+
+    it('arguments', function(done) {
+      assert.throws(function() { wallet1.deleteLabel({}, function() {}); });
+      assert.throws(function() { wallet1.deleteLabel({address: "invalidAddress"}, function() {}); });
+      done();
+    });
+
+    it('delete', function(done) {
+      wallet1.deleteLabel({address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+        assert.equal(err, null);
+        label.should.have.property('address');
+        label.address.should.eql(TEST_WALLET1_ADDRESS2);
+        done();
+      });
+    });
+  });
 
   describe('Unspents', function() {
     it('arguments', function(done) {
