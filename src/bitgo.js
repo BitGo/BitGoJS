@@ -605,4 +605,17 @@ BitGo.prototype.url = function(path) {
   return this._baseApiUrl + path;
 };
 
+//
+// labels
+// Get all the address labels on all of the user's wallets
+//
+BitGo.prototype.labels = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  return this.get(this.url('/labels'))
+  .result('labels')
+  .nodeify(callback);
+};
+
 module.exports = BitGo;

@@ -10,6 +10,11 @@ var should = require('should');
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 
+var TEST_WALLET1_ADDRESS = '2N21Bt5ZjQg5eWJLGuggY2DfkHyxhPKaagB';
+var TEST_WALLET1_ADDRESS2 = '2NEtpyMqA2v8zf44KDyyhE814FKb59zTX3J';
+var TEST_WALLET3_ADDRESS = '2NEC139iJ3wTMeSC4GosKEYmpmGo729kBFN';
+var TEST_WALLET3_ADDRESS2 = '2ND7sbcPS5DDD9b3FpwNs53uMTEKq4hLfxW';
+
 describe('BitGo', function() {
 
   describe('Constructor', function() {
@@ -307,6 +312,42 @@ describe('BitGo', function() {
           user.should.have.property('id');
           user.should.have.property('email');
           user.email.email.should.equal(TestBitGo.TEST_SHARED_KEY_USER);
+          done();
+        });
+      });
+    });
+
+    describe('labels', function() {
+      // ensure that we have at least one label created on two of this user's wallets
+      before(function() {
+        return bitgo.wallets().get({ id: TEST_WALLET1_ADDRESS })
+        .then(function(wallet) {
+          return wallet.setLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2});
+        })
+        .then(function() {
+          return bitgo.wallets().get({ id: TEST_WALLET3_ADDRESS })
+        })
+        .then(function(wallet3) {
+          return wallet3.setLabel({label: "testLabel3", address: TEST_WALLET3_ADDRESS2});
+        });
+      });
+
+      it('success', function(done) {
+        bitgo.labels({}, function(err, labels) {
+          if (err) {
+            throw err;
+          }
+
+          labels.length.should.not.equal(0);
+          labels.should.containDeep([{address: TEST_WALLET1_ADDRESS2}]);
+          labels.should.containDeep([{label: "testLabel"}]);
+          labels.should.containDeep([{address: TEST_WALLET3_ADDRESS2}]);
+          labels.should.containDeep([{label: "testLabel3"}]);
+
+          labels.forEach (function(label) {
+            label.should.have.property('label');
+            label.should.have.property('address');
+          });
           done();
         });
       });
