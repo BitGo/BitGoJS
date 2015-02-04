@@ -255,10 +255,10 @@ Wallet.prototype.labels = function(params, callback) {
 };
 
 //
-// createLabel
+// setLabel
 // Sets a label on the provided address
 //
-Wallet.prototype.createLabel = function(params, callback) {
+Wallet.prototype.setLabel = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address', 'label'], [], callback);
 

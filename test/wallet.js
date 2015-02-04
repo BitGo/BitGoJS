@@ -479,9 +479,9 @@ describe('Wallet', function() {
       });
 
       // create a single label on TEST_WALLET1_ADDRESS2 and check that it is returned
-      wallet1.createLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+      wallet1.setLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2}, function(err, label) {
         // create a label on wallet2's TEST_WALLET2_ADDRESS to ensure that it is not returned
-        wallet2.createLabel({label: "wallet2TestLabel", address: TEST_WALLET2_ADDRESS}, function(err, label2) {
+        wallet2.setLabel({label: "wallet2TestLabel", address: TEST_WALLET2_ADDRESS}, function(err, label2) {
           wallet1.labels({}, function(err, labels) {
             assert.equal(err, null);
             labels.forEach (function(label) {
@@ -497,19 +497,19 @@ describe('Wallet', function() {
     });
   });
 
-  describe('CreateLabel', function() {
+  describe('SetLabel', function() {
 
     it('arguments', function(done) {
-      assert.throws(function() { wallet1.createLabel({}, function() {}); });
-      assert.throws(function() { wallet1.createLabel({label: "testLabel"}, function() {}); });
-      assert.throws(function() { wallet1.createLabel({address: TEST_WALLET1_ADDRESS2}, function() {}); });
-      assert.throws(function() { wallet1.createLabel({label: "testLabel", address: "invalidAddress"}, function() {}); });
-      assert.throws(function() { wallet1.createLabel({label: "testLabel", address: TEST_WALLET2_ADDRESS2}, function() {}); });
+      assert.throws(function() { wallet1.setLabel({}, function() {}); });
+      assert.throws(function() { wallet1.setLabel({label: "testLabel"}, function() {}); });
+      assert.throws(function() { wallet1.setLabel({address: TEST_WALLET1_ADDRESS2}, function() {}); });
+      assert.throws(function() { wallet1.setLabel({label: "testLabel", address: "invalidAddress"}, function() {}); });
+      assert.throws(function() { wallet1.setLabel({label: "testLabel", address: TEST_WALLET2_ADDRESS2}, function() {}); });
       done();
     });
 
     it('create', function(done) {
-      wallet1.createLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+      wallet1.setLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2}, function(err, label) {
         assert.equal(err, null);
         label.should.have.property('label');
         label.should.have.property('address');
