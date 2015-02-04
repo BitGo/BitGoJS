@@ -70,6 +70,17 @@ describe('Wallet', function() {
 
   var walletShareIdWithViewPermissions, walletShareIdWithSpendPermissions, cancelledWalletShareId;
   describe('Share wallet', function() {
+    // clean up any outstanding shares before proceeding
+    before(function() {
+      return bitgo.wallets().listShares({})
+      .then(function(result){
+        var cancels = result.outgoing.map(function(share) { 
+          return bitgo.wallets().cancelShare({ walletShareId: share.id }); 
+        });
+        return Q.all(cancels);
+      });
+    });
+
     it('arguments', function (done) {
       assert.throws(function () { bitgo.getSharingKey({}); });
 
