@@ -5,6 +5,7 @@ exports.Environments = {
   prod: { uri: 'https://www.bitgo.com', network: 'prod' },
   staging: { uri: 'https://staging.bitgo.com', network: 'prod' },
   test: { uri: 'https://test.bitgo.com', network: 'testnet' },
+  dev: { uri: 'https://webdev.bitgo.com', network: 'testnet' },
   local: { uri: 'http://localhost:3000', network: 'testnet' }
 };
 

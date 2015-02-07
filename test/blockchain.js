@@ -23,6 +23,7 @@ describe('Address', function() {
     BitGoJS.setNetwork('testnet');
 
     bitgo = new TestBitGo();
+    bitgo.initializeTestVars();
     blockchain = bitgo.blockchain();
     done();
   });

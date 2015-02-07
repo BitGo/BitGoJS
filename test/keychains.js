@@ -16,6 +16,7 @@ describe('Keychains', function() {
 
   before(function(done) {
     bitgo = new TestBitGo();
+    bitgo.initializeTestVars();
     keychains = bitgo.keychains();
     bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
       if (err) {

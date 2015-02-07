@@ -118,7 +118,7 @@ var BitGo = function(params) {
   common.setNetwork(common.Environments[params.env].network);
 
   if (!this._baseUrl) {
-    this._baseUrl = common.Environments['test'].uri;
+    this._baseUrl = common.Environments[params.env].uri;
   }
 
   this._baseApiUrl = this._baseUrl + '/api/v1';

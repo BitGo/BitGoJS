@@ -10,9 +10,7 @@ var should = require('should');
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 
-var TEST_WALLET_PASSCODE = 'shared lives are shared coins';
 var TEST_WALLET_LABEL = 'wallet management test';
-var TEST_WALLET1_ADDRESS = '2N21Bt5ZjQg5eWJLGuggY2DfkHyxhPKaagB';
 var TEST_WALLET1_LABEL = 'Better Test Wallet 1';
 
 describe('Wallets', function() {
@@ -23,6 +21,7 @@ describe('Wallets', function() {
 
   before(function(done) {
     bitgo = new TestBitGo();
+    bitgo.initializeTestVars();
     wallets = bitgo.wallets();
     bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
       if (err) {
@@ -169,9 +168,9 @@ describe('Wallets', function() {
 
   describe('Create wallet with createWalletWithKeychains', function() {
     it('arguments', function() {
-      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TEST_WALLET_PASSCODE, "backupXpub": backupXpub}); });
-      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TEST_WALLET_PASSCODE, "label": TEST_WALLET_LABEL, "backupXpub": backupXpub}); });
-      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TEST_WALLET_PASSCODE, "label": TEST_WALLET_LABEL, "backupXpub": 123}); });
+      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TestBitGo.TEST_WALLET1_PASSCODE, "backupXpub": backupXpub}); });
+      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TestBitGo.TEST_WALLET1_PASSCODE, "label": TEST_WALLET_LABEL, "backupXpub": backupXpub}); });
+      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TestBitGo.TEST_WALLET1_PASSCODE, "label": TEST_WALLET_LABEL, "backupXpub": 123}); });
       assert.throws(function() { wallets.createWalletWithKeychains({"label": TEST_WALLET_LABEL, "backupXpub": backupXpub}); });
       assert.throws(function() { wallets.createWalletWithKeychains('invalid'); });
       assert.throws(function() { wallets.createWalletWithKeychains(); });
@@ -179,7 +178,7 @@ describe('Wallets', function() {
 
     it('default create', function(done) {
       var options = {
-        "passphrase": TEST_WALLET_PASSCODE,
+        "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
         "label": TEST_WALLET_LABEL
       };
 
@@ -213,7 +212,7 @@ describe('Wallets', function() {
       // Simulate a cold backup key
       var coldBackupKey = bitgo.keychains().create();
       var options = {
-        "passphrase": TEST_WALLET_PASSCODE,
+        "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
         "label": TEST_WALLET_LABEL,
         "backupXpub": coldBackupKey.xpub
       };

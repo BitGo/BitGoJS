@@ -139,6 +139,7 @@ Wallet.prototype.validateAddress = function(params) {
     if (!path.match(re)) {
       throw new Error('unsupported path: ' + path);
     }
+
     var pubKeys = self.keychains.map(function(k) {
       var bip32 = new BIP32(k.xpub);
       return bip32.derive('m' + k.path + path).eckey.getPub();

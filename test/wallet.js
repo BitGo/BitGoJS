@@ -13,16 +13,6 @@ var TestBitGo = require('./lib/test_bitgo');
 var TransactionBuilder = require('../src/transactionBuilder');
 var unspentData = require('./fixtures/largeunspents.json');
 
-var TEST_WALLET1_ADDRESS = '2N21Bt5ZjQg5eWJLGuggY2DfkHyxhPKaagB';
-var TEST_WALLET1_ADDRESS2 = '2NEtpyMqA2v8zf44KDyyhE814FKb59zTX3J';
-var TEST_WALLET1_PASSCODE = 'test wallet #1 security';
-var TEST_WALLET2_ADDRESS = '2N1PtMP1FvPJxX8iUutbkxRVRC86xcxeF6h';
-var TEST_WALLET2_PASSCODE = 'test wallet #2 security';
-var TEST_WALLET3_ADDRESS = '2NEC139iJ3wTMeSC4GosKEYmpmGo729kBFN';
-var TEST_WALLET3_PASSCODE = 'test wallet #3 security';
-var TEST_WALLET3_ADDRESS2 = '2ND7sbcPS5DDD9b3FpwNs53uMTEKq4hLfxW';
-var TEST_WALLET3_ADDRESS3 = '2N7Dba7yr1XkoRQh7XVhGjNUKSEgLCiibJp';
-
 describe('Wallet', function() {
   var bitgo;
   var wallet1, wallet2, wallet3;
@@ -31,6 +21,7 @@ describe('Wallet', function() {
     BitGoJS.setNetwork('testnet');
 
     bitgo = new TestBitGo();
+    bitgo.initializeTestVars();
     wallets = bitgo.wallets();
     bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
       if (err) {
@@ -40,7 +31,7 @@ describe('Wallet', function() {
 
       // Fetch the first wallet.
       var options = {
-        id: TEST_WALLET1_ADDRESS
+        id: TestBitGo.TEST_WALLET1_ADDRESS
       };
       wallets.get(options, function(err, wallet) {
         if (err) {
@@ -50,14 +41,14 @@ describe('Wallet', function() {
 
         // Fetch the second wallet
         var options = {
-          id: TEST_WALLET2_ADDRESS
+          id: TestBitGo.TEST_WALLET2_ADDRESS
         };
         wallets.get(options, function(err, wallet) {
           wallet2 = wallet;
 
           // Fetch the third wallet
           var options = {
-            id: TEST_WALLET3_ADDRESS
+            id: TestBitGo.TEST_WALLET3_ADDRESS
           };
           wallets.get(options, function(err, wallet) {
             wallet3 = wallet;
@@ -156,8 +147,7 @@ describe('Wallet', function() {
 
         result.should.have.property('userId');
         result.should.have.property('pubkey');
-        result.userId.should.equal('549d0ee835aec81206004c082757570f');
-        result.pubkey.should.equal('03F19AAC9A533BDFDAC8CDAD2B71CD3993CECFA0112E12D428914633C203304CA9');
+        result.userId.should.equal(TestBitGo.TEST_SHARED_KEY_USERID);
         done();
       })
     });
@@ -167,7 +157,7 @@ describe('Wallet', function() {
       .then(function() {
         return wallet1.shareWallet({
           email: TestBitGo.TEST_SHARED_KEY_USER,
-          walletPassphrase: TEST_WALLET1_PASSCODE,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
           permissions: 'view'
         });
       })
@@ -177,8 +167,8 @@ describe('Wallet', function() {
         result.should.have.property('toUser');
         result.should.have.property('state');
         result.walletId.should.equal(wallet1.id());
-        result.fromUser.should.equal('543c11ed356d00cb7600000b98794503');
-        result.toUser.should.equal('549d0ee835aec81206004c082757570f');
+        result.fromUser.should.equal(TestBitGo.TEST_USERID);
+        result.toUser.should.equal(TestBitGo.TEST_SHARED_KEY_USERID);
         result.state.should.equal('active');
 
         result.should.have.property('id');
@@ -193,7 +183,7 @@ describe('Wallet', function() {
       .then(function() {
         return wallet2.shareWallet({
           email: TestBitGo.TEST_SHARED_KEY_USER,
-          walletPassphrase: TEST_WALLET2_PASSCODE,
+          walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
           permissions: 'view,spend'
         });
       })
@@ -203,8 +193,8 @@ describe('Wallet', function() {
         result.should.have.property('toUser');
         result.should.have.property('state');
         result.walletId.should.equal(wallet2.id());
-        result.fromUser.should.equal('543c11ed356d00cb7600000b98794503');
-        result.toUser.should.equal('549d0ee835aec81206004c082757570f');
+        result.fromUser.should.equal(TestBitGo.TEST_USERID);
+        result.toUser.should.equal(TestBitGo.TEST_SHARED_KEY_USERID);
         result.state.should.equal('active');
 
         result.should.have.property('id');
@@ -219,7 +209,7 @@ describe('Wallet', function() {
       .then(function() {
         return wallet3.shareWallet({
           email: TestBitGo.TEST_SHARED_KEY_USER,
-          walletPassphrase: TEST_WALLET3_PASSCODE,
+          walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
           permissions: 'view'
         });
       })
@@ -248,6 +238,7 @@ describe('Wallet', function() {
   describe('Get wallet share list', function() {
     before(function(done) {
       bitgoSharedKeyUser = new TestBitGo();
+      bitgoSharedKeyUser.initializeTestVars();
       bitgoSharedKeyUser.authenticate({ username: TestBitGo.TEST_SHARED_KEY_USER, password: TestBitGo.TEST_SHARED_KEY_PASSWORD, otp: '0000000' })
       .then(function(success) {
         done();
@@ -347,8 +338,8 @@ describe('Wallet', function() {
         result.should.have.property('toUser');
         result.should.have.property('state');
         result.walletId.should.equal(wallet2.id());
-        result.fromUser.should.equal('543c11ed356d00cb7600000b98794503');
-        result.toUser.should.equal('549d0ee835aec81206004c082757570f');
+        result.fromUser.should.equal(TestBitGo.TEST_USERID);
+        result.toUser.should.equal(TestBitGo.TEST_SHARED_KEY_USERID);
         result.state.should.equal('active');
 
         result.should.have.property('id');
@@ -412,7 +403,7 @@ describe('Wallet', function() {
         wallet2.validateAddress({address: addr.address, path: '/0/0'});
       });
       wallet2.validateAddress(addr);
-      wallet2.validateAddress({ address: TEST_WALLET2_ADDRESS, path: '/0/0' });
+      wallet2.validateAddress({ address: TestBitGo.TEST_WALLET2_ADDRESS, path: '/0/0' });
     });
   });
 
@@ -478,17 +469,17 @@ describe('Wallet', function() {
         });
       });
 
-      // create a single label on TEST_WALLET1_ADDRESS2 and check that it is returned
-      wallet1.setLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+      // create a single label on TestBitGo.TEST_WALLET1_ADDRESS2 and check that it is returned
+      wallet1.setLabel({label: "testLabel", address: TestBitGo.TEST_WALLET1_ADDRESS2}, function(err, label) {
         // create a label on wallet2's TEST_WALLET2_ADDRESS to ensure that it is not returned
-        wallet2.setLabel({label: "wallet2TestLabel", address: TEST_WALLET2_ADDRESS}, function(err, label2) {
+        wallet2.setLabel({label: "wallet2TestLabel", address: TestBitGo.TEST_WALLET2_ADDRESS}, function(err, label2) {
           wallet1.labels({}, function(err, labels) {
             assert.equal(err, null);
             labels.forEach (function(label) {
               label.should.have.property('label');
               label.should.have.property('address');
               label.label.should.eql("testLabel");
-              label.address.should.eql(TEST_WALLET1_ADDRESS2);
+              label.address.should.eql(TestBitGo.TEST_WALLET1_ADDRESS2);
             });
             done();
           });
@@ -502,19 +493,19 @@ describe('Wallet', function() {
     it('arguments', function(done) {
       assert.throws(function() { wallet1.setLabel({}, function() {}); });
       assert.throws(function() { wallet1.setLabel({label: "testLabel"}, function() {}); });
-      assert.throws(function() { wallet1.setLabel({address: TEST_WALLET1_ADDRESS2}, function() {}); });
+      assert.throws(function() { wallet1.setLabel({address: TestBitGo.TEST_WALLET1_ADDRESS2}, function() {}); });
       assert.throws(function() { wallet1.setLabel({label: "testLabel", address: "invalidAddress"}, function() {}); });
-      assert.throws(function() { wallet1.setLabel({label: "testLabel", address: TEST_WALLET2_ADDRESS2}, function() {}); });
+      assert.throws(function() { wallet1.setLabel({label: "testLabel", address: TestBitGo.TEST_WALLET2_ADDRESS2}, function() {}); });
       done();
     });
 
     it('create', function(done) {
-      wallet1.setLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+      wallet1.setLabel({label: "testLabel", address: TestBitGo.TEST_WALLET1_ADDRESS2}, function(err, label) {
         assert.equal(err, null);
         label.should.have.property('label');
         label.should.have.property('address');
         label.label.should.eql("testLabel");
-        label.address.should.eql(TEST_WALLET1_ADDRESS2);
+        label.address.should.eql(TestBitGo.TEST_WALLET1_ADDRESS2);
         done();
       });
     });
@@ -529,10 +520,10 @@ describe('Wallet', function() {
     });
 
     it('delete', function(done) {
-      wallet1.deleteLabel({address: TEST_WALLET1_ADDRESS2}, function(err, label) {
+      wallet1.deleteLabel({address: TestBitGo.TEST_WALLET1_ADDRESS2}, function(err, label) {
         assert.equal(err, null);
         label.should.have.property('address');
-        label.address.should.eql(TEST_WALLET1_ADDRESS2);
+        label.address.should.eql(TestBitGo.TEST_WALLET1_ADDRESS2);
         done();
       });
     });
@@ -628,19 +619,19 @@ describe('Wallet', function() {
         assert.throws(function() { new TransactionBuilder({}, { 'string': 'should not be a string' }); });
         assert.throws(function() { new TransactionBuilder({}, { 'string': 10000 }); });
         var recipients = {};
-        recipients[TEST_WALLET1_ADDRESS] = 1e8;
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
         assert.throws(function() { new TransactionBuilder({}, [recipients]); });
       });
 
       it('minConfirms argument', function() {
         var recipients = {};
-        recipients[TEST_WALLET1_ADDRESS] = 1e8;
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
         assert.throws(function() { new TransactionBuilder({}, recipients, 0, 'string'); });
       });
 
       it('fee', function() {
         var recipients = {};
-        recipients[TEST_WALLET1_ADDRESS] = 1e8;
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
         assert.throws(function() { new TransactionBuilder({}, recipients, 0.5 * 1e8); });
       });
     });
@@ -648,7 +639,7 @@ describe('Wallet', function() {
     describe('prepare', function() {
       it('insufficient funds', function(done) {
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = wallet1.balance() + 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance() + 1e8;
         var tb = new TransactionBuilder(wallet1, recipients);
         tb.prepare()
           .catch(function(e) {
@@ -660,7 +651,7 @@ describe('Wallet', function() {
       it('insufficient funds due to fees', function(done) {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = wallet1.balance();
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance();
         var tb = new TransactionBuilder(wallet1, recipients);
         tb.prepare()
           .then(function(res) {
@@ -676,7 +667,7 @@ describe('Wallet', function() {
       it('insufficient funds due to minConfirms', function(done) {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
         var tb = new TransactionBuilder(wallet1, recipients, 0, 1e6);
         tb.prepare()
           .then(function(res) {
@@ -692,7 +683,7 @@ describe('Wallet', function() {
       it('no change required', function(done) {
         // Attempt to spend the full balance without any fees.
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = wallet1.balance();
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance();
         var tb = new TransactionBuilder(wallet1, recipients, 0);
         tb.prepare()
           .then(function() {
@@ -708,7 +699,7 @@ describe('Wallet', function() {
 
       it('ok', function(done) {
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
         var tb = new TransactionBuilder(wallet1, recipients);
         tb.prepare()
           .then(function() {
@@ -734,7 +725,7 @@ describe('Wallet', function() {
 
       it('approximate', function(done) {
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 10000 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 10000 * 1e8;
         var tb = new TransactionBuilder(wallet1, recipients);
         tb.prepare()
           .then(function() {
@@ -750,7 +741,7 @@ describe('Wallet', function() {
       it('do not override', function(done) {
         var manualFee = 0.04 * 1e8;
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 10000 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 10000 * 1e8;
         var tb = new TransactionBuilder(wallet1, recipients, manualFee);
         tb.prepare()
           .then(function() {
@@ -777,7 +768,7 @@ describe('Wallet', function() {
             keychain = result;
 
             var recipients = {};
-            recipients[TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
+            recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
 
             // Now build a transaction
             tb = new TransactionBuilder(wallet1, recipients);
@@ -801,7 +792,7 @@ describe('Wallet', function() {
 
       it('valid key', function(done) {
         // First we need to decrypt the xprv.
-        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
+        keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
         // Now we can go ahead and sign.
         var tx = tb.sign(keychain);
         done();
@@ -822,7 +813,7 @@ describe('Wallet', function() {
       wallet1.getEncryptedUserKeychain(options, function(err, result) {
         assert.equal(err, null);
         result.should.have.property('xpub');
-        assert.equal(result.xpub, 'xpub661MyMwAqRbcFSjo1JiMfyKa9vbvMADQHRxUAGy5q6WTLWno94m9BTdJBPVJzFsP2e4wmdjzLGCUw5cD4xxw5F6J8iDrr2w3V7WfFth61oN');
+        assert.equal(result.xpub, TestBitGo.TEST_WALLET1_XPUB);
         result.should.have.property('encryptedXprv');
         done();
       });
@@ -851,25 +842,25 @@ describe('Wallet', function() {
       });
       assert.throws(function () {
         wallet1.sendCoins(
-          { address: TEST_WALLET2_ADDRESS, amount: 0, walletPassphrase: TEST_WALLET1_PASSCODE },
+          { address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
           function () { }
         );
       });
       assert.throws(function () {
         wallet1.sendCoins(
-          { address: TEST_WALLET2_ADDRESS, amount: 0, walletPassphrase: "badpasscode" } ,
+          { address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0, walletPassphrase: "badpasscode" } ,
           function () {}
         );
       });
       assert.throws(function () {
         wallet1.sendCoins(
-          { address: "bad address", amount: 0, walletPassphrase: TEST_WALLET1_PASSCODE } ,
+          { address: "bad address", amount: 0, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE } ,
           function () {}
         );
       });
       assert.throws(function () {
         wallet1.sendMany(
-        { recipients: {}, walletPassphrase: TEST_WALLET1_PASSCODE }, function() {}
+        { recipients: {}, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }, function() {}
         );
       });
       done();
@@ -878,7 +869,7 @@ describe('Wallet', function() {
     describe('Bad input', function () {
       it('send coins - insufficient funds', function (done) {
         wallet1.sendCoins(
-          { address: TEST_WALLET2_ADDRESS, amount: 22 * 1e8 * 1e8, walletPassphrase: TEST_WALLET1_PASSCODE },
+          { address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 22 * 1e8 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
           function (err, result) {
             err.should.eql('Insufficient funds');
             assert.notEqual(err, null);
@@ -891,7 +882,7 @@ describe('Wallet', function() {
     describe('Real transactions', function() {
       it('send coins - wallet1 to wallet3', function (done) {
         wallet1.sendCoins(
-          { address: TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TEST_WALLET1_PASSCODE },
+          { address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
           function (err, result) {
             assert.equal(err, null);
             result.should.have.property('tx');
@@ -904,7 +895,7 @@ describe('Wallet', function() {
 
       it('send coins - wallet3 to wallet1', function (done) {
         wallet3.sendCoins(
-          { address: TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TEST_WALLET3_PASSCODE },
+          { address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE },
           function (err, result) {
             assert.equal(err, null);
             result.should.have.property('tx');
@@ -939,24 +930,24 @@ describe('Wallet', function() {
       });
       assert.throws(function () {
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 0;
-        wallet1.sendMany({ recipients: recipients, walletPassphrase: TEST_WALLET1_PASSCODE }, function () {});
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0;
+        wallet1.sendMany({ recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }, function () {});
       });
       assert.throws(function () {
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
         wallet1.sendMany([ { recipients: recipients, walletPassphrase: "badpasscode" } ], function () {});
       });
       assert.throws(function () {
         var recipients = {};
         recipients['bad address'] = 0.001 * 1e8;
-        wallet1.sendMany({ recipients: recipients, walletPassphrase: TEST_WALLET1_PASSCODE }, function () {});
+        wallet1.sendMany({ recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }, function () {});
       });
       assert.throws(function () {
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 5;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 5;
         recipients['bad address'] = 0.001 * 1e8;
-        wallet1.sendMany({ recipients: recipients, walletPassphrase: TEST_WALLET1_PASSCODE }, function () {});
+        wallet1.sendMany({ recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }, function () {});
       });
       done();
     });
@@ -964,10 +955,10 @@ describe('Wallet', function() {
     describe('Bad input', function () {
       it('send many - insufficient funds', function (done) {
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
-        recipients[TEST_WALLET1_ADDRESS] = 22 * 1e8 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 22 * 1e8 * 1e8;
         wallet1.sendMany(
-        { recipients: recipients, walletPassphrase: TEST_WALLET1_PASSCODE },
+        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
         function (err, result) {
           assert.notEqual(err, null);
           done();
@@ -979,9 +970,9 @@ describe('Wallet', function() {
     describe('Real transactions', function() {
       it('send many - wallet1 to wallet3 (single output)', function (done) {
         var recipients = {};
-        recipients[TEST_WALLET3_ADDRESS] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET3_ADDRESS] = 0.001 * 1e8;
         wallet1.sendMany(
-        { recipients: recipients, walletPassphrase: TEST_WALLET1_PASSCODE },
+        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
         function (err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
@@ -995,9 +986,9 @@ describe('Wallet', function() {
 
       it('send many - wallet3 to wallet1 (single output)', function (done) {
         var recipients = {};
-        recipients[TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
         wallet3.sendMany(
-        { recipients: recipients, walletPassphrase: TEST_WALLET3_PASSCODE },
+        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE },
         function (err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
@@ -1011,11 +1002,11 @@ describe('Wallet', function() {
 
       it('send many - wallet1 to wallet3', function (done) {
         var recipients = {};
-        recipients[TEST_WALLET3_ADDRESS] = 0.001 * 1e8;
-        recipients[TEST_WALLET3_ADDRESS2] = 0.001 * 1e8;
-        recipients[TEST_WALLET3_ADDRESS3] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET3_ADDRESS] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET3_ADDRESS2] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET3_ADDRESS3] = 0.001 * 1e8;
         wallet1.sendMany(
-        { recipients: recipients, walletPassphrase: TEST_WALLET1_PASSCODE },
+        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
         function (err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
@@ -1028,10 +1019,10 @@ describe('Wallet', function() {
 
       it('send many - wallet3 to wallet1', function (done) {
         var recipients = {};
-        recipients[TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
-        recipients[TEST_WALLET1_ADDRESS2] = 0.002 * 1e8;
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS2] = 0.002 * 1e8;
         wallet3.sendMany(
-        { recipients: recipients, walletPassphrase: TEST_WALLET3_PASSCODE },
+        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE },
         function (err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
@@ -1081,13 +1072,13 @@ describe('Wallet', function() {
 
     describe('full transaction', function() {
       it('decrypt key', function(done) {
-        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
+        keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
         done();
       });
 
       it('create transaction with fee', function(done) {
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
         wallet1.createTransaction({ recipients: recipients, fee: 0.0001 * 1e8, keychain: keychain }, function(err, result) {
           assert.equal(err, null);
           assert.equal(result.fee < 0.0005 * 1e8, true);
@@ -1100,7 +1091,7 @@ describe('Wallet', function() {
 
       it('create transaction with default fee', function(done) {
         var recipients = {};
-        recipients[TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
         wallet1.createTransaction({ recipients: recipients, keychain: keychain }, function(err, result) {
           assert.equal(err, null);
           assert.equal(result.fee, 10000);
@@ -1138,13 +1129,13 @@ describe('Wallet', function() {
       });
 
       it('decrypt key', function(done) {
-        keychain.xprv = bitgo.decrypt({ password: TEST_WALLET2_PASSCODE, input: keychain.encryptedXprv });
+        keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET2_PASSCODE, input: keychain.encryptedXprv });
         done();
       });
 
       it('create transaction', function(done) {
         var recipients = {};
-        recipients[TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
         wallet2.createTransaction({ recipients: recipients, fee: 0.0001 * 1e8, keychain: keychain }, function(err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
@@ -1196,7 +1187,7 @@ describe('Wallet', function() {
 
     it('attempt to send funds', function (done) {
       wallet2.sendCoins(
-      {address: TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TEST_WALLET2_PASSCODE},
+      {address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE},
       function (err, result) {
         err.should.not.equal(null);
         err.status.should.equal(403);

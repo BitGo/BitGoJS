@@ -10,11 +10,6 @@ var should = require('should');
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 
-var TEST_WALLET1_ADDRESS = '2N21Bt5ZjQg5eWJLGuggY2DfkHyxhPKaagB';
-var TEST_WALLET1_ADDRESS2 = '2NEtpyMqA2v8zf44KDyyhE814FKb59zTX3J';
-var TEST_WALLET3_ADDRESS = '2NEC139iJ3wTMeSC4GosKEYmpmGo729kBFN';
-var TEST_WALLET3_ADDRESS2 = '2ND7sbcPS5DDD9b3FpwNs53uMTEKq4hLfxW';
-
 describe('BitGo', function() {
 
   describe('Constructor', function() {
@@ -29,6 +24,7 @@ describe('BitGo', function() {
 
     it('methods', function() {
       var bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
       bitgo.should.have.property('version');
       bitgo.should.have.property('market');
       bitgo.should.have.property('authenticate');
@@ -55,11 +51,16 @@ describe('BitGo', function() {
       var bitgo = new TestBitGo({env: 'test'});
       BitGoJS.getNetwork().should.equal('testnet');
     });
+    it('dev', function() {
+      var bitgo = new TestBitGo({env: 'dev'});
+      BitGoJS.getNetwork().should.equal('testnet');
+    });
   });
 
   describe('Version', function() {
     it('version', function() {
       var bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
       var version = bitgo.version();
       assert.equal(typeof(version), 'string');
     });
@@ -99,12 +100,14 @@ describe('BitGo', function() {
 
     it('invalid password', function() {
       var bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
       var opaque = bitgo.encrypt({ password: password, input: secret });
       assert.throws(function() { bitgo.decrypt({ password: 'hack hack', input: opaque }); });
     });
 
     it('valid password', function() {
       var bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
       var opaque = bitgo.encrypt({ password: password, input: secret });
       assert.equal(bitgo.decrypt({ password: password, input: opaque }), secret);
     });
@@ -145,6 +148,7 @@ describe('BitGo', function() {
       var bitgo;
       before(function() {
         bitgo = new TestBitGo();
+        bitgo.initializeTestVars();
       });
 
       it('arguments', function() {
@@ -197,12 +201,14 @@ describe('BitGo', function() {
     describe('Logout API', function() {
       it('arguments', function(done) {
         var bitgo = new TestBitGo();
+        bitgo.initializeTestVars();
         assert.throws(function() { bitgo.logout({}, 'bad'); });
         done();
       });
 
       it('logout', function(done) {
         var bitgo = new TestBitGo();
+        bitgo.initializeTestVars();
         bitgo.logout({}, function(err) {
           // logout should fail when not logged in
           assert(err);
@@ -214,11 +220,13 @@ describe('BitGo', function() {
     describe('me', function() {
       it('arguments', function() {
         var bitgo = new TestBitGo();
+        bitgo.initializeTestVars();
         assert.throws(function() { bitgo.me({}, 'bad'); });
       });
 
       it('me', function(done) {
         var bitgo = new TestBitGo();
+        bitgo.initializeTestVars();
         bitgo.me({}, function(err, user) {
           // Expect an error
           assert.equal(err.message, 'Authorization required');
@@ -230,11 +238,13 @@ describe('BitGo', function() {
     describe('session', function() {
       it('arguments', function() {
         var bitgo = new TestBitGo();
+        bitgo.initializeTestVars();
         assert.throws(function() { bitgo.session({}, 'bad'); });
       });
 
       it('session', function(done) {
         var bitgo = new TestBitGo();
+        bitgo.initializeTestVars();
         bitgo.session({}, function(err, user) {
           // Expect an error
           assert.equal(err.message, 'Authorization required');
@@ -248,6 +258,7 @@ describe('BitGo', function() {
     var bitgo;
     before(function(done) {
       bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
       done();
     });
 
@@ -272,6 +283,7 @@ describe('BitGo', function() {
     var bitgo;
     before(function(done) {
       bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
       bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
         if (err) {
           throw err;
@@ -320,15 +332,15 @@ describe('BitGo', function() {
     describe('labels', function() {
       // ensure that we have at least one label created on two of this user's wallets
       before(function() {
-        return bitgo.wallets().get({ id: TEST_WALLET1_ADDRESS })
+        return bitgo.wallets().get({ id: TestBitGo.TEST_WALLET1_ADDRESS })
         .then(function(wallet) {
-          return wallet.setLabel({label: "testLabel", address: TEST_WALLET1_ADDRESS2});
+          return wallet.setLabel({label: "testLabel", address: TestBitGo.TEST_WALLET1_ADDRESS2});
         })
         .then(function() {
-          return bitgo.wallets().get({ id: TEST_WALLET3_ADDRESS })
+          return bitgo.wallets().get({ id: TestBitGo.TEST_WALLET3_ADDRESS })
         })
         .then(function(wallet3) {
-          return wallet3.setLabel({label: "testLabel3", address: TEST_WALLET3_ADDRESS2});
+          return wallet3.setLabel({label: "testLabel3", address: TestBitGo.TEST_WALLET3_ADDRESS2});
         });
       });
 
@@ -339,9 +351,9 @@ describe('BitGo', function() {
           }
 
           labels.length.should.not.equal(0);
-          labels.should.containDeep([{address: TEST_WALLET1_ADDRESS2}]);
+          labels.should.containDeep([{address: TestBitGo.TEST_WALLET1_ADDRESS2}]);
           labels.should.containDeep([{label: "testLabel"}]);
-          labels.should.containDeep([{address: TEST_WALLET3_ADDRESS2}]);
+          labels.should.containDeep([{address: TestBitGo.TEST_WALLET3_ADDRESS2}]);
           labels.should.containDeep([{label: "testLabel3"}]);
 
           labels.forEach (function(label) {
@@ -385,6 +397,7 @@ describe('BitGo', function() {
 
     before(function(done) {
       bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
       bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
         if (err) {
           throw err;
@@ -399,7 +412,7 @@ describe('BitGo', function() {
         return bitgo.getECDHSharingKeychain();
       })
       .then(function (result) {
-        result.xpub.should.equal('xpub661MyMwAqRbcGn8KmC8qy9cNcLcmLo8aGtcHgiMmXw7R5drDHReavre767FausTZtZTw8vfych3J9jWw67eX8314ARTb3FczLdsPnqkQjyT');
+        result.xpub.should.equal(TestBitGo.TEST_USER_ECDH_XPUB);
         done();
       })
       .done();

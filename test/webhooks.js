@@ -12,9 +12,6 @@ var _ = require('lodash');
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 
-var TEST_WALLET1_ADDRESS = '2N21Bt5ZjQg5eWJLGuggY2DfkHyxhPKaagB';
-
-
 describe('Webhooks', function() {
   var bitgo;
   var wallet;
@@ -23,6 +20,7 @@ describe('Webhooks', function() {
     BitGoJS.setNetwork('testnet');
 
     bitgo = new TestBitGo();
+    bitgo.initializeTestVars();
     wallets = bitgo.wallets();
     bitgo.authenticateTestUser(bitgo.testUserOTP(), function (err, response) {
       if (err) {
@@ -32,7 +30,7 @@ describe('Webhooks', function() {
 
       // Fetch the first wallet.
       var options = {
-        id: TEST_WALLET1_ADDRESS
+        id: TestBitGo.TEST_WALLET1_ADDRESS
       };
       wallets.get(options, function (err, result) {
         if (err) {
