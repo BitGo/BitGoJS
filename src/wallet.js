@@ -240,19 +240,11 @@ Wallet.prototype.labels = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
-  var url = this.bitgo.url('/labels');
+  var url = this.bitgo.url('/labels/' + this.id());
 
-  // only return labels that belong to this wallet
-  var walletLabels = [];
   return this.bitgo.get(url)
-    .result('labels')
-    .then(function(labels) {
-      return _.filter(labels, function(label) { 
-        return label.walletId === self.id(); 
-      });
-    })
-    .nodeify(callback);
+  .result('labels')
+  .nodeify(callback);
 };
 
 //
@@ -272,9 +264,9 @@ Wallet.prototype.setLabel = function(params, callback) {
   var url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
 
   return this.bitgo.put(url)
-    .send({'label': params.label})
-    .result()
-    .nodeify(callback);
+  .send({'label': params.label})
+  .result()
+  .nodeify(callback);
 };
 
 //
@@ -294,8 +286,8 @@ Wallet.prototype.deleteLabel = function(params, callback) {
   var url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
 
   return this.bitgo.del(url)
-    .result()
-    .nodeify(callback);
+  .result()
+  .nodeify(callback);
 };
 
 //

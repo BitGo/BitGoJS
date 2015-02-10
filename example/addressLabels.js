@@ -1,5 +1,5 @@
 //
-// List, create, or delete labels on addresses for a given wallet
+// List, set, or delete labels on addresses for a given wallet
 //
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
@@ -64,7 +64,7 @@ var collectInputs = function() {
   var getCreateOrDeleteVariables = function() {
     return function() {
         var deferred = Q.defer();
-        if (inputs.action == "create") {
+        if (inputs.action == "set") {
             return getVariable("address", "On which address are we setting the label: ")()
                     .then(getVariable("label", "What label do you want to set on the address: "));
         } else if (inputs.action == "delete") {
@@ -77,7 +77,7 @@ var collectInputs = function() {
   };
 
   return getVariable("walletId", "Enter the wallet ID: ")()
-        .then(getVariable("action", "Which label action do you wish to perform? [list, create, delete]: "))
+        .then(getVariable("action", "Which label action do you wish to perform? [list, set, delete]: "))
         .then(getCreateOrDeleteVariables());
 };
 
@@ -115,13 +115,13 @@ var runCommands = function() {
                     }
                 });
                 break;
-            case 'create':
-                wallet.createLabel({label: inputs.label, address: inputs.address}, function (err, result) {
+            case 'set':
+                wallet.setLabel({label: inputs.label, address: inputs.address}, function (err, result) {
                     if (err) {
                         console.log(err);
                         process.exit(-1);
                     }
-                    console.log('Created label ' + result.label + ' on address ' + result.address);
+                    console.log('Set label ' + result.label + ' on address ' + result.address);
                 });
                 break;
             case 'delete':
