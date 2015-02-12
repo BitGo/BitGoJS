@@ -109,8 +109,8 @@ describe('Webhooks', function() {
       var url = 'http://test.com/';
       wallet.listWebhooks()
       .then(function (result) {
-        result.length.should.not.eql(0);
-        var urls = _.pluck(result, 'url');
+        result.webhooks.length.should.not.eql(0);
+        var urls = _.pluck(result.webhooks, 'url');
         urls.should.include(url);
         done();
       })

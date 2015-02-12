@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var BitGoJS = require('./index');
 var common = require('./common');
 var q = require('q');
+var url = require('url');
 var pjson = require('../package.json');
 
 var BITGOEXPRESS_USER_AGENT = "BitGoExpress/" + pjson.version;
