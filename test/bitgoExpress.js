@@ -14,6 +14,8 @@ describe('Bitgo Express', function() {
       debug: false,
       env: 'test'
     };
+    bitgo = new TestBitGo();
+    bitgo.initializeTestVars();
     var app = expessApp(args);
     agent = request.agent(app);
     done();
@@ -160,6 +162,55 @@ describe('Bitgo Express', function() {
           res.body.should.have.property('backupKeychain');
           res.body.backupKeychain.should.have.property('xpub');
           res.body.backupKeychain.xpub.should.equal(backupXpub);
+          done();
+        });
+      });
+    });
+
+    it('send coins - wallet1 to wallet3', function(done) {
+      agent.post('/api/v1/user/unlock')
+      .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+      .send({ otp: '0000000', duration: 5 })
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(200);
+
+        agent.post('/api/v1/wallet/' + TestBitGo.TEST_WALLET1_ADDRESS + '/sendcoins')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) { throw err; }
+          res.should.have.status(200);
+          res.body.should.have.property('tx');
+          res.body.should.have.property('hash');
+          res.body.should.have.property('fee');
+          done();
+        });
+      });
+    });
+
+    it('send coins - wallet3 to wallet1 with fee', function(done) {
+      agent.post('/api/v1/user/unlock')
+      .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+      .send({ otp: '0000000', duration: 5 })
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(200);
+
+        agent.post('/api/v1/wallet/' + TestBitGo.TEST_WALLET3_ADDRESS + '/sendcoins')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE, fee: 0.005 * 1e8 })
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) { throw err; }
+          res.should.have.status(200);
+          res.body.should.have.property('tx');
+          res.body.should.have.property('hash');
+          res.body.should.have.property('fee');
+          res.body.fee.should.equal(0.005 * 1e8);
           done();
         });
       });

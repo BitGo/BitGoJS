@@ -501,6 +501,10 @@ Wallet.prototype.sendCoins = function(params, callback) {
     throw new Error('invalid argument for amount - number expected');
   }
 
+  if (params.fee && typeof(params.fee) != 'number') {
+    throw new Error('invalid argument for fee - number expected');
+  }
+
   if (params.amount <= 0) {
     throw new Error('must send positive number of Satoshis!');
   }
@@ -510,24 +514,30 @@ Wallet.prototype.sendCoins = function(params, callback) {
 
   // Get the user keychain
   return this.getEncryptedUserKeychain()
-  .then(function(keychain) {
-    // Decrypt the user key with a passphrase
-    try {
-      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
-    } catch (e) {
-      throw new Error('Unable to decrypt user keychain');
+  .then(
+    function(keychain) {
+      // Decrypt the user key with a passphrase
+      try {
+        keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+      } catch (e) {
+        throw new Error('Unable to decrypt user keychain');
+      }
+
+      // Create and sign the transaction
+      var recipients = {};
+      recipients[params.address] = params.amount;
+
+      return self.createTransaction({
+        recipients: recipients,
+        keychain: keychain,
+        minConfirms: params.minConfirms,
+        fee: params.fee
+      });
+    },
+    function(err) {
+      throw new Error('Unable to get the keychain for the wallet ' + err);
     }
-
-    // Create and sign the transaction
-    var recipients = {};
-    recipients[params.address] = params.amount;
-
-    return self.createTransaction({
-      recipients: recipients,
-      keychain: keychain,
-      minConfirms: params.minConfirms
-    });
-  })
+  )
   .then(function(result) {
     transaction = result;
     // Send the transaction
@@ -566,6 +576,10 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('expecting recipients object');
   }
 
+  if (params.fee && typeof(params.fee) != 'number') {
+    throw new Error('invalid argument for fee - number expected');
+  }
+
   if (Object.keys(params.recipients).length === 0) {
     throw new Error('must have at least one recipient');
   }
@@ -598,7 +612,8 @@ Wallet.prototype.sendMany = function(params, callback) {
     return self.createTransaction({
       recipients: params.recipients,
       keychain: keychain,
-      minConfirms: params.minConfirms
+      minConfirms: params.minConfirms,
+      fee: params.fee
     });
   })
   .then(function(result) {

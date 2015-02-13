@@ -882,7 +882,7 @@ describe('Wallet', function() {
     describe('Real transactions', function() {
       it('send coins - wallet1 to wallet3', function (done) {
         wallet1.sendCoins(
-          { address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
+          { address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.006 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
           function (err, result) {
             assert.equal(err, null);
             result.should.have.property('tx');
@@ -893,14 +893,15 @@ describe('Wallet', function() {
         );
       });
 
-      it('send coins - wallet3 to wallet1', function (done) {
+      it('send coins - wallet3 to wallet1 with specified fee', function (done) {
         wallet3.sendCoins(
-          { address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE },
+          { address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE, fee: 0.005 * 1e8 },
           function (err, result) {
             assert.equal(err, null);
             result.should.have.property('tx');
             result.should.have.property('hash');
             result.should.have.property('fee');
+            result.fee.should.eql(0.005 * 1e8)
             done();
           }
         );
@@ -1004,7 +1005,7 @@ describe('Wallet', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET3_ADDRESS] = 0.001 * 1e8;
         recipients[TestBitGo.TEST_WALLET3_ADDRESS2] = 0.001 * 1e8;
-        recipients[TestBitGo.TEST_WALLET3_ADDRESS3] = 0.001 * 1e8;
+        recipients[TestBitGo.TEST_WALLET3_ADDRESS3] = 0.006 * 1e8;
         wallet1.sendMany(
         { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
         function (err, result) {
@@ -1017,17 +1018,18 @@ describe('Wallet', function() {
         );
       });
 
-      it('send many - wallet3 to wallet1', function (done) {
+      it('send many - wallet3 to wallet1 with specified fee', function (done) {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
         recipients[TestBitGo.TEST_WALLET1_ADDRESS2] = 0.002 * 1e8;
         wallet3.sendMany(
-        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE },
+        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE, fee: 0.005 * 1e8},
         function (err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
+          result.fee.should.equal(0.005 * 1e8);
           done();
         }
         );
