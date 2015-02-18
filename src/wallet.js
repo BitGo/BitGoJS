@@ -350,7 +350,7 @@ Wallet.prototype.transactions = function(params, callback) {
 //
 // transaction
 // Get a transaction by ID for a given wallet
-Wallet.prototype.transaction = function(params, callback) {
+Wallet.prototype.getTransaction = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 

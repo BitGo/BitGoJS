@@ -605,7 +605,7 @@ describe('Wallet', function() {
 
     it('get transaction', function(done) {
       var options = { id: txHash0 };
-      wallet1.transaction(options, function(err, result) {
+      wallet1.getTransaction(options, function(err, result) {
         assert.equal(err, null);
         result.should.have.property('fee');
         result.should.have.property('outputs');
