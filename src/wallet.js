@@ -348,6 +348,21 @@ Wallet.prototype.transactions = function(params, callback) {
 };
 
 //
+// transaction
+// Get a transaction by ID for a given wallet
+Wallet.prototype.transaction = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], [], callback);
+
+  var url = this.url('/tx/' + params.id);
+
+  return this.bitgo.get(url)
+  .result()
+  .nodeify(callback);
+};
+
+
+//
 // Key chains
 // Gets the user key chain for this wallet
 // The user key chain is typically the first keychain of the wallet and has the encrypted xpriv stored on BitGo.

@@ -554,6 +554,7 @@ describe('Wallet', function() {
       done();
     });
 
+    var txHash0;
     it('list', function(done) {
       var options = { };
       wallet1.transactions(options, function(err, result) {
@@ -562,6 +563,7 @@ describe('Wallet', function() {
         result.should.have.property('total');
         result.should.have.property('count');
         result.start.should.eql(0);
+        txHash0 = result.transactions[0].id;
         done();
       });
     });
@@ -597,6 +599,21 @@ describe('Wallet', function() {
         result.transactions.length.should.eql(result.count);
         limitedTxes = limitedTxes.slice(skipNum);
         result.transactions.should.eql(limitedTxes);
+        done();
+      });
+    });
+
+    it('get transaction', function(done) {
+      var options = { id: txHash0 };
+      wallet1.transaction(options, function(err, result) {
+        assert.equal(err, null);
+        result.should.have.property('fee');
+        result.should.have.property('outputs');
+        result.outputs.length.should.not.eql(0);
+        result.should.have.property('entries');
+        result.entries.length.should.not.eql(0);
+        result.should.have.property('confirmations');
+        result.should.have.property('hex');
         done();
       });
     });
