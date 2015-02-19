@@ -18,6 +18,7 @@ var TransactionOut = Transactions.TransactionOut;
 
 // Setup some fee constants.
 var MAX_FEE = 1e8 * 0.1;        // The maximum fee we'll allow before declaring an error
+var MAX_FEE_RATE = 1e8 * 0.001;        // The maximum fee we'll allow before declaring an error
 var FEE_PER_KB = 0.0001 * 1e8;  // The blockchain required fee-per-kb of transaction size
 var DEFAULT_FEE = 0.0001 * 1e8; // Our default fee
 var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for less than this. (dust - give it to the miner)
@@ -29,11 +30,11 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 //   wallet:  a wallet object to send from
 //   recipients - object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
-var TransactionBuilder = function(wallet, recipients, fee, minConfirms) {
+var TransactionBuilder = function(wallet, recipients, fee, feeRate, minConfirms) {
   minConfirms = minConfirms || 0;
 
   // Sanity check the arguments passed in
-  if (typeof(wallet) != 'object' || (fee && typeof(fee) != 'number') || typeof(minConfirms) != 'number') {
+  if (typeof(wallet) != 'object' || (fee && typeof(fee) != 'number') || (feeRate && typeof(feeRate) != 'number') || typeof(minConfirms) != 'number') {
     throw new Error('invalid argument');
   }
 
@@ -49,11 +50,17 @@ var TransactionBuilder = function(wallet, recipients, fee, minConfirms) {
   this.shouldComputeBestFee = (typeof(fee) == 'undefined');
 
   // Sanity check the fee
+  if (typeof(fee) !== 'undefined' && typeof(feeRate) !== 'undefined') {
+    throw new Error('cannot specify both a fee as well as a fee rate');
+  }
   if (typeof(fee) == 'undefined') {
     fee = DEFAULT_FEE;
   }
   if (fee > MAX_FEE) {
     throw new Error('fee too generous');  // Protection against bad inputs
+  }
+  if (feeRate > MAX_FEE_RATE) {
+    throw new Error('fee rate too generous');  // Protection against bad inputs
   }
 
   var self = this;
@@ -130,16 +137,22 @@ var TransactionBuilder = function(wallet, recipients, fee, minConfirms) {
       return deferred.promise;
     };
 
-    // Approximate the fee based on number of inputs
-    var approximateBlockchainFee = function() {
+    var estimateTxSizeKb = function() {
       // Tx size is dominated by signatures.
       // Use the rough formula of 6 signatures per KB.
       var signaturesPerInput = 2;  // 2-of-3 wallets
 
+      // Note: Reference implementation uses 1000 bytes/kb, so we follow it to be safe
       var outputSizeKb = Object.keys(self.recipients).length * 34 / 1000;
       var inputSizeKb = (_tx.ins.length * signaturesPerInput * 170) / 1000;
 
-      return Math.ceil(inputSizeKb + outputSizeKb) * FEE_PER_KB;
+      return Math.ceil(inputSizeKb + outputSizeKb);
+    };
+
+    // Approximate the fee based on number of inputs
+    var approximateBlockchainFee = function() {
+      var feeRateToUse = typeof(feeRate) !== 'undefined' ? feeRate : FEE_PER_KB;
+      return estimateTxSizeKb() * feeRateToUse;
     };
 
     // Iterate _unspents, sum the inputs, and save _inputs with the total
@@ -197,6 +210,11 @@ var TransactionBuilder = function(wallet, recipients, fee, minConfirms) {
 
     // Add the outputs for this transaction.
     var collectOutputs = function() {
+      var estimatedTxSize = estimateTxSizeKb();
+      if (estimatedTxSize >= 90) {
+        throw new Error('transaction too large: estimated size ' + estimatedTxSize + 'kb');
+      }
+
       Object.keys(self.recipients).forEach(function(destinationAddress) {
         _tx.addOutput(new Address(destinationAddress), self.recipients[destinationAddress]);
       });

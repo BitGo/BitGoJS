@@ -643,13 +643,19 @@ describe('Wallet', function() {
       it('minConfirms argument', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
-        assert.throws(function() { new TransactionBuilder({}, recipients, 0, 'string'); });
+        assert.throws(function() { new TransactionBuilder({}, recipients, 0, 0, 'string'); });
       });
 
       it('fee', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
         assert.throws(function() { new TransactionBuilder({}, recipients, 0.5 * 1e8); });
+      });
+
+      it('fee and feerate', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
+        assert.throws(function() { new TransactionBuilder({}, recipients, 0.5 * 1e8, 0.001 * 1e8); });
       });
     });
 
@@ -685,7 +691,7 @@ describe('Wallet', function() {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        var tb = new TransactionBuilder(wallet1, recipients, 0, 1e6);
+        var tb = new TransactionBuilder(wallet1, recipients, 0, undefined, 1e6);
         tb.prepare()
           .then(function(res) {
             throw new Error('succeeded');
@@ -726,7 +732,7 @@ describe('Wallet', function() {
       });
     });
 
-    describe('fees', function() {
+    describe('size calculation and fees', function() {
       var patch;
       before(function() {
         // Monkey patch wallet1 with simulated inputs
@@ -740,25 +746,52 @@ describe('Wallet', function() {
         wallet1.unspents = patch;
       });
 
-      it('approximate', function(done) {
+      it('too large for blockchain relay', function(done) {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 10000 * 1e8;
+        var tb = new TransactionBuilder(wallet1, recipients);
+        tb.prepare()
+        .catch(function(e) {
+          e.message.should.include('transaction too large');
+          done();
+        })
+        .done();
+      });
+
+      it('approximate', function(done) {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
         var tb = new TransactionBuilder(wallet1, recipients);
         tb.prepare()
           .then(function() {
             var feeUsed = tb.fee;
             // Note that the transaction size here will be fairly small, because the signatures have not
             // been applied.  But we had to estimate our fees already.
-            assert.equal(feeUsed, 1390000);
+            assert.equal(feeUsed, 870000);
             done();
           })
           .done();
       });
 
+      it('approximate with double fees', function(done) {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        var tb = new TransactionBuilder(wallet1, recipients, undefined, 0.0002 * 1e8);
+        tb.prepare()
+        .then(function() {
+          var feeUsed = tb.fee;
+          // Note that the transaction size here will be fairly small, because the signatures have not
+          // been applied.  But we had to estimate our fees already.
+          assert.equal(feeUsed, 1740000);
+          done();
+        })
+        .done();
+      });
+
       it('do not override', function(done) {
         var manualFee = 0.04 * 1e8;
         var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 10000 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
         var tb = new TransactionBuilder(wallet1, recipients, manualFee);
         tb.prepare()
           .then(function() {
@@ -918,7 +951,7 @@ describe('Wallet', function() {
             result.should.have.property('tx');
             result.should.have.property('hash');
             result.should.have.property('fee');
-            result.fee.should.eql(0.005 * 1e8)
+            result.fee.should.eql(0.005 * 1e8);
             done();
           }
         );

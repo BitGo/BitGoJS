@@ -409,6 +409,7 @@ Wallet.prototype.createTransaction = function(params, callback) {
   var self = this;
 
   if ((typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
+      (typeof(params.feeRate) != 'number' && typeof(params.feeRate) != 'undefined') ||
       (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
       typeof(params.keychain) != 'object') {
     throw new Error('invalid argument');
@@ -434,7 +435,7 @@ Wallet.prototype.createTransaction = function(params, callback) {
     }
   });
 
-  return new TransactionBuilder(this, params.recipients, params.fee, params.minConfirms).prepare()
+  return new TransactionBuilder(this, params.recipients, params.fee, params.feeRate, params.minConfirms).prepare()
   .then(function(tb) {
     return tb.sign(params.keychain);
   })
@@ -520,6 +521,10 @@ Wallet.prototype.sendCoins = function(params, callback) {
     throw new Error('invalid argument for fee - number expected');
   }
 
+  if (params.feeRate && typeof(params.feeRate) != 'number') {
+    throw new Error('invalid argument for feeRate - number expected');
+  }
+
   if (params.amount <= 0) {
     throw new Error('must send positive number of Satoshis!');
   }
@@ -546,7 +551,8 @@ Wallet.prototype.sendCoins = function(params, callback) {
         recipients: recipients,
         keychain: keychain,
         minConfirms: params.minConfirms,
-        fee: params.fee
+        fee: params.fee,
+        feeRate: params.feeRate
       });
     },
     function(err) {
@@ -595,6 +601,10 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('invalid argument for fee - number expected');
   }
 
+  if (params.feeRate && typeof(params.feeRate) != 'number') {
+    throw new Error('invalid argument for fee - number expected');
+  }
+
   if (Object.keys(params.recipients).length === 0) {
     throw new Error('must have at least one recipient');
   }
@@ -628,7 +638,8 @@ Wallet.prototype.sendMany = function(params, callback) {
       recipients: params.recipients,
       keychain: keychain,
       minConfirms: params.minConfirms,
-      fee: params.fee
+      fee: params.fee,
+      feeRate: params.feeRate
     });
   })
   .then(function(result) {
