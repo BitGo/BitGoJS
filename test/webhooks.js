@@ -148,12 +148,8 @@ describe('Webhooks', function() {
       var type = 'transaction';
       wallet.removeWebhook({url: url, type: type})
       .then(function (result) {
-        result.should.have.property('walletId');
-        result.should.have.property('url');
-        result.should.have.property('type');
-        result.walletId.should.eql(wallet.id());
-        result.url.should.eql(url);
-        result.type.should.eql(type);
+        result.should.have.property('removed');
+        result.removed.should.equal(1);
 
         return wallet.listWebhooks();
       })

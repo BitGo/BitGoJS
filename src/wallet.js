@@ -661,6 +661,10 @@ Wallet.prototype.shareWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
 
+  if (params.reshare !== undefined && typeof(params.reshare) != 'boolean') {
+    throw new Error('Expected reshare to be a boolean.');
+  }
+
   if (params.skipKeychain !== undefined && typeof(params.skipKeychain) != 'boolean') {
     throw new Error('Expected skipKeychain to be a boolean. ');
   }
@@ -706,6 +710,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
     var options = {
       user: sharing.userId,
       permissions: params.permissions,
+      reshare: params.reshare,
       message: params.message
     };
     if (sharedKeychain) {

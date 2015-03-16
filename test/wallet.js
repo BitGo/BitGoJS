@@ -158,6 +158,7 @@ describe('Wallet', function() {
         return wallet1.shareWallet({
           email: TestBitGo.TEST_SHARED_KEY_USER,
           walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+          reshare: true, // for tests, we have actually already shared the wallet, and thus must set reshare
           permissions: 'view'
         });
       })
@@ -184,6 +185,7 @@ describe('Wallet', function() {
         return wallet2.shareWallet({
           email: TestBitGo.TEST_SHARED_KEY_USER,
           walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
+          reshare: true, // for tests, we have actually already shared the wallet, and thus must set reshare
           permissions: 'view,spend'
         });
       })
@@ -329,6 +331,7 @@ describe('Wallet', function() {
         return wallet2.shareWallet({
           email: TestBitGo.TEST_SHARED_KEY_USER,
           skipKeychain: true,
+          reshare: true, // for tests, we have actually already shared the wallet, and thus must set reshare
           permissions: 'view,spend'
         });
       })
