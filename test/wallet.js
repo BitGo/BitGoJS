@@ -280,6 +280,15 @@ describe('Wallet', function() {
   });
 
   describe('Accept wallet share', function (){
+    before(function(done) {
+      bitgoSharedKeyUser = new TestBitGo();
+      bitgoSharedKeyUser.initializeTestVars();
+      bitgoSharedKeyUser.authenticate({ username: TestBitGo.TEST_SHARED_KEY_USER, password: TestBitGo.TEST_SHARED_KEY_PASSWORD, otp: '0000000' })
+      .then(function(success) {
+        done();
+      })
+      .done();
+    });
 
     it('accept a wallet share with only view permissions', function(done) {
       bitgoSharedKeyUser.wallets().acceptShare({walletShareId: walletShareIdWithViewPermissions})

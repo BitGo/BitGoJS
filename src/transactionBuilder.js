@@ -6,15 +6,16 @@
 //
 
 var Q = require('q');
-var Address = require('./bitcoin/address');
-var BIP32 = require('./bitcoin/bip32');
-var Transactions = require('./bitcoin/transaction');
-var Script = require('./bitcoin/script');
-var Util = require('./bitcoin/util');
-
-var Transaction = Transactions.Transaction;
-var TransactionIn = Transactions.TransactionIn;
-var TransactionOut = Transactions.TransactionOut;
+var Address = require('bitcoinjs-lib/src/address');
+var HDNode = require('./hdnode');
+var Transaction = require('bitcoinjs-lib/src/transaction');
+var _TransactionBuilder = require('bitcoinjs-lib/src/transaction_builder');
+var Script = require('bitcoinjs-lib/src/script');
+var Scripts = require('bitcoinjs-lib/src/scripts');
+var ECPubkey = require('bitcoinjs-lib/src/ecpubkey');
+var ECSignature = require('bitcoinjs-lib/src/ecsignature');
+var Opcodes = require('bitcoinjs-lib/src/opcodes');
+var Util = require('./util');
 
 // Setup some fee constants.
 var MAX_FEE = 1e8 * 0.1;        // The maximum fee we'll allow before declaring an error
@@ -22,7 +23,6 @@ var MAX_FEE_RATE = 1e8 * 0.001;        // The maximum fee we'll allow before dec
 var FEE_PER_KB = 0.0001 * 1e8;  // The blockchain required fee-per-kb of transaction size
 var DEFAULT_FEE = 0.0001 * 1e8; // Our default fee
 var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for less than this. (dust - give it to the miner)
-
 
 //
 // TransactionBuilder
@@ -39,7 +39,7 @@ var TransactionBuilder = function(wallet, recipients, fee, feeRate, minConfirms)
   }
 
   if (typeof(recipients) != 'object' || recipients instanceof Array) {
-    throw new Error('recipients must be dictionary of destionationAddress:amount');
+    throw new Error('recipients must be dictionary of destinationAddress:amount');
   }
 
   if (Object.keys(recipients).length === 0) {
@@ -81,7 +81,7 @@ var TransactionBuilder = function(wallet, recipients, fee, feeRate, minConfirms)
     }
 
     try {
-      var address = new Address(destinationAddress);
+      Address.fromBase58Check(destinationAddress);
     } catch (e) {
       throw new Error('invalid bitcoin address: ' + destinationAddress);
     }
@@ -161,14 +161,10 @@ var TransactionBuilder = function(wallet, recipients, fee, feeRate, minConfirms)
       _inputAmount = 0;
       _unspents.every(function(unspent) {
         _inputAmount += unspent.value;
-        var input = new TransactionIn(
-          {
-            outpoint: { hash: unspent.tx_hash, index: unspent.tx_output_n },
-            script: new Script(unspent.script),
-            sequence: 4294967295
-          }
-        );
-        _tx.addInput(input);
+        var hash = new Buffer(unspent.tx_hash, 'hex');
+        hash = new Buffer(Array.prototype.reverse.call(hash));
+        var script = Script.fromHex(unspent.script);
+        _tx.addInput(hash, unspent.tx_output_n, 0xffffffff, script);
         return (_inputAmount < _totalAmount);
       });
 
@@ -181,7 +177,7 @@ var TransactionBuilder = function(wallet, recipients, fee, feeRate, minConfirms)
           self.fee = approximateFee;
           _totalAmount = self.fee + _totalOutputs;
           _inputAmount = 0;
-          _tx.clearInputs();
+          _tx.ins = [];
           return collectInputs();
         }
       }
@@ -216,21 +212,25 @@ var TransactionBuilder = function(wallet, recipients, fee, feeRate, minConfirms)
       }
 
       Object.keys(self.recipients).forEach(function(destinationAddress) {
-        _tx.addOutput(new Address(destinationAddress), self.recipients[destinationAddress]);
+        var addr = Address.fromBase58Check(destinationAddress);
+        var script = addr.toOutputScript();
+        _tx.addOutput(script, self.recipients[destinationAddress]);
       });
 
       var remainder = _inputAmount - _totalAmount;
       // As long as the remainder is greater than dust we send it to our change
       // address.  Otherwise, let it go to the miners.
       if (remainder > MINIMUM_BTC_DUST) {
-        _tx.addOutput(new Address(_changeAddress), remainder);
+        var addr = Address.fromBase58Check(_changeAddress);
+        var script = addr.toOutputScript();
+        _tx.addOutput(script, remainder);
       }
       return Q.when(self);
     };
 
     // Serialize the transaction into something usable.
     var serialize = function() {
-      _txBytes = _tx.serialize();
+      _txBytes = _tx.toBuffer();
       return Q.when(self);
     };
 
@@ -255,17 +255,127 @@ var TransactionBuilder = function(wallet, recipients, fee, feeRate, minConfirms)
       throw new Error('incorrect keychain');
     }
 
-    var rootExtKey = new BIP32(keychain.xprv);
+    var rootExtKey = HDNode.fromBase58(keychain.xprv);
     for (var index = 0; index < _tx.ins.length; ++index) {
       var path = keychain.path + self.wallet.keychains[0].path + _unspents[index].chainPath;
-      var extKey = rootExtKey.derive(path);
-      var redeemScript = new Script(_unspents[index].redeemScript);
-      if (!_tx.signMultiSigWithKey(index, extKey.eckey, redeemScript)) {
+      var extKey = rootExtKey.deriveFromPath(path);
+
+      // subscript is the part of the output script after the OP_CODESEPARATOR.
+      // Since we are only ever signing p2sh outputs, which do not have
+      // OP_CODESEPARATORS, it is always the output script.
+      var subscript  = Script.fromHex(_unspents[index].redeemScript);
+
+      // In order to sign with bitcoinjs-lib, we must use its transaction
+      // builder, confusingly named the same exact thing as our transaction
+      // builder, but with inequivalent behavior.
+      var txb = _TransactionBuilder.fromTransaction(_tx);
+      try {
+        txb.sign(index, extKey.privKey, subscript, Transaction.SIGHASH_ALL);
+      } catch (e) {
         return Q.reject('Failed to sign input #' + index);
       }
-      _tx.verifyInputSignatures(index, redeemScript);
+
+      // Build the "incomplete" transaction, i.e. one that does not have all
+      // the signatures (since we are only signing the first of 2 signatures in
+      // a 2-of-3 multisig).
+      _tx = txb.buildIncomplete();
+
+      // bitcoinjs-lib adds one more OP_0 than we need. It creates one OP_0 for
+      // every n public keys in an m-of-n multisig, and replaces the OP_0s with
+      // the signature of the nth public key, then removes any remaining OP_0s
+      // at the end. This behavior is not incorrect and valid for some use
+      // cases, particularly if you do not know which keys will be signing the
+      // transaction and the signatures may be added to the transaction in any
+      // chronological order, but is not compatible with the BitGo API, which
+      // assumes m OP_0s for m-of-n multisig (or m-1 after the first signature
+      // is created). Thus we need to remove the superfluous OP_0.
+      var chunks = _tx.ins[index].script.chunks;
+      chunks.splice(2, 1); // The extra OP_0 is always the third chunk
+      _tx.ins[index].script = Script.fromChunks(chunks);
+
+      // Finally, verify that the signature is correct, and if not, throw an
+      // error.
+      if (verifyInputSignatures(index, subscript) !== -1) {
+        throw new Error('number of signatures is invalid - something went wrong when signing');
+      }
     }
+
     return Q.when(this);
+  };
+
+  // Verify the signature on an input.
+  // If the transaction is fully signed, returns a positive number representing the number of valid signatures.
+  // If the transaction is partially signed, returns a negative number representing the number of valid signatures.
+  function verifyInputSignatures (inputIndex, pubScript) {
+    if (inputIndex < 0 || inputIndex >= _tx.ins.length) {
+      throw new Error('illegal index');
+    }
+    if (!(pubScript instanceof Script)) {
+      throw new Error('illegal argument');
+    }
+
+    var sigScript = _tx.ins[inputIndex].script;
+    var sigsNeeded = 1;
+    var sigs = [];
+    var pubKeys = [];
+
+    // Check the script type to determine number of signatures, the pub keys, and the script to hash.
+    switch(Scripts.classifyInput(sigScript, true)) {
+      case 'scripthash':
+        // Replace the pubScript with the P2SH Script.
+        var p2shBytes = sigScript.chunks[sigScript.chunks.length -1];
+        pubScript = Script.fromBuffer(p2shBytes);
+        sigsNeeded = pubScript.chunks[0] - Opcodes.OP_1 + 1;
+        for (var index = 1; index < sigScript.chunks.length -1; ++index) {
+          sigs.push(sigScript.chunks[index]);
+        }
+        for (var index = 1; index < pubScript.chunks.length - 2; ++index) {
+          pubKeys.push(pubScript.chunks[index]);
+        }
+        break;
+      case 'pubkeyhash':
+        sigsNeeded = 1;
+        sigs.push(sigScript.chunks[0]);
+        pubKeys.push(sigScript.chunks[1]);
+        break;
+      default:
+        return 0;
+        break;
+    }
+
+    var numVerifiedSignatures = 0;
+    for (var sigIndex = 0; sigIndex < sigs.length; ++sigIndex) {
+      // If this is an OP_0, then its been left as a placeholder for a future sig.
+      if (sigs[sigIndex] == Opcodes.OP_0) {
+        continue;
+      }
+
+      var hashType = sigs[sigIndex][sigs[sigIndex].length - 1];
+      sigs[sigIndex] = sigs[sigIndex].slice(0, sigs[sigIndex].length - 1); // pop hash type from end
+      var signatureHash = _tx.hashForSignature(inputIndex, pubScript, hashType);
+
+      var validSig = false;
+
+      // Enumerate the possible public keys
+      for (var pubKeyIndex = 0; pubKeyIndex < pubKeys.length; ++pubKeyIndex) {
+        var pubKey = ECPubkey.fromBuffer(pubKeys[pubKeyIndex]);
+        var signature = ECSignature.fromDER(sigs[sigIndex]);
+        validSig = pubKey.verify(signatureHash, signature);
+        if (validSig) {
+          pubKeys.splice(pubKeyIndex, 1);  // remove the pubkey so we can't match 2 sigs against the same pubkey
+          break;
+        }
+      }
+      if (!validSig) {
+        throw new Error('invalid signature');
+      }
+      numVerifiedSignatures++;
+    }
+
+    if (numVerifiedSignatures < sigsNeeded) {
+      numVerifiedSignatures = -numVerifiedSignatures;
+    }
+    return numVerifiedSignatures;
   };
 
   //
@@ -273,7 +383,7 @@ var TransactionBuilder = function(wallet, recipients, fee, feeRate, minConfirms)
   // Get the created transaction in hex format
   //
   this.tx = function() {
-    return Util.bytesToHex(_tx.serialize());
+    return _tx.toBuffer().toString('hex');
   };
 
 };

@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "0.9.26",
+  "version": "0.10.0",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -44,9 +44,13 @@
     "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js",
     "compile-dbg": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs --beautify > BitGoJS.js",
     "test": "npm run-script unit",
-    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js"
+    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js"
   },
   "dependencies": {
+    "bitcoinjs-lib": "1.5.4",
+    "bs58": "2.0.1",
+    "bs58check": "1.0.4",
+    "bigi": "1.4.0",
     "chain-node": "0.0.17",
     "minimist": "0.2.0",
     "superagent": "0.18.0",

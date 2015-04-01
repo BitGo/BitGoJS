@@ -5,15 +5,18 @@
 //
 
 var superagent = require('superagent');
-var Address = require('./bitcoin/address');
+var Address = require('bitcoinjs-lib/src/address');
 var Blockchain = require('./blockchain');
 var Keychains = require('./keychains');
 var Wallet = require('./wallet');
 var Wallets = require('./wallets');
-var sjcl = require('./bitcoin/sjcl.min');
+var sjcl = require('./sjcl.min');
 var common = require('./common');
-var ECKey = require('./bitcoin/eckey');
-var Util = require('./bitcoin/util');
+var ECKey = require('bitcoinjs-lib/src/eckey');
+var ECPubkey = require('bitcoinjs-lib/src/ecpubkey');
+var BufferUtils = require('bitcoinjs-lib/src/bufferutils');
+var networks = require('bitcoinjs-lib/src/networks');
+var Util = require('./util');
 var Q = require('q');
 var pjson = require('../package.json');
 
@@ -196,12 +199,16 @@ BitGo.prototype.verifyAddress = function(params) {
   params = params || {};
   common.validateParams(params, ['address'], []);
 
+  var address;
+
   try {
-    var address = new Address(params.address);
-    return true;
+    address = Address.fromBase58Check(params.address);
   } catch(e) {
     return false;
   }
+
+  var network = common.getNetwork();
+  return address.version === networks[network].pubKeyHash || address.version === networks[network].scriptHash;
 };
 
 BitGo.prototype.verifyPassword = function(params, callback) {
@@ -256,11 +263,10 @@ BitGo.prototype.getECDHSecret = function(params) {
     throw new Error('eckey object required');
   }
 
-  var otherKey = new ECKey('0');
-  otherKey.setPub(params.otherPubKeyHex);
-  var secretPoint = otherKey.getPubPoint().multiply(params.eckey.priv);
-  var secret = secretPoint.getX().toBigInteger().toByteArrayUnsigned();
-  return Util.bytesToHex(secret).toLowerCase();
+  var otherKeyPub = ECPubkey.fromHex(params.otherPubKeyHex);
+  var secretPoint = otherKeyPub.Q.multiply(params.eckey.d);
+  var secret = Util.bnToByteArrayUnsigned(secretPoint.affineX);
+  return new Buffer(secret).toString('hex');
 };
 
 //

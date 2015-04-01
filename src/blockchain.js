@@ -1,5 +1,5 @@
 //
-// Address Object
+// Blockchain Object
 // BitGo accessor to a any Bitcoin address.
 // Using this does not require authentication and is unrelated to BitGo wallet management.
 //

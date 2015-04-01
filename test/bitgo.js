@@ -9,6 +9,7 @@ var should = require('should');
 
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
+var ECKey = require('bitcoinjs-lib/src/eckey');
 
 describe('BitGo', function() {
 
@@ -39,15 +40,15 @@ describe('BitGo', function() {
     it('production', function() {
       BitGoJS.setNetwork('testnet');
       var bitgo = new TestBitGo({env: 'prod'});
-      BitGoJS.getNetwork().should.equal('prod');
+      BitGoJS.getNetwork().should.equal('bitcoin');
     });
     it('staging', function() {
       BitGoJS.setNetwork('testnet');
       var bitgo = new TestBitGo({env: 'staging'});
-      BitGoJS.getNetwork().should.equal('prod');
+      BitGoJS.getNetwork().should.equal('bitcoin');
     });
     it('test', function() {
-      BitGoJS.setNetwork('prod');
+      BitGoJS.setNetwork('bitcoin');
       var bitgo = new TestBitGo({env: 'test'});
       BitGoJS.getNetwork().should.equal('testnet');
     });
@@ -80,15 +81,19 @@ describe('BitGo', function() {
     });
 
     it('standard', function() {
-      BitGoJS.setNetwork('prod');
+      BitGoJS.setNetwork('bitcoin');
       assert.equal(bitgo.verifyAddress({ address: '1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd' }), true);
+      // wrong version byte:
+      assert.equal(bitgo.verifyAddress({ address: '9Ef7HsuByGBogqkjoF5Yng7MYkq5UCdmZz' }), false);
       BitGoJS.setNetwork('testnet');
       assert.equal(bitgo.verifyAddress({ address: 'n4DNhSiEaodqaiF9tLYXTCh4kFbdUzxBHs' }), true);
     });
 
     it('p2sh', function() {
-      BitGoJS.setNetwork('prod');
+      BitGoJS.setNetwork('bitcoin');
       assert.equal(bitgo.verifyAddress({ address: '3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC' }), true);
+      // wrong version byte:
+      assert.equal(bitgo.verifyAddress({ address: 'HV8swrGkmeN7Xig4vENr93aQSrX4iHjg7D' }), false);
       BitGoJS.setNetwork('testnet');
       assert.equal(bitgo.verifyAddress({ address: '2NEeFWbfu4EA1rcKx48e82Mj8d6FKcWawZw' }), true);
     });
@@ -394,6 +399,7 @@ describe('BitGo', function() {
   });
 
   describe('ECDH sharing keychain', function() {
+    var bitgo;
 
     before(function(done) {
       bitgo = new TestBitGo();
@@ -417,6 +423,19 @@ describe('BitGo', function() {
       })
       .done();
     });
+  });
+
+  describe('ECDH sharing secret', function() {
+
+    it('should calculate a new ECDH sharing secret correctly', function() {
+      var bitgo = new TestBitGo();
+      var eckey1 = ECKey.makeRandom();
+      var eckey2 = ECKey.makeRandom();
+      var sharingKey1 = bitgo.getECDHSecret({eckey: eckey1, otherPubKeyHex: eckey2.pub.toHex()});
+      var sharingKey2 = bitgo.getECDHSecret({eckey: eckey2, otherPubKeyHex: eckey1.pub.toHex()});
+      sharingKey1.should.equal(sharingKey2);
+    });
+
   });
 
   var refreshToken;

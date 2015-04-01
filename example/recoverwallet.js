@@ -9,6 +9,14 @@
 
 var BitGoJS = require('../src/index.js');
 var readline = require('readline');
+var HDNode = require('../src/hdnode');
+var Address = require('bitcoinjs-lib/src/address');
+var Script = require('bitcoinjs-lib/src/script');
+var Scripts = require('bitcoinjs-lib/src/scripts');
+var Transaction = require('bitcoinjs-lib/src/transaction');
+var TransactionBuilder = require('bitcoinjs-lib/src/transaction_builder');
+var networks = require('bitcoinjs-lib/src/networks');
+var Util = require('../src/util');
 var Q = require('q');
 
 var chain = require('chain-node');   // Use chain.com as our alternate blockchain api provider
@@ -23,7 +31,7 @@ var bitgoKey;          // The BIP32 xpub for the bitgo public key
 var subAddresses = {}; // A map of addresses containing funds to recover
 var unspents;          // The unspents from the HD wallet
 var transaction;       // The transaction to send
-var bitcoinNetwork = 'prod';
+var bitcoinNetwork = 'bitcoin';
 
 var info = '\n' +
 '**********************************\n' +
@@ -35,7 +43,6 @@ var info = '\n' +
 'then transfer your bitcoin to the address of your choice.\n\n' +
 'Please enter a blank line after each input.\n';
 console.log(info);
-
 
 //
 // collectInputs
@@ -114,7 +121,7 @@ var decryptKeys = function() {
            throw new Error('must be xprv key');
          }
        }
-       return new BitGoJS.BIP32(key);
+       return HDNode.fromBase58(key);
     } catch(e) {
       throw new Error('invalid key: ' + e);
     }
@@ -168,11 +175,12 @@ var findBaseAddress = function() {
 
     for (var key in keys) {
       var keyData = keys[key];
-      keyData.derived = keyData.key.derive(keyData.path);
-      keyData.derivedPubKey = keyData.derived.eckey.getPub();
+      keyData.derived = keyData.key.deriveFromPath(keyData.path);
+      keyData.derivedPubKey = keyData.derived.pubKey;
       pubKeys.push(keyData.derivedPubKey);
     }
-    var baseAddress = BitGoJS.Address.createMultiSigAddress(pubKeys, 2);
+    var network = BitGoJS.getNetwork() === 'bitcoin' ? networks.bitcoin : networks.testnet;
+    var baseAddress = Address.fromOutputScript(Util.p2shMultisigOutputScript(2, pubKeys), network).toBase58Check();
 
     console.log("\tTrying address: " + baseAddress);
     chain.getAddress(baseAddress, function(err, data) {
@@ -280,13 +288,14 @@ var findSubAddresses = function(baseAddress) {
     for (var key in baseAddress.keys) {
       var keyData = baseAddress.keys[key];
       var path = keyData.path + '/' + keyIndex + '/' + addressIndex;
-      keyData.derived = keyData.key.derive(path);
-      keyData.derivedPubKey = keyData.derived.eckey.getPub();
+      keyData.derived = keyData.key.deriveFromPath(path);
+      keyData.derivedPubKey = keyData.derived.pubKey;
       pubKeys.push(keyData.derivedPubKey);
     }
 
-    var subAddress = BitGoJS.Address.createMultiSigAddress(pubKeys, 2);
-    var subAddressString = subAddress.toString();
+    var network = BitGoJS.getNetwork() === 'bitcoin' ? networks.bitcoin : networks.testnet;
+    var redeemScript = Scripts.multisigOutput(2, pubKeys);
+    var subAddressString = Address.fromOutputScript(Util.p2shMultisigOutputScript(2, pubKeys), network).toBase58Check();
 
     console.log("Trying keyIndex " + keyIndex + " addressIndex " + addressIndex + ": " + subAddressString + "...");
     chain.getAddress(subAddressString, function(err, data) {
@@ -297,7 +306,7 @@ var findSubAddresses = function(baseAddress) {
         lookahead = 0;
         console.log('\tfound: ' + data.balance + ' at ' + subAddressString);
         subAddresses[subAddressString] = {
-          address: subAddress,
+          address: subAddressString,
           keyIndex: keyIndex,
           addressIndex: addressIndex,
           keys: [
@@ -305,7 +314,7 @@ var findSubAddresses = function(baseAddress) {
             { key: baseAddress.keys[1].derived, path: baseAddress.keys[1].path + '/' + keyIndex + '/' + addressIndex },
             { key: baseAddress.keys[2].derived, path: baseAddress.keys[2].path + '/' + keyIndex + '/' + addressIndex },
           ],
-          redeemScript: BitGoJS.Util.bytesToHex(subAddress.redeemScript)
+          redeemScript: redeemScript.toBuffer().toString('hex')
         };
       } else {
         if (++lookahead >= MAX_LOOKAHEAD_ADDRESSES) {
@@ -358,22 +367,23 @@ var findUnspents = function() {
 
 var createTransaction = function() {
   var totalValue = 0;
-  transaction = new BitGoJS.Transaction();
+  transaction = new Transaction();
 
   // Add the inputs
   for (var index in unspents) {
     var unspent = unspents[index];
-    transaction.addInput(new BitGoJS.TransactionIn({
-      outpoint: { hash: unspent.transaction_hash, index: unspent.output_index },
-      script: new BitGoJS.Script(unspent.script_hex),
-      sequence: 4294967295
-    }));
+    var hash = new Buffer(unspent.transaction_hash, 'hex');
+    hash = new Buffer(Array.prototype.reverse.call(hash));
+    var index = unspent.output_index;
+    var script = Script.fromHex(unspent.script_hex);
+    var sequence = 0xffffffff;
+    transaction.addInput(hash, index, sequence, script);
     totalValue += unspent.value;
   }
 
   // Note:  we haven't signed the inputs yet.  When we sign them, the transaction will grow by
   //        about 232 bytes per input (2 sigs + redeemscript + misc)
-  var approximateSize = transaction.serialize().length + (232 * unspents.length);
+  var approximateSize = transaction.toBuffer().length + (232 * unspents.length);
   var approximateFee = ((Math.floor(approximateSize / 1024)) + 1) * 0.0001 * 1e8;
   if (approximateFee > totalValue) {
     throw new Error("Insufficient funds to recover (Have your transactions confirmed yet?)");
@@ -384,21 +394,31 @@ var createTransaction = function() {
   console.log("Fee: " + approximateFee / 1e8 + "BTC");
 
   // Create the output
-  transaction.addOutput(new BitGoJS.Address(inputs.destination), totalValue);
+  var script = Address.fromBase58Check(inputs.destination).toOutputScript();
+  transaction.addOutput(Address.fromBase58Check(inputs.destination), totalValue);
+
+  var txb = TransactionBuilder.fromTransaction(transaction);
 
   for (index in unspents) {
+    index = parseInt(index);
     var unspent = unspents[index];
-    var redeemScript = new BitGoJS.Script(unspent.redeemScript);
+    var redeemScript = Script.fromHex(unspent.redeemScript);
 
-    console.log("Signing input " + (parseInt(index) + 1) + " of " + unspents.length);
+    console.log("Signing input " + (index + 1) + " of " + unspents.length);
 
-    if (!transaction.signMultiSigWithKey(index, unspent.keys[0].key.eckey, redeemScript)) {
-      throw new Error('Signature failure for user key');
+    try {
+      txb.sign(index, unspent.keys[0].key.privKey, redeemScript);
+    } catch (e) {
+      throw new Error('Signature failure for user key: ' + e);
     }
-    if (!transaction.signMultiSigWithKey(index, unspent.keys[1].key.eckey, redeemScript)) {
-      throw new Error('Signature failure for backup key');
+    try {
+      txb.sign(index, unspent.keys[1].key.privKey, redeemScript);
+    } catch (e) {
+      throw new Error('Signature failure for backup key: ' + e);
     }
   }
+
+  transaction = txb.build();
 
   return Q.when();
 };
@@ -408,7 +428,7 @@ var createTransaction = function() {
 // Actually send the fully created transaction to the bitcoin network.
 //
 var sendTransaction = function() {
-  var tx = BitGoJS.Util.bytesToHex(transaction.serialize());
+  var tx = transaction.toBuffer().toString('hex');
 
   console.log("Sending transaction: " + tx);
 

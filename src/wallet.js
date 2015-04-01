@@ -6,11 +6,16 @@
 //
 
 var TransactionBuilder = require('./transactionBuilder');
-var Address = require('./bitcoin/address');
-var BIP32 = require('./bitcoin/bip32');
+var Address = require('bitcoinjs-lib/src/address');
+var HDNode = require('./hdnode');
 var Keychains = require('./keychains');
-var ECKey = require('./bitcoin/eckey');
-var Util = require('./bitcoin/util');
+var ECKey = require('bitcoinjs-lib/src/eckey');
+var BufferUtils = require('bitcoinjs-lib/src/bufferutils');
+var Scripts = require('bitcoinjs-lib/src/scripts');
+var Util = require('./util');
+var Crypto = require('bitcoinjs-lib/src/crypto');
+var common = require('./common');
+var networks = require('bitcoinjs-lib/src/networks');
 var _ = require('lodash');
 
 var common = require('./common');
@@ -141,11 +146,14 @@ Wallet.prototype.validateAddress = function(params) {
     }
 
     var pubKeys = self.keychains.map(function(k) {
-      var bip32 = new BIP32(k.xpub);
-      return bip32.derive('m' + k.path + path).eckey.getPub();
+      var hdnode = HDNode.fromBase58(k.xpub);
+      hdnode = hdnode.deriveFromPath('m' + k.path + path);
+      return hdnode.pubKey;
     });
     // TODO: use wallet 'm' value, when exposed
-    return Address.createMultiSigAddress(pubKeys, 2).toString();
+    var script = Util.p2shMultisigOutputScript(2, pubKeys);
+    var network = networks[common.getNetwork()];
+    return Address.fromOutputScript(script, network).toBase58Check();
   };
 
   var localAddress = calcAddress(params.path);
@@ -441,8 +449,9 @@ Wallet.prototype.createTransaction = function(params, callback) {
   })
   .then(function(tb) {
     if (tb) {
+      var tx = tb.tx();
       return {
-        tx: tb.tx(),
+        tx: tx,
         fee: tb.fee
       };
     }
@@ -691,14 +700,14 @@ Wallet.prototype.shareWallet = function(params, callback) {
             throw new Error('Unable to decrypt user keychain');
           }
 
-          var eckey = new ECKey();
+          var eckey = ECKey.makeRandom();
           var secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
           var newEncryptedXprv = self.bitgo.encrypt({password: secret, input: keychain.xprv});
 
           sharedKeychain = {
             xpub: keychain.xpub,
             encryptedXprv: newEncryptedXprv,
-            fromPubKey: eckey.getPubKeyHex(),
+            fromPubKey: eckey.pub.toHex(),
             toPubKey: sharing.pubkey,
             path: sharing.path
           };

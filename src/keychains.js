@@ -5,10 +5,11 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var BIP32 = require('./bitcoin/bip32');
-var SecureRandom = require('./bitcoin/jsbn/rng');
-var Util = require('./bitcoin/util');
+var HDNode = require('./hdnode');
+var BufferUtils = require('bitcoinjs-lib/src/bufferutils');
+var crypto = require('crypto');
 var common = require('./common');
+var Util = require('./util');
 
 //
 // Constructor
@@ -30,7 +31,11 @@ Keychains.prototype.isValid = function(params) {
   }
 
   try {
-    var bip32 = new BIP32(params.key);
+    if (!params.key.path) {
+      HDNode.fromBase58(params.key);
+    } else {
+      HDNode.fromBase58(params.key.xpub).deriveFromPath(params.key.path);
+    }
     return true;
   } catch (e) {
     return false;
@@ -48,19 +53,20 @@ Keychains.prototype.create = function(params) {
   params = params || {};
   common.validateParams(params, [], []);
 
+  var seed;
   if (!params.seed) {
-    params.seed = new Array(256);
-    new SecureRandom().nextBytes(params.seed);
+    // An extended private key has both a normal 256 bit private key and a 256
+    // bit chain code, both of which must be random. 512 bits is therefore the
+    // maximum entropy and gives us maximum security against cracking.
+    seed = crypto.randomBytes(512 / 8);
   } else {
-    if (!Array.isArray(params.seed)) {
-      throw new Error('invalid argument');
-    }
+    seed = params.seed;
   }
 
-  var extendedKey = new BIP32().initFromSeed(Util.bytesToHex(params.seed));
+  var extendedKey = HDNode.fromSeedBuffer(seed);
   return {
-    xpub: extendedKey.extended_public_key_string(),
-    xprv: extendedKey.extended_private_key_string()
+    xpub: extendedKey.neutered().toBase58(),
+    xprv: extendedKey.toBase58()
   };
 };
 

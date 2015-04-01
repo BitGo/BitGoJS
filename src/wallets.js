@@ -6,10 +6,12 @@
 //
 
 var request = require('superagent');
-var ECKey = require('./bitcoin/eckey');
+var ECKey = require('bitcoinjs-lib/src/eckey');
 var Wallet = require('./wallet');
 var common = require('./common');
-var BIP32 = require('./bitcoin/bip32');
+var HDNode = require('./hdnode');
+var networks = require('bitcoinjs-lib/src/networks');
+var Util = require('./util');
 var Q = require('q');
 
 //
@@ -157,10 +159,11 @@ Wallets.prototype.acceptShare = function(params, callback) {
 
       // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
       sharingKeychain.xprv = self.bitgo.decrypt({ password: params.userPassword, input: sharingKeychain.encryptedXprv });
-      var rootExtKey = new BIP32(sharingKeychain.xprv);
+      var rootExtKey = HDNode.fromBase58(sharingKeychain.xprv);
+
       // Derive key by path (which is used between these 2 users only)
-      var extKey = rootExtKey.derive(walletShare.keychain.path);
-      var secret = self.bitgo.getECDHSecret({ eckey: extKey.eckey, otherPubKeyHex: walletShare.keychain.fromPubKey });
+      var extKey = rootExtKey.deriveFromPath(walletShare.keychain.path);
+      var secret = self.bitgo.getECDHSecret({ eckey: extKey.privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
 
       // Yes! We got the secret successfully here, now decrypt the shared wallet xprv
       var decryptedSharedWalletXprv = self.bitgo.decrypt({ password: secret, input: walletShare.keychain.encryptedXprv });
@@ -198,11 +201,13 @@ Wallets.prototype.acceptShare = function(params, callback) {
 Wallets.prototype.createKey = function(params) {
   params = params || {};
   common.validateParams(params);
+  var network = common.getNetwork();
+  network = networks[network];
 
-  var key = new ECKey();
+  var key = ECKey.makeRandom();
   return {
-    address: key.getBitcoinAddress(),
-    key: key.getWalletImportFormat()
+    address: key.pub.getAddress(network),
+    key: key.toWIF(network)
   };
 };
 

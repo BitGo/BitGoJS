@@ -1,9 +1,6 @@
-var Address = require('./bitcoin/address');
-var ECKey = require('./bitcoin/eckey');
-
 exports.Environments = {
-  prod: { uri: 'https://www.bitgo.com', network: 'prod' },
-  staging: { uri: 'https://staging.bitgo.com', network: 'prod' },
+  prod: { uri: 'https://www.bitgo.com', network: 'bitcoin' },
+  staging: { uri: 'https://staging.bitgo.com', network: 'bitcoin' },
   test: { uri: 'https://test.bitgo.com', network: 'testnet' },
   dev: { uri: 'https://webdev.bitgo.com', network: 'testnet' },
   local: { uri: 'http://localhost:3000', network: 'testnet' }
@@ -11,17 +8,11 @@ exports.Environments = {
 
 var bitcoinNetwork;
 exports.setNetwork = function(network) {
-  if (network == 'prod') {
-    bitcoinNetwork = 'prod';
-    Address.pubKeyHashVersion = 0x00;
-    Address.p2shVersion    = 0x5;
-    ECKey.privateKeyPrefix = 0x80;
+  if (network == 'bitcoin') {
+    bitcoinNetwork = 'bitcoin';
   } else {
     // test network
     bitcoinNetwork = 'testnet';
-    Address.pubKeyHashVersion = 0x6f;
-    Address.p2shVersion    = 0xc4;
-    ECKey.privateKeyPrefix = 0xef;
   }
 };
 

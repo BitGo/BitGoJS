@@ -39,8 +39,14 @@ describe('Keychains', function() {
     });
 
     it('create', function() {
-      var seed = BitGoJS.Util.hexToBytes('1234567890');
-      assert.equal(keychains.create({ seed: seed }).xprv, 'xprv9s21ZrQH143K2hrPzWSx6ZXUbcq6Skc22ZsACrjzx6wae8fV63x9gbixpv89ssBvcYLju8BSbjSVF1q2DM1BnFdhi65fgbYrS5WE9UzZaaw');
+      // must use seed of at least 128 bits
+      // standard test vector taken from bip32 spec
+      var seed = new Buffer('000102030405060708090a0b0c0d0e0f', 'hex');
+      assert.equal(keychains.create({ seed: seed }).xprv, 'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi');
+
+      //two keys created one after the other with no seed should have
+      //non-equivalent xprivs, i.e. check that the RNG is actually working.
+      assert.notEqual(keychains.create().xprv, keychains.create().xprv);
     });
   });
 
