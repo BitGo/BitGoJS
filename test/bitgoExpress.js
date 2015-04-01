@@ -170,7 +170,7 @@ describe('Bitgo Express', function() {
     it('send coins - wallet1 to wallet3', function(done) {
       agent.post('/api/v1/user/unlock')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-      .send({ otp: '0000000', duration: 5 })
+      .send({ otp: '0000000', duration: 10 })
       .expect('Content-Type', /json/)
       .end(function(err, res) {
         if (err) { throw err; }
@@ -182,7 +182,7 @@ describe('Bitgo Express', function() {
         .expect('Content-Type', /json/)
         .end(function(err, res) {
           if (err) { throw err; }
-          res.should.have.status(200);
+          res.status.should.equal(200);
           res.body.should.have.property('tx');
           res.body.should.have.property('hash');
           res.body.should.have.property('fee');
