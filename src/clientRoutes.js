@@ -27,7 +27,7 @@ var handleVerifyAddress = function(req) {
 };
 
 var handleCreateLocalKeyChain = function(req) {
-  return req.bitgo.keychains().create();
+  return req.bitgo.keychains().create(req.body);
 };
 
 var handleCreateWalletWithKeychains = function(req) {
