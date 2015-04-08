@@ -7,8 +7,9 @@ npm-debug.log
 node_modules
 coverage
 *.swp
-BitGoJS-min.js
-BitGoJS.js
+browser
+browser/BitGoJS-min.js
+browser/BitGoJS.js
 example/sandbox.js
 bin/server.key
 bin/server.crt

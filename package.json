@@ -13,7 +13,11 @@
     "url": "https://github.com/BitGo/BitGoJS.git"
   },
   "devDependencies": {
-    "browserify": "~4.1.5",
+    "karma": "^0.12.31",
+    "karma-chrome-launcher": "^0.1.7",
+    "karma-mocha": "^0.1.10",
+    "browserify": "~9.0.7",
+    "envify": "^3.4.0",
     "coveralls": "~2.10.0",
     "istanbul": "0.1.30",
     "mocha": "1.18.2",
@@ -41,25 +45,27 @@
   "scripts": {
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js",
     "coveralls": "sleep 300; ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- --timeout 50000 -R spec test/*.js test/bitcoin/*.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "compile": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > BitGoJS-min.js",
-    "compile-dbg": "./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs --beautify > BitGoJS.js",
-    "test": "npm run-script unit",
-    "unit": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js"
+    "compile": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > browser/BitGoJS-min.js",
+    "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs --beautify > browser/BitGoJS.js",
+    "compile-test": "mkdir -p browser && ./node_modules/.bin/browserify -t envify ./test/*.js > ./browser/tests.js",
+    "test": "npm run test-node && npm run test-browser",
+    "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js",
+    "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run"
   },
   "dependencies": {
+    "argparse": "^0.1.16",
+    "bigi": "1.4.0",
     "bitcoinjs-lib": "1.5.4",
+    "body-parser": "^1.10.2",
     "bs58": "2.0.1",
     "bs58check": "1.0.4",
-    "bigi": "1.4.0",
     "chain-node": "0.0.17",
-    "minimist": "0.2.0",
-    "superagent": "0.18.0",
-    "q": "1.1.2",
-    "lodash": "2.4.1",
-    "argparse": "^0.1.16",
-    "body-parser": "^1.10.2",
     "express": "^4.11.1",
     "http-proxy": "^1.8.1",
+    "lodash": "2.4.1",
+    "minimist": "0.2.0",
+    "q": "1.1.2",
+    "superagent": "0.18.0",
     "underscore.string": "2.4.0"
   }
 }

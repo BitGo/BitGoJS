@@ -1,3 +1,8 @@
+if (process.browser) {
+  // Bitgo Express tests not supported in browser
+  return;
+};
+
 var assert = require('assert');
 var should = require('should');
 var request = require('supertest');

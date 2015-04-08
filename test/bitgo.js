@@ -440,6 +440,10 @@ describe('BitGo', function() {
 
   var refreshToken;
   describe('Oauth test', function() {
+    if (process.browser) {
+      // Oauth tests not supported in browser due to same-origin policy
+      return;
+    };
     var bitgo;
 
     before(function (done) {
