@@ -114,7 +114,7 @@ var BitGo = function(params) {
       throw new Error('invalid environment');
     }
   } else {
-    params.env = 'test';
+    params.env = process.env.BITGO_ENV || 'test';
   }
   this.env = params.env;
 
