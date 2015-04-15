@@ -72,10 +72,10 @@ var sendBitcoin = function() {
       var recipients = {};
       recipients[destinationAddress] = amountSatoshis;
 
+      console.dir(keychain);
       console.log("Creating transaction");
       wallet.createTransaction({
         recipients: recipients,
-        keychain: keychain,
         fee: fee
         },
         function(err, transaction) {
@@ -85,12 +85,28 @@ var sendBitcoin = function() {
             return process.exit(-1);
           }
 
-          console.log("Sending transaction");
-          wallet.sendTransaction({ tx: transaction.tx }, function(err, callback) {
-            console.log("Transaction sent: " + callback.tx);
-          }
-        );
-      });
+          console.dir(transaction);
+          console.log("Signing transaction");
+          wallet.signTransaction({
+            transactionHex: transaction.transactionHex,
+            unspents: transaction.unspents,
+            keychain: keychain
+          },
+          function (err, transaction) {
+            if (err) {
+              console.log("Failed to sign transaction!");
+              console.dir(err);
+              return process.exit(-1);
+            }
+
+            console.dir(transaction);
+            console.log("Sending transaction");
+            wallet.sendTransaction({tx: transaction.tx}, function (err, callback) {
+              console.log("Transaction sent: " + callback.tx);
+            });
+          });
+        }
+      );
     });
   });
 };

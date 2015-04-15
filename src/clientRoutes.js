@@ -55,6 +55,13 @@ var handleCreateTransaction = function(req) {
   });
 };
 
+var handleSignTransaction = function(req) {
+  return req.bitgo.wallets().get({id: req.params.id})
+  .then(function(wallet) {
+    return wallet.signTransaction(req.body);
+  });
+};
+
 var handleShareWallet = function(req) {
   return req.bitgo.wallets().get({id: req.params.id})
   .then(function(wallet) {
@@ -70,7 +77,6 @@ var handleAcceptShare = function(req) {
 
 // Perform body parsing here only on routes we want
 var parseBody = bodyParser.json();
-
 // Create the bitgo object in the request
 var prepareBitGo = function(args) {
   return function(req, res, next){
@@ -143,6 +149,7 @@ exports = module.exports = function(app, args) {
   app.post('/api/v1/wallet/:id/sendcoins', parseBody, prepareBitGo(args), promiseWrapper(handleSendCoins, args));
   app.post('/api/v1/wallet/:id/sendmany', parseBody, prepareBitGo(args), promiseWrapper(handleSendMany, args));
   app.post('/api/v1/wallet/:id/createtransaction', parseBody, prepareBitGo(args), promiseWrapper(handleCreateTransaction, args));
+  app.post('/api/v1/wallet/:id/signtransaction', parseBody, prepareBitGo(args), promiseWrapper(handleSignTransaction, args));
 
   app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(args), promiseWrapper(handleShareWallet, args));
   app.post('/api/v1/walletshare/:shareId/acceptShare', parseBody, prepareBitGo(args), promiseWrapper(handleAcceptShare, args));

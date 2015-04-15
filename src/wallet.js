@@ -403,13 +403,14 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 
 //
 // createTransaction
-// Create and sign a transaction
-// TODO: Refactor into create and sign seperately after integrating with new bitcoinjs-lib
+// Create a transaction (unsigned). To sign it, do signTransaction
 // Parameters:
 //   recipients - object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee      - the blockchain fee to send (optional)
+//   feeRate  - the fee per kb to send (optional)
+//   minConfirms - minimum number of confirms to use when gathering unspents
 // Returns:
-//   callback(err, transaction)
+//   callback(err, { transactionHex: string, unspents: [inputs], fee: satoshis })
 Wallet.prototype.createTransaction = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
@@ -418,9 +419,12 @@ Wallet.prototype.createTransaction = function(params, callback) {
 
   if ((typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
       (typeof(params.feeRate) != 'number' && typeof(params.feeRate) != 'undefined') ||
-      (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
-      typeof(params.keychain) != 'object') {
+      (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined')) {
     throw new Error('invalid argument');
+  }
+
+  if (typeof(params.keychain) == 'object') {
+    throw new Error('createTransaction no longer takes a keychain to perform signing - please use signTransaction to sign');
   }
 
   if (typeof(params.recipients) != 'object') {
@@ -443,18 +447,40 @@ Wallet.prototype.createTransaction = function(params, callback) {
     }
   });
 
-  return new TransactionBuilder(this, params.recipients, params.fee, params.feeRate, params.minConfirms).prepare()
-  .then(function(tb) {
-    return tb.sign(params.keychain);
-  })
-  .then(function(tb) {
-    if (tb) {
-      var tx = tb.tx();
-      return {
-        tx: tx,
-        fee: tb.fee
-      };
-    }
+  return TransactionBuilder.createTransaction(this, params.recipients, params.fee, params.feeRate, params.minConfirms)
+  .nodeify(callback);
+};
+
+
+//
+// signTransaction
+// Sign a previously created transaction with a keychain
+// Parameters:
+// transactionHex - serialized form of the transaction in hex
+// unspents - array of unspent information, where each unspent is a chainPath and redeemScript with the same
+//            index as the inputs in the transactionHex
+// keychain - Keychain containing the xprv to sign with
+// Returns:
+//   callback(err, transaction)
+Wallet.prototype.signTransaction = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['transactionHex'], [], callback);
+
+  var self = this;
+
+  if (!Array.isArray(params.unspents)) {
+    throw new Error('expecting the unspents array');
+  }
+
+  if (typeof(params.keychain) != 'object' || !params.keychain.xprv) {
+    throw new Error('expecting keychain object with xprv');
+  }
+
+  return TransactionBuilder.signTransaction(params.transactionHex, params.unspents, params.keychain)
+  .then(function(result) {
+    return {
+      tx: result.transactionHex
+    };
   })
   .nodeify(callback);
 };
@@ -526,60 +552,10 @@ Wallet.prototype.sendCoins = function(params, callback) {
     throw new Error('invalid argument for amount - number expected');
   }
 
-  if (params.fee && typeof(params.fee) != 'number') {
-    throw new Error('invalid argument for fee - number expected');
-  }
+  params.recipients = {};
+  params.recipients[params.address] = params.amount;
 
-  if (params.feeRate && typeof(params.feeRate) != 'number') {
-    throw new Error('invalid argument for feeRate - number expected');
-  }
-
-  if (params.amount <= 0) {
-    throw new Error('must send positive number of Satoshis!');
-  }
-
-  var self = this;
-  var transaction;
-
-  // Get the user keychain
-  return this.getEncryptedUserKeychain()
-  .then(
-    function(keychain) {
-      // Decrypt the user key with a passphrase
-      try {
-        keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
-      } catch (e) {
-        throw new Error('Unable to decrypt user keychain');
-      }
-
-      // Create and sign the transaction
-      var recipients = {};
-      recipients[params.address] = params.amount;
-
-      return self.createTransaction({
-        recipients: recipients,
-        keychain: keychain,
-        minConfirms: params.minConfirms,
-        fee: params.fee,
-        feeRate: params.feeRate
-      });
-    },
-    function(err) {
-      throw new Error('Unable to get the keychain for the wallet ' + err);
-    }
-  )
-  .then(function(result) {
-    transaction = result;
-    // Send the transaction
-    return self.sendTransaction({ tx: transaction.tx, message: params.message });
-  })
-  .then(function(result) {
-    return {
-      tx: result.tx,
-      hash: result.hash,
-      fee: transaction.fee
-    };
-  })
+  return this.sendMany(params)
   .nodeify(callback);
 };
 
@@ -611,7 +587,7 @@ Wallet.prototype.sendMany = function(params, callback) {
   }
 
   if (params.feeRate && typeof(params.feeRate) != 'number') {
-    throw new Error('invalid argument for fee - number expected');
+    throw new Error('invalid argument for feeRate - number expected');
   }
 
   if (Object.keys(params.recipients).length === 0) {
@@ -630,29 +606,41 @@ Wallet.prototype.sendMany = function(params, callback) {
     }
   });
 
-  var transaction;
+  var keychain;
+  var fee;
 
   // Get the user keychain
   return this.getEncryptedUserKeychain()
-  .then(function(keychain) {
+  .then(
+  function(result) {
+    keychain = result;
     // Decrypt the user key with a passphrase
     try {
       keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
     } catch (e) {
       throw new Error('Unable to decrypt user keychain');
     }
-
-    // Create and sign the transaction
+  },
+  function(err) {
+    throw new Error('Unable to get the keychain for the wallet ' + err);
+  }
+  )
+  .then(function() {
+    // Create unsigned transaction
     return self.createTransaction({
       recipients: params.recipients,
-      keychain: keychain,
       minConfirms: params.minConfirms,
       fee: params.fee,
       feeRate: params.feeRate
     });
   })
   .then(function(result) {
-    transaction = result;
+    fee = result.fee;
+    // Sign the transaction
+    result.keychain = keychain;
+    return self.signTransaction(result);
+  })
+  .then(function(transaction) {
     // Send the transaction
     return self.sendTransaction({ tx: transaction.tx, message: params.message });
   })
@@ -660,7 +648,7 @@ Wallet.prototype.sendMany = function(params, callback) {
     return {
       tx: result.tx,
       hash: result.hash,
-      fee: transaction.fee
+      fee: fee
     };
   })
   .nodeify(callback);

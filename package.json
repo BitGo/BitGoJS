@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -48,7 +48,7 @@
     "compile": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > browser/BitGoJS-min.js",
     "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs --beautify > browser/BitGoJS.js",
     "compile-test": "mkdir -p browser && ./node_modules/.bin/browserify -t envify ./test/*.js > ./browser/tests.js",
-    "test": "npm run test-node && npm run test-browser",
+    "test": "npm run test-node",
     "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js",
     "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run"
   },
@@ -62,7 +62,7 @@
     "chain-node": "0.0.17",
     "express": "^4.11.1",
     "http-proxy": "^1.8.1",
-    "lodash": "2.4.1",
+    "lodash": "3.6.0",
     "minimist": "0.2.0",
     "q": "1.1.2",
     "superagent": "0.18.0",
