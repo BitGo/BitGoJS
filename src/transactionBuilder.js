@@ -99,6 +99,9 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
   // The transaction.
   var transaction = new Transaction();
 
+  // The change address, if one is used
+  var changeAddress;
+
   var deferred = Q.defer();
 
   // Get the unspents for the sending wallet.
@@ -182,6 +185,7 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
     if (remainder > MINIMUM_BTC_DUST) {
       return wallet.createAddress({chain: 1})
       .then(function(newAddress) {
+        changeAddress = newAddress;
         var addr = Address.fromBase58Check(newAddress.address);
         var script = addr.toOutputScript();
         transaction.addOutput(script, remainder);
@@ -198,12 +202,11 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
       transactionHex: transaction.toBuffer().toString('hex'),
       unspents: prunedUnspents,
       fee: fee,
-      walletId: wallet.id
+      changeAddress: _.pick(changeAddress, ['address', 'path']),
+      walletId: wallet.id(),
+      walletKeychains: wallet.keychains
     };
 
-    if (wallet.keychains && wallet.keychains[0]) {
-      result.xpub = wallet.keychains[0].xpub;
-    }
     return result;
   };
 
@@ -274,7 +277,15 @@ exports.signTransaction = function(transactionHex, unspents, keychain) {
     // assumes m OP_0s for m-of-n multisig (or m-1 after the first signature
     // is created). Thus we need to remove the superfluous OP_0.
     var chunks = transaction.ins[index].script.chunks;
-    chunks.splice(2, 1); // The extra OP_0 is always the third chunk
+    if (chunks.length !== 5) {
+      throw new Error('unexpected number of chunks in the OP_CHECKMULTISIG script after signing')
+    }
+    if (chunks[1]) {
+      chunks.splice(2, 1); // The extra OP_0 is the third chunk
+    } else if (chunks[2]) {
+      chunks.splice(1, 1); // The extra OP_0 is the second chunk
+    }
+
     transaction.ins[index].script = Script.fromChunks(chunks);
 
     // Finally, verify that the signature is correct, and if not, throw an
