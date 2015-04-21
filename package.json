@@ -13,18 +13,19 @@
     "url": "https://github.com/BitGo/BitGoJS.git"
   },
   "devDependencies": {
+    "browserify": "~9.0.7",
+    "coveralls": "~2.10.0",
+    "envify": "^3.4.0",
+    "istanbul": "0.1.30",
     "karma": "^0.12.31",
     "karma-chrome-launcher": "^0.1.7",
     "karma-mocha": "^0.1.10",
-    "browserify": "~9.0.7",
-    "envify": "^3.4.0",
-    "coveralls": "~2.10.0",
-    "istanbul": "0.1.30",
     "mocha": "1.18.2",
     "mocha-lcov-reporter": "0.0.1",
     "should": "3.3.2",
+    "supertest": "^0.15.0",
     "uglify-js": "2.4.13",
-    "supertest": "^0.15.0"
+    "uglifyify": "^3.0.1"
   },
   "testling": {
     "browsers": [
@@ -45,8 +46,8 @@
   "scripts": {
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js test/bitcoin/*.js",
     "coveralls": "sleep 300; ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- --timeout 50000 -R spec test/*.js test/bitcoin/*.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "compile": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs > browser/BitGoJS-min.js",
-    "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js -s Bitcoin | ./node_modules/.bin/uglifyjs --beautify > browser/BitGoJS.js",
+    "compile": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js -s BitGoJS -g uglifyify -o browser/BitGoJS-min.js",
+    "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js -s BitGoJS -o browser/BitGoJS.js",
     "compile-test": "mkdir -p browser && ./node_modules/.bin/browserify -t envify ./test/*.js > ./browser/tests.js",
     "test": "npm run test-node",
     "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js",
@@ -62,7 +63,7 @@
     "chain-node": "0.0.17",
     "express": "^4.11.1",
     "http-proxy": "^1.8.1",
-    "lodash": "3.6.0",
+    "lodash": "3.7.0",
     "minimist": "0.2.0",
     "q": "1.1.2",
     "superagent": "0.18.0",
