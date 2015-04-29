@@ -34,6 +34,8 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfirms) {
   minConfirms = minConfirms || 0;
 
+  var randomizeChangeIdx = true;
+
   // Sanity check the arguments passed in
   if (typeof(wallet) != 'object' || (fee && typeof(fee) != 'number') || (feeRate && typeof(feeRate) != 'number') || typeof(minConfirms) != 'number') {
     throw new Error('invalid argument');
@@ -173,10 +175,12 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
       throw new Error('transaction too large: estimated size ' + estimatedTxSize + 'kb');
     }
 
+    var outputs = [];
+
     Object.keys(recipients).forEach(function (destinationAddress) {
       var addr = Address.fromBase58Check(destinationAddress);
       var script = addr.toOutputScript();
-      transaction.addOutput(script, recipients[destinationAddress]);
+      outputs.push({script: script, amount: recipients[destinationAddress]});
     });
 
     var remainder = inputAmount - totalAmount;
@@ -188,9 +192,18 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
         changeAddress = newAddress;
         var addr = Address.fromBase58Check(newAddress.address);
         var script = addr.toOutputScript();
-        transaction.addOutput(script, remainder);
+
+          if (randomizeChangeIdx) {
+            outputs.splice(_.random(0, outputs.length), 0, {script: script, amount: remainder});
+          } else {
+            outputs.push({script: script, amount: remainder});
+          }
       });
     }
+
+    outputs.forEach(function(outputInfo) {
+      transaction.addOutput(outputInfo.script, outputInfo.amount);
+    })
   };
 
   // Serialize the transaction, returning what is needed to sign it
