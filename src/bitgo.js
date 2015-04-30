@@ -146,7 +146,12 @@ var BitGo = function(params) {
       if (self._token) {
         req.set('Authorization', "Bearer " + self._token);
       }
-      req.set('User-Agent', self._userAgent);
+      if (!process.browser) {
+        // If not in the browser, set the User-Agent. Browsers don't allow
+        // setting of User-Agent, so we must disable this when run in the
+        // browser (browserify sets process.browser).
+        req.set('User-Agent', self._userAgent);
+      }
       return req;
     };
   };
