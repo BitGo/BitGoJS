@@ -276,6 +276,10 @@ var findBaseAddress = function() {
 // Given our baseAddress, find all sub addresses containing bitcoins.
 //
 var findSubAddresses = function(baseAddress) {
+  if (!baseAddress) {
+    console.log('Could not find base address - perhaps the wallet is empty?');
+    process.exit();
+  }
   var deferred = Q.defer();
   var MAX_LOOKAHEAD_ADDRESSES = 20;
   var lookahead = 0;
