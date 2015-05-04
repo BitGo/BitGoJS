@@ -47,6 +47,16 @@ var getArgs = function () {
     help: 'Path to the SSL Crt file (required if running production)'
   });
 
+  parser.addArgument(
+  ['-u', '--customrooturi'], {
+    help: 'Force custom root BitGo URI (e.g. https://test.bitgo.com)'
+  });
+
+  parser.addArgument(
+  ['-n', '--custombitcoinnetwork'], {
+    help: 'Force custom bitcoin network (e.g. testnet)'
+  });
+
   return parser.parseArgs();
 };
 
@@ -88,6 +98,12 @@ server.listen(args.port, args.bind, function () {
   console.log('BitGo-Express running');
   console.log('Environment: ' + args.env);
   console.log('Base URI: ' + baseUri);
+  if (args.customrooturi) {
+    console.log('Custom root Uri: ' + args.customrooturi);
+  }
+  if (args.custombitcoinnetwork) {
+    console.log('Custom bitcoin network: ' + args.custombitcoinnetwork);
+  }
 });
 
 server.timeout = 300 * 1000; // 5 minutes

@@ -3,7 +3,8 @@ exports.Environments = {
   staging: { uri: 'https://staging.bitgo.com', network: 'bitcoin' },
   test: { uri: 'https://test.bitgo.com', network: 'testnet' },
   dev: { uri: 'https://webdev.bitgo.com', network: 'testnet' },
-  local: { uri: 'http://localhost:3000', network: 'testnet' }
+  local: { uri: 'http://localhost:3000', network: 'testnet' },
+  custom: { uri: process.env.BITGO_CUSTOM_ROOT_URI, network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK || 'bitcoin' }
 };
 
 var bitcoinNetwork;

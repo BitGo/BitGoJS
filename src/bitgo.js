@@ -89,7 +89,7 @@ superagent.Request.prototype.result = function(optionalField) {
 //
 var BitGo = function(params) {
   params = params || {};
-  if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent']) ||
+  if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork']) ||
       (params.useProduction && typeof(params.useProduction) != 'boolean')) {
     throw new Error('invalid argument');
   }
@@ -105,6 +105,19 @@ var BitGo = function(params) {
       throw new Error("Cannot set test environment and use production");
     }
     params.env = 'prod';
+  }
+
+  if (params.customRootURI ||
+      params.customBitcoinNetwork ||
+      process.env.BITGO_CUSTOM_ROOT_URI ||
+      process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
+    params.env = 'custom';
+    if (params.customRootURI) {
+      common.Environments['custom'].uri = params.customRootURI;
+    }
+    if (params.customBitcoinNetwork) {
+      common.Environments['custom'].network = params.customBitcoinNetwork;
+    }
   }
 
   if (params.env) {

@@ -56,6 +56,32 @@ describe('BitGo', function() {
       var bitgo = new TestBitGo({env: 'dev'});
       BitGoJS.getNetwork().should.equal('testnet');
     });
+    it('custom network (prod)', function() {
+      var bitgo = new TestBitGo({customBitcoinNetwork: 'bitcoin'});
+      BitGoJS.getNetwork().should.equal('bitcoin');
+    });
+    it('custom network (testnet)', function() {
+      var bitgo = new TestBitGo({customBitcoinNetwork: 'testnet'});
+      BitGoJS.getNetwork().should.equal('testnet');
+    });
+    it('custom root uri (prod)', function() {
+      var bitgo = new TestBitGo({customRootURI: 'https://www.bitgo.com/'});
+      return bitgo.ping({})
+      .then(function(res) {
+        res.should.have.property('status');
+        res.should.have.property('environment');
+        res.environment.should.eql('BitGo');
+      });
+    });
+    it('custom root uri (testnet)', function() {
+      var bitgo = new TestBitGo({customRootURI: 'https://test.bitgo.com/'});
+      return bitgo.ping({})
+      .then(function(res) {
+        res.should.have.property('status');
+        res.should.have.property('environment');
+        res.environment.should.eql('BitGo Testnet');
+      });
+    });
   });
 
   describe('Version', function() {

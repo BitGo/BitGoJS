@@ -22,6 +22,16 @@ module.exports = function(args) {
     options = { secure: false };
   }
 
+  if (args.customrooturi || args.custombitcoinnetwork || process.env.BITGO_CUSTOM_ROOT_URI || process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
+    args.env = 'custom';
+    if (args.customrooturi) {
+      common.Environments['custom'].uri = args.customrooturi;
+    }
+    if (args.custombitcoinnetwork) {
+      common.Environments['custom'].network = args.custombitcoinnetwork;
+    }
+  }
+
   var proxy = httpProxy.createProxyServer(options);
 
   proxy.on('proxyReq', function (proxyReq, req, res, options) {
@@ -36,7 +46,7 @@ module.exports = function(args) {
     if (args.debug) {
       console.log('proxy: ' + url.parse(req.url).pathname);
     }
-    proxy.web(req, res, { target: common.Environments[args.env].uri });
+    proxy.web(req, res, { target: common.Environments[args.env].uri, changeOrigin: true });
   });
 
   return app;

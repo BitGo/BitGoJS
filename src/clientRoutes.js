@@ -90,7 +90,21 @@ var prepareBitGo = function(args) {
     }
 
     var userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + " " + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
-    req.bitgo = new BitGoJS.BitGo({ accessToken: accessToken, userAgent: userAgent, env: args.env });
+    var params = {
+      accessToken: accessToken,
+      userAgent: userAgent,
+      env: args.env
+    };
+
+    if (args.customrooturi) {
+      params.customRootURI = args.customrooturi;
+    }
+
+    if (args.custombitcoinnetwork) {
+      params.customBitcoinNetwork = args.custombitcoinnetwork;
+    }
+
+    req.bitgo = new BitGoJS.BitGo(params);
 
     next();
   }
