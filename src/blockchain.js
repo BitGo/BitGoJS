@@ -92,4 +92,20 @@ Blockchain.prototype.getTransaction = function(params, callback) {
   .nodeify(callback);
 };
 
+//
+// Get block
+// Fetch block details.
+//
+// Parameters include:
+//   id: the block hash to get, or latest for the latest
+//
+Blockchain.prototype.getBlock = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], [], callback);
+
+  return this.bitgo.get(this.bitgo.url("/block/" + params.id))
+  .result()
+  .nodeify(callback);
+};
+
 module.exports = Blockchain;
