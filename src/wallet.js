@@ -447,7 +447,12 @@ Wallet.prototype.createTransaction = function(params, callback) {
     }
   });
 
-  return TransactionBuilder.createTransaction(this, params.recipients, params.fee, params.feeRate, params.minConfirms)
+  return TransactionBuilder.createTransaction(
+    this,
+    params.recipients,
+    params.fee || undefined,
+    params.feeRate || undefined,
+    params.minConfirms || undefined)
   .nodeify(callback);
 };
 
