@@ -15,6 +15,8 @@ var TEST_MANYTRANSACTIONSADDRESS = 'moCVzXCQgrHdZEhwRmkLHYM9N4wq77n5eL';
 
 var TEST_TRANSACTION = 'c82775ab4f266573820f085c7a466591dfb96af689f9ccce9eba7f87020dc6a6';
 
+var TEST_BLOCK = '00000000000000066fff8a67fbb6fac31e9c4ce5b1eabc279ce53218106aa26a';
+
 describe('Address', function() {
   var bitgo;
   var blockchain;
@@ -120,6 +122,29 @@ describe('Address', function() {
         transactionEntry.should.have.property('account');
         transactionEntry.should.have.property('value');
 
+        done();
+      });
+    });
+  });
+
+  describe('Get Block', function() {
+    it('arguments', function(done) {
+      assert.throws(function() { blockchain.getBlock('invalid', function() {}); });
+      assert.throws(function() { blockchain.getBlock({}); });
+      assert.throws(function() { blockchain.getBlock({}, function() {}); });
+      done();
+    });
+
+    it('get', function(done) {
+      blockchain.getBlock({id: TEST_BLOCK}, function(err, block) {
+        assert.equal(err, null);
+        block.should.have.property('height');
+        block.should.have.property('date');
+        block.should.have.property('previous');
+        block.should.have.property('transactions');
+        block.height.should.eql(326945);
+        block.previous.should.eql('00000000eecd159babde9b094c6dbf1f4f63028ba100f6f092cacb65f04afc46');
+        block.transactions.should.include('e393422e5a0b4c011f511cf3c5911e9c09defdcadbcf16ceb12a47a80e257aaa');
         done();
       });
     });
