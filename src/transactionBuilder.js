@@ -31,11 +31,15 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 //   wallet:  a wallet object to send from
 //   recipients - object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
-exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfirms) {
+exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfirms, forceChangeAtEnd) {
   minConfirms = minConfirms || 0;
 
   // Sanity check the arguments passed in
-  if (typeof(wallet) != 'object' || (fee && typeof(fee) != 'number') || (feeRate && typeof(feeRate) != 'number') || typeof(minConfirms) != 'number') {
+  if (typeof(wallet) != 'object' ||
+     (fee && typeof(fee) != 'number') ||
+     (feeRate && typeof(feeRate) != 'number') ||
+     typeof(minConfirms) != 'number' ||
+     (forceChangeAtEnd && typeof(forceChangeAtEnd) !== 'boolean')) {
     throw new Error('invalid argument');
   }
 
@@ -173,24 +177,42 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
       throw new Error('transaction too large: estimated size ' + estimatedTxSize + 'kb');
     }
 
+    var outputs = [];
+
     Object.keys(recipients).forEach(function (destinationAddress) {
       var addr = Address.fromBase58Check(destinationAddress);
       var script = addr.toOutputScript();
-      transaction.addOutput(script, recipients[destinationAddress]);
+      outputs.push({
+        script: script,
+        amount: recipients[destinationAddress]
+      });
     });
 
-    var remainder = inputAmount - totalAmount;
+    var changeAmount = inputAmount - totalAmount;
     // If the remainder is greater than dust we send create a change address and add an output.
     // Otherwise, let it go to the miners.
-    if (remainder > MINIMUM_BTC_DUST) {
-      return wallet.createAddress({chain: 1})
-      .then(function(newAddress) {
-        changeAddress = newAddress;
-        var addr = Address.fromBase58Check(newAddress.address);
-        var script = addr.toOutputScript();
-        transaction.addOutput(script, remainder);
+    return Q().then(function() {
+      if (changeAmount > MINIMUM_BTC_DUST) {
+        return wallet.createAddress({chain: 1})
+        .then(function(newAddress) {
+          changeAddress = newAddress;
+          var addr = Address.fromBase58Check(newAddress.address);
+          var script = addr.toOutputScript();
+          var changeOutput = {
+            script: script,
+            amount: changeAmount
+          };
+          // decide where to put the change output - default is to randomize unless forced to end
+          var changeIndex = forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
+          outputs.splice(changeIndex, 0, changeOutput);
+        });
+      }
+    })
+    .then(function() {
+      outputs.forEach(function(output) {
+        transaction.addOutput(output.script, output.amount);
       });
-    }
+    });
   };
 
   // Serialize the transaction, returning what is needed to sign it

@@ -13,6 +13,8 @@ var TestBitGo = require('./lib/test_bitgo');
 var TransactionBuilder = require('../src/transactionBuilder');
 var unspentData = require('./fixtures/largeunspents.json');
 
+Q.longStackTrace = true;
+
 describe('Wallet', function() {
   var bitgo;
   var wallet1, wallet2, wallet3;
@@ -65,8 +67,8 @@ describe('Wallet', function() {
     before(function() {
       return bitgo.wallets().listShares({})
       .then(function(result){
-        var cancels = result.outgoing.map(function(share) { 
-          return bitgo.wallets().cancelShare({ walletShareId: share.id }); 
+        var cancels = result.outgoing.map(function(share) {
+          return bitgo.wallets().cancelShare({ walletShareId: share.id });
         });
         return Q.all(cancels);
       });
@@ -1088,21 +1090,21 @@ describe('Wallet', function() {
         );
       });
 
-      it('send many - wallet3 to wallet1 with specified fee', function (done) {
+      it('send many - wallet3 to wallet1 with specified fee', function () {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
         recipients[TestBitGo.TEST_WALLET1_ADDRESS2] = 0.002 * 1e8;
-        wallet3.sendMany(
-        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE, fee: 0.005 * 1e8},
-        function (err, result) {
-          assert.equal(err, null);
+        return wallet3.sendMany({
+          recipients: recipients,
+          walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
+          fee: 0.005 * 1e8
+        })
+        .then(function(result) {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
           result.fee.should.equal(0.005 * 1e8);
-          done();
-        }
-        );
+        });
       });
     });
   });
