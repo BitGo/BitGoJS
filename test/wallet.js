@@ -584,6 +584,7 @@ describe('Wallet', function() {
 
     var limitedTxes;
     var limitTestNumTx = 6;
+    var totalTxCount;
     it('list with limit', function(done) {
 
       var options = { limit: limitTestNumTx };
@@ -596,9 +597,32 @@ describe('Wallet', function() {
         result.count.should.eql(limitTestNumTx);
         result.transactions.length.should.eql(result.count);
         limitedTxes = result.transactions;
+        totalTxCount = result.total;
         done();
       });
     });
+
+    it('list with minHeight', function(done) {
+
+      var minHeight = 394335;
+      var options = { minHeight: 394327, limit: 500 };
+      wallet1.transactions(options, function(err, result) {
+        assert.equal(err, null);
+        assert.equal(Array.isArray(result.transactions), true);
+        result.should.have.property('total');
+        result.should.have.property('count');
+        result.start.should.eql(0);
+        result.transactions.length.should.eql(result.count);
+        result.transactions.forEach(function(transaction) {
+          if (!transaction.pending) {
+            transaction.height.should.be.above(minHeight - 1);
+          }
+        });
+        result.total.should.be.below(totalTxCount);
+        done();
+      });
+    });
+
 
     it('list with limit and skip', function(done) {
       var skipNum = 2;

@@ -343,6 +343,12 @@ Wallet.prototype.transactions = function(params, callback) {
     }
     args.push('skip=' + params.skip);
   }
+  if (params.minHeight) {
+    if (typeof(params.minHeight) != 'number') {
+      throw new Error('invalid minHeight argument, expecting number');
+    }
+    args.push('minHeight=' + params.minHeight);
+  }
   var query = '';
   if (args.length) {
     query = '?' + args.join('&');
