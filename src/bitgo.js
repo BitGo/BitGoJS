@@ -3,7 +3,6 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
-
 var superagent = require('superagent');
 var Address = require('bitcoinjs-lib/src/address');
 var Blockchain = require('./blockchain');
@@ -19,6 +18,10 @@ var networks = require('bitcoinjs-lib/src/networks');
 var Util = require('./util');
 var Q = require('q');
 var pjson = require('../package.json');
+
+if (!process.browser) {
+  require('superagent-proxy')(superagent);
+}
 
 // Patch superagent to return promises
 var _end = superagent.Request.prototype.end;
@@ -50,7 +53,6 @@ superagent.Request.prototype["catch"] = function() {
   var _ref;
   return (_ref = this.end())["catch"].apply(_ref, arguments);
 };
-
 
 // Handle HTTP errors appropriately, returning the result body, or a named
 // field from the body, if the optionalField parameter is provided.
@@ -151,11 +153,22 @@ var BitGo = function(params) {
   this.request = {};
   var methods = ['get', 'post', 'put', 'del'];
 
+  if (!params.proxy && process.env.BITGO_USE_PROXY) {
+    params.proxy = process.env.BITGO_USE_PROXY;
+  }
+
+  if (process.browser && params.proxy) {
+    throw new Error('cannot use https proxy params while in browser');
+  }
+
   // This is a patching function which can apply our authorization
   // headers to any outbound request.
   var createPatch = function(method) {
     return function() {
       var req = superagent[method].apply(null, arguments);
+      if (params.proxy) {
+        req = req.proxy(params.proxy);
+      }
       if (self._token) {
         req.set('Authorization', "Bearer " + self._token);
       }
