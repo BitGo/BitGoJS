@@ -109,6 +109,9 @@ Wallet.prototype.createAddress = function(params, callback) {
   var self = this;
   params = params || {};
   common.validateParams(params, [], ['allowExisting'], callback);
+  if (this.type() === 'safe') {
+    throw new Error('cannot create an address for safe wallet; use .id()');
+  }
 
   // Default to client-side address validation on, for safety. Use validate=false to disable.
   var shouldValidate = true;
@@ -468,9 +471,11 @@ Wallet.prototype.createTransaction = function(params, callback) {
 // Sign a previously created transaction with a keychain
 // Parameters:
 // transactionHex - serialized form of the transaction in hex
-// unspents - array of unspent information, where each unspent is a chainPath and redeemScript with the same
-//            index as the inputs in the transactionHex
-// keychain - Keychain containing the xprv to sign with
+// unspents - array of unspent information, where each unspent is a chainPath
+//            and redeemScript with the same index as the inputs in the
+//            transactionHex
+// keychain - Keychain containing the xprv to sign with.
+// signingKey - For legacy safe wallets, the private key string.
 // Returns:
 //   callback(err, transaction)
 Wallet.prototype.signTransaction = function(params, callback) {
@@ -484,10 +489,14 @@ Wallet.prototype.signTransaction = function(params, callback) {
   }
 
   if (typeof(params.keychain) != 'object' || !params.keychain.xprv) {
-    throw new Error('expecting keychain object with xprv');
+    if (typeof(params.signingKey) === 'string') {
+      // allow passing in a WIF private key for legacy safe wallet support
+    } else {
+      throw new Error('expecting keychain object with xprv');
+    }
   }
 
-  return TransactionBuilder.signTransaction(params.transactionHex, params.unspents, params.keychain)
+  return TransactionBuilder.signTransaction(params.transactionHex, params.unspents, params.keychain, params.signingKey)
   .then(function(result) {
     return {
       tx: result.transactionHex

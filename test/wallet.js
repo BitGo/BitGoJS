@@ -17,7 +17,7 @@ Q.longStackTrace = true;
 
 describe('Wallet', function() {
   var bitgo;
-  var wallet1, wallet2, wallet3;
+  var wallet1, wallet2, wallet3, safewallet;
 
   before(function(done) {
     BitGoJS.setNetwork('testnet');
@@ -54,7 +54,15 @@ describe('Wallet', function() {
           };
           wallets.get(options, function(err, wallet) {
             wallet3 = wallet;
-            done();
+
+            // Fetch legacy safe wallet
+            var options = {
+              id: "2MvfC3e6njdTXqWDfGvNUqDs5kwimfaTGjK"
+            };
+            wallets.get(options, function(err, wallet) {
+              safewallet = wallet;
+              done();
+            });
           });
         });
       });
@@ -1065,6 +1073,39 @@ describe('Wallet', function() {
     });
 
     describe('Real transactions', function() {
+      it('send to legacy safe wallet from wallet1', function (done) {
+        var recipients = {};
+        recipients["2MvfC3e6njdTXqWDfGvNUqDs5kwimfaTGjK"] = 0.001 * 1e8;
+        wallet1.sendMany(
+        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
+        function (err, result) {
+          assert.equal(err, null);
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          done();
+        }
+        );
+      });
+
+      it('send from legacy safe wallet back to wallet1', function () {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.0009 * 1e8;
+        return safewallet.createTransaction({recipients: recipients})
+        .then(function(tx) {
+          var enc = '{"iv":"lFkIIulsbL+Ub2jGUiXdrw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pdx6d0iD+Io=","ct":"kVIZBeHxoxt19ki0hs5WBjmuLdHPfBQ30a0iGb5H+pR6+kH5lr3zxPL0xeO5EtwPRR0Mw0JVuLqapQE="}';
+          var decrypted = bitgo.decrypt({ password: TestBitGo.TEST_PASSWORD, input: enc });
+          tx.signingKey = decrypted;
+          return safewallet.signTransaction(tx);
+        })
+        .then(function(result) {
+          result.should.have.property('tx');
+        })
+        .catch(function(err) {
+          throw err;
+        });
+      });
+
       it('send many - wallet1 to wallet3 (single output)', function (done) {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET3_ADDRESS] = 0.001 * 1e8;
@@ -1202,7 +1243,8 @@ describe('Wallet', function() {
         wallet1.createTransaction({ recipients: recipients })
         .then(function(result) {
           result.should.have.property('fee');
-          assert.equal(result.fee, 10000);
+          should.exist(result.fee);
+          result.fee.should.lessThan(1e8);
           return wallet1.signTransaction({ transactionHex: result.transactionHex, unspents: result.unspents, keychain: keychain });
         })
         .then(function(result) {

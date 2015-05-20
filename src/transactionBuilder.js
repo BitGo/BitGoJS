@@ -8,6 +8,7 @@
 var Q = require('q');
 var Address = require('bitcoinjs-lib/src/address');
 var HDNode = require('./hdnode');
+var ECKey = require('bitcoinjs-lib/src/eckey');
 var Transaction = require('bitcoinjs-lib/src/transaction');
 var _TransactionBuilder = require('bitcoinjs-lib/src/transaction_builder');
 var Script = require('bitcoinjs-lib/src/script');
@@ -193,7 +194,16 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
     // Otherwise, let it go to the miners.
     return Q().then(function() {
       if (changeAmount > MINIMUM_BTC_DUST) {
-        return wallet.createAddress({chain: 1})
+        return Q().then(function() {
+          if (wallet.type() === 'safe') {
+            return wallet.addresses()
+            .then(function(addresses) {
+              return addresses.addresses[0];
+            });
+          } else {
+            return wallet.createAddress({chain: 1});
+          }
+        })
         .then(function(newAddress) {
           changeAddress = newAddress;
           var addr = Address.fromBase58Check(newAddress.address);
@@ -245,10 +255,13 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
  * @param transactionHex serialized form of the transaction in hex
  * @param unspents array of unspent information, where each unspent is a chainPath and redeemScript with the same
  *        index as the inputs in the transactionHex
- * @param keychain Keychain containing the xprv to sign with
+ * @param keychain Keychain containing the xprv to sign with. For legacy support of safe wallets, keychain can
+          also be a WIF private key.
+ * @param signingKey private key in WIF for safe wallets, when keychain is unavailable
  * @returns {*}
  */
-exports.signTransaction = function(transactionHex, unspents, keychain) {
+exports.signTransaction = function(transactionHex, unspents, keychain, signingKey) {
+  var privKey;
   if (typeof(transactionHex) != 'string') {
     throw new Error('expecting the transaction hex as a string');
   }
@@ -256,7 +269,12 @@ exports.signTransaction = function(transactionHex, unspents, keychain) {
     throw new Error('expecting the unspents array');
   }
   if (typeof(keychain) != 'object' || typeof(keychain.xprv) != 'string') {
-    throw new Error('expecting the keychain object with xprv');
+    if (typeof(signingKey) === 'string') {
+      privKey = ECKey.fromWIF(signingKey);
+      keychain = undefined;
+    } else {
+      throw new Error('expecting the keychain object with xprv');
+    }
   }
 
   var transaction = Transaction.fromHex(transactionHex);
@@ -264,10 +282,15 @@ exports.signTransaction = function(transactionHex, unspents, keychain) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
-  var rootExtKey = HDNode.fromBase58(keychain.xprv);
+  if (keychain) {
+    var rootExtKey = HDNode.fromBase58(keychain.xprv);
+  }
   for (var index = 0; index < transaction.ins.length; ++index) {
-    var path = keychain.path + '/0/0' + unspents[index].chainPath;
-    var extKey = rootExtKey.deriveFromPath(path);
+    if (keychain) {
+      var path = keychain.path + '/0/0' + unspents[index].chainPath;
+      var extKey = rootExtKey.deriveFromPath(path);
+      privKey = extKey.privKey;
+    }
 
     // subscript is the part of the output script after the OP_CODESEPARATOR.
     // Since we are only ever signing p2sh outputs, which do not have
@@ -279,7 +302,7 @@ exports.signTransaction = function(transactionHex, unspents, keychain) {
     // builder, but with inequivalent behavior.
     var txb = _TransactionBuilder.fromTransaction(transaction);
     try {
-      txb.sign(index, extKey.privKey, subscript, Transaction.SIGHASH_ALL);
+      txb.sign(index, privKey, subscript, Transaction.SIGHASH_ALL);
     } catch (e) {
       return Q.reject('Failed to sign input #' + index);
     }
