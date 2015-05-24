@@ -4,11 +4,12 @@ var expressApp = require('../src/expressApp');
 var fs = require('fs');
 var http = require('http');
 var https = require('https');
+var pjson = require('../package.json');
 
 // Handle arguments
 var getArgs = function () {
   var parser = new argumentParser({
-    version: '0.1',
+    version: pjson.version,
     addHelp: true,
     description: 'BitGo-Express'
   });
@@ -55,6 +56,11 @@ var getArgs = function () {
   parser.addArgument(
   ['-n', '--custombitcoinnetwork'], {
     help: 'Force custom bitcoin network (e.g. testnet)'
+  });
+
+  parser.addArgument(
+  ['-l', '--logfile'], {
+    help: 'Filepath to write the access log'
   });
 
   return parser.parseArgs();

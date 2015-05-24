@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "0.11.7",
+  "version": "0.11.8",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -46,9 +46,9 @@
   "scripts": {
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js",
     "coveralls": "sleep 300; ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- --timeout 50000 -R spec test/*.js test/bitcoin/*.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "compile": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy -s BitGoJS -g uglifyify -o browser/BitGoJS-min.js",
-    "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy -s BitGoJS -o browser/BitGoJS.js",
-    "compile-test": "mkdir -p browser && ./node_modules/.bin/browserify --exclude superagent-proxy -t envify ./test/*.js > ./browser/tests.js",
+    "compile": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -s BitGoJS -g uglifyify -o browser/BitGoJS-min.js",
+    "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -s BitGoJS -o browser/BitGoJS.js",
+    "compile-test": "mkdir -p browser && ./node_modules/.bin/browserify --exclude superagent-proxy --exclude morgan -t envify ./test/*.js > ./browser/tests.js",
     "test": "npm run test-node",
     "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js",
     "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run"
@@ -65,6 +65,7 @@
     "http-proxy": "1.11.1",
     "lodash": "3.7.0",
     "minimist": "0.2.0",
+    "morgan": "1.5.3",
     "q": "1.1.2",
     "superagent": "0.18.0",
     "superagent-proxy": "0.3.1",

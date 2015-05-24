@@ -2,6 +2,9 @@ var express = require('express');
 var httpProxy = require('http-proxy');
 var url = require('url');
 var q = require('q');
+var morgan = require('morgan');
+var fs = require('fs');
+var path = require('path');
 
 var common = require('./common');
 var pjson = require('../package.json');
@@ -11,6 +14,19 @@ var BITGOEXPRESS_USER_AGENT = "BitGoExpress/" + pjson.version;
 module.exports = function(args) {
   // Create express app
   var app = express();
+
+  // Set up morgan for logging, with optional logging into a file
+  if (args.logfile) {
+    // create a write stream (in append mode)
+    var accessLogPath = path.resolve(args.logfile);
+    var accessLogStream = fs.createWriteStream(accessLogPath, {flags: 'a'});
+    console.log('Log location: ' + accessLogPath);
+    // setup the logger
+    app.use(morgan('combined', {stream: accessLogStream}))
+  } else {
+    app.use(morgan('combined'));
+  }
+  morgan.token('remote-user', function(req, res){ return req.isProxy ? 'proxy' : 'local_express'; });
 
   // Decorate the client routes
   require('./clientRoutes')(app, args);
@@ -43,9 +59,7 @@ module.exports = function(args) {
   });
 
   app.use(function (req, res) {
-    if (args.debug) {
-      console.log('proxy: ' + url.parse(req.url).pathname);
-    }
+    req.isProxy = true;
     proxy.web(req, res, { target: common.Environments[args.env].uri, changeOrigin: true });
   });
 
