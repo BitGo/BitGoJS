@@ -418,6 +418,8 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 //   fee      - the blockchain fee to send (optional)
 //   feeRate  - the fee per kb to send (optional)
 //   minConfirms - minimum number of confirms to use when gathering unspents
+//   forceChangeAtEnd - force change address to be last output (optional)
+//   changeAddress - override the change address (optional)
 // Returns:
 //   callback(err, { transactionHex: string, unspents: [inputs], fee: satoshis })
 Wallet.prototype.createTransaction = function(params, callback) {
@@ -428,7 +430,9 @@ Wallet.prototype.createTransaction = function(params, callback) {
 
   if ((typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
       (typeof(params.feeRate) != 'number' && typeof(params.feeRate) != 'undefined') ||
-      (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined')) {
+      (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
+      (typeof(params.forceChangeAtEnd) != 'boolean' && typeof(params.forceChangeAtEnd) != 'undefined') ||
+      (typeof(params.changeAddress) != 'string' && typeof(params.changeAddress) != 'undefined')) {
     throw new Error('invalid argument');
   }
 
@@ -461,7 +465,10 @@ Wallet.prototype.createTransaction = function(params, callback) {
     params.recipients,
     params.fee || undefined,
     params.feeRate || undefined,
-    params.minConfirms || undefined)
+    params.minConfirms || undefined,
+    params.forceChangeAtEnd || undefined,
+    params.changeAddress || undefined
+    )
   .nodeify(callback);
 };
 
