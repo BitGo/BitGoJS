@@ -32,7 +32,7 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 //   wallet:  a wallet object to send from
 //   recipients - object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
-exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfirms, forceChangeAtEnd) {
+exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfirms, forceChangeAtEnd, changeAddress) {
   minConfirms = minConfirms || 0;
 
   // Sanity check the arguments passed in
@@ -40,7 +40,8 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
      (fee && typeof(fee) != 'number') ||
      (feeRate && typeof(feeRate) != 'number') ||
      typeof(minConfirms) != 'number' ||
-     (forceChangeAtEnd && typeof(forceChangeAtEnd) !== 'boolean')) {
+     (forceChangeAtEnd && typeof(forceChangeAtEnd) !== 'boolean') ||
+     (changeAddress && typeof(changeAddress) !== 'string')) {
     throw new Error('invalid argument');
   }
 
@@ -101,11 +102,11 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
   // The sum of the input values for this transaction.
   var inputAmount;
 
+  // The change address info, if one is used
+  var changeAddressInfo;
+
   // The transaction.
   var transaction = new Transaction();
-
-  // The change address, if one is used
-  var changeAddress;
 
   var deferred = Q.defer();
 
@@ -195,18 +196,23 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
     return Q().then(function() {
       if (changeAmount > MINIMUM_BTC_DUST) {
         return Q().then(function() {
+          // If we already have a change address specified, just return it
+          if (changeAddress) {
+            return {
+              address: changeAddress
+            };
+          }
           if (wallet.type() === 'safe') {
             return wallet.addresses()
             .then(function(addresses) {
               return addresses.addresses[0];
             });
-          } else {
-            return wallet.createAddress({chain: 1});
           }
+          return wallet.createAddress({chain: 1});
         })
-        .then(function(newAddress) {
-          changeAddress = newAddress;
-          var addr = Address.fromBase58Check(newAddress.address);
+        .then(function(result) {
+          changeAddressInfo = result;
+          var addr = Address.fromBase58Check(changeAddressInfo.address);
           var script = addr.toOutputScript();
           var changeOutput = {
             script: script,
@@ -234,7 +240,7 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
       transactionHex: transaction.toBuffer().toString('hex'),
       unspents: prunedUnspents,
       fee: fee,
-      changeAddress: _.pick(changeAddress, ['address', 'path']),
+      changeAddress: _.pick(changeAddressInfo, ['address', 'path']),
       walletId: wallet.id(),
       walletKeychains: wallet.keychains
     };

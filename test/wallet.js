@@ -838,6 +838,15 @@ describe('Wallet', function() {
         })
         .done();
       });
+
+      it('custom change address', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction(wallet1, recipients, undefined, 0.0002 * 1e8, undefined, true, TestBitGo.TEST_WALLET1_ADDRESS)
+        .then(function(result) {
+          assert.equal(result.changeAddress.address, TestBitGo.TEST_WALLET1_ADDRESS);
+        });
+      });
     });
 
     describe('sign', function() {
