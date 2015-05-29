@@ -706,55 +706,53 @@ describe('Wallet', function() {
     });
 
     describe('prepare', function() {
-      it('insufficient funds', function(done) {
+      it('insufficient funds', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance() + 1e8;
-        TransactionBuilder.createTransaction(wallet1, recipients)
+        return TransactionBuilder.createTransaction(wallet1, recipients)
         .catch(function(e) {
-          assert.equal(e.toString(), 'Insufficient funds');
-          done();
-        });
-      });
-
-      it('insufficient funds due to fees', function(done) {
-        // Attempt to spend the full balance - adding the default fee would be insufficient funds.
-        var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance();
-        TransactionBuilder.createTransaction(wallet1, recipients)
-        .then(function(res) {
-          throw new Error('succeeded');
-        })
-        .catch(function(e) {
-          assert.equal(e.toString(), 'Insufficient funds');
-          done();
+          e.message.should.eql('Insufficient funds');
+          e.should.have.property('fee');
         })
         .done();
       });
 
-      it('insufficient funds due to minConfirms', function(done) {
+      it('insufficient funds due to fees', function() {
+        // Attempt to spend the full balance - adding the default fee would be insufficient funds.
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance();
+        return TransactionBuilder.createTransaction(wallet1, recipients)
+        .then(function(res) {
+          throw new Error('succeeded');
+        })
+        .catch(function(e) {
+          e.message.should.eql('Insufficient funds');
+          e.should.have.property('fee');
+        })
+        .done();
+      });
+
+      it('insufficient funds due to minConfirms', function() {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        TransactionBuilder.createTransaction(wallet1, recipients, 0, undefined, 1e6)
+        return TransactionBuilder.createTransaction(wallet1, recipients, 0, undefined, 1e6)
         .then(function(res) {
           throw new Error('succeeded');
         })
         .catch(function(e) {
-          assert.equal(e.toString(), 'Insufficient funds');
-          done();
+          e.message.should.eql('Insufficient funds');
+          e.available.should.eql(0);
+          e.fee.should.eql(0);
         })
         .done();
       });
 
-      it('no change required', function(done) {
+      it('no change required', function() {
         // Attempt to spend the full balance without any fees.
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance();
-        TransactionBuilder.createTransaction(wallet1, recipients, 0)
-        .then(function() {
-          done();
-        })
-        .done();
+        return TransactionBuilder.createTransaction(wallet1, recipients, 0);
       });
 
       it('no inputs available', function(done) {
@@ -762,14 +760,15 @@ describe('Wallet', function() {
         done();
       });
 
-      it('ok', function(done) {
+      it('ok', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        TransactionBuilder.createTransaction(wallet1, recipients)
-        .then(function() {
-          done();
-        })
-        .done();
+        return TransactionBuilder.createTransaction(wallet1, recipients)
+        .then(function(result) {
+          result.should.have.property('unspents');
+          result.should.have.property('fee');
+          result.walletId.should.equal(wallet1.id());
+        });
       });
     });
 
@@ -984,7 +983,7 @@ describe('Wallet', function() {
         wallet1.sendCoins(
           { address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 22 * 1e8 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
           function (err, result) {
-            err.should.eql('Insufficient funds');
+            err.message.should.eql('Insufficient funds');
             assert.notEqual(err, null);
             done();
           }

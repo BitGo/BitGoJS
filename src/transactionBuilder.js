@@ -157,9 +157,6 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
       return (inputAmount < totalAmount);
     });
 
-    if (totalAmount > inputAmount) {
-      return Q.reject('Insufficient funds');
-    }
     if (shouldComputeBestFee) {
       var approximateFee = approximateBlockchainFee();
       if (approximateFee > fee) {
@@ -169,6 +166,13 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
         transaction.ins = [];
         return collectInputs();
       }
+    }
+
+    if (totalAmount > inputAmount) {
+      var err = new Error('Insufficient funds');
+      err.fee = fee;
+      err.available = inputAmount;
+      return Q.reject(err);
     }
   };
 
