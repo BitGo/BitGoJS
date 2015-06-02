@@ -399,6 +399,7 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
     return self.bitgo.keychains().get(params)
     .then(function(keychain) {
       // If we find the xpriv, then this is probably the user keychain we're looking for
+      keychain.walletSubPath = self.keychains[index].path;
       if (keychain.encryptedXprv) {
         return keychain;
       }

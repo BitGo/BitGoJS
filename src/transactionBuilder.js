@@ -297,7 +297,8 @@ exports.signTransaction = function(transactionHex, unspents, keychain, signingKe
   }
   for (var index = 0; index < transaction.ins.length; ++index) {
     if (keychain) {
-      var path = keychain.path + '/0/0' + unspents[index].chainPath;
+      var subPath = keychain.walletSubPath || '/0/0';
+      var path = keychain.path + subPath + unspents[index].chainPath;
       var extKey = rootExtKey.deriveFromPath(path);
       privKey = extKey.privKey;
     }
