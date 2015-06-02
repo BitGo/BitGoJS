@@ -638,8 +638,7 @@ Wallet.prototype.sendMany = function(params, callback) {
 
   // Get the user keychain
   return this.getEncryptedUserKeychain()
-  .then(
-  function(result) {
+  .then(function(result) {
     keychain = result;
     // Decrypt the user key with a passphrase
     try {
@@ -647,11 +646,7 @@ Wallet.prototype.sendMany = function(params, callback) {
     } catch (e) {
       throw new Error('Unable to decrypt user keychain');
     }
-  },
-  function(err) {
-    throw new Error('Unable to get the keychain for the wallet ' + err);
-  }
-  )
+  })
   .then(function() {
     // Create unsigned transaction
     return self.createTransaction({

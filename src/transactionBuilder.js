@@ -114,7 +114,7 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
   var getUnspents = function () {
     // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
     var options = {
-      target: totalAmount + 1e8
+      target: totalAmount + (0.01 * 1e8)  // fee @ 0.0001/kb for a 100kb tx
     };
 
     return wallet.unspents(options)

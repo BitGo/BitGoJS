@@ -992,17 +992,33 @@ describe('Wallet', function() {
     });
 
     describe('Real transactions', function() {
-      it('send coins - wallet1 to wallet3', function (done) {
-        wallet1.sendCoins(
-          { address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.006 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
-          function (err, result) {
-            assert.equal(err, null);
-            result.should.have.property('tx');
-            result.should.have.property('hash');
-            result.should.have.property('fee');
-            done();
-          }
-        );
+      it('send coins fails - not unlocked', function () {
+        return bitgo.lock({})
+        .then(function() {
+          return wallet1.sendCoins(
+            { address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.006 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }
+          );
+        })
+        .then(function(result) {
+          assert(false); // should not reach
+        })
+        .catch(function(err) {
+          err.needsOTP.should.equal(true);
+        });
+      });
+
+      it('send coins - wallet1 to wallet3', function () {
+        return bitgo.unlock({ otp: '0000000' })
+        .then(function() {
+          return wallet1.sendCoins(
+            { address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.006 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }
+          );
+        })
+        .then(function(result) {
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+        });
       });
 
       it('send coins - wallet3 to wallet1 with specified fee', function (done) {
