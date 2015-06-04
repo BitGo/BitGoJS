@@ -70,6 +70,22 @@ Wallet.prototype.confirmedBalance = function() {
 };
 
 //
+// unconfirmedSends
+// Get the balance of unconfirmedSends of this wallet.
+//
+Wallet.prototype.unconfirmedSends = function() {
+  return this.wallet.unconfirmedSends;
+};
+
+//
+// unconfirmedReceives
+// Get the balance of unconfirmedReceives balance of this wallet.
+//
+Wallet.prototype.unconfirmedReceives = function() {
+  return this.wallet.unconfirmedReceives;
+};
+
+//
 // type
 // Get the type of this wallet, e.g. 'safehd'
 //

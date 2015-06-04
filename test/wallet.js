@@ -1030,7 +1030,12 @@ describe('Wallet', function() {
             result.should.have.property('hash');
             result.should.have.property('fee');
             result.fee.should.eql(0.005 * 1e8);
-            done();
+            wallet3.get({}, function(err, resultWallet)
+            {
+              resultWallet.unconfirmedReceives().should.not.eql(0);
+              resultWallet.unconfirmedSends().should.not.eql(0);
+              done();
+            });
           }
         );
       });
