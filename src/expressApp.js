@@ -28,6 +28,12 @@ module.exports = function(args) {
   }
   morgan.token('remote-user', function(req, res){ return req.isProxy ? 'proxy' : 'local_express'; });
 
+  // Be more robust about accepting URLs with double slashes
+  app.use(function(req, res, next) {
+    req.url = req.url.replace(/\/\//g, '/');
+    next();
+  });
+
   // Decorate the client routes
   require('./clientRoutes')(app, args);
 
