@@ -33,7 +33,24 @@ describe('BitGo', function() {
       bitgo.should.have.property('me');
       bitgo.should.have.property('encrypt');
       bitgo.should.have.property('decrypt');
+      bitgo.should.have.property('_validate');
     });
+  });
+
+  describe('validate', function() {
+
+    it('should get', function() {
+      var bitgo = new TestBitGo();
+      bitgo.getValidate().should.equal(true);
+    });
+
+    it('should set', function() {
+      var bitgo = new TestBitGo();
+      bitgo.setValidate(false);
+      bitgo.getValidate().should.equal(false);
+      bitgo._validate.should.equal(false);
+    });
+
   });
 
   describe('Environments', function() {

@@ -437,10 +437,11 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 //   minConfirms - minimum number of confirms to use when gathering unspents
 //   forceChangeAtEnd - force change address to be last output (optional)
 //   changeAddress - override the change address (optional)
+//   validate - extra verification of change addresses (which are always verified server-side) (defaults to global config)
 // Returns:
 //   callback(err, { transactionHex: string, unspents: [inputs], fee: satoshis })
 Wallet.prototype.createTransaction = function(params, callback) {
-  params = params || {};
+  params = _.extend({}, params);
   common.validateParams(params, [], [], callback);
 
   var self = this;
@@ -449,7 +450,8 @@ Wallet.prototype.createTransaction = function(params, callback) {
       (typeof(params.feeRate) != 'number' && typeof(params.feeRate) != 'undefined') ||
       (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
       (typeof(params.forceChangeAtEnd) != 'boolean' && typeof(params.forceChangeAtEnd) != 'undefined') ||
-      (typeof(params.changeAddress) != 'string' && typeof(params.changeAddress) != 'undefined')) {
+      (typeof(params.changeAddress) != 'string' && typeof(params.changeAddress) != 'undefined') ||
+      (typeof(params.validate) != 'boolean' && typeof(params.validate) != 'undefined')) {
     throw new Error('invalid argument');
   }
 
@@ -477,16 +479,10 @@ Wallet.prototype.createTransaction = function(params, callback) {
     }
   });
 
-  return TransactionBuilder.createTransaction(
-    this,
-    params.recipients,
-    params.fee || undefined,
-    params.feeRate || undefined,
-    params.minConfirms || undefined,
-    params.forceChangeAtEnd || undefined,
-    params.changeAddress || undefined
-    )
-  .nodeify(callback);
+  params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
+  params.wallet = this;
+  return TransactionBuilder.createTransaction(params)
+    .nodeify(callback);
 };
 
 
@@ -500,10 +496,11 @@ Wallet.prototype.createTransaction = function(params, callback) {
 //            transactionHex
 // keychain - Keychain containing the xprv to sign with.
 // signingKey - For legacy safe wallets, the private key string.
+// validate - extra verification of signatures (which are always verified server-side) (defaults to global config)
 // Returns:
 //   callback(err, transaction)
 Wallet.prototype.signTransaction = function(params, callback) {
-  params = params || {};
+  params = _.extend({}, params);
   common.validateParams(params, ['transactionHex'], [], callback);
 
   var self = this;
@@ -520,7 +517,8 @@ Wallet.prototype.signTransaction = function(params, callback) {
     }
   }
 
-  return TransactionBuilder.signTransaction(params.transactionHex, params.unspents, params.keychain, params.signingKey)
+  params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
+  return TransactionBuilder.signTransaction(params)
   .then(function(result) {
     return {
       tx: result.transactionHex

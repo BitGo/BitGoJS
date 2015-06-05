@@ -149,6 +149,12 @@ var BitGo = function(params) {
   this._refreshToken = params.refreshToken || null;
   this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
 
+  // whether to perform extra client-side validation for some things, such as
+  // address validation or signature validation. defaults to true, but can be
+  // turned off by setting to false. can also be overridden individually in the
+  // functions that use it.
+  this._validate = params.validate === undefined ? true : params.validate;
+
   // Create superagent methods specific to this BitGo instance.
   this.request = {};
   var methods = ['get', 'post', 'put', 'del'];
@@ -187,6 +193,17 @@ var BitGo = function(params) {
     var method = methods[index];
     self[method] = createPatch(method);
   }
+};
+
+BitGo.prototype.getValidate = function() {
+  return this._validate;
+};
+
+BitGo.prototype.setValidate = function(validate) {
+  if (typeof(validate) !== 'boolean') {
+    throw new Error('invalid argument');
+  }
+  this._validate = validate;
 };
 
 BitGo.prototype.getEnv = function() {

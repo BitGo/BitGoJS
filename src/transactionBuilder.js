@@ -28,30 +28,40 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 
 //
 // TransactionBuilder
-// Inputs
+// @params:
 //   wallet:  a wallet object to send from
-//   recipients - object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
+//   recipients: object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
-exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfirms, forceChangeAtEnd, changeAddress) {
-  minConfirms = minConfirms || 0;
+//   feeRate: the amount of fee per kilobyte - must specify either fee or feeRate, but not both
+//   minConfirms: the minimum confirmations an output must have before spending
+//   forceChangeAtEnd: force the change address to be the last output
+//   changeAddress: specify the change address rather than generate a new one
+//   validate: extra verification of the change addresses, which is always done server-side and is redundant client-side (defaults true)
+exports.createTransaction = function(params) {
+  var minConfirms = params.minConfirms || 0;
+  var validate = params.validate === undefined ? true : params.validate;
 
   // Sanity check the arguments passed in
-  if (typeof(wallet) != 'object' ||
-     (fee && typeof(fee) != 'number') ||
-     (feeRate && typeof(feeRate) != 'number') ||
+  if (typeof(params.wallet) != 'object' ||
+     (params.fee && typeof(params.fee) != 'number') ||
+     (params.feeRate && typeof(params.feeRate) != 'number') ||
      typeof(minConfirms) != 'number' ||
-     (forceChangeAtEnd && typeof(forceChangeAtEnd) !== 'boolean') ||
-     (changeAddress && typeof(changeAddress) !== 'string')) {
+     (params.forceChangeAtEnd && typeof(params.forceChangeAtEnd) !== 'boolean') ||
+     (params.changeAddress && typeof(params.changeAddress) !== 'string') ||
+     (validate && typeof(validate) !== 'boolean')) {
     throw new Error('invalid argument');
   }
 
-  if (typeof(recipients) != 'object' || recipients instanceof Array) {
+  if (typeof(params.recipients) != 'object' || params.recipients instanceof Array) {
     throw new Error('recipients must be dictionary of destinationAddress:amount');
   }
 
-  if (Object.keys(recipients).length === 0) {
+  if (Object.keys(params.recipients).length === 0) {
     throw new Error('must have at least one recipient');
   }
+
+  var fee = params.fee;
+  var feeRate = params.feeRate;
 
   // Flag indicating whether this class will compute the fee
   var shouldComputeBestFee = (typeof(fee) == 'undefined');
@@ -73,8 +83,8 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
   var self = this;
 
   var totalOutputs = 0;
-  Object.keys(recipients).forEach(function (destinationAddress) {
-    var amount = recipients[destinationAddress];
+  Object.keys(params.recipients).forEach(function (destinationAddress) {
+    var amount = params.recipients[destinationAddress];
 
     if (typeof(destinationAddress) != 'string') {
       throw new Error('invalid bitcoin address: ' + destinationAddress);
@@ -117,7 +127,7 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
       target: totalAmount + (0.01 * 1e8)  // fee @ 0.0001/kb for a 100kb tx
     };
 
-    return wallet.unspents(options)
+    return params.wallet.unspents(options)
     .then(function(results) {
       unspents = results.filter(function (u) {
         var confirms = u.confirmations || 0;
@@ -132,7 +142,7 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
     var signaturesPerInput = 2;  // 2-of-3 wallets
 
     // Note: Reference implementation uses 1000 bytes/kb, so we follow it to be safe
-    var outputSizeKb = Object.keys(recipients).length * 34 / 1000;
+    var outputSizeKb = Object.keys(params.recipients).length * 34 / 1000;
     var inputSizeKb = (transaction.ins.length * signaturesPerInput * 170) / 1000;
 
     return Math.ceil(inputSizeKb + outputSizeKb);
@@ -185,12 +195,12 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
 
     var outputs = [];
 
-    Object.keys(recipients).forEach(function (destinationAddress) {
+    Object.keys(params.recipients).forEach(function (destinationAddress) {
       var addr = Address.fromBase58Check(destinationAddress);
       var script = addr.toOutputScript();
       outputs.push({
         script: script,
-        amount: recipients[destinationAddress]
+        amount: params.recipients[destinationAddress]
       });
     });
 
@@ -201,18 +211,18 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
       if (changeAmount > MINIMUM_BTC_DUST) {
         return Q().then(function() {
           // If we already have a change address specified, just return it
-          if (changeAddress) {
+          if (params.changeAddress) {
             return {
-              address: changeAddress
+              address: params.changeAddress
             };
           }
-          if (wallet.type() === 'safe') {
-            return wallet.addresses()
+          if (params.wallet.type() === 'safe') {
+            return params.wallet.addresses()
             .then(function(addresses) {
               return addresses.addresses[0];
             });
           }
-          return wallet.createAddress({chain: 1});
+          return params.wallet.createAddress({chain: 1, validate: validate});
         })
         .then(function(result) {
           changeAddressInfo = result;
@@ -223,7 +233,7 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
             amount: changeAmount
           };
           // decide where to put the change output - default is to randomize unless forced to end
-          var changeIndex = forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
+          var changeIndex = params.forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
           outputs.splice(changeIndex, 0, changeOutput);
         });
       }
@@ -245,8 +255,8 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
       unspents: prunedUnspents,
       fee: fee,
       changeAddress: _.pick(changeAddressInfo, ['address', 'path']),
-      walletId: wallet.id(),
-      walletKeychains: wallet.keychains
+      walletId: params.wallet.id(),
+      walletKeychains: params.wallet.keychains
     };
 
     return result;
@@ -262,33 +272,42 @@ exports.createTransaction = function(wallet, recipients, fee, feeRate, minConfir
  * Given a transaction hex, unspent information (chain path and redeem scripts), and the keychain xprv,
  * perform key derivation and sign the inputs in the transaction based on the unspent information provided
  *
- * @param transactionHex serialized form of the transaction in hex
- * @param unspents array of unspent information, where each unspent is a chainPath and redeemScript with the same
- *        index as the inputs in the transactionHex
- * @param keychain Keychain containing the xprv to sign with. For legacy support of safe wallets, keychain can
-          also be a WIF private key.
- * @param signingKey private key in WIF for safe wallets, when keychain is unavailable
+ * @params:
+ *  transactionHex serialized form of the transaction in hex
+ *  unspents array of unspent information, where each unspent is a chainPath and redeemScript with the same
+ *  index as the inputs in the transactionHex
+ *  keychain Keychain containing the xprv to sign with. For legacy support of safe wallets, keychain can
+    also be a WIF private key.
+ *  signingKey private key in WIF for safe wallets, when keychain is unavailable
+ *  validate client-side signature verification - can be disabled for improved performance (signatures
+ *           are still validated server-side).
  * @returns {*}
  */
-exports.signTransaction = function(transactionHex, unspents, keychain, signingKey) {
+exports.signTransaction = function(params) {
+  var keychain = params.keychain; // duplicate so as to not mutate below
+
+  var validate = (params.validate === undefined) ? true : params.validate;
   var privKey;
-  if (typeof(transactionHex) != 'string') {
+  if (typeof(params.transactionHex) != 'string') {
     throw new Error('expecting the transaction hex as a string');
   }
-  if (!Array.isArray(unspents)) {
+  if (!Array.isArray(params.unspents)) {
     throw new Error('expecting the unspents array');
   }
+  if (typeof(validate) != 'boolean') {
+    throw new Error('expecting validate to be a boolean');
+  }
   if (typeof(keychain) != 'object' || typeof(keychain.xprv) != 'string') {
-    if (typeof(signingKey) === 'string') {
-      privKey = ECKey.fromWIF(signingKey);
+    if (typeof(params.signingKey) === 'string') {
+      privKey = ECKey.fromWIF(params.signingKey);
       keychain = undefined;
     } else {
       throw new Error('expecting the keychain object with xprv');
     }
   }
 
-  var transaction = Transaction.fromHex(transactionHex);
-  if (transaction.ins.length !== unspents.length) {
+  var transaction = Transaction.fromHex(params.transactionHex);
+  if (transaction.ins.length !== params.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
@@ -298,7 +317,7 @@ exports.signTransaction = function(transactionHex, unspents, keychain, signingKe
   for (var index = 0; index < transaction.ins.length; ++index) {
     if (keychain) {
       var subPath = keychain.walletSubPath || '/0/0';
-      var path = keychain.path + subPath + unspents[index].chainPath;
+      var path = keychain.path + subPath + params.unspents[index].chainPath;
       var extKey = rootExtKey.deriveFromPath(path);
       privKey = extKey.privKey;
     }
@@ -306,7 +325,7 @@ exports.signTransaction = function(transactionHex, unspents, keychain, signingKe
     // subscript is the part of the output script after the OP_CODESEPARATOR.
     // Since we are only ever signing p2sh outputs, which do not have
     // OP_CODESEPARATORS, it is always the output script.
-    var subscript  = Script.fromHex(unspents[index].redeemScript);
+    var subscript  = Script.fromHex(params.unspents[index].redeemScript);
 
     // In order to sign with bitcoinjs-lib, we must use its transaction
     // builder, confusingly named the same exact thing as our transaction
@@ -344,10 +363,13 @@ exports.signTransaction = function(transactionHex, unspents, keychain, signingKe
 
     transaction.ins[index].script = Script.fromChunks(chunks);
 
-    // Finally, verify that the signature is correct, and if not, throw an
-    // error.
-    if (exports.verifyInputSignatures(transaction, index, subscript) !== -1) {
-      throw new Error('number of signatures is invalid - something went wrong when signing');
+    // The signatures are validated server side and on the bitcoin network, so
+    // the signature validation is optional and can be disabled by setting:
+    // validate = false
+    if (validate) {
+      if (exports.verifyInputSignatures(transaction, index, subscript) !== -1) {
+        throw new Error('number of signatures is invalid - something went wrong when signing');
+      }
     }
   }
 

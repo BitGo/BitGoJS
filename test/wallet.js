@@ -669,39 +669,39 @@ describe('Wallet', function() {
     describe('check', function() {
       it('arguments', function() {
         assert.throws(function() { new TransactionBuilder.createTransaction(); });
-        assert.throws(function() { new TransactionBuilder.createTransaction('should not be a string'); });
-        assert.throws(function() { new TransactionBuilder.createTransaction({}); });
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, 'should not be a string'); });
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, {}, 'should not be a string'); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: 'should not be a string'}); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}}); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: 'should not be a string'}); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: {}, fee: 'should not be a string'}); });
       });
 
       it('recipient arguments', function() {
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, { 123: true }); });
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, { '123': 'should not be a string' }); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: { 123: true }}); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: { '123': 'should not be a string' }}); });
 
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, { 'string': 'should not be a string' }); });
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, { 'string': 10000 }); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: { 'string': 'should not be a string' }}); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: { 'string': 10000 }}); });
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, [recipients]); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: [recipients]}); });
       });
 
       it('minConfirms argument', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, recipients, 0, 0, 'string'); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: recipients, fee: 0, minConfirms: 'string'}); });
       });
 
       it('fee', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, recipients, 0.5 * 1e8); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: recipients, fee: 0.5 * 1e8}); });
       });
 
       it('fee and feerate', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
-        assert.throws(function() { new TransactionBuilder.createTransaction({}, recipients, 0.5 * 1e8, 0.001 * 1e8); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: recipients, fee: 0.5 * 1e8, feeRate: 0.001 * 1e8}); });
       });
     });
 
@@ -709,7 +709,7 @@ describe('Wallet', function() {
       it('insufficient funds', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance() + 1e8;
-        return TransactionBuilder.createTransaction(wallet1, recipients)
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
         .catch(function(e) {
           e.message.should.eql('Insufficient funds');
           e.should.have.property('fee');
@@ -721,7 +721,7 @@ describe('Wallet', function() {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance();
-        return TransactionBuilder.createTransaction(wallet1, recipients)
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
         .then(function(res) {
           throw new Error('succeeded');
         })
@@ -736,7 +736,7 @@ describe('Wallet', function() {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        return TransactionBuilder.createTransaction(wallet1, recipients, 0, undefined, 1e6)
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: 0, feeRate: undefined, minConfirms: 1e6})
         .then(function(res) {
           throw new Error('succeeded');
         })
@@ -752,7 +752,7 @@ describe('Wallet', function() {
         // Attempt to spend the full balance without any fees.
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance();
-        return TransactionBuilder.createTransaction(wallet1, recipients, 0);
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: 0});
       });
 
       it('no inputs available', function(done) {
@@ -763,7 +763,7 @@ describe('Wallet', function() {
       it('ok', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        return TransactionBuilder.createTransaction(wallet1, recipients)
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
         .then(function(result) {
           result.should.have.property('unspents');
           result.should.have.property('fee');
@@ -789,7 +789,7 @@ describe('Wallet', function() {
       it('too large for blockchain relay', function(done) {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 10000 * 1e8;
-        TransactionBuilder.createTransaction(wallet1, recipients)
+        TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
         .catch(function(e) {
           e.message.should.include('transaction too large');
           done();
@@ -800,7 +800,7 @@ describe('Wallet', function() {
       it('approximate', function(done) {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        TransactionBuilder.createTransaction(wallet1, recipients)
+        TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
         .then(function(result) {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
@@ -815,7 +815,7 @@ describe('Wallet', function() {
       it('approximate with double fees', function(done) {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        TransactionBuilder.createTransaction(wallet1, recipients, undefined, 0.0002 * 1e8)
+        TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: undefined, feeRate: 0.0002 * 1e8})
         .then(function(result) {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
@@ -830,7 +830,7 @@ describe('Wallet', function() {
         var manualFee = 0.04 * 1e8;
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        TransactionBuilder.createTransaction(wallet1, recipients, manualFee)
+        TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: manualFee})
         .then(function(result) {
           assert.equal(result.fee, manualFee);
           done();
@@ -838,10 +838,25 @@ describe('Wallet', function() {
         .done();
       });
 
+      it('validate (disable address verification)', function() {
+        var manualFee = 0.04 * 1e8;
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        var walletmock = Object.create(wallet1);
+        walletmock.createAddress = function(params) {
+          assert.equal(params.validate, false);
+          return wallet1.createAddress.apply(wallet1, arguments);
+        };
+        return TransactionBuilder.createTransaction({wallet: walletmock, recipients: recipients, fee: manualFee, validate: false})
+        .then(function(result) {
+          assert.equal(result.fee, manualFee);
+        });
+      });
+
       it('custom change address', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        return TransactionBuilder.createTransaction(wallet1, recipients, undefined, 0.0002 * 1e8, undefined, true, TestBitGo.TEST_WALLET1_ADDRESS)
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, forceChangeAtEnd: true, changeAddress: TestBitGo.TEST_WALLET1_ADDRESS})
         .then(function(result) {
           assert.equal(result.changeAddress.address, TestBitGo.TEST_WALLET1_ADDRESS);
         });
@@ -867,7 +882,7 @@ describe('Wallet', function() {
             recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
 
             // Now build a transaction
-            TransactionBuilder.createTransaction(wallet1, recipients)
+            TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
             .then(function(result) {
               unsignedTransaction = result;
               done();
@@ -880,18 +895,18 @@ describe('Wallet', function() {
       it('arguments', function() {
         var bogusKey = 'xprv9s21ZrQH143K2EPMtV8YHh3UzYdidYbQyNgxAcEVg1374nZs7UWRvoPRT2tdYpN6dENTZbBNf4Af3ZJQbKDydh1BmZ6azhFeYKJ3knPPjND';
         assert.throws(function() { TransactionBuilder.signTransaction(); });
-        assert.throws(function() { TransactionBuilder.signTransaction('somestring'); });
-        assert.throws(function() { TransactionBuilder.signTransaction([]); });
-        assert.throws(function() { TransactionBuilder.signTransaction('somestring', [], boguskey); });
-        assert.throws(function() { TransactionBuilder.signTransaction(unsignedTransaction.transactionHex, {}); });
-        assert.throws(function() { TransactionBuilder.signTransaction(unsignedTransaction.transactionHex, 'asdfasdds', boguskey); });
-        assert.throws(function() { TransactionBuilder.signTransaction(unsignedTransaction.transactionHex, {}, boguskey); });
+        assert.throws(function() { TransactionBuilder.signTransaction({transactionHex: 'somestring'}); });
+        assert.throws(function() { TransactionBuilder.signTransaction({transactionHex: []}); });
+        assert.throws(function() { TransactionBuilder.signTransaction({transactionHex: 'somestring', unspents: [], keychain: boguskey}); });
+        assert.throws(function() { TransactionBuilder.signTransaction({transactionHex: unsignedTransaction.transactionHex, unspents: {}}); });
+        assert.throws(function() { TransactionBuilder.signTransaction({transactionHex: unsignedTransaction.transactionHex, unspents: 'asdfasdds', keychain: boguskey}); });
+        assert.throws(function() { TransactionBuilder.signTransaction({transactionHex: unsignedTransaction.transactionHex, unspents: {}, keychain: boguskey}); });
       });
 
       it('invalid key', function(done) {
         var bogusKey = 'xprv9s21ZrQH143K2EPMtV8YHh3UzYdidYbQyNgxAcEVg1374nZs7UWRvoPRT2tdYpN6dENTZbBNf4Af3ZJQbKDydh1BmZ6azhFeYKJ3knPPjND';
         assert.throws(function() {
-          TransactionBuilder.signTransaction(unsignedTransaction.transactionHex, unsignedTransaction.unspents, bogusKey); }
+          TransactionBuilder.signTransaction({transactionHex: unsignedTransaction.transactionHex, unspents: unsignedTransaction.unspents, keychain: bogusKey}); }
         );
         done();
       });
@@ -900,7 +915,7 @@ describe('Wallet', function() {
         // First we need to decrypt the xprv.
         keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
         // Now we can go ahead and sign.
-        TransactionBuilder.signTransaction(unsignedTransaction.transactionHex, unsignedTransaction.unspents, keychain)
+        TransactionBuilder.signTransaction({transactionHex: unsignedTransaction.transactionHex, unspents: unsignedTransaction.unspents, keychain: keychain})
         .then(function(result) {
           result.transactionHex.should.not.eql("");
           result.transactionHex.should.not.eql(unsignedTransaction.transactionHex);
@@ -909,6 +924,43 @@ describe('Wallet', function() {
         })
         .done();
       });
+
+      it('validate (disable signature verification)', function() {
+        // First we need to decrypt the xprv.
+        keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
+        // Now we can go ahead and sign.
+        var realVerifyInputSignatures = TransactionBuilder.verifyInputSignatures;
+        TransactionBuilder.verifyInputSignatures = function() {
+          throw new Error('should not be called');
+        };
+        return TransactionBuilder.signTransaction({transactionHex: unsignedTransaction.transactionHex, unspents: unsignedTransaction.unspents, keychain: keychain, validate: false})
+        .then(function(result) {
+          // restore object's true method for the other tests
+          TransactionBuilder.verifyInputSignatures = realVerifyInputSignatures;
+          result.transactionHex.should.not.eql("");
+          result.transactionHex.should.not.eql(unsignedTransaction.transactionHex);
+          result.transactionHex.length.should.be.above(unsignedTransaction.transactionHex.length);
+        });
+      });
+
+      it('validate (enable signature verification)', function() {
+        // First we need to decrypt the xprv.
+        keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
+        // Now we can go ahead and sign.
+        var realVerifyInputSignatures = TransactionBuilder.verifyInputSignatures;
+        var verifyWasCalled = false;
+        TransactionBuilder.verifyInputSignatures = function() {
+          verifyWasCalled = true;
+          return -1;
+        };
+        return TransactionBuilder.signTransaction({transactionHex: unsignedTransaction.transactionHex, unspents: unsignedTransaction.unspents, keychain: keychain, validate: true})
+        .then(function(result) {
+          // restore object's true method for the other tests
+          TransactionBuilder.verifyInputSignatures = realVerifyInputSignatures;
+          assert.equal(verifyWasCalled, true);
+        });
+      });
+
     });
   });
 
@@ -1248,6 +1300,37 @@ describe('Wallet', function() {
       it('decrypt key', function(done) {
         keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
         done();
+      });
+
+      it('create and sign transaction with global no validation', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
+        var calledVerify = false;
+        var setValidate = false;
+        var realVerifyInputSignatures = TransactionBuilder.verifyInputSignatures;
+        TransactionBuilder.verifyInputSignatures = function() {
+          calledVerify = true;
+          return -1;
+        };
+        var wallet = Object.create(wallet1);
+        wallet.createAddress = function(params) {
+          params.validate.should.equal(false);
+          setValidate = true;
+          return wallet1.createAddress.apply(wallet, arguments);
+        };
+        wallet.bitgo.setValidate(false);
+        return wallet.createTransaction({ recipients: recipients })
+        .then(function(result) {
+          result.should.have.property('fee');
+          return wallet.signTransaction({ transactionHex: result.transactionHex, unspents: result.unspents, keychain: keychain });
+        })
+        .then(function(result) {
+          TransactionBuilder.verifyInputSignatures = realVerifyInputSignatures;
+          calledVerify.should.equal(false);
+          setValidate.should.equal(true);
+          result.should.have.property('tx');
+          tx = result.tx;
+        });
       });
 
       it('create and sign transaction with fee', function(done) {
