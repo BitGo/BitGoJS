@@ -9,6 +9,7 @@ var Blockchain = require('./blockchain');
 var Keychains = require('./keychains');
 var Wallet = require('./wallet');
 var Wallets = require('./wallets');
+var PendingApprovals = require('./pendingapprovals');
 var sjcl = require('./sjcl.min');
 var common = require('./common');
 var ECKey = require('bitcoinjs-lib/src/eckey');
@@ -69,7 +70,7 @@ superagent.Request.prototype.result = function(optionalField) {
 
   return this.then(
     function(res) {
-      if (res.status === 200) {
+      if (typeof(res.status) === 'number' && res.status >= 200 && res.status < 300) {
         return optionalField ? res.body[optionalField] : res.body;
       }
       throw errFromResponse(res);
@@ -644,6 +645,17 @@ BitGo.prototype.wallets = function() {
     this._wallets = new Wallets(this);
   }
   return this._wallets;
+};
+
+//
+// pendingApprovals
+// Get pending approvals that can be approved/ or rejected
+//
+BitGo.prototype.pendingApprovals = function( ) {
+  if (!this._pendingApprovals) {
+    this._pendingApprovals = new PendingApprovals(this);
+  }
+  return this._pendingApprovals;
 };
 
 //

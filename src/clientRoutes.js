@@ -2,7 +2,7 @@ var bodyParser = require('body-parser');
 
 var BitGoJS = require('./index');
 var common = require('./common');
-var q = require('q');
+var Q = require('q');
 var url = require('url');
 var pjson = require('../package.json');
 
@@ -38,6 +38,12 @@ var handleSendCoins = function(req) {
   return req.bitgo.wallets().get({id: req.params.id})
   .then(function(wallet) {
     return wallet.sendCoins(req.body);
+  })
+  .then(function(result) {
+    if (result.status === 'pendingApproval') {
+      throw apiResponse(202, result);
+    }
+    return result;
   });
 };
 
@@ -45,6 +51,12 @@ var handleSendMany = function(req) {
   return req.bitgo.wallets().get({id: req.params.id})
   .then(function(wallet) {
     return wallet.sendMany(req.body);
+  })
+  .then(function(result) {
+    if (result.status === 'pendingApproval') {
+      throw apiResponse(202, result);
+    }
+    return result;
   });
 };
 
@@ -73,6 +85,24 @@ var handleAcceptShare = function(req) {
   var params = req.body || {};
   params.walletShareId = req.params.shareId;
   return req.bitgo.wallets().acceptShare(params);
+};
+
+var handleApproveTransaction = function(req) {
+  var params = req.body || {};
+  return req.bitgo.pendingApprovals().get({id: req.params.id})
+  .then(function(pendingApproval) {
+    if (params.state === 'approved') {
+      return pendingApproval.approve(params);
+    }
+    return pendingApproval.reject(params);
+  });
+};
+
+var apiResponse = function(status, result) {
+  var err = new Error('');
+  err.status = status;
+  err.result = result;
+  return err;
 };
 
 // Perform body parsing here only on routes we want
@@ -116,7 +146,7 @@ var promiseWrapper = function(promiseRequestHandler, args) {
     if (args.debug) {
       console.log('handle: ' + url.parse(req.url).pathname);
     }
-    q.fcall(promiseRequestHandler, req, res, next)
+    Q.fcall(promiseRequestHandler, req, res, next)
     .then(function (result) {
       var status = 200;
       if (result.__redirect) {
@@ -142,7 +172,9 @@ var promiseWrapper = function(promiseRequestHandler, args) {
       // use attached result, or make one
       var result = err.result || {error: message};
       var status = err.status || 500;
-      console.log('error %s: %s', status, err.message);
+      if (!(status >= 200 && status < 300)) {
+        console.log('error %s: %s', status, err.message);
+      }
       if (status == 500) {
         console.log(err.stack);
       }
@@ -167,4 +199,6 @@ exports = module.exports = function(app, args) {
 
   app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(args), promiseWrapper(handleShareWallet, args));
   app.post('/api/v1/walletshare/:shareId/acceptShare', parseBody, prepareBitGo(args), promiseWrapper(handleAcceptShare, args));
+
+  app.put('/api/v1/pendingapprovals/:id/express', parseBody, prepareBitGo(args), promiseWrapper(handleApproveTransaction, args));
 };

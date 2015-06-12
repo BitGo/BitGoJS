@@ -9,16 +9,13 @@ var TransactionBuilder = require('./transactionBuilder');
 var Address = require('bitcoinjs-lib/src/address');
 var HDNode = require('./hdnode');
 var Keychains = require('./keychains');
+var PendingApproval = require('./pendingapproval');
 var ECKey = require('bitcoinjs-lib/src/eckey');
-var BufferUtils = require('bitcoinjs-lib/src/bufferutils');
-var Scripts = require('bitcoinjs-lib/src/scripts');
 var Util = require('./util');
-var Crypto = require('bitcoinjs-lib/src/crypto');
+
 var common = require('./common');
 var networks = require('bitcoinjs-lib/src/networks');
 var _ = require('lodash');
-
-var common = require('./common');
 
 //
 // Constructor
@@ -96,6 +93,15 @@ Wallet.prototype.type = function() {
 Wallet.prototype.url = function(extra) {
   extra = extra || '';
   return this.bitgo.url('/wallet/' + this.id() + extra);
+};
+
+//
+// pendingApprovals
+// returns the pending approvals list for this wallet as pending approval objects
+//
+Wallet.prototype.pendingApprovals = function() {
+  var self = this;
+  return this.wallet.pendingApprovals.map(function(p) { return new PendingApproval(self.bitgo, p, self); });
 };
 
 //
@@ -212,6 +218,12 @@ Wallet.prototype.addresses = function(params, callback) {
       throw new Error('invalid skip argument, expecting number');
     }
     args.push('skip=' + params.skip);
+  }
+  if (params.sort) {
+    if (typeof(params.sort) != 'number') {
+      throw new Error('invalid sort argument, expecting number');
+    }
+    args.push('sort=' + params.sort);
   }
   var query = '';
   if (args.length) {
@@ -544,7 +556,12 @@ Wallet.prototype.sendTransaction = function(params, callback) {
   .send(params)
   .result()
   .then(function(body) {
+    if (body.pendingApproval) {
+      return _.extend(body, { status: 'pendingApproval' });
+    }
+
     return {
+      status: 'accepted',
       tx: body.transaction,
       hash: body.transactionHash
     };
@@ -652,6 +669,65 @@ Wallet.prototype.sendMany = function(params, callback) {
   var fee;
 
   // Get the user keychain
+  return this.createAndSignTransaction(params)
+  .then(function(transaction) {
+    // Send the transaction
+    fee = transaction.fee;
+    return self.sendTransaction({ tx: transaction.tx, message: params.message });
+  })
+  .then(function(result) {
+    result.fee = fee;
+    return result;
+  })
+  .nodeify(callback);
+};
+
+//
+// createAndSignTransaction
+// INTERNAL function to create and sign a transaction
+//
+// Parameters:
+//   recipients - array of { address, amount } to send to
+//   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+// Returns:
+//
+Wallet.prototype.createAndSignTransaction = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletPassphrase'], [], callback);
+  var self = this;
+
+  if (typeof(params.recipients) != 'object') {
+    throw new Error('expecting recipients object');
+  }
+
+  if (params.fee && typeof(params.fee) != 'number') {
+    throw new Error('invalid argument for fee - number expected');
+  }
+
+  if (params.feeRate && typeof(params.feeRate) != 'number') {
+    throw new Error('invalid argument for feeRate - number expected');
+  }
+
+  if (Object.keys(params.recipients).length === 0) {
+    throw new Error('must have at least one recipient');
+  }
+
+  Object.keys(params.recipients).forEach(function(destinationAddress) {
+    var amount = params.recipients[destinationAddress];
+
+    if (typeof(destinationAddress) != 'string' ||
+    !self.bitgo.verifyAddress({ address: destinationAddress })) {
+      throw new Error('invalid bitcoin address: ' + destinationAddress);
+    }
+    if (typeof(amount) != 'number' || isNaN(amount) || amount <= 0) {
+      throw new Error('invalid amount for ' + destinationAddress + ': ' + amount);
+    }
+  });
+
+  var keychain;
+  var fee;
+
+  // Get the user keychain
   return this.getEncryptedUserKeychain()
   .then(function(result) {
     keychain = result;
@@ -677,18 +753,9 @@ Wallet.prototype.sendMany = function(params, callback) {
     result.keychain = keychain;
     return self.signTransaction(result);
   })
-  .then(function(transaction) {
-    // Send the transaction
-    return self.sendTransaction({ tx: transaction.tx, message: params.message });
-  })
   .then(function(result) {
-    return {
-      tx: result.tx,
-      hash: result.hash,
-      fee: fee
-    };
+    return _.extend(result, { fee: fee });
   })
-  .nodeify(callback);
 };
 
 Wallet.prototype.shareWallet = function(params, callback) {
@@ -783,6 +850,17 @@ Wallet.prototype.removeWebhook = function(params, callback) {
   common.validateParams(params, ['url', 'type'], [], callback);
 
   return this.bitgo.del(this.url('/webhooks'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+// Not fully implemented / released on SDK. Testing for now.
+Wallet.prototype.updatePolicyRule = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id', 'type'], [], callback);
+
+  return this.bitgo.put(this.url('/policy/rule'))
   .send(params)
   .result()
   .nodeify(callback);

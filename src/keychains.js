@@ -6,7 +6,6 @@
 //
 
 var HDNode = require('./hdnode');
-var BufferUtils = require('bitcoinjs-lib/src/bufferutils');
 var crypto = require('crypto');
 var common = require('./common');
 var Util = require('./util');

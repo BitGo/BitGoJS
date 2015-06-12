@@ -17,7 +17,8 @@ describe('Bitgo Express', function() {
   before(function (done) {
     var args = {
       debug: false,
-      env: 'test'
+      env: 'test',
+      logfile: '/dev/null'
     };
     bitgo = new TestBitGo();
     bitgo.initializeTestVars();
@@ -183,7 +184,7 @@ describe('Bitgo Express', function() {
 
         agent.post('/api/v1/wallet/' + TestBitGo.TEST_WALLET1_ADDRESS + '/sendcoins')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
+        .send({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.002 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
         .expect('Content-Type', /json/)
         .end(function(err, res) {
           if (err) { throw err; }
@@ -217,6 +218,68 @@ describe('Bitgo Express', function() {
           res.body.should.have.property('fee');
           res.body.fee.should.equal(0.005 * 1e8);
           done();
+        });
+      });
+    });
+
+    it('create and reject a pending approval', function(done) {
+      agent.post('/api/v1/user/unlock')
+      .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
+      .send({ otp: '0000000', duration: 10 })
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(200);
+        agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD })
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) { throw err; }
+          res.status.should.equal(202);
+          res.body.should.have.property('pendingApproval');
+          res.body.status.should.eql('pendingApproval');
+          var pendingApprovalId = res.body.pendingApproval;
+          agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/express')
+          .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
+          .send({ walletPassphrase: TestBitGo.TEST_PASSWORD, state: 'rejected' })
+          .expect('Content-Type', /json/)
+          .end(function(err, res) {
+            if (err) { throw err; }
+            res.body.state.should.eql('rejected');
+            done();
+          });
+        });
+      });
+    });
+
+    it('create and accept a pending approval', function(done) {
+      agent.post('/api/v1/user/unlock')
+      .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
+      .send({ otp: '0000000', duration: 10 })
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(200);
+        agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD })
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) { throw err; }
+          res.status.should.equal(202);
+          res.body.should.have.property('pendingApproval');
+          res.body.status.should.eql('pendingApproval');
+          var pendingApprovalId = res.body.pendingApproval;
+          agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/express')
+          .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
+          .send({ walletPassphrase: TestBitGo.TEST_PASSWORD, state: 'approved' })
+          .expect('Content-Type', /json/)
+          .end(function(err, res) {
+            if (err) { throw err; }
+            res.body.state.should.eql('approved');
+            done();
+          });
         });
       });
     });

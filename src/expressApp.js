@@ -1,7 +1,6 @@
 var express = require('express');
 var httpProxy = require('http-proxy');
 var url = require('url');
-var q = require('q');
 var morgan = require('morgan');
 var fs = require('fs');
 var path = require('path');

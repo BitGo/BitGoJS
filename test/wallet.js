@@ -786,56 +786,48 @@ describe('Wallet', function() {
         wallet1.unspents = patch;
       });
 
-      it('too large for blockchain relay', function(done) {
+      it('too large for blockchain relay', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 10000 * 1e8;
-        TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
         .catch(function(e) {
           e.message.should.include('transaction too large');
-          done();
-        })
-        .done();
+        });
       });
 
-      it('approximate', function(done) {
+      it('approximate', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
         .then(function(result) {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
           assert.equal(feeUsed, 870000);
           result.walletId = wallet1.id;
-          done();
-        })
-        .done();
+        });
       });
 
-      it('approximate with double fees', function(done) {
+      it('approximate with double fees', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: undefined, feeRate: 0.0002 * 1e8})
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: undefined, feeRate: 0.0002 * 1e8})
         .then(function(result) {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
           assert.equal(feeUsed, 1740000);
-          done();
-        })
-        .done();
+        });
       });
 
-      it('do not override', function(done) {
+      it('do not override', function() {
         var manualFee = 0.04 * 1e8;
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: manualFee})
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: manualFee})
         .then(function(result) {
           assert.equal(result.fee, manualFee);
-          done();
-        })
-        .done();
+        });
       });
 
       it('validate (disable address verification)', function() {
@@ -1073,23 +1065,14 @@ describe('Wallet', function() {
         });
       });
 
-      it('send coins - wallet3 to wallet1 with specified fee', function (done) {
-        wallet3.sendCoins(
-          { address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE, fee: 0.005 * 1e8 },
-          function (err, result) {
-            assert.equal(err, null);
-            result.should.have.property('tx');
-            result.should.have.property('hash');
-            result.should.have.property('fee');
-            result.fee.should.eql(0.005 * 1e8);
-            wallet3.get({}, function(err, resultWallet)
-            {
-              resultWallet.unconfirmedReceives().should.not.eql(0);
-              resultWallet.unconfirmedSends().should.not.eql(0);
-              done();
-            });
-          }
-        );
+      it('send coins - wallet3 to wallet1 with specified fee', function() {
+        return wallet3.sendCoins({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE, fee: 0.005 * 1e8 })
+        .then(function(result) {
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          result.fee.should.eql(0.005 * 1e8);
+        });
       });
     });
   });
@@ -1250,6 +1233,11 @@ describe('Wallet', function() {
           result.should.have.property('hash');
           result.should.have.property('fee');
           result.fee.should.equal(0.005 * 1e8);
+          return wallet3.get({});
+        })
+        .then(function(resultWallet) {
+          resultWallet.unconfirmedReceives().should.not.eql(0);
+          resultWallet.unconfirmedSends().should.not.eql(0);
         });
       });
     });

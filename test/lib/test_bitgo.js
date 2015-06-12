@@ -25,6 +25,7 @@ BitGo.TEST_CLIENTSECRET = 'testclientsecret';
 // These auth tokens are modified in the db to expire in 2018 on both test & dev
 BitGo.TEST_AUTHCODE = '37454416ba13e1be9fdc39cfc207df7f7a7f0953';
 BitGo.TEST_ACCESSTOKEN = '4cb440e353b5415e350a1e799bb1ad820fef4ead';
+BitGo.TEST_ACCESSTOKEN_SHAREDUSER = '4cb440e353b5415e350a1e799bb1ad820fef4eax';
 BitGo.TEST_REFRESHTOKEN = '8519fcc7787d9d6971ed89a757e3309a72ddedc8';
 
 //
@@ -62,6 +63,12 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.TEST_WALLET3_ADDRESS = '2NEC139iJ3wTMeSC4GosKEYmpmGo729kBFN';
     BitGo.TEST_WALLET3_ADDRESS2 = '2ND7sbcPS5DDD9b3FpwNs53uMTEKq4hLfxW';
     BitGo.TEST_WALLET3_ADDRESS3 = '2N7Dba7yr1XkoRQh7XVhGjNUKSEgLCiibJp';
+
+    BitGo.TEST_ENTERPRISE = '5578ebc76eb47487743b903166e6543a';
+    BitGo.TEST_SHARED_WALLET_ADDRESS = '2MsMfeYWNWYwB3fzfMBfuSZb7jkcGnTjW42';
+    BitGo.TEST_WALLET_PENDING_APPROVAL_ID = '5579252371baa3fd10d4bd93b6d19e68';
+    BitGo.TEST_ENTERPRISE_PENDING_APPROVAL_ID = '5579267f3261f1ff10a0674902e92b4d';
+
   }
 };
 
@@ -78,13 +85,12 @@ BitGo.prototype.testUserOTP = function() {
 // Authenticate the test user.
 //
 BitGo.prototype.authenticateTestUser = function(otp, callback) {
-  this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp }, function(err, response) {
-    if (!err && response) {
-      response.should.have.property('access_token');
-      response.should.have.property('user');
-    }
-    callback(err, response);
-  });
+  return this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp })
+  .then(function(response) {
+    response.should.have.property('access_token');
+    response.should.have.property('user');
+  })
+  .nodeify(callback);
 };
 
 module.exports = BitGo;
