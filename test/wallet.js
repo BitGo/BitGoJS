@@ -732,22 +732,6 @@ describe('Wallet', function() {
         .done();
       });
 
-      it('insufficient funds due to minConfirms', function() {
-        // Attempt to spend the full balance - adding the default fee would be insufficient funds.
-        var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: 0, feeRate: undefined, minConfirms: 1e6})
-        .then(function(res) {
-          throw new Error('succeeded');
-        })
-        .catch(function(e) {
-          e.message.should.eql('Insufficient funds');
-          e.available.should.eql(0);
-          e.fee.should.eql(0);
-        })
-        .done();
-      });
-
       it('no change required', function() {
         // Attempt to spend the full balance without any fees.
         var recipients = {};
@@ -1388,7 +1372,7 @@ describe('Wallet', function() {
       it('create transaction', function(done) {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
-        wallet2.createTransaction({ recipients: recipients, fee: 0.0001 * 1e8 })
+        wallet2.createTransaction({ recipients: recipients, fee: 0.0001 * 1e8, minConfirms: 1 })
         .then(function(result) {
           result.should.have.property('fee');
           return wallet2.signTransaction({ transactionHex: result.transactionHex, unspents: result.unspents, keychain: keychain });

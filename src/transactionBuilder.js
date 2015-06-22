@@ -48,7 +48,8 @@ exports.createTransaction = function(params) {
      typeof(minConfirms) != 'number' ||
      (params.forceChangeAtEnd && typeof(params.forceChangeAtEnd) !== 'boolean') ||
      (params.changeAddress && typeof(params.changeAddress) !== 'string') ||
-     (validate && typeof(validate) !== 'boolean')) {
+     (validate && typeof(validate) !== 'boolean') ||
+     (params.enforceMinConfirmsForChange && typeof(params.enforceMinConfirmsForChange) !== 'boolean')) {
     throw new Error('invalid argument');
   }
 
@@ -131,6 +132,9 @@ exports.createTransaction = function(params) {
     .then(function(results) {
       unspents = results.filter(function (u) {
         var confirms = u.confirmations || 0;
+        if (!params.enforceMinConfirmsForChange && u.isChange) {
+          return true;
+        }
         return confirms >= minConfirms;
       });
     });

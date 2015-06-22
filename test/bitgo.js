@@ -277,7 +277,7 @@ describe('BitGo', function() {
         bitgo.initializeTestVars();
         bitgo.me({}, function(err, user) {
           // Expect an error
-          assert.equal(err.message, 'Authorization required');
+          assert.equal(err.message, 'unauthorized');
           done();
         });
       });
@@ -295,7 +295,7 @@ describe('BitGo', function() {
         bitgo.initializeTestVars();
         bitgo.session({}, function(err, user) {
           // Expect an error
-          assert.equal(err.message, 'Authorization required');
+          assert.equal(err.message, 'unauthorized');
           done();
         });
       });
@@ -550,7 +550,7 @@ describe('BitGo', function() {
 
         bitgoAT.me({}, function (err, me_result) {
           assert.notEqual(err, null);
-          err.message.should.equal('Authorization required');
+          err.message.should.equal('unauthorized');
           err.should.have.property('status');
           done();
         });
