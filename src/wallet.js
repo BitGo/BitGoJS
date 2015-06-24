@@ -708,6 +708,10 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     throw new Error('invalid argument for feeRate - number expected');
   }
 
+  if (params.dynamicFeeConfirmTarget && typeof(params.dynamicFeeConfirmTarget) != 'number') {
+    throw new Error('invalid argument for confirmTarget - number expected');
+  }
+
   if (Object.keys(params.recipients).length === 0) {
     throw new Error('must have at least one recipient');
   }
@@ -740,12 +744,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   })
   .then(function() {
     // Create unsigned transaction
-    return self.createTransaction({
-      recipients: params.recipients,
-      minConfirms: params.minConfirms,
-      fee: params.fee,
-      feeRate: params.feeRate
-    });
+    return self.createTransaction(params);
   })
   .then(function(result) {
     fee = result.fee;
@@ -853,6 +852,10 @@ Wallet.prototype.removeWebhook = function(params, callback) {
   .send(params)
   .result()
   .nodeify(callback);
+};
+
+Wallet.prototype.estimateFee = function(params, callback) {
+  return this.bitgo.estimateFee(params);
 };
 
 // Not fully implemented / released on SDK. Testing for now.

@@ -684,4 +684,27 @@ BitGo.prototype.labels = function(params, callback) {
   .nodeify(callback);
 };
 
+//
+// estimateFee
+// Estimates approximate fee per kb needed for a tx to get into a block
+// Parameters include:
+//   numBlocks:  target blocks for the transaction to be confirmed
+//
+BitGo.prototype.estimateFee = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  var url = this.url('/tx/fee');
+  if (params.numBlocks) {
+    if (typeof(params.numBlocks) != 'number') {
+      throw new Error('invalid argument');
+    }
+    url += '?numBlocks=' + params.numBlocks;
+  }
+
+  return this.get(url)
+  .result()
+  .nodeify(callback);
+};
+
 module.exports = BitGo;

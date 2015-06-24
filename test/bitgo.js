@@ -302,6 +302,43 @@ describe('BitGo', function() {
     });
   });
 
+  describe('Estimate Fee', function() {
+    var bitgo;
+    before(function(done) {
+      bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      done();
+    });
+
+    it('arguments', function() {
+      assert.throws(function () {
+        bitgo.estimateFee({ numBlocks: "none" });
+      });
+    });
+
+    var target1confirmFee;
+    it('get default', function() {
+      return bitgo.estimateFee()
+      .then(function(res) {
+        res.should.have.property('feePerKb');
+        res.should.have.property('numBlocks');
+        res.numBlocks.should.eql(1);
+        res.feePerKb.should.be.within(1000, 100000);
+        target1confirmFee = res.feePerKb;
+      });
+    });
+
+    it('get fee for target of 3 blocks', function() {
+      return bitgo.estimateFee({ numBlocks: 3 })
+      .then(function(res) {
+        res.should.have.property('feePerKb');
+        res.should.have.property('numBlocks');
+        res.numBlocks.should.eql(3);
+        res.feePerKb.should.be.within(1000, target1confirmFee);
+      });
+    });
+  });
+
   describe('Ping', function() {
     var bitgo;
     before(function(done) {

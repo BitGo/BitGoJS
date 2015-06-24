@@ -476,6 +476,36 @@ describe('Wallet', function() {
     });
   });
 
+  describe('Estimate Fees', function() {
+    it('arguments', function() {
+      assert.throws(function () {
+        wallet1.estimateFee({ numBlocks: "none" });
+      });
+    });
+
+    var target1confirmFee;
+    it('get default', function() {
+      return wallet1.estimateFee()
+      .then(function(res) {
+        res.should.have.property('feePerKb');
+        res.should.have.property('numBlocks');
+        res.numBlocks.should.eql(1);
+        res.feePerKb.should.be.within(1000, 100000);
+        target1confirmFee = res.feePerKb;
+      });
+    });
+
+    it('get fee for target of 3 blocks', function() {
+      return wallet1.estimateFee({ numBlocks: 3 })
+      .then(function(res) {
+        res.should.have.property('feePerKb');
+        res.should.have.property('numBlocks');
+        res.numBlocks.should.eql(3);
+        res.feePerKb.should.be.within(1000, target1confirmFee);
+      });
+    });
+  });
+
   describe('Labels', function() {
     it('list', function(done) {
       // delete all labels from wallet1
@@ -758,16 +788,31 @@ describe('Wallet', function() {
 
     describe('size calculation and fees', function() {
       var patch;
+      var patch2;
       before(function() {
         // Monkey patch wallet1 with simulated inputs
         patch = wallet1.unspents;
         wallet1.unspents = function(options, callback) {
           return Q(unspentData.unspents).nodeify(callback);
         };
+        patch2 = wallet1.estimateFee;
+        wallet1.estimateFee = function(options, callback) {
+          var serverFeeRates = {
+            1: 0.000138 * 1e8,
+            2: 0.000112 * 1e8,
+            3: 0.0000156 * 1e8,
+            4: 1.9 * 1e8 // fee rate too high, should fallback to 0.0001
+          };
+          return Q({
+            feePerKb: serverFeeRates[options.numBlocks] || 0.0001,
+            numBlocks: options.numBlocks
+          }).nodeify(callback);
+        };
       });
 
       after(function() {
         wallet1.unspents = patch;
+        wallet1.estimateFee = patch2;
       });
 
       it('too large for blockchain relay', function() {
@@ -811,6 +856,36 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: manualFee})
         .then(function(result) {
           assert.equal(result.fee, manualFee);
+        });
+      });
+
+      it('approximate with feeRate set by feeTxConfirmTarget 1 (estimatefee monkeypatch)', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1})
+        .then(function(result) {
+          var feeUsed = result.fee;
+          assert.equal(feeUsed, 1200600); // tx size will be 87kb * 0.000138 * 1e8
+        });
+      });
+
+      it('approximate with feeRate set by feeTxConfirmTarget 3 (estimatefee monkeypatch)', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3})
+        .then(function(result) {
+          var feeUsed = result.fee;
+          assert.equal(feeUsed, 135720); // tx size will be 87kb * 0.0000156 * 1e8
+        });
+      });
+
+      it('approximate with feeRate set by feeTxConfirmTarget fallback (estimatefee monkeypatch)', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 4})
+        .then(function(result) {
+          var feeUsed = result.fee;
+          assert.equal(feeUsed, 870000); // tx size will be 87kb * 0.0001
         });
       });
 
@@ -1186,13 +1261,13 @@ describe('Wallet', function() {
         );
       });
 
-      it('send many - wallet1 to wallet3', function (done) {
+      it('send many - wallet1 to wallet3 with dynamic fee', function (done) {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET3_ADDRESS] = 0.001 * 1e8;
         recipients[TestBitGo.TEST_WALLET3_ADDRESS2] = 0.001 * 1e8;
         recipients[TestBitGo.TEST_WALLET3_ADDRESS3] = 0.006 * 1e8;
         wallet1.sendMany(
-        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
+        { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE, feeTxConfirmTarget: 2 },
         function (err, result) {
           assert.equal(err, null);
           result.should.have.property('tx');

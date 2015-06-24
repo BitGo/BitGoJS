@@ -22,6 +22,7 @@ var _ = require('lodash');
 // Setup some fee constants.
 var MAX_FEE = 1e8 * 0.1;        // The maximum fee we'll allow before declaring an error
 var MAX_FEE_RATE = 1e8 * 0.001;        // The maximum fee we'll allow before declaring an error
+var MIN_FEE_RATE = 1e8 * 0.00001;      // The minimum fee we'll allow before declaring an error
 var FEE_PER_KB = 0.0001 * 1e8;  // The blockchain required fee-per-kb of transaction size
 var DEFAULT_FEE = 0.0001 * 1e8; // Our default fee
 var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for less than this. (dust - give it to the miner)
@@ -32,7 +33,8 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 //   wallet:  a wallet object to send from
 //   recipients: object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
-//   feeRate: the amount of fee per kilobyte - must specify either fee or feeRate, but not both
+//   feeRate: the amount of fee per kilobyte - optional - specify either fee, feeRate, or feeTxConfirmTarget but not more than one
+//   feeTxConfirmTarget: calculate the fees per kilobyte such that the transaction will be confirmed in this number of blocks
 //   minConfirms: the minimum confirmations an output must have before spending
 //   forceChangeAtEnd: force the change address to be the last output
 //   changeAddress: specify the change address rather than generate a new one
@@ -49,7 +51,8 @@ exports.createTransaction = function(params) {
      (params.forceChangeAtEnd && typeof(params.forceChangeAtEnd) !== 'boolean') ||
      (params.changeAddress && typeof(params.changeAddress) !== 'string') ||
      (validate && typeof(validate) !== 'boolean') ||
-     (params.enforceMinConfirmsForChange && typeof(params.enforceMinConfirmsForChange) !== 'boolean')) {
+     (params.enforceMinConfirmsForChange && typeof(params.enforceMinConfirmsForChange) !== 'boolean') ||
+     (params.feeTxConfirmTarget && typeof(params.feeTxConfirmTarget) !== 'number')) {
     throw new Error('invalid argument');
   }
 
@@ -59,6 +62,10 @@ exports.createTransaction = function(params) {
 
   if (Object.keys(params.recipients).length === 0) {
     throw new Error('must have at least one recipient');
+  }
+
+  if (params.feeTxConfirmTarget != undefined && (params.fee || params.feeRate)) {
+    throw new Error('cannot provide a confirm target along with specified fee and fee rate!');
   }
 
   var fee = params.fee;
@@ -121,6 +128,21 @@ exports.createTransaction = function(params) {
 
   var deferred = Q.defer();
 
+  // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
+  var getDynamicFeeEstimate = function () {
+    if (params.feeTxConfirmTarget) {
+      return params.wallet.estimateFee({ numBlocks: params.feeTxConfirmTarget })
+      .then(function(result) {
+        var estimatedFeeRate = result.feePerKb;
+        if (estimatedFeeRate >= MIN_FEE_RATE && estimatedFeeRate < MAX_FEE_RATE) {
+          feeRate = estimatedFeeRate;
+        }
+      });
+    }
+    // always return a promise
+    return Q();
+  };
+
   // Get the unspents for the sending wallet.
   var getUnspents = function () {
     // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
@@ -153,7 +175,7 @@ exports.createTransaction = function(params) {
   };
 
   // Approximate the fee based on number of inputs
-  var approximateBlockchainFee = function () {
+  var calculateApproximateFee = function () {
     var feeRateToUse = typeof(feeRate) !== 'undefined' ? feeRate : FEE_PER_KB;
     return estimateTxSizeKb() * feeRateToUse;
   };
@@ -172,7 +194,7 @@ exports.createTransaction = function(params) {
     });
 
     if (shouldComputeBestFee) {
-      var approximateFee = approximateBlockchainFee();
+      var approximateFee = calculateApproximateFee();
       if (approximateFee > fee) {
         fee = approximateFee;
         totalAmount = fee + totalOutputs;
@@ -266,7 +288,8 @@ exports.createTransaction = function(params) {
     return result;
   };
 
-  return getUnspents()
+  return getDynamicFeeEstimate()
+  .then(getUnspents)
   .then(collectInputs)
   .then(collectOutputs)
   .then(serialize);
