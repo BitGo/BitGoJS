@@ -98,6 +98,14 @@ var handleApproveTransaction = function(req) {
   });
 };
 
+var handleConstructApprovalTx = function(req) {
+  var params = req.body || {};
+  return req.bitgo.pendingApprovals().get({id: req.params.id})
+  .then(function(pendingApproval) {
+    return pendingApproval.constructApprovalTx(params);
+  });
+};
+
 var apiResponse = function(status, result) {
   var err = new Error('');
   err.status = status;
@@ -201,4 +209,5 @@ exports = module.exports = function(app, args) {
   app.post('/api/v1/walletshare/:shareId/acceptShare', parseBody, prepareBitGo(args), promiseWrapper(handleAcceptShare, args));
 
   app.put('/api/v1/pendingapprovals/:id/express', parseBody, prepareBitGo(args), promiseWrapper(handleApproveTransaction, args));
+  app.put('/api/v1/pendingapprovals/:id/constructTx', parseBody, prepareBitGo(args), promiseWrapper(handleConstructApprovalTx, args));
 };

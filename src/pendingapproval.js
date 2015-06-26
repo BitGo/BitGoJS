@@ -200,6 +200,30 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
 };
 
 //
+// constructApprovalTx
+// constructs/signs a transaction for this pending approval, returning the txHex (but not sending it)
+//
+PendingApproval.prototype.constructApprovalTx = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], ['walletPassphrase'], callback);
+
+  if (this.type() === 'transactionRequest' && !(params.walletPassphrase)) {
+    throw new Error('wallet passphrase or xprv required to approve a transactionRequest');
+  }
+
+  var self = this;
+  return Q()
+  .then(function() {
+    if (self.type() === 'transactionRequest') {
+      return self.populateWallet()
+      .then(function() {
+        return self.recreateAndSignTransaction(_.extend(params, { txHex: self.info().transactionRequest.transaction }));
+      });
+    }
+  });
+};
+
+//
 // approve
 // sets the pending approval to an approved state
 //

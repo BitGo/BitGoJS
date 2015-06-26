@@ -283,5 +283,55 @@ describe('Bitgo Express', function() {
         });
       });
     });
+
+    it('create and accept a pending approval (2 step accept by constructing tx with original user)', function(done) {
+      agent.post('/api/v1/user/unlock')
+      .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+      .send({ otp: '0000000', duration: 20 })
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(200);
+        agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD })
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) { throw err; }
+          res.status.should.equal(202);
+          res.body.should.have.property('pendingApproval');
+          res.body.status.should.eql('pendingApproval');
+          var pendingApprovalId = res.body.pendingApproval;
+          agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/constructTx')
+          .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+          .send({ walletPassphrase: TestBitGo.TEST_PASSWORD })
+          .expect('Content-Type', /json/)
+          .end(function(err, res) {
+            if (err) { throw err; }
+            res.body.should.have.property('tx');
+            res.body.tx.should.not.eql('');
+            var txHex = res.body.tx;
+            agent.post('/api/v1/user/unlock')
+            .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
+            .send({ otp: '0000000', duration: 10 })
+            .expect('Content-Type', /json/)
+            .end(function(err, res) {
+              if (err) { throw err; }
+              agent.put('/api/v1/pendingapprovals/' + pendingApprovalId)
+              .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
+              .send({ tx: txHex, state: 'approved'})
+              .expect('Content-Type', /json/)
+              .end(function (err, res) {
+                if (err) {
+                  throw err;
+                }
+                res.body.state.should.eql('approved');
+                done();
+              });
+            });
+          });
+        });
+      });
+    });
   });
 });
