@@ -1036,7 +1036,7 @@ describe('Wallet', function() {
   });
 
   describe('Send coins', function() {
-    it('arguments', function (done) {
+    it('arguments', function () {
       assert.throws(function () {
         wallet1.sendCoins();
       });
@@ -1055,30 +1055,25 @@ describe('Wallet', function() {
       assert.throws(function () {
         wallet1.sendCoins({ address: 'string', amount: 123, walletPassphrase: 'advanced1' }, {});
       });
-      assert.throws(function () {
-        wallet1.sendCoins(
-          { address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
-          function () { }
-        );
-      });
-      assert.throws(function () {
-        wallet1.sendCoins(
-          { address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0, walletPassphrase: "badpasscode" } ,
-          function () {}
-        );
-      });
-      assert.throws(function () {
-        wallet1.sendCoins(
-          { address: "bad address", amount: 0, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE } ,
-          function () {}
-        );
-      });
-      assert.throws(function () {
-        wallet1.sendMany(
-        { recipients: {}, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }, function() {}
-        );
-      });
-      done();
+
+      return wallet1.sendCoins({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 1, walletPassphrase: 'badcode' })
+      .then(function(result) {
+        console.dir(result);
+        throw new Error("Unexpected result - expected to catch bad code");
+      })
+      .catch(function(err) {
+        return wallet1.sendCoins({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: -1, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
+      })
+      .then(function(result) {
+        throw new Error("Unexpected result - expected to catch bad amount");
+      })
+      .catch(function(err) {
+        return wallet1.sendCoins({ address: "bad address", amount: 1, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
+      })
+      .then(function(result) {
+        throw new Error("Unexpected result - expected to catch bad address");
+      })
+      .catch(function(err) { });
     });
 
     describe('Bad input', function () {
@@ -1137,7 +1132,7 @@ describe('Wallet', function() {
   });
 
   describe('Send many', function() {
-    it('arguments', function (done) {
+    it('arguments', function () {
       assert.throws(function () {
         wallet1.sendMany();
       });
@@ -1158,26 +1153,27 @@ describe('Wallet', function() {
       });
       assert.throws(function () {
         var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0;
-        wallet1.sendMany({ recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }, function () {});
-      });
-      assert.throws(function () {
-        var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
         wallet1.sendMany([ { recipients: recipients, walletPassphrase: "badpasscode" } ], function () {});
       });
-      assert.throws(function () {
-        var recipients = {};
-        recipients['bad address'] = 0.001 * 1e8;
-        wallet1.sendMany({ recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }, function () {});
-      });
-      assert.throws(function () {
-        var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 5;
-        recipients['bad address'] = 0.001 * 1e8;
-        wallet1.sendMany({ recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }, function () {});
-      });
-      done();
+      return wallet1.sendMany({ recipients: [{ address: 'bad address', amount: 0.001 * 1e8 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
+      .then(function(result) {
+        console.dir(result);
+        throw new Error("Unexpected result - expected to catch bad address");
+      })
+      .catch(function(err) {
+        return wallet1.sendMany({ recipients: [{ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 }, { address: 'bad address', amount: 0.001 * 1e8 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
+      })
+      .then(function(result) {
+        throw new Error("Unexpected result - expected to catch bad address");
+      })
+      .catch(function(err) {
+        return wallet1.sendMany({ recipients: [{ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: -100 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
+      })
+      .then(function(result) {
+        throw new Error("Unexpected result - expected to catch bad amount");
+      })
+      .catch(function(err) { });
     });
 
     describe('Bad input', function () {
@@ -1246,8 +1242,8 @@ describe('Wallet', function() {
       });
 
       it('send many - wallet3 to wallet1 (single output)', function (done) {
-        var recipients = {};
-        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
+        var recipients = [];
+        recipients.push({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8});
         wallet3.sendMany(
         { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE },
         function (err, result) {
@@ -1262,10 +1258,10 @@ describe('Wallet', function() {
       });
 
       it('send many - wallet1 to wallet3 with dynamic fee', function (done) {
-        var recipients = {};
-        recipients[TestBitGo.TEST_WALLET3_ADDRESS] = 0.001 * 1e8;
-        recipients[TestBitGo.TEST_WALLET3_ADDRESS2] = 0.001 * 1e8;
-        recipients[TestBitGo.TEST_WALLET3_ADDRESS3] = 0.006 * 1e8;
+        var recipients = [];
+        recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8});
+        recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS2, amount: 0.001 * 1e8});
+        recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS3, amount: 0.006 * 1e8});
         wallet1.sendMany(
         { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE, feeTxConfirmTarget: 2 },
         function (err, result) {
@@ -1350,8 +1346,8 @@ describe('Wallet', function() {
       });
 
       it('create and sign transaction with global no validation', function() {
-        var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
+        var recipients = [];
+        recipients.push({address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8});
         var calledVerify = false;
         var setValidate = false;
         var realVerifyInputSignatures = TransactionBuilder.verifyInputSignatures;

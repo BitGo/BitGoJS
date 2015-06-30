@@ -475,22 +475,6 @@ Wallet.prototype.createTransaction = function(params, callback) {
     throw new Error('expecting recipients object');
   }
 
-  if (Object.keys(params.recipients).length === 0) {
-    throw new Error('must have at least one recipient');
-  }
-
-  Object.keys(params.recipients).forEach(function(destinationAddress) {
-    var amount = params.recipients[destinationAddress];
-
-    if (typeof(destinationAddress) != 'string' ||
-      !self.bitgo.verifyAddress({ address: destinationAddress })) {
-      throw new Error('invalid bitcoin address: ' + destinationAddress);
-    }
-    if (typeof(amount) != 'number' || isNaN(amount) || amount <= 0) {
-      throw new Error('invalid amount for ' + destinationAddress + ': ' + amount);
-    }
-  });
-
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
   params.wallet = this;
   return TransactionBuilder.createTransaction(params)
@@ -649,22 +633,6 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('invalid argument for feeRate - number expected');
   }
 
-  if (Object.keys(params.recipients).length === 0) {
-    throw new Error('must have at least one recipient');
-  }
-
-  Object.keys(params.recipients).forEach(function(destinationAddress) {
-    var amount = params.recipients[destinationAddress];
-
-    if (typeof(destinationAddress) != 'string' ||
-      !self.bitgo.verifyAddress({ address: destinationAddress })) {
-      throw new Error('invalid bitcoin address: ' + destinationAddress);
-    }
-    if (typeof(amount) != 'number' || isNaN(amount) || amount <= 0) {
-      throw new Error('invalid amount for ' + destinationAddress + ': ' + amount);
-    }
-  });
-
   var keychain;
   var fee;
 
@@ -711,22 +679,6 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   if (params.dynamicFeeConfirmTarget && typeof(params.dynamicFeeConfirmTarget) != 'number') {
     throw new Error('invalid argument for confirmTarget - number expected');
   }
-
-  if (Object.keys(params.recipients).length === 0) {
-    throw new Error('must have at least one recipient');
-  }
-
-  Object.keys(params.recipients).forEach(function(destinationAddress) {
-    var amount = params.recipients[destinationAddress];
-
-    if (typeof(destinationAddress) != 'string' ||
-    !self.bitgo.verifyAddress({ address: destinationAddress })) {
-      throw new Error('invalid bitcoin address: ' + destinationAddress);
-    }
-    if (typeof(amount) != 'number' || isNaN(amount) || amount <= 0) {
-      throw new Error('invalid amount for ' + destinationAddress + ': ' + amount);
-    }
-  });
 
   var keychain;
   var fee;

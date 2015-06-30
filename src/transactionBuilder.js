@@ -31,7 +31,7 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 // TransactionBuilder
 // @params:
 //   wallet:  a wallet object to send from
-//   recipients: object of recipient addresses and the amount to send to each e.g. {address:1500, address2:1500}
+//   recipients: array of recipient objects and the amount to send to each e.g. [{address: '38BKDNZbPcLogvVbcx2ekJ9E6Vv94DqDqw', amount: 1500}, {address: '36eL8yQqCn1HMRmVFFo49t2PJ3pai8wQam', amount: 2000}]
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
 //   feeRate: the amount of fee per kilobyte - optional - specify either fee, feeRate, or feeTxConfirmTarget but not more than one
 //   feeTxConfirmTarget: calculate the fees per kilobyte such that the transaction will be confirmed in this number of blocks
@@ -42,6 +42,7 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 exports.createTransaction = function(params) {
   var minConfirms = params.minConfirms || 0;
   var validate = params.validate === undefined ? true : params.validate;
+  var recipients = [];
 
   // Sanity check the arguments passed in
   if (typeof(params.wallet) != 'object' ||
@@ -56,16 +57,27 @@ exports.createTransaction = function(params) {
     throw new Error('invalid argument');
   }
 
-  if (typeof(params.recipients) != 'object' || params.recipients instanceof Array) {
-    throw new Error('recipients must be dictionary of destinationAddress:amount');
-  }
-
-  if (Object.keys(params.recipients).length === 0) {
-    throw new Error('must have at least one recipient');
+  if (typeof(params.recipients) != 'object') {
+    throw new Error('recipients must be array of { address: abc, amount: 100000 } objects');
   }
 
   if (params.feeTxConfirmTarget != undefined && (params.fee || params.feeRate)) {
     throw new Error('cannot provide a confirm target along with specified fee and fee rate!');
+  }
+
+  // Convert the old format of params.recipients (dictionary of address:amount) to new format: { destinationAddress, amount }
+  if (!(params.recipients instanceof Array)) {
+    recipients = [];
+    Object.keys(params.recipients).forEach(function(destinationAddress) {
+      var amount = params.recipients[destinationAddress];
+      recipients.push({address: destinationAddress, amount: amount});
+    });
+  } else {
+    recipients = params.recipients;
+  }
+
+  if (recipients.length === 0) {
+    throw new Error('must have at least one recipient');
   }
 
   var fee = params.fee;
@@ -90,29 +102,27 @@ exports.createTransaction = function(params) {
 
   var self = this;
 
-  var totalOutputs = 0;
-  Object.keys(params.recipients).forEach(function (destinationAddress) {
-    var amount = params.recipients[destinationAddress];
+  var totalOutputAmount = 0;
 
-    if (typeof(destinationAddress) != 'string') {
-      throw new Error('invalid bitcoin address: ' + destinationAddress);
+  recipients.forEach(function(recipient) {
+    if (!!recipient.address && !!recipient.script) {
+      throw new Error('cannot provide both address and script: ' + recipient.address);
     }
-
-    if (typeof(amount) != 'number' || isNaN(amount) || amount <= 0) {
-      throw new Error('invalid amount for ' + destinationAddress + ': ' + amount);
+    if (typeof(recipient.address) == 'string') {
+      try {
+        Address.fromBase58Check(recipient.address);
+      } catch (e) {
+        throw new Error('invalid bitcoin address: ' + recipient.address);
+      }
     }
-
-    try {
-      Address.fromBase58Check(destinationAddress);
-    } catch (e) {
-      throw new Error('invalid bitcoin address: ' + destinationAddress);
+    if (typeof(recipient.amount) != 'number' || isNaN(recipient.amount) || recipient.amount < 0) {
+      throw new Error('invalid amount for ' + recipient.address + ': ' + recipient.amount);
     }
-
-    totalOutputs += amount;
+    totalOutputAmount += recipient.amount;
   });
 
   // The total amount needed for this transaction.
-  var totalAmount = fee + totalOutputs;
+  var totalAmount = fee + totalOutputAmount;
 
   // The list of unspent transactions being used in this transaction.
   var unspents;
@@ -168,7 +178,7 @@ exports.createTransaction = function(params) {
     var signaturesPerInput = 2;  // 2-of-3 wallets
 
     // Note: Reference implementation uses 1000 bytes/kb, so we follow it to be safe
-    var outputSizeKb = Object.keys(params.recipients).length * 34 / 1000;
+    var outputSizeKb = recipients.length * 34 / 1000;
     var inputSizeKb = (transaction.ins.length * signaturesPerInput * 170) / 1000;
 
     return Math.ceil(inputSizeKb + outputSizeKb);
@@ -197,7 +207,7 @@ exports.createTransaction = function(params) {
       var approximateFee = calculateApproximateFee();
       if (approximateFee > fee) {
         fee = approximateFee;
-        totalAmount = fee + totalOutputs;
+        totalAmount = fee + totalOutputAmount;
         inputAmount = 0;
         transaction.ins = [];
         return collectInputs();
@@ -221,12 +231,19 @@ exports.createTransaction = function(params) {
 
     var outputs = [];
 
-    Object.keys(params.recipients).forEach(function (destinationAddress) {
-      var addr = Address.fromBase58Check(destinationAddress);
-      var script = addr.toOutputScript();
+    recipients.forEach(function (recipient) {
+      var script;
+      if (typeof(recipient.address) == 'string') {
+        var addr = Address.fromBase58Check(recipient.address);
+        script = addr.toOutputScript();
+      } else if(typeof(recipient.script) === 'object') {
+        script = recipient.script;
+      } else {
+        throw new Error('neither recipient address nor script was provided');
+      }
       outputs.push({
         script: script,
-        amount: params.recipients[destinationAddress]
+        amount: recipient.amount
       });
     });
 

@@ -13,3 +13,4 @@ browser/BitGoJS.js
 example/sandbox.js
 bin/server.key
 bin/server.crt
+example/test.js
