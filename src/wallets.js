@@ -301,6 +301,68 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
 };
 
 //
+// createForwardWallet
+// Creates a forward wallet from a single private key.
+// BitGo will watch the wallet and send any incoming transactions to a destination multi-sig wallet
+// WARNING: THE PRIVATE KEY WILL BE SENT TO BITGO. YOU MUST CONTACT BITGO BEFORE USING THIS FEATURE!
+// WE CANNOT GUARANTEE THE SECURITY OF SINGLE-SIG WALLETS AS CUSTODY IS UNCLEAR.
+//
+// Params:
+//    privKey - the private key on a legacy single-signature wallet to be watched (WIF format)
+//    sourceAddress - the bitcoin address to forward from (corresponds to the private key)
+//    destinationWallet - the wallet object to send the destination coins to (when incoming transactions are detected)
+//    label - label for the wallet
+//
+Wallets.prototype.createForwardWallet = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['privKey', 'sourceAddress'], ['label'], callback);
+
+  if (!params.destinationWallet || typeof(params.destinationWallet) != 'object' || !params.destinationWallet.id) {
+    throw new Error('expecting destinationWallet object');
+  }
+
+  var self = this;
+
+  var newDestinationAddress;
+  var addressFromPrivKey;
+
+  try {
+    var key = new ECKey.fromWIF(params.privKey);
+    var network = networks[common.getNetwork()];
+    addressFromPrivKey = key.pub.getAddress(network).toBase58Check();
+  } catch (e) {
+    throw new Error('expecting a valid privKey');
+  }
+
+  if (addressFromPrivKey !== params.sourceAddress) {
+    throw new Error('privKey does not match source address - got ' + addressFromPrivKey + ' expected ' + params.sourceAddress);
+  }
+
+  return params.destinationWallet.createAddress()
+  .then(function(result) {
+    // Create new address on the destination wallet to receive coins
+    newDestinationAddress = result.address;
+
+    var walletParams = {
+      type: 'forward',
+      sourceAddress: params.sourceAddress,
+      destinationAddress: newDestinationAddress,
+      privKey: params.privKey,
+      label: params.label
+    };
+
+    if (params.enterprise) {
+      walletParams.enterprise = params.enterprise;
+    }
+
+    return self.bitgo.post(self.bitgo.url('/wallet'))
+    .send(walletParams)
+    .result()
+    .nodeify(callback);
+  });
+};
+
+//
 // add
 // Add a new wallet (advanced mode).
 // This allows you to manually submit the keychains, type, m and n of the wallet

@@ -6,12 +6,15 @@
 
 var assert = require('assert');
 var should = require('should');
+var Q = require('q');
 
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 
+var networks = require('bitcoinjs-lib/src/networks');
+var ECKey = require('bitcoinjs-lib/src/eckey');
+
 var TEST_WALLET_LABEL = 'wallet management test';
-var TEST_WALLET1_LABEL = 'Better Test Wallet 1';
 
 describe('Wallets', function() {
   var bitgo;
@@ -282,7 +285,62 @@ describe('Wallets', function() {
         done();
       });
     });
+  });
 
+  describe('Setup forward wallet', function() {
+    var key = ECKey.makeRandom();
+    var sourceAddress = key.pub.getAddress(networks['testnet']).toString();
+
+    it('arguments', function() {
+      assert.throws(function() { wallets.createForwardWallet('invalid'); });
+      assert.throws(function() { wallets.createForwardWallet(); });
+      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(), "sourceAddress": null, destinationWallet: testWallet}); });
+      assert.throws(function() { wallets.createForwardWallet({"privKey": "asdasdsa", "sourceAddress": sourceAddress, destinationWallet: testWallet}); });
+      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(), "sourceAddress": sourceAddress, destinationWallet: null}); });
+      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(), "sourceAddress": TestBitGo.TEST_WALLET3_ADDRESS, destinationWallet: null}); });
+    });
+
+    it('default', function() {
+      return wallets.createForwardWallet({
+        "privKey": key.toWIF(),
+        "sourceAddress": sourceAddress,
+        destinationWallet: testWallet,
+        label: 'forward ' + sourceAddress
+      })
+      .then(function(result) {
+        result.id.should.eql(sourceAddress);
+        result.isActive.should.eql(true);
+        result.type.should.eql('forward');
+        result.label.should.eql('forward ' + sourceAddress);
+        result.private.destinationAddress.should.startWith('2');
+      });
+    });
+
+    it('send coins to forward wallet', function() {
+      return bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallets.get({ id: TestBitGo.TEST_WALLET3_ADDRESS })
+      })
+      .then(function(test3wallet) {
+        return test3wallet.sendCoins(
+          { address: sourceAddress, amount: 0.0005 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE, fee: 0.0001 * 1e8 }
+        );
+      })
+      .then(function(result) {
+        result.should.have.property('tx');
+        result.should.have.property('hash');
+        result.should.have.property('fee');
+        return Q.delay(3500)
+        .then(function() {
+          return testWallet.get();
+        })
+      })
+      .then(function(wallet) {
+        assert.equal(wallet.id(), testWallet.id());
+        assert.equal(wallet.balance(), 0.0004 * 1e8); // fee of 0.0001
+        assert.equal(wallet.label(), 'my wallet');
+      });
+    });
   });
 
   describe('Delete', function() {
