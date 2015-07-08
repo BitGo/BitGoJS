@@ -121,7 +121,7 @@ exports.createTransaction = function(params) {
   });
 
   // The total amount needed for this transaction.
-  var totalAmount = fee + totalOutputAmount;
+  var totalAmount = totalOutputAmount + (fee || 0);
 
   // The list of unspent transactions being used in this transaction.
   var unspents;
