@@ -501,7 +501,7 @@ describe('Wallet', function() {
         res.should.have.property('feePerKb');
         res.should.have.property('numBlocks');
         res.numBlocks.should.eql(3);
-        res.feePerKb.should.be.within(1000, target1confirmFee);
+        res.feePerKb.should.be.within(1000, 100000);
       });
     });
   });
@@ -832,7 +832,7 @@ describe('Wallet', function() {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
-          assert.equal(feeUsed, 870000);
+          assert.equal(feeUsed, 974400);
           result.walletId = wallet1.id;
         });
       });

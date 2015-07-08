@@ -334,7 +334,7 @@ describe('BitGo', function() {
         res.should.have.property('feePerKb');
         res.should.have.property('numBlocks');
         res.numBlocks.should.eql(3);
-        res.feePerKb.should.be.within(1000, target1confirmFee);
+        res.feePerKb.should.be.within(1000, 100000);
       });
     });
   });

@@ -61,8 +61,14 @@ exports.createTransaction = function(params) {
     throw new Error('recipients must be array of { address: abc, amount: 100000 } objects');
   }
 
-  if (params.feeTxConfirmTarget != undefined && (params.fee || params.feeRate)) {
-    throw new Error('cannot provide a confirm target along with specified fee and fee rate!');
+  var feeParamsDefined = (typeof(params.fee) !== 'undefined') +
+                          (typeof(params.feeRate) !== 'undefined') +
+                          (typeof(params.feeTxConfirmTarget) !== 'undefined');
+  if (feeParamsDefined > 1) {
+    throw new Error('cannot specify more than one of fee, feeRate and feeTxConfirmTarget');
+  } else if (feeParamsDefined === 0) {
+    // no fee params were specified, so try to get the best estimate based on network conditions
+    params.feeTxConfirmTarget = 2;
   }
 
   // Convert the old format of params.recipients (dictionary of address:amount) to new format: { destinationAddress, amount }
@@ -86,10 +92,6 @@ exports.createTransaction = function(params) {
   // Flag indicating whether this class will compute the fee
   var shouldComputeBestFee = (typeof(fee) == 'undefined');
 
-  // Sanity check the fee
-  if (typeof(fee) !== 'undefined' && typeof(feeRate) !== 'undefined') {
-    throw new Error('cannot specify both a fee as well as a fee rate');
-  }
   if (typeof(fee) == 'undefined') {
     fee = DEFAULT_FEE;
   }
@@ -147,6 +149,10 @@ exports.createTransaction = function(params) {
         if (estimatedFeeRate >= MIN_FEE_RATE && estimatedFeeRate < MAX_FEE_RATE) {
           feeRate = estimatedFeeRate;
         }
+      })
+      .catch(function() {
+        // some error happened estimating the fee, so use the default
+        feeRate = FEE_PER_KB;
       });
     }
     // always return a promise
@@ -305,8 +311,7 @@ exports.createTransaction = function(params) {
     return result;
   };
 
-  return getDynamicFeeEstimate()
-  .then(getUnspents)
+  return Q.all([getDynamicFeeEstimate(), getUnspents()])
   .then(collectInputs)
   .then(collectOutputs)
   .then(serialize);
