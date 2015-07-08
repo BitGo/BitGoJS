@@ -192,6 +192,7 @@ describe('Bitgo Express', function() {
           res.body.should.have.property('tx');
           res.body.should.have.property('hash');
           res.body.should.have.property('fee');
+          res.body.should.have.property('feeRate');
           done();
         });
       });

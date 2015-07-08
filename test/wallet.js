@@ -833,7 +833,7 @@ describe('Wallet', function() {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
-          assert.equal(feeUsed, 974400);
+          assert.equal(feeUsed, 971421);
           result.feeRate.should.eql(0.000112 * 1e8);
           result.walletId = wallet1.id;
         });
@@ -847,7 +847,7 @@ describe('Wallet', function() {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
-          assert.equal(feeUsed, 1740000);
+          assert.equal(feeUsed, 1734681);
         });
       });
 
@@ -867,7 +867,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 1200600); // tx size will be 87kb * 0.000138 * 1e8
+          assert.equal(feeUsed, 1196930); // tx size will be 87kb * 0.000138 * 1e8
         });
       });
 
@@ -877,7 +877,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 135720); // tx size will be 87kb * 0.0000156 * 1e8
+          assert.equal(feeUsed, 135306); // tx size will be 87kb * 0.0000156 * 1e8
         });
       });
 
@@ -887,7 +887,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 4})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 870000); // tx size will be 87kb * 0.0001
+          assert.equal(feeUsed, 867341); // tx size will be 87kb * 0.0001
         });
       });
 
@@ -1239,7 +1239,8 @@ describe('Wallet', function() {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
-          result.fee.should.equal(0.0001 * 1e8);
+          result.should.have.property('feeRate');
+          result.fee.should.be.lessThan(result.feeRate);
           done();
         }
         );
@@ -1255,7 +1256,8 @@ describe('Wallet', function() {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
-          result.fee.should.equal(0.0001 * 1e8);
+          result.should.have.property('feeRate');
+          result.fee.should.be.lessThan(result.feeRate);
           done();
         }
         );

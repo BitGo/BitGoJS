@@ -92,9 +92,6 @@ exports.createTransaction = function(params) {
   // Flag indicating whether this class will compute the fee
   var shouldComputeBestFee = (typeof(fee) == 'undefined');
 
-  if (typeof(fee) == 'undefined') {
-    fee = DEFAULT_FEE;
-  }
   if (fee > MAX_FEE) {
     throw new Error('fee too generous');  // Protection against bad inputs
   }
@@ -187,13 +184,13 @@ exports.createTransaction = function(params) {
     var outputSizeKb = recipients.length * 34 / 1000;
     var inputSizeKb = (transaction.ins.length * signaturesPerInput * 170) / 1000;
 
-    return Math.ceil(inputSizeKb + outputSizeKb);
+    return inputSizeKb + outputSizeKb;
   };
 
   // Approximate the fee based on number of inputs
   var calculateApproximateFee = function () {
     var feeRateToUse = typeof(feeRate) !== 'undefined' ? feeRate : FEE_PER_KB;
-    return estimateTxSizeKb() * feeRateToUse;
+    return Math.ceil(estimateTxSizeKb() * feeRateToUse);
   };
 
   // Iterate unspents, sum the inputs, and save _inputs with the total
@@ -211,9 +208,11 @@ exports.createTransaction = function(params) {
 
     if (shouldComputeBestFee) {
       var approximateFee = calculateApproximateFee();
-      if (approximateFee > fee) {
-        fee = approximateFee;
-        totalAmount = fee + totalOutputAmount;
+      var shouldRecurse = typeof(fee) === 'undefined' || approximateFee > fee;
+      fee = approximateFee;
+      totalAmount = fee + totalOutputAmount;
+      if (shouldRecurse) {
+        // if fee changed, re-collect inputs
         inputAmount = 0;
         transaction.ins = [];
         return collectInputs();
