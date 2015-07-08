@@ -781,6 +781,7 @@ describe('Wallet', function() {
         .then(function(result) {
           result.should.have.property('unspents');
           result.should.have.property('fee');
+          result.should.have.property('feeRate');
           result.walletId.should.equal(wallet1.id());
         });
       });
@@ -833,6 +834,7 @@ describe('Wallet', function() {
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
           assert.equal(feeUsed, 974400);
+          result.feeRate.should.eql(0.000112 * 1e8);
           result.walletId = wallet1.id;
         });
       });
@@ -1058,7 +1060,6 @@ describe('Wallet', function() {
 
       return wallet1.sendCoins({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 1, walletPassphrase: 'badcode' })
       .then(function(result) {
-        console.dir(result);
         throw new Error("Unexpected result - expected to catch bad code");
       })
       .catch(function(err) {
@@ -1116,6 +1117,8 @@ describe('Wallet', function() {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
+          result.should.have.property('feeRate');
+          result.feeRate.should.be.lessThan(0.01*1e8);
         });
       });
 
@@ -1158,7 +1161,6 @@ describe('Wallet', function() {
       });
       return wallet1.sendMany({ recipients: [{ address: 'bad address', amount: 0.001 * 1e8 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
       .then(function(result) {
-        console.dir(result);
         throw new Error("Unexpected result - expected to catch bad address");
       })
       .catch(function(err) {
@@ -1202,6 +1204,8 @@ describe('Wallet', function() {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
+          result.should.have.property('feeRate');
+          result.feeRate.should.be.lessThan(0.01*1e8);
           done();
         }
         );
@@ -1398,8 +1402,10 @@ describe('Wallet', function() {
         wallet1.createTransaction({ recipients: recipients })
         .then(function(result) {
           result.should.have.property('fee');
+          result.should.have.property('feeRate');
           should.exist(result.fee);
-          result.fee.should.lessThan(1e8);
+          result.fee.should.be.lessThan(0.01*1e8);
+          result.feeRate.should.be.lessThan(0.01*1e8);
           return wallet1.signTransaction({ transactionHex: result.transactionHex, unspents: result.unspents, keychain: keychain });
         })
         .then(function(result) {

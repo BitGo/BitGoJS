@@ -305,7 +305,8 @@ exports.createTransaction = function(params) {
       fee: fee,
       changeAddress: _.pick(changeAddressInfo, ['address', 'path']),
       walletId: params.wallet.id(),
-      walletKeychains: params.wallet.keychains
+      walletKeychains: params.wallet.keychains,
+      feeRate: feeRate
     };
 
     return result;
