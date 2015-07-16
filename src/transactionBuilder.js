@@ -24,7 +24,6 @@ var MAX_FEE = 1e8 * 0.1;        // The maximum fee we'll allow before declaring 
 var MAX_FEE_RATE = 1e8 * 0.001;        // The maximum fee we'll allow before declaring an error
 var MIN_FEE_RATE = 1e8 * 0.00001;      // The minimum fee we'll allow before declaring an error
 var FEE_PER_KB = 0.0001 * 1e8;  // The blockchain required fee-per-kb of transaction size
-var DEFAULT_FEE = 0.0001 * 1e8; // Our default fee
 var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for less than this. (dust - give it to the miner)
 
 //
@@ -35,6 +34,7 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 //   fee: the fee to use with this transaction.  if not provided, a default, minimum fee will be used.
 //   feeRate: the amount of fee per kilobyte - optional - specify either fee, feeRate, or feeTxConfirmTarget but not more than one
 //   feeTxConfirmTarget: calculate the fees per kilobyte such that the transaction will be confirmed in this number of blocks
+//   maxFeeRate: The maximum fee per kb to use in satoshis, for safety purposes when using dynamic fees
 //   minConfirms: the minimum confirmations an output must have before spending
 //   forceChangeAtEnd: force the change address to be the last output
 //   changeAddress: specify the change address rather than generate a new one
@@ -53,6 +53,7 @@ exports.createTransaction = function(params) {
      (params.changeAddress && typeof(params.changeAddress) !== 'string') ||
      (validate && typeof(validate) !== 'boolean') ||
      (params.enforceMinConfirmsForChange && typeof(params.enforceMinConfirmsForChange) !== 'boolean') ||
+     (params.maxFeeRate && typeof(params.maxFeeRate) !== 'number') ||
      (params.feeTxConfirmTarget && typeof(params.feeTxConfirmTarget) !== 'number')) {
     throw new Error('invalid argument');
   }
@@ -69,6 +70,10 @@ exports.createTransaction = function(params) {
   } else if (feeParamsDefined === 0) {
     // no fee params were specified, so try to get the best estimate based on network conditions
     params.feeTxConfirmTarget = 2;
+  }
+
+  if (typeof(params.maxFeeRate) === 'undefined') {
+    params.maxFeeRate = MAX_FEE_RATE;
   }
 
   // Convert the old format of params.recipients (dictionary of address:amount) to new format: { destinationAddress, amount }
@@ -140,10 +145,14 @@ exports.createTransaction = function(params) {
   // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
   var getDynamicFeeEstimate = function () {
     if (params.feeTxConfirmTarget) {
-      return params.wallet.estimateFee({ numBlocks: params.feeTxConfirmTarget })
+      return params.wallet.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate })
       .then(function(result) {
         var estimatedFeeRate = result.feePerKb;
-        if (estimatedFeeRate >= MIN_FEE_RATE && estimatedFeeRate < MAX_FEE_RATE) {
+        if (estimatedFeeRate < MIN_FEE_RATE) {
+          feeRate = MIN_FEE_RATE;
+        } else if (estimatedFeeRate > params.maxFeeRate) {
+          feeRate = params.maxFeeRate;
+        } else {
           feeRate = estimatedFeeRate;
         }
       })

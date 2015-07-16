@@ -476,6 +476,29 @@ describe('Wallet', function() {
     });
   });
 
+  describe('GetAddress', function() {
+    it('arguments', function(done) {
+      assert.throws(function() { wallet1.address('invalid', function() {}); });
+      assert.throws(function() { wallet1.address({}, 'invalid'); });
+      done();
+    });
+
+    it('get', function() {
+      var options = { address: wallet1.id() };
+      return wallet1.address(options)
+      .then(function(result) {
+        result.address.should.eql(wallet1.id());
+        result.chain.should.eql(0);
+        result.index.should.eql(0);
+        result.redeemScript.should.not.eql("");
+        result.sent.should.be.greaterThan(0);
+        result.received.should.be.greaterThan(0);
+        result.txCount.should.be.greaterThan(0);
+        result.balance.should.be.greaterThan(0);
+      });
+    });
+  });
+
   describe('Estimate Fees', function() {
     it('arguments', function() {
       assert.throws(function () {
@@ -871,6 +894,16 @@ describe('Wallet', function() {
         });
       });
 
+      it('approximate with feeRate with maxFeeRate (server gives too high a fee and we use max)', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1, maxFeeRate: 5000})
+        .then(function(result) {
+          var feeUsed = result.fee;
+          assert.equal(feeUsed, 433671);
+        });
+      });
+
       it('approximate with feeRate set by feeTxConfirmTarget 3 (estimatefee monkeypatch)', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
@@ -881,13 +914,27 @@ describe('Wallet', function() {
         });
       });
 
+      it('approximate with feeRate with maxFeeRate (real service)', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        // undo the monkey patch so we get the right max fee
+        var feeMonkeyPatch = wallet1.estimateFee;
+        wallet1.estimateFee = patch2;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3, maxFeeRate: 1100})
+        .then(function(result) {
+          wallet1.estimateFee = feeMonkeyPatch;
+          var feeUsed = result.fee;
+          assert.equal(feeUsed, 95408);
+        });
+      });
+
       it('approximate with feeRate set by feeTxConfirmTarget fallback (estimatefee monkeypatch)', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 4})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 867341); // tx size will be 87kb * 0.0001
+          assert.equal(feeUsed, 8673400); // tx size will be 87kb * 0.001 (max feerate as defined in transactionBuilder)
         });
       });
 
@@ -1240,7 +1287,6 @@ describe('Wallet', function() {
           result.should.have.property('hash');
           result.should.have.property('fee');
           result.should.have.property('feeRate');
-          result.fee.should.be.lessThan(result.feeRate);
           done();
         }
         );
@@ -1257,7 +1303,6 @@ describe('Wallet', function() {
           result.should.have.property('hash');
           result.should.have.property('fee');
           result.should.have.property('feeRate');
-          result.fee.should.be.lessThan(result.feeRate);
           done();
         }
         );

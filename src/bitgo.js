@@ -689,20 +689,28 @@ BitGo.prototype.labels = function(params, callback) {
 // Estimates approximate fee per kb needed for a tx to get into a block
 // Parameters include:
 //   numBlocks:  target blocks for the transaction to be confirmed
+//   maxFee: maximum fee willing to be paid (for safety)
 //
 BitGo.prototype.estimateFee = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var url = this.url('/tx/fee');
+  var queryParams = {};
   if (params.numBlocks) {
     if (typeof(params.numBlocks) != 'number') {
       throw new Error('invalid argument');
     }
-    url += '?numBlocks=' + params.numBlocks;
+    queryParams.numBlocks = params.numBlocks;
+  }
+  if (params.maxFee) {
+    if (typeof(params.maxFee) != 'number') {
+      throw new Error('invalid argument');
+    }
+    queryParams.maxFee = params.maxFee;
   }
 
-  return this.get(url)
+  return this.get(this.url('/tx/fee'))
+  .query(queryParams)
   .result()
   .nodeify(callback);
 };

@@ -237,6 +237,24 @@ Wallet.prototype.addresses = function(params, callback) {
 };
 
 //
+// address
+// Gets information about a single address on a HD wallet.
+// Information includes index, path, redeemScript, sent, received, txCount and balance
+// Options include:
+//  address: the address on this wallet to get
+//
+Wallet.prototype.address = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['address'], [], callback);
+
+  var url = this.url('/addresses/' + params.address);
+
+  return this.bitgo.get(url)
+  .result()
+  .nodeify(callback);
+};
+
+//
 // freeze
 // Freeze the wallet for a duration of choice, stopping BitGo from signing any transactions
 // Parameters include:

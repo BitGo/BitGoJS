@@ -90,17 +90,17 @@ describe('Bitgo Express', function() {
     });
 
     it('put label set (authed)', function(done) {
-      var walletId = '2MtqQLrtPVfF4cDgYC2eXiruTpyq9ehiPse';
+      var walletId = '2MvfC3e6njdTXqWDfGvNUqDs5kwimfaTGjK';
       agent.put('/api/v1/labels/' + walletId + '/msj42CCGruhRsFrGATiUuh25dtxYtnpbTx')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-      .send({ label: 'testLabel' })
+      .send({ label: 'testLabel_bitgoExpressSDK' })
       .expect('Content-Type', /json/)
       .end(function(err, res) {
         if (err) { throw err; }
         res.body.should.have.property('walletId');
         res.body.should.have.property('address');
         res.body.should.have.property('label');
-        res.body.label.should.equal('testLabel');
+        res.body.label.should.equal('testLabel_bitgoExpressSDK');
         res.body.walletId.should.equal(walletId);
         done();
       });
