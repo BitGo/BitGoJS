@@ -380,6 +380,7 @@ BitGo.prototype.authenticate = function(params, callback) {
   var username = params.username;
   var password = params.password;
   var otp = params.otp;
+  var trust = params.trust;
 
   // Calculate the password HMAC so we don't send clear-text passwords
   var key = sjcl.codec.utf8String.toBits(username);
@@ -393,6 +394,9 @@ BitGo.prototype.authenticate = function(params, callback) {
 
   if (otp) {
     authParams.otp = otp;
+    if (trust) {
+      authParams.trust = 1;
+    }
   }
 
   var self = this;
