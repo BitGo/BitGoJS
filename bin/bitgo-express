@@ -63,14 +63,22 @@ var getArgs = function () {
     help: 'Filepath to write the access log'
   });
 
+  parser.addArgument(
+  ['--disablessl'], {
+    action: 'storeTrue',
+    help: 'Allow running against production in non-SSL mode (at your own risk!)'
+  });
+
   return parser.parseArgs();
 };
 
 args = getArgs();
 
 if (args.env === 'prod') {
-  if (!args.keypath || !args.crtpath) {
-    throw new Error("Must provide keypath and crtpath for SSL in prod!");
+  if (args.bind !== 'localhost' && (!args.keypath || !args.crtpath)) {
+    if (!args.disablessl) {
+      throw new Error("Must provide keypath and crtpath for SSL when running against prod and listening on external interfaces!");
+    }
   }
 }
 
