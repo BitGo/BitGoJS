@@ -1493,10 +1493,17 @@ describe('Wallet', function() {
         done();
       });
 
-      it('create transaction', function(done) {
+      it('create transaction, check that minSize is sent', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
-        wallet2.createTransaction({ recipients: recipients, fee: 0.0001 * 1e8, minConfirms: 1 })
+        // monkey patch unspents to check that expected options are sent
+        var backingUnspentMethod = wallet2.unspents.bind(wallet2);
+        wallet2.unspents = function(expectedOptions) {
+          expectedOptions.should.have.property('minSize');
+          expectedOptions.minSize.should.eql(5460);
+          return backingUnspentMethod(arguments);
+        };
+        return wallet2.createTransaction({ recipients: recipients, fee: 0.0001 * 1e8, minConfirms: 1 })
         .then(function(result) {
           result.should.have.property('fee');
           return wallet2.signTransaction({ transactionHex: result.transactionHex, unspents: result.unspents, keychain: keychain });
@@ -1504,8 +1511,24 @@ describe('Wallet', function() {
         .then(function(result) {
           result.should.have.property('tx');
           tx = result.tx;
-        })
-        .done(done);
+          wallet2.unspents = backingUnspentMethod;
+        });
+      });
+
+      it('create transaction with custom minSize', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
+        // monkey patch unspents to check that expected options are sent
+        var backingUnspentMethod = wallet2.unspents.bind(wallet2);
+        wallet2.unspents = function(expectedOptions) {
+          expectedOptions.should.have.property('minSize');
+          expectedOptions.minSize.should.eql(999);
+          return backingUnspentMethod(arguments);
+        };
+        return wallet2.createTransaction({ recipients: recipients, fee: 0.0001 * 1e8, minConfirms: 1, minUnspentSize: 999 })
+        .then(function() {
+          wallet2.unspents = backingUnspentMethod;
+        });
       });
 
       it('send', function(done) {

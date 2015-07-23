@@ -39,6 +39,7 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 //   forceChangeAtEnd: force the change address to be the last output
 //   changeAddress: specify the change address rather than generate a new one
 //   validate: extra verification of the change addresses, which is always done server-side and is redundant client-side (defaults true)
+//   minUnspentSize: The minimum use of unspent to use (don't spend dust transactions). Defaults to MINIMUM_BTC_DUST.
 exports.createTransaction = function(params) {
   var minConfirms = params.minConfirms || 0;
   var validate = params.validate === undefined ? true : params.validate;
@@ -53,6 +54,7 @@ exports.createTransaction = function(params) {
      (params.changeAddress && typeof(params.changeAddress) !== 'string') ||
      (validate && typeof(validate) !== 'boolean') ||
      (params.enforceMinConfirmsForChange && typeof(params.enforceMinConfirmsForChange) !== 'boolean') ||
+     (params.minUnspentSize && typeof(params.minUnspentSize) !== 'number') ||
      (params.maxFeeRate && typeof(params.maxFeeRate) !== 'number') ||
      (params.feeTxConfirmTarget && typeof(params.feeTxConfirmTarget) !== 'number')) {
     throw new Error('invalid argument');
@@ -169,7 +171,8 @@ exports.createTransaction = function(params) {
   var getUnspents = function () {
     // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
     var options = {
-      target: totalAmount + (0.01 * 1e8)  // fee @ 0.0001/kb for a 100kb tx
+      target: totalAmount + (0.01 * 1e8),  // fee @ 0.0001/kb for a 100kb tx
+      minSize: params.minUnspentSize || MINIMUM_BTC_DUST // don't bother to use unspents smaller than dust
     };
 
     return params.wallet.unspents(options)
