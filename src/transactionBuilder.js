@@ -277,7 +277,7 @@ exports.createTransaction = function(params) {
       .then(function(stats) {
         // If we have at least 25 data points, choose a size which is equal to the 75th percentile of tx spend sizes,
         // but put a floor of max(1% of the wallet balance, 0.1 BTC)
-        var minAutoSplitSize = Math.max(wallet.balance() / 100, 1e7);
+        var minAutoSplitSize = Math.max(params.wallet.balance() / 100, 1e7);
         var STATS_MIN_SENDS = 25;
         var SEND_SIZE_PERCENTILE = 75;
         if (stats.nSends >= STATS_MIN_SENDS && stats.sendSizes && stats.sendSizes[SEND_SIZE_PERCENTILE]) {
@@ -287,6 +287,7 @@ exports.createTransaction = function(params) {
         return 0;
       })
       .catch(function(err) {
+        console.log(err);
         // In case of any error, don't split
         return 0;
       });
