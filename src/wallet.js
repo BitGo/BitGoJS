@@ -236,6 +236,28 @@ Wallet.prototype.addresses = function(params, callback) {
   .nodeify(callback);
 };
 
+Wallet.prototype.stats = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+  var args = [];
+  if (params.limit) {
+    if (typeof(params.limit) != 'number') {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    args.push('limit=' + params.limit);
+  }
+  var query = '';
+  if (args.length) {
+    query = '?' + args.join('&');
+  }
+
+  var url = this.url('/stats' + query);
+
+  return this.bitgo.get(url)
+  .result()
+  .nodeify(callback);
+};
+
 //
 // address
 // Gets information about a single address on a HD wallet.
@@ -466,6 +488,7 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 //   feeRate  - the fee per kb to send (optional)
 //   minConfirms - minimum number of confirms to use when gathering unspents
 //   forceChangeAtEnd - force change address to be last output (optional)
+//   splitChangeSize - optional (see transactionBuilder.createTransaction)
 //   changeAddress - override the change address (optional)
 //   validate - extra verification of change addresses (which are always verified server-side) (defaults to global config)
 // Returns:
@@ -603,6 +626,7 @@ Wallet.prototype.createShare = function(params, callback) {
 //   amount - the amount in satoshis to be sent
 //   message - optional message to attach to transaction
 //   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+//   (See transactionBuilder.createTransaction for other passthrough params)
 // Returns:
 //
 Wallet.prototype.sendCoins = function(params, callback) {
@@ -632,6 +656,7 @@ Wallet.prototype.sendCoins = function(params, callback) {
 // Parameters:
 //   recipients - array of { address, amount } to send to
 //   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+//   (See transactionBuilder.createTransaction for other passthrough params)
 // Returns:
 //
 Wallet.prototype.sendMany = function(params, callback) {
@@ -678,6 +703,7 @@ Wallet.prototype.sendMany = function(params, callback) {
 // Parameters:
 //   recipients - array of { address, amount } to send to
 //   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+//   (See transactionBuilder.createTransaction for other passthrough params)
 // Returns:
 //
 Wallet.prototype.createAndSignTransaction = function(params, callback) {
@@ -729,7 +755,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   })
   .then(function(result) {
     return _.extend(result, { fee: fee, feeRate: feeRate });
-  })
+  });
 };
 
 Wallet.prototype.shareWallet = function(params, callback) {

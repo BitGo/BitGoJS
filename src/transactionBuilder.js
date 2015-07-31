@@ -38,6 +38,7 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 //   minConfirms: the minimum confirmations an output must have before spending
 //   forceChangeAtEnd: force the change address to be the last output
 //   changeAddress: specify the change address rather than generate a new one
+//   splitChangeSize: specify a target change size for splitting change (positive = #satoshis, 0 = never split, negative = automatic splitting)
 //   validate: extra verification of the change addresses, which is always done server-side and is redundant client-side (defaults true)
 //   minUnspentSize: The minimum use of unspent to use (don't spend dust transactions). Defaults to MINIMUM_BTC_DUST.
 exports.createTransaction = function(params) {
@@ -52,6 +53,7 @@ exports.createTransaction = function(params) {
      typeof(minConfirms) != 'number' ||
      (params.forceChangeAtEnd && typeof(params.forceChangeAtEnd) !== 'boolean') ||
      (params.changeAddress && typeof(params.changeAddress) !== 'string') ||
+     (params.splitChangeSize !== undefined && typeof(params.splitChangeSize) !== 'number') ||
      (validate && typeof(validate) !== 'boolean') ||
      (params.enforceMinConfirmsForChange && typeof(params.enforceMinConfirmsForChange) !== 'boolean') ||
      (params.minUnspentSize && typeof(params.minUnspentSize) !== 'number') ||
@@ -136,8 +138,7 @@ exports.createTransaction = function(params) {
   // The sum of the input values for this transaction.
   var inputAmount;
 
-  // The change address info, if one is used
-  var changeAddressInfo;
+  var changeOutputs = [];
 
   // The transaction.
   var transaction = new Transaction();
@@ -264,41 +265,98 @@ exports.createTransaction = function(params) {
       });
     });
 
-    var changeAmount = inputAmount - totalAmount;
-    // If the remainder is greater than dust we send create a change address and add an output.
-    // Otherwise, let it go to the miners.
-    return Q().then(function() {
-      if (changeAmount > MINIMUM_BTC_DUST) {
-        return Q().then(function() {
-          // If we already have a change address specified, just return it
-          if (params.changeAddress) {
-            return {
-              address: params.changeAddress
-            };
-          }
-          if (params.wallet.type() === 'safe') {
-            return params.wallet.addresses()
-            .then(function(addresses) {
-              return addresses.addresses[0];
-            });
-          }
-          return params.wallet.createAddress({chain: 1, validate: validate});
-        })
+    var getSplitChangeSize = function() {
+      if (typeof(params.splitChangeSize) !== 'number') {
+        return 0;
+      }
+      if (params.splitChangeSize >= 0) {
+        return params.splitChangeSize;
+      }
+      // negative values => auto change splitting
+      return params.wallet.stats()
+      .then(function(stats) {
+        // If we have at least 25 data points, choose a size which is equal to the 75th percentile of tx spend sizes,
+        // but put a floor of max(1% of the wallet balance, 0.1 BTC)
+        var minAutoSplitSize = Math.max(wallet.balance() / 100, 1e7);
+        var STATS_MIN_SENDS = 25;
+        var SEND_SIZE_PERCENTILE = 75;
+        if (stats.nSends >= STATS_MIN_SENDS && stats.sendSizes && stats.sendSizes[SEND_SIZE_PERCENTILE]) {
+          return Math.floor(Math.max(stats.sendSizes[SEND_SIZE_PERCENTILE], minAutoSplitSize));
+        }
+        // Don't split
+        return 0;
+      })
+      .catch(function(err) {
+        // In case of any error, don't split
+        return 0;
+      });
+    };
+
+    var getChangeOutputs = function(changeAmount) {
+      if (changeAmount < MINIMUM_BTC_DUST) {
+        // Give it to the miners
+        return [];
+      }
+      // If user specified directly, just return it
+      if (params.changeAddress) {
+        return [{ address: params.changeAddress, amount: changeAmount }];
+      }
+      if (params.wallet.type() === 'safe') {
+        return params.wallet.addresses()
         .then(function(result) {
-          changeAddressInfo = result;
-          var addr = Address.fromBase58Check(changeAddressInfo.address);
-          var script = addr.toOutputScript();
-          var changeOutput = {
-            script: script,
-            amount: changeAmount
-          };
-          // decide where to put the change output - default is to randomize unless forced to end
-          var changeIndex = params.forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
-          outputs.splice(changeIndex, 0, changeOutput);
+          return [{ address: result.addresses[0].address, amount: changeAmount }];
         });
       }
+
+      var result = [];
+      var splitAmount;
+      return Q()
+      .then(getSplitChangeSize)
+      .then(function(splitChangeSize) {
+        if (splitChangeSize > 0 && changeAmount > 2 * splitChangeSize) {
+          // Start with an even split
+          splitAmount = changeAmount / 2;
+          // Adjust split amount by a random amount between -1/6 and 1/6 of the total change amount
+          // This results in max ratio of the sizes of 2:1
+          var adjustment = ((2 * Math.random() - 1) / 6) * changeAmount;
+          // Make at least one of the two change outputs end in 0000
+          splitAmount = 10000 * Math.floor((splitAmount + adjustment) / 10000);
+
+          // adjust changeAmount to account for the split
+          changeAmount = changeAmount - splitAmount;
+
+          // create an additional change address
+          return params.wallet.createAddress({chain: 1, validate: validate})
+          .then(function(changeAddress) {
+            changeAddress.amount = splitAmount;
+            result.push(changeAddress);
+          });
+        }
+      })
+      .then(function() {
+        return params.wallet.createAddress({chain: 1, validate: validate});
+      })
+      .then(function(changeAddress) {
+        changeAddress.amount = changeAmount;
+        result.push(changeAddress);
+        return result;
+      });
+    };
+
+    return Q().then(function() {
+      return getChangeOutputs(inputAmount - totalAmount);
     })
-    .then(function() {
+    .then(function(result) {
+      changeOutputs = result;
+      changeOutputs.forEach(function(output) {
+        output.script = Address.fromBase58Check(output.address).toOutputScript();
+
+        // decide where to put the change output - default is to randomize unless forced to end
+        var changeIndex = params.forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
+        outputs.splice(changeIndex, 0, output);
+      });
+
+      // Add all outputs to the transaction
       outputs.forEach(function(output) {
         transaction.addOutput(output.script, output.amount);
       });
@@ -314,7 +372,7 @@ exports.createTransaction = function(params) {
       transactionHex: transaction.toBuffer().toString('hex'),
       unspents: prunedUnspents,
       fee: fee,
-      changeAddress: _.pick(changeAddressInfo, ['address', 'path']),
+      changeAddresses: changeOutputs.map(function(co) { return _.pick(co, ['address', 'path', 'amount']); }),
       walletId: params.wallet.id(),
       walletKeychains: params.wallet.keychains,
       feeRate: feeRate
