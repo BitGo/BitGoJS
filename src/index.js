@@ -9,7 +9,7 @@ bitgo.BitGo = require('./bitgo.js');
 
 // Expose bitcoin and sjcl
 bitgo.bitcoin = require('bitcoinjs-lib');
-bitgo.sjcl = require('sjcl');
+bitgo.sjcl = require('./sjcl.min');
 bitgo.bs58 = require('bs58');
 
 /**
