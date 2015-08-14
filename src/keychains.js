@@ -91,10 +91,7 @@ Keychains.prototype.add = function(params, callback) {
   common.validateParams(params, ['xpub'], ['encryptedXprv'], callback);
 
   return this.bitgo.post(this.bitgo.url('/keychain'))
-  .send({
-    xpub: params.xpub,
-    encryptedXprv: params.encryptedXprv
-  })
+  .send(params)
   .result()
   .nodeify(callback);
 };

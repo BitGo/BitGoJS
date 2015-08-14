@@ -3,8 +3,10 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
+
 var superagent = require('superagent');
-var Address = require('bitcoinjs-lib/src/address');
+var bitcoin = require('bitcoinjs-lib');
+var Address = bitcoin.Address;
 var Blockchain = require('./blockchain');
 var Keychains = require('./keychains');
 var Wallet = require('./wallet');
@@ -12,10 +14,10 @@ var Wallets = require('./wallets');
 var PendingApprovals = require('./pendingapprovals');
 var sjcl = require('./sjcl.min');
 var common = require('./common');
-var ECKey = require('bitcoinjs-lib/src/eckey');
-var ECPubkey = require('bitcoinjs-lib/src/ecpubkey');
-var BufferUtils = require('bitcoinjs-lib/src/bufferutils');
-var networks = require('bitcoinjs-lib/src/networks');
+var ECKey = bitcoin.ECKey;
+var ECPubkey = bitcoin.ECPubKey;
+var BufferUtils = bitcoin.BufferUtils;
+var networks = bitcoin.networks;
 var Util = require('./util');
 var Q = require('q');
 var pjson = require('../package.json');
@@ -62,6 +64,9 @@ superagent.Request.prototype.result = function(optionalField) {
   var errFromResponse = function(res) {
     var err = new Error(res.body.error ? res.body.error : res.status.toString());
     err.status = res.status;
+    if (_.has(res.headers, 'x-auth-required') && (res.headers['x-auth-required'] === 'true')) {
+      err.invalidToken = true;
+    }
     if (res.body.needsOTP) {
       err.needsOTP = true;
     }

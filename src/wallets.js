@@ -59,6 +59,25 @@ Wallets.prototype.list = function(params, callback) {
   .nodeify(callback);
 };
 
+Wallets.prototype.getWallet = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], [], callback);
+
+  var self = this;
+
+  var query = '';
+  if (params.gpk) {
+    query = '?gpk=1';
+  }
+
+  return this.bitgo.get(this.bitgo.url('/wallet/' + params.id + query))
+  .result()
+  .then(function(wallet) {
+    return new Wallet(self.bitgo, wallet);
+  })
+  .nodeify(callback);
+};
+
 //
 // listShares
 // List the user's wallet shares

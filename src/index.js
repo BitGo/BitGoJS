@@ -3,9 +3,14 @@
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
-var common = require('./common')
+var common = require('./common');
 var bitgo = module.exports;
-bitgo.BitGo = require('./bitgo.js'),
+bitgo.BitGo = require('./bitgo.js');
+
+// Expose bitcoin and sjcl
+bitgo.bitcoin = require('bitcoinjs-lib');
+bitgo.sjcl = require('sjcl');
+bitgo.bs58 = require('bs58');
 
 /**
  * Set the network, i.e. either "bitcoin" for production with real bitcoin, or

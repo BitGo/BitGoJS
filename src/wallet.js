@@ -472,11 +472,10 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
         return keychain;
       }
       return tryKeyChain(index + 1);
-    })
-    .nodeify(callback);
+    });
   };
 
-  return tryKeyChain(0);
+  return tryKeyChain(0).nodeify(callback);
 };
 
 //
@@ -518,8 +517,9 @@ Wallet.prototype.createTransaction = function(params, callback) {
 
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
   params.wallet = this;
+
   return TransactionBuilder.createTransaction(params)
-    .nodeify(callback);
+  .nodeify(callback);
 };
 
 
@@ -755,7 +755,8 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   })
   .then(function(result) {
     return _.extend(result, { fee: fee, feeRate: feeRate });
-  });
+  })
+  .nodeify(callback);
 };
 
 Wallet.prototype.shareWallet = function(params, callback) {
@@ -820,7 +821,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
       options.keychain = {};
     }
 
-    return self.createShare(options, callback);
+    return self.createShare(options);
   })
   .nodeify(callback);
 };
@@ -865,6 +866,16 @@ Wallet.prototype.updatePolicyRule = function(params, callback) {
   common.validateParams(params, ['id', 'type'], [], callback);
 
   return this.bitgo.put(this.url('/policy/rule'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.deletePolicyRule = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], [], callback);
+
+  return this.bitgo.del(this.url('/policy/rule'))
   .send(params)
   .result()
   .nodeify(callback);
