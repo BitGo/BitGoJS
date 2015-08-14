@@ -21,6 +21,7 @@ var networks = bitcoin.networks;
 var Util = require('./util');
 var Q = require('q');
 var pjson = require('../package.json');
+var _ = require('lodash');
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);
