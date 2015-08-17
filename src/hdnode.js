@@ -8,6 +8,7 @@ module.exports = HDNode;
  * so /4/3/2'/6 is also a valid path.
  */
 HDNode.prototype.deriveFromPath = function(path) {
+  this.cache = this.cache || {};
   if (path[0] === 'm') {
     path = path.slice(1, path.length);
   }
@@ -17,9 +18,18 @@ HDNode.prototype.deriveFromPath = function(path) {
   path = path.slice(1, path.length);
   var split = path.split('/');
 
+  var currentPath = "/";
   var hdnode = this;
   for (var i = 0; i < split.length; i++) {
     var el = split[i];
+    currentPath += el + "/";
+
+    if (this.cache[currentPath]) {
+      // If the current path was found in the cache,
+      hdnode = this.cache[currentPath];
+      continue;
+    }
+
     var hardened = false;
 
     if (el[el.length - 1] === "'") {
@@ -38,7 +48,9 @@ HDNode.prototype.deriveFromPath = function(path) {
     } else {
       hdnode = hdnode.derive(index);
     }
+
+    this.cache[currentPath] = hdnode;
   }
-  
+
   return hdnode;
 };
