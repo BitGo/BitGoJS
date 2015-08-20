@@ -555,13 +555,15 @@ exports.verifyInputSignatures = function(transaction, inputIndex, pubScript) {
     var hashType = sigs[sigIndex][sigs[sigIndex].length - 1];
     sigs[sigIndex] = sigs[sigIndex].slice(0, sigs[sigIndex].length - 1); // pop hash type from end
     var signatureHash = transaction.hashForSignature(inputIndex, pubScript, hashType);
+    var signature = ECSignature.fromDER(sigs[sigIndex]);
+
 
     var validSig = false;
 
     // Enumerate the possible public keys
     for (var pubKeyIndex = 0; pubKeyIndex < pubKeys.length; ++pubKeyIndex) {
       var pubKey = ECPubkey.fromBuffer(pubKeys[pubKeyIndex]);
-      var signature = ECSignature.fromDER(sigs[sigIndex]);
+
       validSig = pubKey.verify(signatureHash, signature);
       if (validSig) {
         pubKeys.splice(pubKeyIndex, 1);  // remove the pubkey so we can't match 2 sigs against the same pubkey
