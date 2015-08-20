@@ -666,8 +666,8 @@ describe('Wallet', function() {
 
     it('list with minHeight', function(done) {
 
-      var minHeight = 394335;
-      var options = { minHeight: 394327, limit: 500 };
+      var minHeight = 530000;
+      var options = { minHeight: minHeight, limit: 500 };
       wallet1.transactions(options, function(err, result) {
         assert.equal(err, null);
         assert.equal(Array.isArray(result.transactions), true);

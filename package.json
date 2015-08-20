@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "0.11.31",
+  "version": "0.11.32",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -25,7 +25,8 @@
     "should": "3.3.2",
     "supertest": "^0.15.0",
     "uglify-js": "2.4.13",
-    "uglifyify": "^3.0.1"
+    "uglifyify": "^3.0.1",
+    "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz"
   },
   "testling": {
     "browsers": [

@@ -211,13 +211,26 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
     throw new Error('wallet passphrase or xprv required to approve a transactionRequest');
   }
 
+  if (params.useOriginalFee) {
+    if (typeof(params.useOriginalFee) != 'boolean') {
+      throw new Error('invalid type for useOriginalFeeRate');
+    }
+    if (params.fee || params.feeRate || params.feeTxConfirmTarget) {
+      throw new Error('cannot specify a fee/feerate/feeTxConfirmTarget as well as useSameFeeRate');
+    }
+  }
+
   var self = this;
   return Q()
   .then(function() {
     if (self.type() === 'transactionRequest') {
+      var extendParams = { txHex: self.info().transactionRequest.transaction };
+      if (params.useOriginalFee) {
+        extendParams.fee = self.info().transactionRequest.fee;
+      }
       return self.populateWallet()
       .then(function() {
-        return self.recreateAndSignTransaction(_.extend(params, { txHex: self.info().transactionRequest.transaction }));
+        return self.recreateAndSignTransaction(_.extend(params, extendParams));
       });
     }
   });
