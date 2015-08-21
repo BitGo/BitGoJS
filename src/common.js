@@ -48,9 +48,9 @@ exports.validateParams = function(params, expectedParams, optionalParams, option
   });
 
   optionalParams = optionalParams || [];
-  optionalParams.forEach(function(expectedParam) {
-    if (params[expectedParam] && typeof(params[expectedParam]) != 'string') {
-      throw new Error('Expecting parameter string: ' + expectedParam + ' but found ' + typeof(params[expectedParam]));
+  optionalParams.forEach(function(optionalParam) {
+    if (params[optionalParam] && typeof(params[optionalParam]) != 'string') {
+      throw new Error('Expecting parameter string: ' + optionalParam + ' but found ' + typeof(params[optionalParam]));
     }
   });
 
