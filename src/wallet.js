@@ -686,7 +686,7 @@ Wallet.prototype.sendMany = function(params, callback) {
     // Send the transaction
     fee = transaction.fee;
     feeRate = transaction.feeRate;
-    return self.sendTransaction({ tx: transaction.tx, message: params.message });
+    return self.sendTransaction({ tx: transaction.tx, message: params.message, sequenceId: params.sequenceId });
   })
   .then(function(result) {
     result.fee = fee;
