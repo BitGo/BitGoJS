@@ -379,16 +379,36 @@ Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var url = this.url('/unspents');
-  if (params.target) {
-    if (typeof(params.target) != 'number') {
-      throw new Error('invalid argument');
-    }
-    url += '?target=' + params.target;
-  }
+  var allUnspents = [];
+  var self = this;
 
-  return this.bitgo.get(url)
-  .result('unspents')
+  var getUnspentsBatch = function(skip){
+    var url = self.url('/unspents');
+    if (params.target) {
+      if (typeof(params.target) != 'number') {
+        throw new Error('invalid argument');
+      }
+      url += '?target=' + params.target;
+    } else if (skip > 0) {
+      url += '?skip='+skip;
+    }
+    return self.bitgo.get(url)
+    .then(function(response){
+      allUnspents = allUnspents.concat(response.body.unspents);
+      var totalUnspentCount = response.body.total;
+      if (!params.target && totalUnspentCount && totalUnspentCount > allUnspents.length) {
+        // we need to fetch the next batch
+        // let's just offset the current skip by the count
+        var newSkip = skip + response.body.count;
+        return getUnspentsBatch(newSkip);
+      }
+
+      return allUnspents;
+
+    });
+  };
+
+  return getUnspentsBatch(0)
   .nodeify(callback);
 };
 
