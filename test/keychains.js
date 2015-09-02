@@ -167,6 +167,47 @@ describe('Keychains', function() {
     });
   });
 
+  describe('Create Backup', function() {
+    it('arguments', function () {
+      assert.throws(function () {
+        keychains.createBackup('invalid');
+      });
+      assert.throws(function () {
+        keychains.createBackup();
+      });
+      assert.throws(function () {
+        keychains.createBackup({}, 0);
+      });
+    });
+
+    describe('prederived key', function () {
+      var generatedXPub;
+      it('add', function () {
+        var options = {
+          provider: 'bitgo'
+        };
+        return keychains.createBackup(options)
+        .then(function(keychain) {
+          keychain.should.have.property('xpub');
+          keychain.should.have.property('path');
+          generatedXPub = keychain.xpub;
+        });
+      });
+
+      it('get', function() {
+        var options = {
+          xpub: generatedXPub
+        };
+        return keychains.get(options)
+        .then(function(keychain) {
+          keychain.should.have.property('xpub');
+          keychain.should.have.property('path');
+          keychain.xpub.should.eql(generatedXPub);
+        });
+      });
+    });
+  });
+
   describe('Update', function() {
     var newKey;
 

@@ -97,7 +97,7 @@ Keychains.prototype.add = function(params, callback) {
 };
 
 //
-// addBitGo
+// createBitGo
 // Add a new BitGo server keychain
 //
 Keychains.prototype.createBitGo = function(params, callback) {
@@ -106,6 +106,20 @@ Keychains.prototype.createBitGo = function(params, callback) {
 
   return this.bitgo.post(this.bitgo.url('/keychain/bitgo'))
   .send({})
+  .result()
+  .nodeify(callback);
+};
+
+//
+// createBackup
+// Create a new backup keychain through bitgo - often used for creating a keychain on a KRS
+//
+Keychains.prototype.createBackup = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['provider'], [], callback);
+
+  return this.bitgo.post(this.bitgo.url('/keychain/backup'))
+  .send(params)
   .result()
   .nodeify(callback);
 };
