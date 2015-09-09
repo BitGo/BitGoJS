@@ -15,6 +15,7 @@ var Util = require('./util');
 
 var common = require('./common');
 var networks = require('bitcoinjs-lib/src/networks');
+var Q = require('q');
 var _ = require('lodash');
 
 //
@@ -646,12 +647,13 @@ Wallet.prototype.createShare = function(params, callback) {
 //   amount - the amount in satoshis to be sent
 //   message - optional message to attach to transaction
 //   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+//   xprv - the private key in string form, if walletPassphrase is not available
 //   (See transactionBuilder.createTransaction for other passthrough params)
 // Returns:
 //
 Wallet.prototype.sendCoins = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address', 'walletPassphrase'], ['message'], callback);
+  common.validateParams(params, ['address'], ['message'], callback);
 
   if (typeof(params.amount) != 'number') {
     throw new Error('invalid argument for amount - number expected');
@@ -676,12 +678,13 @@ Wallet.prototype.sendCoins = function(params, callback) {
 // Parameters:
 //   recipients - array of { address, amount } to send to
 //   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+//   xprv - the private key in string form, if walletPassphrase is not available
 //   (See transactionBuilder.createTransaction for other passthrough params)
 // Returns:
 //
 Wallet.prototype.sendMany = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['walletPassphrase'], ['message'], callback);
+  common.validateParams(params, [], ['message'], callback);
   var self = this;
 
   if (typeof(params.recipients) != 'object') {
@@ -728,7 +731,7 @@ Wallet.prototype.sendMany = function(params, callback) {
 //
 Wallet.prototype.createAndSignTransaction = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['walletPassphrase'], [], callback);
+  common.validateParams(params, [], [], callback);
   var self = this;
 
   if (typeof(params.recipients) != 'object') {
@@ -751,32 +754,84 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   var fee;
   var feeRate;
 
-  // Get the user keychain
-  return this.getEncryptedUserKeychain()
-  .then(function(result) {
-    keychain = result;
-    // Decrypt the user key with a passphrase
-    try {
-      keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
-    } catch (e) {
-      throw new Error('Unable to decrypt user keychain');
-    }
-  })
+  return Q()
   .then(function() {
-    // Create unsigned transaction
-    return self.createTransaction(params);
+    // wrap in a Q in case one of these throws
+    return Q.all([self.getAndPrepareSigningKeychain(params), self.createTransaction(params)]);
   })
-  .then(function(result) {
-    fee = result.fee;
-    feeRate = result.feeRate;
+  .spread(function(keychain, transaction) {
+    fee = transaction.fee;
+    feeRate = transaction.feeRate;
     // Sign the transaction
-    result.keychain = keychain;
-    return self.signTransaction(result);
+    transaction.keychain = keychain;
+    return self.signTransaction(transaction);
   })
   .then(function(result) {
     return _.extend(result, { fee: fee, feeRate: feeRate });
   })
   .nodeify(callback);
+};
+
+//
+// getAndPrepareSigningKeychain
+// INTERNAL function to get the user keychain for signing.
+// Caller must provider either walletPassphrase or xprv as a string
+// If the caller provides the encrypted xprv (walletPassphrase), then fetch the keychain object and decrypt
+// Otherwise if the xprv is provided, fetch the keychain object and augment it with the xprv
+//
+// Parameters:
+//   xprv - the private key in string form
+//   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+// Returns:
+//   Keychain object containing xprv, xpub and paths
+//
+Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
+
+  if ((params.walletPassphrase && params.xprv) || (!params.walletPassphrase && !params.xprv)) {
+    throw new Error('must provide exactly one of xprv or walletPassphrase');
+  }
+
+  var self = this;
+
+  // Caller provided a wallet passphrase
+  if (params.walletPassphrase) {
+    return self.getEncryptedUserKeychain()
+    .then(function(keychain) {
+      // Decrypt the user key with a passphrase
+      try {
+        keychain.xprv = self.bitgo.decrypt({password: params.walletPassphrase, input: keychain.encryptedXprv});
+      } catch (e) {
+        throw new Error('Unable to decrypt user keychain');
+      }
+      return keychain;
+    });
+  }
+
+  // Caller provided an xprv - validate and construct keychain object
+  var xpub;
+  try {
+    xpub = HDNode.fromBase58(params.xprv).neutered().toBase58();
+  } catch (e) {
+    throw new Error('Unable to parse the xprv');
+  }
+
+  if (xpub == params.xprv) {
+    throw new Error('xprv provided was not a private key (found xpub instead)');
+  }
+
+  var walletXpubs = _.pluck(self.keychains, 'xpub');
+  if (!_.includes(walletXpubs, xpub)) {
+    throw new Error('xprv provided was not a keychain on this wallet!');
+  }
+
+  // get the keychain object from bitgo to find the path and (potential) wallet structure
+  return self.bitgo.keychains().get({ xpub: xpub })
+  .then(function(keychain) {
+    keychain.xprv = params.xprv;
+    return keychain;
+  });
 };
 
 Wallet.prototype.shareWallet = function(params, callback) {
