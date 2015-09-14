@@ -766,7 +766,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
         .catch(function(e) {
           e.message.should.eql('Insufficient funds');
-          e.should.have.property('fee');
+          e.result.should.have.property('fee');
         })
         .done();
       });
@@ -781,7 +781,7 @@ describe('Wallet', function() {
         })
         .catch(function(e) {
           e.message.should.eql('Insufficient funds');
-          e.should.have.property('fee');
+          e.result.should.have.property('fee');
         })
         .done();
       });

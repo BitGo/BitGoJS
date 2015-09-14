@@ -234,8 +234,10 @@ exports.createTransaction = function(params) {
 
     if (totalAmount > inputAmount) {
       var err = new Error('Insufficient funds');
-      err.fee = fee;
-      err.available = inputAmount;
+      err.result = {
+        fee: fee,
+        available: inputAmount
+      };
       return Q.reject(err);
     }
   };

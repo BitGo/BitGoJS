@@ -198,6 +198,32 @@ describe('Bitgo Express', function() {
       });
     });
 
+    it('send coins - wallet3 to wallet1 with insufficient amount', function(done) {
+      agent.post('/api/v1/user/unlock')
+      .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+      .send({ otp: '0000000', duration: 10 })
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(200);
+
+        agent.post('/api/v1/wallet/' + TestBitGo.TEST_WALLET3_ADDRESS + '/createtransaction')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ recipients: [{ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 10000 * 1e8 }], walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE })
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) { throw err; }
+          res.body.should.have.property('message');
+          res.body.result.should.have.property('fee');
+          res.body.result.should.have.property('available');
+          res.body.message.should.equal("Insufficient funds");
+          res.body.result.fee.should.be.greaterThan(546);
+          res.body.result.available.should.be.greaterThan(546);
+          done();
+        });
+      });
+    });
+
     it('send coins - wallet3 to wallet1 with fee', function(done) {
       agent.post('/api/v1/user/unlock')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)

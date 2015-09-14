@@ -4,6 +4,7 @@ var BitGoJS = require('./index');
 var common = require('./common');
 var Q = require('q');
 var url = require('url');
+var _ = require('lodash');
 var pjson = require('../package.json');
 
 var BITGOEXPRESS_USER_AGENT = "BitGoExpress/" + pjson.version;
@@ -64,7 +65,12 @@ var handleCreateTransaction = function(req) {
   return req.bitgo.wallets().get({id: req.params.id})
   .then(function(wallet) {
     return wallet.createTransaction(req.body);
-  });
+  })
+  .catch(function(err) {
+    if (err.message === "Insufficient funds") {
+      throw apiResponse(400, err, "Insufficient funds");
+    }
+  })
 };
 
 var handleSignTransaction = function(req) {
@@ -106,8 +112,8 @@ var handleConstructApprovalTx = function(req) {
   });
 };
 
-var apiResponse = function(status, result) {
-  var err = new Error('');
+var apiResponse = function(status, result, message) {
+  var err = new Error(message);
   err.status = status;
   err.result = result;
   return err;
@@ -179,6 +185,8 @@ var promiseWrapper = function(promiseRequestHandler, args) {
       var message = err.message || 'local error';
       // use attached result, or make one
       var result = err.result || {error: message};
+      result = _.extend({}, result);
+      result.message = err.message;
       var status = err.status || 500;
       if (!(status >= 200 && status < 300)) {
         console.log('error %s: %s', status, err.message);
