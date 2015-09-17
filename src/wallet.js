@@ -13,6 +13,7 @@ var PendingApproval = require('./pendingapproval');
 var ECKey = require('bitcoinjs-lib/src/eckey');
 var Util = require('./util');
 
+var assert = require('assert');
 var common = require('./common');
 var networks = require('bitcoinjs-lib/src/networks');
 var Q = require('q');
@@ -834,6 +835,230 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
   });
 };
 
+/**
+ * Takes a wallet's unspents and fans them out into a larger number of equally sized unspents
+ * @param params
+ *  target: set how many unspents you want to have in the end
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.fanOutUnspents = function(params, callback) {
+  // maximum number of inputs for fanout transaction
+  // (when fanning out, we take all the unspents and make a bigger number of outputs)
+  const MAX_FANOUT_INPUT_COUNT = 80;
+  // maximum number of outputs for fanout transaction
+  const MAX_FANOUT_OUTPUT_COUNT = 300;
+  params = params || {};
+  var validate = params.validate === undefined ? true : params.validate;
+
+  var target = params.target;
+  // the target must be defined, be a number, be at least two, and be a natural number
+  if (typeof(target) !== 'number' || target < 2 || (target % 1) !== 0) {
+    throw new Error('Target needs to be a positive integer');
+  }
+  if (target > MAX_FANOUT_OUTPUT_COUNT) {
+    throw new Error('Fan out target too high');
+  }
+  var self = this;
+
+  /**
+   * Split a natural number N into n almost equally sized (±1) natural numbers.
+   * In order to calculate the sizes of the parts, we calculate floor(N/n), and thus have the base size of all parts.
+   * If N % n != 0, this leaves us with a remainder r where r < n. We distribute r equally among the n parts by
+   * adding 1 to the first r parts.
+   * @param total
+   * @param partCount
+   * @returns {Array}
+   */
+  var splitNumberIntoCloseNaturalNumbers = function(total, partCount) {
+    var partSize = Math.floor(total / partCount);
+    var remainder = total - partSize * partCount;
+    // initialize placeholder array
+    var almostEqualParts = new Array(partCount);
+    // fill the first remainder parts with the value partSize+1
+    _.fill(almostEqualParts, partSize + 1, 0, remainder);
+    // fill the remaining parts with the value partSize
+    _.fill(almostEqualParts, partSize, remainder);
+    // assert the correctness of the almost equal parts
+    // TODO: add check for the biggest deviation between any two parts and make sure it's <= 1
+    assert.equal(_(almostEqualParts).sum(), total);
+    assert.equal(_(almostEqualParts).size(), partCount);
+    return almostEqualParts;
+  };
+
+  var transactionParams;
+  var grossAmount = 0;
+
+  // first, let's take all the wallet's unspents
+  return self.unspents()
+  .then(function(allUnspents) {
+    if (allUnspents.length < 1) {
+      throw new Error('No unspents to branch out');
+    }
+
+    // this consolidation is essentially just a waste of money
+    if (allUnspents.length >= target) {
+      throw new Error('Fan out target has to be bigger than current number of unspents');
+    }
+
+    // we have at the very minimum 81 inputs, and 81 outputs. That transaction will be big
+    // in the medium run, this algorithm could be reworked to only work with a subset of the transactions
+    if (allUnspents.length > MAX_FANOUT_INPUT_COUNT) {
+      throw new Error('Too many unspents');
+    }
+
+    // this is all the money that is currently in the wallet
+    grossAmount = _(allUnspents).pluck('value').sum();
+
+    // in order to not modify the params object, we create a copy
+    transactionParams = _.extend({}, params);
+    transactionParams.unspents = allUnspents;
+    transactionParams.recipients = {};
+
+    // create target amount of new addresses for this wallet
+    var newAddresses = [];
+    return _.range(target).reduce(function(soFar) {
+      return soFar
+      .then(function() {
+        return self.createAddress({ chain: 1, validate: validate });
+      })
+      .then(function(currentNewAddress) {
+        newAddresses.push(currentNewAddress);
+        return newAddresses;
+      });
+    }, Q());
+  })
+  .then(function(newAddresses) {
+    // let's find a nice, equal distribution of our Satoshis among the new addresses
+    var splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
+    // map the newly created addresses to the almost components amounts we just calculated
+    transactionParams.recipients = _.zipObject(_.pluck(newAddresses, 'address'), splitAmounts);
+    // attempt to create a transaction. As it is a wallet-sweeping transaction with no fee, we expect it to fail
+    return self.sendMany(transactionParams)
+    .catch(function(error) {
+      // as expected, the transaction creation did indeed fail due to insufficient fees
+      // the error suggests a fee value which we then use for the transaction
+      var fee = error.fee || error.result.fee;
+      transactionParams.fee = fee;
+      // in order to maintain the equal distribution, we need to subtract the fee from the cumulative funds
+      var netAmount = grossAmount - fee; // after fees
+      // that means that the distribution has to be recalculated
+      var remainingSplitAmounts = splitNumberIntoCloseNaturalNumbers(netAmount, target);
+      // and the distribution again mapped to the new addresses
+      transactionParams.recipients = _.zipObject(_.pluck(newAddresses, 'address'), remainingSplitAmounts);
+      // this time, the transaction creation should work
+      return self.sendMany(transactionParams);
+    });
+  })
+  .nodeify(callback);
+};
+
+/**
+ * Consolidate a wallet's unspents into fewer unspents
+ * @param params
+ *  target: set how many unspents you want to have in the end
+ *  maxInputCountPerConsolidation: set how many maximum inputs are to be permitted per consolidation batch
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.consolidateUnspents = function(params, callback) {
+  params = params || {};
+  var validate = params.validate === undefined ? true : params.validate;
+
+  var target = params.target;
+  // the target must be defined, be a number, be at least one, and be a natural number
+  if (!target || typeof(target) !== 'number' || target < 1 || (target % 1) !== 0) {
+    throw new Error('Target needs to be a positive integer');
+  }
+
+  // maximum number of inputs per transaction for consolidation
+  const ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT = 85;
+  var maxInputCountPerConsolidation = params.maxInputCountPerConsolidation;
+  if (typeof (maxInputCountPerConsolidation) !== 'number' || maxInputCountPerConsolidation < 2 || (maxInputCountPerConsolidation % 1) !== 0) {
+    throw new Error('Maximum consolidation input count needs to be an integer equal to or bigger than 2');
+  } else if (maxInputCountPerConsolidation > ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT) {
+    throw new Error('Maximum consolidation input count needs cannot be bigger than ' + ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT);
+  }
+
+  var self = this;
+
+  /**
+   * Consolidate one batch of up to MAX_CONSOLIDATION_INPUT_COUNT unspents.
+   * @param wallet
+   * @param targetUnspentCount
+   * @returns {*}
+   */
+  var consolidateSelectUnspents = function() {
+    var consolidationTransactions = [];
+    var grossAmount;
+    var isFinalConsolidation = false;
+    /*
+     We take a maximum of unspentBulkSizeLimit unspents from the wallet. We want to make sure that we swipe the wallet
+     clean of all excessive unspents, so we add 1 to the target unspent count to make sure we haven't missed anything.
+     In case there are even more unspents than that, to make the consolidation as fast as possible, we expand our
+     selection to include as many as the maximum permissible number of inputs per consolidation batch.
+     Should the target number of unspents be higher than the maximum number if inputs per consolidation,
+     we still want to fetch them all simply to be able to determine whether or not a consolidation can be performed
+     at all, which is dependent on the number of all unspents being higher than the target.
+     In the next version of the unspents version SDK, we will know the total number of unspents without having to fetch
+     them, and therefore will be able to simplify this method.
+     */
+    var unspentBulkSizeLimit = Math.max(target, maxInputCountPerConsolidation) + 1;
+    return self.unspents({ limit: unspentBulkSizeLimit })
+    .then(function(allUnspents) {
+      // this consolidation is essentially just a waste of money
+      if (allUnspents.length <= target) {
+        throw new Error('Fewer unspents than consolidation target. Use fanOutUnspents instead.');
+      }
+
+      // how many of the unspents do we want to consolidate?
+      // the +1 is because the consolidated block becomes a new unspent later
+      var targetConsolidationSize = allUnspents.length - target + 1;
+      // if the targetConsolidationSize requires more inputs than we allow per batch, we reduce the number
+      var consolidationSize = Math.min(targetConsolidationSize, maxInputCountPerConsolidation);
+      isFinalConsolidation = (consolidationSize === targetConsolidationSize);
+
+      var currentUnspentChunk = allUnspents.splice(0, consolidationSize);
+      return [self.createAddress({ chain: 1, validate: validate }), currentUnspentChunk];
+    })
+    .spread(function(newAddress, currentChunk) {
+      var transactionParams = _.extend({}, params);
+      // the total amount that we are consolidating within this batch
+      grossAmount = _(currentChunk).pluck('value').sum(); // before fees
+
+      transactionParams.unspents = currentChunk;
+      transactionParams.recipients = {};
+      transactionParams.recipients[newAddress.address] = grossAmount;
+      // let's attempt to create this transaction. We expect it to fail because no fee is set.
+      return self.sendMany(transactionParams)
+      .catch(function(error) {
+        // this error should occur due to insufficient funds
+        var fee = error.fee || error.result.fee;
+        var netAmount = grossAmount - fee; // after fees
+        transactionParams.fee = fee;
+        transactionParams.recipients[newAddress.address] = netAmount;
+        // this transaction, on the other hand, should be created with no issues, because an appropriate fee is set
+        return self.sendMany(transactionParams);
+      });
+    })
+    .then(function(sentConsolidationTransaction) {
+      consolidationTransactions.push(sentConsolidationTransaction);
+      if (!isFinalConsolidation) {
+        // this last consolidation has not yet brought the unspents count down to the target unspent count
+        // therefore, we proceed by consolidating yet another batch
+        // before we do that, we wait 1 second so that the newly created unspent will be fetched in the next batch
+        return Q.delay(1000)
+        .then(consolidateSelectUnspents);
+      }
+      // this is the final consolidation transaction. We return all the ones we've had so far
+      return consolidationTransactions;
+    });
+  };
+
+  return consolidateSelectUnspents(this, target)
+  .nodeify(callback);
+};
+
 Wallet.prototype.shareWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
@@ -850,7 +1075,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
   var self = this;
   var sharing;
   var sharedKeychain;
-  return this.bitgo.getSharingKey({email: params.email})
+  return this.bitgo.getSharingKey({ email: params.email })
   .then(function(result) {
     sharing = result;
 
@@ -870,7 +1095,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
 
           var eckey = ECKey.makeRandom();
           var secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
-          var newEncryptedXprv = self.bitgo.encrypt({password: secret, input: keychain.xprv});
+          var newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
 
           sharedKeychain = {
             xpub: keychain.xpub,

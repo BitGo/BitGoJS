@@ -606,6 +606,25 @@ describe('Wallet', function() {
   });
 
   describe('Unspents', function() {
+
+    var sharedWallet;
+
+    before(function() {
+      var consolidationBitgo = new TestBitGo();
+      consolidationBitgo.initializeTestVars();
+
+      return consolidationBitgo.authenticateTestUser(consolidationBitgo.testUserOTP())
+      .then(function() {
+        return consolidationBitgo.unlock({ otp: consolidationBitgo.testUserOTP(), duration: 3600 })
+      })
+      .then(function() {
+        return consolidationBitgo.wallets().get({id: TestBitGo.TEST_WALLET2_ADDRESS})
+      })
+      .then(function(result) {
+        sharedWallet = result;
+      });
+    });
+
     it('arguments', function(done) {
       assert.throws(function() { wallet1.unspents('invalid', function() {}); });
       assert.throws(function() { wallet1.unspents({target: 'a string!'}, function() {}); });
@@ -621,6 +640,80 @@ describe('Wallet', function() {
         done();
       });
     });
+
+    describe('Unspent Fanning And Consolidation', function(){
+
+      it('arguments', function(done){
+        assert.throws(function() { wallet1.fanOutUnspents('invalid'); });
+        assert.throws(function() { wallet1.fanOutUnspents({}); });
+        assert.throws(function() { wallet1.fanOutUnspents({target: -4}); });
+        assert.throws(function() { wallet1.fanOutUnspents({target: 0}); });
+        assert.throws(function() { wallet1.fanOutUnspents({target: 2.3}); });
+
+        assert.throws(function() { wallet1.consolidateUnspents('invalid'); });
+        assert.throws(function() { wallet1.consolidateUnspents({}); });
+        assert.throws(function() { wallet1.consolidateUnspents({target: -4}); });
+        assert.throws(function() { wallet1.consolidateUnspents({target: 0}); });
+        assert.throws(function() { wallet1.consolidateUnspents({target: 2.3}); });
+        assert.throws(function() { wallet1.consolidateUnspents({target: 3, maxInputCountPerConsolidation: -4}); });
+        assert.throws(function() { wallet1.consolidateUnspents({target: 3, maxInputCountPerConsolidation: 0}); });
+        assert.throws(function() { wallet1.consolidateUnspents({target: 3, maxInputCountPerConsolidation: -2.3}); });
+        done();
+      });
+
+      it('fan out unspents', function() {
+
+        return Q()
+        .then(function(){
+          // at this point, we have 44 unspents. Let's test consolidating them into one
+          var options = {
+            walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
+            password: TestBitGo.TEST_WALLET2_PASSCODE,
+            otp: '0000000',
+            target: 20 // the maximum consolidation count per input will be 7. This is to ensure we have multiple batches
+          };
+          return sharedWallet.fanOutUnspents(options);
+        })
+        .then(function(response){
+          response.should.have.property('hash');
+          response.should.have.property('tx');
+          response.status.should.equal('accepted');
+        });
+
+      });
+
+      it('wait after fanning out', function(done) {
+        setTimeout(done, 2000); // let's just wait for 2 seconds so the consolidation works
+      });
+
+      it('consolidate unspents', function() {
+
+        return Q()
+        .then(function(){
+          // at this point, we have 44 unspents. Let's test consolidating them into one
+          var options = {
+            walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
+            password: TestBitGo.TEST_WALLET2_PASSCODE,
+            otp: '0000000',
+            target: 4,
+            maxInputCountPerConsolidation: 7
+          };
+          return sharedWallet.consolidateUnspents(options);
+        })
+        .then(function(response){
+          response.length.should.equal(1);
+          var firstConsolidation = response[0];
+          firstConsolidation.should.have.property('hash');
+          firstConsolidation.should.have.property('tx');
+          firstConsolidation.status.should.equal('accepted');
+        });
+
+      });
+
+    });
+
+
+
   });
 
   describe('Transactions', function() {
@@ -1370,8 +1463,7 @@ describe('Wallet', function() {
           result.should.have.property('feeRate');
           result.feeRate.should.be.lessThan(0.01*1e8);
           done();
-        }
-        );
+        });
       });
 
       it('send from legacy safe wallet back to wallet1', function () {

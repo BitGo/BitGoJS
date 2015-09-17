@@ -58,6 +58,7 @@ exports.createTransaction = function(params) {
      (params.enforceMinConfirmsForChange && typeof(params.enforceMinConfirmsForChange) !== 'boolean') ||
      (params.minUnspentSize && typeof(params.minUnspentSize) !== 'number') ||
      (params.maxFeeRate && typeof(params.maxFeeRate) !== 'number') ||
+     (params.unspents && params.unspents.length < 1) || // this should be an array and its length must be at least 1
      (params.feeTxConfirmTarget && typeof(params.feeTxConfirmTarget) !== 'number')) {
     throw new Error('invalid argument');
   }
@@ -170,6 +171,12 @@ exports.createTransaction = function(params) {
 
   // Get the unspents for the sending wallet.
   var getUnspents = function () {
+
+    if (params.unspents) { // we just wanna use custom unspents
+      unspents = params.unspents;
+      return;
+    }
+
     // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
     var options = {
       target: totalAmount + (0.01 * 1e8),  // fee @ 0.0001/kb for a 100kb tx
