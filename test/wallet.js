@@ -686,6 +686,29 @@ describe('Wallet', function() {
         setTimeout(done, 2000); // let's just wait for 2 seconds so the consolidation works
       });
 
+      it('consolidate unspents with automatic input count per consolidation', function() {
+
+        return Q()
+        .then(function(){
+          // at this point, we have 44 unspents. Let's test consolidating them into one
+          var options = {
+            walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
+            password: TestBitGo.TEST_WALLET2_PASSCODE,
+            otp: '0000000',
+            target: 18,
+          };
+          return sharedWallet.consolidateUnspents(options);
+        })
+        .then(function(response){
+          response.length.should.equal(1);
+          var firstConsolidation = response[0];
+          firstConsolidation.should.have.property('hash');
+          firstConsolidation.should.have.property('tx');
+          firstConsolidation.status.should.equal('accepted');
+        });
+
+      });
+
       it('consolidate unspents', function() {
 
         return Q()

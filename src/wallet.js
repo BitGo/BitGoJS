@@ -966,14 +966,19 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   var validate = params.validate === undefined ? true : params.validate;
 
   var target = params.target;
-  // the target must be defined, be a number, be at least one, and be a natural number
-  if (!target || typeof(target) !== 'number' || target < 1 || (target % 1) !== 0) {
+  if (target == undefined) {
+    target = 1;
+  } else if (typeof(target) !== 'number' || target < 1 || (target % 1) !== 0) {
+    // the target must be defined, be a number, be at least one, and be a natural number
     throw new Error('Target needs to be a positive integer');
   }
 
   // maximum number of inputs per transaction for consolidation
   const ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT = 85;
   var maxInputCountPerConsolidation = params.maxInputCountPerConsolidation;
+  if (maxInputCountPerConsolidation == undefined) { // null or unidentified, because equality to zero retruns true in if(! clause
+    maxInputCountPerConsolidation = ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT;
+  }
   if (typeof (maxInputCountPerConsolidation) !== 'number' || maxInputCountPerConsolidation < 2 || (maxInputCountPerConsolidation % 1) !== 0) {
     throw new Error('Maximum consolidation input count needs to be an integer equal to or bigger than 2');
   } else if (maxInputCountPerConsolidation > ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT) {
