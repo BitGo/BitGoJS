@@ -839,6 +839,8 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
  * Takes a wallet's unspents and fans them out into a larger number of equally sized unspents
  * @param params
  *  target: set how many unspents you want to have in the end
+ *  xprv: private key to sign transaction
+ *  walletPassphrase: wallet passphrase to decrypt the wallet's private key
  * @param callback
  * @returns {*}
  */
@@ -849,6 +851,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
   // maximum number of outputs for fanout transaction
   const MAX_FANOUT_OUTPUT_COUNT = 300;
   params = params || {};
+  common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
   var validate = params.validate === undefined ? true : params.validate;
 
   var target = params.target;
@@ -958,11 +961,14 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
  * @param params
  *  target: set how many unspents you want to have in the end
  *  maxInputCountPerConsolidation: set how many maximum inputs are to be permitted per consolidation batch
+ *  xprv: private key to sign transaction
+ *  walletPassphrase: wallet passphrase to decrypt the wallet's private key
  * @param callback
  * @returns {*}
  */
 Wallet.prototype.consolidateUnspents = function(params, callback) {
   params = params || {};
+  common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
   var validate = params.validate === undefined ? true : params.validate;
 
   var target = params.target;

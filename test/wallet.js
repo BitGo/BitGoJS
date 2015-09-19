@@ -651,7 +651,6 @@ describe('Wallet', function() {
         assert.throws(function() { wallet1.fanOutUnspents({target: 2.3}); });
 
         assert.throws(function() { wallet1.consolidateUnspents('invalid'); });
-        assert.throws(function() { wallet1.consolidateUnspents({}); });
         assert.throws(function() { wallet1.consolidateUnspents({target: -4}); });
         assert.throws(function() { wallet1.consolidateUnspents({target: 0}); });
         assert.throws(function() { wallet1.consolidateUnspents({target: 2.3}); });
