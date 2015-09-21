@@ -941,6 +941,11 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
     .catch(function(error) {
       // as expected, the transaction creation did indeed fail due to insufficient fees
       // the error suggests a fee value which we then use for the transaction
+      // however, let's make sure it wasn't something else
+      if (!error.fee && (!error.result || !error.result.fee)) {
+        // if the error does not contain a fee property, it is something else that has gone awry, and we throw it
+        throw error;
+      }
       var fee = error.fee || error.result.fee;
       transactionParams.fee = fee;
       // in order to maintain the equal distribution, we need to subtract the fee from the cumulative funds
