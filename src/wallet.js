@@ -1044,6 +1044,11 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       return self.sendMany(transactionParams)
       .catch(function(error) {
         // this error should occur due to insufficient funds
+        // however, let's make sure it wasn't something else
+        if (!error.fee && (!error.result || !error.result.fee)) {
+          // if the error does not contain a fee property, it is something else that has gone awry, and we throw it
+          throw error;
+        }
         var fee = error.fee || error.result.fee;
         var netAmount = grossAmount - fee; // after fees
         transactionParams.fee = fee;
