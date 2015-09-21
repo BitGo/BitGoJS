@@ -328,6 +328,24 @@ Wallet.prototype.labels = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * Rename a wallet
+ * @param params
+ *  - label: the wallet's intended new name
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.setWalletName = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['label'], [], callback);
+
+  var url = this.bitgo.url('/wallet/' + this.id());
+  return this.bitgo.put(url)
+  .send({ label: params.label })
+  .result()
+  .nodeify(callback);
+};
+
 //
 // setLabel
 // Sets a label on the provided address

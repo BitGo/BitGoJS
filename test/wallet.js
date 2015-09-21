@@ -12,6 +12,7 @@ var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 var TransactionBuilder = require('../src/transactionBuilder');
 var unspentData = require('./fixtures/largeunspents.json');
+var crypto = require("crypto");
 var _ = require('lodash');
 
 Q.longStackTrace = true;
@@ -583,6 +584,35 @@ describe('Wallet', function() {
         label.label.should.eql("testLabel");
         label.address.should.eql(TestBitGo.TEST_WALLET1_ADDRESS2);
         done();
+      });
+    });
+  });
+
+  describe('Rename Wallet / Set Wallet Label', function() {
+
+    it('arguments', function(done) {
+      assert.throws(function() { wallet1.setLabel({}, function() {}); });
+      done();
+    });
+
+    it('should rename wallet', function() {
+      // generate some random string to make the rename visible in the system
+      var renameIndicator = crypto.randomBytes(3).toString('hex');
+      var originalWalletName = 'Even Better Test Wallet 1';
+      var newWalletName = originalWalletName + '(' + renameIndicator + ')';
+      return wallet1.setWalletName({ label: newWalletName })
+      .then(function(result){
+        result.should.have.property('id');
+        result.should.have.property('label');
+        result.id.should.eql(TestBitGo.TEST_WALLET1_ADDRESS);
+        result.label.should.eql(newWalletName);
+
+        // now, let's rename it back
+        return wallet1.setWalletName({ label: originalWalletName });
+      })
+      .catch(function(err){
+        // it should never be in here
+        assert.equal(err, null);
       });
     });
   });
