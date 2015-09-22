@@ -70,6 +70,7 @@ var handleCreateTransaction = function(req) {
     if (err.message === "Insufficient funds") {
       throw apiResponse(400, err, "Insufficient funds");
     }
+    throw err;
   })
 };
 
