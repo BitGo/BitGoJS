@@ -694,12 +694,13 @@ describe('Wallet', function() {
 
         return Q()
         .then(function(){
-          // at this point, we have 44 unspents. Let's test consolidating them into one
+          // at this point, we have 4 unspents. Let's test fanning them out into 20
           var options = {
             walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
             password: TestBitGo.TEST_WALLET2_PASSCODE,
             otp: '0000000',
-            target: 20 // the maximum consolidation count per input will be 7. This is to ensure we have multiple batches
+            target: 20, // the maximum consolidation count per input will be 7. This is to ensure we have multiple batches
+            validate: false
           };
           return sharedWallet.fanOutUnspents(options);
         })
@@ -719,12 +720,13 @@ describe('Wallet', function() {
 
         return Q()
         .then(function(){
-          // at this point, we have 44 unspents. Let's test consolidating them into one
+          // at this point, we have 20 unspents. Let's test consolidating them into 18
           var options = {
             walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
             password: TestBitGo.TEST_WALLET2_PASSCODE,
             otp: '0000000',
             target: 18,
+            validate: false
           };
           return sharedWallet.consolidateUnspents(options);
         })
@@ -739,21 +741,33 @@ describe('Wallet', function() {
       });
 
       it('consolidate unspents', function() {
+        var maxInputCountPerConsolidation = 7;
+        var progressCallbackCount = 0;
+        var progressCallback = function(progressDetails){
+          progressDetails.should.have.property('index');
+          progressDetails.should.have.property('inputCount');
+          progressDetails.index.should.equal(progressCallbackCount);
+          assert(progressDetails.inputCount <= maxInputCountPerConsolidation);
+          progressCallbackCount++;
+        };
 
         return Q()
         .then(function(){
-          // at this point, we have 44 unspents. Let's test consolidating them into one
+          // at this point, we have 18 unspents. Let's test consolidating them into four
           var options = {
             walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
             password: TestBitGo.TEST_WALLET2_PASSCODE,
             otp: '0000000',
             target: 4,
-            maxInputCountPerConsolidation: 7
+            maxInputCountPerConsolidation: maxInputCountPerConsolidation,
+            validate: false,
+            progressCallback: progressCallback
           };
           return sharedWallet.consolidateUnspents(options);
         })
         .then(function(response){
           response.length.should.equal(1);
+          progressCallbackCount.should.equal(3);
           var firstConsolidation = response[0];
           firstConsolidation.should.have.property('hash');
           firstConsolidation.should.have.property('tx');

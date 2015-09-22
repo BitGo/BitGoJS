@@ -986,6 +986,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
  *  maxInputCountPerConsolidation: set how many maximum inputs are to be permitted per consolidation batch
  *  xprv: private key to sign transaction
  *  walletPassphrase: wallet passphrase to decrypt the wallet's private key
+ *  progressCallback: method to be called with object outlining current progress details
  * @param callback
  * @returns {*}
  */
@@ -1015,6 +1016,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   }
 
   var self = this;
+  var consolidationIndex = 0;
 
   /**
    * Consolidate one batch of up to MAX_CONSOLIDATION_INPUT_COUNT unspents.
@@ -1026,6 +1028,8 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     var consolidationTransactions = [];
     var grossAmount;
     var isFinalConsolidation = false;
+    var consolidationSize;
+    var currentConsolidationAddress;
     /*
      We take a maximum of unspentBulkSizeLimit unspents from the wallet. We want to make sure that we swipe the wallet
      clean of all excessive unspents, so we add 1 to the target unspent count to make sure we haven't missed anything.
@@ -1049,7 +1053,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       // the +1 is because the consolidated block becomes a new unspent later
       var targetConsolidationSize = allUnspents.length - target + 1;
       // if the targetConsolidationSize requires more inputs than we allow per batch, we reduce the number
-      var consolidationSize = Math.min(targetConsolidationSize, maxInputCountPerConsolidation);
+      consolidationSize = Math.min(targetConsolidationSize, maxInputCountPerConsolidation);
       isFinalConsolidation = (consolidationSize === targetConsolidationSize);
 
       var currentUnspentChunk = allUnspents.splice(0, consolidationSize);
@@ -1057,6 +1061,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     })
     .spread(function(newAddress, currentChunk) {
       var transactionParams = _.extend({}, params);
+      currentConsolidationAddress = newAddress;
       // the total amount that we are consolidating within this batch
       grossAmount = _(currentChunk).pluck('value').sum(); // before fees
 
@@ -1080,8 +1085,19 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
         return self.sendMany(transactionParams);
       });
     })
-    .then(function(sentConsolidationTransaction) {
-      consolidationTransactions.push(sentConsolidationTransaction);
+    .then(function(sentTx) {
+      consolidationTransactions.push(sentTx);
+      if (typeof(params.progressCallback) === 'function') {
+        params.progressCallback({
+          txid: sentTx.hash,
+          destination: currentConsolidationAddress,
+          amount: grossAmount,
+          fee: sentTx.fee,
+          inputCount: consolidationSize,
+          index: consolidationIndex
+        });
+      }
+      consolidationIndex++;
       if (!isFinalConsolidation) {
         // this last consolidation has not yet brought the unspents count down to the target unspent count
         // therefore, we proceed by consolidating yet another batch
