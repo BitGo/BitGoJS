@@ -428,7 +428,7 @@ Wallet.prototype.unspents = function(params, callback) {
       allUnspents = allUnspents.concat(response.body.unspents);
       // Our limit adjustment makes sure that we never fetch more unspents than we need, meaning that if we hit the
       // limit, we hit it precisely
-      if (allUnspents.length == limit) {
+      if (allUnspents.length >= params.limit) {
         return allUnspents; // we aren't interested in any further unspents
       }
 
@@ -888,9 +888,9 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
 Wallet.prototype.fanOutUnspents = function(params, callback) {
   // maximum number of inputs for fanout transaction
   // (when fanning out, we take all the unspents and make a bigger number of outputs)
-  const MAX_FANOUT_INPUT_COUNT = 80;
+  var MAX_FANOUT_INPUT_COUNT = 80;
   // maximum number of outputs for fanout transaction
-  const MAX_FANOUT_OUTPUT_COUNT = 300;
+  var MAX_FANOUT_OUTPUT_COUNT = 300;
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
   var validate = params.validate === undefined ? true : params.validate;
@@ -1019,7 +1019,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   var validate = params.validate === undefined ? true : params.validate;
 
   var target = params.target;
-  if (target == undefined) {
+  if (target === undefined) {
     target = 1;
   } else if (typeof(target) !== 'number' || target < 1 || (target % 1) !== 0) {
     // the target must be defined, be a number, be at least one, and be a natural number
@@ -1027,32 +1027,32 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   }
 
   // maximum number of inputs per transaction for consolidation
-  const ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT = 85;
-  var maxInputCountPerConsolidation = params.maxInputCountPerConsolidation;
-  if (maxInputCountPerConsolidation == undefined) { // null or unidentified, because equality to zero retruns true in if(! clause
-    maxInputCountPerConsolidation = ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT;
+  var MAX_INPUT_COUNT = 85;
+  var maxInputCount = params.maxInputCountPerConsolidation;
+  if (maxInputCount === undefined) { // null or unidentified, because equality to zero retruns true in if(! clause
+    maxInputCount = MAX_INPUT_COUNT;
   }
-  if (typeof (maxInputCountPerConsolidation) !== 'number' || maxInputCountPerConsolidation < 2 || (maxInputCountPerConsolidation % 1) !== 0) {
+  if (typeof (maxInputCount) !== 'number' || maxInputCount < 2 || (maxInputCount % 1) !== 0) {
     throw new Error('Maximum consolidation input count needs to be an integer equal to or bigger than 2');
-  } else if (maxInputCountPerConsolidation > ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT) {
-    throw new Error('Maximum consolidation input count needs cannot be bigger than ' + ABSOLUTE_MAX_CONSOLIDATION_INPUT_COUNT);
+  } else if (maxInputCount > MAX_INPUT_COUNT) {
+    throw new Error('Maximum consolidation input count cannot be bigger than ' + MAX_INPUT_COUNT);
   }
 
   var self = this;
   var consolidationIndex = 0;
 
   /**
-   * Consolidate one batch of up to MAX_CONSOLIDATION_INPUT_COUNT unspents.
+   * Consolidate one batch of up to MAX_INPUT_COUNT unspents.
    * @param wallet
    * @param targetUnspentCount
    * @returns {*}
    */
-  var consolidateSelectUnspents = function() {
+  var runNextConsolidation = function() {
     var consolidationTransactions = [];
     var grossAmount;
     var isFinalConsolidation = false;
-    var consolidationSize;
-    var currentConsolidationAddress;
+    var inputCount;
+    var currentAddress;
     /*
      We take a maximum of unspentBulkSizeLimit unspents from the wallet. We want to make sure that we swipe the wallet
      clean of all excessive unspents, so we add 1 to the target unspent count to make sure we haven't missed anything.
@@ -1064,8 +1064,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      In the next version of the unspents version SDK, we will know the total number of unspents without having to fetch
      them, and therefore will be able to simplify this method.
      */
-    var unspentBulkSizeLimit = target + maxInputCountPerConsolidation;
-    return self.unspents({ limit: unspentBulkSizeLimit })
+    return self.unspents({ limit: target + maxInputCount })
     .then(function(allUnspents) {
       // this consolidation is essentially just a waste of money
       if (allUnspents.length <= target) {
@@ -1074,25 +1073,27 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
 
       // how many of the unspents do we want to consolidate?
       // the +1 is because the consolidated block becomes a new unspent later
-      var targetConsolidationSize = allUnspents.length - target + 1;
-      // if the targetConsolidationSize requires more inputs than we allow per batch, we reduce the number
-      consolidationSize = Math.min(targetConsolidationSize, maxInputCountPerConsolidation);
-      isFinalConsolidation = (consolidationSize === targetConsolidationSize);
+      var targetInputCount = allUnspents.length - target + 1;
 
-      var currentUnspentChunk = allUnspents.splice(0, consolidationSize);
+      // if the targetInputCount requires more inputs than we allow per batch, we reduce the number
+      inputCount = Math.min(targetInputCount, maxInputCount);
+      isFinalConsolidation = (inputCount === targetInputCount);
+
+      var currentUnspentChunk = allUnspents.splice(0, inputCount);
       return [self.createAddress({ chain: 1, validate: validate }), currentUnspentChunk];
     })
     .spread(function(newAddress, currentChunk) {
-      var transactionParams = _.extend({}, params);
-      currentConsolidationAddress = newAddress;
+      var txParams = _.extend({}, params);
+      currentAddress = newAddress;
       // the total amount that we are consolidating within this batch
       grossAmount = _(currentChunk).pluck('value').sum(); // before fees
 
-      transactionParams.unspents = currentChunk;
-      transactionParams.recipients = {};
-      transactionParams.recipients[newAddress.address] = grossAmount;
+      txParams.unspents = currentChunk;
+      txParams.recipients = {};
+      txParams.recipients[newAddress.address] = grossAmount;
+
       // let's attempt to create this transaction. We expect it to fail because no fee is set.
-      return self.sendMany(transactionParams)
+      return self.sendMany(txParams)
       .catch(function(error) {
         // this error should occur due to insufficient funds
         // however, let's make sure it wasn't something else
@@ -1102,10 +1103,14 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
         }
         var fee = error.fee || error.result.fee;
         var netAmount = grossAmount - fee; // after fees
-        transactionParams.fee = fee;
-        transactionParams.recipients[newAddress.address] = netAmount;
+        // Need to clear these out since only 1 may be set
+        delete txParams.fee;
+        delete txParams.feeRate;
+        delete txParams.feeTxConfirmTarget;
+        txParams.fee = fee;
+        txParams.recipients[newAddress.address] = netAmount;
         // this transaction, on the other hand, should be created with no issues, because an appropriate fee is set
-        return self.sendMany(transactionParams);
+        return self.sendMany(txParams);
       });
     })
     .then(function(sentTx) {
@@ -1113,10 +1118,10 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       if (typeof(params.progressCallback) === 'function') {
         params.progressCallback({
           txid: sentTx.hash,
-          destination: currentConsolidationAddress,
+          destination: currentAddress,
           amount: grossAmount,
           fee: sentTx.fee,
-          inputCount: consolidationSize,
+          inputCount: inputCount,
           index: consolidationIndex
         });
       }
@@ -1126,14 +1131,14 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
         // therefore, we proceed by consolidating yet another batch
         // before we do that, we wait 1 second so that the newly created unspent will be fetched in the next batch
         return Q.delay(1000)
-        .then(consolidateSelectUnspents);
+        .then(runNextConsolidation);
       }
       // this is the final consolidation transaction. We return all the ones we've had so far
       return consolidationTransactions;
     });
   };
 
-  return consolidateSelectUnspents(this, target)
+  return runNextConsolidation(this, target)
   .nodeify(callback);
 };
 
