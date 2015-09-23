@@ -402,25 +402,48 @@ Wallet.prototype.unspents = function(params, callback) {
   var allUnspents = [];
   var self = this;
 
-  var getUnspentsBatch = function(skip){
+  var getUnspentsBatch = function(skip, limit) {
     var url = self.url('/unspents');
+    var extensions = {};
     if (params.target) {
       if (typeof(params.target) != 'number') {
         throw new Error('invalid argument');
       }
-      url += '?target=' + params.target;
-    } else if (skip > 0) {
-      url += '?skip='+skip;
+      extensions.target = params.target;
+    } else {
+      // if no target is specified, we can work with skips and limits
+      if (skip > 0) {
+        extensions.skip = skip;
+      }
+      if (limit && limit > 0) {
+        extensions.limit = limit;
+      }
     }
     return self.bitgo.get(url)
-    .then(function(response){
+    .query(extensions)
+    .then(function(response) {
+
+      // The API has its own limit handling. For example, the API does not support limits bigger than 500. If the limit
+      // specified here is bigger than that, we will have to do multiple requests with necessary limit adjustment.
       allUnspents = allUnspents.concat(response.body.unspents);
+      // Our limit adjustment makes sure that we never fetch more unspents than we need, meaning that if we hit the
+      // limit, we hit it precisely
+      if (allUnspents.length == limit) {
+        return allUnspents; // we aren't interested in any further unspents
+      }
+
       var totalUnspentCount = response.body.total;
+      // if no target is specified and the SDK indicates that there has been a limit, we need to fetch another batch
       if (!params.target && totalUnspentCount && totalUnspentCount > allUnspents.length) {
         // we need to fetch the next batch
         // let's just offset the current skip by the count
         var newSkip = skip + response.body.count;
-        return getUnspentsBatch(newSkip);
+        var newLimit = null;
+        if (limit > 0) {
+          // we set the new limit to be precisely the number of missing unspents to hit our own limit
+          newLimit = limit - allUnspents.length;
+        }
+        return getUnspentsBatch(newSkip, newLimit);
       }
 
       return allUnspents;
@@ -428,7 +451,7 @@ Wallet.prototype.unspents = function(params, callback) {
     });
   };
 
-  return getUnspentsBatch(0)
+  return getUnspentsBatch(0, params.limit)
   .nodeify(callback);
 };
 
@@ -1041,7 +1064,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      In the next version of the unspents version SDK, we will know the total number of unspents without having to fetch
      them, and therefore will be able to simplify this method.
      */
-    var unspentBulkSizeLimit = Math.max(target, maxInputCountPerConsolidation) + 1;
+    var unspentBulkSizeLimit = target + maxInputCountPerConsolidation;
     return self.unspents({ limit: unspentBulkSizeLimit })
     .then(function(allUnspents) {
       // this consolidation is essentially just a waste of money
