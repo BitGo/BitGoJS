@@ -161,36 +161,6 @@ describe('BitGo', function() {
     });
   });
 
-  describe('Market', function() {
-    var bitgo;
-    before(function() {
-      bitgo = new BitGoJS.BitGo();
-    });
-
-    it('arguments', function() {
-      assert.throws(function() { bitgo.market('invalid'); });
-      assert.throws(function() { bitgo.market({}, 'invalid'); });
-    });
-
-    it('latest', function(done) {
-      bitgo.market({}, function(err, marketData) {
-        if (err) {
-          throw err;
-        }
-        marketData.should.have.property('latest');
-        marketData.latest.should.have.property('currencies');
-        marketData.latest.currencies.should.have.property('USD');
-        marketData.latest.currencies.USD.should.have.property('bid');
-        marketData.latest.currencies.USD.should.have.property('ask');
-        marketData.latest.currencies.USD.should.have.property('last');
-        marketData.latest.currencies.USD.should.have.property('total_vol');
-        marketData.latest.currencies.USD.should.have.property('prevDayHigh');
-        marketData.latest.currencies.USD.should.have.property('prevDayLow');
-        done();
-      });
-    });
-  });
-
   describe('Logged Out', function() {
     describe('Authenticate', function() {
       var bitgo;

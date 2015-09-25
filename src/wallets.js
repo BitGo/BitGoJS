@@ -5,7 +5,6 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var request = require('superagent');
 var ECKey = require('bitcoinjs-lib/src/eckey');
 var Wallet = require('./wallet');
 var common = require('./common');

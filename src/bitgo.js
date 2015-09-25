@@ -11,6 +11,7 @@ var Blockchain = require('./blockchain');
 var Keychains = require('./keychains');
 var Wallet = require('./wallet');
 var Wallets = require('./wallets');
+var Markets = require('./markets');
 var PendingApprovals = require('./pendingapprovals');
 var sjcl = require('./sjcl.min');
 var common = require('./common');
@@ -345,7 +346,18 @@ BitGo.prototype.getECDHSharingKeychain = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * Get bitcoin market data
+ */
+BitGo.prototype.markets = function() {
+  if (!this._markets) {
+    this._markets = new Markets(this);
+  }
+  return this._markets;
+};
+
 //
+// (Deprecated: Will be removed in the future) use bitgo.markets().latest()
 // market
 // Get the latest bitcoin prices.
 //
@@ -359,6 +371,7 @@ BitGo.prototype.market = function(params, callback) {
 };
 
 //
+// (Deprecated: Will be removed in the future) use bitgo.markets().yesterday()
 // market data yesterday
 // Get market data from yesterday
 //
