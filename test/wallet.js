@@ -930,6 +930,21 @@ describe('Wallet', function() {
         .done();
       });
 
+      it('conflicting output script and address', function() {
+        var recipients = [];
+        recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ad', amount: wallet1.balance() - 5000 });
+        return Q()
+        .then(function() {
+          return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients});
+        })
+        .then(function() {
+          throw new Error('should not be here!!');
+        })
+        .catch(function(e) {
+          e.message.should.include('both script and address provided but they did not match');
+        });
+      });
+
       it('insufficient funds due to fees', function() {
         // Attempt to spend the full balance - adding the default fee would be insufficient funds.
         var recipients = {};
@@ -958,7 +973,8 @@ describe('Wallet', function() {
       });
 
       it('ok', function() {
-        var recipients = {};
+        var recipients = [];
+        recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
         .then(function(result) {

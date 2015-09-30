@@ -169,6 +169,11 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
 
   return Q()
   .then(function() {
+    if (self.info().transactionRequest.recipients) {
+      // recipients object found on the pending approvals - use it
+      params.recipients = self.info().transactionRequest.recipients;
+      return;
+    }
     if (transaction.outs.length <= 2) {
       transaction.outs.forEach(function (out) {
         var outAddress = Address.fromOutputScript(out.script, network).toBase58Check();

@@ -16,6 +16,8 @@ var Scripts = require('bitcoinjs-lib/src/scripts');
 var ECPubkey = require('bitcoinjs-lib/src/ecpubkey');
 var ECSignature = require('bitcoinjs-lib/src/ecsignature');
 var Opcodes = require('bitcoinjs-lib/src/opcodes');
+var networks = require('bitcoinjs-lib/src/networks');
+var common = require('./common');
 var Util = require('./util');
 var _ = require('lodash');
 
@@ -114,14 +116,18 @@ exports.createTransaction = function(params) {
   var totalOutputAmount = 0;
 
   recipients.forEach(function(recipient) {
-    if (!!recipient.address && !!recipient.script) {
-      throw new Error('cannot provide both address and script: ' + recipient.address);
-    }
     if (typeof(recipient.address) == 'string') {
+      var addressObj;
       try {
-        Address.fromBase58Check(recipient.address);
+        addressObj = Address.fromBase58Check(recipient.address);
       } catch (e) {
         throw new Error('invalid bitcoin address: ' + recipient.address);
+      }
+      if (!!recipient.script) {
+        // A script was provided as well - validate that the address corresponds to that
+        if (addressObj.toOutputScript().toHex() != recipient.script) {
+          throw new Error('both script and address provided but they did not match: ' + recipient.address + " " + recipient.script);
+        }
       }
     }
     if (typeof(recipient.amount) != 'number' || isNaN(recipient.amount) || recipient.amount < 0) {
