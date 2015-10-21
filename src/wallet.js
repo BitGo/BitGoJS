@@ -509,6 +509,19 @@ Wallet.prototype.getTransaction = function(params, callback) {
   .nodeify(callback);
 };
 
+//
+// transaction by sequence id
+// Get a transaction by sequence id for a given wallet
+Wallet.prototype.getWalletTransactionBySequenceId = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['sequenceId'], [], callback);
+
+  var url = this.url('/tx/sequence/' + params.sequenceId);
+
+  return this.bitgo.get(url)
+  .result()
+  .nodeify(callback);
+};
 
 //
 // Key chains
