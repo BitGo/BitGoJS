@@ -1209,6 +1209,64 @@ Wallet.prototype.shareWallet = function(params, callback) {
   .nodeify(callback);
 };
 
+Wallet.prototype.removeUser = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['user'], [], callback);
+
+  return this.bitgo.del(this.url('/user/' + params.user))
+  .send()
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.getPolicy = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  return this.bitgo.get(this.url('/policy'))
+  .send()
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.getPolicyStatus = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  return this.bitgo.get(this.url('/policy/status'))
+  .send()
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.setPolicyRule = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id', 'type'], ['message'], callback);
+
+  if (typeof(params.condition) !== 'object') {
+    throw new Error('missing parameter: conditions object');
+  }
+
+  if (typeof(params.action) !== 'object') {
+    throw new Error('missing parameter: action object');
+  }
+
+  return this.bitgo.put(this.url('/policy/rule'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.removePolicyRule = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], ['message'], callback);
+
+  return this.bitgo.del(this.url('/policy/rule'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
 Wallet.prototype.listWebhooks = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);

@@ -191,13 +191,25 @@ describe('Wallet', function() {
       .done();
     });
 
+    it('remove user from wallet', function() {
+      return bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet2.removeUser({
+          user: TestBitGo.TEST_SHARED_KEY_USERID
+        });
+      })
+      .then(function(wallet){
+        wallet.adminCount.should.eql(1);
+        wallet.admin.users.length.should.eql(1);
+      });
+    });
+
     it('share a wallet (spend)', function(done) {
       bitgo.unlock({ otp: '0000000' })
       .then(function() {
         return wallet2.shareWallet({
           email: TestBitGo.TEST_SHARED_KEY_USER,
           walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
-          reshare: true, // for tests, we have actually already shared the wallet, and thus must set reshare
           permissions: 'view,spend'
         });
       })
@@ -1824,6 +1836,81 @@ describe('Wallet', function() {
           result.should.have.property('hash');
           done();
         });
+      });
+    });
+  });
+
+  describe('Policy', function() {
+    it('arguments', function (done) {
+      assert.throws(function () {
+        wallet1.setPolicyRule({});
+      });
+      assert.throws(function () {
+        wallet1.setPolicyRule({ id: 'policy1' });
+      });
+      assert.throws(function () {
+        wallet1.setPolicyRule({ id: 'policy1', type: 'dailyLimit' });
+      });
+      assert.throws(function () {
+        wallet1.setPolicyRule({ id: 'policy1', type: 'dailyLimit', action: { type: 'getApproval' }});
+      });
+      assert.throws(function () {
+        wallet1.setPolicyRule({ id: 'policy1', type: 'dailyLimit', condition: { amount: 1e8 } });
+      });
+      assert.throws(function () {
+        wallet1.removePolicyRule({});
+      });
+      done();
+    });
+
+    var amount;
+    it('set a policy rule', function() {
+      amount = 888 * 1e8 + Math.round(Math.random() * 1e8);
+      return wallet1.setPolicyRule({
+        action: { type: "getApproval" },
+        condition: { "amount": amount },
+        id: "test1",
+        type: "dailyLimit"
+      })
+      .then(function(wallet) {
+        wallet.id.should.eql(wallet1.id());
+        var rulesById = _.indexBy(wallet.admin.policy.rules, 'id');
+        rulesById.should.have.property('test1');
+        rulesById['test1'].action.type.should.eql('getApproval');
+        rulesById['test1'].condition.amount.should.eql(amount);
+        rulesById['test1'].id.should.eql('test1');
+        rulesById['test1'].type.should.eql('dailyLimit');
+      });
+    });
+
+    it('get policy and rules', function() {
+      return wallet1.getPolicy({})
+      .then(function(policy) {
+        var rulesById = _.indexBy(policy.rules, 'id');
+        rulesById.should.have.property('test1');
+        rulesById['test1'].action.type.should.eql('getApproval');
+        rulesById['test1'].condition.amount.should.eql(amount);
+        rulesById['test1'].id.should.eql('test1');
+        rulesById['test1'].type.should.eql('dailyLimit');
+      });
+    });
+
+    it('get policy status', function() {
+      return wallet1.getPolicyStatus({})
+      .then(function(policyStatus) {
+        var rulesById = _.indexBy(policyStatus.statusResults, 'ruleId');
+        rulesById['test1'].ruleId.should.eql('test1');
+        rulesById['test1'].status.should.have.property('remaining');
+        rulesById['test1'].status.remaining.should.be.greaterThan(0);
+      });
+    });
+
+    it('delete the policy rule', function() {
+      return wallet1.removePolicyRule({ id: 'test1' })
+      .then(function(wallet) {
+        wallet.id.should.eql(wallet1.id());
+        var rulesById = _.indexBy(wallet.admin.policy.rules, 'id');
+        rulesById.should.not.have.property('test1')
       });
     });
   });
