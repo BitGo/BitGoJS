@@ -13,6 +13,7 @@
     "url": "https://github.com/BitGo/BitGoJS.git"
   },
   "devDependencies": {
+    "babelify": "^7.0.2",
     "browserify": "~9.0.7",
     "coveralls": "~2.10.0",
     "envify": "^3.4.0",
@@ -47,6 +48,7 @@
   "scripts": {
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --timeout 10000 --reporter list test/*.js",
     "coveralls": "sleep 300; ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- --timeout 50000 -R spec test/*.js test/bitcoin/*.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
+    "babelify": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -t babelify -s BitGoJS -o browser/BitGoJS-babelify.js",
     "compile": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -s BitGoJS -g uglifyify -o browser/BitGoJS-min.js",
     "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -s BitGoJS -o browser/BitGoJS.js",
     "compile-test": "mkdir -p browser && ./node_modules/.bin/browserify --exclude superagent-proxy --exclude morgan -t envify ./test/*.js > ./browser/tests.js",
