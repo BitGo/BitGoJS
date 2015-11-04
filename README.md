@@ -16,9 +16,64 @@ Please contact us at support@bitgo.com if you have questions or comments about t
 
 `npm install`
 
-# Documentation
+# Full Documentation
 
 View our [Javascript SDK Documentation](https://www.bitgo.com/api/?javascript#authentication).
+
+# Example Usage
+
+## Initialize SDK
+Create an access token by logging into your bitgo account, going to the API access tab [in the settings area](https://www.bitgo.com/settings) and making a developer token.
+```
+var BitGo = require('bitgo');
+var bitgo = new BitGo.BitGo({ accessToken: ACCESS_TOKEN }); // defaults to testnet. add env: 'prod' if you want to go against mainnet
+bitgo.session({}, function(err,res) {
+  console.dir(err);
+  console.dir(res);
+});
+```
+
+## Create Wallet
+```
+var wallet;
+var params = { 
+  "passphrase": "replaceme", 
+  "label": "firstwallet"
+}
+bitgo.wallets().createWalletWithKeychains(params, function(err, result) {
+  wallet = result.wallet; 
+  console.dir(wallet.wallet);
+  console.log("Locally created keychain: " + result.userKeychain.encryptedXprv);
+});
+```
+
+## Create new address
+```
+wallet.createAddress({ "chain": 0 }, function callback(err, address) {
+    console.dir(address);
+});
+```
+
+## View transactions
+```
+wallet.transactions({}, function callback(err, transactions) {
+    console.dir(transactions);
+});
+```
+
+## Send coins
+```
+wallet.sendCoins({ 
+  address: "2NEe9QhKPB2gnQLB3hffMuDcoFKZFjHYJYx", 
+  amount: 0.01 * 1e8, 
+  walletPassphrase:  "replaceme" 
+}, function(err, result) {
+    console.dir(result);
+});
+```
+
+## More examples
+Further demos and examples can be found in the [example](example/) directory and [documented here](https://www.bitgo.com/api/?javascript#examples).
 
 # BitGo Express Local Signing Server (REST API)
 
@@ -36,4 +91,3 @@ Creates a single file of javascript for inclusion in your applications.
 `npm run-script compile`
 
 `npm run-script compile-dbg`
-
