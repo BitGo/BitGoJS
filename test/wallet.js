@@ -706,12 +706,12 @@ describe('Wallet', function() {
 
         return Q()
         .then(function(){
-          // at this point, we have 4 unspents. Let's test fanning them out into 20
+          // at this point, we have 2 unspents. Let's test fanning them out into 20
           var options = {
             walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
             password: TestBitGo.TEST_WALLET2_PASSCODE,
             otp: '0000000',
-            target: 20, // the maximum consolidation count per input will be 7. This is to ensure we have multiple batches
+            target: 10, // the maximum consolidation count per input will be 7. This is to ensure we have multiple batches
             validate: false
           };
           return sharedWallet.fanOutUnspents(options);
@@ -732,12 +732,12 @@ describe('Wallet', function() {
 
         return Q()
         .then(function(){
-          // at this point, we have 20 unspents. Let's test consolidating them into 18
+          // at this point, we have 10 unspents. Let's test consolidating them into 8
           var options = {
             walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
             password: TestBitGo.TEST_WALLET2_PASSCODE,
             otp: '0000000',
-            target: 18,
+            target: 8,
             validate: false
           };
           return sharedWallet.consolidateUnspents(options);
@@ -753,7 +753,7 @@ describe('Wallet', function() {
       });
 
       it('consolidate unspents', function() {
-        var maxInputCountPerConsolidation = 7;
+        var maxInputCountPerConsolidation = 3;
         var progressCallbackCount = 0;
         var progressCallback = function(progressDetails){
           progressDetails.should.have.property('index');
@@ -765,12 +765,12 @@ describe('Wallet', function() {
 
         return Q()
         .then(function(){
-          // at this point, we have 18 unspents. Let's test consolidating them into four
+          // at this point, we have 8 unspents. Let's test consolidating them into four
           var options = {
             walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
             password: TestBitGo.TEST_WALLET2_PASSCODE,
             otp: '0000000',
-            target: 4,
+            target: 2,
             maxInputCountPerConsolidation: maxInputCountPerConsolidation,
             validate: false,
             progressCallback: progressCallback
