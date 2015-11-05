@@ -97,6 +97,7 @@ superagent.Request.prototype.result = function(optionalField) {
 //   @useProduction: flag to use the production bitcoin network rather than the
 //                   testnet network.
 //
+var testNetWarningMessage = false;
 var BitGo = function(params) {
   params = params || {};
   if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork']) ||
@@ -138,6 +139,10 @@ var BitGo = function(params) {
     }
   } else {
     params.env = process.env.BITGO_ENV || 'test';
+    if (!testNetWarningMessage && params.env === 'test') {
+      testNetWarningMessage = true;
+      console.log('BitGo SDK env not set - defaulting to testnet at test.bitgo.com.');
+    }
   }
   this.env = params.env;
 
