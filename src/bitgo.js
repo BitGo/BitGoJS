@@ -389,6 +389,19 @@ BitGo.prototype.yesterday = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * Synchronous method for activating an access token.
+ * @param params
+ *  - accessToken: the token to be used
+ * @param callback
+ */
+BitGo.prototype.authenticateWithAccessToken = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['accessToken'], [], callback);
+
+  this._token = params.accessToken;
+};
+
 //
 // authenticate
 // Login to the bitgo system.

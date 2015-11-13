@@ -343,6 +343,8 @@ describe('BitGo', function() {
         if (err) {
           throw err;
         }
+        // this isn't doing anything, but it's testing the API method's availability
+        bitgo.authenticateWithAccessToken({ accessToken: bitgo._token }); // assert that this doesn't fail
         done();
       });
     });
