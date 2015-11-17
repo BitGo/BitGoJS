@@ -193,6 +193,7 @@ describe('Wallets', function() {
         var wallet = result.wallet;
 
         assert.equal(wallet.balance(), 0);
+        assert.equal(wallet.spendableBalance(), 0);
         assert.equal(wallet.label(), TEST_WALLET_LABEL);
         assert.equal(wallet.confirmedBalance(), 0);
         assert.equal(wallet.keychains.length, 3);

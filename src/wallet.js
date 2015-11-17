@@ -61,6 +61,15 @@ Wallet.prototype.balance = function() {
 };
 
 //
+// balance
+// Get the spendable balance of this wallet.
+// This is the total of all unspents except those that are unconfirmed and external
+//
+Wallet.prototype.spendableBalance = function() {
+  return this.wallet.spendableBalance;
+};
+
+//
 // confirmedBalance
 // Get the confirmedBalance of this wallet.
 //
