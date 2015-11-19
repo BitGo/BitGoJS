@@ -61,7 +61,9 @@ exports.createTransaction = function(params) {
      (params.minUnspentSize && typeof(params.minUnspentSize) !== 'number') ||
      (params.maxFeeRate && typeof(params.maxFeeRate) !== 'number') ||
      (params.unspents && params.unspents.length < 1) || // this should be an array and its length must be at least 1
-     (params.feeTxConfirmTarget && typeof(params.feeTxConfirmTarget) !== 'number')) {
+     (params.feeTxConfirmTarget && typeof(params.feeTxConfirmTarget) !== 'number') ||
+     (params.instant && typeof(params.instant) !== 'boolean')
+  ) {
     throw new Error('invalid argument');
   }
 
@@ -186,7 +188,8 @@ exports.createTransaction = function(params) {
     // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
     var options = {
       target: totalAmount + (0.01 * 1e8),  // fee @ 0.0001/kb for a 100kb tx
-      minSize: params.minUnspentSize || MINIMUM_BTC_DUST // don't bother to use unspents smaller than dust
+      minSize: params.minUnspentSize || MINIMUM_BTC_DUST, // don't bother to use unspents smaller than dust
+      instant: params.instant // insist on instant unspents only
     };
 
     return params.wallet.unspents(options)
@@ -391,7 +394,8 @@ exports.createTransaction = function(params) {
       changeAddresses: changeOutputs.map(function(co) { return _.pick(co, ['address', 'path', 'amount']); }),
       walletId: params.wallet.id(),
       walletKeychains: params.wallet.keychains,
-      feeRate: feeRate
+      feeRate: feeRate,
+      instant: params.instant
     };
 
     return result;

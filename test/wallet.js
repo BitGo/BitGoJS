@@ -683,6 +683,16 @@ describe('Wallet', function() {
       });
     });
 
+    it('list instant only', function(done) {
+      var options = { target: 500 * 1e8, instant: true };
+      wallet3.unspents(options, function(err, unspents) {
+        _.every(unspents, function(unspent) {
+          return unspent.instant === true;
+        }).should.eql(true);
+        done();
+      });
+    });
+
     describe('Unspent Fanning And Consolidation', function(){
 
       it('arguments', function(done){
@@ -1383,6 +1393,18 @@ describe('Wallet', function() {
           }
         );
       });
+
+      it('send coins - instant unsupported on non-krs wallet', function (done) {
+        wallet1.sendCoins(
+        {
+          address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE, instant: true
+        },
+        function (err, result) {
+          err.response.body.error.should.eql('wallet does not support instant transactions');
+          done();
+        }
+        );
+      });
     });
 
     describe('Real transactions', function() {
@@ -1413,20 +1435,30 @@ describe('Wallet', function() {
           result.should.have.property('hash');
           result.should.have.property('fee');
           result.should.have.property('feeRate');
+          result.should.have.property('instant');
+          result.instant.should.eql(false);
           result.feeRate.should.be.lessThan(0.01*1e8);
         });
       });
 
-      it('send coins - wallet3 to wallet1 with specified fee', function() {
-        return wallet3.sendCoins({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE, fee: 0.005 * 1e8 })
+      it('send coins - wallet3 to wallet1 with specified fee and in instant mode', function() {
+        return wallet3.sendCoins({
+          address: TestBitGo.TEST_WALLET1_ADDRESS,
+          amount: 0.001 * 1e8,
+          walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
+          fee: 0.005 * 1e8,
+          instant: true
+        })
         .then(function(result) {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
+          result.should.have.property('instant');
+          result.should.have.property('instantId');
+          result.instant.should.eql(true);
           result.fee.should.eql(0.005 * 1e8);
         });
       });
-
 
       it('send coins - wallet1 to wallet3 using xprv', function () {
         return bitgo.unlock({ otp: '0000000' })
@@ -1445,7 +1477,7 @@ describe('Wallet', function() {
         });
       });
 
-      it('send coins - wallet3 to wallet1 with xprv', function() {
+      it('send coins - wallet3 to wallet1 with xprv and instant', function() {
         return wallet3.sendCoins({
           address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 14000000, // 0.14 coins, test js floating point bugs
           xprv: "xprv9s21ZrQH143K3aLCRoCteo8TkJWojD5d8wQwJmcvUPx6TaDeLnEWq2Mw6ffDyThZNe4YgaNsdEAL9JN8ip8BdqisQsEpy9yR6HxVfvkgEEZ"
@@ -1455,6 +1487,14 @@ describe('Wallet', function() {
           result.should.have.property('hash');
           result.should.have.property('fee');
         });
+      });
+    });
+
+    it('list unspents and expect some instant and some non-instant', function() {
+      return wallet3.unspents({})
+      .then(function(unspents) {
+        _.some(unspents, function(unspent) { return unspent.instant === true; }).should.eql(true);
+        _.some(unspents, function(unspent) { return unspent.instant === false; }).should.eql(true);
       });
     });
   });

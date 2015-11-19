@@ -60,6 +60,8 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.TEST_WALLET2_PASSCODE = 'test wallet #2 security';
     BitGo.TEST_WALLET2_ADDRESS = '2MvpZhq6zUu3UARdJKZH7TTfqHJ3Ec1YAjv';
     BitGo.TEST_WALLET3_PASSCODE = 'test wallet #3 security';
+
+    // TEST_WALLET_3 is a KRS wallet
     BitGo.TEST_WALLET3_ADDRESS = '2MyKoaanySBPCA2Br7dGvaZEgEGp7YRZvif';
     BitGo.TEST_WALLET3_ADDRESS2 = '2N11YQ5mb73CDhupX8peKqb3xFdD9kr78Wf';
     BitGo.TEST_WALLET3_ADDRESS3 = '2N1Tt75MNKFHRBE68HXHB7FSmLpmGCQDuJC';
