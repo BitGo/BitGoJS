@@ -413,7 +413,7 @@ Wallet.prototype.unspents = function(params, callback) {
 
   var getUnspentsBatch = function(skip, limit) {
     var url = self.url('/unspents');
-    var extensions = {};
+    var extensions = { instant: params.instant };
     if (params.target) {
       if (typeof(params.target) != 'number') {
         throw new Error('invalid argument');
@@ -575,7 +575,8 @@ Wallet.prototype.createTransaction = function(params, callback) {
       (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
       (typeof(params.forceChangeAtEnd) != 'boolean' && typeof(params.forceChangeAtEnd) != 'undefined') ||
       (typeof(params.changeAddress) != 'string' && typeof(params.changeAddress) != 'undefined') ||
-      (typeof(params.validate) != 'boolean' && typeof(params.validate) != 'undefined')) {
+      (typeof(params.validate) != 'boolean' && typeof(params.validate) != 'undefined') ||
+      (typeof(params.instant) != 'boolean' && typeof(params.instant) != 'undefined')) {
     throw new Error('invalid argument');
   }
 
@@ -660,7 +661,9 @@ Wallet.prototype.sendTransaction = function(params, callback) {
     return {
       status: 'accepted',
       tx: body.transaction,
-      hash: body.transactionHash
+      hash: body.transactionHash,
+      instant: body.instant,
+      instantId: body.instantId
     };
   })
   .nodeify(callback);
@@ -750,6 +753,10 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('invalid argument for feeRate - number expected');
   }
 
+  if (params.instant && typeof(params.instant) != 'boolean') {
+    throw new Error('invalid argument for instant - boolean expected');
+  }
+
   var keychain;
   var fee;
   var feeRate;
@@ -760,7 +767,12 @@ Wallet.prototype.sendMany = function(params, callback) {
     // Send the transaction
     fee = transaction.fee;
     feeRate = transaction.feeRate;
-    return self.sendTransaction({ tx: transaction.tx, message: params.message, sequenceId: params.sequenceId });
+    return self.sendTransaction({
+      tx: transaction.tx,
+      message: params.message,
+      sequenceId: params.sequenceId,
+      instant: params.instant
+    });
   })
   .then(function(result) {
     result.fee = fee;
@@ -801,6 +813,10 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     throw new Error('invalid argument for confirmTarget - number expected');
   }
 
+  if (params.instant && typeof(params.instant) != 'boolean') {
+    throw new Error('invalid argument for instant - boolean expected');
+  }
+
   var keychain;
   var fee;
   var feeRate;
@@ -818,7 +834,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     return self.signTransaction(transaction);
   })
   .then(function(result) {
-    return _.extend(result, { fee: fee, feeRate: feeRate });
+    return _.extend(result, { fee: fee, feeRate: feeRate, instant: params.instant });
   })
   .nodeify(callback);
 };
