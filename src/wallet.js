@@ -78,6 +78,30 @@ Wallet.prototype.confirmedBalance = function() {
 };
 
 //
+// canSendInstant
+// Returns if the wallet can send instant transactions
+// This is impacted by the choice of backup key provider
+//
+Wallet.prototype.canSendInstant = function() {
+  return this.wallet && this.wallet.canSendInstant;
+};
+
+//
+// instant balance
+// Get the instant balance of this wallet.
+// This is the total of all unspents that may be spent instantly.
+//
+Wallet.prototype.instantBalance = function() {
+  if (!this.canSendInstant()) {
+    throw new Error('not an instant wallet');
+  }
+  return this.unspents({ minConfirms: 3 })
+  .then(function(unspents) {
+    return _.sum(unspents, 'value');
+  });
+};
+
+//
 // unconfirmedSends
 // Get the balance of unconfirmedSends of this wallet.
 //
@@ -402,11 +426,20 @@ Wallet.prototype.deleteLabel = function(params, callback) {
 // unspents
 // List the unspents for a given wallet
 // Parameters include:
-//   limit:  the optional limit of unspents to collect in BTC.
+//   limit:  the optional limit of unspents to collect in BTC
+//   minConf: only include results with this number of confirmations
+//   target: the amount of btc to find to spend
+//   instant: only find instant transactions (must specify a target)
 //
 Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
+
+  if (params.minConfirms) {
+    if (typeof(params.minConfirms) !== 'number') {
+      throw new Error('invalid minConfirms - should be number');
+    }
+  }
 
   var allUnspents = [];
   var self = this;
@@ -431,10 +464,20 @@ Wallet.prototype.unspents = function(params, callback) {
     return self.bitgo.get(url)
     .query(extensions)
     .then(function(response) {
-
       // The API has its own limit handling. For example, the API does not support limits bigger than 500. If the limit
       // specified here is bigger than that, we will have to do multiple requests with necessary limit adjustment.
-      allUnspents = allUnspents.concat(response.body.unspents);
+      for (var i = 0; i < response.body.unspents.length; i++) {
+        var unspent = response.body.unspents[i];
+        if (params.minConfirms) {
+          if ((unspent.confirmations || 0) < params.minConfirms) {
+            // API returns unspents in the order of height (largest confirms first)
+            // So if we see an unspent with too few minConfirms then we can return what we have now.
+            return allUnspents;
+          }
+        }
+        allUnspents.push(unspent);
+      }
+
       // Our limit adjustment makes sure that we never fetch more unspents than we need, meaning that if we hit the
       // limit, we hit it precisely
       if (allUnspents.length >= params.limit) {
