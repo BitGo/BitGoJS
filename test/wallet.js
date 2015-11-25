@@ -683,6 +683,16 @@ describe('Wallet', function() {
       });
     });
 
+    it('list with minconfirms', function(done) {
+      var options = { minConfirms: 5 };
+      wallet1.unspents(options, function(err, unspents) {
+        _.forEach(unspents, function(unspent) {
+          unspent.minConfirms.should.be.greaterThan(4);
+        });
+        done();
+      });
+    });
+
     it('list instant only', function(done) {
       var options = { target: 500 * 1e8, instant: true };
       wallet3.unspents(options, function(err, unspents) {
@@ -795,13 +805,48 @@ describe('Wallet', function() {
           firstConsolidation.should.have.property('tx');
           firstConsolidation.status.should.equal('accepted');
         });
-
       });
+    });
+  });
 
+
+  describe('Instant', function() {
+    it('wallet1 cannot send instant', function() {
+      return Q()
+      .then(function() {
+        return wallet1.canSendInstant();
+      })
+      .then(function(result) {
+        (!!result).should.eql(false);
+      });
     });
 
+    it('wallet3 can send instant', function() {
+      return Q()
+      .then(function() {
+        return wallet3.canSendInstant();
+      })
+      .then(function(result) {
+        result.should.eql(true);
+      });
+    });
 
+    it('wallet1 cannot get instant balance', function() {
+      return Q()
+      .then(function() {
+        return wallet1.instantBalance();
+      })
+      .catch(function(error) {
+        error.message.should.include('not an instant wallet');
+      });
+    });
 
+    it('wallet3 instant balance', function() {
+      return wallet3.instantBalance()
+      .then(function(result) {
+        result.should.be.greaterThan(-1);
+      });
+    });
   });
 
   describe('Transactions', function() {
@@ -1488,13 +1533,25 @@ describe('Wallet', function() {
           result.should.have.property('fee');
         });
       });
-    });
 
-    it('list unspents and expect some instant and some non-instant', function() {
-      return wallet3.unspents({})
-      .then(function(unspents) {
-        _.some(unspents, function(unspent) { return unspent.instant === true; }).should.eql(true);
-        _.some(unspents, function(unspent) { return unspent.instant === false; }).should.eql(true);
+      it('list unspents and expect some instant and some non-instant', function() {
+        return wallet3.unspents({})
+        .then(function(unspents) {
+          _.some(unspents, function(unspent) { return unspent.instant === true; }).should.eql(true);
+          _.some(unspents, function(unspent) { return unspent.instant === false; }).should.eql(true);
+        });
+      });
+
+      it('get instant balance 2 ways and make sure they are the same', function() {
+        var instantBalanceFromUnspentsNative;
+        return wallet3.unspents({ instant: true, target: 10000 * 1e8 })
+        .then(function(unspents) {
+          instantBalanceFromUnspentsNative = _.sum(unspents, 'value');
+          return wallet3.instantBalance();
+        })
+        .then(function(balance) {
+          balance.should.eql(instantBalanceFromUnspentsNative);
+        });
       });
     });
   });

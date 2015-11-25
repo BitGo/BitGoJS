@@ -756,4 +756,17 @@ BitGo.prototype.estimateFee = function(params, callback) {
   .nodeify(callback);
 };
 
+//
+// instantGuarantee
+// Get BitGo's guarantee using an instant id
+//
+BitGo.prototype.instantGuarantee = function(params,callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], [], callback);
+
+  return this.get(this.url('/instant/' + params.id))
+  .result()
+  .nodeify(callback);
+};
+
 module.exports = BitGo;
