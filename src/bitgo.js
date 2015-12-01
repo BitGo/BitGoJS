@@ -17,7 +17,6 @@ var sjcl = require('./sjcl.min');
 var common = require('./common');
 var ECKey = bitcoin.ECKey;
 var ECPubkey = bitcoin.ECPubKey;
-var BufferUtils = bitcoin.BufferUtils;
 var networks = bitcoin.networks;
 var Util = require('./util');
 var Q = require('q');
@@ -118,8 +117,13 @@ var BitGo = function(params) {
     params.env = 'prod';
   }
 
+  if (params.env === 'production') {
+    params.env = 'prod'; // make life easier
+  }
+
   if (params.customRootURI ||
       params.customBitcoinNetwork ||
+      params.customSigningAddress ||
       process.env.BITGO_CUSTOM_ROOT_URI ||
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
     params.env = 'custom';
@@ -128,6 +132,9 @@ var BitGo = function(params) {
     }
     if (params.customBitcoinNetwork) {
       common.Environments['custom'].network = params.customBitcoinNetwork;
+    }
+    if (params.customSigningAddress) {
+      common.Environments['custom'].customSigningAddress = params.customSigningAddress;
     }
   }
 
@@ -764,8 +771,23 @@ BitGo.prototype.instantGuarantee = function(params,callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
+  var self = this;
   return this.get(this.url('/instant/' + params.id))
   .result()
+  .then(function(body) {
+    if (!body.guarantee) {
+      throw new Error('no guarantee found in response body');
+    }
+    if (!body.signature) {
+      throw new Error('no signature found in guarantee response body');
+    }
+    var signingAddress = common.Environments[self.env].signingAddress;
+    var network = common.getNetwork();
+    if (!bitcoin.Message.verify(signingAddress, new Buffer(body.signature, 'hex'), body.guarantee, networks[network])) {
+      throw new Error('incorrect signature');
+    }
+    return body;
+  })
   .nodeify(callback);
 };
 

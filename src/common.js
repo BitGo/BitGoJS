@@ -1,10 +1,10 @@
 exports.Environments = {
-  prod: { uri: 'https://www.bitgo.com', network: 'bitcoin' },
-  staging: { uri: 'https://staging.bitgo.com', network: 'bitcoin' },
-  test: { uri: 'https://test.bitgo.com', network: 'testnet' },
-  dev: { uri: 'https://webdev.bitgo.com', network: 'testnet' },
-  local: { uri: 'http://localhost:3000', network: 'testnet' },
-  custom: { uri: process.env.BITGO_CUSTOM_ROOT_URI, network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK || 'bitcoin' }
+  prod: { uri: 'https://www.bitgo.com', network: 'bitcoin', signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja' },
+  staging: { uri: 'https://staging.bitgo.com', network: 'bitcoin', signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja' },
+  test: { uri: 'https://test.bitgo.com', network: 'testnet', signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3' },
+  dev: { uri: 'https://webdev.bitgo.com', network: 'testnet', signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3' },
+  local: { uri: 'http://localhost:3000', network: 'testnet', signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3' },
+  custom: { uri: process.env.BITGO_CUSTOM_ROOT_URI, network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK || 'bitcoin', signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja' }
 };
 
 var bitcoinNetwork;
