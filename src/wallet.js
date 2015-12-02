@@ -446,7 +446,10 @@ Wallet.prototype.unspents = function(params, callback) {
 
   var getUnspentsBatch = function(skip, limit) {
     var url = self.url('/unspents');
-    var extensions = { instant: params.instant };
+    var extensions = {};
+    if (params.instant) {
+      extensions.instant = params.instant;
+    }
     if (params.target) {
       if (typeof(params.target) != 'number') {
         throw new Error('invalid argument');

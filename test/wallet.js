@@ -687,7 +687,7 @@ describe('Wallet', function() {
       var options = { minConfirms: 5 };
       wallet1.unspents(options, function(err, unspents) {
         _.forEach(unspents, function(unspent) {
-          unspent.minConfirms.should.be.greaterThan(4);
+          unspent.confirmations.should.be.greaterThan(4);
         });
         done();
       });
