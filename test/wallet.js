@@ -1506,11 +1506,14 @@ describe('Wallet', function() {
       });
 
       it('send coins - wallet1 to wallet3 using xprv', function () {
+        var seqId = Math.floor(Math.random()*1e16).toString(16);
+        var txHash;
         return bitgo.unlock({ otp: '0000000' })
         .then(function() {
           return wallet1.sendCoins({
             address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 14000000, // 0.14 coins, test js floating point bugs
-            xprv: "xprv9s21ZrQH143K3z2ngVpK59RD3V7g2VpT7bPcCpPjk3Zwvz1Jc4FK2iEMFtKeWMfgDRpqQosVgqS7NNXhA3iVYjn8sd9mxUpx4wFFsMxxWEi"
+            xprv: "xprv9s21ZrQH143K3z2ngVpK59RD3V7g2VpT7bPcCpPjk3Zwvz1Jc4FK2iEMFtKeWMfgDRpqQosVgqS7NNXhA3iVYjn8sd9mxUpx4wFFsMxxWEi",
+            sequenceId: seqId
           });
         })
         .then(function(result) {
@@ -1519,6 +1522,12 @@ describe('Wallet', function() {
           result.should.have.property('fee');
           result.should.have.property('feeRate');
           result.feeRate.should.be.lessThan(0.01*1e8);
+          txHash = result.hash;
+          return wallet1.getWalletTransactionBySequenceId({ sequenceId: seqId });
+        })
+        .then(function(result) {
+          result.transaction.transactionId.should.eql(txHash);
+          result.transaction.sequenceId.should.eql(seqId);
         });
       });
 
