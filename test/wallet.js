@@ -1439,16 +1439,16 @@ describe('Wallet', function() {
         );
       });
 
-      it('send coins - instant unsupported on non-krs wallet', function (done) {
-        wallet1.sendCoins(
-        {
+      it('send coins - instant unsupported on non-krs wallet', function() {
+        return wallet1.sendCoins({
           address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE, instant: true
-        },
-        function (err, result) {
-          err.response.body.error.should.eql('wallet does not support instant transactions');
-          done();
-        }
-        );
+        })
+        .then(function(res) {
+          assert(false); // should not reach
+        })
+        .catch(function(err) {
+          err.message.should.eql('wallet does not support instant transactions');
+        });
       });
     });
 
@@ -1502,6 +1502,9 @@ describe('Wallet', function() {
           result.should.have.property('instantId');
           result.instant.should.eql(true);
           result.fee.should.eql(0.005 * 1e8);
+        })
+        .catch(function(err) {
+          err.should.eql('not here');
         });
       });
 

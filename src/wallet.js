@@ -466,11 +466,12 @@ Wallet.prototype.unspents = function(params, callback) {
     }
     return self.bitgo.get(url)
     .query(extensions)
-    .then(function(response) {
+    .result()
+    .then(function(result) {
       // The API has its own limit handling. For example, the API does not support limits bigger than 500. If the limit
       // specified here is bigger than that, we will have to do multiple requests with necessary limit adjustment.
-      for (var i = 0; i < response.body.unspents.length; i++) {
-        var unspent = response.body.unspents[i];
+      for (var i = 0; i < result.unspents.length; i++) {
+        var unspent = result.unspents[i];
         if (params.minConfirms) {
           if ((unspent.confirmations || 0) < params.minConfirms) {
             // API returns unspents in the order of height (largest confirms first)
@@ -487,12 +488,12 @@ Wallet.prototype.unspents = function(params, callback) {
         return allUnspents; // we aren't interested in any further unspents
       }
 
-      var totalUnspentCount = response.body.total;
+      var totalUnspentCount = result.total;
       // if no target is specified and the SDK indicates that there has been a limit, we need to fetch another batch
       if (!params.target && totalUnspentCount && totalUnspentCount > allUnspents.length) {
         // we need to fetch the next batch
         // let's just offset the current skip by the count
-        var newSkip = skip + response.body.count;
+        var newSkip = skip + result.count;
         var newLimit = null;
         if (limit > 0) {
           // we set the new limit to be precisely the number of missing unspents to hit our own limit
