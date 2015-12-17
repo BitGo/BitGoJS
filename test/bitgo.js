@@ -359,6 +359,49 @@ describe('BitGo', function() {
       });
     });
 
+    describe('Extend Token', function() {
+      var extensibleTokenBitGo;
+      before(function(done) {
+        extensibleTokenBitGo = new TestBitGo();
+        extensibleTokenBitGo.initializeTestVars();
+        done();
+      });
+
+      it('logging in with extensible token', function(done) {
+        var authenticationData = {
+          username: BitGoJS.BitGo.TEST_USER,
+          password: BitGoJS.BitGo.TEST_PASSWORD,
+          otp: bitgo.testUserOTP(),
+          extensible: true
+        };
+        extensibleTokenBitGo.authenticate(authenticationData, function(err, response) {
+          if (err) {
+            throw err;
+          }
+          response.access_token.should.be.type('string');
+          done();
+        })
+      });
+
+      it('extending token by impermissible duration', function(done) {
+        extensibleTokenBitGo.extendToken({ duration: 3600 * 24 * 20 }, function(err, response) {
+          err.status.should.equal(400);
+          done();
+        });
+      });
+
+      it('extending token by permissible duration', function(done) {
+        extensibleTokenBitGo.extendToken({ duration: 3600 * 24 * 10 }, function(err, response) {
+          if (err) {
+            throw err;
+          }
+          response.isExtensible.should.equal(true);
+          response.extensionAddress.should.be.type('string');
+          done();
+        });
+      })
+    });
+
     describe('me', function() {
       it('get', function(done) {
         bitgo.me({}, function(err, user) {

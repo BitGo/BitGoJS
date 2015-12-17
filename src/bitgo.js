@@ -443,6 +443,12 @@ BitGo.prototype.authenticate = function(params, callback) {
     }
   }
 
+  if (params.extensible) {
+    this._extensionKey = ECKey.makeRandom();
+    authParams.extensible = true;
+    authParams.extensionAddress = this._extensionKey.pub.getAddress().toString();
+  }
+
   var self = this;
   if (this._token) {
     return this.reject('already logged in', callback);
@@ -631,6 +637,29 @@ BitGo.prototype.sendOTP = function(params, callback) {
 
   return this.post(this.url('/user/sendotp'))
   .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+/**
+ * Extend token, provided the current token is extendable
+ * @param params
+ * - duration: duration in seconds by which to extend the token, starting at the current time
+ * @param callback
+ */
+BitGo.prototype.extendToken = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  var timestamp = Date.now();
+  var duration = params.duration;
+  var message = timestamp + '|' + this._token + '|' + duration;
+  var signature = bitcoin.Message.sign(this._extensionKey, message).toString('hex');
+
+  return this.post(this.url('/user/refreshtoken'))
+  .send(params)
+  .set('timestamp', timestamp)
+  .set('signature', signature)
   .result()
   .nodeify(callback);
 };
