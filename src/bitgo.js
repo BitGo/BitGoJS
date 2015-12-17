@@ -831,7 +831,7 @@ BitGo.prototype.instantFee = function(params, callback) {
     throw new Error('invalid amount argument');
   }
 
-  return this.get(this.url('/instant/fee?amount'))
+  return this.get(this.url('/instant/fee'))
   .query(params)
   .result()
   .nodeify(callback);
