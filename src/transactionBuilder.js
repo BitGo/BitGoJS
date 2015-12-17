@@ -138,6 +138,8 @@ exports.createTransaction = function(params) {
     totalOutputAmount += recipient.amount;
   });
 
+  var instantFeeInfo;
+
   // The total amount needed for this transaction.
   var totalAmount = totalOutputAmount + (fee || 0);
 
@@ -152,7 +154,30 @@ exports.createTransaction = function(params) {
   // The transaction.
   var transaction = new Transaction();
 
-  var deferred = Q.defer();
+  var getInstantFee = function() {
+    if (!params.instant) {
+      return;
+    }
+    return params.wallet.bitgo.instantFee({ amount: totalOutputAmount, wallet: params.wallet.id() })
+    .then(function(feeInfo) {
+      if (feeInfo && feeInfo.fee > 0) {
+        instantFeeInfo = {
+          amount: feeInfo.fee
+        };
+      }
+    });
+  };
+
+  var getInstantFeeAddress = function() {
+    if (!instantFeeInfo) {
+      return;
+    }
+    return params.wallet.bitgo.instantFeeAddress()
+    .then(function(addressInfo) {
+      instantFeeInfo.address = addressInfo.address;
+      totalAmount += instantFeeInfo.amount;
+    });
+  };
 
   // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
   var getDynamicFeeEstimate = function () {
@@ -209,8 +234,8 @@ exports.createTransaction = function(params) {
     // Use the rough formula of 6 signatures per KB.
     var signaturesPerInput = 2;  // 2-of-3 wallets
 
-    // Note: Reference implementation uses 1000 bytes/kb, so we follow it to be safe
-    var outputSizeKb = recipients.length * 34 / 1000;
+    // Add 1 output for change, and possibly 1 output for instant fee
+    var outputSizeKb = (recipients.length + 1 + (instantFeeInfo ? 1 : 0)) * 34 / 1000;
     var inputSizeKb = (transaction.ins.length * signaturesPerInput * 170) / 1000;
 
     return inputSizeKb + outputSizeKb;
@@ -362,17 +387,22 @@ exports.createTransaction = function(params) {
       });
     };
 
+    // Add change output(s) and instant fee output if applicable
     return Q().then(function() {
       return getChangeOutputs(inputAmount - totalAmount);
     })
     .then(function(result) {
       changeOutputs = result;
-      changeOutputs.forEach(function(output) {
+      var extraOutputs = changeOutputs.concat([]); // copy the array
+      if (instantFeeInfo && instantFeeInfo.amount > 0) {
+        extraOutputs.push(instantFeeInfo);
+      }
+      extraOutputs.forEach(function(output) {
         output.script = Address.fromBase58Check(output.address).toOutputScript();
 
-        // decide where to put the change output - default is to randomize unless forced to end
-        var changeIndex = params.forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
-        outputs.splice(changeIndex, 0, output);
+        // decide where to put the outputs - default is to randomize unless forced to end
+        var outputIndex = params.forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
+        outputs.splice(outputIndex, 0, output);
       });
 
       // Add all outputs to the transaction
@@ -385,7 +415,7 @@ exports.createTransaction = function(params) {
   // Serialize the transaction, returning what is needed to sign it
   var serialize = function () {
     // only need to return the unspents that were used and just the chainPath, redeemScript, and instant flag
-    var pickedUnspents = _.map(unspents, function (unspent) { return _.pick(unspent, ['chainPath', 'redeemScript', 'instant']) });
+    var pickedUnspents = _.map(unspents, function (unspent) { return _.pick(unspent, ['chainPath', 'redeemScript', 'instant']); });
     var prunedUnspents = _.slice(pickedUnspents, 0, transaction.ins.length);
     var result = {
       transactionHex: transaction.toBuffer().toString('hex'),
@@ -395,13 +425,19 @@ exports.createTransaction = function(params) {
       walletId: params.wallet.id(),
       walletKeychains: params.wallet.keychains,
       feeRate: feeRate,
-      instant: params.instant
+      instant: params.instant,
+      instantFee: instantFeeInfo
     };
 
     return result;
   };
 
-  return Q.all([getDynamicFeeEstimate(), getUnspents()])
+  return Q().then(function() {
+    return getInstantFee();
+  })
+  .then(function() {
+    return Q.all([getInstantFeeAddress(), getDynamicFeeEstimate(), getUnspents()]);
+  })
   .then(collectInputs)
   .then(collectOutputs)
   .then(serialize);
@@ -450,8 +486,9 @@ exports.signTransaction = function(params) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
+  var rootExtKey;
   if (keychain) {
-    var rootExtKey = HDNode.fromBase58(keychain.xprv);
+    rootExtKey = HDNode.fromBase58(keychain.xprv);
   }
   for (var index = 0; index < transaction.ins.length; ++index) {
     if (keychain) {
@@ -492,7 +529,7 @@ exports.signTransaction = function(params) {
     // is created). Thus we need to remove the superfluous OP_0.
     var chunks = transaction.ins[index].script.chunks;
     if (chunks.length !== 5) {
-      throw new Error('unexpected number of chunks in the OP_CHECKMULTISIG script after signing')
+      throw new Error('unexpected number of chunks in the OP_CHECKMULTISIG script after signing');
     }
     if (chunks[1]) {
       chunks.splice(2, 1); // The extra OP_0 is the third chunk

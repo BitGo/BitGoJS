@@ -796,7 +796,7 @@ BitGo.prototype.estimateFee = function(params, callback) {
 // instantGuarantee
 // Get BitGo's guarantee using an instant id
 //
-BitGo.prototype.instantGuarantee = function(params,callback) {
+BitGo.prototype.instantGuarantee = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
@@ -819,5 +819,39 @@ BitGo.prototype.instantGuarantee = function(params,callback) {
   })
   .nodeify(callback);
 };
+
+//
+// instantFee
+// Get the required fee for a BitGo Instant transaction
+//
+BitGo.prototype.instantFee = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], ['wallet'], callback);
+  if (typeof(params.amount) !== 'number') {
+    throw new Error('invalid amount argument');
+  }
+
+  return this.get(this.url('/instant/fee?amount'))
+  .query(params)
+  .result()
+  .nodeify(callback);
+};
+
+//
+// instantAddress
+// Get a target address for payment of a BitGo Instant fee
+//
+BitGo.prototype.instantFeeAddress = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  var self = this;
+  return this.post(this.url('/instant/feeaddress'))
+  .send({})
+  .result()
+  .nodeify(callback);
+};
+
+
 
 module.exports = BitGo;

@@ -820,6 +820,7 @@ Wallet.prototype.sendMany = function(params, callback) {
   var keychain;
   var fee;
   var feeRate;
+  var instantFee;
 
   // Get the user keychain
   return this.createAndSignTransaction(params)
@@ -827,6 +828,7 @@ Wallet.prototype.sendMany = function(params, callback) {
     // Send the transaction
     fee = transaction.fee;
     feeRate = transaction.feeRate;
+    instantFee = transaction.instantFee;
     return self.sendTransaction({
       tx: transaction.tx,
       message: params.message,
@@ -837,6 +839,9 @@ Wallet.prototype.sendMany = function(params, callback) {
   .then(function(result) {
     result.fee = fee;
     result.feeRate = feeRate;
+    if (instantFee) {
+      result.instantFee = instantFee;
+    }
     return result;
   })
   .nodeify(callback);
@@ -880,6 +885,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   var keychain;
   var fee;
   var feeRate;
+  var instantFee;
 
   return Q()
   .then(function() {
@@ -891,10 +897,11 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     feeRate = transaction.feeRate;
     // Sign the transaction
     transaction.keychain = keychain;
+    instantFee = transaction.instantFee;
     return self.signTransaction(transaction);
   })
   .then(function(result) {
-    return _.extend(result, { fee: fee, feeRate: feeRate, instant: params.instant });
+    return _.extend(result, { fee: fee, feeRate: feeRate, instant: params.instant, instantFee: instantFee });
   })
   .nodeify(callback);
 };

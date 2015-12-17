@@ -1099,7 +1099,7 @@ describe('Wallet', function() {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
-          assert.equal(feeUsed, 971421);
+          assert.equal(feeUsed, 971802);
           result.feeRate.should.eql(0.000112 * 1e8);
           result.walletId = wallet1.id;
         });
@@ -1113,7 +1113,7 @@ describe('Wallet', function() {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
-          assert.equal(feeUsed, 1734681);
+          assert.equal(feeUsed, 1735360);
         });
       });
 
@@ -1133,7 +1133,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 1196930); // tx size will be 87kb * 0.000138 * 1e8
+          assert.equal(feeUsed, 1197399); // tx size will be 87kb * 0.000138 * 1e8
         });
       });
 
@@ -1143,7 +1143,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1, maxFeeRate: 5000})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 433671);
+          assert.equal(feeUsed, 433840);
         });
       });
 
@@ -1153,7 +1153,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 135306); // tx size will be 87kb * 0.0000156 * 1e8
+          assert.equal(feeUsed, 135359); // tx size will be 87kb * 0.0000156 * 1e8
         });
       });
 
@@ -1167,7 +1167,7 @@ describe('Wallet', function() {
         .then(function(result) {
           wallet1.estimateFee = feeMonkeyPatch;
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 95408);
+          assert.equal(feeUsed, 95445);
         });
       });
 
@@ -1177,7 +1177,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 4})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 8673400); // tx size will be 87kb * 0.001 (max feerate as defined in transactionBuilder)
+          assert.equal(feeUsed, 8676800); // tx size will be 87kb * 0.001 (max feerate as defined in transactionBuilder)
         });
       });
 
@@ -1486,7 +1486,7 @@ describe('Wallet', function() {
         });
       });
 
-      it('send coins - wallet3 to wallet1 with specified fee and in instant mode', function() {
+      it('send instant transaction with no fee required - wallet3 to wallet1', function() {
         return wallet3.sendCoins({
           address: TestBitGo.TEST_WALLET1_ADDRESS,
           amount: 0.001 * 1e8,
@@ -1500,11 +1500,47 @@ describe('Wallet', function() {
           result.should.have.property('fee');
           result.should.have.property('instant');
           result.should.have.property('instantId');
+          result.should.not.have.property('instantFee');
           result.instant.should.eql(true);
           result.fee.should.eql(0.005 * 1e8);
+        });
+      });
+
+      it('send instant transaction requiring fee - wallet3 to wallet1', function() {
+        return wallet3.sendCoins({
+          address: TestBitGo.TEST_WALLET1_ADDRESS,
+          amount: 1.1e8,
+          walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
+          fee: 0.005 * 1e8,
+          instant: true
         })
-        .catch(function(err) {
-          err.should.eql('not here');
+        .then(function(result) {
+          console.error(JSON.stringify(result, null, 2));
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          result.should.have.property('instant');
+          result.should.have.property('instantId');
+          result.should.have.property('instantFee');
+          result.instantFee.should.have.property('address');
+          result.instantFee.should.have.property('amount');
+          result.instant.should.eql(true);
+          result.fee.should.eql(0.005 * 1e8);
+        });
+      });
+
+      it('send coins from wallet 1 back to wallet 3 (to keep balance about the same)', function() {
+        return wallet1.sendCoins({
+          address: TestBitGo.TEST_WALLET3_ADDRESS,
+          amount: 1.1e8,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+          fee: 0.005 * 1e8,
+        })
+        .then(function(result) {
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          result.fee.should.eql(0.005 * 1e8);
         });
       });
 
