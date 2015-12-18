@@ -62,7 +62,8 @@ exports.createTransaction = function(params) {
      (params.maxFeeRate && typeof(params.maxFeeRate) !== 'number') ||
      (params.unspents && params.unspents.length < 1) || // this should be an array and its length must be at least 1
      (params.feeTxConfirmTarget && typeof(params.feeTxConfirmTarget) !== 'number') ||
-     (params.instant && typeof(params.instant) !== 'boolean')
+     (params.instant && typeof(params.instant) !== 'boolean') ||
+     (params.instantFee && typeof(params.instantFee) !== 'object')
   ) {
     throw new Error('invalid argument');
   }
@@ -138,7 +139,11 @@ exports.createTransaction = function(params) {
     totalOutputAmount += recipient.amount;
   });
 
-  var instantFeeInfo;
+  var instantFeeInfo = params.instantFee;
+  if (instantFeeInfo &&
+    (typeof(instantFeeInfo.amount) !== 'number' || typeof(instantFeeInfo.address) !== 'string')) {
+    throw new Error('invalid instantFee');
+  }
 
   // The total amount needed for this transaction.
   var totalAmount = totalOutputAmount + (fee || 0);
@@ -155,7 +160,8 @@ exports.createTransaction = function(params) {
   var transaction = new Transaction();
 
   var getInstantFee = function() {
-    if (!params.instant) {
+    // If we're not sending instant, or instantFeeInfo is already set, don't fetch fee
+    if (!params.instant || instantFeeInfo) {
       return;
     }
     return params.wallet.bitgo.instantFee({ amount: totalOutputAmount, wallet: params.wallet.id() })
@@ -169,7 +175,8 @@ exports.createTransaction = function(params) {
   };
 
   var getInstantFeeAddress = function() {
-    if (!instantFeeInfo) {
+    // If we don't have instantFeeInfo, or address is already set, don't get a new one
+    if (!instantFeeInfo || instantFeeInfo.address) {
       return;
     }
     return params.wallet.bitgo.instantFeeAddress()

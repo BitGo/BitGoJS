@@ -1506,44 +1506,6 @@ describe('Wallet', function() {
         });
       });
 
-      it('send instant transaction requiring fee - wallet3 to wallet1', function() {
-        return wallet3.sendCoins({
-          address: TestBitGo.TEST_WALLET1_ADDRESS,
-          amount: 1.1e8,
-          walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
-          fee: 0.005 * 1e8,
-          instant: true
-        })
-        .then(function(result) {
-          console.error(JSON.stringify(result, null, 2));
-          result.should.have.property('tx');
-          result.should.have.property('hash');
-          result.should.have.property('fee');
-          result.should.have.property('instant');
-          result.should.have.property('instantId');
-          result.should.have.property('instantFee');
-          result.instantFee.should.have.property('address');
-          result.instantFee.should.have.property('amount');
-          result.instant.should.eql(true);
-          result.fee.should.eql(0.005 * 1e8);
-        });
-      });
-
-      it('send coins from wallet 1 back to wallet 3 (to keep balance about the same)', function() {
-        return wallet1.sendCoins({
-          address: TestBitGo.TEST_WALLET3_ADDRESS,
-          amount: 1.1e8,
-          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
-          fee: 0.005 * 1e8,
-        })
-        .then(function(result) {
-          result.should.have.property('tx');
-          result.should.have.property('hash');
-          result.should.have.property('fee');
-          result.fee.should.eql(0.005 * 1e8);
-        });
-      });
-
       it('send coins - wallet1 to wallet3 using xprv', function () {
         var seqId = Math.floor(Math.random()*1e16).toString(16);
         var txHash;
@@ -1903,6 +1865,30 @@ describe('Wallet', function() {
           tx = result.tx;
         })
         .done(done);
+      });
+
+      it('create instant transaction', function() {
+        var recipients = {};
+        var instantFee;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 1.1e8;
+        return wallet3.createTransaction({ recipients: recipients, instant: true })
+        .then(function(result) {
+          result.should.have.property('fee');
+          result.should.have.property('feeRate');
+          should.exist(result.fee);
+          result.fee.should.be.lessThan(0.01e8);
+          result.feeRate.should.be.lessThan(0.01e8);
+          result.should.have.property('instantFee');
+          instantFee = result.instantFee;
+          instantFee.amount.should.equal(100000);
+          instantFee.should.have.property('address');
+          // Re-create the same tx, passing instantFee info
+          return wallet3.createTransaction({ recipients: recipients, instant: true, instantFee: result.instantFee});
+        })
+        .then(function(result) {
+          result.should.have.property('instantFee');
+          result.instantFee.address.should.equal(instantFee.address);
+        });
       });
 
       it('send', function(done) {
