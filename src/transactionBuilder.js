@@ -160,16 +160,23 @@ exports.createTransaction = function(params) {
   var transaction = new Transaction();
 
   var getInstantFee = function() {
-    // If we're not sending instant, or instantFeeInfo is already set, don't fetch fee
-    if (!params.instant || instantFeeInfo) {
-      return;
-    }
-    return params.wallet.bitgo.instantFee({ amount: totalOutputAmount, wallet: params.wallet.id() })
-    .then(function(feeInfo) {
-      if (feeInfo && feeInfo.fee > 0) {
-        instantFeeInfo = {
-          amount: feeInfo.fee
-        };
+    return Q().then(function() {
+      // If we're not sending instant, or instantFeeInfo is already set, don't fetch fee
+      if (!params.instant || instantFeeInfo) {
+        return;
+      }
+      return params.wallet.bitgo.instantFee({ amount: totalOutputAmount, wallet: params.wallet.id() })
+      .then(function(feeInfo) {
+        if (feeInfo && feeInfo.fee > 0) {
+          instantFeeInfo = {
+            amount: feeInfo.fee
+          };
+        }
+      });
+    })
+    .then(function() {
+      if (instantFeeInfo && instantFeeInfo.amount > 0) {
+        totalAmount += instantFeeInfo.amount;
       }
     });
   };
@@ -182,7 +189,6 @@ exports.createTransaction = function(params) {
     return params.wallet.bitgo.instantFeeAddress()
     .then(function(addressInfo) {
       instantFeeInfo.address = addressInfo.address;
-      totalAmount += instantFeeInfo.amount;
     });
   };
 
@@ -219,7 +225,7 @@ exports.createTransaction = function(params) {
 
     // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
     var options = {
-      target: totalAmount + (0.01 * 1e8),  // fee @ 0.0001/kb for a 100kb tx
+      target: totalAmount + 0.01e8,  // fee @ 0.0001/kb for a 100kb tx
       minSize: params.minUnspentSize || MINIMUM_BTC_DUST, // don't bother to use unspents smaller than dust
       instant: params.instant // insist on instant unspents only
     };
@@ -271,7 +277,11 @@ exports.createTransaction = function(params) {
       var approximateFee = calculateApproximateFee();
       var shouldRecurse = typeof(fee) === 'undefined' || approximateFee > fee;
       fee = approximateFee;
+      // Recompute totalAmount from scratch
       totalAmount = fee + totalOutputAmount;
+      if (instantFeeInfo) {
+        totalAmount += instantFeeInfo.amount;
+      }
       if (shouldRecurse) {
         // if fee changed, re-collect inputs
         inputAmount = 0;
@@ -344,6 +354,9 @@ exports.createTransaction = function(params) {
     };
 
     var getChangeOutputs = function(changeAmount) {
+      if (changeAmount < 0) {
+        throw new Error('negative change amount');
+      }
       if (changeAmount < MINIMUM_BTC_DUST) {
         // Give it to the miners
         return [];
