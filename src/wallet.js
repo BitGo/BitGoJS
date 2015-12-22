@@ -428,7 +428,9 @@ Wallet.prototype.deleteLabel = function(params, callback) {
 
 //
 // unspents
-// List the unspents for a given wallet
+// List ALL the unspents for a given wallet
+// This method will return a paged list of all unspents
+//
 // Parameters include:
 //   limit:  the optional limit of unspents to collect in BTC
 //   minConf: only include results with this number of confirmations
@@ -512,6 +514,44 @@ Wallet.prototype.unspents = function(params, callback) {
   };
 
   return getUnspentsBatch(0, params.limit)
+  .nodeify(callback);
+};
+
+//
+// unspentsPaged
+// List the unspents (paged) for a given wallet, returning the result as an object of unspents, count, skip and total
+// This method may not return all the unspents as the list is paged by the API
+//
+// Parameters include:
+//   limit:  the optional limit of unspents to collect in BTC
+//   skip: index in list of unspents to start paging from
+//   minConfirms: only include results with this number of confirmations
+//   target: the amount of btc to find to spend
+//   instant: only find instant transactions (must specify a target)
+//
+Wallet.prototype.unspentsPaged = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  if (params.limit && typeof(params.limit) != 'number') {
+    throw new Error('invalid limit - should be number');
+  }
+  if (params.skip && typeof(params.skip) != 'number') {
+    throw new Error('invalid skip - should be number');
+  }
+  if (params.minConfirms && typeof(params.minConfirms) !== 'number') {
+    throw new Error('invalid minConfirms - should be number');
+  }
+  if (params.target && typeof(params.target) != 'number') {
+    throw new Error('invalid target - should be number');
+  }
+  if (params.instant && typeof(params.instant) != 'boolean') {
+    throw new Error('invalid instant flag - should be boolean');
+  }
+
+  return this.bitgo.get(this.url('/unspents'))
+  .query(params)
+  .result()
   .nodeify(callback);
 };
 

@@ -671,6 +671,12 @@ describe('Wallet', function() {
       assert.throws(function() { wallet1.unspents('invalid', function() {}); });
       assert.throws(function() { wallet1.unspents({target: 'a string!'}, function() {}); });
       assert.throws(function() { wallet1.unspents({}, 'invalid'); });
+      assert.throws(function() { wallet1.unspentsPaged('invalid', function() {}); });
+      assert.throws(function() { wallet1.unspentsPaged({target: 'a string!'}, function() {}); });
+      assert.throws(function() { wallet1.unspentsPaged({limit: 'a string!'}, function() {}); });
+      assert.throws(function() { wallet1.unspentsPaged({skip: 'a string!'}, function() {}); });
+      assert.throws(function() { wallet1.unspentsPaged({minConfirms: 'a string!'}, function() {}); });
+      assert.throws(function() { wallet1.unspentsPaged({}, 'invalid'); });
       done();
     });
 
@@ -700,6 +706,30 @@ describe('Wallet', function() {
           return unspent.instant === true;
         }).should.eql(true);
         done();
+      });
+    });
+
+    it('list paged', function() {
+      var options = { minConfirms: 1, limit: 3 };
+      return wallet3.unspentsPaged(options)
+      .then(function(result) {
+        result.should.have.property('start');
+        result.should.have.property('count');
+        result.should.have.property('total');
+        result.should.have.property('unspents');
+        result.unspents.length.should.eql(result.count);
+        result.start.should.eql(0);
+        result.count.should.eql(3);
+      });
+    });
+
+    it('list paged with target', function() {
+      var options = { target: 50 * 1e8 };
+      return wallet1.unspentsPaged(options)
+      .then(function(result) {
+        result.should.have.property('count');
+        result.should.have.property('total');
+        result.should.have.property('unspents');
       });
     });
 
@@ -964,6 +994,7 @@ describe('Wallet', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 1e8;
         assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: [recipients]}); });
+        assert.throws(function() { new TransactionBuilder.createTransaction({wallet: {}, recipients: recipients, minUnspentsTarget: 51 }); });
       });
 
       it('minConfirms argument', function() {
@@ -1056,11 +1087,26 @@ describe('Wallet', function() {
     describe('size calculation and fees', function() {
       var patch;
       var patch2;
+      var patch3;
       before(function() {
         // Monkey patch wallet1 with simulated inputs
         patch = wallet1.unspents;
+        patch3 = wallet1.unspentsPaged;
+        patch4 = wallet1.createAddress;
         wallet1.unspents = function(options, callback) {
           return Q(unspentData.unspents).nodeify(callback);
+        };
+        wallet1.unspentsPaged = function(options, callback) {
+          return Q(unspentData).nodeify(callback);
+        };
+        wallet1.createAddress = function(options, callback) {
+          var changeAddress = { address: '2N1Dk6C74PM5xoUzEdoPLpWEWufULRwSag7',
+            chain: 1,
+            index: 8838,
+            path: '/1/8838',
+            redeemScript: '52210369c90fd18fd7d6bd028d02486997f38cd54365780db5f2a046994cd63680truncated'
+          };
+          return Q(changeAddress).nodeify(callback);
         };
         patch2 = wallet1.estimateFee;
         wallet1.estimateFee = function(options, callback) {
@@ -1080,6 +1126,8 @@ describe('Wallet', function() {
       after(function() {
         wallet1.unspents = patch;
         wallet1.estimateFee = patch2;
+        wallet1.unspentsPaged = patch3;
+        wallet1.createAddress = patch4;
       });
 
       it('too large for blockchain relay', function() {
@@ -1225,6 +1273,86 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, forceChangeAtEnd: true, splitChangeSize: 0 })
         .then(function(result) {
           result.changeAddresses.length.should.equal(1);
+        });
+      });
+
+      it('minUnspentsTarget 0', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, minUnspentsTarget: 0 })
+        .then(function(result) {
+          result.changeAddresses.length.should.equal(1);
+        });
+      });
+
+      it('minUnspentsTarget 1', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, minUnspentsTarget: 1 })
+        .then(function(result) {
+          console.dir(result);
+          result.changeAddresses.length.should.equal(1);
+          result.changeAddresses[0].amount.should.eql(724858140);
+        });
+      });
+
+      it('minUnspentsTarget 2', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, minUnspentsTarget: 2 })
+        .then(function(result) {
+          result.changeAddresses.length.should.equal(2);
+          var totalChange = 0;
+          result.changeAddresses.forEach(function(changeAddress) {
+            changeAddress.amount.should.be.greaterThan(9999);
+            totalChange += changeAddress.amount;
+          });
+          totalChange.should.eql(724858140);
+        });
+      });
+
+      it('minUnspentsTarget 3', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, minUnspentsTarget: 3 })
+        .then(function(result) {
+          result.changeAddresses.length.should.equal(3);
+          var totalChange = 0;
+          result.changeAddresses.forEach(function(changeAddress) {
+            changeAddress.amount.should.be.greaterThan(9999);
+            totalChange += changeAddress.amount;
+          });
+          totalChange.should.eql(724858140);
+        });
+      });
+
+      it('minUnspentsTarget 20', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, minUnspentsTarget: 20 })
+        .then(function(result) {
+          result.changeAddresses.length.should.equal(20);
+          var totalChange = 0;
+          result.changeAddresses.forEach(function(changeAddress) {
+            changeAddress.amount.should.be.greaterThan(9999);
+            totalChange += changeAddress.amount;
+          });
+          totalChange.should.eql(724858140);
+        });
+      });
+
+      it('minUnspentsTarget 20 with insufficient amount to split', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8 + 724843819;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, minUnspentsTarget: 20 })
+        .then(function(result) {
+          result.changeAddresses.length.should.eql(1);
+          var totalChange = 0;
+          result.changeAddresses.forEach(function(changeAddress) {
+            changeAddress.amount.should.be.greaterThan(9999);
+            totalChange += changeAddress.amount;
+          });
+          totalChange.should.eql(14321);
         });
       });
     });
