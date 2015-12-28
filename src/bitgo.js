@@ -250,13 +250,17 @@ BitGo.prototype.version = function() {
 BitGo.prototype.toJSON = function() {
   return {
     user: this._user,
-    token: this._token
+    token: this._token,
+    extensionKey: this._extensionKey ?  this._extensionKey.toWIF() : null
   };
 };
 
 BitGo.prototype.fromJSON = function(json) {
   this._user = json.user;
   this._token = json.token;
+  if (json.extensionKey) {
+    this._extensionKey = ECKey.fromWIF(json.extensionKey);
+  }
 };
 
 BitGo.prototype.user = function() {

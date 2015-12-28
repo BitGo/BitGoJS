@@ -399,7 +399,20 @@ describe('BitGo', function() {
           response.extensionAddress.should.be.type('string');
           done();
         });
-      })
+      });
+
+      it('extending token after juggling session data', function(done) {
+        var sessionData = extensibleTokenBitGo.toJSON();
+        extensibleTokenBitGo.fromJSON(sessionData);
+        extensibleTokenBitGo.extendToken({ duration: 3600 * 24 * 10 }, function(err, response) {
+          if (err) {
+            throw err;
+          }
+          response.isExtensible.should.equal(true);
+          response.extensionAddress.should.be.type('string');
+          done();
+        });
+      });
     });
 
     describe('me', function() {
