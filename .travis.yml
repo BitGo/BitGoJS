@@ -3,6 +3,14 @@ before_install:
   - npm install npm -g
 node_js:
   - '0.10.37'
+  - "4.1"
+  - "4.0"
+  - "0.12"
+  - "0.11"
+  - "0.10"
+  - "0.8"
+  - "0.6"
+  - "iojs"
 env:
   matrix:
     - TEST_SUITE=test-node
