@@ -455,6 +455,8 @@ Wallet.prototype.unspents = function(params, callback) {
     var extensions = {};
     if (params.instant) {
       extensions.instant = params.instant;
+    } else if (params.minConfirms) {
+      extensions.minConfirms = params.minConfirms;
     }
     if (params.target) {
       if (typeof(params.target) != 'number') {
@@ -478,13 +480,6 @@ Wallet.prototype.unspents = function(params, callback) {
       // specified here is bigger than that, we will have to do multiple requests with necessary limit adjustment.
       for (var i = 0; i < result.unspents.length; i++) {
         var unspent = result.unspents[i];
-        if (params.minConfirms) {
-          if ((unspent.confirmations || 0) < params.minConfirms) {
-            // API returns unspents in the order of height (largest confirms first)
-            // So if we see an unspent with too few minConfirms then we can return what we have now.
-            return allUnspents;
-          }
-        }
         allUnspents.push(unspent);
       }
 
@@ -1069,8 +1064,8 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
   var transactionParams;
   var grossAmount = 0;
 
-  // first, let's take all the wallet's unspents
-  return self.unspents()
+  // first, let's take all the wallet's unspents (with min confirms if necessary)
+  return self.unspents({ minConfirms: params.minConfirms })
   .then(function(allUnspents) {
     if (allUnspents.length < 1) {
       throw new Error('No unspents to branch out');
@@ -1200,7 +1195,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      In the next version of the unspents version SDK, we will know the total number of unspents without having to fetch
      them, and therefore will be able to simplify this method.
      */
-    return self.unspents({ limit: target + maxInputCount })
+    return self.unspents({ limit: target + maxInputCount, minConfirms: params.minConfirms })
     .then(function(allUnspents) {
       // this consolidation is essentially just a waste of money
       if (allUnspents.length <= target) {
