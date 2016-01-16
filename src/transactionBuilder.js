@@ -44,6 +44,8 @@ var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for les
 //   minUnspentsTarget: specify number of unspents to target after this transaction is created
 //   validate: extra verification of the change addresses, which is always done server-side and is redundant client-side (defaults true)
 //   minUnspentSize: The minimum use of unspent to use (don't spend dust transactions). Defaults to MINIMUM_BTC_DUST.
+//   feeSingleKeySourceAddress: Use this single key address to pay fees
+//   feeSingleKeyWIF: Use the address based on this private key to pay fees
 exports.createTransaction = function(params) {
   var minConfirms = params.minConfirms || 0;
   var validate = params.validate === undefined ? true : params.validate;
@@ -68,6 +70,36 @@ exports.createTransaction = function(params) {
      (params.instantFee && typeof(params.instantFee) !== 'object')
   ) {
     throw new Error('invalid argument');
+  }
+
+  var self = this;
+
+  // The user can specify a seperate, single-key wallet for the purposes of paying miner's fees
+  // When creating a transaction this can be specified as an input address or the private key in WIF
+  var feeSingleKeySourceAddress;
+  var feeSingleKeyInputAmount = 0;
+  if (params.feeSingleKeySourceAddress) {
+    try {
+      Address.fromBase58Check(params.feeSingleKeySourceAddress);
+      feeSingleKeySourceAddress = params.feeSingleKeySourceAddress;
+    } catch (e) {
+      throw new Error('invalid bitcoin address: ' + params.feeSingleKeySourceAddress);
+    }
+  }
+
+  if (params.feeSingleKeyWIF) {
+    var feeSingleKey;
+    try {
+      feeSingleKey = ECKey.fromWIF(params.feeSingleKeyWIF);
+    } catch(e) {
+      throw new Error('Failed to parse key when importing feeSingleKeyWIF');
+    }
+    feeSingleKeySourceAddress = feeSingleKey.pub.getAddress(networks[common.getNetwork()]).toString();
+    // If the user specifies both, check to make sure the feeSingleKeySourceAddress corresponds to the address of feeSingleKeyWIF
+    if (params.feeSingleKeySourceAddress &&
+        params.feeSingleKeySourceAddress !== feeSingleKeySourceAddress) {
+      throw new Error('feeSingleKeySourceAddress did not correspond to address of feeSingleKeyWIF');
+    }
   }
 
   if (params.minUnspentsTarget) {
@@ -127,8 +159,6 @@ exports.createTransaction = function(params) {
   if (feeRate > MAX_FEE_RATE) {
     throw new Error('fee rate too generous');  // Protection against bad inputs
   }
-
-  var self = this;
 
   var totalOutputAmount = 0;
 
@@ -263,13 +293,33 @@ exports.createTransaction = function(params) {
     });
   };
 
+  // Get the unspents for the single key fee address
+  var feeSingleKeyUnspents = [];
+  var getUnspentsForSingleKey = function() {
+    if (feeSingleKeySourceAddress) {
+      var feeTarget = 0.01e8;
+      if (params.instant) {
+        feeTarget += totalAmount * 0.001;
+      }
+      return params.wallet.bitgo.get(params.wallet.bitgo.url('/address/' + feeSingleKeySourceAddress + '/unspents?target=' + feeTarget))
+      .then(function(response) {
+        if (response.body.total <= 0) {
+          throw new Error("No unspents available in single key fee source");
+        }
+        feeSingleKeyUnspents = response.body.unspents;
+      });
+    }
+  };
+
   var estimateTxSizeKb = function () {
     // Tx size is dominated by signatures.
     // Use the rough formula of 6 signatures per KB.
     var signaturesPerInput = 2;  // 2-of-3 wallets
 
-    // Add 1 output for change, and possibly 1 output for instant fee
-    var outputSizeKb = (recipients.length + 1 + (instantFeeInfo ? 1 : 0)) * 34 / 1000;
+    // Add 1 output for change, possibly 1 output for instant fee, and 1 output for the single key change if needed
+    var outputSizeKb = (recipients.length + 1 + (instantFeeInfo ? 1 : 0) + (feeSingleKeySourceAddress ? 1 : 0)) * 34 / 1000;
+
+    // Add 1 output potentially for the single key fee
     var inputSizeKb = (transaction.ins.length * signaturesPerInput * 170) / 1000;
 
     return inputSizeKb + outputSizeKb;
@@ -283,6 +333,7 @@ exports.createTransaction = function(params) {
 
   // Iterate unspents, sum the inputs, and save _inputs with the total
   // input amound and final list of inputs to use with the transaction.
+  var feeSingleKeyUnspentsUsed = [];
   var collectInputs = function () {
     inputAmount = 0;
     unspents.every(function (unspent) {
@@ -291,8 +342,23 @@ exports.createTransaction = function(params) {
       hash = new Buffer(Array.prototype.reverse.call(hash));
       var script = Script.fromHex(unspent.script);
       transaction.addInput(hash, unspent.tx_output_n, 0xffffffff, script);
-      return (inputAmount < totalAmount);
+      return (inputAmount < (feeSingleKeySourceAddress ? totalOutputAmount : totalAmount));
     });
+
+    // if paying fees from an external single key wallet, add the inputs
+    if (feeSingleKeySourceAddress) {
+      // collect the amount used in the fee inputs so we can get change later
+      feeSingleKeyInputAmount = 0;
+      feeSingleKeyUnspentsUsed = [];
+      feeSingleKeyUnspents.every(function (unspent) {
+        feeSingleKeyInputAmount += unspent.value;
+        inputAmount += unspent.value;
+        transaction.addInput(unspent.tx_hash, unspent.tx_output_n);
+        feeSingleKeyUnspentsUsed.push(unspent);
+        // use the fee wallet to pay miner fees and potentially instant fees
+        return (feeSingleKeyInputAmount < (fee + (instantFeeInfo ? instantFeeInfo.amount : 0)));
+      });
+    }
 
     if (shouldComputeBestFee) {
       var approximateFee = calculateApproximateFee();
@@ -311,11 +377,26 @@ exports.createTransaction = function(params) {
       }
     }
 
-    if (totalAmount > inputAmount) {
+    var totalFee = fee + (instantFeeInfo ? instantFeeInfo.amount : 0);
+
+    if (feeSingleKeySourceAddress) {
+      if (totalFee > _.sum(feeSingleKeyUnspents, 'value')) {
+        var err = new Error('Insufficient fee amount available in single key fee source');
+        err.result = {
+          fee: fee,
+          available: inputAmount,
+          instantFee: instantFeeInfo
+        };
+        return Q.reject(err);
+      }
+    }
+
+    if (inputAmount < (feeSingleKeySourceAddress ? totalOutputAmount : totalAmount)) {
       var err = new Error('Insufficient funds');
       err.result = {
         fee: fee,
-        available: inputAmount
+        available: inputAmount,
+        instantFee: instantFeeInfo
       };
       return Q.reject(err);
     }
@@ -382,18 +463,30 @@ exports.createTransaction = function(params) {
         // Give it to the miners
         return [];
       }
+
+      var result = [];
+      // if we paid fees from a single key wallet, return the fee change first
+      if (feeSingleKeySourceAddress) {
+        var feeSingleKeyWalletChangeAmount = feeSingleKeyInputAmount - (fee + (instantFeeInfo ? instantFeeInfo.amount : 0));
+        if (feeSingleKeyWalletChangeAmount >= MINIMUM_BTC_DUST) {
+          result.push({ address: feeSingleKeySourceAddress, amount: feeSingleKeyWalletChangeAmount });
+          changeAmount = changeAmount - feeSingleKeyWalletChangeAmount;
+        }
+      }
+
       // If user specified directly, just return it
       if (params.changeAddress) {
-        return [{ address: params.changeAddress, amount: changeAmount }];
+        result.push({ address: params.changeAddress, amount: changeAmount });
+        return result;
       }
       if (params.wallet.type() === 'safe') {
         return params.wallet.addresses()
-        .then(function(result) {
-          return [{ address: result.addresses[0].address, amount: changeAmount }];
+        .then(function(response) {
+          result.push({ address: response.addresses[0].address, amount: changeAmount });
+          return result;
         });
       }
 
-      var result = [];
       var splitAmount;
 
       // Recursive method to keep adding outputs as long as we haven't hit our desired numChangeOutputs
@@ -496,7 +589,10 @@ exports.createTransaction = function(params) {
   var serialize = function () {
     // only need to return the unspents that were used and just the chainPath, redeemScript, and instant flag
     var pickedUnspents = _.map(unspents, function (unspent) { return _.pick(unspent, ['chainPath', 'redeemScript', 'instant']); });
-    var prunedUnspents = _.slice(pickedUnspents, 0, transaction.ins.length);
+    var prunedUnspents = _.slice(pickedUnspents, 0, transaction.ins.length - feeSingleKeyUnspentsUsed.length);
+    _.every(feeSingleKeyUnspentsUsed, function(feeUnspent) {
+      prunedUnspents.push({ redeemScript: false, chainPath: false }); // mark as false to signify a non-multisig address
+    });
     var result = {
       transactionHex: transaction.toBuffer().toString('hex'),
       unspents: prunedUnspents,
@@ -516,7 +612,7 @@ exports.createTransaction = function(params) {
     return getInstantFee();
   })
   .then(function() {
-    return Q.all([getInstantFeeAddress(), getDynamicFeeEstimate(), getUnspents()]);
+    return Q.all([getInstantFeeAddress(), getDynamicFeeEstimate(), getUnspents(), getUnspentsForSingleKey()]);
   })
   .then(collectInputs)
   .then(collectOutputs)
@@ -536,6 +632,7 @@ exports.createTransaction = function(params) {
  *  signingKey private key in WIF for safe wallets, when keychain is unavailable
  *  validate client-side signature verification - can be disabled for improved performance (signatures
  *           are still validated server-side).
+ *  feeSingleKeyWIF Use the address based on this private key to pay fees
  * @returns {*}
  */
 exports.signTransaction = function(params) {
@@ -561,6 +658,11 @@ exports.signTransaction = function(params) {
     }
   }
 
+  var feeSingleKey;
+  if (params.feeSingleKeyWIF) {
+    feeSingleKey = ECKey.fromWIF(params.feeSingleKeyWIF);
+  }
+
   var transaction = Transaction.fromHex(params.transactionHex);
   if (transaction.ins.length !== params.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
@@ -571,6 +673,18 @@ exports.signTransaction = function(params) {
     rootExtKey = HDNode.fromBase58(keychain.xprv);
   }
   for (var index = 0; index < transaction.ins.length; ++index) {
+    if (params.unspents[index].redeemScript === false) {
+      // this is the input from a single key fee address
+      if (!feeSingleKey) {
+        throw new Error('single key address used in input but feeSingleKeyWIF not provided');
+      }
+
+      var txb = _TransactionBuilder.fromTransaction(transaction);
+      txb.sign(index, feeSingleKey);
+      transaction = txb.buildIncomplete();
+      continue;
+    }
+
     if (keychain) {
       var subPath = keychain.walletSubPath || '/0/0';
       var path = keychain.path + subPath + params.unspents[index].chainPath;

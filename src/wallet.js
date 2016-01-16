@@ -937,6 +937,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     // Sign the transaction
     transaction.keychain = keychain;
     instantFee = transaction.instantFee;
+    transaction.feeSingleKeyWIF = params.feeSingleKeyWIF;
     return self.signTransaction(transaction);
   })
   .then(function(result) {

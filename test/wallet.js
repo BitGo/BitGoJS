@@ -12,6 +12,8 @@ var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 var TransactionBuilder = require('../src/transactionBuilder');
 var unspentData = require('./fixtures/largeunspents.json');
+var Transaction = require('bitcoinjs-lib/src/transaction');
+var BufferUtils = require('bitcoinjs-lib/src/bufferutils');
 var crypto = require("crypto");
 var _ = require('lodash');
 
@@ -1068,11 +1070,6 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: 0});
       });
 
-      it('no inputs available', function(done) {
-        // TODO: implement me!
-        done();
-      });
-
       it('ok', function() {
         var recipients = [];
         recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ac', amount: 0.01 * 1e8 });
@@ -1293,7 +1290,6 @@ describe('Wallet', function() {
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, minUnspentsTarget: 1 })
         .then(function(result) {
-          console.dir(result);
           result.changeAddresses.length.should.equal(1);
           result.changeAddresses[0].amount.should.eql(724858140);
         });
@@ -1358,10 +1354,117 @@ describe('Wallet', function() {
           totalChange.should.eql(14321);
         });
       });
+
+      it('insufficient inputs in single key address', function() {
+        var recipients = [];
+        recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ac', amount: 0.01 * 1e8 });
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
+
+        return TransactionBuilder.createTransaction({
+          wallet: wallet1,
+          recipients: recipients,
+          feeSingleKeySourceAddress: "mnGmNgALrkHRX6nPqmC4x1tmGtJn9sFTdn"
+        })
+        .then(function(result) {
+          throw new Error('succeeded');
+        })
+        .catch(function(err) {
+          err.message.should.eql('No unspents available in single key fee source');
+        })
+        .done();
+      });
+
+      it('single key address and WIF do not match', function() {
+        var recipients = [];
+        recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ac', amount: 0.01 * 1e8 });
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
+
+        return Q()
+        .then(function() {
+          return TransactionBuilder.createTransaction({
+            wallet: wallet1,
+            recipients: recipients,
+            feeSingleKeySourceAddress: "mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7",
+            feeSingleKeyWIF: "L2zRizgTckt4FbBae1AUcxMC686S37iACpiAj4aMEiUtxKFhW87q"
+          });
+        })
+        .then(function(result) {
+          throw new Error('succeeded');
+        })
+        .catch(function(err) {
+          err.message.should.eql('feeSingleKeySourceAddress did not correspond to address of feeSingleKeyWIF');
+        })
+        .done();
+      });
+
+      it('ok with single fee wallet key', function() {
+        var recipients = [];
+        recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ac', amount: 0.01 * 1e8 });
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeSingleKeyWIF: "L18QdhbdYCbEkkW7vqL9QvCWYpz4WoaeKzb2QbJ5u3mHKiSoqkkN"})
+        .then(function(result) {
+          result.should.have.property('unspents');
+          result.should.have.property('fee');
+          result.should.have.property('feeRate');
+          result.walletId.should.equal(wallet1.id());
+          result.unspents[result.unspents.length - 1].redeemScript.should.eql(false);
+          result.changeAddresses.length.should.eql(2); // we expect 2 changeaddresses - 1 for the usual wallet, and 1 for the fee address
+        });
+      });
+
+      it('ok with single fee wallet address', function() {
+        var recipients = [];
+        recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ac', amount: 0.01 * 1e8 });
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeSingleKeySourceAddress: "mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7"})
+        .then(function(result) {
+          result.should.have.property('unspents');
+          result.should.have.property('fee');
+          result.should.have.property('feeRate');
+          result.walletId.should.equal(wallet1.id());
+          result.unspents[result.unspents.length - 1].redeemScript.should.eql(false);
+          result.changeAddresses.length.should.eql(2); // we expect 2 changeaddresses - 1 for the usual wallet, and 1 for the fee address
+
+          // parse tx to make sure the single key address was used to pay the fee
+          var transaction = Transaction.fromHex(result.transactionHex);
+          var singleKeyInput = transaction.ins[transaction.ins.length - 1];
+          var inputTxHash = BufferUtils.reverse(singleKeyInput.hash).toString('hex');
+
+          // get the input tx to find the amount taken from the single key fee address
+          return bitgo.get(bitgo.url('/tx/' + inputTxHash))
+          .then(function(response) {
+            var inputTx = response.body;
+            var output = inputTx.outputs[singleKeyInput.index];
+
+            var feeAddressInputValue = output.value;
+            var feeAddressChangeAmount = _.find(result.changeAddresses, { address: 'mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7' }).amount;
+
+            // calculate the implied fee by using the input amount minus the output and ensure this amount was the final fee for the tx
+            var impliedFeeFromTx = feeAddressInputValue - feeAddressChangeAmount;
+            impliedFeeFromTx.should.eql(result.fee);
+          })
+        });
+      });
+
+      it('ok with single fee wallet address and key', function() {
+        var recipients = [];
+        recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ac', amount: 0.01 * 1e8 });
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeSingleKeySourceAddress: "mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7", feeSingleKeyWIF: "L18QdhbdYCbEkkW7vqL9QvCWYpz4WoaeKzb2QbJ5u3mHKiSoqkkN"})
+        .then(function(result) {
+          result.should.have.property('unspents');
+          result.should.have.property('fee');
+          result.should.have.property('feeRate');
+          result.walletId.should.equal(wallet1.id());
+          result.unspents[result.unspents.length - 1].redeemScript.should.eql(false);
+          result.changeAddresses.length.should.eql(2); // we expect 2 changeaddresses - 1 for the usual wallet, and 1 for the fee address
+        });
+      });
     });
 
     describe('sign', function() {
       var unsignedTransaction;
+      var unsignedTransactionUsingSingleKeyFeeAddress;
       var keychain;
       before(function(done) {
 
@@ -1382,7 +1485,13 @@ describe('Wallet', function() {
             TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
             .then(function(result) {
               unsignedTransaction = result;
-              done();
+              // Build a transaction with single fee wallet address
+              TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeSingleKeySourceAddress: TestBitGo.TEST_FEE_SINGLE_KEY_ADDRESS })
+              .then(function(result) {
+                unsignedTransactionUsingSingleKeyFeeAddress = result;
+                done();
+              })
+              .done();
             })
             .done();
           });
@@ -1420,6 +1529,65 @@ describe('Wallet', function() {
           done();
         })
         .done();
+      });
+
+      it('valid key but missing single-sig key', function() {
+        // First we need to decrypt the xprv.
+        keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
+        // Now we can go ahead and sign.
+        return Q()
+        .then(function() {
+          return TransactionBuilder.signTransaction({
+            transactionHex: unsignedTransactionUsingSingleKeyFeeAddress.transactionHex,
+            unspents: unsignedTransactionUsingSingleKeyFeeAddress.unspents,
+            keychain: keychain,
+            feeSingleKeySourceAddress: TestBitGo.TEST_FEE_SINGLE_KEY_ADDRESS
+          });
+        })
+        .then(function(res) {
+          throw new Error('succeeded');
+        })
+        .catch(function(e) {
+          e.message.should.eql('single key address used in input but feeSingleKeyWIF not provided');
+        });
+      });
+
+      it('invalid single-sig key WIF', function() {
+        // First we need to decrypt the xprv.
+        keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
+        // Now we can go ahead and sign.
+        return Q()
+        .then(function() {
+          return TransactionBuilder.signTransaction({
+            transactionHex: unsignedTransactionUsingSingleKeyFeeAddress.transactionHex,
+            unspents: unsignedTransactionUsingSingleKeyFeeAddress.unspents,
+            keychain: keychain,
+            feeSingleKeyWIF: 'L18QdhbdYCbEkkW7vqL9QvCWYpz4WoaeKzb2QbJ5u3mHKiSoqk98'
+          });
+        })
+        .then(function(res) {
+          throw new Error('succeeded');
+        })
+        .catch(function(e) {
+          e.message.should.eql('Invalid checksum');
+        });
+      });
+
+      it('valid key and valid single-sig key WIF', function() {
+        // First we need to decrypt the xprv.
+        keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
+        // Now we can go ahead and sign.
+        return TransactionBuilder.signTransaction({
+          transactionHex: unsignedTransactionUsingSingleKeyFeeAddress.transactionHex,
+          unspents: unsignedTransactionUsingSingleKeyFeeAddress.unspents,
+          keychain: keychain,
+          feeSingleKeyWIF: TestBitGo.TEST_FEE_SINGLE_KEY_WIF
+        })
+        .then(function(result) {
+          result.transactionHex.should.not.eql("");
+          result.transactionHex.should.not.eql(unsignedTransaction.transactionHex);
+          result.transactionHex.length.should.be.above(unsignedTransaction.transactionHex.length);
+        });
       });
 
       it('validate (disable signature verification)', function() {
@@ -1637,7 +1805,7 @@ describe('Wallet', function() {
         });
       });
 
-      it('send coins - wallet1 to wallet3 using xprv', function () {
+      it('send coins - wallet1 to wallet3 using xprv and single key fee input', function () {
         var seqId = Math.floor(Math.random()*1e16).toString(16);
         var txHash;
         return bitgo.unlock({ otp: '0000000' })
@@ -1645,7 +1813,8 @@ describe('Wallet', function() {
           return wallet1.sendCoins({
             address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 14000000, // 0.14 coins, test js floating point bugs
             xprv: "xprv9s21ZrQH143K3z2ngVpK59RD3V7g2VpT7bPcCpPjk3Zwvz1Jc4FK2iEMFtKeWMfgDRpqQosVgqS7NNXhA3iVYjn8sd9mxUpx4wFFsMxxWEi",
-            sequenceId: seqId
+            sequenceId: seqId,
+            feeSingleKeyWIF: TestBitGo.TEST_FEE_SINGLE_KEY_WIF
           });
         })
         .then(function(result) {
