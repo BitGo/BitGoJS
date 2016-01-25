@@ -469,6 +469,54 @@ BitGo.prototype.authenticate = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ *
+ * @param params
+ * - operatingSystem: one of ios, android
+ * - pushToken: hex-formatted token for the respective native push notification service
+ * @param callback
+ * @returns {*}
+ */
+BitGo.prototype.registerPushToken = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['pushToken', 'operatingSystem'], [], callback);
+
+  if (!this._token) {
+    // this device has to be registered to an extensible session
+    return this.reject('not logged in', callback);
+  }
+
+  var postParams = _.pick(params, ['pushToken', 'operatingSystem']);
+
+  return this.post(this.url('/devices'))
+  .send(postParams)
+  .result()
+  .nodeify(callback);
+};
+
+/**
+ *
+ * @param params
+ * - pushVerificationToken: the token received via push notification to confirm the device's mobility
+ * @param callback
+ */
+BitGo.prototype.verifyPushToken = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['pushVerificationToken'], [], callback);
+
+  if (!this._token) {
+    // this device has to be registered to an extensible session
+    return this.reject('not logged in', callback);
+  }
+
+  var postParams = _.pick(params, 'pushVerificationToken');
+
+  return this.post(this.url('/devices/verify'))
+  .send(postParams)
+  .result()
+  .nodeify(callback);
+};
+
 //
 // authenticateWithAuthCode
 // Login to the bitgo system using an authcode generated via Oauth
