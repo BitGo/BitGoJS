@@ -64,7 +64,6 @@
     "body-parser": "^1.10.2",
     "bs58": "2.0.1",
     "bs58check": "1.0.4",
-    "chain-node": "0.0.17",
     "express": "^4.11.1",
     "http-proxy": "1.11.1",
     "lodash": "3.7.0",
