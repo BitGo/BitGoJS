@@ -10,6 +10,10 @@ var should = require('should');
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 
+var Address = require('bitcoinjs-lib/src/address');
+var Transaction = require('bitcoinjs-lib/src/transaction');
+var networks = require('bitcoinjs-lib/src/networks');
+
 var _ = require('lodash');
 var Q = require('q');
 
@@ -26,6 +30,35 @@ describe('PendingApproval', function() {
     return sharedWallet.sendCoins({
       address: TestBitGo.TEST_WALLET2_ADDRESS,
       amount: 0.0001 * 1e8,
+      walletPassphrase: TestBitGo.TEST_PASSWORD,
+      message: 'never gonna'
+    })
+    .then(function(result) {
+      result.should.have.property('pendingApproval');
+      return bitgo.pendingApprovals().get({id: result.pendingApproval})
+    });
+  };
+
+  /**
+   * There is a 0-limit policy on the shared wallet
+   * Create a pending approval by attempting to send to many
+   */
+  var createTransactionPendingApprovalToMultipleRecipients = function() {
+    return sharedWallet.sendMany({
+      recipients: [
+        {
+          address: TestBitGo.TEST_WALLET3_ADDRESS,
+          amount: 0.0002 * 1e8
+        },
+        {
+          address: TestBitGo.TEST_WALLET2_ADDRESS,
+          amount: 0.0001 * 1e8
+        },
+        {
+          address: TestBitGo.TEST_SHARED_WALLET_CHANGE_ADDRESS,
+          amount: 0.0005 * 1e8
+        }
+      ],
       walletPassphrase: TestBitGo.TEST_PASSWORD,
       message: 'never gonna'
     })
@@ -197,6 +230,34 @@ describe('PendingApproval', function() {
       })
       .then(function(result) {
         result.state.should.eql('approved');
+      });
+    });
+
+    it('can approve when it does require tx signing (multiple recipients)', function() {
+      return createTransactionPendingApprovalToMultipleRecipients()
+      .then(function(pendingApproval) {
+        return bitgoSharedKeyUser.pendingApprovals().get({id: pendingApproval.id()})
+      })
+      .then(function(result) {
+        return result.approve({ walletPassphrase: TestBitGo.TEST_PASSWORD });
+      })
+      .then(function(result) {
+        result.state.should.eql('approved');
+
+        // Parse the completed tx hex and make sure it was built with proper outputs
+        var completedTxHex = result.info.transactionRequest.validTransaction;
+        var transaction = Transaction.fromHex(completedTxHex);
+        if (!transaction || !transaction.outs) {
+          throw new Error('transaction had no outputs or failed to parse successfully');
+        }
+        var outputAddresses = _.map(transaction.outs, function(out) {
+          return Address.fromOutputScript(out.script, networks['testnet']).toBase58Check();
+        });
+
+        // Output addresses should contain the 2 destinations, but not the change address
+        outputAddresses.should.include(TestBitGo.TEST_WALLET3_ADDRESS);
+        outputAddresses.should.include(TestBitGo.TEST_WALLET2_ADDRESS);
+        outputAddresses.should.not.include(TestBitGo.TEST_SHARED_WALLET_CHANGE_ADDRESS);
       });
     });
   });

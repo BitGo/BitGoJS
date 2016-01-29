@@ -1790,7 +1790,6 @@ describe('Wallet', function() {
           address: TestBitGo.TEST_WALLET1_ADDRESS,
           amount: 0.001 * 1e8,
           walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
-          fee: 0.005 * 1e8,
           instant: true
         })
         .then(function(result) {
@@ -1801,7 +1800,6 @@ describe('Wallet', function() {
           result.should.have.property('instantId');
           result.should.not.have.property('instantFee');
           result.instant.should.eql(true);
-          result.fee.should.eql(0.005 * 1e8);
         });
       });
 
@@ -2037,13 +2035,13 @@ describe('Wallet', function() {
         return wallet3.sendMany({
           recipients: recipients,
           walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
-          fee: 0.005 * 1e8
+          fee: 0.00062 * 1e8
         })
         .then(function(result) {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
-          result.fee.should.equal(0.005 * 1e8);
+          result.fee.should.equal(0.00062 * 1e8);
           return wallet3.get({});
         })
         .then(function(resultWallet) {
