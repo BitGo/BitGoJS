@@ -246,6 +246,8 @@ Wallets.prototype.createKey = function(params) {
 //   "label": wallet label, is shown in BitGo UI
 //   "backupXpub": backup keychain xpub, it is HIGHLY RECOMMENDED you generate this on a separate machine!
 //                 BITGO DOES NOT GUARANTEE SAFETY OF WALLETS WITH MULTIPLE KEYS CREATED ON THE SAME MACHINE **
+//   "backupXpubProvider": Provision backup key from this provider (KRS), e.g. "keyternal".
+//                         Setting this value will create an instant-capable wallet.
 // Returns: {
 //   wallet: newly created wallet model object
 //   userKeychain: the newly created user keychain, which has an encrypted xprv stored on BitGo
@@ -265,27 +267,41 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   var userKeychain = this.bitgo.keychains().create();
   userKeychain.encryptedXprv = this.bitgo.encrypt({ password: params.passphrase, input: userKeychain.xprv });
 
-  var backupKeychain = { "xpub" : params.backupXpub };
-  if (!params.backupXpub) {
-    backupKeychain = this.bitgo.keychains().create();
+  if ((!!params.backupXpub + !!params.backupXpubProvider) > 1) {
+    throw new Error("Cannot provide more than one backupXpub or backupXpubProvider flag");
   }
 
+  var backupKeychain;
   var bitgoKeychain;
 
-  // Add keychains to BitGo
-  var key1Params = {
+  // Add the user keychain
+  return self.bitgo.keychains().add({
     "xpub": userKeychain.xpub,
     "encryptedXprv": userKeychain.encryptedXprv
-  };
-
-  return self.bitgo.keychains().add(key1Params)
-  .then(function(keychain) {
-    var key2Params = {
-      "xpub": backupKeychain.xpub
-    };
-    return self.bitgo.keychains().add(key2Params);
   })
-  .then(function(keychain) {
+  .then(function() {
+    // Add the backup keychain
+    if (params.backupXpubProvider) {
+      // If requested, use a KRS or backup key provider
+      return self.bitgo.keychains().createBackup({
+        provider: params.backupXpubProvider
+      })
+      .then(function(keychain) {
+        backupKeychain = keychain;
+      });
+    }
+
+    if (params.backupXpub) {
+      // user provided backup xpub
+      backupKeychain = { "xpub" : params.backupXpub };
+    } else {
+      // no provided xpub, so default to creating one here
+      backupKeychain = self.bitgo.keychains().create();
+    }
+
+    return self.bitgo.keychains().add(backupKeychain);
+  })
+  .then(function() {
     return self.bitgo.keychains().createBitGo();
   })
   .then(function(keychain) {
@@ -306,14 +322,19 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
 
     return self.add(walletParams);
   })
-  .then(function(result) {
-    return {
-      wallet: result,
+  .then(function(newWallet) {
+    var result = {
+      wallet: newWallet,
       userKeychain: userKeychain,
       backupKeychain: backupKeychain,
-      bitgoKeychain: bitgoKeychain,
-      warning: 'Be sure to backup the backup keychain -- it is not stored anywhere else!'
+      bitgoKeychain: bitgoKeychain
     };
+
+    if (backupKeychain.xprv) {
+      result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
+    }
+
+    return result;
   })
   .nodeify(callback);
 };

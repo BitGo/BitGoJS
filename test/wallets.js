@@ -205,6 +205,8 @@ describe('Wallets', function() {
 
         result.userKeychain.should.have.property('encryptedXprv');
         result.backupKeychain.should.not.have.property('encryptedXprv');
+        result.backupKeychain.should.have.property('xprv');
+        result.warning.should.include('backup the backup keychain -- it is not stored anywhere else');
 
         wallet.delete({}, function() {});
         done();
@@ -241,7 +243,45 @@ describe('Wallets', function() {
         assert.equal(result.backupKeychain.xpub, coldBackupKey.xpub);
 
         result.userKeychain.should.have.property('encryptedXprv');
+        result.backupKeychain.should.have.property('xpub');
+        result.backupKeychain.should.not.have.property('xprv');
         result.backupKeychain.should.not.have.property('encryptedXprv');
+
+        wallet.delete({}, function() {});
+        done();
+      });
+    });
+
+    it('create with backup xpub provider (KRS wallet)', function(done) {
+      var options = {
+        "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
+        "label": TEST_WALLET_LABEL,
+        "backupXpubProvider": "keyvault-io"
+      };
+
+      bitgo.wallets().createWalletWithKeychains(options, function(err, result) {
+        assert.equal(err, null);
+        assert.notEqual(result, null);
+
+        result.should.have.property('wallet');
+        var wallet = result.wallet;
+
+        assert.equal(wallet.balance(), 0);
+        assert.equal(wallet.spendableBalance(), 0);
+        assert.equal(wallet.label(), TEST_WALLET_LABEL);
+        assert.equal(wallet.confirmedBalance(), 0);
+        assert.equal(wallet.keychains.length, 3);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0].xpub }), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1].xpub }), true);
+        assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[2].xpub }), true);
+        assert.equal(wallet.keychains[0].xpub, result.userKeychain.xpub);
+        assert.equal(wallet.keychains[1].xpub, result.backupKeychain.xpub);
+
+        result.userKeychain.should.have.property('encryptedXprv');
+        result.backupKeychain.should.not.have.property('encryptedXprv');
+        result.should.not.have.property('warning');
+
+        result.wallet.canSendInstant().should.eql(true);
 
         wallet.delete({}, function() {});
         done();
