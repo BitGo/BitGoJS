@@ -2035,13 +2035,13 @@ describe('Wallet', function() {
         return wallet3.sendMany({
           recipients: recipients,
           walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
-          fee: 0.00062 * 1e8
+          fee: 0.00042 * 1e8
         })
         .then(function(result) {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
-          result.fee.should.equal(0.00062 * 1e8);
+          result.fee.should.equal(0.00042 * 1e8);
           return wallet3.get({});
         })
         .then(function(resultWallet) {

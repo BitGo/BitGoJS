@@ -252,7 +252,7 @@ describe('Bitgo Express', function() {
     it('create and reject a pending approval', function(done) {
       agent.post('/api/v1/user/unlock')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
-      .send({ otp: '0000000', duration: 10 })
+      .send({ otp: '0000000', duration: 20 })
       .expect('Content-Type', /json/)
       .end(function(err, res) {
         if (err) { throw err; }
@@ -283,7 +283,7 @@ describe('Bitgo Express', function() {
     it('create a transaction and then reconstruct a tx to approve (with original fee)', function() {
       return agent.post('/api/v1/user/unlock')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-      .send({ otp: '0000000', duration: 20 })
+      .send({ otp: '0000000', duration: 30 })
       .then(function(res) {
         res.should.have.status(200);
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
@@ -315,7 +315,7 @@ describe('Bitgo Express', function() {
     it('create and accept a pending approval', function(done) {
       agent.post('/api/v1/user/unlock')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
-      .send({ otp: '0000000', duration: 10 })
+      .send({ otp: '0000000', duration: 20 })
       .expect('Content-Type', /json/)
       .end(function(err, res) {
         if (err) { throw err; }

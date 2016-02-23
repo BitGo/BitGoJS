@@ -437,7 +437,8 @@ BitGo.prototype.authenticate = function(params, callback) {
 
   var authParams = {
     email: username,
-    password: hmacPassword
+    password: hmacPassword,
+    forceSMS: !!params.forceSMS
   };
 
   if (otp) {
