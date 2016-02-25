@@ -169,15 +169,17 @@ Wallet.prototype.get = function(params, callback) {
 Wallet.prototype.createAddress = function(params, callback) {
   var self = this;
   params = params || {};
-  common.validateParams(params, [], ['allowExisting'], callback);
+  common.validateParams(params, [], [], callback);
   if (this.type() === 'safe') {
     throw new Error('cannot create an address for safe wallet; use .id()');
   }
 
   // Default to client-side address validation on, for safety. Use validate=false to disable.
-  var shouldValidate = true;
-  if (typeof(params.validate) === 'boolean') {
-    shouldValidate = params.validate;
+  var shouldValidate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
+
+  var allowExisting = params.allowExisting;
+  if (typeof(params.allowExisting) != 'boolean') {
+    allowExisting = params.allowExisting === "true";
   }
 
   var chain = params.chain || 0;
