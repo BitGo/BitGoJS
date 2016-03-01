@@ -30,6 +30,10 @@ Wallets.prototype.list = function(params, callback) {
 
   var args = [];
 
+  if (params.skip && params.prevId) {
+    throw new Error('cannot specify both skip and prevId');
+  }
+
   if (params.limit) {
     if (typeof(params.limit) != 'number') {
       throw new Error('invalid limit argument, expecting number');
@@ -41,6 +45,8 @@ Wallets.prototype.list = function(params, callback) {
       throw new Error('invalid skip argument, expecting number');
     }
     args.push('skip=' + params.skip);
+  } else if (params.prevId) {
+    args.push('prevId=' + params.prevId);
   }
 
   var query = '';
@@ -448,21 +454,12 @@ Wallets.prototype.add = function(params, callback) {
 
 //
 // get
-// Fetch an existing wallet
+// Shorthand to getWallet
 // Parameters include:
 //   id: the id of the wallet
 //
 Wallets.prototype.get = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, ['id'], [], callback);
-
-  var self = this;
-  return this.bitgo.get(this.bitgo.url('/wallet/' + params.id))
-  .result()
-  .then(function(body) {
-    return new Wallet(self.bitgo, body);
-  })
-  .nodeify(callback);
+  return this.getWallet(params, callback);
 };
 
 //

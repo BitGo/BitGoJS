@@ -528,7 +528,7 @@ describe('Wallet', function() {
       .then(function(res) {
         res.should.have.property('feePerKb');
         res.should.have.property('numBlocks');
-        res.numBlocks.should.eql(1);
+        res.numBlocks.should.eql(2);
         res.feePerKb.should.be.within(1000, 100000);
         target1confirmFee = res.feePerKb;
       });
@@ -1276,6 +1276,24 @@ describe('Wallet', function() {
         });
       });
 
+      it('auto-detected change splitting', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, splitChangeSize: -1 })
+        .then(function(result) {
+          result.changeAddresses.length.should.be.greaterThan(1);
+        });
+      });
+
+      it('change splitting on by default', function() {
+        var recipients = {};
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8 })
+        .then(function(result) {
+          result.changeAddresses.length.should.be.greaterThan(1);
+        });
+      });
+
       it('minUnspentsTarget 0', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
@@ -1401,7 +1419,7 @@ describe('Wallet', function() {
         var recipients = [];
         recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeSingleKeyWIF: "L18QdhbdYCbEkkW7vqL9QvCWYpz4WoaeKzb2QbJ5u3mHKiSoqkkN"})
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeSingleKeyWIF: "L18QdhbdYCbEkkW7vqL9QvCWYpz4WoaeKzb2QbJ5u3mHKiSoqkkN", splitChangeSize: 0})
         .then(function(result) {
           result.should.have.property('unspents');
           result.should.have.property('fee');
@@ -1416,7 +1434,7 @@ describe('Wallet', function() {
         var recipients = [];
         recipients.push({ address: '1KiAB1hLHvKRqJaz9BaT24bhbmRzDTFy49', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeSingleKeySourceAddress: "mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7"})
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeSingleKeySourceAddress: "mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7", splitChangeSize: 0})
         .then(function(result) {
           result.should.have.property('unspents');
           result.should.have.property('fee');
@@ -1457,7 +1475,7 @@ describe('Wallet', function() {
           result.should.have.property('feeRate');
           result.walletId.should.equal(wallet1.id());
           result.unspents[result.unspents.length - 1].redeemScript.should.eql(false);
-          result.changeAddresses.length.should.eql(2); // we expect 2 changeaddresses - 1 for the usual wallet, and 1 for the fee address
+          result.changeAddresses.length.should.be.greaterThan(2); // we expect more than 2 changeaddresses - 2 for the usual wallet (autodetected split change size), and 1 for the fee address
         });
       });
     });

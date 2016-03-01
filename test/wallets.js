@@ -43,7 +43,6 @@ describe('Wallets', function() {
     it('all', function(done) {
       wallets.list({}, function(err, result) {
         assert.equal(err, null);
-
         result.should.have.property('wallets');
         result.should.have.property('start');
         result.should.have.property('limit');
@@ -54,6 +53,25 @@ describe('Wallets', function() {
         result.total.should.not.equal(0);
         result.wallets.length.should.not.equal(0);
         done();
+      });
+    });
+
+    it('prevId', function() {
+      return wallets.list({})
+      .then(function(result) {
+        result.should.have.property('wallets');
+        result.should.have.property('start');
+        result.should.have.property('limit');
+        result.should.have.property('total');
+        result.should.have.property('nextBatchPrevId');
+
+        return wallets.list({prevId: result.nextBatchPrevId});
+      })
+      .then(function(result) {
+        result.should.have.property('wallets');
+        result.should.not.have.property('start'); // if you passed in the prevId start will be undefined
+        result.should.have.property('limit');
+        result.should.have.property('total');
       });
     });
 

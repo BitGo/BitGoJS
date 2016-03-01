@@ -27,6 +27,8 @@ var MAX_FEE_RATE = 1e8 * 0.001;        // The maximum fee we'll allow before dec
 var MIN_FEE_RATE = 1e8 * 0.00001;      // The minimum fee we'll allow before declaring an error
 var FEE_PER_KB = 0.0001 * 1e8;  // The blockchain required fee-per-kb of transaction size
 var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for less than this. (dust - give it to the miner)
+var MIN_SPLIT_AMOUNT = 0.01 * 1e8; // When splitting change, don't bother splitting if it results in change under this amount
+var FALLBACK_DEFAULT_UNSPENTS_TARGET = 8; // If splitChangeSize was -1 but we didn't have enough data, fallback to targeting this number of unspents
 
 //
 // TransactionBuilder
@@ -102,7 +104,7 @@ exports.createTransaction = function(params) {
     }
   }
 
-  if (params.minUnspentsTarget) {
+  if (typeof(params.minUnspentsTarget) != 'undefined') {
     if (params.splitChangeSize) {
       throw new Error('cannot specify both splitChangeSize as well as target number of unspents');
     }
@@ -112,6 +114,8 @@ exports.createTransaction = function(params) {
     if (params.minUnspentsTarget > 50) {
       throw new Error('cannot target more than 50 unspents - use wallet.fanOutUnspents instead');
     }
+  } else if (typeof(params.splitChangeSize) === 'undefined') {
+    params.splitChangeSize = -1; // reasonable default for new wallets
   }
 
   if (typeof(params.recipients) != 'object') {
@@ -237,6 +241,7 @@ exports.createTransaction = function(params) {
   };
 
   var numChangeOutputs = 1;
+  var numUnspentsAfterTx = 0;
 
   // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
   var getDynamicFeeEstimate = function () {
@@ -285,9 +290,9 @@ exports.createTransaction = function(params) {
         }
         return confirms >= minConfirms;
       });
+      numUnspentsAfterTx = results.total - results.count;
       if (params.minUnspentsTarget) {
         // number of unspents left after this tx will be total - count (which we will use now)
-        var numUnspentsAfterTx = results.total - results.count;
         numChangeOutputs = Math.max(params.minUnspentsTarget - numUnspentsAfterTx, 1);
       }
     });
@@ -503,7 +508,7 @@ exports.createTransaction = function(params) {
         var thisChangeAmount = changeAmount / (numChangeOutputs - result.length);
         var randomAdjustment = ((2 * Math.random() - 1) / 6) * thisChangeAmount;
         thisChangeAmount = 10000 * Math.floor((thisChangeAmount + randomAdjustment) / 10000);
-        if (thisChangeAmount <= 10000) {
+        if (thisChangeAmount <= MIN_SPLIT_AMOUNT) {
           // we're dealing in amounts too small here, don't bother splitting
           return;
         }
@@ -524,28 +529,36 @@ exports.createTransaction = function(params) {
           // Caller wants to target a minimum number of unspents on the wallet.
           // Potentially this can help mitigate spending long unconfirmed chains.
           return addChangeOutputs();
-        } else {
+        } else if (params.splitChangeSize) {
           return Q()
           .then(getSplitChangeSize)
           .then(function(splitChangeSize) {
-            if (splitChangeSize > 0 && changeAmount > 2 * splitChangeSize) {
-              // Start with an even split
-              splitAmount = changeAmount / 2;
-              // Adjust split amount by a random amount between -1/6 and 1/6 of the total change amount
-              // This results in max ratio of the sizes of 2:1
-              var adjustment = ((2 * Math.random() - 1) / 6) * changeAmount;
-              // Make at least one of the two change outputs end in 0000
-              splitAmount = 10000 * Math.floor((splitAmount + adjustment) / 10000);
+            if (splitChangeSize > 0) {
+              if (changeAmount > 2 * splitChangeSize) {
+                // Start with an even split
+                splitAmount = changeAmount / 2;
+                // Adjust split amount by a random amount between -1/6 and 1/6 of the total change amount
+                // This results in max ratio of the sizes of 2:1
+                var adjustment = ((2 * Math.random() - 1) / 6) * changeAmount;
+                // Make at least one of the two change outputs end in 0000
+                splitAmount = 10000 * Math.floor((splitAmount + adjustment) / 10000);
 
-              // adjust changeAmount to account for the split
-              changeAmount = changeAmount - splitAmount;
+                // adjust changeAmount to account for the split
+                changeAmount = changeAmount - splitAmount;
 
-              // create an additional change address
-              return params.wallet.createAddress({chain: 1, validate: validate})
-              .then(function (changeAddress) {
-                changeAddress.amount = splitAmount;
-                result.push(changeAddress);
-              });
+                // create an additional change address
+                return params.wallet.createAddress({chain: 1, validate: validate})
+                .then(function (changeAddress) {
+                  changeAddress.amount = splitAmount;
+                  result.push(changeAddress);
+                });
+              }
+            } else {
+              // We wanted to use splitChangeSize but there were not enough stats to do that, let's fall back to
+              // ensuring we have a minimum amount of change
+              numChangeOutputs = Math.max(FALLBACK_DEFAULT_UNSPENTS_TARGET - numUnspentsAfterTx, 1);
+              numExtraChangeOutputs = numChangeOutputs - 1;
+              return addChangeOutputs();
             }
           });
         }

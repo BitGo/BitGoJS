@@ -1111,6 +1111,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
     var splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
     // map the newly created addresses to the almost components amounts we just calculated
     transactionParams.recipients = _.zipObject(_.pluck(newAddresses, 'address'), splitAmounts);
+    transactionParams.splitChangeSize = 0; // do not generate more change than needed
     // attempt to create a transaction. As it is a wallet-sweeping transaction with no fee, we expect it to fail
     return self.sendMany(transactionParams)
     .catch(function(error) {
@@ -1225,6 +1226,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       txParams.unspents = currentChunk;
       txParams.recipients = {};
       txParams.recipients[newAddress.address] = grossAmount;
+      txParams.splitChangeSize = 0; // do not generate more change
 
       // let's attempt to create this transaction. We expect it to fail because no fee is set.
       return self.sendMany(txParams)

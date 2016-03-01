@@ -707,9 +707,10 @@ BitGo.prototype.extendToken = function(params, callback) {
   var timestamp = Date.now();
   var duration = params.duration;
   var message = timestamp + '|' + this._token + '|' + duration;
-  var signature = bitcoin.Message.sign(this._extensionKey, message).toString('hex');
+  var network = common.getNetwork();
+  var signature = bitcoin.Message.sign(this._extensionKey, message, networks[network]).toString('hex');
 
-  return this.post(this.url('/user/refreshtoken'))
+  return this.post(this.url('/user/extendtoken'))
   .send(params)
   .set('timestamp', timestamp)
   .set('signature', signature)

@@ -292,7 +292,7 @@ describe('BitGo', function() {
       .then(function(res) {
         res.should.have.property('feePerKb');
         res.should.have.property('numBlocks');
-        res.numBlocks.should.eql(1);
+        res.numBlocks.should.eql(2);
         res.feePerKb.should.be.within(1000, 100000);
         target1confirmFee = res.feePerKb;
       });
