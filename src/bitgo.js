@@ -826,7 +826,7 @@ BitGo.prototype.estimateFee = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var queryParams = {};
+  var queryParams = { version: 12 };
   if (params.numBlocks) {
     if (typeof(params.numBlocks) != 'number') {
       throw new Error('invalid argument');

@@ -127,9 +127,6 @@ exports.createTransaction = function(params) {
                           (typeof(params.feeTxConfirmTarget) !== 'undefined');
   if (feeParamsDefined > 1) {
     throw new Error('cannot specify more than one of fee, feeRate and feeTxConfirmTarget');
-  } else if (feeParamsDefined === 0) {
-    // no fee params were specified, so try to get the best estimate based on network conditions
-    params.feeTxConfirmTarget = 2;
   }
 
   if (typeof(params.maxFeeRate) === 'undefined') {
@@ -245,7 +242,7 @@ exports.createTransaction = function(params) {
 
   // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
   var getDynamicFeeEstimate = function () {
-    if (params.feeTxConfirmTarget) {
+    if (params.feeTxConfirmTarget || !feeParamsDefined) {
       return params.wallet.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate })
       .then(function(result) {
         var estimatedFeeRate = result.feePerKb;

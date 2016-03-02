@@ -528,7 +528,7 @@ describe('Wallet', function() {
       .then(function(res) {
         res.should.have.property('feePerKb');
         res.should.have.property('numBlocks');
-        res.numBlocks.should.eql(2);
+        res.numBlocks.should.eql(3);
         res.feePerKb.should.be.within(1000, 100000);
         target1confirmFee = res.feePerKb;
       });
@@ -1117,7 +1117,7 @@ describe('Wallet', function() {
             4: 1.9 * 1e8 // fee rate too high, should fallback to 0.0001
           };
           return Q({
-            feePerKb: serverFeeRates[options.numBlocks] || 0.0001,
+            feePerKb: serverFeeRates[options.numBlocks || 2] || 0.0001,
             numBlocks: options.numBlocks
           }).nodeify(callback);
         };
