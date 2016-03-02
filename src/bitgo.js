@@ -451,7 +451,7 @@ BitGo.prototype.authenticate = function(params, callback) {
   if (params.extensible) {
     this._extensionKey = ECKey.makeRandom();
     authParams.extensible = true;
-    authParams.extensionAddress = this._extensionKey.pub.getAddress().toString();
+    authParams.extensionAddress = this._extensionKey.pub.getAddress(networks[common.getNetwork()]).toString();
   }
 
   var self = this;
