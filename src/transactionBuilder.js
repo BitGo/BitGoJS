@@ -24,8 +24,8 @@ var _ = require('lodash');
 // Setup some fee constants.
 var MAX_FEE = 1e8 * 0.1;        // The maximum fee we'll allow before declaring an error
 var MAX_FEE_RATE = 1e8 * 0.001;        // The maximum fee we'll allow before declaring an error
-var MIN_FEE_RATE = 1e8 * 0.00001;      // The minimum fee we'll allow before declaring an error
-var FEE_PER_KB = 0.0001 * 1e8;  // The blockchain required fee-per-kb of transaction size
+var MIN_FEE_RATE = 1e8 * 0.00002;      // The minimum fee we'll allow before declaring an error
+var FEE_PER_KB = 0.0002 * 1e8;  // The blockchain required fee-per-kb of transaction size
 var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for less than this. (dust - give it to the miner)
 var MIN_SPLIT_AMOUNT = 0.01 * 1e8; // When splitting change, don't bother splitting if it results in change under this amount
 var FALLBACK_DEFAULT_UNSPENTS_TARGET = 8; // If splitChangeSize was -1 but we didn't have enough data, fallback to targeting this number of unspents
@@ -247,6 +247,7 @@ exports.createTransaction = function(params) {
       .then(function(result) {
         var estimatedFeeRate = result.feePerKb;
         if (estimatedFeeRate < MIN_FEE_RATE) {
+          console.log(new Date() + ': Error when estimating fee for send from ' + params.wallet + ', it was too low - ' + estimatedFeeRate);
           feeRate = MIN_FEE_RATE;
         } else if (estimatedFeeRate > params.maxFeeRate) {
           feeRate = params.maxFeeRate;
@@ -254,8 +255,10 @@ exports.createTransaction = function(params) {
           feeRate = estimatedFeeRate;
         }
       })
-      .catch(function() {
+      .catch(function(err) {
         // some error happened estimating the fee, so use the default
+        console.log(new Date() + ': Error when estimating fee for send from - ' + params.wallet);
+        console.dir(err);
         feeRate = FEE_PER_KB;
       });
     }
