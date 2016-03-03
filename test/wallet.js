@@ -1113,7 +1113,7 @@ describe('Wallet', function() {
           var serverFeeRates = {
             1: 0.000138 * 1e8,
             2: 0.000112 * 1e8,
-            3: 0.0000156 * 1e8,
+            3: 0.0000312 * 1e8,
             4: 1.9 * 1e8 // fee rate too high, should fallback to 0.0001
           };
           return Q({
@@ -1201,7 +1201,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 135359); // tx size will be 87kb * 0.0000156 * 1e8
+          assert.equal(feeUsed, 270717); // tx size will be 87kb * 0.0000312 * 1e8
         });
       });
 
@@ -1211,11 +1211,11 @@ describe('Wallet', function() {
         // undo the monkey patch so we get the right max fee
         var feeMonkeyPatch = wallet1.estimateFee;
         wallet1.estimateFee = patch2;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3, maxFeeRate: 1100})
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3, maxFeeRate: 2200})
         .then(function(result) {
           wallet1.estimateFee = feeMonkeyPatch;
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 95445);
+          assert.equal(feeUsed, 190890);
         });
       });
 
