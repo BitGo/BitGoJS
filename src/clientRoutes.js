@@ -113,6 +113,20 @@ var handleConstructApprovalTx = function(req) {
   });
 };
 
+var handleConsolidateUnspents = function(req) {
+  return req.bitgo.wallets().get({id: req.params.id})
+  .then(function(wallet) {
+    return wallet.consolidateUnspents(req.body);
+  });
+};
+
+var handleFanOutUnspents = function(req) {
+  return req.bitgo.wallets().get({id: req.params.id})
+  .then(function(wallet) {
+    return wallet.fanOutUnspents(req.body);
+  });
+};
+
 var apiResponse = function(status, result, message) {
   var err = new Error(message);
   err.status = status;
@@ -219,4 +233,7 @@ exports = module.exports = function(app, args) {
 
   app.put('/api/v1/pendingapprovals/:id/express', parseBody, prepareBitGo(args), promiseWrapper(handleApproveTransaction, args));
   app.put('/api/v1/pendingapprovals/:id/constructTx', parseBody, prepareBitGo(args), promiseWrapper(handleConstructApprovalTx, args));
+
+  app.put('/api/v1/wallet/:id/consolidateunspents', parseBody, prepareBitGo(args), promiseWrapper(handleConsolidateUnspents, args));
+  app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(args), promiseWrapper(handleFanOutUnspents, args));
 };
