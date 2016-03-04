@@ -277,9 +277,11 @@ exports.createTransaction = function(params) {
     // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
     var options = {
       target: totalAmount + 0.01e8,  // fee @ 0.0001/kb for a 100kb tx
-      minSize: params.minUnspentSize || MINIMUM_BTC_DUST, // don't bother to use unspents smaller than dust
-      instant: params.instant // insist on instant unspents only
+      minSize: params.minUnspentSize !== undefined ? params.minUnspentSize : MINIMUM_BTC_DUST // don't bother to use unspents smaller than dust
     };
+    if (params.instant) {
+      options.instant = params.instant; // insist on instant unspents only
+    }
 
     return params.wallet.unspentsPaged(options)
     .then(function(results) {
