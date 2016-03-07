@@ -545,6 +545,9 @@ Wallet.prototype.unspentsPaged = function(params, callback) {
   if (params.instant && typeof(params.instant) != 'boolean') {
     throw new Error('invalid instant flag - should be boolean');
   }
+  if (params.targetWalletUnspents && typeof(params.targetWalletUnspents) != 'number') {
+    throw new Error('invalid targetWalletUnspents flag - should be number');
+  }
 
   return this.bitgo.get(this.url('/unspents'))
   .query(params)
@@ -660,7 +663,7 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 //   feeRate  - the fee per kb to send (optional)
 //   minConfirms - minimum number of confirms to use when gathering unspents
 //   forceChangeAtEnd - force change address to be last output (optional)
-//   splitChangeSize - optional (see transactionBuilder.createTransaction)
+//   noSplitChange - disable automatic change splitting for purposes of unspent management
 //   changeAddress - override the change address (optional)
 //   validate - extra verification of change addresses (which are always verified server-side) (defaults to global config)
 // Returns:
@@ -1111,7 +1114,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
     var splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
     // map the newly created addresses to the almost components amounts we just calculated
     transactionParams.recipients = _.zipObject(_.pluck(newAddresses, 'address'), splitAmounts);
-    transactionParams.splitChangeSize = 0; // do not generate more change than needed
+    transactionParams.noSplitChange = true;
     // attempt to create a transaction. As it is a wallet-sweeping transaction with no fee, we expect it to fail
     return self.sendMany(transactionParams)
     .catch(function(error) {
@@ -1226,7 +1229,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       txParams.unspents = currentChunk;
       txParams.recipients = {};
       txParams.recipients[newAddress.address] = grossAmount;
-      txParams.splitChangeSize = 0; // do not generate more change
+      txParams.noSplitChange = true;
 
       // let's attempt to create this transaction. We expect it to fail because no fee is set.
       return self.sendMany(txParams)

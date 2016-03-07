@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "0.11.72",
+  "version": "0.12.0",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -68,6 +68,7 @@
     "http-proxy": "1.11.1",
     "lodash": "3.7.0",
     "minimist": "0.2.0",
+    "moment": "^2.11.2",
     "morgan": "1.5.3",
     "q": "1.1.2",
     "superagent": "^1.4.0",

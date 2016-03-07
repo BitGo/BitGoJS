@@ -21,6 +21,7 @@ var networks = bitcoin.networks;
 var Util = require('./util');
 var Q = require('q');
 var pjson = require('../package.json');
+var moment = require('moment');
 var _ = require('lodash');
 
 if (!process.browser) {
@@ -213,6 +214,9 @@ var BitGo = function(params) {
     var method = methods[index];
     self[method] = createPatch(method);
   }
+
+  // Kick off first load of constants
+  this.fetchConstants();
 };
 
 BitGo.prototype.getValidate = function() {
@@ -906,6 +910,48 @@ BitGo.prototype.instantFeeAddress = function(params, callback) {
   .nodeify(callback);
 };
 
+//
+// getConstantsAsync
+// Receives a TTL and refetches as necessary
+//
+BitGo.prototype.fetchConstants = function(params, callback) {
+  params = params || {};
+  var self = this;
 
+  if (self._constants && self._constantsExpire && new Date() < self._constantsExpire) {
+    return Q().then(function() {
+      return self._constants;
+    })
+    .nodeify(callback);
+  }
+
+  return this.get(this.url('/client/constants'))
+  .result()
+  .then(function(result) {
+    self._constants = result.constants;
+    self._constantsExpire = moment.utc().add(result.ttl, 'second').toDate();
+    return self._constants;
+  })
+  .nodeify(callback);
+};
+
+//
+// getConstants
+// Get a set of constants from the server to use as defaults
+//
+BitGo.prototype.getConstants = function(params) {
+  params = params || {};
+
+  var defaultConstants = {
+    maxFee: 0.1e8,
+    maxFeeRate: 100000,
+    minFeeRate: 2000,
+    fallbackFeeRate: 20000,
+    minOutputSize: 2730
+  };
+
+  this.fetchConstants(params);
+  return this._constants || defaultConstants;
+};
 
 module.exports = BitGo;

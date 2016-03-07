@@ -21,15 +21,6 @@ var common = require('./common');
 var Util = require('./util');
 var _ = require('lodash');
 
-// Setup some fee constants.
-var MAX_FEE = 1e8 * 0.1;        // The maximum fee we'll allow before declaring an error
-var MAX_FEE_RATE = 1e8 * 0.001;        // The maximum fee we'll allow before declaring an error
-var MIN_FEE_RATE = 1e8 * 0.00002;      // The minimum fee we'll allow before declaring an error
-var FEE_PER_KB = 0.0002 * 1e8;  // The blockchain required fee-per-kb of transaction size
-var MINIMUM_BTC_DUST = 5460;    // The blockchain will reject any output for less than this. (dust - give it to the miner)
-var MIN_SPLIT_AMOUNT = 0.01 * 1e8; // When splitting change, don't bother splitting if it results in change under this amount
-var FALLBACK_DEFAULT_UNSPENTS_TARGET = 8; // If splitChangeSize was -1 but we didn't have enough data, fallback to targeting this number of unspents
-
 //
 // TransactionBuilder
 // @params:
@@ -42,16 +33,18 @@ var FALLBACK_DEFAULT_UNSPENTS_TARGET = 8; // If splitChangeSize was -1 but we di
 //   minConfirms: the minimum confirmations an output must have before spending
 //   forceChangeAtEnd: force the change address to be the last output
 //   changeAddress: specify the change address rather than generate a new one
-//   splitChangeSize: specify a target change size for splitting change (positive = #satoshis, 0 = never split, negative = automatic splitting)
-//   minUnspentsTarget: specify number of unspents to target after this transaction is created
+//   noSplitChange: set to true to disable automatic change splitting for purposes of unspent management
+//   targetWalletUnspents: specify a number of target unspents to maintain in the wallet (currently defaulted to 8 by the server)
 //   validate: extra verification of the change addresses, which is always done server-side and is redundant client-side (defaults true)
-//   minUnspentSize: The minimum use of unspent to use (don't spend dust transactions). Defaults to MINIMUM_BTC_DUST.
+//   minUnspentSize: The minimum use of unspent to use (don't spend dust transactions). Defaults to 0.
 //   feeSingleKeySourceAddress: Use this single key address to pay fees
 //   feeSingleKeyWIF: Use the address based on this private key to pay fees
 exports.createTransaction = function(params) {
   var minConfirms = params.minConfirms || 0;
   var validate = params.validate === undefined ? true : params.validate;
   var recipients = [];
+  var extraChangeAmounts;
+  var constants = params.wallet.bitgo.getConstants();
 
   // Sanity check the arguments passed in
   if (typeof(params.wallet) != 'object' ||
@@ -60,8 +53,8 @@ exports.createTransaction = function(params) {
      typeof(minConfirms) != 'number' ||
      (params.forceChangeAtEnd && typeof(params.forceChangeAtEnd) !== 'boolean') ||
      (params.changeAddress && typeof(params.changeAddress) !== 'string') ||
-     (params.splitChangeSize !== undefined && typeof(params.splitChangeSize) !== 'number') ||
-     (params.minUnspentsTarget !== undefined && typeof(params.minUnspentsTarget) !== 'number') ||
+     (params.noSplitChange && typeof(params.noSplitChange) !== 'boolean') ||
+     (params.targetWalletUnspents && typeof(params.targetWalletUnspents) !== 'number') ||
      (validate && typeof(validate) !== 'boolean') ||
      (params.enforceMinConfirmsForChange && typeof(params.enforceMinConfirmsForChange) !== 'boolean') ||
      (params.minUnspentSize && typeof(params.minUnspentSize) !== 'number') ||
@@ -104,20 +97,6 @@ exports.createTransaction = function(params) {
     }
   }
 
-  if (typeof(params.minUnspentsTarget) != 'undefined') {
-    if (params.splitChangeSize) {
-      throw new Error('cannot specify both splitChangeSize as well as target number of unspents');
-    }
-    if (params.unspents) {
-      throw new Error('cannot specify both minUnspentsTarget as well as custom unspents');
-    }
-    if (params.minUnspentsTarget > 50) {
-      throw new Error('cannot target more than 50 unspents - use wallet.fanOutUnspents instead');
-    }
-  } else if (typeof(params.splitChangeSize) === 'undefined') {
-    params.splitChangeSize = -1; // reasonable default for new wallets
-  }
-
   if (typeof(params.recipients) != 'object') {
     throw new Error('recipients must be array of { address: abc, amount: 100000 } objects');
   }
@@ -130,7 +109,7 @@ exports.createTransaction = function(params) {
   }
 
   if (typeof(params.maxFeeRate) === 'undefined') {
-    params.maxFeeRate = MAX_FEE_RATE;
+    params.maxFeeRate = constants.maxFeeRate;
   }
 
   // Convert the old format of params.recipients (dictionary of address:amount) to new format: { destinationAddress, amount }
@@ -154,10 +133,10 @@ exports.createTransaction = function(params) {
   // Flag indicating whether this class will compute the fee
   var shouldComputeBestFee = (typeof(fee) == 'undefined');
 
-  if (fee > MAX_FEE) {
+  if (fee > constants.maxFee) {
     throw new Error('fee too generous');  // Protection against bad inputs
   }
-  if (feeRate > MAX_FEE_RATE) {
+  if (feeRate > constants.maxFeeRate) {
     throw new Error('fee rate too generous');  // Protection against bad inputs
   }
 
@@ -237,18 +216,15 @@ exports.createTransaction = function(params) {
     });
   };
 
-  var numChangeOutputs = 1;
-  var numUnspentsAfterTx = 0;
-
   // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
   var getDynamicFeeEstimate = function () {
     if (params.feeTxConfirmTarget || !feeParamsDefined) {
       return params.wallet.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate })
       .then(function(result) {
         var estimatedFeeRate = result.feePerKb;
-        if (estimatedFeeRate < MIN_FEE_RATE) {
+        if (estimatedFeeRate < constants.minFeeRate) {
           console.log(new Date() + ': Error when estimating fee for send from ' + params.wallet + ', it was too low - ' + estimatedFeeRate);
-          feeRate = MIN_FEE_RATE;
+          feeRate = constants.minFeeRate;
         } else if (estimatedFeeRate > params.maxFeeRate) {
           feeRate = params.maxFeeRate;
         } else {
@@ -259,7 +235,7 @@ exports.createTransaction = function(params) {
         // some error happened estimating the fee, so use the default
         console.log(new Date() + ': Error when estimating fee for send from - ' + params.wallet);
         console.dir(err);
-        feeRate = FEE_PER_KB;
+        feeRate = constants.fallbackFeeRate;
       });
     }
     // always return a promise
@@ -267,7 +243,7 @@ exports.createTransaction = function(params) {
   };
 
   // Get the unspents for the sending wallet.
-  var getUnspents = function () {
+  var getUnspents = function() {
 
     if (params.unspents) { // we just wanna use custom unspents
       unspents = params.unspents;
@@ -277,7 +253,9 @@ exports.createTransaction = function(params) {
     // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
     var options = {
       target: totalAmount + 0.01e8,  // fee @ 0.0001/kb for a 100kb tx
-      minSize: params.minUnspentSize !== undefined ? params.minUnspentSize : MINIMUM_BTC_DUST // don't bother to use unspents smaller than dust
+      minSize: params.minUnspentSize || 0,
+      instant: params.instant, // insist on instant unspents only
+      targetWalletUnspents: params.targetWalletUnspents
     };
     if (params.instant) {
       options.instant = params.instant; // insist on instant unspents only
@@ -292,10 +270,9 @@ exports.createTransaction = function(params) {
         }
         return confirms >= minConfirms;
       });
-      numUnspentsAfterTx = results.total - results.count;
-      if (params.minUnspentsTarget) {
-        // number of unspents left after this tx will be total - count (which we will use now)
-        numChangeOutputs = Math.max(params.minUnspentsTarget - numUnspentsAfterTx, 1);
+      // For backwards compatibility, respect the old splitChangeSize=0 parameter
+      if (!params.noSplitChange && params.splitChangeSize !== 0) {
+        extraChangeAmounts = results.extraChangeAmounts;
       }
     });
   };
@@ -318,23 +295,24 @@ exports.createTransaction = function(params) {
     }
   };
 
-  var estimateTxSizeKb = function () {
-    // Tx size is dominated by signatures.
-    // Use the rough formula of 6 signatures per KB.
-    var signaturesPerInput = 2;  // 2-of-3 wallets
+  var estimateTxSizeKb = function (nExtraChange) {
+    nExtraChange = nExtraChange || 0;
+    var sizePerP2SHInput = 295;
+    var sizePerP2PKHInput = 160;
+    var sizePerOutput = 34;
 
-    // Add 1 output for change, possibly 1 output for instant fee, and 1 output for the single key change if needed
-    var outputSizeKb = (recipients.length + 1 + (instantFeeInfo ? 1 : 0) + (feeSingleKeySourceAddress ? 1 : 0)) * 34 / 1000;
+    // Add 1 output for change, possibly 1 output for instant fee, and 1 output for the single key change if needed.
+    // If we do change splitting, we will add more fee later.
+    var nOutputs = (recipients.length + 1 + nExtraChange + (instantFeeInfo ? 1 : 0) + (feeSingleKeySourceAddress ? 1 : 0));
+    var nP2SHInputs = transaction.ins.length + (feeSingleKeySourceAddress ? 1 : 0);
+    var nP2PKHInputs = (feeSingleKeySourceAddress ? 1 : 0);
 
-    // Add 1 output potentially for the single key fee
-    var inputSizeKb = (transaction.ins.length * signaturesPerInput * 170) / 1000;
-
-    return inputSizeKb + outputSizeKb;
+    return (sizePerP2SHInput * nP2SHInputs + sizePerP2PKHInput * nP2PKHInputs + sizePerOutput * nOutputs) / 1000;
   };
 
   // Approximate the fee based on number of inputs
   var calculateApproximateFee = function () {
-    var feeRateToUse = typeof(feeRate) !== 'undefined' ? feeRate : FEE_PER_KB;
+    var feeRateToUse = typeof(feeRate) !== 'undefined' ? feeRate : constants.fallbackFeeRate;
     return Math.ceil(estimateTxSizeKb() * feeRateToUse);
   };
 
@@ -434,39 +412,11 @@ exports.createTransaction = function(params) {
       });
     });
 
-    var getSplitChangeSize = function() {
-      if (typeof(params.splitChangeSize) !== 'number') {
-        return 0;
-      }
-      if (params.splitChangeSize >= 0) {
-        return params.splitChangeSize;
-      }
-      // negative values => auto change splitting
-      return params.wallet.stats()
-      .then(function(stats) {
-        // If we have at least 25 data points, choose a size which is equal to the 75th percentile of tx spend sizes,
-        // but put a floor of max(1% of the wallet balance, 0.1 BTC)
-        var minAutoSplitSize = Math.max(params.wallet.balance() / 100, 1e7);
-        var STATS_MIN_SENDS = 25;
-        var SEND_SIZE_PERCENTILE = 75;
-        if (stats.nSends >= STATS_MIN_SENDS && stats.sendSizes && stats.sendSizes[SEND_SIZE_PERCENTILE]) {
-          return Math.floor(Math.max(stats.sendSizes[SEND_SIZE_PERCENTILE], minAutoSplitSize));
-        }
-        // Don't split
-        return 0;
-      })
-      .catch(function(err) {
-        console.log(err);
-        // In case of any error, don't split
-        return 0;
-      });
-    };
-
     var getChangeOutputs = function(changeAmount) {
       if (changeAmount < 0) {
         throw new Error('negative change amount');
       }
-      if (changeAmount < MINIMUM_BTC_DUST) {
+      if (changeAmount < constants.minOutputSize) {
         // Give it to the miners
         return [];
       }
@@ -475,17 +425,12 @@ exports.createTransaction = function(params) {
       // if we paid fees from a single key wallet, return the fee change first
       if (feeSingleKeySourceAddress) {
         var feeSingleKeyWalletChangeAmount = feeSingleKeyInputAmount - (fee + (instantFeeInfo ? instantFeeInfo.amount : 0));
-        if (feeSingleKeyWalletChangeAmount >= MINIMUM_BTC_DUST) {
+        if (feeSingleKeyWalletChangeAmount >= constants.minOutputSize) {
           result.push({ address: feeSingleKeySourceAddress, amount: feeSingleKeyWalletChangeAmount });
           changeAmount = changeAmount - feeSingleKeyWalletChangeAmount;
         }
       }
 
-      // If user specified directly, just return it
-      if (params.changeAddress) {
-        result.push({ address: params.changeAddress, amount: changeAmount });
-        return result;
-      }
       if (params.wallet.type() === 'safe') {
         return params.wallet.addresses()
         .then(function(response) {
@@ -494,85 +439,43 @@ exports.createTransaction = function(params) {
         });
       }
 
-      var splitAmount;
+      extraChangeAmounts = extraChangeAmounts || [];
+      var extraChangeTotal = _.sum(extraChangeAmounts);
+      // Sanity check
+      if (extraChangeTotal > changeAmount) {
+        extraChangeAmounts = [];
+        extraChangeTotal = 0;
+      }
 
-      // Recursive method to keep adding outputs as long as we haven't hit our desired numChangeOutputs
-      var numExtraChangeOutputs = numChangeOutputs - 1;
+      // copy and add remaining change amount
+      var allChangeAmounts = extraChangeAmounts.slice(0);
+      allChangeAmounts.push(changeAmount - extraChangeTotal);
+
+      // Recursive async func to add all change outputs
       var addChangeOutputs = function() {
-        if (result.length >= numExtraChangeOutputs) {
-          // Base case
-          // One more change output will be added later, we now have enough
-          return;
+        var thisAmount = allChangeAmounts.shift();
+        if (!thisAmount) {
+          return result;
         }
-        // This algorithm will attempt to make a roughly even split of the outputs,
-        // with a +/- 1/6 randomization of the output at each step
-        // The change amount is 1 / (remaining amount of change to be spent)
-        var thisChangeAmount = changeAmount / (numChangeOutputs - result.length);
-        var randomAdjustment = ((2 * Math.random() - 1) / 6) * thisChangeAmount;
-        thisChangeAmount = 10000 * Math.floor((thisChangeAmount + randomAdjustment) / 10000);
-        if (thisChangeAmount <= MIN_SPLIT_AMOUNT) {
-          // we're dealing in amounts too small here, don't bother splitting
-          return;
-        }
-        // create an additional change address
-        return params.wallet.createAddress({chain: 1, validate: validate})
-        .then(function (changeAddress) {
-          // add the new output and then keep going
-          changeAmount = changeAmount - thisChangeAmount;
-          changeAddress.amount = thisChangeAmount;
-          result.push(changeAddress);
+        return Q().then(function() {
+          if (params.changeAddress) {
+            // If user passed a change address, use it for all outputs
+            return params.changeAddress;
+          } else {
+            // Otherwise create a new address per output, for privacy
+            return params.wallet.createAddress({chain: 1, validate: validate})
+            .then(function(result) {
+              return result.address;
+            });
+          }
+        })
+        .then(function(address) {
+          result.push({ address: address, amount: thisAmount });
           return addChangeOutputs();
         });
       };
 
-      return Q()
-      .then(function() {
-        if (params.minUnspentsTarget) {
-          // Caller wants to target a minimum number of unspents on the wallet.
-          // Potentially this can help mitigate spending long unconfirmed chains.
-          return addChangeOutputs();
-        } else if (params.splitChangeSize) {
-          return Q()
-          .then(getSplitChangeSize)
-          .then(function(splitChangeSize) {
-            if (splitChangeSize > 0) {
-              if (changeAmount > 2 * splitChangeSize) {
-                // Start with an even split
-                splitAmount = changeAmount / 2;
-                // Adjust split amount by a random amount between -1/6 and 1/6 of the total change amount
-                // This results in max ratio of the sizes of 2:1
-                var adjustment = ((2 * Math.random() - 1) / 6) * changeAmount;
-                // Make at least one of the two change outputs end in 0000
-                splitAmount = 10000 * Math.floor((splitAmount + adjustment) / 10000);
-
-                // adjust changeAmount to account for the split
-                changeAmount = changeAmount - splitAmount;
-
-                // create an additional change address
-                return params.wallet.createAddress({chain: 1, validate: validate})
-                .then(function (changeAddress) {
-                  changeAddress.amount = splitAmount;
-                  result.push(changeAddress);
-                });
-              }
-            } else {
-              // We wanted to use splitChangeSize but there were not enough stats to do that, let's fall back to
-              // ensuring we have a minimum amount of change
-              numChangeOutputs = Math.max(FALLBACK_DEFAULT_UNSPENTS_TARGET - numUnspentsAfterTx, 1);
-              numExtraChangeOutputs = numChangeOutputs - 1;
-              return addChangeOutputs();
-            }
-          });
-        }
-      })
-      .then(function() {
-        return params.wallet.createAddress({chain: 1, validate: validate});
-      })
-      .then(function(changeAddress) {
-        changeAddress.amount = changeAmount;
-        result.push(changeAddress);
-        return result;
-      });
+      return addChangeOutputs();
     };
 
     // Add change output(s) and instant fee output if applicable
