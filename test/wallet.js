@@ -754,6 +754,17 @@ describe('Wallet', function() {
         done();
       });
 
+      it('prepare unspents', function() {
+        var options = {
+          walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
+          password: TestBitGo.TEST_WALLET2_PASSCODE,
+          otp: '0000000',
+          target: 2
+        };
+        // this unit test should simply not throw an error
+        return sharedWallet.regroupUnspents(options);
+      });
+
       it('fan out unspents', function() {
 
         return Q()
@@ -765,7 +776,7 @@ describe('Wallet', function() {
             otp: '0000000',
             target: 10, // the maximum consolidation count per input will be 7. This is to ensure we have multiple batches
             validate: false,
-            minConfirms: 1
+            minConfirms: 0
           };
           return sharedWallet.fanOutUnspents(options);
         })
@@ -792,7 +803,7 @@ describe('Wallet', function() {
             otp: '0000000',
             target: 8,
             validate: false,
-            minConfirms: 1
+            minConfirms: 0,
           };
           return sharedWallet.consolidateUnspents(options);
         })
@@ -827,7 +838,7 @@ describe('Wallet', function() {
             target: 2,
             maxInputCountPerConsolidation: maxInputCountPerConsolidation,
             validate: false,
-            minConfirms: 1,
+            minConfirms: 0,
             progressCallback: progressCallback
           };
           return sharedWallet.consolidateUnspents(options);

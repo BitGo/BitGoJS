@@ -1141,12 +1141,40 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
 };
 
 /**
+ * Determine whether to fan out or coalesce a wallet's unspents
+ * @param params
+ * @param callback
+ * @returns {Request|Promise.<T>|*}
+ */
+Wallet.prototype.regroupUnspents = function(params, callback) {
+  params = params || {};
+  var target = params.target;
+  if (typeof(target) !== 'number' || target < 1 || (target % 1) !== 0) {
+    // the target must be defined, be a number, be at least one, and be a natural number
+    throw new Error('Target needs to be a positive integer');
+  }
+
+  var self = this;
+  return self.unspents({ minConfirms: params.minConfirms })
+  .then(function(unspents) {
+    if (unspents.length == target) {
+      return unspents;
+    } else if (unspents.length > target) {
+      return self.consolidateUnspents(params, callback);
+    } else if (unspents.length < target) {
+      return self.fanOutUnspents(params, callback);
+    }
+  });
+};
+
+/**
  * Consolidate a wallet's unspents into fewer unspents
  * @param params
  *  target: set how many unspents you want to have in the end
  *  maxInputCountPerConsolidation: set how many maximum inputs are to be permitted per consolidation batch
  *  xprv: private key to sign transaction
  *  walletPassphrase: wallet passphrase to decrypt the wallet's private key
+ *  maxIterationCount: maximum number of iterations to be performed until function stops
  *  progressCallback: method to be called with object outlining current progress details
  * @param callback
  * @returns {*}
@@ -1167,7 +1195,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   // maximum number of inputs per transaction for consolidation
   var MAX_INPUT_COUNT = 85;
   var maxInputCount = params.maxInputCountPerConsolidation;
-  if (maxInputCount === undefined) { // null or unidentified, because equality to zero retruns true in if(! clause
+  if (maxInputCount === undefined) { // null or unidentified, because equality to zero returns true in if(! clause
     maxInputCount = MAX_INPUT_COUNT;
   }
   if (typeof (maxInputCount) !== 'number' || maxInputCount < 2 || (maxInputCount % 1) !== 0) {
@@ -1176,13 +1204,18 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     throw new Error('Maximum consolidation input count cannot be bigger than ' + MAX_INPUT_COUNT);
   }
 
+  var maxIterationCount = -1 || params.maxIterationCount;
+  if(params.maxIterationCount && (typeof(maxIterationCount) !== 'number' || maxIterationCount < 1) || (maxIterationCount % 1) !== 0){
+    throw new Error('Maximum iteration count needs to be an integer equal to or bigger than 1');
+  }
+
+  var iterationCount = 0;
+
   var self = this;
   var consolidationIndex = 0;
 
   /**
    * Consolidate one batch of up to MAX_INPUT_COUNT unspents.
-   * @param wallet
-   * @param targetUnspentCount
    * @returns {*}
    */
   var runNextConsolidation = function() {
@@ -1191,6 +1224,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     var isFinalConsolidation = false;
     var inputCount;
     var currentAddress;
+    iterationCount++;
     /*
      We take a maximum of unspentBulkSizeLimit unspents from the wallet. We want to make sure that we swipe the wallet
      clean of all excessive unspents, so we add 1 to the target unspent count to make sure we haven't missed anything.
@@ -1215,7 +1249,10 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
 
       // if the targetInputCount requires more inputs than we allow per batch, we reduce the number
       inputCount = Math.min(targetInputCount, maxInputCount);
-      isFinalConsolidation = (inputCount === targetInputCount);
+
+      // if either the number of inputs left to coalesce equals the number we will coalesce in this iteration
+      // or if the number of iterations matches the maximum permitted number
+      isFinalConsolidation = (inputCount === targetInputCount || iterationCount == maxIterationCount);
 
       var currentUnspentChunk = allUnspents.splice(0, inputCount);
       return [self.createAddress({ chain: 1, validate: validate }), currentUnspentChunk];
