@@ -348,20 +348,22 @@ describe('Wallets', function() {
 
   describe('Setup forward wallet', function() {
     var key = ECKey.makeRandom();
-    var sourceAddress = key.pub.getAddress(networks['testnet']).toString();
+    var testnet = networks['testnet'];
+    var sourceAddress = key.pub.getAddress(testnet).toString();
+
 
     it('arguments', function() {
       assert.throws(function() { wallets.createForwardWallet('invalid'); });
       assert.throws(function() { wallets.createForwardWallet(); });
-      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(), "sourceAddress": null, destinationWallet: testWallet}); });
+      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(testnet), "sourceAddress": null, destinationWallet: testWallet}); });
       assert.throws(function() { wallets.createForwardWallet({"privKey": "asdasdsa", "sourceAddress": sourceAddress, destinationWallet: testWallet}); });
-      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(), "sourceAddress": sourceAddress, destinationWallet: null}); });
-      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(), "sourceAddress": TestBitGo.TEST_WALLET3_ADDRESS, destinationWallet: null}); });
+      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(testnet), "sourceAddress": sourceAddress, destinationWallet: null}); });
+      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(testnet), "sourceAddress": TestBitGo.TEST_WALLET3_ADDRESS, destinationWallet: null}); });
     });
 
     it('default', function() {
       return wallets.createForwardWallet({
-        "privKey": key.toWIF(),
+        "privKey": key.toWIF(testnet),
         "sourceAddress": sourceAddress,
         destinationWallet: testWallet,
         label: 'forward ' + sourceAddress

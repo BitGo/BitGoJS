@@ -879,39 +879,22 @@ BitGo.prototype.instantGuarantee = function(params, callback) {
 };
 
 //
-// instantFee
-// Get the required fee for a BitGo Instant transaction
+// getBitGoFeeAddress
+// Get a target address for payment of a BitGo fee
 //
-BitGo.prototype.instantFee = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, [], ['wallet'], callback);
-  if (typeof(params.amount) !== 'number') {
-    throw new Error('invalid amount argument');
-  }
-
-  return this.get(this.url('/instant/fee'))
-  .query(params)
-  .result()
-  .nodeify(callback);
-};
-
-//
-// instantAddress
-// Get a target address for payment of a BitGo Instant fee
-//
-BitGo.prototype.instantFeeAddress = function(params, callback) {
+BitGo.prototype.getBitGoFeeAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
   var self = this;
-  return this.post(this.url('/instant/feeaddress'))
+  return this.post(this.url('/billing/address'))
   .send({})
   .result()
   .nodeify(callback);
 };
 
 //
-// getConstantsAsync
+// fetchConstants
 // Receives a TTL and refetches as necessary
 //
 BitGo.prototype.fetchConstants = function(params, callback) {

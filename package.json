@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -53,7 +53,7 @@
     "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -s BitGoJS -o browser/BitGoJS.js",
     "compile-test": "mkdir -p browser && ./node_modules/.bin/browserify --exclude superagent-proxy --exclude morgan -t envify ./test/*.js > ./browser/tests.js",
     "test": "npm run test-node",
-    "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 15000 --reporter list test/*.js",
+    "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 20000 --reporter list test/*.js",
     "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run"
   },
   "dependencies": {

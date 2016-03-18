@@ -864,7 +864,7 @@ Wallet.prototype.sendMany = function(params, callback) {
   var keychain;
   var fee;
   var feeRate;
-  var instantFee;
+  var bitgoFee;
 
   // Get the user keychain
   return this.createAndSignTransaction(params)
@@ -872,7 +872,7 @@ Wallet.prototype.sendMany = function(params, callback) {
     // Send the transaction
     fee = transaction.fee;
     feeRate = transaction.feeRate;
-    instantFee = transaction.instantFee;
+    bitgoFee = transaction.bitgoFee;
     return self.sendTransaction({
       tx: transaction.tx,
       message: params.message,
@@ -883,8 +883,8 @@ Wallet.prototype.sendMany = function(params, callback) {
   .then(function(result) {
     result.fee = fee;
     result.feeRate = feeRate;
-    if (instantFee) {
-      result.instantFee = instantFee;
+    if (bitgoFee) {
+      result.bitgoFee = bitgoFee;
     }
     return result;
   })
@@ -929,7 +929,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   var keychain;
   var fee;
   var feeRate;
-  var instantFee;
+  var bitgoFee;
 
   return Q()
   .then(function() {
@@ -941,12 +941,12 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     feeRate = transaction.feeRate;
     // Sign the transaction
     transaction.keychain = keychain;
-    instantFee = transaction.instantFee;
+    bitgoFee = transaction.bitgoFee;
     transaction.feeSingleKeyWIF = params.feeSingleKeyWIF;
     return self.signTransaction(transaction);
   })
   .then(function(result) {
-    return _.extend(result, { fee: fee, feeRate: feeRate, instant: params.instant, instantFee: instantFee });
+    return _.extend(result, { fee: fee, feeRate: feeRate, instant: params.instant, bitgoFee: bitgoFee });
   })
   .nodeify(callback);
 };
@@ -1494,6 +1494,25 @@ Wallet.prototype.deletePolicyRule = function(params, callback) {
 
   return this.bitgo.del(this.url('/policy/rule'))
   .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+//
+// getBitGoFee
+// Get the required on-transaction BitGo fee
+//
+Wallet.prototype.getBitGoFee = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+  if (typeof(params.amount) !== 'number') {
+    throw new Error('invalid amount argument');
+  }
+  if (params.instant && typeof(params.instant) !== 'boolean') {
+    throw new Error('invalid instant argument');
+  }
+  return this.bitgo.get(this.url('/billing/fee'))
+  .query(params)
   .result()
   .nodeify(callback);
 };

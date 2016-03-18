@@ -62,7 +62,7 @@ exports.createTransaction = function(params) {
      (params.unspents && params.unspents.length < 1) || // this should be an array and its length must be at least 1
      (params.feeTxConfirmTarget && typeof(params.feeTxConfirmTarget) !== 'number') ||
      (params.instant && typeof(params.instant) !== 'boolean') ||
-     (params.instantFee && typeof(params.instantFee) !== 'object')
+     (params.bitgoFee && typeof(params.bitgoFee) !== 'object')
   ) {
     throw new Error('invalid argument');
   }
@@ -163,10 +163,10 @@ exports.createTransaction = function(params) {
     totalOutputAmount += recipient.amount;
   });
 
-  var instantFeeInfo = params.instantFee;
-  if (instantFeeInfo &&
-    (typeof(instantFeeInfo.amount) !== 'number' || typeof(instantFeeInfo.address) !== 'string')) {
-    throw new Error('invalid instantFee');
+  var bitgoFeeInfo = params.bitgoFee;
+  if (bitgoFeeInfo &&
+    (typeof(bitgoFeeInfo.amount) !== 'number' || typeof(bitgoFeeInfo.address) !== 'string')) {
+    throw new Error('invalid bitgoFeeInfo');
   }
 
   // The total amount needed for this transaction.
@@ -183,36 +183,37 @@ exports.createTransaction = function(params) {
   // The transaction.
   var transaction = new Transaction();
 
-  var getInstantFee = function() {
+  var getBitGoFee = function() {
     return Q().then(function() {
-      // If we're not sending instant, or instantFeeInfo is already set, don't fetch fee
-      if (!params.instant || instantFeeInfo) {
+      if (bitgoFeeInfo) {
         return;
       }
-      return params.wallet.bitgo.instantFee({ amount: totalOutputAmount, wallet: params.wallet.id() })
-      .then(function(feeInfo) {
-        if (feeInfo && feeInfo.fee > 0) {
-          instantFeeInfo = {
-            amount: feeInfo.fee
+      return params.wallet.getBitGoFee({ amount: totalOutputAmount, instant: params.instant })
+      .then(function(result) {
+        if (result && result.fee > 0) {
+          bitgoFeeInfo = {
+            amount: result.fee
           };
         }
       });
     })
     .then(function() {
-      if (instantFeeInfo && instantFeeInfo.amount > 0) {
-        totalAmount += instantFeeInfo.amount;
+      if (bitgoFeeInfo && bitgoFeeInfo.amount > 0) {
+        totalAmount += bitgoFeeInfo.amount;
       }
     });
   };
 
-  var getInstantFeeAddress = function() {
-    // If we don't have instantFeeInfo, or address is already set, don't get a new one
-    if (!instantFeeInfo || instantFeeInfo.address) {
-      return;
-    }
-    return params.wallet.bitgo.instantFeeAddress()
-    .then(function(addressInfo) {
-      instantFeeInfo.address = addressInfo.address;
+  var getBitGoFeeAddress = function() {
+    return Q().then(function() {
+      // If we don't have bitgoFeeInfo, or address is already set, don't get a new one
+      if (!bitgoFeeInfo || bitgoFeeInfo.address) {
+        return;
+      }
+      return params.wallet.bitgo.getBitGoFeeAddress()
+      .then(function(result) {
+        bitgoFeeInfo.address = result.address;
+      });
     });
   };
 
@@ -303,7 +304,7 @@ exports.createTransaction = function(params) {
 
     // Add 1 output for change, possibly 1 output for instant fee, and 1 output for the single key change if needed.
     // If we do change splitting, we will add more fee later.
-    var nOutputs = (recipients.length + 1 + nExtraChange + (instantFeeInfo ? 1 : 0) + (feeSingleKeySourceAddress ? 1 : 0));
+    var nOutputs = (recipients.length + 1 + nExtraChange + (bitgoFeeInfo ? 1 : 0) + (feeSingleKeySourceAddress ? 1 : 0));
     var nP2SHInputs = transaction.ins.length + (feeSingleKeySourceAddress ? 1 : 0);
     var nP2PKHInputs = (feeSingleKeySourceAddress ? 1 : 0);
 
@@ -341,7 +342,7 @@ exports.createTransaction = function(params) {
         transaction.addInput(unspent.tx_hash, unspent.tx_output_n);
         feeSingleKeyUnspentsUsed.push(unspent);
         // use the fee wallet to pay miner fees and potentially instant fees
-        return (feeSingleKeyInputAmount < (fee + (instantFeeInfo ? instantFeeInfo.amount : 0)));
+        return (feeSingleKeyInputAmount < (fee + (bitgoFeeInfo ? bitgoFeeInfo.amount : 0)));
       });
     }
 
@@ -351,8 +352,8 @@ exports.createTransaction = function(params) {
       fee = approximateFee;
       // Recompute totalAmount from scratch
       totalAmount = fee + totalOutputAmount;
-      if (instantFeeInfo) {
-        totalAmount += instantFeeInfo.amount;
+      if (bitgoFeeInfo) {
+        totalAmount += bitgoFeeInfo.amount;
       }
       if (shouldRecurse) {
         // if fee changed, re-collect inputs
@@ -362,7 +363,7 @@ exports.createTransaction = function(params) {
       }
     }
 
-    var totalFee = fee + (instantFeeInfo ? instantFeeInfo.amount : 0);
+    var totalFee = fee + (bitgoFeeInfo ? bitgoFeeInfo.amount : 0);
 
     if (feeSingleKeySourceAddress) {
       if (totalFee > _.sum(feeSingleKeyUnspents, 'value')) {
@@ -370,7 +371,7 @@ exports.createTransaction = function(params) {
         err.result = {
           fee: fee,
           available: inputAmount,
-          instantFee: instantFeeInfo
+          bitgoFee: bitgoFeeInfo
         };
         return Q.reject(err);
       }
@@ -381,7 +382,7 @@ exports.createTransaction = function(params) {
       err.result = {
         fee: fee,
         available: inputAmount,
-        instantFee: instantFeeInfo
+        bitgoFee: bitgoFeeInfo
       };
       return Q.reject(err);
     }
@@ -424,7 +425,7 @@ exports.createTransaction = function(params) {
       var result = [];
       // if we paid fees from a single key wallet, return the fee change first
       if (feeSingleKeySourceAddress) {
-        var feeSingleKeyWalletChangeAmount = feeSingleKeyInputAmount - (fee + (instantFeeInfo ? instantFeeInfo.amount : 0));
+        var feeSingleKeyWalletChangeAmount = feeSingleKeyInputAmount - (fee + (bitgoFeeInfo ? bitgoFeeInfo.amount : 0));
         if (feeSingleKeyWalletChangeAmount >= constants.minOutputSize) {
           result.push({ address: feeSingleKeySourceAddress, amount: feeSingleKeyWalletChangeAmount });
           changeAmount = changeAmount - feeSingleKeyWalletChangeAmount;
@@ -485,8 +486,8 @@ exports.createTransaction = function(params) {
     .then(function(result) {
       changeOutputs = result;
       var extraOutputs = changeOutputs.concat([]); // copy the array
-      if (instantFeeInfo && instantFeeInfo.amount > 0) {
-        extraOutputs.push(instantFeeInfo);
+      if (bitgoFeeInfo && bitgoFeeInfo.amount > 0) {
+        extraOutputs.push(bitgoFeeInfo);
       }
       extraOutputs.forEach(function(output) {
         output.script = Address.fromBase58Check(output.address).toOutputScript();
@@ -520,17 +521,22 @@ exports.createTransaction = function(params) {
       walletKeychains: params.wallet.keychains,
       feeRate: feeRate,
       instant: params.instant,
-      instantFee: instantFeeInfo
+      bitgoFee: bitgoFeeInfo
     };
+
+    // Add for backwards compatibility
+    if (result.instant && bitgoFeeInfo) {
+      result.instantFee = _.pick(bitgoFeeInfo, ['amount', 'address']);
+    }
 
     return result;
   };
 
   return Q().then(function() {
-    return getInstantFee();
+    return getBitGoFee();
   })
   .then(function() {
-    return Q.all([getInstantFeeAddress(), getDynamicFeeEstimate(), getUnspents(), getUnspentsForSingleKey()]);
+    return Q.all([getBitGoFeeAddress(), getDynamicFeeEstimate(), getUnspents(), getUnspentsForSingleKey()]);
   })
   .then(collectInputs)
   .then(collectOutputs)

@@ -1077,7 +1077,12 @@ describe('Wallet', function() {
         // Attempt to spend the full balance without any fees.
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance();
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: 0});
+        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: 0, minConfirms: 0, bitgoFee: { amount: 0, address: 'foo' } })
+        .then(function(result) {
+          result.fee.should.equal(0);
+          result.changeAddresses.length.should.equal(0);
+          result.bitgoFee.amount.should.equal(0);
+        });
       });
 
       it('ok', function() {
@@ -1157,7 +1162,7 @@ describe('Wallet', function() {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
-          assert.equal(feeUsed, 843282);
+          assert.equal(feeUsed, 843663);
           result.feeRate.should.eql(0.000112 * 1e8);
           result.walletId = wallet1.id;
         });
@@ -1171,7 +1176,7 @@ describe('Wallet', function() {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
-          assert.equal(feeUsed, 1505861);
+          assert.equal(feeUsed, 1506540);
         });
       });
 
@@ -1191,7 +1196,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 1039044); // tx size will be 75kb * 0.000138 * 1e8
+          assert.equal(feeUsed, 1039513); // tx size will be 75kb * 0.000138 * 1e8
         });
       });
 
@@ -1201,7 +1206,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1, maxFeeRate: 5000})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 376466);
+          assert.equal(feeUsed, 376635);
         });
       });
 
@@ -1211,7 +1216,7 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 234915); // tx size will be 75kb * 0.0000312 * 1e8
+          assert.equal(feeUsed, 235021); // tx size will be 75kb * 0.0000312 * 1e8
         });
       });
 
@@ -1225,7 +1230,7 @@ describe('Wallet', function() {
         .then(function(result) {
           wallet1.estimateFee = feeMonkeyPatch;
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 165645);
+          assert.equal(feeUsed, 165720);
         });
       });
 
@@ -1235,14 +1240,14 @@ describe('Wallet', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 4})
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 7529301); // tx size will be 75kb * 0.001 (max feerate as defined in transactionBuilder)
+          assert.equal(feeUsed, 7532700); // tx size will be 75kb * 0.001 (max feerate as defined in transactionBuilder)
         });
       });
 
       it('validate (disable address verification)', function() {
         var manualFee = 0.04 * 1e8;
         var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6194e8;
         var walletmock = Object.create(wallet1);
         walletmock.createAddress = function(params) {
           assert.equal(params.validate, false);
@@ -1256,7 +1261,7 @@ describe('Wallet', function() {
 
       it('custom change address', function() {
         var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6194e8;
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, forceChangeAtEnd: true, changeAddress: TestBitGo.TEST_WALLET1_ADDRESS})
         .then(function(result) {
           assert.equal(result.changeAddresses[0].address, TestBitGo.TEST_WALLET1_ADDRESS);
@@ -1265,7 +1270,7 @@ describe('Wallet', function() {
 
       it('no change splitting', function() {
         var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6194e8;
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, forceChangeAtEnd: true, noSplitChange: true })
         .then(function(result) {
           result.changeAddresses.length.should.equal(1);
@@ -1274,7 +1279,7 @@ describe('Wallet', function() {
 
       it('no change splitting 2', function() {
         var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6194e8;
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, forceChangeAtEnd: true, splitChangeSize: 0 })
         .then(function(result) {
           result.changeAddresses.length.should.equal(1);
@@ -1283,7 +1288,7 @@ describe('Wallet', function() {
 
       it('change splitting on by default', function() {
         var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200e8;
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6194e8;
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, forceChangeAtEnd: true })
         .then(function(result) {
           result.changeAddresses.length.should.equal(3);
@@ -1733,7 +1738,7 @@ describe('Wallet', function() {
           result.should.have.property('fee');
           result.should.have.property('instant');
           result.should.have.property('instantId');
-          result.should.not.have.property('instantFee');
+          result.should.not.have.property('bitgoFee');
           result.instant.should.eql(true);
         });
       });
@@ -2102,7 +2107,7 @@ describe('Wallet', function() {
 
       it('create instant transaction', function() {
         var recipients = {};
-        var instantFee;
+        var bitgoFee;
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 1.1e8;
         return wallet3.createTransaction({ recipients: recipients, instant: true })
         .then(function(result) {
@@ -2111,16 +2116,18 @@ describe('Wallet', function() {
           should.exist(result.fee);
           result.fee.should.be.lessThan(0.01e8);
           result.feeRate.should.be.lessThan(0.01e8);
+          result.should.have.property('bitgoFee');
+          bitgoFee = result.bitgoFee;
+          bitgoFee.amount.should.equal(100000);
+          bitgoFee.should.have.property('address');
           result.should.have.property('instantFee');
-          instantFee = result.instantFee;
-          instantFee.amount.should.equal(100000);
-          instantFee.should.have.property('address');
-          // Re-create the same tx, passing instantFee info
-          return wallet3.createTransaction({ recipients: recipients, instant: true, instantFee: result.instantFee});
+          result.instantFee.amount.should.equal(100000);
+          // Re-create the same tx, passing bitgoFee info
+          return wallet3.createTransaction({ recipients: recipients, instant: true, bitgoFee: result.bitgoFee});
         })
         .then(function(result) {
-          result.should.have.property('instantFee');
-          result.instantFee.address.should.equal(instantFee.address);
+          result.should.have.property('bitgoFee');
+          result.bitgoFee.address.should.equal(bitgoFee.address);
         });
       });
 
