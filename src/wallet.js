@@ -1330,6 +1330,10 @@ Wallet.prototype.shareWallet = function(params, callback) {
     throw new Error('Expected skipKeychain to be a boolean. ');
   }
   var needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
+  
+  if (params.disableEmail !== undefined && typeof(params.disableEmail) != 'boolean') {
+    throw new Error('Expected disableEmail to be a boolean.');
+  }
 
   var self = this;
   var sharing;
@@ -1372,7 +1376,8 @@ Wallet.prototype.shareWallet = function(params, callback) {
       user: sharing.userId,
       permissions: params.permissions,
       reshare: params.reshare,
-      message: params.message
+      message: params.message,
+      disableEmail: params.disableEmail
     };
     if (sharedKeychain) {
       options.keychain = sharedKeychain;
