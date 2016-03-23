@@ -212,7 +212,7 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase'], callback);
 
-  if (this.type() === 'transactionRequest' && !(params.walletPassphrase)) {
+  if (this.type() === 'transactionRequest' && !(params.walletPassphrase || params.xprv)) {
     throw new Error('wallet passphrase or xprv required to approve a transactionRequest');
   }
 
@@ -249,7 +249,7 @@ PendingApproval.prototype.approve = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase'], callback);
 
-  if (this.type() === 'transactionRequest' && !(params.walletPassphrase)) {
+  if (this.type() === 'transactionRequest' && !(params.walletPassphrase || params.xprv)) {
     throw new Error('wallet passphrase or xprv required to approve a transactionRequest');
   }
 
