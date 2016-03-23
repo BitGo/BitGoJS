@@ -265,7 +265,6 @@ Wallets.prototype.createKey = function(params) {
 Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['passphrase'], ['label', 'backupXpub', 'enterprise'], callback);
-
   var self = this;
   var label = params.label;
 
@@ -275,6 +274,10 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
 
   if ((!!params.backupXpub + !!params.backupXpubProvider) > 1) {
     throw new Error("Cannot provide more than one backupXpub or backupXpubProvider flag");
+  }
+
+  if (params.disableTransactionNotifications !== undefined && typeof(params.disableTransactionNotifications) != 'boolean') {
+    throw new Error('Expected disableTransactionNotifications to be a boolean. ');
   }
 
   var backupKeychain;
@@ -324,6 +327,10 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
 
     if (params.enterprise) {
       walletParams.enterprise = params.enterprise;
+    }
+    
+    if (params.disableTransactionNotifications) {
+      walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
     }
 
     return self.add(walletParams);
