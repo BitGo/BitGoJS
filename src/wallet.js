@@ -95,14 +95,7 @@ Wallet.prototype.instantBalance = function() {
   if (!this.canSendInstant()) {
     throw new Error('not an instant wallet');
   }
-  var minConfirms = 3;
-  if (this.bitgo.env === 'test' || this.bitgo.env === 'dev') {
-    minConfirms = 1;
-  }
-  return this.unspents({ minConfirms: minConfirms })
-  .then(function(unspents) {
-    return _.sum(unspents, 'value');
-  });
+  return this.wallet.instantBalance;
 };
 
 //

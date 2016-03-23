@@ -888,10 +888,8 @@ describe('Wallet', function() {
     });
 
     it('wallet3 instant balance', function() {
-      return wallet3.instantBalance()
-      .then(function(result) {
-        result.should.be.greaterThan(-1);
-      });
+      var instantBalance = wallet3.instantBalance();
+      instantBalance.should.be.greaterThan(-1);
     });
   });
 
@@ -1792,7 +1790,10 @@ describe('Wallet', function() {
 
       it('get instant balance 2 ways and make sure they are the same', function() {
         var instantBalanceFromUnspentsNative;
-        return wallet3.unspents({ instant: true, target: 10000 * 1e8 })
+        return wallet3.get()
+        .then(function() {
+          return wallet3.unspents({ instant: true, target: 10000 * 1e8 });
+        })
         .then(function(unspents) {
           instantBalanceFromUnspentsNative = _.sum(unspents, 'value');
           return wallet3.instantBalance();
