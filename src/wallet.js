@@ -766,6 +766,15 @@ Wallet.prototype.sendTransaction = function(params, callback) {
   .nodeify(callback);
 };
 
+//
+// createShare
+// share the wallet with an existing BitGo user.
+// Parameters:
+//   user - the recipient, must have a corresponding user record in our database
+//   keychain - the keychain to be shared with the recipient
+//   permissions - the recipient's permissions if the share is accepted
+// Returns:
+//   
 Wallet.prototype.createShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['user', 'permissions'], [], callback);
@@ -781,6 +790,75 @@ Wallet.prototype.createShare = function(params, callback) {
   return this.bitgo.post(this.url('/share'))
   .send(params)
   .result()
+  .nodeify(callback);
+};
+
+//
+// createInvite
+// invite a non BitGo customer to join a wallet
+// Parameters:
+//   email - the recipient's email address
+//   permissions - the recipient's permissions if the share is accepted
+// Returns:
+//
+Wallet.prototype.createInvite = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['email', 'permissions'], ['message'], callback);
+
+  var self = this;
+  var options = {
+    toEmail: params.email,
+    permissions: params.permissions,
+    walletLabel: self.wallet.label
+  };
+
+  if (params.message) {
+    options.message = params.message;
+  }
+
+  if (self.wallet.enterprise) {
+    options.enterprise = self.wallet.enterprise;
+  }
+
+  return this.bitgo.post(this.url('/invite'))
+  .send(options)
+  .result()
+  .nodeify(callback);
+};
+
+//
+// confirmInvite
+// confirm my invite on this wallet to a recipient who has
+// subsequently signed up by creating the actual wallet share
+// Parameters:
+//   walletInviteId - the wallet invite id
+//   walletPassphrase - required if the wallet share success is expected
+// Returns:
+//
+Wallet.prototype.confirmInvite = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletInviteId'], ['walletPassphrase'], callback);
+
+  var self = this;
+  return this.bitgo.wallets().listInvites()
+  .then(function(invites) {
+    var outgoing = invites.outgoing;
+    var invite = _.find(outgoing, function(out) {
+      return out.id === params.walletInviteId;
+    });
+    if (!invite) {
+      throw new Error('wallet invite not found');
+    }
+
+    var options = {
+      email: invite.toEmail,
+      permissions: invite.permissions,
+      message: invite.message,
+      walletPassphrase: params.walletPassphrase
+    };
+
+    return self.shareWallet(options);
+  })
   .nodeify(callback);
 };
 

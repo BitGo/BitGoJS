@@ -73,6 +73,69 @@ describe('Wallet', function() {
     });
   });
 
+  describe('Invite non BitGo user', function() {
+    before(function(done) {
+      wallets.listInvites({})
+      .done(function(success) {
+        success.should.have.property('outgoing');
+        done();
+      }, function(err) {
+        err.should.equal(null);
+      });
+    });
+
+    it('arguments', function(done) {
+      assert.throws(function() { bitgo.wallets().cancelInvite({}, function() {}); });
+
+      assert.throws(function() { wallet1.createInvite({}, function() {}); });
+      assert.throws(function() { wallet1.createInvite({ email: 'tester@bitgo.com' }, function() {}); });
+      done();
+    });
+
+    it('invite existing user', function(done) {
+      wallet1.createInvite({
+        email: TestBitGo.TEST_SHARED_KEY_USER,
+        permissions: 'admin'
+      })
+      .done(function(success) {
+        success.should.equal(null);
+      }, function(err) {
+        err.status.should.equal(400);
+        done();
+      });
+    });
+
+    var walletInviteId;
+    it('invite non bitgo user', function(done) {
+      wallet1.createInvite({
+        email: 'notfoundqery@bitgo.com',
+        permissions: 'admin'
+      })
+      .done(function(success) {
+        success.should.have.property('invite');
+        walletInviteId = success.invite.id;
+        done();
+      }, function(err) {
+        err.should.equal(null);
+      });
+    });
+
+    it('cancel invite', function(done) {
+      wallets.cancelInvite({
+        walletInviteId: walletInviteId
+      })
+      .done(function(success) {
+        success.should.have.property('state');
+        success.state.should.equal('canceled');
+        success.should.have.property('changed');
+        success.changed.should.equal(true);
+        done();
+      }, function(err) {
+        err.should.equal(null);
+      });
+    });
+  });
+
   var walletShareIdWithViewPermissions, walletShareIdWithSpendPermissions, cancelledWalletShareId;
   describe('Share wallet', function() {
     // clean up any outstanding shares before proceeding

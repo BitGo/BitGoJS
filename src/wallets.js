@@ -84,6 +84,34 @@ Wallets.prototype.getWallet = function(params, callback) {
 };
 
 //
+// listInvites
+// List the invites on a user
+//
+Wallets.prototype.listInvites = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  var self = this;
+  return this.bitgo.get(this.bitgo.url('/walletinvite'))
+  .result()
+  .nodeify(callback);
+};
+
+//
+// cancelInvite
+// cancel a wallet invite that a user initiated
+//
+Wallets.prototype.cancelInvite = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletInviteId'], [], callback);
+
+  var self = this;
+  return this.bitgo.del(this.bitgo.url('/walletinvite/' + params.walletInviteId))
+  .result()
+  .nodeify(callback);
+};
+
+//
 // listShares
 // List the user's wallet shares
 //
