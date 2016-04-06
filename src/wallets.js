@@ -40,6 +40,12 @@ Wallets.prototype.list = function(params, callback) {
     }
     args.push('limit=' + params.limit);
   }
+  if (params.getbalances) {
+    if (typeof(params.getbalances) != 'boolean') {
+      throw new Error('invalid getbalances argument, expecting boolean'); 
+    }
+    args.push('getbalances=' + params.getbalances);
+  }
   if (params.skip) {
     if (typeof(params.skip) != 'number') {
       throw new Error('invalid skip argument, expecting number');
