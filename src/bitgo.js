@@ -607,6 +607,162 @@ BitGo.prototype.refreshToken = function(params, callback) {
 };
 
 //
+// listAccessTokens
+// Get information on all of the BitGo access tokens on the user
+// Returns:
+// {
+//    id: <id of the token>
+//    label: <the user-provided label for this token>
+//    user: <id of the user on the token>
+//    enterprise <id of the enterprise this token is valid for>
+//    client: <the auth client that this token belongs to>
+//    scope: <list of allowed OAuth scope values>
+//    created: <date the token was created>
+//    expires: <date the token will expire>
+//    origin: <the origin for which this token is valid>
+//    isExtensible: <flag indicating if the token can be extended>
+//    extensionAddress: <address whose private key's signature is necessary for extensions>
+//    unlock: <info for actions that require an unlock before firing>
+// }
+//
+BitGo.prototype.listAccessTokens = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  return this.get(this.url('/user/accesstoken'))
+  .send()
+  .result('accessTokens')
+  .nodeify(callback);
+};
+
+//
+// addAccessToken
+// Add a BitGo API Access Token to the current user account
+// Params:
+// {
+//    otp: (required) <valid otp code>
+//    label: (required) <label for the token>
+//    duration: <length of time in seconds the token will be valid for>
+//    ipRestrict: <array of IP address strings to whitelist>
+//    txValueLimit: <number of outgoing satoshis allowed on this token>
+// }
+// Returns:
+// {
+//    id: <id of the token>
+//    token: <access token hex string to be used for BitGo API request verification>
+//    label: <user-provided label for this token>
+//    user: <id of the user on the token>
+//    enterprise <id of the enterprise this token is valid for>
+//    client: <the auth client that this token belongs to>
+//    scope: <list of allowed OAuth scope values>
+//    created: <date the token was created>
+//    expires: <date the token will expire>
+//    origin: <the origin for which this token is valid>
+//    isExtensible: <flag indicating if the token can be extended>
+//    extensionAddress: <address whose private key's signature is necessary for extensions>
+//    unlock: <info for actions that require an unlock before firing>
+// }
+//
+BitGo.prototype.addAccessToken = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['otp', 'label'], [], callback);
+
+  // check non-string params
+  if (params.duration) {
+    if (typeof(params.duration) !== 'number' || params.duration < 0) {
+      throw new Error('duration must be greater than 0');
+    }
+  }
+  if (params.ipRestrict) {
+    if (!_.isArray(params.ipRestrict)) {
+      throw new Error('ipRestrict must be an array');
+    }
+    _.forEach(params.ipRestrict, function(ipAddr) {
+      if (!_.isString(ipAddr)) {
+        throw new Error('ipRestrict must be an array of IP address strings');
+      }
+    });
+  }
+  if (params.txValueLimit) {
+    if (typeof(params.txValueLimit) !== 'number') {
+      throw new Error('txValueLimit must be a number');
+    }
+    if (params.txValueLimit < 0) {
+      throw new Error('txValueLimit must be a non-negative number')
+    }
+  }
+
+  return this.post(this.url('/user/accesstoken'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+//
+// removeAccessToken
+// Sets the expire time of an access token matching either the id or label to the current date, effectively deleting it
+// Params:
+// {
+//    id: <id of the access token to be deleted>
+//    label: <label of the access token to be deleted>
+// }
+// Returns:
+// {
+//    id: <id of the token>
+//    label: <user-provided label for this token>
+//    user: <id of the user on the token>
+//    enterprise <id of the enterprise this token is valid for>
+//    client: <the auth client that this token belongs to>
+//    scope: <list of allowed OAuth scope values>
+//    created: <date the token was created>
+//    expires: <date the token will expire>
+//    origin: <the origin for which this token is valid>
+//    isExtensible: <flag indicating if the token can be extended>
+//    extensionAddress: <address whose private key's signature is necessary for extensions>
+//    unlock: <info for actions that require an unlock before firing>
+// }
+//
+BitGo.prototype.removeAccessToken = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], ['id', 'label'], callback);
+  var exactlyOne = !!params.id ^ !!params.label;
+  if (!exactlyOne) {
+    throw new Error('must provide exactly one of id or label')
+  }
+
+  var self = this;
+
+  return Q().then(function() {
+    if (params.id) {
+      return params.id;
+    }
+
+    // we have to get the id of the token by using the label before we can delete it
+    return self.listAccessTokens()
+    .then(function(tokens) {
+      if (!tokens) {
+        throw new Error('token with this label does not exist');
+      }
+
+      var matchingTokens = _.filter(tokens, { label: params.label });
+      if (matchingTokens.length > 1) {
+        throw new Error('ambiguous call: multiple tokens matching this label');
+      }
+      if (matchingTokens.length === 0) {
+        throw new Error('token with this label does not exist');
+      }
+      return matchingTokens[0].id;
+    });
+  })
+  .then(function(tokenId) {
+    return self.del(self.url('/user/accesstoken/' + tokenId))
+    .send()
+    .result();
+  })
+  .nodeify(callback);
+};
+
+//
 // logout
 // Logout of BitGo
 //

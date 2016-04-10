@@ -15,7 +15,7 @@ Util.bnToByteArrayUnsigned = function(bn) {
     // Empty array, nothing to do
     return ba;
   }
-}
+};
 
 Util.p2shMultisigOutputScript = function(m, pubKeys) {
   var redeemScript = Scripts.multisigOutput(2, pubKeys);
