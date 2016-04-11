@@ -509,7 +509,7 @@ exports.createTransaction = function(params) {
     // only need to return the unspents that were used and just the chainPath, redeemScript, and instant flag
     var pickedUnspents = _.map(unspents, function (unspent) { return _.pick(unspent, ['chainPath', 'redeemScript', 'instant']); });
     var prunedUnspents = _.slice(pickedUnspents, 0, transaction.ins.length - feeSingleKeyUnspentsUsed.length);
-    _.every(feeSingleKeyUnspentsUsed, function(feeUnspent) {
+    _.each(feeSingleKeyUnspentsUsed, function(feeUnspent) {
       prunedUnspents.push({ redeemScript: false, chainPath: false }); // mark as false to signify a non-multisig address
     });
     var result = {
