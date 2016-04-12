@@ -417,10 +417,6 @@ exports.createTransaction = function(params) {
       if (changeAmount < 0) {
         throw new Error('negative change amount');
       }
-      if (changeAmount < constants.minOutputSize) {
-        // Give it to the miners
-        return [];
-      }
 
       var result = [];
       // if we paid fees from a single key wallet, return the fee change first
@@ -430,6 +426,11 @@ exports.createTransaction = function(params) {
           result.push({ address: feeSingleKeySourceAddress, amount: feeSingleKeyWalletChangeAmount });
           changeAmount = changeAmount - feeSingleKeyWalletChangeAmount;
         }
+      }
+
+      if (changeAmount < constants.minOutputSize) {
+        // Give it to the miners
+        return result;
       }
 
       if (params.wallet.type() === 'safe') {
