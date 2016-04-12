@@ -744,7 +744,7 @@ Wallet.prototype.signTransaction = function(params, callback) {
 //
 Wallet.prototype.sendTransaction = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['tx'], ['message'], callback);
+  common.validateParams(params, ['tx'], ['message', 'otp'], callback);
 
   var self = this;
   return this.bitgo.post(this.bitgo.url('/tx/send'))
@@ -753,6 +753,10 @@ Wallet.prototype.sendTransaction = function(params, callback) {
   .then(function(body) {
     if (body.pendingApproval) {
       return _.extend(body, { status: 'pendingApproval' });
+    }
+    
+    if (body.otp) {
+      return _.extend(body, { status: 'otp' });
     }
 
     return {
@@ -913,7 +917,7 @@ Wallet.prototype.sendCoins = function(params, callback) {
 //
 Wallet.prototype.sendMany = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['message'], callback);
+  common.validateParams(params, [], ['message', 'otp'], callback);
   var self = this;
 
   if (typeof(params.recipients) != 'object') {
@@ -948,7 +952,8 @@ Wallet.prototype.sendMany = function(params, callback) {
       tx: transaction.tx,
       message: params.message,
       sequenceId: params.sequenceId,
-      instant: params.instant
+      instant: params.instant,
+      otp: params.otp
     });
   })
   .then(function(result) {
