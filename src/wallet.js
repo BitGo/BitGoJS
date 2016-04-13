@@ -852,16 +852,11 @@ Wallet.prototype.createInvite = function(params, callback) {
   var self = this;
   var options = {
     toEmail: params.email,
-    permissions: params.permissions,
-    walletLabel: self.wallet.label
+    permissions: params.permissions
   };
 
   if (params.message) {
     options.message = params.message;
-  }
-
-  if (self.wallet.enterprise) {
-    options.enterprise = self.wallet.enterprise;
   }
 
   return this.bitgo.post(this.url('/invite'))
@@ -871,7 +866,7 @@ Wallet.prototype.createInvite = function(params, callback) {
 };
 
 //
-// confirmInvite
+// confirmInviteAndShareWallet
 // confirm my invite on this wallet to a recipient who has
 // subsequently signed up by creating the actual wallet share
 // Parameters:
@@ -879,7 +874,7 @@ Wallet.prototype.createInvite = function(params, callback) {
 //   walletPassphrase - required if the wallet share success is expected
 // Returns:
 //
-Wallet.prototype.confirmInvite = function(params, callback) {
+Wallet.prototype.confirmInviteAndShareWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletInviteId'], ['walletPassphrase'], callback);
 
@@ -902,6 +897,9 @@ Wallet.prototype.confirmInvite = function(params, callback) {
     };
 
     return self.shareWallet(options);
+  })
+  .then(function() {
+    return this.bitgo.put(this.bitgo.url('/walletinvite/' + params.walletInviteId));
   })
   .nodeify(callback);
 };

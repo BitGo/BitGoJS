@@ -78,7 +78,12 @@ describe('Wallet', function() {
       wallets.listInvites({})
       .done(function(success) {
         success.should.have.property('outgoing');
-        done();
+        Promise.all(success.outgoing.map(function(out) {
+          return wallets.cancelInvite({ walletInviteId: out.id });
+        }))
+        .then(function() {
+          done();
+        });
       }, function(err) {
         err.should.equal(null);
       });
@@ -129,6 +134,20 @@ describe('Wallet', function() {
         success.state.should.equal('canceled');
         success.should.have.property('changed');
         success.changed.should.equal(true);
+        done();
+      }, function(err) {
+        err.should.equal(null);
+      });
+    });
+
+    it('can invite non bitgo user again', function (done) {
+      wallet1.createInvite({
+        email: 'notfoundqery@bitgo.com',
+        permissions: 'admin'
+      })
+      .done(function(success) {
+        success.should.have.property('invite');
+        walletInviteId = success.invite.id;
         done();
       }, function(err) {
         err.should.equal(null);
