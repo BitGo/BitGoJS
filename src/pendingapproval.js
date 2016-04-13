@@ -103,6 +103,15 @@ PendingApproval.prototype.info = function() {
 };
 
 //
+// approvalsRequired
+// get the number of approvals that are required for this pending approval to be approved.
+// Defaults to 1 if approvalsRequired doesn't exist on the object
+//
+PendingApproval.prototype.approvalsRequired = function() {
+  return this.pendingApproval.approvalsRequired || 1;
+};
+
+//
 // url
 // Gets the url for this pending approval
 //
@@ -221,7 +230,7 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
       throw new Error('invalid type for useOriginalFeeRate');
     }
     if (params.fee || params.feeRate || params.feeTxConfirmTarget) {
-      throw new Error('cannot specify a fee/feerate/feeTxConfirmTarget as well as useSameFeeRate');
+      throw new Error('cannot specify a fee/feerate/feeTxConfirmTarget as well as useOriginalFee');
     }
   }
 

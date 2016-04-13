@@ -19,6 +19,10 @@ if (process.env.BITGOJS_TEST_PASSWORD) {
 BitGo.TEST_SHARED_KEY_USER = 'shared_key_test@bitgo.com';
 BitGo.TEST_SHARED_KEY_PASSWORD = BitGo.TEST_PASSWORD;
 
+// used for testing multiple approvers
+BitGo.TEST_THIRD_USER = 'third_user_test@bitgo.com';
+BitGo.TEST_THIRD_PASSWORD = BitGo.TEST_PASSWORD;
+
 BitGo.TEST_CLIENTID = 'test';
 BitGo.TEST_CLIENTSECRET = 'testclientsecret';
 
@@ -36,6 +40,7 @@ BitGo.prototype.initializeTestVars = function() {
   if (this.getEnv() == 'dev') {
     BitGo.TEST_USERID = '54d3e3a4b08fa6dc0a0002c07f8a9f86';
     BitGo.TEST_SHARED_KEY_USERID = '54d418de4ea11d050b0006186d08ea5c';
+    BitGo.TEST_THIRD_USERID = '57056ad593eae8ca0c51e3cee62022cb';
     BitGo.TEST_USER_ECDH_XPUB = 'xpub661MyMwAqRbcF31yYvTH5DbmabEMXVvx1o1p73sZmvEDHM8bhUiZzNQA4gfyDtKarpGz7NPH6Wub8YCqXnUbP8ZMA3Ad8LfwHsBWhWEeJqu';
 
     BitGo.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
@@ -51,6 +56,7 @@ BitGo.prototype.initializeTestVars = function() {
   } else {
     BitGo.TEST_USERID = '543c11ed356d00cb7600000b98794503';
     BitGo.TEST_SHARED_KEY_USERID = '549d0ee835aec81206004c082757570f';
+    BitGo.TEST_THIRD_USERID = '57049b9a194a115a06da21fb9731fb71';
     BitGo.TEST_USER_ECDH_XPUB = 'xpub661MyMwAqRbcGn8KmC8qy9cNcLcmLo8aGtcHgiMmXw7R5drDHReavre767FausTZtZTw8vfych3J9jWw67eX8314ARTb3FczLdsPnqkQjyT';
 
     BitGo.TEST_WALLET1_PASSCODE = 'test wallet #1 security';
@@ -60,6 +66,10 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.TEST_WALLET2_PASSCODE = 'test wallet #2 security';
     BitGo.TEST_WALLET2_ADDRESS = '2MvpZhq6zUu3UARdJKZH7TTfqHJ3Ec1YAjv';
     BitGo.TEST_WALLET3_PASSCODE = 'test wallet #3 security';
+    
+    // shared amongst 3 users (TEST_USER, TEST_SHARED_KEY_USER, and TEST_THIRD_USER)
+    BitGo.TEST_WALLETMULTAPPROVERS_ADDRESS = '2NF7pK1pDEUXrWmqXxCT4fjPtQrsK6XNvUy';
+    BitGo.TEST_WALLETMULTAPPROVERS_PASSCODE = BitGo.TEST_PASSWORD;
 
     // TEST_WALLET_3 is a KRS wallet
     BitGo.TEST_WALLET3_ADDRESS = '2MyKoaanySBPCA2Br7dGvaZEgEGp7YRZvif';

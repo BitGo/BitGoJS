@@ -9,6 +9,7 @@ var should = require('should');
 
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
+var TestUtil = require('./testutil');
 
 var Address = require('bitcoinjs-lib/src/address');
 var Transaction = require('bitcoinjs-lib/src/transaction');
@@ -20,6 +21,7 @@ var Q = require('q');
 describe('PendingApproval', function() {
   var bitgo;
   var bitgoSharedKeyUser;
+  var bitgoThirdUser;
   var sharedWallet;
 
   /**
@@ -94,23 +96,25 @@ describe('PendingApproval', function() {
     bitgo.initializeTestVars();
     bitgoSharedKeyUser = new TestBitGo();
     bitgoSharedKeyUser.initializeTestVars();
+    bitgoThirdUser = new TestBitGo();
+    bitgoThirdUser.initializeTestVars();
 
     return bitgo.authenticateTestUser(bitgo.testUserOTP())
     .then(function() {
-      return bitgoSharedKeyUser.authenticate({ username: TestBitGo.TEST_SHARED_KEY_USER, password: TestBitGo.TEST_SHARED_KEY_PASSWORD, otp: bitgo.testUserOTP() })
+      return bitgoSharedKeyUser.authenticate({ username: TestBitGo.TEST_SHARED_KEY_USER, password: TestBitGo.TEST_SHARED_KEY_PASSWORD, otp: bitgo.testUserOTP() });
     })
     .then(function() {
-      return bitgo.unlock({ otp: bitgo.testUserOTP() })
+      return bitgo.unlock({ otp: bitgo.testUserOTP() });
     })
     .then(function() {
-      return bitgoSharedKeyUser.unlock({ otp: bitgo.testUserOTP() })
+      return bitgoSharedKeyUser.unlock({ otp: bitgo.testUserOTP() });
     })
     .then(function() {
-      return bitgo.wallets().get({id: TestBitGo.TEST_SHARED_WALLET_ADDRESS})
+      return bitgo.wallets().get({id: TestBitGo.TEST_SHARED_WALLET_ADDRESS});
     })
     .then(function(result) {
       sharedWallet = result;
-    });
+    })
   });
 
   describe('Create and Get', function() {
@@ -293,6 +297,101 @@ describe('PendingApproval', function() {
       })
       .then(function(result) {
         result.state.should.eql('rejected');
+      });
+    });
+  });
+
+  describe('Create, Get, Approve and Reject with Multiple Approvers', function() {
+    // setup third user
+    var multipleApproversWallet;
+    var pendingApproval;
+    before(function() {
+      return bitgoThirdUser.authenticate({
+        username: TestBitGo.TEST_THIRD_USER,
+        password: TestBitGo.TEST_THIRD_PASSWORD,
+        otp: bitgo.testUserOTP()
+      })
+      .then(function() {
+        return bitgoThirdUser.unlock({ otp: bitgoThirdUser.testUserOTP() });
+      })
+      .then(function () {
+        return bitgoThirdUser.wallets().get({id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS});
+      })
+      .then(function (result) {
+        multipleApproversWallet = result;
+
+        if (multipleApproversWallet.approvalsRequired() === 2) {
+          // we don't need to bother setting the number of approvals required
+          return;
+        }
+
+        return multipleApproversWallet.updateApprovalsRequired({ approvalsRequired: 2 })
+        .then(function (result) {
+          return bitgoSharedKeyUser.pendingApprovals().get({id: result.id});
+        })
+        .then(function (result) {
+          pendingApproval = result;
+          pendingApproval.approvalsRequired().should.equal(1);
+          return result.approve();
+        })
+        .then(function (result) {
+          result.state.should.eql('approved');
+
+          // update wallet variable with new approvalsRequired
+          return bitgoThirdUser.wallets().get({id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS});
+        })
+        .then(function (result) {
+          multipleApproversWallet = result;
+        });
+      });
+    });
+
+    after(function() {
+      pendingApproval.reject();
+    });
+
+    it('should fail with too low approvalsRequired', function() {
+      assert.throws(function() { multipleApproversWallet.updateApprovalsRequired({ approvalsRequired: 0 }); }, 'invalid approvalsRequired');
+    });
+
+    it('should fail with too high approvalsRequired', function() {
+      var promise = multipleApproversWallet.updateApprovalsRequired({ approvalsRequired: 3 });
+      return TestUtil.throws(promise, 'approvalsRequired must be less than the number of admins on the wallet');
+    });
+
+    it('should be a no-op with same approvalsRequired', function() {
+      return multipleApproversWallet.updateApprovalsRequired({ approvalsRequired: 2 })
+      .then(function(wallet) {
+        wallet.should.equal(multipleApproversWallet.wallet);
+      });
+    });
+
+    it('should set approvals required to 1 after 2 approvals', function() {
+      return multipleApproversWallet.updateApprovalsRequired({ approvalsRequired: 1 })
+      .then(function(result) {
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: result.id });
+      })
+      .then(function(result) {
+        pendingApproval = result;
+        pendingApproval.approvalsRequired().should.equal(2);
+        return result.approve();
+      })
+      .then(function(result) {
+        result.state.should.eql('pending');
+
+        return bitgo.pendingApprovals().get({ id: result.id });
+      })
+      .then(function(result) {
+        return result.approve();
+      })
+      .then(function(result) {
+        result.state.should.eql('approved');
+
+        return bitgoThirdUser.wallets().get({id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS});
+      })
+      .then(function(wallet) {
+        multipleApproversWallet = wallet;
+        multipleApproversWallet.approvalsRequired().should.equal(1);
       });
     });
   });

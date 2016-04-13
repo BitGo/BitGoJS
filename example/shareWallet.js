@@ -84,6 +84,6 @@ senderSession.authenticate({ username: senderUser, password: senderPassword, otp
   console.dir(result);
 })
 .catch(function(err) {
-  console.log('errr');
+  console.log('err');
   console.dir(err);
 });

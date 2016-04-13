@@ -337,6 +337,7 @@ describe('Wallets', function() {
         assert.equal(wallet.confirmedBalance(), 0);
         assert.equal(wallet.unconfirmedReceives(), 0);
         assert.equal(wallet.unconfirmedSends(), 0);
+        assert.equal(wallet.approvalsRequired(), 1);
         assert.equal(wallet.keychains.length, 3);
         assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[0] }), true);
         assert.equal(bitgo.keychains().isValid({ key: wallet.keychains[1] }), true);

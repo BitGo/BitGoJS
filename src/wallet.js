@@ -137,6 +137,14 @@ Wallet.prototype.pendingApprovals = function() {
 };
 
 //
+// approvalsRequired
+// returns the number of approvals required to approve pending approvals involving this wallet
+//
+Wallet.prototype.approvalsRequired = function() {
+  return this.wallet.approvalsRequired || 1;
+};
+
+//
 // get
 // Refetches this wallet and returns it
 //
@@ -152,6 +160,38 @@ Wallet.prototype.get = function(params, callback) {
     self.wallet = res;
     return self;
   })
+  .nodeify(callback);
+};
+
+//
+// updateApprovalsRequired
+// Updates the number of approvals required on a pending approval involving this wallet.
+// The approvals required is by default 1, but this function allows you to update the
+// number such that 1 <= approvalsRequired <= walletAdmins.length - 1
+//
+Wallet.prototype.updateApprovalsRequired = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+  if (params.approvalsRequired === undefined ||
+    typeof(params.approvalsRequired) !== 'number' ||
+    params.approvalsRequired < 1
+  ) {
+    throw new Error('invalid approvalsRequired: must be a nonzero positive number');
+  }
+
+  var self = this;
+  var currentApprovalsRequired = this.approvalsRequired();
+  if (currentApprovalsRequired === params.approvalsRequired) {
+    // no-op, just return the current wallet
+    return Q().then(function() {
+      return self.wallet;
+    })
+    .nodeify(callback);
+  }
+
+  return this.bitgo.put(this.url())
+  .send(params)
+  .result()
   .nodeify(callback);
 };
 
