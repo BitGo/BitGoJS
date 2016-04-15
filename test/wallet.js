@@ -78,7 +78,7 @@ describe('Wallet', function() {
       wallets.listInvites({})
       .done(function(success) {
         success.should.have.property('outgoing');
-        Promise.all(success.outgoing.map(function(out) {
+        Q.all(success.outgoing.map(function(out) {
           return wallets.cancelInvite({ walletInviteId: out.id });
         }))
         .then(function() {
