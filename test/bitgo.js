@@ -6,9 +6,11 @@
 
 var assert = require('assert');
 var should = require('should');
+var _ = require('lodash');
 
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
+var TestUtil = require('./testutil');
 var ECKey = require('bitcoinjs-lib/src/eckey');
 
 describe('BitGo', function() {
@@ -365,6 +367,13 @@ describe('BitGo', function() {
         extensibleTokenBitGo = new TestBitGo();
         extensibleTokenBitGo.initializeTestVars();
         done();
+      });
+      
+      after(function() {
+        // delete all extensible tokens, because if they're left around then the test/accessToken.js tests will
+        // fail because there are more than 10 long lived tokens, and then we can't add any more long lived tokens
+        var filterFunc = function(tok) { return tok.isExtensible; };
+        return TestUtil.deleteTestTokens(extensibleTokenBitGo, filterFunc);
       });
 
       it('logging in with extensible token', function(done) {

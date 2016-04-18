@@ -56,7 +56,7 @@ TestUtil.promiseWhile = function(condition, body) {
 // helper function used to cleanup more than one token
 // This is useful in the event that some of your tests fail, and there ends up being more than 10 access tokens
 // at which point the server won't allow you to make any more longlived tokens
-TestUtil.deleteTestTokens = function(bitgoObj) {
+TestUtil.deleteTestTokens = function(bitgoObj, filterFunc) {
   var tokenList;
   var index = 0;
 
@@ -80,8 +80,8 @@ TestUtil.deleteTestTokens = function(bitgoObj) {
 
   return bitgoObj.listAccessTokens()
   .then(function(tokens) {
-    // clear up test tokens and long-lived extensible tokens created in other tests
-    tokenList = _.filter(tokens, function(tok) { return (tok.label && tok.label.indexOf('test token') !== -1) });
+    // clear up access tokens which return true from the filter function
+    tokenList = _.filter(tokens, filterFunc);
     
     return TestUtil.promiseWhile(condition, body);
   });

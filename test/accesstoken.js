@@ -25,7 +25,8 @@ describe('Access Token', function() {
     .then(function() {
       loginAccessTokenHex = bitgo._token;
 
-      return TestUtil.deleteTestTokens(bitgo);
+      var filterFunc = function(tok) { return tok.label; };
+      return TestUtil.deleteTestTokens(bitgo, filterFunc);
     })
     .then(function() {
       return bitgo.listAccessTokens();
