@@ -197,7 +197,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
   var self = this;
   var encryptedXprv = params.overrideEncryptedXprv;
 
-  return this.getShare({walletShareId: params.walletShareId})
+  return this.getShare({ walletShareId: params.walletShareId })
   .then(function(walletShare) {
     // Return right away if there is no keychain to decrypt, or if explicit encryptedXprv was provided
     if (!walletShare.keychain || !walletShare.keychain.encryptedXprv || encryptedXprv) {

@@ -1,18 +1,9 @@
-BitGoJS Examples
+SDK Examples
 =======
 
-# Wallet Recovery Tool
+Please refer to https://www.bitgo.com/api/#examples for some context on these examples.
 
-The wallet recovery tool allows you to completely recover a BitGo BIP32 multi-sig wallet
-using only the user's 2 keys, without making any communication with BitGo. In the event
-BitGo ceases to operate, or becomes temporarily unavailable, the tool makes it possible
-to exert full control over the bitcoin in your wallet.
+# Wallet Recovery Tool Repository
 
-To use the tool, you will need the KeyCard from your BitGo wallet, along with your
-wallet passcode. If you provided
-your own backup public key at wallet creation time, you will also need the private half
-of the backup key. It may be necessary to scan the QR codes from the KeyCard 
-with a mobile phone and email the resulting text to yourself.
-
-Run the tool using 'node recoverWallet.js'
-
+We have placed the wallet recovery tool in the repository at https://github.com/BitGo/bitgo-recovery-tool
+Alternatively, you may use our GUI at http://bitgo.github.io/bitgo-recovery-tool/ to recover funds.
