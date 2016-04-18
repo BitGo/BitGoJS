@@ -66,6 +66,9 @@ superagent.Request.prototype.result = function(optionalField) {
   var errFromResponse = function(res) {
     var err = new Error(res.body.error ? res.body.error : res.status.toString());
     err.status = res.status;
+    if (res.body) {
+      err.result = res.body;
+    }
     if (_.has(res.headers, 'x-auth-required') && (res.headers['x-auth-required'] === 'true')) {
       err.invalidToken = true;
     }
