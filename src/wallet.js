@@ -1301,8 +1301,12 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     throw new Error('Target needs to be a positive integer');
   }
 
+  if (params.minSize && typeof(params.minSize) !== 'number') {
+    throw new Error('minSize should be a number');
+  }
+
   // maximum number of inputs per transaction for consolidation
-  var MAX_INPUT_COUNT = 85;
+  var MAX_INPUT_COUNT = 200;
   var maxInputCount = params.maxInputCountPerConsolidation;
   if (maxInputCount === undefined) { // null or unidentified, because equality to zero returns true in if(! clause
     maxInputCount = MAX_INPUT_COUNT;
@@ -1345,7 +1349,8 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      In the next version of the unspents version SDK, we will know the total number of unspents without having to fetch
      them, and therefore will be able to simplify this method.
      */
-    return self.unspents({ limit: target + maxInputCount, minConfirms: params.minConfirms })
+
+    return self.unspents({ limit: target + maxInputCount, minConfirms: params.minConfirms, minSize: params.minSize })
     .then(function(allUnspents) {
       // this consolidation is essentially just a waste of money
       if (allUnspents.length <= target) {
