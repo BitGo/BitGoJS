@@ -15,7 +15,9 @@ Please join us on our [Slack channel](https://slack.bitgo.com) if you have quest
 # Installation
 
 `git clone https://github.com/BitGo/BitGoJS`
+
 `cd BitGoJS`
+
 `npm install`
 
 # Full Documentation
