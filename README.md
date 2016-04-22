@@ -14,7 +14,7 @@ Please join us on our [Slack channel](https://slack.bitgo.com) if you have quest
 
 # Installation
 
-`npm install`
+`npm install bitgo`
 
 # Full Documentation
 
