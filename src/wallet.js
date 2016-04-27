@@ -1301,8 +1301,8 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     throw new Error('Target needs to be a positive integer');
   }
 
-  if (params.minSize && typeof(params.minSize) !== 'number') {
-    throw new Error('minSize should be a number');
+  if (params.maxSize && typeof(params.maxSize) !== 'number') {
+    throw new Error('maxSize should be a number');
   }
 
   // maximum number of inputs per transaction for consolidation
@@ -1350,16 +1350,24 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      them, and therefore will be able to simplify this method.
      */
 
-    return self.unspents({ limit: target + maxInputCount, minConfirms: params.minConfirms, minSize: params.minSize })
+    return self.unspents({ limit: target + maxInputCount, minConfirms: params.minConfirms })
     .then(function(allUnspents) {
       // this consolidation is essentially just a waste of money
       if (allUnspents.length <= target) {
         throw new Error('Fewer unspents than consolidation target. Use fanOutUnspents instead.');
       }
 
+      var allUnspentsCount = allUnspents.length;
+      if (params.maxSize) {
+        allUnspents = allUnspents.filter(function(unspent) {
+          return unspent.value <= params.maxSize;
+        });
+      }
+
       // how many of the unspents do we want to consolidate?
       // the +1 is because the consolidated block becomes a new unspent later
-      var targetInputCount = allUnspents.length - target + 1;
+      var targetInputCount = allUnspentsCount - target + 1;
+      targetInputCount = Math.min(targetInputCount, allUnspents.length);
 
       // if the targetInputCount requires more inputs than we allow per batch, we reduce the number
       inputCount = Math.min(targetInputCount, maxInputCount);
@@ -1381,6 +1389,10 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       txParams.recipients = {};
       txParams.recipients[newAddress.address] = grossAmount;
       txParams.noSplitChange = true;
+
+      if (txParams.unspents.length <= 1) {
+        throw new Error('Done');
+      }
 
       // let's attempt to create this transaction. We expect it to fail because no fee is set.
       return self.sendMany(txParams)
@@ -1429,6 +1441,12 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   };
 
   return runNextConsolidation(this, target)
+  .catch(function(err) {
+    if (err.message === 'Done') {
+      return;
+    }
+    throw err;
+  })
   .nodeify(callback);
 };
 
