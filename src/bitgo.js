@@ -5,8 +5,7 @@
 //
 
 var superagent = require('superagent');
-var bitcoin = require('bitcoinjs-lib');
-var Address = bitcoin.Address;
+var bitcoin = require('./bitcoin');
 var Blockchain = require('./blockchain');
 var Keychains = require('./keychains');
 var Wallet = require('./wallet');
@@ -15,9 +14,6 @@ var Markets = require('./markets');
 var PendingApprovals = require('./pendingapprovals');
 var sjcl = require('./sjcl.min');
 var common = require('./common');
-var ECKey = bitcoin.ECKey;
-var ECPubkey = bitcoin.ECPubKey;
-var networks = bitcoin.networks;
 var Util = require('./util');
 var Q = require('q');
 var pjson = require('../package.json');
@@ -266,7 +262,7 @@ BitGo.prototype.fromJSON = function(json) {
   this._user = json.user;
   this._token = json.token;
   if (json.extensionKey) {
-    this._extensionKey = ECKey.fromWIF(json.extensionKey);
+    this._extensionKey = bitcoin.ECPair.fromWIF(json.extensionKey, bitcoin.getNetwork());
   }
 };
 
@@ -281,13 +277,13 @@ BitGo.prototype.verifyAddress = function(params) {
   var address;
 
   try {
-    address = Address.fromBase58Check(params.address);
+    address = bitcoin.address.fromBase58Check(params.address);
   } catch(e) {
     return false;
   }
 
-  var network = common.getNetwork();
-  return address.version === networks[network].pubKeyHash || address.version === networks[network].scriptHash;
+  var network = bitcoin.getNetwork();
+  return address.version === network.pubKeyHash || address.version === network.scriptHash;
 };
 
 BitGo.prototype.verifyPassword = function(params, callback) {
@@ -342,7 +338,7 @@ BitGo.prototype.getECDHSecret = function(params) {
     throw new Error('eckey object required');
   }
 
-  var otherKeyPub = ECPubkey.fromHex(params.otherPubKeyHex);
+  var otherKeyPub = bitcoin.ECPair.fromPublicKeyBuffer(new Buffer(params.otherPubKeyHex, 'hex'));
   var secretPoint = otherKeyPub.Q.multiply(params.eckey.d);
   var secret = Util.bnToByteArrayUnsigned(secretPoint.affineX);
   return new Buffer(secret).toString('hex');
@@ -456,9 +452,9 @@ BitGo.prototype.authenticate = function(params, callback) {
   }
 
   if (params.extensible) {
-    this._extensionKey = ECKey.makeRandom();
+    this._extensionKey = bitcoin.makeRandomKey();
     authParams.extensible = true;
-    authParams.extensionAddress = this._extensionKey.pub.getAddress(networks[common.getNetwork()]).toString();
+    authParams.extensionAddress = this._extensionKey.getAddress();
   }
 
   var self = this;
@@ -870,8 +866,7 @@ BitGo.prototype.extendToken = function(params, callback) {
   var timestamp = Date.now();
   var duration = params.duration;
   var message = timestamp + '|' + this._token + '|' + duration;
-  var network = common.getNetwork();
-  var signature = bitcoin.Message.sign(this._extensionKey, message, networks[network]).toString('hex');
+  var signature = bitcoin.message.sign(this._extensionKey, message, bitcoin.networks.bitcoin).toString('hex');
 
   return this.post(this.url('/user/extendtoken'))
   .send(params)
@@ -1028,8 +1023,7 @@ BitGo.prototype.instantGuarantee = function(params, callback) {
       throw new Error('no signature found in guarantee response body');
     }
     var signingAddress = common.Environments[self.env].signingAddress;
-    var network = common.getNetwork();
-    if (!bitcoin.Message.verify(signingAddress, new Buffer(body.signature, 'hex'), body.guarantee, networks[network])) {
+    if (!bitcoin.message.verify(signingAddress, new Buffer(body.signature, 'hex'), body.guarantee, bitcoin.getNetwork())) {
       throw new Error('incorrect signature');
     }
     return body;

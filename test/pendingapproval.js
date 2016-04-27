@@ -11,10 +11,7 @@ var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 var TestUtil = require('./testutil');
 
-var Address = require('bitcoinjs-lib/src/address');
-var Transaction = require('bitcoinjs-lib/src/transaction');
-var networks = require('bitcoinjs-lib/src/networks');
-
+var bitcoin = BitGoJS.bitcoin;
 var _ = require('lodash');
 var Q = require('q');
 
@@ -250,12 +247,12 @@ describe('PendingApproval', function() {
 
         // Parse the completed tx hex and make sure it was built with proper outputs
         var completedTxHex = result.info.transactionRequest.validTransaction;
-        var transaction = Transaction.fromHex(completedTxHex);
+        var transaction = bitcoin.Transaction.fromHex(completedTxHex);
         if (!transaction || !transaction.outs) {
           throw new Error('transaction had no outputs or failed to parse successfully');
         }
         var outputAddresses = _.map(transaction.outs, function(out) {
-          return Address.fromOutputScript(out.script, networks['testnet']).toBase58Check();
+          return bitcoin.address.fromOutputScript(out.script, BitGoJS.getNetworkObj());
         });
 
         // Output addresses should contain the 2 destinations, but not the change address

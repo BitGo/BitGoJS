@@ -1,6 +1,5 @@
 var Util = module.exports;
-var Crypto = require('bitcoinjs-lib/src/crypto');
-var Scripts = require('bitcoinjs-lib/src/scripts');
+var bitcoin = require('bitcoinjs-lib');
 
 Util.bnToByteArrayUnsigned = function(bn) {
   var ba = bn.abs().toByteArray();
@@ -18,7 +17,7 @@ Util.bnToByteArrayUnsigned = function(bn) {
 };
 
 Util.p2shMultisigOutputScript = function(m, pubKeys) {
-  var redeemScript = Scripts.multisigOutput(2, pubKeys);
-  var hash = Crypto.ripemd160(Crypto.sha256(redeemScript.toBuffer()));
-  return Scripts.scriptHashOutput(hash);
+  var redeemScript = bitcoin.script.multisigOutput(2, pubKeys);
+  var hash = bitcoin.crypto.hash160(redeemScript);
+  return bitcoin.script.scriptHashOutput(hash);
 };

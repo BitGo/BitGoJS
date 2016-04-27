@@ -8,7 +8,7 @@ var bitgo = module.exports;
 bitgo.BitGo = require('./bitgo.js');
 
 // Expose bitcoin and sjcl
-bitgo.bitcoin = require('bitcoinjs-lib');
+bitgo.bitcoin = require('./bitcoin');
 bitgo.sjcl = require('./sjcl.min');
 bitgo.bs58 = require('bs58');
 
@@ -25,6 +25,10 @@ bitgo.setNetwork = function(network) {
  */
 bitgo.getNetwork = function() {
   return common.getNetwork();
+};
+
+bitgo.getNetworkObj = function() {
+  return bitgo.bitcoin.getNetwork();
 };
 
 bitgo.setNetwork('testnet');

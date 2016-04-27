@@ -5,10 +5,10 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var HDNode = require('./hdnode');
 var crypto = require('crypto');
 var common = require('./common');
 var Util = require('./util');
+var bitcoin = require('./bitcoin');
 
 //
 // Constructor
@@ -31,9 +31,10 @@ Keychains.prototype.isValid = function(params) {
 
   try {
     if (!params.key.path) {
-      HDNode.fromBase58(params.key);
+      bitcoin.HDNode.fromBase58(params.key);
     } else {
-      HDNode.fromBase58(params.key.xpub).deriveFromPath(params.key.path);
+      var hdnode = bitcoin.HDNode.fromBase58(params.key.xpub);
+      bitcoin.hdPath(hdnode).derive(params.key.path);
     }
     return true;
   } catch (e) {
@@ -62,7 +63,7 @@ Keychains.prototype.create = function(params) {
     seed = params.seed;
   }
 
-  var extendedKey = HDNode.fromSeedBuffer(seed);
+  var extendedKey = bitcoin.HDNode.fromSeedBuffer(seed);
   return {
     xpub: extendedKey.neutered().toBase58(),
     xprv: extendedKey.toBase58()

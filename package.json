@@ -18,7 +18,7 @@
     "coveralls": "~2.10.0",
     "envify": "^3.4.0",
     "istanbul": "0.3.13",
-    "karma": "^0.12.31",
+    "karma": "^0.13.22",
     "karma-chrome-launcher": "^0.1.7",
     "karma-mocha": "^0.1.10",
     "mocha": "2.2.4",
@@ -60,10 +60,12 @@
     "argparse": "^0.1.16",
     "assert": "0.4.9",
     "bigi": "1.4.0",
-    "bitcoinjs-lib": "1.5.7",
+    "bitcoinjs-lib": "2.1.4",
     "body-parser": "^1.10.2",
     "bs58": "2.0.1",
     "bs58check": "1.0.4",
+    "create-hmac": "^1.1.4",
+    "ecurve": "^1.0.2",
     "express": "^4.11.1",
     "http-proxy": "1.11.1",
     "lodash": "3.7.0",
@@ -74,5 +76,8 @@
     "superagent": "^1.4.0",
     "superagent-proxy": "^1.0.0",
     "underscore.string": "2.4.0"
+  },
+  "optionalDependencies": {
+    "secp256k1": "3.0.1"
   }
 }

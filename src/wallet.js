@@ -6,16 +6,13 @@
 //
 
 var TransactionBuilder = require('./transactionBuilder');
-var Address = require('bitcoinjs-lib/src/address');
-var HDNode = require('./hdnode');
+var bitcoin = require('./bitcoin');
 var Keychains = require('./keychains');
 var PendingApproval = require('./pendingapproval');
-var ECKey = require('bitcoinjs-lib/src/eckey');
 var Util = require('./util');
 
 var assert = require('assert');
 var common = require('./common');
-var networks = require('bitcoinjs-lib/src/networks');
 var Q = require('q');
 var _ = require('lodash');
 
@@ -245,14 +242,12 @@ Wallet.prototype.validateAddress = function(params) {
     }
 
     var pubKeys = self.keychains.map(function(k) {
-      var hdnode = HDNode.fromBase58(k.xpub);
-      hdnode = hdnode.deriveFromPath('m' + k.path + path);
-      return hdnode.pubKey;
+      var hdnode = bitcoin.HDNode.fromBase58(k.xpub);
+      return bitcoin.hdPath(hdnode).deriveKey('m' + k.path + path).getPublicKeyBuffer();
     });
     // TODO: use wallet 'm' value, when exposed
     var script = Util.p2shMultisigOutputScript(2, pubKeys);
-    var network = networks[common.getNetwork()];
-    return Address.fromOutputScript(script, network).toBase58Check();
+    return bitcoin.address.fromOutputScript(script, bitcoin.getNetwork());
   };
 
   var localAddress = calcAddress(params.path);
@@ -794,7 +789,7 @@ Wallet.prototype.sendTransaction = function(params, callback) {
     if (body.pendingApproval) {
       return _.extend(body, { status: 'pendingApproval' });
     }
-    
+
     if (body.otp) {
       return _.extend(body, { status: 'otp' });
     }
@@ -818,7 +813,7 @@ Wallet.prototype.sendTransaction = function(params, callback) {
 //   keychain - the keychain to be shared with the recipient
 //   permissions - the recipient's permissions if the share is accepted
 // Returns:
-//   
+//
 Wallet.prototype.createShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['user', 'permissions'], [], callback);
@@ -1105,7 +1100,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
   // Caller provided an xprv - validate and construct keychain object
   var xpub;
   try {
-    xpub = HDNode.fromBase58(params.xprv).neutered().toBase58();
+    xpub = bitcoin.HDNode.fromBase58(params.xprv).neutered().toBase58();
   } catch (e) {
     throw new Error('Unable to parse the xprv');
   }
@@ -1444,7 +1439,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
     throw new Error('Expected skipKeychain to be a boolean. ');
   }
   var needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
-  
+
   if (params.disableEmail !== undefined && typeof(params.disableEmail) != 'boolean') {
     throw new Error('Expected disableEmail to be a boolean.');
   }
@@ -1470,14 +1465,14 @@ Wallet.prototype.shareWallet = function(params, callback) {
             throw new Error('Unable to decrypt user keychain');
           }
 
-          var eckey = ECKey.makeRandom();
+          var eckey = bitcoin.makeRandomKey();
           var secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
           var newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
 
           sharedKeychain = {
             xpub: keychain.xpub,
             encryptedXprv: newEncryptedXprv,
-            fromPubKey: eckey.pub.toHex(),
+            fromPubKey: eckey.getPublicKeyBuffer().toString('hex'),
             toPubKey: sharing.pubkey,
             path: sharing.path
           };

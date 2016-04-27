@@ -5,11 +5,9 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var ECKey = require('bitcoinjs-lib/src/eckey');
+var bitcoin = require('./bitcoin');
 var Wallet = require('./wallet');
 var common = require('./common');
-var HDNode = require('./hdnode');
-var networks = require('bitcoinjs-lib/src/networks');
 var Util = require('./util');
 var Q = require('q');
 
@@ -42,7 +40,7 @@ Wallets.prototype.list = function(params, callback) {
   }
   if (params.getbalances) {
     if (typeof(params.getbalances) != 'boolean') {
-      throw new Error('invalid getbalances argument, expecting boolean'); 
+      throw new Error('invalid getbalances argument, expecting boolean');
     }
     args.push('getbalances=' + params.getbalances);
   }
@@ -217,11 +215,11 @@ Wallets.prototype.acceptShare = function(params, callback) {
 
       // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
       sharingKeychain.xprv = self.bitgo.decrypt({ password: params.userPassword, input: sharingKeychain.encryptedXprv });
-      var rootExtKey = HDNode.fromBase58(sharingKeychain.xprv);
+      var rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.xprv);
 
       // Derive key by path (which is used between these 2 users only)
-      var extKey = rootExtKey.deriveFromPath(walletShare.keychain.path);
-      var secret = self.bitgo.getECDHSecret({ eckey: extKey.privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
+      var privKey = bitcoin.hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
+      var secret = self.bitgo.getECDHSecret({ eckey: privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
 
       // Yes! We got the secret successfully here, now decrypt the shared wallet xprv
       var decryptedSharedWalletXprv = self.bitgo.decrypt({ password: secret, input: walletShare.keychain.encryptedXprv });
@@ -259,13 +257,11 @@ Wallets.prototype.acceptShare = function(params, callback) {
 Wallets.prototype.createKey = function(params) {
   params = params || {};
   common.validateParams(params);
-  var network = common.getNetwork();
-  network = networks[network];
 
-  var key = ECKey.makeRandom();
+  var key = bitcoin.makeRandomKey();
   return {
-    address: key.pub.getAddress(network),
-    key: key.toWIF(network)
+    address: key.getAddress(),
+    key: key.toWIF()
   };
 };
 
@@ -362,7 +358,7 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
     if (params.enterprise) {
       walletParams.enterprise = params.enterprise;
     }
-    
+
     if (params.disableTransactionNotifications) {
       walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
     }
@@ -413,9 +409,8 @@ Wallets.prototype.createForwardWallet = function(params, callback) {
   var addressFromPrivKey;
 
   try {
-    var key = new ECKey.fromWIF(params.privKey);
-    var network = networks[common.getNetwork()];
-    addressFromPrivKey = key.pub.getAddress(network).toBase58Check();
+    var key = bitcoin.ECPair.fromWIF(params.privKey, bitcoin.getNetwork());
+    addressFromPrivKey = key.getAddress();
   } catch (e) {
     throw new Error('expecting a valid privKey');
   }

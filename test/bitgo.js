@@ -11,7 +11,7 @@ var _ = require('lodash');
 var BitGoJS = require('../src/index');
 var TestBitGo = require('./lib/test_bitgo');
 var TestUtil = require('./testutil');
-var ECKey = require('bitcoinjs-lib/src/eckey');
+var bitcoin = BitGoJS.bitcoin;
 
 describe('BitGo', function() {
 
@@ -410,16 +410,13 @@ describe('BitGo', function() {
         });
       });
 
-      it('extending token after juggling session data', function(done) {
+      it('extending token after juggling session data', function() {
         var sessionData = extensibleTokenBitGo.toJSON();
         extensibleTokenBitGo.fromJSON(sessionData);
-        extensibleTokenBitGo.extendToken({ duration: 3600 * 24 * 10 }, function(err, response) {
-          if (err) {
-            throw err;
-          }
+        return extensibleTokenBitGo.extendToken({ duration: 3600 * 24 * 10 })
+        .then(function(response) {
           response.isExtensible.should.equal(true);
           response.extensionAddress.should.be.type('string');
-          done();
         });
       });
     });
@@ -568,10 +565,10 @@ describe('BitGo', function() {
 
     it('should calculate a new ECDH sharing secret correctly', function() {
       var bitgo = new TestBitGo();
-      var eckey1 = ECKey.makeRandom();
-      var eckey2 = ECKey.makeRandom();
-      var sharingKey1 = bitgo.getECDHSecret({eckey: eckey1, otherPubKeyHex: eckey2.pub.toHex()});
-      var sharingKey2 = bitgo.getECDHSecret({eckey: eckey2, otherPubKeyHex: eckey1.pub.toHex()});
+      var eckey1 = bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
+      var eckey2 = bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
+      var sharingKey1 = bitgo.getECDHSecret({eckey: eckey1, otherPubKeyHex: eckey2.getPublicKeyBuffer().toString('hex')});
+      var sharingKey2 = bitgo.getECDHSecret({eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex')});
       sharingKey1.should.equal(sharingKey2);
     });
 
