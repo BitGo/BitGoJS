@@ -69,6 +69,12 @@ var getArgs = function () {
     help: 'Allow running against production in non-SSL mode (at your own risk!)'
   });
 
+  parser.addArgument(
+  ['--disableproxy'], {
+    action: 'storeTrue',
+    help: 'disable the proxy, not routing any non-express routes'
+  });
+
   return parser.parseArgs();
 };
 

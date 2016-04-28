@@ -1,11 +1,12 @@
 if (process.browser) {
   // Bitgo Express tests not supported in browser
   return;
-};
+}
 
 var assert = require('assert');
 var should = require('should');
 var request = require("supertest-as-promised");
+var _ = require('lodash');
 
 var BitGoJS = require('../src/index');
 var expessApp = require('../src/expressApp');
@@ -36,6 +37,26 @@ describe('Bitgo Express', function() {
       .end(function(err, res) {
         if (err) { throw err; }
         res.should.have.status(401);
+        done();
+      });
+    });
+
+    it('error - proxied calls disabled', function(done) {
+      var app = expessApp(_.extend(
+        {},
+        {
+          debug: false,
+          env: 'test',
+          logfile: '/dev/null'
+        },
+        { disableproxy: true })
+      );
+      disabledProxyAgent = request.agent(app);
+      disabledProxyAgent.get('/api/v1/market/latest')
+      .send()
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(404);
         done();
       });
     });

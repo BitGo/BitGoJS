@@ -36,13 +36,6 @@ module.exports = function(args) {
   // Decorate the client routes
   require('./clientRoutes')(app, args);
 
-  // Mount the proxy middleware
-  var options = {};
-  if (common.Environments[args.env].network === 'testnet') {
-    // Need to do this to make supertest agent pass (set rejectUnauthorized to false)
-    options = { secure: false };
-  }
-
   if (args.customrooturi || args.custombitcoinnetwork || process.env.BITGO_CUSTOM_ROOT_URI || process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
     args.env = 'custom';
     if (args.customrooturi) {
@@ -53,20 +46,29 @@ module.exports = function(args) {
     }
   }
 
-  var proxy = httpProxy.createProxyServer(options);
+  if (!args.disableproxy) {
+    // Mount the proxy middleware
+    var options = {};
+    if (common.Environments[args.env].network === 'testnet') {
+      // Need to do this to make supertest agent pass (set rejectUnauthorized to false)
+      options = {secure: false};
+    }
 
-  proxy.on('proxyReq', function (proxyReq, req, res, options) {
-    // Need to rewrite the host, otherwise cross-site protection kicks in
-    proxyReq.setHeader('host', url.parse(common.Environments[args.env].uri).hostname);
+    var proxy = httpProxy.createProxyServer(options);
 
-    var userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + " " + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
-    proxyReq.setHeader('User-Agent', userAgent);
-  });
+    proxy.on('proxyReq', function (proxyReq, req, res, options) {
+      // Need to rewrite the host, otherwise cross-site protection kicks in
+      proxyReq.setHeader('host', url.parse(common.Environments[args.env].uri).hostname);
 
-  app.use(function (req, res) {
-    req.isProxy = true;
-    proxy.web(req, res, { target: common.Environments[args.env].uri, changeOrigin: true });
-  });
+      var userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + " " + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
+      proxyReq.setHeader('User-Agent', userAgent);
+    });
+
+    app.use(function (req, res) {
+      req.isProxy = true;
+      proxy.web(req, res, {target: common.Environments[args.env].uri, changeOrigin: true});
+    });
+  }
 
   return app;
 };
