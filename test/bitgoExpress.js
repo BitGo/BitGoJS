@@ -154,6 +154,39 @@ describe('Bitgo Express', function() {
       });
     });
 
+    it('derive BIP32 private keychain', function() {
+      return agent.post('/api/v1/keychain/derive')
+      .send({
+        path: 'm/1/2/3/4',
+        xprv: 'xprv9s21ZrQH143K3o5A54b28GYVnDAa7gdPSxjWGz9ARzbxqYax8gbds5yGiU4D56GgSRwp7t9T8p54xh6MN19h8n6HJyR5FCkQopoUxC34EV3'
+      })
+      .expect('Content-Type', /json/)
+      .then(function(res) {
+        res.should.have.status(200);
+        res.body.should.have.property('xpub');
+        res.body.should.have.property('xprv');
+        res.body.xprv.should.eql('xprvA1yY6N1A6aT3B9VUb2mhnLpNyPwAguPY3sibAXYXiEUVjT62TZNHTy13LhrdJ4BcGmt2hnRdgGQFLDowBqANkysSRw6KXri2MpGjkPAbGrS');
+        res.body.xpub.should.eql('xpub6ExtVsY3vx1LPdZwh4Ji9Um7XRmf6N7PR6eBxux9Ga1UcFRB16gY1mKXBzVPcGZVpnDPYboEPYdPxfsrnq1Yec49RN4usyB5ba8NNtVbHeG');
+        res.body.path.should.eql('m/1/2/3/4');
+      });
+    });
+
+    it('derive BIP32 public keychain', function() {
+      return agent.post('/api/v1/keychain/derive')
+      .send({
+        path: 'm/3/4/5/6',
+        xpub: 'xpub6ExtVsY3vx1LPdZwh4Ji9Um7XRmf6N7PR6eBxux9Ga1UcFRB16gY1mKXBzVPcGZVpnDPYboEPYdPxfsrnq1Yec49RN4usyB5ba8NNtVbHeG'
+      })
+      .expect('Content-Type', /json/)
+      .then(function(res) {
+        res.should.have.status(200);
+        res.body.should.have.property('xpub');
+        res.body.should.not.have.property('xprv');
+        res.body.xpub.should.eql('xpub6N5Svn29v8op8f6VgHeM9FXvmpoFx7535qW4HKFHeM7HqJDD2dWQq92MKduYZjuWi4FWZQsGDtHwRtLpmCRWMxy3d3r77jcsxDpYNAGpbuY');
+        res.body.path.should.eql('m/3/4/5/6');
+      });
+    });
+
     it('decrypt', function(done) {
       var encryptedString = '{"iv":"n4zHXVTi/Go/riCP8fNs/A==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"zvLyve+4AJU=","ct":"gNMqheicMoD8ZmNzRwuQfWGAh+HA933l"}';
       agent.post('/api/v1/decrypt')

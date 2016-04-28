@@ -48,6 +48,31 @@ describe('Keychains', function() {
       //non-equivalent xprivs, i.e. check that the RNG is actually working.
       assert.notEqual(keychains.create().xprv, keychains.create().xprv);
     });
+
+    it('deriveLocal', function() {
+      assert.throws(function() { keychains.deriveLocal('') });
+      assert.throws(function() { keychains.deriveLocal({}) });
+      assert.throws(function() { keychains.deriveLocal({ 'path': 'm/0/1' }) });
+      assert.throws(function() { keychains.deriveLocal({ 'path': 'm/0/1', xprv: 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P', xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L' }) });
+
+      var xprvDerivation = keychains.deriveLocal(
+        {
+          'path': 'm/0/1',
+          'xprv': 'xprv9s21ZrQH143K2JF8RafpqtKiTbsbaxEeUaMnNHsm5o6wCW3z8ySyH4UxFVSfZ8n7ESu7fgir8imbZKLYVBxFPND1pniTZ81vKfd45EHKX73'
+        }
+      );
+      assert.equal(xprvDerivation.xprv, 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P');
+      assert.equal(xprvDerivation.xpub, 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L');
+
+      var xpubDerivation = keychains.deriveLocal(
+        {
+          'path': 'm/0/1',
+          'xpub': 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L'
+        }
+      );
+      assert.equal(xpubDerivation.xpub, 'xpub6Ee6yTYU8n4jBALmLc7jn88vQkuEUEN4xEyre8Y8f4UeTE9Wv4kQoVBc2EBkDN4bHSf5TrHFEUFM6ZWboxrDXuthejjm61ukBSnM3sEYtM9');
+      assert.equal(xpubDerivation.xprv, undefined);
+    });
   });
 
   describe('List', function() {

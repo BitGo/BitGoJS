@@ -71,6 +71,42 @@ Keychains.prototype.create = function(params) {
 };
 
 //
+// deriveLocal
+// Locally derives a keychain from a top level BIP32 string, given a path.
+//
+Keychains.prototype.deriveLocal = function(params) {
+  params = params || {};
+  common.validateParams(params, ['path'], ['xprv', 'xpub']);
+
+  if (!params.xprv && !params.xpub) {
+    throw new Error("must provide an xpub or xprv for derivation.");
+  }
+  if (params.xprv && params.xpub) {
+    throw new Error("cannot provide both xpub and xprv");
+  }
+
+  var hdNode;
+  try {
+    hdNode = bitcoin.HDNode.fromBase58(params.xprv || params.xpub);
+  } catch (e) {
+    throw apiResponse(400, {}, "Unable to parse the xprv or xpub");
+  }
+
+  var derivedNode;
+  try {
+    var derivedNode = bitcoin.hdPath(hdNode).derive(params.path);
+  } catch (e) {
+    throw apiResponse(400, {}, "Unable to derive HD key from path");
+  }
+
+  return {
+    path: params.path,
+    xpub: derivedNode.neutered().toBase58(),
+    xprv: params.xprv && derivedNode.toBase58()
+  }
+};
+
+//
 // list
 // List the user's keychains
 //

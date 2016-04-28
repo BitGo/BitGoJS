@@ -31,6 +31,10 @@ var handleCreateLocalKeyChain = function(req) {
   return req.bitgo.keychains().create(req.body);
 };
 
+var handleDeriveLocalKeyChain = function(req) {
+  return req.bitgo.keychains().deriveLocal(req.body);
+};
+
 var handleCreateWalletWithKeychains = function(req) {
   return req.bitgo.wallets().createWalletWithKeychains(req.body);
 };
@@ -221,6 +225,7 @@ exports = module.exports = function(app, args) {
   app.post('/api/v1/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleVerifyAddress, args));
 
   app.post('/api/v1/keychain/local', parseBody, prepareBitGo(args), promiseWrapper(handleCreateLocalKeyChain, args));
+  app.post('/api/v1/keychain/derive', parseBody, prepareBitGo(args), promiseWrapper(handleDeriveLocalKeyChain, args));
   app.post('/api/v1/wallets/simplecreate', parseBody, prepareBitGo(args), promiseWrapper(handleCreateWalletWithKeychains, args));
 
   app.post('/api/v1/wallet/:id/sendcoins', parseBody, prepareBitGo(args), promiseWrapper(handleSendCoins, args));
