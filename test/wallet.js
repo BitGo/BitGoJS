@@ -597,36 +597,6 @@ describe('Wallet API', function() {
     });
   });
 
-  describe('Estimate Fees', function() {
-    it('arguments', function() {
-      assert.throws(function () {
-        wallet1.estimateFee({ numBlocks: "none" });
-      });
-    });
-
-    var target1confirmFee;
-    it('get default', function() {
-      return wallet1.estimateFee()
-      .then(function(res) {
-        res.should.have.property('feePerKb');
-        res.should.have.property('numBlocks');
-        res.numBlocks.should.eql(3);
-        res.feePerKb.should.be.within(1000, 100000);
-        target1confirmFee = res.feePerKb;
-      });
-    });
-
-    it('get fee for target of 3 blocks', function() {
-      return wallet1.estimateFee({ numBlocks: 3 })
-      .then(function(res) {
-        res.should.have.property('feePerKb');
-        res.should.have.property('numBlocks');
-        res.numBlocks.should.eql(3);
-        res.feePerKb.should.be.within(1000, 100000);
-      });
-    });
-  });
-
   describe('Labels', function() {
     it('list', function(done) {
       // delete all labels from wallet1
@@ -1204,8 +1174,8 @@ describe('Wallet API', function() {
           };
           return Q(changeAddress).nodeify(callback);
         };
-        patch2 = wallet1.estimateFee;
-        wallet1.estimateFee = function(options, callback) {
+        patch2 = wallet1.bitgo.estimateFee;
+        wallet1.bitgo.estimateFee = function(options, callback) {
           var serverFeeRates = {
             1: 0.000138 * 1e8,
             2: 0.000112 * 1e8,
@@ -1221,7 +1191,7 @@ describe('Wallet API', function() {
 
       after(function() {
         wallet1.unspents = patch;
-        wallet1.estimateFee = patch2;
+        wallet1.bitgo.estimateFee = patch2;
         wallet1.unspentsPaged = patch3;
         wallet1.createAddress = patch4;
       });
@@ -1235,6 +1205,38 @@ describe('Wallet API', function() {
         });
       });
 
+      it('estimateFee with amount', function() {
+        return wallet1.estimateFee({amount: 6200 * 1e8})
+        .then(function(result) {
+          result.feeRate.should.eql(0.000112 * 1e8);
+          result.estimatedSize.should.eql(75327);
+          result.fee.should.eql(843663);
+        });
+      });
+
+      it('estimateFee with recipients (1 recipient)', function() {
+        var recipients = [];
+        recipients.push({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 6200 * 1e8});
+        return wallet1.estimateFee({recipients: recipients})
+        .then(function(result) {
+          result.feeRate.should.eql(0.000112 * 1e8);
+          result.estimatedSize.should.eql(75327);
+          result.fee.should.eql(843663);
+        });
+      });
+
+      it('estimateFee with recipients (2 recipients)', function() {
+        var recipients = [];
+        recipients.push({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 6195 * 1e8});
+        recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 5 * 1e8});
+        return wallet1.estimateFee({recipients: recipients})
+        .then(function(result) {
+          result.feeRate.should.eql(0.000112 * 1e8);
+          result.estimatedSize.should.eql(75361);
+          result.fee.should.eql(844044);
+        });
+      });
+
       it('approximate', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
@@ -1243,9 +1245,9 @@ describe('Wallet API', function() {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
-          assert.equal(feeUsed, 843663);
           result.feeRate.should.eql(0.000112 * 1e8);
           result.walletId = wallet1.id;
+          result.fee.should.eql(843663);
         });
       });
 
@@ -1305,11 +1307,11 @@ describe('Wallet API', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
         // undo the monkey patch so we get the right max fee
-        var feeMonkeyPatch = wallet1.estimateFee;
-        wallet1.estimateFee = patch2;
+        var feeMonkeyPatch = wallet1.bitgo.estimateFee;
+        wallet1.bitgo.estimateFee = patch2;
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3, maxFeeRate: 2200})
         .then(function(result) {
-          wallet1.estimateFee = feeMonkeyPatch;
+          wallet1.bitgo.estimateFee = feeMonkeyPatch;
           var feeUsed = result.fee;
           assert.equal(feeUsed, 165720);
         });

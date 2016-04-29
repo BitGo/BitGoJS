@@ -1611,7 +1611,40 @@ Wallet.prototype.removeWebhook = function(params, callback) {
 };
 
 Wallet.prototype.estimateFee = function(params, callback) {
-  return this.bitgo.estimateFee(params);
+  common.validateParams(params, [], [], callback);
+
+  if (params.amount && params.recipients) {
+    throw new Error('cannot specify both amount as well as recipients');
+  }
+  if (params.recipients && typeof(params.recipients) != 'object') {
+    throw new Error('recipients must be array of { address: abc, amount: 100000 } objects');
+  }
+  if (params.amount && typeof(params.amount) != 'number') {
+    throw new Error('invalid amount argument, expecting number');
+  }
+
+  var recipients = params.recipients || [];
+
+  if (params.amount) {
+    // only the amount was passed in, so we need to make a false recipient to run createTransaction with
+    recipients.push({
+      address: common.Environments[this.bitgo.env].signingAddress, // any address will do
+      amount: params.amount
+    })
+  }
+
+  var transactionParams = _.extend({}, params);
+  transactionParams.amount = undefined;
+  transactionParams.recipients = recipients;
+
+  return this.createTransaction(transactionParams)
+  .then(function(tx) {
+    return {
+      estimatedSize: tx.estimatedSize,
+      fee: tx.fee,
+      feeRate: tx.feeRate
+    }
+  });
 };
 
 // Not fully implemented / released on SDK. Testing for now.

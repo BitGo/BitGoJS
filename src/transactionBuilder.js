@@ -206,7 +206,7 @@ exports.createTransaction = function(params) {
   // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
   var getDynamicFeeEstimate = function () {
     if (params.feeTxConfirmTarget || !feeParamsDefined) {
-      return params.wallet.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate })
+      return params.wallet.bitgo.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate })
       .then(function(result) {
         var estimatedFeeRate = result.feePerKb;
         if (estimatedFeeRate < constants.minFeeRate) {
@@ -282,7 +282,7 @@ exports.createTransaction = function(params) {
     }
   };
 
-  var estimateTxSizeKb = function (nExtraChange) {
+  var estimateTxSizeBytes = function (nExtraChange) {
     nExtraChange = nExtraChange || 0;
     var sizePerP2SHInput = 295;
     var sizePerP2PKHInput = 160;
@@ -294,13 +294,15 @@ exports.createTransaction = function(params) {
     var nP2SHInputs = transaction.tx.ins.length + (feeSingleKeySourceAddress ? 1 : 0);
     var nP2PKHInputs = (feeSingleKeySourceAddress ? 1 : 0);
 
-    return (sizePerP2SHInput * nP2SHInputs + sizePerP2PKHInput * nP2PKHInputs + sizePerOutput * nOutputs) / 1000;
+    return sizePerP2SHInput * nP2SHInputs + sizePerP2PKHInput * nP2PKHInputs + sizePerOutput * nOutputs;
   };
 
   // Approximate the fee based on number of inputs
+  var estimatedSize = 0;
   var calculateApproximateFee = function () {
     var feeRateToUse = typeof(feeRate) !== 'undefined' ? feeRate : constants.fallbackFeeRate;
-    return Math.ceil(estimateTxSizeKb() * feeRateToUse);
+    estimatedSize = estimateTxSizeBytes();
+    return Math.ceil(estimatedSize * feeRateToUse / 1000);
   };
 
   // Iterate unspents, sum the inputs, and save _inputs with the total
@@ -354,6 +356,8 @@ exports.createTransaction = function(params) {
         var err = new Error('Insufficient fee amount available in single key fee source');
         err.result = {
           fee: fee,
+          feeRate: feeRate,
+          estimatedSize: estimatedSize,
           available: inputAmount,
           bitgoFee: bitgoFeeInfo
         };
@@ -365,6 +369,8 @@ exports.createTransaction = function(params) {
       var err = new Error('Insufficient funds');
       err.result = {
         fee: fee,
+        feeRate: feeRate,
+        estimatedSize: estimatedSize,
         available: inputAmount,
         bitgoFee: bitgoFeeInfo
       };
@@ -374,9 +380,9 @@ exports.createTransaction = function(params) {
 
   // Add the outputs for this transaction.
   var collectOutputs = function () {
-    var estimatedTxSize = estimateTxSizeKb();
-    if (estimatedTxSize >= 90) {
-      throw new Error('transaction too large: estimated size ' + estimatedTxSize + 'kb');
+    var estimatedTxSize = estimateTxSizeBytes();
+    if (estimatedTxSize >= 90000) {
+      throw new Error('transaction too large: estimated size ' + estimatedTxSize + ' bytes');
     }
 
     var outputs = [];
@@ -505,7 +511,8 @@ exports.createTransaction = function(params) {
       walletKeychains: params.wallet.keychains,
       feeRate: feeRate,
       instant: params.instant,
-      bitgoFee: bitgoFeeInfo
+      bitgoFee: bitgoFeeInfo,
+      estimatedSize: estimatedSize
     };
 
     // Add for backwards compatibility
