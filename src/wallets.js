@@ -323,7 +323,8 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
     if (params.backupXpubProvider) {
       // If requested, use a KRS or backup key provider
       return self.bitgo.keychains().createBackup({
-        provider: params.backupXpubProvider
+        provider: params.backupXpubProvider,
+        disableKRSEmail: params.disableKRSEmail
       })
       .then(function(keychain) {
         backupKeychain = keychain;
@@ -477,6 +478,10 @@ Wallets.prototype.add = function(params, callback) {
 
   if (params.enterprise) {
     walletParams.enterprise = params.enterprise;
+  }
+
+  if (params.disableTransactionNotifications) {
+    walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
   }
 
   return this.bitgo.post(this.bitgo.url('/wallet'))
