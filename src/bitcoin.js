@@ -14,6 +14,13 @@ try {
   console.log('running without secp256k1 acceleration');
 }
 
+// Check for IE, and disable secp256k1, due to:
+// https://github.com/indutny/bn.js/issues/133
+var isIE = (({}).constructor.name === undefined);
+if (isIE) {
+  secp256k1 = undefined;
+}
+
 bitcoin.getNetwork = function() {
   return bitcoin.networks[common.getNetwork()];
 };
