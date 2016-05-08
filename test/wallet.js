@@ -50,6 +50,9 @@ describe('Wallet API', function() {
           id: TestBitGo.TEST_WALLET2_ADDRESS
         };
         wallets.get(options, function(err, wallet) {
+          if (err) {
+            throw err;
+          }
           wallet2 = wallet;
 
           // Fetch the third wallet
@@ -807,7 +810,7 @@ describe('Wallet API', function() {
         done();
       });
 
-      it('prepare unspents', function() {
+      xit('prepare unspents', function() {
         var options = {
           walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
           password: TestBitGo.TEST_WALLET2_PASSCODE,
@@ -818,7 +821,7 @@ describe('Wallet API', function() {
         return sharedWallet.regroupUnspents(options);
       });
 
-      it('fan out unspents', function() {
+      xit('fan out unspents', function() {
 
         return Q()
         .then(function(){
@@ -841,11 +844,11 @@ describe('Wallet API', function() {
 
       });
 
-      it('wait after fanning out', function(done) {
+      xit('wait after fanning out', function(done) {
         setTimeout(done, 2000); // let's just wait for 2 seconds so the consolidation works
       });
 
-      it('consolidate unspents with automatic input count per consolidation', function() {
+      xit('consolidate unspents with automatic input count per consolidation', function() {
 
         return Q()
         .then(function(){
@@ -870,7 +873,7 @@ describe('Wallet API', function() {
 
       });
 
-      it('consolidate unspents', function() {
+      xit('consolidate unspents', function() {
         var maxInputCountPerConsolidation = 3;
         var progressCallbackCount = 0;
         var progressCallback = function(progressDetails){
@@ -1038,6 +1041,31 @@ describe('Wallet API', function() {
         result.should.have.property('confirmations');
         result.should.have.property('hex');
         done();
+      });
+    });
+
+    it('get transaction with travel info', function() {
+      var keychain;
+      var options = {
+        xpub: wallet1.keychains[0].xpub,
+      };
+      return bitgo.keychains().get({ xpub: wallet3.keychains[0].xpub })
+      .then(function(res) {
+        keychain = res;
+        res.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET3_PASSCODE, input: keychain.encryptedXprv });
+        return wallet3.getTransaction({ id: TestBitGo.TRAVEL_RULE_TXID });
+      })
+      .then(function(tx) {
+        tx.should.have.property('receivedTravelInfo');
+        tx.receivedTravelInfo.should.have.length(2);
+        tx = bitgo.travelRule().decryptReceivedTravelInfo({ tx: tx, keychain: keychain });
+        var infos = tx.receivedTravelInfo;
+        infos.should.have.length(2);
+        var info = infos[0].travelInfo;
+        info.fromUserName.should.equal('Alice');
+        info.toEnterprise.should.equal('SDKOther');
+        info = infos[1].travelInfo;
+        info.fromUserName.should.equal('Bob');
       });
     });
   });
@@ -2054,6 +2082,53 @@ describe('Wallet API', function() {
         );
       });
 
+      it('send many - wallet1 to wallet3 with travel info', function () {
+        var recipients = [];
+        recipients.push({
+          address: TestBitGo.TEST_WALLET3_ADDRESS,
+          amount: 0.001 * 1e8,
+          travelInfo: {
+            fromUserName: 'Alice'
+          }
+        });
+        recipients.push({
+          address: TestBitGo.TEST_WALLET3_ADDRESS2,
+          amount: 0.002 * 1e8,
+          travelInfo: {
+            toUserName: 'Bob'
+          }
+        });
+        recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS3, amount: 0.006 * 1e8});
+        return wallet1.sendMany({
+          recipients: recipients,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+          feeTxConfirmTarget: 2 }
+        )
+        .then(function(res) {
+          res.should.have.property('tx');
+          res.should.have.property('hash');
+          res.should.have.property('fee');
+          res.should.have.property('travelResult');
+          res.travelResult.matched.should.equal(2);
+          res.travelResult.results.should.have.length(2);
+          var result = res.travelResult.results[0].result;
+          result.should.have.property('id');
+          result.fromEnterprise.should.equal('SDKTest');
+          result.fromEnterpriseId.should.equal(TestBitGo.TEST_ENTERPRISE);
+          result.toEnterpriseId.should.equal(TestBitGo.TEST_ENTERPRISE_2);
+          result.transactionId.should.equal(res.hash);
+          result.should.have.property('outputIndex');
+          result.fromWallet.should.equal(TestBitGo.TEST_WALLET1_ADDRESS);
+          result.toAddress.should.equal(TestBitGo.TEST_WALLET3_ADDRESS);
+          result.amount.should.equal(100000);
+          result.toPubKey.should.equal('02fbb4b2f489535af4660202836ec041f2751700bfa1e65a72dee039b7ae3a3ac3');
+          result.should.have.property('encryptedTravelInfo');
+          result = res.travelResult.results[1].result;
+          result.amount.should.equal(200000);
+          result.should.have.property('encryptedTravelInfo');
+        });
+      });
+
       it('send many - wallet3 to wallet1 with specified fee', function () {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
@@ -2127,7 +2202,10 @@ describe('Wallet API', function() {
 
       it('create and sign transaction with global no validation', function() {
         var recipients = [];
-        recipients.push({address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8});
+        recipients.push({
+          address: TestBitGo.TEST_WALLET2_ADDRESS,
+          amount: 0.001 * 1e8
+        });
         var calledVerify = false;
         var setValidate = false;
         var realVerifyInputSignatures = TransactionBuilder.verifyInputSignatures;
@@ -2153,6 +2231,48 @@ describe('Wallet API', function() {
           setValidate.should.equal(true);
           result.should.have.property('tx');
           tx = result.tx;
+        });
+      });
+
+      it('create tx with bad travelInfo', function() {
+        var recipients = [];
+        recipients.push({
+          address: TestBitGo.TEST_WALLET2_ADDRESS,
+          amount: 0.001 * 1e8,
+          travelInfo: {
+            fromUserName: 42
+          }
+        });
+        var wallet = Object.create(wallet1);
+        return wallet.createTransaction({ recipients: recipients })
+        .then(function(result) {
+          // should not reach
+          assert(false);
+        })
+        .catch(function(err) {
+          err.message.should.include('incorrect type for field fromUserName in travel info');
+        });
+      });
+
+      it('create tx with travelInfo', function() {
+        var recipients = [];
+        recipients.push({
+          address: TestBitGo.TEST_WALLET2_ADDRESS,
+          amount: 0.001 * 1e8,
+          travelInfo: {
+            fromUserName: 'Alice',
+            toUserName: 'Bob'
+          }
+        });
+        var wallet = Object.create(wallet1);
+        return wallet.createTransaction({ recipients: recipients })
+        .then(function(res) {
+          res.should.have.property('travelInfos');
+          res.travelInfos.should.have.length(1);
+          var travelInfo = res.travelInfos[0];
+          travelInfo.should.have.property('outputIndex');
+          travelInfo.fromUserName.should.equal('Alice');
+          travelInfo.toUserName.should.equal('Bob');
         });
       });
 
@@ -2367,7 +2487,7 @@ describe('Wallet API', function() {
       .then(function(wallet) {
         wallet.id.should.eql(wallet1.id());
         var rulesById = _.indexBy(wallet.admin.policy.rules, 'id');
-        rulesById.should.not.have.property('test1')
+        rulesById.should.not.have.property('test1');
       });
     });
   });

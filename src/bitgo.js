@@ -8,6 +8,7 @@ var superagent = require('superagent');
 var bitcoin = require('./bitcoin');
 var Blockchain = require('./blockchain');
 var Keychains = require('./keychains');
+var TravelRule = require('./travelRule');
 var Wallet = require('./wallet');
 var Wallets = require('./wallets');
 var Markets = require('./markets');
@@ -937,6 +938,17 @@ BitGo.prototype.wallets = function() {
 };
 
 //
+// travel rule
+// Get the travel rule object
+//
+BitGo.prototype.travelRule = function() {
+  if (!this._travel) {
+    this._travelRule = new TravelRule(this);
+  }
+  return this._travelRule;
+};
+
+//
 // pendingApprovals
 // Get pending approvals that can be approved/ or rejected
 //
@@ -948,7 +960,7 @@ BitGo.prototype.pendingApprovals = function( ) {
 };
 
 //
-// newWallet
+// newWalletObject
 // A factory method to create a new Wallet object, initialized with the wallet params
 // Can be used to reconstitute a wallet from cached data
 //

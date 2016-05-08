@@ -34,7 +34,7 @@ exports.createTransaction = function(params) {
   var validate = params.validate === undefined ? true : params.validate;
   var recipients = [];
   var extraChangeAmounts;
-  var constants = params.wallet.bitgo.getConstants();
+  var travelInfos;
 
   // Sanity check the arguments passed in
   if (typeof(params.wallet) != 'object' ||
@@ -58,6 +58,8 @@ exports.createTransaction = function(params) {
   }
 
   var self = this;
+  var bitgo = params.wallet.bitgo;
+  var constants = bitgo.getConstants();
 
   // The user can specify a seperate, single-key wallet for the purposes of paying miner's fees
   // When creating a transaction this can be specified as an input address or the private key in WIF
@@ -196,7 +198,7 @@ exports.createTransaction = function(params) {
       if (!bitgoFeeInfo || bitgoFeeInfo.address) {
         return;
       }
-      return params.wallet.bitgo.getBitGoFeeAddress()
+      return bitgo.getBitGoFeeAddress()
       .then(function(result) {
         bitgoFeeInfo.address = result.address;
       });
@@ -206,7 +208,7 @@ exports.createTransaction = function(params) {
   // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
   var getDynamicFeeEstimate = function () {
     if (params.feeTxConfirmTarget || !feeParamsDefined) {
-      return params.wallet.bitgo.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate })
+      return bitgo.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate })
       .then(function(result) {
         var estimatedFeeRate = result.feePerKb;
         if (estimatedFeeRate < constants.minFeeRate) {
@@ -272,7 +274,7 @@ exports.createTransaction = function(params) {
       if (params.instant) {
         feeTarget += totalAmount * 0.001;
       }
-      return params.wallet.bitgo.get(params.wallet.bitgo.url('/address/' + feeSingleKeySourceAddress + '/unspents?target=' + feeTarget))
+      return bitgo.get(bitgo.url('/address/' + feeSingleKeySourceAddress + '/unspents?target=' + feeTarget))
       .then(function(response) {
         if (response.body.total <= 0) {
           throw new Error("No unspents available in single key fee source");
@@ -396,9 +398,19 @@ exports.createTransaction = function(params) {
       } else {
         throw new Error('neither recipient address nor script was provided');
       }
+
+      // validate travelInfo if it exists
+      var travelInfo;
+      if (!_.isEmpty(recipient.travelInfo)) {
+        travelInfo = recipient.travelInfo;
+        // Better to avoid trouble now, before tx is created
+        bitgo.travelRule().validateTravelInfo(travelInfo);
+      }
+
       outputs.push({
         script: script,
-        amount: recipient.amount
+        amount: recipient.amount,
+        travelInfo: travelInfo
       });
     });
 
@@ -491,6 +503,17 @@ exports.createTransaction = function(params) {
       outputs.forEach(function(output) {
         transaction.addOutput(output.script, output.amount);
       });
+
+      travelInfos = _(outputs).map(function(output, index) {
+        var result = output.travelInfo;
+        if (!result) {
+          return undefined;
+        }
+        result.outputIndex = index;
+        return result;
+      })
+      .filter()
+      .value();
     });
   };
 
@@ -512,7 +535,8 @@ exports.createTransaction = function(params) {
       feeRate: feeRate,
       instant: params.instant,
       bitgoFee: bitgoFeeInfo,
-      estimatedSize: estimatedSize
+      estimatedSize: estimatedSize,
+      travelInfos: travelInfos
     };
 
     // Add for backwards compatibility

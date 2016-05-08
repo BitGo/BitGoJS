@@ -638,6 +638,47 @@ Wallet.prototype.getTransaction = function(params, callback) {
 };
 
 //
+// pollForTransaction
+// Poll a transaction until successful or times out
+// Parameters:
+//   id: the txid
+//   delay: delay between polls in ms (default: 1000)
+//   timeout: timeout in ms (default: 10000)
+Wallet.prototype.pollForTransaction = function(params, callback) {
+  var self = this;
+  params = params || {};
+  common.validateParams(params, ['id'], [], callback);
+  if (params.delay && typeof(params.delay) !== 'number') {
+    throw new Error('invalid delay parameter');
+  }
+  if (params.timeout && typeof(params.timeout) !== 'number') {
+    throw new Error('invalid timeout parameter');
+  }
+  params.delay = params.delay || 1000;
+  params.timeout = params.timeout || 10000;
+
+  var start = new Date();
+
+  var doNextPoll = function() {
+    return self.getTransaction(params)
+    .then(function(res) {
+      return res;
+    })
+    .catch(function(err) {
+      if (err.status !== 404 || (new Date() - start) > params.timeout) {
+        throw err;
+      }
+      return Q.delay(params.delay)
+      .then(function() {
+        return doNextPoll();
+      });
+    });
+  };
+
+  return doNextPoll();
+};
+
+//
 // transaction by sequence id
 // Get a transaction by sequence id for a given wallet
 Wallet.prototype.getWalletTransactionBySequenceId = function(params, callback) {
@@ -942,7 +983,7 @@ Wallet.prototype.sendCoins = function(params, callback) {
 // 3. Sends the transaction to BitGo
 //
 // Parameters:
-//   recipients - array of { address, amount } to send to
+//   recipients - array of { address: string, amount: number, travelInfo: object } to send to
 //   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
 //   xprv - the private key in string form, if walletPassphrase is not available
 //   (See transactionBuilder.createTransaction for other passthrough params)
@@ -973,6 +1014,8 @@ Wallet.prototype.sendMany = function(params, callback) {
   var fee;
   var feeRate;
   var bitgoFee;
+  var travelInfos;
+  var finalResult;
 
   // Get the user keychain
   return this.createAndSignTransaction(params)
@@ -981,6 +1024,7 @@ Wallet.prototype.sendMany = function(params, callback) {
     fee = transaction.fee;
     feeRate = transaction.feeRate;
     bitgoFee = transaction.bitgoFee;
+    travelInfos = transaction.travelInfos;
     return self.sendTransaction({
       tx: transaction.tx,
       message: params.message,
@@ -992,10 +1036,35 @@ Wallet.prototype.sendMany = function(params, callback) {
   .then(function(result) {
     result.fee = fee;
     result.feeRate = feeRate;
+    result.travelInfos = travelInfos;
     if (bitgoFee) {
       result.bitgoFee = bitgoFee;
     }
-    return result;
+    finalResult = result;
+
+    // Handle sending travel infos if they exist, but make sure we never fail here.
+    // Error or result (with possible sub-errors) will be provided in travelResult
+    if (travelInfos && travelInfos.length) {
+      try {
+        return self.pollForTransaction({ id: result.hash })
+        .then(function() {
+          return self.bitgo.travelRule().sendMany(result);
+        })
+        .then(function(res) {
+          finalResult.travelResult = res;
+        })
+        .catch(function(err) {
+          // catch async errors
+          finalResult.travelResult = { error: err.message };
+        });
+      } catch (err) {
+        // catch synchronous errors
+        finalResult.travelResult = { error: err.message };
+      }
+    }
+  })
+  .then(function() {
+    return finalResult;
   })
   .nodeify(callback);
 };
@@ -1039,6 +1108,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   var fee;
   var feeRate;
   var bitgoFee;
+  var travelInfos;
 
   return Q()
   .then(function() {
@@ -1051,11 +1121,18 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     // Sign the transaction
     transaction.keychain = keychain;
     bitgoFee = transaction.bitgoFee;
+    travelInfos = transaction.travelInfos;
     transaction.feeSingleKeyWIF = params.feeSingleKeyWIF;
     return self.signTransaction(transaction);
   })
   .then(function(result) {
-    return _.extend(result, { fee: fee, feeRate: feeRate, instant: params.instant, bitgoFee: bitgoFee });
+    return _.extend(result, {
+      fee: fee,
+      feeRate: feeRate,
+      instant: params.instant,
+      bitgoFee: bitgoFee,
+      travelInfos: travelInfos
+    });
   })
   .nodeify(callback);
 };
@@ -1630,7 +1707,7 @@ Wallet.prototype.estimateFee = function(params, callback) {
     recipients.push({
       address: common.Environments[this.bitgo.env].signingAddress, // any address will do
       amount: params.amount
-    })
+    });
   }
 
   var transactionParams = _.extend({}, params);
@@ -1643,7 +1720,7 @@ Wallet.prototype.estimateFee = function(params, callback) {
       estimatedSize: tx.estimatedSize,
       fee: tx.fee,
       feeRate: tx.feeRate
-    }
+    };
   });
 };
 
@@ -1686,5 +1763,7 @@ Wallet.prototype.getBitGoFee = function(params, callback) {
   .result()
   .nodeify(callback);
 };
+
+
 
 module.exports = Wallet;

@@ -13,7 +13,7 @@ if (process.env.BITGOJS_TEST_PASSWORD) {
 } else {
   // Test accounts are locked internally to prevent tampering
   // Contact bencxr@fragnetics.com benchan for further help on how to fix this
-  throw new Error("Need to set BITGOJS_TEST_PASSWORD env variable - please see the developer setup docs.")
+  throw new Error("Need to set BITGOJS_TEST_PASSWORD env variable - please see the developer setup docs.");
 }
 
 BitGo.TEST_SHARED_KEY_USER = 'shared_key_test@bitgo.com';
@@ -31,6 +31,8 @@ BitGo.TEST_AUTHCODE = '37454416ba13e1be9fdc39cfc207df7f7a7f0953';
 BitGo.TEST_ACCESSTOKEN = '4cb440e353b5415e350a1e799bb1ad820fef4ead';
 BitGo.TEST_ACCESSTOKEN_SHAREDUSER = '4cb440e353b5415e350a1e799bb1ad820fef4eax';
 BitGo.TEST_REFRESHTOKEN = '8519fcc7787d9d6971ed89a757e3309a72ddedc8';
+
+BitGo.TRAVEL_RULE_TXID = '33447753455651508cfd099c9ebe0db6a2243ccba4766319621fbce56db7f135';
 
 //
 // testUserOTP
@@ -66,7 +68,7 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.TEST_WALLET2_PASSCODE = 'test wallet #2 security';
     BitGo.TEST_WALLET2_ADDRESS = '2MvpZhq6zUu3UARdJKZH7TTfqHJ3Ec1YAjv';
     BitGo.TEST_WALLET3_PASSCODE = 'test wallet #3 security';
-    
+
     // shared amongst 3 users (TEST_USER, TEST_SHARED_KEY_USER, and TEST_THIRD_USER)
     BitGo.TEST_WALLETMULTAPPROVERS_ADDRESS = '2NF7pK1pDEUXrWmqXxCT4fjPtQrsK6XNvUy';
     BitGo.TEST_WALLETMULTAPPROVERS_PASSCODE = BitGo.TEST_PASSWORD;
@@ -77,6 +79,7 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.TEST_WALLET3_ADDRESS3 = '2N1Tt75MNKFHRBE68HXHB7FSmLpmGCQDuJC';
 
     BitGo.TEST_ENTERPRISE = '5578ebc76eb47487743b903166e6543a';
+    BitGo.TEST_ENTERPRISE_2 = '57057916c03b4a5d0644e2ad94a9e070';
     BitGo.TEST_SHARED_WALLET_ADDRESS = '2MsMfeYWNWYwB3fzfMBfuSZb7jkcGnTjW42';
     BitGo.TEST_SHARED_WALLET_CHANGE_ADDRESS = '2MsUevsM5ncvgrrqUoJ7qYd7Ks9VCN3uhHM';
     BitGo.TEST_WALLET_PENDING_APPROVAL_ID = '56eaf3bdcc4635bb0529843a0dcf860b';
