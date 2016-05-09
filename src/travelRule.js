@@ -52,6 +52,7 @@ TravelRule.prototype.validateTravelInfo = function(info) {
     toAddress:       { type: 'string' },
     toEnterprise:    { type: 'string' },
     fromUserName:    { type: 'string' },
+    fromUserAccount: { type: 'string' },
     fromUserAddress: { type: 'string' },
     toUserName:      { type: 'string' },
     toUserAccount:   { type: 'string' },
