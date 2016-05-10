@@ -27,8 +27,9 @@ if (!process.browser) {
 
 // Patch superagent to return promises
 var _end = superagent.Request.prototype.end;
-superagent.Request.prototype.end = function() {
+superagent.Request.prototype.end = function(cb) {
   var self = this;
+  if (typeof cb === 'function') return _end.call(self, cb)
 
   return new Q.Promise(function(resolve, reject) {
     var error;
