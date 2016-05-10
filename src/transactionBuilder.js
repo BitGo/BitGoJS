@@ -610,7 +610,7 @@ exports.signTransaction = function(params) {
   var hdPath;
   if (keychain) {
     rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
-    hdPath = bitcoin.hdPath(bitcoin.HDNode.fromBase58(keychain.xprv));
+    hdPath = bitcoin.hdPath(rootExtKey);
   }
   var txb;
 

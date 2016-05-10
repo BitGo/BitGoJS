@@ -2065,6 +2065,22 @@ describe('Wallet API', function() {
         });
       });
 
+      it('send many - wallet3 to wallet1 (single output, using keychain)', function () {
+        var recipients = [];
+        recipients.push({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8});
+        return wallet3.getEncryptedUserKeychain()
+        .then(function(keychain) {
+          keychain.xprv = 'xprv9s21ZrQH143K3aLCRoCteo8TkJWojD5d8wQwJmcvUPx6TaDeLnEWq2Mw6ffDyThZNe4YgaNsdEAL9JN8ip8BdqisQsEpy9yR6HxVfvkgEEZ';
+          return wallet3.sendMany({ recipients: recipients, keychain: keychain });
+        })
+        .then(function (result) {
+          result.should.have.property('tx');
+          result.should.have.property('hash');
+          result.should.have.property('fee');
+          result.should.have.property('feeRate');
+        });
+      });
+
       it('send many - wallet1 to wallet3 with dynamic fee', function (done) {
         var recipients = [];
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8});

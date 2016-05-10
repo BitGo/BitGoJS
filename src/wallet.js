@@ -753,10 +753,6 @@ Wallet.prototype.createTransaction = function(params, callback) {
     throw new Error('invalid argument');
   }
 
-  if (typeof(params.keychain) == 'object') {
-    throw new Error('createTransaction no longer takes a keychain to perform signing - please use signTransaction to sign');
-  }
-
   if (typeof(params.recipients) != 'object') {
     throw new Error('expecting recipients object');
   }
@@ -1140,11 +1136,13 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
 //
 // getAndPrepareSigningKeychain
 // INTERNAL function to get the user keychain for signing.
-// Caller must provider either walletPassphrase or xprv as a string
+// Caller must provider either a keychain, or walletPassphrase or xprv as a string
+// If the caller provides the keychain with xprv, it is simply returned.
 // If the caller provides the encrypted xprv (walletPassphrase), then fetch the keychain object and decrypt
-// Otherwise if the xprv is provided, fetch the keychain object and augment it with the xprv
+// Otherwise if the xprv is provided, fetch the keychain object and augment it with the xprv.
 //
 // Parameters:
+//   keychain - keychain with xprv
 //   xprv - the private key in string form
 //   walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
 // Returns:
@@ -1152,6 +1150,12 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
 //
 Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
   params = params || {};
+
+  // If keychain with xprv is already provided, use it
+  if (typeof(params.keychain) === 'object' && params.keychain.xprv) {
+    return Q(params.keychain);
+  }
+
   common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
   if ((params.walletPassphrase && params.xprv) || (!params.walletPassphrase && !params.xprv)) {
