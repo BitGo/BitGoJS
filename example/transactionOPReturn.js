@@ -54,7 +54,7 @@ var sendBitcoin = function() {
       keychain.xprv = bitgo.decrypt({ password: walletPassphrase, input: keychain.encryptedXprv });
 
       var data = new Buffer(message);
-      var outputScript = BitcoinJSLib.scripts.nullDataOutput(data);
+      var outputScript = BitcoinJSLib.script.nullDataOutput(data);
 
       // Set recipients
       var recipients = [];
