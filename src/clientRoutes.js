@@ -44,6 +44,12 @@ var handleSendCoins = function(req) {
   .then(function(wallet) {
     return wallet.sendCoins(req.body);
   })
+  .catch(function(err) {
+    if (err.message === "Insufficient funds") {
+      throw apiResponse(400, err, "Insufficient funds");
+    }
+    throw err;
+  })
   .then(function(result) {
     if (result.status === 'pendingApproval') {
       throw apiResponse(202, result);
@@ -56,6 +62,12 @@ var handleSendMany = function(req) {
   return req.bitgo.wallets().get({id: req.params.id})
   .then(function(wallet) {
     return wallet.sendMany(req.body);
+  })
+  .catch(function(err) {
+    if (err.message === "Insufficient funds") {
+      throw apiResponse(400, err, "Insufficient funds");
+    }
+    throw err;
   })
   .then(function(result) {
     if (result.status === 'pendingApproval') {
@@ -75,7 +87,7 @@ var handleCreateTransaction = function(req) {
       throw apiResponse(400, err, "Insufficient funds");
     }
     throw err;
-  })
+  });
 };
 
 var handleSignTransaction = function(req) {

@@ -267,6 +267,7 @@ describe('Bitgo Express', function() {
         .expect('Content-Type', /json/)
         .end(function(err, res) {
           if (err) { throw err; }
+          res.status.should.eql(400);
           res.body.should.have.property('message');
           res.body.result.should.have.property('fee');
           res.body.result.should.have.property('available');
