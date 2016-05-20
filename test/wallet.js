@@ -791,7 +791,7 @@ describe('Wallet API', function() {
     });
 
     // Disabled -- consistently broken
-    xdescribe('Unspent Fanning And Consolidation', function(){
+    describe('Unspent Fanning And Consolidation', function(){
 
       it('arguments', function(done){
         assert.throws(function() { wallet1.fanOutUnspents('invalid'); });
@@ -810,7 +810,7 @@ describe('Wallet API', function() {
         done();
       });
 
-      xit('prepare unspents', function() {
+      it('prepare unspents', function() {
         var options = {
           walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
           password: TestBitGo.TEST_WALLET2_PASSCODE,
@@ -821,7 +821,7 @@ describe('Wallet API', function() {
         return sharedWallet.regroupUnspents(options);
       });
 
-      xit('fan out unspents', function() {
+      it('fan out unspents', function() {
 
         return Q()
         .then(function(){

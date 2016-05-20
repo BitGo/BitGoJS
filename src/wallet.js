@@ -1230,6 +1230,15 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
   if (target > MAX_FANOUT_OUTPUT_COUNT) {
     throw new Error('Fan out target too high');
   }
+
+  var minConfirms = params.minConfirms;
+  if (minConfirms === undefined) {
+    minConfirms = 1;
+  }
+  if (typeof(minConfirms) !== 'number' || minConfirms < 0) {
+    throw new Error('minConfirms needs to be an integer >= 0');
+  }
+
   var self = this;
 
   /**
@@ -1261,7 +1270,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
   var grossAmount = 0;
 
   // first, let's take all the wallet's unspents (with min confirms if necessary)
-  return self.unspents({ minConfirms: params.minConfirms })
+  return self.unspents({ minConfirms: minConfirms })
   .then(function(allUnspents) {
     if (allUnspents.length < 1) {
       throw new Error('No unspents to branch out');
@@ -1315,10 +1324,14 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
         // if the error does not contain a fee property, it is something else that has gone awry, and we throw it
         throw error;
       }
-      var fee = error.fee || error.result.fee;
-      transactionParams.fee = fee;
+      var baseFee = error.fee || error.result.fee;
+      var totalFee = baseFee;
+      if (error.result.bitgoFee && error.result.bitgoFee.amount) {
+        totalFee += error.result.bitgoFee.amount;
+      }
+      transactionParams.fee = baseFee;
       // in order to maintain the equal distribution, we need to subtract the fee from the cumulative funds
-      var netAmount = grossAmount - fee; // after fees
+      var netAmount = grossAmount - totalFee; // after fees
       // that means that the distribution has to be recalculated
       var remainingSplitAmounts = splitNumberIntoCloseNaturalNumbers(netAmount, target);
       // and the distribution again mapped to the new addresses
@@ -1344,8 +1357,16 @@ Wallet.prototype.regroupUnspents = function(params, callback) {
     throw new Error('Target needs to be a positive integer');
   }
 
+  var minConfirms = params.minConfirms;
+  if (minConfirms === undefined) {
+    minConfirms = 1;
+  }
+  if ((typeof(minConfirms) !== 'number' || minConfirms < 0)) {
+    throw new Error('minConfirms needs to be an integer equal to or bigger than 0');
+  }
+
   var self = this;
-  return self.unspents({ minConfirms: params.minConfirms })
+  return self.unspents({ minConfirms: minConfirms })
   .then(function(unspents) {
     if (unspents.length == target) {
       return unspents;
@@ -1398,11 +1419,19 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     throw new Error('Maximum consolidation input count cannot be bigger than ' + MAX_INPUT_COUNT);
   }
 
-  var maxIterationCount = -1 || params.maxIterationCount;
-  if(params.maxIterationCount && (typeof(maxIterationCount) !== 'number' || maxIterationCount < 1) || (maxIterationCount % 1) !== 0){
+  var maxIterationCount = params.maxIterationCount || -1;
+  if (params.maxIterationCount && (typeof(maxIterationCount) !== 'number' || maxIterationCount < 1) || (maxIterationCount % 1) !== 0) {
     throw new Error('Maximum iteration count needs to be an integer equal to or bigger than 1');
   }
 
+  var minConfirms = params.minConfirms;
+  if (minConfirms === undefined) {
+    minConfirms = 1;
+  }
+  if ((typeof(minConfirms) !== 'number' || minConfirms < 0)) {
+    throw new Error('minConfirms needs to be an integer equal to or bigger than 0');
+  }
+  
   var iterationCount = 0;
 
   var self = this;
@@ -1431,11 +1460,17 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      them, and therefore will be able to simplify this method.
      */
 
-    return self.unspents({ limit: target + maxInputCount, minConfirms: params.minConfirms })
+    return self.unspents({ limit: target + maxInputCount, minConfirms: minConfirms })
     .then(function(allUnspents) {
       // this consolidation is essentially just a waste of money
       if (allUnspents.length <= target) {
-        throw new Error('Fewer unspents than consolidation target. Use fanOutUnspents instead.');
+        if (iterationCount <= 1) {
+          // this is the first iteration, so the method is incorrect
+          throw new Error('Fewer unspents than consolidation target. Use fanOutUnspents instead.');
+        } else {
+          // it's a later iteration, so the target may have been surpassed (due to confirmations in the background)
+          throw new Error('Done');
+        }
       }
 
       var allUnspentsCount = allUnspents.length;
@@ -1484,13 +1519,17 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
           // if the error does not contain a fee property, it is something else that has gone awry, and we throw it
           throw error;
         }
-        var fee = error.fee || error.result.fee;
-        var netAmount = grossAmount - fee; // after fees
+        var baseFee = error.fee || error.result.fee;
+        var totalFee = baseFee;
+        if (error.result.bitgoFee && error.result.bitgoFee.amount) {
+          totalFee += error.result.bitgoFee.amount;
+        }
+        var netAmount = grossAmount - totalFee; // after fees
         // Need to clear these out since only 1 may be set
         delete txParams.fee;
         delete txParams.feeRate;
         delete txParams.feeTxConfirmTarget;
-        txParams.fee = fee;
+        txParams.fee = baseFee;
         txParams.recipients[newAddress.address] = netAmount;
         // this transaction, on the other hand, should be created with no issues, because an appropriate fee is set
         return self.sendMany(txParams);
