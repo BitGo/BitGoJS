@@ -284,6 +284,7 @@ Wallets.prototype.createKey = function(params) {
 //                 BITGO DOES NOT GUARANTEE SAFETY OF WALLETS WITH MULTIPLE KEYS CREATED ON THE SAME MACHINE **
 //   "backupXpubProvider": Provision backup key from this provider (KRS), e.g. "keyternal".
 //                         Setting this value will create an instant-capable wallet.
+//   "passcodeEncryptionCode": the code used to encrypt the wallet passcode used in the recovery process
 // Returns: {
 //   wallet: newly created wallet model object
 //   userKeychain: the newly created user keychain, which has an encrypted xprv stored on BitGo
@@ -294,13 +295,22 @@ Wallets.prototype.createKey = function(params) {
 // }
 Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['passphrase'], ['label', 'backupXpub', 'enterprise'], callback);
+  common.validateParams(params, ['passphrase'], ['label', 'backupXpub', 'enterprise', 'passcodeEncryptionCode'], callback);
   var self = this;
   var label = params.label;
 
   // Create the user and backup key.
   var userKeychain = this.bitgo.keychains().create();
   userKeychain.encryptedXprv = this.bitgo.encrypt({ password: params.passphrase, input: userKeychain.xprv });
+
+  var keychainData = {
+    "xpub": userKeychain.xpub,
+    "encryptedXprv": userKeychain.encryptedXprv
+  };
+
+  if (params.passcodeEncryptionCode) {
+    keychainData.originalPasscodeEncryptionCode = params.passcodeEncryptionCode;
+  }
 
   if ((!!params.backupXpub + !!params.backupXpubProvider) > 1) {
     throw new Error("Cannot provide more than one backupXpub or backupXpubProvider flag");
@@ -314,10 +324,7 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   var bitgoKeychain;
 
   // Add the user keychain
-  return self.bitgo.keychains().add({
-    "xpub": userKeychain.xpub,
-    "encryptedXprv": userKeychain.encryptedXprv
-  })
+  return self.bitgo.keychains().add(keychainData)
   .then(function() {
     // Add the backup keychain
     if (params.backupXpubProvider) {
