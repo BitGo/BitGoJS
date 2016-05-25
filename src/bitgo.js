@@ -313,7 +313,8 @@ BitGo.prototype.encrypt = function(params) {
   params = params || {};
   common.validateParams(params, ['input', 'password'], []);
 
-  var encryptOptions = { iter: 10000, ks: 256 };
+  var randomSalt = sjcl.random.randomWords(2,0);
+  var encryptOptions = { iter: 10000, ks: 256, salt: randomSalt };
   return sjcl.encrypt(params.password, params.input, encryptOptions);
 };
 
