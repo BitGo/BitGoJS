@@ -499,6 +499,32 @@ describe('BitGo', function() {
       });
     });
 
+    describe('getWalletAddress', function() {
+      it('address not found', function() {
+        return bitgo.getWalletAddress({ address: 'mk6ZqJBctDBbVuy6FHK9ddS7CVtRJnN15a' }) // not a bitgo address
+        .then(function(result) {
+          throw new Error("unexpected success on non bitgo address");
+        })
+        .catch(function(error) {
+          error.message.should.include('not found');
+        })
+        .done();
+      });
+
+      it('get', function() {
+        return bitgo.getWalletAddress({ address: TestBitGo.TEST_WALLET1_ADDRESS2 })
+        .then(function(result) {
+          result.should.have.property('address');
+          result.should.have.property('wallet');
+          result.should.have.property('path');
+          result.should.have.property('chain');
+          result.should.have.property('index');
+          result.address.should.eql(TestBitGo.TEST_WALLET1_ADDRESS2);
+          result.wallet.should.eql(TestBitGo.TEST_WALLET1_ADDRESS);
+        });
+      });
+    });
+
     describe('instant', function() {
       it('get guarantee', function() {
         return bitgo.instantGuarantee({ id: '56562ee923ab7f3a28d638085ba6955a' })

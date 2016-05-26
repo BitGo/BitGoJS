@@ -313,6 +313,8 @@ BitGo.prototype.encrypt = function(params) {
   params = params || {};
   common.validateParams(params, ['input', 'password'], []);
 
+  // SJCL internally reuses salts for the same password, so we force a new random salt everytime
+  // We use random.randomWords(2,0) because it's what SJCL uses for randomness by default
   var randomSalt = sjcl.random.randomWords(2,0);
   var encryptOptions = { iter: 10000, ks: 256, salt: randomSalt };
   return sjcl.encrypt(params.password, params.input, encryptOptions);
@@ -1056,6 +1058,20 @@ BitGo.prototype.getBitGoFeeAddress = function(params, callback) {
   var self = this;
   return this.post(this.url('/billing/address'))
   .send({})
+  .result()
+  .nodeify(callback);
+};
+
+//
+// getWalletAddress
+// Gets an address object (including the wallet id) given an address
+//
+BitGo.prototype.getWalletAddress = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['address'], [], callback);
+
+  var self = this;
+  return this.get(this.url('/walletaddress/' + params.address))
   .result()
   .nodeify(callback);
 };
