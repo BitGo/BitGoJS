@@ -1026,7 +1026,11 @@ Wallet.prototype.sendMany = function(params, callback) {
       message: params.message,
       sequenceId: params.sequenceId,
       instant: params.instant,
-      otp: params.otp
+      otp: params.otp,
+      // The below params are for logging only, and do not impact the API call
+      estimatedSize: transaction.estimatedSize,
+      feeRate: feeRate,
+      fee: fee
     });
   })
   .then(function(result) {
@@ -1105,6 +1109,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   var feeRate;
   var bitgoFee;
   var travelInfos;
+  var estimatedSize;
 
   return Q()
   .then(function() {
@@ -1114,6 +1119,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   .spread(function(keychain, transaction) {
     fee = transaction.fee;
     feeRate = transaction.feeRate;
+    estimatedSize = transaction.estimatedSize;
     // Sign the transaction
     transaction.keychain = keychain;
     bitgoFee = transaction.bitgoFee;
@@ -1127,7 +1133,8 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
       feeRate: feeRate,
       instant: params.instant,
       bitgoFee: bitgoFee,
-      travelInfos: travelInfos
+      travelInfos: travelInfos,
+      estimatedSize: estimatedSize
     });
   })
   .nodeify(callback);
@@ -1431,7 +1438,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   if ((typeof(minConfirms) !== 'number' || minConfirms < 0)) {
     throw new Error('minConfirms needs to be an integer equal to or bigger than 0');
   }
-  
+
   var iterationCount = 0;
 
   var self = this;

@@ -1234,7 +1234,7 @@ describe('Wallet API', function() {
       });
 
       it('estimateFee with amount', function() {
-        return wallet1.estimateFee({amount: 6200 * 1e8})
+        return wallet1.estimateFee({ amount: 6200 * 1e8, noSplitChange: true })
         .then(function(result) {
           result.feeRate.should.eql(0.000112 * 1e8);
           result.estimatedSize.should.eql(75327);
@@ -1245,7 +1245,7 @@ describe('Wallet API', function() {
       it('estimateFee with recipients (1 recipient)', function() {
         var recipients = [];
         recipients.push({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 6200 * 1e8});
-        return wallet1.estimateFee({recipients: recipients})
+        return wallet1.estimateFee({ recipients: recipients, noSplitChange: true })
         .then(function(result) {
           result.feeRate.should.eql(0.000112 * 1e8);
           result.estimatedSize.should.eql(75327);
@@ -1257,7 +1257,7 @@ describe('Wallet API', function() {
         var recipients = [];
         recipients.push({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 6195 * 1e8});
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 5 * 1e8});
-        return wallet1.estimateFee({recipients: recipients})
+        return wallet1.estimateFee({ recipients: recipients, noSplitChange: true })
         .then(function(result) {
           result.feeRate.should.eql(0.000112 * 1e8);
           result.estimatedSize.should.eql(75361);
@@ -1268,7 +1268,7 @@ describe('Wallet API', function() {
       it('approximate', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, noSplitChange: true })
         .then(function(result) {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
@@ -1282,7 +1282,7 @@ describe('Wallet API', function() {
       it('approximate with double fees', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: undefined, feeRate: 0.0002 * 1e8})
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, fee: undefined, feeRate: 0.0002 * 1e8, noSplitChange: true })
         .then(function(result) {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
@@ -1304,7 +1304,7 @@ describe('Wallet API', function() {
       it('approximate with feeRate set by feeTxConfirmTarget 1 (estimatefee monkeypatch)', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1})
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1, noSplitChange: true })
         .then(function(result) {
           var feeUsed = result.fee;
           assert.equal(feeUsed, 1039513); // tx size will be 75kb * 0.000138 * 1e8
@@ -1314,7 +1314,7 @@ describe('Wallet API', function() {
       it('approximate with feeRate with maxFeeRate (server gives too high a fee and we use max)', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1, maxFeeRate: 5000})
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 1, maxFeeRate: 5000, noSplitChange: true })
         .then(function(result) {
           var feeUsed = result.fee;
           assert.equal(feeUsed, 376635);
@@ -1324,7 +1324,7 @@ describe('Wallet API', function() {
       it('approximate with feeRate set by feeTxConfirmTarget 3 (estimatefee monkeypatch)', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3})
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3, noSplitChange: true })
         .then(function(result) {
           var feeUsed = result.fee;
           assert.equal(feeUsed, 235021); // tx size will be 75kb * 0.0000312 * 1e8
@@ -1337,7 +1337,7 @@ describe('Wallet API', function() {
         // undo the monkey patch so we get the right max fee
         var feeMonkeyPatch = wallet1.bitgo.estimateFee;
         wallet1.bitgo.estimateFee = patch2;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3, maxFeeRate: 2200})
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 3, maxFeeRate: 2200, noSplitChange: true })
         .then(function(result) {
           wallet1.bitgo.estimateFee = feeMonkeyPatch;
           var feeUsed = result.fee;
@@ -1348,7 +1348,7 @@ describe('Wallet API', function() {
       it('approximate with feeRate set by feeTxConfirmTarget fallback (estimatefee monkeypatch)', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 4})
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 4, noSplitChange: true })
         .then(function(result) {
           var feeUsed = result.fee;
           assert.equal(feeUsed, 7532700); // tx size will be 75kb * 0.001 (max feerate as defined in transactionBuilder)

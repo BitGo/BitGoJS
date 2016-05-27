@@ -33,7 +33,7 @@ exports.createTransaction = function(params) {
   var minConfirms = params.minConfirms || 0;
   var validate = params.validate === undefined ? true : params.validate;
   var recipients = [];
-  var extraChangeAmounts;
+  var extraChangeAmounts = [];
   var travelInfos;
 
   // Sanity check the arguments passed in
@@ -261,7 +261,7 @@ exports.createTransaction = function(params) {
       });
       // For backwards compatibility, respect the old splitChangeSize=0 parameter
       if (!params.noSplitChange && params.splitChangeSize !== 0) {
-        extraChangeAmounts = results.extraChangeAmounts;
+        extraChangeAmounts = results.extraChangeAmounts || [];
       }
     });
   };
@@ -284,8 +284,8 @@ exports.createTransaction = function(params) {
     }
   };
 
-  var estimateTxSizeBytes = function (nExtraChange) {
-    nExtraChange = nExtraChange || 0;
+  var estimateTxSizeBytes = function() {
+    var nExtraChange = extraChangeAmounts.length;
     var sizePerP2SHInput = 295;
     var sizePerP2PKHInput = 160;
     var sizePerOutput = 34;
@@ -299,9 +299,9 @@ exports.createTransaction = function(params) {
     return sizePerP2SHInput * nP2SHInputs + sizePerP2PKHInput * nP2PKHInputs + sizePerOutput * nOutputs;
   };
 
-  // Approximate the fee based on number of inputs
+  // Approximate the fee based on number of inputs & outputs
   var estimatedSize = 0;
-  var calculateApproximateFee = function () {
+  var calculateApproximateFee = function() {
     var feeRateToUse = typeof(feeRate) !== 'undefined' ? feeRate : constants.fallbackFeeRate;
     estimatedSize = estimateTxSizeBytes();
     return Math.ceil(estimatedSize * feeRateToUse / 1000);
@@ -442,7 +442,6 @@ exports.createTransaction = function(params) {
         });
       }
 
-      extraChangeAmounts = extraChangeAmounts || [];
       var extraChangeTotal = _.sum(extraChangeAmounts);
       // Sanity check
       if (extraChangeTotal > changeAmount) {
@@ -536,7 +535,7 @@ exports.createTransaction = function(params) {
       instant: params.instant,
       bitgoFee: bitgoFeeInfo,
       estimatedSize: estimatedSize,
-      travelInfos: travelInfos
+      travelInfos: travelInfos,
     };
 
     // Add for backwards compatibility
