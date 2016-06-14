@@ -206,6 +206,7 @@ var BitGo = function(params) {
         // browser (browserify sets process.browser).
         req.set('User-Agent', self._userAgent);
       }
+      req.timeout(process.env.BITGO_TIMEOUT || 60000);
       return req;
     };
   };
