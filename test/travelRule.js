@@ -215,7 +215,7 @@ describe('Travel Rule API', function() {
       .then(function(res) {
         res.matched.should.equal(2);
         res.results.should.have.length(2);
-        _(res.results).pluck('result').filter().value().should.have.length(2);
+        _(res.results).map('result').filter().value().should.have.length(2);
       });
     });
   });

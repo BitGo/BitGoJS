@@ -198,7 +198,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
     // Attempt to figure out the outputs by choosing all outputs that were not going back to the wallet as change addresses
     return self.wallet.addresses({chain: 1, sort: -1, limit:500})
     .then(function(result) {
-      var changeAddresses = _.indexBy(result.addresses, 'address');
+      var changeAddresses = _.keyBy(result.addresses, 'address');
       transaction.outs.forEach(function (out) {
         var outAddress = Address.fromOutputScript(out.script, network).toBase58Check();
         if (!changeAddresses[outAddress]) {

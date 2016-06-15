@@ -68,7 +68,7 @@
     "ecurve": "^1.0.2",
     "express": "^4.11.1",
     "http-proxy": "1.11.1",
-    "lodash": "3.7.0",
+    "lodash": "4.13.1",
     "minimist": "0.2.0",
     "moment": "^2.11.2",
     "morgan": "1.5.3",

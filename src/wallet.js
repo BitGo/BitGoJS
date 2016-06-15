@@ -1197,7 +1197,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
     throw new Error('xprv provided was not a private key (found xpub instead)');
   }
 
-  var walletXpubs = _.pluck(self.keychains, 'xpub');
+  var walletXpubs = _.map(self.keychains, 'xpub');
   if (!_.includes(walletXpubs, xpub)) {
     throw new Error('xprv provided was not a keychain on this wallet!');
   }
@@ -1295,7 +1295,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
     }
 
     // this is all the money that is currently in the wallet
-    grossAmount = _(allUnspents).pluck('value').sum();
+    grossAmount = _(allUnspents).map('value').sum();
 
     // in order to not modify the params object, we create a copy
     transactionParams = _.extend({}, params);
@@ -1319,7 +1319,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
     // let's find a nice, equal distribution of our Satoshis among the new addresses
     var splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
     // map the newly created addresses to the almost components amounts we just calculated
-    transactionParams.recipients = _.zipObject(_.pluck(newAddresses, 'address'), splitAmounts);
+    transactionParams.recipients = _.zipObject(_.map(newAddresses, 'address'), splitAmounts);
     transactionParams.noSplitChange = true;
     // attempt to create a transaction. As it is a wallet-sweeping transaction with no fee, we expect it to fail
     return self.sendMany(transactionParams)
@@ -1342,7 +1342,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
       // that means that the distribution has to be recalculated
       var remainingSplitAmounts = splitNumberIntoCloseNaturalNumbers(netAmount, target);
       // and the distribution again mapped to the new addresses
-      transactionParams.recipients = _.zipObject(_.pluck(newAddresses, 'address'), remainingSplitAmounts);
+      transactionParams.recipients = _.zipObject(_.map(newAddresses, 'address'), remainingSplitAmounts);
       // this time, the transaction creation should work
       return self.sendMany(transactionParams);
     });
@@ -1506,7 +1506,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       var txParams = _.extend({}, params);
       currentAddress = newAddress;
       // the total amount that we are consolidating within this batch
-      grossAmount = _(currentChunk).pluck('value').sum(); // before fees
+      grossAmount = _(currentChunk).map('value').sum(); // before fees
 
       txParams.unspents = currentChunk;
       txParams.recipients = {};

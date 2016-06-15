@@ -1908,7 +1908,7 @@ describe('Wallet API', function() {
           return wallet3.unspents({ instant: true, target: 10000 * 1e8 });
         })
         .then(function(unspents) {
-          instantBalanceFromUnspentsNative = _.sum(unspents, 'value');
+          instantBalanceFromUnspentsNative = _.sumBy(unspents, 'value');
           return wallet3.instantBalance();
         })
         .then(function(balance) {
@@ -2467,7 +2467,7 @@ describe('Wallet API', function() {
       })
       .then(function(wallet) {
         wallet.id.should.eql(wallet1.id());
-        var rulesById = _.indexBy(wallet.admin.policy.rules, 'id');
+        var rulesById = _.keyBy(wallet.admin.policy.rules, 'id');
         rulesById.should.have.property('test1');
         rulesById['test1'].action.type.should.eql('getApproval');
         rulesById['test1'].condition.amount.should.eql(amount);
@@ -2479,7 +2479,7 @@ describe('Wallet API', function() {
     it('get policy and rules', function() {
       return wallet1.getPolicy({})
       .then(function(policy) {
-        var rulesById = _.indexBy(policy.rules, 'id');
+        var rulesById = _.keyBy(policy.rules, 'id');
         rulesById.should.have.property('test1');
         rulesById['test1'].action.type.should.eql('getApproval');
         rulesById['test1'].condition.amount.should.eql(amount);
@@ -2491,7 +2491,7 @@ describe('Wallet API', function() {
     it('get policy status', function() {
       return wallet1.getPolicyStatus({})
       .then(function(policyStatus) {
-        var rulesById = _.indexBy(policyStatus.statusResults, 'ruleId');
+        var rulesById = _.keyBy(policyStatus.statusResults, 'ruleId');
         rulesById['test1'].ruleId.should.eql('test1');
         rulesById['test1'].status.should.have.property('remaining');
         rulesById['test1'].status.remaining.should.be.greaterThan(0);
@@ -2502,7 +2502,7 @@ describe('Wallet API', function() {
       return wallet1.removePolicyRule({ id: 'test1' })
       .then(function(wallet) {
         wallet.id.should.eql(wallet1.id());
-        var rulesById = _.indexBy(wallet.admin.policy.rules, 'id');
+        var rulesById = _.keyBy(wallet.admin.policy.rules, 'id');
         rulesById.should.not.have.property('test1');
       });
     });

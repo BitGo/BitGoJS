@@ -110,7 +110,7 @@ describe('Webhooks', function() {
       wallet.listWebhooks()
       .then(function (result) {
         result.webhooks.length.should.not.eql(0);
-        var urls = _.pluck(result.webhooks, 'url');
+        var urls = _.map(result.webhooks, 'url');
         urls.should.include(url);
         done();
       })
@@ -154,7 +154,7 @@ describe('Webhooks', function() {
         return wallet.listWebhooks();
       })
       .then(function (result) {
-        var urls = _.pluck(result, 'url');
+        var urls = _.map(result, 'url');
         urls.should.not.include(url);
         done();
       })

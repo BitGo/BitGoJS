@@ -354,7 +354,7 @@ exports.createTransaction = function(params) {
     var totalFee = fee + (bitgoFeeInfo ? bitgoFeeInfo.amount : 0);
 
     if (feeSingleKeySourceAddress) {
-      if (totalFee > _.sum(feeSingleKeyUnspents, 'value')) {
+      if (totalFee > _.sumBy(feeSingleKeyUnspents, 'value')) {
         var err = new Error('Insufficient fee amount available in single key fee source');
         err.result = {
           fee: fee,
@@ -723,7 +723,7 @@ exports.verifyInputSignatures = function(transaction, inputIndex, pubScript, ign
       }
       for (index = 1; index < decompiledPubScript.length - 2; ++index) {
         // we minus 1 because the key indexes start from the second chunk (first chunk is used for total keys)
-        if (_.contains(ignoreKeyIndices, index - 1)) {
+        if (_.includes(ignoreKeyIndices, index - 1)) {
           // ignore this public key (do not treat it as valid for a signature)
           continue;
         }

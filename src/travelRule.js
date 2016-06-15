@@ -238,7 +238,7 @@ TravelRule.prototype.sendMany = function(params, callback) {
 
   var self = this;
   var travelInfoMap = _(travelInfos)
-    .indexBy('outputIndex')
+    .keyBy('outputIndex')
     .mapValues(function(travelInfo) {
       return self.validateTravelInfo(travelInfo);
     })
