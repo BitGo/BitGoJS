@@ -21,6 +21,7 @@ Q.longStackTrace = true;
 
 describe('Wallet API', function() {
   var bitgo;
+  var wallets;
   var wallet1, wallet2, wallet3, safewallet;
 
   before(function(done) {
@@ -790,53 +791,68 @@ describe('Wallet API', function() {
       });
     });
 
-    // Disabled -- consistently broken
     describe('Unspent Fanning And Consolidation', function(){
 
-      it('arguments', function(done){
-        assert.throws(function() { wallet1.fanOutUnspents('invalid'); });
-        assert.throws(function() { wallet1.fanOutUnspents({}); });
-        assert.throws(function() { wallet1.fanOutUnspents({target: -4}); });
-        assert.throws(function() { wallet1.fanOutUnspents({target: 0}); });
-        assert.throws(function() { wallet1.fanOutUnspents({target: 2.3}); });
+      var regroupWallet;
+      before(function() {
+        var walletParams = {
+          id: TestBitGo.TEST_WALLET_REGROUP_ADDRESS
+        };
+        return bitgo.wallets().get(walletParams)
+        .then(function(wallet) {
+          regroupWallet = wallet;
+        })
+      });
 
-        assert.throws(function() { wallet1.consolidateUnspents('invalid'); });
-        assert.throws(function() { wallet1.consolidateUnspents({target: -4}); });
-        assert.throws(function() { wallet1.consolidateUnspents({target: 0}); });
-        assert.throws(function() { wallet1.consolidateUnspents({target: 2.3}); });
-        assert.throws(function() { wallet1.consolidateUnspents({target: 3, maxInputCountPerConsolidation: -4}); });
-        assert.throws(function() { wallet1.consolidateUnspents({target: 3, maxInputCountPerConsolidation: 0}); });
-        assert.throws(function() { wallet1.consolidateUnspents({target: 3, maxInputCountPerConsolidation: -2.3}); });
+      it('arguments', function(done){
+        assert.throws(function() { regroupWallet.fanOutUnspents('invalid'); });
+        assert.throws(function() { regroupWallet.fanOutUnspents({}); });
+        assert.throws(function() { regroupWallet.fanOutUnspents({target: -4}); });
+        assert.throws(function() { regroupWallet.fanOutUnspents({target: 0}); });
+        assert.throws(function() { regroupWallet.fanOutUnspents({target: 2.3}); });
+
+        assert.throws(function() { regroupWallet.consolidateUnspents('invalid'); });
+        assert.throws(function() { regroupWallet.consolidateUnspents({target: -4}); });
+        assert.throws(function() { regroupWallet.consolidateUnspents({target: 0}); });
+        assert.throws(function() { regroupWallet.consolidateUnspents({target: 2.3}); });
+        assert.throws(function() { regroupWallet.consolidateUnspents({target: 3, maxInputCountPerConsolidation: -4}); });
+        assert.throws(function() { regroupWallet.consolidateUnspents({target: 3, maxInputCountPerConsolidation: 0}); });
+        assert.throws(function() { regroupWallet.consolidateUnspents({target: 3, maxInputCountPerConsolidation: -2.3}); });
         done();
       });
 
       it('prepare unspents', function() {
         var options = {
-          walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
-          password: TestBitGo.TEST_WALLET2_PASSCODE,
+          walletPassphrase: TestBitGo.TEST_WALLET_REGROUP_PASSCODE,
           otp: '0000000',
-          target: 2
+          target: 2,
+          minConfirms: 0
         };
         // this unit test should simply not throw an error
-        return sharedWallet.regroupUnspents(options);
+        return bitgo.unlock({ otp: '0000000' })
+        .then(function() {
+          return regroupWallet.regroupUnspents(options);
+        });
       });
 
       it('fan out unspents', function() {
 
-        return Q()
-        .then(function(){
-          // at this point, we have 2 unspents. Let's test fanning them out into 20
-          var options = {
-            walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
-            password: TestBitGo.TEST_WALLET2_PASSCODE,
-            otp: '0000000',
-            target: 10, // the maximum consolidation count per input will be 7. This is to ensure we have multiple batches
-            validate: false,
-            minConfirms: 0
-          };
-          return sharedWallet.fanOutUnspents(options);
+        var options = {
+          walletPassphrase: TestBitGo.TEST_WALLET_REGROUP_PASSCODE,
+          otp: '0000000',
+          target: 10, // the maximum consolidation count per input will be 7. This is to ensure we have multiple batches
+          validate: false,
+          minConfirms: 0
+        };
+
+        return Q.delay(5000) // allow time for unspents to be registered
+        .then(function() {
+          return bitgo.unlock({ otp: '0000000' })
         })
-        .then(function(response){
+        .then(function() {
+          return regroupWallet.fanOutUnspents(options);
+        })
+        .then(function(response) {
           response.should.have.property('hash');
           response.should.have.property('tx');
           response.status.should.equal('accepted');
@@ -844,26 +860,24 @@ describe('Wallet API', function() {
 
       });
 
-      xit('wait after fanning out', function(done) {
-        setTimeout(done, 2000); // let's just wait for 2 seconds so the consolidation works
-      });
+      it('consolidate unspents with automatic input count per consolidation', function() {
 
-      xit('consolidate unspents with automatic input count per consolidation', function() {
+        var options = {
+          walletPassphrase: TestBitGo.TEST_WALLET_REGROUP_PASSCODE,
+          otp: '0000000',
+          target: 8,
+          validate: false,
+          minConfirms: 0
+        };
 
-        return Q()
-        .then(function(){
-          // at this point, we have 10 unspents. Let's test consolidating them into 8
-          var options = {
-            walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
-            password: TestBitGo.TEST_WALLET2_PASSCODE,
-            otp: '0000000',
-            target: 8,
-            validate: false,
-            minConfirms: 0,
-          };
-          return sharedWallet.consolidateUnspents(options);
+        return Q.delay(5000) // allow time for unspents to be registered
+        .then(function() {
+          return bitgo.unlock({ otp: '0000000' })
         })
-        .then(function(response){
+        .then(function() {
+          return regroupWallet.consolidateUnspents(options);
+        })
+        .then(function(response) {
           response.length.should.equal(1);
           var firstConsolidation = response[0];
           firstConsolidation.should.have.property('hash');
@@ -884,22 +898,24 @@ describe('Wallet API', function() {
           progressCallbackCount++;
         };
 
-        return Q()
-        .then(function(){
-          // at this point, we have 8 unspents. Let's test consolidating them into four
-          var options = {
-            walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE,
-            password: TestBitGo.TEST_WALLET2_PASSCODE,
-            otp: '0000000',
-            target: 2,
-            maxInputCountPerConsolidation: maxInputCountPerConsolidation,
-            validate: false,
-            minConfirms: 0,
-            progressCallback: progressCallback
-          };
-          return sharedWallet.consolidateUnspents(options);
+        var options = {
+          walletPassphrase: TestBitGo.TEST_WALLET_REGROUP_PASSCODE,
+          otp: '0000000',
+          target: 2,
+          maxInputCountPerConsolidation: maxInputCountPerConsolidation,
+          validate: false,
+          minConfirms: 0,
+          progressCallback: progressCallback
+        };
+
+        return Q.delay(5000)
+        .then(function() {
+          return bitgo.unlock({ otp: '0000000' })
         })
-        .then(function(response){
+        .then(function() {
+          return regroupWallet.consolidateUnspents(options);
+        })
+        .then(function(response) {
           response.length.should.equal(1);
           progressCallbackCount.should.equal(3);
           var firstConsolidation = response[0];
