@@ -9,7 +9,7 @@ var request = require("supertest-as-promised");
 var _ = require('lodash');
 
 var BitGoJS = require('../src/index');
-var expessApp = require('../src/expressApp');
+var expressApp = require('../src/expressApp');
 var TestBitGo = require('./lib/test_bitgo');
 
 describe('Bitgo Express', function() {
@@ -23,7 +23,7 @@ describe('Bitgo Express', function() {
     };
     bitgo = new TestBitGo();
     bitgo.initializeTestVars();
-    var app = expessApp(args);
+    var app = expressApp(args);
     agent = request.agent(app);
     done();
   });
@@ -42,7 +42,7 @@ describe('Bitgo Express', function() {
     });
 
     it('error - proxied calls disabled', function(done) {
-      var app = expessApp(_.extend(
+      var app = expressApp(_.extend(
         {},
         {
           debug: false,
@@ -141,6 +141,17 @@ describe('Bitgo Express', function() {
       });
     });
 
+    it('error - not authed (eth)', function(done) {
+      agent.post('/api/v1/eth/wallet/generate')
+      .send({ passphrase:'abc', label:'helloworld' })
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(401);
+        done();
+      });
+    });
+
     it('new keychain', function(done) {
       agent.post('/api/v1/keychain/local')
       .send()
@@ -222,6 +233,56 @@ describe('Bitgo Express', function() {
           res.body.should.have.property('backupKeychain');
           res.body.backupKeychain.should.have.property('xpub');
           res.body.backupKeychain.xpub.should.equal(backupXpub);
+          done();
+        });
+      });
+    });
+
+    it('create eth wallet', function(done) {
+      agent.post('/api/v1/user/unlock')
+      .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+      .send({ otp: '0000000', duration: 5 })
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(200);
+
+        var backupXpub = "xpub6AHA9hZDN11k2ijHMeS5QqHx2KP9aMBRhTDqANMnwVtdyw2TDYRmF8PjpvwUFcL1Et8Hj59S3gTSMcUQ5gAqTz3Wd8EsMTmF3DChhqPQBnU";
+        agent.post('/api/v1/eth/wallet/generate')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ passphrase: "chamchatka", label: "kokoko", backupXpub: backupXpub })
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) { throw err; }
+          res.should.have.status(200);
+          res.body.should.have.property('wallet');
+          res.body.should.have.property('backupKeychain');
+          res.body.backupKeychain.should.have.property('xpub');
+          res.body.backupKeychain.should.have.property('ethAddress');
+          res.body.backupKeychain.xpub.should.equal(backupXpub);
+          done();
+        });
+      });
+    });
+
+    it('send eth transaction', function(done) {
+      agent.post('/api/v1/user/unlock')
+      .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+      .send({ otp: '0000000', duration: 5 })
+      .expect('Content-Type', /json/)
+      .end(function(err, res) {
+        if (err) { throw err; }
+        res.should.have.status(200);
+
+        agent.post('/api/v1/eth/wallet/' + TestBitGo.TEST_ETH_WALLET1_ADDRESS + '/sendtransaction')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ recipients: [{ toAddress: TestBitGo.TEST_ETH_WALLET1_ADDRESS, value: '36000' }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
+        .expect('Content-Type', /json/)
+        .end(function(err, res) {
+          if (err) { throw err; }
+          res.should.have.status(200);
+          res.body.should.have.property('tx');
+          res.body.should.have.property('hash');
           done();
         });
       });

@@ -507,8 +507,7 @@ describe('BitGo', function() {
         })
         .catch(function(error) {
           error.message.should.include('not found');
-        })
-        .done();
+        });
       });
 
       it('get', function() {
@@ -542,8 +541,7 @@ describe('BitGo', function() {
         })
         .catch(function(error) {
           error.message.should.include('Invalid signature');
-        })
-        .done();
+        });
       });
     });
 
@@ -583,7 +581,7 @@ describe('BitGo', function() {
         result.xpub.should.equal(TestBitGo.TEST_USER_ECDH_XPUB);
         done();
       })
-      .done();
+      .finally(done);
     });
   });
 

@@ -7,10 +7,13 @@
 var superagent = require('superagent');
 var bitcoin = require('./bitcoin');
 var Blockchain = require('./blockchain');
+var EthBlockchain = require('./eth/ethBlockchain');
 var Keychains = require('./keychains');
 var TravelRule = require('./travelRule');
 var Wallet = require('./wallet');
+var EthWallet = require('./eth/ethWallet');
 var Wallets = require('./wallets');
+var EthWallets = require('./eth/ethWallets');
 var Markets = require('./markets');
 var PendingApprovals = require('./pendingapprovals');
 var sjcl = require('./sjcl.min');
@@ -29,7 +32,7 @@ if (!process.browser) {
 var _end = superagent.Request.prototype.end;
 superagent.Request.prototype.end = function(cb) {
   var self = this;
-  if (typeof cb === 'function') return _end.call(self, cb)
+  if (typeof cb === 'function') return _end.call(self, cb);
 
   return new Q.Promise(function(resolve, reject) {
     var error;
@@ -77,18 +80,18 @@ superagent.Request.prototype.result = function(optionalField) {
   };
 
   return this.then(
-    function(res) {
-      if (typeof(res.status) === 'number' && res.status >= 200 && res.status < 300) {
-        return optionalField ? res.body[optionalField] : res.body;
-      }
-      throw errFromResponse(res);
-    },
-    function(e) {
-      if (e.response) {
-        throw errFromResponse(e.response);
-      }
-      throw e;
+  function(res) {
+    if (typeof(res.status) === 'number' && res.status >= 200 && res.status < 300) {
+      return optionalField ? res.body[optionalField] : res.body;
     }
+    throw errFromResponse(res);
+  },
+  function(e) {
+    if (e.response) {
+      throw errFromResponse(e.response);
+    }
+    throw e;
+  }
   );
 };
 
@@ -102,7 +105,7 @@ var testNetWarningMessage = false;
 var BitGo = function(params) {
   params = params || {};
   if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork']) ||
-      (params.useProduction && typeof(params.useProduction) != 'boolean')) {
+  (params.useProduction && typeof(params.useProduction) != 'boolean')) {
     throw new Error('invalid argument');
   }
 
@@ -124,10 +127,10 @@ var BitGo = function(params) {
   }
 
   if (params.customRootURI ||
-      params.customBitcoinNetwork ||
-      params.customSigningAddress ||
-      process.env.BITGO_CUSTOM_ROOT_URI ||
-      process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
+  params.customBitcoinNetwork ||
+  params.customSigningAddress ||
+  process.env.BITGO_CUSTOM_ROOT_URI ||
+  process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
     params.env = 'custom';
     if (params.customRootURI) {
       common.Environments['custom'].uri = params.customRootURI;
@@ -156,6 +159,7 @@ var BitGo = function(params) {
   this.env = params.env;
 
   common.setNetwork(common.Environments[params.env].network);
+  common.setEthNetwork(common.Environments[params.env].ethNetwork);
 
   if (!this._baseUrl) {
     this._baseUrl = common.Environments[params.env].uri;
@@ -220,6 +224,44 @@ var BitGo = function(params) {
   this.fetchConstants();
 };
 
+BitGo.prototype.eth = function() {
+  var self = this;
+
+  var ethBlockchain = function() {
+    if (!self._ethBlockchain) {
+      self._ethBlockchain = new EthBlockchain(self);
+    }
+    return self._ethBlockchain;
+  };
+
+  var ethWallets = function() {
+    if (!self._ethWallets) {
+      self._ethWallets = new EthWallets(self);
+    }
+    return self._ethWallets;
+  };
+
+  var newEthWalletObject = function(walletParams) {
+    return new EthWallet(self, walletParams);
+  };
+
+  var verifyEthAddress = function(params) {
+    params = params || {};
+    common.validateParams(params, ['address'], []);
+
+    var address = params.address;
+    return address.indexOf('0x') == 0 && address.length == 42;
+  };
+
+  return {
+    blockchain: ethBlockchain,
+    wallets: ethWallets,
+    newWalletObject: newEthWalletObject,
+    verifyAddress: verifyEthAddress,
+    weiToEtherString: Util.weiToEtherString
+  };
+};
+
 BitGo.prototype.getValidate = function() {
   return this._validate;
 };
@@ -256,7 +298,7 @@ BitGo.prototype.toJSON = function() {
   return {
     user: this._user,
     token: this._token,
-    extensionKey: this._extensionKey ?  this._extensionKey.toWIF() : null
+    extensionKey: this._extensionKey ? this._extensionKey.toWIF() : null
   };
 };
 
@@ -280,7 +322,7 @@ BitGo.prototype.verifyAddress = function(params) {
 
   try {
     address = bitcoin.address.fromBase58Check(params.address);
-  } catch(e) {
+  } catch (e) {
     return false;
   }
 
@@ -801,7 +843,7 @@ BitGo.prototype.getUser = function(params, callback) {
 // Get the current logged in user
 //
 BitGo.prototype.me = function(params, callback) {
-  return this.getUser({id: 'me'}, callback);
+  return this.getUser({ id: 'me' }, callback);
 };
 
 //
@@ -899,7 +941,7 @@ BitGo.prototype.getSharingKey = function(params, callback) {
 // ping
 // Test connectivity to the server
 //
-BitGo.prototype.ping = function(params,callback) {
+BitGo.prototype.ping = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -956,7 +998,7 @@ BitGo.prototype.travelRule = function() {
 // pendingApprovals
 // Get pending approvals that can be approved/ or rejected
 //
-BitGo.prototype.pendingApprovals = function( ) {
+BitGo.prototype.pendingApprovals = function() {
   if (!this._pendingApprovals) {
     this._pendingApprovals = new PendingApprovals(this);
   }
@@ -1108,16 +1150,20 @@ BitGo.prototype.fetchConstants = function(params, callback) {
 BitGo.prototype.getConstants = function(params) {
   params = params || {};
 
+  // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
   var defaultConstants = {
     maxFee: 0.1e8,
     maxFeeRate: 100000,
     minFeeRate: 2000,
     fallbackFeeRate: 20000,
-    minOutputSize: 2730
+    minOutputSize: 2730,
+    bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47'
   };
 
   this.fetchConstants(params);
-  return this._constants || defaultConstants;
+
+  // use defaultConstants as the backup for keys that are not set in this._constants
+  return _.merge({}, defaultConstants, this._constants);
 };
 
 module.exports = BitGo;

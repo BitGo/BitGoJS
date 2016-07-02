@@ -39,6 +39,10 @@ var handleCreateWalletWithKeychains = function(req) {
   return req.bitgo.wallets().createWalletWithKeychains(req.body);
 };
 
+var handleEthGenerateWallet = function(req) {
+  return req.bitgo.eth().wallets().generateWallet(req.body);
+};
+
 var handleSendCoins = function(req) {
   return req.bitgo.wallets().get({id: req.params.id})
   .then(function(wallet) {
@@ -81,6 +85,19 @@ var handleCreateTransaction = function(req) {
   return req.bitgo.wallets().get({id: req.params.id})
   .then(function(wallet) {
     return wallet.createTransaction(req.body);
+  })
+  .catch(function(err) {
+    if (err.message === "Insufficient funds") {
+      throw apiResponse(400, err, "Insufficient funds");
+    }
+    throw err;
+  });
+};
+
+var handleEthSendTransaction = function(req) {
+  return req.bitgo.eth().wallets().get({ id: req.params.id })
+  .then(function(wallet) {
+    return wallet.sendTransaction(req.body);
   })
   .catch(function(err) {
     if (err.message === "Insufficient funds") {
@@ -253,4 +270,8 @@ exports = module.exports = function(app, args) {
 
   app.put('/api/v1/wallet/:id/consolidateunspents', parseBody, prepareBitGo(args), promiseWrapper(handleConsolidateUnspents, args));
   app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(args), promiseWrapper(handleFanOutUnspents, args));
+
+  // eth
+  app.post('/api/v1/eth/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleEthGenerateWallet, args));
+  app.post('/api/v1/eth/wallet/:id/sendtransaction', parseBody, prepareBitGo(args), promiseWrapper(handleEthSendTransaction, args));
 };

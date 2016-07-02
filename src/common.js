@@ -1,13 +1,45 @@
 exports.Environments = {
-  prod: { uri: 'https://www.bitgo.com', network: 'bitcoin', signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja' },
-  staging: { uri: 'https://staging.bitgo.com', network: 'bitcoin', signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja' },
-  test: { uri: 'https://test.bitgo.com', network: 'testnet', signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3' },
-  dev: { uri: 'https://webdev.bitgo.com', network: 'testnet', signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3' },
-  local: { uri: 'http://localhost:3000', network: 'testnet', signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3' },
-  custom: { uri: process.env.BITGO_CUSTOM_ROOT_URI, network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK || 'bitcoin', signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja' }
+  prod: {
+    uri: 'https://www.bitgo.com',
+    network: 'bitcoin',
+    ethNetwork: 'ethereum',
+    signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja'
+  },
+  staging: {
+    uri: 'https://staging.bitgo.com',
+    network: 'bitcoin',
+    ethNetwork: 'ethereum',
+    signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja'
+  },
+  test: {
+    uri: 'https://test.bitgo.com',
+    network: 'testnet',
+    ethNetwork: 'ethereum',
+    signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3'
+  },
+  dev: {
+    uri: 'https://webdev.bitgo.com',
+    network: 'testnet',
+    ethNetwork: 'ethereum',
+    signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3'
+  },
+  local: {
+    uri: 'http://localhost:3000',
+    network: 'testnet',
+    ethNetwork: 'ethereum',
+    signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3'
+  },
+  custom: {
+    uri: process.env.BITGO_CUSTOM_ROOT_URI,
+    network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK || 'bitcoin',
+    ethNetwork: process.env.BITGO_CUSTOM_ETHEREUM_NETWORK || 'ethereum',
+    signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja'
+  }
 };
 
 var bitcoinNetwork;
+var ethereumNetwork;
+
 exports.setNetwork = function(network) {
   if (network == 'bitcoin') {
     bitcoinNetwork = 'bitcoin';
@@ -19,6 +51,14 @@ exports.setNetwork = function(network) {
 
 exports.getNetwork = function() {
   return bitcoinNetwork;
+};
+
+exports.setEthNetwork = function(network) {
+  ethereumNetwork = 'ethereum';
+};
+
+exports.getEthNetwork = function() {
+  return ethereumNetwork;
 };
 
 /**
