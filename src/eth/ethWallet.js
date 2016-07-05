@@ -425,6 +425,10 @@ EthWallet.prototype.sendTransaction = function(params, callback) {
 
   var EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
 
+  if (!params.recipients && params.toAddress && params.value) {
+    params.recipients = [{ toAddress: params.toAddress, value: params.value }];
+  }
+
   if (!params.recipients || !Array.isArray(params.recipients)) {
     throw new Error('expecting array of recipients');
   }
