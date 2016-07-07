@@ -27,10 +27,10 @@ var _ = require('lodash');
 var EthWallet = function(bitgo, wallet) {
   this.bitgo = bitgo;
   this.wallet = wallet;
-  this.addresses = [];
+  this.signingAddresses = [];
 
   if (wallet.private) {
-    this.addresses = wallet.private.addresses;
+    this.signingAddresses = wallet.private.addresses;
   }
 };
 
@@ -299,7 +299,7 @@ EthWallet.prototype.getEncryptedUserKeychain = function(params, callback) {
   var self = this;
 
   return self.bitgo.keychains()
-  .get({ 'ethAddress': self.addresses[0].address })
+  .get({ 'ethAddress': self.signingAddresses[0].address })
   .then(function(keychain) {
     if (!keychain.encryptedXprv) {
       return self.bitgo.reject('No encrypted keychains on this wallet.', callback);
@@ -549,7 +549,7 @@ EthWallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
     throw new Error('xprv provided was not a private key (found xpub instead)');
   }
 
-  var walletAddresses = _.map(self.addresses, 'address');
+  var walletAddresses = _.map(self.signingAddresses, 'address');
   if (!_.includes(walletAddresses, Util.xpubToEthAddress(xpub))) {
     throw new Error('xprv provided did not correspond to any address on this wallet!');
   }

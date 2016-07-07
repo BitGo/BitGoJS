@@ -230,12 +230,12 @@ EthWallets.prototype.generateWallet = function(params, callback) {
 //
 // add
 // Add a new EthWallet (advanced mode).
-// This allows you to manually submit the keychains, type, m and n of the wallet
+// This allows you to manually submit the signing addresses, type, m and n of the wallet
 // Parameters include:
 //    "label": label of the wallet to be shown in UI
 //    "m": number of keys required to unlock wallet (2)
 //    "n": number of keys available on the wallet (3)
-//    "keychains": array of keychain xpubs
+//    "addresses": array of signing addresses
 EthWallets.prototype.add = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['label', 'enterprise'], callback);
