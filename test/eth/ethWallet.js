@@ -367,6 +367,45 @@ describe('Ethereum Wallet API:', function() {
       });
     });
 
+    it('non-undefined gasLimit', function() {
+      return bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '25000' }], gasLimit: null });
+      })
+      .then(function(result) {
+        throw new Error("should not be here");
+      })
+      .catch(function(error) {
+        error.message.should.include("expecting positive integer for gasLimit");
+      });
+    });
+
+    it('non-numeric gasLimit', function() {
+      return bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '25000' }], gasLimit: '10' });
+      })
+      .then(function(result) {
+        throw new Error("should not be here");
+      })
+      .catch(function(error) {
+        error.message.should.include("expecting positive integer for gasLimit");
+      });
+    });
+
+    it('invalid gasLimit', function() {
+      return bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '25000' }], gasLimit: -1 });
+      })
+      .then(function(result) {
+        throw new Error("should not be here");
+      })
+      .catch(function(error) {
+        error.message.should.include("expecting positive integer for gasLimit");
+      });
+    });
+
     it('success', function() {
       var txHash;
       return bitgo.unlock({ otp: '0000000' })

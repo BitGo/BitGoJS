@@ -462,6 +462,12 @@ EthWallet.prototype.sendTransaction = function(params, callback) {
     }
   }
 
+  if (params.gasLimit !== undefined) {
+    if (typeof(params.gasLimit) != 'number' || params.gasLimit < 1) {
+      throw new Error('expecting positive integer for gasLimit');
+    }
+  }
+
   var self = this;
 
   return Q()
@@ -482,7 +488,8 @@ EthWallet.prototype.sendTransaction = function(params, callback) {
       contractSequenceId: prebuildParams.nextContractSequenceId,
       sequenceId: params.sequenceId,
       operationHash: operationHash,
-      signature: signature
+      signature: signature,
+      gasLimit: params.gasLimit
     };
 
     return self.bitgo.post(self.url('/tx/send'))
