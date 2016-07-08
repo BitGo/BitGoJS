@@ -303,6 +303,42 @@ describe('Ethereum Wallets API:', function() {
       });
     });
 
+    it('create with mixed-case backup eth address', function() {
+
+      // Simulate a cold backup key
+      var coldBackupAddress = '0xfb32740232EcF3FD6D5A7bfC514a2cfb8A310e9b';
+      var options = {
+        passphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+        label: TEST_WALLET_LABEL,
+        backupAddress: coldBackupAddress
+      };
+
+      return bitgo.eth().wallets().generateWallet(options)
+      .then(function(result) {
+        assert.notEqual(result, null);
+
+        result.should.have.property('wallet');
+        var wallet = result.wallet;
+
+        assert.equal(wallet.balance(), 0);
+        assert.equal(wallet.label(), TEST_WALLET_LABEL);
+        // assert.equal(wallet.confirmedBalance(), 0);
+        assert.equal(wallet.signingAddresses.length, 3);
+        assert.equal(bitgo.keychains().isValid({ ethAddress: wallet.signingAddresses[0].address }), true);
+        assert.equal(bitgo.keychains().isValid({ ethAddress: wallet.signingAddresses[1].address }), true);
+        assert.equal(bitgo.keychains().isValid({ ethAddress: wallet.signingAddresses[2].address }), true);
+        assert.equal(wallet.signingAddresses[0].address, result.userKeychain.ethAddress);
+        assert.equal(wallet.signingAddresses[1].address, coldBackupAddress.toLowerCase());
+
+        result.userKeychain.should.have.property('encryptedXprv');
+        // result.backupKeychain.should.have.property('xpub');
+        // result.backupKeychain.should.not.have.property('xprv');
+        // result.backupKeychain.should.not.have.property('encryptedXprv');
+
+        return wallet.delete({});
+      });
+    });
+
     it('create with backup xpub provider (KRS wallet)', function() {
       var options = {
         "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,

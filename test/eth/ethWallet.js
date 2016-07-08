@@ -424,6 +424,28 @@ describe('Ethereum Wallet API:', function() {
         // txFound.should.eql(true); UNCOMMENT AFTER SERVER FIX
       });
     });
+
+    xit('success with custom gas limit', function() {
+      var txHash;
+      return bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '36000' }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE, gasLimit: 41234567 });
+      })
+      .then(function(result) {
+        result.should.have.property('hash');
+        result.should.have.property('tx');
+        // TODO: assert correct gas amount
+        result.tx.gas.should.equal(41234567);
+        txHash = result.hash;
+        return wallet1.transfers();
+      })
+      .then(function(result) {
+        result.should.have.property('transfers');
+        var txFound = _.some(result.transfers, function(transfer) { return transfer.txHash === txHash; });
+        // txFound.should.eql(true); UNCOMMENT AFTER SERVER FIX
+      });
+    });
+
   });
 
   describe('Get wallet user encrypted key', function() {

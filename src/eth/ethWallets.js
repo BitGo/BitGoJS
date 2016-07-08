@@ -245,6 +245,9 @@ EthWallets.prototype.add = function(params, callback) {
     throw new Error('invalid argument');
   }
 
+  // lowercase the addresses
+  params.addresses = _.invokeMap(params.addresses, 'toLowerCase');
+
   if (params.m != 2 || params.n != 3) {
     throw new Error('unsupported multi-sig type');
   }
