@@ -58,28 +58,24 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.TEST_WALLET3_ADDRESS2 = '2NFFt4H2vP54WwWjrUVLh7ksF4t6mabCGsh';
     BitGo.TEST_WALLET3_ADDRESS3 = '2NG8HA7qya4pbwbg25NF1SY6nEjM6apT1hF';
 
-    // Ethereum test variables
-    BitGo.TEST_ETH_WALLET1_PASSCODE = 'test wallet #1 security';
-    BitGo.TEST_ETH_WALLET1_XPUB = 'xpub661MyMwAqRbcGArHN1PcNHNhyJb5rZkjNxBorDumey6wv1CX6E3mhVqBpdwG93dusK8LHm4ts9HDk3bfB4hnF6R2Lc14Axm5tKSsh2xh2xw';
-    BitGo.TEST_ETH_WALLET1_ADDRESS = '0x5cd7e5cf09b93b3f84603acfba0191f09fbb12e7';
+    // wallet addresses
+    BitGo.TEST_ETH_WALLET1_ADDRESS = '0x2a45d946acb0534ed9a06723f505c0fc09a87fd8';
+    BitGo.TEST_ETH_WALLET2_ADDRESS = '0xdbdc12ca37f3e65c420cfa172885c2ecc6c8bc6b';
+
+    // labeled addresses (not directly used)
     BitGo.TEST_ETH_WALLET1_ADDRESS2 = '0xeab1cac0d744e99289c1798c280961172e63b508';
-    // BitGo.TEST_ETH_WALLET1_ADDRESS2 = '0x46c383d36e42cae2b718406297451f67fa671a9a';
-    BitGo.TEST_ETH_WALLET2_PASSCODE = 'test wallet #2 security';
-    BitGo.TEST_ETH_WALLET2_ADDRESS = '0x28a69ce37ef21a4de7e745eb7ee3c999d2e891a7';
-    // BitGo.TEST_ETH_WALLET2_ADDRESS = '0x46c383d36e42cae2b718406297451f67fa671a9a';
-    BitGo.TEST_ETH_WALLET3_PASSCODE = 'test wallet #3 security';
-
-    // TEST_WALLET_3 is a KRS wallet
     BitGo.TEST_ETH_WALLET3_ADDRESS = '0xe59dfe5c67114b39a5662cc856be536c614124c0';
-    BitGo.TEST_ETH_WALLET3_ADDRESS2 = '0x04d453650ab2cb926cf44f938c31a51bac39ec7f';
-    BitGo.TEST_ETH_WALLET3_ADDRESS3 = '0x6b5f14c498e45f37f7e277a3f4bc031b01d97778';
 
-    // TEST_WALLET_4 is a safe wallet
-    BitGo.TEST_ETH_WALLET4_ADDRESS = '0xe59dfe5c67114b39a5662cc856be536c614124c0';
+    // wallet xpubs
+    BitGo.TEST_ETH_WALLET1_XPUB = 'xpub661MyMwAqRbcEx4BzQcLh7JREVXCxNMXkaMJthGGA1UpjR2jxf4Z183SCnuYnujTPYTTgbdDYhDSWem23os8tdoYXwMGK4vSDYL1Aj9Z9pD';
 
-    BitGo.TEST_ETH_TRANSACTION = '0xc0c1c720bc5b3583ad3a4075730b44c0c120a0fe660e51817f8c857bf37dbec0';
-    BitGo.TEST_ETH_BLOCK = '0xbee4330cdd56d2bcc47fa42e52e3c089c649b209acc0ae5611f6c7bc7c0b350e';
-    BitGo.TEST_ETH_PARENT_BLOCK = '0x43df14fa812e4862a13db5330a838b0b112bbbb1c293ff1ce97d13fd6626b389';
+    // transactions
+    BitGo.TEST_ETH_TRANSACTION = '0x29fa68687d2263be6bcd637fb758aba59801eacfc78ac9ceef444b194214ba5a';
+    BitGo.TEST_ETH_BLOCK = '0xdd6425966c69a1f4a2630ec5cbd4e9ce26fb026f0d285df1ec64e011ea0fed4f';
+    BitGo.TEST_ETH_PARENT_BLOCK = '0x7d9045cbe4342add4036de0731cdcc786d4d19c0ddf800b9eb58135e2b373c72';
+
+    // wallet for testing unspents regrouping (fanout & consolidate/coalesce)
+    BitGo.TEST_WALLET_REGROUP_ADDRESS = '2MuVshMLfZaXfF6q7af47ZFUtZGGpnyZuLu';
   } else {
     BitGo.TEST_USERID = '543c11ed356d00cb7600000b98794503';
     BitGo.TEST_SHARED_KEY_USERID = '549d0ee835aec81206004c082757570f';

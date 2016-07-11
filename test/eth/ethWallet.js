@@ -1,4 +1,4 @@
-  //
+//
 // Tests for Wallet
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
@@ -121,7 +121,7 @@ describe('Ethereum Wallet API:', function() {
       var originalWalletName = 'Even Better Test Wallet 1';
       var newWalletName = originalWalletName + '(' + renameIndicator + ')';
       return wallet1.setWalletName({ label: newWalletName })
-      .then(function(result){
+      .then(function(result) {
         result.should.have.property('id');
         result.should.have.property('label');
         result.id.should.eql(TestBitGo.TEST_ETH_WALLET1_ADDRESS);
@@ -130,7 +130,7 @@ describe('Ethereum Wallet API:', function() {
         // now, let's rename it back
         return wallet1.setWalletName({ label: originalWalletName });
       })
-      .catch(function(err){
+      .catch(function(err) {
         // it should never be in here
         assert.equal(err, null);
       });
@@ -184,7 +184,6 @@ describe('Ethereum Wallet API:', function() {
       });
     });
 
-    var limitedTxes;
     var limitTestNumTx = 6;
     it('list with limit', function() {
       var options = { limit: limitTestNumTx };
@@ -196,7 +195,6 @@ describe('Ethereum Wallet API:', function() {
         result.start.should.eql(0);
         result.count.should.eql(limitTestNumTx);
         result.transactions.length.should.eql(result.count);
-        limitedTxes = result.transactions;
       });
     });
 
@@ -212,7 +210,7 @@ describe('Ethereum Wallet API:', function() {
         result.start.should.eql(0);
         result.transactions.length.should.eql(result.count);
         result.transactions.forEach(function(transaction) {
-          if (!transaction.confirmations > 0) {
+          if (transaction.confirmations > 0) {
             transaction.should.have.property('blockHeight');
             transaction.blockHeight.should.be.above(minHeight - 1);
           }
@@ -221,20 +219,25 @@ describe('Ethereum Wallet API:', function() {
       });
     });
 
-
     it('list with limit and skip', function() {
       var skipNum = 2;
       var options = { limit: (limitTestNumTx - skipNum), skip: skipNum };
-      return wallet1.transactions(options)
-      .then(function(result){
+      var referenceOptions = { limit: limitTestNumTx };
+      return Q.all([wallet1.transactions(options), wallet1.transactions(referenceOptions)])
+      .spread(function(result, reference) {
         assert.equal(Array.isArray(result.transactions), true);
         // result.should.have.property('total');
         result.should.have.property('count');
-        result.start.should.eql(skipNum);
-        result.count.should.eql(limitTestNumTx - skipNum);
+        result.start.should.equal(skipNum);
+        result.count.should.equal(limitTestNumTx - skipNum);
         result.transactions.length.should.eql(result.count);
-        limitedTxes = limitedTxes.slice(skipNum);
-        result.transactions.should.eql(limitedTxes);
+
+        var limitedTxes = reference.transactions;
+        var limitedTxesSubset = limitedTxes.slice(skipNum);
+
+        // there should be no difference between these object arrays
+        var difference = _.differenceWith(result.transactions, limitedTxes, _.isEqual);
+        difference.length.should.equal(0);
       });
     });
 
@@ -249,7 +252,9 @@ describe('Ethereum Wallet API:', function() {
         result.transaction.entries.length.should.not.eql(0);
         result.transaction.should.have.property('confirmations');
         result.transaction.should.have.property('txHash');
-        result.transaction.should.have.property('blockHeight');
+        if (result.transaction.confirmations > 0) {
+          result.transaction.should.have.property('blockHeight');
+        }
       });
     });
   });
@@ -273,7 +278,6 @@ describe('Ethereum Wallet API:', function() {
       });
     });
 
-    var limitedTransfers;
     var limitTestNumTransfers = 4;
     var totalTransferCount;
     it('list with limit', function() {
@@ -286,25 +290,29 @@ describe('Ethereum Wallet API:', function() {
         result.start.should.eql(0);
         result.count.should.eql(limitTestNumTransfers);
         result.transfers.length.should.eql(result.count);
-        limitedTransfers = result.transfers;
         // totalTransferCount = result.total;
       });
     });
 
     it('list with limit and skip', function() {
       var skipNum = 2;
+      var referenceOptions = { limit: limitTestNumTransfers };
       var options = { limit: (limitTestNumTransfers - skipNum), skip: skipNum };
-      return wallet1.transfers(options)
-      .then(function(result){
+      return Q.all([wallet1.transfers(options), wallet1.transfers(referenceOptions)])
+      .spread(function(result, reference) {
         assert.equal(Array.isArray(result.transfers), true);
         // result.should.have.property('total');
         result.should.have.property('count');
-        result.start.should.eql(skipNum);
+        result.start.should.equal(skipNum);
         // result.total.should.eql(limitTestNumTransfers);
         result.count.should.eql(limitTestNumTransfers - skipNum);
-        result.transfers.length.should.eql(result.count);
-        limitedTransfers = limitedTransfers.slice(skipNum);
-        result.transfers.should.eql(limitedTransfers);
+        result.transfers.length.should.equal(result.count);
+
+        var limitedTransfers = reference.transfers;
+        var limitedTransfersSubset = limitedTransfers.slice(skipNum);
+        // there should be no difference between these object arrays
+        var difference = _.differenceWith(result.transfers, limitedTransfersSubset, _.isEqual);
+        difference.length.should.equal(0);
       });
     });
   });
@@ -357,7 +365,10 @@ describe('Ethereum Wallet API:', function() {
     it('wrong walletPassphrase', function() {
       return bitgo.unlock({ otp: '0000000' })
       .then(function() {
-        return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '25000' }], walletPassphrase: 'wrong passphrase' });
+        return wallet1.sendTransaction({
+          recipients: [{ toAddress: wallet1.id(), value: '25000' }],
+          walletPassphrase: 'wrong passphrase'
+        });
       })
       .then(function(result) {
         throw new Error("should not be here");
@@ -410,7 +421,10 @@ describe('Ethereum Wallet API:', function() {
       var txHash;
       return bitgo.unlock({ otp: '0000000' })
       .then(function() {
-        return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '36000' }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
+        return wallet1.sendTransaction({
+          recipients: [{ toAddress: wallet1.id(), value: '36000' }],
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE
+        });
       })
       .then(function(result) {
         result.should.have.property('hash');
@@ -420,7 +434,9 @@ describe('Ethereum Wallet API:', function() {
       })
       .then(function(result) {
         result.should.have.property('transfers');
-        var txFound = _.some(result.transfers, function(transfer) { return transfer.txHash === txHash; });
+        var txFound = _.some(result.transfers, function(transfer) {
+          return transfer.txHash === txHash;
+        });
         // txFound.should.eql(true); UNCOMMENT AFTER SERVER FIX
       });
     });
@@ -429,7 +445,11 @@ describe('Ethereum Wallet API:', function() {
       var txHash;
       return bitgo.unlock({ otp: '0000000' })
       .then(function() {
-        return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '36000' }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE, gasLimit: 41234567 });
+        return wallet1.sendTransaction({
+          recipients: [{ toAddress: wallet1.id(), value: '36000' }],
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+          gasLimit: 41234567
+        });
       })
       .then(function(result) {
         result.should.have.property('hash');
