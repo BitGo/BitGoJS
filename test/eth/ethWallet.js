@@ -12,7 +12,6 @@ var BitGoJS = require('../../src/index');
 var common = require('../../src/common');
 var TestBitGo = require('../lib/test_bitgo');
 var TransactionBuilder = require('../../src/transactionBuilder');
-var unspentData = require('../fixtures/largeunspents.json');
 var crypto = require("crypto");
 var _ = require('lodash');
 var bitcoin = BitGoJS.bitcoin;

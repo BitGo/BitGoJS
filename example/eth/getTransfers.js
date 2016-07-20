@@ -31,7 +31,7 @@ var getTransactions = function() {
         console.dir(err);
         throw err;
       }
-      console.dir(res);
+      console.dir(res.transfers);
     });
   });
 };
