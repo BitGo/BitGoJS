@@ -1175,11 +1175,65 @@ describe('Wallet API', function() {
         .done();
       });
 
+      xit('prepare wallet1 for transaction size estimation', function() {
+        var options = {
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+          otp: '0000000',
+          target: 15,
+          validate: false,
+          minConfirms: 0
+        };
+
+        return Q.delay(5000) // allow time for unspents to be registered
+        .then(function() {
+          return bitgo.unlock({ otp: '0000000' })
+        })
+        .then(function() {
+          return wallet1.consolidateUnspents(options);
+        })
+        .catch(function(error) {
+          // even if there was an error, it was fine. We only want to reduce the number of unspents if it is more than 15
+          console.log('wallet 1 not consolidated');
+          console.dir(error);
+        });
+      });
+
       it('no change required', function() {
         // Attempt to spend the full balance without any fees.
-        var recipients = {};
-        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance();
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, fee: 0, minConfirms: 0, bitgoFee: { amount: 0, address: 'foo' } })
+
+        var walletmock = Object.create(wallet1);
+
+        // prepare the mock
+        return wallet1.unspentsPaged(arguments)
+        .then(function(unspents) {
+          // it's ascending by default, but we need it to be descending
+          var sortedUnspents = _.reverse(_.sortBy(unspents.unspents, 'value'));
+
+          // limit the amount to no more than 15 unspents
+          var filteredArray = _.take(sortedUnspents, 15);
+
+          unspents.total = filteredArray.length;
+          unspents.count = filteredArray.length;
+          unspents.unspents = filteredArray;
+          walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
+
+          walletmock.unspentsPaged = function() {
+            return Q.fcall(function() {
+              return unspents;
+            });
+          };
+        })
+        .then(function() {
+          var recipients = {};
+          recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance();
+          return TransactionBuilder.createTransaction({
+            wallet: walletmock,
+            recipients: recipients,
+            fee: 0,
+            minConfirms: 0,
+            bitgoFee: { amount: 0, address: 'foo' }
+          })
+        })
         .then(function(result) {
           result.fee.should.equal(0);
           result.changeAddresses.length.should.equal(0);
