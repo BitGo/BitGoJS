@@ -221,17 +221,30 @@ describe('Bitgo Express', function() {
 
     it('send eth transaction', function() {
       var amount = '36000';
+      var destination = TestBitGo.TEST_ETH_WALLET2_ADDRESS;
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function() {
         return agent.post('/api/v1/eth/wallet/' + TestBitGo.TEST_ETH_WALLET1_ADDRESS + '/sendtransaction')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({ recipients: [{ toAddress: TestBitGo.TEST_ETH_WALLET1_ADDRESS, value: amount }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
+        .send({ recipients: [{ toAddress: destination, value: amount }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
       })
       .then(function(res) {
         res.should.have.status(200);
         res.body.should.have.property('tx');
         res.body.should.have.property('hash');
-      });
+        return agent.get('/api/v1/eth/wallet/' + TestBitGo.TEST_ETH_WALLET1_ADDRESS + '/transfer/' + res.body.hash)
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send();
+      })
+      .then(function(res) {
+        res.should.have.status(200);
+        var transfer = res.body.transfer;
+        transfer.from.should.eql(TestBitGo.TEST_ETH_WALLET1_ADDRESS);
+        transfer.outputs.length.should.eql(1);
+        transfer.outputs[0].to.should.eql(destination);
+        transfer.outputs[0].value.should.eql(amount);
+        transfer.creator.should.eql(TestBitGo.TEST_USERID);
+      })
     });
 
     it('send coins - wallet1 to wallet3', function() {

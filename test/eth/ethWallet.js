@@ -418,26 +418,31 @@ describe('Ethereum Wallet API:', function() {
 
     it('success', function() {
       var txHash;
+      var sequenceId = "randSeq_" + (new Date().getTime());
       return bitgo.unlock({ otp: '0000000' })
       .then(function() {
         return wallet1.sendTransaction({
           recipients: [{ toAddress: wallet1.id(), value: '36000' }],
-          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+          sequenceId: sequenceId
         });
       })
       .then(function(result) {
         result.should.have.property('hash');
         result.should.have.property('tx');
         txHash = result.hash;
-        return wallet1.transfers();
+        return wallet1.getTransfer({ id: txHash })
       })
       .then(function(result) {
-        result.should.have.property('transfers');
-        var txFound = _.some(result.transfers, function(transfer) {
-          return transfer.txHash === txHash;
-        });
-        // txFound.should.eql(true); UNCOMMENT AFTER SERVER FIX
-      });
+        result.should.have.property('transfer');
+        result.transfer.txHash.should.eql(txHash);
+        result.transfer.outputs.length.should.eql(1);
+        result.transfer.value.should.eql('-36000');
+        return wallet1.getTransfer({ id: sequenceId })
+      })
+      .then(function(result) {
+        result.transfer.txHash.should.eql(txHash);
+      })
     });
 
     xit('success with custom gas limit', function() {
@@ -456,12 +461,11 @@ describe('Ethereum Wallet API:', function() {
         // TODO: assert correct gas amount
         result.tx.gas.should.equal(41234567);
         txHash = result.hash;
-        return wallet1.transfers();
+        return wallet1.getTransfer({ id: txHash })
       })
       .then(function(result) {
-        result.should.have.property('transfers');
-        var txFound = _.some(result.transfers, function(transfer) { return transfer.txHash === txHash; });
-        // txFound.should.eql(true); UNCOMMENT AFTER SERVER FIX
+        result.transfer.txHash.should.eql(txHash);
+        result.transfer.gas.should.eql(41234567);
       });
     });
 

@@ -572,16 +572,14 @@ describe('BitGo', function() {
       });
     });
 
-    it('Get user ECDH sharing keychain', function(done) {
+    it('Get user ECDH sharing keychain', function() {
       return bitgo.unlock({ otp: '0000000' })
-      .then (function() {
+      .then(function() {
         return bitgo.getECDHSharingKeychain();
       })
       .then(function (result) {
         result.xpub.should.equal(TestBitGo.TEST_USER_ECDH_XPUB);
-        done();
-      })
-      .finally(done);
+      });
     });
   });
 
