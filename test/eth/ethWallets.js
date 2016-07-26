@@ -413,7 +413,7 @@ describe('Ethereum Wallets API:', function() {
       assert.throws(function() { wallets.get({}, function() {}); });
     });
 
-    it('non existent wallet', function(done) {
+    it('non existent wallet', function() {
       var options = {
         id: '0xaaaaaaaaaaaaaaa0123456789abcdef72e63b508'
       };
@@ -421,7 +421,6 @@ describe('Ethereum Wallets API:', function() {
       .catch(function(error) {
         error.message.should.equal('not found');
         error.status.should.equal(404);
-        done();
       })
     });
 
@@ -447,15 +446,13 @@ describe('Ethereum Wallets API:', function() {
   });
 
   describe('Delete', function() {
-    it('arguments', function(done) {
+    it('arguments', function() {
       assert.throws(function() { testWallet.delete({}, 'invalid'); });
-      done();
     });
 
-    it('delete', function(done) {
+    it('delete', function() {
       testWallet.delete({}, function(err, status) {
         assert.equal(err, null);
-        done();
       });
     });
   });

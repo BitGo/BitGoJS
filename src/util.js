@@ -18,6 +18,7 @@ Util.bnToByteArrayUnsigned = function(bn) {
   }
 };
 
+// Generate the output script for a BTC P2SH multisig address
 Util.p2shMultisigOutputScript = function(m, pubKeys) {
   var redeemScript = bitcoin.script.multisigOutput(2, pubKeys);
   var hash = bitcoin.crypto.hash160(redeemScript);
@@ -66,6 +67,7 @@ Util.weiToEtherString = function(wei) {
   return ether.toPrecision();
 };
 
+// Utility method for handling arguments of pageable queries
 Util.preparePageableQuery = function(params) {
   var query = {};
   if (params.limit) {

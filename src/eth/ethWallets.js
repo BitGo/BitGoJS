@@ -288,7 +288,6 @@ EthWallets.prototype.remove = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  var self = this;
   return this.bitgo.del(this.bitgo.url('/eth/wallet/' + params.id))
   .result()
   .nodeify(callback);

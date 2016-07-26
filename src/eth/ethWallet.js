@@ -5,11 +5,8 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var TransactionBuilder = require('../transactionBuilder');
 var bitcoin = require('../bitcoin');
 var ethereumUtil = require('ethereumjs-util');
-var Keychains = require('../keychains');
-var PendingApproval = require('../pendingapproval');
 var Util = require('../util');
 var ethUtil = require("ethereumjs-util");
 var ethAbi = require('ethereumjs-abi');
@@ -331,9 +328,6 @@ EthWallet.prototype.createAddress = function(params, callback) {
 //  }
 //
 EthWallet.prototype.getTransactionPreBuildParams = function(params, callback) {
-  params = params || {};
-
-  var self = this;
   return this.bitgo.post(this.url('/tx/prebuild'))
   .send({}) // in future we'll send the target destination, value and other data
   .result()

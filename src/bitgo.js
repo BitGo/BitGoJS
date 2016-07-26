@@ -224,6 +224,7 @@ var BitGo = function(params) {
   this.fetchConstants();
 };
 
+// Accessor object for Ethereum methods
 BitGo.prototype.eth = function() {
   var self = this;
 
@@ -253,12 +254,19 @@ BitGo.prototype.eth = function() {
     return address.indexOf('0x') == 0 && address.length == 42;
   };
 
+  var retrieveGasBalance = function(params, callback) {
+    return self.get(self.url('/eth/user/gas'))
+    .result()
+    .nodeify(callback);
+  };
+
   return {
     blockchain: ethBlockchain,
     wallets: ethWallets,
     newWalletObject: newEthWalletObject,
     verifyAddress: verifyEthAddress,
-    weiToEtherString: Util.weiToEtherString
+    weiToEtherString: Util.weiToEtherString,
+    gasBalance: retrieveGasBalance
   };
 };
 
@@ -273,6 +281,7 @@ BitGo.prototype.setValidate = function(validate) {
   this._validate = validate;
 };
 
+// Return the current BitGo environment
 BitGo.prototype.getEnv = function() {
   return this.env;
 };

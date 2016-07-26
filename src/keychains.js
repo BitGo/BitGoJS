@@ -145,12 +145,16 @@ Keychains.prototype.list = function(params, callback) {
 //
 Keychains.prototype.add = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['xpub'], ['encryptedXprv'], callback);
+  common.validateParams(params, ['xpub'], ['encryptedXprv', 'type'], callback);
 
   return this.bitgo.post(this.bitgo.url('/keychain'))
-  .send(params)
+  .send({
+    xpub: params.xpub,
+    encryptedXprv: params.encryptedXprv,
+    type: params.type
+  })
   .result()
-  .then(function(keychain){
+  .then(function(keychain) {
     if (keychain.xpub && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }

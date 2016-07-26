@@ -246,9 +246,11 @@ describe('Ethereum Wallet API:', function() {
       .then(function(result) {
         result.transaction.should.have.property('gas');
         // gas used only there if confirmations > 0
+        result.transaction.should.have.property('type');
         result.transaction.should.have.property('gasPrice');
         result.transaction.should.have.property('entries');
-        result.transaction.entries.length.should.not.eql(0);
+        result.transaction.entries.length.should.not.equal(0);
+        result.transaction.type.should.not.equal('internal');
         result.transaction.should.have.property('confirmations');
         result.transaction.should.have.property('txHash');
         if (result.transaction.confirmations > 0) {
@@ -471,12 +473,22 @@ describe('Ethereum Wallet API:', function() {
 
   });
 
+  describe('Gas Balance', function() {
+    it('should retrieve gas balance', function() {
+      return bitgo.eth().gasBalance()
+      .then(function(balance) {
+        balance.should.have.property('balance');
+        balance.should.have.property('updateTime');
+        assert(typeof(balance.balance) === 'string');
+      });
+    });
+  });
+
   describe('Get wallet user encrypted key', function() {
-    it('arguments', function(done) {
+    it('arguments', function() {
       assert.throws(function() { wallet1.getEncryptedUserKeychain(undefined, 'invalid'); });
       assert.throws(function() { wallet1.getEncryptedUserKeychain({}, 'invalid'); });
       assert.throws(function() { wallet1.transactions('invalid', function() {}); });
-      done();
     });
 
     it('get key', function() {
@@ -496,14 +508,13 @@ describe('Ethereum Wallet API:', function() {
   });
 
   describe('Freeze Wallet', function() {
-    it('arguments', function (done) {
+    it('arguments', function () {
       assert.throws(function () {
         wallet2.freeze({duration: 'asdfasdasd'});
       });
       assert.throws(function () {
         wallet2.freeze({duration: 5}, 'asdasdsa');
       });
-      done();
     });
 
     it('perform freeze', function() {
