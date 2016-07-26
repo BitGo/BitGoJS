@@ -247,6 +247,22 @@ describe('Bitgo Express', function() {
       })
     });
 
+    it('create transaction - wallet1 to wallet3', function() {
+      return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
+      .then(function() {
+        return agent.post('/api/v1/wallet/' + TestBitGo.TEST_WALLET1_ADDRESS + '/createtransaction')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ recipients: [{ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 2 * 1e8 }], walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE });
+      })
+      .then(function(res) {
+        res.status.should.eql(200);
+        var txInfo = res.body.txInfo;
+        txInfo.nP2SHInputs.should.be.greaterThan(0);
+        txInfo.nP2PKHInputs.should.eql(0);
+        txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
+      });
+    });
+
     it('send coins - wallet1 to wallet3', function() {
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function() {
@@ -263,7 +279,7 @@ describe('Bitgo Express', function() {
       });
     });
 
-    it('send coins - wallet3 to wallet1 with insufficient amount', function() {
+    it('create transaction - wallet3 to wallet1 with insufficient amount', function() {
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function() {
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_WALLET3_ADDRESS + '/createtransaction')
@@ -278,6 +294,32 @@ describe('Bitgo Express', function() {
         res.body.message.should.equal("Insufficient funds");
         res.body.result.fee.should.be.greaterThan(546);
         res.body.result.available.should.be.greaterThan(546);
+        var txInfo = res.body.result.txInfo;
+        txInfo.nP2SHInputs.should.be.greaterThan(0);
+        txInfo.nP2PKHInputs.should.eql(0);
+        txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
+      });
+    });
+
+    it('send coins - wallet3 to wallet1 with insufficient amount', function() {
+      return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
+      .then(function() {
+        return agent.post('/api/v1/wallet/' + TestBitGo.TEST_WALLET3_ADDRESS + '/sendcoins')
+        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
+        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 10000 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE, fee: 0.0003 * 1e8 });
+      })
+      .then(function(res) {
+        res.status.should.equal(400);
+        res.body.result.should.have.property('fee');
+        res.body.result.should.have.property('available');
+        res.body.message.should.equal("Insufficient funds");
+        var result = res.body.result;
+        result.should.have.property('fee');
+        result.fee.should.equal(0.0003 * 1e8);
+        var txInfo = res.body.result.txInfo;
+        txInfo.nP2SHInputs.should.be.greaterThan(0);
+        txInfo.nP2PKHInputs.should.eql(0);
+        txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
       });
     });
 
@@ -350,6 +392,21 @@ describe('Bitgo Express', function() {
         res.body.should.have.property('tx');
         res.body.tx.should.not.eql('');
         res.body.fee.should.eql(12345);
+      });
+    });
+
+    it('calculate tx size from parameters', function() {
+      return agent.post('/api/v1/calculateminerfeeinfo')
+      .send({
+        feeRate: 20000,
+        nP2SHInputs: 2,
+        nP2PKHInputs: 1,
+        nOutputs: 4
+      })
+      .then(function(res) {
+        res.should.have.status(200);
+        res.body.size.should.eql(886);
+        res.body.fee.should.eql(17720);
       });
     });
 

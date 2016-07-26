@@ -206,7 +206,7 @@ exports.createTransaction = function(params) {
   };
 
   // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
-  var getDynamicFeeEstimate = function () {
+  var getDynamicFeeRateEstimate = function () {
     if (params.feeTxConfirmTarget || !feeParamsDefined) {
       return bitgo.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate })
       .then(function(result) {
@@ -284,28 +284,8 @@ exports.createTransaction = function(params) {
     }
   };
 
-  var estimateTxSizeBytes = function() {
-    var nExtraChange = extraChangeAmounts.length;
-    var sizePerP2SHInput = 295;
-    var sizePerP2PKHInput = 160;
-    var sizePerOutput = 34;
-
-    // Add 1 output for change, possibly 1 output for instant fee, and 1 output for the single key change if needed.
-    // If we do change splitting, we will add more fee later.
-    var nOutputs = (recipients.length + 1 + nExtraChange + (bitgoFeeInfo ? 1 : 0) + (feeSingleKeySourceAddress ? 1 : 0));
-    var nP2SHInputs = transaction.tx.ins.length + (feeSingleKeySourceAddress ? 1 : 0);
-    var nP2PKHInputs = (feeSingleKeySourceAddress ? 1 : 0);
-
-    return sizePerP2SHInput * nP2SHInputs + sizePerP2PKHInput * nP2PKHInputs + sizePerOutput * nOutputs;
-  };
-
-  // Approximate the fee based on number of inputs & outputs
-  var estimatedSize = 0;
-  var calculateApproximateFee = function() {
-    var feeRateToUse = typeof(feeRate) !== 'undefined' ? feeRate : constants.fallbackFeeRate;
-    estimatedSize = estimateTxSizeBytes();
-    return Math.ceil(estimatedSize * feeRateToUse / 1000);
-  };
+  var minerFeeInfo = {};
+  var txInfo = {};
 
   // Iterate unspents, sum the inputs, and save _inputs with the total
   // input amound and final list of inputs to use with the transaction.
@@ -334,8 +314,25 @@ exports.createTransaction = function(params) {
       });
     }
 
+    txInfo = {
+      nP2SHInputs: transaction.tx.ins.length - (feeSingleKeySourceAddress ? 1 : 0),
+      nP2PKHInputs: feeSingleKeySourceAddress ? 1 : 0,
+      nOutputs: (
+        recipients.length + 1 + // recipients and change
+        extraChangeAmounts.length + // extra change splitting
+        (bitgoFeeInfo && bitgoFeeInfo.amount > 0 ? 1 : 0) + // add output for bitgo fee
+        (feeSingleKeySourceAddress ? 1 : 0) // add single key source address change
+      )
+    };
     if (shouldComputeBestFee) {
-      var approximateFee = calculateApproximateFee();
+      minerFeeInfo = exports.calculateMinerFeeInfo({
+        bitgo: params.wallet.bitgo,
+        feeRate: feeRate,
+        nP2SHInputs: txInfo.nP2SHInputs,
+        nP2PKHInputs: txInfo.nP2PKHInputs,
+        nOutputs: txInfo.nOutputs
+      });
+      var approximateFee = minerFeeInfo.fee;
       var shouldRecurse = typeof(fee) === 'undefined' || approximateFee > fee;
       fee = approximateFee;
       // Recompute totalAmount from scratch
@@ -359,9 +356,10 @@ exports.createTransaction = function(params) {
         err.result = {
           fee: fee,
           feeRate: feeRate,
-          estimatedSize: estimatedSize,
+          estimatedSize: minerFeeInfo.size,
           available: inputAmount,
-          bitgoFee: bitgoFeeInfo
+          bitgoFee: bitgoFeeInfo,
+          txInfo: txInfo
         };
         return Q.reject(err);
       }
@@ -372,9 +370,10 @@ exports.createTransaction = function(params) {
       err.result = {
         fee: fee,
         feeRate: feeRate,
-        estimatedSize: estimatedSize,
+        estimatedSize: minerFeeInfo.size,
         available: inputAmount,
-        bitgoFee: bitgoFeeInfo
+        bitgoFee: bitgoFeeInfo,
+        txInfo: txInfo
       };
       return Q.reject(err);
     }
@@ -382,9 +381,8 @@ exports.createTransaction = function(params) {
 
   // Add the outputs for this transaction.
   var collectOutputs = function () {
-    var estimatedTxSize = estimateTxSizeBytes();
-    if (estimatedTxSize >= 90000) {
-      throw new Error('transaction too large: estimated size ' + estimatedTxSize + ' bytes');
+    if (minerFeeInfo.size >= 90000) {
+      throw new Error('transaction too large: estimated size ' + minerFeeInfo.size + ' bytes');
     }
 
     var outputs = [];
@@ -534,8 +532,9 @@ exports.createTransaction = function(params) {
       feeRate: feeRate,
       instant: params.instant,
       bitgoFee: bitgoFeeInfo,
-      estimatedSize: estimatedSize,
-      travelInfos: travelInfos,
+      estimatedSize: minerFeeInfo.size,
+      txInfo: txInfo,
+      travelInfos: travelInfos
     };
 
     // Add for backwards compatibility
@@ -550,11 +549,57 @@ exports.createTransaction = function(params) {
     return getBitGoFee();
   })
   .then(function() {
-    return Q.all([getBitGoFeeAddress(), getDynamicFeeEstimate(), getUnspents(), getUnspentsForSingleKey()]);
+    return Q.all([getBitGoFeeAddress(), getDynamicFeeRateEstimate(), getUnspents(), getUnspentsForSingleKey()]);
   })
   .then(collectInputs)
   .then(collectOutputs)
   .then(serialize);
+};
+
+/**
+ * Calculate the size (bytes) and fee of a transaction, given it's parameters
+ * @params params {
+ *   bitgo: bitgo object
+ *   feeRate: satoshis per kilobyte
+ *   nP2SHInputs: number of P2SH (multisig) inputs
+ *   nP2PKHInputs: number of P2PKH (single sig) inputs
+ *   nOutputs: number of outputs
+ * }
+ *
+ * @returns {
+ *   size: estimated size of the transaction in bytes
+ *   fee: estimated fee in satoshis for the transaction
+ *   feeRate: fee rate that was used to estimate the fee for the transaction
+ * }
+ */
+exports.calculateMinerFeeInfo = function(params) {
+  if (typeof(params.bitgo) === 'undefined' || typeof(params.bitgo.getConstants) !== 'function') {
+    throw new Error('expecting bitgo object');
+  }
+
+  if (typeof(params.nP2SHInputs) !== 'number' || params.nP2SHInputs < 1) {
+    throw new Error('expecting positive nP2SHInputs');
+  }
+
+  if (typeof(params.nOutputs) !== 'number' || params.nOutputs < 1) {
+    throw new Error('expecting positive nOutputs');
+  }
+
+  var feeRateToUse = typeof(params.feeRate) !== 'undefined' ? params.feeRate :  params.bitgo.getConstants().fallbackFeeRate;
+
+  var sizePerP2SHInput = 295;
+  var sizePerP2PKHInput = 160;
+  var sizePerOutput = 34;
+
+  var estimatedSize = sizePerP2SHInput * params.nP2SHInputs +
+    sizePerP2PKHInput * (params.nP2PKHInputs || 0) +
+    sizePerOutput * params.nOutputs;
+
+  return {
+    size: estimatedSize,
+    fee: Math.ceil(estimatedSize * feeRateToUse / 1000),
+    feeRate: feeRateToUse
+  };
 };
 
 /*

@@ -1130,12 +1130,19 @@ describe('Wallet API', function() {
       it('insufficient funds', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = wallet1.balance() + 1e8;
-        return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients})
+        return Q()
+        .then(function() {
+          return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients });
+        })
         .catch(function(e) {
           e.message.should.eql('Insufficient funds');
           e.result.should.have.property('fee');
-        })
-        .done();
+          e.result.should.have.property('txInfo');
+          e.result.txInfo.should.have.property('nP2SHInputs');
+          e.result.txInfo.should.have.property('nP2PKHInputs');
+          e.result.txInfo.should.have.property('nOutputs');
+          e.result.txInfo.nP2PKHInputs.should.eql(0);
+        });
       });
 
       it('conflicting output script and address', function() {
@@ -1292,6 +1299,10 @@ describe('Wallet API', function() {
           result.feeRate.should.eql(0.000112 * 1e8);
           result.walletId = wallet1.id;
           result.fee.should.eql(843663);
+          result.should.have.property('txInfo');
+          result.txInfo.nP2SHInputs.should.eql(255);
+          result.txInfo.nP2PKHInputs.should.eql(0);
+          result.txInfo.nOutputs.should.eql(3);
         });
       });
 
@@ -1324,6 +1335,10 @@ describe('Wallet API', function() {
         .then(function(result) {
           var feeUsed = result.fee;
           assert.equal(feeUsed, 1039513); // tx size will be 75kb * 0.000138 * 1e8
+          result.should.have.property('txInfo');
+          result.txInfo.nP2SHInputs.should.eql(255);
+          result.txInfo.nP2PKHInputs.should.eql(0);
+          result.txInfo.nOutputs.should.eql(3);
         });
       });
 
@@ -1401,6 +1416,10 @@ describe('Wallet API', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, forceChangeAtEnd: true, noSplitChange: true })
         .then(function(result) {
           result.changeAddresses.length.should.equal(1);
+          result.should.have.property('txInfo');
+          result.txInfo.nP2SHInputs.should.eql(255);
+          result.txInfo.nP2PKHInputs.should.eql(0);
+          result.txInfo.nOutputs.should.eql(3);
         });
       });
 
@@ -1419,6 +1438,10 @@ describe('Wallet API', function() {
         return TransactionBuilder.createTransaction({wallet: wallet1, recipients: recipients, feeRate: 0.0002 * 1e8, forceChangeAtEnd: true })
         .then(function(result) {
           result.changeAddresses.length.should.equal(3);
+          result.should.have.property('txInfo');
+          result.txInfo.nP2SHInputs.should.eql(255);
+          result.txInfo.nP2PKHInputs.should.eql(0);
+          result.txInfo.nOutputs.should.eql(5);
         });
       });
 
@@ -1476,6 +1499,10 @@ describe('Wallet API', function() {
           result.walletId.should.equal(wallet1.id());
           result.unspents[result.unspents.length - 1].redeemScript.should.eql(false);
           result.changeAddresses.length.should.eql(2); // we expect 2 changeaddresses - 1 for the usual wallet, and 1 for the fee address
+          result.should.have.property('txInfo');
+          result.txInfo.nP2SHInputs.should.eql(1);
+          result.txInfo.nP2PKHInputs.should.eql(1);
+          result.txInfo.nOutputs.should.eql(3);
         });
       });
 
@@ -1794,15 +1821,21 @@ describe('Wallet API', function() {
     });
 
     describe('Bad input', function () {
-      it('send coins - insufficient funds', function (done) {
-        wallet1.sendCoins(
-          { address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 22 * 1e8 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
-          function (err, result) {
-            err.message.should.eql('Insufficient funds');
-            assert.notEqual(err, null);
-            done();
-          }
-        );
+      it('send coins - insufficient funds', function () {
+        return wallet1.sendCoins(
+          { address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 22 * 1e8 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }
+        )
+        .then(function(res) {
+          assert(false); // should not reach
+        })
+        .catch(function(err) {
+          err.message.should.eql('Insufficient funds');
+          err.result.should.have.property('txInfo');
+          err.result.txInfo.should.have.property('nP2SHInputs');
+          err.result.txInfo.should.have.property('nP2PKHInputs');
+          err.result.txInfo.should.have.property('nOutputs');
+          err.result.txInfo.nP2PKHInputs.should.eql(0);
+        });
       });
 
       it('send coins - instant unsupported on non-krs wallet', function() {

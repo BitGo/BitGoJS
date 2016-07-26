@@ -1,6 +1,7 @@
 var bodyParser = require('body-parser');
 
 var BitGoJS = require('./index');
+var TransactionBuilder = require('./transactionBuilder');
 var common = require('./common');
 var Q = require('q');
 var url = require('url');
@@ -160,6 +161,16 @@ var handleFanOutUnspents = function(req) {
   });
 };
 
+var handleCalculateMinerFeeInfo = function(req) {
+  return TransactionBuilder.calculateMinerFeeInfo({
+    bitgo: req.bitgo,
+    feeRate: req.body.feeRate,
+    nP2SHInputs: req.body.nP2SHInputs,
+    nP2PKHInputs: req.body.nP2PKHInputs,
+    nOutputs: req.body.nOutputs
+  });
+};
+
 var apiResponse = function(status, result, message) {
   var err = new Error(message);
   err.status = status;
@@ -252,6 +263,7 @@ exports = module.exports = function(app, args) {
   app.post('/api/v1/decrypt', parseBody, prepareBitGo(args), promiseWrapper(handleDecrypt, args));
   app.post('/api/v1/encrypt', parseBody, prepareBitGo(args), promiseWrapper(handleEncrypt, args));
   app.post('/api/v1/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleVerifyAddress, args));
+  app.post('/api/v1/calculateminerfeeinfo', parseBody, prepareBitGo(args), promiseWrapper(handleCalculateMinerFeeInfo, args));
 
   app.post('/api/v1/keychain/local', parseBody, prepareBitGo(args), promiseWrapper(handleCreateLocalKeyChain, args));
   app.post('/api/v1/keychain/derive', parseBody, prepareBitGo(args), promiseWrapper(handleDeriveLocalKeyChain, args));
