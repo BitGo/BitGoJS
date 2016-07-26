@@ -585,7 +585,7 @@ exports.calculateMinerFeeInfo = function(params) {
     throw new Error('expecting positive nOutputs');
   }
 
-  var feeRateToUse = typeof(params.feeRate) !== 'undefined' ? params.feeRate :  params.bitgo.getConstants().fallbackFeeRate;
+  var feeRateToUse = params.feeRate || params.bitgo.getConstants().fallbackFeeRate;
 
   var sizePerP2SHInput = 295;
   var sizePerP2PKHInput = 160;
