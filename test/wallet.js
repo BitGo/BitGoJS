@@ -1145,6 +1145,39 @@ describe('Wallet API', function() {
         });
       });
 
+      it('insufficient funds on an empty wallet', function() {
+        var wallet;
+        var options = {
+          "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
+          "label": "temp-empty-wallet",
+          "backupXpubProvider": "keyvault-io"
+        };
+
+        return bitgo.wallets().createWalletWithKeychains({
+          "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
+          "label": "temp-empty-wallet-1"
+        })
+        .then(function(result) {
+          result.should.have.property('wallet');
+          wallet = result.wallet;
+          var recipients = {};
+          recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 1e8; // wallet is empty
+          return TransactionBuilder.createTransaction({wallet: wallet, recipients: recipients});
+        })
+        .catch(function(e) {
+          e.message.should.eql('Insufficient funds');
+          e.result.should.have.property('fee');
+          e.result.should.have.property('txInfo');
+          e.result.txInfo.should.have.property('nP2SHInputs');
+          e.result.txInfo.should.have.property('nP2PKHInputs');
+          e.result.txInfo.should.have.property('nOutputs');
+          e.result.txInfo.nP2SHInputs.should.eql(0);
+          e.result.txInfo.nP2PKHInputs.should.eql(0);
+
+          return wallet.delete({});
+        });
+      });
+
       it('conflicting output script and address', function() {
         var recipients = [];
         recipients.push({ address: '2Mx3TZycg4XL5sQFfERBgNmg9Ma7uxowK9y', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ad', amount: wallet1.balance() - 5000 });

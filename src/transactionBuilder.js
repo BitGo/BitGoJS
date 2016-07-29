@@ -577,7 +577,7 @@ exports.calculateMinerFeeInfo = function(params) {
     throw new Error('expecting bitgo object');
   }
 
-  if (typeof(params.nP2SHInputs) !== 'number' || params.nP2SHInputs < 1) {
+  if (typeof(params.nP2SHInputs) !== 'number') {
     throw new Error('expecting positive nP2SHInputs');
   }
 
