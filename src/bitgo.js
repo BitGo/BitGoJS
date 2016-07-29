@@ -210,6 +210,8 @@ var BitGo = function(params) {
         // browser (browserify sets process.browser).
         req.set('User-Agent', self._userAgent);
       }
+      // Set the request timeout to just above 5 minutes by default
+      req.timeout(process.env.BITGO_TIMEOUT * 1000 || 305 * 1000);
       return req;
     };
   };

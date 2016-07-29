@@ -9,22 +9,16 @@
 
 var BitGoJS = require('../../src/index.js');
 
-if (process.argv.length < 5) {
-  console.log("usage:\n\t" + process.argv[0] + " " + process.argv[1] + " <user> <pass> <label> [backupXpub]");
+if (process.argv.length < 2) {
+  console.log("usage:\n\t" + process.argv[0] + " " + process.argv[1] + " <pass> <label> [backupXpub]");
   process.exit(-1);
 }
 
-var user = process.argv[2];
-var password = process.argv[3];
-var otp = '0000000';
-var label = process.argv[4];
+var password = process.argv[2];
+var label = process.argv[3];
 
 var backupXpub = null;
-if (process.argv.length > 5) {
-  backupXpub = process.argv[5];
-}
-
-var bitgo = new BitGoJS.BitGo({ accessToken: 'b96de779d08f8c16e5d1904cd293923d72f6845110802f155fb478f85bf7f386' });
+var bitgo = new BitGoJS.BitGo({ accessToken: process.env.ACCESS_TOKEN });
 
 // Create the wallet
 bitgo.eth().wallets().generateWallet({"passphrase": password, "label": label, "backupXpub": backupXpub}, function(err, result) {
