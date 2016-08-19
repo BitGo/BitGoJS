@@ -179,7 +179,6 @@ describe('PendingApproval', function() {
     it('arguments', function() {
       assert.throws(function() { pendingApproval.approve({}, 'invalid'); });
       assert.throws(function() { pendingApproval.approve('invalid'); });
-      assert.throws(function() { pendingApproval.approve(); });
     });
 
     it('error when self approving', function() {
@@ -203,6 +202,19 @@ describe('PendingApproval', function() {
         .then(function(result) {
           result.state.should.eql('approved');
           result.info.policyRuleRequest.update.condition.amount.should.eql(pendingApproval.info().policyRuleRequest.update.condition.amount);
+        });
+      });
+    });
+
+    it('can approve when tx does not require reconstruction', function() {
+      return createTransactionPendingApproval()
+      .then(function(pendingApproval) {
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: pendingApproval.id() })
+        .then(function(result) {
+          return result.approve();
+        })
+        .then(function(result) {
+          result.state.should.eql('approved');
         });
       });
     });
@@ -231,6 +243,37 @@ describe('PendingApproval', function() {
       })
       .then(function(result) {
         result.state.should.eql('approved');
+      });
+    });
+
+    it('cannot approve when transaction needs reconstructing', function() {
+      var approvals = [];
+      return Q.all([
+        createTransactionPendingApproval(),
+        createTransactionPendingApproval()
+      ])
+      .spread(function(approval1, approval2) {
+        approvals = [approval1, approval2];
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: approval1.id() })
+      })
+      .then(function(result) {
+        return result.approve();
+      })
+      .then(function(result) {
+        result.state.should.eql('approved');
+        var approval2 = approvals[1];
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: approval2.id() })
+      })
+      .then(function(result) {
+        return result.approve();
+      })
+      .then(function() {
+        // should never be here
+        throw new Error();
+      })
+      .catch(function(error) {
+        error.message.should.equal('unspents expired, wallet passphrase or xprv required to recreate transaction');
+        console.log('here');
       });
     });
 

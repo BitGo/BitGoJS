@@ -156,6 +156,8 @@ PendingApproval.prototype.populateWallet = function() {
   if (self.wallet.id() != self.info().transactionRequest.sourceWallet) {
     throw new Error('unexpected source wallet for pending approval');
   }
+
+  return Q(); // otherwise returns undefined
 };
 
 //
@@ -258,14 +260,23 @@ PendingApproval.prototype.approve = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase'], callback);
 
+  var canRecreateTransaction = true;
   if (this.type() === 'transactionRequest' && !(params.walletPassphrase || params.xprv)) {
-    throw new Error('wallet passphrase or xprv required to approve a transactionRequest');
+    canRecreateTransaction = false;
   }
 
   var self = this;
   return Q()
   .then(function() {
     if (self.type() === 'transactionRequest') {
+
+      // this user may not have spending privileges or a passphrase may not have been passed in
+      if (!canRecreateTransaction) {
+        return {
+          tx: self.info().transactionRequest.transaction
+        };
+      }
+
       return self.populateWallet()
       .then(function() {
         return self.recreateAndSignTransaction(_.extend(params, { txHex: self.info().transactionRequest.transaction }));
@@ -273,7 +284,7 @@ PendingApproval.prototype.approve = function(params, callback) {
     }
   })
   .then(function(transaction) {
-    var approvalParams = {'state': 'approved'};
+    var approvalParams = { 'state': 'approved' };
     if (transaction) {
       approvalParams.tx = transaction.tx;
     }
@@ -281,6 +292,16 @@ PendingApproval.prototype.approve = function(params, callback) {
     .send(approvalParams)
     .result()
     .nodeify(callback);
+  })
+  .catch(function(error) {
+    if (!canRecreateTransaction &&
+    (
+      error.message.indexOf('could not find unspent output for input') !== -1 ||
+      error.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
+    ) {
+      throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction')
+    }
+    throw error;
   });
 };
 
