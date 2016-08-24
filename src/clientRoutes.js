@@ -182,7 +182,15 @@ var apiResponse = function(status, result, message) {
 var parseBody = bodyParser.json();
 // Create the bitgo object in the request
 var prepareBitGo = function(args) {
-  return function(req, res, next){
+  var params = { env: args.env };
+  if (args.customrooturi) {
+    params.customRootURI = args.customrooturi;
+  }
+  if (args.custombitcoinnetwork) {
+    params.customBitcoinNetwork = args.custombitcoinnetwork;
+  }
+
+  return function(req, res, next) {
     // Get access token
     var accessToken;
     if (req.headers.authorization) {
@@ -193,19 +201,8 @@ var prepareBitGo = function(args) {
     }
 
     var userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + " " + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
-    var params = {
-      accessToken: accessToken,
-      userAgent: userAgent,
-      env: args.env
-    };
-
-    if (args.customrooturi) {
-      params.customRootURI = args.customrooturi;
-    }
-
-    if (args.custombitcoinnetwork) {
-      params.customBitcoinNetwork = args.custombitcoinnetwork;
-    }
+    params.accessToken = accessToken;
+    params.userAgent = userAgent;
 
     req.bitgo = new BitGoJS.BitGo(params);
 
