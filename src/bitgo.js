@@ -1134,9 +1134,17 @@ BitGo.prototype.getWalletAddress = function(params, callback) {
 // Receives a TTL and refetches as necessary
 //
 BitGo.prototype.fetchConstants = function(params, callback) {
-  if (BitGo._constants && BitGo._constantsExpire && new Date() < BitGo._constantsExpire) {
+  var env = this.env;
+  if (!BitGo._constants) {
+    BitGo._constants = {};
+  }
+  if (!BitGo._constantsExpire) {
+    BitGo._constantsExpire = {};
+  }
+
+  if (BitGo._constants[env] && BitGo._constantsExpire[env] && new Date() < BitGo._constantsExpire[env]) {
     return Q().then(function() {
-      return BitGo._constants;
+      return BitGo._constants[env];
     })
     .nodeify(callback);
   }
@@ -1144,9 +1152,9 @@ BitGo.prototype.fetchConstants = function(params, callback) {
   return this.get(this.url('/client/constants'))
   .result()
   .then(function(result) {
-    BitGo._constants = result.constants;
-    BitGo._constantsExpire = moment.utc().add(result.ttl, 'second').toDate();
-    return BitGo._constants;
+    BitGo._constants[env] = result.constants;
+    BitGo._constantsExpire[env] = moment.utc().add(result.ttl, 'second').toDate();
+    return BitGo._constants[env];
   })
   .nodeify(callback);
 };
@@ -1171,7 +1179,7 @@ BitGo.prototype.getConstants = function(params) {
   this.fetchConstants(params);
 
   // use defaultConstants as the backup for keys that are not set in this._constants
-  return _.merge({}, defaultConstants, BitGo._constants);
+  return _.merge({}, defaultConstants, BitGo._constants[this.env]);
 };
 
 module.exports = BitGo;
