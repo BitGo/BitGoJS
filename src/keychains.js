@@ -151,7 +151,8 @@ Keychains.prototype.add = function(params, callback) {
   .send({
     xpub: params.xpub,
     encryptedXprv: params.encryptedXprv,
-    type: params.type
+    type: params.type,
+    originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode
   })
   .result()
   .then(function(keychain) {
