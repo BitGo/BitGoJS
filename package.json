@@ -13,8 +13,8 @@
     "url": "https://github.com/BitGo/BitGoJS.git"
   },
   "devDependencies": {
-    "babelify": "^7.0.2",
-    "browserify": "~9.0.7",
+    "babelify": "7.3.0",
+    "browserify": "13.1.0",
     "coveralls": "~2.10.0",
     "envify": "^3.4.0",
     "istanbul": "0.3.13",
