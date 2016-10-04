@@ -41,7 +41,7 @@ BitGo.TEST_WALLET_REGROUP_PASSCODE = 'test security fanout & coalesce';
 // Get an OTP code for the test user.
 //
 BitGo.prototype.initializeTestVars = function() {
-  if (this.getEnv() == 'dev') {
+  if (this.getEnv() === 'dev' || this.getEnv() === 'local') {
     BitGo.TEST_USERID = '54d3e3a4b08fa6dc0a0002c07f8a9f86';
     BitGo.TEST_SHARED_KEY_USERID = '54d418de4ea11d050b0006186d08ea5c';
     BitGo.TEST_THIRD_USERID = '57056ad593eae8ca0c51e3cee62022cb';
@@ -49,7 +49,7 @@ BitGo.prototype.initializeTestVars = function() {
 
     BitGo.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
     BitGo.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcFgsE3Zg66E8prHy7aohb9wSiZRN9vQA4fp6n1dpXDyRLPT4YnhBTPwkhtDGqR3ynB4tJUenw9WTPhRWwZ3cpqkQrGzXTcFM';
-    BitGo.TEST_WALLET1_ADDRESS = '2MuBzFZYkyyaBozzh2a5fKApwQzwLyThKv6';
+    BitGo.TEST_WALLET1_ADDRESS = '2N1vk5Qm6vGPB8SAZUjEQ8Gac6v71EmxgaG';
     BitGo.TEST_WALLET1_ADDRESS2 = '2MxCHzAYyK9RgLGUWymw9Jhhtt19VqUtCej';
     BitGo.TEST_WALLET2_PASSCODE = 'j0XVTJiTgsMCogKRoHIDzGbz';
     BitGo.TEST_WALLET2_ADDRESS = '2MtZAqJWLBCmtjYQ7WftcXY1fdMjEv8vERZ';
@@ -57,6 +57,9 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.TEST_WALLET3_ADDRESS = '2NE4bZSitUxoRLFg4U6qHkjrCXWNAvQBDo5';
     BitGo.TEST_WALLET3_ADDRESS2 = '2NFFt4H2vP54WwWjrUVLh7ksF4t6mabCGsh';
     BitGo.TEST_WALLET3_ADDRESS3 = '2NG8HA7qya4pbwbg25NF1SY6nEjM6apT1hF';
+
+    // webhooks
+    BitGo.TEST_WEBHOOK_TRANSACTION_SIMULATION_ID = '57f3ee68a2cece1770402dbe7d84c368';
 
     // wallet addresses
     BitGo.TEST_ETH_WALLET1_ADDRESS = '0x2a45d946acb0534ed9a06723f505c0fc09a87fd8';
@@ -89,6 +92,9 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.TEST_WALLET2_PASSCODE = 'test wallet #2 security';
     BitGo.TEST_WALLET2_ADDRESS = '2MvpZhq6zUu3UARdJKZH7TTfqHJ3Ec1YAjv';
     BitGo.TEST_WALLET3_PASSCODE = 'test wallet #3 security';
+
+    // webhooks
+    BitGo.TEST_WEBHOOK_TRANSACTION_SIMULATION_ID = '5797f78b651fc971062eb851ea09672d';
 
     // shared amongst 3 users (TEST_USER, TEST_SHARED_KEY_USER, and TEST_THIRD_USER)
     BitGo.TEST_WALLETMULTAPPROVERS_ADDRESS = '2NF7pK1pDEUXrWmqXxCT4fjPtQrsK6XNvUy';
