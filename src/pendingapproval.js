@@ -269,6 +269,12 @@ PendingApproval.prototype.approve = function(params, callback) {
   return Q()
   .then(function() {
     if (self.type() === 'transactionRequest') {
+      if (params.tx) {
+        // the approval tx was reconstructed and explicitly specified - pass it through
+        return {
+          tx: params.tx
+        };
+      }
 
       // this user may not have spending privileges or a passphrase may not have been passed in
       if (!canRecreateTransaction) {

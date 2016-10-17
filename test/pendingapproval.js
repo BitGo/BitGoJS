@@ -273,7 +273,6 @@ describe('PendingApproval', function() {
       })
       .catch(function(error) {
         error.message.should.equal('unspents expired, wallet passphrase or xprv required to recreate transaction');
-        console.log('here');
       });
     });
 
@@ -284,6 +283,39 @@ describe('PendingApproval', function() {
       })
       .then(function(result) {
         return result.approve({ walletPassphrase: TestBitGo.TEST_PASSWORD });
+      })
+      .then(function(result) {
+        result.state.should.eql('approved');
+
+        // Parse the completed tx hex and make sure it was built with proper outputs
+        var completedTxHex = result.info.transactionRequest.validTransaction;
+        var transaction = bitcoin.Transaction.fromHex(completedTxHex);
+        if (!transaction || !transaction.outs) {
+          throw new Error('transaction had no outputs or failed to parse successfully');
+        }
+        var outputAddresses = _.map(transaction.outs, function(out) {
+          return bitcoin.address.fromOutputScript(out.script, BitGoJS.getNetworkObj());
+        });
+
+        // Output addresses should contain the 2 destinations, but not the change address
+        outputAddresses.should.include(TestBitGo.TEST_WALLET3_ADDRESS);
+        outputAddresses.should.include(TestBitGo.TEST_WALLET2_ADDRESS);
+        outputAddresses.should.not.include(TestBitGo.TEST_SHARED_WALLET_CHANGE_ADDRESS);
+      });
+    });
+
+    it('can manually pass in reconstructed tx', function() {
+      var pendingApproval;
+      return createTransactionPendingApprovalToMultipleRecipients()
+      .then(function(pendingApproval) {
+        return bitgoSharedKeyUser.pendingApprovals().get({id: pendingApproval.id()})
+      })
+      .then(function(result) {
+        pendingApproval = result;
+        return pendingApproval.constructApprovalTx({ walletPassphrase: TestBitGo.TEST_PASSWORD });
+      })
+      .then(function(result) {
+        return pendingApproval.approve({ walletPassphrase: TestBitGo.TEST_PASSWORD, tx: result.tx });
       })
       .then(function(result) {
         result.state.should.eql('approved');
