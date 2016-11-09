@@ -258,7 +258,7 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
 //
 PendingApproval.prototype.approve = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['walletPassphrase'], callback);
+  common.validateParams(params, [], ['walletPassphrase', 'otp'], callback);
 
   var canRecreateTransaction = true;
   if (this.type() === 'transactionRequest' && !(params.walletPassphrase || params.xprv)) {
@@ -290,7 +290,7 @@ PendingApproval.prototype.approve = function(params, callback) {
     }
   })
   .then(function(transaction) {
-    var approvalParams = { 'state': 'approved' };
+    var approvalParams = { 'state': 'approved', 'otp': params.otp };
     if (transaction) {
       approvalParams.tx = transaction.tx;
     }
