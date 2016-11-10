@@ -343,7 +343,7 @@ describe('Ethereum Wallets API:', function() {
       var options = {
         "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
         "label": TEST_WALLET_LABEL,
-        "backupXpubProvider": "keyvault-io"
+        "backupXpubProvider": "keyternal"
       };
 
       return bitgo.eth().wallets().generateWallet(options)

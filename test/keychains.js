@@ -173,7 +173,6 @@ describe('Keychains', function() {
           assert.equal(keychain.xpub, extendedKey.xpub);
           assert.equal(keychain.path, 'm');
           assert.equal(keychain.encryptedXprv, 'xyzzy');
-          assert.equal(keychain.originalPasscodeEncryptionCode, 'encryptionCode');
           done();
         });
       });

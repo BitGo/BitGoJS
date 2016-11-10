@@ -16,7 +16,6 @@ describe('PendingApprovals', function() {
   var bitgo;
   var pendingApprovals;
   var sharedWallet;
-  var transactionPendingApprovalId = TestBitGo.TEST_WALLET_PENDING_APPROVAL_ID;
 
   before(function() {
     bitgo = new TestBitGo();

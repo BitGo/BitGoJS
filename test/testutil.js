@@ -94,6 +94,5 @@ TestUtil.unlockToken = function(agent, accessToken, seconds) {
   .send({ otp: '0000000', duration: seconds })
   .then(function(res) {
     res.should.have.status(200);
-    return res;
   })
 };

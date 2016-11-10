@@ -340,7 +340,10 @@ describe('Bitgo Express', function() {
     });
 
     it('create and reject a pending approval', function() {
-      return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15)
+      return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
+      .then(function() {
+        return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15);
+      })
       .then(function() {
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
@@ -411,7 +414,10 @@ describe('Bitgo Express', function() {
     });
 
     it('create and accept a pending approval', function() {
-      return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 20)
+      return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
+      .then(function() {
+        return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15);
+      })
       .then(function() {
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
