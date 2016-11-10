@@ -15,7 +15,8 @@ var TestBitGo = require('./lib/test_bitgo');
 describe('Webhooks', function() {
   var bitgo;
   var wallet;
-  var simulatedWebhookId;
+  var simulatedTransactionWebhookId;
+  var simulatedPendingApprovalWebhookId;
 
   before(function (done) {
     BitGoJS.setNetwork('testnet');
@@ -23,7 +24,8 @@ describe('Webhooks', function() {
     bitgo = new TestBitGo();
     bitgo.initializeTestVars();
 
-    simulatedWebhookId = TestBitGo.TEST_WEBHOOK_TRANSACTION_SIMULATION_ID;
+    simulatedTransactionWebhookId = TestBitGo.TEST_WEBHOOK_TRANSACTION_SIMULATION_ID;
+    simulatedPendingApprovalWebhookId = TestBitGo.TEST_WEBHOOK_PENDING_APPROVAL_SIMULATION_ID;
 
     wallets = bitgo.wallets();
     bitgo.authenticateTestUser(bitgo.testUserOTP(), function (err, response) {
@@ -100,17 +102,17 @@ describe('Webhooks', function() {
     });
   });
 
-  describe('Simulate webhook', function() {
+  describe('Simulate wallet webhooks', function() {
     it('should enforce arguments', function(){
       assert.throws(function() { wallet.simulateWebhook({}, function() {}); });
-      assert.throws(function() { wallet.simulateWebhook({ webhookId: simulatedWebhookId }, function() {}); });
+      assert.throws(function() { wallet.simulateWebhook({ webhookId: simulatedTransactionWebhookId }, function() {}); });
       assert.throws(function() { wallet.simulateWebhook({ url: 'https://google.com' }, function() {}); });
       assert.throws(function() { wallet.simulateWebhook({ txHash: 'bogus' }, function() {}); });
     });
 
     it('should fail to override with bogus hash', function() {
       var hash = 'bogus-tx-hash';
-      return wallet.simulateWebhook({ webhookId: simulatedWebhookId, txHash: hash })
+      return wallet.simulateWebhook({ webhookId: simulatedTransactionWebhookId, txHash: hash })
       .then(function() {
         throw new Error('should never be here');
       })
@@ -119,21 +121,42 @@ describe('Webhooks', function() {
       });
     });
 
-    it('should simulate with valid hash and url', function() {
-      var customURL = 'https://mockbin.com/bin/155d5dc2-5ef8-4f57-b9f2-879a7eb3a4bb';
-      var hash = '1909ef7863aa761e4d9cc30be7e2e0a6a34b5adc06c1e82f84f63491bb6ca40f';
-      return wallet.simulateWebhook({ webhookId: simulatedWebhookId, txHash: hash, url: customURL })
-      .then(function(result) {
-        // result should contain the simulation response
-        result.should.have.property('body');
-        result.should.have.property('code');
-        result.should.have.property('type');
-        result.body.should.equal('hello again!');
-        result.code.should.equal(200);
-        result.type.should.equal('text/html');
+    it('should fail simulate with an invalid pending approval id', function() {
+      var pendingApprovalId = 'invalid';
+      return wallet.simulateWebhook({ webhookId: simulatedPendingApprovalWebhookId, pendingApprovalId: pendingApprovalId })
+      .then(function() {
+        throw new Error('should never be here');
+      })
+      .catch(function(e) {
+        e.message.should.equal('pendingApprovalId must not be empty');
       });
     });
 
+    it('should simulate a transaction webhook with valid hash', function() {
+      var hash = '1909ef7863aa761e4d9cc30be7e2e0a6a34b5adc06c1e82f84f63491bb6ca40f';
+      return wallet.simulateWebhook({ webhookId: simulatedTransactionWebhookId, txHash: hash})
+      .then(function(result) {
+        // result should contain the simulation response
+        result.should.have.property('webhookNotifications');
+        result.webhookNotifications.should.not.have.length(0);
+        result.webhookNotifications[0].should.have.property('id');
+        result.webhookNotifications[0].should.have.property('wallet');
+        result.webhookNotifications[0].should.have.property('url');
+      });
+    });
+
+    it('should simulate a pending approval with valid pendingApprovalId', function() {
+      var pendingApprovalId = '5824ce6051b236a6064bdc57a518369f';
+      return wallet.simulateWebhook({ webhookId: simulatedPendingApprovalWebhookId, pendingApprovalId: pendingApprovalId})
+      .then(function(result) {
+        // result should contain the simulation response
+        result.should.have.property('webhookNotifications');
+        result.webhookNotifications.should.not.have.length(0);
+        result.webhookNotifications[0].should.have.property('id');
+        result.webhookNotifications[0].should.have.property('wallet');
+        result.webhookNotifications[0].should.have.property('url');
+      });
+    });
   });
 
   describe('List webhooks', function () {

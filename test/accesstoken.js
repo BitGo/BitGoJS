@@ -17,6 +17,7 @@ describe('Access Token', function() {
   var INITIAL_TOKEN_COUNT; // used as an offset when checking if tokens were properly created or removed
   var loginAccessTokenHex; // save token hex for when we remove a token that was just set
   var bitgo;
+  var someScopes = ['openid', 'profile', 'wallet_create', 'wallet_view_all'];
 
   before(function() {
     bitgo = new TestBitGo();
@@ -39,7 +40,7 @@ describe('Access Token', function() {
   describe('authentication with access token', function() {
     var addedTokenHex;
     it('should authenticate with added access token', function() {
-      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token' })
+      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', scope: someScopes })
       .then(function(res) {
         addedTokenHex = res.token;
         return bitgo.authenticateWithAccessToken({ accessToken: addedTokenHex });
@@ -66,8 +67,18 @@ describe('Access Token', function() {
         assert.throws(function() { bitgo.addAccessToken({ otp: bitgo.testUserOTP() }, 'invalid'); });
       });
 
-      it('fails to add with bad otp', function() {
+      it('fails to add without scope', function() {
         var promise = bitgo.addAccessToken({otp: 'badToken', label: 'test token'});
+        return TestUtil.throws(promise, 'must supply scope for token');
+      });
+
+      it('fails to add with invalid scope', function() {
+        var promise = bitgo.addAccessToken({otp: 'badToken', label: 'test token', scope:['invalid']});
+        return TestUtil.throws(promise, 'invalid scope');
+      });
+
+      it('fails to add with bad otp', function() {
+        var promise = bitgo.addAccessToken({otp: 'badToken', label: 'test token', scope:someScopes});
         return TestUtil.throws(promise, 'invalid');
       });
     });
@@ -79,7 +90,7 @@ describe('Access Token', function() {
       });
 
       it('simple add', function() {
-        return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token' })
+        return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', scope:someScopes })
         .then(function(res) {
           res.should.have.property('user');
           res.should.have.property('scope');
@@ -106,7 +117,7 @@ describe('Access Token', function() {
 
       it('duration', function() {
         var DURATION = 3600 * 10; // ten days
-        return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', duration: DURATION })
+        return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', duration: DURATION, scope:someScopes })
         .then(function(res) {
           res.label.should.equal('test token');
 
@@ -122,7 +133,7 @@ describe('Access Token', function() {
 
       it('ipRestrict', function() {
         var IPRESTRICT = ['0.0.0.0', '8.8.8.8'];
-        return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', ipRestrict: IPRESTRICT })
+        return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', ipRestrict: IPRESTRICT, scope:someScopes })
         .then(function(token) {
           token.should.have.property('token');
         });
@@ -130,7 +141,7 @@ describe('Access Token', function() {
 
       it('txValueLimit', function() {
         var TXVALUELIMIT = 1e8; // 1 BTC
-        return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', txValueLimit: TXVALUELIMIT })
+        return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', txValueLimit: TXVALUELIMIT, scope:someScopes })
         .then(function(res) {
           res.unlock.txValueLimit.should.equal(1e8);
         });
@@ -138,7 +149,6 @@ describe('Access Token', function() {
 
       // see some examples of Scope Values under https://www.bitgo.com/api/#partner-oauth
       it('scopes', function() {
-        var someScopes = ['openid', 'profile', 'wallet_create', 'wallet_view_all'];
         return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', scope: someScopes })
         .then(function(res) {
           res.scope.should.have.length(4);
@@ -156,7 +166,7 @@ describe('Access Token', function() {
     });
     
     it('should add and list single access token', function() {
-      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token'})
+      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', scope:someScopes})
       .then(function(res) {
         res.label.should.equal('test token');
 
@@ -174,7 +184,7 @@ describe('Access Token', function() {
     it('should add another and list multiple access tokens', function() {
       var token1;
       var token2;
-      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token 2'})
+      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token 2', scope:someScopes})
       .then(function(res) {
         res.label.should.equal('test token 2');
 
@@ -210,7 +220,7 @@ describe('Access Token', function() {
   describe('Remove', function() {
     var ambiguousTokenId;
     before(function() {
-      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token'})
+      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', scope: someScopes})
     });
 
     it('arguments', function() {
@@ -222,7 +232,7 @@ describe('Access Token', function() {
 
     it('should fail with ambigous remove', function() {
       // begin by adding second token
-      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token' })
+      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', scope: someScopes })
       .then(function(token) {
         ambiguousTokenId = token.id;
         var promise = bitgo.removeAccessToken({ label: 'test token' });
@@ -255,8 +265,7 @@ describe('Access Token', function() {
     });
 
     it('should remove access token by id', function() {
-      var tokId;
-      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token' })
+      return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', scope: someScopes })
       .then(function(tok) {
         return bitgo.removeAccessToken({ id: tok.id });
       })

@@ -1718,23 +1718,26 @@ Wallet.prototype.listWebhooks = function(params, callback) {
 };
 
 /**
- * Simulate wallet webhook, currently for webhooks of type transaction
+ * Simulate wallet webhook, currently for webhooks of type transaction and pending approval
  * @param params
  * - webhookId (required): id of the webhook to be simulated
- * - txHash (optional, but recommended) hash of the simulated transaction
- * - url (optional) custom url to send the simulation to
+ * - txHash (optional but required for transaction webhooks) hash of the simulated transaction
+ * - pendingApprovalId (optional but required for pending approval webhooks) id of the simulated pending approval
  * @param callback
  * @returns {*}
  */
 Wallet.prototype.simulateWebhook = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['webhookId', 'txHash'], ['url'], callback);
+  common.validateParams(params, ['webhookId'], ['txHash', 'pendingApprovalId'], callback);
+
+  assert(!!params.txHash || !!params.pendingApprovalId, 'must supply either txHash or pendingApprovalId');
+  assert(!!params.txHash ^ !!params.pendingApprovalId, 'must supply either txHash or pendingApprovalId, but not both');
 
   // depending on the coin type of the wallet, the txHash has to adhere to its respective format
   // but the server takes care of that
 
-  // only take the url, coin, and txHash properties
-  var filteredParams = _.pick(params, ['url', 'txHash']);
+  // only take the txHash and pendingApprovalId properties
+  var filteredParams = _.pick(params, ['txHash', 'pendingApprovalId']);
 
   var webhookId = params.webhookId;
   return this.bitgo.post(this.url('/webhooks/' + webhookId + '/simulate'))
