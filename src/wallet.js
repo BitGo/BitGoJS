@@ -130,7 +130,9 @@ Wallet.prototype.url = function(extra) {
 //
 Wallet.prototype.pendingApprovals = function() {
   var self = this;
-  return this.wallet.pendingApprovals.map(function(p) { return new PendingApproval(self.bitgo, p, self); });
+  return this.wallet.pendingApprovals.map(function(p) {
+    return new PendingApproval(self.bitgo, p, self);
+  });
 };
 
 //
@@ -430,7 +432,7 @@ Wallet.prototype.setLabel = function(params, callback) {
   var url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
 
   return this.bitgo.put(url)
-  .send({'label': params.label})
+  .send({ label: params.label })
   .result()
   .nodeify(callback);
 };
@@ -471,10 +473,16 @@ Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  if (params.minConfirms) {
-    if (typeof(params.minConfirms) !== 'number') {
-      throw new Error('invalid minConfirms - should be number');
-    }
+  if (params.minConfirms && typeof(params.minConfirms) !== 'number') {
+    throw new Error('invalid minConfirms - should be number');
+  }
+
+  if (params.minSize && typeof(params.minSize) != 'number') {
+    throw new Error('invalid argument: minSize must be a number');
+  }
+
+  if (params.target && typeof(params.target) != 'number') {
+    throw new Error('invalid argument');
   }
 
   var allUnspents = [];
@@ -482,28 +490,29 @@ Wallet.prototype.unspents = function(params, callback) {
 
   var getUnspentsBatch = function(skip, limit) {
     var url = self.url('/unspents');
-    var extensions = {};
+    var queryObject = {
+      minSize: params.minSize
+    };
     if (params.instant) {
-      extensions.instant = params.instant;
+      queryObject.instant = params.instant;
     } else if (params.minConfirms) {
-      extensions.minConfirms = params.minConfirms;
+      queryObject.minConfirms = params.minConfirms;
     }
+
     if (params.target) {
-      if (typeof(params.target) != 'number') {
-        throw new Error('invalid argument');
-      }
-      extensions.target = params.target;
+      queryObject.target = params.target;
     } else {
       // if no target is specified, we can work with skips and limits
       if (skip > 0) {
-        extensions.skip = skip;
+        queryObject.skip = skip;
       }
       if (limit && limit > 0) {
-        extensions.limit = limit;
+        queryObject.limit = limit;
       }
     }
+
     return self.bitgo.get(url)
-    .query(extensions)
+    .query(queryObject)
     .result()
     .then(function(result) {
       // The API has its own limit handling. For example, the API does not support limits bigger than 500. If the limit
@@ -744,12 +753,12 @@ Wallet.prototype.createTransaction = function(params, callback) {
   var self = this;
 
   if ((typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
-      (typeof(params.feeRate) != 'number' && typeof(params.feeRate) != 'undefined') ||
-      (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
-      (typeof(params.forceChangeAtEnd) != 'boolean' && typeof(params.forceChangeAtEnd) != 'undefined') ||
-      (typeof(params.changeAddress) != 'string' && typeof(params.changeAddress) != 'undefined') ||
-      (typeof(params.validate) != 'boolean' && typeof(params.validate) != 'undefined') ||
-      (typeof(params.instant) != 'boolean' && typeof(params.instant) != 'undefined')) {
+    (typeof(params.feeRate) != 'number' && typeof(params.feeRate) != 'undefined') ||
+    (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
+    (typeof(params.forceChangeAtEnd) != 'boolean' && typeof(params.forceChangeAtEnd) != 'undefined') ||
+    (typeof(params.changeAddress) != 'string' && typeof(params.changeAddress) != 'undefined') ||
+    (typeof(params.validate) != 'boolean' && typeof(params.validate) != 'undefined') ||
+    (typeof(params.instant) != 'boolean' && typeof(params.instant) != 'undefined')) {
     throw new Error('invalid argument');
   }
 
@@ -1177,7 +1186,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
     .then(function(keychain) {
       // Decrypt the user key with a passphrase
       try {
-        keychain.xprv = self.bitgo.decrypt({password: params.walletPassphrase, input: keychain.encryptedXprv});
+        keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
       } catch (e) {
         throw new Error('Unable to decrypt user keychain');
       }
@@ -1414,6 +1423,10 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     throw new Error('maxSize should be a number');
   }
 
+  if (params.minSize && typeof(params.minSize) !== 'number') {
+    throw new Error('minSize should be a number');
+  }
+
   // maximum number of inputs per transaction for consolidation
   var MAX_INPUT_COUNT = 200;
   var maxInputCount = params.maxInputCountPerConsolidation;
@@ -1437,6 +1450,22 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   }
   if ((typeof(minConfirms) !== 'number' || minConfirms < 0)) {
     throw new Error('minConfirms needs to be an integer equal to or bigger than 0');
+  }
+
+  var minSize = params.minSize || 0;
+  if (params.feeRate) {
+    // fee rate is in satoshis per KB
+    // one input is 0.295 KB
+    var feeBasedMinSize = Math.ceil(0.295 * params.feeRate);
+    if (params.minSize && minSize < feeBasedMinSize) {
+      throw new Error('provided minSize too low due to too high fee rate');
+    }
+    minSize = Math.max(feeBasedMinSize, minSize);
+
+    if (!params.minSize) {
+      // fee rate-based min size needs no logging if it was set explicitly
+      console.log('Only consolidating unspents larger than ' + minSize + ' satoshis to avoid wasting money on fees. To consolidate smaller unspents, use a lower fee rate.');
+    }
   }
 
   var iterationCount = 0;
@@ -1467,7 +1496,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      them, and therefore will be able to simplify this method.
      */
 
-    return self.unspents({ limit: target + maxInputCount, minConfirms: minConfirms })
+    return self.unspents({ limit: target + maxInputCount, minConfirms: minConfirms, minSize: minSize })
     .then(function(allUnspents) {
       // this consolidation is essentially just a waste of money
       if (allUnspents.length <= target) {
@@ -1527,17 +1556,24 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
           throw error;
         }
         var baseFee = error.fee || error.result.fee;
+        var bitgoFee = 0;
         var totalFee = baseFee;
         if (error.result.bitgoFee && error.result.bitgoFee.amount) {
-          totalFee += error.result.bitgoFee.amount;
+          bitgoFee = error.result.bitgoFee.amount;
+          totalFee += bitgoFee;
         }
-        var netAmount = grossAmount - totalFee; // after fees
+
+        // if the net amount is negative, it should be replaced with the minimum output size
+        var netAmount = Math.max(grossAmount - totalFee, self.bitgo.getConstants().minOutputSize);
         // Need to clear these out since only 1 may be set
         delete txParams.fee;
         delete txParams.feeRate;
         delete txParams.feeTxConfirmTarget;
-        txParams.fee = baseFee;
+
+        // we set the fee explicitly
+        txParams.fee = grossAmount - netAmount - bitgoFee;
         txParams.recipients[newAddress.address] = netAmount;
+
         // this transaction, on the other hand, should be created with no issues, because an appropriate fee is set
         return self.sendMany(txParams);
       });
