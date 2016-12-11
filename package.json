@@ -71,7 +71,6 @@
     "ethereumjs-util": "^4.4.1",
     "express": "^4.11.1",
     "http-proxy": "1.11.1",
-    "keccakjs": "^0.2.1",
     "lodash": "4.13.1",
     "minimist": "0.2.0",
     "moment": "^2.11.2",
