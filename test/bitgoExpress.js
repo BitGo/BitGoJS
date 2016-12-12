@@ -87,7 +87,7 @@ describe('Bitgo Express', function() {
     it('post unlock (authed)', function() {
       return agent.post('/api/v1/user/unlock')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-      .send({ otp: '0000000', duration: 3 })
+      .send({ otp: bitgo.testUserOTP(), duration: 3 })
       .then(function(res) {
         res.body.should.have.property('session');
         res.body.session.should.have.property('client');
@@ -350,7 +350,8 @@ describe('Bitgo Express', function() {
         .send({
           address: TestBitGo.TEST_WALLET1_ADDRESS,
           amount: 0.001 * 1e8,
-          walletPassphrase: TestBitGo.TEST_PASSWORD
+          walletPassphrase: TestBitGo.TEST_PASSWORD,
+          otp : bitgo.testUserOTP()
         });
       })
       .then(function(res) {
@@ -421,7 +422,7 @@ describe('Bitgo Express', function() {
       .then(function() {
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD});
+        .send({address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
       })
       .then(function(res) {
         res.status.should.equal(202);
@@ -430,7 +431,7 @@ describe('Bitgo Express', function() {
         var pendingApprovalId = res.body.pendingApproval;
         return agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/express')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
-        .send({ walletPassphrase: TestBitGo.TEST_PASSWORD, state: 'approved' });
+        .send({ walletPassphrase: TestBitGo.TEST_PASSWORD, state: 'approved', otp: bitgo.testUserOTP() });
       })
       .then(function(res) {
         res.body.state.should.eql('approved');
@@ -445,7 +446,7 @@ describe('Bitgo Express', function() {
       .then(function(res) {
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD });
+        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
       })
       .then(function(res) {
         res.status.should.equal(202);
@@ -454,7 +455,10 @@ describe('Bitgo Express', function() {
         var pendingApprovalId = res.body.pendingApproval;
         return agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/express')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
-        .send({ xprv: 'xprv9s21ZrQH143K3GisDvcsLyQZ88CrgtHziPuQ4ZZU6x3v8AZxEYEBZ7ANwfAPVz9mqraSjREVaCdFgv1u7mHvjuDRZ25J4wGJ73yooYhDoJ4', state: 'approved' });
+        .send({ xprv: 'xprv9s21ZrQH143K3GisDvcsLyQZ88CrgtHziPuQ4ZZU6x3v8AZxEYEBZ7ANwfAPVz9mqraSjREVaCdFgv1u7mHvjuDRZ25J4wGJ73yooYhDoJ4',
+                state: 'approved',
+                otp: bitgo.testUserOTP()
+	});
       })
       .then(function(res) {
         res.body.state.should.eql('approved');
@@ -470,7 +474,7 @@ describe('Bitgo Express', function() {
       .then(function(res) {
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, fee: 12345 });;
+        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, fee: 12345, otp: bitgo.testUserOTP() });;
       })
       .then(function(res) {
         res.status.should.equal(202);
@@ -488,7 +492,7 @@ describe('Bitgo Express', function() {
         var txHex = res.body.tx;
         return agent.put('/api/v1/pendingapprovals/' + pendingApprovalId)
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
-        .send({ tx: txHex, state: 'approved'});
+        .send({ tx: txHex, state: 'approved', otp: bitgo.testUserOTP() });
       })
       .then(function(res) {
         res.body.state.should.eql('approved');
