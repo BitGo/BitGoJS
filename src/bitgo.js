@@ -23,6 +23,8 @@ var Q = require('q');
 var pjson = require('../package.json');
 var moment = require('moment');
 var _ = require('lodash');
+var url = require('url');
+var querystring = require('querystring');
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);
@@ -50,49 +52,41 @@ superagent.Request.prototype.end = function(cb) {
   });
 };
 
-// Shortcuts to avoid having to call end()
-superagent.Request.prototype.then = function() {
-  var _ref;
-  return (_ref = this.end()).then.apply(_ref, arguments);
-};
-superagent.Request.prototype["catch"] = function() {
-  var _ref;
-  return (_ref = this.end())["catch"].apply(_ref, arguments);
-};
-
 // Handle HTTP errors appropriately, returning the result body, or a named
 // field from the body, if the optionalField parameter is provided.
 superagent.Request.prototype.result = function(optionalField) {
+  return this.then(handleResponseResult(optionalField), handleResponseError);
+};
 
-  var errFromResponse = function(res) {
-    var err = new Error(res.body.error ? res.body.error : res.status.toString());
-    err.status = res.status;
-    if (res.body) {
-      err.result = res.body;
-    }
-    if (_.has(res.headers, 'x-auth-required') && (res.headers['x-auth-required'] === 'true')) {
-      err.invalidToken = true;
-    }
-    if (res.body.needsOTP) {
-      err.needsOTP = true;
-    }
-    return err;
-  };
-
-  return this.then(
-  function(res) {
+var handleResponseResult = function(optionalField) {
+  return function(res) {
     if (typeof(res.status) === 'number' && res.status >= 200 && res.status < 300) {
       return optionalField ? res.body[optionalField] : res.body;
     }
     throw errFromResponse(res);
-  },
-  function(e) {
-    if (e.response) {
-      throw errFromResponse(e.response);
-    }
-    throw e;
   }
-  );
+};
+
+var errFromResponse = function(res) {
+  var err = new Error(res.body.error ? res.body.error : res.status.toString());
+  err.status = res.status;
+  if (res.body) {
+    err.result = res.body;
+  }
+  if (_.has(res.headers, 'x-auth-required') && (res.headers['x-auth-required'] === 'true')) {
+    err.invalidToken = true;
+  }
+  if (res.body.needsOTP) {
+    err.needsOTP = true;
+  }
+  return err;
+};
+
+var handleResponseError = function(e) {
+  if (e.response) {
+    throw errFromResponse(e.response);
+  }
+  throw e;
 };
 
 //
@@ -105,7 +99,7 @@ var testNetWarningMessage = false;
 var BitGo = function(params) {
   params = params || {};
   if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork']) ||
-  (params.useProduction && typeof(params.useProduction) != 'boolean')) {
+    (params.useProduction && typeof(params.useProduction) != 'boolean')) {
     throw new Error('invalid argument');
   }
 
@@ -127,10 +121,10 @@ var BitGo = function(params) {
   }
 
   if (params.customRootURI ||
-  params.customBitcoinNetwork ||
-  params.customSigningAddress ||
-  process.env.BITGO_CUSTOM_ROOT_URI ||
-  process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
+    params.customBitcoinNetwork ||
+    params.customSigningAddress ||
+    process.env.BITGO_CUSTOM_ROOT_URI ||
+    process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
     params.env = 'custom';
     if (params.customRootURI) {
       common.Environments['custom'].uri = params.customRootURI;
@@ -201,15 +195,148 @@ var BitGo = function(params) {
       if (params.proxy) {
         req = req.proxy(params.proxy);
       }
-      if (self._token) {
-        req.set('Authorization', "Bearer " + self._token);
-      }
+
+      // Patch superagent to return promises
+      req.prototypicalEnd = req.end;
+      req.end = function() {
+        // intercept a request before it's submitted to the server for v2 authentication (based on token)
+        var bitgo = self;
+
+        this.isV2Authenticated = true;
+        // some of the older tokens appear to be only 40 characters long
+        if ((bitgo._token && bitgo._token.length !== 67 && !bitgo._token.startsWith('v2x'))
+          || req.forceAuthenticationDowngrade) {
+          // use the old method
+          this.isV2Authenticated = false;
+
+          this.set('Authorization', 'Bearer ' + bitgo._token);
+          return this.prototypicalEnd.apply(this, arguments);
+        }
+
+        this.set('BitGo-Auth-Version', '2.0');
+        if (bitgo._token) {
+
+          // do a localized data serialization process
+          var data = this._data;
+          if (typeof data !== 'string') {
+            function isJSON(mime) {
+              return /[\/+]json\b/.test(mime);
+            }
+
+            var contentType = this.getHeader('Content-Type');
+            // Parse out just the content type from the header (ignore the charset)
+            if (contentType) {
+              contentType = contentType.split(';')[0]
+            }
+            var serialize = superagent.serialize[contentType];
+            if (!serialize && isJSON(contentType)) {
+              serialize = superagent.serialize['application/json'];
+            }
+            if (serialize) {
+              data = serialize(data);
+            }
+          }
+          this._data = data;
+
+          var urlDetails = url.parse(req.url);
+
+          var queryString = null;
+          if (req._query && req._query.length > 0) {
+            // browser version
+            queryString = req._query.join('&');
+            req._query = [];
+          } else if (req.qs) {
+            // node version
+            queryString = querystring.stringify(req.qs);
+            req.qs = null;
+          }
+
+          if (queryString) {
+            if (urlDetails.search) {
+              urlDetails.search += '&' + queryString;
+            } else {
+              urlDetails.search = '?' + queryString;
+            }
+            req.url = urlDetails.format();
+            urlDetails = url.parse(req.url);
+          }
+
+          var queryPath = urlDetails.path;
+          var timestamp = Date.now();
+          var signatureSubject = [timestamp, queryPath, data].join('|');
+
+          this.set('Auth-Timestamp', timestamp);
+
+          // calculate the SHA256 hash of the token
+          var hashDigest = sjcl.hash.sha256.hash(bitgo._token);
+          var hash = sjcl.codec.hex.fromBits(hashDigest);
+
+          // we're not sending the actual token, but only its hash
+          this.set('Authorization', 'Bearer ' + hash);
+
+          // calculate the HMAC
+          var hmacKey = sjcl.codec.utf8String.toBits(bitgo._token);
+          var hmacDigest = (new sjcl.misc.hmac(hmacKey, sjcl.hash.sha256)).mac(signatureSubject);
+          var hmac = sjcl.codec.hex.fromBits(hmacDigest);
+
+          this.set('HMAC', hmac);
+        }
+
+        return this.prototypicalEnd.apply(this, arguments);
+      };
+
+      // verify that the response received from the server is signed correctly
+      // right now, it is very permissive with the timestamp variance
+      req.verifyResponse = function(response) {
+        var bitgo = self;
+
+        if (!req.isV2Authenticated || !bitgo._token) {
+          return response;
+        }
+
+        var urlDetails = url.parse(req.url);
+
+        // verify the HMAC and timestamp
+        var timestamp = response.headers.timestamp;
+        var queryPath = urlDetails.path;
+
+        var signatureSubject = [timestamp, queryPath, response.statusCode, response.text].join('|');
+        // calculate the HMAC
+        var hmacKey = sjcl.codec.utf8String.toBits(bitgo._token);
+        var hmacDigest = (new sjcl.misc.hmac(hmacKey, sjcl.hash.sha256)).mac(signatureSubject);
+        var expectedHmac = sjcl.codec.hex.fromBits(hmacDigest);
+
+        var receivedHmac = response.headers.hmac;
+
+        if (expectedHmac !== receivedHmac) {
+          var error = new Error('invalid response HMAC, possible man-in-the-middle-attack');
+          error.status = 511;
+          throw error;
+        }
+        return response;
+      };
+
+      var lastPromise = null;
+      req.then = function() {
+
+        if (!lastPromise) {
+          var reference = req.end()
+          .then(req.verifyResponse);
+          lastPromise = reference.then.apply(reference, arguments);
+        } else {
+          lastPromise = lastPromise.then.apply(lastPromise, arguments);
+        }
+
+        return lastPromise;
+      };
+
       if (!process.browser) {
         // If not in the browser, set the User-Agent. Browsers don't allow
         // setting of User-Agent, so we must disable this when run in the
         // browser (browserify sets process.browser).
         req.set('User-Agent', self._userAgent);
       }
+
       // Set the request timeout to just above 5 minutes by default
       req.timeout(process.env.BITGO_TIMEOUT * 1000 || 305 * 1000);
       return req;
@@ -368,7 +495,7 @@ BitGo.prototype.encrypt = function(params) {
 
   // SJCL internally reuses salts for the same password, so we force a new random salt everytime
   // We use random.randomWords(2,0) because it's what SJCL uses for randomness by default
-  var randomSalt = sjcl.random.randomWords(2,0);
+  var randomSalt = sjcl.random.randomWords(2, 0);
   var encryptOptions = { iter: 10000, ks: 256, salt: randomSalt };
   return sjcl.encrypt(params.password, params.input, encryptOptions);
 };
@@ -474,6 +601,45 @@ BitGo.prototype.authenticateWithAccessToken = function(params, callback) {
   this._token = params.accessToken;
 };
 
+/**
+ *
+ * @param responseBody Response body object
+ * @param password Password for the symmetric decryption
+ */
+BitGo.prototype.handleTokenIssuance = function(responseBody, password) {
+  // make sure the response body contains the necessary properties
+  common.validateParams(responseBody, ['derivationPath'], ['encryptedECDHXprv']);
+
+  var serverXpub = common.Environments[this.env].serverXpub;
+  var ecdhXprv = this._ecdhXprv;
+  if (!ecdhXprv) {
+    if (!password || !responseBody.encryptedECDHXprv) {
+      throw new Error('ecdhXprv property must be set or password and encrypted encryptedECDHXprv must be provided');
+    }
+    ecdhXprv = this.decrypt({ input: responseBody.encryptedECDHXprv, password: password });
+  }
+
+  // construct HDNode objects for client's xprv and server's xpub
+  var clientHDNode = bitcoin.HDNode.fromBase58(ecdhXprv);
+  var serverHDNode = bitcoin.HDNode.fromBase58(serverXpub);
+
+  // BIP32 derivation path is applied to both client and server master keys
+  var derivationPath = responseBody.derivationPath;
+  var clientDerivedNode = clientHDNode.derive(derivationPath);
+  var serverDerivedNode = serverHDNode.derive(derivationPath);
+
+  // calculating one-time ECDH key
+  var secretPoint = serverDerivedNode.keyPair.__Q.multiply(clientDerivedNode.keyPair.d);
+  var secret = secretPoint.getEncoded().toString('hex');
+
+  // decrypt token with symmetric ECDH key
+  var response = { token: this.decrypt({ input: responseBody.encryptedToken, password: secret }) };
+  if (!this._ecdhXprv) {
+    response.ecdhXprv = ecdhXprv;
+  }
+  return response;
+};
+
 //
 // authenticate
 // Login to the bitgo system.
@@ -520,14 +686,41 @@ BitGo.prototype.authenticate = function(params, callback) {
     return this.reject('already logged in', callback);
   }
 
-  return this.post(this.url('/user/login'))
-  .send(authParams)
-  .result()
-  .then(function(body) {
+  var request = this.post(this.url('/user/login'));
+  return request.send(authParams)
+  .then(function(response) {
+    // verify the response's authenticity
+    request.verifyResponse(response);
+
+    // extract body and user information
+    var body = response.body;
     self._user = body.user;
-    self._token = body.access_token;
-    return body;
+
+    // check the presence of an encrypted ECDH xprv
+    // if not present, legacy account
+    var encryptedXprv = body.encryptedECDHXprv;
+    if (!encryptedXprv) {
+      // signify that a protocol downgrade had to occur
+      var downGradeRequest = self.post(self.url('/user/login'));
+      downGradeRequest.forceAuthenticationDowngrade = true;
+      return downGradeRequest.send(authParams)
+      .then(function(response) {
+        self._token = response.body.access_token;
+
+        response.body.warning = 'A protocol downgrade has occurred because this is a legacy account.';
+        return response;
+      });
+    }
+
+    var responseDetails = self.handleTokenIssuance(response.body, password);
+    self._token = responseDetails.token;
+    self._ecdhXprv = responseDetails.ecdhXprv;
+
+    // add the remaining component for easier access
+    response.body.access_token = self._token;
+    return response;
   })
+  .then(handleResponseResult(), handleResponseError)
   .nodeify(callback);
 };
 
@@ -603,7 +796,9 @@ BitGo.prototype.authenticateWithAuthCode = function(params, callback) {
 
   var token_result;
 
-  return this.post(this._baseUrl + '/oauth/token')
+  var request = this.post(this._baseUrl + '/oauth/token');
+  request.forceAuthenticationDowngrade = true; // OAuth currently only supports v1 authentication
+  return request
   .send({
     grant_type: 'authorization_code',
     code: authCode,
@@ -722,7 +917,7 @@ BitGo.prototype.listAccessTokens = function(params, callback) {
 //
 BitGo.prototype.addAccessToken = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['otp', 'label'], [], callback);
+  common.validateParams(params, ['label'], ['otp'], callback);
 
   // check non-string params
   if (params.duration) {
@@ -749,9 +944,30 @@ BitGo.prototype.addAccessToken = function(params, callback) {
     }
   }
 
-  return this.post(this.url('/user/accesstoken'))
-  .send(params)
-  .result()
+  var bitgo = this;
+
+  var request = this.post(this.url('/user/accesstoken'));
+  if (!bitgo._ecdhXprv) {
+    // without a private key, the user cannot decrypt the new access token the server will send
+    request.forceAuthenticationDowngrade = true;
+  }
+
+  return request.send(params)
+  .then(function(response) {
+    if (request.forceAuthenticationDowngrade) {
+      response.body.warning = 'A protocol downgrade has occurred because this is a legacy account.';
+      return response;
+    }
+
+    // verify the authenticity of the server's response before proceeding any further
+    request.verifyResponse(response);
+
+    var responseDetails = bitgo.handleTokenIssuance(response.body);
+    response.body.token = responseDetails.token;
+
+    return response;
+  })
+  .then(handleResponseResult(), handleResponseError)
   .nodeify(callback);
 };
 

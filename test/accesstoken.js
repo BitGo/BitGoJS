@@ -64,7 +64,12 @@ describe('Access Token', function() {
       it('arguments', function() {
         assert.throws(function() { bitgo.addAccessToken({}, 'invalid'); });
         assert.throws(function() { bitgo.addAccessToken({}, function() {}); });
-        assert.throws(function() { bitgo.addAccessToken({ otp: bitgo.testUserOTP() }, 'invalid'); });
+        assert.throws(function() {
+          bitgo.addAccessToken({
+            otp: bitgo.testUserOTP(),
+            scope: ["wallet_view_all", "openid", "profile"]
+          }, 'invalid');
+        });
       });
 
       it('fails to add without scope', function() {
@@ -80,6 +85,13 @@ describe('Access Token', function() {
       it('fails to add with bad otp', function() {
         var promise = bitgo.addAccessToken({otp: 'badToken', label: 'test token', scope:someScopes});
         return TestUtil.throws(promise, 'invalid');
+      });
+      it('fails without scope', function() {
+        var promise = bitgo.addAccessToken({
+          otp: 'badToken',
+          label: 'test token',
+        });
+        return TestUtil.throws(promise, 'must supply scope');
       });
     });
 

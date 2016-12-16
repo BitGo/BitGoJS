@@ -10,6 +10,13 @@ var pjson = require('../package.json');
 
 var BITGOEXPRESS_USER_AGENT = "BitGoExpress/" + pjson.version;
 
+var handleLogin = function(req) {
+  var username = req.body.username || req.body.email;
+  var body = req.body;
+  body.username = username;
+  return req.bitgo.authenticate(body);
+};
+
 var handleDecrypt = function(req) {
   return {
     decrypted: req.bitgo.decrypt(req.body)
@@ -171,6 +178,26 @@ var handleCalculateMinerFeeInfo = function(req) {
   });
 };
 
+// handle any other API call
+var handleREST = function(req, res, next) {
+  var method = req.method;
+  var bitgo = req.bitgo;
+  var apiPath = '/' + req.params[0];
+  var bitgoURL = bitgo.url(apiPath);
+  switch (method) {
+    case 'GET':
+      return bitgo.get(bitgoURL).result().nodeify();
+    case 'POST':
+      return bitgo.post(bitgoURL).send(req.body).result().nodeify();
+    case 'PUT':
+      return bitgo.put(bitgoURL).send(req.body).result().nodeify();
+    case 'DELETE':
+      return bitgo.del(bitgoURL).send(req.body).result().nodeify();
+  }
+  // something has presumably gone wrong
+  next();
+};
+
 var apiResponse = function(status, result, message) {
   var err = new Error(message);
   err.status = status;
@@ -257,6 +284,9 @@ var promiseWrapper = function(promiseRequestHandler, args) {
 };
 
 exports = module.exports = function(app, args) {
+  // auth
+  app.post('/api/v1/user/login', parseBody, prepareBitGo(args), promiseWrapper(handleLogin, args));
+
   app.post('/api/v1/decrypt', parseBody, prepareBitGo(args), promiseWrapper(handleDecrypt, args));
   app.post('/api/v1/encrypt', parseBody, prepareBitGo(args), promiseWrapper(handleEncrypt, args));
   app.post('/api/v1/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleVerifyAddress, args));
@@ -283,4 +313,7 @@ exports = module.exports = function(app, args) {
   // eth
   app.post('/api/v1/eth/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleEthGenerateWallet, args));
   app.post('/api/v1/eth/wallet/:id/sendtransaction', parseBody, prepareBitGo(args), promiseWrapper(handleEthSendTransaction, args));
+
+  // any other API call
+  app.use('/api/v1/*', parseBody, prepareBitGo(args), promiseWrapper(handleREST, args));
 };
