@@ -145,14 +145,15 @@ Keychains.prototype.list = function(params, callback) {
 //
 Keychains.prototype.add = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['xpub'], ['encryptedXprv', 'type'], callback);
+  common.validateParams(params, ['xpub'], ['encryptedXprv', 'type', 'isLedger'], callback);
 
   return this.bitgo.post(this.bitgo.url('/keychain'))
   .send({
     xpub: params.xpub,
     encryptedXprv: params.encryptedXprv,
     type: params.type,
-    originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode
+    originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+    isLedger: params.isLedger
   })
   .result()
   .then(function(keychain) {
