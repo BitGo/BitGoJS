@@ -625,8 +625,8 @@ BitGo.prototype.handleTokenIssuance = function(responseBody, password) {
 
   // BIP32 derivation path is applied to both client and server master keys
   var derivationPath = responseBody.derivationPath;
-  var clientDerivedNode = clientHDNode.derive(derivationPath);
-  var serverDerivedNode = serverHDNode.derive(derivationPath);
+  var clientDerivedNode = bitcoin.hdPath(clientHDNode).derive(derivationPath);
+  var serverDerivedNode = bitcoin.hdPath(serverHDNode).derive(derivationPath);
 
   // calculating one-time ECDH key
   var secretPoint = serverDerivedNode.keyPair.__Q.multiply(clientDerivedNode.keyPair.d);
