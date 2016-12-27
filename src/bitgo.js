@@ -643,6 +643,8 @@ BitGo.prototype.handleTokenIssuance = function(responseBody, password) {
 //
 // authenticate
 // Login to the bitgo system.
+// Params:
+// - forceV1Auth (boolean)
 // Returns:
 //   {
 //     token: <user's token>,
@@ -656,6 +658,7 @@ BitGo.prototype.authenticate = function(params, callback) {
   var password = params.password;
   var otp = params.otp;
   var trust = params.trust;
+  var forceDowngrade = !!params.forceV1Auth;
 
   // Calculate the password HMAC so we don't send clear-text passwords
   var key = sjcl.codec.utf8String.toBits(username);
@@ -687,6 +690,9 @@ BitGo.prototype.authenticate = function(params, callback) {
   }
 
   var request = this.post(this.url('/user/login'));
+  if (forceDowngrade) {
+    request.forceAuthenticationDowngrade = true;
+  }
   return request.send(authParams)
   .then(function(response) {
     // verify the response's authenticity
@@ -696,28 +702,25 @@ BitGo.prototype.authenticate = function(params, callback) {
     var body = response.body;
     self._user = body.user;
 
-    // check the presence of an encrypted ECDH xprv
-    // if not present, legacy account
-    var encryptedXprv = body.encryptedECDHXprv;
-    if (!encryptedXprv) {
-      // signify that a protocol downgrade had to occur
-      var downGradeRequest = self.post(self.url('/user/login'));
-      downGradeRequest.forceAuthenticationDowngrade = true;
-      return downGradeRequest.send(authParams)
-      .then(function(response) {
-        self._token = response.body.access_token;
+    if (body.access_token) {
+      self._token = body.access_token;
+      // if the downgrade was forced, adding a warning message might be prudent
+    } else {
+      // check the presence of an encrypted ECDH xprv
+      // if not present, legacy account
+      var encryptedXprv = body.encryptedECDHXprv;
+      if (!encryptedXprv) {
+        throw new Error('Keychain needs encryptedXprv property');
+      }
 
-        response.body.warning = 'A protocol downgrade has occurred because this is a legacy account.';
-        return response;
-      });
+      var responseDetails = self.handleTokenIssuance(response.body, password);
+      self._token = responseDetails.token;
+      self._ecdhXprv = responseDetails.ecdhXprv;
+
+      // add the remaining component for easier access
+      response.body.access_token = self._token;
     }
 
-    var responseDetails = self.handleTokenIssuance(response.body, password);
-    self._token = responseDetails.token;
-    self._ecdhXprv = responseDetails.ecdhXprv;
-
-    // add the remaining component for easier access
-    response.body.access_token = self._token;
     return response;
   })
   .then(handleResponseResult(), handleResponseError)
