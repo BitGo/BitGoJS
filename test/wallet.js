@@ -2476,10 +2476,10 @@ describe('Wallet API', function() {
           result.feeRate.should.be.lessThan(0.01e8);
           result.should.have.property('bitgoFee');
           bitgoFee = result.bitgoFee;
-          bitgoFee.amount.should.equal(100000);
+          bitgoFee.amount.should.equal(110000);
           bitgoFee.should.have.property('address');
           result.should.have.property('instantFee');
-          result.instantFee.amount.should.equal(100000);
+          result.instantFee.amount.should.equal(110000);
           // Re-create the same tx, passing bitgoFee info
           return wallet3.createTransaction({ recipients: recipients, instant: true, bitgoFee: result.bitgoFee});
         })

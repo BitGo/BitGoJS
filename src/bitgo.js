@@ -6,6 +6,8 @@
 
 var superagent = require('superagent');
 var bitcoin = require('./bitcoin');
+var sanitizeHtml = require('sanitize-html');
+var eol = require('eol');
 var Blockchain = require('./blockchain');
 var EthBlockchain = require('./eth/ethBlockchain');
 var Keychains = require('./keychains');
@@ -68,7 +70,9 @@ var handleResponseResult = function(optionalField) {
 };
 
 var errFromResponse = function(res) {
-  var err = new Error(res.body.error ? res.body.error : res.status.toString());
+  var errString = createResponseErrorString(res);
+  var err = new Error(errString);
+
   err.status = res.status;
   if (res.body) {
     err.result = res.body;
@@ -87,6 +91,42 @@ var handleResponseError = function(e) {
     throw errFromResponse(e.response);
   }
   throw e;
+};
+
+/**
+ * There are many ways a request can fail, and may ways information on that failure can be
+ * communicated to the client. This function tries to handle those cases and create a sane error string
+ * @param res Response from an HTTP request
+ * @returns {String}
+ */
+var createResponseErrorString = function(res) {
+  var errString = res.statusCode.toString(); // at the very least we'll have the status code
+  if (res.body.error) {
+    // this is the case we hope for, where the server gives us a nice error from the JSON body
+    errString = res.body.error;
+  } else {
+    // things get messy from here on, we try different parts of the response, salvaging what we can
+    if (res.res && res.res.statusMessage) {
+      errString = errString + '\n' + res.res.statusMessage;
+    }
+    if (res.text) {
+      // if the response came back as text, we try to parse it as HTML and remove all tags, leaving us
+      // just the bare text, which we then trim of excessive newlines and limit to a certain length
+      try {
+        var sanitizedText = sanitizeHtml(res.text, { allowedTags: [] });
+        sanitizedText = sanitizedText.trim();
+        sanitizedText = eol.lf(sanitizedText); // use '\n' for all newlines
+        sanitizedText = _.replace(sanitizedText, /\n[ |\t]{1,}\n/g, '\n\n'); // remove the spaces/tabs between newlines
+        sanitizedText = _.replace(sanitizedText, /[\n]{2,}/g, '\n\n'); // have at most 2 consecutive newlines
+        sanitizedText = sanitizedText.substring(0, 5000); // prevent message from getting too large
+        errString = errString + '\n' + sanitizedText; // add it to our existing errString (at this point the more info the better!)
+      } catch (e) {
+        // do nothing, the response's HTML was too wacky to be parsed cleanly
+      }
+    }
+  }
+
+  return errString;
 };
 
 //
