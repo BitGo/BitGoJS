@@ -30,6 +30,7 @@ describe('Market', function() {
         throw err;
       }
       marketData.should.have.property('latest');
+
       marketData.latest.should.have.property('currencies');
       marketData.latest.currencies.should.have.property('USD');
       marketData.latest.currencies.USD.should.have.property('bid');
@@ -38,6 +39,16 @@ describe('Market', function() {
       marketData.latest.currencies.USD.should.have.property('total_vol');
       marketData.latest.currencies.USD.should.have.property('prevDayHigh');
       marketData.latest.currencies.USD.should.have.property('prevDayLow');
+      marketData.latest.currencies.USD.should.have.property('24h_avg');
+      marketData.latest.currencies.USD.should.have.property('total_vol');
+      marketData.latest.currencies.USD.should.have.property('timestamp');
+      (typeof marketData.latest.currencies.USD.timestamp === 'number').should.equal(true);
+      marketData.latest.currencies.USD.should.have.property('monthlyLow');
+      marketData.latest.currencies.USD.should.have.property('monthlyHigh');
+      marketData.latest.currencies.USD.should.have.property('prevDayLow');
+      marketData.latest.currencies.USD.should.have.property('prevDayHigh');
+      marketData.latest.currencies.USD.should.have.property('lastHourLow');
+      marketData.latest.currencies.USD.should.have.property('lastHourHigh');
       done();
     });
   });
