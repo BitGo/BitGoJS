@@ -232,6 +232,7 @@ var prepareBitGo = function(args) {
     params.userAgent = userAgent;
 
     req.bitgo = new BitGoJS.BitGo(params);
+    req.bitgo._promise.longStackSupport = true;
 
     next();
   }

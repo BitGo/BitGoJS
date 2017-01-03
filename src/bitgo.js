@@ -168,6 +168,7 @@ var BitGo = function(params) {
   this._token = params.accessToken || null;
   this._refreshToken = params.refreshToken || null;
   this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
+  this._promise = Q;
 
   // whether to perform extra client-side validation for some things, such as
   // address validation or signature validation. defaults to true, but can be
