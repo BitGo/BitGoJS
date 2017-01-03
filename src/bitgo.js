@@ -206,7 +206,7 @@ var BitGo = function(params) {
         this.isV2Authenticated = true;
         // some of the older tokens appear to be only 40 characters long
         if ((bitgo._token && bitgo._token.length !== 67 && !bitgo._token.startsWith('v2x'))
-          || req.forceAuthenticationDowngrade) {
+          || req.forceV1Auth) {
           // use the old method
           this.isV2Authenticated = false;
 
@@ -617,7 +617,13 @@ BitGo.prototype.handleTokenIssuance = function(responseBody, password) {
     if (!password || !responseBody.encryptedECDHXprv) {
       throw new Error('ecdhXprv property must be set or password and encrypted encryptedECDHXprv must be provided');
     }
-    ecdhXprv = this.decrypt({ input: responseBody.encryptedECDHXprv, password: password });
+    try {
+      ecdhXprv = this.decrypt({ input: responseBody.encryptedECDHXprv, password: password });
+    } catch (e) {
+      e.errorCode = 'ecdh_xprv_decryption_failure';
+      console.error('Failed to decrypt encryptedECDHXprv.');
+      throw e;
+    }
   }
 
   // construct HDNode objects for client's xprv and server's xpub
@@ -634,7 +640,14 @@ BitGo.prototype.handleTokenIssuance = function(responseBody, password) {
   var secret = secretPoint.getEncoded().toString('hex');
 
   // decrypt token with symmetric ECDH key
-  var response = { token: this.decrypt({ input: responseBody.encryptedToken, password: secret }) };
+  var response = {};
+  try {
+    response.token = this.decrypt({ input: responseBody.encryptedToken, password: secret });
+  } catch (e) {
+    e.errorCode = 'token_decryption_failure';
+    console.error('Failed to decrypt token.');
+    throw e;
+  }
   if (!this._ecdhXprv) {
     response.ecdhXprv = ecdhXprv;
   }
@@ -659,7 +672,7 @@ BitGo.prototype.authenticate = function(params, callback) {
   var password = params.password;
   var otp = params.otp;
   var trust = params.trust;
-  var forceDowngrade = !!params.forceV1Auth;
+  var forceV1Auth = !!params.forceV1Auth;
 
   // Calculate the password HMAC so we don't send clear-text passwords
   var key = sjcl.codec.utf8String.toBits(username);
@@ -691,14 +704,13 @@ BitGo.prototype.authenticate = function(params, callback) {
   }
 
   var request = this.post(this.url('/user/login'));
-  if (forceDowngrade) {
-    request.forceAuthenticationDowngrade = true;
+  if (forceV1Auth) {
+    request.forceV1Auth = true;
+    // tell the server that the client was forced to downgrade the authentication protocol
+    authParams.forceV1Auth = true;
   }
   return request.send(authParams)
   .then(function(response) {
-    // verify the response's authenticity
-    request.verifyResponse(response);
-
     // extract body and user information
     var body = response.body;
     self._user = body.user;
@@ -717,6 +729,9 @@ BitGo.prototype.authenticate = function(params, callback) {
       var responseDetails = self.handleTokenIssuance(response.body, password);
       self._token = responseDetails.token;
       self._ecdhXprv = responseDetails.ecdhXprv;
+
+      // verify the response's authenticity
+      request.verifyResponse(response);
 
       // add the remaining component for easier access
       response.body.access_token = self._token;
@@ -801,7 +816,7 @@ BitGo.prototype.authenticateWithAuthCode = function(params, callback) {
   var token_result;
 
   var request = this.post(this._baseUrl + '/oauth/token');
-  request.forceAuthenticationDowngrade = true; // OAuth currently only supports v1 authentication
+  request.forceV1Auth = true; // OAuth currently only supports v1 authentication
   return request
   .send({
     grant_type: 'authorization_code',
@@ -953,12 +968,12 @@ BitGo.prototype.addAccessToken = function(params, callback) {
   var request = this.post(this.url('/user/accesstoken'));
   if (!bitgo._ecdhXprv) {
     // without a private key, the user cannot decrypt the new access token the server will send
-    request.forceAuthenticationDowngrade = true;
+    request.forceV1Auth = true;
   }
 
   return request.send(params)
   .then(function(response) {
-    if (request.forceAuthenticationDowngrade) {
+    if (request.forceV1Auth) {
       response.body.warning = 'A protocol downgrade has occurred because this is a legacy account.';
       return response;
     }
