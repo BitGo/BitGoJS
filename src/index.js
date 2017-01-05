@@ -11,6 +11,7 @@ bitgo.BitGo = require('./bitgo.js');
 bitgo.bitcoin = require('./bitcoin');
 bitgo.sjcl = require('./sjcl.min');
 bitgo.bs58 = require('bs58');
+bitgo.Buffer = Buffer;
 
 /**
  * Set the network, i.e. either "bitcoin" for production with real bitcoin, or
