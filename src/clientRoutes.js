@@ -184,15 +184,36 @@ var handleREST = function(req, res, next) {
   var bitgo = req.bitgo;
   var apiPath = '/' + req.params[0];
   var bitgoURL = bitgo.url(apiPath);
+  return redirectRequest(bitgo, method, bitgoURL, req, next);
+};
+
+// handle new wallet creation
+var handleV2GenerateWallet = function(req) {
+  var bitgo = req.bitgo;
+  var coin = bitgo.coin(req.params.coin);
+  return coin.wallets().generateWallet(req.body);
+};
+
+// handle any other API call
+var handleV2REST = function(req, res, next) {
+  var method = req.method;
+  var bitgo = req.bitgo;
+  var coin = bitgo.coin(req.params.coin);
+  var apiPath = '/' + req.params[0];
+  var coinURL = coin.url(apiPath);
+  return redirectRequest(bitgo, method, coinURL, req, next);
+};
+
+var redirectRequest = function(bitgo, method, url, req, next){
   switch (method) {
     case 'GET':
-      return bitgo.get(bitgoURL).result().nodeify();
+      return bitgo.get(url).result().nodeify();
     case 'POST':
-      return bitgo.post(bitgoURL).send(req.body).result().nodeify();
+      return bitgo.post(url).send(req.body).result().nodeify();
     case 'PUT':
-      return bitgo.put(bitgoURL).send(req.body).result().nodeify();
+      return bitgo.put(url).send(req.body).result().nodeify();
     case 'DELETE':
-      return bitgo.del(bitgoURL).send(req.body).result().nodeify();
+      return bitgo.del(url).send(req.body).result().nodeify();
   }
   // something has presumably gone wrong
   next();
@@ -317,4 +338,13 @@ exports = module.exports = function(app, args) {
 
   // any other API call
   app.use('/api/v1/*', parseBody, prepareBitGo(args), promiseWrapper(handleREST, args));
+
+  // API v2
+
+  // generate wallet
+  app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleV2GenerateWallet, args));
+
+  // any other API v2 call
+  app.use('/api/v2/:coin/*', parseBody, prepareBitGo(args), promiseWrapper(handleV2REST, args));
+
 };

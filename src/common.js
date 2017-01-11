@@ -1,6 +1,11 @@
+var bitcoin = require('bitcoinjs-lib');
+
 exports.Environments = {
   prod: {
     uri: 'https://www.bitgo.com',
+    networks: {
+      btc: bitcoin.networks.bitcoin
+    },
     network: 'bitcoin',
     ethNetwork: 'ethereum',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
@@ -8,6 +13,9 @@ exports.Environments = {
   },
   staging: {
     uri: 'https://staging.bitgo.com',
+    networks: {
+      btc: bitcoin.networks.bitcoin
+    },
     network: 'bitcoin',
     ethNetwork: 'ethereum',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
@@ -15,6 +23,9 @@ exports.Environments = {
   },
   test: {
     uri: 'https://test.bitgo.com',
+    networks: {
+      tbtc: bitcoin.networks.testnet
+    },
     network: 'testnet',
     ethNetwork: 'ethereum',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
@@ -22,6 +33,9 @@ exports.Environments = {
   },
   dev: {
     uri: 'https://webdev.bitgo.com',
+    networks: {
+      tbtc: bitcoin.networks.testnet
+    },
     network: 'testnet',
     ethNetwork: 'ethereum',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
@@ -29,6 +43,9 @@ exports.Environments = {
   },
   local: {
     uri: 'http://localhost:3000',
+    networks: {
+      tbtc: bitcoin.networks.testnet
+    },
     network: 'testnet',
     ethNetwork: 'ethereum',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
@@ -36,6 +53,10 @@ exports.Environments = {
   },
   custom: {
     uri: process.env.BITGO_CUSTOM_ROOT_URI,
+    networks: {
+      btc: bitcoin.networks.bitcoin,
+      tbtc: bitcoin.networks.testnet,
+    },
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK || 'bitcoin',
     ethNetwork: process.env.BITGO_CUSTOM_ETHEREUM_NETWORK || 'ethereum',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
@@ -81,9 +102,9 @@ exports.validateParams = function(params, expectedParams, optionalParams, option
   if (typeof(params) != 'object') {
     throw new Error('Must pass in parameters dictionary');
   }
-
+  
   expectedParams = expectedParams || [];
-
+  
   expectedParams.forEach(function(expectedParam) {
     if (!params[expectedParam]) {
       throw new Error('Missing parameter: ' + expectedParam);
@@ -92,17 +113,17 @@ exports.validateParams = function(params, expectedParams, optionalParams, option
       throw new Error('Expecting parameter string: ' + expectedParam + ' but found ' + typeof(params[expectedParam]));
     }
   });
-
+  
   optionalParams = optionalParams || [];
   optionalParams.forEach(function(optionalParam) {
     if (params[optionalParam] && typeof(params[optionalParam]) != 'string') {
       throw new Error('Expecting parameter string: ' + optionalParam + ' but found ' + typeof(params[optionalParam]));
     }
   });
-
+  
   if (optionalCallback && typeof(optionalCallback) != 'function') {
     throw new Error('illegal callback argument');
   }
-
+  
   return true;
 };

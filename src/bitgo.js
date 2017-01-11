@@ -8,6 +8,7 @@ var superagent = require('superagent');
 var bitcoin = require('./bitcoin');
 var sanitizeHtml = require('sanitize-html');
 var eol = require('eol');
+var BaseCoin = require('./v2/baseCoin');
 var Blockchain = require('./blockchain');
 var EthBlockchain = require('./eth/ethBlockchain');
 var Keychains = require('./keychains');
@@ -27,6 +28,7 @@ var moment = require('moment');
 var _ = require('lodash');
 var url = require('url');
 var querystring = require('querystring');
+var crypto = require('crypto');
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);
@@ -117,7 +119,7 @@ var createResponseErrorString = function(res) {
         sanitizedText = sanitizedText.trim();
         sanitizedText = eol.lf(sanitizedText); // use '\n' for all newlines
         sanitizedText = _.replace(sanitizedText, /\n[ |\t]{1,}\n/g, '\n\n'); // remove the spaces/tabs between newlines
-        sanitizedText = _.replace(sanitizedText, /[\n]{2,}/g, '\n\n'); // have at most 2 consecutive newlines
+        sanitizedText = _.replace(sanitizedText, /[\n]{3,}/g, '\n\n'); // have at most 2 consecutive newlines
         sanitizedText = sanitizedText.substring(0, 5000); // prevent message from getting too large
         errString = errString + '\n' + sanitizedText; // add it to our existing errString (at this point the more info the better!)
       } catch (e) {
@@ -342,13 +344,13 @@ var BitGo = function(params) {
         var queryPath = urlDetails.path;
 
         var signatureSubject = [timestamp, queryPath, response.statusCode, response.text].join('|');
+
         // calculate the HMAC
         var hmacKey = sjcl.codec.utf8String.toBits(bitgo._token);
         var hmacDigest = (new sjcl.misc.hmac(hmacKey, sjcl.hash.sha256)).mac(signatureSubject);
         var expectedHmac = sjcl.codec.hex.fromBits(hmacDigest);
 
         var receivedHmac = response.headers.hmac;
-
         if (expectedHmac !== receivedHmac) {
           var error = new Error('invalid response HMAC, possible man-in-the-middle-attack');
           error.status = 511;
@@ -392,6 +394,14 @@ var BitGo = function(params) {
 
   // Kick off first load of constants
   this.fetchConstants();
+};
+
+/**
+ * Create a basecoin object
+ * @param coinName
+ */
+BitGo.prototype.coin = function(coinName) {
+  return new BaseCoin(this, coinName);
 };
 
 // Accessor object for Ethereum methods

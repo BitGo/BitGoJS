@@ -36,10 +36,6 @@ BitGo.TRAVEL_RULE_TXID = '33447753455651508cfd099c9ebe0db6a2243ccba4766319621fbc
 
 BitGo.TEST_WALLET_REGROUP_PASSCODE = 'test security fanout & coalesce';
 
-//
-// testUserOTP
-// Get an OTP code for the test user.
-//
 BitGo.prototype.initializeTestVars = function() {
   if (this.getEnv() === 'dev' || this.getEnv() === 'local') {
     BitGo.TEST_USERID = '54d3e3a4b08fa6dc0a0002c07f8a9f86';
