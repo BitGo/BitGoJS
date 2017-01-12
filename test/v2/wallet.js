@@ -7,9 +7,9 @@ var should = require('should');
 var bitcoin = require('bitcoinjs-lib');
 
 var common = require('../../src/common');
-var TestBitGo = require('./lib/test_bitgo');
+var TestV2BitGo = require('../lib/test_bitgo');
 
-describe('Wallets', function() {
+describe('V2 Wallet:', function() {
   var bitgo;
   var wallets;
   var keychains;
@@ -18,7 +18,7 @@ describe('Wallets', function() {
   
   before(function() {
     // TODO: replace dev with test
-    bitgo = new TestBitGo({ env: 'dev' });
+    bitgo = new TestV2BitGo({ env: 'dev' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc', bitcoin.networks.testnet);
     wallets = basecoin.wallets();
@@ -26,7 +26,7 @@ describe('Wallets', function() {
     
     return bitgo.authenticateTestUser(bitgo.testUserOTP())
     .then(function() {
-      return wallets.getWallet({ id: TestBitGo.TEST_WALLET1_ID })
+      return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID })
     })
     .then(function(testWallet) {
       wallet = testWallet;
@@ -117,7 +117,7 @@ describe('Wallets', function() {
               address: recipientAddress.address,
             }
           ],
-          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE
+          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
         };
         return wallet.sendMany(params);
       })

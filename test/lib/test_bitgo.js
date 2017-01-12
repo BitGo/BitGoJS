@@ -75,11 +75,19 @@ BitGo.prototype.initializeTestVars = function() {
 
     // wallet for testing unspents regrouping (fanout & consolidate/coalesce)
     BitGo.TEST_WALLET_REGROUP_ADDRESS = '2MuVshMLfZaXfF6q7af47ZFUtZGGpnyZuLu';
+
+    // v2 variables
+    BitGo.V2 = {};
+    BitGo.V2.TEST_USERID = '585caccd5573b0a8416a745ed58d8cb4';
+    BitGo.V2.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
+    BitGo.V2.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcGicVM5K5UnocWoFt3Yh1RZKzSEHPPARhyMf9w7DVqM3PgBgiVW5NHRp8UteqhMoQb17rCQsLbmGXuPx43MKskyB31R97p3G';
+    BitGo.V2.TEST_WALLET1_ID = '585cc5335573b0a8416aadb1fce63ce3';
+
   } else {
     BitGo.TEST_USERID = '543c11ed356d00cb7600000b98794503';
     BitGo.TEST_SHARED_KEY_USERID = '549d0ee835aec81206004c082757570f';
     BitGo.TEST_THIRD_USERID = '57049b9a194a115a06da21fb9731fb71';
-    BitGo.TEST_USER_ECDH_XPUB = 'xpub661MyMwAqRbcGn8KmC8qy9cNcLcmLo8aGtcHgiMmXw7R5drDHReavre767FausTZtZTw8vfych3J9jWw67eX8314ARTb3FczLdsPnqkQjyT';
+    BitGo.TEST_USER_ECDH_XPUB = 'xpub661MyMwAqRbcFkiN8QJXCytQqPyDPW1cfnuG6RGCVFnVyiSQL1b6ZS2iiVJHH7UZYwLbN2ayWsaRVhnBFKYvLz956PTRH2SuuurpEcNGLKv';
 
     BitGo.TEST_WALLET1_PASSCODE = 'test wallet #1 security';
     BitGo.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcGU7FnXMKSHMwbWxARxYJUpKD1CoMJP6vonLT9bZZaWYq7A7tKPXmDFFXTKigT7VHMnbtEnjCmxQ1E93ZJe6HDKwxWD28M6f';
@@ -127,10 +135,18 @@ BitGo.prototype.initializeTestVars = function() {
 
     // wallet for testing unspents regrouping (fanout & consolidate/coalesce)
     BitGo.TEST_WALLET_REGROUP_ADDRESS = '2MuVshMLfZaXfF6q7af47ZFUtZGGpnyZuLu';
+
+    // v2 variables
+    BitGo.V2 = {};
+    BitGo.V2.TEST_USERID = '543c11ed356d00cb7600000b98794503';
+    BitGo.V2.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
+    BitGo.V2.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcFWFN9gpFpnSVy6bF3kMZAkSXtu3ZYKPgq2KUVo1xEMnMXDcavwDJ4zH57iUHVfEGVK7dEgo7ufKRzTkeWYSBDuye5g7w4pe';
+    BitGo.V2.TEST_WALLET1_ID = '585cc6eb16efb0a50675fe4e3054662b';
   }
 
   BitGo.TEST_FEE_SINGLE_KEY_WIF = 'cRVQ6cbUyGHVvByPKF9GnEhaB4HUBFgLQ2jVX1kbQARHaTaD7WJ2';
   BitGo.TEST_FEE_SINGLE_KEY_ADDRESS = 'mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7';
+
 };
 
 //

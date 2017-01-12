@@ -7,9 +7,9 @@ var should = require('should');
 var bitcoin = require('bitcoinjs-lib');
 
 var common = require('../../src/common');
-var TestBitGo = require('./lib/test_bitgo');
+var TestV2BitGo = require('../lib/test_bitgo');
 
-describe('Wallets', function() {
+describe('V2 Wallets:', function() {
   var bitgo;
   var wallets;
   var keychains;
@@ -17,7 +17,7 @@ describe('Wallets', function() {
   
   before(function() {
     // TODO: replace dev with test
-    bitgo = new TestBitGo({ env: 'dev' });
+    bitgo = new TestV2BitGo({ env: 'dev' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc', bitcoin.networks.testnet);
     wallets = basecoin.wallets();
@@ -125,7 +125,7 @@ describe('Wallets', function() {
   
   describe('Get Wallet', function() {
     it('should get wallet', function() {
-      return wallets.getWallet({ id: TestBitGo.TEST_WALLET1_ID })
+      return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID })
       .then(function(wallet) {
         should.exist(wallet);
         wallet.should.have.property('baseCoin');
@@ -136,7 +136,7 @@ describe('Wallets', function() {
         wallet.balance.should.be.greaterThan(0);
         wallet.confirmedBalance.should.be.greaterThan(0);
         wallet.coin.should.equal('tbtc');
-        wallet.id.should.equal(TestBitGo.TEST_WALLET1_ID);
+        wallet.id.should.equal(TestV2BitGo.V2.TEST_WALLET1_ID);
         wallet.approvalsRequired.should.equal(1);
         wallet.m.should.equal(2);
         wallet.n.should.equal(3);
