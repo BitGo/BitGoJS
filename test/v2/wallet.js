@@ -18,9 +18,9 @@ describe('V2 Wallet:', function() {
   
   before(function() {
     // TODO: replace dev with test
-    bitgo = new TestV2BitGo({ env: 'dev' });
+    bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tbtc', bitcoin.networks.testnet);
+    basecoin = bitgo.coin('tbtc');
     wallets = basecoin.wallets();
     keychains = basecoin.keychains();
     
@@ -55,7 +55,6 @@ describe('V2 Wallet:', function() {
       .then(function(addresses){
         addresses.should.have.property('coin');
         addresses.should.have.property('count');
-        addresses.should.have.property('limit');
         addresses.should.have.property('addresses');
         addresses.addresses.length.should.be.greaterThan(2);
       });
@@ -100,7 +99,6 @@ describe('V2 Wallet:', function() {
       .then(function(transfers){
         transfers.should.have.property('coin');
         transfers.should.have.property('count');
-        transfers.should.have.property('limit');
         transfers.should.have.property('transfers');
       });
     });

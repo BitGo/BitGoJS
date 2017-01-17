@@ -17,9 +17,9 @@ describe('V2 Wallets:', function() {
   
   before(function() {
     // TODO: replace dev with test
-    bitgo = new TestV2BitGo({ env: 'dev' });
+    bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tbtc', bitcoin.networks.testnet);
+    basecoin = bitgo.coin('tbtc');
     wallets = basecoin.wallets();
     keychains = basecoin.keychains();
     return bitgo.authenticateTestUser(bitgo.testUserOTP());

@@ -1,9 +1,10 @@
 var Wallets = require('./wallets');
 var Keychains = require('./keychains');
-var common = require('../common');
 
-var bitcoin = require('bitcoinjs-lib');
-var _ = require('lodash');
+var coinInstances = {
+  btc: require('./coins/btc'),
+  tbtc: require('./coins/tbtc')
+};
 
 var BaseCoin = function(bitgo, coin) {
   this.bitgo = bitgo;
@@ -33,7 +34,7 @@ var BaseCoin = function(bitgo, coin) {
 
 BaseCoin.prototype.initializeCoin = function(coin) {
 
-  var coinInstance = require(__dirname + '/coins/' + coin);
+  var coinInstance = coinInstances[coin];
   if (!coinInstance) {
     throw new Error('Coin type ' + coin + ' not supported');
   }
