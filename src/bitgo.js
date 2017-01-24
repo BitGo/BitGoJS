@@ -1454,9 +1454,9 @@ BitGo.prototype.getConstants = function(params) {
   // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
   var defaultConstants = {
     maxFee: 0.1e8,
-    maxFeeRate: 100000,
-    minFeeRate: 2000,
-    fallbackFeeRate: 20000,
+    maxFeeRate: 250000,
+    minFeeRate: 1000,
+    fallbackFeeRate: 50000,
     minOutputSize: 2730,
     bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47'
   };
