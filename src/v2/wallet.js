@@ -134,7 +134,7 @@ Wallet.prototype.sendMany = function(params, callback) {
   var self = this;
 
   if (!(params.recipients instanceof Array)) {
-    throw new Error('expecting recipients object');
+    throw new Error('expecting recipients array');
   }
 
   var txPrebuildPromise = self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/build'))
