@@ -15,7 +15,7 @@ describe('V2 Wallet:', function() {
   var keychains;
   var basecoin;
   var wallet;
-  
+
   before(function() {
     // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
@@ -23,7 +23,7 @@ describe('V2 Wallet:', function() {
     basecoin = bitgo.coin('tbtc');
     wallets = basecoin.wallets();
     keychains = basecoin.keychains();
-    
+
     return bitgo.authenticateTestUser(bitgo.testUserOTP())
     .then(function() {
       return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID })
@@ -32,9 +32,9 @@ describe('V2 Wallet:', function() {
       wallet = testWallet;
     });
   });
-  
+
   describe('Create Address', function() {
-    
+
     it('should create a new address', function() {
       return wallet.createAddress()
       .then(function(newAddress) {
@@ -45,11 +45,11 @@ describe('V2 Wallet:', function() {
         newAddress.coin.should.equal(wallet._wallet.coin);
       });
     });
-    
+
   });
-  
+
   describe('List Addresses', function() {
-    
+
     it('addresses', function() {
       return wallet.addresses()
       .then(function(addresses){
@@ -59,18 +59,18 @@ describe('V2 Wallet:', function() {
         addresses.addresses.length.should.be.greaterThan(2);
       });
     });
-    
+
     it('getbalances', function() {
       // TODO server currently doesn't use this param
     });
-    
+
     it('prevId', function() {
       // TODO server currently doesn't use this param
     });
   });
-  
+
   describe('List Transactions', function() {
-    
+
     it('transactions', function() {
       return wallet.transactions()
       .then(function(transactions){
@@ -91,9 +91,9 @@ describe('V2 Wallet:', function() {
       });
     });
   });
-  
+
   describe('List Transfers', function() {
-    
+
     it('transfers', function() {
       return wallet.transfers()
       .then(function(transfers){
@@ -103,9 +103,43 @@ describe('V2 Wallet:', function() {
       });
     });
   });
-  
+
   describe('Send Transactions', function() {
-    it('should send a transaction to the wallet itself', function() {
+
+    it('should send transaction to the wallet itself with send', function() {
+      return wallet.createAddress()
+      .then(function(recipientAddress){
+        var params = {
+          amount: 0.01 * 1e8, // 0.01 tBTC
+          address: recipientAddress.address,
+          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        };
+        return wallet.send(params);
+      })
+      .then(function(transaction){
+        transaction.should.have.property('status');
+        transaction.should.have.property('txid');
+        transaction.status.should.equal('signed');
+      });
+    });
+
+    it('sendMany should error when given a non-array of recipients', function() {
+      return wallet.createAddress()
+      .then(function(recipientAddress){
+        var params = {
+          recipients: {
+            amount: 0.01 * 1e8, // 0.01 tBTC
+            address: recipientAddress.address,
+          },
+          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        };
+        assert.throws(function(){
+          wallet.sendMany(params)
+        });
+      });
+    });
+
+    it('should send a transaction to the wallet itself with sendMany', function() {
       return wallet.createAddress()
       .then(function(recipientAddress){
         var params = {
