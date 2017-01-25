@@ -20,7 +20,7 @@ Wallet.prototype.balance = function() {
 Wallet.prototype.transactions = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  
+
   return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx'))
   .result()
   .nodeify(callback);
@@ -35,7 +35,7 @@ Wallet.prototype.transactions = function(params, callback) {
 Wallet.prototype.transfers = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  
+
   return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer'))
   .result()
   .nodeify(callback);
@@ -50,20 +50,20 @@ Wallet.prototype.transfers = function(params, callback) {
 Wallet.prototype.addresses = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  
+
   var query = {};
-  
+
   if (params.mine) {
     query.mine = !!params.mine;
   }
-  
+
   if(params.prevId){
     if (typeof(params.prevId) != 'number') {
       throw new Error('invalid prevId argument, expecting number');
     }
     query.prevId = params.prevId;
   }
-  
+
   return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
   .query(query)
   .result()
@@ -81,7 +81,7 @@ Wallet.prototype.createAddress = function(params, callback) {
   var self = this;
   params = params || {};
   common.validateParams(params, [], [], callback);
-  
+
   params.chain = params.chain || 0;
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
   .send(params)
@@ -108,8 +108,10 @@ Wallet.prototype.send = function(params, callback) {
     throw new Error('invalid argument for amount - number expected');
   }
 
-  params.recipients = {};
-  params.recipients[params.address] = params.amount;
+  params.recipients = [{
+    address: params.address,
+    amount: params.amount
+  }];
 
   return this.sendMany(params)
   .nodeify(callback);
@@ -131,8 +133,8 @@ Wallet.prototype.sendMany = function(params, callback) {
   common.validateParams(params, [], ['message', 'otp'], callback);
   var self = this;
 
-  if (typeof(params.recipients) != 'object') {
-    throw new Error('expecting recipients object');
+  if (!(params.recipients instanceof Array)) {
+    throw new Error('expecting recipients array');
   }
 
   var txPrebuildPromise = self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/build'))
