@@ -90,6 +90,19 @@ Wallet.prototype.createAddress = function(params, callback) {
 };
 
 /**
+ *
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.prebuildTransaction = function(params, callback) {
+  return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
+  .send({ recipients: params.recipients })
+  .result()
+  .nodeify(callback);
+};
+
+/**
  * Send coins to a recipient
  * @param params
  * address - the destination address
@@ -133,17 +146,26 @@ Wallet.prototype.sendMany = function(params, callback) {
   common.validateParams(params, [], ['message', 'otp'], callback);
   var self = this;
 
-  if (!(params.recipients instanceof Array)) {
+  if(params.prebuildTx && params.recipients){
+    throw new Error('Only one of prebuildTx and recipients may be specified');
+  }
+
+  if (params.recipients && !(params.recipients instanceof Array)) {
     throw new Error('expecting recipients array');
   }
 
-  var txPrebuildPromise = self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/build'))
-  .send({ recipients: params.recipients })
-  .result();
+  // the prebuild can be overridden by providing an explicit tx
+  var txPrebuild = params.prebuildTx;
+  var txPrebuildPromise = null;
+  if (!txPrebuild) {
+    // if there is no prebuild, we need to calculate the prebuild in here
+    txPrebuildPromise = self.prebuildTransaction(params);
+  }
 
   var userKeychainPromise = self.baseCoin.keychains().get({ id: self._wallet.keys[0] });
 
-  return Q.all([txPrebuildPromise, userKeychainPromise, params])
+  // pass in either the prebuild promise or, if undefined, the actual prebuild
+  return Q.all([txPrebuildPromise || txPrebuild, userKeychainPromise, params])
   // preserve the "this"-reference in signTransaction
   .spread(self.baseCoin.signTransaction.bind(self.baseCoin))
   .then(function(halfSignedTransaction) {
