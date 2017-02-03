@@ -108,6 +108,7 @@ describe('V2 Wallet:', function() {
 
     it('should send transaction to the wallet itself with send', function() {
       return wallet.createAddress()
+      .delay(3000) // wait three seconds before sending
       .then(function(recipientAddress){
         var params = {
           amount: 0.01 * 1e8, // 0.01 tBTC
@@ -141,6 +142,7 @@ describe('V2 Wallet:', function() {
 
     it('should send a transaction to the wallet itself with sendMany', function() {
       return wallet.createAddress()
+      .delay(3000) // wait three seconds before sending
       .then(function(recipientAddress){
         var params = {
           recipients: [
@@ -154,6 +156,34 @@ describe('V2 Wallet:', function() {
         return wallet.sendMany(params);
       })
       .then(function(transaction){
+        transaction.should.have.property('status');
+        transaction.should.have.property('txid');
+        transaction.status.should.equal('signed');
+      });
+    });
+
+    it('should prebuild a transaction to the wallet', function() {
+      return wallet.createAddress()
+      .delay(3000) // wait three seconds before fetching unspents
+      .then(function(recipientAddress) {
+        var params = {
+          recipients: [
+            {
+              amount: 0.01 * 1e8, // 0.01 tBTC
+              address: recipientAddress.address,
+            }
+          ],
+
+        };
+        return wallet.prebuildTransaction(params);
+      })
+      .then(function(prebuild) {
+        return wallet.sendMany({
+          prebuildTx: prebuild,
+          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        })
+      })
+      .then(function(transaction) {
         transaction.should.have.property('status');
         transaction.should.have.property('txid');
         transaction.status.should.equal('signed');
