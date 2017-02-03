@@ -67,4 +67,13 @@ Keychains.prototype.createBitGo = function(params, callback) {
   return this.add(params, callback);
 };
 
+Keychains.prototype.createBackup = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['provider'], [], callback);
+  params.source = 'backup';
+
+  return this.add(params, callback);
+};
+
+
 module.exports = Keychains;

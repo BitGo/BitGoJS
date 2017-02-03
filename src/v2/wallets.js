@@ -2,15 +2,12 @@ var common = require('../common');
 var Wallet = require('./Wallet');
 var Q = require('q');
 var _ = require('lodash');
+var RmgCoin = require('./coins/rmg');
 
 var Wallets = function(bitgo, baseCoin) {
   this.bitgo = bitgo;
   this.baseCoin = baseCoin;
   this.coinWallet = Wallet;
-};
-
-Wallets.prototype.createWalletInstance = function() {
-  return new this.coinWallet(this.bitgo, this.coin);
 };
 
 /**
@@ -108,10 +105,10 @@ Wallets.prototype.generateWallet = function(params, callback) {
   });
 
   var backupKeychainPromise = Q.fcall(function() {
-    if (params.backupXpubProvider) {
+    if (params.backupXpubProvider || self.baseCoin instanceof RmgCoin) {
       // If requested, use a KRS or backup key provider
-      return self.bitgo.keychains().createBackup({
-        provider: params.backupXpubProvider,
+      return self.baseCoin.keychains().createBackup({
+        provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
         disableKRSEmail: params.disableKRSEmail,
         type: self.baseCoin.chain
       });

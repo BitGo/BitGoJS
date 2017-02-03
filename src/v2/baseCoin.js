@@ -3,7 +3,9 @@ var Keychains = require('./keychains');
 
 var coinInstances = {
   btc: require('./coins/btc'),
-  tbtc: require('./coins/tbtc')
+  tbtc: require('./coins/tbtc'),
+  rmg: require('./coins/rmg'),
+  trmg: require('./coins/trmg'),
 };
 
 var BaseCoin = function(bitgo, coin) {

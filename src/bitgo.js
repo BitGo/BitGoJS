@@ -196,6 +196,7 @@ var BitGo = function(params) {
 
   common.setNetwork(common.Environments[params.env].network);
   common.setEthNetwork(common.Environments[params.env].ethNetwork);
+  common.setRmgNetwork(common.Environments[params.env].rmgNetwork);
 
   if (!this._baseUrl) {
     this._baseUrl = common.Environments[params.env].uri;
