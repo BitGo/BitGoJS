@@ -8,7 +8,7 @@ exports.Environments = {
     },
     network: 'bitcoin',
     ethNetwork: 'ethereum',
-    rmgNetwork: 'aztec',
+    rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
   },
@@ -19,7 +19,7 @@ exports.Environments = {
     },
     network: 'bitcoin',
     ethNetwork: 'ethereum',
-    rmgNetwork: 'aztec',
+    rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
   },
@@ -30,7 +30,7 @@ exports.Environments = {
     },
     network: 'testnet',
     ethNetwork: 'ethereum',
-    rmgNetwork: 'aztecTest',
+    rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
   },
@@ -41,7 +41,7 @@ exports.Environments = {
     },
     network: 'testnet',
     ethNetwork: 'ethereum',
-    rmgNetwork: 'aztecTest',
+    rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
   },
@@ -52,7 +52,7 @@ exports.Environments = {
     },
     network: 'testnet',
     ethNetwork: 'ethereum',
-    rmgNetwork: 'aztecTest',
+    rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
   },
@@ -64,7 +64,7 @@ exports.Environments = {
     },
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK || 'bitcoin',
     ethNetwork: process.env.BITGO_CUSTOM_ETHEREUM_NETWORK || 'ethereum',
-    rmgNetwork: process.env.BITGO_CUSTOM_RMG_NETWORK || 'aztec',
+    rmgNetwork: process.env.BITGO_CUSTOM_RMG_NETWORK || 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
   }
