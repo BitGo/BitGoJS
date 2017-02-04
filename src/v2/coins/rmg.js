@@ -1,6 +1,6 @@
 var BaseCoin = require('../baseCoin');
 var common = require('../../common');
-var prova = require('prova');
+var prova = require('../../prova');
 var _ = require('lodash');
 
 var Rmg = function() {
@@ -34,15 +34,15 @@ Rmg.prototype.signTransaction = function(txPreBuild, userKeychain, params) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
-  var keychain = prova.HDNode.fromBase58(userPrv);
-  var hdPath = prova.hdPath(keychain);
+  var keychain = prova.HDNode.fromBase58(userPrv, this.network);
+  var hdPath = keychain.hdPath();
 
   for (var index = 0; index < transaction.ins.length; ++index) {
     var currentUnspent = txPreBuild.txInfo.unspents[index];
     var path = "m/0/0/" + currentUnspent.chain + "/" + currentUnspent.index;
     var privKey = hdPath.deriveKey(path);
 
-    var unspentAddress = prova.AztecAddress.fromBase58(currentUnspent.address);
+    var unspentAddress = prova.Address.fromBase58(currentUnspent.address);
     var subscript = unspentAddress.toScript();
     var txb = prova.TransactionBuilder.fromTransaction(transaction, this.network);
     try {
@@ -60,7 +60,7 @@ Rmg.prototype.signTransaction = function(txPreBuild, userKeychain, params) {
   }
 
   return {
-    txHex: transaction.toBuffer().toString('hex')
+    txHex: transaction.toHex()
   };
 };
 
