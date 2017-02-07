@@ -47,11 +47,6 @@ Rmg.prototype.signTransaction = function(txPreBuild, userKeychain, params) {
     var txb = prova.TransactionBuilder.fromTransaction(transaction, this.network);
     try {
       txb.sign(index, privKey, subscript, currentUnspent.value);
-
-      // temporary second signature
-      var serverKey = prova.ECPair.fromPrivateKeyBuffer(new Buffer('eaf02ca348c524e6392655ba4d29603cd1a7347d9d65cfe93ce1ebffdca22694', 'hex'), this.network);
-      txb.sign(index, serverKey, subscript, currentUnspent.value);
-
     } catch (e) {
       throw new Error('Failed to sign input #' + index);
     }

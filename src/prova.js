@@ -1,5 +1,5 @@
 var common = require('./common');
-var prova = require('../node_modules/prova/provalib.node');
+var prova = require('prova');
 
 prova.getNetwork = function() {
   return prova.networks[common.getRmgNetwork()];
