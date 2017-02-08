@@ -1,5 +1,5 @@
 var common = require('../common');
-var Wallet = require('./Wallet');
+var Wallet = require('./wallet');
 var Q = require('q');
 var _ = require('lodash');
 var RmgCoin = require('./coins/rmg');

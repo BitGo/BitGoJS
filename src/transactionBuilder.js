@@ -81,7 +81,8 @@ exports.createTransaction = function(params) {
     // If the user specifies both, check to make sure the feeSingleKeySourceAddress corresponds to the address of feeSingleKeyWIF
     if (params.feeSingleKeySourceAddress &&
         params.feeSingleKeySourceAddress !== feeSingleKeySourceAddress) {
-      throw new Error('feeSingleKeySourceAddress did not correspond to address of feeSingleKeyWIF');
+      throw new Error('feeSingleKeySourceAddress: ' + params.feeSingleKeySourceAddress +
+        ' did not correspond to address of feeSingleKeyWIF: ' + feeSingleKeySourceAddress);
     }
   }
 
@@ -122,17 +123,16 @@ exports.createTransaction = function(params) {
   var shouldComputeBestFee = (typeof(fee) == 'undefined');
 
   if (fee > constants.maxFee) {
-    throw new Error('fee too generous');  // Protection against bad inputs
+    throw new Error('fee too generous: ' + fee + ' greater than maxFee ' + constants.maxFee);  // Protection against bad inputs
   }
   if (feeRate > constants.maxFeeRate) {
-    throw new Error('fee rate too generous');  // Protection against bad inputs
+    throw new Error('fee rate too generous: ' + feeRate + ' greater than maxFeeRate ' + constants.maxFeeRate);  // Protection against bad inputs
   }
 
   var totalOutputAmount = 0;
 
   recipients.forEach(function(recipient) {
     if (typeof(recipient.address) == 'string') {
-      var addressObj;
       try {
         bitcoin.address.fromBase58Check(recipient.address);
       } catch (e) {
@@ -351,8 +351,9 @@ exports.createTransaction = function(params) {
     var totalFee = fee + (bitgoFeeInfo ? bitgoFeeInfo.amount : 0);
 
     if (feeSingleKeySourceAddress) {
-      if (totalFee > _.sumBy(feeSingleKeyUnspents, 'value')) {
-        var err = new Error('Insufficient fee amount available in single key fee source');
+      var summedSingleKeyUnspents = _.sumBy(feeSingleKeyUnspents, 'value');
+      if (totalFee > summedSingleKeyUnspents) {
+        var err = new Error('Insufficient fee amount available in single key fee source: ' + summedSingleKeyUnspents);
         err.result = {
           fee: fee,
           feeRate: feeRate,
@@ -414,7 +415,7 @@ exports.createTransaction = function(params) {
 
     var getChangeOutputs = function(changeAmount) {
       if (changeAmount < 0) {
-        throw new Error('negative change amount');
+        throw new Error('negative change amount: ' + changeAmount);
       }
 
       var result = [];
