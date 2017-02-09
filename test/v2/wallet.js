@@ -180,7 +180,9 @@ describe('V2 Wallet:', function() {
       .then(function(prebuild) {
         return wallet.sendMany({
           prebuildTx: prebuild,
-          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+          comment: 'Hello World!',
+          txHex: 'should be overwritten'
         })
       })
       .then(function(transaction) {
