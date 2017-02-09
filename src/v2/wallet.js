@@ -1,5 +1,6 @@
 var common = require('../common');
 var Q = require('q');
+var _ = require('lodash');
 
 var Wallet = function(bitgo, baseCoin, walletData) {
   this.bitgo = bitgo;
@@ -8,7 +9,7 @@ var Wallet = function(bitgo, baseCoin, walletData) {
 };
 
 Wallet.prototype.balance = function() {
-  return 'base balance';
+  return this._wallet.balance;
 };
 
 /**
@@ -143,7 +144,7 @@ Wallet.prototype.send = function(params, callback) {
  */
 Wallet.prototype.sendMany = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['message', 'otp'], callback);
+  common.validateParams(params, [], ['comment', 'otp'], callback);
   var self = this;
 
   if(params.prebuildTx && params.recipients){
@@ -169,8 +170,10 @@ Wallet.prototype.sendMany = function(params, callback) {
   // preserve the "this"-reference in signTransaction
   .spread(self.baseCoin.signTransaction.bind(self.baseCoin))
   .then(function(halfSignedTransaction) {
+    var selectParams = _.pick(params, ['comment', 'otp']);
+    var finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
     return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
-    .send(halfSignedTransaction)
+    .send(finalTxParams)
     .result();
   })
   .nodeify(callback);
