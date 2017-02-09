@@ -100,6 +100,37 @@ describe('V2 Wallet:', function() {
         transfers.should.have.property('coin');
         transfers.should.have.property('count');
         transfers.should.have.property('transfers');
+        transfers.transfers.length.should.be.greaterThan(0);
+      });
+    });
+
+    it('update comment', function() {
+      return wallet.transfers()
+      .then(function(result){
+        var params = {
+          id:  result.transfers[0].id,
+          comment: 'testComment'
+        };
+        return wallet.transferComment(params);
+      })
+      .then(function(transfer){
+        transfer.should.have.property('comment');
+        transfer.comment.should.eql('testComment');
+      });
+    });
+
+    it('remove comment', function() {
+      return wallet.transfers()
+      .then(function(result){
+        var params = {
+          id:  result.transfers[0].id,
+          comment: null
+        };
+        return wallet.transferComment(params);
+      })
+      .then(function(transfer){
+        transfer.should.have.property('comment');
+        transfer.comment.should.eql('');
       });
     });
   });

@@ -43,6 +43,22 @@ Wallet.prototype.transfers = function(params, callback) {
 };
 
 /**
+ * Update comment of a transfer
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.transferComment = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], ['comment'], callback);
+
+  return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer/' + params.id + '/comment'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+/**
  * List the addresses for a given wallet
  * @param params
  * @param callback
