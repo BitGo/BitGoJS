@@ -142,5 +142,60 @@ describe('V2 Wallets:', function() {
         wallet.n.should.equal(3);
       })
     });
+
+    it('should add webhook to wallet, simulate it, and then remove it', function() {
+      var wallet;
+      var count;
+      var webhookId;
+      return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID })
+      .then(function(currentWallet) {
+        wallet = currentWallet;
+        return wallet.listWebhooks();
+      })
+      .then(function(webhooks){
+        webhooks.should.have.property('webhooks');
+        count = webhooks.webhooks.length;
+        return wallet.addWebhook({
+          url: 'https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d',
+          type: 'transaction'
+        });
+      })
+      .then(function(webhook) {
+        webhook.should.have.property('id');
+        webhook.should.have.property('url');
+        webhook.should.have.property('type');
+        webhook.should.have.property('coin');
+        webhook.should.have.property('walletId');
+        webhookId = webhook.id;
+        return wallet.listWebhooks();
+      })
+      .then(function(webhooks){
+        webhooks.should.have.property('webhooks');
+        webhooks.webhooks.length.should.equal(count+1);
+        return wallet.simulateWebhook({
+          webhookId: webhookId,
+          txHash: 'e0119a0695efee3229978df74cbb066269890947d85c80ab630a4075b141b880'
+        });
+      }).then(function(simulation){
+        simulation.should.have.property('webhookNotifications');
+        var notification = simulation.webhookNotifications[0];
+        notification.url.should.equal('https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d');
+        notification.hash.should.equal('e0119a0695efee3229978df74cbb066269890947d85c80ab630a4075b141b880');
+        notification.type.should.equal('transaction');
+        notification.coin.should.equal('bitcoin');
+        return wallet.removeWebhook({
+          url: 'https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d',
+          type: 'transaction'
+        });
+      })
+      .then(function(webhookRemoval) {
+        webhookRemoval.should.have.property('removed');
+        return wallet.listWebhooks();
+      })
+      .then(function(webhooks){
+        webhooks.should.have.property('webhooks');
+        webhooks.webhooks.length.should.equal(count);
+      })
+    });
   });
 });
