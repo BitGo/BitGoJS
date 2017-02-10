@@ -1,4 +1,5 @@
 var common = require('../common');
+var assert = require('assert');
 var Q = require('q');
 var _ = require('lodash');
 
@@ -6,6 +7,15 @@ var Wallet = function(bitgo, baseCoin, walletData) {
   this.bitgo = bitgo;
   this.baseCoin = baseCoin;
   this._wallet = walletData;
+};
+
+Wallet.prototype.url = function(extra) {
+  extra = extra || '';
+  return this.baseCoin.url('/wallet/' + this.id() + extra);
+};
+
+Wallet.prototype.id = function() {
+  return this._wallet.id;
 };
 
 Wallet.prototype.balance = function() {
@@ -74,11 +84,25 @@ Wallet.prototype.addresses = function(params, callback) {
     query.mine = !!params.mine;
   }
 
-  if(params.prevId){
+  if (params.prevId) {
     if (typeof(params.prevId) != 'number') {
       throw new Error('invalid prevId argument, expecting number');
     }
     query.prevId = params.prevId;
+  }
+
+  if (params.sort) {
+    if (typeof(params.sort) != 'number') {
+      throw new Error('invalid sort argument, expecting number');
+    }
+    query.sort = params.sort;
+  }
+
+  if (params.limit) {
+    if (typeof(params.limit) != 'number') {
+      throw new Error('invalid sort argument, expecting number');
+    }
+    query.limit = params.limit;
   }
 
   return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
@@ -101,6 +125,65 @@ Wallet.prototype.createAddress = function(params, callback) {
 
   params.chain = params.chain || 0;
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.listWebhooks = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  return this.bitgo.get(this.url('/webhooks'))
+  .send()
+  .result()
+  .nodeify(callback);
+};
+
+/**
+ * Simulate wallet webhook, currently for webhooks of type transaction and pending approval
+ * @param params
+ * - webhookId (required): id of the webhook to be simulated
+ * - txHash (optional but required for transaction webhooks) hash of the simulated transaction
+ * - pendingApprovalId (optional but required for pending approval webhooks) id of the simulated pending approval
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.simulateWebhook = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['webhookId'], ['txHash', 'pendingApprovalId'], callback);
+
+  assert(!!params.txHash || !!params.pendingApprovalId, 'must supply either txHash or pendingApprovalId');
+  assert(!!params.txHash ^ !!params.pendingApprovalId, 'must supply either txHash or pendingApprovalId, but not both');
+
+  // depending on the coin type of the wallet, the txHash has to adhere to its respective format
+  // but the server takes care of that
+
+  // only take the txHash and pendingApprovalId properties
+  var filteredParams = _.pick(params, ['txHash', 'pendingApprovalId']);
+
+  var webhookId = params.webhookId;
+  return this.bitgo.post(this.url('/webhooks/' + webhookId + '/simulate'))
+  .send(filteredParams)
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.addWebhook = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['url', 'type'], [], callback);
+
+  return this.bitgo.post(this.url('/webhooks'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+Wallet.prototype.removeWebhook = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['url', 'type'], [], callback);
+
+  return this.bitgo.del(this.url('/webhooks'))
   .send(params)
   .result()
   .nodeify(callback);
