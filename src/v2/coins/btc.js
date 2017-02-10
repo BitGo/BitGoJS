@@ -13,6 +13,18 @@ var Btc = function() {
 
 Btc.prototype.__proto__ = BaseCoin.prototype;
 
+
+Btc.prototype.isValidAddress = function(address) {
+  var addressDetails;
+  try {
+    addressDetails = bitcoin.address.fromBase58Check(address);
+  } catch (e) {
+    return false;
+  }
+
+  return addressDetails.version === this.network.pubKeyHash || addressDetails.version === this.network.scriptHash;
+};
+
 /**
  * Assemble keychain and half-sign prebuilt transaction
  * @param txPreBuild

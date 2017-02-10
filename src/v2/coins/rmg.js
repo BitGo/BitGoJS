@@ -13,6 +13,10 @@ var Rmg = function() {
 
 Rmg.prototype.__proto__ = BaseCoin.prototype;
 
+Rmg.prototype.isValidAddress = function(address) {
+  return prova.Address.validateBase58(address, this.network);
+};
+
 /**
  * Assemble keychain and half-sign prebuilt transaction
  * @param txPreBuild
