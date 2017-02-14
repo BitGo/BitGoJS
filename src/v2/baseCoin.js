@@ -1,12 +1,7 @@
 var Wallets = require('./wallets');
 var Keychains = require('./keychains');
 
-var coinInstances = {
-  btc: require('./coins/btc'),
-  tbtc: require('./coins/tbtc'),
-  rmg: require('./coins/rmg'),
-  trmg: require('./coins/trmg'),
-};
+var coinInstances;
 
 var BaseCoin = function(bitgo, coin) {
   this.bitgo = bitgo;
@@ -35,6 +30,16 @@ var BaseCoin = function(bitgo, coin) {
 };
 
 BaseCoin.prototype.initializeCoin = function(coin) {
+
+  if (!coinInstances) {
+    // initialization has to be asynchronous to avoid circular dependencies
+    coinInstances = {
+      btc: require('./coins/btc'),
+      tbtc: require('./coins/tbtc'),
+      rmg: require('./coins/rmg'),
+      trmg: require('./coins/trmg')
+    };
+  }
 
   var coinInstance = coinInstances[coin];
   if (!coinInstance) {

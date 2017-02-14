@@ -194,6 +194,50 @@ var handleV2GenerateWallet = function(req) {
   return coin.wallets().generateWallet(req.body);
 };
 
+// handle send one
+var handleV2SendOne = function(req) {
+  var bitgo = req.bitgo;
+  var coin = bitgo.coin(req.params.coin);
+  return coin.wallets().get({ id: req.params.id })
+  .then(function(wallet) {
+    return wallet.send(req.body);
+  })
+  .catch(function(err) {
+    if (err.message === "Insufficient funds") {
+      throw apiResponse(400, err, "Insufficient funds");
+    }
+    throw err;
+  })
+  .then(function(result) {
+    if (result.status === 'pendingApproval') {
+      throw apiResponse(202, result);
+    }
+    return result;
+  });
+};
+
+// handle send many
+var handleV2SendMany = function(req) {
+  var bitgo = req.bitgo;
+  var coin = bitgo.coin(req.params.coin);
+  return coin.wallets().get({ id: req.params.id })
+  .then(function(wallet) {
+    return wallet.sendMany(req.body);
+  })
+  .catch(function(err) {
+    if (err.message === "Insufficient funds") {
+      throw apiResponse(400, err, "Insufficient funds");
+    }
+    throw err;
+  })
+  .then(function(result) {
+    if (result.status === 'pendingApproval') {
+      throw apiResponse(202, result);
+    }
+    return result;
+  });
+};
+
 // handle any other API call
 var handleV2REST = function(req, res, next) {
   var method = req.method;
@@ -343,6 +387,10 @@ exports = module.exports = function(app, args) {
 
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleV2GenerateWallet, args));
+
+  // send transaction
+  app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(args), promiseWrapper(handleV2SendOne, args));
+  app.post('/api/v2/:coin/wallet/:id/sendmany', parseBody, prepareBitGo(args), promiseWrapper(handleV2SendMany, args));
 
   // any other API v2 call
   app.use('/api/v2/:coin/*', parseBody, prepareBitGo(args), promiseWrapper(handleV2REST, args));
