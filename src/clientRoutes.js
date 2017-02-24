@@ -178,12 +178,29 @@ var handleCalculateMinerFeeInfo = function(req) {
   });
 };
 
+/**
+ * Builds the API's URL string, optionally building the querystring if parameters exist
+ * @param req
+ * @return {string}
+ */
+var createAPIPath = function(req) {
+  var apiPath = '/' + req.params[0];
+  if (!_.isEmpty(req.query)) {
+    // req.params does not contain the querystring, so we manually add them here
+    var urlDetails = url.parse(req.url);
+    if (urlDetails.search) {
+      // "search" is the properly URL encoded query params, prefixed with "?"
+      apiPath += urlDetails.search;
+    }
+  }
+  return apiPath;
+};
+
 // handle any other API call
 var handleREST = function(req, res, next) {
   var method = req.method;
   var bitgo = req.bitgo;
-  var apiPath = '/' + req.params[0];
-  var bitgoURL = bitgo.url(apiPath);
+  var bitgoURL = bitgo.url(createAPIPath(req));
   return redirectRequest(bitgo, method, bitgoURL, req, next);
 };
 
@@ -243,8 +260,7 @@ var handleV2REST = function(req, res, next) {
   var method = req.method;
   var bitgo = req.bitgo;
   var coin = bitgo.coin(req.params.coin);
-  var apiPath = '/' + req.params[0];
-  var coinURL = coin.url(apiPath);
+  var coinURL = coin.url(createAPIPath(req));
   return redirectRequest(bitgo, method, coinURL, req, next);
 };
 

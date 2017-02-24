@@ -48,6 +48,18 @@ describe('V2 Wallet:', function() {
 
   });
 
+  describe('List Unspents', function() {
+
+    it('addresses', function() {
+      return wallet.unspents()
+      .then(function(unspents){
+        unspents.should.have.property('coin');
+        unspents.should.have.property('unspents');
+        unspents.unspents.length.should.be.greaterThan(10);
+      });
+    });
+  });
+
   describe('List Addresses', function() {
 
     it('addresses', function() {

@@ -53,6 +53,21 @@ Wallet.prototype.transfers = function(params, callback) {
 };
 
 /**
+ * List the unspents for a given wallet
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.unspents = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/unspents'))
+  .result()
+  .nodeify(callback);
+};
+
+/**
  * Update comment of a transfer
  * @param params
  * @param callback
@@ -186,6 +201,84 @@ Wallet.prototype.removeWebhook = function(params, callback) {
   return this.bitgo.del(this.url('/webhooks'))
   .send(params)
   .result()
+  .nodeify(callback);
+};
+
+/**
+ *
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.shareWallet = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
+
+  if (params.reshare !== undefined && typeof(params.reshare) != 'boolean') {
+    throw new Error('Expected reshare to be a boolean.');
+  }
+
+  if (params.skipKeychain !== undefined && typeof(params.skipKeychain) != 'boolean') {
+    throw new Error('Expected skipKeychain to be a boolean. ');
+  }
+  var needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
+
+  if (params.disableEmail !== undefined && typeof(params.disableEmail) != 'boolean') {
+    throw new Error('Expected disableEmail to be a boolean.');
+  }
+
+  var self = this;
+  var sharing;
+  var sharedKeychain;
+  return this.bitgo.getSharingKey({ email: params.email })
+  .then(function(result) {
+    sharing = result;
+
+    if (needsKeychain) {
+      return self.getEncryptedUserKeychain({})
+      .then(function(keychain) {
+        // Decrypt the user key with a passphrase
+        if (keychain.encryptedXprv) {
+          if (!params.walletPassphrase) {
+            throw new Error('Missing walletPassphrase argument');
+          }
+          try {
+            keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+          } catch (e) {
+            throw new Error('Unable to decrypt user keychain');
+          }
+
+          var eckey = bitcoin.makeRandomKey();
+          var secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
+          var newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
+
+          sharedKeychain = {
+            xpub: keychain.xpub,
+            encryptedXprv: newEncryptedXprv,
+            fromPubKey: eckey.getPublicKeyBuffer().toString('hex'),
+            toPubKey: sharing.pubkey,
+            path: sharing.path
+          };
+        }
+      });
+    }
+  })
+  .then(function() {
+    var options = {
+      user: sharing.userId,
+      permissions: params.permissions,
+      reshare: params.reshare,
+      message: params.message,
+      disableEmail: params.disableEmail
+    };
+    if (sharedKeychain) {
+      options.keychain = sharedKeychain;
+    } else if (params.skipKeychain) {
+      options.keychain = {};
+    }
+
+    return self.createShare(options);
+  })
   .nodeify(callback);
 };
 
