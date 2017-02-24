@@ -53,6 +53,7 @@ Keychains.prototype.add = function(params, callback) {
     encryptedPrv: params.encryptedPrv,
     type: params.type,
     source: params.source,
+    provider: params.provider,
     originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
   })
   .result()
