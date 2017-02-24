@@ -247,7 +247,7 @@ var BitGo = function(params) {
 
         this.isV2Authenticated = true;
         // some of the older tokens appear to be only 40 characters long
-        if ((bitgo._token && bitgo._token.length !== 67 && !bitgo._token.startsWith('v2x'))
+        if ((bitgo._token && bitgo._token.length !== 67 && !bitgo._token.indexOf('v2x') === 0)
           || req.forceV1Auth) {
           // use the old method
           this.isV2Authenticated = false;
