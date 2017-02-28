@@ -14,7 +14,7 @@ describe('V2 Wallets:', function() {
   var wallets;
   var keychains;
   var basecoin;
-  
+
   before(function() {
     // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
@@ -24,33 +24,33 @@ describe('V2 Wallets:', function() {
     keychains = basecoin.keychains();
     return bitgo.authenticateTestUser(bitgo.testUserOTP());
   });
-  
+
   describe('List', function() {
     it('arguments', function() {
       assert.throws(function() { wallets.list({}, 'invalid'); });
       assert.throws(function() { wallets.list('invalid'); });
     });
-    
+
     it('skip', function(done) {
       // TODO server currently doesn't use this param
       done()
     });
-    
+
     it('getbalances', function(done) {
       // TODO server currently doesn't use this param
       done()
     });
-    
+
     it('prevId', function(done) {
       // TODO server currently doesn't use this param
       done()
     });
   });
-  
+
   describe('Generate Wallet', function() {
     var passphrase = 'yoplait';
     var label = 'v2 wallet';
-    
+
     it('arguments', function() {
       assert.throws(function() {wallets.generateWallet();});
       assert.throws(function() {wallets.generateWallet('invalid');});
@@ -73,37 +73,37 @@ describe('V2 Wallets:', function() {
         });
       });
     });
-    
+
     it('should make wallet with client-generated user and backup key', function() {
       var params = {
         passphrase: passphrase,
         label: label,
         disableTransactionNotifications: true
       };
-      
+
       return wallets.generateWallet(params)
       .then(function(res) {
         res.should.have.property('wallet');
         res.should.have.property('userKeychain');
         res.should.have.property('backupKeychain');
         res.should.have.property('bitgoKeychain');
-        
+
         res.userKeychain.should.have.property('pub');
         res.userKeychain.should.have.property('prv');
         res.userKeychain.should.have.property('encryptedPrv');
-        
+
         res.backupKeychain.should.have.property('pub');
         res.backupKeychain.should.have.property('prv');
-        
+
         res.bitgoKeychain.should.have.property('pub');
         res.bitgoKeychain.isBitGo.should.equal(true);
         res.bitgoKeychain.should.not.have.property('prv');
         res.bitgoKeychain.should.not.have.property('encryptedPrv');
       });
     });
-    
+
     it('should make wallet with client-generated user and krs backupkey', function() {
-      
+
       var xpub = keychains.create().pub; // random xpub
       var params = {
         passphrase: passphrase,
@@ -116,13 +116,35 @@ describe('V2 Wallets:', function() {
         res.should.have.property('userKeychain');
         res.should.have.property('backupKeychain');
         res.should.have.property('bitgoKeychain');
-        
+
         res.backupKeychain.should.have.property('pub');
         res.backupKeychain.should.not.have.property('prv');
       });
     });
+
+    it('should make wallet with provided user key and backup key', function() {
+      var backupXpub = keychains.create().pub; // random xpub
+      var userXpub = keychains.create().pub; // random xpub
+      var params = {
+        label: label,
+        backupXpub: backupXpub,
+        userKey: userXpub
+      };
+
+      return wallets.generateWallet(params)
+      .then(function(res) {
+        res.should.have.property('wallet');
+        res.should.have.property('userKeychain');
+        res.should.have.property('backupKeychain');
+        res.should.have.property('bitgoKeychain');
+
+        res.userKeychain.should.have.property('pub');
+        res.userKeychain.should.not.have.property('prv');
+        res.userKeychain.should.not.have.property('encryptedPrv');
+      });
+    });
   });
-  
+
   describe('Get Wallet', function() {
     it('should get wallet', function() {
       return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID })
