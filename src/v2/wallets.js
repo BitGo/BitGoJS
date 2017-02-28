@@ -77,7 +77,7 @@ Wallets.prototype.list = function(params, callback) {
  */
 Wallets.prototype.generateWallet = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['passphrase', 'label'], ['backupXpub', 'enterprise', 'passcodeEncryptionCode'], callback);
+  common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub', 'enterprise', 'passcodeEncryptionCode'], callback);
   var self = this;
   var label = params.label;
 
@@ -92,16 +92,25 @@ Wallets.prototype.generateWallet = function(params, callback) {
   var userKeychain;
   var backupKeychain;
   var bitgoKeychain;
+  var userKeychainParams;
 
   // Add the user keychain
   var userKeychainPromise = Q.fcall(function() {
-    // Create the user and backup key.
-    userKeychain = self.baseCoin.keychains().create();
-    userKeychain.encryptedPrv = self.bitgo.encrypt({ password: params.passphrase, input: userKeychain.prv });
-    return self.baseCoin.keychains().add({
-      pub: userKeychain.pub,
-      encryptedPrv: userKeychain.encryptedPrv
-    })
+    // User provided user key
+    if (params.userKey) {
+      userKeychain = { 'pub': params.userKey };
+      userKeychainParams = userKeychain;
+    } else {
+      // Create the user and backup key.
+      userKeychain = self.baseCoin.keychains().create();
+      userKeychain.encryptedPrv = self.bitgo.encrypt({ password: params.passphrase, input: userKeychain.prv });
+      userKeychainParams = {
+        pub: userKeychain.pub,
+        encryptedPrv: userKeychain.encryptedPrv
+      };
+    }
+
+    return self.baseCoin.keychains().add(userKeychainParams)
     .then(function(newUserKeychain) {
       userKeychain = _.extend({}, newUserKeychain, userKeychain);
     });
