@@ -1,4 +1,3 @@
-var BaseCoin = require('../baseCoin');
 var Btc = require('./btc');
 var common = require('../../common');
 var bitcoin = require('bitcoinjs-lib');

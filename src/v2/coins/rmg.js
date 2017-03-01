@@ -19,22 +19,18 @@ Rmg.prototype.isValidAddress = function(address) {
 
 /**
  * Assemble keychain and half-sign prebuilt transaction
- * @param txPreBuild
- * @param userKeychain
  * @param params
+ * - txPrebuild
+ * - prv
  * @returns {{txHex}}
  */
-Rmg.prototype.signTransaction = function(txPreBuild, userKeychain, params) {
+Rmg.prototype.signTransaction = function(params) {
+  var txPrebuild = params.txPrebuild;
   var userPrv = params.prv;
-  if (!userPrv) {
-    // the server is going to change to include the encryptedPrv in the response
-    var userEncryptedPrv = userKeychain.encryptedPrv;
-    userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
-  }
 
-  var transaction = prova.Transaction.fromHex(txPreBuild.txHex);
+  var transaction = prova.Transaction.fromHex(txPrebuild.txHex);
 
-  if (transaction.ins.length !== txPreBuild.txInfo.unspents.length) {
+  if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
@@ -42,7 +38,7 @@ Rmg.prototype.signTransaction = function(txPreBuild, userKeychain, params) {
   var hdPath = keychain.hdPath();
 
   for (var index = 0; index < transaction.ins.length; ++index) {
-    var currentUnspent = txPreBuild.txInfo.unspents[index];
+    var currentUnspent = txPrebuild.txInfo.unspents[index];
     var path = "m/0/0/" + currentUnspent.chain + "/" + currentUnspent.index;
     var privKey = hdPath.deriveKey(path);
 

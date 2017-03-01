@@ -1,32 +1,37 @@
-var Wallets = require('./wallets');
-var Keychains = require('./keychains');
-
+var Keychains;
+var Wallets;
 var coinInstances;
 
 var BaseCoin = function(bitgo, coin) {
   this.bitgo = bitgo;
   this.initializeCoin(coin);
-  
+
   var self = this;
-  
+
   this.url = function(suffix) {
     return bitgo._baseUrl + '/api/v2/' + coin + suffix;
   };
-  
+
   this.wallets = function() {
     if (!self.coinWallets) {
+      if (!Wallets) {
+        Wallets = require('./wallets');
+      }
       self.coinWallets = new Wallets(bitgo, this);
     }
     return self.coinWallets;
   };
-  
+
   this.keychains = function() {
     if (!self.coinKeychains) {
+      if (!Keychains) {
+        Keychains = require('./keychains');
+      }
       self.coinKeychains = new Keychains(bitgo, this);
     }
     return self.coinKeychains;
   };
-  
+
 };
 
 BaseCoin.prototype.initializeCoin = function(coin) {

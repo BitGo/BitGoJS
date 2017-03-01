@@ -52,7 +52,7 @@ var handleEthGenerateWallet = function(req) {
 };
 
 var handleSendCoins = function(req) {
-  return req.bitgo.wallets().get({id: req.params.id})
+  return req.bitgo.wallets().get({ id: req.params.id })
   .then(function(wallet) {
     return wallet.sendCoins(req.body);
   })
@@ -71,7 +71,7 @@ var handleSendCoins = function(req) {
 };
 
 var handleSendMany = function(req) {
-  return req.bitgo.wallets().get({id: req.params.id})
+  return req.bitgo.wallets().get({ id: req.params.id })
   .then(function(wallet) {
     return wallet.sendMany(req.body);
   })
@@ -90,7 +90,7 @@ var handleSendMany = function(req) {
 };
 
 var handleCreateTransaction = function(req) {
-  return req.bitgo.wallets().get({id: req.params.id})
+  return req.bitgo.wallets().get({ id: req.params.id })
   .then(function(wallet) {
     return wallet.createTransaction(req.body);
   })
@@ -116,14 +116,14 @@ var handleEthSendTransaction = function(req) {
 };
 
 var handleSignTransaction = function(req) {
-  return req.bitgo.wallets().get({id: req.params.id})
+  return req.bitgo.wallets().get({ id: req.params.id })
   .then(function(wallet) {
     return wallet.signTransaction(req.body);
   });
 };
 
 var handleShareWallet = function(req) {
-  return req.bitgo.wallets().get({id: req.params.id})
+  return req.bitgo.wallets().get({ id: req.params.id })
   .then(function(wallet) {
     return wallet.shareWallet(req.body);
   });
@@ -137,7 +137,7 @@ var handleAcceptShare = function(req) {
 
 var handleApproveTransaction = function(req) {
   var params = req.body || {};
-  return req.bitgo.pendingApprovals().get({id: req.params.id})
+  return req.bitgo.pendingApprovals().get({ id: req.params.id })
   .then(function(pendingApproval) {
     if (params.state === 'approved') {
       return pendingApproval.approve(params);
@@ -148,21 +148,21 @@ var handleApproveTransaction = function(req) {
 
 var handleConstructApprovalTx = function(req) {
   var params = req.body || {};
-  return req.bitgo.pendingApprovals().get({id: req.params.id})
+  return req.bitgo.pendingApprovals().get({ id: req.params.id })
   .then(function(pendingApproval) {
     return pendingApproval.constructApprovalTx(params);
   });
 };
 
 var handleConsolidateUnspents = function(req) {
-  return req.bitgo.wallets().get({id: req.params.id})
+  return req.bitgo.wallets().get({ id: req.params.id })
   .then(function(wallet) {
     return wallet.consolidateUnspents(req.body);
   });
 };
 
 var handleFanOutUnspents = function(req) {
-  return req.bitgo.wallets().get({id: req.params.id})
+  return req.bitgo.wallets().get({ id: req.params.id })
   .then(function(wallet) {
     return wallet.fanOutUnspents(req.body);
   });
@@ -208,7 +208,10 @@ var handleREST = function(req, res, next) {
 var handleV2GenerateWallet = function(req) {
   var bitgo = req.bitgo;
   var coin = bitgo.coin(req.params.coin);
-  return coin.wallets().generateWallet(req.body);
+  return coin.wallets().generateWallet(req.body)
+  .then(function(result) {
+    return result.wallet._wallet;
+  });
 };
 
 // handle send one
@@ -264,7 +267,7 @@ var handleV2REST = function(req, res, next) {
   return redirectRequest(bitgo, method, coinURL, req, next);
 };
 
-var redirectRequest = function(bitgo, method, url, req, next){
+var redirectRequest = function(bitgo, method, url, req, next) {
   switch (method) {
     case 'GET':
       return bitgo.get(url).result().nodeify();
@@ -321,12 +324,12 @@ var prepareBitGo = function(args) {
 
 // Promise handler wrapper to handle sending responses and error cases
 var promiseWrapper = function(promiseRequestHandler, args) {
-  return function (req, res, next) {
+  return function(req, res, next) {
     if (args.debug) {
       console.log('handle: ' + url.parse(req.url).pathname);
     }
     Q.fcall(promiseRequestHandler, req, res, next)
-    .then(function (result) {
+    .then(function(result) {
       var status = 200;
       if (result.__redirect) {
         res.redirect(result.url);
@@ -349,7 +352,7 @@ var promiseWrapper = function(promiseRequestHandler, args) {
 
       var message = err.message || 'local error';
       // use attached result, or make one
-      var result = err.result || {error: message};
+      var result = err.result || { error: message };
       result = _.extend({}, result);
       result.message = err.message;
       var status = err.status || 500;

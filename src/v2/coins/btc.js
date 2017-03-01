@@ -27,22 +27,18 @@ Btc.prototype.isValidAddress = function(address) {
 
 /**
  * Assemble keychain and half-sign prebuilt transaction
- * @param txPreBuild
- * @param userKeychain
  * @param params
+ * - txPrebuild
+ * - prv
  * @returns {{txHex}}
  */
-Btc.prototype.signTransaction = function(txPreBuild, userKeychain, params) {
+Btc.prototype.signTransaction = function(params) {
+  var txPrebuild = params.txPrebuild;
   var userPrv = params.prv;
-  if (!userPrv) {
-    // the server is going to change to include the encryptedPrv in the response
-    var userEncryptedPrv = userKeychain.encryptedPrv;
-    userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
-  }
 
-  var transaction = bitcoin.Transaction.fromHex(txPreBuild.txHex);
+  var transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
 
-  if (transaction.ins.length !== txPreBuild.txInfo.unspents.length) {
+  if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
@@ -50,10 +46,10 @@ Btc.prototype.signTransaction = function(txPreBuild, userKeychain, params) {
   var hdPath = bitcoin.hdPath(keychain);
 
   for (var index = 0; index < transaction.ins.length; ++index) {
-    var path = "m/0/0/" + txPreBuild.txInfo.unspents[index].chain + "/" + txPreBuild.txInfo.unspents[index].index;
+    var path = "m/0/0/" + txPrebuild.txInfo.unspents[index].chain + "/" + txPrebuild.txInfo.unspents[index].index;
     var privKey = hdPath.deriveKey(path);
 
-    var subscript = new Buffer(txPreBuild.txInfo.unspents[index].redeemScript, 'hex');
+    var subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
     var txb = bitcoin.TransactionBuilder.fromTransaction(transaction, this.network);
     try {
       txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);

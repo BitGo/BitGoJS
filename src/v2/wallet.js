@@ -289,9 +289,52 @@ Wallet.prototype.shareWallet = function(params, callback) {
  * @returns {*}
  */
 Wallet.prototype.prebuildTransaction = function(params, callback) {
+  var self = this;
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
   .send({ recipients: params.recipients })
   .result()
+  .then(function(response) {
+    // extend the prebuild details with the wallet id
+    return _.extend({}, response, { walletId: self.id() });
+  })
+  .nodeify(callback);
+};
+
+/**
+ * Sign a transaction
+ * @param params
+ * - txPrebuild
+ * - [keychain / key] (object) or prv (string)
+ * - walletPassphrase
+ * @param callback
+ * @return {*}
+ */
+Wallet.prototype.signTransaction = function(params, callback) {
+  var userKeychain = params.keychain || params.key;
+  var txPrebuild = params.txPrebuild;
+  if (!txPrebuild || typeof txPrebuild !== 'object') {
+    throw new Error('txPrebuild must be an object');
+  }
+  var userPrv = params.prv;
+  if (userPrv && typeof userPrv !== 'string') {
+    throw new Error('txPrebuild must be a string');
+  } else {
+    if (!userKeychain || typeof userKeychain !== 'object') {
+      throw new Error('keychain must be an object');
+    }
+    var userEncryptedPrv = userKeychain.encryptedPrv;
+    if (!userEncryptedPrv) {
+      throw new Error('keychain does not have property encryptedPrv');
+    }
+    if (!params.walletPassphrase) {
+      throw new Error('walletPassphrase property missing');
+    }
+    userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
+  }
+  var self = this;
+  return Q.fcall(function() {
+    return self.baseCoin.signTransaction({ txPrebuild: txPrebuild, prv: userPrv });
+  })
   .nodeify(callback);
 };
 
@@ -339,7 +382,7 @@ Wallet.prototype.sendMany = function(params, callback) {
   common.validateParams(params, [], ['comment', 'otp'], callback);
   var self = this;
 
-  if(params.prebuildTx && params.recipients){
+  if (params.prebuildTx && params.recipients) {
     throw new Error('Only one of prebuildTx and recipients may be specified');
   }
 
@@ -358,9 +401,12 @@ Wallet.prototype.sendMany = function(params, callback) {
   var userKeychainPromise = self.baseCoin.keychains().get({ id: self._wallet.keys[0] });
 
   // pass in either the prebuild promise or, if undefined, the actual prebuild
-  return Q.all([txPrebuildPromise || txPrebuild, userKeychainPromise, params])
+  return Q.all([txPrebuildPromise || txPrebuild, userKeychainPromise])
   // preserve the "this"-reference in signTransaction
-  .spread(self.baseCoin.signTransaction.bind(self.baseCoin))
+  .spread(function(txPrebuild, userKeychain) {
+    var signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
+    return self.signTransaction(signingParams);
+  })
   .then(function(halfSignedTransaction) {
     var selectParams = _.pick(params, ['comment', 'otp']);
     var finalTxParams = _.extend({}, halfSignedTransaction, selectParams);

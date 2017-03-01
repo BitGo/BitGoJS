@@ -1,6 +1,4 @@
-var BaseCoin = require('../baseCoin');
 var Rmg = require('./rmg');
-var common = require('../../common');
 var prova = require('../../prova');
 var _ = require('lodash');
 
