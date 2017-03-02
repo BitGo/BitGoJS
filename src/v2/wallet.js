@@ -339,6 +339,20 @@ Wallet.prototype.signTransaction = function(params, callback) {
 };
 
 /**
+ * Submits a half-signed transaction to BitGo
+ * @param params
+ * - txHex: transaction hex to submit
+ * @param callback
+ */
+Wallet.prototype.submitTransaction = function(params, callback) {
+  common.validateParams(params, ['txHex'], ['otp'], callback);
+  return this.bitgo.post(self.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+/**
  * Send coins to a recipient
  * @param params
  * address - the destination address
