@@ -1,4 +1,5 @@
 var Keychains;
+var Wallet;
 var Wallets;
 var coinInstances;
 
@@ -52,6 +53,13 @@ BaseCoin.prototype.initializeCoin = function(coin) {
   }
   coinInstance.call(this);
 
+};
+
+BaseCoin.prototype.newWalletObject = function(walletParams) {
+  if (!Wallet) {
+    Wallet = require('./wallet');
+  }
+  return new Wallet(this.bitgo, this, walletParams);
 };
 
 BaseCoin.prototype.toJSON = function() {
