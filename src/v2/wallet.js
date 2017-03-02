@@ -317,8 +317,8 @@ Wallet.prototype.signTransaction = function(params, callback) {
   }
   var userPrv = params.prv;
   if (userPrv && typeof userPrv !== 'string') {
-    throw new Error('txPrebuild must be a string');
-  } else {
+    throw new Error('prv must be a string');
+  } else if (!userPrv) {
     if (!userKeychain || typeof userKeychain !== 'object') {
       throw new Error('keychain must be an object');
     }
