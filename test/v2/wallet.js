@@ -52,7 +52,7 @@ describe('V2 Wallet:', function() {
 
     it('addresses', function() {
       return wallet.unspents()
-      .then(function(unspents){
+      .then(function(unspents) {
         unspents.should.have.property('coin');
         unspents.should.have.property('unspents');
         unspents.unspents.length.should.be.greaterThan(10);
@@ -64,7 +64,7 @@ describe('V2 Wallet:', function() {
 
     it('addresses', function() {
       return wallet.addresses()
-      .then(function(addresses){
+      .then(function(addresses) {
         addresses.should.have.property('coin');
         addresses.should.have.property('count');
         addresses.should.have.property('addresses');
@@ -85,7 +85,7 @@ describe('V2 Wallet:', function() {
 
     it('transactions', function() {
       return wallet.transactions()
-      .then(function(transactions){
+      .then(function(transactions) {
         transactions.should.have.property('coin');
         transactions.should.have.property('transactions');
         transactions.transactions.length.should.be.greaterThan(6);
@@ -108,7 +108,7 @@ describe('V2 Wallet:', function() {
 
     it('transfers', function() {
       return wallet.transfers()
-      .then(function(transfers){
+      .then(function(transfers) {
         transfers.should.have.property('coin');
         transfers.should.have.property('count');
         transfers.should.have.property('transfers');
@@ -118,14 +118,14 @@ describe('V2 Wallet:', function() {
 
     it('update comment', function() {
       return wallet.transfers()
-      .then(function(result){
+      .then(function(result) {
         var params = {
-          id:  result.transfers[0].id,
+          id: result.transfers[0].id,
           comment: 'testComment'
         };
         return wallet.transferComment(params);
       })
-      .then(function(transfer){
+      .then(function(transfer) {
         transfer.should.have.property('comment');
         transfer.comment.should.eql('testComment');
       });
@@ -133,14 +133,14 @@ describe('V2 Wallet:', function() {
 
     it('remove comment', function() {
       return wallet.transfers()
-      .then(function(result){
+      .then(function(result) {
         var params = {
-          id:  result.transfers[0].id,
+          id: result.transfers[0].id,
           comment: null
         };
         return wallet.transferComment(params);
       })
-      .then(function(transfer){
+      .then(function(transfer) {
         transfer.should.have.property('comment');
         transfer.comment.should.eql('');
       });
@@ -152,7 +152,7 @@ describe('V2 Wallet:', function() {
     it('should send transaction to the wallet itself with send', function() {
       return wallet.createAddress()
       .delay(3000) // wait three seconds before sending
-      .then(function(recipientAddress){
+      .then(function(recipientAddress) {
         var params = {
           amount: 0.01 * 1e8, // 0.01 tBTC
           address: recipientAddress.address,
@@ -160,7 +160,7 @@ describe('V2 Wallet:', function() {
         };
         return wallet.send(params);
       })
-      .then(function(transaction){
+      .then(function(transaction) {
         transaction.should.have.property('status');
         transaction.should.have.property('txid');
         transaction.status.should.equal('signed');
@@ -169,7 +169,7 @@ describe('V2 Wallet:', function() {
 
     it('sendMany should error when given a non-array of recipients', function() {
       return wallet.createAddress()
-      .then(function(recipientAddress){
+      .then(function(recipientAddress) {
         var params = {
           recipients: {
             amount: 0.01 * 1e8, // 0.01 tBTC
@@ -177,7 +177,7 @@ describe('V2 Wallet:', function() {
           },
           walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
         };
-        assert.throws(function(){
+        assert.throws(function() {
           wallet.sendMany(params)
         });
       });
@@ -186,7 +186,7 @@ describe('V2 Wallet:', function() {
     it('should send a transaction to the wallet itself with sendMany', function() {
       return wallet.createAddress()
       .delay(3000) // wait three seconds before sending
-      .then(function(recipientAddress){
+      .then(function(recipientAddress) {
         var params = {
           recipients: [
             {
@@ -198,7 +198,7 @@ describe('V2 Wallet:', function() {
         };
         return wallet.sendMany(params);
       })
-      .then(function(transaction){
+      .then(function(transaction) {
         transaction.should.have.property('status');
         transaction.should.have.property('txid');
         transaction.status.should.equal('signed');
@@ -227,6 +227,45 @@ describe('V2 Wallet:', function() {
           comment: 'Hello World!',
           txHex: 'should be overwritten'
         })
+      })
+      .then(function(transaction) {
+        transaction.should.have.property('status');
+        transaction.should.have.property('txid');
+        transaction.status.should.equal('signed');
+      });
+    });
+
+    it('should prebuild a transaction to the wallet and manually sign and submit it', function() {
+      var keychain;
+      return basecoin.keychains().get({ id: wallet._wallet.keys[0] })
+      .then(function(key) {
+        keychain = key;
+        return wallet.createAddress()
+      })
+      .delay(3000) // wait three seconds before fetching unspents
+      .then(function(recipientAddress) {
+        var params = {
+          recipients: [
+            {
+              amount: 0.01 * 1e8, // 0.01 tBTC
+              address: recipientAddress.address,
+            }
+          ],
+
+        };
+        return wallet.prebuildTransaction(params);
+      })
+      .then(function(prebuild) {
+        return wallet.signTransaction({
+          txPrebuild: prebuild,
+          key: keychain,
+          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+          comment: 'Hello World!',
+          txHex: 'should be overwritten'
+        })
+      })
+      .then(function(signedTransaction) {
+        return wallet.submitTransaction(signedTransaction);
       })
       .then(function(transaction) {
         transaction.should.have.property('status');
