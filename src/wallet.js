@@ -172,8 +172,8 @@ Wallet.prototype.updateApprovalsRequired = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
   if (params.approvalsRequired === undefined ||
-    typeof(params.approvalsRequired) !== 'number' ||
-    params.approvalsRequired < 1
+  typeof(params.approvalsRequired) !== 'number' ||
+  params.approvalsRequired < 1
   ) {
     throw new Error('invalid approvalsRequired: must be a nonzero positive number');
   }
@@ -753,12 +753,12 @@ Wallet.prototype.createTransaction = function(params, callback) {
   var self = this;
 
   if ((typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
-    (typeof(params.feeRate) != 'number' && typeof(params.feeRate) != 'undefined') ||
-    (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
-    (typeof(params.forceChangeAtEnd) != 'boolean' && typeof(params.forceChangeAtEnd) != 'undefined') ||
-    (typeof(params.changeAddress) != 'string' && typeof(params.changeAddress) != 'undefined') ||
-    (typeof(params.validate) != 'boolean' && typeof(params.validate) != 'undefined') ||
-    (typeof(params.instant) != 'boolean' && typeof(params.instant) != 'undefined')) {
+  (typeof(params.feeRate) != 'number' && typeof(params.feeRate) != 'undefined') ||
+  (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
+  (typeof(params.forceChangeAtEnd) != 'boolean' && typeof(params.forceChangeAtEnd) != 'undefined') ||
+  (typeof(params.changeAddress) != 'string' && typeof(params.changeAddress) != 'undefined') ||
+  (typeof(params.validate) != 'boolean' && typeof(params.validate) != 'undefined') ||
+  (typeof(params.instant) != 'boolean' && typeof(params.instant) != 'undefined')) {
     throw new Error('invalid argument');
   }
 
@@ -865,8 +865,7 @@ Wallet.prototype.createShare = function(params, callback) {
   common.validateParams(params, ['user', 'permissions'], [], callback);
 
   if (params.keychain && !_.isEmpty(params.keychain)) {
-    if (!params.keychain.xpub || !params.keychain.encryptedXprv || !params.keychain.fromPubKey ||
-      !params.keychain.toPubKey || !params.keychain.path) {
+    if (!params.keychain.xpub || !params.keychain.encryptedXprv || !params.keychain.fromPubKey || !params.keychain.toPubKey || !params.keychain.path) {
       throw new Error('requires keychain parameters - xpub, encryptedXprv, fromPubKey, toPubKey, path');
     }
   }
@@ -1878,7 +1877,6 @@ Wallet.prototype.getBitGoFee = function(params, callback) {
   .result()
   .nodeify(callback);
 };
-
 
 
 module.exports = Wallet;

@@ -1,5 +1,6 @@
 var common = require('../common');
 var assert = require('assert');
+var bitcoin = require('../bitcoin');
 var Q = require('q');
 var _ = require('lodash');
 
@@ -204,6 +205,62 @@ Wallet.prototype.removeWebhook = function(params, callback) {
   .nodeify(callback);
 };
 
+//
+// Key chains
+// Gets the user key chain for this wallet
+// The user key chain is typically the first keychain of the wallet and has the encrypted prv stored on BitGo.
+// Useful when trying to get the users' keychain from the server before decrypting to sign a transaction.
+Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+  var self = this;
+
+  var tryKeyChain = function(index) {
+    if (!self._wallet.keys || index >= self._wallet.keys.length) {
+      return self.bitgo.reject('No encrypted keychains on this wallet.', callback);
+    }
+
+    var params = { id: self._wallet.keys[index] };
+
+    return self.baseCoin.keychains().get(params)
+    .then(function(keychain) {
+      // If we find the prv, then this is probably the user keychain we're looking for
+      if (keychain.encryptedPrv) {
+        return keychain;
+      }
+      return tryKeyChain(index + 1);
+    });
+  };
+
+  return tryKeyChain(0).nodeify(callback);
+};
+
+//
+// createShare
+// share the wallet with an existing BitGo user.
+// Parameters:
+//   user - the recipient, must have a corresponding user record in our database
+//   keychain - the keychain to be shared with the recipient
+//   permissions - the recipient's permissions if the share is accepted
+// Returns:
+//
+Wallet.prototype.createShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['user', 'permissions'], [], callback);
+
+  if (params.keychain && !_.isEmpty(params.keychain)) {
+    if (!params.keychain.pub || !params.keychain.encryptedPrv || !params.keychain.fromPubKey ||
+    !params.keychain.toPubKey || !params.keychain.path) {
+      throw new Error('requires keychain parameters - pub, encryptedPrv, fromPubKey, toPubKey, path');
+    }
+  }
+
+  return this.bitgo.post(this.url('/share'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
 /**
  *
  * @param params
@@ -238,23 +295,23 @@ Wallet.prototype.shareWallet = function(params, callback) {
       return self.getEncryptedUserKeychain({})
       .then(function(keychain) {
         // Decrypt the user key with a passphrase
-        if (keychain.encryptedXprv) {
+        if (keychain.encryptedPrv) {
           if (!params.walletPassphrase) {
             throw new Error('Missing walletPassphrase argument');
           }
           try {
-            keychain.xprv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedXprv });
+            keychain.prv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedPrv });
           } catch (e) {
             throw new Error('Unable to decrypt user keychain');
           }
 
           var eckey = bitcoin.makeRandomKey();
           var secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
-          var newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
+          var newEncryptedPrv = self.bitgo.encrypt({ password: secret, input: keychain.prv });
 
           sharedKeychain = {
-            xpub: keychain.xpub,
-            encryptedXprv: newEncryptedXprv,
+            pub: keychain.pub,
+            encryptedPrv: newEncryptedPrv,
             fromPubKey: eckey.getPublicKeyBuffer().toString('hex'),
             toPubKey: sharing.pubkey,
             path: sharing.path

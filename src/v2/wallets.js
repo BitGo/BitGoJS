@@ -1,3 +1,4 @@
+var bitcoin = require('../bitcoin');
 var common = require('../common');
 var Wallet = require('./wallet');
 var Q = require('q');
@@ -57,7 +58,7 @@ Wallets.prototype.list = function(params, callback) {
   .result()
   .then(function(body) {
     body.wallets = body.wallets.map(function(w) {
-      return new self.coinWallet(self.bitgo, w);
+      return new self.coinWallet(self.bitgo, self.baseCoin, w);
     });
     return body;
   })
@@ -178,11 +179,142 @@ Wallets.prototype.generateWallet = function(params, callback) {
       bitgoKeychain: bitgoKeychain
     };
 
-    if (backupKeychain.xprv) {
+    if (backupKeychain.prv) {
       result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
     }
 
     return result;
+  })
+  .nodeify(callback);
+};
+
+//
+// listShares
+// List the user's wallet shares
+//
+Wallets.prototype.listShares = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  return this.bitgo.get(this.baseCoin.url('/walletshare'))
+  .result()
+  .nodeify(callback);
+};
+
+//
+// getShare
+// Gets a wallet share information, including the encrypted sharing keychain. requires unlock if keychain is present.
+// Params:
+//    walletShareId - the wallet share to get information on
+//
+Wallets.prototype.getShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId'], [], callback);
+
+  return this.bitgo.get(this.baseCoin.url('/walletshare/' + params.walletShareId))
+  .result()
+  .nodeify(callback);
+};
+
+//
+// updateShare
+// updates a wallet share
+// Params:
+//    walletShareId - the wallet share to update
+//    state - the new state of the wallet share
+//
+Wallets.prototype.updateShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId'], [], callback);
+
+  return this.bitgo.post(this.baseCoin.url('/walletshare/' + params.walletShareId))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+//
+// cancelShare
+// cancels a wallet share
+// Params:
+//    walletShareId - the wallet share to update
+//
+Wallets.prototype.cancelShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId'], [], callback);
+
+  return this.bitgo.del(this.baseCoin.url('/walletshare/' + params.walletShareId))
+  .send()
+  .result()
+  .nodeify(callback);
+};
+
+//
+// acceptShare
+// Accepts a wallet share, adding the wallet to the user's list
+// Needs a user's password to decrypt the shared key
+// Params:
+//    walletShareId - the wallet share to accept
+//    userPassword - (required if more a keychain was shared) user's password to decrypt the shared wallet
+//    newWalletPassphrase - new wallet passphrase for saving the shared wallet prv.
+//                          If left blank and a wallet with more than view permissions was shared, then the userpassword is used.
+//    overrideEncryptedPrv - set only if the prv was received out-of-band.
+//
+Wallets.prototype.acceptShare = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId'], ['overrideEncryptedPrv'], callback);
+
+  var self = this;
+  var encryptedPrv = params.overrideEncryptedPrv;
+
+  return this.getShare({ walletShareId: params.walletShareId })
+  .then(function(walletShare) {
+    // Return right away if there is no keychain to decrypt, or if explicit encryptedPrv was provided
+    if (!walletShare.keychain || !walletShare.keychain.encryptedPrv || encryptedPrv) {
+      return walletShare;
+    }
+
+    // More than viewing was requested, so we need to process the wallet keys using the shared ecdh scheme
+    if (!params.userPassword) {
+      throw new Error("userPassword param must be provided to decrypt shared key");
+    }
+
+    return self.bitgo.getECDHSharingKeychain()
+    .then(function(sharingKeychain) {
+      if (!sharingKeychain.encryptedXprv) {
+        throw new Error('encryptedXprv was not found on sharing keychain')
+      }
+
+      // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
+      sharingKeychain.prv = self.bitgo.decrypt({ password: params.userPassword, input: sharingKeychain.encryptedXprv });
+      var rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.prv);
+
+      // Derive key by path (which is used between these 2 users only)
+      var privKey = bitcoin.hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
+      var secret = self.bitgo.getECDHSecret({ eckey: privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
+
+      // Yes! We got the secret successfully here, now decrypt the shared wallet prv
+      var decryptedSharedWalletPrv = self.bitgo.decrypt({ password: secret, input: walletShare.keychain.encryptedPrv });
+
+      // We will now re-encrypt the wallet with our own password
+      var newWalletPassphrase = params.newWalletPassphrase || params.userPassword;
+      encryptedPrv = self.bitgo.encrypt({ password: newWalletPassphrase, input: decryptedSharedWalletPrv });
+
+      // Carry on to the next block where we will post the acceptance of the share with the encrypted prv
+      return walletShare;
+    });
+  })
+  .then(function() {
+    var updateParams = {
+      walletShareId: params.walletShareId,
+      state: 'accepted'
+    };
+
+    if (encryptedPrv) {
+      updateParams.encryptedPrv = encryptedPrv;
+    }
+
+    return self.updateShare(updateParams);
   })
   .nodeify(callback);
 };
