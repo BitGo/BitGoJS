@@ -29,6 +29,7 @@ var _ = require('lodash');
 //   minUnspentSize: The minimum use of unspent to use (don't spend dust transactions). Defaults to 0.
 //   feeSingleKeySourceAddress: Use this single key address to pay fees
 //   feeSingleKeyWIF: Use the address based on this private key to pay fees
+//   useCpfp: If the unspents are deemed too small of fees compared to current feeRate, attempt to make up for their fees
 exports.createTransaction = function(params) {
   var minConfirms = params.minConfirms || 0;
   var validate = params.validate === undefined ? true : params.validate;
@@ -41,6 +42,7 @@ exports.createTransaction = function(params) {
      (params.fee && typeof(params.fee) != 'number') ||
      (params.feeRate && typeof(params.feeRate) != 'number') ||
      typeof(minConfirms) != 'number' ||
+     (params.useCpfp && (typeof(params.useCpfp) !== 'boolean' || typeof(params.fee) !== 'undefined')) || // Can't calculate CPFP with set fee
      (params.forceChangeAtEnd && typeof(params.forceChangeAtEnd) !== 'boolean') ||
      (params.changeAddress && typeof(params.changeAddress) !== 'string') ||
      (params.noSplitChange && typeof(params.noSplitChange) !== 'boolean') ||
@@ -286,6 +288,27 @@ exports.createTransaction = function(params) {
 
   var minerFeeInfo = {};
   var txInfo = {};
+  var neededExtraCpfpFees = 0;
+  var checkedCpfpCount = 0;
+
+  var addExtraCpfpFee = function () {
+    var vinPromises = []
+    transaction.tx.ins.forEach(function (vin) {
+      vinPromises.push(bitgo.blockchain().getTransaction({id: vin.hash}))
+    })
+    return Q.all(vinPromises).
+    then(function (vinResults) {
+      neededExtraCpfpFees = 0
+      checkedCpfpCount = 0
+      vinResults.forEach(function (vin) {
+        checkedCpfpCount++
+        // if satoshis / kB rate is less than feeRate, then we have a problem
+        if (vin.confirmations === 0 && Math.floor((vin.fee * 1000) / (vin.hex.length / 2)) < feeRate) {
+          neededExtraCpfpFees += (((vin.hex.length / 2) * feeRate) / 1000) - vin.fee;
+        }
+      });
+    })
+  }
 
   // Iterate unspents, sum the inputs, and save _inputs with the total
   // input amound and final list of inputs to use with the transaction.
@@ -332,13 +355,25 @@ exports.createTransaction = function(params) {
         nP2PKHInputs: txInfo.nP2PKHInputs,
         nOutputs: txInfo.nOutputs
       });
-      var approximateFee = minerFeeInfo.fee;
+      var approximateFee = minerFeeInfo.fee + neededExtraCpfpFees; // neededExtraCpfpFees defaults 0
       var shouldRecurse = typeof(fee) === 'undefined' || approximateFee > fee;
       fee = approximateFee;
       // Recompute totalAmount from scratch
       totalAmount = fee + totalOutputAmount;
       if (bitgoFeeInfo) {
         totalAmount += bitgoFeeInfo.amount;
+      }
+      if (params.useCpfp && checkedCpfpCount < transaction.tx.ins.length) {
+          addExtraCpfpFee().
+          then(function () {
+            // if no CPFP needed, checkedCpfpCount will == ins length and neededExtraCpfpFees will == 0 still
+            // So this will not trigger an endless loop
+            inputAmount = 0;
+            transaction = new bitcoin.TransactionBuilder(bitcoin.getNetwork());
+            return Q();
+          }).
+          then(collectInputs);
+          return;
       }
       if (shouldRecurse) {
         // if fee changed, re-collect inputs
