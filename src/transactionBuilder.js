@@ -57,7 +57,6 @@ exports.createTransaction = function(params) {
     throw new Error('invalid argument');
   }
 
-  var self = this;
   var bitgo = params.wallet.bitgo;
   var constants = bitgo.getConstants();
 
@@ -163,6 +162,12 @@ exports.createTransaction = function(params) {
   // The list of unspent transactions being used in this transaction.
   var unspents;
 
+  // the total number of unspents on this wallet
+  var totalUnspentsCount;
+
+  // the number of unspents we fetched from the server, before filtering
+  var fetchedUnspentsCount;
+
   // The sum of the input values for this transaction.
   var inputAmount;
 
@@ -252,6 +257,8 @@ exports.createTransaction = function(params) {
 
     return params.wallet.unspentsPaged(options)
     .then(function(results) {
+      totalUnspentsCount = results.total;
+      fetchedUnspentsCount = results.count;
       unspents = results.unspents.filter(function (u) {
         var confirms = u.confirmations || 0;
         if (!params.enforceMinConfirmsForChange && u.isChange) {
@@ -367,7 +374,21 @@ exports.createTransaction = function(params) {
     }
 
     if (inputAmount < (feeSingleKeySourceAddress ? totalOutputAmount : totalAmount)) {
-      var err = new Error('Insufficient funds');
+      // The unspents we're using for inputs do not have sufficient value on them to
+      // satisfy the user's requested spend amount. That may be because the wallet's balance
+      // is simply too low, or it might be that the wallet's balance is sufficient but
+      // we didn't fetch enough unspents. Too few unspents could result from the wallet
+      // having many small unspents and we hit our limit on the number of inputs we can use
+      // in a txn, or it might have been that the filters the user passed in (like minConfirms)
+      // disqualified too many of the unspents
+      var err;
+      if (totalUnspentsCount === fetchedUnspentsCount) {
+        // we fetched every unspent the wallet had, but it still wasn't enough
+        err = new Error('Insufficient funds');
+      } else {
+        // we weren't able to fetch all the unspents on the wallet
+        err = new Error('Transaction size too large due to too many unspents. Can send only ' + inputAmount + ' satoshis in this transaction');
+      }
       err.result = {
         fee: fee,
         feeRate: feeRate,
