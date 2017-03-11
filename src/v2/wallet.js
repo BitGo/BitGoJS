@@ -19,9 +19,34 @@ Wallet.prototype.id = function() {
   return this._wallet.id;
 };
 
+Wallet.prototype.approvalsRequired = function() {
+  return this._wallet.approvalsRequired;
+};
+
 Wallet.prototype.balance = function() {
   return this._wallet.balance;
 };
+
+Wallet.prototype.coin = function() {
+  return this._wallet.coin;
+};
+
+Wallet.prototype.confirmedBalance = function() {
+  return this._wallet.confirmedBalance;
+};
+
+Wallet.prototype.label = function() {
+  return this._wallet.label;
+};
+
+Wallet.prototype.keyIds = function() {
+  return this._wallet.keys;
+};
+
+Wallet.prototype.receiveAddress = function() {
+  return this._wallet.receiveAddress.address;
+};
+
 
 /**
  * List the transactions for a given wallet
@@ -249,8 +274,7 @@ Wallet.prototype.createShare = function(params, callback) {
   common.validateParams(params, ['user', 'permissions'], [], callback);
 
   if (params.keychain && !_.isEmpty(params.keychain)) {
-    if (!params.keychain.pub || !params.keychain.encryptedPrv || !params.keychain.fromPubKey ||
-    !params.keychain.toPubKey || !params.keychain.path) {
+    if (!params.keychain.pub || !params.keychain.encryptedPrv || !params.keychain.fromPubKey || !params.keychain.toPubKey || !params.keychain.path) {
       throw new Error('requires keychain parameters - pub, encryptedPrv, fromPubKey, toPubKey, path');
     }
   }
