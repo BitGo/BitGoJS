@@ -364,6 +364,24 @@ Wallet.prototype.shareWallet = function(params, callback) {
 };
 
 /**
+ * Remove user from wallet
+ * @param params
+ * - userId Id of the user to remove
+ * @param callback
+ * @return {*}
+ */
+Wallet.prototype.removeUser = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['userId'], [], callback);
+
+  var userId = params.userId;
+
+  return this.bitgo.del(this.url('/user/' + userId))
+  .result()
+  .nodeify(callback);
+};
+
+/**
  *
  * @param params
  * @param callback
