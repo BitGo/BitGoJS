@@ -1462,7 +1462,7 @@ describe('Wallet API', function() {
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, feeTxConfirmTarget: 4, noSplitChange: true })
         .then(function(result) {
           var feeUsed = result.fee;
-          assert.equal(feeUsed, 7532700); // tx size will be 75kb * 0.001 (max feerate as defined in transactionBuilder)
+          assert.equal(feeUsed, 75327000); // tx size will be 75kb * 0.01 (max feerate as defined in bitgo.js)
         });
       });
 
