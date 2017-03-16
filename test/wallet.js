@@ -1,4 +1,4 @@
-  //
+//
 // Tests for Wallet
 //
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
@@ -1145,7 +1145,7 @@ describe('Wallet API', function() {
         });
       });
 
-      it('insufficient funds on an empty wallet', function() {
+      it('spend from wallet with no unspents', function() {
         var wallet;
         var options = {
           "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
@@ -1165,15 +1165,7 @@ describe('Wallet API', function() {
           return TransactionBuilder.createTransaction({wallet: wallet, recipients: recipients});
         })
         .catch(function(e) {
-          e.message.should.eql('Insufficient funds');
-          e.result.should.have.property('fee');
-          e.result.should.have.property('txInfo');
-          e.result.txInfo.should.have.property('nP2SHInputs');
-          e.result.txInfo.should.have.property('nP2PKHInputs');
-          e.result.txInfo.should.have.property('nOutputs');
-          e.result.txInfo.nP2SHInputs.should.eql(0);
-          e.result.txInfo.nP2PKHInputs.should.eql(0);
-
+          e.message.should.eql('no unspents available on wallet');
           return wallet.delete({});
         });
       });
@@ -1366,6 +1358,7 @@ describe('Wallet API', function() {
       it('estimateFee with recipients (2 recipients)', function() {
         var recipients = [];
         recipients.push({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 6195 * 1e8});
+
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 5 * 1e8});
         return wallet1.estimateFee({ recipients: recipients, noSplitChange: true })
         .then(function(result) {
@@ -2347,6 +2340,7 @@ describe('Wallet API', function() {
     });
 
     describe('full transaction', function() {
+
       it('decrypt key', function(done) {
         keychain.xprv = bitgo.decrypt({ password: TestBitGo.TEST_WALLET1_PASSCODE, input: keychain.encryptedXprv });
         done();
@@ -2448,7 +2442,7 @@ describe('Wallet API', function() {
         var recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
         wallet1.createTransaction({ recipients: recipients })
-        .then(function(result) {
+          .then(function(result) {
           result.should.have.property('fee');
           result.should.have.property('feeRate');
           should.exist(result.fee);
@@ -2490,12 +2484,68 @@ describe('Wallet API', function() {
       });
 
       it('send', function(done) {
-        wallet1.sendTransaction({ tx: tx }, function(err, result) {
-          assert.equal(err, null);
-          result.should.have.property('tx');
-          result.should.have.property('hash');
-          done();
+        return bitgo.unlock({ otp: '0000000' })
+        .then(function() {
+          wallet1.sendTransaction({ tx: tx }, function(err, result) {
+            assert.equal(err, null);
+            result.should.have.property('tx');
+            result.should.have.property('hash');
+            done();
+          });
         });
+      });
+    });
+
+    describe('CPFP', function() {
+      let parentTxHash;
+      let defaultFee;
+
+      before(function() {
+        return bitgo.unlock({ otp: '0000000' })
+        .then(function() {
+          // broadcast parent tx
+          var recipients = {};
+          recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
+          return wallet3.sendMany({
+            recipients: recipients,
+            walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
+            fee: 10000    // extremely low fee
+          });
+        })
+        .then(function(result) {
+          result.should.have.property('hash');
+          parentTxHash = result.hash;
+        })
+        .delay(3000);    // give the indexer some time to pick up the tx
+      });
+
+      it('child should pay more than usual', function() {
+        return bitgo.estimateFee({ numBlocks: 2, maxFee: 1.00 * 1e8, inputs: [ parentTxHash ], txSize: 300, cpfpAware: true })
+        .then(function(result) {
+          result.should.have.property('feePerKb');
+          defaultFee = result.feePerKb;
+          result.should.have.property('cpfpFeePerKb');
+          defaultFee.should.be.lessThan(result.cpfpFeePerKb);
+          });
+      });
+
+      it('child fee capped by maxFee', function() {
+        let maxFee = defaultFee + 1000;
+        return bitgo.estimateFee({ numBlocks: 2, maxFee: maxFee, inputs: [ parentTxHash ], txSize: 300, cpfpAware: true })
+        .then(function(result) {
+          result.should.have.property('feePerKb');
+          result.should.have.property('cpfpFeePerKb');
+          result.cpfpFeePerKb.should.equal(maxFee);
+          });
+      });
+
+      it('disable cpfp awareness', function() {
+        return bitgo.estimateFee({ numBlocks: 2, maxFee: 1.00 * 1e8, inputs: [ parentTxHash ], txSize: 300, cpfpAware: false })
+        .then(function(result) {
+          result.should.have.property('feePerKb');
+          result.should.have.property('cpfpFeePerKb');
+          result.feePerKb.should.equal(result.cpfpFeePerKb);
+          });
       });
     });
 

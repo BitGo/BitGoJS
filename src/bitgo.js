@@ -1333,6 +1333,9 @@ BitGo.prototype.labels = function(params, callback) {
 // Parameters include:
 //   numBlocks:  target blocks for the transaction to be confirmed
 //   maxFee: maximum fee willing to be paid (for safety)
+//   inputs: list of unspent txIds that have zero confirmations
+//   txSize: estimated transaction size in bytes
+//   cpfpAware: flag indicating fee should take into account CPFP
 //
 BitGo.prototype.estimateFee = function(params, callback) {
   params = params || {};
@@ -1340,16 +1343,34 @@ BitGo.prototype.estimateFee = function(params, callback) {
 
   var queryParams = { version: 12 };
   if (params.numBlocks) {
-    if (typeof(params.numBlocks) != 'number') {
+    if (typeof(params.numBlocks) !== 'number') {
       throw new Error('invalid argument');
     }
     queryParams.numBlocks = params.numBlocks;
   }
   if (params.maxFee) {
-    if (typeof(params.maxFee) != 'number') {
+    if (typeof(params.maxFee) !== 'number') {
       throw new Error('invalid argument');
     }
     queryParams.maxFee = params.maxFee;
+  }
+  if (params.inputs) {
+    if (!Array.isArray(params.inputs)) {
+      throw new Error('invalid argument');
+    }
+    queryParams.inputs = params.inputs;
+  }
+  if (params.txSize) {
+    if (typeof(params.txSize) !== 'number') {
+      throw new Error('invalid argument');
+    }
+    queryParams.txSize = params.txSize;
+  }
+  if (params.cpfpAware) {
+    if (typeof(params.cpfpAware) !== 'boolean') {
+      throw new Error('invalid argument');
+    }
+    queryParams.cpfpAware = params.cpfpAware;
   }
 
   return this.get(this.url('/tx/fee'))
