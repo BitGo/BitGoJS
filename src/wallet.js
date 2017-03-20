@@ -1222,6 +1222,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
  * Takes a wallet's unspents and fans them out into a larger number of equally sized unspents
  * @param params
  *  target: set how many unspents you want to have in the end
+ *  minConfirms: minimum number of confirms the unspents must have
  *  xprv: private key to sign transaction
  *  walletPassphrase: wallet passphrase to decrypt the wallet's private key
  * @param callback

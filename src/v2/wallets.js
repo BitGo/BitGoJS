@@ -336,8 +336,4 @@ Wallets.prototype.getWallet = function(params, callback) {
   .nodeify(callback);
 };
 
-Wallets.prototype.parentList = function() {
-  return 'listing all my parents';
-};
-
 module.exports = Wallets;

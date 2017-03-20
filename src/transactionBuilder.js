@@ -34,6 +34,7 @@ exports.createTransaction = function(params) {
   var validate = params.validate === undefined ? true : params.validate;
   var recipients = [];
   var extraChangeAmounts = [];
+  var estTxSize;
   var travelInfos;
 
   // Sanity check the arguments passed in
@@ -57,7 +58,6 @@ exports.createTransaction = function(params) {
     throw new Error('invalid argument');
   }
 
-  var self = this;
   var bitgo = params.wallet.bitgo;
   var constants = bitgo.getConstants();
 
@@ -163,6 +163,15 @@ exports.createTransaction = function(params) {
   // The list of unspent transactions being used in this transaction.
   var unspents;
 
+  // the total number of unspents on this wallet
+  var totalUnspentsCount;
+
+  // the number of unspents we fetched from the server, before filtering
+  var fetchedUnspentsCount;
+
+  // The list of unspent transactions being used with zero-confirmations
+  var zeroConfUnspents;
+
   // The sum of the input values for this transaction.
   var inputAmount;
 
@@ -205,12 +214,13 @@ exports.createTransaction = function(params) {
     });
   };
 
-  // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget is specified
+  // Get a dynamic fee estimate from the BitGo server if feeTxConfirmTarget
+  // is specified or if no fee-related params are specified
   var getDynamicFeeRateEstimate = function () {
     if (params.feeTxConfirmTarget || !feeParamsDefined) {
-      return bitgo.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate })
+      return bitgo.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate, inputs: zeroConfUnspents, txSize: estTxSize, cpfpAware: true })
       .then(function(result) {
-        var estimatedFeeRate = result.feePerKb;
+        var estimatedFeeRate = result.cpfpFeePerKb;
         if (estimatedFeeRate < constants.minFeeRate) {
           console.log(new Date() + ': Error when estimating fee for send from ' + params.wallet + ', it was too low - ' + estimatedFeeRate);
           feeRate = constants.minFeeRate;
@@ -219,17 +229,22 @@ exports.createTransaction = function(params) {
         } else {
           feeRate = estimatedFeeRate;
         }
+        return feeRate;
       })
-      .catch(function(err) {
-        // some error happened estimating the fee, so use the default
-        console.log(new Date() + ': Error when estimating fee for send from - ' + params.wallet);
-        console.dir(err);
-        feeRate = constants.fallbackFeeRate;
+      .catch(function(e) {
+        // sanity check failed on tx size
+        if (_.includes(e.message, 'invalid txSize')) {
+          return Q.reject(e);
+        }
+        else {
+          // couldn't estimate the fee, proceed using the default
+          feeRate = constants.fallbackFeeRate;
+          return Q();
+        }
       });
     }
-    // always return a promise
-    return Q();
   };
+
 
   // Get the unspents for the sending wallet.
   var getUnspents = function() {
@@ -252,6 +267,8 @@ exports.createTransaction = function(params) {
 
     return params.wallet.unspentsPaged(options)
     .then(function(results) {
+      totalUnspentsCount = results.total;
+      fetchedUnspentsCount = results.count;
       unspents = results.unspents.filter(function (u) {
         var confirms = u.confirmations || 0;
         if (!params.enforceMinConfirmsForChange && u.isChange) {
@@ -259,6 +276,7 @@ exports.createTransaction = function(params) {
         }
         return confirms >= minConfirms;
       });
+      zeroConfUnspents = _.filter(results.unspents, function(x) { return(!x.confs); });
       // For backwards compatibility, respect the old splitChangeSize=0 parameter
       if (!params.noSplitChange && params.splitChangeSize !== 0) {
         extraChangeAmounts = results.extraChangeAmounts || [];
@@ -291,6 +309,9 @@ exports.createTransaction = function(params) {
   // input amound and final list of inputs to use with the transaction.
   var feeSingleKeyUnspentsUsed = [];
   var collectInputs = function () {
+    if (!unspents.length) {
+      throw new Error('no unspents available on wallet');
+    }
     inputAmount = 0;
     unspents.every(function (unspent) {
       inputAmount += unspent.value;
@@ -324,14 +345,26 @@ exports.createTransaction = function(params) {
         (feeSingleKeySourceAddress ? 1 : 0) // add single key source address change
       )
     };
-    if (shouldComputeBestFee) {
+
+    estTxSize = estimateTransactionSize({
+      nP2SHInputs: txInfo.nP2SHInputs,
+      nP2PKHInputs: txInfo.nP2PKHInputs,
+      nOutputs: txInfo.nOutputs
+    });
+
+    return Q().then(function() {
+      return(getDynamicFeeRateEstimate());
+    })
+    .then(function() {
       minerFeeInfo = exports.calculateMinerFeeInfo({
-        bitgo: params.wallet.bitgo,
-        feeRate: feeRate,
-        nP2SHInputs: txInfo.nP2SHInputs,
-        nP2PKHInputs: txInfo.nP2PKHInputs,
-        nOutputs: txInfo.nOutputs
-      });
+      bitgo: params.wallet.bitgo,
+      feeRate: feeRate,
+      nP2SHInputs: txInfo.nP2SHInputs,
+      nP2PKHInputs: txInfo.nP2PKHInputs,
+      nOutputs: txInfo.nOutputs
+    });
+
+    if (shouldComputeBestFee) {
       var approximateFee = minerFeeInfo.fee;
       var shouldRecurse = typeof(fee) === 'undefined' || approximateFee > fee;
       fee = approximateFee;
@@ -367,7 +400,21 @@ exports.createTransaction = function(params) {
     }
 
     if (inputAmount < (feeSingleKeySourceAddress ? totalOutputAmount : totalAmount)) {
-      var err = new Error('Insufficient funds');
+      // The unspents we're using for inputs do not have sufficient value on them to
+      // satisfy the user's requested spend amount. That may be because the wallet's balance
+      // is simply too low, or it might be that the wallet's balance is sufficient but
+      // we didn't fetch enough unspents. Too few unspents could result from the wallet
+      // having many small unspents and we hit our limit on the number of inputs we can use
+      // in a txn, or it might have been that the filters the user passed in (like minConfirms)
+      // disqualified too many of the unspents
+      var err;
+      if (totalUnspentsCount === fetchedUnspentsCount) {
+        // we fetched every unspent the wallet had, but it still wasn't enough
+        err = new Error('Insufficient funds');
+      } else {
+        // we weren't able to fetch all the unspents on the wallet
+        err = new Error('Transaction size too large due to too many unspents. Can send only ' + inputAmount + ' satoshis in this transaction');
+      }
       err.result = {
         fee: fee,
         feeRate: feeRate,
@@ -377,7 +424,7 @@ exports.createTransaction = function(params) {
         txInfo: txInfo
       };
       return Q.reject(err);
-    }
+    }});
   };
 
   // Add the outputs for this transaction.
@@ -550,15 +597,50 @@ exports.createTransaction = function(params) {
     return getBitGoFee();
   })
   .then(function() {
-    return Q.all([getBitGoFeeAddress(), getDynamicFeeRateEstimate(), getUnspents(), getUnspentsForSingleKey()]);
+    return Q.all([getBitGoFeeAddress(), getUnspents(), getUnspentsForSingleKey()]);
   })
   .then(collectInputs)
   .then(collectOutputs)
   .then(serialize);
 };
 
+
 /**
- * Calculate the size (bytes) and fee of a transaction, given it's parameters
+ * Estimate the size of a transaction in bytes based on the number of
+ * inputs and outputs present.
+ * @params params {
+ *   nP2SHInputs: number of P2SH (multisig) inputs
+ *   nP2PKHInputs: number of P2PKH (single sig) inputs
+ *   nOutputs: number of outputs
+ * }
+ *
+ * @returns size: estimated size of the transaction in bytes
+ */
+var estimateTransactionSize = function(params) {
+  if (typeof(params.nP2SHInputs) !== 'number' || params.nP2SHInputs < 1) {
+    throw new Error('expecting positive nP2SHInputs');
+  }
+  if ((params.nP2PKHInputs) && (typeof(params.nP2PKHInputs) !== 'number')) {
+    throw new Error('expecting positive nP2PKHInputs to be numeric');
+  }
+  if (typeof(params.nOutputs) !== 'number' || params.nOutputs < 1) {
+    throw new Error('expecting positive nOutputs');
+  }
+
+  var sizePerP2SHInput = 295;
+  var sizePerP2PKHInput = 160;
+  var sizePerOutput = 34;
+
+  var estimatedSize = sizePerP2SHInput * params.nP2SHInputs +
+    sizePerP2PKHInput * (params.nP2PKHInputs || 0) +
+    sizePerOutput * params.nOutputs;
+
+  return estimatedSize;
+};
+
+
+/**
+ * Calculate the fee and estimated size in bytes for a transaction.
  * @params params {
  *   bitgo: bitgo object
  *   feeRate: satoshis per kilobyte
@@ -574,27 +656,8 @@ exports.createTransaction = function(params) {
  * }
  */
 exports.calculateMinerFeeInfo = function(params) {
-  if (typeof(params.bitgo) === 'undefined' || typeof(params.bitgo.getConstants) !== 'function') {
-    throw new Error('expecting bitgo object');
-  }
-
-  if (typeof(params.nP2SHInputs) !== 'number') {
-    throw new Error('expecting positive nP2SHInputs');
-  }
-
-  if (typeof(params.nOutputs) !== 'number' || params.nOutputs < 1) {
-    throw new Error('expecting positive nOutputs');
-  }
-
   var feeRateToUse = params.feeRate || params.bitgo.getConstants().fallbackFeeRate;
-
-  var sizePerP2SHInput = 295;
-  var sizePerP2PKHInput = 160;
-  var sizePerOutput = 34;
-
-  var estimatedSize = sizePerP2SHInput * params.nP2SHInputs +
-    sizePerP2PKHInput * (params.nP2PKHInputs || 0) +
-    sizePerOutput * params.nOutputs;
+  var estimatedSize = estimateTransactionSize(params);
 
   return {
     size: estimatedSize,

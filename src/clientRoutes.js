@@ -57,9 +57,7 @@ var handleSendCoins = function(req) {
     return wallet.sendCoins(req.body);
   })
   .catch(function(err) {
-    if (err.message === "Insufficient funds") {
-      throw apiResponse(400, err, "Insufficient funds");
-    }
+    err.status = 400;
     throw err;
   })
   .then(function(result) {
@@ -76,9 +74,7 @@ var handleSendMany = function(req) {
     return wallet.sendMany(req.body);
   })
   .catch(function(err) {
-    if (err.message === "Insufficient funds") {
-      throw apiResponse(400, err, "Insufficient funds");
-    }
+    err.status = 400;
     throw err;
   })
   .then(function(result) {
@@ -95,9 +91,7 @@ var handleCreateTransaction = function(req) {
     return wallet.createTransaction(req.body);
   })
   .catch(function(err) {
-    if (err.message === "Insufficient funds") {
-      throw apiResponse(400, err, "Insufficient funds");
-    }
+    err.status = 400;
     throw err;
   });
 };
@@ -108,9 +102,7 @@ var handleEthSendTransaction = function(req) {
     return wallet.sendTransaction(req.body);
   })
   .catch(function(err) {
-    if (err.message === "Insufficient funds") {
-      throw apiResponse(400, err, "Insufficient funds");
-    }
+    err.status = 400;
     throw err;
   });
 };
@@ -223,9 +215,7 @@ var handleV2SendOne = function(req) {
     return wallet.send(req.body);
   })
   .catch(function(err) {
-    if (err.message === "Insufficient funds") {
-      throw apiResponse(400, err, "Insufficient funds");
-    }
+    err.status = 400;
     throw err;
   })
   .then(function(result) {
@@ -245,9 +235,7 @@ var handleV2SendMany = function(req) {
     return wallet.sendMany(req.body);
   })
   .catch(function(err) {
-    if (err.message === "Insufficient funds") {
-      throw apiResponse(400, err, "Insufficient funds");
-    }
+    err.status = 400;
     throw err;
   })
   .then(function(result) {
