@@ -2497,8 +2497,8 @@ describe('Wallet API', function() {
     });
 
     describe('CPFP', function() {
-      let parentTxHash;
-      let defaultFee;
+      var parentTxHash;
+      var defaultFee;
 
       before(function() {
         return bitgo.unlock({ otp: '0000000' })
@@ -2530,7 +2530,7 @@ describe('Wallet API', function() {
       });
 
       it('child fee capped by maxFee', function() {
-        let maxFee = defaultFee + 1000;
+        var maxFee = defaultFee + 1000;
         return bitgo.estimateFee({ numBlocks: 2, maxFee: maxFee, inputs: [ parentTxHash ], txSize: 300, cpfpAware: true })
         .then(function(result) {
           result.should.have.property('feePerKb');
