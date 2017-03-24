@@ -221,6 +221,13 @@ describe('V2 Wallet:', function() {
         return wallet.prebuildTransaction(params);
       })
       .then(function(prebuild) {
+        var explanation = basecoin.explainTransaction(prebuild);
+        explanation.displayOrder.length.should.equal(6);
+        explanation.outputs.length.should.equal(1);
+        explanation.changeOutputs.length.should.equal(1);
+        explanation.outputAmount.should.equal(0.01 * 1e8);
+        explanation.outputs[0].amount.should.equal(0.01 * 1e8);
+        explanation.should.have.property('fee');
         return wallet.sendMany({
           prebuildTx: prebuild,
           walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,

@@ -1,7 +1,13 @@
 var Util = module.exports;
 var bitcoin = require('bitcoinjs-lib');
-var ethUtil = require('ethereumjs-util');
+var ethUtil = function() {};
 var Big = require('big.js');
+
+try {
+  ethUtil = require('ethereumjs-util');
+} catch (e) {
+  // ethereum currently not supported
+}
 
 Util.bnToByteArrayUnsigned = function(bn) {
   var ba = bn.abs().toByteArray();
@@ -9,7 +15,7 @@ Util.bnToByteArrayUnsigned = function(bn) {
     if (ba[0] == 0) {
       ba = ba.slice(1);
     }
-    return ba.map(function (v) {
+    return ba.map(function(v) {
       return (v < 0) ? v + 256 : v;
     });
   } else {

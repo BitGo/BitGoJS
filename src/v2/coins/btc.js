@@ -65,4 +65,51 @@ Btc.prototype.signTransaction = function(params) {
   };
 };
 
+Btc.prototype.explainTransaction = function(params) {
+  var self = this;
+  var transaction = bitcoin.Transaction.fromBuffer(new Buffer(params.txHex, 'hex'));
+  var id = transaction.getId();
+  var changeAddresses = [];
+  var spendAmount = 0;
+  var changeAmount = 0;
+  if (params.txInfo && params.txInfo.changeAddresses) {
+    changeAddresses = params.txInfo.changeAddresses;
+  }
+  var explanation = {
+    displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
+    id: id,
+    outputs: [],
+    changeOutputs: []
+  };
+  transaction.outs.forEach(function(currentOutput) {
+    var currentAddress = bitcoin.address.fromOutputScript(currentOutput.script, self.network);
+    var currentAmount = currentOutput.value;
+
+    if (changeAddresses.indexOf(currentAddress) !== -1) {
+      // this is change
+      changeAmount += currentAmount;
+      explanation.changeOutputs.push({
+        address: currentAddress,
+        amount: currentAmount
+      });
+      return;
+    }
+
+    spendAmount += currentAmount;
+    explanation.outputs.push({
+      address: currentAddress,
+      amount: currentAmount
+    });
+  });
+  explanation.outputAmount = spendAmount;
+  explanation.changeAmount = changeAmount;
+
+  // add fee info if available
+  if (params.feeInfo) {
+    explanation.displayOrder.push('fee');
+    explanation.fee = params.feeInfo;
+  }
+  return explanation;
+};
+
 module.exports = Btc;

@@ -9,9 +9,14 @@ var should = require('should');
 
 var BitGoJS = require('../../src/index');
 var TestBitGo = require('../lib/test_bitgo');
-var BN = require('ethereumjs-util').BN;
+var BN = function() {};
 var Util = require('../../src/util');
 var _ = require('lodash');
+
+try {
+  BN = require('ethereumjs-util').BN;
+} catch (e) {
+}
 
 // TODO: WORK IN PROGRESS
 describe('Ethereum BitGo.eth:', function() {
@@ -67,19 +72,28 @@ describe('Ethereum BitGo.eth:', function() {
       var incorrectlyPaddedXprv4 = 'xprv9s21ZrQH143K3gxrUzNDWx2NF7WFgjUqmjEFTK7wh46JS72sC1ugYUG7G3KwJNNTa44q3jkUh4yU8g19TGqtQ21DNZ3JzeM2MjwF6vF9MdK';
       var correctlyPaddedXprv005 = 'xprv9s21ZrQH143K2PLs4Qu4C8vogXrVi9sH3gZtkSNnkyte4AZYnjPCTvERYwYGAJoeyEYkxffNjUyUHcMaGu2viZiqauAusDkvQ6ii9rN88Sn';
 
-      Util.xprvToEthPrivateKey(correctlyPaddedXprv005).should.equal('433efe74dc0a841c1e398238d3512e5ae8cbfde26a67667ef03a98a3e9291d80');
+      Util.xprvToEthPrivateKey(correctlyPaddedXprv005).should
+      .equal('433efe74dc0a841c1e398238d3512e5ae8cbfde26a67667ef03a98a3e9291d80');
 
-      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv1).should.not.equal('cf63a5439fafb8e89c85952df485f0c14403a706a1ddecdef791941abcfbc0');
-      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv1).should.equal('00cf63a5439fafb8e89c85952df485f0c14403a706a1ddecdef791941abcfbc0');
+      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv1).should.not
+      .equal('cf63a5439fafb8e89c85952df485f0c14403a706a1ddecdef791941abcfbc0');
+      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv1).should
+      .equal('00cf63a5439fafb8e89c85952df485f0c14403a706a1ddecdef791941abcfbc0');
 
-      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv2).should.not.equal('521e3129c5b9b2ce7496ad2d66aee274ec668f8731199a973ecb455e1dead1');
-      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv2).should.equal('00521e3129c5b9b2ce7496ad2d66aee274ec668f8731199a973ecb455e1dead1');
+      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv2).should.not
+      .equal('521e3129c5b9b2ce7496ad2d66aee274ec668f8731199a973ecb455e1dead1');
+      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv2).should
+      .equal('00521e3129c5b9b2ce7496ad2d66aee274ec668f8731199a973ecb455e1dead1');
 
-      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv3).should.not.equal('c578cfe7f0e90575bb1e3cff8e4860c63fcbc3d8afe1a8465fe80078110bcb');
-      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv3).should.equal('00c578cfe7f0e90575bb1e3cff8e4860c63fcbc3d8afe1a8465fe80078110bcb');
+      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv3).should.not
+      .equal('c578cfe7f0e90575bb1e3cff8e4860c63fcbc3d8afe1a8465fe80078110bcb');
+      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv3).should
+      .equal('00c578cfe7f0e90575bb1e3cff8e4860c63fcbc3d8afe1a8465fe80078110bcb');
 
-      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv4).should.not.equal('24e4f2fee6b3badccacf1bccde5fd937ecf6f8fda1ecca6d2061a6b62aede4');
-      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv4).should.equal('0024e4f2fee6b3badccacf1bccde5fd937ecf6f8fda1ecca6d2061a6b62aede4');
+      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv4).should.not
+      .equal('24e4f2fee6b3badccacf1bccde5fd937ecf6f8fda1ecca6d2061a6b62aede4');
+      Util.xprvToEthPrivateKey(incorrectlyPaddedXprv4).should
+      .equal('0024e4f2fee6b3badccacf1bccde5fd937ecf6f8fda1ecca6d2061a6b62aede4');
     });
 
     it('verify addresses', function() {

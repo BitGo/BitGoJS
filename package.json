@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -68,8 +68,6 @@
     "create-hmac": "^1.1.4",
     "ecurve": "^1.0.2",
     "eol": "0.5.0",
-    "ethereumjs-abi": "^0.6.2",
-    "ethereumjs-util": "^4.4.1",
     "express": "^4.11.1",
     "http-proxy": "1.11.1",
     "lodash": "4.13.1",
@@ -84,6 +82,8 @@
     "underscore.string": "2.4.0"
   },
   "optionalDependencies": {
+    "ethereumjs-abi": "^0.6.2",
+    "ethereumjs-util": "^4.4.1",
     "secp256k1": "3.2.5"
   }
 }

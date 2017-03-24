@@ -6,16 +6,22 @@
 //
 
 var bitcoin = require('../bitcoin');
-var ethereumUtil = require('ethereumjs-util');
 var Util = require('../util');
-var ethUtil = require("ethereumjs-util");
-var ethAbi = require('ethereumjs-abi');
+var ethAbi = function() {};
+var ethUtil = function() {};
 
 
 var assert = require('assert');
 var common = require('../common');
 var Q = require('q');
 var _ = require('lodash');
+
+try {
+  ethAbi = require('ethereumjs-abi');
+  ethUtil = require('ethereumjs-util');
+} catch (e) {
+  // ethereum currently not supported
+}
 
 //
 // Constructor
@@ -56,7 +62,7 @@ EthWallet.prototype.label = function() {
 // Get the balance of this wallet.
 //
 EthWallet.prototype.balance = function() {
-  return new ethereumUtil.BN(this.wallet.balance);
+  return new ethUtil.BN(this.wallet.balance);
 };
 
 //
@@ -65,7 +71,7 @@ EthWallet.prototype.balance = function() {
 // This is the total of all funds available for s(p)ending
 //
 EthWallet.prototype.spendableBalance = function() {
-  return new ethereumUtil.BN(this.wallet.spendableBalance);
+  return new ethUtil.BN(this.wallet.spendableBalance);
 };
 
 //
@@ -378,14 +384,14 @@ var getOperationSha3ForExecuteAndConfirm = function(recipients, expireTime, cont
 
   var recipient = recipients[0];
   return ethUtil.bufferToHex(ethAbi.soliditySHA3(
-    [ "address", "uint", "string", "uint", "uint" ],
-    [
-      new ethUtil.BN(ethUtil.stripHexPrefix(recipient.toAddress), 16),
-      recipient.value,
-      ethUtil.stripHexPrefix(recipient.data) || "",
-      expireTime,
-      contractSequenceId
-    ]
+  ["address", "uint", "string", "uint", "uint"],
+  [
+    new ethUtil.BN(ethUtil.stripHexPrefix(recipient.toAddress), 16),
+    recipient.value,
+    ethUtil.stripHexPrefix(recipient.data) || "",
+    expireTime,
+    contractSequenceId
+  ]
   ));
 };
 
