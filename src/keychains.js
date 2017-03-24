@@ -9,7 +9,13 @@ var crypto = require('crypto');
 var common = require('./common');
 var Util = require('./util');
 var bitcoin = require('./bitcoin');
-var ethereumUtil = require('ethereumjs-util');
+var ethereumUtil = function() {};
+
+try {
+  ethereumUtil = require('ethereumjs-util');
+} catch (e) {
+  // ethereum currently not supported
+}
 
 //
 // Constructor
@@ -128,7 +134,7 @@ Keychains.prototype.list = function(params, callback) {
 
   return this.bitgo.get(this.bitgo.url('/keychain'))
   .result('keychains')
-  .then(function(keychains){
+  .then(function(keychains) {
     keychains.map(function(keychain) {
       if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
         throw new Error('ethAddress and xpub do not match');
@@ -176,7 +182,7 @@ Keychains.prototype.createBitGo = function(params, callback) {
   return this.bitgo.post(this.bitgo.url('/keychain/bitgo'))
   .send(params)
   .result()
-  .then(function(keychain){
+  .then(function(keychain) {
     if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
@@ -196,7 +202,7 @@ Keychains.prototype.createBackup = function(params, callback) {
   return this.bitgo.post(this.bitgo.url('/keychain/backup'))
   .send(params)
   .result()
-  .then(function(keychain){
+  .then(function(keychain) {
     // not all keychains have an xpub
     if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
@@ -224,7 +230,7 @@ Keychains.prototype.get = function(params, callback) {
   return this.bitgo.post(this.bitgo.url('/keychain/' + encodeURIComponent(id)))
   .send({})
   .result()
-  .then(function(keychain){
+  .then(function(keychain) {
     if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
@@ -248,7 +254,7 @@ Keychains.prototype.update = function(params, callback) {
     encryptedXprv: params.encryptedXprv
   })
   .result()
-  .then(function(keychain){
+  .then(function(keychain) {
     if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
