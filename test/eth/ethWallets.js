@@ -6,12 +6,17 @@
 
 var assert = require('assert');
 var should = require('should');
-var ethereumUtil = require('ethereumjs-util');
+var ethereumUtil = function() {};
 
 var BitGoJS = require('../../src/index');
 var common = require('../../src/common');
 var TestBitGo = require('../lib/test_bitgo');
 var Util = require('../../src/util');
+
+try {
+  ethereumUtil = require('ethereumjs-util');
+} catch (e) {
+}
 
 var bitcoin = BitGoJS.bitcoin;
 
@@ -66,7 +71,7 @@ describe('Ethereum Wallets API:', function() {
         result.should.have.property('total');
         result.should.have.property('nextBatchPrevId');
 
-        return wallets.list({prevId: result.nextBatchPrevId});
+        return wallets.list({ prevId: result.nextBatchPrevId });
       })
       .then(function(result) {
         result.should.have.property('wallets');
@@ -189,10 +194,32 @@ describe('Ethereum Wallets API:', function() {
 
   describe('Create Ether Wallet', function() {
     it('arguments', function() {
-      assert.throws(function() { wallets.generateWallet({"passphrase": TestBitGo.TEST_WALLET1_PASSCODE, "backupAddress": backupXpub}); });
-      assert.throws(function() { wallets.generateWallet({"passphrase": TestBitGo.TEST_WALLET1_PASSCODE, "label": TEST_WALLET_LABEL, "backupAddress": backupXpub}); });
-      assert.throws(function() { wallets.generateWallet({"passphrase": TestBitGo.TEST_WALLET1_PASSCODE, "label": TEST_WALLET_LABEL, "backupAddress": 123}); });
-      assert.throws(function() { wallets.generateWallet({"label": TEST_WALLET_LABEL, "backupAddress": backupXpub}); });
+      assert.throws(function() {
+        wallets.generateWallet({
+          "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
+          "backupAddress": backupXpub
+        });
+      });
+      assert.throws(function() {
+        wallets.generateWallet({
+          "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
+          "label": TEST_WALLET_LABEL,
+          "backupAddress": backupXpub
+        });
+      });
+      assert.throws(function() {
+        wallets.generateWallet({
+          "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
+          "label": TEST_WALLET_LABEL,
+          "backupAddress": 123
+        });
+      });
+      assert.throws(function() {
+        wallets.generateWallet({
+          "label": TEST_WALLET_LABEL,
+          "backupAddress": backupXpub
+        });
+      });
       assert.throws(function() { wallets.generateWallet('invalid'); });
       assert.throws(function() { wallets.generateWallet(); });
     });
