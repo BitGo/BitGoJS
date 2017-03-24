@@ -30,7 +30,6 @@ var BaseCoin = function(bitgo, coin) {
 };
 
 BaseCoin.prototype.initializeCoin = function(coin) {
-
   if (!coinInstances) {
     // initialization has to be asynchronous to avoid circular dependencies
     coinInstances = {
@@ -44,7 +43,6 @@ BaseCoin.prototype.initializeCoin = function(coin) {
     throw new Error('Coin type ' + coin + ' not supported');
   }
   coinInstance.call(this);
-
 };
 
 BaseCoin.prototype.toJSON = function() {
