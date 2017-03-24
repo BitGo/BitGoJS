@@ -91,6 +91,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
   var backupKeychain;
   var bitgoKeychain;
   var userKeychainParams;
+  var isCold;
 
   // Add the user keychain
   var userKeychainPromise = Q.fcall(function() {
@@ -98,6 +99,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
     if (params.userKey) {
       userKeychain = { 'pub': params.userKey };
       userKeychainParams = userKeychain;
+      isCold = true;
     } else {
       // Create the user and backup key.
       userKeychain = self.baseCoin.keychains().create();
@@ -155,7 +157,8 @@ Wallets.prototype.generateWallet = function(params, callback) {
         userKeychain.id,
         backupKeychain.id,
         bitgoKeychain.id
-      ]
+      ],
+      isCold: isCold
     };
 
     if (params.enterprise) {
