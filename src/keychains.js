@@ -79,10 +79,18 @@ Keychains.prototype.create = function(params) {
 
   var extendedKey = bitcoin.HDNode.fromSeedBuffer(seed);
   var xpub = extendedKey.neutered().toBase58();
+
+  var ethAddress = undefined;
+  try {
+    ethAddress = Util.xpubToEthAddress(xpub);
+  } catch (e) {
+    // ethereum is unavailable
+  }
+
   return {
     xpub: xpub,
     xprv: extendedKey.toBase58(),
-    ethAddress: Util.xpubToEthAddress(xpub)
+    ethAddress: ethAddress
   };
 };
 
@@ -116,11 +124,19 @@ Keychains.prototype.deriveLocal = function(params) {
   }
 
   var xpub = derivedNode.neutered().toBase58();
+
+  var ethAddress = undefined;
+  try {
+    ethAddress = Util.xpubToEthAddress(xpub);
+  } catch (e) {
+    // ethereum is unavailable
+  }
+
   return {
     path: params.path,
     xpub: xpub,
     xprv: params.xprv && derivedNode.toBase58(),
-    ethAddress: Util.xpubToEthAddress(xpub)
+    ethAddress: ethAddress
   }
 };
 
@@ -163,7 +179,7 @@ Keychains.prototype.add = function(params, callback) {
   })
   .result()
   .then(function(keychain) {
-    if (keychain.xpub && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
+    if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
