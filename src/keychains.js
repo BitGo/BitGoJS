@@ -152,7 +152,7 @@ Keychains.prototype.list = function(params, callback) {
   .result('keychains')
   .then(function(keychains) {
     keychains.map(function(keychain) {
-      if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
+      if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
         throw new Error('ethAddress and xpub do not match');
       }
     });
@@ -179,7 +179,7 @@ Keychains.prototype.add = function(params, callback) {
   })
   .result()
   .then(function(keychain) {
-    if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
+    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
@@ -199,7 +199,7 @@ Keychains.prototype.createBitGo = function(params, callback) {
   .send(params)
   .result()
   .then(function(keychain) {
-    if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
+    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
@@ -220,7 +220,7 @@ Keychains.prototype.createBackup = function(params, callback) {
   .result()
   .then(function(keychain) {
     // not all keychains have an xpub
-    if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
+    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
@@ -247,7 +247,7 @@ Keychains.prototype.get = function(params, callback) {
   .send({})
   .result()
   .then(function(keychain) {
-    if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
+    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;
@@ -271,7 +271,7 @@ Keychains.prototype.update = function(params, callback) {
   })
   .result()
   .then(function(keychain) {
-    if (keychain.xpub && keychain.ethAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
+    if (keychain.xpub && keychain.ethAddress && Util.xpubToEthAddress && keychain.ethAddress !== Util.xpubToEthAddress(keychain.xpub)) {
       throw new Error('ethAddress and xpub do not match');
     }
     return keychain;

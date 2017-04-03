@@ -1,6 +1,7 @@
 var common = require('../common');
 var assert = require('assert');
 var bitcoin = require('../bitcoin');
+var PendingApproval = require('./pendingApproval');
 var Q = require('q');
 var _ = require('lodash');
 
@@ -47,6 +48,12 @@ Wallet.prototype.receiveAddress = function() {
   return this._wallet.receiveAddress.address;
 };
 
+Wallet.prototype.pendingApprovals = function() {
+  var self = this;
+  return this._wallet.pendingApprovals.map(function(currentApproval) {
+    return new PendingApproval(self.bitgo, self.baseCoin, currentApproval, self);
+  });
+};
 
 /**
  * List the transactions for a given wallet

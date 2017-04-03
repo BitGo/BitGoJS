@@ -10,11 +10,11 @@ var Keychains = function(bitgo, baseCoin) {
 Keychains.prototype.get = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['xpub', 'ethAddress'], callback);
-  
+
   if (!params.id) {
     throw new Error('id must be defined');
   }
-  
+
   var id = params.id;
   return this.bitgo.get(this.baseCoin.url('/key/' + encodeURIComponent(id)))
   .result()
@@ -46,7 +46,7 @@ Keychains.prototype.create = function(params) {
 Keychains.prototype.add = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode'], callback);
-  
+
   return this.bitgo.post(this.baseCoin.url('/key'))
   .send({
     pub: params.pub,
@@ -64,7 +64,7 @@ Keychains.prototype.createBitGo = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
   params.source = 'bitgo';
-  
+
   return this.add(params, callback);
 };
 
