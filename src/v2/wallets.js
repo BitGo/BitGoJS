@@ -66,6 +66,58 @@ Wallets.prototype.list = function(params, callback) {
 };
 
 /**
+* add
+* Add a new wallet (advanced mode).
+* This allows you to manually submit the keys, type, m and n of the wallet
+* Parameters include:
+*    "label": label of the wallet to be shown in UI
+*    "m": number of keys required to unlock wallet (2)
+*    "n": number of keys available on the wallet (3)
+*    "keys": array of keychain ids
+*/
+Wallets.prototype.add = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], ['label', 'enterprise'], callback);
+
+  if (Array.isArray(params.keys) === false || typeof(params.m) !== 'number' ||
+    typeof(params.n) != 'number') {
+    throw new Error('invalid argument');
+  }
+
+  // TODO: support more types of multisig
+  if (params.m != 2 || params.n != 3) {
+    throw new Error('unsupported multi-sig type');
+  }
+
+  var self = this;
+  var walletParams = {
+    label: params.label,
+    m: params.m,
+    n: params.n,
+    keys: params.keys
+  };
+
+  if (params.enterprise) {
+    walletParams.enterprise = params.enterprise;
+  }
+
+  if (params.isCold) {
+    walletParams.isCold = params.isCold;
+  }
+
+  if (params.disableTransactionNotifications) {
+    walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
+  }
+  return self.bitgo.post(self.baseCoin.url('/wallet')).send(walletParams).result()
+  .then(function(newWallet) {
+    return {
+      wallet: new self.coinWallet(self.bitgo, self.baseCoin, newWallet)  
+    };
+  })
+  .nodeify(callback);
+};
+
+/**
  * Generate a new wallet
  * 1. Creates the user keychain locally on the client, and encrypts it with the provided passphrase
  * 2. If no pub was provided, creates the backup keychain locally on the client, and encrypts it with the provided passphrase

@@ -8,6 +8,7 @@ var bitcoin = require('bitcoinjs-lib');
 
 var common = require('../../src/common');
 var TestV2BitGo = require('../lib/test_bitgo');
+var Q = require('q');
 
 describe('V2 Wallets:', function() {
   var bitgo;
@@ -141,6 +142,68 @@ describe('V2 Wallets:', function() {
         res.userKeychain.should.have.property('pub');
         res.userKeychain.should.not.have.property('prv');
         res.userKeychain.should.not.have.property('encryptedPrv');
+      });
+    });
+  });
+
+  describe('Add Wallet', function() {
+
+    var userKeychainId;
+    var backupKeychainId;
+    var bitgoKeychainId;
+
+    it('arguments', function() {
+      assert.throws(function() {wallets.add();});
+      assert.throws(function() {wallets.add('invalid');});
+      assert.throws(function() {wallets.add({}, 0);});
+    });
+
+    it('should add a wallet with pre generated keys', function() {
+      
+      var userKeychain;
+      var backupKeychain;
+      var bitgoKeychain;
+
+      // Add the user keychain
+      var userKeychainPromise = Q.fcall(function() {
+        userKeychain = keychains.create();
+        return keychains.add(userKeychain);
+      }).then(function(keychain) {
+        userKeychainId = keychain.id;
+      });
+
+      var backupKeychainPromise = Q.fcall(function() {
+        backupKeychain = keychains.create();
+        return keychains.add(backupKeychain);
+      })
+      .then(function(newBackupKeychain) {
+        backupKeychainId = newBackupKeychain.id;
+      });
+
+      var bitgoKeychainPromise = keychains.createBitGo()
+      .then(function(keychain) {
+        bitgoKeychainId = keychain.id;
+      });
+
+      // Add the user keychain
+      return Q.all([userKeychainPromise, backupKeychainPromise, bitgoKeychainPromise])
+      .then(function() {
+        var params = {
+          label: 'sample wallet',
+          m: 2,
+          n: 3,
+          keys: [userKeychainId, backupKeychainId, bitgoKeychainId],
+          enterprise: '',
+          isCold: true
+        }
+        return wallets.add(params)
+      }).then(function(res) {
+        res.should.have.property('wallet');
+        res.wallet.should.have.property('_wallet');
+        res.wallet._wallet.should.have.property('keys');
+        res.wallet._wallet.keys[0].should.equal(userKeychainId);
+        res.wallet._wallet.keys[1].should.equal(backupKeychainId);
+        res.wallet._wallet.keys[2].should.equal(bitgoKeychainId);
       });
     });
   });
