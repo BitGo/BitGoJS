@@ -5,6 +5,7 @@
 var assert = require('assert');
 var should = require('should');
 var bitcoin = require('bitcoinjs-lib');
+var _ = require('lodash');
 
 var common = require('../../src/common');
 var TestV2BitGo = require('../lib/test_bitgo');
@@ -278,6 +279,74 @@ describe('V2 Wallet:', function() {
         transaction.should.have.property('status');
         transaction.should.have.property('txid');
         transaction.status.should.equal('signed');
+      });
+    });
+  });
+
+  describe('Sharing & Pending Approvals', function() {
+    var sharingUserBitgo;
+    var sharingUserBasecoin;
+    before(function() {
+      sharingUserBitgo = new TestV2BitGo({ env: 'test' });
+      sharingUserBitgo.initializeTestVars();
+      sharingUserBasecoin = sharingUserBitgo.coin('tbtc');
+      return sharingUserBitgo.authenticateSharingTestUser(sharingUserBitgo.testUserOTP());
+    });
+
+    it('should extend invitation from main user to sharing user', function() {
+      // take the main user wallet and invite this user
+      var share;
+      return wallet.shareWallet({
+        email: TestV2BitGo.TEST_SHARED_KEY_USER,
+        permissions: 'view,spend,admin',
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+      })
+      .then(function(shareDetails) {
+        share = shareDetails;
+        return sharingUserBitgo.unlock({ otp: sharingUserBitgo.testUserOTP() });
+      })
+      .then(function() {
+        return sharingUserBasecoin.wallets().acceptShare({
+          walletShareId: share.id,
+          userPassword: TestV2BitGo.TEST_SHARED_KEY_PASSWORD,
+        });
+      })
+      .then(function(acceptanceDetails) {
+        acceptanceDetails.should.have.property('changed');
+        acceptanceDetails.should.have.property('state');
+        acceptanceDetails.changed.should.equal(true);
+        acceptanceDetails.state.should.equal('accepted');
+      });
+    });
+
+    it('should have sharing user self-remove from accepted wallet and approve it', function() {
+      var receivedWalletId = wallet.id();
+      return sharingUserBasecoin.wallets().list()
+      .then(function(sharedWallets) {
+        var receivedWallet = _.find(sharedWallets.wallets, function(w) { return w.id() === receivedWalletId; });
+        return receivedWallet.removeUser({ userId: sharingUserBitgo._user.id });
+      })
+      .then(function(removal) {
+        // this should require a pending approval
+        return basecoin.wallets().get({ id: receivedWalletId });
+      })
+      .then(function(updatedWallet) {
+        return updatedWallet.pendingApprovals();
+      })
+      .then(function(pendingApprovals) {
+        var pendingApproval = _.find(pendingApprovals, function(pa) { return pa.wallet.id() === receivedWalletId; });
+        return pendingApproval.approve({ otp: bitgo.testUserOTP() });
+      })
+      .then(function(approval) {
+        approval.should.have.property('approvalsRequired');
+        approval.should.have.property('coin');
+        approval.should.have.property('creator');
+        approval.should.have.property('id');
+        approval.should.have.property('state');
+        approval.should.have.property('userIds');
+        approval.should.have.property('wallet');
+        approval.state.should.equal('approved');
+        approval.wallet.should.equal(receivedWalletId);
       });
     });
   });

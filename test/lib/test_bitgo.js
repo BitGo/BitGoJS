@@ -170,4 +170,13 @@ BitGo.prototype.authenticateTestUser = function(otp, callback) {
   .nodeify(callback);
 };
 
+BitGo.prototype.authenticateSharingTestUser = function(otp, callback) {
+  return this.authenticate({ username: BitGo.TEST_SHARED_KEY_USER, password: BitGo.TEST_SHARED_KEY_PASSWORD, otp: otp })
+  .then(function(response) {
+    response.should.have.property('access_token');
+    response.should.have.property('user');
+  })
+  .nodeify(callback);
+};
+
 module.exports = BitGo;
