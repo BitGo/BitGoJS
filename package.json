@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "2.2.4",
+  "version": "3.0.0",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -11,6 +11,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/BitGoJS.git"
+  },
+  "engines": {
+    "node": ">=6.9.0",
+    "npm": ">=3.10.0"
   },
   "devDependencies": {
     "babelify": "7.3.0",
@@ -74,7 +78,7 @@
     "minimist": "0.2.0",
     "moment": "^2.11.2",
     "morgan": "1.5.3",
-    "prova": "git+ssh://git@github.com:BitGo/provajs-lib.git",
+    "prova-lib": "0.1.0",
     "q": "1.1.2",
     "sanitize-html": "1.13.0",
     "superagent": "^1.4.0",
