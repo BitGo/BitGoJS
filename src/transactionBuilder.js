@@ -279,7 +279,7 @@ exports.createTransaction = function(params) {
 
       // create array of unconfirmed unspent ID strings of the form "txHash:outputIndex"
       zeroConfUnspentTxIds = _(results.unspents).filter(function(u) {
-        return u.confs;
+        return !u.confirmations;
       }).map(function(u) {
           return u.tx_hash + ':' + u.tx_output_n;
       }).value();
