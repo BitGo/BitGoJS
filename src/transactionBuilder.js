@@ -170,7 +170,7 @@ exports.createTransaction = function(params) {
   var fetchedUnspentsCount;
 
   // The list of unspent transactions being used with zero-confirmations
-  var zeroConfUnspents;
+  var zeroConfUnspentTxIds;
 
   // The sum of the input values for this transaction.
   var inputAmount;
@@ -218,7 +218,7 @@ exports.createTransaction = function(params) {
   // is specified or if no fee-related params are specified
   var getDynamicFeeRateEstimate = function () {
     if (params.feeTxConfirmTarget || !feeParamsDefined) {
-      return bitgo.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate, inputs: zeroConfUnspents, txSize: estTxSize, cpfpAware: true })
+      return bitgo.estimateFee({ numBlocks: params.feeTxConfirmTarget, maxFee: params.maxFeeRate, inputs: zeroConfUnspentTxIds, txSize: estTxSize, cpfpAware: true })
       .then(function(result) {
         var estimatedFeeRate = result.cpfpFeePerKb;
         if (estimatedFeeRate < constants.minFeeRate) {
@@ -276,7 +276,19 @@ exports.createTransaction = function(params) {
         }
         return confirms >= minConfirms;
       });
-      zeroConfUnspents = _.filter(results.unspents, function(x) { return(!x.confs); });
+
+      // create array of unconfirmed unspent ID strings of the form "txHash:outputIndex"
+      zeroConfUnspentTxIds = _(results.unspents).filter(function(u) {
+        return u.confs;
+      }).map(function(u) {
+          return u.tx_hash + ':' + u.tx_output_n;
+      }).value();
+      if (_.isEmpty(zeroConfUnspentTxIds)) {
+        // we don't want to pass an empty array of inputs to the server, because it assumes if the
+        // inputs arguments exists, it contains values
+        zeroConfUnspentTxIds = undefined;
+      }
+
       // For backwards compatibility, respect the old splitChangeSize=0 parameter
       if (!params.noSplitChange && params.splitChangeSize !== 0) {
         extraChangeAmounts = results.extraChangeAmounts || [];
