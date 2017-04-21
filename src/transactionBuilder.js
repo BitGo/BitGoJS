@@ -239,6 +239,7 @@ exports.createTransaction = function(params) {
         else {
           // couldn't estimate the fee, proceed using the default
           feeRate = constants.fallbackFeeRate;
+          console.log("Error estimating fee for send from " + params.wallet + ": " + e.message);
           return Q();
         }
       });
