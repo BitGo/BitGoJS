@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -81,7 +81,7 @@
     "prova-lib": "0.1.0",
     "q": "1.1.2",
     "sanitize-html": "1.13.0",
-    "superagent": "~1.4.0",
+    "superagent": "~1.8.3",
     "superagent-proxy": "~1.0.0",
     "underscore.string": "2.4.0"
   },
