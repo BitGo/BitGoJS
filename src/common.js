@@ -79,7 +79,7 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
   },
   rmg_dev: {
-    uri: 'https://rmgdev.bitgo.com',
+    uri: 'https://rmgwebdev.bitgo.com',
     networks: {
       tbtc: bitcoin.networks.testnet
     },
@@ -161,9 +161,9 @@ exports.validateParams = function(params, expectedParams, optionalParams, option
   if (typeof(params) != 'object') {
     throw new Error('Must pass in parameters dictionary');
   }
-  
+
   expectedParams = expectedParams || [];
-  
+
   expectedParams.forEach(function(expectedParam) {
     if (!params[expectedParam]) {
       throw new Error('Missing parameter: ' + expectedParam);
@@ -172,17 +172,17 @@ exports.validateParams = function(params, expectedParams, optionalParams, option
       throw new Error('Expecting parameter string: ' + expectedParam + ' but found ' + typeof(params[expectedParam]));
     }
   });
-  
+
   optionalParams = optionalParams || [];
   optionalParams.forEach(function(optionalParam) {
     if (params[optionalParam] && typeof(params[optionalParam]) != 'string') {
       throw new Error('Expecting parameter string: ' + optionalParam + ' but found ' + typeof(params[optionalParam]));
     }
   });
-  
+
   if (optionalCallback && typeof(optionalCallback) != 'function') {
     throw new Error('illegal callback argument');
   }
-  
+
   return true;
 };
