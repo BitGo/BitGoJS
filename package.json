@@ -57,6 +57,7 @@
     "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -s BitGoJS -o browser/BitGoJS.js",
     "compile-test": "mkdir -p browser && ./node_modules/.bin/browserify --exclude superagent-proxy --exclude morgan -t envify ./test/*.js > ./browser/tests.js",
     "test": "npm run test-node",
+    "express": "node bin/bitgo-express -b 0.0.0.0",
     "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 20000 --reporter list --recursive test/",
     "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run"
   },

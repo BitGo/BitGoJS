@@ -1,0 +1,13 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Image": {
+    "Name": "bitgo/express",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "3080"
+    }
+  ],
+  "Logging": "/var/log/nginx"
+}
