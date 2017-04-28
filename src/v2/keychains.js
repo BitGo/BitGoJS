@@ -1,6 +1,6 @@
-var common = require('../common');
-var crypto = require('crypto');
-var bitcoin = require('bitcoinjs-lib');
+const common = require('../common');
+const crypto = require('crypto');
+const prova = require('../prova');
 
 var Keychains = function(bitgo, baseCoin) {
   this.bitgo = bitgo;
@@ -35,7 +35,7 @@ Keychains.prototype.create = function(params) {
     seed = params.seed;
   }
 
-  var extendedKey = bitcoin.HDNode.fromSeedBuffer(seed);
+  var extendedKey = prova.HDNode.fromSeedBuffer(seed);
   var xpub = extendedKey.neutered().toBase58();
   return {
     pub: xpub,

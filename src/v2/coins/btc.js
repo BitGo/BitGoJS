@@ -9,6 +9,7 @@ var Btc = function() {
   // effectively, move the BaseCoin prototype one level away
   this.__proto__ = Btc.prototype;
   this.network = bitcoin.networks.bitcoin;
+  this.baseFactor = 1e8; // factor between base unit and smallest unit
 };
 
 Btc.prototype.__proto__ = BaseCoin.prototype;

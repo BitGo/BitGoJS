@@ -1,15 +1,14 @@
-var Btc = require('./btc');
-var bitcoin = require('bitcoinjs-lib');
+var Xrp = require('./xrp');
 var _ = require('lodash');
 
-var Tbtc = function() {
+var Txrp = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
-  this.__proto__ = Tbtc.prototype;
-  this.network = bitcoin.networks.testnet;
+  this.__proto__ = Txrp.prototype;
+  this.network = 'altnet.rippletest.net';
 };
 
-Tbtc.prototype.__proto__ = Btc.prototype;
+Txrp.prototype.__proto__ = Xrp.prototype;
 
-module.exports = Tbtc;
+module.exports = Txrp;

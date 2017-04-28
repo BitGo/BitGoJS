@@ -11,6 +11,10 @@ var Wallets = function(bitgo, baseCoin) {
   this.coinWallet = Wallet;
 };
 
+Wallets.prototype.createWalletInstance = function() {
+  return new this.coinWallet(this.bitgo, this.coin);
+};
+
 /**
  * Get a wallet by ID (proxy for getWallet)
  * @param params
@@ -139,14 +143,15 @@ Wallets.prototype.generateWallet = function(params, callback) {
     throw new Error('Expected disableTransactionNotifications to be a boolean. ');
   }
 
-  var userKeychain;
-  var backupKeychain;
-  var bitgoKeychain;
-  var userKeychainParams;
-  var isCold;
+  let userKeychain;
+  let backupKeychain;
+  let bitgoKeychain;
+  let userKeychainParams;
+  let isCold;
 
   // Add the user keychain
-  var userKeychainPromise = Q.fcall(function() {
+  const userKeychainPromise = Q.fcall(function() {
+    let userKeychainParams;
     // User provided user key
     if (params.userKey) {
       userKeychain = { 'pub': params.userKey };
@@ -168,7 +173,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
     });
   });
 
-  var backupKeychainPromise = Q.fcall(function() {
+  const backupKeychainPromise = Q.fcall(function() {
     if (params.backupXpubProvider || self.baseCoin instanceof RmgCoin) {
       // If requested, use a KRS or backup key provider
       return self.baseCoin.keychains().createBackup({
@@ -193,7 +198,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
     backupKeychain = _.extend({}, newBackupKeychain, backupKeychain);
   });
 
-  var bitgoKeychainPromise = self.baseCoin.keychains().createBitGo()
+  const bitgoKeychainPromise = self.baseCoin.keychains().createBitGo()
   .then(function(keychain) {
     bitgoKeychain = keychain;
   });
@@ -221,6 +226,14 @@ Wallets.prototype.generateWallet = function(params, callback) {
       walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
     }
 
+    const keychains = {
+      userKeychain: userKeychain,
+      backupKeychain: backupKeychain,
+      bitgoKeychain: bitgoKeychain
+    };
+    return self.baseCoin.supplementGenerateWallet(walletParams, keychains);
+  })
+  .then(function(walletParams) {
     return self.bitgo.post(self.baseCoin.url('/wallet')).send(walletParams).result();
   })
   .then(function(newWallet) {

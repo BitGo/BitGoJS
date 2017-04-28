@@ -8,6 +8,7 @@ var BaseCoin = function(bitgo, coin) {
   this.initializeCoin(coin);
 
   var self = this;
+  this.type = coin;
 
   this.url = function(suffix) {
     return bitgo._baseUrl + '/api/v2/' + coin + suffix;
@@ -42,7 +43,9 @@ BaseCoin.prototype.initializeCoin = function(coin) {
       btc: require('./coins/btc'),
       tbtc: require('./coins/tbtc'),
       rmg: require('./coins/rmg'),
-      trmg: require('./coins/trmg')
+      trmg: require('./coins/trmg'),
+      xrp: require('./coins/xrp'),
+      txrp: require('./coins/txrp')
     };
   }
 
@@ -51,6 +54,15 @@ BaseCoin.prototype.initializeCoin = function(coin) {
     throw new Error('Coin type ' + coin + ' not supported');
   }
   coinInstance.call(this);
+};
+
+/**
+ * If a coin needs to add additional parameters to the wallet generation, it does it in this method
+ * @param walletParams
+ * @return {*}
+ */
+BaseCoin.prototype.supplementGenerateWallet = function(walletParams) {
+  return walletParams;
 };
 
 BaseCoin.prototype.newWalletObject = function(walletParams) {

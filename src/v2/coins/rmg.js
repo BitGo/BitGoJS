@@ -9,6 +9,7 @@ var Rmg = function() {
   // effectively, move the BaseCoin prototype one level away
   this.__proto__ = Rmg.prototype;
   this.network = prova.networks.rmg;
+  this.baseFactor = 1e6; // factor between base unit and smallest unit
 };
 
 Rmg.prototype.__proto__ = BaseCoin.prototype;
