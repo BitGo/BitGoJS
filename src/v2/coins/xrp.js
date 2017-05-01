@@ -1,7 +1,10 @@
 const BaseCoin = require('../baseCoin');
 const crypto = require('crypto');
+const querystring = require('querystring');
 const ripple = require('../../ripple');
+const rippleAddressCodec = require('ripple-address-codec');
 const rippleKeypairs = require('ripple-keypairs');
+const url = require('url');
 const prova = require('../../prova');
 const Q = require('q');
 const common = require('../../common');
@@ -13,11 +16,65 @@ const Xrp = function() {
   // effectively, move the BaseCoin prototype one level away
   this.__proto__ = Xrp.prototype;
   // TODO: replace dependency with platform IMS
-  this.network = 'ripple.com';
-  this.baseFactor = 1e6; // factor between base unit and smallest unit
 };
 
 Xrp.prototype.__proto__ = BaseCoin.prototype;
+
+/**
+ * Returns the factor between the base unit and its smallest subdivison
+ * @return {number}
+ */
+Xrp.prototype.getBaseFactor = function() {
+  return 1e6;
+};
+
+/**
+ * Evaluates whether an address string is valid for this coin
+ * @param address
+ */
+Xrp.prototype.isValidAddress = function(address) {
+  const destinationDetails = url.parse(address);
+  const queryDetails = querystring.parse(destinationDetails.query);
+  const destinationAddress = destinationDetails.pathname;
+  if (!rippleAddressCodec.isValidAddress(destinationAddress)) {
+    return false;
+  }
+
+  // there are no other properties like destination tags
+  if (destinationDetails.pathname === address) {
+    return true;
+  }
+
+  if (!queryDetails.dt) {
+    // if there are more properties, the query details need to contain the destination tag property
+    return false;
+  }
+
+  const parsedTag = parseInt(queryDetails.dt);
+  if (!Number.isSafeInteger(parsedTag)) {
+    return false;
+  }
+
+  if (parsedTag > 0xFFFFFFFF || parsedTag < 0) {
+    return false;
+  }
+
+  // the simplest form, reconstruction after the deconstruction, should be deterministic
+  const normalizedAddress = `${destinationAddress}?dt=${parsedTag}`;
+  return normalizedAddress === address;
+};
+
+/**
+ * Get fee info from server
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Xrp.prototype.getFeeInfo = function(params, callback) {
+  return this.bitgo.get(this.url('/public/feeinfo'))
+  .result()
+  .nodeify(callback);
+};
 
 /**
  * Assemble keychain and half-sign prebuilt transaction
@@ -72,24 +129,21 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
   let multiSigTxFee;
   let ledgerVersion; // one ledger every 5 seconds
 
-  // TODO: replace with IMS calls
-  const rippleLib = ripple({ server: common.Environments[this.bitgo.env].xrpNetwork });
+  const self = this;
+
+  const rippleLib = ripple();
   // create cosigner-setting transaction
   // specify the multisigners
   return Q.fcall(function() {
-    return rippleLib.connect()
+    return self.getFeeInfo();
   })
-  .then(function() {
-    return [
-      rippleLib.getFee(),
-      rippleLib.getServerInfo()
-    ];
-  })
-  .spread(function(fee, info) {
+  .then(function(feeInfo) {
     // TODO: get recommended fee from server instead of doing number magic
-    singleSigTxFee = `${fee * 1 + 0.00001}`;
-    multiSigTxFee = `${fee * 3 + 0.00001}`;
-    ledgerVersion = info.validatedLedger.ledgerVersion;
+    const fee = feeInfo.xrpOpenLedgerFee;
+    const baseFactor = self.getBaseFactor();
+    singleSigTxFee = `${fee / baseFactor}`;
+    multiSigTxFee = `${fee * 3 / baseFactor}`;
+    ledgerVersion = feeInfo.height;
     return rippleLib.prepareSettings(rootAddress, {
       //
       signers: {

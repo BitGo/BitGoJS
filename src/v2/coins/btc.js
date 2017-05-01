@@ -9,11 +9,17 @@ var Btc = function() {
   // effectively, move the BaseCoin prototype one level away
   this.__proto__ = Btc.prototype;
   this.network = bitcoin.networks.bitcoin;
-  this.baseFactor = 1e8; // factor between base unit and smallest unit
 };
 
 Btc.prototype.__proto__ = BaseCoin.prototype;
 
+/**
+ * Returns the factor between the base unit and its smallest subdivison
+ * @return {number}
+ */
+Btc.prototype.getBaseFactor = function() {
+  return 1e8;
+};
 
 Btc.prototype.isValidAddress = function(address) {
   var addressDetails;

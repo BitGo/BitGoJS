@@ -9,10 +9,17 @@ var Rmg = function() {
   // effectively, move the BaseCoin prototype one level away
   this.__proto__ = Rmg.prototype;
   this.network = prova.networks.rmg;
-  this.baseFactor = 1e6; // factor between base unit and smallest unit
 };
 
 Rmg.prototype.__proto__ = BaseCoin.prototype;
+
+/**
+ * Returns the factor between the base unit and its smallest subdivison
+ * @return {number}
+ */
+Rmg.prototype.getBaseFactor = function() {
+  return 1e6;
+};
 
 Rmg.prototype.isValidAddress = function(address) {
   return prova.Address.validateBase58(address, this.network);
