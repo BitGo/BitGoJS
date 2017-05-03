@@ -992,7 +992,7 @@ BitGo.prototype.addAccessToken = function(params, callback) {
   // check non-string params
   if (params.duration) {
     if (typeof(params.duration) !== 'number' || params.duration < 0) {
-      throw new Error('duration must be greater than 0');
+      throw new Error('duration must be a non-negative number');
     }
   }
   if (params.ipRestrict) {
