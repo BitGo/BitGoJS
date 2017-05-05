@@ -64,6 +64,7 @@ describe('Access Token', function() {
       it('arguments', function() {
         assert.throws(function() { bitgo.addAccessToken({}, 'invalid'); });
         assert.throws(function() { bitgo.addAccessToken({}, function() {}); });
+
         assert.throws(function() {
           bitgo.addAccessToken({
             otp: bitgo.testUserOTP(),
@@ -73,8 +74,29 @@ describe('Access Token', function() {
       });
 
       it('fails to add without scope', function() {
-        var promise = bitgo.addAccessToken({otp: 'badToken', label: 'test token'});
-        return TestUtil.throws(promise, 'must supply scope for token');
+        assert.throws(function() {
+          bitgo.addAccessToken({
+            otp: bitgo.testUserOTP()
+          }, function() {});
+        });
+      });
+
+      it('fails to add with empty scope', function() {
+        assert.throws(function() {
+          bitgo.addAccessToken({
+            otp: bitgo.testUserOTP(),
+            scope: []
+          }, function() {});
+        });
+      });
+
+      it('fails to add with incorrect type of scope', function() {
+        assert.throws(function() {
+          bitgo.addAccessToken({
+            otp: bitgo.testUserOTP(),
+            scope: "notAnArray" 
+          }, function() {});
+        });
       });
 
       it('fails to add with invalid scope', function() {
@@ -85,13 +107,6 @@ describe('Access Token', function() {
       it('fails to add with bad otp', function() {
         var promise = bitgo.addAccessToken({otp: 'badToken', label: 'test token', scope:someScopes});
         return TestUtil.throws(promise, 'invalid');
-      });
-      it('fails without scope', function() {
-        var promise = bitgo.addAccessToken({
-          otp: 'badToken',
-          label: 'test token',
-        });
-        return TestUtil.throws(promise, 'must supply scope');
       });
     });
 

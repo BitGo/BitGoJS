@@ -967,6 +967,7 @@ BitGo.prototype.listAccessTokens = function(params, callback) {
 //    duration: <length of time in seconds the token will be valid for>
 //    ipRestrict: <array of IP address strings to whitelist>
 //    txValueLimit: <number of outgoing satoshis allowed on this token>
+//    scope: (required) <authorization scope of the requested token>
 // }
 // Returns:
 // {
@@ -1012,6 +1013,13 @@ BitGo.prototype.addAccessToken = function(params, callback) {
     if (params.txValueLimit < 0) {
       throw new Error('txValueLimit must be a non-negative number')
     }
+  }
+  if(params.scope && params.scope.length > 0) {
+    if(!_.isArray(params.scope)) {
+      throw new Error('scope must be an array');
+    } 
+  } else {
+      throw new Error('must specify scope for token')
   }
 
   var bitgo = this;
