@@ -125,72 +125,66 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
   let signedMasterDeactivationTx;
   let halfSignedDestinationTagTx;
 
-  let singleSigTxFee;
-  let multiSigTxFee;
-  let ledgerVersion; // one ledger every 5 seconds
-
   const self = this;
-
   const rippleLib = ripple();
-  // create cosigner-setting transaction
-  // specify the multisigners
-  return Q.fcall(function() {
-    return self.getFeeInfo();
-  })
+
+  return self.getFeeInfo()
   .then(function(feeInfo) {
     // TODO: get recommended fee from server instead of doing number magic
     const fee = feeInfo.xrpOpenLedgerFee;
-    const baseFactor = self.getBaseFactor();
-    singleSigTxFee = `${fee / baseFactor}`;
-    multiSigTxFee = `${fee * 3 / baseFactor}`;
-    ledgerVersion = feeInfo.height;
-    return rippleLib.prepareSettings(rootAddress, {
-      //
-      signers: {
-        threshold: 2,
-        weights: [
-          {
-            address: userAddress,
-            weight: 1
-          },
-          {
-            address: backupAddress,
-            weight: 1
-          },
-          {
-            address: bitgoAddress,
-            weight: 1
+    const ledgerVersion = feeInfo.height;
+    const multisigAssignmentTx = {
+      TransactionType: 'SignerListSet',
+      Account: rootAddress,
+      SignerQuorum: 2,
+      SignerEntries: [
+        {
+          SignerEntry: {
+            Account: userAddress,
+            SignerWeight: 1
           }
-        ]
-      }
-    }, {
-      sequence: 1,
-      fee: singleSigTxFee,
-      maxLedgerVersion: ledgerVersion + 10
-    });
-  })
-  .then(function(multisigAssignmentTx) {
-    signedMultisigAssignmentTx = rippleLib.signWithPrivateKey(multisigAssignmentTx.txJSON, privateKey.toString('hex'));
+        },
+        {
+          SignerEntry: {
+            Account: backupAddress,
+            SignerWeight: 1
+          }
+        },
+        {
+          SignerEntry: {
+            Account: bitgoAddress,
+            SignerWeight: 1
+          }
+        }
+      ],
+      Flags: 2147483648,
+      LastLedgerSequence: ledgerVersion + 10,
+      Fee: `${fee}`,
+      Sequence: 1
+    };
+    signedMultisigAssignmentTx = rippleLib.signWithPrivateKey(JSON.stringify(multisigAssignmentTx), privateKey.toString('hex'));
 
-    // sign transaction disabling master key
-    return rippleLib.prepareSettings(rootAddress, { disableMasterKey: true }, {
-      sequence: 2,
-      fee: singleSigTxFee,
-      maxLedgerVersion: ledgerVersion + 10
-    });
-  })
-  .then(function(masterDeactivationTx) {
-    signedMasterDeactivationTx = rippleLib.signWithPrivateKey(masterDeactivationTx.txJSON, privateKey.toString('hex'));
+    const masterDeactivationTx = {
+      TransactionType: 'AccountSet',
+      Account: rootAddress,
+      SetFlag: 4,
+      Flags: 2147483648,
+      LastLedgerSequence: ledgerVersion + 10,
+      Fee: `${fee}`,
+      Sequence: 2
+    };
+    signedMasterDeactivationTx = rippleLib.signWithPrivateKey(JSON.stringify(masterDeactivationTx), privateKey.toString('hex'));
 
-    // half-sign destination tag enforcement transaction
-    return rippleLib.prepareSettings(rootAddress, { requireDestinationTag: true }, {
-      sequence: 3,
-      fee: multiSigTxFee,
-      maxLedgerVersion: ledgerVersion + 10
-    });
-  })
-  .then(function(destinationTagTx) {
-    halfSignedDestinationTagTx = rippleLib.signWithPrivateKey(destinationTagTx.txJSON, userPrivateKey.toString('hex'), { signAs: userAddress });
+    const destinationTagTx = {
+      TransactionType: 'AccountSet',
+      Account: rootAddress,
+      SetFlag: 1,
+      Flags: 2147483648,
+      LastLedgerSequence: 1019193,
+      Fee: `${fee * 3}`,
+      Sequence: 3
+    };
+    halfSignedDestinationTagTx = rippleLib.signWithPrivateKey(JSON.stringify(destinationTagTx), userPrivateKey.toString('hex'), { signAs: userAddress });
 
     walletParams.rootPub = publicKey.toString('hex');
     walletParams.initializationTxs = {
