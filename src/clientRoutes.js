@@ -206,6 +206,13 @@ var handleV2GenerateWallet = function(req) {
   });
 };
 
+// handle sign transaction
+var handleV2SignTx = function(req) {
+  var bitgo = req.bitgo;
+  var coin = bitgo.coin(req.params.coin);
+  return coin.sign(req.body);
+};
+
 // handle send one
 var handleV2SendOne = function(req) {
   var bitgo = req.bitgo;
@@ -394,6 +401,9 @@ exports = module.exports = function(app, args) {
 
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleV2GenerateWallet, args));
+
+  // sign transaction
+  app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(args), promiseWrapper(handleV2SignTx, args));
 
   // send transaction
   app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(args), promiseWrapper(handleV2SendOne, args));
