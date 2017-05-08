@@ -105,6 +105,14 @@ Wallets.prototype.add = function(params, callback) {
   if (params.isCold) {
     walletParams.isCold = params.isCold;
   }
+  // Additional params needed for xrp
+  if (params.rootPub) {
+    walletParams.rootPub = params.rootPub;
+  }
+
+  if (params.initializationTxs) {
+    walletParams.initializationTxs = params.initializationTxs;
+  }
 
   if (params.disableTransactionNotifications) {
     walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
