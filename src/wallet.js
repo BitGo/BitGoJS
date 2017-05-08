@@ -347,12 +347,10 @@ Wallet.prototype.address = function(params, callback) {
   .nodeify(callback);
 };
 
-//
-// freeze
-// Freeze the wallet for a duration of choice, stopping BitGo from signing any transactions
-// Parameters include:
-//   limit:  the duration to freeze the wallet for in seconds, defaults to 3600
-//
+/**
+ * Freeze the wallet for a duration of choice, stopping BitGo from signing any transactions.
+ * @param {number} limit The duration to freeze the wallet for in seconds, defaults to 3600.
+ */
 Wallet.prototype.freeze = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
@@ -851,15 +849,13 @@ Wallet.prototype.sendTransaction = function(params, callback) {
   .nodeify(callback);
 };
 
-//
-// createShare
-// share the wallet with an existing BitGo user.
-// Parameters:
-//   user - the recipient, must have a corresponding user record in our database
-//   keychain - the keychain to be shared with the recipient
-//   permissions - the recipient's permissions if the share is accepted
-// Returns:
-//
+/**
+ * Share the wallet with an existing BitGo user.
+ * @param {string} user The recipient's user id, must have a corresponding user record in our database.
+ * @param {keychain} keychain The keychain to be shared with the recipient.
+ * @param {string} permissions A comma-separated value string that specifies the recipient's permissions if the share is accepted.
+ * @param {string} message The message to be used for this share.
+ */
 Wallet.prototype.createShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['user', 'permissions'], [], callback);

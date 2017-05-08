@@ -1151,10 +1151,11 @@ BitGo.prototype.me = function(params, callback) {
   return this.getUser({ id: 'me' }, callback);
 };
 
-//
-// unlock
-// Unlock the session by providing Authy OTP
-//
+/**
+ * Unlock the session by providing OTP
+ * @param {string} otp Required OTP code for the account.
+ * @param {number} duration Desired duration of the unlock in seconds (default=600, max=3600).
+ */
 BitGo.prototype.unlock = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['otp'], callback);
@@ -1191,10 +1192,10 @@ BitGo.prototype.session = function(params, callback) {
   .nodeify(callback);
 };
 
-//
-// sendOTP
-// Trigger a push/sms for the OTP code
-//
+/**
+ * Trigger a push/sms for the OTP code
+ * @param {boolean} forceSMS If set to true, will use SMS to send the OTP to the user even if they have other 2FA method set up.
+ */
 BitGo.prototype.sendOTP = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
@@ -1336,16 +1337,15 @@ BitGo.prototype.labels = function(params, callback) {
   .nodeify(callback);
 };
 
-//
-// estimateFee
-// Estimates approximate fee per kb needed for a tx to get into a block
-// Parameters include:
-//   numBlocks:  target blocks for the transaction to be confirmed
-//   maxFee: maximum fee willing to be paid (for safety)
-//   inputs: list of unspent txIds that have zero confirmations
-//   txSize: estimated transaction size in bytes
-//   cpfpAware: flag indicating fee should take into account CPFP
-//
+/** 
+* Estimates approximate fee per kb needed for a tx to get into a block
+* @param {number} numBlocks target blocks for the transaction to be confirmed
+* @param {number} maxFee maximum fee willing to be paid (for safety)
+* @param {array[string]} inputs list of unconfirmed txIds from which this transaction uses inputs
+* @param {number} txSize estimated transaction size in bytes
+* @param {boolean} cpfpAware flag indicating fee should take into account CPFP
+* @returns 
+*/
 BitGo.prototype.estimateFee = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
@@ -1430,10 +1430,10 @@ BitGo.prototype.getBitGoFeeAddress = function(params, callback) {
   .nodeify(callback);
 };
 
-//
-// getWalletAddress
-// Gets an address object (including the wallet id) given an address
-//
+/**
+ * Gets an address object (including the wallet id) for a given address.
+ * @param {string} address The address to look up.
+ */
 BitGo.prototype.getWalletAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
