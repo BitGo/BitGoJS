@@ -180,7 +180,7 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
       Account: rootAddress,
       SetFlag: 1,
       Flags: 2147483648,
-      LastLedgerSequence: 1019193,
+      LastLedgerSequence: ledgerVersion + 10,
       Fee: `${fee * 3}`,
       Sequence: 3
     };
