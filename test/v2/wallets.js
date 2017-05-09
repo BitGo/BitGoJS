@@ -144,6 +144,28 @@ describe('V2 Wallets:', function() {
         res.userKeychain.should.not.have.property('encryptedPrv');
       });
     });
+
+    it('should generate wallet and freeze it', function() {
+      var backupXpub = keychains.create().pub; // random xpub
+      var userXpub = keychains.create().pub; // random xpub
+      var params = {
+        label: label,
+        backupXpub: backupXpub,
+        userKey: userXpub
+      };
+
+      return bitgo.unlock({ otp: '0000000' })
+      .then(function(res) {
+        return wallets.generateWallet(params);
+      })
+      .then(function(res) {
+        return res.wallet.freeze({ otp: '0000000' });
+      })
+      .then(function(freeze) {
+        freeze.should.have.property('expires');
+        freeze.should.have.property('time');
+      });
+    });
   });
 
   describe('Add Wallet', function() {

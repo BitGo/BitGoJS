@@ -95,7 +95,28 @@ Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/unspents'))
+  return this.bitgo.get(this.url('/unspents'))
+  .result()
+  .nodeify(callback);
+};
+
+/**
+ * Freeze a given wallet
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.freeze = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  if (params.duration) {
+    if (typeof(params.duration) != 'number') {
+      throw new Error('invalid duration: should be number of seconds');
+    }
+  }
+
+  return this.bitgo.post(this.url('/freeze'))
   .result()
   .nodeify(callback);
 };
