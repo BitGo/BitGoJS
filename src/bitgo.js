@@ -305,7 +305,7 @@ var BitGo = function(params) {
             urlDetails = url.parse(req.url);
           }
 
-          var queryPath = urlDetails.path;
+          var queryPath = (urlDetails.query.length > 0) ? urlDetails.path : urlDetails.pathname;
           var timestamp = Date.now();
           var signatureSubject = [timestamp, queryPath, data].join('|');
 
@@ -342,7 +342,7 @@ var BitGo = function(params) {
 
         // verify the HMAC and timestamp
         var timestamp = response.headers.timestamp;
-        var queryPath = urlDetails.path;
+        var queryPath = (urlDetails.query.length > 0) ? urlDetails.path : urlDetails.pathname;
 
         var signatureSubject = [timestamp, queryPath, response.statusCode, response.text].join('|');
 
