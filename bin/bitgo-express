@@ -5,6 +5,7 @@ var fs = require('fs');
 var http = require('http');
 var https = require('https');
 var pjson = require('../package.json');
+var constants = require('constants');
 
 // Handle arguments
 var getArgs = function () {
@@ -102,10 +103,13 @@ if (args.keypath && args.crtpath) {
   // Run in SSL mode
   var privateKey  = fs.readFileSync(args.keypath, 'utf8');
   var certificate = fs.readFileSync(args.crtpath, 'utf8');
-  var credentials = {key: privateKey, cert: certificate};
   baseUri += "s";
 
-  server = https.createServer(credentials, app);
+  server = https.createServer({
+    secureOptions: constants.SSL_OP_NO_TLSv1,
+    key: privateKey,
+    cert: certificate
+  }, app);
 } else {
   server = http.createServer(app);
 }

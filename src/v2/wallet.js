@@ -65,7 +65,23 @@ Wallet.prototype.transactions = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
+  var query = {};
+  if (params.prevId) {
+    if (typeof(params.prevId) !== 'string') {
+      throw new Error('invalid prevId argument, expecting string');
+    }
+    query.prevId = params.prevId;
+  }
+
+  if (params.limit) {
+    if (typeof(params.limit) !== 'number') {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    query.limit = params.limit;
+  }
+  
   return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx'))
+  .query(query)
   .result()
   .nodeify(callback);
 };
@@ -80,7 +96,23 @@ Wallet.prototype.transfers = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
+  var query = {};
+  if (params.prevId) {
+    if (typeof(params.prevId) !== 'string') {
+      throw new Error('invalid prevId argument, expecting string');
+    }
+    query.prevId = params.prevId;
+  }
+
+  if (params.limit) {
+    if (typeof(params.limit) !== 'number') {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    query.limit = params.limit;
+  }
+
   return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer'))
+  .query(query)
   .result()
   .nodeify(callback);
 };
@@ -95,7 +127,23 @@ Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
+  var query = {};
+  if (params.prevId) {
+    if (typeof(params.prevId) !== 'string') {
+      throw new Error('invalid prevId argument, expecting string');
+    }
+    query.prevId = params.prevId;
+  }
+
+  if (params.limit) {
+    if (typeof(params.limit) !== 'number') {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    query.limit = params.limit;
+  }
+
   return this.bitgo.get(this.url('/unspents'))
+  .query(query)
   .result()
   .nodeify(callback);
 };
@@ -111,7 +159,7 @@ Wallet.prototype.freeze = function(params, callback) {
   common.validateParams(params, [], [], callback);
 
   if (params.duration) {
-    if (typeof(params.duration) != 'number') {
+    if (typeof(params.duration) !== 'number') {
       throw new Error('invalid duration: should be number of seconds');
     }
   }
@@ -154,22 +202,22 @@ Wallet.prototype.addresses = function(params, callback) {
   }
 
   if (params.prevId) {
-    if (typeof(params.prevId) != 'number') {
+    if (typeof(params.prevId) !== 'number') {
       throw new Error('invalid prevId argument, expecting number');
     }
     query.prevId = params.prevId;
   }
 
   if (params.sort) {
-    if (typeof(params.sort) != 'number') {
+    if (typeof(params.sort) !== 'number') {
       throw new Error('invalid sort argument, expecting number');
     }
     query.sort = params.sort;
   }
 
   if (params.limit) {
-    if (typeof(params.limit) != 'number') {
-      throw new Error('invalid sort argument, expecting number');
+    if (typeof(params.limit) !== 'number') {
+      throw new Error('invalid limit argument, expecting number');
     }
     query.limit = params.limit;
   }
@@ -203,8 +251,23 @@ Wallet.prototype.listWebhooks = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
+  var query = {};
+  if (params.prevId) {
+    if (typeof(params.prevId) !== 'string') {
+      throw new Error('invalid prevId argument, expecting string');
+    }
+    query.prevId = params.prevId;
+  }
+
+  if (params.limit) {
+    if (typeof(params.limit) !== 'number') {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    query.limit = params.limit;
+  }
+
   return this.bitgo.get(this.url('/webhooks'))
-  .send()
+  .query(query)
   .result()
   .nodeify(callback);
 };
@@ -323,16 +386,16 @@ Wallet.prototype.shareWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
 
-  if (params.reshare !== undefined && typeof(params.reshare) != 'boolean') {
+  if (params.reshare !== undefined && typeof(params.reshare) !== 'boolean') {
     throw new Error('Expected reshare to be a boolean.');
   }
 
-  if (params.skipKeychain !== undefined && typeof(params.skipKeychain) != 'boolean') {
+  if (params.skipKeychain !== undefined && typeof(params.skipKeychain) !== 'boolean') {
     throw new Error('Expected skipKeychain to be a boolean. ');
   }
   var needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
 
-  if (params.disableEmail !== undefined && typeof(params.disableEmail) != 'boolean') {
+  if (params.disableEmail !== undefined && typeof(params.disableEmail) !== 'boolean') {
     throw new Error('Expected disableEmail to be a boolean.');
   }
 
@@ -494,7 +557,7 @@ Wallet.prototype.send = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], ['message'], callback);
 
-  if (typeof(params.amount) != 'number') {
+  if (typeof(params.amount) !== 'number') {
     throw new Error('invalid argument for amount - number expected');
   }
 

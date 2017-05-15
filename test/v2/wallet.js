@@ -103,10 +103,31 @@ describe('V2 Wallet:', function() {
         firstTransaction.should.have.property('size');
       });
     });
+
+    it('transactions with limit', function() {
+      return wallet.transactions({ limit: 2 })
+      .then(function(transactions) {
+        transactions.should.have.property('coin');
+        transactions.should.have.property('transactions');
+        transactions.transactions.length.should.eql(2);
+        var firstTransaction = transactions.transactions[0];
+        firstTransaction.should.have.property('date');
+        firstTransaction.should.have.property('entries');
+        firstTransaction.should.have.property('fee');
+        firstTransaction.should.have.property('fromWallet');
+        firstTransaction.should.have.property('hex');
+        firstTransaction.should.have.property('id');
+        firstTransaction.should.have.property('inputIds');
+        firstTransaction.should.have.property('inputs');
+        firstTransaction.should.have.property('outputs');
+        firstTransaction.should.have.property('size');
+      });
+    });
   });
 
   describe('List Transfers', function() {
 
+    var thirdTransfer;
     it('transfers', function() {
       return wallet.transfers()
       .then(function(transfers) {
@@ -114,6 +135,25 @@ describe('V2 Wallet:', function() {
         transfers.should.have.property('count');
         transfers.should.have.property('transfers');
         transfers.transfers.length.should.be.greaterThan(0);
+        thirdTransfer = transfers.transfers[2];
+      });
+    });
+
+    it('transfers with limit and nextBatchPrevId', function() {
+      return wallet.transfers({ limit: 2 })
+      .then(function(transfers) {
+        transfers.should.have.property('coin');
+        transfers.should.have.property('count');
+        transfers.should.have.property('transfers');
+        transfers.transfers.length.should.eql(2);
+        return wallet.transfers({ prevId: transfers.nextBatchPrevId });
+      })
+      .then(function(transfers) {
+        transfers.should.have.property('coin');
+        transfers.should.have.property('count');
+        transfers.should.have.property('transfers');
+        transfers.transfers.length.should.be.greaterThan(0);
+        transfers.transfers[0].id.should.eql(thirdTransfer.id);
       });
     });
 

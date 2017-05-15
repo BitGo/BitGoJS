@@ -47,10 +47,16 @@ Wallets.prototype.list = function(params, callback) {
     queryObject.getbalances = params.getbalances;
   }
   if (params.prevId) {
-    if (typeof(params.prevId) !== 'number') {
-      throw new Error('invalid prevId argument, expecting number');
+    if (typeof(params.prevId) !== 'string') {
+      throw new Error('invalid prevId argument, expecting string');
     }
     queryObject.prevId = params.prevId;
+  }
+  if (params.limit) {
+    if (typeof(params.limit) !== 'number') {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    queryObject.limit = params.limit;
   }
 
   var self = this;
