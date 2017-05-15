@@ -12,7 +12,7 @@ exports.Environments = {
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
   },
-  rmg_prod: {
+  rmgProd: {
     uri: 'https://rmg.bitgo.com',
     networks: {
       btc: bitcoin.networks.bitcoin
@@ -34,7 +34,7 @@ exports.Environments = {
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
   },
-  rmg_staging: {
+  rmgStaging: {
     uri: 'https://rmgstaging.bitgo.com',
     networks: {
       btc: bitcoin.networks.bitcoin
@@ -56,7 +56,7 @@ exports.Environments = {
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
   },
-  rmg_test: {
+  rmgTest: {
     uri: 'https://rmgtest.bitgo.com',
     networks: {
       tbtc: bitcoin.networks.testnet
@@ -78,7 +78,7 @@ exports.Environments = {
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
   },
-  rmg_dev: {
+  rmgDev: {
     uri: 'https://rmgwebdev.bitgo.com',
     networks: {
       tbtc: bitcoin.networks.testnet
@@ -91,6 +91,17 @@ exports.Environments = {
   },
   local: {
     uri: 'http://localhost:3000',
+    networks: {
+      tbtc: bitcoin.networks.testnet
+    },
+    network: 'testnet',
+    ethNetwork: 'ethereum',
+    rmgNetwork: 'rmgTest',
+    signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
+  },
+  rmgLocal: {
+    uri: 'http://rmglocalhost:3000',
     networks: {
       tbtc: bitcoin.networks.testnet
     },
