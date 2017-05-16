@@ -26,6 +26,33 @@ describe('V2 Wallets:', function() {
     return bitgo.authenticateTestUser(bitgo.testUserOTP());
   });
 
+  describe('Per-coin tests', function() {
+    const coins = ['tbtc', 'txrp', 'teth'];
+
+    for (const currentCoin of coins){
+      let basecoin;
+      let wallets;
+
+      before(function() {
+        basecoin = bitgo.coin(currentCoin);
+        wallets = basecoin.wallets();
+      });
+
+      it(`generates ${currentCoin} wallet`, function() {
+        const params = {
+          label: `Test ${currentCoin} wallet`,
+          passphrase: 'yoplait'
+        };
+        return wallets.generateWallet(params)
+        .then(function(wallet) {
+          const walletObject = wallet.wallet;
+          walletObject._wallet.coin.should.equal(currentCoin);
+          console.log('here');
+        });
+      });
+    }
+  });
+
   describe('List', function() {
     it('arguments', function() {
       assert.throws(function() { wallets.list({}, 'invalid'); });
@@ -181,7 +208,7 @@ describe('V2 Wallets:', function() {
     });
 
     it('should add a wallet with pre generated keys', function() {
-      
+
       var userKeychain;
       var backupKeychain;
       var bitgoKeychain;
@@ -259,7 +286,7 @@ describe('V2 Wallets:', function() {
         wallet = currentWallet;
         return wallet.listWebhooks();
       })
-      .then(function(webhooks){
+      .then(function(webhooks) {
         webhooks.should.have.property('webhooks');
         count = webhooks.webhooks.length;
         return wallet.addWebhook({
@@ -276,14 +303,14 @@ describe('V2 Wallets:', function() {
         webhookId = webhook.id;
         return wallet.listWebhooks();
       })
-      .then(function(webhooks){
+      .then(function(webhooks) {
         webhooks.should.have.property('webhooks');
-        webhooks.webhooks.length.should.equal(count+1);
+        webhooks.webhooks.length.should.equal(count + 1);
         return wallet.simulateWebhook({
           webhookId: webhookId,
           txHash: 'e0119a0695efee3229978df74cbb066269890947d85c80ab630a4075b141b880'
         });
-      }).then(function(simulation){
+      }).then(function(simulation) {
         simulation.should.have.property('webhookNotifications');
         var notification = simulation.webhookNotifications[0];
         notification.url.should.equal('https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d');
@@ -299,7 +326,7 @@ describe('V2 Wallets:', function() {
         webhookRemoval.should.have.property('removed');
         return wallet.listWebhooks();
       })
-      .then(function(webhooks){
+      .then(function(webhooks) {
         webhooks.should.have.property('webhooks');
         webhooks.webhooks.length.should.equal(count);
       })
