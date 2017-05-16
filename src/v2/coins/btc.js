@@ -49,7 +49,7 @@ Btc.prototype.signTransaction = function(params) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
-  var keychain = bitcoin.HDNode.fromBase58(userPrv);
+  var keychain = bitcoin.HDNode.fromBase58(userPrv, this.network);
   var hdPath = bitcoin.hdPath(keychain);
 
   for (var index = 0; index < transaction.ins.length; ++index) {

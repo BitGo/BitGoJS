@@ -95,7 +95,7 @@ var deriveFast = function (hdnode, index) {
     return deriveFast(hdnode, index + 1);
   }
 
-  var keyPair = new bitcoin.ECPair(null, Ki, {network: hdnode.network});
+  var keyPair = new bitcoin.ECPair(null, Ki, { network: hdnode.keyPair.network });
   hd = new bitcoin.HDNode(keyPair, IR);
 
   hd.depth = hdnode.depth + 1;
@@ -163,7 +163,8 @@ bitcoin.hdPath = function(rootKey) {
   };
 
   var deriveKey = function(path) {
-    return this.derive(path).getKey();
+    var hdNode = this.derive(path);
+    return hdNode.keyPair;
   };
 
   return {
