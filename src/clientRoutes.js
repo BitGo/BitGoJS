@@ -365,12 +365,12 @@ var promiseWrapper = function(promiseRequestHandler, args) {
 
 exports = module.exports = function(app, args) {
   // auth
-  app.post('/api/v1/user/login', parseBody, prepareBitGo(args), promiseWrapper(handleLogin, args));
+  app.post('/api/v[12]/user/login', parseBody, prepareBitGo(args), promiseWrapper(handleLogin, args));
 
-  app.post('/api/v1/decrypt', parseBody, prepareBitGo(args), promiseWrapper(handleDecrypt, args));
-  app.post('/api/v1/encrypt', parseBody, prepareBitGo(args), promiseWrapper(handleEncrypt, args));
-  app.post('/api/v1/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleVerifyAddress, args));
-  app.post('/api/v1/calculateminerfeeinfo', parseBody, prepareBitGo(args), promiseWrapper(handleCalculateMinerFeeInfo, args));
+  app.post('/api/v[12]/decrypt', parseBody, prepareBitGo(args), promiseWrapper(handleDecrypt, args));
+  app.post('/api/v[12]/encrypt', parseBody, prepareBitGo(args), promiseWrapper(handleEncrypt, args));
+  app.post('/api/v[12]/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleVerifyAddress, args));
+  app.post('/api/v[12]/calculateminerfeeinfo', parseBody, prepareBitGo(args), promiseWrapper(handleCalculateMinerFeeInfo, args));
 
   app.post('/api/v1/keychain/local', parseBody, prepareBitGo(args), promiseWrapper(handleCreateLocalKeyChain, args));
   app.post('/api/v1/keychain/derive', parseBody, prepareBitGo(args), promiseWrapper(handleDeriveLocalKeyChain, args));
