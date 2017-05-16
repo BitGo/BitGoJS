@@ -42,6 +42,8 @@ BaseCoin.prototype.initializeCoin = function(coin) {
     coinInstances = {
       btc: require('./coins/btc'),
       tbtc: require('./coins/tbtc'),
+      ltc: require('./coins/ltc'),
+      tltc: require('./coins/tltc'),
       rmg: require('./coins/rmg'),
       trmg: require('./coins/trmg'),
       xrp: require('./coins/xrp'),
