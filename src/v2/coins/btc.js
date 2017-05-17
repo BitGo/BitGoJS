@@ -49,7 +49,7 @@ Btc.prototype.signTransaction = function(params) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
-  var keychain = bitcoin.HDNode.fromBase58(userPrv, this.network);
+  var keychain = bitcoin.HDNode.fromBase58(userPrv);
   var hdPath = bitcoin.hdPath(keychain);
 
   for (var index = 0; index < transaction.ins.length; ++index) {
@@ -57,7 +57,7 @@ Btc.prototype.signTransaction = function(params) {
     var privKey = hdPath.deriveKey(path);
 
     var subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
-    var txb = bitcoin.TransactionBuilder.fromTransaction(transaction, this.network);
+    var txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
     try {
       txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);
     } catch (e) {
