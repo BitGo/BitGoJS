@@ -39,7 +39,7 @@ Eth.prototype.getBaseFactor = function() {
  * @param address
  */
 Eth.prototype.isValidAddress = function(address) {
-  return true;
+  return ethUtil.isValidAddress(ethUtil.addHexPrefix(address));
 };
 
 const getOperationSha3ForExecuteAndConfirm = (recipients, expireTime, contractSequenceId) => {
