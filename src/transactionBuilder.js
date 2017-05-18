@@ -742,7 +742,7 @@ exports.signTransaction = function(params) {
         throw new Error('single key address used in input but feeSingleKeyWIF not provided');
       }
 
-      txb = bitcoin.TransactionBuilder.fromTransaction(transaction, bitcoin.getNetwork());
+      txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
       txb.sign(index, feeSingleKey);
       transaction = txb.buildIncomplete();
       continue;
@@ -762,7 +762,7 @@ exports.signTransaction = function(params) {
     // In order to sign with bitcoinjs-lib, we must use its transaction
     // builder, confusingly named the same exact thing as our transaction
     // builder, but with inequivalent behavior.
-    txb = bitcoin.TransactionBuilder.fromTransaction(transaction, bitcoin.getNetwork());
+    txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
     try {
       txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);
     } catch (e) {
