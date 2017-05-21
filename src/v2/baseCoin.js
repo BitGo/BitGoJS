@@ -1,4 +1,5 @@
 var Keychains;
+var PendingApprovals;
 var Wallet;
 var Wallets;
 var coinInstances;
@@ -33,6 +34,16 @@ var BaseCoin = function(bitgo, coin) {
     }
     return self.coinKeychains;
   };
+
+  this.pendingApprovals = function() {
+    if (!self.coinPendingApprovals) {
+      if (!PendingApprovals) {
+        PendingApprovals = require('./pendingApprovals');
+      }
+      self.coinPendingApprovals = new PendingApprovals(bitgo, this);
+    }
+    return self.coinPendingApprovals;
+  }
 
 };
 

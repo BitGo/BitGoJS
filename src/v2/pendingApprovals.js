@@ -20,10 +20,10 @@ PendingApprovals.prototype.list = function(params, callback) {
 
   var args = [];
   var queryParams = {};
-  if (typeof(params.walletId) == 'string') {
+  if (typeof(params.walletId) === 'string') {
     queryParams.walletId = params.walletId;
   }
-  if (typeof(params.enterpriseId) == 'string') {
+  if (typeof(params.enterpriseId) === 'string') {
     queryParams.enterprise = params.enterpriseId;
   }
 
