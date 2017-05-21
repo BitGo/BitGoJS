@@ -131,7 +131,7 @@ PendingApproval.prototype.get = function(params, callback) {
 PendingApproval.prototype.populateWallet = function() {
   var self = this;
   if (!self.wallet) {
-    return self.bitgo.wallets().get({ id: self.info().transactionRequest.sourceWallet })
+    return self.baseCoin.wallets().get({ id: self.info().transactionRequest.sourceWallet })
     .then(function(wallet) {
       if (!wallet) {
         throw new Error('unexpected - unable to get wallet using sourcewallet');
@@ -163,7 +163,15 @@ PendingApproval.prototype.approve = function(params, callback) {
   var self = this;
   return Q()
   .then(function() {
-    var approvalParams = { 'state': 'approved', 'otp': params.otp };
+    let txHex;
+    if(self.info && self.info().transactionRequest && self.info().transactionRequest.coinSpecific
+      && self.info().transactionRequest.coinSpecific[self.baseCoin.type]
+      && self.info().transactionRequest.coinSpecific[self.baseCoin.type].txHex) {
+      txHex = self.info().transactionRequest.coinSpecific[self.baseCoin.type].txHex;
+    } else {
+      throw new Error('missing txHex on pending approval');
+    }
+    var approvalParams = { txHex: txHex, 'state': 'approved', 'otp': params.otp };
     return self.bitgo.put(self.url())
     .send(approvalParams)
     .result()

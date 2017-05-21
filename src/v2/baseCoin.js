@@ -44,7 +44,6 @@ var BaseCoin = function(bitgo, coin) {
     }
     return self.coinPendingApprovals;
   }
-
 };
 
 BaseCoin.prototype.initializeCoin = function(coin) {
