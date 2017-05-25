@@ -105,8 +105,7 @@ Xrp.prototype.signTransaction = function(params) {
 Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
   const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
 
-  const userKey = prova.HDNode.fromBase58(userKeychain.prv).getKey();
-  const userPrivateKey = userKey.d.toBuffer();
+  const userKey = prova.HDNode.fromBase58(userKeychain.pub).getKey();
   const userAddress = rippleKeypairs.deriveAddress(userKey.getPublicKeyBuffer().toString('hex'));
 
   const backupKey = prova.HDNode.fromBase58(backupKeychain.pub).getKey();
@@ -123,7 +122,7 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
 
   let signedMultisigAssignmentTx;
   let signedMasterDeactivationTx;
-  let halfSignedDestinationTagTx;
+  let signedDestinationTagTx;
 
   const self = this;
   const rippleLib = ripple();
@@ -133,6 +132,8 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
     // TODO: get recommended fee from server instead of doing number magic
     const fee = feeInfo.xrpOpenLedgerFee;
     const ledgerVersion = feeInfo.height;
+
+    // configure multisigners
     const multisigAssignmentTx = {
       TransactionType: 'SignerListSet',
       Account: rootAddress,
@@ -164,6 +165,19 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
     };
     signedMultisigAssignmentTx = rippleLib.signWithPrivateKey(JSON.stringify(multisigAssignmentTx), privateKey.toString('hex'));
 
+    // enforce destination tags
+    const destinationTagTx = {
+      TransactionType: 'AccountSet',
+      Account: rootAddress,
+      SetFlag: 1,
+      Flags: 2147483648,
+      LastLedgerSequence: ledgerVersion + 10,
+      Fee: `${fee}`,
+      Sequence: 2
+    };
+    signedDestinationTagTx = rippleLib.signWithPrivateKey(JSON.stringify(destinationTagTx), privateKey.toString('hex'));
+
+    // disable master key
     const masterDeactivationTx = {
       TransactionType: 'AccountSet',
       Account: rootAddress,
@@ -171,26 +185,16 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
       Flags: 2147483648,
       LastLedgerSequence: ledgerVersion + 10,
       Fee: `${fee}`,
-      Sequence: 2
+      Sequence: 3
     };
     signedMasterDeactivationTx = rippleLib.signWithPrivateKey(JSON.stringify(masterDeactivationTx), privateKey.toString('hex'));
 
-    const destinationTagTx = {
-      TransactionType: 'AccountSet',
-      Account: rootAddress,
-      SetFlag: 1,
-      Flags: 2147483648,
-      LastLedgerSequence: ledgerVersion + 10,
-      Fee: `${fee * 3}`,
-      Sequence: 3
-    };
-    halfSignedDestinationTagTx = rippleLib.signWithPrivateKey(JSON.stringify(destinationTagTx), userPrivateKey.toString('hex'), { signAs: userAddress });
-
+    // extend the wallet initialization params
     walletParams.rootPub = publicKey.toString('hex');
     walletParams.initializationTxs = {
       setMultisig: signedMultisigAssignmentTx.signedTransaction,
       disableMasterKey: signedMasterDeactivationTx.signedTransaction,
-      forceDestinationTag: halfSignedDestinationTagTx.signedTransaction
+      forceDestinationTag: signedDestinationTagTx.signedTransaction
     };
     return walletParams;
   });
