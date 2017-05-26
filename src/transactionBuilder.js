@@ -222,7 +222,7 @@ exports.createTransaction = function(params) {
       .then(function(result) {
         var estimatedFeeRate = result.cpfpFeePerKb;
         if (estimatedFeeRate < constants.minFeeRate) {
-          console.log(new Date() + ': Error when estimating fee for send from ' + params.wallet + ', it was too low - ' + estimatedFeeRate);
+          console.log(new Date() + ': Error when estimating fee for send from ' + params.wallet.id() + ', it was too low - ' + estimatedFeeRate);
           feeRate = constants.minFeeRate;
         } else if (estimatedFeeRate > params.maxFeeRate) {
           feeRate = params.maxFeeRate;
@@ -239,7 +239,7 @@ exports.createTransaction = function(params) {
         else {
           // couldn't estimate the fee, proceed using the default
           feeRate = constants.fallbackFeeRate;
-          console.log("Error estimating fee for send from " + params.wallet + ": " + e.message);
+          console.log("Error estimating fee for send from " + params.wallet.id() + ": " + e.message);
           return Q();
         }
       });
