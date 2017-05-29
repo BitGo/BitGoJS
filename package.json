@@ -1,6 +1,6 @@
 {
   "name": "blake2b",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Blake2b (64-bit version) in pure Javascript",
   "main": "index.js",
   "dependencies": {},
@@ -14,9 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/emilbayes/blake2b.git"
   },
-  "keywords": [
-
-  ],
+  "keywords": [],
   "author": "Emil Bay <github@tixz.dk>",
   "license": "Proprietary",
   "bugs": {
