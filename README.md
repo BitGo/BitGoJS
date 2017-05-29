@@ -2,6 +2,16 @@
 
 > Blake2b (64-bit version) in pure Javascript
 
+This module is based on @dcposch
+[implementation of BLAKE2b](https://github.com/dcposch/blakejs), with some changes:
+
+* This module requires you to pass in a `out` buffer, saving an allocation
+* This module allows you to set the `salt` and `personal` parameters
+* This module exports constants for the parameters in libsodium style
+
+All credit goes to @dcposch for doing the hard work of porting the
+implementation from C to Javascript.
+
 ## Usage
 
 ```js
@@ -15,7 +25,37 @@ blake2b(output, input)
 
 ## API
 
-### `blake2b(out, input, [key], [salt], [personal])`
+### `blake2b(out, input, [key], [salt], [personal], [noAssert = false])`
+
+Hash `input` and write result to `out`, optionally with `key`, `salt` and
+`personal`. Bypass input assertions by setting `noAssert` to `true`.
+
+All parameters must be `Uint8Array`, `Buffer` or another object with a compatible
+API. All parameters must also fulfill the following constraints, or an
+`AssertionError` will be thrown (unless `noAssert = true`):
+
+* `out` must within the byte ranges defined by the constants below.
+* `input` can be any length, including `0`
+* `key` is optional, but must within the byte ranges defined by the constants
+   below, if given. This value must be kept secret, and can be used to create
+   prefix-MACs.
+* `salt` is optional, but must be exactly `SALTBYTES`, if given. You can use
+  this parameter as a kind of per user id, or local versioning scheme. This
+  value is not required to be secret.
+* `personal` is optional, but must be exactly `PERSONALBYTES`, if given. You can
+  use this parameter as a kind of app id, or global versioning scheme. This
+  value is not required to be secret.
+
+### Constants
+
+* `blake2b.BYTES_MIN` Minimum length of `out`
+* `blake2b.BYTES_MAX` Maximum length of `out`
+* `blake2b.BYTES` Recommended default length of `out`
+* `blake2b.KEYBYTES_MIN` Minimum length of `key`
+* `blake2b.KEYBYTES_MAX` Maximum length of `key`
+* `blake2b.KEYBYTES` Recommended default length of `key`
+* `blake2b.SALTBYTES` Required length of `salt`
+* `blake2b.PERSONALBYTES` Required length of `personal`
 
 ## Install
 
