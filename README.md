@@ -1,5 +1,7 @@
 # `blake2b`
 
+[![Build Status](https://travis-ci.org/emilbayes/blake2b.svg?branch=master)](https://travis-ci.org/emilbayes/blake2b)
+
 > Blake2b (64-bit version) in pure Javascript
 
 This module is based on @dcposch
