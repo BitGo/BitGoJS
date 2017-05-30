@@ -127,6 +127,37 @@ describe('Address', function() {
     });
   });
 
+  describe('Get Transaction By Input', function() {
+    it('arguments', function(done) {
+      assert.throws(function() { blockchain.getTransactionByInput('invalid', function() {}); });
+      assert.throws(function() { blockchain.getTransactionByInput({ 'txid': '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2' }, function() {}); });
+      assert.throws(function() { blockchain.getTransactionByInput({ 'vout': 999 }, function() {}); });
+      assert.throws(function() { blockchain.getTransactionByInput({ 'txid': '90411397fd43aa1e285a0c2b3ac8cb341f26805e14e69264dacf91801d9fd6e2', 'vout': 'asdf' }, function() {}); });
+      assert.throws(function() { blockchain.getTransactionByInput({}); });
+      assert.throws(function() { blockchain.getTransactionByInput({}, function() {}); });
+      done();
+    });
+
+    it('get', function(done) {
+      blockchain.getTransactionByInput({ txid: TEST_TRANSACTION, vout: 0 }, function(err, result) {
+        assert.equal(err, null);
+        result.should.have.property('transactions');
+        result.transactions.length.should.eql(1);
+        let transaction = result.transactions[0];
+        transaction.should.have.property('id');
+        transaction.should.have.property('date');
+        transaction.should.have.property('entries');
+        assert.equal(Array.isArray(transaction.entries), true);
+        assert.equal(transaction.entries.length, 3);
+        var transactionEntry = transaction.entries[0];
+        transactionEntry.should.have.property('account');
+        transactionEntry.should.have.property('value');
+
+        done();
+      });
+    });
+  });
+
   describe('Get Block', function() {
     it('arguments', function(done) {
       assert.throws(function() { blockchain.getBlock('invalid', function() {}); });

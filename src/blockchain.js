@@ -93,6 +93,25 @@ Blockchain.prototype.getTransaction = function(params, callback) {
 };
 
 //
+// Get transaction that spends a specific output
+// Fetch transaction details.
+//
+// Parameters include:
+//   txid: the transaction id of the output
+//   vout: the position of the output on the transaction that created it
+//
+Blockchain.prototype.getTransactionByInput = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['txid'], [], callback);
+  if (typeof(params.vout) != 'number') {
+    throw new Error('invalid vout - number expected');
+  }
+  return this.bitgo.get(this.bitgo.url("/tx/input/" + params.txid + "/" + params.vout))
+  .result()
+  .nodeify(callback);
+};
+
+//
 // Get block
 // Fetch block details.
 //
