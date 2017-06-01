@@ -196,7 +196,7 @@ PendingApproval.prototype.approve = function(params, callback) {
 
       return self.populateWallet()
       .then(function() {
-        return self.recreateAndSignTransaction();
+        return self.recreateAndSignTransaction(params);
       });
     }
   })
