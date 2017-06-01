@@ -140,7 +140,7 @@ PendingApproval.prototype.populateWallet = function() {
     });
   }
 
-  if (self.wallet.id() != self.info().transactionRequest.sourceWallet) {
+  if (self.wallet.id() !== self.info().transactionRequest.sourceWallet) {
     throw new Error('unexpected source wallet for pending approval');
   }
 
@@ -163,15 +163,50 @@ PendingApproval.prototype.approve = function(params, callback) {
   var self = this;
   return Q()
   .then(function() {
-    let txHex;
-    if(self.info && self.info().transactionRequest && self.info().transactionRequest.coinSpecific
+    if (self.type() === 'transactionRequest') {
+      /*
+      If this is a request for approving a transaction, depending on whether this user has a private key to the wallet
+      (some admins may not have the spend permission), the transaction could either be rebroadcast as is, or it could
+      be reconstructed. It is preferable to reconstruct a tx in order to adhere to the latest network conditions
+      such as newer unspents, different fees, or a higher sequence id
+       */
+      if (params.tx) {
+        // the approval tx was reconstructed and explicitly specified - pass it through
+        return {
+          txHex: params.tx
+        };
+      }
+
+      let transaction;
+      if (self.info && self.info().transactionRequest && self.info().transactionRequest.coinSpecific
       && self.info().transactionRequest.coinSpecific[self.baseCoin.type]
       && self.info().transactionRequest.coinSpecific[self.baseCoin.type].txHex) {
-      txHex = self.info().transactionRequest.coinSpecific[self.baseCoin.type].txHex;
-    } else {
-      throw new Error('missing txHex on pending approval');
+        transaction = self.info().transactionRequest.coinSpecific[self.baseCoin.type];
+      }
+
+      // this user may not have spending privileges or a passphrase may not have been passed in
+      if (!canRecreateTransaction) {
+        if (!transaction) {
+          throw new Error('missing txHex on pending approval');
+        }
+        return {
+          txHex: transaction.txHex
+        };
+      }
+
+      return self.populateWallet()
+      .then(function() {
+        return self.recreateAndSignTransaction();
+      });
     }
-    var approvalParams = { txHex: txHex, 'state': 'approved', 'otp': params.otp };
+  })
+  .then(function(transaction) {
+
+    var approvalParams = { 'state': 'approved', 'otp': params.otp };
+    if (transaction) {
+      // if in the previous instance, we recreated a transaction, we need to add its hex to the approval params
+      approvalParams.txHex = transaction.txHex;
+    }
     return self.bitgo.put(self.url())
     .send(approvalParams)
     .result()
@@ -211,6 +246,29 @@ PendingApproval.prototype.reject = function(params, callback) {
 //
 PendingApproval.prototype.cancel = function(params, callback) {
   return this.reject(params, callback);
+};
+
+/**
+ * Recreate a transaction for a pending approval to respond to updated network conditions
+ * @param params
+ */
+PendingApproval.prototype.recreateAndSignTransaction = function(params) {
+  params = _.extend({}, params);
+  common.validateParams(params, [], []);
+
+  // this method only makes sense with existing transaction requests
+  assert(this.info().transactionRequest);
+
+  // let's prebuild this transaction
+  var wallet = this.wallet;
+  var recipients = this.info().transactionRequest.recipients;
+  var txPrebuildPromise = this.wallet.prebuildTransaction({ recipients: recipients });
+  var userKeychainPromise = this.baseCoin.keychains().get({ id: wallet._wallet.keys[0] });
+  return Q.all([txPrebuildPromise, userKeychainPromise])
+  .spread(function(txPrebuild, userKeychain) {
+    var signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
+    return wallet.signTransaction(signingParams);
+  });
 };
 
 module.exports = PendingApproval;
