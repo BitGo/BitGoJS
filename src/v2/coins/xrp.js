@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const querystring = require('querystring');
 const ripple = require('../../ripple');
 const rippleAddressCodec = require('ripple-address-codec');
+const rippleBinaryCodec = require('ripple-binary-codec');
+const rippleHashes = require('ripple-hashes');
 const rippleKeypairs = require('ripple-keypairs');
 const url = require('url');
 const prova = require('../../prova');
@@ -198,6 +200,38 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
     };
     return walletParams;
   });
+};
+
+/**
+ * Explain/parse transaction
+ * @param params
+ * - txHex: hexadecimal representation of transaction
+ * @returns {{displayOrder: [string,string,string,string,string], id: *, outputs: Array, changeOutputs: Array}}
+ */
+Xrp.prototype.explainTransaction = function(params) {
+  var transaction = rippleBinaryCodec.decode(params.txHex);
+  var id = rippleHashes.computeBinaryTransactionHash(params.txHex);
+  var changeAmount = 0;
+  var explanation = {
+    displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
+    id: id,
+    outputs: [],
+    changeOutputs: []
+  };
+  explanation.outputs = [{
+    address: transaction.Destination + ((transaction.DestinationTag >= 0) ? '?dt=' + transaction.DestinationTag : ''),
+    amount: transaction.Amount
+  }];
+  const spendAmount = transaction.Amount;
+  explanation.outputAmount = spendAmount;
+  explanation.changeAmount = changeAmount;
+
+  // add fee info if available
+  if (params.feeInfo) {
+    explanation.displayOrder.push('fee');
+    explanation.fee = params.feeInfo;
+  }
+  return explanation;
 };
 
 module.exports = Xrp;
