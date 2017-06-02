@@ -27,7 +27,7 @@ describe('V2 Wallets:', function() {
   });
 
   describe('Per-coin tests', function() {
-    const coins = ['tbtc', 'txrp', 'teth'];
+    const coins = ['tbtc', 'txrp', 'teth', 'tltc', 'trmg'];
 
     for (const currentCoin of coins){
       let basecoin;
@@ -47,7 +47,6 @@ describe('V2 Wallets:', function() {
         .then(function(wallet) {
           const walletObject = wallet.wallet;
           walletObject._wallet.coin.should.equal(currentCoin);
-          console.log('here');
         });
       });
     }
