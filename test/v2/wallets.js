@@ -204,6 +204,32 @@ describe('V2 Wallets:', function() {
       assert.throws(function() {wallets.add();});
       assert.throws(function() {wallets.add('invalid');});
       assert.throws(function() {wallets.add({}, 0);});
+      assert.throws(function() {wallets.add({
+        keys: [],
+        m: 'bad',
+        n: 3
+      }, 0);});
+
+      assert.throws(function() {wallets.add({
+        keys: [],
+        m: 1,
+        n: 3
+      }, 0);});
+
+      assert.throws(function() {wallets.add({
+        keys: [],
+        m: 2,
+        n: 3,
+        tags: 'bad arg'
+      }, 0);});
+
+      assert.throws(function() {wallets.add({
+        keys: [],
+        m: 2,
+        n: 3,
+        tags: [],
+        clientFlags: 'bad arg'
+      }, 0);});
     });
 
     it('should add a wallet with pre generated keys', function() {

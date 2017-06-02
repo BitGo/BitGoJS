@@ -87,12 +87,24 @@ Wallets.prototype.add = function(params, callback) {
   common.validateParams(params, [], ['label', 'enterprise'], callback);
 
   if (Array.isArray(params.keys) === false || typeof(params.m) !== 'number' ||
-    typeof(params.n) != 'number') {
+    typeof(params.n) !== 'number') {
     throw new Error('invalid argument');
   }
 
+  if (params.tags && Array.isArray(params.tags) === false) {
+    throw new Error('invalid argument for tags - array expected');
+  }
+
+  if (params.clientFlags && Array.isArray(params.clientFlags) === false) {
+    throw new Error('invalid argument for clientFlags - array expected');
+  }
+
+  if (params.isCold && typeof(params.isCold) !== 'boolean') {
+    throw new Error('invalid argument for isCold - boolean expected');
+  }
+
   // TODO: support more types of multisig
-  if (params.m != 2 || params.n != 3) {
+  if (params.m !== 2 || params.n !== 3) {
     throw new Error('unsupported multi-sig type');
   }
 
@@ -111,6 +123,15 @@ Wallets.prototype.add = function(params, callback) {
   if (params.isCold) {
     walletParams.isCold = params.isCold;
   }
+
+  if(params.tags) {
+    walletParams.tags = params.tags;
+  }
+
+  if(params.clientFlags) {
+    walletParams.clientFlags = params.clientFlags;
+  }
+
   // Additional params needed for xrp
   if (params.rootPub) {
     walletParams.rootPub = params.rootPub;
@@ -123,10 +144,11 @@ Wallets.prototype.add = function(params, callback) {
   if (params.disableTransactionNotifications) {
     walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
   }
+
   return self.bitgo.post(self.baseCoin.url('/wallet')).send(walletParams).result()
   .then(function(newWallet) {
     return {
-      wallet: new self.coinWallet(self.bitgo, self.baseCoin, newWallet)  
+      wallet: new self.coinWallet(self.bitgo, self.baseCoin, newWallet)
     };
   })
   .nodeify(callback);
