@@ -1223,6 +1223,159 @@ describe('Wallet API', function() {
         });
       });
 
+      it('uses all unspents passed into method', function() {
+        // Attempt to spend the full balance without any fees.
+
+        var walletmock = Object.create(wallet1);
+
+        // prepare the mock
+        return wallet1.unspentsPaged(arguments)
+          .then(function(unspents) {
+            // it's ascending by default, but we need it to be descending
+            var sortedUnspents = _.reverse(_.sortBy(unspents.unspents, 'value'));
+
+            // limit the amount to no more than 15 unspents
+            var filteredArray = _.take(sortedUnspents, 15);
+
+            unspents.total = filteredArray.length;
+            unspents.count = filteredArray.length;
+            unspents.unspents = filteredArray;
+            walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
+
+            walletmock.unspentsPaged = function() {
+              return Q.fcall(function() {
+                return unspents;
+              });
+            };
+          })
+          .then(function() {
+            var recipients = {};
+            recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance();
+            return TransactionBuilder.createTransaction({
+              wallet: walletmock,
+              recipients: recipients,
+              fee: 0,
+              minConfirms: 0,
+              bitgoFee: { amount: 0, address: 'foo' }
+            })
+          })
+          .then(function(result) {
+            result.fee.should.equal(0);
+            result.changeAddresses.length.should.equal(0);
+            result.bitgoFee.amount.should.equal(0);
+          });
+      });
+
+      it('ok', function() {
+        var recipients = [];
+        recipients.push({ address: 'n3Eii3DYh5z3SMzWiq7ZVS43bQLvuArsd4', script: '76a914ee40c53bd6f0dcc34f024b6dd13803db2bc8beba88ac', amount: 0.01 * 1e8 });
+        recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
+        return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients })
+          .then(function(result) {
+            result.should.have.property('unspents');
+            result.txInfo.nP2PKHInputs.should.equal(15);
+            result.should.have.property('fee');
+            result.should.have.property('feeRate');
+            result.walletId.should.equal(wallet1.id());
+          });
+      });
+
+      it('Filter uneconomic unspents test, no feerate set', function() {
+        // prepare the mock
+        var walletmock = Object.create(wallet1);
+        var countLowInputs = 0;
+        return wallet1.unspentsPaged(arguments)
+          .then(function(unspents) {
+
+            // limit the amount to no more than 15 unspents
+            var filteredArray = _.take(unspents.unspents, 15);
+            unspents.count = filteredArray.length;
+            unspents.unspents = filteredArray;
+            // mock a very low unspent value
+            var mockedValue = unspents.unspents[2].value;
+            unspents.unspents[2].value = 10;
+            walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
+
+            for(i = 0; i < unspents.count; i++) {
+              // count the number of inputs that are below 1 sat/Byte
+              if(unspents.unspents[i].value <= 1000 * 295 / 1000){
+                countLowInputs++;
+              }
+            }
+            countLowInputs.should.be.above(0);
+
+            // mock the unspentsPaged call to return an unspent with a very low value
+            walletmock.unspentsPaged = function() {
+              return Q.fcall(function() {
+                should.equal(unspents.count, 15);
+                return unspents;
+              });
+            };
+          })
+          .then(function() {
+            var recipients = {};
+            // Spend the complete wallet balance minus some for fees.
+            recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance() - 120000;
+            return TransactionBuilder.createTransaction({
+              wallet: walletmock,
+              recipients: recipients,
+              minConfirms: 1
+            });
+          })
+          .then(function(result) {
+            // several inputs are below fee cost to add them and should be pruned
+            result.txInfo.nP2SHInputs.should.equal(15-1);
+          });
+      });
+
+      it('Filter uneconomic unspents test, given feerate', function() {
+        // prepare the mock
+        var walletmock = Object.create(wallet1);
+        var countLowInputs = 0;
+        return wallet1.unspentsPaged(arguments)
+          .then(function(unspents) {
+
+            // limit the amount to no more than 15 unspents
+            var filteredArray = _.take(unspents.unspents, 15);
+            unspents.count = filteredArray.length;
+            unspents.unspents = filteredArray;
+            // mock a very low unspent value
+            unspents.unspents[2].value = 10;
+            walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
+
+
+            for(i = 0; i < unspents.count; i++) {
+              if(unspents.unspents[i].value <= 1000 * 295 / 1000){
+                countLowInputs++;
+              }
+            }
+
+            countLowInputs.should.be.above(0);
+
+            walletmock.unspentsPaged = function() {
+              return Q.fcall(function() {
+                should.equal(unspents.count, 15);
+                return unspents;
+              });
+            };
+          })
+          .then(function() {
+            var recipients = {};
+            // Spend the complete wallet balance minus some for fees.
+            recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance() - 120000;
+            return TransactionBuilder.createTransaction({
+              wallet: walletmock,
+              recipients: recipients,
+              feeRate: 1000,
+              minConfirms: 1
+            });
+          })
+          .then(function(result) {
+            // several inputs are below fee cost to add them and should be pruned
+            result.txInfo.nP2SHInputs.should.equal(15 - 1);
+          });
+      });
+
       it('no change required', function() {
         // Attempt to spend the full balance without any fees.
 

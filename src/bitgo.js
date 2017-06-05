@@ -1342,7 +1342,7 @@ BitGo.prototype.labels = function(params, callback) {
 * @param {number} numBlocks target blocks for the transaction to be confirmed
 * @param {number} maxFee maximum fee willing to be paid (for safety)
 * @param {array[string]} inputs list of unconfirmed txIds from which this transaction uses inputs
-* @param {number} txSize estimated transaction size in bytes
+* @param {number} txSize estimated transaction size in bytes, optional parameter used for CPFP estimation.
 * @param {boolean} cpfpAware flag indicating fee should take into account CPFP
 * @returns 
 */
