@@ -640,13 +640,15 @@ var estimateTransactionSize = function(params) {
     throw new Error('expecting positive nOutputs');
   }
 
-  var sizePerP2SHInput = 295;
-  var sizePerP2PKHInput = 160;
-  var sizePerOutput = 34;
+  const sizePerP2SHInput = 295;
+  const sizePerP2PKHInput = 160;
+  const sizePerOutput = 34;
+  const sizeForTXOverhead = 10;
 
   var estimatedSize = sizePerP2SHInput * params.nP2SHInputs +
     sizePerP2PKHInput * (params.nP2PKHInputs || 0) +
-    sizePerOutput * params.nOutputs;
+    sizePerOutput * params.nOutputs +
+    sizeForTXOverhead;
 
   return estimatedSize;
 };

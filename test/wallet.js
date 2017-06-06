@@ -1394,7 +1394,7 @@ describe('Wallet API', function() {
           var feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
-          assert.equal(feeUsed, 1506540);
+          assert.equal(feeUsed, 1506740);
         });
       });
 
