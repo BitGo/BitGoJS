@@ -227,7 +227,7 @@ function blake2bUpdate (ctx, input) {
 
 // Completes a BLAKE2b streaming hash
 // Returns a Uint8Array containing the message digest
-function blake2bFinal (out, ctx) {
+function blake2bFinal (ctx, out) {
   ctx.t += ctx.c // mark last block offset
 
   while (ctx.c < 128) { // fill up with zeros
@@ -256,7 +256,41 @@ module.exports = function blake2b (out, input, key, salt, personal, noAssert) {
   // do the math
   var ctx = blake2bInit(out.length, key, salt, personal)
   blake2bUpdate(ctx, input)
-  return blake2bFinal(out, ctx)
+  return blake2bFinal(ctx, out)
+}
+
+module.exports.instance = function instance (outlen, key, salt, personal, noAssert) {
+  if (noAssert !== true) {
+    assert(outlen >= BYTES_MIN)
+    assert(outlen <= BYTES_MAX)
+    assert(key == null ? true : key.length >= KEYBYTES_MIN)
+    assert(key == null ? true : key.length <= KEYBYTES_MAX)
+    assert(salt == null ? true : salt.length === SALTBYTES)
+    assert(personal == null ? true : personal.length === PERSONALBYTES)
+  }
+
+  var ctx = blake2bInit(outlen, key, salt, personal)
+  var finalised = false
+
+  return {
+    update: function (input) {
+      if (finalised === true) throw new Error('hash has been finalised')
+      if (noAssert !== true) {
+        assert(input != null)
+      }
+
+      blake2bUpdate(ctx, input)
+    },
+    final: function (out) {
+      if (noAssert !== true) {
+        assert(out != null)
+        assert(out.length === outlen)
+      }
+
+      finalised = true
+      return blake2bFinal(ctx, out)
+    }
+  }
 }
 
 var BYTES_MIN = module.exports.BYTES_MIN = 16

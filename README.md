@@ -48,6 +48,23 @@ API. All parameters must also fulfill the following constraints, or an
   use this parameter as a kind of app id, or global versioning scheme. This
   value is not required to be secret.
 
+### `var instance = blake2b.instance(outlen, [key], [salt], [personal], [noAssert = false])`
+
+Like the above method, but allows your to update the hash as you can access more
+data. `noAssert` will also disable asserts in `.update` and `.final` methods.
+Note that `outlen` should be a number, and that you pass the `Buffer` in the
+`.final` method
+
+### `instance.update(input)`
+
+Update the hash with new `input`. Calling this method after `.final` will throw
+an error.
+
+### `instance.final(out)`
+
+Finalise the the hash and write the digest to `out`. `out` must be exactly equal
+to `outlen` given in the `.instance` method.
+
 ### Constants
 
 * `blake2b.BYTES_MIN` Minimum length of `out`

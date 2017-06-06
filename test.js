@@ -34,6 +34,64 @@ test('works with buffers', function (assert) {
   assert.end()
 })
 
+test('streaming', function (t) {
+  var isntance = blake2b.instance(blake2b.BYTES)
+  var buf = new Buffer('Hej, Verden')
+
+  for (var i = 0; i < 10; i++) isntance.update(buf)
+
+  var out = Buffer.alloc(blake2b.BYTES)
+  isntance.final(out)
+
+  t.same(out.toString('hex'), 'cbc20f347f5dfe37dc13231cbf7eaa4ec48e585ec055a96839b213f62bd8ce00', 'streaming hash')
+  t.end()
+})
+
+test('streaming with key', function (t) {
+  var key = Buffer.alloc(blake2b.KEYBYTES)
+  key.fill('lo')
+
+  var instance = blake2b.instance(blake2b.BYTES, key)
+  var buf = new Buffer('Hej, Verden')
+
+  for (var i = 0; i < 10; i++) instance.update(buf)
+
+  var out = Buffer.alloc(blake2b.BYTES)
+  instance.final(out)
+
+  t.same(out.toString('hex'), '405f14acbeeb30396b8030f78e6a84bab0acf08cb1376aa200a500f669f675dc', 'streaming keyed hash')
+  t.end()
+})
+
+test('streaming with hash length', function (t) {
+  var isntance = blake2b.instance(blake2b.BYTES_MIN)
+  var buf = new Buffer('Hej, Verden')
+
+  for (var i = 0; i < 10; i++) isntance.update(buf)
+
+  var out = Buffer.alloc(blake2b.BYTES_MIN)
+  isntance.final(out)
+
+  t.same(out.toString('hex'), 'decacdcc3c61948c79d9f8dee5b6aa99', 'streaming short hash')
+  t.end()
+})
+
+test('streaming with key and hash length', function (t) {
+  var key = Buffer.alloc(blake2b.KEYBYTES)
+  key.fill('lo')
+
+  var instance = blake2b.instance(blake2b.BYTES_MIN, key)
+  var buf = new Buffer('Hej, Verden')
+
+  for (var i = 0; i < 10; i++) instance.update(buf)
+
+  var out = Buffer.alloc(blake2b.BYTES_MIN)
+  instance.final(out)
+
+  t.same(out.toString('hex'), 'fb43f0ab6872cbfd39ec4f8a1bc6fb37', 'streaming short keyed hash')
+  t.end()
+})
+
 function hexWrite (buf, string) {
   // must be an even number of digits
   var strLen = string.length
