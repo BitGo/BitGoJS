@@ -27,7 +27,7 @@ blake2b(output, input)
 
 ## API
 
-### `blake2b(out, input, [key], [salt], [personal], [noAssert = false])`
+### `var out = blake2b(out, input, [key], [salt], [personal], [noAssert = false])`
 
 Hash `input` and write result to `out`, optionally with `key`, `salt` and
 `personal`. Bypass input assertions by setting `noAssert` to `true`.
@@ -55,12 +55,12 @@ data. `noAssert` will also disable asserts in `.update` and `.final` methods.
 Note that `outlen` should be a number, and that you pass the `Buffer` in the
 `.final` method
 
-### `instance.update(input)`
+### `var instance = instance.update(input)`
 
 Update the hash with new `input`. Calling this method after `.final` will throw
 an error.
 
-### `instance.final(out)`
+### `var out = instance.final(out)`
 
 Finalise the the hash and write the digest to `out`. `out` must be exactly equal
 to `outlen` given in the `.instance` method.

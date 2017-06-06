@@ -280,6 +280,7 @@ module.exports.instance = function instance (outlen, key, salt, personal, noAsse
       }
 
       blake2bUpdate(ctx, input)
+      return this
     },
     final: function (out) {
       if (noAssert !== true) {
