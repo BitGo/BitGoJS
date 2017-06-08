@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -74,7 +74,7 @@
     "create-hmac": "~1.1.4",
     "ecurve": "~1.0.2",
     "eol": "0.5.0",
-    "express": "~4.11.1",
+    "express": "~4.15.3",
     "http-proxy": "1.11.1",
     "lodash": "4.13.1",
     "minimist": "0.2.0",
