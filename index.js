@@ -90,5 +90,3 @@ function toUint8Array (s) {
 function charCodeAt (c) {
   return c.charCodeAt(0)
 }
-
-window.Blake2b = module.exports
