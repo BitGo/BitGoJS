@@ -21,9 +21,9 @@ blake2b.ready(function (err) {
   if (err) throw err
 
   var hash = blake2b()
-    .update(new Buffer('hello')) // pass in a buffer or uint8array
-    .update(new Buffer(' '))
-    .update(new Buffer('world'))
+    .update(Buffer.from('hello')) // pass in a buffer or uint8array
+    .update(Buffer.from(' '))
+    .update(Buffer.from('world'))
     .digest('hex')
 
   console.log('Blake2b hash of "hello world" is %s', hash)
