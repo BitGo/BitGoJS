@@ -7,7 +7,9 @@
     "brfs": "^1.4.3"
   },
   "devDependencies": {
-    "browserify": "^14.4.0"
+    "blake2b": "^1.2.0",
+    "browserify": "^14.4.0",
+    "tape": "^4.6.3"
   },
   "browserify": {
     "transform": [
@@ -16,7 +18,8 @@
   },
   "scripts": {
     "compile": "wast2wasm blake2b.wat -o blake2b.wasm",
-    "demo": "browserify example.js > bundle.js"
+    "demo": "browserify example.js > bundle.js",
+    "test": "tape tape.js"
   },
   "repository": {
     "type": "git",

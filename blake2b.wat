@@ -5,33 +5,35 @@
   (func (export "blake2b_init") (param $ptr i32) (param $outlen i32)
     ;; setup param block (expect memory to be cleared)
 
-    ;; 1 byte outlen.
-    (i32.store8 (i32.const 0) (get_local $outlen))
-
-    ;; 1 byte keylen.
-    (i32.store8 (i32.const 1) (i32.const 0))
-
-    ;; 1 byte fanout.
-    (i32.store8 (i32.const 2) (i32.const 1))
-
-    ;; 1 byte depth.
-    (i32.store8 (i32.const 3) (i32.const 1))
-
-    ;; init the hash
-
     ;; b array: 0-128
+    (i64.store (get_local $ptr) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 8)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 16)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 24)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 32)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 40)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 48)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 56)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 64)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 72)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 80)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 88)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 96)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 104)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 112)) (i64.const 0))
+    (i64.store (i32.add (get_local $ptr) (i32.const 120)) (i64.const 0))
 
     ;; h array: 128-192, (8 * i64)
     ;; TODO: support xor against param block and stuff, for now just xor against length
 
     (i64.store (i32.add (get_local $ptr) (i32.const 128)) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.load (i32.const 0))))
-    (i64.store (i32.add (get_local $ptr) (i32.const 136)) (i64.const 0xbb67ae8584caa73b))
-    (i64.store (i32.add (get_local $ptr) (i32.const 144)) (i64.const 0x3c6ef372fe94f82b))
-    (i64.store (i32.add (get_local $ptr) (i32.const 152)) (i64.const 0xa54ff53a5f1d36f1))
-    (i64.store (i32.add (get_local $ptr) (i32.const 160)) (i64.const 0x510e527fade682d1))
-    (i64.store (i32.add (get_local $ptr) (i32.const 168)) (i64.const 0x9b05688c2b3e6c1f))
-    (i64.store (i32.add (get_local $ptr) (i32.const 176)) (i64.const 0x1f83d9abfb41bd6b))
-    (i64.store (i32.add (get_local $ptr) (i32.const 184)) (i64.const 0x5be0cd19137e2179))
+    (i64.store (i32.add (get_local $ptr) (i32.const 136)) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.load (i32.const 8))))
+    (i64.store (i32.add (get_local $ptr) (i32.const 144)) (i64.xor (i64.const 0x3c6ef372fe94f82b) (i64.load (i32.const 16))))
+    (i64.store (i32.add (get_local $ptr) (i32.const 152)) (i64.xor (i64.const 0xa54ff53a5f1d36f1) (i64.load (i32.const 24))))
+    (i64.store (i32.add (get_local $ptr) (i32.const 160)) (i64.xor (i64.const 0x510e527fade682d1) (i64.load (i32.const 32))))
+    (i64.store (i32.add (get_local $ptr) (i32.const 168)) (i64.xor (i64.const 0x9b05688c2b3e6c1f) (i64.load (i32.const 40))))
+    (i64.store (i32.add (get_local $ptr) (i32.const 176)) (i64.xor (i64.const 0x1f83d9abfb41bd6b) (i64.load (i32.const 48))))
+    (i64.store (i32.add (get_local $ptr) (i32.const 184)) (i64.xor (i64.const 0x5be0cd19137e2179) (i64.load (i32.const 56))))
 
     ;; t int.64: 192-200
     (i64.store (i32.add (get_local $ptr) (i32.const 192)) (i64.const 0))

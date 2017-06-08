@@ -9,8 +9,8 @@ var freeList = []
 
 module.exports = Blake2b
 
-function Blake2b () {
-  if (!(this instanceof Blake2b)) return new Blake2b()
+function Blake2b (digestLength, key, salt, personal) {
+  if (!(this instanceof Blake2b)) return new Blake2b(digestLength, key, salt, personal)
   if (!mod) throw new Error('WASM not loaded. Wait for Blake2b.ready(cb)')
 
   if (!freeList.length) {
@@ -18,9 +18,26 @@ function Blake2b () {
     head += 216
   }
 
+  this.digestLength = digestLength || 32
   this.finalized = false
   this.pointer = freeList.pop()
-  mod.blake2b_init(this.pointer, 32)
+
+  memory.fill(0, 0, 64)
+  memory[0] = this.digestLength
+  memory[1] = key ? key.length : 0
+  memory[2] = 1 // fanout
+  memory[3] = 1 // depth
+
+  if (salt) memory.set(salt, 32)
+  if (personal) memory.set(personal, 48)
+
+  mod.blake2b_init(this.pointer, this.digestLength)
+
+  if (key) {
+    this.update(key)
+    memory.fill(0, head, head + key.length) // whiteout key
+    memory[this.pointer + 200] = 128
+  }
 }
 
 Blake2b.prototype.ready = Blake2b.ready
@@ -40,10 +57,18 @@ Blake2b.prototype.digest = function (enc) {
   freeList.push(this.pointer)
   mod.blake2b_final(this.pointer)
 
-  if (!enc || enc === 'binary') return memory.slice(this.pointer + 128, this.pointer + 128 + 32)
-  if (enc === 'hex') return hexSlice(memory, this.pointer + 128, 32)
+  if (!enc || enc === 'binary') {
+    return memory.slice(this.pointer + 128, this.pointer + 128 + this.digestLength)
+  }
 
-  for (var i = 0; i < 32; i++) enc[i] = memory[this.pointer + 128 + i]
+  if (enc === 'hex') {
+    return hexSlice(memory, this.pointer + 128, this.digestLength)
+  }
+
+  for (var i = 0; i < this.digestLength; i++) {
+    enc[i] = memory[this.pointer + 128 + i]
+  }
+
   return enc
 }
 
