@@ -32,9 +32,9 @@ blake2b.ready(function (err) {
 
 ## API
 
-#### `var hash = blake2b()`
+#### `var hash = blake2b([digestLength], [key], [salt], [personal])`
 
-Create a new hash instance
+Create a new hash instance. `digestLength` defaults to `32`.
 
 #### `hash.update(data)`
 
