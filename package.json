@@ -19,7 +19,7 @@
   "scripts": {
     "compile": "wast2wasm blake2b.wat -o blake2b.wasm",
     "demo": "browserify example.js > bundle.js",
-    "test": "tape tape.js"
+    "test": "tape test.js"
   },
   "repository": {
     "type": "git",
