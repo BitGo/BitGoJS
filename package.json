@@ -1,6 +1,6 @@
 {
   "name": "blake2b-wasm",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Blake2b implemented in WASM",
   "main": "index.js",
   "dependencies": {
