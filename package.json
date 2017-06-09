@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -80,7 +80,7 @@
     "minimist": "0.2.0",
     "moment": "~2.18.1",
     "morgan": "1.5.3",
-    "prova-lib": "0.1.0",
+    "prova-lib": "0.2.3",
     "q": "1.1.2",
     "ripple-lib": "~0.17.7",
     "sanitize-html": "1.13.0",
