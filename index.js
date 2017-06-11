@@ -224,6 +224,8 @@ Blake2b.prototype.digest = function (out) {
   return buf
 }
 
+Blake2b.prototype.digest = Blake2b.prototype.final
+
 Blake2b.ready = function (cb) {
   b2wasm.ready(function () {
     cb() // ignore the error
