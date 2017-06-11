@@ -4,6 +4,7 @@
   "description": "Blake2b implemented in WASM",
   "main": "index.js",
   "dependencies": {
+    "base64-to-uint8array": "^1.0.0",
     "brfs": "^1.4.3",
     "nanoassert": "^1.0.0"
   },

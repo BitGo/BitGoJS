@@ -1,5 +1,6 @@
 var fs = require('fs')
 var assert = require('nanoassert')
+var toUint8Array = require('base64-to-uint8array')
 var buf = toUint8Array(fs.readFileSync(__dirname + '/blake2b.wasm', 'base64'))
 var rdy
 
@@ -126,16 +127,4 @@ function toHex (n) {
 function setup (w) {
   mod = w.instance.exports
   memory = new Uint8Array(w.instance.exports.memory.buffer)
-}
-
-function toUint8Array (s) {
-  if (typeof atob === 'function') {
-    return new Uint8Array(atob(s).split('').map(charCodeAt))
-  }
-  var b = require('buf' + 'fer')
-  return new b.Buffer(s, 'base64')
-}
-
-function charCodeAt (c) {
-  return c.charCodeAt(0)
 }
