@@ -211,12 +211,14 @@ function Blake2b (outlen, key, salt, personal) {
 }
 
 Blake2b.prototype.update = function (input) {
+  assert(input != null, 'input must be Uint8Array or Buffer')
   blake2bUpdate(this, input)
   return this
 }
 
 Blake2b.prototype.digest = function (out) {
   var buf = (!out || out === 'binary' || out === 'hex') ? new Uint8Array(this.outlen) : out
+  assert(buf.length >= this.outlen, 'out must have at least outlen bytes of space')
   blake2bFinal(this, buf)
   if (out === 'hex') return hexSlice(buf)
   return buf
