@@ -53,7 +53,7 @@ blake2b.ready(function () {
       var salt = vector.salt && Buffer.from(vector.salt, 'hex')
       var personal = vector.personal && Buffer.from(vector.personal, 'hex')
 
-      var hash = blake2b(vector.outlen, key, salt, personal)
+      var hash = blake2b(vector.outlen, key, salt, personal, true)
         .update(Buffer.from(vector.input, 'hex'))
         .digest('hex')
 

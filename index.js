@@ -19,8 +19,10 @@ var SALTBYTES = module.exports.SALTBYTES = 16
 var PERSONALBYTES = module.exports.PERSONALBYTES = 16
 
 function Blake2b (digestLength, key, salt, personal, noAssert) {
-  if (!(this instanceof Blake2b)) return new Blake2b(digestLength, key, salt, personal)
+  if (!(this instanceof Blake2b)) return new Blake2b(digestLength, key, salt, personal, noAssert)
   if (!mod) throw new Error('WASM not loaded. Wait for Blake2b.ready(cb)')
+  if (!digestLength) digestLength = 32
+
   if (noAssert !== true) {
     assert(digestLength >= BYTES_MIN, 'digestLength must be at least ' + BYTES_MIN + ', was given ' + digestLength)
     assert(digestLength <= BYTES_MAX, 'digestLength must be at most ' + BYTES_MAX + ', was given ' + digestLength)
@@ -35,7 +37,7 @@ function Blake2b (digestLength, key, salt, personal, noAssert) {
     head += 216
   }
 
-  this.digestLength = digestLength || 32
+  this.digestLength = digestLength
   this.finalized = false
   this.pointer = freeList.pop()
 

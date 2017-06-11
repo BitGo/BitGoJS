@@ -44,6 +44,11 @@ Update the hash with a new piece of data. `data` should be a buffer or uint8arra
 
 Digest the hash.
 
+#### `var promise = blake2b.ready([cb])`
+
+Wait for the WASM code to load. Returns the WebAssembly instance promise as well for convenience.
+You have to call this at least once before instantiating the hash.
+
 ## Browser demo
 
 There is a browser example included in [example.html](example.html) and [example.js](example.js).
