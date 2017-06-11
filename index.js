@@ -1,4 +1,4 @@
-var assert = require('assert')
+var assert = require('nanoassert')
 var b2wasm = require('blake2b-wasm')
 
 // 64-bit unsigned addition
@@ -272,12 +272,12 @@ var Proto = Blake2b
 
 module.exports = function createHash (outlen, key, salt, personal, noAssert) {
   if (noAssert !== true) {
-    assert(outlen >= BYTES_MIN)
-    assert(outlen <= BYTES_MAX)
-    assert(key == null ? true : key.length >= KEYBYTES_MIN)
-    assert(key == null ? true : key.length <= KEYBYTES_MAX)
-    assert(salt == null ? true : salt.length === SALTBYTES)
-    assert(personal == null ? true : personal.length === PERSONALBYTES)
+    assert(outlen >= BYTES_MIN, 'outlen must be at least ' + BYTES_MIN + ', was given ' + outlen)
+    assert(outlen <= BYTES_MAX, 'outlen must be at most ' + BYTES_MAX + ', was given ' + outlen)
+    if (key != null) assert(key.length >= KEYBYTES_MIN, 'key must be at least ' + KEYBYTES_MIN + ', was given ' + key.length)
+    if (key != null) assert(key.length <= KEYBYTES_MAX, 'key must be at least ' + KEYBYTES_MAX + ', was given ' + key.length)
+    if (salt != null) assert(salt.length === SALTBYTES, 'salt must be exactly ' + SALTBYTES + ', was given ' + salt.length)
+    if (personal != null) assert(personal.length === PERSONALBYTES, 'personal must be exactly ' + PERSONALBYTES + ', was given ' + personal.length)
   }
 
   return new Proto(outlen, key, salt, personal)
