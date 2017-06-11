@@ -1,4 +1,5 @@
 var assert = require('assert')
+var b2wasm = require('blake2b-wasm')
 
 // 64-bit unsigned addition
 // Sets v[a,a+1] += v[b,b+1]
@@ -177,17 +178,16 @@ var parameter_block = new Uint8Array([
 // Creates a BLAKE2b hashing context
 // Requires an output length between 1 and 64 bytes
 // Takes an optional Uint8Array key
-function blake2bInit (outlen, key, salt, personal) {
+function Blake2b (outlen, key, salt, personal) {
   // zero out parameter_block before usage
   parameter_block.fill(0)
   // state, 'param block'
-  var ctx = {
-    b: new Uint8Array(128),
-    h: new Uint32Array(16),
-    t: 0, // input count
-    c: 0, // pointer within buffer
-    outlen: outlen // output length in bytes
-  }
+
+  this.b = new Uint8Array(128)
+  this.h = new Uint32Array(16)
+  this.t = 0 // input count
+  this.c = 0 // pointer within buffer
+  this.outlen = outlen // output length in bytes
 
   parameter_block[0] = outlen
   if (key) parameter_block[1] = key.length
@@ -199,17 +199,33 @@ function blake2bInit (outlen, key, salt, personal) {
 
   // initialize hash state
   for (var i = 0; i < 16; i++) {
-    ctx.h[i] = BLAKE2B_IV32[i] ^ B2B_GET32(parameter_block, i * 4)
+    this.h[i] = BLAKE2B_IV32[i] ^ B2B_GET32(parameter_block, i * 4)
   }
 
   // key the hash, if applicable
   if (key) {
-    blake2bUpdate(ctx, key)
+    blake2bUpdate(this, key)
     // at the end
-    ctx.c = 128
+    this.c = 128
   }
+}
 
-  return ctx
+Blake2b.prototype.update = function (input) {
+  blake2bUpdate(this, input)
+  return this
+}
+
+Blake2b.prototype.digest = function (out) {
+  var buf = (!out || out === 'binary' || out === 'hex') ? new Uint8Array(this.outlen) : out
+  blake2bFinal(this, buf)
+  if (out === 'hex') return hexSlice(buf)
+  return buf
+}
+
+Blake2b.ready = function (cb) {
+  b2wasm.ready(function () {
+    cb() // ignore the error
+  })
 }
 
 // Updates a BLAKE2b streaming hash
@@ -241,25 +257,20 @@ function blake2bFinal (ctx, out) {
   return out
 }
 
-module.exports = function blake2b (out, input, key, salt, personal, noAssert) {
-  if (noAssert !== true) {
-    assert(out != null)
-    assert(out.length >= BYTES_MIN)
-    assert(out.length <= BYTES_MAX)
-    assert(input != null)
-    assert(key == null ? true : key.length >= KEYBYTES_MIN)
-    assert(key == null ? true : key.length <= KEYBYTES_MAX)
-    assert(salt == null ? true : salt.length === SALTBYTES)
-    assert(personal == null ? true : personal.length === PERSONALBYTES)
-  }
-
-  // do the math
-  var ctx = blake2bInit(out.length, key, salt, personal)
-  blake2bUpdate(ctx, input)
-  return blake2bFinal(ctx, out)
+function hexSlice (buf) {
+  var str = ''
+  for (var i = 0; i < buf.length; i++) str += toHex(buf[i])
+  return str
 }
 
-module.exports.instance = function instance (outlen, key, salt, personal, noAssert) {
+function toHex (n) {
+  if (n < 16) return '0' + n.toString(16)
+  return n.toString(16)
+}
+
+var Proto = Blake2b
+
+module.exports = function createHash (outlen, key, salt, personal, noAssert) {
   if (noAssert !== true) {
     assert(outlen >= BYTES_MIN)
     assert(outlen <= BYTES_MAX)
@@ -269,30 +280,17 @@ module.exports.instance = function instance (outlen, key, salt, personal, noAsse
     assert(personal == null ? true : personal.length === PERSONALBYTES)
   }
 
-  var ctx = blake2bInit(outlen, key, salt, personal)
-  var finalised = false
-
-  return {
-    update: function (input) {
-      if (finalised === true) throw new Error('hash has been finalised')
-      if (noAssert !== true) {
-        assert(input != null)
-      }
-
-      blake2bUpdate(ctx, input)
-      return this
-    },
-    final: function (out) {
-      if (noAssert !== true) {
-        assert(out != null)
-        assert(out.length === outlen)
-      }
-
-      finalised = true
-      return blake2bFinal(ctx, out)
-    }
-  }
+  return new Proto(outlen, key, salt, personal)
 }
+
+module.exports.ready = function (cb) {
+  b2wasm.ready(function () { // ignore errors
+    cb()
+  })
+}
+
+module.exports.WASM_SUPPORTED = b2wasm.SUPPORTED
+module.exports.WASM_LOADED = false
 
 var BYTES_MIN = module.exports.BYTES_MIN = 16
 var BYTES_MAX = module.exports.BYTES_MAX = 64
@@ -302,3 +300,10 @@ var KEYBYTES_MAX = module.exports.KEYBYTES_MAX = 64
 var KEYBYTES = module.exports.KEYBYTES = 32
 var SALTBYTES = module.exports.SALTBYTES = 16
 var PERSONALBYTES = module.exports.PERSONALBYTES = 16
+
+b2wasm.ready(function (err) {
+  if (!err) {
+    module.exports.WASM_LOADED = true
+    Proto = b2wasm
+  }
+})

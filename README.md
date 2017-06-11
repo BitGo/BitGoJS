@@ -10,6 +10,7 @@ This module is based on @dcposch
 * This module requires you to pass in a `out` buffer, saving an allocation
 * This module allows you to set the `salt` and `personal` parameters
 * This module exports constants for the parameters in libsodium style
+* Uses a WASM version (where it is supported) for massive performance boosts
 
 All credit goes to @dcposch for doing the hard work of porting the
 implementation from C to Javascript.
@@ -27,17 +28,16 @@ blake2b(output, input)
 
 ## API
 
-### `var out = blake2b(out, input, [key], [salt], [personal], [noAssert = false])`
+### `var hash = blake2b(outLength, [key], [salt], [personal], [noAssert = false])`
 
-Hash `input` and write result to `out`, optionally with `key`, `salt` and
+Create a new hash instance, optionally with `key`, `salt` and
 `personal`. Bypass input assertions by setting `noAssert` to `true`.
 
 All parameters must be `Uint8Array`, `Buffer` or another object with a compatible
 API. All parameters must also fulfill the following constraints, or an
 `AssertionError` will be thrown (unless `noAssert = true`):
 
-* `out` must within the byte ranges defined by the constants below.
-* `input` can be any length, including `0`
+* `outLength` must within the byte ranges defined by the constants below.
 * `key` is optional, but must within the byte ranges defined by the constants
    below, if given. This value must be kept secret, and can be used to create
    prefix-MACs.
@@ -48,22 +48,18 @@ API. All parameters must also fulfill the following constraints, or an
   use this parameter as a kind of app id, or global versioning scheme. This
   value is not required to be secret.
 
-### `var instance = blake2b.instance(outlen, [key], [salt], [personal], [noAssert = false])`
+### `var hash = hash.update(input)`
 
-Like the above method, but allows your to update the hash as you can access more
-data. `noAssert` will also disable asserts in `.update` and `.final` methods.
-Note that `outlen` should be a number, and that you pass the `Buffer` in the
-`.final` method
-
-### `var instance = instance.update(input)`
-
-Update the hash with new `input`. Calling this method after `.final` will throw
+Update the hash with new `input`. Calling this method after `.digest` will throw
 an error.
 
-### `var out = instance.final(out)`
+### `var out = hash.digest(out)`
 
 Finalise the the hash and write the digest to `out`. `out` must be exactly equal
-to `outlen` given in the `.instance` method.
+to `outLength` given in the `blake2b` method.
+
+Optionally you can pass `hex` to get the hash as a hex string or no arguments
+to have the hash return a new Uint8Array with the hash.
 
 ### Constants
 
