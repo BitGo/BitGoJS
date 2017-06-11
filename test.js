@@ -1,5 +1,5 @@
 var test = require('tape')
-var blake2b = require('.')
+var blake2b = require('./')
 var vectors = require('./test-vectors.json')
 
 setup()
