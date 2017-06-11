@@ -4,7 +4,8 @@
   "description": "Blake2b implemented in WASM",
   "main": "index.js",
   "dependencies": {
-    "brfs": "^1.4.3"
+    "brfs": "^1.4.3",
+    "nanoassert": "^1.0.0"
   },
   "devDependencies": {
     "blake2b": "^1.2.0",

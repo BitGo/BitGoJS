@@ -62,4 +62,3 @@ blake2b.ready(function () {
     })
   })
 })
-

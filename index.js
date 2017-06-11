@@ -1,4 +1,5 @@
 var fs = require('fs')
+var assert = require('nanoassert')
 var buf = toUint8Array(fs.readFileSync(__dirname + '/blake2b.wasm', 'base64'))
 var rdy
 
@@ -8,10 +9,26 @@ var memory = null
 var freeList = []
 
 module.exports = Blake2b
+var BYTES_MIN = module.exports.BYTES_MIN = 16
+var BYTES_MAX = module.exports.BYTES_MAX = 64
+var BYTES = module.exports.BYTES = 32
+var KEYBYTES_MIN = module.exports.KEYBYTES_MIN = 16
+var KEYBYTES_MAX = module.exports.KEYBYTES_MAX = 64
+var KEYBYTES = module.exports.KEYBYTES = 32
+var SALTBYTES = module.exports.SALTBYTES = 16
+var PERSONALBYTES = module.exports.PERSONALBYTES = 16
 
-function Blake2b (digestLength, key, salt, personal) {
+function Blake2b (digestLength, key, salt, personal, noAssert) {
   if (!(this instanceof Blake2b)) return new Blake2b(digestLength, key, salt, personal)
   if (!mod) throw new Error('WASM not loaded. Wait for Blake2b.ready(cb)')
+  if (noAssert !== true) {
+    assert(digestLength >= BYTES_MIN, 'digestLength must be at least ' + BYTES_MIN + ', was given ' + digestLength)
+    assert(digestLength <= BYTES_MAX, 'digestLength must be at most ' + BYTES_MAX + ', was given ' + digestLength)
+    if (key != null) assert(key.length >= KEYBYTES_MIN, 'key must be at least ' + KEYBYTES_MIN + ', was given ' + key.length)
+    if (key != null) assert(key.length <= KEYBYTES_MAX, 'key must be at least ' + KEYBYTES_MAX + ', was given ' + key.length)
+    if (salt != null) assert(salt.length === SALTBYTES, 'salt must be exactly ' + SALTBYTES + ', was given ' + salt.length)
+    if (personal != null) assert(personal.length === PERSONALBYTES, 'personal must be exactly ' + PERSONALBYTES + ', was given ' + personal.length)
+  }
 
   if (!freeList.length) {
     freeList.push(head)
@@ -43,7 +60,8 @@ function Blake2b (digestLength, key, salt, personal) {
 Blake2b.prototype.ready = Blake2b.ready
 
 Blake2b.prototype.update = function (input) {
-  if (this.finalized) throw new Error('Hash instance finalized')
+  assert(this.finalized === false, 'Hash instance finalized')
+  assert(input, 'input must be TypedArray or Buffer')
 
   memory.set(input, head)
   mod.blake2b_update(this.pointer, head, head + input.length)
@@ -51,7 +69,7 @@ Blake2b.prototype.update = function (input) {
 }
 
 Blake2b.prototype.digest = function (enc) {
-  if (this.finalized) throw new Error('Hash instance finalized')
+  assert(this.finalized === false, 'Hash instance finalized')
   this.finalized = true
 
   freeList.push(this.pointer)
@@ -65,12 +83,16 @@ Blake2b.prototype.digest = function (enc) {
     return hexSlice(memory, this.pointer + 128, this.digestLength)
   }
 
+  assert(enc.length >= this.digestLength, 'input must be TypedArray or Buffer')
   for (var i = 0; i < this.digestLength; i++) {
     enc[i] = memory[this.pointer + 128 + i]
   }
 
   return enc
 }
+
+// libsodium compat
+Blake2b.prototype.final = Blake2b.prototype.digest
 
 Blake2b.WASM = buf
 Blake2b.SUPPORTED = typeof WebAssembly !== 'undefined'
