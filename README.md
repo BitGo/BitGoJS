@@ -90,4 +90,4 @@ against the spec and other implementations:
 
 ## License
 
-[ISC](LICENSE.md)
+[ISC](LICENSE)

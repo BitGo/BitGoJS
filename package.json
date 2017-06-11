@@ -22,7 +22,7 @@
   },
   "keywords": [],
   "author": "Emil Bay <github@tixz.dk>",
-  "license": "Proprietary",
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/emilbayes/blake2b/issues"
   },
