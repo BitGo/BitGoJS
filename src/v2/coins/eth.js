@@ -34,6 +34,13 @@ Eth.prototype.getBaseFactor = function() {
   return '1000000000000000000';
 };
 
+Eth.prototype.getChain = function() {
+  return 'eth';
+};
+Eth.prototype.getCurrency = function() {
+  return 'eth';
+};
+
 /**
  * Evaluates whether an address string is valid for this coin
  * @param address

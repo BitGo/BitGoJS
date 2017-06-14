@@ -215,7 +215,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
       return self.baseCoin.keychains().createBackup({
         provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
         disableKRSEmail: params.disableKRSEmail,
-        type: self.baseCoin.chain
+        type: null
       });
     }
 
@@ -260,6 +260,10 @@ Wallets.prototype.generateWallet = function(params, callback) {
 
     if (params.disableTransactionNotifications) {
       walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
+    }
+
+    if (self.baseCoin.getCurrency() === 'xrp' && params.rootPrivateKey) {
+      walletParams.rootPrivateKey = params.rootPrivateKey;
     }
 
     const keychains = {

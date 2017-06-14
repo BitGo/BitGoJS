@@ -21,6 +21,13 @@ Rmg.prototype.getBaseFactor = function() {
   return 1e6;
 };
 
+Rmg.prototype.getChain = function() {
+  return 'rmg';
+};
+Rmg.prototype.getCurrency = function() {
+  return 'rmg';
+};
+
 Rmg.prototype.isValidAddress = function(address) {
   return prova.Address.validateBase58(address, this.network);
 };

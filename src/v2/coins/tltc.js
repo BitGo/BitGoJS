@@ -24,4 +24,8 @@ var Tltc = function() {
 
 Tltc.prototype.__proto__ = Ltc.prototype;
 
+Tltc.prototype.getChain = function() {
+  return 'tltc';
+};
+
 module.exports = Tltc;

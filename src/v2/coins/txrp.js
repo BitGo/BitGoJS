@@ -10,4 +10,8 @@ var Txrp = function() {
 
 Txrp.prototype.__proto__ = Xrp.prototype;
 
+Txrp.prototype.getChain = function() {
+  return 'txrp';
+};
+
 module.exports = Txrp;

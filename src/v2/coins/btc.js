@@ -21,6 +21,13 @@ Btc.prototype.getBaseFactor = function() {
   return 1e8;
 };
 
+Btc.prototype.getChain = function() {
+  return 'btc';
+};
+Btc.prototype.getCurrency = function() {
+  return 'btc';
+};
+
 Btc.prototype.isValidAddress = function(address) {
   var addressDetails;
   try {

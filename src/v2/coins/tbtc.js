@@ -12,4 +12,8 @@ var Tbtc = function() {
 
 Tbtc.prototype.__proto__ = Btc.prototype;
 
+Tbtc.prototype.getChain = function() {
+  return 'tbtc';
+};
+
 module.exports = Tbtc;

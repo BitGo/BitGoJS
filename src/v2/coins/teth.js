@@ -9,4 +9,8 @@ var Teth = function() {
 
 Teth.prototype.__proto__ = Eth.prototype;
 
+Teth.prototype.getChain = function() {
+  return 'teth';
+};
+
 module.exports = Teth;

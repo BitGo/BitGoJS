@@ -12,4 +12,8 @@ var Trmg = function() {
 
 Trmg.prototype.__proto__ = Rmg.prototype;
 
+Trmg.prototype.getChain = function() {
+  return 'trmg';
+};
+
 module.exports = Trmg;

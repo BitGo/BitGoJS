@@ -30,6 +30,13 @@ Xrp.prototype.getBaseFactor = function() {
   return 1e6;
 };
 
+Xrp.prototype.getChain = function() {
+  return 'xrp';
+};
+Xrp.prototype.getCurrency = function() {
+  return 'xrp';
+};
+
 /**
  * Evaluates whether an address string is valid for this coin
  * @param address
@@ -101,6 +108,7 @@ Xrp.prototype.signTransaction = function(params) {
  * Ripple requires additional parameters for wallet generation to be sent to the server. The additional parameters are
  * the root public key, which is the basis of the root address, two signed, and one half-signed initialization txs
  * @param walletParams
+ * - rootPrivateKey: optional hex-encoded Ripple private key
  * @param keychains
  * @return {*|Request|Promise.<TResult>|{anyOf}}
  */
@@ -117,9 +125,16 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
   const bitgoAddress = rippleKeypairs.deriveAddress(bitgoKey.getPublicKeyBuffer().toString('hex'));
 
   // initially, we need to generate a random root address which has to be distinct from all three keychains
-  const keyPair = prova.ECPair.makeRandom();
-  const publicKey = keyPair.getPublicKeyBuffer();
+  let keyPair = prova.ECPair.makeRandom();
+  if (walletParams.rootPrivateKey) {
+    const rootPrivateKey = walletParams.rootPrivateKey;
+    if (typeof rootPrivateKey !== 'string' || rootPrivateKey.length !== 64) {
+      throw new Error('rootPrivateKey needs to be a hexadecimal private key string')
+    }
+    keyPair = prova.ECPair.fromPrivateKeyBuffer(Buffer.from(walletParams.rootPrivateKey, 'hex'));
+  }
   const privateKey = keyPair.getPrivateKeyBuffer();
+  const publicKey = keyPair.getPublicKeyBuffer();
   const rootAddress = rippleKeypairs.deriveAddress(publicKey.toString('hex'));
 
   let signedMultisigAssignmentTx;

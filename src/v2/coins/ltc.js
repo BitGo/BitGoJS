@@ -24,4 +24,11 @@ var Ltc = function() {
 
 Ltc.prototype.__proto__ = Btc.prototype;
 
+Ltc.prototype.getChain = function() {
+  return 'ltc';
+};
+Ltc.prototype.getCurrency = function() {
+  return 'ltc';
+};
+
 module.exports = Ltc;
