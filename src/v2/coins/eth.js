@@ -37,7 +37,7 @@ Eth.prototype.getBaseFactor = function() {
 Eth.prototype.getChain = function() {
   return 'eth';
 };
-Eth.prototype.getCurrency = function() {
+Eth.prototype.getFamily = function() {
   return 'eth';
 };
 

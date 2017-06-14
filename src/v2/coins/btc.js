@@ -24,19 +24,28 @@ Btc.prototype.getBaseFactor = function() {
 Btc.prototype.getChain = function() {
   return 'btc';
 };
-Btc.prototype.getCurrency = function() {
+Btc.prototype.getFamily = function() {
   return 'btc';
 };
 
-Btc.prototype.isValidAddress = function(address) {
-  var addressDetails;
+Btc.prototype.isValidAddress = function(address, forceAltScriptSupport) {
+  const validVersions = [
+    this.network.pubKeyHash,
+    this.network.scriptHash,
+  ];
+  if (this.altScriptHash && (forceAltScriptSupport || this.supportAltScriptDestination)) {
+    validVersions.push(this.altScriptHash);
+  }
+
+  let addressDetails;
   try {
     addressDetails = bitcoin.address.fromBase58Check(address);
   } catch (e) {
     return false;
   }
 
-  return addressDetails.version === this.network.pubKeyHash || addressDetails.version === this.network.scriptHash;
+  // the address version needs to be among the valid ones
+  return validVersions.indexOf(addressDetails.version) !== -1;
 };
 
 /**

@@ -33,7 +33,7 @@ Xrp.prototype.getBaseFactor = function() {
 Xrp.prototype.getChain = function() {
   return 'xrp';
 };
-Xrp.prototype.getCurrency = function() {
+Xrp.prototype.getFamily = function() {
   return 'xrp';
 };
 

@@ -1,4 +1,5 @@
 var Ltc = require('./ltc');
+var bitcoin = require('bitcoinjs-lib');
 var _ = require('lodash');
 
 var Tltc = function() {
@@ -20,6 +21,9 @@ var Tltc = function() {
     dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
     feePerKb: 100000 // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
   };
+  this.altScriptHash = bitcoin.networks.testnet.scriptHash;
+  // support alt destinations on test
+  this.supportAltScriptDestination = false;
 };
 
 Tltc.prototype.__proto__ = Ltc.prototype;

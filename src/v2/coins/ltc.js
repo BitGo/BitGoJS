@@ -20,6 +20,9 @@ var Ltc = function() {
     dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
     feePerKb: 100000 // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
   };
+  this.altScriptHash = bitcoin.networks.litecoin.scriptHash;
+  // do not support alt destinations in prod
+  this.supportAltScriptDestination = false;
 };
 
 Ltc.prototype.__proto__ = Btc.prototype;
@@ -27,8 +30,37 @@ Ltc.prototype.__proto__ = Btc.prototype;
 Ltc.prototype.getChain = function() {
   return 'ltc';
 };
-Ltc.prototype.getCurrency = function() {
+Ltc.prototype.getFamily = function() {
   return 'ltc';
+};
+
+/**
+ * Canonicalize a Litecoin address for a specific scriptHash version
+ * @param address
+ * @param scriptHashVersion 1 or 2, where 1 is the old version and 2 is the new version
+ * @returns {*} address string
+ */
+Ltc.prototype.canonicalAddress = function(address, scriptHashVersion = 2) {
+  if (!this.isValidAddress(address, true)) {
+    throw new Error('invalid address');
+  }
+  const addressDetails = bitcoin.address.fromBase58Check(address);
+  if (addressDetails.version === this.network.pubKeyHash) {
+    // the pub keys never changed
+    return address;
+  }
+
+  if ([1, 2].indexOf(scriptHashVersion) === -1) {
+    throw new Error('scriptHashVersion needs to be either 1 or 2');
+  }
+  const scriptHashMap = {
+    // altScriptHash is the old one
+    1: this.altScriptHash,
+    // by default we're using the new one
+    2: this.network.scriptHash
+  };
+  const newScriptHash = scriptHashMap[scriptHashVersion];
+  return bitcoin.address.toBase58Check(addressDetails.hash, newScriptHash);
 };
 
 module.exports = Ltc;

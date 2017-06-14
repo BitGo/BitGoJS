@@ -24,7 +24,7 @@ Rmg.prototype.getBaseFactor = function() {
 Rmg.prototype.getChain = function() {
   return 'rmg';
 };
-Rmg.prototype.getCurrency = function() {
+Rmg.prototype.getFamily = function() {
   return 'rmg';
 };
 

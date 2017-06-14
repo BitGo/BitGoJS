@@ -262,7 +262,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
       walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
     }
 
-    if (self.baseCoin.getCurrency() === 'xrp' && params.rootPrivateKey) {
+    if (self.baseCoin.getFamily() === 'xrp' && params.rootPrivateKey) {
       walletParams.rootPrivateKey = params.rootPrivateKey;
     }
 

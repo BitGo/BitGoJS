@@ -196,6 +196,18 @@ var handleREST = function(req, res, next) {
   return redirectRequest(bitgo, method, bitgoURL, req, next);
 };
 
+// handle Litecoin address canonicalization
+var handleLtcCanonicalAddress = function(req) {
+  var bitgo = req.bitgo;
+  var coin = bitgo.coin(req.params.coin);
+  if (coin.getFamily() !== 'ltc') {
+    throw new Error('only Litecoin address canonicalization is supported');
+  }
+  var address = req.body.address;
+  var version = req.body.scriptHashVersion;
+  return coin.canonicalAddress(address, version);
+};
+
 // handle new wallet creation
 var handleV2GenerateWallet = function(req) {
   var bitgo = req.bitgo;
@@ -398,6 +410,8 @@ exports = module.exports = function(app, args) {
   app.use('/api/v1/*', parseBody, prepareBitGo(args), promiseWrapper(handleREST, args));
 
   // API v2
+
+  app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(args), promiseWrapper(handleLtcCanonicalAddress, args));
 
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleV2GenerateWallet, args));
