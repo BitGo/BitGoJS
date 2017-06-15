@@ -2,14 +2,15 @@ var fs = require('fs')
 var assert = require('nanoassert')
 var toUint8Array = require('base64-to-uint8array')
 var buf = toUint8Array(fs.readFileSync(__dirname + '/blake2b.wasm', 'base64'))
-var rdy
 
 var head = 64
-var mod = null
-var memory = null
+var wasm = typeof WebAssembly !== 'undefined' && new WebAssembly.Instance(new WebAssembly.Module(buf))
+var mod = wasm && wasm.exports
+var memory = wasm && new Uint8Array(wasm.exports.memory.buffer)
 var freeList = []
 
 module.exports = Blake2b
+
 var BYTES_MIN = module.exports.BYTES_MIN = 16
 var BYTES_MAX = module.exports.BYTES_MAX = 64
 var BYTES = module.exports.BYTES = 32
@@ -21,7 +22,7 @@ var PERSONALBYTES = module.exports.PERSONALBYTES = 16
 
 function Blake2b (digestLength, key, salt, personal, noAssert) {
   if (!(this instanceof Blake2b)) return new Blake2b(digestLength, key, salt, personal, noAssert)
-  if (!mod) throw new Error('WASM not loaded. Wait for Blake2b.ready(cb)')
+  if (!mod) throw new Error('WebAssembly not supported')
   if (!digestLength) digestLength = 32
 
   if (noAssert !== true) {
@@ -60,8 +61,6 @@ function Blake2b (digestLength, key, salt, personal, noAssert) {
   }
 }
 
-Blake2b.prototype.ready = Blake2b.ready
-
 Blake2b.prototype.update = function (input) {
   assert(this.finalized === false, 'Hash instance finalized')
   assert(input, 'input must be TypedArray or Buffer')
@@ -98,18 +97,7 @@ Blake2b.prototype.digest = function (enc) {
 Blake2b.prototype.final = Blake2b.prototype.digest
 
 Blake2b.WASM = buf
-Blake2b.SUPPORTED = typeof WebAssembly !== 'undefined'
-
-Blake2b.ready = function (cb) {
-  if (!cb) cb = noop
-  if (!Blake2b.SUPPORTED) return cb(new Error('WebAssembly not supported'))
-
-  if (!rdy) {
-    rdy = WebAssembly.instantiate(buf).then(setup)
-  }
-
-  return rdy.then(cb).catch(cb)
-}
+Blake2b.SUPPORTED = !!mod
 
 function noop () {}
 
@@ -122,9 +110,4 @@ function hexSlice (buf, start, len) {
 function toHex (n) {
   if (n < 16) return '0' + n.toString(16)
   return n.toString(16)
-}
-
-function setup (w) {
-  mod = w.instance.exports
-  memory = new Uint8Array(w.instance.exports.memory.buffer)
 }
