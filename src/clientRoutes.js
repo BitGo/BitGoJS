@@ -196,6 +196,25 @@ var handleREST = function(req, res, next) {
   return redirectRequest(bitgo, method, bitgoURL, req, next);
 };
 
+// handle v2 address validation
+const handleV2VerifyAddress = function(req) {
+  common.validateParams(req.body, ['address'], []);
+
+  if (req.body.supportOldScriptHashVersion !== undefined &&
+    typeof(req.body.supportOldScriptHashVersion) !== 'boolean') {
+    throw new Error('Expected supportOldScriptHashVersion to be a boolean.');
+  }
+  const supportOldScriptHashVersion = !!req.body.supportOldScriptHashVersion;
+
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+
+  const result = coin.isValidAddress(req.body.address, supportOldScriptHashVersion);
+  return {
+    isValid: !!result
+  }
+};
+
 // handle Litecoin address canonicalization
 var handleLtcCanonicalAddress = function(req) {
   var bitgo = req.bitgo;
@@ -411,8 +430,6 @@ exports = module.exports = function(app, args) {
 
   // API v2
 
-  app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(args), promiseWrapper(handleLtcCanonicalAddress, args));
-
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleV2GenerateWallet, args));
 
@@ -422,6 +439,10 @@ exports = module.exports = function(app, args) {
   // send transaction
   app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(args), promiseWrapper(handleV2SendOne, args));
   app.post('/api/v2/:coin/wallet/:id/sendmany', parseBody, prepareBitGo(args), promiseWrapper(handleV2SendMany, args));
+
+  // Miscellaneous
+  app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(args), promiseWrapper(handleLtcCanonicalAddress, args));
+  app.post('/api/v2/:coin/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleV2VerifyAddress, args));
 
   // any other API v2 call
   app.use('/api/v2/:coin/*', parseBody, prepareBitGo(args), promiseWrapper(handleV2REST, args));
