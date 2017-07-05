@@ -127,13 +127,6 @@ exports.createTransaction = function(params) {
   // Flag indicating whether this class will compute the fee
   var shouldComputeBestFee = (typeof(fee) == 'undefined');
 
-  if (fee > constants.maxFee) {
-    throw new Error('fee too generous: ' + fee + ' greater than maxFee ' + constants.maxFee);  // Protection against bad inputs
-  }
-  if (feeRate > constants.maxFeeRate) {
-    throw new Error('fee rate too generous: ' + feeRate + ' greater than maxFeeRate ' + constants.maxFeeRate);  // Protection against bad inputs
-  }
-
   var totalOutputAmount = 0;
 
   recipients.forEach(function(recipient) {
