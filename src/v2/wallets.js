@@ -175,7 +175,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
     throw new Error("Cannot provide more than one backupXpub or backupXpubProvider flag");
   }
 
-  if (params.disableTransactionNotifications !== undefined && typeof(params.disableTransactionNotifications) != 'boolean') {
+  if (params.disableTransactionNotifications !== undefined && typeof(params.disableTransactionNotifications) !== 'boolean') {
     throw new Error('Expected disableTransactionNotifications to be a boolean. ');
   }
 
@@ -183,7 +183,10 @@ Wallets.prototype.generateWallet = function(params, callback) {
   let backupKeychain;
   let bitgoKeychain;
   let userKeychainParams;
-  let isCold;
+
+  const passphrase = params.passphrase;
+  const canEncrypt = (!!passphrase && typeof passphrase === 'string');
+  const isCold = (!canEncrypt || !!params.userKey);
 
   // Add the user keychain
   const userKeychainPromise = Q.fcall(function() {
@@ -192,11 +195,13 @@ Wallets.prototype.generateWallet = function(params, callback) {
     if (params.userKey) {
       userKeychain = { 'pub': params.userKey };
       userKeychainParams = userKeychain;
-      isCold = true;
     } else {
+      if (!canEncrypt) {
+        throw new Error('cannot generate user keypair without passphrase');
+      }
       // Create the user and backup key.
       userKeychain = self.baseCoin.keychains().create();
-      userKeychain.encryptedPrv = self.bitgo.encrypt({ password: params.passphrase, input: userKeychain.prv });
+      userKeychain.encryptedPrv = self.bitgo.encrypt({ password: passphrase, input: userKeychain.prv });
       userKeychainParams = {
         pub: userKeychain.pub,
         encryptedPrv: userKeychain.encryptedPrv
@@ -224,6 +229,9 @@ Wallets.prototype.generateWallet = function(params, callback) {
       // user provided backup ethereum address
       backupKeychain = { 'pub': params.backupXpub };
     } else {
+      if (!canEncrypt) {
+        throw new Error('cannot generate backup keypair without passphrase');
+      }
       // No provided backup xpub or address, so default to creating one here
       backupKeychain = self.baseCoin.keychains().create();
     }
