@@ -201,11 +201,13 @@ PendingApproval.prototype.approve = function(params, callback) {
     }
   })
   .then(function(transaction) {
-
     var approvalParams = { 'state': 'approved', 'otp': params.otp };
     if (transaction) {
       // if in the previous instance, we recreated a transaction, we need to add its hex to the approval params
       approvalParams.txHex = transaction.txHex;
+      if (transaction.halfSigned) {
+        approvalParams.halfSigned = transaction.halfSigned;
+      }
     }
     return self.bitgo.put(self.url())
     .send(approvalParams)
@@ -267,6 +269,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params) {
   return Q.all([txPrebuildPromise, userKeychainPromise])
   .spread(function(txPrebuild, userKeychain) {
     var signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
+    signingParams.recipients = recipients;
     return wallet.signTransaction(signingParams);
   });
 };
