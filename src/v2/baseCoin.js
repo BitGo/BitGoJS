@@ -3,6 +3,10 @@ var PendingApprovals;
 var Wallet;
 var Wallets;
 var coinInstances;
+var bitcoin = require('bitcoinjs-lib');
+var prova = require('../prova');
+var Q = require('q');
+var sjcl = require('../sjcl.min');
 
 var BaseCoin = function(bitgo, coin) {
   this.bitgo = bitgo;
@@ -88,6 +92,61 @@ BaseCoin.prototype.newWalletObject = function(walletParams) {
 
 BaseCoin.prototype.toJSON = function() {
   return undefined;
+};
+
+BaseCoin.prototype.initiateRecovery = function(params) {
+  const keys = [];
+  const userKey = params.userKey; // Box A
+  let backupKey = params.backupKey; // Box B
+  const bitgoXpub = params.bitgoKey; // Box C
+  const destinationAddress = params.recoveryDestination;
+  const passphrase = params.walletPassphrase;
+
+  const validatePassphraseKey = function(userKey, passphrase) {
+    try {
+      if (!userKey.startsWith('xprv')) {
+        userKey = sjcl.decrypt(passphrase, userKey);
+      }
+      const userHDNode = prova.HDNode.fromBase58(userKey);
+      return Q(userHDNode);
+    } catch (e) {
+      throw new Error("Failed to decrypt user key with passcode - try again!");
+    }
+  };
+
+  const self = this;
+  return Q.try(function() {
+    // TODO: Arik add Ledger support
+    return validatePassphraseKey(userKey, passphrase);
+  })
+  .then(function(key) {
+    keys.push(key);
+    // Validate the backup key
+    try {
+      if (!backupKey.startsWith('xprv')) {
+        backupKey = sjcl.decrypt(passphrase, backupKey);
+      }
+      const backupHDNode = prova.HDNode.fromBase58(backupKey);
+      keys.push(backupHDNode);
+    } catch (e) {
+      throw new Error("Failed to decrypt backup key with passcode - try again!");
+    }
+    try {
+      const bitgoHDNode = prova.HDNode.fromBase58(bitgoXpub);
+      keys.push(bitgoHDNode);
+    } catch (e) {
+      if (self.getFamily() !== 'xrp') {
+        // in XRP recoveries, the BitGo xpub is optional
+        throw new Error("Failed to parse bitgo xpub!");
+      }
+    }
+    // Validate the destination address
+    if (!self.isValidAddress(destinationAddress)) {
+      throw new Error("Invalid destination address!");
+    }
+
+    return keys;
+  });
 };
 
 module.exports = BaseCoin;

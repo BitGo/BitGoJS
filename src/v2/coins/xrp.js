@@ -1,4 +1,5 @@
 const BaseCoin = require('../baseCoin');
+const BigNumber = require('bignumber.js');
 const crypto = require('crypto');
 const querystring = require('querystring');
 const ripple = require('../../ripple');
@@ -228,7 +229,7 @@ Xrp.prototype.explainTransaction = function(params) {
   var id = rippleHashes.computeBinaryTransactionHash(params.txHex);
   var changeAmount = 0;
   var explanation = {
-    displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
+    displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
     id: id,
     outputs: [],
     changeOutputs: []
@@ -241,12 +242,152 @@ Xrp.prototype.explainTransaction = function(params) {
   explanation.outputAmount = spendAmount;
   explanation.changeAmount = changeAmount;
 
-  // add fee info if available
-  if (params.feeInfo) {
-    explanation.displayOrder.push('fee');
-    explanation.fee = params.feeInfo;
-  }
+  explanation.fee = {
+    miner: transaction.Fee
+  };
   return explanation;
+};
+
+Xrp.prototype.getRippledUrl = function() {
+  return 'https://s1.ripple.com:51234';
+};
+
+/**
+ * Builds a funds recovery transaction without BitGo
+ * @param params
+ * - rootAddress: root XRP wallet address to recover funds from
+ * - userKey: [encrypted] xprv
+ * - backupKey: [encrypted] xrpv
+ * - walletPassphrase: necessary if one of the xprvs is encrypted
+ * - bitgoKey: xpub
+ * - recoveryDestination: target address to send recovered funds to
+ * @param callback
+ * @returns {Function|*}
+ */
+Xrp.prototype.recover = function(params, callback) {
+  const rippledUrl = this.getRippledUrl();
+  const self = this;
+  return this.initiateRecovery(params)
+  .then(function(keys) {
+    const addressDetailsPromise = self.bitgo.post(rippledUrl)
+    .send({
+      method: 'account_info',
+      params: [{
+        account: params.rootAddress,
+        strict: true,
+        ledger_index: 'current',
+        queue: true,
+        signer_lists: true
+      }]
+    });
+    const feeDetailsPromise = self.bitgo.post(rippledUrl).send({ method: 'fee' });
+    const serverDetailsPromise = self.bitgo.post(rippledUrl).send({ method: 'server_info' });
+    return [addressDetailsPromise, feeDetailsPromise, serverDetailsPromise, keys];
+  })
+  .spread(function(addressDetails, feeDetails, serverDetails, keys) {
+    const openLedgerFee = new BigNumber(feeDetails.body.result.drops.open_ledger_fee);
+    const baseReserve = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_base_xrp).times(self.getBaseFactor());
+    const reserveDelta = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_inc_xrp).times(self.getBaseFactor());
+    const currentLedger = serverDetails.body.result.info.validated_ledger.seq;
+    const sequenceId = addressDetails.body.result.account_data.Sequence;
+    const balance = new BigNumber(addressDetails.body.result.account_data.Balance);
+    const signerLists = addressDetails.body.result.account_data.signer_lists;
+    const accountFlags = addressDetails.body.result.account_data.Flags;
+
+    // make sure there is only one signer list set
+    if (signerLists.length !== 1) {
+      throw new Error('unexpected set of signer lists');
+    }
+
+    // make sure the signers are user, backup, bitgo
+    const userAddress = rippleKeypairs.deriveAddress(keys[0].getPublicKeyBuffer().toString('hex'));
+    const backupAddress = rippleKeypairs.deriveAddress(keys[1].getPublicKeyBuffer().toString('hex'));
+
+    const signerList = signerLists[0];
+    if (signerList.SignerQuorum !== 2) {
+      throw new Error('invalid minimum signature count');
+    }
+    const foundAddresses = {};
+
+    const signerEntries = signerList.SignerEntries;
+    if (signerEntries.length !== 3) {
+      throw new Error('invalid signer list length');
+    }
+    for (const { SignerEntry } of signerEntries) {
+      const weight = SignerEntry.SignerWeight;
+      const address = SignerEntry.Account;
+      if (weight !== 1) {
+        throw new Error('invalid signer weight');
+      }
+
+      // if it's a dupe of an address we already know, block
+      if (foundAddresses[address] >= 1) {
+        throw new Error('duplicate signer address');
+      }
+      foundAddresses[address] = (foundAddresses[address] || 0) + 1;
+    }
+
+    if (foundAddresses[userAddress] !== 1) {
+      throw new Error('unexpected incidence frequency of user signer address');
+    }
+    if (foundAddresses[backupAddress] !== 1) {
+      throw new Error('unexpected incidence frequency of user signer address');
+    }
+
+    // make sure the flags disable the master key and enforce destination tags
+    const USER_KEY_SETTING_FLAG = 65536;
+    const MASTER_KEY_DEACTIVATION_FLAG = 1048576;
+    const REQUIRE_DESTINATION_TAG_FLAG = 131072;
+    if ((accountFlags & USER_KEY_SETTING_FLAG) !== 0) {
+      throw new Error('a custom user key has been set');
+    }
+    if ((accountFlags & MASTER_KEY_DEACTIVATION_FLAG) !== MASTER_KEY_DEACTIVATION_FLAG) {
+      throw new Error('the master key has not been deactivated');
+    }
+    if ((accountFlags & REQUIRE_DESTINATION_TAG_FLAG) !== REQUIRE_DESTINATION_TAG_FLAG) {
+      throw new Error('the destination flag requirement has not been activated');
+    }
+
+    // recover the funds
+    const reserve = baseReserve.plus(reserveDelta.times(5));
+    const recoverableBalance = balance.minus(reserve);
+
+    const rawDestination = params.recoveryDestination;
+    const destinationDetails = url.parse(rawDestination);
+    const queryDetails = querystring.parse(destinationDetails.query);
+    const destinationAddress = destinationDetails.pathname;
+    let destinationTag = undefined;
+    const parsedTag = parseInt(queryDetails.dt);
+    if (Number.isInteger(parsedTag)) {
+      destinationTag = parsedTag;
+    }
+
+    const transaction = {
+      TransactionType: 'Payment',
+      Account: params.rootAddress, // source address
+      Destination: destinationAddress,
+      DestinationTag: destinationTag,
+      Amount: recoverableBalance.toFixed(0),
+      Flags: 2147483648,
+      LastLedgerSequence: currentLedger + 100, // give it 100 ledgers' time
+      Fee: openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
+      Sequence: sequenceId
+    };
+    const txJSON = JSON.stringify(transaction);
+
+    const userKey = keys[0].getKey().getPrivateKeyBuffer().toString('hex');
+    const backupKey = keys[1].getKey().getPrivateKeyBuffer().toString('hex');
+
+    const rippleLib = ripple();
+    const userSignature = rippleLib.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
+    const backupSignature = rippleLib.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
+    const signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
+
+    const transactionExplanation = self.explainTransaction({ txHex: signedTransaction.signedTransaction });
+    transactionExplanation.txHex = signedTransaction.signedTransaction;
+    return transactionExplanation;
+  })
+  .nodeify(callback);
 };
 
 module.exports = Xrp;

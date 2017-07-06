@@ -14,4 +14,8 @@ Txrp.prototype.getChain = function() {
   return 'txrp';
 };
 
+Xrp.prototype.getRippledUrl = function(){
+  return 'https://s.altnet.rippletest.net:51234';
+};
+
 module.exports = Txrp;

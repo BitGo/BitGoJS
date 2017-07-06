@@ -27,11 +27,12 @@
     "karma-mocha": "~0.1.10",
     "mocha": "3.4.2",
     "mocha-lcov-reporter": "0.0.2",
+    "nock": "^9.0.13",
     "should": "3.3.2",
     "supertest": "~3.0.0",
+    "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz",
     "uglify-js": "3.0.15",
-    "uglifyify": "~3.0.4",
-    "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz"
+    "uglifyify": "~3.0.4"
   },
   "testling": {
     "browsers": [
@@ -80,7 +81,7 @@
     "minimist": "0.2.0",
     "moment": "~2.18.1",
     "morgan": "1.5.3",
-    "prova-lib": "0.2.3",
+    "prova-lib": "~0.2.6",
     "q": "1.1.2",
     "ripple-lib": "~0.17.7",
     "sanitize-html": "1.13.0",

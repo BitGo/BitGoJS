@@ -10,7 +10,8 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
-    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
+    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
+    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
   },
   rmgProd: {
     uri: 'https://rmg.bitgo.com',
@@ -21,7 +22,8 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
-    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
+    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
+    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
   },
   staging: {
     uri: 'https://staging.bitgo.com',
@@ -32,7 +34,8 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
-    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
+    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
+    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
   },
   rmgStaging: {
     uri: 'https://rmgstaging.bitgo.com',
@@ -43,7 +46,8 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
-    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
+    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
+    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
   },
   test: {
     uri: 'https://test.bitgo.com',
@@ -54,7 +58,8 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
-    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
   },
   rmgTest: {
     uri: 'https://rmgtest.bitgo.com',
@@ -76,7 +81,8 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
-    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
   },
   rmgDev: {
     uri: 'https://rmgwebdev.bitgo.com',
@@ -87,7 +93,8 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
-    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
   },
   local: {
     uri: 'http://localhost:3000',
@@ -98,7 +105,8 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
-    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
   },
   rmgLocal: {
     uri: 'http://rmglocalhost:3000',
@@ -109,7 +117,8 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
-    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
   },
   custom: {
     uri: process.env.BITGO_CUSTOM_ROOT_URI,
@@ -121,7 +130,8 @@ exports.Environments = {
     ethNetwork: process.env.BITGO_CUSTOM_ETHEREUM_NETWORK || 'ethereum',
     rmgNetwork: process.env.BITGO_CUSTOM_RMG_NETWORK || 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
-    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ'
+    serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
+    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
   }
 };
 

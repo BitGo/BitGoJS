@@ -63,4 +63,14 @@ Ltc.prototype.canonicalAddress = function(address, scriptHashVersion = 2) {
   return bitcoin.address.toBase58Check(addressDetails.hash, newScriptHash);
 };
 
+Ltc.prototype.getRecoveryBlockchainApiBaseUrl = function() {
+  return 'https://ltc.blockr.io/api/v1';
+};
+
+Ltc.prototype.calculateRecoveryAddress = function(scriptHashScript) {
+  const bitgoAddress = bitcoin.address.fromOutputScript(scriptHashScript, this.network);
+  const blockrAddress = this.canonicalAddress(bitgoAddress, 1);
+  return blockrAddress;
+};
+
 module.exports = Ltc;

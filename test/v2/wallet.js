@@ -4,7 +4,6 @@
 
 var assert = require('assert');
 var should = require('should');
-var bitcoin = require('bitcoinjs-lib');
 var _ = require('lodash');
 
 var common = require('../../src/common');
@@ -390,4 +389,5 @@ describe('V2 Wallet:', function() {
       });
     });
   });
+
 });
