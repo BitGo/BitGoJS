@@ -1,6 +1,7 @@
 const common = require('../common');
 const crypto = require('crypto');
 const prova = require('../prova');
+const _ = require('lodash');
 
 var Keychains = function(bitgo, baseCoin) {
   this.bitgo = bitgo;
@@ -70,8 +71,14 @@ Keychains.prototype.createBitGo = function(params, callback) {
 
 Keychains.prototype.createBackup = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['provider'], [], callback);
+  common.validateParams(params, [], ['provider'], callback);
   params.source = 'backup';
+
+  if (!params.provider) {
+    // if the provider is undefined, we generate a local key and add the source details
+    const key = this.create();
+    _.extend(params, key);
+  }
 
   return this.add(params, callback);
 };

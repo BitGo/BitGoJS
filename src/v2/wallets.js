@@ -227,13 +227,13 @@ Wallets.prototype.generateWallet = function(params, callback) {
     // User provided backup xpub
     if (params.backupXpub) {
       // user provided backup ethereum address
-      backupKeychain = { 'pub': params.backupXpub };
+      backupKeychain = { pub: params.backupXpub, source: 'backup' };
     } else {
       if (!canEncrypt) {
         throw new Error('cannot generate backup keypair without passphrase');
       }
       // No provided backup xpub or address, so default to creating one here
-      backupKeychain = self.baseCoin.keychains().create();
+      return self.baseCoin.keychains().createBackup();
     }
 
     return self.baseCoin.keychains().add(backupKeychain);
