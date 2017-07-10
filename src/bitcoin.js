@@ -21,8 +21,9 @@ if (isIE) {
   secp256k1 = undefined;
 }
 
-bitcoin.getNetwork = function() {
-  return bitcoin.networks[common.getNetwork()];
+bitcoin.getNetwork = function(network) {
+  network = network || common.getNetwork();
+  return bitcoin.networks[network];
 };
 
 bitcoin.makeRandomKey = function() {
