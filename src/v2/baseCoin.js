@@ -1,4 +1,5 @@
 var Keychains;
+var BigNumber = require('bignumber.js');
 var PendingApprovals;
 var Wallet;
 var Wallets;
@@ -72,6 +73,16 @@ BaseCoin.prototype.initializeCoin = function(coin) {
     throw new Error('Coin type ' + coin + ' not supported');
   }
   coinInstance.call(this);
+};
+
+/**
+ * Convert a currency amount represented in base units (satoshi, wei, atoms, drops) to big units (btc, eth, rmg, xrp)
+ * @param baseUnits
+ */
+BaseCoin.prototype.baseUnitsToBigUnits = function(baseUnits) {
+  const dividend = this.getBaseFactor();
+  const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
+  return bigNumber.toFormat();
 };
 
 /**
