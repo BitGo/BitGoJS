@@ -107,7 +107,7 @@ exports.createTransaction = function(params) {
   }
 
   // Convert the old format of params.recipients (dictionary of address:amount) to new format: { destinationAddress, amount }
-  if (!(params.recipients instanceof Array)) {
+  if (!(Array.isArray(params.recipients))) {
     recipients = [];
     Object.keys(params.recipients).forEach(function(destinationAddress) {
       var amount = params.recipients[destinationAddress];
