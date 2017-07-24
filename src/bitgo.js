@@ -1488,6 +1488,7 @@ BitGo.prototype.getConstants = function(params) {
     minFeeRate: 5000,
     fallbackFeeRate: 50000,
     minOutputSize: 2730,
+    minInstantFeeRate: 10000,
     bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47'
   };
 

@@ -223,30 +223,34 @@ exports.createTransaction = function(params) {
         txSize: estTxSize,
         cpfpAware: true
       })
-        .then(function(result) {
-          var estimatedFeeRate = result.cpfpFeePerKb;
-          if (estimatedFeeRate < constants.minFeeRate) {
-            console.log(new Date() + ': Error when estimating fee for send from ' + params.wallet.id() + ', it was too low - ' + estimatedFeeRate);
-            feeRate = constants.minFeeRate;
-          } else if (estimatedFeeRate > params.maxFeeRate) {
-            feeRate = params.maxFeeRate;
-          } else {
-            feeRate = estimatedFeeRate;
-          }
-          return feeRate;
-        })
-        .catch(function(e) {
-          // sanity check failed on tx size
-          if (_.includes(e.message, 'invalid txSize')) {
-            return Q.reject(e);
-          }
-          else {
-            // couldn't estimate the fee, proceed using the default
-            feeRate = constants.fallbackFeeRate;
-            console.log("Error estimating fee for send from " + params.wallet.id() + ": " + e.message);
-            return Q();
-          }
-        });
+      .then(function(result) {
+        var estimatedFeeRate = result.cpfpFeePerKb;
+        var minimum = params.instant ? Math.max(constants.minFeeRate, constants.minInstantFeeRate) : constants.minFeeRate;
+        // 5 satoshis per byte
+        // it is worth noting that the padding only applies when the threshold is crossed, but not when the delta is less than the padding
+        var padding = 5000;
+        if (estimatedFeeRate < minimum) {
+          console.log(new Date() + ': Error when estimating fee for send from ' + params.wallet.id() + ', it was too low - ' + estimatedFeeRate);
+          feeRate = minimum + padding;
+        } else if (estimatedFeeRate > params.maxFeeRate) {
+          feeRate = params.maxFeeRate - padding;
+        } else {
+          feeRate = estimatedFeeRate;
+        }
+        return feeRate;
+      })
+      .catch(function(e) {
+        // sanity check failed on tx size
+        if (_.includes(e.message, 'invalid txSize')) {
+          return Q.reject(e);
+        }
+        else {
+          // couldn't estimate the fee, proceed using the default
+          feeRate = constants.fallbackFeeRate;
+          console.log("Error estimating fee for send from " + params.wallet.id() + ": " + e.message);
+          return Q();
+        }
+      });
     }
   };
 
