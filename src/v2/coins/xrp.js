@@ -148,7 +148,7 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
   return self.getFeeInfo()
   .then(function(feeInfo) {
     // TODO: get recommended fee from server instead of doing number magic
-    const fee = feeInfo.xrpOpenLedgerFee;
+    const fee = new BigNumber(feeInfo.xrpOpenLedgerFee).times(1.5).toFixed(0);
     const ledgerVersion = feeInfo.height;
 
     // configure multisigners
@@ -177,8 +177,8 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
         }
       ],
       Flags: 2147483648,
-      LastLedgerSequence: ledgerVersion + 10,
-      Fee: `${fee}`,
+      // LastLedgerSequence: ledgerVersion + 10,
+      Fee: fee,
       Sequence: 1
     };
     signedMultisigAssignmentTx = rippleLib.signWithPrivateKey(JSON.stringify(multisigAssignmentTx), privateKey.toString('hex'));
@@ -189,8 +189,8 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
       Account: rootAddress,
       SetFlag: 1,
       Flags: 2147483648,
-      LastLedgerSequence: ledgerVersion + 10,
-      Fee: `${fee}`,
+      // LastLedgerSequence: ledgerVersion + 10,
+      Fee: fee,
       Sequence: 2
     };
     signedDestinationTagTx = rippleLib.signWithPrivateKey(JSON.stringify(destinationTagTx), privateKey.toString('hex'));
@@ -201,8 +201,8 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
       Account: rootAddress,
       SetFlag: 4,
       Flags: 2147483648,
-      LastLedgerSequence: ledgerVersion + 10,
-      Fee: `${fee}`,
+      // LastLedgerSequence: ledgerVersion + 10,
+      Fee: fee,
       Sequence: 3
     };
     signedMasterDeactivationTx = rippleLib.signWithPrivateKey(JSON.stringify(masterDeactivationTx), privateKey.toString('hex'));
