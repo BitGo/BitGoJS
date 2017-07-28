@@ -258,6 +258,8 @@ var BitGo = function(params) {
         }
 
         this.set('BitGo-Auth-Version', '2.0');
+        // prevent IE from caching requests
+        this.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
         if (bitgo._token) {
 
           // do a localized data serialization process
