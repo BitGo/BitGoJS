@@ -105,6 +105,21 @@ BaseCoin.prototype.toJSON = function() {
   return undefined;
 };
 
+BaseCoin.prototype.deriveKeyWithSeed = function({ key, seed }) {
+  const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
+  const derivationPathParts = [
+    parseInt(derivationPathInput.slice(0, 7), 16),
+    parseInt(derivationPathInput.slice(7, 14), 16)
+  ];
+  const derivationPath = 'm/999999/' + derivationPathParts.join('/');
+  const keyNode = bitcoin.HDNode.fromBase58(key);
+  const derivedKeyNode = bitcoin.hdPath(keyNode).derive(derivationPath);
+  return {
+    key: derivedKeyNode.toBase58(),
+    derivationPath: derivationPath
+  };
+};
+
 BaseCoin.prototype.initiateRecovery = function(params) {
   const keys = [];
   const userKey = params.userKey; // Box A

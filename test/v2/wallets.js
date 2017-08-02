@@ -171,6 +171,30 @@ describe('V2 Wallets:', function() {
       });
     });
 
+    it('should make wallet with provided user key and custom derivation path', function() {
+      var userXpub = keychains.create().pub; // random xpub
+      var params = {
+        label: label,
+        userKey: userXpub,
+        coldDerivationSeed: 'custom-derivation-seed',
+        passphrase: passphrase
+      };
+
+      return wallets.generateWallet(params)
+      .then(function(res) {
+        res.should.have.property('wallet');
+        res.should.have.property('userKeychain');
+        res.should.have.property('backupKeychain');
+        res.should.have.property('bitgoKeychain');
+
+        res.userKeychain.should.have.property('pub');
+        res.userKeychain.should.have.property('derivationPath');
+        res.userKeychain.derivationPath.should.equal('m/999999/112305623/88990619');
+        res.userKeychain.should.not.have.property('prv');
+        res.userKeychain.should.not.have.property('encryptedPrv');
+      });
+    });
+
     it('should generate wallet and freeze it', function() {
       var backupXpub = keychains.create().pub; // random xpub
       var userXpub = keychains.create().pub; // random xpub

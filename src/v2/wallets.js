@@ -183,6 +183,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
   let backupKeychain;
   let bitgoKeychain;
   let userKeychainParams;
+  let derivationPath;
 
   const passphrase = params.passphrase;
   const canEncrypt = (!!passphrase && typeof passphrase === 'string');
@@ -195,6 +196,12 @@ Wallets.prototype.generateWallet = function(params, callback) {
     if (params.userKey) {
       userKeychain = { 'pub': params.userKey };
       userKeychainParams = userKeychain;
+      if (params.coldDerivationSeed) {
+        // the derivation only makes sense when a key already exists
+        const derivation = self.baseCoin.deriveKeyWithSeed({ key: params.userKey, seed: params.coldDerivationSeed });
+        derivationPath = derivation.derivationPath;
+        userKeychain.pub = derivation.key;
+      }
     } else {
       if (!canEncrypt) {
         throw new Error('cannot generate user keypair without passphrase');
@@ -294,6 +301,10 @@ Wallets.prototype.generateWallet = function(params, callback) {
 
     if (backupKeychain.prv) {
       result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
+    }
+
+    if (derivationPath) {
+      userKeychain.derivationPath = derivationPath;
     }
 
     return result;

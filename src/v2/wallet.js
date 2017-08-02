@@ -522,9 +522,14 @@ Wallet.prototype.signTransaction = function(params, callback) {
   if (!txPrebuild || typeof txPrebuild !== 'object') {
     throw new Error('txPrebuild must be an object');
   }
-  var userPrv = params.prv;
+  let userPrv = params.prv;
   if (userPrv && typeof userPrv !== 'string') {
     throw new Error('prv must be a string');
+  }
+  if (userPrv && params.coldDerivationSeed) {
+    // the derivation only makes sense when a key already exists
+    const derivation = this.baseCoin.deriveKeyWithSeed({ key: userPrv, seed: params.coldDerivationSeed });
+    userPrv = derivation.key;
   } else if (!userPrv) {
     if (!userKeychain || typeof userKeychain !== 'object') {
       throw new Error('keychain must be an object');
