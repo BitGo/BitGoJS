@@ -36,6 +36,7 @@ Bch.prototype.signTransaction = function(params) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
+  const sigHashType = bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
   var keychain = bitcoin.HDNode.fromBase58(userPrv);
   var hdPath = bitcoin.hdPath(keychain);
 
@@ -48,9 +49,9 @@ Bch.prototype.signTransaction = function(params) {
     txb.enableBitcoinCash(true);
     // TODO (arik): Figure out if version 2 is actually necessary
     txb.setVersion(2);
-    const sigHashType = bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
+    var subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
     try {
-      txb.sign(index, privKey, null, sigHashType, value);
+      txb.sign(index, privKey, subscript, sigHashType, value);
     } catch (e) {
       throw new Error('Failed to sign input #' + index);
     }
