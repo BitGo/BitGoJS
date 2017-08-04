@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "3.4.11",
+  "version": "3.4.12",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -21,6 +21,7 @@
     "browserify": "13.1.0",
     "coveralls": "~2.13.1",
     "envify": "~3.4.0",
+    "eslint": "~4.3.0",
     "istanbul": "0.4.5",
     "karma": "~0.13.22",
     "karma-chrome-launcher": "~0.1.7",
@@ -60,7 +61,8 @@
     "test": "npm run test-node",
     "express": "node bin/bitgo-express -b 0.0.0.0",
     "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 20000 --reporter list --recursive test/",
-    "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run"
+    "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run",
+    "lint": "./node_modules/.bin/eslint --ext .js ."
   },
   "dependencies": {
     "argparse": "~0.1.16",

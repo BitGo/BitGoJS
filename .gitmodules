@@ -1,0 +1,3 @@
+[submodule ".arcanist-extensions"]
+	path = .arcanist-extensions
+	url = https://github.com/tagview/arcanist-extensions.git
