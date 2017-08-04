@@ -1,5 +1,5 @@
 var Btc = require('./btc');
-var bitcoin = require('bitcoinjs-lib');
+var bitcoin = require('bitgoinjs-lib');
 var _ = require('lodash');
 
 var Bch = function() {
@@ -7,22 +7,7 @@ var Bch = function() {
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
   this.__proto__ = Bch.prototype;
-  this.network = {
-    messagePrefix: '\x19Bitcash Signed Message:\n',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
-    pubKeyHash: 0x30,
-    scriptHash: 0x32,
-    wif: 0xb0,
-    dustThreshold: 0, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L360-L365
-    dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
-    feePerKb: 100000 // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
-  };
-  this.altScriptHash = bitcoin.networks.litecoin.scriptHash;
-  // do not support alt destinations in prod
-  this.supportAltScriptDestination = false;
+  this.network = this.network = bitcoin.networks.bitcoin;
 };
 
 Bch.prototype.__proto__ = Btc.prototype;
@@ -35,42 +20,47 @@ Bch.prototype.getFamily = function() {
 };
 
 /**
- * Canonicalize a Litecoin address for a specific scriptHash version
- * @param address
- * @param scriptHashVersion 1 or 2, where 1 is the old version and 2 is the new version
- * @returns {*} address string
+ * Assemble keychain and half-sign prebuilt transaction
+ * @param params
+ * - txPrebuild
+ * - prv
+ * @returns {{txHex}}
  */
-Bch.prototype.canonicalAddress = function(address, scriptHashVersion = 2) {
-  if (!this.isValidAddress(address, true)) {
-    throw new Error('invalid address');
-  }
-  const addressDetails = bitcoin.address.fromBase58Check(address);
-  if (addressDetails.version === this.network.pubKeyHash) {
-    // the pub keys never changed
-    return address;
+Bch.prototype.signTransaction = function(params) {
+  var txPrebuild = params.txPrebuild;
+  var userPrv = params.prv;
+
+  var transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
+
+  if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
+    throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
-  if ([1, 2].indexOf(scriptHashVersion) === -1) {
-    throw new Error('scriptHashVersion needs to be either 1 or 2');
+  var keychain = bitcoin.HDNode.fromBase58(userPrv);
+  var hdPath = bitcoin.hdPath(keychain);
+
+  for (var index = 0; index < transaction.ins.length; ++index) {
+    var path = 'm/0/0/' + txPrebuild.txInfo.unspents[index].chain + '/' + txPrebuild.txInfo.unspents[index].index;
+    var privKey = hdPath.deriveKey(path);
+    var value = txPrebuild.txInfo.unspents[index].value;
+
+    var txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
+    txb.enableBitcoinCash(true);
+    // TODO (arik): Figure out if version 2 is actually necessary
+    txb.setVersion(2);
+    const sigHashType = bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
+    try {
+      txb.sign(index, privKey, null, sigHashType, value);
+    } catch (e) {
+      throw new Error('Failed to sign input #' + index);
+    }
+
+    transaction = txb.buildIncomplete();
   }
-  const scriptHashMap = {
-    // altScriptHash is the old one
-    1: this.altScriptHash,
-    // by default we're using the new one
-    2: this.network.scriptHash
+
+  return {
+    txHex: transaction.toBuffer().toString('hex')
   };
-  const newScriptHash = scriptHashMap[scriptHashVersion];
-  return bitcoin.address.toBase58Check(addressDetails.hash, newScriptHash);
-};
-
-Bch.prototype.getRecoveryBlockchainApiBaseUrl = function() {
-  return 'https://ltc.blockr.io/api/v1';
-};
-
-Bch.prototype.calculateRecoveryAddress = function(scriptHashScript) {
-  const bitgoAddress = bitcoin.address.fromOutputScript(scriptHashScript, this.network);
-  const blockrAddress = this.canonicalAddress(bitgoAddress, 1);
-  return blockrAddress;
 };
 
 module.exports = Bch;

@@ -6,6 +6,7 @@
 
 var superagent = require('superagent');
 var bitcoin = require('./bitcoin');
+require('./bitgoin'); // this amends hdPath capabilities
 var sanitizeHtml = require('sanitize-html');
 var eol = require('eol');
 var BaseCoin = require('./v2/baseCoin');
@@ -38,7 +39,9 @@ if (!process.browser) {
 var _end = superagent.Request.prototype.end;
 superagent.Request.prototype.end = function(cb) {
   var self = this;
-  if (typeof cb === 'function') return _end.call(self, cb);
+  if (typeof cb === 'function') {
+    return _end.call(self, cb);
+  }
 
   return new Q.Promise(function(resolve, reject) {
     var error;
@@ -68,7 +71,7 @@ var handleResponseResult = function(optionalField) {
       return optionalField ? res.body[optionalField] : res.body;
     }
     throw errFromResponse(res);
-  }
+  };
 };
 
 var errFromResponse = function(res) {
@@ -153,7 +156,7 @@ var BitGo = function(params) {
   // Deprecate useProduction in the future
   if (params.useProduction) {
     if (params.env && params.env !== 'prod') {
-      throw new Error("Cannot set test environment and use production");
+      throw new Error('Cannot set test environment and use production');
     }
     params.env = 'prod';
   }
@@ -272,7 +275,7 @@ var BitGo = function(params) {
             var contentType = this.getHeader('Content-Type');
             // Parse out just the content type from the header (ignore the charset)
             if (contentType) {
-              contentType = contentType.split(';')[0]
+              contentType = contentType.split(';')[0];
             }
             var serialize = superagent.serialize[contentType];
             if (!serialize && isJSON(contentType)) {
@@ -1013,15 +1016,15 @@ BitGo.prototype.addAccessToken = function(params, callback) {
       throw new Error('txValueLimit must be a number');
     }
     if (params.txValueLimit < 0) {
-      throw new Error('txValueLimit must be a non-negative number')
+      throw new Error('txValueLimit must be a non-negative number');
     }
   }
-  if(params.scope && params.scope.length > 0) {
-    if(!_.isArray(params.scope)) {
+  if (params.scope && params.scope.length > 0) {
+    if (!_.isArray(params.scope)) {
       throw new Error('scope must be an array');
-    } 
+    }
   } else {
-      throw new Error('must specify scope for token')
+    throw new Error('must specify scope for token');
   }
 
   var bitgo = this;
@@ -1080,7 +1083,7 @@ BitGo.prototype.removeAccessToken = function(params, callback) {
   common.validateParams(params, [], ['id', 'label'], callback);
   var exactlyOne = !!params.id ^ !!params.label;
   if (!exactlyOne) {
-    throw new Error('must provide exactly one of id or label')
+    throw new Error('must provide exactly one of id or label');
   }
 
   var self = this;

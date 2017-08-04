@@ -16,8 +16,8 @@ var BaseCoin = function(bitgo, coin) {
   var self = this;
   this.type = coin;
 
-  this.url = function(suffix) {
-    return bitgo._baseUrl + '/api/v2/' + coin + suffix;
+  this.url = (suffix) => {
+    return bitgo._baseUrl + '/api/v2/' + this.getChain() + suffix;
   };
 
   this.wallets = function() {
@@ -48,7 +48,7 @@ var BaseCoin = function(bitgo, coin) {
       self.coinPendingApprovals = new PendingApprovals(bitgo, this);
     }
     return self.coinPendingApprovals;
-  }
+  };
 };
 
 BaseCoin.prototype.initializeCoin = function(coin) {
@@ -58,6 +58,7 @@ BaseCoin.prototype.initializeCoin = function(coin) {
       btc: require('./coins/btc'),
       tbtc: require('./coins/tbtc'),
       bch: require('./coins/bch'),
+      tbch: require('./coins/tbch'),
       ltc: require('./coins/ltc'),
       tltc: require('./coins/tltc'),
       eth: require('./coins/eth'),
@@ -137,7 +138,7 @@ BaseCoin.prototype.initiateRecovery = function(params) {
       const userHDNode = prova.HDNode.fromBase58(userKey);
       return Q(userHDNode);
     } catch (e) {
-      throw new Error("Failed to decrypt user key with passcode - try again!");
+      throw new Error('Failed to decrypt user key with passcode - try again!');
     }
   };
 
@@ -156,7 +157,7 @@ BaseCoin.prototype.initiateRecovery = function(params) {
       const backupHDNode = prova.HDNode.fromBase58(backupKey);
       keys.push(backupHDNode);
     } catch (e) {
-      throw new Error("Failed to decrypt backup key with passcode - try again!");
+      throw new Error('Failed to decrypt backup key with passcode - try again!');
     }
     try {
       const bitgoHDNode = prova.HDNode.fromBase58(bitgoXpub);
@@ -164,12 +165,12 @@ BaseCoin.prototype.initiateRecovery = function(params) {
     } catch (e) {
       if (self.getFamily() !== 'xrp') {
         // in XRP recoveries, the BitGo xpub is optional
-        throw new Error("Failed to parse bitgo xpub!");
+        throw new Error('Failed to parse bitgo xpub!');
       }
     }
     // Validate the destination address
     if (!self.isValidAddress(destinationAddress)) {
-      throw new Error("Invalid destination address!");
+      throw new Error('Invalid destination address!');
     }
 
     return keys;
