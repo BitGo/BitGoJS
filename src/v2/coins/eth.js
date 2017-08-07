@@ -89,8 +89,9 @@ const getOperationSha3ForExecuteAndConfirm = (recipients, expireTime, contractSe
 
   const recipient = recipients[0];
   return ethUtil.bufferToHex(ethAbi.soliditySHA3(
-  ["address", "uint", "string", "uint", "uint"],
+  ["string", "address", "uint", "string", "uint", "uint"],
   [
+    "ETHER",
     new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
     recipient.amount,
     ethUtil.stripHexPrefix(recipient.data) || '',
