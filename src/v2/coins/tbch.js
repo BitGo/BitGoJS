@@ -1,5 +1,5 @@
 var Bch = require('./bch');
-var bitcoin = require('bitgoinjs-lib');
+var bitcoin = require('bcashjs-lib');
 
 var Tbch = function() {
   // this function is called externally from BaseCoin

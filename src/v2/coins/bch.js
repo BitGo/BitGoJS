@@ -1,5 +1,5 @@
 var Btc = require('./btc');
-var bitcoin = require('bitgoinjs-lib');
+var bitcoin = require('bcashjs-lib');
 var _ = require('lodash');
 
 var Bch = function() {

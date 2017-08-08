@@ -6,7 +6,7 @@
 
 var superagent = require('superagent');
 var bitcoin = require('./bitcoin');
-require('./bitgoin'); // this amends hdPath capabilities
+require('./bitcoinCash'); // this amends hdPath capabilities
 var sanitizeHtml = require('sanitize-html');
 var eol = require('eol');
 var BaseCoin = require('./v2/baseCoin');

@@ -1,5 +1,5 @@
 var common = require('./common');
-var bitcoin = require('bitgoinjs-lib');
+var bitcoin = require('bcashjs-lib');
 var ecurve = require('ecurve');
 var curve = ecurve.getCurveByName('secp256k1');
 var BigInteger = require('bigi');
