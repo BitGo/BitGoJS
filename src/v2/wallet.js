@@ -558,7 +558,7 @@ Wallet.prototype.signTransaction = function(params, callback) {
  * @param callback
  */
 Wallet.prototype.submitTransaction = function(params, callback) {
-  common.validateParams(params, ['txHex'], ['otp'], callback);
+  common.validateParams(params, [], ['otp', 'txHex'], callback);
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
   .send(params)
   .result()
