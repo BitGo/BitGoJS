@@ -37,7 +37,7 @@ TestUtil.promiseWhile = function(condition, body) {
   function loop() {
     // When the result of calling `condition` is no longer true, we are
     // done.
-    if (!condition()) return done.resolve();
+    if (!condition()) {return done.resolve();}
     // Use `when`, in case `body` does not return a promise.
     // When it completes loop again otherwise, if it fails, reject the
     // done promise
@@ -60,7 +60,7 @@ TestUtil.deleteTestTokens = function(bitgoObj, filterFunc) {
   var tokenList;
   var index = 0;
 
-  var condition = function() { return index < tokenList.length }; // don't delete last token, which is the login token for this test
+  var condition = function() { return index < tokenList.length; }; // don't delete last token, which is the login token for this test
   var body = function() {
     var token = tokenList[index];
 
@@ -93,6 +93,6 @@ TestUtil.unlockToken = function(agent, accessToken, seconds) {
   .set('Authorization', 'Bearer ' + accessToken)
   .send({ otp: '0000000', duration: seconds })
   .then(function(res) {
-    res.should.have.status(200);
-  })
+    res.statusCode.should.equal(200);
+  });
 };
