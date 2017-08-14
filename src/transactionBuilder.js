@@ -286,6 +286,11 @@ exports.createTransaction = function(params) {
           return confirms >= minConfirms;
         });
 
+        // abort early if there's no viable unspents, because it won't be possible to create the txn later
+        if (unspents.length === 0) {
+          throw Error('0 unspents available for transaction creation');
+        }
+
         // create array of unconfirmed unspent ID strings of the form "txHash:outputIndex"
         zeroConfUnspentTxIds = _(results.unspents).filter(function(u) {
           return !u.confirmations;

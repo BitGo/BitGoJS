@@ -2261,11 +2261,22 @@ describe('Wallet API', function() {
         err.message.should.include("invalid bitcoin address");
         return wallet1.sendMany({ recipients: [{ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: -100 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
       })
-      .then(function(result) {
+      .then(function() {
         throw new Error("Unexpected result - expected to catch bad amount");
       })
       .catch(function(err) {
         err.message.should.include("invalid amount");
+        // use a ridiculously high number for the minConfirms so that no viable unspents are returned
+        return bitgo.unlock({ otp: '0000000' });
+      })
+      .then(function() {
+        return wallet1.sendMany({ recipients: [{ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 10000 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE, enforceMinConfirmsForChange: true, minConfirms: 999999999 });
+      })
+      .then(function() {
+        throw new Error("Unexpected result - expected to catch 0 unspents");
+      })
+      .catch(function(err) {
+        err.message.should.include('0 unspents available for transaction creation');
       });
     });
 
