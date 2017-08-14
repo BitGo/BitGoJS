@@ -263,9 +263,9 @@ exports.createTransaction = function(params) {
       return;
     }
 
-    // Get enough unspents for the requested amount, plus a little more in case we need to pay an increased fee
+    // Get enough unspents for the requested amount
     var options = {
-      target: totalAmount + 0.01e8,  // fee @ 0.0001/kb for a 100kb tx
+      target: totalAmount,
       minSize: params.minUnspentSize || 0,
       instant: params.instant, // insist on instant unspents only
       targetWalletUnspents: params.targetWalletUnspents
