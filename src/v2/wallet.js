@@ -617,7 +617,7 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('Only one of prebuildTx and recipients may be specified');
   }
 
-  if (params.recipients && !(params.recipients instanceof Array)) {
+  if (params.recipients && !(Array.isArray(params.recipients))) {
     throw new Error('expecting recipients array');
   }
 
