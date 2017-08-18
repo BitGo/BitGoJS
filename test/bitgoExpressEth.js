@@ -108,8 +108,8 @@ describe('Bitgo Express TETH v2', function () {
     res.statusCode.should.equal(200);
   }));
 
-  // Disabled, see JIRA BG-994
-  xit('can do sendmany', co(function *() {
+
+  it('can do sendmany', co(function *() {
     // fetch two new address
     let res, address1, address2;
     res = yield agent.post(`/api/v2/teth/wallet/${testWalletId}/address`).set(authHeader);
@@ -121,9 +121,24 @@ describe('Bitgo Express TETH v2', function () {
       .post(`/api/v2/teth/wallet/${testWalletId}/sendmany`)
       .set(authHeader)
       .send({
+        walletPassphrase: testWalletPassphrase,
         recipients: [
           { address: address1, amount: '10000' },
           { address: address2, amount: '20000' },
+        ]
+      });
+
+    // Ethereum does not support "sendmany" with multiple recipients, see JIRA BG-994
+    res.statusCode.should.equal(400);
+
+    // Sendmany with single recipient is fine
+    res = yield agent
+      .post(`/api/v2/teth/wallet/${testWalletId}/sendmany`)
+      .set(authHeader)
+      .send({
+        walletPassphrase: testWalletPassphrase,
+        recipients: [
+          { address: address1, amount: '10000' },
         ]
       });
     res.statusCode.should.equal(200);
