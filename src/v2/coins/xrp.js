@@ -130,7 +130,7 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
   if (walletParams.rootPrivateKey) {
     const rootPrivateKey = walletParams.rootPrivateKey;
     if (typeof rootPrivateKey !== 'string' || rootPrivateKey.length !== 64) {
-      throw new Error('rootPrivateKey needs to be a hexadecimal private key string')
+      throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
     }
     keyPair = prova.ECPair.fromPrivateKeyBuffer(Buffer.from(walletParams.rootPrivateKey, 'hex'));
   }
@@ -225,7 +225,16 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
  * @returns {{displayOrder: [string,string,string,string,string], id: *, outputs: Array, changeOutputs: Array}}
  */
 Xrp.prototype.explainTransaction = function(params) {
-  var transaction = rippleBinaryCodec.decode(params.txHex);
+  let transaction;
+  try {
+    transaction = rippleBinaryCodec.decode(params.txHex);
+  } catch (e) {
+    try {
+      transaction = JSON.parse(params.txHex);
+    } catch (e) {
+      throw new Error('txHex needs to be either hex or JSON string for XRP');
+    }
+  }
   var id = rippleHashes.computeBinaryTransactionHash(params.txHex);
   var changeAmount = 0;
   var explanation = {
