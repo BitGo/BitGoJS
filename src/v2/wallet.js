@@ -257,6 +257,7 @@ Wallet.prototype.createAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
+  // TODO: verify address generation
   params.chain = params.chain || 0;
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
   .send(params)
@@ -543,6 +544,7 @@ Wallet.prototype.signTransaction = function(params, callback) {
     }
     userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
   }
+
   var self = this;
   return Q.fcall(function() {
     const signingParams = _.extend({}, params, { txPrebuild: txPrebuild, prv: userPrv });
@@ -617,6 +619,7 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('Only one of prebuildTx and recipients may be specified');
   }
 
+  // TODO: use Array.isArray
   if (params.recipients && !(params.recipients instanceof Array)) {
     throw new Error('expecting recipients array');
   }
@@ -633,8 +636,8 @@ Wallet.prototype.sendMany = function(params, callback) {
 
   // pass in either the prebuild promise or, if undefined, the actual prebuild
   return Q.all([txPrebuildPromise || txPrebuild, userKeychainPromise])
-  // preserve the "this"-reference in signTransaction
   .spread(function(txPrebuild, userKeychain) {
+    // TODO: fix blob for
     var signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
     return self.signTransaction(signingParams);
   })

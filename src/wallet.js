@@ -7,6 +7,8 @@
 
 var TransactionBuilder = require('./transactionBuilder');
 var bitcoin = require('./bitcoin');
+// TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
+var bitcoinCash = require('./bitcoinCash');
 var Keychains = require('./keychains');
 var PendingApproval = require('./pendingapproval');
 var Util = require('./util');
@@ -210,11 +212,17 @@ Wallet.prototype.createAddress = function(params, callback) {
   var shouldValidate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
 
   var allowExisting = params.allowExisting;
-  if (typeof(params.allowExisting) != 'boolean') {
-    allowExisting = params.allowExisting === "true";
+  if (typeof params.allowExisting !== 'boolean') {
+    allowExisting = (params.allowExisting === 'true');
   }
 
-  var chain = params.chain || 0;
+  const isSegwit = this.bitgo.getConstants().enableSegwit;
+  const defaultChain = isSegwit ? 10 : 0;
+
+  var chain = params.chain;
+  if (chain === null || chain === undefined) {
+    chain = defaultChain;
+  }
   return this.bitgo.post(this.url('/address/' + chain))
   .send(params)
   .result()
@@ -233,12 +241,13 @@ Wallet.prototype.createAddress = function(params, callback) {
 //
 Wallet.prototype.validateAddress = function(params) {
   common.validateParams(params, ['address', 'path'], []);
+  const isSegwit = !!params.witnessScript && params.witnessScript.length > 0;
   var self = this;
 
   // Function to calculate the address locally, to validate that what the server
   // gives us is an address in this wallet.
   var calcAddress = function(path) {
-    var re = /^\/[01]\/\d+$/;
+    var re = /^\/1?[01]\/\d+$/;
     if (!path.match(re)) {
       throw new Error('unsupported path: ' + path);
     }
@@ -249,6 +258,14 @@ Wallet.prototype.validateAddress = function(params) {
     });
     // TODO: use wallet 'm' value, when exposed
     var script = Util.p2shMultisigOutputScript(2, pubKeys);
+
+    if (isSegwit) {
+      const witnessScript = bitcoinCash.script.multisig.output.encode(2, pubKeys);
+      const witnessScriptHash = bitcoinCash.crypto.sha256(witnessScript);
+      const redeemScript = bitcoinCash.script.witnessScriptHash.output.encode(witnessScriptHash);
+      const redeemScriptHash = bitcoinCash.crypto.hash160(redeemScript);
+      script = bitcoinCash.script.scriptHash.output.encode(redeemScriptHash);
+    }
     return bitcoin.address.fromOutputScript(script, bitcoin.getNetwork());
   };
 
@@ -268,41 +285,44 @@ Wallet.prototype.addresses = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var args = [];
+  const query = {};
   if (params.details) {
-    args.push('details=1');
+    query.details = 1;
   }
-  if (typeof(params.chain) != 'undefined') {
-    if (params.chain !== 0 && params.chain !== 1) {
-      throw new Error('invalid chain argument, expecting 0 or 1');
+
+  const chain = params.chain;
+  if (chain !== null && chain !== undefined) {
+    if (Array.isArray(chain)) {
+      query.chain = _.uniq(_.filter(chain, _.isInteger));
+    } else {
+      if (chain !== 0 && chain !== 1) {
+        throw new Error('invalid chain argument, expecting 0 or 1');
+      }
+      query.chain = chain;
     }
-    args.push('chain=' + params.chain);
   }
   if (params.limit) {
-    if (typeof(params.limit) != 'number') {
+    if (typeof(params.limit) !== 'number') {
       throw new Error('invalid limit argument, expecting number');
     }
-    args.push('limit=' + params.limit);
+    query.limit = params.limit;
   }
   if (params.skip) {
-    if (typeof(params.skip) != 'number') {
+    if (typeof(params.skip) !== 'number') {
       throw new Error('invalid skip argument, expecting number');
     }
-    args.push('skip=' + params.skip);
+    query.skip = params.skip;
   }
   if (params.sort) {
-    if (typeof(params.sort) != 'number') {
+    if (typeof(params.sort) !== 'number') {
       throw new Error('invalid sort argument, expecting number');
     }
-    args.push('sort=' + params.sort);
+    query.sort = params.sort;
   }
-  var query = '';
-  if (args.length) {
-    query = '?' + args.join('&');
-  }
-  var url = this.url('/addresses' + query);
 
+  var url = this.url('/addresses');
   return this.bitgo.get(url)
+  .query(query)
   .result()
   .nodeify(callback);
 };

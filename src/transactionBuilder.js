@@ -7,11 +7,13 @@
 
 var Q = require('q');
 var bitcoin = require('./bitcoin');
+var bitcoinCash = require('./bitcoinCash');
 var common = require('./common');
 var Util = require('./util');
 var _ = require('lodash');
 
 const P2SH_INPUT_SIZE = 295;
+const P2SH_P2WSH_INPUT_SIZE = 139;
 const P2PKH_INPUT_SIZE = 160;
 const OUTPUT_SIZE = 34;
 const TX_OVERHEAD_SIZE = 10;
@@ -363,10 +365,14 @@ exports.createTransaction = function(params) {
       unspents = _.filter(unspents, function(unspent) {
         return unspent.value > minInputValue;
       });
+      let segwitInputCount = 0;
       unspents.every(function(unspent) {
+        if (unspent.witnessScript) {
+          segwitInputCount++;
+        }
         inputAmount += unspent.value;
-        var script = new Buffer(unspent.script, 'hex');
-        transaction.addInput(unspent.tx_hash, unspent.tx_output_n, 0xffffffff, script);
+        transaction.addInput(unspent.tx_hash, unspent.tx_output_n, 0xffffffff);
+
         return (inputAmount < (feeSingleKeySourceAddress ? totalOutputAmount : totalAmount));
       });
 
@@ -386,7 +392,8 @@ exports.createTransaction = function(params) {
       }
 
       txInfo = {
-        nP2SHInputs: transaction.tx.ins.length - (feeSingleKeySourceAddress ? 1 : 0),
+        nP2SHInputs: transaction.tx.ins.length - (feeSingleKeySourceAddress ? 1 : 0) - segwitInputCount,
+        nP2SHP2WSHInputs: segwitInputCount,
         nP2PKHInputs: feeSingleKeySourceAddress ? 1 : 0,
         nOutputs: (
           recipients.length + 1 + // recipients and change
@@ -398,6 +405,7 @@ exports.createTransaction = function(params) {
 
       estTxSize = estimateTransactionSize({
         nP2SHInputs: txInfo.nP2SHInputs,
+        nP2SHP2WSHInputs: txInfo.nP2SHP2WSHInputs,
         nP2PKHInputs: txInfo.nP2PKHInputs,
         nOutputs: txInfo.nOutputs
       });
@@ -407,6 +415,7 @@ exports.createTransaction = function(params) {
           bitgo: params.wallet.bitgo,
           feeRate: feeRate,
           nP2SHInputs: txInfo.nP2SHInputs,
+          nP2SHP2WSHInputs: txInfo.nP2SHP2WSHInputs,
           nP2PKHInputs: txInfo.nP2PKHInputs,
           nOutputs: txInfo.nOutputs
         });
@@ -559,7 +568,10 @@ exports.createTransaction = function(params) {
             return params.changeAddress;
           } else {
             // Otherwise create a new address per output, for privacy
-            return params.wallet.createAddress({chain: 1, validate: validate})
+            // determine if segwit or not
+            const isSegwit = bitgo.getConstants().enableSegwit;
+            const changeChain = isSegwit ? 11 : 1;
+            return params.wallet.createAddress({ chain: changeChain, validate: validate })
               .then(function(result) {
                 return result.address;
               });
@@ -614,7 +626,7 @@ exports.createTransaction = function(params) {
   var serialize = function() {
     // only need to return the unspents that were used and just the chainPath, redeemScript, and instant flag
     var pickedUnspents = _.map(unspents, function(unspent) {
-      return _.pick(unspent, ['chainPath', 'redeemScript', 'instant']);
+      return _.pick(unspent, ['chainPath', 'redeemScript', 'instant', 'witnessScript', 'value']);
     });
     var prunedUnspents = _.slice(pickedUnspents, 0, transaction.tx.ins.length - feeSingleKeyUnspentsUsed.length);
     _.each(feeSingleKeyUnspentsUsed, function(feeUnspent) {
@@ -669,20 +681,30 @@ exports.createTransaction = function(params) {
  * @returns size: estimated size of the transaction in bytes
  */
 var estimateTransactionSize = function(params) {
-  if (typeof(params.nP2SHInputs) !== 'number' || params.nP2SHInputs < 1) {
+  if (!_.isInteger(params.nP2SHInputs) || params.nP2SHInputs < 0) {
     throw new Error('expecting positive nP2SHInputs');
   }
-  if ((params.nP2PKHInputs) && (typeof(params.nP2PKHInputs) !== 'number')) {
+  if (!_.isInteger(params.nP2PKHInputs) || params.nP2PKHInputs < 0) {
     throw new Error('expecting positive nP2PKHInputs to be numeric');
   }
-  if (typeof(params.nOutputs) !== 'number' || params.nOutputs < 1) {
+  if (!_.isInteger(params.nP2SHP2WSHInputs) || params.nP2SHP2WSHInputs < 0) {
+    throw new Error('expecting positive nP2SHP2WSHInputs to be numeric');
+  }
+  if ((params.nP2SHInputs + params.nP2SHP2WSHInputs) < 1) {
+    throw new Error('expecting at least one nP2SHInputs or nP2SHP2WSHInputs');
+  }
+  if (!_.isInteger(params.nOutputs) || params.nOutputs < 1) {
     throw new Error('expecting positive nOutputs');
   }
 
+
+
   var estimatedSize = P2SH_INPUT_SIZE * params.nP2SHInputs +
+    P2SH_P2WSH_INPUT_SIZE * (params.nP2SHP2WSHInputs || 0) +
     P2PKH_INPUT_SIZE * (params.nP2PKHInputs || 0) +
     OUTPUT_SIZE * params.nOutputs +
-    TX_OVERHEAD_SIZE;
+    // if the tx contains at least one segwit input, the tx overhead is increased by 1
+    TX_OVERHEAD_SIZE + (params.nP2SHP2WSHInputs > 0 ? 1 : 0);
 
   return estimatedSize;
 };
@@ -736,16 +758,16 @@ exports.signTransaction = function(params) {
 
   var validate = (params.validate === undefined) ? true : params.validate;
   var privKey;
-  if (typeof(params.transactionHex) != 'string') {
+  if (typeof(params.transactionHex) !== 'string') {
     throw new Error('expecting the transaction hex as a string');
   }
   if (!Array.isArray(params.unspents)) {
     throw new Error('expecting the unspents array');
   }
-  if (typeof(validate) != 'boolean') {
+  if (typeof(validate) !== 'boolean') {
     throw new Error('expecting validate to be a boolean');
   }
-  if (typeof(keychain) != 'object' || typeof(keychain.xprv) != 'string') {
+  if (typeof(keychain) !== 'object' || typeof(keychain.xprv) !== 'string') {
     if (typeof(params.signingKey) === 'string') {
       privKey = bitcoin.ECPair.fromWIF(params.signingKey, bitcoin.getNetwork());
       keychain = undefined;
@@ -759,7 +781,7 @@ exports.signTransaction = function(params) {
     feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, bitcoin.getNetwork());
   }
 
-  var transaction = bitcoin.Transaction.fromHex(params.transactionHex);
+  var transaction = bitcoinCash.Transaction.fromHex(params.transactionHex);
   if (transaction.ins.length !== params.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
@@ -769,47 +791,57 @@ exports.signTransaction = function(params) {
     var rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
     hdPath = bitcoin.hdPath(rootExtKey);
   }
-  var txb;
 
-  for (var index = 0; index < transaction.ins.length; ++index) {
-    if (params.unspents[index].redeemScript === false) {
+  var txb = bitcoinCash.TransactionBuilder.fromTransaction(transaction, rootExtKey.keyPair.network);
+
+  for (let index = 0; index < txb.tx.ins.length; ++index) {
+    const currentUnspent = params.unspents[index];
+    if (currentUnspent.redeemScript === false) {
       // this is the input from a single key fee address
       if (!feeSingleKey) {
         throw new Error('single key address used in input but feeSingleKeyWIF not provided');
       }
 
-      txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
       txb.sign(index, feeSingleKey);
-      transaction = txb.buildIncomplete();
       continue;
     }
 
+    const chainPath = currentUnspent.chainPath;
     if (hdPath) {
       var subPath = keychain.walletSubPath || '/0/0';
-      var path = keychain.path + subPath + params.unspents[index].chainPath;
+      var path = keychain.path + subPath + chainPath;
       privKey = hdPath.deriveKey(path);
     }
+
+    const isSegwitInput = !!currentUnspent.witnessScript;
 
     // subscript is the part of the output script after the OP_CODESEPARATOR.
     // Since we are only ever signing p2sh outputs, which do not have
     // OP_CODESEPARATORS, it is always the output script.
-    var subscript = new Buffer(params.unspents[index].redeemScript, 'hex');
+    let subscript = new Buffer(currentUnspent.redeemScript, 'hex');
+    currentUnspent.validationScript = subscript;
 
     // In order to sign with bitcoinjs-lib, we must use its transaction
     // builder, confusingly named the same exact thing as our transaction
     // builder, but with inequivalent behavior.
-    txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
     try {
-      txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);
+      if (isSegwitInput) {
+        const witnessScript = new Buffer(currentUnspent.witnessScript, 'hex');
+        currentUnspent.validationScript = witnessScript;
+        txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL, currentUnspent.value, witnessScript);
+      } else {
+        txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);
+      }
     } catch (e) {
       return Q.reject('Failed to sign input #' + index);
     }
 
-    // Build the "incomplete" transaction, i.e. one that does not have all
-    // the signatures (since we are only signing the first of 2 signatures in
-    // a 2-of-3 multisig).
-    transaction = txb.buildIncomplete();
+  }
 
+  // reserialize transaction
+  transaction = txb.build();
+
+  for (let index = 0; index < transaction.ins.length; ++index) {
     // bitcoinjs-lib adds one more OP_0 than we need. It creates one OP_0 for
     // every n public keys in an m-of-n multisig, and replaces the OP_0s with
     // the signature of the nth public key, then removes any remaining OP_0s
@@ -819,30 +851,21 @@ exports.signTransaction = function(params) {
     // chronological order, but is not compatible with the BitGo API, which
     // assumes m OP_0s for m-of-n multisig (or m-1 after the first signature
     // is created). Thus we need to remove the superfluous OP_0.
-    var chunks = bitcoin.script.decompile(transaction.ins[index].script);
-    if (chunks.length !== 5) {
-      throw new Error('unexpected number of chunks in the OP_CHECKMULTISIG script after signing');
-    }
-    if (chunks[1]) {
-      chunks.splice(2, 1); // The extra OP_0 is the third chunk
-    } else if (chunks[2]) {
-      chunks.splice(1, 1); // The extra OP_0 is the second chunk
-    }
 
-    transaction.ins[index].script = bitcoin.script.compile(chunks);
+    const currentUnspent = params.unspents[index];
 
     // The signatures are validated server side and on the bitcoin network, so
     // the signature validation is optional and can be disabled by setting:
     // validate = false
     if (validate) {
-      if (exports.verifyInputSignatures(transaction, index, subscript) !== -1) {
+      if (exports.verifyInputSignatures(transaction, index, currentUnspent.validationScript, false, currentUnspent.value) !== -1) {
         throw new Error('number of signatures is invalid - something went wrong when signing');
       }
     }
   }
 
   return Q.when({
-    transactionHex: transaction.toBuffer().toString('hex')
+    transactionHex: transaction.toHex()
   });
 };
 
@@ -855,22 +878,34 @@ exports.signTransaction = function(params) {
  * @param inputIndex the input index to verify
  * @param pubScript the redeem script to verify with
  * @param ignoreKeyIndices array of multisig keys indexes (in order of keychains on the wallet). e.g. [1] to ignore backup keys
+ * @param amount
  * @returns {number}
  */
-exports.verifyInputSignatures = function(transaction, inputIndex, pubScript, ignoreKeyIndices) {
+exports.verifyInputSignatures = function(transaction, inputIndex, pubScript, ignoreKeyIndices, amount) {
   if (inputIndex < 0 || inputIndex >= transaction.ins.length) {
     throw new Error('illegal index');
   }
 
   ignoreKeyIndices = ignoreKeyIndices || [];
-  var sigScript = transaction.ins[inputIndex].script;
+  const currentTransactionInput = transaction.ins[inputIndex];
+  var sigScript = currentTransactionInput.script;
   var sigsNeeded = 1;
   var sigs = [];
   var pubKeys = [];
   var decompiledSigScript = bitcoin.script.decompile(sigScript);
 
+  const isSegwitInput = currentTransactionInput.witness.length > 0;
+  if (isSegwitInput) {
+    decompiledSigScript = currentTransactionInput.witness;
+    sigScript = bitcoin.script.compile(decompiledSigScript);
+    if (!amount) {
+      return 0;
+    }
+  }
+
   // Check the script type to determine number of signatures, the pub keys, and the script to hash.
-  switch (bitcoin.script.classifyInput(sigScript, true)) {
+  const inputClassification = bitcoinCash.script.classifyInput(sigScript, true);
+  switch (inputClassification) {
     case 'scripthash':
       // Replace the pubScript with the P2SH Script.
       pubScript = decompiledSigScript[decompiledSigScript.length - 1];
@@ -897,16 +932,21 @@ exports.verifyInputSignatures = function(transaction, inputIndex, pubScript, ign
       return 0;
   }
 
-  var numVerifiedSignatures = 0;
-  for (var sigIndex = 0; sigIndex < sigs.length; ++sigIndex) {
+  let numVerifiedSignatures = 0;
+  for (let sigIndex = 0; sigIndex < sigs.length; ++sigIndex) {
     // If this is an OP_0, then its been left as a placeholder for a future sig.
-    if (sigs[sigIndex] == bitcoin.opcodes.OP_0) {
+    if (sigs[sigIndex] === bitcoin.opcodes.OP_0) {
       continue;
     }
 
     var hashType = sigs[sigIndex][sigs[sigIndex].length - 1];
     sigs[sigIndex] = sigs[sigIndex].slice(0, sigs[sigIndex].length - 1); // pop hash type from end
-    var signatureHash = transaction.hashForSignature(inputIndex, pubScript, hashType);
+    let signatureHash;
+    if (isSegwitInput) {
+      signatureHash = transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
+    } else {
+      signatureHash = transaction.hashForSignature(inputIndex, pubScript, hashType);
+    }
 
     var validSig = false;
 

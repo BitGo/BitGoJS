@@ -116,6 +116,7 @@ Wallets.prototype.add = function(params, callback) {
     keys: params.keys
   };
 
+  // TODO: replace all IFs with single pick line
   if (params.enterprise) {
     walletParams.enterprise = params.enterprise;
   }

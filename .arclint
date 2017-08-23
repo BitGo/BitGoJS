@@ -14,10 +14,6 @@
     },
     "spelling": {
       "type": "spelling"
-    },
-    "eslint": {
-      "type": "eslint",
-      "include": "(\\.js$)"
     }
   }
 }
