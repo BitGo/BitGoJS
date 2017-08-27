@@ -235,6 +235,82 @@ Wallet.prototype.createAddress = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * Generate address locally without calling server
+ * @param params
+ *
+ */
+Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold }) {
+  const isSegwit = !!segwit;
+  let signatureThreshold = 2;
+  if (_.isInteger(threshold)) {
+    signatureThreshold = threshold;
+    if (signatureThreshold <= 0) {
+      throw new Error('threshold has to be positive');
+    }
+  }
+
+  const pathRegex = /^\/1?[01]\/\d+$/;
+  if (!path.match(pathRegex)) {
+    throw new Error('unsupported path: ' + path);
+  }
+
+  let rootKeys = this.keychains;
+  if (Array.isArray(keychains)) {
+    rootKeys = keychains;
+  }
+
+  const derivedKeys = rootKeys.map(function(k) {
+    const hdnode = bitcoin.HDNode.fromBase58(k.xpub);
+    let derivationPath = k.path + path;
+    if (k.walletSubPath) {
+      // if a keychain has a wallet subpath, it should be used as an infix
+      derivationPath = k.path + k.walletSubPath + path;
+    }
+    if (!derivationPath.startsWith('m')) {
+      // all derivation paths need to start with m, but k.path may already contain that
+      derivationPath = `m/${derivationPath}`;
+    }
+    return bitcoin.hdPath(hdnode).deriveKey(derivationPath).getPublicKeyBuffer();
+  });
+
+  const pathComponents = path.split('/');
+  const normalizedPathComponents = _.map(pathComponents, (component) => {
+    if (component && component.length > 0) {
+      return parseInt(component);
+    }
+  });
+  const pathDetails = _.filter(normalizedPathComponents, _.isInteger);
+
+  const addressDetails = {
+    chainPath: path,
+    path: path,
+    chain: pathDetails[0],
+    index: pathDetails[1],
+    wallet: this.id()
+  };
+
+  // redeem script normally, witness script for segwit
+  const inputScript = bitcoinCash.script.multisig.output.encode(signatureThreshold, derivedKeys);
+  const inputScriptHash = bitcoinCash.crypto.hash160(inputScript);
+  let outputScript = bitcoinCash.script.scriptHash.output.encode(inputScriptHash);
+  addressDetails.redeemScript = inputScript.toString('hex');
+
+  if (isSegwit) {
+    const witnessScriptHash = bitcoinCash.crypto.sha256(inputScript);
+    const redeemScript = bitcoinCash.script.witnessScriptHash.output.encode(witnessScriptHash);
+    const redeemScriptHash = bitcoinCash.crypto.hash160(redeemScript);
+    outputScript = bitcoinCash.script.scriptHash.output.encode(redeemScriptHash);
+    addressDetails.witnessScript = inputScript.toString('hex');
+    addressDetails.redeemScript = redeemScript.toString('hex');
+  }
+
+  addressDetails.outputScript = outputScript.toString('hex');
+  addressDetails.address = bitcoin.address.fromOutputScript(outputScript, bitcoin.getNetwork());
+
+  return addressDetails;
+};
+
 //
 // validateAddress
 // Validates an address and path by calculating it locally from the keychain xpubs
@@ -242,36 +318,10 @@ Wallet.prototype.createAddress = function(params, callback) {
 Wallet.prototype.validateAddress = function(params) {
   common.validateParams(params, ['address', 'path'], []);
   const isSegwit = !!params.witnessScript && params.witnessScript.length > 0;
-  var self = this;
 
-  // Function to calculate the address locally, to validate that what the server
-  // gives us is an address in this wallet.
-  var calcAddress = function(path) {
-    var re = /^\/1?[01]\/\d+$/;
-    if (!path.match(re)) {
-      throw new Error('unsupported path: ' + path);
-    }
-
-    var pubKeys = self.keychains.map(function(k) {
-      var hdnode = bitcoin.HDNode.fromBase58(k.xpub);
-      return bitcoin.hdPath(hdnode).deriveKey('m' + k.path + path).getPublicKeyBuffer();
-    });
-    // TODO: use wallet 'm' value, when exposed
-    var script = Util.p2shMultisigOutputScript(2, pubKeys);
-
-    if (isSegwit) {
-      const witnessScript = bitcoinCash.script.multisig.output.encode(2, pubKeys);
-      const witnessScriptHash = bitcoinCash.crypto.sha256(witnessScript);
-      const redeemScript = bitcoinCash.script.witnessScriptHash.output.encode(witnessScriptHash);
-      const redeemScriptHash = bitcoinCash.crypto.hash160(redeemScript);
-      script = bitcoinCash.script.scriptHash.output.encode(redeemScriptHash);
-    }
-    return bitcoin.address.fromOutputScript(script, bitcoin.getNetwork());
-  };
-
-  var localAddress = calcAddress(params.path);
-  if (localAddress !== params.address) {
-    throw new Error('address validation failure: ' + params.address + ' vs. ' + localAddress);
+  const generatedAddress = this.generateAddress({ path: params.path, segwit: isSegwit });
+  if (generatedAddress.address !== params.address) {
+    throw new Error('address validation failure: ' + params.address + ' vs. ' + generatedAddress.address);
   }
 };
 

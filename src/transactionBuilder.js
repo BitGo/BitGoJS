@@ -40,6 +40,7 @@ exports.createTransaction = function(params) {
   var minConfirms = params.minConfirms || 0;
   var validate = params.validate === undefined ? true : params.validate;
   var recipients = [];
+  var opReturns = [];
   var extraChangeAmounts = [];
   var estTxSize;
   var travelInfos;
@@ -119,7 +120,19 @@ exports.createTransaction = function(params) {
     recipients = params.recipients;
   }
 
-  if (recipients.length === 0) {
+  if (params.opReturns) {
+    if (!(params.opReturns instanceof Array)) {
+      opReturns = [];
+      Object.keys(params.opReturns).forEach(function(message) {
+        var amount = params.opReturns[message];
+        opReturns.push({ message, amount });
+      });
+    } else {
+      opReturns = params.opReturns;
+    }
+  }
+
+  if (recipients.length === 0 && opReturns.length === 0) {
     throw new Error('must have at least one recipient');
   }
 
@@ -140,15 +153,19 @@ exports.createTransaction = function(params) {
       }
       if (!!recipient.script) {
         // A script was provided as well - validate that the address corresponds to that
-        if (bitcoin.address.toOutputScript(recipient.address, bitcoin.getNetwork()).toString('hex') != recipient.script) {
+        if (bitcoin.address.toOutputScript(recipient.address, bitcoin.getNetwork()).toString('hex') !== recipient.script) {
           throw new Error('both script and address provided but they did not match: ' + recipient.address + " " + recipient.script);
         }
       }
     }
-    if (typeof(recipient.amount) != 'number' || isNaN(recipient.amount) || recipient.amount < 0) {
+    if (!_.isInteger(recipient.amount) || recipient.amount < 0) {
       throw new Error('invalid amount for ' + recipient.address + ': ' + recipient.amount);
     }
     totalOutputAmount += recipient.amount;
+  });
+
+  opReturns.forEach(function(opReturn) {
+    totalOutputAmount += opReturn.amount;
   });
 
   var bitgoFeeInfo = params.bitgoFee;
@@ -365,6 +382,9 @@ exports.createTransaction = function(params) {
       unspents = _.filter(unspents, function(unspent) {
         return unspent.value > minInputValue;
       });
+      if (unspents.length === 0) {
+        throw new Error('insufficient funds');
+      }
       let segwitInputCount = 0;
       unspents.every(function(unspent) {
         if (unspent.witnessScript) {
@@ -517,6 +537,11 @@ exports.createTransaction = function(params) {
       });
     });
 
+    opReturns.forEach(function({ message, amount }) {
+      const script = bitcoin.script.fromASM('OP_RETURN ' + Buffer.from(message).toString('hex'));
+      outputs.push({ script, amount });
+    });
+
     var getChangeOutputs = function(changeAmount) {
       if (changeAmount < 0) {
         throw new Error('negative change amount: ' + changeAmount);
@@ -626,7 +651,7 @@ exports.createTransaction = function(params) {
   var serialize = function() {
     // only need to return the unspents that were used and just the chainPath, redeemScript, and instant flag
     var pickedUnspents = _.map(unspents, function(unspent) {
-      return _.pick(unspent, ['chainPath', 'redeemScript', 'instant', 'witnessScript', 'value']);
+      return _.pick(unspent, ['chainPath', 'redeemScript', 'instant', 'witnessScript', 'script', 'value']);
     });
     var prunedUnspents = _.slice(pickedUnspents, 0, transaction.tx.ins.length - feeSingleKeyUnspentsUsed.length);
     _.each(feeSingleKeyUnspentsUsed, function(feeUnspent) {
@@ -825,13 +850,28 @@ exports.signTransaction = function(params) {
     // builder, confusingly named the same exact thing as our transaction
     // builder, but with inequivalent behavior.
     try {
+
       if (isSegwitInput) {
+        let signatures = _.cloneDeep(txb.inputs[index].signatures);
         const witnessScript = new Buffer(currentUnspent.witnessScript, 'hex');
         currentUnspent.validationScript = witnessScript;
         txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL, currentUnspent.value, witnessScript);
+
+        if (Array.isArray(signatures)) {
+          // for segwit inputs, if they are partially signed, bitcoinjs-lib overrides previous signatures
+          // this workaround forces them to be preserved
+          signatures = signatures.filter(sig => !!sig);
+          // Last, override builder's signatures property to an array including previous signatures, if there are any.
+          const builderSignatures = txb.inputs[index].signatures;
+          const nonEmptySignatures = _.remove(builderSignatures, sig => !!sig);
+          signatures.push.apply(signatures, nonEmptySignatures);
+          txb.inputs[index].signatures = signatures;
+        }
+
       } else {
         txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);
       }
+
     } catch (e) {
       return Q.reject('Failed to sign input #' + index);
     }
@@ -858,9 +898,18 @@ exports.signTransaction = function(params) {
     // the signature validation is optional and can be disabled by setting:
     // validate = false
     if (validate) {
-      if (exports.verifyInputSignatures(transaction, index, currentUnspent.validationScript, false, currentUnspent.value) !== -1) {
+      const signatureCount = exports.verifyInputSignatures(transaction, index, currentUnspent.validationScript, false, currentUnspent.value);
+      // TODO: figure out something smarter for half-signed
+
+      // if params.fullLocalSigning is set to true, we allow custom non-zero values
+      // otherwise, the signature count has to be -1
+
+      const fullLocalSigning = !!params.fullLocalSigning;
+      if (signatureCount === 0 || (!fullLocalSigning && signatureCount !== -1)) {
+        // if the signature count is positive, we do not want to throw the error, because it is expected
         throw new Error('number of signatures is invalid - something went wrong when signing');
       }
+
     }
   }
 

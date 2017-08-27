@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "babelify": "7.3.0",
+    "bluebird": "~3.5.0",
     "browserify": "13.1.0",
     "coveralls": "~2.13.1",
     "envify": "~3.4.0",

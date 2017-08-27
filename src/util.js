@@ -30,7 +30,7 @@ Util.bnToByteArrayUnsigned = function(bn) {
 
 // Generate the output script for a BTC P2SH multisig address
 Util.p2shMultisigOutputScript = function(m, pubKeys) {
-  var redeemScript = bitcoin.script.multisigOutput(2, pubKeys);
+  var redeemScript = bitcoin.script.multisigOutput(m, pubKeys);
   var hash = bitcoin.crypto.hash160(redeemScript);
   return bitcoin.script.scriptHashOutput(hash);
 };
