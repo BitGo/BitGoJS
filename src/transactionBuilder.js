@@ -362,26 +362,32 @@ exports.createTransaction = function(params) {
 
     // Calculate the cost of spending a single input, i.e. the smallest economical unspent value
     return Q().then(function() {
-      var minInputValue = 0;
-      if (typeof(params.minUnspentSize) !== 'undefined') {
-        minInputValue = params.minUnspentSize;
-      }
-      if (typeof(params.feeRate) !== 'undefined') {
-        return Math.max((params.feeRate * P2SH_INPUT_SIZE) / 1000, minInputValue);
+
+      if (_.isNumber(params.feeRate)) {
+        return params.feeRate;
       } else {
         return bitgo.estimateFee({
           numBlocks: params.feeTxConfirmTarget,
           maxFee: params.maxFeeRate
         })
         .then(function(feeRateEstimate) {
-          return Math.max((feeRateEstimate.feePerKb * P2SH_INPUT_SIZE) / 1000, minInputValue);
+          return feeRateEstimate.feePerKb;
         });
       }
-    }).then(function(minInputValue) {
+    }).then(function(feeRate) {
       // Don't spend inputs that cannot pay for their own cost.
+      let minInputValue = 0;
+      if (_.isInteger(params.minUnspentSize)) {
+        minInputValue = params.minUnspentSize;
+      }
+
       unspents = _.filter(unspents, function(unspent) {
-        return unspent.value > minInputValue;
+        const isSegwitInput = !!unspent.witnessScript;
+        const currentInputSize = isSegwitInput ? P2SH_P2WSH_INPUT_SIZE : P2SH_INPUT_SIZE;
+        const currentMinInputValue = Math.max(minInputValue, (feeRate * currentInputSize) / 1000);
+        return unspent.value > currentMinInputValue;
       });
+
       if (unspents.length === 0) {
         throw new Error('insufficient funds');
       }
