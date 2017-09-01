@@ -166,6 +166,7 @@ var handleCalculateMinerFeeInfo = function(req) {
     feeRate: req.body.feeRate,
     nP2SHInputs: req.body.nP2SHInputs,
     nP2PKHInputs: req.body.nP2PKHInputs,
+    nP2SHP2WSHInputs: req.body.nP2SHP2WSHInputs,
     nOutputs: req.body.nOutputs
   });
 };
