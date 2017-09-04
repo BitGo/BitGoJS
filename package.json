@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -73,7 +73,7 @@
     "bigi": "1.4.0",
     "bignumber.js": "~4.0.2",
     "bitcoinjs-lib": "2.1.4",
-    "bcashjs-lib": "https://github.com/BitGo/bcashjs-lib.git",
+    "bcashjs-lib": "https://github.com/BitGo/bcashjs-lib.git#a49702b12f06729ab80756d1c6dba880f0c64295",
     "body-parser": "~1.17.2",
     "bs58": "2.0.1",
     "bs58check": "1.0.4",
