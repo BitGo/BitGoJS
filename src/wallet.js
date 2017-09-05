@@ -205,7 +205,7 @@ Wallet.prototype.createAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
   if (this.type() === 'safe') {
-    throw new Error('cannot create an address for safe wallet; use .id()');
+    throw new Error('You are using a legacy wallet that cannot create a new address');
   }
 
   // Default to client-side address validation on, for safety. Use validate=false to disable.
