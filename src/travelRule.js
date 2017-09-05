@@ -5,20 +5,20 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var Util = require('./util');
+const Util = require('./util');
 
-var assert = require('assert');
-var bitcoin = require('./bitcoin');
-var common = require('./common');
-var networks = require('bitcoinjs-lib/src/networks');
-var Q = require('q');
-var _ = require('lodash');
-var sjcl = require('./sjcl.min');
+const assert = require('assert');
+const bitcoin = require('./bitcoin');
+const common = require('./common');
+const networks = require('bitcoinjs-lib/src/networks');
+const Promise = require('bluebird');
+const _ = require('lodash');
+const sjcl = require('./sjcl.min');
 
 //
 // Constructor
 //
-var TravelRule = function(bitgo) {
+const TravelRule = function(bitgo) {
   this.bitgo = bitgo;
 };
 
@@ -95,7 +95,7 @@ TravelRule.prototype.decryptReceivedTravelInfo = function(params) {
   params = params || {};
 
   var tx = params.tx;
-  if (typeof(tx) != 'object') {
+  if (!_.isObject(tx)) {
     throw new Error('expecting tx param to be object');
   }
 
@@ -109,13 +109,13 @@ TravelRule.prototype.decryptReceivedTravelInfo = function(params) {
     hdNode = params.hdnode;
   } else {
     var keychain = params.keychain;
-    if (typeof(keychain) != 'object' || typeof(keychain.xprv) != 'string') {
+    if (!_.isObject(keychain) || !_.isString(keychain.xprv)) {
       throw new Error('expecting keychain param with xprv');
     }
     hdNode = bitcoin.HDNode.fromBase58(keychain.xprv);
   }
 
-  var self = this;
+  const self = this;
   var hdPath = bitcoin.hdPath(hdNode);
   tx.receivedTravelInfo.forEach(function(info) {
     var key = hdPath.deriveKey(info.toPubKeyPath);
@@ -141,10 +141,10 @@ TravelRule.prototype.prepareParams = function(params) {
   var txid = params.txid;
   var recipient = params.recipient;
   var travelInfo = params.travelInfo;
-  if (!recipient || typeof(recipient) !== 'object') {
+  if (!recipient || !_.isObject(recipient)) {
     throw new Error('invalid or missing recipient');
   }
-  if (!travelInfo || typeof(travelInfo) !== 'object') {
+  if (!travelInfo || !_.isObject(travelInfo)) {
     throw new Error('invalid or missing travelInfo');
   }
   if (!params.noValidate) {
@@ -195,7 +195,7 @@ TravelRule.prototype.send = function(params, callback) {
   params.txid = params.txid || params.hash;
   common.validateParams(params, ['txid', 'toPubKey', 'encryptedTravelInfo'], ['fromPubKey', 'fromPrivateInfo'], callback);
 
-  if (typeof(params.outputIndex) !== 'number') {
+  if (!_.isNumber(params.outputIndex)) {
     throw new Error('invalid outputIndex');
   }
 
@@ -236,7 +236,7 @@ TravelRule.prototype.sendMany = function(params, callback) {
     throw new Error('expected parameter travelInfos to be array');
   }
 
-  var self = this;
+  const self = this;
   var travelInfoMap = _(travelInfos)
     .keyBy('outputIndex')
     .mapValues(function(travelInfo) {
@@ -278,7 +278,7 @@ TravelRule.prototype.sendMany = function(params, callback) {
       results: []
     };
 
-    var sendSerial = function() {
+    const sendSerial = function() {
       var sendParams = sendParamsList.shift();
       if (!sendParams) {
         return result;

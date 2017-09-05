@@ -6,15 +6,15 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var request = require('superagent');
-var common = require('../common');
+const request = require('superagent');
+const common = require('../common');
 
 //
 // Constructor
 // TODO: WORK IN PROGRESS!
 // @param: bitgo Instance of BitGoJS
 //
-var EthBlockchain = function(bitgo) {
+const EthBlockchain = function(bitgo) {
   this.bitgo = bitgo;
 };
 

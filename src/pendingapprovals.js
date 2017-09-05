@@ -5,14 +5,15 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-var common = require('./common');
-var Util = require('./util');
-var PendingApproval = require('./pendingapproval');
+const common = require('./common');
+const Util = require('./util');
+const PendingApproval = require('./pendingapproval');
+const _ = require('lodash');
 
 //
 // Constructor
 //
-var PendingApprovals = function(bitgo) {
+const PendingApprovals = function(bitgo) {
   this.bitgo = bitgo;
 };
 
@@ -26,10 +27,10 @@ PendingApprovals.prototype.list = function(params, callback) {
 
   var args = [];
   var queryParams = {};
-  if (typeof(params.walletId) == 'string') {
+  if (_.isString(params.walletId)) {
     queryParams.walletId = params.walletId;
   }
-  if (typeof(params.enterpriseId) == 'string') {
+  if (_.isString(params.enterpriseId)) {
     queryParams.enterprise = params.enterpriseId;
   }
 
@@ -37,7 +38,7 @@ PendingApprovals.prototype.list = function(params, callback) {
     throw new Error('must provide exactly 1 of walletId or enterpriseId to get pending approvals on');
   }
 
-  var self = this;
+  const self = this;
   return this.bitgo.get(this.bitgo.url('/pendingapprovals'))
   .query(queryParams)
   .result()
@@ -58,7 +59,7 @@ PendingApprovals.prototype.get = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  var self = this;
+  const self = this;
   return this.bitgo.get(this.bitgo.url('/pendingapprovals/' + params.id))
   .result()
   .then(function(body) {

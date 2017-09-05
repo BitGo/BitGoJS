@@ -2,7 +2,7 @@ const BaseCoin = require('../baseCoin');
 const BigNumber = require('bignumber.js');
 const crypto = require('crypto');
 const prova = require('../../prova');
-const Q = require('q');
+const Promise = require('bluebird');
 const common = require('../../common');
 const Util = require('../../util');
 const _ = require('lodash');
@@ -59,17 +59,17 @@ const getOperationSha3ForExecuteAndConfirm = (recipients, expireTime, contractSe
     throw new Error("must send to exactly 1 recipient");
   }
 
-  if (typeof(expireTime) !== 'number') {
+  if (!_.isNumber(expireTime)) {
     throw new Error("expireTime must be number of seconds since epoch");
   }
 
-  if (typeof(contractSequenceId) !== 'number') {
+  if (!_.isNumber(contractSequenceId)) {
     throw new Error("contractSequenceId must be number");
   }
 
   // Check inputs
   recipients.forEach(function(recipient) {
-    if (typeof(recipient.address) !== 'string' || !ethUtil.isValidAddress(ethUtil.addHexPrefix(recipient.address))) {
+    if (!_.isString(recipient.address) || !ethUtil.isValidAddress(ethUtil.addHexPrefix(recipient.address))) {
       throw new Error("Invalid address: " + recipient.address);
     }
 
@@ -82,7 +82,7 @@ const getOperationSha3ForExecuteAndConfirm = (recipients, expireTime, contractSe
 
     recipient.amount = amount.toFixed(0);
 
-    if (recipient.data && typeof(recipient.data) !== 'string') {
+    if (recipient.data && !_.isString(recipient.data)) {
       throw new Error("Data for recipient " + recipient.address + ' - should be of type hex string');
     }
   });

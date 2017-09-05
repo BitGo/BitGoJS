@@ -1,19 +1,19 @@
 var Keychains;
-var BigNumber = require('bignumber.js');
+const BigNumber = require('bignumber.js');
 var PendingApprovals;
 var Wallet;
 var Wallets;
 var coinInstances;
-var bitcoin = require('bitcoinjs-lib');
-var prova = require('../prova');
-var Q = require('q');
-var sjcl = require('../sjcl.min');
+const bitcoin = require('bitcoinjs-lib');
+const prova = require('../prova');
+const Promise = require('bluebird');
+const sjcl = require('../sjcl.min');
 
-var BaseCoin = function(bitgo, coin) {
+const BaseCoin = function(bitgo, coin) {
   this.bitgo = bitgo;
   this.initializeCoin(coin);
 
-  var self = this;
+  const self = this;
   this.type = coin;
 
   this.url = (suffix) => {
@@ -92,9 +92,9 @@ BaseCoin.prototype.baseUnitsToBigUnits = function(baseUnits) {
  * @param walletParams
  * @return {*}
  */
-BaseCoin.prototype.supplementGenerateWallet = function(walletParams) {
+BaseCoin.prototype.supplementGenerateWallet = Promise.method(function(walletParams) {
   return walletParams;
-};
+});
 
 BaseCoin.prototype.newWalletObject = function(walletParams) {
   if (!Wallet) {
@@ -136,14 +136,14 @@ BaseCoin.prototype.initiateRecovery = function(params) {
         userKey = sjcl.decrypt(passphrase, userKey);
       }
       const userHDNode = prova.HDNode.fromBase58(userKey);
-      return Q(userHDNode);
+      return Promise.resolve(userHDNode);
     } catch (e) {
       throw new Error('Failed to decrypt user key with passcode - try again!');
     }
   };
 
   const self = this;
-  return Q.try(function() {
+  return Promise.try(function() {
     // TODO: Arik add Ledger support
     return validatePassphraseKey(userKey, passphrase);
   })

@@ -1,9 +1,9 @@
-var BaseCoin = require('../baseCoin');
-var common = require('../../common');
-var prova = require('../../prova');
-var _ = require('lodash');
+const BaseCoin = require('../baseCoin');
+const common = require('../../common');
+const prova = require('../../prova');
+const _ = require('lodash');
 
-var Rmg = function() {
+const Rmg = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
@@ -75,7 +75,7 @@ Rmg.prototype.signTransaction = function(params) {
 };
 
 Rmg.prototype.explainTransaction = function(params) {
-  var self = this;
+  const self = this;
   var transaction = prova.Transaction.fromHex(params.txHex);
   var id = transaction.getId();
   var changeAddresses = [];

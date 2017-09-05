@@ -1,10 +1,10 @@
-var BaseCoin = require('../baseCoin');
-var common = require('../../common');
-var bitcoin = require('bitcoinjs-lib');
-var Q = require('q');
-var _ = require('lodash');
+const BaseCoin = require('../baseCoin');
+const common = require('../../common');
+const bitcoin = require('bitcoinjs-lib');
+const Promise = require('bluebird');
+const _ = require('lodash');
 
-var Btc = function() {
+const Btc = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
@@ -90,7 +90,7 @@ Btc.prototype.signTransaction = function(params) {
 };
 
 Btc.prototype.explainTransaction = function(params) {
-  var self = this;
+  const self = this;
   var transaction = bitcoin.Transaction.fromBuffer(new Buffer(params.txHex, 'hex'));
   var id = transaction.getId();
   var changeAddresses = [];
@@ -173,7 +173,7 @@ Btc.prototype.recover = function(params, callback) {
     const transactionBuilder = new bitcoin.TransactionBuilder(self.network);
 
     // try to find a realtime recommended fee rate so that we don't under or overpay
-    return Q.try(function() {
+    return Promise.try(function() {
       let feePerByte = self.getRecoveryFeePerBytes(); // satoshis per byte of data
       const externalGetRequest = self.bitgo.get(self.getRecoveryFeeRecommendationApiBaseUrl());
       externalGetRequest.forceV1Auth = true;
@@ -283,7 +283,7 @@ Btc.prototype.recover = function(params, callback) {
     const queryBlockchainUnspentsPath = function(keyArray, basePath) {
 
       const gatherUnspentAddresses = function(addrIndex) {
-        return Q.try(function() {
+        return Promise.try(function() {
           // Derive the address
           const derivedKeys = deriveKeys(keyArray, addrIndex);
           const address = createMultiSigAddress(derivedKeys);

@@ -6,13 +6,13 @@
 //
 
 
-var common = require('./common');
-var Q = require('q');
+const common = require('./common');
+const Promise = require('bluebird');
 
 //
 // Constructor
 //
-var Markets = function(bitgo) {
+const Markets = function(bitgo) {
   this.bitgo = bitgo;
 };
 

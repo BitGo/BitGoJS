@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const prova = require('../prova');
 const _ = require('lodash');
 
-var Keychains = function(bitgo, baseCoin) {
+const Keychains = function(bitgo, baseCoin) {
   this.bitgo = bitgo;
   this.baseCoin = baseCoin;
 };

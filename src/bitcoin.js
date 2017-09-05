@@ -1,12 +1,12 @@
-var common = require('./common');
-var bitcoin = require('bitcoinjs-lib');
-var ecurve = require('ecurve');
-var curve = ecurve.getCurveByName('secp256k1');
-var BigInteger = require('bigi');
-var createHmac = require('create-hmac');
-var HDNode = bitcoin.HDNode;
+const common = require('./common');
+const bitcoin = require('bitcoinjs-lib');
+const ecurve = require('ecurve');
+const curve = ecurve.getCurveByName('secp256k1');
+const BigInteger = require('bigi');
+const createHmac = require('create-hmac');
+const HDNode = bitcoin.HDNode;
 
-var secp256k1;
+let secp256k1;
 
 try {
   secp256k1 = require('secp256k1');
@@ -16,7 +16,7 @@ try {
 
 // Check for IE, and disable secp256k1, due to:
 // https://github.com/indutny/bn.js/issues/133
-var isIE = (({}).constructor.name === undefined);
+const isIE = (({}).constructor.name === undefined);
 if (isIE) {
   secp256k1 = undefined;
 }
@@ -49,7 +49,7 @@ HDNode.prototype.getKey = function(network) {
  * @param   {Number} index   child index
  * @returns {HDNode}         derived HDNode
  */
-var deriveFast = function (hdnode, index) {
+const deriveFast = function (hdnode, index) {
   // no fast path for private key derivations -- delegate to standard method
   if (!secp256k1 || hdnode.keyPair.d) {
     return hdnode.derive(index);
@@ -131,7 +131,7 @@ if (secp256k1) {
  */
 bitcoin.hdPath = function(rootKey) {
   var cache = {};
-  var derive = function (path) {
+  const derive = function (path) {
     var components = path.split('/').filter(function (c) {
       return c !== '';
     });
@@ -163,7 +163,7 @@ bitcoin.hdPath = function(rootKey) {
     return derived;
   };
 
-  var deriveKey = function(path) {
+  const deriveKey = function(path) {
     var hdNode = this.derive(path);
     return hdNode.keyPair;
   };

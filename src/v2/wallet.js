@@ -3,7 +3,7 @@ const assert = require('assert');
 const BigNumber = require('bignumber.js');
 const bitcoin = require('../bitcoin');
 const PendingApproval = require('./pendingApproval');
-const Q = require('q');
+const Promise = require('bluebird');
 const _ = require('lodash');
 
 const Wallet = function(bitgo, baseCoin, walletData) {
@@ -66,7 +66,7 @@ Wallet.prototype.receiveAddress = function() {
 };
 
 Wallet.prototype.pendingApprovals = function() {
-  var self = this;
+  const self = this;
   return this._wallet.pendingApprovals.map(function(currentApproval) {
     return new PendingApproval(self.bitgo, self.baseCoin, currentApproval, self);
   });
@@ -84,14 +84,14 @@ Wallet.prototype.transactions = function(params, callback) {
 
   var query = {};
   if (params.prevId) {
-    if (typeof(params.prevId) !== 'string') {
+    if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
     }
     query.prevId = params.prevId;
   }
 
   if (params.limit) {
-    if (typeof(params.limit) !== 'number') {
+    if (!_.isNumber(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     query.limit = params.limit;
@@ -115,14 +115,14 @@ Wallet.prototype.transfers = function(params, callback) {
 
   var query = {};
   if (params.prevId) {
-    if (typeof(params.prevId) !== 'string') {
+    if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
     }
     query.prevId = params.prevId;
   }
 
   if (params.limit) {
-    if (typeof(params.limit) !== 'number') {
+    if (!_.isNumber(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     query.limit = params.limit;
@@ -146,14 +146,14 @@ Wallet.prototype.unspents = function(params, callback) {
 
   var query = {};
   if (params.prevId) {
-    if (typeof(params.prevId) !== 'string') {
+    if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
     }
     query.prevId = params.prevId;
   }
 
   if (params.limit) {
-    if (typeof(params.limit) !== 'number') {
+    if (!_.isNumber(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     query.limit = params.limit;
@@ -176,7 +176,7 @@ Wallet.prototype.freeze = function(params, callback) {
   common.validateParams(params, [], [], callback);
 
   if (params.duration) {
-    if (typeof(params.duration) !== 'number') {
+    if (!_.isNumber(params.duration)) {
       throw new Error('invalid duration: should be number of seconds');
     }
   }
@@ -219,21 +219,21 @@ Wallet.prototype.addresses = function(params, callback) {
   }
 
   if (params.prevId) {
-    if (typeof(params.prevId) !== 'number') {
+    if (!_.isNumber(params.prevId)) {
       throw new Error('invalid prevId argument, expecting number');
     }
     query.prevId = params.prevId;
   }
 
   if (params.sort) {
-    if (typeof(params.sort) !== 'number') {
+    if (!_.isNumber(params.sort)) {
       throw new Error('invalid sort argument, expecting number');
     }
     query.sort = params.sort;
   }
 
   if (params.limit) {
-    if (typeof(params.limit) !== 'number') {
+    if (!_.isNumber(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     query.limit = params.limit;
@@ -253,7 +253,7 @@ Wallet.prototype.addresses = function(params, callback) {
  * @returns {*}
  */
 Wallet.prototype.createAddress = function(params, callback) {
-  var self = this;
+  const self = this;
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -271,14 +271,14 @@ Wallet.prototype.listWebhooks = function(params, callback) {
 
   var query = {};
   if (params.prevId) {
-    if (typeof(params.prevId) !== 'string') {
+    if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
     }
     query.prevId = params.prevId;
   }
 
   if (params.limit) {
-    if (typeof(params.limit) !== 'number') {
+    if (!_.isNumber(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     query.limit = params.limit;
@@ -347,9 +347,9 @@ Wallet.prototype.removeWebhook = function(params, callback) {
 Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  var self = this;
+  const self = this;
 
-  var tryKeyChain = function(index) {
+  const tryKeyChain = function(index) {
     if (!self._wallet.keys || index >= self._wallet.keys.length) {
       return self.bitgo.reject('No encrypted keychains on this wallet.', callback);
     }
@@ -404,20 +404,20 @@ Wallet.prototype.shareWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
 
-  if (params.reshare !== undefined && typeof(params.reshare) !== 'boolean') {
+  if (params.reshare !== undefined && !_.isBoolean(params.reshare)) {
     throw new Error('Expected reshare to be a boolean.');
   }
 
-  if (params.skipKeychain !== undefined && typeof(params.skipKeychain) !== 'boolean') {
+  if (params.skipKeychain !== undefined && !_.isBoolean(params.skipKeychain)) {
     throw new Error('Expected skipKeychain to be a boolean. ');
   }
   var needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
 
-  if (params.disableEmail !== undefined && typeof(params.disableEmail) !== 'boolean') {
+  if (params.disableEmail !== undefined && !_.isBoolean(params.disableEmail)) {
     throw new Error('Expected disableEmail to be a boolean.');
   }
 
-  var self = this;
+  const self = this;
   var sharing;
   var sharedKeychain;
   return this.bitgo.getSharingKey({ email: params.email })
@@ -497,7 +497,7 @@ Wallet.prototype.removeUser = function(params, callback) {
  * @returns {*}
  */
 Wallet.prototype.prebuildTransaction = function(params, callback) {
-  var self = this;
+  const self = this;
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
   .send({ recipients: params.recipients })
   .result()
@@ -545,8 +545,8 @@ Wallet.prototype.signTransaction = function(params, callback) {
     userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
   }
 
-  var self = this;
-  return Q.fcall(function() {
+  const self = this;
+  return Promise.try(function() {
     const signingParams = _.extend({}, params, { txPrebuild: txPrebuild, prv: userPrv });
     return self.baseCoin.signTransaction(signingParams);
   })
@@ -613,7 +613,7 @@ Wallet.prototype.send = function(params, callback) {
 Wallet.prototype.sendMany = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['comment', 'otp'], callback);
-  var self = this;
+  const self = this;
 
   if (params.prebuildTx && params.recipients) {
     throw new Error('Only one of prebuildTx and recipients may be specified');
@@ -635,11 +635,25 @@ Wallet.prototype.sendMany = function(params, callback) {
   var userKeychainPromise = self.baseCoin.keychains().get({ id: self._wallet.keys[0] });
 
   // pass in either the prebuild promise or, if undefined, the actual prebuild
-  return Q.all([txPrebuildPromise || txPrebuild, userKeychainPromise])
+  return Promise.all([txPrebuildPromise || txPrebuild, userKeychainPromise])
   .spread(function(txPrebuild, userKeychain) {
     // TODO: fix blob for
     var signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
     return self.signTransaction(signingParams);
+  })
+  .catch(function(error) {
+    if (error.message.includes('insufficient funds')) {
+      error.walletBalances = {
+        balanceString: self.balanceString(),
+        confirmedBalanceString: self.confirmedBalanceString(),
+        spendableBalanceString: self.spendableBalanceString(),
+        balance: self.balance(),
+        confirmedBalance: self.confirmedBalance(),
+        spendableBalance: self.spendableBalance(),
+      };
+      error.txParams = _.omit(params, ['keychain', 'xprv', 'passphrase', 'walletPassphrase', 'key']);
+    }
+    throw error;
   })
   .then(function(halfSignedTransaction) {
     var selectParams = _.pick(params, ['comment', 'otp']);

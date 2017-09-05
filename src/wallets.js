@@ -5,16 +5,16 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var bitcoin = require('./bitcoin');
-var Wallet = require('./wallet');
-var common = require('./common');
-var Util = require('./util');
-var Q = require('q');
+const bitcoin = require('./bitcoin');
+const Wallet = require('./wallet');
+const common = require('./common');
+const Util = require('./util');
+const Promise = require('bluebird');
 
 //
 // Constructor
 //
-var Wallets = function(bitgo) {
+const Wallets = function(bitgo) {
   this.bitgo = bitgo;
 };
 
@@ -33,19 +33,19 @@ Wallets.prototype.list = function(params, callback) {
   }
 
   if (params.limit) {
-    if (typeof(params.limit) != 'number') {
+    if (!_.isNumber(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     args.push('limit=' + params.limit);
   }
   if (params.getbalances) {
-    if (typeof(params.getbalances) != 'boolean') {
+    if (!_.isBoolean(params.getbalances)) {
       throw new Error('invalid getbalances argument, expecting boolean');
     }
     args.push('getbalances=' + params.getbalances);
   }
   if (params.skip) {
-    if (typeof(params.skip) != 'number') {
+    if (!_.isNumber(params.skip)) {
       throw new Error('invalid skip argument, expecting number');
     }
     args.push('skip=' + params.skip);
@@ -58,7 +58,7 @@ Wallets.prototype.list = function(params, callback) {
     query = '?' + args.join('&');
   }
 
-  var self = this;
+  const self = this;
   return this.bitgo.get(this.bitgo.url('/wallet' + query))
   .result()
   .then(function(body) {
@@ -72,7 +72,7 @@ Wallets.prototype.getWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  var self = this;
+  const self = this;
 
   var query = '';
   if (params.gpk) {
@@ -95,7 +95,7 @@ Wallets.prototype.listInvites = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
   return this.bitgo.get(this.bitgo.url('/walletinvite'))
   .result()
   .nodeify(callback);
@@ -109,7 +109,7 @@ Wallets.prototype.cancelInvite = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletInviteId'], [], callback);
 
-  var self = this;
+  const self = this;
   return this.bitgo.del(this.bitgo.url('/walletinvite/' + params.walletInviteId))
   .result()
   .nodeify(callback);
@@ -123,7 +123,7 @@ Wallets.prototype.listShares = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
   return this.bitgo.get(this.bitgo.url('/walletshare'))
   .result()
   .nodeify(callback);
@@ -192,7 +192,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletShareId'], ['overrideEncryptedXprv'], callback);
 
-  var self = this;
+  const self = this;
   var encryptedXprv = params.overrideEncryptedXprv;
 
   return this.getShare({ walletShareId: params.walletShareId })
@@ -296,7 +296,7 @@ Wallets.prototype.createKey = function(params) {
 Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['passphrase'], ['label', 'backupXpub', 'enterprise', 'passcodeEncryptionCode'], callback);
-  var self = this;
+  const self = this;
   var label = params.label;
 
   // Create the user and backup key.
@@ -316,7 +316,7 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
     throw new Error("Cannot provide more than one backupXpub or backupXpubProvider flag");
   }
 
-  if (params.disableTransactionNotifications !== undefined && typeof(params.disableTransactionNotifications) != 'boolean') {
+  if (params.disableTransactionNotifications !== undefined && !_.isBoolean(params.disableTransactionNotifications)) {
     throw new Error('Expected disableTransactionNotifications to be a boolean. ');
   }
 
@@ -407,11 +407,11 @@ Wallets.prototype.createForwardWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['privKey', 'sourceAddress'], ['label'], callback);
 
-  if (!params.destinationWallet || typeof(params.destinationWallet) != 'object' || !params.destinationWallet.id) {
+  if (!_.isObject(params.destinationWallet) || !params.destinationWallet.id) {
     throw new Error('expecting destinationWallet object');
   }
 
-  var self = this;
+  const self = this;
 
   var newDestinationAddress;
   var addressFromPrivKey;
@@ -465,17 +465,17 @@ Wallets.prototype.add = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['label', 'enterprise'], callback);
 
-  if (Array.isArray(params.keychains) === false || typeof(params.m) !== 'number' ||
-    typeof(params.n) != 'number') {
+  if (Array.isArray(params.keychains) === false || !_.isNumber(params.m) ||
+    !_.isNumber(params.n)) {
     throw new Error('invalid argument');
   }
 
   // TODO: support more types of multisig
-  if (params.m != 2 || params.n != 3) {
+  if (params.m !== 2 || params.n !== 3) {
     throw new Error('unsupported multi-sig type');
   }
 
-  var self = this;
+  const self = this;
   var keychains = params.keychains.map(function(k) { return {xpub: k.xpub}; });
   var walletParams = {
     label: params.label,
@@ -521,7 +521,7 @@ Wallets.prototype.remove = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  var self = this;
+  const self = this;
   return this.bitgo.del(this.bitgo.url('/wallet/' + params.id))
   .result()
   .nodeify(callback);

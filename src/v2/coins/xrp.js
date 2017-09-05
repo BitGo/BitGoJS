@@ -9,7 +9,7 @@ const rippleHashes = require('ripple-hashes');
 const rippleKeypairs = require('ripple-keypairs');
 const url = require('url');
 const prova = require('../../prova');
-const Q = require('q');
+const Promise = require('bluebird');
 const common = require('../../common');
 const _ = require('lodash');
 

@@ -4,21 +4,21 @@
 //
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
-var common = require('./common');
-var Util = require('./util');
-var assert = require('assert');
+const common = require('./common');
+const Util = require('./util');
+const assert = require('assert');
 
-var Address = require('bitcoinjs-lib/src/address');
-var Transaction = require('bitcoinjs-lib/src/transaction');
-var networks = require('bitcoinjs-lib/src/networks');
+const Address = require('bitcoinjs-lib/src/address');
+const Transaction = require('bitcoinjs-lib/src/transaction');
+const networks = require('bitcoinjs-lib/src/networks');
 
-var Q = require('q');
-var _ = require('lodash');
+const Promise = require('bluebird');
+const _ = require('lodash');
 
 //
 // Constructor
 //
-var PendingApproval = function(bitgo, pendingApproval, wallet) {
+const PendingApproval = function(bitgo, pendingApproval, wallet) {
   this.bitgo = bitgo;
   this.pendingApproval = pendingApproval;
   this.wallet = wallet;
@@ -128,7 +128,7 @@ PendingApproval.prototype.get = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
   return this.bitgo.get(this.url())
   .result()
   .then(function(res) {
@@ -142,7 +142,7 @@ PendingApproval.prototype.get = function(params, callback) {
 // Helper function to ensure that self.wallet is set
 //
 PendingApproval.prototype.populateWallet = function() {
-  var self = this;
+  const self = this;
   if (!self.wallet) {
     return self.bitgo.wallets().get({ id: self.info().transactionRequest.sourceWallet })
     .then(function(wallet) {
@@ -153,11 +153,11 @@ PendingApproval.prototype.populateWallet = function() {
     });
   }
 
-  if (self.wallet.id() != self.info().transactionRequest.sourceWallet) {
+  if (self.wallet.id() !== self.info().transactionRequest.sourceWallet) {
     throw new Error('unexpected source wallet for pending approval');
   }
 
-  return Q(); // otherwise returns undefined
+  return Promise.resolve(); // otherwise returns undefined
 };
 
 //
@@ -176,10 +176,9 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
   var network = networks[common.getNetwork()];
   params.recipients = {};
 
-  var self = this;
+  const self = this;
 
-  return Q()
-  .then(function() {
+  return Promise.try(function() {
     if (self.info().transactionRequest.recipients) {
       // recipients object found on the pending approvals - use it
       params.recipients = self.info().transactionRequest.recipients;
@@ -188,7 +187,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
     if (transaction.outs.length <= 2) {
       transaction.outs.forEach(function (out) {
         var outAddress = Address.fromOutputScript(out.script, network).toBase58Check();
-        if (self.info().transactionRequest.destinationAddress == outAddress) {
+        if (self.info().transactionRequest.destinationAddress === outAddress) {
           // If this is the destination, then spend to it
           params.recipients[outAddress] = out.value;
         }
@@ -228,7 +227,7 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
   }
 
   if (params.useOriginalFee) {
-    if (typeof(params.useOriginalFee) != 'boolean') {
+    if (!_.isBoolean(params.useOriginalFee)) {
       throw new Error('invalid type for useOriginalFeeRate');
     }
     if (params.fee || params.feeRate || params.feeTxConfirmTarget) {
@@ -236,9 +235,8 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
     }
   }
 
-  var self = this;
-  return Q()
-  .then(function() {
+  const self = this;
+  return Promise.try(function() {
     if (self.type() === 'transactionRequest') {
       var extendParams = { txHex: self.info().transactionRequest.transaction };
       if (params.useOriginalFee) {
@@ -265,9 +263,8 @@ PendingApproval.prototype.approve = function(params, callback) {
     canRecreateTransaction = false;
   }
 
-  var self = this;
-  return Q()
-  .then(function() {
+  const self = this;
+  return Promise.try(function() {
     if (self.type() === 'transactionRequest') {
       if (params.tx) {
         // the approval tx was reconstructed and explicitly specified - pass it through
@@ -319,7 +316,7 @@ PendingApproval.prototype.reject = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
 
   return this.bitgo.put(this.url())
   .send({'state': 'rejected'})

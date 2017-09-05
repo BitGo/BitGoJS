@@ -5,23 +5,25 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var TransactionBuilder = require('./transactionBuilder');
-var bitcoin = require('./bitcoin');
+const TransactionBuilder = require('./transactionBuilder');
+const bitcoin = require('./bitcoin');
 // TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
-var bitcoinCash = require('./bitcoinCash');
-var Keychains = require('./keychains');
-var PendingApproval = require('./pendingapproval');
-var Util = require('./util');
+const bitcoinCash = require('./bitcoinCash');
+const prova = require('prova-lib');
+const Keychains = require('./keychains');
+const PendingApproval = require('./pendingapproval');
+const Util = require('./util');
 
-var assert = require('assert');
-var common = require('./common');
-var Q = require('q');
-var _ = require('lodash');
+const assert = require('assert');
+const common = require('./common');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
+const _ = require('lodash');
 
 //
 // Constructor
 //
-var Wallet = function(bitgo, wallet) {
+const Wallet = function(bitgo, wallet) {
   this.bitgo = bitgo;
   this.wallet = wallet;
   this.keychains = [];
@@ -131,7 +133,7 @@ Wallet.prototype.url = function(extra) {
 // returns the pending approvals list for this wallet as pending approval objects
 //
 Wallet.prototype.pendingApprovals = function() {
-  var self = this;
+  const self = this;
   return this.wallet.pendingApprovals.map(function(p) {
     return new PendingApproval(self.bitgo, p, self);
   });
@@ -153,7 +155,7 @@ Wallet.prototype.get = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
 
   return this.bitgo.get(this.url())
   .result()
@@ -174,17 +176,17 @@ Wallet.prototype.updateApprovalsRequired = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
   if (params.approvalsRequired === undefined ||
-  typeof(params.approvalsRequired) !== 'number' ||
+  !_.isInteger(params.approvalsRequired) ||
   params.approvalsRequired < 1
   ) {
     throw new Error('invalid approvalsRequired: must be a nonzero positive number');
   }
 
-  var self = this;
+  const self = this;
   var currentApprovalsRequired = this.approvalsRequired();
   if (currentApprovalsRequired === params.approvalsRequired) {
     // no-op, just return the current wallet
-    return Q().then(function() {
+    return Promise.try(function() {
       return self.wallet;
     })
     .nodeify(callback);
@@ -196,12 +198,20 @@ Wallet.prototype.updateApprovalsRequired = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * Returns the correct chain for change, taking into consideration segwit
+ */
+Wallet.prototype.getChangeChain = function() {
+  const isSegwit = this.bitgo.getConstants().enableSegwit;
+  return isSegwit ? 11 : 1;
+};
+
 //
 // createAddress
 // Creates a new address for use with this wallet.
 //
 Wallet.prototype.createAddress = function(params, callback) {
-  var self = this;
+  const self = this;
   params = params || {};
   common.validateParams(params, [], [], callback);
   if (this.type() === 'safe') {
@@ -261,7 +271,7 @@ Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold
   }
 
   const derivedKeys = rootKeys.map(function(k) {
-    const hdnode = bitcoin.HDNode.fromBase58(k.xpub);
+    const hdnode = prova.HDNode.fromBase58(k.xpub);
     let derivationPath = k.path + path;
     if (k.walletSubPath) {
       // if a keychain has a wallet subpath, it should be used as an infix
@@ -271,7 +281,7 @@ Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold
       // all derivation paths need to start with m, but k.path may already contain that
       derivationPath = `m/${derivationPath}`;
     }
-    return bitcoin.hdPath(hdnode).deriveKey(derivationPath).getPublicKeyBuffer();
+    return hdnode.hdPath().deriveKey(derivationPath).getPublicKeyBuffer();
   });
 
   const pathComponents = path.split('/');
@@ -352,19 +362,19 @@ Wallet.prototype.addresses = function(params, callback) {
     }
   }
   if (params.limit) {
-    if (typeof(params.limit) !== 'number') {
+    if (!_.isInteger(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     query.limit = params.limit;
   }
   if (params.skip) {
-    if (typeof(params.skip) !== 'number') {
+    if (!_.isInteger(params.skip)) {
       throw new Error('invalid skip argument, expecting number');
     }
     query.skip = params.skip;
   }
   if (params.sort) {
-    if (typeof(params.sort) !== 'number') {
+    if (!_.isNumber(params.sort)) {
       throw new Error('invalid sort argument, expecting number');
     }
     query.sort = params.sort;
@@ -382,7 +392,7 @@ Wallet.prototype.stats = function(params, callback) {
   common.validateParams(params, [], [], callback);
   var args = [];
   if (params.limit) {
-    if (typeof(params.limit) != 'number') {
+    if (!_.isInteger(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     args.push('limit=' + params.limit);
@@ -426,7 +436,7 @@ Wallet.prototype.freeze = function(params, callback) {
   common.validateParams(params, [], [], callback);
 
   if (params.duration) {
-    if (typeof(params.duration) != 'number') {
+    if (!_.isNumber(params.duration)) {
       throw new Error('invalid duration - should be number of seconds');
     }
   }
@@ -491,7 +501,7 @@ Wallet.prototype.setLabel = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address', 'label'], [], callback);
 
-  var self = this;
+  const self = this;
 
   if (!self.bitgo.verifyAddress({ address: params.address })) {
     throw new Error('Invalid bitcoin address: ' + params.address);
@@ -513,7 +523,7 @@ Wallet.prototype.deleteLabel = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
-  var self = this;
+  const self = this;
 
   if (!self.bitgo.verifyAddress({ address: params.address })) {
     throw new Error('Invalid bitcoin address: ' + params.address);
@@ -541,22 +551,22 @@ Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  if (params.minConfirms && typeof(params.minConfirms) !== 'number') {
+  if (params.minConfirms && !_.isInteger(params.minConfirms)) {
     throw new Error('invalid minConfirms - should be number');
   }
 
-  if (params.minSize && typeof(params.minSize) != 'number') {
+  if (params.minSize && !_.isNumber(params.minSize)) {
     throw new Error('invalid argument: minSize must be a number');
   }
 
-  if (params.target && typeof(params.target) != 'number') {
+  if (params.target && !_.isNumber(params.target)) {
     throw new Error('invalid argument');
   }
 
   var allUnspents = [];
-  var self = this;
+  const self = this;
 
-  var getUnspentsBatch = function(skip, limit) {
+  const getUnspentsBatch = function(skip, limit) {
     var url = self.url('/unspents');
     var queryObject = {
       minSize: params.minSize
@@ -635,22 +645,22 @@ Wallet.prototype.unspentsPaged = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  if (params.limit && typeof(params.limit) != 'number') {
+  if (params.limit && !_.isInteger(params.limit)) {
     throw new Error('invalid limit - should be number');
   }
-  if (params.skip && typeof(params.skip) != 'number') {
+  if (params.skip && !_.isInteger(params.skip)) {
     throw new Error('invalid skip - should be number');
   }
-  if (params.minConfirms && typeof(params.minConfirms) !== 'number') {
+  if (params.minConfirms && !_.isInteger(params.minConfirms)) {
     throw new Error('invalid minConfirms - should be number');
   }
-  if (params.target && typeof(params.target) != 'number') {
+  if (params.target && !_.isNumber(params.target)) {
     throw new Error('invalid target - should be number');
   }
-  if (params.instant && typeof(params.instant) != 'boolean') {
+  if (params.instant && !_.isBoolean(params.instant)) {
     throw new Error('invalid instant flag - should be boolean');
   }
-  if (params.targetWalletUnspents && typeof(params.targetWalletUnspents) != 'number') {
+  if (params.targetWalletUnspents && !_.isInteger(params.targetWalletUnspents)) {
     throw new Error('invalid targetWalletUnspents flag - should be number');
   }
 
@@ -671,19 +681,19 @@ Wallet.prototype.transactions = function(params, callback) {
 
   var args = [];
   if (params.limit) {
-    if (typeof(params.limit) != 'number') {
+    if (!_.isInteger(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     args.push('limit=' + params.limit);
   }
   if (params.skip) {
-    if (typeof(params.skip) != 'number') {
+    if (!_.isInteger(params.skip)) {
       throw new Error('invalid skip argument, expecting number');
     }
     args.push('skip=' + params.skip);
   }
   if (params.minHeight) {
-    if (typeof(params.minHeight) != 'number') {
+    if (!_.isInteger(params.minHeight)) {
       throw new Error('invalid minHeight argument, expecting number');
     }
     args.push('minHeight=' + params.minHeight);
@@ -722,13 +732,13 @@ Wallet.prototype.getTransaction = function(params, callback) {
 //   delay: delay between polls in ms (default: 1000)
 //   timeout: timeout in ms (default: 10000)
 Wallet.prototype.pollForTransaction = function(params, callback) {
-  var self = this;
+  const self = this;
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
-  if (params.delay && typeof(params.delay) !== 'number') {
+  if (params.delay && !_.isNumber(params.delay)) {
     throw new Error('invalid delay parameter');
   }
-  if (params.timeout && typeof(params.timeout) !== 'number') {
+  if (params.timeout && !_.isNumber(params.timeout)) {
     throw new Error('invalid timeout parameter');
   }
   params.delay = params.delay || 1000;
@@ -736,7 +746,7 @@ Wallet.prototype.pollForTransaction = function(params, callback) {
 
   var start = new Date();
 
-  var doNextPoll = function() {
+  const doNextPoll = function() {
     return self.getTransaction(params)
     .then(function(res) {
       return res;
@@ -745,7 +755,7 @@ Wallet.prototype.pollForTransaction = function(params, callback) {
       if (err.status !== 404 || (new Date() - start) > params.timeout) {
         throw err;
       }
-      return Q.delay(params.delay)
+      return Promise.delay(params.delay)
       .then(function() {
         return doNextPoll();
       });
@@ -777,9 +787,9 @@ Wallet.prototype.getWalletTransactionBySequenceId = function(params, callback) {
 Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  var self = this;
+  const self = this;
 
-  var tryKeyChain = function(index) {
+  const tryKeyChain = function(index) {
     if (!self.keychains || index >= self.keychains.length) {
       return self.bitgo.reject('No encrypted keychains on this wallet.', callback);
     }
@@ -818,19 +828,19 @@ Wallet.prototype.createTransaction = function(params, callback) {
   params = _.extend({}, params);
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
 
-  if ((typeof(params.fee) != 'number' && typeof(params.fee) != 'undefined') ||
-  (typeof(params.feeRate) != 'number' && typeof(params.feeRate) != 'undefined') ||
-  (typeof(params.minConfirms) != 'number' && typeof(params.minConfirms) != 'undefined') ||
-  (typeof(params.forceChangeAtEnd) != 'boolean' && typeof(params.forceChangeAtEnd) != 'undefined') ||
-  (typeof(params.changeAddress) != 'string' && typeof(params.changeAddress) != 'undefined') ||
-  (typeof(params.validate) != 'boolean' && typeof(params.validate) != 'undefined') ||
-  (typeof(params.instant) != 'boolean' && typeof(params.instant) != 'undefined')) {
+  if ((!_.isNumber(params.fee) && !_.isUndefined(params.fee)) ||
+  (!_.isNumber(params.feeRate) && !_.isUndefined(params.feeRate)) ||
+  (!_.isNumber(params.minConfirms) && !_.isUndefined(params.minConfirms)) ||
+  (!_.isBoolean(params.forceChangeAtEnd) && !_.isUndefined(params.forceChangeAtEnd)) ||
+  (!_.isString(params.changeAddress) && !_.isUndefined(params.changeAddress)) ||
+  (!_.isBoolean(params.validate) && !_.isUndefined(params.validate)) ||
+  (!_.isBoolean(params.instant) && !_.isUndefined(params.instant))) {
     throw new Error('invalid argument');
   }
 
-  if (typeof(params.recipients) != 'object') {
+  if (!_.isObject(params.recipients)) {
     throw new Error('expecting recipients object');
   }
 
@@ -859,14 +869,14 @@ Wallet.prototype.signTransaction = function(params, callback) {
   params = _.extend({}, params);
   common.validateParams(params, ['transactionHex'], [], callback);
 
-  var self = this;
+  const self = this;
 
   if (!Array.isArray(params.unspents)) {
     throw new Error('expecting the unspents array');
   }
 
-  if (typeof(params.keychain) != 'object' || !params.keychain.xprv) {
-    if (typeof(params.signingKey) === 'string') {
+  if (!_.isObject(params.keychain) || !params.keychain.xprv) {
+    if (_.isString(params.signingKey)) {
       // allow passing in a WIF private key for legacy safe wallet support
     } else {
       throw new Error('expecting keychain object with xprv');
@@ -895,7 +905,7 @@ Wallet.prototype.sendTransaction = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['tx'], ['message', 'otp'], callback);
 
-  var self = this;
+  const self = this;
   return this.bitgo.post(this.bitgo.url('/tx/send'))
   .send(params)
   .result()
@@ -936,7 +946,7 @@ Wallet.prototype.createShare = function(params, callback) {
     }
   }
 
-  var self = this;
+  const self = this;
   return this.bitgo.post(this.url('/share'))
   .send(params)
   .result()
@@ -955,7 +965,7 @@ Wallet.prototype.createInvite = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['message'], callback);
 
-  var self = this;
+  const self = this;
   var options = {
     toEmail: params.email,
     permissions: params.permissions
@@ -984,7 +994,7 @@ Wallet.prototype.confirmInviteAndShareWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletInviteId'], ['walletPassphrase'], callback);
 
-  var self = this;
+  const self = this;
   return this.bitgo.wallets().listInvites()
   .then(function(invites) {
     var outgoing = invites.outgoing;
@@ -1032,7 +1042,7 @@ Wallet.prototype.sendCoins = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], ['message'], callback);
 
-  if (typeof(params.amount) != 'number') {
+  if (!_.isNumber(params.amount)) {
     throw new Error('invalid argument for amount - number expected');
   }
 
@@ -1062,21 +1072,21 @@ Wallet.prototype.sendCoins = function(params, callback) {
 Wallet.prototype.sendMany = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['message', 'otp'], callback);
-  var self = this;
+  const self = this;
 
-  if (typeof(params.recipients) != 'object') {
+  if (!_.isObject(params.recipients)) {
     throw new Error('expecting recipients object');
   }
 
-  if (params.fee && typeof(params.fee) != 'number') {
+  if (params.fee && !_.isNumber(params.fee)) {
     throw new Error('invalid argument for fee - number expected');
   }
 
-  if (params.feeRate && typeof(params.feeRate) != 'number') {
+  if (params.feeRate && !_.isNumber(params.feeRate)) {
     throw new Error('invalid argument for feeRate - number expected');
   }
 
-  if (params.instant && typeof(params.instant) != 'boolean') {
+  if (params.instant && !_.isBoolean(params.instant)) {
     throw new Error('invalid argument for instant - boolean expected');
   }
 
@@ -1156,25 +1166,25 @@ Wallet.prototype.sendMany = function(params, callback) {
 Wallet.prototype.createAndSignTransaction = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  var self = this;
+  const self = this;
 
-  if (typeof(params.recipients) != 'object') {
+  if (!_.isObject(params.recipients)) {
     throw new Error('expecting recipients object');
   }
 
-  if (params.fee && typeof(params.fee) != 'number') {
+  if (params.fee && !_.isNumber(params.fee)) {
     throw new Error('invalid argument for fee - number expected');
   }
 
-  if (params.feeRate && typeof(params.feeRate) != 'number') {
+  if (params.feeRate && !_.isNumber(params.feeRate)) {
     throw new Error('invalid argument for feeRate - number expected');
   }
 
-  if (params.dynamicFeeConfirmTarget && typeof(params.dynamicFeeConfirmTarget) != 'number') {
+  if (params.dynamicFeeConfirmTarget && !_.isNumber(params.dynamicFeeConfirmTarget)) {
     throw new Error('invalid argument for confirmTarget - number expected');
   }
 
-  if (params.instant && typeof(params.instant) != 'boolean') {
+  if (params.instant && !_.isBoolean(params.instant)) {
     throw new Error('invalid argument for instant - boolean expected');
   }
 
@@ -1185,11 +1195,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
   var travelInfos;
   var estimatedSize;
 
-  return Q()
-  .then(function() {
-    // wrap in a Q in case one of these throws
-    return Q.all([self.getAndPrepareSigningKeychain(params), self.createTransaction(params)]);
-  })
+  return Promise.all([self.getAndPrepareSigningKeychain(params), self.createTransaction(params)])
   .spread(function(keychain, transaction) {
     fee = transaction.fee;
     feeRate = transaction.feeRate;
@@ -1233,8 +1239,8 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
   params = params || {};
 
   // If keychain with xprv is already provided, use it
-  if (typeof(params.keychain) === 'object' && params.keychain.xprv) {
-    return Q(params.keychain);
+  if (_.isObject(params.keychain) && params.keychain.xprv) {
+    return Promise.resolve(params.keychain);
   }
 
   common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
@@ -1243,7 +1249,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
     throw new Error('must provide exactly one of xprv or walletPassphrase');
   }
 
-  var self = this;
+  const self = this;
 
   // Caller provided a wallet passphrase
   if (params.walletPassphrase) {
@@ -1267,7 +1273,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
     throw new Error('Unable to parse the xprv');
   }
 
-  if (xpub == params.xprv) {
+  if (xpub === params.xprv) {
     throw new Error('xprv provided was not a private key (found xpub instead)');
   }
 
@@ -1295,65 +1301,61 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
  * @returns {*}
  */
 Wallet.prototype.fanOutUnspents = function(params, callback) {
-  // maximum number of inputs for fanout transaction
-  // (when fanning out, we take all the unspents and make a bigger number of outputs)
-  var MAX_FANOUT_INPUT_COUNT = 80;
-  // maximum number of outputs for fanout transaction
-  var MAX_FANOUT_OUTPUT_COUNT = 300;
-  params = params || {};
-  common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
-  var validate = params.validate === undefined ? true : params.validate;
+  const self = this;
+  return Promise.coroutine(function *() {
+    // maximum number of inputs for fanout transaction
+    // (when fanning out, we take all the unspents and make a bigger number of outputs)
+    const MAX_FANOUT_INPUT_COUNT = 80;
+    // maximum number of outputs for fanout transaction
+    const MAX_FANOUT_OUTPUT_COUNT = 300;
+    params = params || {};
+    common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
+    const validate = params.validate === undefined ? true : params.validate;
 
-  var target = params.target;
-  // the target must be defined, be a number, be at least two, and be a natural number
-  if (typeof(target) !== 'number' || target < 2 || (target % 1) !== 0) {
-    throw new Error('Target needs to be a positive integer');
-  }
-  if (target > MAX_FANOUT_OUTPUT_COUNT) {
-    throw new Error('Fan out target too high');
-  }
+    const target = params.target;
+    // the target must be defined, be a number, be at least two, and be a natural number
+    if (!_.isNumber(target) || target < 2 || (target % 1) !== 0) {
+      throw new Error('Target needs to be a positive integer');
+    }
+    if (target > MAX_FANOUT_OUTPUT_COUNT) {
+      throw new Error('Fan out target too high');
+    }
 
-  var minConfirms = params.minConfirms;
-  if (minConfirms === undefined) {
-    minConfirms = 1;
-  }
-  if (typeof(minConfirms) !== 'number' || minConfirms < 0) {
-    throw new Error('minConfirms needs to be an integer >= 0');
-  }
+    let minConfirms = params.minConfirms;
+    if (minConfirms === undefined) {
+      minConfirms = 1;
+    }
+    if (!_.isNumber(minConfirms) || minConfirms < 0) {
+      throw new Error('minConfirms needs to be an integer >= 0');
+    }
 
-  var self = this;
+    /**
+     * Split a natural number N into n almost equally sized (±1) natural numbers.
+     * In order to calculate the sizes of the parts, we calculate floor(N/n), and thus have the base size of all parts.
+     * If N % n !== 0, this leaves us with a remainder r where r < n. We distribute r equally among the n parts by
+     * adding 1 to the first r parts.
+     * @param total
+     * @param partCount
+     * @returns {Array}
+     */
+    const splitNumberIntoCloseNaturalNumbers = function(total, partCount) {
+      const partSize = Math.floor(total / partCount);
+      const remainder = total - partSize * partCount;
+      // initialize placeholder array
+      const almostEqualParts = new Array(partCount);
+      // fill the first remainder parts with the value partSize+1
+      _.fill(almostEqualParts, partSize + 1, 0, remainder);
+      // fill the remaining parts with the value partSize
+      _.fill(almostEqualParts, partSize, remainder);
+      // assert the correctness of the almost equal parts
+      // TODO: add check for the biggest deviation between any two parts and make sure it's <= 1
+      assert.equal(_(almostEqualParts).sum(), total);
+      assert.equal(_(almostEqualParts).size(), partCount);
+      return almostEqualParts;
+    };
 
-  /**
-   * Split a natural number N into n almost equally sized (±1) natural numbers.
-   * In order to calculate the sizes of the parts, we calculate floor(N/n), and thus have the base size of all parts.
-   * If N % n != 0, this leaves us with a remainder r where r < n. We distribute r equally among the n parts by
-   * adding 1 to the first r parts.
-   * @param total
-   * @param partCount
-   * @returns {Array}
-   */
-  var splitNumberIntoCloseNaturalNumbers = function(total, partCount) {
-    var partSize = Math.floor(total / partCount);
-    var remainder = total - partSize * partCount;
-    // initialize placeholder array
-    var almostEqualParts = new Array(partCount);
-    // fill the first remainder parts with the value partSize+1
-    _.fill(almostEqualParts, partSize + 1, 0, remainder);
-    // fill the remaining parts with the value partSize
-    _.fill(almostEqualParts, partSize, remainder);
-    // assert the correctness of the almost equal parts
-    // TODO: add check for the biggest deviation between any two parts and make sure it's <= 1
-    assert.equal(_(almostEqualParts).sum(), total);
-    assert.equal(_(almostEqualParts).size(), partCount);
-    return almostEqualParts;
-  };
-
-  var transactionParams;
-  var grossAmount = 0;
-
-  // first, let's take all the wallet's unspents (with min confirms if necessary)
-  return self.unspents({ minConfirms: minConfirms })
-  .then(function(allUnspents) {
+    // first, let's take all the wallet's unspents (with min confirms if necessary)
+    const allUnspents = yield self.unspents({ minConfirms: minConfirms });
     if (allUnspents.length < 1) {
       throw new Error('No unspents to branch out');
     }
@@ -1370,59 +1372,66 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
     }
 
     // this is all the money that is currently in the wallet
-    grossAmount = _(allUnspents).map('value').sum();
+    const grossAmount = _(allUnspents).map('value').sum();
 
     // in order to not modify the params object, we create a copy
-    transactionParams = _.extend({}, params);
-    transactionParams.unspents = allUnspents;
-    transactionParams.recipients = {};
+    const txParams = _.extend({}, params);
+    txParams.unspents = allUnspents;
+    txParams.recipients = {};
 
     // create target amount of new addresses for this wallet
-    var newAddresses = [];
-    return _.range(target).reduce(function(soFar) {
-      return soFar
-      .then(function() {
-        return self.createAddress({ chain: 1, validate: validate });
-      })
-      .then(function(currentNewAddress) {
-        newAddresses.push(currentNewAddress);
-        return newAddresses;
-      });
-    }, Q());
-  })
-  .then(function(newAddresses) {
+    const newAddressPromises = _.range(target)
+    .map(() => self.createAddress({ chain: self.getChangeChain(), validate: validate }));
+    const newAddresses = yield Promise.all(newAddressPromises);
     // let's find a nice, equal distribution of our Satoshis among the new addresses
-    var splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
+    const splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
     // map the newly created addresses to the almost components amounts we just calculated
-    transactionParams.recipients = _.zipObject(_.map(newAddresses, 'address'), splitAmounts);
-    transactionParams.noSplitChange = true;
+    txParams.recipients = _.zipObject(_.map(newAddresses, 'address'), splitAmounts);
+    txParams.noSplitChange = true;
     // attempt to create a transaction. As it is a wallet-sweeping transaction with no fee, we expect it to fail
-    return self.sendMany(transactionParams)
-    .catch(function(error) {
+    try {
+      yield self.sendMany(txParams);
+    } catch (error) {
       // as expected, the transaction creation did indeed fail due to insufficient fees
       // the error suggests a fee value which we then use for the transaction
       // however, let's make sure it wasn't something else
       if (!error.fee && (!error.result || !error.result.fee)) {
         // if the error does not contain a fee property, it is something else that has gone awry, and we throw it
+        const debugParams = _.omit(txParams, ['walletPassphrase', 'xprv']);
+        error.message += `\n\nTX PARAMS:\n ${JSON.stringify(debugParams, null, 4)}`;
         throw error;
       }
-      var baseFee = error.fee || error.result.fee;
-      var totalFee = baseFee;
+      const baseFee = error.fee || error.result.fee;
+      let totalFee = baseFee;
       if (error.result.bitgoFee && error.result.bitgoFee.amount) {
         totalFee += error.result.bitgoFee.amount;
       }
-      transactionParams.fee = baseFee;
+
+      // Need to clear these out since only 1 may be set
+      delete txParams.fee;
+      delete txParams.feeRate;
+      delete txParams.feeTxConfirmTarget;
+      txParams.fee = baseFee;
       // in order to maintain the equal distribution, we need to subtract the fee from the cumulative funds
-      var netAmount = grossAmount - totalFee; // after fees
+      const netAmount = grossAmount - totalFee; // after fees
       // that means that the distribution has to be recalculated
-      var remainingSplitAmounts = splitNumberIntoCloseNaturalNumbers(netAmount, target);
+      const remainingSplitAmounts = splitNumberIntoCloseNaturalNumbers(netAmount, target);
       // and the distribution again mapped to the new addresses
-      transactionParams.recipients = _.zipObject(_.map(newAddresses, 'address'), remainingSplitAmounts);
-      // this time, the transaction creation should work
-      return self.sendMany(transactionParams);
-    });
-  })
-  .nodeify(callback);
+      txParams.recipients = _.zipObject(_.map(newAddresses, 'address'), remainingSplitAmounts);
+    }
+
+    // this time, the transaction creation should work
+    let fanoutTx;
+    try {
+      fanoutTx = yield self.sendMany(txParams);
+    } catch (e) {
+      const debugParams = _.omit(txParams, ['walletPassphrase', 'xprv']);
+      e.message += `\n\nTX PARAMS:\n ${JSON.stringify(debugParams, null, 4)}`;
+      throw e;
+    }
+
+    return Promise.resolve(fanoutTx).asCallback(callback);
+  })().asCallback(callback);
 };
 
 /**
@@ -1434,7 +1443,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
 Wallet.prototype.regroupUnspents = function(params, callback) {
   params = params || {};
   var target = params.target;
-  if (typeof(target) !== 'number' || target < 1 || (target % 1) !== 0) {
+  if (!_.isNumber(target) || target < 1 || (target % 1) !== 0) {
     // the target must be defined, be a number, be at least one, and be a natural number
     throw new Error('Target needs to be a positive integer');
   }
@@ -1443,14 +1452,14 @@ Wallet.prototype.regroupUnspents = function(params, callback) {
   if (minConfirms === undefined) {
     minConfirms = 1;
   }
-  if ((typeof(minConfirms) !== 'number' || minConfirms < 0)) {
+  if ((!_.isNumber(minConfirms) || minConfirms < 0)) {
     throw new Error('minConfirms needs to be an integer equal to or bigger than 0');
   }
 
-  var self = this;
+  const self = this;
   return self.unspents({ minConfirms: minConfirms })
   .then(function(unspents) {
-    if (unspents.length == target) {
+    if (unspents.length === target) {
       return unspents;
     } else if (unspents.length > target) {
       return self.consolidateUnspents(params, callback);
@@ -1475,27 +1484,27 @@ Wallet.prototype.regroupUnspents = function(params, callback) {
 Wallet.prototype.consolidateUnspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
-  var validate = params.validate === undefined ? true : params.validate;
+  const validate = params.validate === undefined ? true : params.validate;
 
-  var target = params.target;
+  let target = params.target;
   if (target === undefined) {
     target = 1;
-  } else if (typeof(target) !== 'number' || target < 1 || (target % 1) !== 0) {
+  } else if (!_.isNumber(target) || target < 1 || (target % 1) !== 0) {
     // the target must be defined, be a number, be at least one, and be a natural number
     throw new Error('Target needs to be a positive integer');
   }
 
-  if (params.maxSize && typeof(params.maxSize) !== 'number') {
+  if (params.maxSize && !_.isNumber(params.maxSize)) {
     throw new Error('maxSize should be a number');
   }
 
-  if (params.minSize && typeof(params.minSize) !== 'number') {
+  if (params.minSize && !_.isNumber(params.minSize)) {
     throw new Error('minSize should be a number');
   }
 
   // maximum number of inputs per transaction for consolidation
-  var MAX_INPUT_COUNT = 200;
-  var maxInputCount = params.maxInputCountPerConsolidation;
+  const MAX_INPUT_COUNT = 200;
+  let maxInputCount = params.maxInputCountPerConsolidation;
   if (maxInputCount === undefined) { // null or unidentified, because equality to zero returns true in if(! clause
     maxInputCount = MAX_INPUT_COUNT;
   }
@@ -1506,7 +1515,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   }
 
   var maxIterationCount = params.maxIterationCount || -1;
-  if (params.maxIterationCount && (typeof(maxIterationCount) !== 'number' || maxIterationCount < 1) || (maxIterationCount % 1) !== 0) {
+  if (params.maxIterationCount && (!_.isNumber(maxIterationCount) || maxIterationCount < 1) || (maxIterationCount % 1) !== 0) {
     throw new Error('Maximum iteration count needs to be an integer equal to or bigger than 1');
   }
 
@@ -1514,15 +1523,15 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   if (minConfirms === undefined) {
     minConfirms = 1;
   }
-  if ((typeof(minConfirms) !== 'number' || minConfirms < 0)) {
+  if ((!_.isNumber(minConfirms) || minConfirms < 0)) {
     throw new Error('minConfirms needs to be an integer equal to or bigger than 0');
   }
 
-  var minSize = params.minSize || 0;
+  let minSize = params.minSize || 0;
   if (params.feeRate) {
     // fee rate is in satoshis per KB
     // one input is 0.295 KB
-    var feeBasedMinSize = Math.ceil(0.295 * params.feeRate);
+    const feeBasedMinSize = Math.ceil(0.295 * params.feeRate);
     if (params.minSize && minSize < feeBasedMinSize) {
       throw new Error('provided minSize too low due to too high fee rate');
     }
@@ -1534,21 +1543,21 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     }
   }
 
-  var iterationCount = 0;
+  let iterationCount = 0;
 
-  var self = this;
-  var consolidationIndex = 0;
+  const self = this;
+  let consolidationIndex = 0;
 
   /**
    * Consolidate one batch of up to MAX_INPUT_COUNT unspents.
    * @returns {*}
    */
-  var runNextConsolidation = function() {
-    var consolidationTransactions = [];
-    var grossAmount;
-    var isFinalConsolidation = false;
-    var inputCount;
-    var currentAddress;
+  const runNextConsolidation = co(function *() {
+    let consolidationTransactions = [];
+    let grossAmount;
+    let isFinalConsolidation = false;
+    let inputCount;
+    let currentAddress;
     iterationCount++;
     /*
      We take a maximum of unspentBulkSizeLimit unspents from the wallet. We want to make sure that we swipe the wallet
@@ -1562,112 +1571,116 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      them, and therefore will be able to simplify this method.
      */
 
-    return self.unspents({ limit: target + maxInputCount, minConfirms: minConfirms, minSize: minSize })
-    .then(function(allUnspents) {
-      // this consolidation is essentially just a waste of money
-      if (allUnspents.length <= target) {
-        if (iterationCount <= 1) {
-          // this is the first iteration, so the method is incorrect
-          throw new Error('Fewer unspents than consolidation target. Use fanOutUnspents instead.');
-        } else {
-          // it's a later iteration, so the target may have been surpassed (due to confirmations in the background)
-          throw new Error('Done');
-        }
-      }
-
-      var allUnspentsCount = allUnspents.length;
-      if (params.maxSize) {
-        allUnspents = allUnspents.filter(function(unspent) {
-          return unspent.value <= params.maxSize;
-        });
-      }
-
-      // how many of the unspents do we want to consolidate?
-      // the +1 is because the consolidated block becomes a new unspent later
-      var targetInputCount = allUnspentsCount - target + 1;
-      targetInputCount = Math.min(targetInputCount, allUnspents.length);
-
-      // if the targetInputCount requires more inputs than we allow per batch, we reduce the number
-      inputCount = Math.min(targetInputCount, maxInputCount);
-
-      // if either the number of inputs left to coalesce equals the number we will coalesce in this iteration
-      // or if the number of iterations matches the maximum permitted number
-      isFinalConsolidation = (inputCount === targetInputCount || iterationCount == maxIterationCount);
-
-      var currentUnspentChunk = allUnspents.splice(0, inputCount);
-      return [self.createAddress({ chain: 1, validate: validate }), currentUnspentChunk];
-    })
-    .spread(function(newAddress, currentChunk) {
-      var txParams = _.extend({}, params);
-      currentAddress = newAddress;
-      // the total amount that we are consolidating within this batch
-      grossAmount = _(currentChunk).map('value').sum(); // before fees
-
-      txParams.unspents = currentChunk;
-      txParams.recipients = {};
-      txParams.recipients[newAddress.address] = grossAmount;
-      txParams.noSplitChange = true;
-
-      if (txParams.unspents.length <= 1) {
+    let allUnspents = yield self.unspents({ limit: target + maxInputCount, minConfirms: minConfirms, minSize: minSize });
+    // this consolidation is essentially just a waste of money
+    if (allUnspents.length <= target) {
+      if (iterationCount <= 1) {
+        // this is the first iteration, so the method is incorrect
+        throw new Error('Fewer unspents than consolidation target. Use fanOutUnspents instead.');
+      } else {
+        // it's a later iteration, so the target may have been surpassed (due to confirmations in the background)
         throw new Error('Done');
       }
+    }
 
-      // let's attempt to create this transaction. We expect it to fail because no fee is set.
-      return self.sendMany(txParams)
-      .catch(function(error) {
-        // this error should occur due to insufficient funds
-        // however, let's make sure it wasn't something else
-        if (!error.fee && (!error.result || !error.result.fee)) {
-          // if the error does not contain a fee property, it is something else that has gone awry, and we throw it
-          throw error;
-        }
-        var baseFee = error.fee || error.result.fee;
-        var bitgoFee = 0;
-        var totalFee = baseFee;
-        if (error.result.bitgoFee && error.result.bitgoFee.amount) {
-          bitgoFee = error.result.bitgoFee.amount;
-          totalFee += bitgoFee;
-        }
-
-        // if the net amount is negative, it should be replaced with the minimum output size
-        var netAmount = Math.max(grossAmount - totalFee, self.bitgo.getConstants().minOutputSize);
-        // Need to clear these out since only 1 may be set
-        delete txParams.fee;
-        delete txParams.feeRate;
-        delete txParams.feeTxConfirmTarget;
-
-        // we set the fee explicitly
-        txParams.fee = grossAmount - netAmount - bitgoFee;
-        txParams.recipients[newAddress.address] = netAmount;
-
-        // this transaction, on the other hand, should be created with no issues, because an appropriate fee is set
-        return self.sendMany(txParams);
+    const allUnspentsCount = allUnspents.length;
+    if (params.maxSize) {
+      allUnspents = allUnspents.filter(function(unspent) {
+        return unspent.value <= params.maxSize;
       });
-    })
-    .then(function(sentTx) {
-      consolidationTransactions.push(sentTx);
-      if (typeof(params.progressCallback) === 'function') {
-        params.progressCallback({
-          txid: sentTx.hash,
-          destination: currentAddress,
-          amount: grossAmount,
-          fee: sentTx.fee,
-          inputCount: inputCount,
-          index: consolidationIndex
-        });
+    }
+
+    // how many of the unspents do we want to consolidate?
+    // the +1 is because the consolidated block becomes a new unspent later
+    let targetInputCount = allUnspentsCount - target + 1;
+    targetInputCount = Math.min(targetInputCount, allUnspents.length);
+
+    // if the targetInputCount requires more inputs than we allow per batch, we reduce the number
+    inputCount = Math.min(targetInputCount, maxInputCount);
+
+    // if either the number of inputs left to coalesce equals the number we will coalesce in this iteration
+    // or if the number of iterations matches the maximum permitted number
+    isFinalConsolidation = (inputCount === targetInputCount || iterationCount === maxIterationCount);
+
+    const currentChunk = allUnspents.splice(0, inputCount);
+    const changeChain = self.getChangeChain();
+    const newAddress = yield self.createAddress({ chain: changeChain, validate: validate });
+    const txParams = _.extend({}, params);
+    currentAddress = newAddress;
+    // the total amount that we are consolidating within this batch
+    grossAmount = _(currentChunk).map('value').sum(); // before fees
+
+    txParams.unspents = currentChunk;
+    txParams.recipients = {};
+    txParams.recipients[newAddress.address] = grossAmount;
+    txParams.noSplitChange = true;
+
+    if (txParams.unspents.length <= 1) {
+      throw new Error('Done');
+    }
+
+    // let's attempt to create this transaction. We expect it to fail because no fee is set.
+    try {
+      yield self.sendMany(txParams);
+    } catch (error) {
+      // this error should occur due to insufficient funds
+      // however, let's make sure it wasn't something else
+      if (!error.fee && (!error.result || !error.result.fee)) {
+        // if the error does not contain a fee property, it is something else that has gone awry, and we throw it
+        const debugParams = _.omit(txParams, ['walletPassphrase', 'xprv']);
+        error.message += `\n\nTX PARAMS:\n ${JSON.stringify(debugParams, null, 4)}`;
+        throw error;
       }
-      consolidationIndex++;
-      if (!isFinalConsolidation) {
-        // this last consolidation has not yet brought the unspents count down to the target unspent count
-        // therefore, we proceed by consolidating yet another batch
-        // before we do that, we wait 1 second so that the newly created unspent will be fetched in the next batch
-        return Q.delay(1000)
-        .then(runNextConsolidation);
+      const baseFee = error.fee || error.result.fee;
+      let bitgoFee = 0;
+      let totalFee = baseFee;
+      if (error.result.bitgoFee && error.result.bitgoFee.amount) {
+        bitgoFee = error.result.bitgoFee.amount;
+        totalFee += bitgoFee;
       }
-      // this is the final consolidation transaction. We return all the ones we've had so far
-      return consolidationTransactions;
-    });
-  };
+
+      // if the net amount is negative, it should be replaced with the minimum output size
+      const netAmount = Math.max(grossAmount - totalFee, self.bitgo.getConstants().minOutputSize);
+      // Need to clear these out since only 1 may be set
+      delete txParams.fee;
+      delete txParams.feeRate;
+      delete txParams.feeTxConfirmTarget;
+
+      // we set the fee explicitly
+      txParams.fee = grossAmount - netAmount - bitgoFee;
+      txParams.recipients[newAddress.address] = netAmount;
+    }
+    // this transaction, on the other hand, should be created with no issues, because an appropriate fee is set
+    let sentTx;
+    try {
+      sentTx = yield self.sendMany(txParams);
+    } catch (e) {
+      const debugParams = _.omit(txParams, ['walletPassphrase', 'xprv']);
+      e.message += `\n\nTX PARAMS:\n ${JSON.stringify(debugParams, null, 4)}`;
+      throw e;
+    }
+    consolidationTransactions.push(sentTx);
+    if (_.isFunction(params.progressCallback)) {
+      params.progressCallback({
+        txid: sentTx.hash,
+        destination: currentAddress,
+        amount: grossAmount,
+        fee: sentTx.fee,
+        inputCount: inputCount,
+        index: consolidationIndex
+      });
+    }
+    consolidationIndex++;
+    if (!isFinalConsolidation) {
+      // this last consolidation has not yet brought the unspents count down to the target unspent count
+      // therefore, we proceed by consolidating yet another batch
+      // before we do that, we wait 1 second so that the newly created unspent will be fetched in the next batch
+      yield Promise.delay(1000);
+      yield runNextConsolidation();
+    }
+    // this is the final consolidation transaction. We return all the ones we've had so far
+    return consolidationTransactions;
+  });
 
   return runNextConsolidation(this, target)
   .catch(function(err) {
@@ -1683,20 +1696,20 @@ Wallet.prototype.shareWallet = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
 
-  if (params.reshare !== undefined && typeof(params.reshare) != 'boolean') {
+  if (params.reshare !== undefined && !_.isBoolean(params.reshare)) {
     throw new Error('Expected reshare to be a boolean.');
   }
 
-  if (params.skipKeychain !== undefined && typeof(params.skipKeychain) != 'boolean') {
+  if (params.skipKeychain !== undefined && !_.isBoolean(params.skipKeychain)) {
     throw new Error('Expected skipKeychain to be a boolean. ');
   }
   var needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
 
-  if (params.disableEmail !== undefined && typeof(params.disableEmail) != 'boolean') {
+  if (params.disableEmail !== undefined && !_.isBoolean(params.disableEmail)) {
     throw new Error('Expected disableEmail to be a boolean.');
   }
 
-  var self = this;
+  const self = this;
   var sharing;
   var sharedKeychain;
   return this.bitgo.getSharingKey({ email: params.email })
@@ -1785,11 +1798,11 @@ Wallet.prototype.setPolicyRule = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id', 'type'], ['message'], callback);
 
-  if (typeof(params.condition) !== 'object') {
+  if (!_.isObject(params.condition)) {
     throw new Error('missing parameter: conditions object');
   }
 
-  if (typeof(params.action) !== 'object') {
+  if (!_.isObject(params.action)) {
     throw new Error('missing parameter: action object');
   }
 
@@ -1874,10 +1887,10 @@ Wallet.prototype.estimateFee = function(params, callback) {
   if (params.amount && params.recipients) {
     throw new Error('cannot specify both amount as well as recipients');
   }
-  if (params.recipients && typeof(params.recipients) != 'object') {
+  if (params.recipients && !_.isObject(params.recipients)) {
     throw new Error('recipients must be array of { address: abc, amount: 100000 } objects');
   }
-  if (params.amount && typeof(params.amount) != 'number') {
+  if (params.amount && !_.isNumber(params.amount)) {
     throw new Error('invalid amount argument, expecting number');
   }
 
@@ -1933,10 +1946,10 @@ Wallet.prototype.deletePolicyRule = function(params, callback) {
 Wallet.prototype.getBitGoFee = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  if (typeof(params.amount) !== 'number') {
+  if (!_.isNumber(params.amount)) {
     throw new Error('invalid amount argument');
   }
-  if (params.instant && typeof(params.instant) !== 'boolean') {
+  if (params.instant && !_.isBoolean(params.instant)) {
     throw new Error('invalid instant argument');
   }
   return this.bitgo.get(this.url('/billing/fee'))

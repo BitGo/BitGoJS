@@ -1,12 +1,12 @@
-var express = require('express');
-var httpProxy = require('http-proxy');
-var url = require('url');
-var morgan = require('morgan');
-var fs = require('fs');
-var path = require('path');
+const express = require('express');
+const httpProxy = require('http-proxy');
+const url = require('url');
+const morgan = require('morgan');
+const fs = require('fs');
+const path = require('path');
 
-var common = require('./common');
-var pjson = require('../package.json');
+const common = require('./common');
+const pjson = require('../package.json');
 
 var BITGOEXPRESS_USER_AGENT = "BitGoExpress/" + pjson.version;
 

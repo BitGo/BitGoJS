@@ -5,16 +5,16 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var bitcoin = require('../bitcoin');
-var Util = require('../util');
-var ethAbi = function() {};
-var ethUtil = function() {};
+const bitcoin = require('../bitcoin');
+const Util = require('../util');
+let ethAbi = function() {};
+let ethUtil = function() {};
 
 
-var assert = require('assert');
-var common = require('../common');
-var Q = require('q');
-var _ = require('lodash');
+const assert = require('assert');
+const common = require('../common');
+const Promise = require('bluebird');
+const _ = require('lodash');
 
 try {
   ethAbi = require('ethereumjs-abi');
@@ -27,7 +27,7 @@ try {
 // Constructor
 // TODO: WORK IN PROGRESS
 //
-var EthWallet = function(bitgo, wallet) {
+const EthWallet = function(bitgo, wallet) {
   this.bitgo = bitgo;
   this.wallet = wallet;
   this.signingAddresses = [];
@@ -99,7 +99,7 @@ EthWallet.prototype.get = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
 
   return this.bitgo.get(this.url())
   .result()
@@ -121,7 +121,7 @@ EthWallet.prototype.freeze = function(params, callback) {
   common.validateParams(params, [], [], callback);
 
   if (params.duration) {
-    if (typeof(params.duration) != 'number') {
+    if (!_.isNumber(params.duration)) {
       throw new Error('invalid duration - should be number of seconds');
     }
   }
@@ -186,7 +186,7 @@ EthWallet.prototype.setLabel = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address', 'label'], [], callback);
 
-  var self = this;
+  const self = this;
 
   if (!self.bitgo.eth().verifyAddress({ address: params.address })) {
     throw new Error('Invalid Ethereum address: ' + params.address);
@@ -208,7 +208,7 @@ EthWallet.prototype.deleteLabel = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
-  var self = this;
+  const self = this;
 
   if (!self.bitgo.eth().verifyAddress({ address: params.address })) {
     throw new Error('Invalid Ethereum address: ' + params.address);
@@ -232,7 +232,7 @@ EthWallet.prototype.transactions = function(params, callback) {
 
   var query = Util.preparePageableQuery(params);
   if (params.minHeight) {
-    if (typeof(params.minHeight) != 'number') {
+    if (!_.isNumber(params.minHeight)) {
       throw new Error('invalid minHeight argument, expecting number');
     }
     query.minHeight = params.minHeight;
@@ -299,7 +299,7 @@ EthWallet.prototype.getTransfer = function(params, callback) {
 EthWallet.prototype.getEncryptedUserKeychain = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  var self = this;
+  const self = this;
 
   return self.bitgo.keychains()
   .get({ 'ethAddress': self.signingAddresses[0].address })
@@ -355,29 +355,29 @@ var getOperationSha3ForExecuteAndConfirm = function(recipients, expireTime, cont
   }
 
   // Right now we only support 1 recipient
-  if (recipients.length != 1) {
+  if (recipients.length !== 1) {
     throw new Error("must send to exactly 1 recipient");
   }
 
-  if (typeof(expireTime) !== 'number') {
+  if (!_.isNumber(expireTime)) {
     throw new Error("expireTime must be number of seconds since epoch");
   }
 
-  if (typeof(contractSequenceId) !== 'number') {
+  if (!_.isNumber(contractSequenceId)) {
     throw new Error("contractSequenceId must be number");
   }
 
   // Check inputs
   recipients.forEach(function(recipient) {
-    if (typeof(recipient.toAddress) !== 'string' || !ethUtil.isValidAddress(ethUtil.addHexPrefix(recipient.toAddress))) {
+    if (!_.isString(recipient.toAddress) || !ethUtil.isValidAddress(ethUtil.addHexPrefix(recipient.toAddress))) {
       throw new Error("Invalid address: " + recipient.toAddress);
     }
 
-    if (typeof(recipient.value) !== 'string') {
+    if (!_.isString(recipient.value)) {
       throw new Error("Invalid value for: " + recipient.toAddress + ' - should be of type string in wei');
     }
 
-    if (recipient.data && typeof(recipient.data) !== 'string') {
+    if (recipient.data && !_.isString(recipient.data)) {
       throw new Error("Data for recipient " + recipient.toAddress + ' - should be of type hex string');
     }
   });
@@ -439,21 +439,21 @@ EthWallet.prototype.sendTransaction = function(params, callback) {
 
   // Check inputs
   params.recipients.forEach(function(recipient) {
-    if (typeof(recipient.toAddress) !== 'string' || !ethUtil.isValidAddress(ethUtil.addHexPrefix(recipient.toAddress))) {
+    if (!_.isString(recipient.toAddress) || !ethUtil.isValidAddress(ethUtil.addHexPrefix(recipient.toAddress))) {
       throw new Error("Invalid address: " + recipient.toAddress);
     }
 
-    if (typeof(recipient.value) !== 'string') {
+    if (!_.isString(recipient.value)) {
       throw new Error("Invalid value for: " + recipient.toAddress + ' - should be of type string in wei');
     }
 
-    if (recipient.data && typeof(recipient.data) !== 'string') {
+    if (recipient.data && !_.isString(recipient.data)) {
       throw new Error("Data for recipient " + recipient.toAddress + ' - should be of type hex string');
     }
   });
 
   if (params.expireTime !== undefined) {
-    if (typeof(params.expireTime) == 'number') {
+    if (_.isNumber(params.expireTime)) {
       if (params.expireTime < ((new Date().getTime()) / 1000)) {
         throw new Error('expireTime is before current time');
       }
@@ -463,18 +463,14 @@ EthWallet.prototype.sendTransaction = function(params, callback) {
   }
 
   if (params.gasLimit !== undefined) {
-    if (typeof(params.gasLimit) != 'number' || params.gasLimit < 1) {
+    if (!_.isNumber(params.gasLimit) || params.gasLimit < 1) {
       throw new Error('expecting positive integer for gasLimit');
     }
   }
 
-  var self = this;
+  const self = this;
 
-  return Q()
-  .then(function() {
-    // wrap in case one of these throws
-    return Q.all([self.getAndPrepareSigningKeychain(params), self.getTransactionPreBuildParams(params)]);
-  })
+  return Promise.all([self.getAndPrepareSigningKeychain(params), self.getTransactionPreBuildParams(params)])
   .spread(function(keychain, prebuildParams) {
     var secondsSinceEpoch = Math.floor((new Date().getTime()) / 1000);
     var expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
@@ -518,8 +514,8 @@ EthWallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
   params = params || {};
 
   // If keychain with xprv is already provided, use it
-  if (typeof(params.keychain) === 'object' && params.keychain.xprv) {
-    return Q(params.keychain);
+  if (_.isObject(params.keychain) && params.keychain.xprv) {
+    return Promise.resolve(params.keychain);
   }
 
   common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
@@ -528,7 +524,7 @@ EthWallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
     throw new Error('must provide exactly one of xprv or walletPassphrase');
   }
 
-  var self = this;
+  const self = this;
 
   // Caller provided a wallet passphrase
   if (params.walletPassphrase) {
@@ -552,7 +548,7 @@ EthWallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
     throw new Error('Unable to parse the xprv');
   }
 
-  if (xpub == params.xprv) {
+  if (xpub === params.xprv) {
     throw new Error('xprv provided was not a private key (found xpub instead)');
   }
 

@@ -5,11 +5,12 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var crypto = require('crypto');
-var common = require('./common');
-var Util = require('./util');
-var bitcoin = require('./bitcoin');
-var ethereumUtil = function() {};
+const crypto = require('crypto');
+const common = require('./common');
+const Util = require('./util');
+const bitcoin = require('./bitcoin');
+const _ = require('lodash');
+let ethereumUtil = function() {};
 
 try {
   ethereumUtil = require('ethereumjs-util');
@@ -20,7 +21,7 @@ try {
 //
 // Constructor
 //
-var Keychains = function(bitgo) {
+const Keychains = function(bitgo) {
   this.bitgo = bitgo;
 };
 
@@ -33,13 +34,13 @@ Keychains.prototype.isValid = function(params) {
   common.validateParams(params, [], []);
 
   if (params.ethAddress) {
-    if (typeof(params.ethAddress) != 'string') {
+    if (!_.isString(params.ethAddress)) {
       throw new Error('ethAddress must be a string');
     }
     return ethereumUtil.isValidAddress(params.ethAddress);
   }
 
-  if (typeof(params.key) != 'string' && typeof(params.key) != 'object') {
+  if (!_.isString(params.key) && !_.isObject(params.key)) {
     throw new Error('key must be a string or object');
   }
 

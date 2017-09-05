@@ -1,10 +1,10 @@
-var common = require('../common');
-var assert = require('assert');
-var bitcoin = require('../bitcoin');
-var Q = require('q');
-var _ = require('lodash');
+const common = require('../common');
+const assert = require('assert');
+const bitcoin = require('../bitcoin');
+const Promise = require('bluebird');
+const _ = require('lodash');
 
-var PendingApproval = function(bitgo, baseCoin, pendingApprovalData, wallet) {
+const PendingApproval = function(bitgo, baseCoin, pendingApprovalData, wallet) {
   this.bitgo = bitgo;
   this.baseCoin = baseCoin;
   this.wallet = wallet;
@@ -115,7 +115,7 @@ PendingApproval.prototype.get = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
   return this.bitgo.get(this.url())
   .result()
   .then(function(res) {
@@ -129,7 +129,7 @@ PendingApproval.prototype.get = function(params, callback) {
 // Helper function to ensure that self.wallet is set
 //
 PendingApproval.prototype.populateWallet = function() {
-  var self = this;
+  const self = this;
   if (!self.wallet) {
     return self.baseCoin.wallets().get({ id: self.info().transactionRequest.sourceWallet })
     .then(function(wallet) {
@@ -144,7 +144,7 @@ PendingApproval.prototype.populateWallet = function() {
     throw new Error('unexpected source wallet for pending approval');
   }
 
-  return Q(); // otherwise returns undefined
+  return Promise.resolve(); // otherwise returns undefined
 };
 
 //
@@ -160,9 +160,8 @@ PendingApproval.prototype.approve = function(params, callback) {
     canRecreateTransaction = false;
   }
 
-  var self = this;
-  return Q()
-  .then(function() {
+  const self = this;
+  return Promise.try(function() {
     if (self.type() === 'transactionRequest') {
       /*
       If this is a request for approving a transaction, depending on whether this user has a private key to the wallet
@@ -234,7 +233,7 @@ PendingApproval.prototype.reject = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
 
   return this.bitgo.put(this.url())
   .send({ 'state': 'rejected' })
@@ -266,7 +265,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params) {
   var recipients = this.info().transactionRequest.recipients;
   var txPrebuildPromise = this.wallet.prebuildTransaction({ recipients: recipients });
   var userKeychainPromise = this.baseCoin.keychains().get({ id: wallet._wallet.keys[0] });
-  return Q.all([txPrebuildPromise, userKeychainPromise])
+  return Promise.all([txPrebuildPromise, userKeychainPromise])
   .spread(function(txPrebuild, userKeychain) {
     var signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
     signingParams.recipients = recipients;

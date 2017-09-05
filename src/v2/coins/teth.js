@@ -1,6 +1,6 @@
-var Eth = require('./eth');
+const Eth = require('./eth');
 
-var Teth = function() {
+const Teth = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away

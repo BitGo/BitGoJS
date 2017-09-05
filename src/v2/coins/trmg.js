@@ -1,8 +1,8 @@
-var Rmg = require('./rmg');
-var prova = require('../../prova');
-var _ = require('lodash');
+const Rmg = require('./rmg');
+const prova = require('../../prova');
+const _ = require('lodash');
 
-var Trmg = function() {
+const Trmg = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away

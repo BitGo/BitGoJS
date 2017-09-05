@@ -1,8 +1,8 @@
-var Ltc = require('./ltc');
-var bitcoin = require('bitcoinjs-lib');
-var _ = require('lodash');
+const Ltc = require('./ltc');
+const bitcoin = require('bitcoinjs-lib');
+const _ = require('lodash');
 
-var Tltc = function() {
+const Tltc = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away

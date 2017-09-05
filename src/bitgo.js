@@ -4,32 +4,32 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var superagent = require('superagent');
-var bitcoin = require('./bitcoin');
+const superagent = require('superagent');
+const bitcoin = require('./bitcoin');
 require('./bitcoinCash'); // this amends hdPath capabilities
-var sanitizeHtml = require('sanitize-html');
-var eol = require('eol');
-var BaseCoin = require('./v2/baseCoin');
-var Blockchain = require('./blockchain');
-var EthBlockchain = require('./eth/ethBlockchain');
-var Keychains = require('./keychains');
-var TravelRule = require('./travelRule');
-var Wallet = require('./wallet');
-var EthWallet = require('./eth/ethWallet');
-var Wallets = require('./wallets');
-var EthWallets = require('./eth/ethWallets');
-var Markets = require('./markets');
-var PendingApprovals = require('./pendingapprovals');
-var sjcl = require('./sjcl.min');
-var common = require('./common');
-var Util = require('./util');
-var Q = require('q');
-var pjson = require('../package.json');
-var moment = require('moment');
-var _ = require('lodash');
-var url = require('url');
-var querystring = require('querystring');
-var crypto = require('crypto');
+const sanitizeHtml = require('sanitize-html');
+const eol = require('eol');
+const BaseCoin = require('./v2/baseCoin');
+const Blockchain = require('./blockchain');
+const EthBlockchain = require('./eth/ethBlockchain');
+const Keychains = require('./keychains');
+const TravelRule = require('./travelRule');
+const Wallet = require('./wallet');
+const EthWallet = require('./eth/ethWallet');
+const Wallets = require('./wallets');
+const EthWallets = require('./eth/ethWallets');
+const Markets = require('./markets');
+const PendingApprovals = require('./pendingapprovals');
+const sjcl = require('./sjcl.min');
+const common = require('./common');
+const Util = require('./util');
+const Promise = require('bluebird');
+const pjson = require('../package.json');
+const moment = require('moment');
+const _ = require('lodash');
+const url = require('url');
+const querystring = require('querystring');
+const crypto = require('crypto');
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);
@@ -38,12 +38,12 @@ if (!process.browser) {
 // Patch superagent to return promises
 var _end = superagent.Request.prototype.end;
 superagent.Request.prototype.end = function(cb) {
-  var self = this;
+  const self = this;
   if (typeof cb === 'function') {
     return _end.call(self, cb);
   }
 
-  return new Q.Promise(function(resolve, reject) {
+  return new Promise.Promise(function(resolve, reject) {
     var error;
     try {
       return _end.call(self, function(error, response) {
@@ -65,16 +65,16 @@ superagent.Request.prototype.result = function(optionalField) {
   return this.then(handleResponseResult(optionalField), handleResponseError);
 };
 
-var handleResponseResult = function(optionalField) {
+const handleResponseResult = function(optionalField) {
   return function(res) {
-    if (typeof(res.status) === 'number' && res.status >= 200 && res.status < 300) {
+    if (_.isNumber(res.status) && res.status >= 200 && res.status < 300) {
       return optionalField ? res.body[optionalField] : res.body;
     }
     throw errFromResponse(res);
   };
 };
 
-var errFromResponse = function(res) {
+const errFromResponse = function(res) {
   var errString = createResponseErrorString(res);
   var err = new Error(errString);
 
@@ -91,7 +91,7 @@ var errFromResponse = function(res) {
   return err;
 };
 
-var handleResponseError = function(e) {
+const handleResponseError = function(e) {
   if (e.response) {
     throw errFromResponse(e.response);
   }
@@ -104,7 +104,7 @@ var handleResponseError = function(e) {
  * @param res Response from an HTTP request
  * @returns {String}
  */
-var createResponseErrorString = function(res) {
+const createResponseErrorString = function(res) {
   var errString = res.statusCode.toString(); // at the very least we'll have the status code
   if (res.body.error) {
     // this is the case we hope for, where the server gives us a nice error from the JSON body
@@ -118,7 +118,7 @@ var createResponseErrorString = function(res) {
       // if the response came back as text, we try to parse it as HTML and remove all tags, leaving us
       // just the bare text, which we then trim of excessive newlines and limit to a certain length
       try {
-        var sanitizedText = sanitizeHtml(res.text, { allowedTags: [] });
+        let sanitizedText = sanitizeHtml(res.text, { allowedTags: [] });
         sanitizedText = sanitizedText.trim();
         sanitizedText = eol.lf(sanitizedText); // use '\n' for all newlines
         sanitizedText = _.replace(sanitizedText, /\n[ |\t]{1,}\n/g, '\n\n'); // remove the spaces/tabs between newlines
@@ -141,10 +141,10 @@ var createResponseErrorString = function(res) {
 //                   testnet network.
 //
 var testNetWarningMessage = false;
-var BitGo = function(params) {
+const BitGo = function(params) {
   params = params || {};
   if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork']) ||
-    (params.useProduction && typeof(params.useProduction) != 'boolean')) {
+    (params.useProduction && !_.isBoolean(params.useProduction))) {
     throw new Error('invalid argument');
   }
 
@@ -206,6 +206,7 @@ var BitGo = function(params) {
   }
 
   this._baseApiUrl = this._baseUrl + '/api/v1';
+  this._baseApiUrlV2 = this._baseUrl + '/api/v2';
   this._user = null;
   this._keychains = null;
   this._wallets = null;
@@ -214,7 +215,7 @@ var BitGo = function(params) {
   this._token = params.accessToken || null;
   this._refreshToken = params.refreshToken || null;
   this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
-  this._promise = Q;
+  this._promise = Promise;
 
   // whether to perform extra client-side validation for some things, such as
   // address validation or signature validation. defaults to true, but can be
@@ -234,9 +235,11 @@ var BitGo = function(params) {
     throw new Error('cannot use https proxy params while in browser');
   }
 
+  const self = this;
+
   // This is a patching function which can apply our authorization
   // headers to any outbound request.
-  var createPatch = function(method) {
+  const createPatch = function(method) {
     return function() {
       var req = superagent[method].apply(null, arguments);
       if (params.proxy) {
@@ -402,9 +405,8 @@ var BitGo = function(params) {
     };
   };
 
-  for (var index in methods) {
-    var self = this;
-    var method = methods[index];
+  for (let index in methods) {
+    const method = methods[index];
     self[method] = createPatch(method);
   }
 
@@ -422,35 +424,35 @@ BitGo.prototype.coin = function(coinName) {
 
 // Accessor object for Ethereum methods
 BitGo.prototype.eth = function() {
-  var self = this;
+  const self = this;
 
-  var ethBlockchain = function() {
+  const ethBlockchain = function() {
     if (!self._ethBlockchain) {
       self._ethBlockchain = new EthBlockchain(self);
     }
     return self._ethBlockchain;
   };
 
-  var ethWallets = function() {
+  const ethWallets = function() {
     if (!self._ethWallets) {
       self._ethWallets = new EthWallets(self);
     }
     return self._ethWallets;
   };
 
-  var newEthWalletObject = function(walletParams) {
+  const newEthWalletObject = function(walletParams) {
     return new EthWallet(self, walletParams);
   };
 
-  var verifyEthAddress = function(params) {
+  const verifyEthAddress = function(params) {
     params = params || {};
     common.validateParams(params, ['address'], []);
 
     var address = params.address;
-    return address.indexOf('0x') == 0 && address.length == 42;
+    return address.indexOf('0x') === 0 && address.length === 42;
   };
 
-  var retrieveGasBalance = function(params, callback) {
+  const retrieveGasBalance = function(params, callback) {
     return self.get(self.url('/eth/user/gas'))
     .result()
     .nodeify(callback);
@@ -471,7 +473,7 @@ BitGo.prototype.getValidate = function() {
 };
 
 BitGo.prototype.setValidate = function(validate) {
-  if (typeof(validate) !== 'boolean') {
+  if (!_.isBoolean(validate)) {
     throw new Error('invalid argument');
   }
   this._validate = validate;
@@ -488,7 +490,7 @@ BitGo.prototype.clear = function() {
 
 // Helper function to return a rejected promise or call callback with error
 BitGo.prototype.reject = function(msg, callback) {
-  return Q().thenReject(new Error(msg)).nodeify(callback);
+  return Promise.reject(new Error(msg)).nodeify(callback);
 };
 
 //
@@ -586,7 +588,7 @@ BitGo.prototype.getECDHSecret = function(params) {
   params = params || {};
   common.validateParams(params, ['otherPubKeyHex'], []);
 
-  if (typeof(params.eckey) !== 'object') {
+  if (!_.isObject(params.eckey)) {
     throw new Error('eckey object required');
   }
 
@@ -603,7 +605,7 @@ BitGo.prototype.getECDHSharingKeychain = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], []);
 
-  var self = this;
+  const self = this;
 
   return this.get(this.url('/user/settings'))
   .result()
@@ -764,7 +766,7 @@ BitGo.prototype.authenticate = function(params, callback) {
     authParams.extensionAddress = this._extensionKey.getAddress();
   }
 
-  var self = this;
+  const self = this;
   if (this._token) {
     return this.reject('already logged in', callback);
   }
@@ -874,7 +876,7 @@ BitGo.prototype.authenticateWithAuthCode = function(params, callback) {
 
   var authCode = params.authCode;
 
-  var self = this;
+  const self = this;
   if (this._token) {
     return this.reject('already logged in', callback);
   }
@@ -926,7 +928,7 @@ BitGo.prototype.refreshToken = function(params, callback) {
     throw new Error('Need client id and secret set first to use this');
   }
 
-  var self = this;
+  const self = this;
   return this.post(this._baseUrl + '/oauth/token')
   .send({
     grant_type: 'refresh_token',
@@ -1007,7 +1009,7 @@ BitGo.prototype.addAccessToken = function(params, callback) {
 
   // check non-string params
   if (params.duration) {
-    if (typeof(params.duration) !== 'number' || params.duration < 0) {
+    if (!_.isNumber(params.duration) || params.duration < 0) {
       throw new Error('duration must be a non-negative number');
     }
   }
@@ -1022,7 +1024,7 @@ BitGo.prototype.addAccessToken = function(params, callback) {
     });
   }
   if (params.txValueLimit) {
-    if (typeof(params.txValueLimit) !== 'number') {
+    if (!_.isNumber(params.txValueLimit)) {
       throw new Error('txValueLimit must be a number');
     }
     if (params.txValueLimit < 0) {
@@ -1096,9 +1098,9 @@ BitGo.prototype.removeAccessToken = function(params, callback) {
     throw new Error('must provide exactly one of id or label');
   }
 
-  var self = this;
+  const self = this;
 
-  return Q().then(function() {
+  return Promise.try(function() {
     if (params.id) {
       return params.id;
     }
@@ -1136,7 +1138,7 @@ BitGo.prototype.logout = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
   return this.get(this.url('/user/logout'))
   .result()
   .then(function() {
@@ -1335,8 +1337,9 @@ BitGo.prototype.newWalletObject = function(walletParams) {
   return new Wallet(this, walletParams);
 };
 
-BitGo.prototype.url = function(path) {
-  return this._baseApiUrl + path;
+BitGo.prototype.url = function(path, version = 1) {
+  const baseUrl = version === 2 ? this._baseApiUrlV2 : this._baseApiUrl;
+  return baseUrl + path;
 };
 
 //
@@ -1367,13 +1370,13 @@ BitGo.prototype.estimateFee = function(params, callback) {
 
   var queryParams = { version: 12 };
   if (params.numBlocks) {
-    if (typeof(params.numBlocks) !== 'number') {
+    if (!_.isNumber(params.numBlocks)) {
       throw new Error('invalid argument');
     }
     queryParams.numBlocks = params.numBlocks;
   }
   if (params.maxFee) {
-    if (typeof(params.maxFee) !== 'number') {
+    if (!_.isNumber(params.maxFee)) {
       throw new Error('invalid argument');
     }
     queryParams.maxFee = params.maxFee;
@@ -1385,13 +1388,13 @@ BitGo.prototype.estimateFee = function(params, callback) {
     queryParams.inputs = params.inputs;
   }
   if (params.txSize) {
-    if (typeof(params.txSize) !== 'number') {
+    if (!_.isNumber(params.txSize)) {
       throw new Error('invalid argument');
     }
     queryParams.txSize = params.txSize;
   }
   if (params.cpfpAware) {
-    if (typeof(params.cpfpAware) !== 'boolean') {
+    if (!_.isBoolean(params.cpfpAware)) {
       throw new Error('invalid argument');
     }
     queryParams.cpfpAware = params.cpfpAware;
@@ -1411,7 +1414,7 @@ BitGo.prototype.instantGuarantee = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  var self = this;
+  const self = this;
   return this.get(this.url('/instant/' + params.id))
   .result()
   .then(function(body) {
@@ -1438,7 +1441,7 @@ BitGo.prototype.getBitGoFeeAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var self = this;
+  const self = this;
   return this.post(this.url('/billing/address'))
   .send({})
   .result()
@@ -1453,7 +1456,7 @@ BitGo.prototype.getWalletAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
-  var self = this;
+  const self = this;
   return this.get(this.url('/walletaddress/' + params.address))
   .result()
   .nodeify(callback);
@@ -1473,7 +1476,7 @@ BitGo.prototype.fetchConstants = function(params, callback) {
   }
 
   if (BitGo._constants[env] && BitGo._constantsExpire[env] && new Date() < BitGo._constantsExpire[env]) {
-    return Q().then(function() {
+    return Promise.try(function() {
       return BitGo._constants[env];
     })
     .nodeify(callback);

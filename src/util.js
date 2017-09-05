@@ -1,8 +1,9 @@
-var Util = module.exports;
-var bitcoin = require('bitcoinjs-lib');
-var ethUtil = function() {};
-var Big = require('big.js');
-var isEthAvailable = false;
+const Util = module.exports;
+const bitcoin = require('bitcoinjs-lib');
+let ethUtil = function() {};
+const Big = require('big.js');
+const _ = require('lodash');
+let isEthAvailable = false;
 
 try {
   ethUtil = require('ethereumjs-util');
@@ -16,7 +17,7 @@ Util.isEthAvailable = function() { return isEthAvailable; };
 Util.bnToByteArrayUnsigned = function(bn) {
   var ba = bn.abs().toByteArray();
   if (ba.length) {
-    if (ba[0] == 0) {
+    if (ba[0] === 0) {
       ba = ba.slice(1);
     }
     return ba.map(function(v) {
@@ -39,13 +40,13 @@ Util.p2shMultisigOutputScript = function(m, pubKeys) {
 Util.preparePageableQuery = function(params) {
   var query = {};
   if (params.limit) {
-    if (typeof(params.limit) != 'number') {
+    if (!_.isNumber(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     query.limit = params.limit;
   }
   if (params.skip) {
-    if (typeof(params.skip) != 'number') {
+    if (!_.isNumber(params.skip)) {
       throw new Error('invalid skip argument, expecting number');
     }
     query.skip = params.skip;

@@ -6,13 +6,14 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var request = require('superagent');
-var common = require('./common');
+const request = require('superagent');
+const common = require('./common');
+const _ = require('lodash');
 
 //
 // Constructor
 //
-var Blockchain = function(bitgo) {
+const Blockchain = function(bitgo) {
   this.bitgo = bitgo;
 };
 
@@ -62,7 +63,7 @@ Blockchain.prototype.getAddressUnspents = function(params, callback) {
 
   var url = this.bitgo.url("/address/" + params.address + '/unspents');
   if (params.limit) {
-    if (typeof(params.limit) != 'number') {
+    if (!_.isInteger(params.limit)) {
       throw new Error('invalid limit - number expected');
     }
     url += '?limit=' + (params.limit * 1e8);
@@ -103,7 +104,7 @@ Blockchain.prototype.getTransaction = function(params, callback) {
 Blockchain.prototype.getTransactionByInput = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['txid'], [], callback);
-  if (typeof(params.vout) != 'number') {
+  if (!_.isInteger(params.vout)) {
     throw new Error('invalid vout - number expected');
   }
   return this.bitgo.get(this.bitgo.url("/tx/input/" + params.txid + "/" + params.vout))
