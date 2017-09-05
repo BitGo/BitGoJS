@@ -249,7 +249,9 @@ var BitGo = function(params) {
         // intercept a request before it's submitted to the server for v2 authentication (based on token)
         var bitgo = self;
 
+        // if there is no token, and we're not logged in, the request cannot be v2 authenticated
         this.isV2Authenticated = true;
+        this.authenticationToken = bitgo._token;
         // some of the older tokens appear to be only 40 characters long
         if ((bitgo._token && bitgo._token.length !== 67 && bitgo._token.indexOf('v2x') !== 0)
           || req.forceV1Auth) {
@@ -339,7 +341,7 @@ var BitGo = function(params) {
       req.verifyResponse = function(response) {
         var bitgo = self;
 
-        if (!req.isV2Authenticated || !bitgo._token) {
+        if (!req.isV2Authenticated || !req.authenticationToken) {
           return response;
         }
 
@@ -352,13 +354,21 @@ var BitGo = function(params) {
         var signatureSubject = [timestamp, queryPath, response.statusCode, response.text].join('|');
 
         // calculate the HMAC
-        var hmacKey = sjcl.codec.utf8String.toBits(bitgo._token);
+        var hmacKey = sjcl.codec.utf8String.toBits(req.authenticationToken);
         var hmacDigest = (new sjcl.misc.hmac(hmacKey, sjcl.hash.sha256)).mac(signatureSubject);
         var expectedHmac = sjcl.codec.hex.fromBits(hmacDigest);
 
         var receivedHmac = response.headers.hmac;
         if (expectedHmac !== receivedHmac) {
-          var error = new Error('invalid response HMAC, possible man-in-the-middle-attack');
+          const errorDetails = {
+            expectedHmac,
+            receivedHmac,
+            hmacInput: signatureSubject,
+            requestToken: req.authenticationToken,
+            bitgoToken: bitgo._token
+          };
+          var error = new Error(`invalid response HMAC, possible man-in-the-middle-attack: ${JSON.stringify(errorDetails, null, 4)}`);
+          error.result = errorDetails;
           error.status = 511;
           throw error;
         }
