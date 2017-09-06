@@ -8,9 +8,7 @@ const common = require('./common');
 const Util = require('./util');
 const assert = require('assert');
 
-const Address = require('bitcoinjs-lib/src/address');
-const Transaction = require('bitcoinjs-lib/src/transaction');
-const networks = require('bitcoinjs-lib/src/networks');
+const bitcoinCash = require('./bitcoinCash');
 
 const Promise = require('bluebird');
 const _ = require('lodash');
@@ -168,12 +166,12 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
   params = _.extend({}, params);
   common.validateParams(params, ['txHex'], [], callback);
 
-  var transaction = Transaction.fromHex(params.txHex);
+  var transaction = bitcoinCash.Transaction.fromHex(params.txHex);
   if (!transaction.outs) {
     throw new Error('transaction had no outputs or failed to parse successfully');
   }
 
-  var network = networks[common.getNetwork()];
+  var network = bitcoinCash.networks[common.getNetwork()];
   params.recipients = {};
 
   const self = this;
@@ -186,7 +184,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
     }
     if (transaction.outs.length <= 2) {
       transaction.outs.forEach(function (out) {
-        var outAddress = Address.fromOutputScript(out.script, network).toBase58Check();
+        var outAddress = bitcoinCash.address.fromOutputScript(out.script, network).toBase58Check();
         if (self.info().transactionRequest.destinationAddress === outAddress) {
           // If this is the destination, then spend to it
           params.recipients[outAddress] = out.value;
@@ -201,7 +199,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
     .then(function(result) {
       var changeAddresses = _.keyBy(result.addresses, 'address');
       transaction.outs.forEach(function (out) {
-        var outAddress = Address.fromOutputScript(out.script, network).toBase58Check();
+        var outAddress = bitcoinCash.address.fromOutputScript(out.script, network).toBase58Check();
         if (!changeAddresses[outAddress]) {
           // If this is not a change address, then spend to it
           params.recipients[outAddress] = out.value;

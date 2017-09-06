@@ -1,6 +1,5 @@
 const common = require('../common');
 const assert = require('assert');
-const bitcoin = require('../bitcoin');
 const Promise = require('bluebird');
 const _ = require('lodash');
 
