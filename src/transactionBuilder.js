@@ -61,7 +61,7 @@ exports.createTransaction = function(params) {
     // this should be an array and its length must be at least 1
     (params.unspents && (!Array.isArray(params.unspents) || params.unspents.length < 1)) ||
     (params.feeTxConfirmTarget && !_.isInteger(params.feeTxConfirmTarget)) ||
-    (params.instant && _.isBoolean(params.instant)) ||
+    (params.instant && !_.isBoolean(params.instant)) ||
     (params.bitgoFee && !_.isObject(params.bitgoFee))
   ) {
     throw new Error('invalid argument');
