@@ -589,6 +589,15 @@ Wallet.prototype.unspents = function(params, callback) {
       }
     }
 
+    // explicitly request segwit unspents, as platform behavior is opt-in
+    queryObject.segwit = true;
+    if (!_.isUndefined(params.segwit)) {
+      if (!_.isBoolean(params.segwit)) {
+        throw new Error('invalid argument: segwit must be a boolean');
+      }
+      queryObject.segwit = params.segwit;
+    }
+
     return self.bitgo.get(url)
     .query(queryObject)
     .result()
