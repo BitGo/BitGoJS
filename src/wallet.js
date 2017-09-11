@@ -673,8 +673,17 @@ Wallet.prototype.unspentsPaged = function(params, callback) {
     throw new Error('invalid targetWalletUnspents flag - should be number');
   }
 
+  const queryObject = _.cloneDeep(params);
+  queryObject.segwit = true;
+  if (!_.isUndefined(params.segwit)) {
+    if (!_.isBoolean(params.segwit)) {
+      throw new Error('invalid argument: segwit must be a boolean');
+    }
+    queryObject.segwit = params.segwit;
+  }
+
   return this.bitgo.get(this.url('/unspents'))
-  .query(params)
+  .query(queryObject)
   .result()
   .nodeify(callback);
 };
