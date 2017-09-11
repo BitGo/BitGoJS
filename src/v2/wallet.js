@@ -143,9 +143,14 @@ Wallet.prototype.getTransaction = function getTransaction(params, callback){
  */
 Wallet.prototype.transfers = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], [], callback);
+  common.validateParams(params, [], ['id'], callback);
 
   var query = {};
+  if (params.id && !_.isString(params.id)) {
+      throw new Error('invalid id argument, expecting string');
+  }
+  var transferId = params.id;
+
   if (params.prevId) {
     if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
@@ -160,8 +165,28 @@ Wallet.prototype.transfers = function(params, callback) {
     query.limit = params.limit;
   }
 
-  return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer'))
+  var url = this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer');
+  if (transferId) {
+    url += '/' + transferId;
+  }
+
+  return this.bitgo.get(url)
   .query(query)
+  .result()
+  .nodeify(callback);
+};
+
+// Get a transaction by sequence id for a given wallet
+Wallet.prototype.transferBySequenceId = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['sequenceId'], [], callback);
+
+
+  if (!_.isString(params.sequenceId)) {
+    throw new Error('invalid sequenceId argument, expecting string');
+  }
+
+  return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer/sequenceId/' + params.sequenceId))
   .result()
   .nodeify(callback);
 };
@@ -683,12 +708,12 @@ Wallet.prototype.sendMany = function(params, callback) {
         confirmedBalance: self.confirmedBalance(),
         spendableBalance: self.spendableBalance(),
       };
-      error.txParams = _.omit(params, ['keychain', 'xprv', 'passphrase', 'walletPassphrase', 'key']);
+      error.txParams = _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']);
     }
     throw error;
   })
   .then(function(halfSignedTransaction) {
-    var selectParams = _.pick(params, ['comment', 'otp']);
+    var selectParams = _.pick(params, ['comment', 'otp', 'sequenceId']);
     var finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
     return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
     .send(finalTxParams)
