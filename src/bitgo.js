@@ -251,6 +251,7 @@ const BitGo = function(params) {
       req.end = function() {
         // intercept a request before it's submitted to the server for v2 authentication (based on token)
         var bitgo = self;
+        this.set('BitGo-SDK-Version', bitgo.version());
 
         // if there is no token, and we're not logged in, the request cannot be v2 authenticated
         this.isV2Authenticated = true;
