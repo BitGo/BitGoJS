@@ -167,7 +167,7 @@ Wallet.prototype.transfers = function(params, callback) {
 
   var url = this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer');
   if (transferId) {
-    url += '/' + transferId;
+    url += '/' + encodeURIComponent(transferId);
   }
 
   return this.bitgo.get(url)
