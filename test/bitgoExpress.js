@@ -405,6 +405,7 @@ describe('Bitgo Express', function() {
         feeRate: 20000,
         nP2SHInputs: 2,
         nP2PKHInputs: 1,
+        nP2SHP2WSHInputs: 0,
         nOutputs: 4
       })
       .then(function(res) {

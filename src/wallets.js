@@ -10,6 +10,7 @@ const Wallet = require('./wallet');
 const common = require('./common');
 const Util = require('./util');
 const Promise = require('bluebird');
+const _ = require('lodash');
 
 //
 // Constructor
