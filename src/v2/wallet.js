@@ -160,8 +160,18 @@ Wallet.prototype.transfers = function(params, callback) {
     query.limit = params.limit;
   }
 
-  return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer'))
+  return this.bitgo.get(this.url('/transfer'))
   .query(query)
+  .result()
+  .nodeify(callback);
+};
+
+// Get a transaction by sequence id for a given wallet
+Wallet.prototype.transferBySequenceId = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['sequenceId'], [], callback);
+
+  return this.bitgo.get(this.url('/transfer/sequenceId/' + params.sequenceId))
   .result()
   .nodeify(callback);
 };
@@ -683,12 +693,12 @@ Wallet.prototype.sendMany = function(params, callback) {
         confirmedBalance: self.confirmedBalance(),
         spendableBalance: self.spendableBalance(),
       };
-      error.txParams = _.omit(params, ['keychain', 'xprv', 'passphrase', 'walletPassphrase', 'key']);
+      error.txParams = _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']);
     }
     throw error;
   })
   .then(function(halfSignedTransaction) {
-    var selectParams = _.pick(params, ['comment', 'otp']);
+    var selectParams = _.pick(params, ['comment', 'otp', 'sequenceId']);
     var finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
     return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
     .send(finalTxParams)
