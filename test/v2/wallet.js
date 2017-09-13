@@ -238,6 +238,7 @@ describe('V2 Wallet:', function() {
     // be selected and used for pending transactions, and the tests will fail until there are available unspents.
 
     before(co(function *() {
+      // TODO temporarily unlocking session to fix tests. Address unlock concept in BG-322.
       yield bitgo.unlock({otp: bitgo.testUserOTP()});
     }));
 
@@ -259,37 +260,26 @@ describe('V2 Wallet:', function() {
       });
     });
 
-    it('should send transaction with sequence Id', function() {
-      // TODO temporarily unlocking session to fix tests. Address unlock concept in BG-322.
+    it('should send transaction with sequence Id', co(function *() {
       sequenceId = Math.random().toString(36).slice(-10);
-      return bitgo.unlock({ otp: '0000000' })
-      .then(function() {
-        return wallet.createAddress()
-        .delay(3000) // wait three seconds before sending
-        .then(function(recipientAddress) {
-          var params = {
-            amount: 0.01 * 1e8, // 0.01 tBTC
-            address: recipientAddress.address,
-            walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
-            sequenceId: sequenceId
-          };
-          return wallet.send(params);
-        })
-        .then(function(transaction) {
-          transaction.should.have.property('status');
-          transaction.should.have.property('txid');
-          transaction.status.should.equal('signed');
-        });
-      });
-    });
+      const recipientAddress = yield wallet.createAddress();
+      const params = {
+        amount: 0.01 * 1e8, // 0.01 tBTC
+        address: recipientAddress.address,
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        sequenceId: sequenceId
+      };
+      const transaction = yield wallet.send(params);
+      transaction.should.have.property('status');
+      transaction.should.have.property('txid');
+      transaction.status.should.equal('signed');
+    }));
 
-    it('should fetch a transfer by its sequence Id', function() {
-      return wallet.transferBySequenceId({ sequenceId: sequenceId })
-      .then(function(transfer) {
-        transfer.should.have.property('sequenceId');
-        transfer.sequenceId.should.equal(sequenceId);
-      });
-    });
+    it('should fetch a transfer by its sequence Id', co(function *() {
+      const transfer = yield wallet.transferBySequenceId({ sequenceId: sequenceId });
+      transfer.should.have.property('sequenceId');
+      transfer.sequenceId.should.equal(sequenceId);
+    }));
 
     it('sendMany should error when given a non-array of recipients', function() {
       return wallet.createAddress()

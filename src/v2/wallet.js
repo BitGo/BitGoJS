@@ -143,14 +143,9 @@ Wallet.prototype.getTransaction = function getTransaction(params, callback){
  */
 Wallet.prototype.transfers = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['id'], callback);
+  common.validateParams(params, [], [], callback);
 
   var query = {};
-  if (params.id && !_.isString(params.id)) {
-      throw new Error('invalid id argument, expecting string');
-  }
-  var transferId = params.id;
-
   if (params.prevId) {
     if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
@@ -165,12 +160,7 @@ Wallet.prototype.transfers = function(params, callback) {
     query.limit = params.limit;
   }
 
-  var url = this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer');
-  if (transferId) {
-    url += '/' + encodeURIComponent(transferId);
-  }
-
-  return this.bitgo.get(url)
+  return this.bitgo.get(this.url('/transfer'))
   .query(query)
   .result()
   .nodeify(callback);
@@ -181,12 +171,7 @@ Wallet.prototype.transferBySequenceId = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['sequenceId'], [], callback);
 
-
-  if (!_.isString(params.sequenceId)) {
-    throw new Error('invalid sequenceId argument, expecting string');
-  }
-
-  return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer/sequenceId/' + params.sequenceId))
+  return this.bitgo.get(this.url('/transfer/sequenceId/' + params.sequenceId))
   .result()
   .nodeify(callback);
 };
