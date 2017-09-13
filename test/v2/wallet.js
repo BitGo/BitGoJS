@@ -5,6 +5,8 @@
 var assert = require('assert');
 var should = require('should');
 var _ = require('lodash');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 
 var common = require('../../src/common');
 var TestV2BitGo = require('../lib/test_bitgo');
@@ -15,6 +17,12 @@ describe('V2 Wallet:', function() {
   var keychains;
   var basecoin;
   var wallet;
+
+  // TODO: automate keeping test wallet full with bitcoin
+  // If failures are occurring, make sure that the wallet at test.bitgo.com contains bitcoin.
+  // The wallet is named Test Wallet, and its information is sometimes cleared from the test environment, causing
+  // many of these tests to fail. If that is the case, send it some bitcoin with at least 2 transactions
+  // to make sure the tests will pass.
 
   before(function() {
     // TODO: replace dev with test
@@ -50,12 +58,12 @@ describe('V2 Wallet:', function() {
 
   describe('List Unspents', function() {
 
-    it('addresses', function() {
+    it('unspents', function() {
       return wallet.unspents()
       .then(function(unspents) {
         unspents.should.have.property('coin');
         unspents.should.have.property('unspents');
-        unspents.unspents.length.should.be.greaterThan(10);
+        unspents.unspents.length.should.be.greaterThan(2);
       });
     });
   });
@@ -88,12 +96,11 @@ describe('V2 Wallet:', function() {
       .then(function(transactions) {
         transactions.should.have.property('coin');
         transactions.should.have.property('transactions');
-        transactions.transactions.length.should.be.greaterThan(6);
+        transactions.transactions.length.should.be.greaterThan(2);
         var firstTransaction = transactions.transactions[0];
         firstTransaction.should.have.property('date');
         firstTransaction.should.have.property('entries');
         firstTransaction.should.have.property('fee');
-        firstTransaction.should.have.property('fromWallet');
         firstTransaction.should.have.property('hex');
         firstTransaction.should.have.property('id');
         firstTransaction.should.have.property('inputIds');
@@ -113,7 +120,6 @@ describe('V2 Wallet:', function() {
         firstTransaction.should.have.property('date');
         firstTransaction.should.have.property('entries');
         firstTransaction.should.have.property('fee');
-        firstTransaction.should.have.property('fromWallet');
         firstTransaction.should.have.property('hex');
         firstTransaction.should.have.property('id');
         firstTransaction.should.have.property('inputIds');
@@ -122,6 +128,45 @@ describe('V2 Wallet:', function() {
         firstTransaction.should.have.property('size');
       });
     });
+
+    it('should fetch transaction by id', function() {
+      return wallet.getTransaction({ txHash: '96b2376fb0ccfdbcc9472489ca3ec75df1487b08a0ea8d9d82c55da19d8cceea' })
+      .then(function(transaction) {
+        transaction.should.have.property('id');
+        transaction.should.have.property('normalizedTxHash');
+        transaction.should.have.property('date');
+        transaction.should.have.property('blockHash');
+        transaction.should.have.property('blockHeight');
+        transaction.should.have.property('blockPosition');
+        transaction.should.have.property('confirmations');
+        transaction.should.have.property('fee');
+        transaction.should.have.property('feeString');
+        transaction.should.have.property('size');
+        transaction.should.have.property('inputIds');
+        transaction.should.have.property('inputs');
+        transaction.should.have.property('size');
+
+      });
+    });
+
+    it('should fail if not given a txHash', co(function *(){
+      try {
+        yield wallet.getTransaction();
+        throw '';
+      } catch (error){
+        error.message.should.equal('Missing parameter: txHash');
+      }
+    }));
+
+    it('should fail if limit is negative', co(function *(){
+      try {
+        yield wallet.getTransaction({ txHash: '96b2376fb0ccfdbcc9472489ca3ec75df1487b08a0ea8d9d82c55da19d8cceea', limit: -1 });
+        throw '';
+      } catch (error){
+        error.message.should.equal('invalid limit argument, expecting positive integer');
+      }
+    }));
+
   });
 
   describe('List Transfers', function() {
@@ -188,6 +233,14 @@ describe('V2 Wallet:', function() {
   });
 
   describe('Send Transactions', function() {
+    // some of the tests will return the error "Error: transaction attempted to double spend",
+    // that occurs when the same unspent is selected different transactions, this is unlikely when
+    // first running the function, but if you need to run it multiple times, all unspents will
+    // be selected and used for pending transactions, and the tests will fail until there are available unspents.
+
+    before(co(function *() {
+      yield bitgo.unlock({otp: bitgo.testUserOTP()});
+    }));
 
     it('should send transaction to the wallet itself with send', function() {
       return wallet.createAddress()

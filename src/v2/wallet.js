@@ -104,6 +104,38 @@ Wallet.prototype.transactions = function(params, callback) {
 };
 
 /**
+ * List the transactions for a given wallet
+ * @param params
+ *  - txHash the transaction hash to search for
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.getTransaction = function getTransaction(params, callback){
+  params = params || {};
+  common.validateParams(params, ['txHash'], [], callback);
+
+  let query = {};
+  if (!_.isUndefined(params.prevId)) {
+    if (!_.isString(params.prevId)) {
+      throw new Error('invalid prevId argument, expecting string');
+    }
+    query.prevId = params.prevId;
+  }
+
+  if (!_.isUndefined(params.limit)) {
+    if (!_.isInteger(params.limit) || params.limit < 1) {
+      throw new Error('invalid limit argument, expecting positive integer');
+    }
+    query.limit = params.limit;
+  }
+
+  return this.bitgo.get(this.url('/tx/' + params.txHash))
+  .query(query)
+  .result()
+  .nodeify(callback);
+};
+
+/**
  * List the transfers for a given wallet
  * @param params
  * @param callback
