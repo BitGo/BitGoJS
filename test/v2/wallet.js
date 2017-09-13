@@ -411,6 +411,40 @@ describe('V2 Wallet:', function() {
       });
     });
 
+    it('should have sharing user self-remove from accepted wallet and reject it', function() {
+      var receivedWalletId = wallet.id();
+      console.log('This is received wallet ID', receivedWalletId);
+      return sharingUserBasecoin.wallets().list()
+      .then(function(sharedWallets) {
+        var receivedWallet = _.find(sharedWallets.wallets, function(w) { return w.id() === receivedWalletId; });
+        return receivedWallet.removeUser({ userId: sharingUserBitgo._user.id });
+      })
+      .then(function(removal) {
+        // this should require a pending approval
+        return basecoin.wallets().get({ id: receivedWalletId });
+      })
+      .then(function(updatedWallet) {
+        return updatedWallet.pendingApprovals();
+      })
+      .then(function(pendingApprovals) {
+        var pendingApproval = _.find(pendingApprovals, function(pa) { return pa.wallet.id() === receivedWalletId; });
+
+        pendingApproval.ownerType().should.equal('wallet');
+        should.exist(pendingApproval.walletId());
+        should.exist(pendingApproval.state());
+        should.exist(pendingApproval.creator());
+        should.exist(pendingApproval.info());
+        should.exist(pendingApproval.type());
+        should.exist(pendingApproval.approvalsRequired());
+        pendingApproval.approvalsRequired().should.equal(1);
+        return pendingApproval.reject();
+      })
+      .then(function(approval) {
+        approval.wallet.should.equal(receivedWalletId);
+        approval.state.should.equal('rejected');
+      });
+    });
+
     it('should have sharing user self-remove from accepted wallet and approve it', function() {
       var receivedWalletId = wallet.id();
       return sharingUserBasecoin.wallets().list()

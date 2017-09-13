@@ -29,12 +29,12 @@ PendingApproval.prototype.ownerType = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  if (this._pendingApproval.walletId) {
+  if (this._pendingApproval.wallet) {
     return 'wallet';
   } else if (this._pendingApproval.enterprise) {
     return 'enterprise';
   } else {
-    throw new Error('unexpected pending approval owner: neither walletId nor enterprise was present');
+    throw new Error('unexpected pending approval owner: neither wallet nor enterprise was present');
   }
 };
 
@@ -43,7 +43,7 @@ PendingApproval.prototype.ownerType = function(params, callback) {
 // Get the wallet ID that owns / is associated with the pending approval
 //
 PendingApproval.prototype.walletId = function() {
-  return this._pendingApproval.walletId;
+  return this._pendingApproval.wallet;
 };
 
 //
