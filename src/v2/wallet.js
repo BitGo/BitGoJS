@@ -4,6 +4,7 @@ const BigNumber = require('bignumber.js');
 const bitcoin = require('../bitcoin');
 const PendingApproval = require('./pendingApproval');
 const Promise = require('bluebird');
+const co = Promise.coroutine;
 const _ = require('lodash');
 
 const Wallet = function(bitgo, baseCoin, walletData) {
@@ -205,6 +206,54 @@ Wallet.prototype.unspents = function(params, callback) {
   .query(query)
   .result()
   .nodeify(callback);
+};
+
+/**
+ * Consolidate unspents on a wallet
+ *
+ * @param params {Object} parameters object
+ * -walletPassphrase {String} the users wallet passphrase
+ * -prevId {String} used in batch requests
+ * -limit {Number} used by mongoose to limit the amount of queries
+ * -minValue {Number} the minimum value of unspents to use
+ * -maxValue {Number} the maximum value of unspents to use
+ * -minHeight {Number} the minimum height of unspents on the block chain to use
+ * -target {Number} sum of the outputs plus sum of fees and change
+ * -plainTarget {Number} the sum of the outputs
+ * -targetUnspentPoolSize {Number} the number of unspents you want after the consolidation of valid unspents
+ * -minConfirms {Number} all selected unspents will have at least this many conformations
+ * -feeRate {Number} The fee rate to use for the consolidation
+ * -maxFeePercentage {Number} The maximum value of the unspents you are willing to lose
+ * @param callback
+ * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
+ */
+Wallet.prototype.consolidateUnspents = function consolidateUnspents(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
+
+    let targetUnspentPoolSize = params.targetUnspentPoolSize;
+    if (_.isUndefined(targetUnspentPoolSize) || !_.isNumber(targetUnspentPoolSize) || targetUnspentPoolSize < 1 || (targetUnspentPoolSize % 1) !== 0) {
+      // the target must be defined, be a number, be at least one, and be a natural number
+      throw new Error('targetUnspentPoolSize must be set and a positive integer');
+    }
+
+    const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0] });
+    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'target', 'plainTarget', 'targetUnspentPoolSize', 'prevId', 'limit', 'minConfirms', 'feeRate', 'maxFeePercentage']);
+    const response = yield this.bitgo.post(this.url('/consolidateUnspents'))
+    .send(filteredParams)
+    .result();
+
+    const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain });
+    const signedTransaction = yield this.signTransaction(transactionParams);
+
+    let selectParams = _.pick(params, ['comment', 'otp']);
+    let finalTxParams = _.extend({}, signedTransaction, selectParams);
+    return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
+    .send(finalTxParams)
+    .result();
+  }).call(this).asCallback(callback);
+
 };
 
 /**
