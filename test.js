@@ -2,7 +2,15 @@ var tape = require('tape')
 var blake2b = require('./')
 var vectors = require('blake2b/test-vectors.json')
 
+var readyCalled = false
+process.on('exit', function () {
+  if (!readyCalled)
+    throw new Error('ready not called')
+})
+
 blake2b.ready(function () {
+  readyCalled = true
+
   tape('hello world', function (t) {
     var hash = blake2b()
       .update(Buffer.from('hello'))
