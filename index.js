@@ -108,7 +108,7 @@ Blake2b.ready = function (cb) {
     rdy = WebAssembly.instantiate(buf).then(setup)
   }
 
-  return rdy.then(cb).catch(cb)
+  return rdy.then(cb, cb)
 }
 
 function noop () {}

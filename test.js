@@ -70,3 +70,16 @@ blake2b.ready(function () {
     })
   })
 })
+
+tape('.ready()', function (t) {
+  var invokeCount = 0;
+  blake2b
+    .ready(function () {
+      invokeCount++
+      throw new Error()
+    })
+    .catch(function () {
+      t.same(invokeCount, 1)
+      t.end()
+    })
+});
