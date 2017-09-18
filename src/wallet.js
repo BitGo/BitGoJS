@@ -20,6 +20,9 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
 
+const CHANGE_CHAIN_P2SH = 1;
+const CHANGE_CHAIN_SEGWIT = 11;
+
 //
 // Constructor
 //
@@ -201,9 +204,17 @@ Wallet.prototype.updateApprovalsRequired = function(params, callback) {
 /**
  * Returns the correct chain for change, taking into consideration segwit
  */
-Wallet.prototype.getChangeChain = function() {
-  const isSegwit = this.bitgo.getConstants().enableSegwit;
-  return isSegwit ? 11 : 1;
+Wallet.prototype.getChangeChain = function(params) {
+  let useSegwitChange = !!this.bitgo.getConstants().enableSegwit;
+  if (!_.isUndefined(params.segwitChange)) {
+    if (!_.isBoolean(params.segwitChange)) {
+      throw new Error('segwitChange must be a boolean');
+    }
+
+    // if segwit is disabled through the constants, segwit change should still not be created
+    useSegwitChange = this.bitgo.getConstants().enableSegwit && params.segwitChange;
+  }
+  return useSegwitChange ? CHANGE_CHAIN_SEGWIT : CHANGE_CHAIN_P2SH;
 };
 
 //
@@ -1399,7 +1410,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
 
     // create target amount of new addresses for this wallet
     const newAddressPromises = _.range(target)
-    .map(() => self.createAddress({ chain: self.getChangeChain(), validate: validate }));
+    .map(() => self.createAddress({ chain: self.getChangeChain(params), validate: validate }));
     const newAddresses = yield Promise.all(newAddressPromises);
     // let's find a nice, equal distribution of our Satoshis among the new addresses
     const splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
@@ -1621,7 +1632,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     isFinalConsolidation = (inputCount === targetInputCount || iterationCount === maxIterationCount);
 
     const currentChunk = allUnspents.splice(0, inputCount);
-    const changeChain = self.getChangeChain();
+    const changeChain = self.getChangeChain(params);
     const newAddress = yield self.createAddress({ chain: changeChain, validate: validate });
     const txParams = _.extend({}, params);
     currentAddress = newAddress;

@@ -1515,7 +1515,7 @@ BitGo.prototype.getConstants = function(params) {
   this.fetchConstants(params);
 
   // use defaultConstants as the backup for keys that are not set in this._constants
-  return _.merge({}, defaultConstants, BitGo._constants[this.env]);
+  return _.merge({}, defaultConstants, BitGo.prototype._constants[this.env]);
 };
 
 module.exports = BitGo;

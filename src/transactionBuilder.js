@@ -601,12 +601,11 @@ exports.createTransaction = function(params) {
           } else {
             // Otherwise create a new address per output, for privacy
             // determine if segwit or not
-            const isSegwit = bitgo.getConstants().enableSegwit;
-            const changeChain = isSegwit ? 11 : 1;
+            const changeChain = params.wallet.getChangeChain(params);
             return params.wallet.createAddress({ chain: changeChain, validate: validate })
-              .then(function(result) {
-                return result.address;
-              });
+            .then(function(result) {
+              return result.address;
+            });
           }
         })
           .then(function(address) {
