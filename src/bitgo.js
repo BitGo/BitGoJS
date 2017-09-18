@@ -1468,17 +1468,18 @@ BitGo.prototype.getWalletAddress = function(params, callback) {
 // Receives a TTL and refetches as necessary
 //
 BitGo.prototype.fetchConstants = function(params, callback) {
-  var env = this.env;
-  if (!BitGo._constants) {
-    BitGo._constants = {};
+  const env = this.env;
+
+  if (!BitGo.prototype._constants) {
+    BitGo.prototype._constants = {};
   }
-  if (!BitGo._constantsExpire) {
-    BitGo._constantsExpire = {};
+  if (!BitGo.prototype._constantsExpire) {
+    BitGo.prototype._constantsExpire = {};
   }
 
-  if (BitGo._constants[env] && BitGo._constantsExpire[env] && new Date() < BitGo._constantsExpire[env]) {
+  if (BitGo.prototype._constants[env] && BitGo.prototype._constantsExpire[env] && new Date() < BitGo.prototype._constantsExpire[env]) {
     return Promise.try(function() {
-      return BitGo._constants[env];
+      return BitGo.prototype._constants[env];
     })
     .nodeify(callback);
   }
@@ -1486,9 +1487,9 @@ BitGo.prototype.fetchConstants = function(params, callback) {
   return this.get(this.url('/client/constants'))
   .result()
   .then(function(result) {
-    BitGo._constants[env] = result.constants;
-    BitGo._constantsExpire[env] = moment.utc().add(result.ttl, 'second').toDate();
-    return BitGo._constants[env];
+    BitGo.prototype._constants[env] = result.constants;
+    BitGo.prototype._constantsExpire[env] = moment.utc().add(result.ttl, 'second').toDate();
+    return BitGo.prototype._constants[env];
   })
   .nodeify(callback);
 };
