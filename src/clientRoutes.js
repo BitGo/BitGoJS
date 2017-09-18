@@ -250,7 +250,7 @@ var handleV2GenerateWallet = function(req) {
 var handleV2SignTx = function(req) {
   var bitgo = req.bitgo;
   var coin = bitgo.coin(req.params.coin);
-  return coin.sign(req.body);
+  return coin.signTransaction(req.body);
 };
 
 // handle send one

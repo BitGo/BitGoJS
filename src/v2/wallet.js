@@ -589,8 +589,9 @@ Wallet.prototype.removeUser = function(params, callback) {
  */
 Wallet.prototype.prebuildTransaction = function(params, callback) {
   const self = this;
+  const prebuildParams = _.pick(params, ['recipients', 'lastLedgerSequence', 'ledgerSequenceDelta']);
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
-  .send({ recipients: params.recipients })
+  .send(prebuildParams)
   .result()
   .then(function(response) {
     // extend the prebuild details with the wallet id
