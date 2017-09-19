@@ -588,10 +588,18 @@ Wallet.prototype.removeUser = function(params, callback) {
  * @returns {*}
  */
 Wallet.prototype.prebuildTransaction = function(params, callback) {
+
+  // Whitelist params to build tx (mostly around unspent selection)
+  const whitelistedParams = _.pick(params, [
+    'recipients', 'numBlocks', 'feeRate', 'minConfirms',
+    'enforceMinConfirmsForChange', 'targetWalletUnspents',
+    'message', 'minValue', 'maxValue', 'sequenceId',
+    'lastLedgerSequence', 'ledgerSequenceDelta'
+  ]);
+
   const self = this;
-  const prebuildParams = _.pick(params, ['recipients', 'lastLedgerSequence', 'ledgerSequenceDelta']);
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
-  .send(prebuildParams)
+  .send(whitelistedParams)
   .result()
   .then(function(response) {
     // extend the prebuild details with the wallet id
@@ -667,6 +675,8 @@ Wallet.prototype.submitTransaction = function(params, callback) {
  * message - optional message to attach to transaction
  * walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
  * prv - the private key in string form, if walletPassphrase is not available
+ * minConfirms - the minimum confirmation threshold for inputs
+ * enforceMinConfirmsForChange - whether to enforce minConfirms for change inputs
  * @param callback
  * @returns {*}
  */
