@@ -126,7 +126,8 @@ Eth.prototype.signTransaction = function(params) {
     sequenceId: params.sequenceId,
     operationHash: operationHash,
     signature: signature,
-    gasLimit: params.gasLimit
+    gasLimit: params.gasLimit,
+    gasPrice: params.gasPrice
   };
   return { halfSigned: txParams };
 };
