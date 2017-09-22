@@ -493,10 +493,10 @@ exports.createTransaction = function(params) {
           var err;
           if (totalUnspentsCount === fetchedUnspentsCount) {
             // we fetched every unspent the wallet had, but it still wasn't enough
-            err = new Error('Insufficient funds');
+            err = new Error('Insufficient funds. Can send only ' + inputAmount + ' satoshis.');
           } else {
             // we weren't able to fetch all the unspents on the wallet
-            err = new Error('Transaction size too large due to too many unspents. Can send only ' + inputAmount + ' satoshis in this transaction');
+            err = new Error('Insufficient spendable funds. Can send only ' + inputAmount + ' satoshis in a single transaction. There are either pending incoming transactions, or the transaction size limit was reached.');
           }
           err.result = {
             fee: fee,
