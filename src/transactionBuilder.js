@@ -33,7 +33,7 @@ const TX_OVERHEAD_SIZE = 10;
 //   noSplitChange: set to true to disable automatic change splitting for purposes of unspent management
 //   targetWalletUnspents: specify a number of target unspents to maintain in the wallet (currently defaulted to 8 by the server)
 //   validate: extra verification of the change addresses, which is always done server-side and is redundant client-side (defaults true)
-//   minUnspentSize: The minimum use of unspent to use (don't spend dust transactions). Defaults to 0.
+//   minUnspentSize: The minimum size in satoshis of unspent to use (to prevent spending unspents worth less than fee added). Defaults to 0.
 //   feeSingleKeySourceAddress: Use this single key address to pay fees
 //   feeSingleKeyWIF: Use the address based on this private key to pay fees
 exports.createTransaction = function(params) {
