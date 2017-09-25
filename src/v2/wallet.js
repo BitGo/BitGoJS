@@ -167,6 +167,15 @@ Wallet.prototype.transfers = function(params, callback) {
   .nodeify(callback);
 };
 
+Wallet.prototype.getTransfer = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['id'], [], callback);
+
+  return this.bitgo.get(this.url('/transfer/' + params.id))
+    .result()
+    .nodeify(callback);
+}
+
 // Get a transaction by sequence id for a given wallet
 Wallet.prototype.transferBySequenceId = function(params, callback) {
   params = params || {};

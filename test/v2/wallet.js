@@ -176,7 +176,6 @@ describe('V2 Wallet:', function() {
     it('transfers', function() {
       return wallet.transfers()
       .then(function(transfers) {
-        transfers.should.have.property('coin');
         transfers.should.have.property('transfers');
         transfers.transfers.length.should.be.greaterThan(0);
         thirdTransfer = transfers.transfers[2];
@@ -186,18 +185,25 @@ describe('V2 Wallet:', function() {
     it('transfers with limit and nextBatchPrevId', function() {
       return wallet.transfers({ limit: 2 })
       .then(function(transfers) {
-        transfers.should.have.property('coin');
         transfers.should.have.property('transfers');
         transfers.transfers.length.should.eql(2);
         return wallet.transfers({ prevId: transfers.nextBatchPrevId });
       })
       .then(function(transfers) {
-        transfers.should.have.property('coin');
-        transfers.should.have.property('count');
         transfers.should.have.property('transfers');
         transfers.transfers.length.should.be.greaterThan(0);
         transfers.transfers[0].id.should.eql(thirdTransfer.id);
       });
+    });
+
+    it('get a transfer by id', function() {
+      return wallet.getTransfer({ id: thirdTransfer.id})
+        .then(function(transfer) {
+          transfer.should.have.property('coin');
+          transfer.should.have.property('height');
+          transfer.should.have.property('txid');
+          transfer.id.should.eql(thirdTransfer.id);
+        });
     });
 
     it('update comment', function() {
