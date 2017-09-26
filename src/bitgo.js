@@ -4,6 +4,8 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
+// signed commit test
+
 const superagent = require('superagent');
 const bitcoin = require('./bitcoin');
 require('./bitcoinCash'); // this amends hdPath capabilities
