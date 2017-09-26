@@ -4,6 +4,7 @@ const BitGoJS = require('./index');
 const TransactionBuilder = require('./transactionBuilder');
 const common = require('./common');
 const Promise = require('bluebird');
+const co = Promise.coroutine;
 const url = require('url');
 const _ = require('lodash');
 const pjson = require('../package.json');
@@ -246,6 +247,18 @@ var handleV2GenerateWallet = function(req) {
   });
 };
 
+//handle v2 approve transaction
+const handleV2PendingApproval = co(function *(req) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const params = req.body || {};
+  const pendingApproval = yield coin.pendingApprovals().get({ id: req.params.id });
+  if (params.state === 'approved') {
+    return pendingApproval.approve(params);
+  }
+  return pendingApproval.reject(params);
+});
+
 // handle sign transaction
 var handleV2SignTx = function(req) {
   var bitgo = req.bitgo;
@@ -452,6 +465,8 @@ exports = module.exports = function(app, args) {
   // Miscellaneous
   app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(args), promiseWrapper(handleLtcCanonicalAddress, args));
   app.post('/api/v2/:coin/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleV2VerifyAddress, args));
+  app.put('/api/v2/:coin/pendingapprovals/:id', parseBody, prepareBitGo(args), promiseWrapper(handleV2PendingApproval, args));
+
 
   // any other API v2 call
   app.use('/api/v2/user/*', parseBody, prepareBitGo(args), promiseWrapper(handleV2UserREST, args));
