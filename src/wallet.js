@@ -618,7 +618,7 @@ Wallet.prototype.transactions = function(params, callback) {
     }
     args.push('minHeight=' + params.minHeight);
   }
-  if (params.compact) {
+  if (typeof (params.compact) != 'undefined') {
     if (typeof (params.compact) != 'boolean') {
       throw new Error('invalid compact argument, expecting boolean');
     }
