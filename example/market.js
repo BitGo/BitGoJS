@@ -4,11 +4,11 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var BitGoJS = require('../src/index.js');
+const BitGoJS = require('../src/index.js');
 
-var bitgo = new BitGoJS.BitGo();
-var market = null;
-var yesterday = null;
+const bitgo = new BitGoJS.BitGo();
+let market = null;
+let yesterday = null;
 
 // Get latest market data
 bitgo.market({}, function(err, res) {
@@ -25,11 +25,11 @@ bitgo.market({}, function(err, res) {
     yesterday = res;
 
     // Now print out some market information
-    var changeSinceYesterday = (market.latest.currencies.USD.last - yesterday.currencies.USD.last).toFixed(2);
-    var direction = changeSinceYesterday > 0 ? "up" : "down";
+    let changeSinceYesterday = (market.latest.currencies.USD.last - yesterday.currencies.USD.last).toFixed(2);
+    const direction = changeSinceYesterday > 0 ? 'up' : 'down';
     changeSinceYesterday = Math.abs(changeSinceYesterday);
     console.log(
-    "Market Price (USD): $" + market.latest.currencies.USD.last +
-    " (" + direction + " $" + changeSinceYesterday + " from yesterday)");
+      'Market Price (USD): $' + market.latest.currencies.USD.last +
+    ' (' + direction + ' $' + changeSinceYesterday + ' from yesterday)');
   });
 });

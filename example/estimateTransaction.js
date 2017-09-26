@@ -9,55 +9,55 @@
 // Copyright 2016, BitGo, Inc.  All Rights Reserved.
 //
 
-var BitGoJS = require('../src/index.js');
+const BitGoJS = require('../src/index.js');
 
 if (process.argv.length < 8) {
-  console.log("usage:\n\t" + process.argv[0] + " " + process.argv[1] +
-    " <user> <pass> <otp> <walletId> <destinationAddress> <amountSatoshis> <feeRate>");
+  console.log('usage:\n\t' + process.argv[0] + ' ' + process.argv[1] +
+    ' <user> <pass> <otp> <walletId> <destinationAddress> <amountSatoshis> <feeRate>');
 
-  console.log("user: user email (on test.bitgo.com)");
-  console.log("pass: password");
-  console.log("otp: one-time password, 0000000 on test");
-  console.log("walletId: wallet ID (first address on the wallet)");
-  console.log("destinationAddress: the bitcoin address to send coins to");
-  console.log("amountSatoshis: number of satoshis to send");
-  console.log("feeRate: The fee rate to use in satoshis / kb [optional]");
+  console.log('user: user email (on test.bitgo.com)');
+  console.log('pass: password');
+  console.log('otp: one-time password, 0000000 on test');
+  console.log('walletId: wallet ID (first address on the wallet)');
+  console.log('destinationAddress: the bitcoin address to send coins to');
+  console.log('amountSatoshis: number of satoshis to send');
+  console.log('feeRate: The fee rate to use in satoshis / kb [optional]');
   process.exit(-1);
 }
 
-var user = process.argv[2];
-var password = process.argv[3];
-var otp = process.argv[4];
-var walletId = process.argv[5];
-var destinationAddress = process.argv[6];
-var amountSatoshis = parseInt(process.argv[7], 10);
-var feeRate = undefined;
+const user = process.argv[2];
+const password = process.argv[3];
+const otp = process.argv[4];
+const walletId = process.argv[5];
+const destinationAddress = process.argv[6];
+const amountSatoshis = parseInt(process.argv[7], 10);
+let feeRate = undefined;
 
 if (!!process.argv[8]) {
   feeRate = parseInt(process.argv[8], 10);
-};
+}
 
-var bitgo = new BitGoJS.BitGo({ env: 'test' });
+const bitgo = new BitGoJS.BitGo({ env: 'test' });
 
-var getTransactionInfo = function () {
+const getTransactionInfo = function () {
 
   return bitgo.authenticate({ username: user, password: password, otp: otp })
   .then(function () {
-    return bitgo.unlock({ otp: otp })
+    return bitgo.unlock({ otp: otp });
   })
   .then(function () {
 
     // Fetch the specified wallet
-    return bitgo.wallets().get({ id: walletId })
+    return bitgo.wallets().get({ id: walletId });
   })
   .then(function (wallet) {
 
     // Set recipients
-    var recipients = {};
+    const recipients = {};
     recipients[destinationAddress] = amountSatoshis;
 
     // Create the transaction
-    return wallet.createTransaction({ recipients: recipients, feeRate: feeRate })
+    return wallet.createTransaction({ recipients: recipients, feeRate: feeRate });
   }).then(function (transaction) {
     console.log('\nEstimated Transaction Info:\n');
     console.log('\tSending from:                        ' + walletId);

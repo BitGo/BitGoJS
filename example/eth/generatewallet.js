@@ -7,39 +7,39 @@
 // It is HIGHLY RECOMMENDED that you GENERATE THE KEYS ON SEPARATE MACHINES for real money wallets!
 //
 
-var BitGoJS = require('../../src/index.js');
+const BitGoJS = require('../../src/index.js');
 
 if (process.argv.length < 5) {
-  console.log("usage:\n\t" + process.argv[0] + " " + process.argv[1] + " <user> <pass> <label> [backupXpub]");
+  console.log('usage:\n\t' + process.argv[0] + ' ' + process.argv[1] + ' <user> <pass> <label> [backupXpub]');
   process.exit(-1);
 }
 
-var user = process.argv[2];
-var password = process.argv[3];
-var otp = '0000000';
-var label = process.argv[4];
+const user = process.argv[2];
+const password = process.argv[3];
+const otp = '0000000';
+const label = process.argv[4];
 
-var backupXpub = null;
+let backupXpub = null;
 if (process.argv.length > 5) {
   backupXpub = process.argv[5];
 }
 
-var bitgo = new BitGoJS.BitGo();
+const bitgo = new BitGoJS.BitGo();
 
 // Authenticate
 bitgo.authenticate({ username: user, password: password, otp: otp }, function(err, result) {
-  if (err) { console.dir(err); throw new Error("Could not authenticate!"); }
+  if (err) { console.dir(err); throw new Error('Could not authenticate!'); }
 
   // Create the wallet
-  bitgo.eth().wallets().generateWallet({"passphrase": password, "label": label, "backupXpub": backupXpub}, function(err, result) {
-    if (err) { console.dir(err); throw new Error("Could not create wallet!"); }
-    console.log("New Wallet: " + result.wallet.id());
+  bitgo.eth().wallets().generateWallet({ passphrase: password, label: label, backupXpub: backupXpub }, function(err, result) {
+    if (err) { console.dir(err); throw new Error('Could not create wallet!'); }
+    console.log('New Wallet: ' + result.wallet.id());
     console.dir(result.wallet.wallet);
-    console.log("Addresses: ");
+    console.log('Addresses: ');
     console.dir(result.wallet.wallet.private.addresses);
 
-    console.log("BACK THIS UP: ");
-    console.log("User keychain encrypted xPrv: " + result.userKeychain.encryptedXprv);
-    console.log("Backup keychain encrypted xPrv: " + result.backupKeychain.encryptedXprv);
+    console.log('BACK THIS UP: ');
+    console.log('User keychain encrypted xPrv: ' + result.userKeychain.encryptedXprv);
+    console.log('Backup keychain encrypted xPrv: ' + result.backupKeychain.encryptedXprv);
   });
 });

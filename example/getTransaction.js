@@ -5,22 +5,22 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var BitGoJS = require('../src/index.js');
+const BitGoJS = require('../src/index.js');
 
 if (process.argv.length < 2) {
-  console.log("usage:\n\t" + process.argv[0] + " " + process.argv[1] + " <transactionId>");
+  console.log('usage:\n\t' + process.argv[0] + ' ' + process.argv[1] + ' <transactionId>');
   process.exit(-1);
 }
 
-var txId = '951aea423c6ba55ac4e6aba953c1dc08e4854bcdf07cb505c4c69447a3f9712e';
+let txId = '951aea423c6ba55ac4e6aba953c1dc08e4854bcdf07cb505c4c69447a3f9712e';
 if (process.argv.length > 2) {
   txId = process.argv[2];
 }
 
-var bitgo = new BitGoJS.BitGo();
+const bitgo = new BitGoJS.BitGo();
 
 // Now get the Address information
-bitgo.blockchain().getTransaction({id: txId}, function(err, response) {
+bitgo.blockchain().getTransaction({ id: txId }, function(err, response) {
   if (err) { console.log(err); process.exit(-1); }
   console.log('Transaction info: ');
   console.log(JSON.stringify(response, null, 4));
