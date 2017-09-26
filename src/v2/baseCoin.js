@@ -1,9 +1,9 @@
-var Keychains;
+let Keychains;
 const BigNumber = require('bignumber.js');
-var PendingApprovals;
-var Wallet;
-var Wallets;
-var coinInstances;
+let PendingApprovals;
+let Wallet;
+let Wallets;
+let coinInstances;
 const bitcoin = require('bitcoinjs-lib');
 const prova = require('../prova');
 const Promise = require('bluebird');
@@ -70,7 +70,7 @@ BaseCoin.prototype.initializeCoin = function(coin) {
     };
   }
 
-  var coinInstance = coinInstances[coin];
+  const coinInstance = coinInstances[coin];
   if (!coinInstance) {
     throw new Error('Coin type ' + coin + ' not supported');
   }

@@ -35,7 +35,7 @@ Wallets.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var queryObject = {};
+  const queryObject = {};
 
   if (params.skip && params.prevId) {
     throw new Error('cannot specify both skip and prevId');
@@ -110,7 +110,7 @@ Wallets.prototype.add = function(params, callback) {
   }
 
   const self = this;
-  var walletParams = {
+  const walletParams = {
     label: params.label,
     m: params.m,
     n: params.n,
@@ -171,10 +171,10 @@ Wallets.prototype.generateWallet = co(function *(params, callback) {
   params = params || {};
   common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub', 'enterprise', 'passcodeEncryptionCode'], callback);
   const self = this;
-  var label = params.label;
+  const label = params.label;
 
   if ((!!params.backupXpub + !!params.backupXpubProvider) > 1) {
-    throw new Error("Cannot provide more than one backupXpub or backupXpubProvider flag");
+    throw new Error('Cannot provide more than one backupXpub or backupXpubProvider flag');
   }
 
   if (params.disableTransactionNotifications !== undefined && !_.isBoolean(params.disableTransactionNotifications)) {
@@ -196,7 +196,7 @@ Wallets.prototype.generateWallet = co(function *(params, callback) {
     let userKeychainParams;
     // User provided user key
     if (params.userKey) {
-      userKeychain = { 'pub': params.userKey };
+      userKeychain = { pub: params.userKey };
       userKeychainParams = userKeychain;
       if (params.coldDerivationSeed) {
         // the derivation only makes sense when a key already exists
@@ -257,10 +257,10 @@ Wallets.prototype.generateWallet = co(function *(params, callback) {
   // Add the user keychain
   yield Promise.all([userKeychainPromise, backupKeychainPromise, bitgoKeychainPromise]);
   let walletParams = {
-    "label": label,
-    "m": 2,
-    "n": 3,
-    "keys": [
+    label: label,
+    m: 2,
+    n: 3,
+    keys: [
       userKeychain.id,
       backupKeychain.id,
       bitgoKeychain.id
@@ -382,7 +382,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
   common.validateParams(params, ['walletShareId'], ['overrideEncryptedPrv'], callback);
 
   const self = this;
-  var encryptedPrv = params.overrideEncryptedPrv;
+  let encryptedPrv = params.overrideEncryptedPrv;
 
   return this.getShare({ walletShareId: params.walletShareId })
   .then(function(walletShare) {
@@ -393,28 +393,28 @@ Wallets.prototype.acceptShare = function(params, callback) {
 
     // More than viewing was requested, so we need to process the wallet keys using the shared ecdh scheme
     if (!params.userPassword) {
-      throw new Error("userPassword param must be provided to decrypt shared key");
+      throw new Error('userPassword param must be provided to decrypt shared key');
     }
 
     return self.bitgo.getECDHSharingKeychain()
     .then(function(sharingKeychain) {
       if (!sharingKeychain.encryptedXprv) {
-        throw new Error('encryptedXprv was not found on sharing keychain')
+        throw new Error('encryptedXprv was not found on sharing keychain');
       }
 
       // Now we have the sharing keychain, we can work out the secret used for sharing the wallet with us
       sharingKeychain.prv = self.bitgo.decrypt({ password: params.userPassword, input: sharingKeychain.encryptedXprv });
-      var rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.prv);
+      const rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.prv);
 
       // Derive key by path (which is used between these 2 users only)
-      var privKey = bitcoin.hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
-      var secret = self.bitgo.getECDHSecret({ eckey: privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
+      const privKey = bitcoin.hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
+      const secret = self.bitgo.getECDHSecret({ eckey: privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
 
       // Yes! We got the secret successfully here, now decrypt the shared wallet prv
-      var decryptedSharedWalletPrv = self.bitgo.decrypt({ password: secret, input: walletShare.keychain.encryptedPrv });
+      const decryptedSharedWalletPrv = self.bitgo.decrypt({ password: secret, input: walletShare.keychain.encryptedPrv });
 
       // We will now re-encrypt the wallet with our own password
-      var newWalletPassphrase = params.newWalletPassphrase || params.userPassword;
+      const newWalletPassphrase = params.newWalletPassphrase || params.userPassword;
       encryptedPrv = self.bitgo.encrypt({ password: newWalletPassphrase, input: decryptedSharedWalletPrv });
 
       // Carry on to the next block where we will post the acceptance of the share with the encrypted prv
@@ -422,7 +422,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
     });
   })
   .then(function() {
-    var updateParams = {
+    const updateParams = {
       walletShareId: params.walletShareId,
       state: 'accepted'
     };

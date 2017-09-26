@@ -154,7 +154,7 @@ PendingApproval.prototype.approve = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase', 'otp'], callback);
 
-  var canRecreateTransaction = true;
+  let canRecreateTransaction = true;
   if (this.type() === 'transactionRequest' && !(params.walletPassphrase || params.xprv)) {
     canRecreateTransaction = false;
   }
@@ -199,7 +199,7 @@ PendingApproval.prototype.approve = function(params, callback) {
     }
   })
   .then(function(transaction) {
-    var approvalParams = { 'state': 'approved', 'otp': params.otp };
+    const approvalParams = { state: 'approved', otp: params.otp };
     if (transaction) {
       // if in the previous instance, we recreated a transaction, we need to add its hex to the approval params
       approvalParams.txHex = transaction.txHex;
@@ -215,10 +215,10 @@ PendingApproval.prototype.approve = function(params, callback) {
   .catch(function(error) {
     if (!canRecreateTransaction &&
     (
-    error.message.indexOf('could not find unspent output for input') !== -1 ||
+      error.message.indexOf('could not find unspent output for input') !== -1 ||
     error.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
     ) {
-      throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction')
+      throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
     }
     throw error;
   });
@@ -235,7 +235,7 @@ PendingApproval.prototype.reject = function(params, callback) {
   const self = this;
 
   return this.bitgo.put(this.url())
-  .send({ 'state': 'rejected' })
+  .send({ state: 'rejected' })
   .result()
   .nodeify(callback);
 };
@@ -260,13 +260,13 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params) {
   assert(this.info().transactionRequest);
 
   // let's prebuild this transaction
-  var wallet = this.wallet;
-  var recipients = this.info().transactionRequest.recipients;
-  var txPrebuildPromise = this.wallet.prebuildTransaction({ recipients: recipients });
-  var userKeychainPromise = this.baseCoin.keychains().get({ id: wallet._wallet.keys[0] });
+  const wallet = this.wallet;
+  const recipients = this.info().transactionRequest.recipients;
+  const txPrebuildPromise = this.wallet.prebuildTransaction({ recipients: recipients });
+  const userKeychainPromise = this.baseCoin.keychains().get({ id: wallet._wallet.keys[0] });
   return Promise.all([txPrebuildPromise, userKeychainPromise])
   .spread(function(txPrebuild, userKeychain) {
-    var signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
+    const signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
     signingParams.recipients = recipients;
     return wallet.signTransaction(signingParams);
   });

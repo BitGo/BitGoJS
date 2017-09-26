@@ -32,7 +32,7 @@ Btc.prototype.getFamily = function() {
 Btc.prototype.isValidAddress = function(address, forceAltScriptSupport) {
   const validVersions = [
     this.network.pubKeyHash,
-    this.network.scriptHash,
+    this.network.scriptHash
   ];
   if (this.altScriptHash && (forceAltScriptSupport || this.supportAltScriptDestination)) {
     validVersions.push(this.altScriptHash);
@@ -57,24 +57,24 @@ Btc.prototype.isValidAddress = function(address, forceAltScriptSupport) {
  * @returns {{txHex}}
  */
 Btc.prototype.signTransaction = function(params) {
-  var txPrebuild = params.txPrebuild;
-  var userPrv = params.prv;
+  const txPrebuild = params.txPrebuild;
+  const userPrv = params.prv;
 
-  var transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
+  let transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
 
   if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
-  var keychain = bitcoin.HDNode.fromBase58(userPrv);
-  var hdPath = bitcoin.hdPath(keychain);
+  const keychain = bitcoin.HDNode.fromBase58(userPrv);
+  const hdPath = bitcoin.hdPath(keychain);
 
-  for (var index = 0; index < transaction.ins.length; ++index) {
-    var path = "m/0/0/" + txPrebuild.txInfo.unspents[index].chain + "/" + txPrebuild.txInfo.unspents[index].index;
-    var privKey = hdPath.deriveKey(path);
+  for (let index = 0; index < transaction.ins.length; ++index) {
+    const path = 'm/0/0/' + txPrebuild.txInfo.unspents[index].chain + '/' + txPrebuild.txInfo.unspents[index].index;
+    const privKey = hdPath.deriveKey(path);
 
-    var subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
-    var txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
+    const subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
+    const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
     try {
       txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);
     } catch (e) {
@@ -91,23 +91,23 @@ Btc.prototype.signTransaction = function(params) {
 
 Btc.prototype.explainTransaction = function(params) {
   const self = this;
-  var transaction = bitcoin.Transaction.fromBuffer(new Buffer(params.txHex, 'hex'));
-  var id = transaction.getId();
-  var changeAddresses = [];
-  var spendAmount = 0;
-  var changeAmount = 0;
+  const transaction = bitcoin.Transaction.fromBuffer(new Buffer(params.txHex, 'hex'));
+  const id = transaction.getId();
+  let changeAddresses = [];
+  let spendAmount = 0;
+  let changeAmount = 0;
   if (params.txInfo && params.txInfo.changeAddresses) {
     changeAddresses = params.txInfo.changeAddresses;
   }
-  var explanation = {
+  const explanation = {
     displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
     id: id,
     outputs: [],
     changeOutputs: []
   };
   transaction.outs.forEach(function(currentOutput) {
-    var currentAddress = bitcoin.address.fromOutputScript(currentOutput.script, self.network);
-    var currentAmount = currentOutput.value;
+    const currentAddress = bitcoin.address.fromOutputScript(currentOutput.script, self.network);
+    const currentAmount = currentOutput.value;
 
     if (changeAddresses.indexOf(currentAddress) !== -1) {
       // this is change
@@ -168,7 +168,7 @@ Btc.prototype.recover = function(params, callback) {
 
     const totalInputAmount = _.sumBy(unspents, 'amount');
     if (totalInputAmount <= 0) {
-      throw new Error("No input to recover - aborting!");
+      throw new Error('No input to recover - aborting!');
     }
     const transactionBuilder = new bitcoin.TransactionBuilder(self.network);
 
@@ -304,7 +304,7 @@ Btc.prototype.recover = function(params, callback) {
 
             if (body.data.balance > 0) {
               lookupThisBatch.push(addressBase58);
-              address.chainPath = basePath + "/" + addrIndex;
+              address.chainPath = basePath + '/' + addrIndex;
               address.userKey = derivedKeys[0];
               address.backupKey = derivedKeys[1];
               addresses[addressBase58] = address;
@@ -324,9 +324,9 @@ Btc.prototype.recover = function(params, callback) {
 
       return gatherUnspentAddresses(0)
       .then(function() {
-        const unspentAddressList = lookupThisBatch.join(",");
+        const unspentAddressList = lookupThisBatch.join(',');
         if (unspentAddressList.length > 0) {
-          const url = blockrApiBaseUrl + "/address/unspent/" + lookupThisBatch.join(",");
+          const url = blockrApiBaseUrl + '/address/unspent/' + lookupThisBatch.join(',');
 
           // Make async call to blockr.io
           const externalGetRequest = self.bitgo.get(url);
@@ -351,7 +351,7 @@ Btc.prototype.recover = function(params, callback) {
                 };
                 // if recovering ledger wallet, gather full transactions (needed by ledger device for signing)
                 if (isLedger && !txMap[singleUnspent.tx]) {
-                  const url = blockrApiBaseUrl + "/tx/raw/" + singleUnspent.tx;
+                  const url = blockrApiBaseUrl + '/tx/raw/' + singleUnspent.tx;
                   const externalGetRequest = self.bitgo.get(url);
                   externalGetRequest.forceV1Auth = true;
                   return externalGetRequest
@@ -373,9 +373,9 @@ Btc.prototype.recover = function(params, callback) {
       });
     };
 
-    return queryBlockchainUnspentsPath(keys_0_0_0, "/0/0/0")
+    return queryBlockchainUnspentsPath(keys_0_0_0, '/0/0/0')
     .then(function() {
-      return queryBlockchainUnspentsPath(keys_0_0_1, "/0/0/1");
+      return queryBlockchainUnspentsPath(keys_0_0_1, '/0/0/1');
     })
     .then(function() {
       return unspents;
@@ -394,10 +394,10 @@ Btc.prototype.recover = function(params, callback) {
     return collectUnspents(keys);
   })
   .then(function(unspents) {
-    return craftTransaction(unspents, params.recoveryDestination)
+    return craftTransaction(unspents, params.recoveryDestination);
   })
   .then(function(txSigningRequest) {
-    const externalPostRequest = self.bitgo.post(blockrApiBaseUrl + "/tx/decode");
+    const externalPostRequest = self.bitgo.post(blockrApiBaseUrl + '/tx/decode');
     externalPostRequest.forceV1Auth = true;
     return externalPostRequest
     .send({ hex: txSigningRequest.transactionHex })

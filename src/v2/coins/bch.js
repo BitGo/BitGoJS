@@ -27,29 +27,29 @@ Bch.prototype.getFamily = function() {
  * @returns {{txHex}}
  */
 Bch.prototype.signTransaction = function(params) {
-  var txPrebuild = params.txPrebuild;
-  var userPrv = params.prv;
+  const txPrebuild = params.txPrebuild;
+  const userPrv = params.prv;
 
-  var transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
+  let transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
 
   if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
 
   const sigHashType = bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
-  var keychain = bitcoin.HDNode.fromBase58(userPrv);
-  var hdPath = bitcoin.hdPath(keychain);
+  const keychain = bitcoin.HDNode.fromBase58(userPrv);
+  const hdPath = bitcoin.hdPath(keychain);
 
-  for (var index = 0; index < transaction.ins.length; ++index) {
-    var path = 'm/0/0/' + txPrebuild.txInfo.unspents[index].chain + '/' + txPrebuild.txInfo.unspents[index].index;
-    var privKey = hdPath.deriveKey(path);
-    var value = txPrebuild.txInfo.unspents[index].value;
+  for (let index = 0; index < transaction.ins.length; ++index) {
+    const path = 'm/0/0/' + txPrebuild.txInfo.unspents[index].chain + '/' + txPrebuild.txInfo.unspents[index].index;
+    const privKey = hdPath.deriveKey(path);
+    const value = txPrebuild.txInfo.unspents[index].value;
 
-    var txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
+    const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
     txb.enableBitcoinCash(true);
     // TODO (arik): Figure out if version 2 is actually necessary
     txb.setVersion(2);
-    var subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
+    const subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
     try {
       txb.sign(index, privKey, subscript, sigHashType, value);
     } catch (e) {

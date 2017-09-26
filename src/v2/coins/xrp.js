@@ -235,9 +235,9 @@ Xrp.prototype.explainTransaction = function(params) {
       throw new Error('txHex needs to be either hex or JSON string for XRP');
     }
   }
-  var id = rippleHashes.computeBinaryTransactionHash(params.txHex);
-  var changeAmount = 0;
-  var explanation = {
+  const id = rippleHashes.computeBinaryTransactionHash(params.txHex);
+  const changeAmount = 0;
+  const explanation = {
     displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
     id: id,
     outputs: [],

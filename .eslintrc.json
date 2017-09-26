@@ -5,9 +5,13 @@
     "node": true,
     "mocha": true
   },
-  "extends": "eslint:recommended",
+  "globals": {
+    "app": true,        // BitGo side-effect from testutil
+    "ethUtil": true,    // BitGo side-effect from testutil
+    "requireCommon": true
+  },
+  //"extends": "eslint:recommended",  //possibly to be added in the future
   "parserOptions": {
-    "sourceType": "module",
     "ecmaVersion": 6
   },
   "rules": {
@@ -17,15 +21,41 @@
     "eqeqeq": ["warn", "always"],
     "curly": "error",
     "no-extra-boolean-cast": "off",
-    "no-unused-vars": "warn",
+    "no-unused-vars": ["error", {"vars": "all", "args": "none"}],
     "object-curly-spacing": ["error", "always", {"objectsInObjects": true, "arraysInObjects": true}],
     "array-bracket-spacing": ["error", "never"],
     "require-yield": "off",
     "func-call-spacing": ["error", "never"],
-    "quotes": ["error", "single"],
+    "quotes": ["error", "single", { "avoidEscape": true, "allowTemplateLiterals": true }],
     "key-spacing": ["error", { "beforeColon": false, "afterColon": true, "mode": "strict" }],
     "quote-props": ["error", "as-needed"],
     "no-console": "off",
-    "no-empty": "warn"
+    "no-empty": ["warn", { "allowEmptyCatch": false }],
+    "no-inner-declarations": "off",
+    "no-useless-escape": "off",
+    "func-names": "off",
+    "generator-star-spacing": ["error", {"before": true, "after": false}],
+    "yield-star-spacing": ["error", {"before": true, "after": false}],
+    "no-duplicate-imports": "error",  // whilst imports are not being used, if we start to use them, we do not want duplicates
+    "no-unreachable": "error",
+    "no-path-concat": "off",
+    "no-process-env": "off",
+    "no-process-exit": "off",
+    "no-sync": "warn",
+    "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
+    "eol-last": "error",
+    "no-trailing-spaces": ["warn", { "skipBlankLines": true, "ignoreComments": true }],
+    "no-unneeded-ternary": "error",
+    "switch-colon-spacing": ["error", {"before": false, "after": true}],
+    "arrow-spacing": ["error", { "before": true, "after": true }],
+    "no-dupe-args": "error",
+    "no-undef": "error",
+    "no-var": "error",
+    "prefer-const": "error",
+    "no-compare-neg-zero": "error",
+    "no-extra-semi": "error",
+    "radix": "warn",
+    "comma-spacing": ["error", { "before": false, "after": true }],
+    "comma-dangle": ["error", "never"]
   }
 }

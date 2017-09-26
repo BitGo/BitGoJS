@@ -56,48 +56,48 @@ const getOperationSha3ForExecuteAndConfirm = (recipients, expireTime, contractSe
 
   // Right now we only support 1 recipient
   if (recipients.length !== 1) {
-    throw new Error("must send to exactly 1 recipient");
+    throw new Error('must send to exactly 1 recipient');
   }
 
   if (!_.isNumber(expireTime)) {
-    throw new Error("expireTime must be number of seconds since epoch");
+    throw new Error('expireTime must be number of seconds since epoch');
   }
 
   if (!_.isNumber(contractSequenceId)) {
-    throw new Error("contractSequenceId must be number");
+    throw new Error('contractSequenceId must be number');
   }
 
   // Check inputs
   recipients.forEach(function(recipient) {
     if (!_.isString(recipient.address) || !ethUtil.isValidAddress(ethUtil.addHexPrefix(recipient.address))) {
-      throw new Error("Invalid address: " + recipient.address);
+      throw new Error('Invalid address: ' + recipient.address);
     }
 
     let amount;
     try {
       amount = new BigNumber(recipient.amount);
     } catch (e) {
-      throw new Error("Invalid amount for: " + recipient.address + ' - should be numeric');
+      throw new Error('Invalid amount for: ' + recipient.address + ' - should be numeric');
     }
 
     recipient.amount = amount.toFixed(0);
 
     if (recipient.data && !_.isString(recipient.data)) {
-      throw new Error("Data for recipient " + recipient.address + ' - should be of type hex string');
+      throw new Error('Data for recipient ' + recipient.address + ' - should be of type hex string');
     }
   });
 
   const recipient = recipients[0];
   return ethUtil.bufferToHex(ethAbi.soliditySHA3(
-  ["string", "address", "uint", "string", "uint", "uint"],
-  [
-    "ETHER",
-    new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
-    recipient.amount,
-    ethUtil.stripHexPrefix(recipient.data) || '',
-    expireTime,
-    contractSequenceId
-  ]
+    ['string', 'address', 'uint', 'string', 'uint', 'uint'],
+    [
+      'ETHER',
+      new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
+      recipient.amount,
+      ethUtil.stripHexPrefix(recipient.data) || '',
+      expireTime,
+      contractSequenceId
+    ]
   ));
 };
 
@@ -113,13 +113,13 @@ Eth.prototype.signTransaction = function(params) {
   const userPrv = params.prv;
   const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
 
-  var secondsSinceEpoch = Math.floor((new Date().getTime()) / 1000);
-  var expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
+  const secondsSinceEpoch = Math.floor((new Date().getTime()) / 1000);
+  const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
 
-  var operationHash = getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, txPrebuild.nextContractSequenceId);
-  var signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+  const operationHash = getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, txPrebuild.nextContractSequenceId);
+  const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
-  var txParams = {
+  const txParams = {
     recipients: params.recipients,
     expireTime: expireTime,
     contractSequenceId: txPrebuild.nextContractSequenceId,
