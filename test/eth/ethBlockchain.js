@@ -4,19 +4,19 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
+const assert = require('assert');
+const should = require('should');
 
-var BitGoJS = require('../../src/index');
-var TestBitGo = require('../lib/test_bitgo');
+const BitGoJS = require('../../src/index');
+const TestBitGo = require('../lib/test_bitgo');
 
-var TEST_ADDRESS1 = '0x8ce4949d8a16542d423c17984e6739fa72ceb177';
-var TEST_MANYTRANSACTIONSADDRESS = '0x8ce4949d8a16542d423c17984e6739fa72ceb177';
+const TEST_ADDRESS1 = '0x8ce4949d8a16542d423c17984e6739fa72ceb177';
+const TEST_MANYTRANSACTIONSADDRESS = '0x8ce4949d8a16542d423c17984e6739fa72ceb177';
 
 // TODO: WORK IN PROGRESS
 describe('Ethereum Blockchain API:', function() {
-  var bitgo;
-  var blockchain;
+  let bitgo;
+  let blockchain;
 
   before(function() {
     BitGoJS.setNetwork('testnet');
@@ -60,7 +60,7 @@ describe('Ethereum Blockchain API:', function() {
     });
 
     it('list', function() {
-      var options = { address: TEST_ADDRESS1 };
+      const options = { address: TEST_ADDRESS1 };
       return blockchain.getAddressTransactions(options)
       .then(function(result) {
         assert.equal(Array.isArray(result.transactions), true);
@@ -71,7 +71,7 @@ describe('Ethereum Blockchain API:', function() {
     });
 
     it('list_many_transactions', function() {
-      var options = { address: TEST_MANYTRANSACTIONSADDRESS };
+      const options = { address: TEST_MANYTRANSACTIONSADDRESS };
       blockchain.getAddressTransactions(options)
       .then(function(result) {
         assert.equal(Array.isArray(result.transactions), true);

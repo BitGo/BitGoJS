@@ -4,29 +4,29 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
-var _ = require('lodash');
+const assert = require('assert');
+const should = require('should');
+const _ = require('lodash');
 
-var BitGoJS = require('../src/index');
-var TestBitGo = require('./lib/test_bitgo');
-var TestUtil = require('./testutil');
-var bitcoin = BitGoJS.bitcoin;
+const BitGoJS = require('../src/index');
+const TestBitGo = require('./lib/test_bitgo');
+const TestUtil = require('./testutil');
+const bitcoin = BitGoJS.bitcoin;
 
 describe('BitGo', function() {
 
   describe('Constructor', function() {
     it('arguments', function() {
       assert.throws(function() { new BitGoJS.BitGo('invalid'); });
-      assert.throws(function() { new BitGoJS.BitGo({useProduction: 'invalid'}); });
-      assert.throws(function() { new BitGoJS.BitGo({clientId: 'invalid'}); });
-      assert.throws(function() { new BitGoJS.BitGo({clientSecret: 'invalid'}); });
-      assert.throws(function() { new BitGoJS.BitGo({env: 'invalid'}); });
-      assert.throws(function() { new BitGoJS.BitGo({env: 'testnet', useProduction: true}); });
+      assert.throws(function() { new BitGoJS.BitGo({ useProduction: 'invalid' }); });
+      assert.throws(function() { new BitGoJS.BitGo({ clientId: 'invalid' }); });
+      assert.throws(function() { new BitGoJS.BitGo({ clientSecret: 'invalid' }); });
+      assert.throws(function() { new BitGoJS.BitGo({ env: 'invalid' }); });
+      assert.throws(function() { new BitGoJS.BitGo({ env: 'testnet', useProduction: true }); });
     });
 
     it('methods', function() {
-      var bitgo = new TestBitGo();
+      const bitgo = new TestBitGo();
       bitgo.initializeTestVars();
       bitgo.should.have.property('version');
       bitgo.should.have.property('market');
@@ -42,12 +42,12 @@ describe('BitGo', function() {
   describe('validate', function() {
 
     it('should get', function() {
-      var bitgo = new TestBitGo();
+      const bitgo = new TestBitGo();
       bitgo.getValidate().should.equal(true);
     });
 
     it('should set', function() {
-      var bitgo = new TestBitGo();
+      const bitgo = new TestBitGo();
       bitgo.setValidate(false);
       bitgo.getValidate().should.equal(false);
       bitgo._validate.should.equal(false);
@@ -58,33 +58,33 @@ describe('BitGo', function() {
   describe('Environments', function() {
     it('production', function() {
       BitGoJS.setNetwork('testnet');
-      var bitgo = new TestBitGo({env: 'prod'});
+      const bitgo = new TestBitGo({ env: 'prod' });
       BitGoJS.getNetwork().should.equal('bitcoin');
     });
     it('staging', function() {
       BitGoJS.setNetwork('testnet');
-      var bitgo = new TestBitGo({env: 'staging'});
+      const bitgo = new TestBitGo({ env: 'staging' });
       BitGoJS.getNetwork().should.equal('bitcoin');
     });
     it('test', function() {
       BitGoJS.setNetwork('bitcoin');
-      var bitgo = new TestBitGo({env: 'test'});
+      const bitgo = new TestBitGo({ env: 'test' });
       BitGoJS.getNetwork().should.equal('testnet');
     });
     it('dev', function() {
-      var bitgo = new TestBitGo({env: 'dev'});
+      const bitgo = new TestBitGo({ env: 'dev' });
       BitGoJS.getNetwork().should.equal('testnet');
     });
     it('custom network (prod)', function() {
-      var bitgo = new TestBitGo({customBitcoinNetwork: 'bitcoin'});
+      const bitgo = new TestBitGo({ customBitcoinNetwork: 'bitcoin' });
       BitGoJS.getNetwork().should.equal('bitcoin');
     });
     it('custom network (testnet)', function() {
-      var bitgo = new TestBitGo({customBitcoinNetwork: 'testnet'});
+      const bitgo = new TestBitGo({ customBitcoinNetwork: 'testnet' });
       BitGoJS.getNetwork().should.equal('testnet');
     });
     it('custom root uri (prod)', function() {
-      var bitgo = new TestBitGo({customRootURI: 'https://www.bitgo.com/'});
+      const bitgo = new TestBitGo({ customRootURI: 'https://www.bitgo.com/' });
       return bitgo.ping({})
       .then(function(res) {
         res.should.have.property('status');
@@ -93,7 +93,7 @@ describe('BitGo', function() {
       });
     });
     it('custom root uri (testnet)', function() {
-      var bitgo = new TestBitGo({customRootURI: 'https://test.bitgo.com/'});
+      const bitgo = new TestBitGo({ customRootURI: 'https://test.bitgo.com/' });
       return bitgo.ping({})
       .then(function(res) {
         res.should.have.property('status');
@@ -105,15 +105,15 @@ describe('BitGo', function() {
 
   describe('Version', function() {
     it('version', function() {
-      var bitgo = new TestBitGo();
+      const bitgo = new TestBitGo();
       bitgo.initializeTestVars();
-      var version = bitgo.version();
+      const version = bitgo.version();
       assert.equal(typeof(version), 'string');
     });
   });
 
   describe('Verify Address', function() {
-    var bitgo;
+    let bitgo;
     before(function() {
       bitgo = new BitGoJS.BitGo();
     });
@@ -145,27 +145,27 @@ describe('BitGo', function() {
   });
 
   describe('Encrypt/Decrypt', function() {
-    var password = 'mickey mouse';
-    var secret = 'this is a secret';
+    const password = 'mickey mouse';
+    const secret = 'this is a secret';
 
     it('invalid password', function() {
-      var bitgo = new TestBitGo();
+      const bitgo = new TestBitGo();
       bitgo.initializeTestVars();
-      var opaque = bitgo.encrypt({ password: password, input: secret });
+      const opaque = bitgo.encrypt({ password: password, input: secret });
       assert.throws(function() { bitgo.decrypt({ password: 'hack hack', input: opaque }); });
     });
 
     it('valid password', function() {
-      var bitgo = new TestBitGo();
+      const bitgo = new TestBitGo();
       bitgo.initializeTestVars();
-      var opaque = bitgo.encrypt({ password: password, input: secret });
+      const opaque = bitgo.encrypt({ password: password, input: secret });
       assert.equal(bitgo.decrypt({ password: password, input: opaque }), secret);
     });
   });
 
   describe('Logged Out', function() {
     describe('Authenticate', function() {
-      var bitgo;
+      let bitgo;
       before(function() {
         bitgo = new TestBitGo();
         bitgo.initializeTestVars();
@@ -175,12 +175,12 @@ describe('BitGo', function() {
         assert.throws(function() { bitgo.authenticate(); });
         assert.throws(function() { bitgo.authenticate(123); });
         assert.throws(function() { bitgo.authenticate('foo', 123); });
-        assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar', otp: 0.01}); });
-        assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar', otp: 'baz'}, 123); });
+        assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar', otp: 0.01 }); });
+        assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar', otp: 'baz' }, 123); });
       });
 
       it('fails without OTP', function(done) {
-        bitgo.authenticateTestUser("0", function(err, response) {
+        bitgo.authenticateTestUser('0', function(err, response) {
           err.status.should.equal(401);
           err.needsOTP.should.equal(true);
           done();
@@ -198,7 +198,7 @@ describe('BitGo', function() {
       });
 
       it('verify password fails', function(done) {
-        bitgo.verifyPassword({ password: 'foobar'}, function(err, result) {
+        bitgo.verifyPassword({ password: 'foobar' }, function(err, result) {
           if (err) {
             throw err;
           }
@@ -220,14 +220,14 @@ describe('BitGo', function() {
 
     describe('Logout API', function() {
       it('arguments', function(done) {
-        var bitgo = new TestBitGo();
+        const bitgo = new TestBitGo();
         bitgo.initializeTestVars();
         assert.throws(function() { bitgo.logout({}, 'bad'); });
         done();
       });
 
       it('logout', function(done) {
-        var bitgo = new TestBitGo();
+        const bitgo = new TestBitGo();
         bitgo.initializeTestVars();
         bitgo.logout({}, function(err) {
           // logout should fail when not logged in
@@ -239,13 +239,13 @@ describe('BitGo', function() {
 
     describe('me', function() {
       it('arguments', function() {
-        var bitgo = new TestBitGo();
+        const bitgo = new TestBitGo();
         bitgo.initializeTestVars();
         assert.throws(function() { bitgo.me({}, 'bad'); });
       });
 
       it('me', function(done) {
-        var bitgo = new TestBitGo();
+        const bitgo = new TestBitGo();
         bitgo.initializeTestVars();
         bitgo.me({}, function(err, user) {
           // Expect an error
@@ -257,13 +257,13 @@ describe('BitGo', function() {
 
     describe('session', function() {
       it('arguments', function() {
-        var bitgo = new TestBitGo();
+        const bitgo = new TestBitGo();
         bitgo.initializeTestVars();
         assert.throws(function() { bitgo.session({}, 'bad'); });
       });
 
       it('session', function(done) {
-        var bitgo = new TestBitGo();
+        const bitgo = new TestBitGo();
         bitgo.initializeTestVars();
         bitgo.session({}, function(err, user) {
           // Expect an error
@@ -275,7 +275,7 @@ describe('BitGo', function() {
   });
 
   describe('Estimate Fee', function() {
-    var bitgo;
+    let bitgo;
     before(function(done) {
       bitgo = new TestBitGo();
       bitgo.initializeTestVars();
@@ -284,11 +284,11 @@ describe('BitGo', function() {
 
     it('arguments', function() {
       assert.throws(function () {
-        bitgo.estimateFee({ numBlocks: "none" });
+        bitgo.estimateFee({ numBlocks: 'none' });
       });
     });
 
-    var target1confirmFee;
+    let target1confirmFee;
     it('get default', function() {
       return bitgo.estimateFee()
       .then(function(res) {
@@ -312,7 +312,7 @@ describe('BitGo', function() {
   });
 
   describe('Ping', function() {
-    var bitgo;
+    let bitgo;
     before(function(done) {
       bitgo = new TestBitGo();
       bitgo.initializeTestVars();
@@ -337,7 +337,7 @@ describe('BitGo', function() {
   });
 
   describe('Logged In', function() {
-    var bitgo;
+    let bitgo;
     before(function(done) {
       bitgo = new TestBitGo();
       bitgo.initializeTestVars();
@@ -362,7 +362,7 @@ describe('BitGo', function() {
     });
 
     describe('Extend Token', function() {
-      var extensibleTokenBitGo;
+      let extensibleTokenBitGo;
       before(function(done) {
         extensibleTokenBitGo = new TestBitGo();
         extensibleTokenBitGo.initializeTestVars();
@@ -372,12 +372,12 @@ describe('BitGo', function() {
       after(function() {
         // delete all extensible tokens, because if they're left around then the test/accessToken.js tests will
         // fail because there are more than 10 long lived tokens, and then we can't add any more long lived tokens
-        var filterFunc = function(tok) { return tok.isExtensible; };
+        const filterFunc = function(tok) { return tok.isExtensible; };
         return TestUtil.deleteTestTokens(extensibleTokenBitGo, filterFunc);
       });
 
       it('logging in with extensible token', function(done) {
-        var authenticationData = {
+        const authenticationData = {
           username: BitGoJS.BitGo.TEST_USER,
           password: BitGoJS.BitGo.TEST_PASSWORD,
           otp: bitgo.testUserOTP(),
@@ -389,7 +389,7 @@ describe('BitGo', function() {
           }
           response.access_token.should.be.type('string');
           done();
-        })
+        });
       });
 
       it('extending token by impermissible duration', function(done) {
@@ -411,7 +411,7 @@ describe('BitGo', function() {
       });
 
       it('extending token after juggling session data', function() {
-        var sessionData = extensibleTokenBitGo.toJSON();
+        const sessionData = extensibleTokenBitGo.toJSON();
         extensibleTokenBitGo.fromJSON(sessionData);
         return extensibleTokenBitGo.extendToken({ duration: 3600 * 24 * 10 })
         .then(function(response) {
@@ -438,7 +438,7 @@ describe('BitGo', function() {
 
     describe('getUser', function() {
       it('success', function(done) {
-        bitgo.getUser({ id: TestBitGo.TEST_SHARED_KEY_USERID}, function(err, user) {
+        bitgo.getUser({ id: TestBitGo.TEST_SHARED_KEY_USERID }, function(err, user) {
           if (err) { throw err; }
           user.should.have.property('id');
           user.should.have.property('email');
@@ -453,13 +453,13 @@ describe('BitGo', function() {
       before(function() {
         return bitgo.wallets().get({ id: TestBitGo.TEST_WALLET1_ADDRESS })
         .then(function(wallet) {
-          return wallet.setLabel({label: "testLabel", address: TestBitGo.TEST_WALLET1_ADDRESS2});
+          return wallet.setLabel({ label: 'testLabel', address: TestBitGo.TEST_WALLET1_ADDRESS2 });
         })
         .then(function() {
-          return bitgo.wallets().get({ id: TestBitGo.TEST_WALLET3_ADDRESS })
+          return bitgo.wallets().get({ id: TestBitGo.TEST_WALLET3_ADDRESS });
         })
         .then(function(wallet3) {
-          return wallet3.setLabel({label: "testLabel3", address: TestBitGo.TEST_WALLET3_ADDRESS2});
+          return wallet3.setLabel({ label: 'testLabel3', address: TestBitGo.TEST_WALLET3_ADDRESS2 });
         });
       });
 
@@ -470,12 +470,12 @@ describe('BitGo', function() {
           }
 
           labels.length.should.not.equal(0);
-          labels.should.containDeep([{address: TestBitGo.TEST_WALLET1_ADDRESS2}]);
-          labels.should.containDeep([{label: "testLabel"}]);
-          labels.should.containDeep([{address: TestBitGo.TEST_WALLET3_ADDRESS2}]);
-          labels.should.containDeep([{label: "testLabel3"}]);
+          labels.should.containDeep([{ address: TestBitGo.TEST_WALLET1_ADDRESS2 }]);
+          labels.should.containDeep([{ label: 'testLabel' }]);
+          labels.should.containDeep([{ address: TestBitGo.TEST_WALLET3_ADDRESS2 }]);
+          labels.should.containDeep([{ label: 'testLabel3' }]);
 
-          labels.forEach (function(label) {
+          labels.forEach(function(label) {
             label.should.have.property('label');
             label.should.have.property('address');
           });
@@ -503,7 +503,7 @@ describe('BitGo', function() {
       it('address not found', function() {
         return bitgo.getWalletAddress({ address: 'mk6ZqJBctDBbVuy6FHK9ddS7CVtRJnN15a' }) // not a bitgo address
         .then(function(result) {
-          throw new Error("unexpected success on non bitgo address");
+          throw new Error('unexpected success on non bitgo address');
         })
         .catch(function(error) {
           error.message.should.include('not found');
@@ -559,7 +559,7 @@ describe('BitGo', function() {
   });
 
   describe('ECDH sharing keychain', function() {
-    var bitgo;
+    let bitgo;
 
     before(function(done) {
       bitgo = new TestBitGo();
@@ -586,26 +586,26 @@ describe('BitGo', function() {
   describe('ECDH sharing secret', function() {
 
     it('should calculate a new ECDH sharing secret correctly', function() {
-      var bitgo = new TestBitGo();
-      var eckey1 = bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
-      var eckey2 = bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
-      var sharingKey1 = bitgo.getECDHSecret({eckey: eckey1, otherPubKeyHex: eckey2.getPublicKeyBuffer().toString('hex')});
-      var sharingKey2 = bitgo.getECDHSecret({eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex')});
+      const bitgo = new TestBitGo();
+      const eckey1 = bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
+      const eckey2 = bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
+      const sharingKey1 = bitgo.getECDHSecret({ eckey: eckey1, otherPubKeyHex: eckey2.getPublicKeyBuffer().toString('hex') });
+      const sharingKey2 = bitgo.getECDHSecret({ eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex') });
       sharingKey1.should.equal(sharingKey2);
     });
 
   });
 
-  var refreshToken;
+  let refreshToken;
   describe('Oauth test', function() {
     if (process.browser) {
       // Oauth tests not supported in browser due to same-origin policy
       return;
-    };
-    var bitgo;
+    }
+    let bitgo;
 
     before(function (done) {
-      bitgo = new BitGoJS.BitGo({clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET});
+      bitgo = new BitGoJS.BitGo({ clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET });
       done();
     });
 
@@ -614,7 +614,7 @@ describe('BitGo', function() {
         assert.throws(function() { bitgo.authenticateWithAuthCode(); });
         assert.throws(function() { bitgo.authenticateWithAuthCode({ authCode: 123 }); });
         assert.throws(function() { bitgo.authenticateWithAuthCode({ authCode: 'foo' }, 123); });
-        var bitgoNoClientId = new BitGoJS.BitGo();
+        const bitgoNoClientId = new BitGoJS.BitGo();
         assert.throws(function() { bitgoNoClientId.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function() {}); });
       });
 
@@ -657,7 +657,7 @@ describe('BitGo', function() {
       });
 
       it('use bad access token', function (done) {
-        var bitgoAT = new BitGoJS.BitGo({
+        const bitgoAT = new BitGoJS.BitGo({
           clientId: TestBitGo.TEST_CLIENTID,
           clientSecret: TestBitGo.TEST_CLIENTSECRET,
           accessToken: 'bad token'
@@ -672,7 +672,7 @@ describe('BitGo', function() {
       });
 
       it('use access token', function (done) {
-        var bitgoAT = new BitGoJS.BitGo({
+        const bitgoAT = new BitGoJS.BitGo({
           clientId: TestBitGo.TEST_CLIENTID,
           clientSecret: TestBitGo.TEST_CLIENTSECRET,
           accessToken: TestBitGo.TEST_ACCESSTOKEN
@@ -693,7 +693,7 @@ describe('BitGo', function() {
         assert.throws(function() { bitgo.refresh_token(123); });
         assert.throws(function() { bitgo.refresh_token('foo', 123); });
         assert.throws(function() { bitgo.refresh_token(TestBitGo.TEST_REFRESHTOKEN, 123); });
-        var bitgoNoClientId = new BitGoJS.BitGo();
+        const bitgoNoClientId = new BitGoJS.BitGo();
         assert.throws(function() { bitgoNoClientId.refresh_token(TestBitGo.TEST_AUTHCODE, function() {}); });
       });
 
@@ -734,7 +734,7 @@ describe('BitGo', function() {
 
       it('login with auth code then refresh with no args', function (done) {
 
-        bitgo = new BitGoJS.BitGo({clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET});
+        bitgo = new BitGoJS.BitGo({ clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET });
         bitgo.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function (err, response) {
           // Expect no error
           assert.equal(err, null);

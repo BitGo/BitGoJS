@@ -4,26 +4,26 @@
 // Copyright 2016, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
-var _ = require('lodash');
-var Q = require('q');
+const assert = require('assert');
+const should = require('should');
+const _ = require('lodash');
+const Q = require('q');
 
-var BitGoJS = require('../src/index');
-var bitcoin = BitGoJS.bitcoin;
-var sjcl = require('../src/sjcl.min');
-var TestBitGo = require('./lib/test_bitgo');
+const BitGoJS = require('../src/index');
+const bitcoin = BitGoJS.bitcoin;
+const sjcl = require('../src/sjcl.min');
+const TestBitGo = require('./lib/test_bitgo');
 
-var networks = require('bitcoinjs-lib/src/networks');
+const networks = require('bitcoinjs-lib/src/networks');
 
-var txid = TestBitGo.TRAVEL_RULE_TXID;
+const txid = TestBitGo.TRAVEL_RULE_TXID;
 
 describe('Travel Rule API', function() {
-  var bitgo;
-  var travel;
-  var receiver;
-  var testWallet;      // Test will create this wallet
-  var keychains = [];  // Test will create these keychains
+  let bitgo;
+  let travel;
+  let receiver;
+  let testWallet;      // Test will create this wallet
+  const keychains = [];  // Test will create these keychains
 
   before(function(done) {
     bitgo = new TestBitGo();
@@ -47,7 +47,7 @@ describe('Travel Rule API', function() {
       return travel.getRecipients({ txid: txid })
       .then(function(recipients) {
         recipients.should.have.length(3);
-        var r = recipients[0];
+        let r = recipients[0];
         r.outputIndex.should.equal(0);
         r.enterprise.should.equal('SDKOther');
         r.amount.should.equal(100000);
@@ -99,32 +99,32 @@ describe('Travel Rule API', function() {
       assert.throws(function() { travel.decryptReceivedTravelInfo({ tx: { receivedTravelInfo: [1] } }); });
       assert.throws(function() { travel.decryptReceivedTravelInfo({ tx: { receivedTravelInfo: [1] }, keychain: 'foo' }); });
       assert.throws(function() { travel.decryptReceivedTravelInfo({ tx: { receivedTravelInfo: [1] }, keychain: {} }); });
-      var res = travel.decryptReceivedTravelInfo({ tx: {foo: 'bar'}, keychain: {xprv: 'blah'} });
+      const res = travel.decryptReceivedTravelInfo({ tx: { foo: 'bar' }, keychain: { xprv: 'blah' } });
       res.foo.should.equal('bar');
     });
 
     it('decrypts successfully', function() {
-      var toPrivate = bitcoin.HDNode.fromSeedHex('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
-      var fromPrivate = bitcoin.makeRandomKey();
-      var path = '/99/99';
-      var toPubKey = bitcoin.hdPath(toPrivate).deriveKey(path).getPublicKeyBuffer().toString('hex');
-      var secret = bitgo.getECDHSecret({
+      const toPrivate = bitcoin.HDNode.fromSeedHex('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+      const fromPrivate = bitcoin.makeRandomKey();
+      const path = '/99/99';
+      const toPubKey = bitcoin.hdPath(toPrivate).deriveKey(path).getPublicKeyBuffer().toString('hex');
+      const secret = bitgo.getECDHSecret({
         eckey: fromPrivate,
         otherPubKeyHex: toPubKey
       });
-      var encryptedTravelInfo = sjcl.encrypt(secret, JSON.stringify({ fromUserName: 'frobozz' }));
-      var fakeTravelInfo = {
+      const encryptedTravelInfo = sjcl.encrypt(secret, JSON.stringify({ fromUserName: 'frobozz' }));
+      const fakeTravelInfo = {
         toPubKey: toPubKey,
         toPubKeyPath: path,
         fromPubKey: fromPrivate.getPublicKeyBuffer().toString('hex'),
         encryptedTravelInfo: encryptedTravelInfo
       };
-      var fakeTx = {
+      const fakeTx = {
         id: 'aabbcc',
         receivedTravelInfo: [fakeTravelInfo, fakeTravelInfo]
       };
-      var tx = travel.decryptReceivedTravelInfo({ tx: fakeTx, hdnode: toPrivate });
-      var infos = tx.receivedTravelInfo;
+      const tx = travel.decryptReceivedTravelInfo({ tx: fakeTx, hdnode: toPrivate });
+      const infos = tx.receivedTravelInfo;
       infos.should.have.length(2);
       infos[0].travelInfo.fromUserName.should.equal('frobozz');
       infos[1].travelInfo.fromUserName.should.equal('frobozz');
@@ -139,11 +139,11 @@ describe('Travel Rule API', function() {
       assert.throws(function() { travel.sendMany({ txid: txid }); });
       assert.throws(function() { travel.sendMany({ txid: txid, travelInfos: 'foo' }); });
       assert.throws(function() { travel.sendMany({ txid: txid, travelInfos: {} }, 'invalid'); });
-      assert.throws(function() { travel.sendMany({ txid: txid, travelInfos: [ {} ] }); });
+      assert.throws(function() { travel.sendMany({ txid: txid, travelInfos: [{}] }); });
     });
 
     it('no matches', function() {
-      var travelInfos = [{
+      const travelInfos = [{
         outputIndex: 2,
         fromUserName: 'Bob'
       }];
@@ -155,7 +155,7 @@ describe('Travel Rule API', function() {
     });
 
     it('bad travel info', function() {
-      var travelInfos = [{
+      const travelInfos = [{
         outputIndex: 0,
         fromUserName: 1
       }];
@@ -163,7 +163,7 @@ describe('Travel Rule API', function() {
     });
 
     it('amount mismatch', function() {
-      var travelInfos = [{
+      const travelInfos = [{
         outputIndex: 0,
         fromUserName: 'Bob',
         amount: 42
@@ -178,7 +178,7 @@ describe('Travel Rule API', function() {
     });
 
     it('success with single', function() {
-      var travelInfos = [{
+      const travelInfos = [{
         outputIndex: 0,
         fromUserName: 'Alice'
       }];
@@ -186,7 +186,7 @@ describe('Travel Rule API', function() {
       .then(function(res) {
         res.matched.should.equal(1);
         res.results.should.have.length(1);
-        var r = res.results[0].result;
+        const r = res.results[0].result;
         r.should.have.property('id');
         r.should.have.property('date');
         r.fromEnterpriseId.should.equal('5578ebc76eb47487743b903166e6543a');
@@ -201,7 +201,7 @@ describe('Travel Rule API', function() {
     });
 
     it('success with multiple', function() {
-      var travelInfos = [
+      const travelInfos = [
         {
           outputIndex: 0,
           fromUserName: 'Alice'

@@ -4,35 +4,35 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
-var Q = require('q');
+const assert = require('assert');
+const should = require('should');
+const Q = require('q');
 
-var BitGoJS = require('../../src/index');
-var common = require('../../src/common');
-var TestBitGo = require('../lib/test_bitgo');
-var TransactionBuilder = require('../../src/transactionBuilder');
-var crypto = require("crypto");
-var _ = require('lodash');
-var bitcoin = BitGoJS.bitcoin;
+const BitGoJS = require('../../src/index');
+const common = require('../../src/common');
+const TestBitGo = require('../lib/test_bitgo');
+const TransactionBuilder = require('../../src/transactionBuilder');
+const crypto = require('crypto');
+const _ = require('lodash');
+const bitcoin = BitGoJS.bitcoin;
 
 Q.longStackTrace = true;
 
 // TODO: WORK IN PROGRESS
 describe('Ethereum Wallet API:', function() {
-  var bitgo;
-  var wallet1, wallet2;
+  let bitgo;
+  let wallet1, wallet2;
 
   before(function() {
     BitGoJS.setNetwork('testnet');
 
     bitgo = new TestBitGo();
     bitgo.initializeTestVars();
-    var wallets = bitgo.eth().wallets();
+    const wallets = bitgo.eth().wallets();
     return bitgo.authenticateTestUser(bitgo.testUserOTP())
     .then(function() {
       // Fetch the first wallet.
-      var options = {
+      const options = {
         id: TestBitGo.TEST_ETH_WALLET1_ADDRESS
       };
       return wallets.get(options);
@@ -41,7 +41,7 @@ describe('Ethereum Wallet API:', function() {
       wallet1 = wallet;
 
       // Fetch the second wallet
-      var options = {
+      const options = {
         id: TestBitGo.TEST_ETH_WALLET2_ADDRESS
       };
       return wallets.get(options);
@@ -68,10 +68,10 @@ describe('Ethereum Wallet API:', function() {
       });
 
       // create a single label on TestBitGo.TEST_ETH_WALLET1_ADDRESS2 and check that it is returned
-      return wallet1.setLabel({ label: "testLabel", address: TestBitGo.TEST_ETH_WALLET1_ADDRESS2 })
+      return wallet1.setLabel({ label: 'testLabel', address: TestBitGo.TEST_ETH_WALLET1_ADDRESS2 })
       .then(function() {
         // create a label on wallet2's TEST_ETH_WALLET2_ADDRESS to ensure that it is not returned
-        return wallet2.setLabel({ label: "wallet2TestLabel", address: TestBitGo.TEST_ETH_WALLET3_ADDRESS });
+        return wallet2.setLabel({ label: 'wallet2TestLabel', address: TestBitGo.TEST_ETH_WALLET3_ADDRESS });
       })
       .then(function() {
         return wallet1.labels({});
@@ -80,7 +80,7 @@ describe('Ethereum Wallet API:', function() {
         labels.forEach(function(label) {
           label.should.have.property('label');
           label.should.have.property('address');
-          label.label.should.eql("testLabel");
+          label.label.should.eql('testLabel');
           label.address.should.eql(TestBitGo.TEST_ETH_WALLET1_ADDRESS2);
         });
       });
@@ -91,18 +91,18 @@ describe('Ethereum Wallet API:', function() {
 
     it('arguments', function() {
       assert.throws(function() { wallet1.setLabel({}, function() {}); });
-      assert.throws(function() { wallet1.setLabel({label: "testLabel"}, function() {}); });
-      assert.throws(function() { wallet1.setLabel({address: TestBitGo.TEST_ETH_WALLET1_ADDRESS2}, function() {}); });
-      assert.throws(function() { wallet1.setLabel({label: "testLabel", address: "invalidAddress"}, function() {}); });
-      assert.throws(function() { wallet1.setLabel({label: "testLabel", address: TestBitGo.TEST_ETH_WALLET2_ADDRESS2}, function() {}); });
+      assert.throws(function() { wallet1.setLabel({ label: 'testLabel' }, function() {}); });
+      assert.throws(function() { wallet1.setLabel({ address: TestBitGo.TEST_ETH_WALLET1_ADDRESS2 }, function() {}); });
+      assert.throws(function() { wallet1.setLabel({ label: 'testLabel', address: 'invalidAddress' }, function() {}); });
+      assert.throws(function() { wallet1.setLabel({ label: 'testLabel', address: TestBitGo.TEST_ETH_WALLET2_ADDRESS2 }, function() {}); });
     });
 
     it('create', function() {
-      return wallet1.setLabel({ label: "testLabel", address: TestBitGo.TEST_ETH_WALLET1_ADDRESS2 })
+      return wallet1.setLabel({ label: 'testLabel', address: TestBitGo.TEST_ETH_WALLET1_ADDRESS2 })
       .then(function(label) {
         label.should.have.property('label');
         label.should.have.property('address');
-        label.label.should.equal("testLabel");
+        label.label.should.equal('testLabel');
         label.address.should.equal(TestBitGo.TEST_ETH_WALLET1_ADDRESS2);
       });
     });
@@ -116,9 +116,9 @@ describe('Ethereum Wallet API:', function() {
 
     it('should rename wallet', function() {
       // generate some random string to make the rename visible in the system
-      var renameIndicator = crypto.randomBytes(3).toString('hex');
-      var originalWalletName = 'Even Better Test Wallet 1';
-      var newWalletName = originalWalletName + '(' + renameIndicator + ')';
+      const renameIndicator = crypto.randomBytes(3).toString('hex');
+      const originalWalletName = 'Even Better Test Wallet 1';
+      const newWalletName = originalWalletName + '(' + renameIndicator + ')';
       return wallet1.setWalletName({ label: newWalletName })
       .then(function(result) {
         result.should.have.property('id');
@@ -140,7 +140,7 @@ describe('Ethereum Wallet API:', function() {
 
     it('arguments', function() {
       assert.throws(function() { wallet1.deleteLabel({}, function() {}); });
-      assert.throws(function() { wallet1.deleteLabel({address: "invalidAddress"}, function() {}); });
+      assert.throws(function() { wallet1.deleteLabel({ address: 'invalidAddress' }, function() {}); });
     });
 
     it('delete', function() {
@@ -170,9 +170,9 @@ describe('Ethereum Wallet API:', function() {
       assert.throws(function() { wallet1.transactions({}, 'invalid'); });
     });
 
-    var txHash0;
+    let txHash0;
     it('list', function() {
-      var options = {};
+      const options = {};
       return wallet1.transactions(options)
       .then(function(result) {
         assert.equal(Array.isArray(result.transactions), true);
@@ -183,9 +183,9 @@ describe('Ethereum Wallet API:', function() {
       });
     });
 
-    var limitTestNumTx = 6;
+    const limitTestNumTx = 6;
     it('list with limit', function() {
-      var options = { limit: limitTestNumTx };
+      const options = { limit: limitTestNumTx };
       return wallet1.transactions(options)
       .then(function(result) {
         assert.equal(Array.isArray(result.transactions), true);
@@ -199,8 +199,8 @@ describe('Ethereum Wallet API:', function() {
 
     it('list with minHeight', function() {
 
-      var minHeight = 530000;
-      var options = { minHeight: minHeight, limit: 500 };
+      const minHeight = 530000;
+      const options = { minHeight: minHeight, limit: 500 };
       return wallet1.transactions(options)
       .then(function(result) {
         assert.equal(Array.isArray(result.transactions), true);
@@ -219,9 +219,9 @@ describe('Ethereum Wallet API:', function() {
     });
 
     it('list with limit and skip', function() {
-      var skipNum = 2;
-      var options = { limit: (limitTestNumTx - skipNum), skip: skipNum };
-      var referenceOptions = { limit: limitTestNumTx };
+      const skipNum = 2;
+      const options = { limit: (limitTestNumTx - skipNum), skip: skipNum };
+      const referenceOptions = { limit: limitTestNumTx };
       return Q.all([wallet1.transactions(options), wallet1.transactions(referenceOptions)])
       .spread(function(result, reference) {
         assert.equal(Array.isArray(result.transactions), true);
@@ -231,17 +231,17 @@ describe('Ethereum Wallet API:', function() {
         result.count.should.equal(limitTestNumTx - skipNum);
         result.transactions.length.should.eql(result.count);
 
-        var limitedTxes = reference.transactions;
-        var limitedTxesSubset = limitedTxes.slice(skipNum);
+        const limitedTxes = reference.transactions;
+        const limitedTxesSubset = limitedTxes.slice(skipNum);
 
         // there should be no difference between these object arrays
-        var difference = _.differenceWith(result.transactions, limitedTxes, _.isEqual);
+        const difference = _.differenceWith(result.transactions, limitedTxes, _.isEqual);
         difference.length.should.equal(0);
       });
     });
 
     it('get transaction', function() {
-      var options = { id: txHash0 };
+      const options = { id: txHash0 };
       return wallet1.getTransaction(options)
       .then(function(result) {
         result.transaction.should.have.property('gas');
@@ -266,9 +266,9 @@ describe('Ethereum Wallet API:', function() {
       assert.throws(function() { wallet1.transfers({}, 'invalid'); });
     });
 
-    var txHash0;
+    let txHash0;
     it('list', function() {
-      var options = {};
+      const options = {};
       return wallet1.transfers(options)
       .then(function(result) {
         assert.equal(Array.isArray(result.transfers), true);
@@ -279,10 +279,10 @@ describe('Ethereum Wallet API:', function() {
       });
     });
 
-    var limitTestNumTransfers = 4;
-    var totalTransferCount;
+    const limitTestNumTransfers = 4;
+    let totalTransferCount;
     it('list with limit', function() {
-      var options = { limit: limitTestNumTransfers };
+      const options = { limit: limitTestNumTransfers };
       return wallet1.transfers(options)
       .then(function(result) {
         assert.equal(Array.isArray(result.transfers), true);
@@ -296,9 +296,9 @@ describe('Ethereum Wallet API:', function() {
     });
 
     it('list with limit and skip', function() {
-      var skipNum = 2;
-      var referenceOptions = { limit: limitTestNumTransfers };
-      var options = { limit: (limitTestNumTransfers - skipNum), skip: skipNum };
+      const skipNum = 2;
+      const referenceOptions = { limit: limitTestNumTransfers };
+      const options = { limit: (limitTestNumTransfers - skipNum), skip: skipNum };
       return Q.all([wallet1.transfers(options), wallet1.transfers(referenceOptions)])
       .spread(function(result, reference) {
         assert.equal(Array.isArray(result.transfers), true);
@@ -309,10 +309,10 @@ describe('Ethereum Wallet API:', function() {
         result.count.should.eql(limitTestNumTransfers - skipNum);
         result.transfers.length.should.equal(result.count);
 
-        var limitedTransfers = reference.transfers;
-        var limitedTransfersSubset = limitedTransfers.slice(skipNum);
+        const limitedTransfers = reference.transfers;
+        const limitedTransfersSubset = limitedTransfers.slice(skipNum);
         // there should be no difference between these object arrays
-        var difference = _.differenceWith(result.transfers, limitedTransfersSubset, _.isEqual);
+        const difference = _.differenceWith(result.transfers, limitedTransfersSubset, _.isEqual);
         difference.length.should.equal(0);
       });
     });
@@ -325,29 +325,37 @@ describe('Ethereum Wallet API:', function() {
       assert.throws(function() { wallet1.sendTransaction({ recipients: [] }, function() {}); });
 
       // Invalid recipient toAddress
-      assert.throws(function() { wallet1.sendTransaction({
-        recipients: [{ toAddress: 'abc', value: '10000' }],
-        walletPassphrase: 'daodaodao'
-      }, function() {}); });
+      assert.throws(function() {
+        wallet1.sendTransaction({
+          recipients: [{ toAddress: 'abc', value: '10000' }],
+          walletPassphrase: 'daodaodao'
+        }, function() {});
+      });
 
       // Invalid recipient value
-      assert.throws(function() { wallet1.sendTransaction({
-        recipients: [{ toAddress: '0x9c4545befe9bfec17ffcdfbebe34a7ecc80e9165', value: 10000 }],
-        walletPassphrase: 'daodaodao'
-      }, function() {}); });
+      assert.throws(function() {
+        wallet1.sendTransaction({
+          recipients: [{ toAddress: '0x9c4545befe9bfec17ffcdfbebe34a7ecc80e9165', value: 10000 }],
+          walletPassphrase: 'daodaodao'
+        }, function() {});
+      });
 
       // Invalid recipient data
-      assert.throws(function() { wallet1.sendTransaction({
-        recipients: [{ toAddress: '0x9c4545befe9bfec17ffcdfbebe34a7ecc80e9165', value: '10000', data: 1234 }],
-        walletPassphrase: 'daodaodao'
-      }, function() {}); });
+      assert.throws(function() {
+        wallet1.sendTransaction({
+          recipients: [{ toAddress: '0x9c4545befe9bfec17ffcdfbebe34a7ecc80e9165', value: '10000', data: 1234 }],
+          walletPassphrase: 'daodaodao'
+        }, function() {});
+      });
 
       // Invalid expire time
-      assert.throws(function() { wallet1.sendTransaction({
-        recipients: [{ toAddress: '0x9c4545befe9bfec17ffcdfbebe34a7ecc80e9165', value: '10000' }],
-        expireTime: "asdfadsads",
-        walletPassphrase: 'daodaodao'
-      }, function() {}); });
+      assert.throws(function() {
+        wallet1.sendTransaction({
+          recipients: [{ toAddress: '0x9c4545befe9bfec17ffcdfbebe34a7ecc80e9165', value: '10000' }],
+          expireTime: 'asdfadsads',
+          walletPassphrase: 'daodaodao'
+        }, function() {});
+      });
     });
 
     it('missing walletPassphrase', function() {
@@ -356,10 +364,10 @@ describe('Ethereum Wallet API:', function() {
         return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '25000' }] });
       })
       .then(function(result) {
-        throw new Error("should not be here");
+        throw new Error('should not be here');
       })
       .catch(function(error) {
-        error.message.should.include("walletPassphrase");
+        error.message.should.include('walletPassphrase');
       });
     });
 
@@ -372,10 +380,10 @@ describe('Ethereum Wallet API:', function() {
         });
       })
       .then(function(result) {
-        throw new Error("should not be here");
+        throw new Error('should not be here');
       })
       .catch(function(error) {
-        error.message.should.include("Unable to decrypt user keychain");
+        error.message.should.include('Unable to decrypt user keychain');
       });
     });
 
@@ -385,10 +393,10 @@ describe('Ethereum Wallet API:', function() {
         return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '25000' }], gasLimit: null });
       })
       .then(function(result) {
-        throw new Error("should not be here");
+        throw new Error('should not be here');
       })
       .catch(function(error) {
-        error.message.should.include("expecting positive integer for gasLimit");
+        error.message.should.include('expecting positive integer for gasLimit');
       });
     });
 
@@ -398,10 +406,10 @@ describe('Ethereum Wallet API:', function() {
         return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '25000' }], gasLimit: '10' });
       })
       .then(function(result) {
-        throw new Error("should not be here");
+        throw new Error('should not be here');
       })
       .catch(function(error) {
-        error.message.should.include("expecting positive integer for gasLimit");
+        error.message.should.include('expecting positive integer for gasLimit');
       });
     });
 
@@ -411,16 +419,16 @@ describe('Ethereum Wallet API:', function() {
         return wallet1.sendTransaction({ recipients: [{ toAddress: wallet1.id(), value: '25000' }], gasLimit: -1 });
       })
       .then(function(result) {
-        throw new Error("should not be here");
+        throw new Error('should not be here');
       })
       .catch(function(error) {
-        error.message.should.include("expecting positive integer for gasLimit");
+        error.message.should.include('expecting positive integer for gasLimit');
       });
     });
 
     it('success', function() {
-      var txHash;
-      var sequenceId = "randSeq_" + (new Date().getTime());
+      let txHash;
+      const sequenceId = 'randSeq_' + (new Date().getTime());
       return bitgo.unlock({ otp: '0000000' })
       .then(function() {
         return wallet1.sendTransaction({
@@ -433,22 +441,22 @@ describe('Ethereum Wallet API:', function() {
         result.should.have.property('hash');
         result.should.have.property('tx');
         txHash = result.hash;
-        return wallet1.getTransfer({ id: txHash })
+        return wallet1.getTransfer({ id: txHash });
       })
       .then(function(result) {
         result.should.have.property('transfer');
         result.transfer.txHash.should.eql(txHash);
         result.transfer.outputs.length.should.eql(1);
         result.transfer.value.should.eql('-36000');
-        return wallet1.getTransfer({ id: sequenceId })
+        return wallet1.getTransfer({ id: sequenceId });
       })
       .then(function(result) {
         result.transfer.txHash.should.eql(txHash);
-      })
+      });
     });
 
     xit('success with custom gas limit', function() {
-      var txHash;
+      let txHash;
       return bitgo.unlock({ otp: '0000000' })
       .then(function() {
         return wallet1.sendTransaction({
@@ -463,7 +471,7 @@ describe('Ethereum Wallet API:', function() {
         // TODO: assert correct gas amount
         result.tx.gas.should.equal(41234567);
         txHash = result.hash;
-        return wallet1.getTransfer({ id: txHash })
+        return wallet1.getTransfer({ id: txHash });
       })
       .then(function(result) {
         result.transfer.txHash.should.eql(txHash);
@@ -492,15 +500,15 @@ describe('Ethereum Wallet API:', function() {
     });
 
     it('get key', function() {
-      var options = {};
+      const options = {};
       return bitgo.unlock({ otp: '0000000' })
       .then(function() {
         return wallet1.getEncryptedUserKeychain(options);
       })
       .then(function(result) {
         result.should.have.property('xpub');
-        var resultXpub = result.xpub;
-        var expectedXpub = TestBitGo.TEST_ETH_WALLET1_XPUB;
+        const resultXpub = result.xpub;
+        const expectedXpub = TestBitGo.TEST_ETH_WALLET1_XPUB;
         result.xpub.should.equal(TestBitGo.TEST_ETH_WALLET1_XPUB);
         result.should.have.property('encryptedXprv');
       });
@@ -510,10 +518,10 @@ describe('Ethereum Wallet API:', function() {
   describe('Freeze Wallet', function() {
     it('arguments', function () {
       assert.throws(function () {
-        wallet2.freeze({duration: 'asdfasdasd'});
+        wallet2.freeze({ duration: 'asdfasdasd' });
       });
       assert.throws(function () {
-        wallet2.freeze({duration: 5}, 'asdasdsa');
+        wallet2.freeze({ duration: 5 }, 'asdasdsa');
       });
     });
 
@@ -528,7 +536,7 @@ describe('Ethereum Wallet API:', function() {
     it('get wallet should show freeze', function() {
       return wallet2.get({})
       .then(function(res) {
-        var wallet = res.wallet;
+        const wallet = res.wallet;
         wallet.should.have.property('freeze');
         wallet.freeze.should.have.property('time');
         wallet.freeze.should.have.property('expires');

@@ -4,14 +4,14 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
+const assert = require('assert');
+const should = require('should');
 
-var BitGoJS = require('../../src/index');
-var TestBitGo = require('../lib/test_bitgo');
-var BN = function() {};
-var Util = require('../../src/util');
-var _ = require('lodash');
+const BitGoJS = require('../../src/index');
+const TestBitGo = require('../lib/test_bitgo');
+let BN = function() {};
+const Util = require('../../src/util');
+const _ = require('lodash');
 
 try {
   BN = require('ethereumjs-util').BN;
@@ -20,7 +20,7 @@ try {
 
 // TODO: WORK IN PROGRESS
 describe('Ethereum BitGo.eth:', function() {
-  var bitgo;
+  let bitgo;
 
   before(function() {
     BitGoJS.setNetwork('testnet');
@@ -32,7 +32,7 @@ describe('Ethereum BitGo.eth:', function() {
   describe('Ether to Wei conversion', function() {
     it('convert ethereum to wei', function() {
       // 0 ether
-      var number = new BN('0');
+      let number = new BN('0');
       bitgo.eth().weiToEtherString(number).should.equal('0');
 
       // 12345 ether
@@ -66,11 +66,11 @@ describe('Ethereum BitGo.eth:', function() {
 
   describe('Bitcoin-Ethereum Conversion', function() {
     it('verify padding', function() {
-      var incorrectlyPaddedXprv1 = 'xprv9s21ZrQH143K3EsVzrBYfWNonEcQ67i4VS6AodNVijvQnukHpAXpST2LwqoRY5rTJ7sFPJh8qUxGx9MmyfK54dZTvH8ERWZY37x6yL9j5dB';
-      var incorrectlyPaddedXprv2 = 'xprv9s21ZrQH143K3QNgDCkvSx3koPxxwckY5vyafntKWCk9jZ7yHcGt4ZV3kHRpi8tsjpRuQY7YGWj9dsSVqckaKvmsx3xKrcj2RMSuuopmAYK';
-      var incorrectlyPaddedXprv3 = 'xprv9s21ZrQH143K3tksgZT9ttq5GC2TnSe284TfMDsutsacu4CWvtSw2UdQDNUN28fXs9mhTc6ResUmc3o2enpKiFekB2JP8Kb6N6iBGoJMUBf';
-      var incorrectlyPaddedXprv4 = 'xprv9s21ZrQH143K3gxrUzNDWx2NF7WFgjUqmjEFTK7wh46JS72sC1ugYUG7G3KwJNNTa44q3jkUh4yU8g19TGqtQ21DNZ3JzeM2MjwF6vF9MdK';
-      var correctlyPaddedXprv005 = 'xprv9s21ZrQH143K2PLs4Qu4C8vogXrVi9sH3gZtkSNnkyte4AZYnjPCTvERYwYGAJoeyEYkxffNjUyUHcMaGu2viZiqauAusDkvQ6ii9rN88Sn';
+      const incorrectlyPaddedXprv1 = 'xprv9s21ZrQH143K3EsVzrBYfWNonEcQ67i4VS6AodNVijvQnukHpAXpST2LwqoRY5rTJ7sFPJh8qUxGx9MmyfK54dZTvH8ERWZY37x6yL9j5dB';
+      const incorrectlyPaddedXprv2 = 'xprv9s21ZrQH143K3QNgDCkvSx3koPxxwckY5vyafntKWCk9jZ7yHcGt4ZV3kHRpi8tsjpRuQY7YGWj9dsSVqckaKvmsx3xKrcj2RMSuuopmAYK';
+      const incorrectlyPaddedXprv3 = 'xprv9s21ZrQH143K3tksgZT9ttq5GC2TnSe284TfMDsutsacu4CWvtSw2UdQDNUN28fXs9mhTc6ResUmc3o2enpKiFekB2JP8Kb6N6iBGoJMUBf';
+      const incorrectlyPaddedXprv4 = 'xprv9s21ZrQH143K3gxrUzNDWx2NF7WFgjUqmjEFTK7wh46JS72sC1ugYUG7G3KwJNNTa44q3jkUh4yU8g19TGqtQ21DNZ3JzeM2MjwF6vF9MdK';
+      const correctlyPaddedXprv005 = 'xprv9s21ZrQH143K2PLs4Qu4C8vogXrVi9sH3gZtkSNnkyte4AZYnjPCTvERYwYGAJoeyEYkxffNjUyUHcMaGu2viZiqauAusDkvQ6ii9rN88Sn';
 
       Util.xprvToEthPrivateKey(correctlyPaddedXprv005).should
       .equal('433efe74dc0a841c1e398238d3512e5ae8cbfde26a67667ef03a98a3e9291d80');
@@ -98,7 +98,7 @@ describe('Ethereum BitGo.eth:', function() {
 
     it('verify addresses', function() {
       // a random xpub
-      var xpub = 'xpub661MyMwAqRbcF73ayX674hFz5Wr26tgRQKR3SexMeySATH1a7Ui7ZnL2re1Vwg6t2vj2xXui4xNmZH7ToTQFNVbBsFSpSGF3sMtjCAeT6H2';
+      const xpub = 'xpub661MyMwAqRbcF73ayX674hFz5Wr26tgRQKR3SexMeySATH1a7Ui7ZnL2re1Vwg6t2vj2xXui4xNmZH7ToTQFNVbBsFSpSGF3sMtjCAeT6H2';
       Util.xpubToEthAddress(xpub).should.equal('0x8383257c2beb7af0a660a79ccac76120151f7348');
     });
   });

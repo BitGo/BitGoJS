@@ -4,12 +4,12 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
-var BitGoJS = require('../src/index');
+const assert = require('assert');
+const should = require('should');
+const BitGoJS = require('../src/index');
 
 describe('Market', function() {
-  var bitgo;
+  let bitgo;
   before(function() {
     bitgo = new BitGoJS.BitGo();
   });
@@ -20,8 +20,8 @@ describe('Market', function() {
   });
 
   it('lastDays arguments', function() {
-    assert.throws(function() { bitgo.markets().lastDays({ currencyName: '' }) });
-    assert.throws(function() { bitgo.markets().lastDays({ currencyName: 'USD', days: -1 }) });
+    assert.throws(function() { bitgo.markets().lastDays({ currencyName: '' }); });
+    assert.throws(function() { bitgo.markets().lastDays({ currencyName: 'USD', days: -1 }); });
   });
 
   it('latest', function(done) {
@@ -58,7 +58,7 @@ describe('Market', function() {
     .then(function(marketData) {
       marketData.length.should.equal(90);
 
-      var data = marketData[0];
+      const data = marketData[0];
       data.length.should.equal(2);
     });
   });

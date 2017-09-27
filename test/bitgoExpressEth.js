@@ -27,14 +27,14 @@ describe('Bitgo Express TETH v2', function () {
   };
 
   before(co(function *() {
-    let args = {
+    const args = {
       debug: false,
       env: 'test',
-      logfile: '/dev/null',
+      logfile: '/dev/null'
     };
-    let bitgo = new TestBitGo();
+    const bitgo = new TestBitGo();
     bitgo.initializeTestVars();
-    let app = expressApp(args);
+    const app = expressApp(args);
     agent = request.agent(app);
     yield testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15);
   }));
@@ -55,7 +55,7 @@ describe('Bitgo Express TETH v2', function () {
   }));
 
   it('can list wallets', co(function *() {
-    let res = yield agent
+    const res = yield agent
       .get('/api/v2/teth/wallet')
       .set(authHeader);
     res.statusCode.should.equal(200);
@@ -63,7 +63,7 @@ describe('Bitgo Express TETH v2', function () {
   }));
 
   it('can fetch testWallet', co(function *() {
-    let res = yield agent
+    const res = yield agent
       .get(`/api/v2/teth/wallet/${testWalletId}`)
       .set(authHeader);
     res.statusCode.should.equal(200);
@@ -73,7 +73,7 @@ describe('Bitgo Express TETH v2', function () {
   }));
 
   it('can list deposit addresses', co(function *() {
-    let res = yield agent
+    const res = yield agent
       .get(`/api/v2/teth/wallet/${testWalletId}/addresses`)
       .set(authHeader);
     res.statusCode.should.equal(200);
@@ -83,7 +83,7 @@ describe('Bitgo Express TETH v2', function () {
   }));
 
   it('can create new address', co(function *() {
-    let res = yield agent
+    const res = yield agent
       .post(`/api/v2/teth/wallet/${testWalletId}/address`)
       .set(authHeader);
     res.statusCode.should.equal(200);
@@ -95,7 +95,7 @@ describe('Bitgo Express TETH v2', function () {
       .post(`/api/v2/teth/wallet/${testWalletId}/address`)
       .set(authHeader);
     res.statusCode.should.equal(200);
-    let { address } = res.body;
+    const { address } = res.body;
 
     res = yield agent
       .post(`/api/v2/teth/wallet/${testWalletId}/sendcoins`)
@@ -124,7 +124,7 @@ describe('Bitgo Express TETH v2', function () {
         walletPassphrase: testWalletPassphrase,
         recipients: [
           { address: address1, amount: '10000' },
-          { address: address2, amount: '20000' },
+          { address: address2, amount: '20000' }
         ]
       });
 
@@ -138,7 +138,7 @@ describe('Bitgo Express TETH v2', function () {
       .send({
         walletPassphrase: testWalletPassphrase,
         recipients: [
-          { address: address1, amount: '10000' },
+          { address: address1, amount: '10000' }
         ]
       });
     res.statusCode.should.equal(200);

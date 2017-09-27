@@ -4,18 +4,18 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
+const assert = require('assert');
+const should = require('should');
 
-var BitGoJS = require('../src/index');
-var TestBitGo = require('./lib/test_bitgo');
+const BitGoJS = require('../src/index');
+const TestBitGo = require('./lib/test_bitgo');
 
-var _ = require('lodash');
+const _ = require('lodash');
 
 describe('PendingApprovals', function() {
-  var bitgo;
-  var pendingApprovals;
-  var sharedWallet;
+  let bitgo;
+  let pendingApprovals;
+  let sharedWallet;
 
   before(function() {
     bitgo = new TestBitGo();
@@ -24,10 +24,10 @@ describe('PendingApprovals', function() {
     pendingApprovals = bitgo.pendingApprovals();
     return bitgo.authenticateTestUser(bitgo.testUserOTP())
     .then(function() {
-      return bitgo.unlock({ otp: bitgo.testUserOTP() })
+      return bitgo.unlock({ otp: bitgo.testUserOTP() });
     })
     .then(function() {
-      return bitgo.wallets().get({id: TestBitGo.TEST_SHARED_WALLET_ADDRESS})
+      return bitgo.wallets().get({ id: TestBitGo.TEST_SHARED_WALLET_ADDRESS });
     })
     .then(function(result) {
       sharedWallet = result;
@@ -48,21 +48,21 @@ describe('PendingApprovals', function() {
       .then(function(res) {
         res.should.have.property('pendingApprovals');
         res.pendingApprovals.length.should.not.eql(0);
-        var pendingApprovalIds = _.map(res.pendingApprovals, function(pa) { return pa.id(); });
+        const pendingApprovalIds = _.map(res.pendingApprovals, function(pa) { return pa.id(); });
         pendingApprovalIds.should.include(TestBitGo.TEST_WALLET_PENDING_APPROVAL_ID);
-      })
+      });
     });
 
     it('shared wallet should have pending approval objects on it', function() {
       return sharedWallet.get()
       .then(function(result) {
-        var walletPendingApprovals = result.pendingApprovals();
+        const walletPendingApprovals = result.pendingApprovals();
         walletPendingApprovals.length.should.not.eql(0);
-        var pendingApprovalIds = _.map(walletPendingApprovals, function(pa) { return pa.id(); });
+        const pendingApprovalIds = _.map(walletPendingApprovals, function(pa) { return pa.id(); });
         pendingApprovalIds.should.include(TestBitGo.TEST_WALLET_PENDING_APPROVAL_ID);
         // the pending approval from the wallet object should have itself on it
         walletPendingApprovals[0].walletId().should.eql(walletPendingApprovals[0].wallet.id());
-      })
+      });
     });
 
     it('enterprise pending approvals', function() {
@@ -70,9 +70,9 @@ describe('PendingApprovals', function() {
       .then(function(res) {
         res.should.have.property('pendingApprovals');
         res.pendingApprovals.length.should.not.eql(0);
-        var pendingApprovalIds = _.map(res.pendingApprovals, function(pa) { return pa.id(); });
+        const pendingApprovalIds = _.map(res.pendingApprovals, function(pa) { return pa.id(); });
         pendingApprovalIds.should.include(TestBitGo.TEST_ENTERPRISE_PENDING_APPROVAL_ID);
-      })
+      });
     });
   });
 
@@ -80,7 +80,7 @@ describe('PendingApprovals', function() {
     it('arguments', function() {
       assert.throws(function() { pendingApprovals.get({}, 'invalid'); });
       assert.throws(function() { pendingApprovals.get('invalid'); });
-      assert.throws(function() { pendingApprovals.get({'id': 54321}, 'invalid'); });
+      assert.throws(function() { pendingApprovals.get({ id: 54321 }, 'invalid'); });
     });
 
     it('get a wallet pending approval', function() {

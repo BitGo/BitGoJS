@@ -4,15 +4,15 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
+const assert = require('assert');
+const should = require('should');
 
-var BitGoJS = require('../src/index');
-var TestBitGo = require('./lib/test_bitgo');
+const BitGoJS = require('../src/index');
+const TestBitGo = require('./lib/test_bitgo');
 
 describe('Keychains', function() {
-  var bitgo;
-  var keychains;
+  let bitgo;
+  let keychains;
 
   before(function(done) {
     bitgo = new TestBitGo();
@@ -28,8 +28,8 @@ describe('Keychains', function() {
 
   describe('Local', function() {
     it('isValid', function() {
-      assert.throws(function() { keychains.isValid('') });
-      assert.throws(function() { keychains.isValid({}) });
+      assert.throws(function() { keychains.isValid(''); });
+      assert.throws(function() { keychains.isValid({}); });
       assert.equal(keychains.isValid({ key: 'hello world' }), false);
       assert.equal(keychains.isValid({ key: 'xpub123123' }), false);
       assert.equal(keychains.isValid({ key: 'xprv123123' }), false);
@@ -41,7 +41,7 @@ describe('Keychains', function() {
     it('create', function() {
       // must use seed of at least 128 bits
       // standard test vector taken from bip32 spec
-      var seed = new Buffer('000102030405060708090a0b0c0d0e0f', 'hex');
+      const seed = new Buffer('000102030405060708090a0b0c0d0e0f', 'hex');
       assert.equal(keychains.create({ seed: seed }).xprv, 'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi');
 
       //two keys created one after the other with no seed should have
@@ -50,24 +50,24 @@ describe('Keychains', function() {
     });
 
     it('deriveLocal', function() {
-      assert.throws(function() { keychains.deriveLocal('') });
-      assert.throws(function() { keychains.deriveLocal({}) });
-      assert.throws(function() { keychains.deriveLocal({ 'path': 'm/0/1' }) });
-      assert.throws(function() { keychains.deriveLocal({ 'path': 'm/0/1', xprv: 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P', xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L' }) });
+      assert.throws(function() { keychains.deriveLocal(''); });
+      assert.throws(function() { keychains.deriveLocal({}); });
+      assert.throws(function() { keychains.deriveLocal({ path: 'm/0/1' }); });
+      assert.throws(function() { keychains.deriveLocal({ path: 'm/0/1', xprv: 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P', xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L' }); });
 
-      var xprvDerivation = keychains.deriveLocal(
+      const xprvDerivation = keychains.deriveLocal(
         {
-          'path': 'm/0/1',
-          'xprv': 'xprv9s21ZrQH143K2JF8RafpqtKiTbsbaxEeUaMnNHsm5o6wCW3z8ySyH4UxFVSfZ8n7ESu7fgir8imbZKLYVBxFPND1pniTZ81vKfd45EHKX73'
+          path: 'm/0/1',
+          xprv: 'xprv9s21ZrQH143K2JF8RafpqtKiTbsbaxEeUaMnNHsm5o6wCW3z8ySyH4UxFVSfZ8n7ESu7fgir8imbZKLYVBxFPND1pniTZ81vKfd45EHKX73'
         }
       );
       assert.equal(xprvDerivation.xprv, 'xprv9xDfxS6Lqhq1CHyU5RouJbbBTjtv2GUwfQ5Xg14vWuj4YizffPA2G8HVyoNNyqTrfdN47QHJnP9bjwn7G9d6oAxDnbRyugouXmNeVZHfJ6P');
       assert.equal(xprvDerivation.xpub, 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L');
 
-      var xpubDerivation = keychains.deriveLocal(
+      const xpubDerivation = keychains.deriveLocal(
         {
-          'path': 'm/0/1',
-          'xpub': 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L'
+          path: 'm/0/1',
+          xpub: 'xpub6BD2MwdEg5PJQn3wBTLufjXv1mjQRjCo2d18UPUY5FG3RXKpCvUGovbyq6oa1hWuvGb5P4F5mG3tKZYh7chDkQrdBTfKhH5iXPR5g4men9L'
         }
       );
       assert.equal(xpubDerivation.xpub, 'xpub6Ee6yTYU8n4jBALmLc7jn88vQkuEUEN4xEyre8Y8f4UeTE9Wv4kQoVBc2EBkDN4bHSf5TrHFEUFM6ZWboxrDXuthejjm61ukBSnM3sEYtM9');
@@ -98,9 +98,9 @@ describe('Keychains', function() {
     });
 
     it('non existent keychain', function(done) {
-      var newKey = keychains.create();
-      var options = {
-        xpub: newKey.xpub,
+      const newKey = keychains.create();
+      const options = {
+        xpub: newKey.xpub
       };
       keychains.get(options, function(err, keychain) {
         assert.ok(err);
@@ -118,7 +118,7 @@ describe('Keychains', function() {
     });
 
     describe('public', function() {
-      var extendedKey;
+      let extendedKey;
 
       before(function(done) {
         // Generate a new keychain
@@ -131,7 +131,7 @@ describe('Keychains', function() {
       });
 
       it('add', function(done) {
-        var options = {
+        const options = {
           xpub: extendedKey.xpub
         };
         keychains.add(options, function(err, keychain) {
@@ -143,7 +143,7 @@ describe('Keychains', function() {
       });
 
       it('get', function(done) {
-        var options = {
+        const options = {
           xpub: extendedKey.xpub
         };
         keychains.get(options, function(err, keychain) {
@@ -156,7 +156,7 @@ describe('Keychains', function() {
     });
 
     describe('private', function() {
-      var extendedKey;
+      let extendedKey;
 
       before(function() {
         // Generate a new keychain
@@ -164,7 +164,7 @@ describe('Keychains', function() {
       });
 
       it('add', function(done) {
-        var options = {
+        const options = {
           xpub: extendedKey.xpub,
           encryptedXprv: 'xyzzy'
         };
@@ -178,7 +178,7 @@ describe('Keychains', function() {
       });
 
       it('get', function(done) {
-        var options = {
+        const options = {
           xpub: extendedKey.xpub
         };
         keychains.get(options, function(err, keychain) {
@@ -206,9 +206,9 @@ describe('Keychains', function() {
     });
 
     describe('prederived key', function () {
-      var generatedXPub;
+      let generatedXPub;
       it('add', function () {
-        var options = {
+        const options = {
           provider: 'bitgo'
         };
         return keychains.createBackup(options)
@@ -220,7 +220,7 @@ describe('Keychains', function() {
       });
 
       it('get', function() {
-        var options = {
+        const options = {
           xpub: generatedXPub
         };
         return keychains.get(options)
@@ -234,7 +234,7 @@ describe('Keychains', function() {
   });
 
   describe('Update', function() {
-    var newKey;
+    let newKey;
 
     before(function() {
       newKey = keychains.create();
@@ -246,8 +246,8 @@ describe('Keychains', function() {
     });
 
     it('non existent keychain', function(done) {
-      var options = {
-        xpub: newKey.xpub,
+      const options = {
+        xpub: newKey.xpub
       };
       keychains.get(options, function(err, keychain) {
         assert.ok(err);
@@ -256,8 +256,8 @@ describe('Keychains', function() {
     });
 
     it('update ', function(done) {
-      var options = {
-        xpub: newKey.xpub,
+      const options = {
+        xpub: newKey.xpub
       };
       keychains.add(options, function(err, keychain) {
         assert.equal(err, null);

@@ -4,28 +4,28 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
+const assert = require('assert');
+const should = require('should');
 
-var BitGoJS = require('../src/index');
-var TestBitGo = require('./lib/test_bitgo');
-var TestUtil = require('./testutil');
+const BitGoJS = require('../src/index');
+const TestBitGo = require('./lib/test_bitgo');
+const TestUtil = require('./testutil');
 
-var bitcoin = BitGoJS.bitcoin;
-var _ = require('lodash');
-var Q = require('q');
+const bitcoin = BitGoJS.bitcoin;
+const _ = require('lodash');
+const Q = require('q');
 
 describe('PendingApproval', function() {
-  var bitgo;
-  var bitgoSharedKeyUser;
-  var bitgoThirdUser;
-  var sharedWallet;
+  let bitgo;
+  let bitgoSharedKeyUser;
+  let bitgoThirdUser;
+  let sharedWallet;
 
   /**
    * There is a 0-limit policy on the shared wallet
    * Create a pending approval by attempting to send coins
    */
-  var createTransactionPendingApproval = function() {
+  const createTransactionPendingApproval = function() {
     return sharedWallet.sendCoins({
       address: TestBitGo.TEST_WALLET2_ADDRESS,
       amount: 0.0001 * 1e8,
@@ -35,7 +35,7 @@ describe('PendingApproval', function() {
     })
     .then(function(result) {
       result.should.have.property('pendingApproval');
-      return bitgo.pendingApprovals().get({ id: result.pendingApproval })
+      return bitgo.pendingApprovals().get({ id: result.pendingApproval });
     });
   };
 
@@ -43,7 +43,7 @@ describe('PendingApproval', function() {
    * There is a 0-limit policy on the shared wallet
    * Create a pending approval by attempting to send to many
    */
-  var createTransactionPendingApprovalToMultipleRecipients = function() {
+  const createTransactionPendingApprovalToMultipleRecipients = function() {
     return sharedWallet.sendMany({
       recipients: [
         {
@@ -65,14 +65,14 @@ describe('PendingApproval', function() {
     })
     .then(function(result) {
       result.should.have.property('pendingApproval');
-      return bitgo.pendingApprovals().get({id: result.pendingApproval})
+      return bitgo.pendingApprovals().get({ id: result.pendingApproval });
     });
   };
 
   /**
    * Create a pending approval by attempting to add a user to the wallet
    */
-  var createPolicyPendingApproval = function() {
+  const createPolicyPendingApproval = function() {
     // it's ok to set up any tx limit since the daily limit is 0
     return sharedWallet.updatePolicyRule({
       action: {
@@ -86,7 +86,7 @@ describe('PendingApproval', function() {
     })
     .then(function(result) {
       result.should.have.property('pendingApproval');
-      return bitgo.pendingApprovals().get({id: result.pendingApproval.id })
+      return bitgo.pendingApprovals().get({ id: result.pendingApproval.id });
     });
   };
 
@@ -109,16 +109,16 @@ describe('PendingApproval', function() {
       return bitgoSharedKeyUser.unlock({ otp: bitgo.testUserOTP() });
     })
     .then(function() {
-      return bitgo.wallets().get({id: TestBitGo.TEST_SHARED_WALLET_ADDRESS});
+      return bitgo.wallets().get({ id: TestBitGo.TEST_SHARED_WALLET_ADDRESS });
     })
     .then(function(result) {
       sharedWallet = result;
-    })
+    });
   });
 
 
   describe('Create and Get', function() {
-    var pendingApproval;
+    let pendingApproval;
 
     before(function() {
       return createTransactionPendingApproval()
@@ -134,7 +134,7 @@ describe('PendingApproval', function() {
     it('arguments', function() {
       assert.throws(function() { bitgo.pendingApprovals().get({}, 'invalid'); });
       assert.throws(function() { bitgo.pendingApprovals().get('invalid'); });
-      assert.throws(function() { bitgo.pendingApprovals().get({'id': 54321}, 'invalid'); });
+      assert.throws(function() { bitgo.pendingApprovals().get({ id: 54321 }, 'invalid'); });
     });
 
     it('get property methods', function() {
@@ -166,7 +166,7 @@ describe('PendingApproval', function() {
   });
 
   describe('Approve', function() {
-    var pendingApproval;
+    let pendingApproval;
 
     before(function() {
       return createTransactionPendingApproval()
@@ -198,7 +198,7 @@ describe('PendingApproval', function() {
     it('can approve when it does not require tx signing', function() {
       return createPolicyPendingApproval()
       .then(function(pendingApproval) {
-        return bitgoSharedKeyUser.pendingApprovals().get({id: pendingApproval.id()})
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: pendingApproval.id() })
         .then(function(result) {
           return result.approve({ walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
         })
@@ -225,7 +225,7 @@ describe('PendingApproval', function() {
     it('error when it does require tx signing but wrong passphrase', function() {
       return createTransactionPendingApproval()
       .then(function(pendingApproval) {
-        return bitgoSharedKeyUser.pendingApprovals().get({id: pendingApproval.id()});
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: pendingApproval.id() });
       })
       .then(function(result) {
         return result.approve({ walletPassphrase: 'abcdef', otp: bitgo.testUserOTP() });
@@ -239,10 +239,10 @@ describe('PendingApproval', function() {
     it('can approve when it does require tx signing', function() {
       return createTransactionPendingApproval()
       .then(function(pendingApproval) {
-        return bitgoSharedKeyUser.pendingApprovals().get({id: pendingApproval.id()})
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: pendingApproval.id() });
       })
       .then(function(result) {
-        return result.approve({ walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() })
+        return result.approve({ walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
       })
       .then(function(result) {
         result.state.should.eql('approved');
@@ -250,22 +250,22 @@ describe('PendingApproval', function() {
     });
 
     it('cannot approve when transaction needs reconstructing', function() {
-      var approvals = [];
+      let approvals = [];
       return Q.all([
         createTransactionPendingApproval(),
         createTransactionPendingApproval()
       ])
       .spread(function(approval1, approval2) {
         approvals = [approval1, approval2];
-        return bitgoSharedKeyUser.pendingApprovals().get({ id: approval1.id() })
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: approval1.id() });
       })
       .then(function(result) {
         return result.approve({ walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
       })
       .then(function(result) {
         result.state.should.eql('approved');
-        var approval2 = approvals[1];
-        return bitgoSharedKeyUser.pendingApprovals().get({ id: approval2.id() })
+        const approval2 = approvals[1];
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: approval2.id() });
       })
       .then(function(result) {
         return result.approve({ otp: bitgo.testUserOTP() });
@@ -281,7 +281,7 @@ describe('PendingApproval', function() {
     it('can approve when it does require tx signing (multiple recipients)', function() {
       return createTransactionPendingApprovalToMultipleRecipients()
       .then(function(pendingApproval) {
-        return bitgoSharedKeyUser.pendingApprovals().get({id: pendingApproval.id()})
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: pendingApproval.id() });
       })
       .then(function(result) {
         return result.approve({ walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
@@ -290,12 +290,12 @@ describe('PendingApproval', function() {
         result.state.should.eql('approved');
 
         // Parse the completed tx hex and make sure it was built with proper outputs
-        var completedTxHex = result.info.transactionRequest.validTransaction;
-        var transaction = bitcoin.Transaction.fromHex(completedTxHex);
+        const completedTxHex = result.info.transactionRequest.validTransaction;
+        const transaction = bitcoin.Transaction.fromHex(completedTxHex);
         if (!transaction || !transaction.outs) {
           throw new Error('transaction had no outputs or failed to parse successfully');
         }
-        var outputAddresses = _.map(transaction.outs, function(out) {
+        const outputAddresses = _.map(transaction.outs, function(out) {
           return bitcoin.address.fromOutputScript(out.script, BitGoJS.getNetworkObj());
         });
 
@@ -307,10 +307,10 @@ describe('PendingApproval', function() {
     });
 
     it('can manually pass in reconstructed tx', function() {
-      var pendingApproval;
+      let pendingApproval;
       return createTransactionPendingApprovalToMultipleRecipients()
       .then(function(pendingApproval) {
-        return bitgoSharedKeyUser.pendingApprovals().get({id: pendingApproval.id()})
+        return bitgoSharedKeyUser.pendingApprovals().get({ id: pendingApproval.id() });
       })
       .then(function(result) {
         pendingApproval = result;
@@ -323,12 +323,12 @@ describe('PendingApproval', function() {
         result.state.should.eql('approved');
 
         // Parse the completed tx hex and make sure it was built with proper outputs
-        var completedTxHex = result.info.transactionRequest.validTransaction;
-        var transaction = bitcoin.Transaction.fromHex(completedTxHex);
+        const completedTxHex = result.info.transactionRequest.validTransaction;
+        const transaction = bitcoin.Transaction.fromHex(completedTxHex);
         if (!transaction || !transaction.outs) {
           throw new Error('transaction had no outputs or failed to parse successfully');
         }
-        var outputAddresses = _.map(transaction.outs, function(out) {
+        const outputAddresses = _.map(transaction.outs, function(out) {
           return bitcoin.address.fromOutputScript(out.script, BitGoJS.getNetworkObj());
         });
 
@@ -341,7 +341,7 @@ describe('PendingApproval', function() {
   });
 
   describe('Reject', function() {
-    var pendingApproval;
+    let pendingApproval;
 
     before(function () {
       return Q.delay(500).then(function() {
@@ -365,9 +365,9 @@ describe('PendingApproval', function() {
     });
 
     it('can reject', function () {
-      return bitgoSharedKeyUser.pendingApprovals().get({id: pendingApproval.id()})
+      return bitgoSharedKeyUser.pendingApprovals().get({ id: pendingApproval.id() })
       .then(function(result) {
-        return result.reject()
+        return result.reject();
       })
       .then(function(result) {
         result.state.should.eql('rejected');
@@ -377,8 +377,8 @@ describe('PendingApproval', function() {
 
   describe('Create, Get, Approve and Reject with Multiple Approvers', function() {
     // setup third user
-    var multipleApproversWallet;
-    var pendingApproval;
+    let multipleApproversWallet;
+    let pendingApproval;
     before(function() {
       return bitgoThirdUser.authenticate({
         username: TestBitGo.TEST_THIRD_USER,
@@ -389,7 +389,7 @@ describe('PendingApproval', function() {
         return bitgoThirdUser.unlock({ otp: bitgoThirdUser.testUserOTP() });
       })
       .then(function () {
-        return bitgoThirdUser.wallets().get({id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS});
+        return bitgoThirdUser.wallets().get({ id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS });
       })
       .then(function (result) {
         multipleApproversWallet = result;
@@ -406,13 +406,13 @@ describe('PendingApproval', function() {
         .then(function (result) {
           pendingApproval = result;
           pendingApproval.approvalsRequired().should.equal(1);
-          return result.approve({ otp: bitgo.testUserOTP()});
+          return result.approve({ otp: bitgo.testUserOTP() });
         })
         .then(function (result) {
           result.state.should.eql('approved');
 
           // update wallet variable with new approvalsRequired
-          return bitgoThirdUser.wallets().get({id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS});
+          return bitgoThirdUser.wallets().get({ id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS });
         })
         .then(function (result) {
           multipleApproversWallet = result;
@@ -429,7 +429,7 @@ describe('PendingApproval', function() {
     });
 
     it('should fail with too high approvalsRequired', function() {
-      var promise = multipleApproversWallet.updateApprovalsRequired({ approvalsRequired: 3 });
+      const promise = multipleApproversWallet.updateApprovalsRequired({ approvalsRequired: 3 });
       return TestUtil.throws(promise, 'approvalsRequired must be less than the number of admins on the wallet');
     });
 
@@ -461,7 +461,7 @@ describe('PendingApproval', function() {
       .then(function(result) {
         result.state.should.eql('approved');
 
-        return bitgoThirdUser.wallets().get({id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS});
+        return bitgoThirdUser.wallets().get({ id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS });
       })
       .then(function(wallet) {
         multipleApproversWallet = wallet;

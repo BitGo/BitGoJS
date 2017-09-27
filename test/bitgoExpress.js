@@ -3,28 +3,28 @@ if (process.browser) {
   return;
 }
 
-var assert = require('assert');
-var should = require('should');
-var request = require("supertest-as-promised");
-var _ = require('lodash');
+const assert = require('assert');
+const should = require('should');
+const request = require('supertest-as-promised');
+const _ = require('lodash');
 
-var BitGoJS = require('../src/index');
-var expressApp = require('../src/expressApp');
-var TestBitGo = require('./lib/test_bitgo');
-var testUtil = require('./testutil');
+const BitGoJS = require('../src/index');
+const expressApp = require('../src/expressApp');
+const TestBitGo = require('./lib/test_bitgo');
+const testUtil = require('./testutil');
 
 describe('Bitgo Express', function() {
-  var agent;
+  let agent;
 
   before(function() {
-    var args = {
+    const args = {
       debug: false,
       env: 'test',
       logfile: '/dev/null'
     };
     bitgo = new TestBitGo();
     bitgo.initializeTestVars();
-    var app = expressApp(args);
+    const app = expressApp(args);
     agent = request.agent(app);
   });
 
@@ -39,7 +39,7 @@ describe('Bitgo Express', function() {
     });
 
     it('error - proxied calls disabled', function() {
-      var app = expressApp(_.extend(
+      const app = expressApp(_.extend(
         {},
         {
           debug: false,
@@ -48,7 +48,7 @@ describe('Bitgo Express', function() {
         },
         { disableproxy: true })
       );
-      var disabledProxyAgent = request.agent(app);
+      const disabledProxyAgent = request.agent(app);
       return disabledProxyAgent.get('/api/v1/market/latest')
       .send()
       .then(function(res) {
@@ -65,7 +65,7 @@ describe('Bitgo Express', function() {
         res.body.latest.should.have.property('currencies');
         res.body.latest.currencies.should.have.property('USD');
 
-        var usdMarketData = res.body.latest.currencies.USD;
+        const usdMarketData = res.body.latest.currencies.USD;
         usdMarketData.should.have.property('last');
         usdMarketData.should.have.property('bid');
         usdMarketData.should.have.property('ask');
@@ -96,7 +96,7 @@ describe('Bitgo Express', function() {
     });
 
     it('put label set (authed)', function() {
-      var walletId = '2MvfC3e6njdTXqWDfGvNUqDs5kwimfaTGjK';
+      const walletId = '2MvfC3e6njdTXqWDfGvNUqDs5kwimfaTGjK';
       return agent.put('/api/v1/labels/' + walletId + '/msj42CCGruhRsFrGATiUuh25dtxYtnpbTx')
       .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
       .send({ label: 'testLabel_bitgoExpressSDK' })
@@ -114,7 +114,7 @@ describe('Bitgo Express', function() {
 
     it('error - not authed', function() {
       return agent.post('/api/v1/wallets/simplecreate')
-      .send({ passphrase:'abc', label: 'helloworld' })
+      .send({ passphrase: 'abc', label: 'helloworld' })
       .then(function(res) {
         res.should.have.status(401);
       });
@@ -122,7 +122,7 @@ describe('Bitgo Express', function() {
 
     it('error - not authed (eth)', function() {
       return agent.post('/api/v1/eth/wallet/generate')
-      .send({ passphrase:'abc', label: 'helloworld' })
+      .send({ passphrase: 'abc', label: 'helloworld' })
       .then(function(res) {
         res.should.have.status(401);
       });
@@ -170,9 +170,9 @@ describe('Bitgo Express', function() {
     });
 
     it('decrypt', function() {
-      var encryptedString = '{"iv":"n4zHXVTi/Go/riCP8fNs/A==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"zvLyve+4AJU=","ct":"gNMqheicMoD8ZmNzRwuQfWGAh+HA933l"}';
+      const encryptedString = '{"iv":"n4zHXVTi/Go/riCP8fNs/A==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"zvLyve+4AJU=","ct":"gNMqheicMoD8ZmNzRwuQfWGAh+HA933l"}';
       return agent.post('/api/v1/decrypt')
-      .send({input: encryptedString, password: 'password'})
+      .send({ input: encryptedString, password: 'password' })
       .then(function(res) {
         res.should.have.status(200);
         res.body.should.have.property('decrypted');
@@ -181,12 +181,12 @@ describe('Bitgo Express', function() {
     });
 
     it('create wallet', function() {
-      var backupXpub = "xpub6AHA9hZDN11k2ijHMeS5QqHx2KP9aMBRhTDqANMnwVtdyw2TDYRmF8PjpvwUFcL1Et8Hj59S3gTSMcUQ5gAqTz3Wd8EsMTmF3DChhqPQBnU";
+      const backupXpub = 'xpub6AHA9hZDN11k2ijHMeS5QqHx2KP9aMBRhTDqANMnwVtdyw2TDYRmF8PjpvwUFcL1Et8Hj59S3gTSMcUQ5gAqTz3Wd8EsMTmF3DChhqPQBnU';
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function() {
         return agent.post('/api/v1/wallets/simplecreate')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({ passphrase: "chamchatka", label: "kokoko", backupXpub: backupXpub });
+        .send({ passphrase: 'chamchatka', label: 'kokoko', backupXpub: backupXpub });
       })
       .then(function(res) {
         res.should.have.status(200);
@@ -198,12 +198,12 @@ describe('Bitgo Express', function() {
     });
 
     it('create eth wallet', function() {
-      var backupXpub = "xpub6AHA9hZDN11k2ijHMeS5QqHx2KP9aMBRhTDqANMnwVtdyw2TDYRmF8PjpvwUFcL1Et8Hj59S3gTSMcUQ5gAqTz3Wd8EsMTmF3DChhqPQBnU";
+      const backupXpub = 'xpub6AHA9hZDN11k2ijHMeS5QqHx2KP9aMBRhTDqANMnwVtdyw2TDYRmF8PjpvwUFcL1Et8Hj59S3gTSMcUQ5gAqTz3Wd8EsMTmF3DChhqPQBnU';
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function() {
         return agent.post('/api/v1/eth/wallet/generate')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({ passphrase: "chamchatka", label: "kokoko", backupXpub: backupXpub });
+        .send({ passphrase: 'chamchatka', label: 'kokoko', backupXpub: backupXpub });
       })
       .then(function(res) {
         res.should.have.status(200);
@@ -220,8 +220,8 @@ describe('Bitgo Express', function() {
     });
 
     it('send eth transaction', function() {
-      var amount = '36000';
-      var destination = TestBitGo.TEST_ETH_WALLET2_ADDRESS;
+      const amount = '36000';
+      const destination = TestBitGo.TEST_ETH_WALLET2_ADDRESS;
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function() {
         return agent.post('/api/v1/eth/wallet/' + TestBitGo.TEST_ETH_WALLET1_ADDRESS + '/sendtransaction')
@@ -238,13 +238,13 @@ describe('Bitgo Express', function() {
       })
       .then(function(res) {
         res.should.have.status(200);
-        var transfer = res.body.transfer;
+        const transfer = res.body.transfer;
         transfer.from.should.eql(TestBitGo.TEST_ETH_WALLET1_ADDRESS);
         transfer.outputs.length.should.eql(1);
         transfer.outputs[0].to.should.eql(destination);
         transfer.outputs[0].value.should.eql(amount);
         transfer.creator.should.eql(TestBitGo.TEST_USERID);
-      })
+      });
     });
 
     it('create transaction - wallet1 to wallet3', function() {
@@ -256,7 +256,7 @@ describe('Bitgo Express', function() {
       })
       .then(function(res) {
         res.status.should.eql(200);
-        var txInfo = res.body.txInfo;
+        const txInfo = res.body.txInfo;
         txInfo.nP2SHInputs.should.be.greaterThan(0);
         txInfo.nP2PKHInputs.should.eql(0);
         txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
@@ -291,10 +291,10 @@ describe('Bitgo Express', function() {
         res.body.should.have.property('message');
         res.body.result.should.have.property('fee');
         res.body.result.should.have.property('available');
-        res.body.message.should.equal("Insufficient funds");
+        res.body.message.should.equal('Insufficient funds');
         res.body.result.fee.should.be.greaterThan(546);
         res.body.result.available.should.be.greaterThan(546);
-        var txInfo = res.body.result.txInfo;
+        const txInfo = res.body.result.txInfo;
         txInfo.nP2SHInputs.should.be.greaterThan(0);
         txInfo.nP2PKHInputs.should.eql(0);
         txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
@@ -312,11 +312,11 @@ describe('Bitgo Express', function() {
         res.status.should.equal(400);
         res.body.result.should.have.property('fee');
         res.body.result.should.have.property('available');
-        res.body.message.should.equal("Insufficient funds");
-        var result = res.body.result;
+        res.body.message.should.equal('Insufficient funds');
+        const result = res.body.result;
         result.should.have.property('fee');
         result.fee.should.equal(0.0003 * 1e8);
-        var txInfo = res.body.result.txInfo;
+        const txInfo = res.body.result.txInfo;
         txInfo.nP2SHInputs.should.be.greaterThan(0);
         txInfo.nP2PKHInputs.should.eql(0);
         txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
@@ -351,14 +351,14 @@ describe('Bitgo Express', function() {
           address: TestBitGo.TEST_WALLET1_ADDRESS,
           amount: 0.001 * 1e8,
           walletPassphrase: TestBitGo.TEST_PASSWORD,
-          otp : bitgo.testUserOTP()
+          otp: bitgo.testUserOTP()
         });
       })
       .then(function(res) {
         res.status.should.equal(202);
         res.body.should.have.property('pendingApproval');
         res.body.status.should.eql('pendingApproval');
-        var pendingApprovalId = res.body.pendingApproval;
+        const pendingApprovalId = res.body.pendingApproval;
         return agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/express')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
         .send({ walletPassphrase: TestBitGo.TEST_PASSWORD, state: 'rejected' });
@@ -387,10 +387,10 @@ describe('Bitgo Express', function() {
         res.status.should.equal(202);
         res.body.should.have.property('pendingApproval');
         res.body.status.should.eql('pendingApproval');
-        var pendingApprovalId = res.body.pendingApproval;
+        const pendingApprovalId = res.body.pendingApproval;
         return agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/constructTx')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({walletPassphrase: TestBitGo.TEST_PASSWORD, useOriginalFee: true});
+        .send({ walletPassphrase: TestBitGo.TEST_PASSWORD, useOriginalFee: true });
       })
       .then(function(res) {
         res.body.should.have.property('tx');
@@ -423,13 +423,13 @@ describe('Bitgo Express', function() {
       .then(function() {
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
+        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
       })
       .then(function(res) {
         res.status.should.equal(202);
         res.body.should.have.property('pendingApproval');
         res.body.status.should.eql('pendingApproval');
-        var pendingApprovalId = res.body.pendingApproval;
+        const pendingApprovalId = res.body.pendingApproval;
         return agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/express')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
         .send({ walletPassphrase: TestBitGo.TEST_PASSWORD, state: 'approved', otp: bitgo.testUserOTP() });
@@ -442,7 +442,7 @@ describe('Bitgo Express', function() {
     it('create and accept a pending approval using the xprv', function() {
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function(res) {
-        return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15)
+        return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15);
       })
       .then(function(res) {
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
@@ -453,29 +453,29 @@ describe('Bitgo Express', function() {
         res.status.should.equal(202);
         res.body.should.have.property('pendingApproval');
         res.body.status.should.eql('pendingApproval');
-        var pendingApprovalId = res.body.pendingApproval;
+        const pendingApprovalId = res.body.pendingApproval;
         return agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/express')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
         .send({ xprv: 'xprv9s21ZrQH143K3GisDvcsLyQZ88CrgtHziPuQ4ZZU6x3v8AZxEYEBZ7ANwfAPVz9mqraSjREVaCdFgv1u7mHvjuDRZ25J4wGJ73yooYhDoJ4',
-                state: 'approved',
-                otp: bitgo.testUserOTP()
-	});
+          state: 'approved',
+          otp: bitgo.testUserOTP()
+        });
       })
       .then(function(res) {
         res.body.state.should.eql('approved');
-      })
+      });
     });
 
     it('create and accept a pending approval (2 step accept by constructing tx with original user)', function() {
-      var pendingApprovalId;
+      let pendingApprovalId;
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function(res) {
-        return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15)
+        return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15);
       })
       .then(function(res) {
         return agent.post('/api/v1/wallet/' + TestBitGo.TEST_SHARED_WALLET_ADDRESS + '/sendcoins')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, fee: 12345, otp: bitgo.testUserOTP() });;
+        .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, fee: 12345, otp: bitgo.testUserOTP() });
       })
       .then(function(res) {
         res.status.should.equal(202);
@@ -484,13 +484,13 @@ describe('Bitgo Express', function() {
         pendingApprovalId = res.body.pendingApproval;
         return agent.put('/api/v1/pendingapprovals/' + pendingApprovalId + '/constructTx')
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({walletPassphrase: TestBitGo.TEST_PASSWORD});
+        .send({ walletPassphrase: TestBitGo.TEST_PASSWORD });
       })
       .then(function(res) {
         res.body.should.have.property('tx');
         res.body.tx.should.not.eql('');
         res.body.fee.should.not.eql(12345); // fee should be recalculated dynamically
-        var txHex = res.body.tx;
+        const txHex = res.body.tx;
         return agent.put('/api/v1/pendingapprovals/' + pendingApprovalId)
         .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER)
         .send({ tx: txHex, state: 'approved', otp: bitgo.testUserOTP() });

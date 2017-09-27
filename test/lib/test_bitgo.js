@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var BitGo = require('../../src/bitgo.js');
+const BitGo = require('../../src/bitgo.js');
 
 BitGo.TEST_USER = 'tester@bitgo.com';
 
@@ -13,7 +13,7 @@ if (process.env.BITGOJS_TEST_PASSWORD) {
 } else {
   // Test accounts are locked internally to prevent tampering
   // Contact bencxr@fragnetics.com benchan for further help on how to fix this
-  throw new Error("Need to set BITGOJS_TEST_PASSWORD env variable - please see the developer setup docs.");
+  throw new Error('Need to set BITGOJS_TEST_PASSWORD env variable - please see the developer setup docs.');
 }
 
 BitGo.TEST_SHARED_KEY_USER = 'shared_key_test@bitgo.com';
@@ -154,7 +154,7 @@ BitGo.prototype.initializeTestVars = function() {
 // Get an OTP code for the test user.
 //
 BitGo.prototype.testUserOTP = function() {
-  return "0000000";
+  return '0000000';
 };
 
 //

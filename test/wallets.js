@@ -4,23 +4,23 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-var assert = require('assert');
-var should = require('should');
-var Q = require('q');
+const assert = require('assert');
+const should = require('should');
+const Q = require('q');
 
-var BitGoJS = require('../src/index');
-var common = require('../src/common');
-var TestBitGo = require('./lib/test_bitgo');
+const BitGoJS = require('../src/index');
+const common = require('../src/common');
+const TestBitGo = require('./lib/test_bitgo');
 
-var bitcoin = BitGoJS.bitcoin;
+const bitcoin = BitGoJS.bitcoin;
 
-var TEST_WALLET_LABEL = 'wallet management test';
+const TEST_WALLET_LABEL = 'wallet management test';
 
 describe('Wallets', function() {
-  var bitgo;
-  var wallets;
-  var testWallet;      // Test will create this wallet
-  var keychains = [];  // Test will create these keychains
+  let bitgo;
+  let wallets;
+  let testWallet;      // Test will create this wallet
+  const keychains = [];  // Test will create these keychains
 
   before(function(done) {
     bitgo = new TestBitGo();
@@ -65,7 +65,7 @@ describe('Wallets', function() {
         result.should.have.property('total');
         result.should.have.property('nextBatchPrevId');
 
-        return wallets.list({prevId: result.nextBatchPrevId});
+        return wallets.list({ prevId: result.nextBatchPrevId });
       })
       .then(function(result) {
         result.should.have.property('wallets');
@@ -140,7 +140,7 @@ describe('Wallets', function() {
     });
 
     it('wallet', function(done) {
-      var options = {
+      const options = {
         xpub: keychains[0].xpub,
         encryptedXprv: keychains[0].xprv
       };
@@ -149,7 +149,7 @@ describe('Wallets', function() {
         assert.equal(keychain.xpub, keychains[0].xpub);
         assert.equal(keychain.encryptedXprv, keychains[0].xprv);
 
-        var options = {
+        const options = {
           xpub: keychains[1].xpub
         };
         bitgo.keychains().add(options, function(err, keychain) {
@@ -160,11 +160,11 @@ describe('Wallets', function() {
             assert(keychain.xpub);
             keychains.push(keychain);
 
-            var options = {
+            const options = {
               label: 'my wallet',
               m: 2,
               n: 3,
-              keychains: keychains.map(function(k) { return {xpub: k.xpub}; })
+              keychains: keychains.map(function(k) { return { xpub: k.xpub }; })
             };
             wallets.add(options, function(err, wallet) {
               assert.equal(err, null);
@@ -189,18 +189,18 @@ describe('Wallets', function() {
 
   describe('Create wallet with createWalletWithKeychains', function() {
     it('arguments', function() {
-      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TestBitGo.TEST_WALLET1_PASSCODE, "backupXpub": backupXpub}); });
-      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TestBitGo.TEST_WALLET1_PASSCODE, "label": TEST_WALLET_LABEL, "backupXpub": backupXpub}); });
-      assert.throws(function() { wallets.createWalletWithKeychains({"passphrase": TestBitGo.TEST_WALLET1_PASSCODE, "label": TEST_WALLET_LABEL, "backupXpub": 123}); });
-      assert.throws(function() { wallets.createWalletWithKeychains({"label": TEST_WALLET_LABEL, "backupXpub": backupXpub}); });
+      assert.throws(function() { wallets.createWalletWithKeychains({ passphrase: TestBitGo.TEST_WALLET1_PASSCODE, backupXpub: backupXpub }); });
+      assert.throws(function() { wallets.createWalletWithKeychains({ passphrase: TestBitGo.TEST_WALLET1_PASSCODE, label: TEST_WALLET_LABEL, backupXpub: backupXpub }); });
+      assert.throws(function() { wallets.createWalletWithKeychains({ passphrase: TestBitGo.TEST_WALLET1_PASSCODE, label: TEST_WALLET_LABEL, backupXpub: 123 }); });
+      assert.throws(function() { wallets.createWalletWithKeychains({ label: TEST_WALLET_LABEL, backupXpub: backupXpub }); });
       assert.throws(function() { wallets.createWalletWithKeychains('invalid'); });
       assert.throws(function() { wallets.createWalletWithKeychains(); });
     });
 
     it('default create', function(done) {
-      var options = {
-        "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
-        "label": TEST_WALLET_LABEL
+      const options = {
+        passphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+        label: TEST_WALLET_LABEL
       };
 
       bitgo.wallets().createWalletWithKeychains(options, function(err, result) {
@@ -208,7 +208,7 @@ describe('Wallets', function() {
         assert.notEqual(result, null);
 
         result.should.have.property('wallet');
-        var wallet = result.wallet;
+        const wallet = result.wallet;
 
         assert.equal(wallet.balance(), 0);
         assert.equal(wallet.spendableBalance(), 0);
@@ -234,11 +234,11 @@ describe('Wallets', function() {
     it('create with cold backup xpub', function(done) {
 
       // Simulate a cold backup key
-      var coldBackupKey = bitgo.keychains().create();
-      var options = {
-        "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
-        "label": TEST_WALLET_LABEL,
-        "backupXpub": coldBackupKey.xpub
+      const coldBackupKey = bitgo.keychains().create();
+      const options = {
+        passphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+        label: TEST_WALLET_LABEL,
+        backupXpub: coldBackupKey.xpub
       };
 
       bitgo.wallets().createWalletWithKeychains(options, function(err, result) {
@@ -246,7 +246,7 @@ describe('Wallets', function() {
         assert.notEqual(result, null);
 
         result.should.have.property('wallet');
-        var wallet = result.wallet;
+        const wallet = result.wallet;
 
         assert.equal(wallet.balance(), 0);
         assert.equal(wallet.label(), TEST_WALLET_LABEL);
@@ -271,10 +271,10 @@ describe('Wallets', function() {
     });
 
     it('create with backup xpub provider (KRS wallet)', function(done) {
-      var options = {
-        "passphrase": TestBitGo.TEST_WALLET1_PASSCODE,
-        "label": TEST_WALLET_LABEL,
-        "backupXpubProvider": "keyvault-io"
+      const options = {
+        passphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+        label: TEST_WALLET_LABEL,
+        backupXpubProvider: 'keyvault-io'
       };
 
       bitgo.wallets().createWalletWithKeychains(options, function(err, result) {
@@ -282,7 +282,7 @@ describe('Wallets', function() {
         assert.notEqual(result, null);
 
         result.should.have.property('wallet');
-        var wallet = result.wallet;
+        const wallet = result.wallet;
 
         assert.equal(wallet.balance(), 0);
         assert.equal(wallet.spendableBalance(), 0);
@@ -315,8 +315,8 @@ describe('Wallets', function() {
     });
 
     it('non existent wallet', function(done) {
-      var newKey = wallets.createKey();
-      var options = {
+      const newKey = wallets.createKey();
+      const options = {
         id: newKey.address.toString()
       };
       wallets.get(options, function(err, wallet) {
@@ -326,7 +326,7 @@ describe('Wallets', function() {
     });
 
     it('get', function(done) {
-      var options = {
+      const options = {
         id: testWallet.id()
       };
       wallets.get(options, function(err, wallet) {
@@ -348,22 +348,22 @@ describe('Wallets', function() {
   });
 
   describe('Setup forward wallet', function() {
-    var key = bitcoin.ECPair.makeRandom({ network: bitcoin.getNetwork() });
-    var sourceAddress = key.getAddress();
+    const key = bitcoin.ECPair.makeRandom({ network: bitcoin.getNetwork() });
+    const sourceAddress = key.getAddress();
 
     it('arguments', function() {
       assert.throws(function() { wallets.createForwardWallet('invalid'); });
       assert.throws(function() { wallets.createForwardWallet(); });
-      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(), "sourceAddress": null, destinationWallet: testWallet}); });
-      assert.throws(function() { wallets.createForwardWallet({"privKey": "asdasdsa", "sourceAddress": sourceAddress, destinationWallet: testWallet}); });
-      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(), "sourceAddress": sourceAddress, destinationWallet: null}); });
-      assert.throws(function() { wallets.createForwardWallet({"privKey": key.toWIF(), "sourceAddress": TestBitGo.TEST_WALLET3_ADDRESS, destinationWallet: null}); });
+      assert.throws(function() { wallets.createForwardWallet({ privKey: key.toWIF(), sourceAddress: null, destinationWallet: testWallet }); });
+      assert.throws(function() { wallets.createForwardWallet({ privKey: 'asdasdsa', sourceAddress: sourceAddress, destinationWallet: testWallet }); });
+      assert.throws(function() { wallets.createForwardWallet({ privKey: key.toWIF(), sourceAddress: sourceAddress, destinationWallet: null }); });
+      assert.throws(function() { wallets.createForwardWallet({ privKey: key.toWIF(), sourceAddress: TestBitGo.TEST_WALLET3_ADDRESS, destinationWallet: null }); });
     });
 
     it('default', function() {
       return wallets.createForwardWallet({
-        "privKey": key.toWIF(),
-        "sourceAddress": sourceAddress,
+        privKey: key.toWIF(),
+        sourceAddress: sourceAddress,
         destinationWallet: testWallet,
         label: 'forward ' + sourceAddress
       })
@@ -379,7 +379,7 @@ describe('Wallets', function() {
     it('send coins to forward wallet', function() {
       return bitgo.unlock({ otp: '0000000' })
       .then(function() {
-        return wallets.get({ id: TestBitGo.TEST_WALLET3_ADDRESS })
+        return wallets.get({ id: TestBitGo.TEST_WALLET3_ADDRESS });
       })
       .then(function(test3wallet) {
         return test3wallet.sendCoins(
@@ -393,7 +393,7 @@ describe('Wallets', function() {
         return Q.delay(3500)
         .then(function() {
           return testWallet.get();
-        })
+        });
       })
       .then(function(wallet) {
         assert.equal(wallet.id(), testWallet.id());
