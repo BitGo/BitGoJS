@@ -879,6 +879,12 @@ exports.signTransaction = function(params) {
       }
 
     } catch (e) {
+      // we need to know what's causing this
+      e.result = {
+        unspent: currentUnspent
+      };
+      e.message = `${e.message} — ${JSON.stringify(e.result, null, 4)}`;
+      console.trace(e);
       return Promise.reject('Failed to sign input #' + index);
     }
 
