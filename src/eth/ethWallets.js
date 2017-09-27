@@ -28,7 +28,7 @@ EthWallets.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var args = [];
+  const args = [];
 
   if (params.skip && params.prevId) {
     throw new Error('cannot specify both skip and prevId');
@@ -55,7 +55,7 @@ EthWallets.prototype.list = function(params, callback) {
     args.push('prevId=' + params.prevId);
   }
 
-  var query = '';
+  let query = '';
   if (args.length) {
     query = '?' + args.join('&');
   }
@@ -78,7 +78,7 @@ EthWallets.prototype.getWallet = function(params, callback) {
 
   const self = this;
 
-  var query = '';
+  let query = '';
   if (params.gpk) {
     query = '?gpk=1';
   }
@@ -124,32 +124,32 @@ EthWallets.prototype.generateWallet = function(params, callback) {
   const self = this;
 
   if ((!!params.backupAddress + !!params.backupXpub + !!params.backupXpubProvider) > 1) {
-    throw new Error("Cannot provide more than one backupAddress or backupXpub or backupXpubProvider flag");
+    throw new Error('Cannot provide more than one backupAddress or backupXpub or backupXpubProvider flag');
   }
 
   if (params.disableTransactionNotifications !== undefined && !_.isBoolean(params.disableTransactionNotifications)) {
     throw new Error('Expected disableTransactionNotifications to be a boolean. ');
   }
 
-  var userKeychain;
-  var userAddress;
-  var backupKeychain;
-  var backupAddress;
-  var bitgoAddress;
+  let userKeychain;
+  let userAddress;
+  let backupKeychain;
+  let backupAddress;
+  let bitgoAddress;
 
   // Add the user keychain
-  var userKeychainPromise = Promise.try(function() {
+  const userKeychainPromise = Promise.try(function() {
     // Create the user and backup key.
     userKeychain = self.bitgo.keychains().create();
     userKeychain.encryptedXprv = self.bitgo.encrypt({ password: params.passphrase, input: userKeychain.xprv });
     userAddress = Util.xpubToEthAddress(userKeychain.xpub);
     return self.bitgo.keychains().add({
-      "xpub": userKeychain.xpub,
-      "encryptedXprv": userKeychain.encryptedXprv
+      xpub: userKeychain.xpub,
+      encryptedXprv: userKeychain.encryptedXprv
     });
   });
 
-  var backupKeychainPromise = Promise.try(function() {
+  const backupKeychainPromise = Promise.try(function() {
     if (params.backupXpubProvider) {
       // If requested, use a KRS or backup key provider
       return self.bitgo.keychains().createBackup({
@@ -168,7 +168,7 @@ EthWallets.prototype.generateWallet = function(params, callback) {
     // User provided backup xpub
     if (params.backupXpub) {
       // user provided backup ethereum address
-      backupKeychain = { 'xpub': params.backupXpub };
+      backupKeychain = { xpub: params.backupXpub };
     } else {
       // No provided backup xpub or address, so default to creating one here
       backupKeychain = self.bitgo.keychains().create();
@@ -189,7 +189,7 @@ EthWallets.prototype.generateWallet = function(params, callback) {
     }
   });
 
-  var bitgoKeychainPromise = self.bitgo.keychains().createBitGo({ type: 'eth' })
+  const bitgoKeychainPromise = self.bitgo.keychains().createBitGo({ type: 'eth' })
   .then(function(keychain) {
     bitgoAddress = keychain.ethAddress;
   });
@@ -197,7 +197,7 @@ EthWallets.prototype.generateWallet = function(params, callback) {
   // parallelize the independent keychain retrievals/syncs
   return Promise.all([userKeychainPromise, backupKeychainPromise, bitgoKeychainPromise])
   .then(function() {
-    var walletParams = {
+    const walletParams = {
       m: 2,
       n: 3,
       addresses: [
@@ -212,7 +212,7 @@ EthWallets.prototype.generateWallet = function(params, callback) {
     return self.add(walletParams);
   })
   .then(function(newWallet) {
-    var result = {
+    const result = {
       wallet: newWallet,
       userKeychain: userKeychain,
       backupKeychain: backupKeychain
@@ -253,13 +253,13 @@ EthWallets.prototype.add = function(params, callback) {
   }
 
   const self = this;
-  var walletParams = _.extend({ type: 'eth' }, params);
+  const walletParams = _.extend({ type: 'eth' }, params);
 
   return this.bitgo.post(this.bitgo.url('/eth/wallet'))
   .send(walletParams)
   .result()
   .then(function(body) {
-    var serverAddresses = _.map(body.private.addresses, 'address');
+    const serverAddresses = _.map(body.private.addresses, 'address');
     if (!_.isEqual(walletParams.addresses, serverAddresses)) {
       throw new Error('server addresses do not match');
     }

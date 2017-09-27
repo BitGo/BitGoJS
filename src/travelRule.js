@@ -28,7 +28,7 @@ TravelRule.prototype.url = function(extra) {
 };
 
 
- /**
+/**
   * Get available travel-rule info recipients for a transaction
   * @param params
   *  txid: transaction id
@@ -40,24 +40,24 @@ TravelRule.prototype.getRecipients = function(params, callback) {
   params.txid = params.txid || params.hash;
   common.validateParams(params, ['txid'], [], callback);
 
-  var url = this.url(params.txid + '/recipients');
+  const url = this.url(params.txid + '/recipients');
   return this.bitgo.get(url)
   .result('recipients')
   .nodeify(callback);
 };
 
 TravelRule.prototype.validateTravelInfo = function(info) {
-  var fields = {
-    amount:          { type: 'number' },
-    toAddress:       { type: 'string' },
-    toEnterprise:    { type: 'string' },
-    fromUserName:    { type: 'string' },
+  const fields = {
+    amount: { type: 'number' },
+    toAddress: { type: 'string' },
+    toEnterprise: { type: 'string' },
+    fromUserName: { type: 'string' },
     fromUserAccount: { type: 'string' },
     fromUserAddress: { type: 'string' },
-    toUserName:      { type: 'string' },
-    toUserAccount:   { type: 'string' },
-    toUserAddress:   { type: 'string' },
-    extra:           { type: 'object' },
+    toUserName: { type: 'string' },
+    toUserAccount: { type: 'string' },
+    toUserAddress: { type: 'string' },
+    extra: { type: 'object' }
   };
 
   _.forEach(fields, function(field, fieldName) {
@@ -73,7 +73,7 @@ TravelRule.prototype.validateTravelInfo = function(info) {
   });
 
   // Strip out any other fields we don't know about
-  var result = _.pick(info, _.keys(fields));
+  const result = _.pick(info, _.keys(fields));
   if (_.isEmpty(result)) {
     throw new Error('empty travel data');
   }
@@ -94,7 +94,7 @@ TravelRule.prototype.validateTravelInfo = function(info) {
 TravelRule.prototype.decryptReceivedTravelInfo = function(params) {
   params = params || {};
 
-  var tx = params.tx;
+  const tx = params.tx;
   if (!_.isObject(tx)) {
     throw new Error('expecting tx param to be object');
   }
@@ -103,12 +103,12 @@ TravelRule.prototype.decryptReceivedTravelInfo = function(params) {
     return tx;
   }
 
-  var hdNode;
+  let hdNode;
   // Passing in hdnode is faster because it doesn't reconstruct the key every time
   if (params.hdnode) {
     hdNode = params.hdnode;
   } else {
-    var keychain = params.keychain;
+    const keychain = params.keychain;
     if (!_.isObject(keychain) || !_.isString(keychain.xprv)) {
       throw new Error('expecting keychain param with xprv');
     }
@@ -116,15 +116,15 @@ TravelRule.prototype.decryptReceivedTravelInfo = function(params) {
   }
 
   const self = this;
-  var hdPath = bitcoin.hdPath(hdNode);
+  const hdPath = bitcoin.hdPath(hdNode);
   tx.receivedTravelInfo.forEach(function(info) {
-    var key = hdPath.deriveKey(info.toPubKeyPath);
-    var secret = self.bitgo.getECDHSecret({
+    const key = hdPath.deriveKey(info.toPubKeyPath);
+    const secret = self.bitgo.getECDHSecret({
       eckey: key,
       otherPubKeyHex: info.fromPubKey
     });
     try {
-      var decrypted = sjcl.decrypt(secret, info.encryptedTravelInfo);
+      const decrypted = sjcl.decrypt(secret, info.encryptedTravelInfo);
       info.travelInfo = JSON.parse(decrypted);
     } catch (err) {
       console.error('failed to decrypt or parse travel info for ', info.transactionId + ':' + info.outputIndex);
@@ -138,9 +138,9 @@ TravelRule.prototype.prepareParams = function(params) {
   params = params || {};
   params.txid = params.txid || params.hash;
   common.validateParams(params, ['txid'], ['fromPrivateInfo']);
-  var txid = params.txid;
-  var recipient = params.recipient;
-  var travelInfo = params.travelInfo;
+  const txid = params.txid;
+  const recipient = params.recipient;
+  let travelInfo = params.travelInfo;
   if (!recipient || !_.isObject(recipient)) {
     throw new Error('invalid or missing recipient');
   }
@@ -157,22 +157,22 @@ TravelRule.prototype.prepareParams = function(params) {
   }
 
   // If a key was not provided, create a new random key
-  var fromKey = params.fromKey && bitcoin.ECPair.fromWIF(params.fromKey, bitcoin.getNetwork());
+  let fromKey = params.fromKey && bitcoin.ECPair.fromWIF(params.fromKey, bitcoin.getNetwork());
   if (!fromKey) {
     fromKey = bitcoin.makeRandomKey();
   }
 
   // Compute the shared key for encryption
-  var sharedSecret = this.bitgo.getECDHSecret({
+  const sharedSecret = this.bitgo.getECDHSecret({
     eckey: fromKey,
     otherPubKeyHex: recipient.pubKey
   });
 
   // JSON-ify and encrypt the payload
-  var travelInfoJSON = JSON.stringify(travelInfo);
-  var encryptedTravelInfo = sjcl.encrypt(sharedSecret, travelInfoJSON);
+  const travelInfoJSON = JSON.stringify(travelInfo);
+  const encryptedTravelInfo = sjcl.encrypt(sharedSecret, travelInfoJSON);
 
-  var result = {
+  const result = {
     txid: txid,
     outputIndex: recipient.outputIndex,
     toPubKey: recipient.pubKey,
@@ -231,13 +231,13 @@ TravelRule.prototype.sendMany = function(params, callback) {
   params.txid = params.txid || params.hash;
   common.validateParams(params, ['txid'], callback);
 
-  var travelInfos = params.travelInfos;
+  const travelInfos = params.travelInfos;
   if (!_.isArray(travelInfos)) {
     throw new Error('expected parameter travelInfos to be array');
   }
 
   const self = this;
-  var travelInfoMap = _(travelInfos)
+  const travelInfoMap = _(travelInfos)
     .keyBy('outputIndex')
     .mapValues(function(travelInfo) {
       return self.validateTravelInfo(travelInfo);
@@ -248,18 +248,18 @@ TravelRule.prototype.sendMany = function(params, callback) {
   .then(function(recipients) {
 
     // Build up data to post
-    var sendParamsList = [];
+    const sendParamsList = [];
     // don't regenerate a new random key for each recipient
-    var fromKey = params.fromKey || bitcoin.makeRandomKey().toWIF();
+    const fromKey = params.fromKey || bitcoin.makeRandomKey().toWIF();
 
     recipients.forEach(function(recipient) {
-      var outputIndex = recipient.outputIndex;
-      var info = travelInfoMap[outputIndex];
+      const outputIndex = recipient.outputIndex;
+      const info = travelInfoMap[outputIndex];
       if (info) {
         if (info.amount && info.amount !== recipient.amount) {
           throw new Error('amount did not match for output index ' + outputIndex);
         }
-        var sendParams = self.prepareParams({
+        const sendParams = self.prepareParams({
           txid: params.txid,
           recipient: recipient,
           travelInfo: info,
@@ -270,16 +270,16 @@ TravelRule.prototype.sendMany = function(params, callback) {
       }
     });
 
-    var results = [];
-    var errors = [];
+    const results = [];
+    const errors = [];
 
-    var result = {
+    const result = {
       matched: sendParamsList.length,
       results: []
     };
 
     const sendSerial = function() {
-      var sendParams = sendParamsList.shift();
+      const sendParams = sendParamsList.shift();
       if (!sendParams) {
         return result;
       }

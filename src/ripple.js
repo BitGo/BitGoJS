@@ -8,7 +8,7 @@ const { computeBinaryTransactionHash } = require('ripple-hashes');
 
 function computeSignature(tx, privateKey, signAs) {
   const signingData = signAs ?
-  binary.encodeForMultisigning(tx, signAs) : binary.encodeForSigning(tx);
+    binary.encodeForMultisigning(tx, signAs) : binary.encodeForSigning(tx);
   return keypairs.sign(signingData, privateKey);
 }
 

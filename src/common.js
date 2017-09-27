@@ -125,7 +125,7 @@ exports.Environments = {
     uri: process.env.BITGO_CUSTOM_ROOT_URI,
     networks: {
       btc: bitcoin.networks.bitcoin,
-      tbtc: bitcoin.networks.testnet,
+      tbtc: bitcoin.networks.testnet
     },
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK || 'bitcoin',
     ethNetwork: process.env.BITGO_CUSTOM_ETHEREUM_NETWORK || 'ethereum',
@@ -136,9 +136,9 @@ exports.Environments = {
   }
 };
 
-var bitcoinNetwork;
-var ethereumNetwork;
-var rmgNetwork;
+let bitcoinNetwork;
+let ethereumNetwork;
+let rmgNetwork;
 
 exports.setNetwork = function(network) {
   if (network === 'bitcoin') {

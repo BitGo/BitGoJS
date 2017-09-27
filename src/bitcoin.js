@@ -32,8 +32,8 @@ bitcoin.makeRandomKey = function() {
 
 HDNode.prototype.getKey = function(network) {
   network = network || bitcoin.getNetwork();
-  var k = this.keyPair;
-  var result = new bitcoin.ECPair(k.d, k.d ? null : k.Q, { network: network, compressed: k.compressed });
+  const k = this.keyPair;
+  const result = new bitcoin.ECPair(k.d, k.d ? null : k.Q, { network: network, compressed: k.compressed });
   // Creating Q from d takes ~25ms, so if it's not created, use native bindings to pre-compute
   if (!result.__Q && secp256k1) {
     result.__Q = ecurve.Point.decodeFrom(curve, secp256k1.publicKeyCreate(k.d.toBuffer(32), false));
@@ -55,15 +55,15 @@ const deriveFast = function (hdnode, index) {
     return hdnode.derive(index);
   }
 
-  var isHardened = index >= bitcoin.HDNode.HIGHEST_BIT;
+  const isHardened = index >= bitcoin.HDNode.HIGHEST_BIT;
   if (isHardened) {
     throw new Error('cannot derive hardened key from public key');
   }
 
-  var indexBuffer = new Buffer(4);
+  const indexBuffer = new Buffer(4);
   indexBuffer.writeUInt32BE(index, 0);
 
-  var data;
+  let data;
 
   // data = serP(point(kpar)) || ser32(index)
   //      = serP(Kpar) || ser32(index)
@@ -72,11 +72,11 @@ const deriveFast = function (hdnode, index) {
     indexBuffer
   ]);
 
-  var I = createHmac('sha512', hdnode.chainCode).update(data).digest();
-  var IL = I.slice(0, 32);
-  var IR = I.slice(32);
+  const I = createHmac('sha512', hdnode.chainCode).update(data).digest();
+  const IL = I.slice(0, 32);
+  const IR = I.slice(32);
 
-  var pIL = BigInteger.fromBuffer(IL);
+  const pIL = BigInteger.fromBuffer(IL);
 
   // In case parse256(IL) >= n, proceed with the next value for i
   if (pIL.compareTo(curve.n) >= 0) {
@@ -84,19 +84,19 @@ const deriveFast = function (hdnode, index) {
   }
 
   // Private parent key -> private child key
-  var hd;
+  let hd;
   // Ki = point(parse256(IL)) + Kpar
   //    = G*IL + Kpar
 
   // The expensive op is the point multiply -- use secp256k1 lib to do that
-  var Ki = ecurve.Point.decodeFrom(curve, secp256k1.publicKeyCreate(IL, false)).add(hdnode.keyPair.Q);
+  const Ki = ecurve.Point.decodeFrom(curve, secp256k1.publicKeyCreate(IL, false)).add(hdnode.keyPair.Q);
 
   // In case Ki is the point at infinity, proceed with the next value for i
   if (curve.isInfinity(Ki)) {
     return deriveFast(hdnode, index + 1);
   }
 
-  var keyPair = new bitcoin.ECPair(null, Ki, { network: hdnode.keyPair.network });
+  const keyPair = new bitcoin.ECPair(null, Ki, { network: hdnode.keyPair.network });
   hd = new bitcoin.HDNode(keyPair, IR);
 
   hd.depth = hdnode.depth + 1;
@@ -111,7 +111,7 @@ if (secp256k1) {
     if (!this.d) {
       throw new Error('Missing private key');
     }
-    var sig = secp256k1.sign(hash, this.d.toBuffer(32)).signature;
+    const sig = secp256k1.sign(hash, this.d.toBuffer(32)).signature;
     return bitcoin.ECSignature.fromDER(secp256k1.signatureExport(sig));
   };
 
@@ -130,9 +130,9 @@ if (secp256k1) {
  * @returns {*} the derived hd key
  */
 bitcoin.hdPath = function(rootKey) {
-  var cache = {};
+  const cache = {};
   const derive = function (path) {
-    var components = path.split('/').filter(function (c) {
+    const components = path.split('/').filter(function (c) {
       return c !== '';
     });
     // strip any extraneous / characters
@@ -140,20 +140,20 @@ bitcoin.hdPath = function(rootKey) {
     if (cache[path]) {
       return cache[path];
     }
-    var len = components.length;
+    const len = components.length;
     if (len === 0 || len === 1 && components[0] === 'm') {
       return rootKey;
     }
-    var parentPath = components.slice(0, len - 1).join('/');
-    var parentKey = derive(parentPath);
-    var el = components[len - 1];
+    const parentPath = components.slice(0, len - 1).join('/');
+    const parentKey = derive(parentPath);
+    const el = components[len - 1];
 
-    var hardened = false;
+    let hardened = false;
     if (el[el.length - 1] === "'") {
       hardened = true;
     }
-    var index = parseInt(el);
-    var derived;
+    const index = parseInt(el);
+    let derived;
     if (hardened) {
       derived = parentKey.deriveHardened(index);
     } else {
@@ -164,7 +164,7 @@ bitcoin.hdPath = function(rootKey) {
   };
 
   const deriveKey = function(path) {
-    var hdNode = this.derive(path);
+    const hdNode = this.derive(path);
     return hdNode.keyPair;
   };
 

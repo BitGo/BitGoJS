@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 const common = require('./common');
-var bitgo = module.exports;
+const bitgo = module.exports;
 bitgo.BitGo = require('./bitgo.js');
 
 // Expose bitcoin and sjcl

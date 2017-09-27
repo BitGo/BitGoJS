@@ -48,7 +48,7 @@ Keychains.prototype.isValid = function(params) {
     if (!params.key.path) {
       bitcoin.HDNode.fromBase58(params.key);
     } else {
-      var hdnode = bitcoin.HDNode.fromBase58(params.key.xpub);
+      const hdnode = bitcoin.HDNode.fromBase58(params.key.xpub);
       bitcoin.hdPath(hdnode).derive(params.key.path);
     }
     return true;
@@ -68,7 +68,7 @@ Keychains.prototype.create = function(params) {
   params = params || {};
   common.validateParams(params, [], []);
 
-  var seed;
+  let seed;
   if (!params.seed) {
     // An extended private key has both a normal 256 bit private key and a 256
     // bit chain code, both of which must be random. 512 bits is therefore the
@@ -78,10 +78,10 @@ Keychains.prototype.create = function(params) {
     seed = params.seed;
   }
 
-  var extendedKey = bitcoin.HDNode.fromSeedBuffer(seed);
-  var xpub = extendedKey.neutered().toBase58();
+  const extendedKey = bitcoin.HDNode.fromSeedBuffer(seed);
+  const xpub = extendedKey.neutered().toBase58();
 
-  var ethAddress = undefined;
+  let ethAddress = undefined;
   try {
     ethAddress = Util.xpubToEthAddress(xpub);
   } catch (e) {
@@ -104,29 +104,29 @@ Keychains.prototype.deriveLocal = function(params) {
   common.validateParams(params, ['path'], ['xprv', 'xpub']);
 
   if (!params.xprv && !params.xpub) {
-    throw new Error("must provide an xpub or xprv for derivation.");
+    throw new Error('must provide an xpub or xprv for derivation.');
   }
   if (params.xprv && params.xpub) {
-    throw new Error("cannot provide both xpub and xprv");
+    throw new Error('cannot provide both xpub and xprv');
   }
 
-  var hdNode;
+  let hdNode;
   try {
     hdNode = bitcoin.HDNode.fromBase58(params.xprv || params.xpub);
   } catch (e) {
-    throw apiResponse(400, {}, "Unable to parse the xprv or xpub");
+    throw apiResponse(400, {}, 'Unable to parse the xprv or xpub');
   }
 
-  var derivedNode;
+  let derivedNode;
   try {
     derivedNode = bitcoin.hdPath(hdNode).derive(params.path);
   } catch (e) {
-    throw apiResponse(400, {}, "Unable to derive HD key from path");
+    throw apiResponse(400, {}, 'Unable to derive HD key from path');
   }
 
-  var xpub = derivedNode.neutered().toBase58();
+  const xpub = derivedNode.neutered().toBase58();
 
-  var ethAddress = undefined;
+  let ethAddress = undefined;
   try {
     ethAddress = Util.xpubToEthAddress(xpub);
   } catch (e) {
@@ -138,7 +138,7 @@ Keychains.prototype.deriveLocal = function(params) {
     xpub: xpub,
     xprv: params.xprv && derivedNode.toBase58(),
     ethAddress: ethAddress
-  }
+  };
 };
 
 //
@@ -243,7 +243,7 @@ Keychains.prototype.get = function(params, callback) {
     throw new Error('xpub or ethAddress must be defined');
   }
 
-  var id = params.xpub || params.ethAddress;
+  const id = params.xpub || params.ethAddress;
   return this.bitgo.post(this.bitgo.url('/keychain/' + encodeURIComponent(id)))
   .send({})
   .result()

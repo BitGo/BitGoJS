@@ -186,7 +186,7 @@ Wallet.prototype.updateApprovalsRequired = function(params, callback) {
   }
 
   const self = this;
-  var currentApprovalsRequired = this.approvalsRequired();
+  const currentApprovalsRequired = this.approvalsRequired();
   if (currentApprovalsRequired === params.approvalsRequired) {
     // no-op, just return the current wallet
     return Promise.try(function() {
@@ -230,9 +230,9 @@ Wallet.prototype.createAddress = function(params, callback) {
   }
 
   // Default to client-side address validation on, for safety. Use validate=false to disable.
-  var shouldValidate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
+  const shouldValidate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
 
-  var allowExisting = params.allowExisting;
+  let allowExisting = params.allowExisting;
   if (typeof params.allowExisting !== 'boolean') {
     allowExisting = (params.allowExisting === 'true');
   }
@@ -240,7 +240,7 @@ Wallet.prototype.createAddress = function(params, callback) {
   const isSegwit = this.bitgo.getConstants().enableSegwit;
   const defaultChain = isSegwit ? 10 : 0;
 
-  var chain = params.chain;
+  let chain = params.chain;
   if (chain === null || chain === undefined) {
     chain = defaultChain;
   }
@@ -391,7 +391,7 @@ Wallet.prototype.addresses = function(params, callback) {
     query.sort = params.sort;
   }
 
-  var url = this.url('/addresses');
+  const url = this.url('/addresses');
   return this.bitgo.get(url)
   .query(query)
   .result()
@@ -401,19 +401,19 @@ Wallet.prototype.addresses = function(params, callback) {
 Wallet.prototype.stats = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  var args = [];
+  const args = [];
   if (params.limit) {
     if (!_.isInteger(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
     }
     args.push('limit=' + params.limit);
   }
-  var query = '';
+  let query = '';
   if (args.length) {
     query = '?' + args.join('&');
   }
 
-  var url = this.url('/stats' + query);
+  const url = this.url('/stats' + query);
 
   return this.bitgo.get(url)
   .result()
@@ -431,7 +431,7 @@ Wallet.prototype.address = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
-  var url = this.url('/addresses/' + params.address);
+  const url = this.url('/addresses/' + params.address);
 
   return this.bitgo.get(url)
   .result()
@@ -479,7 +479,7 @@ Wallet.prototype.labels = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var url = this.bitgo.url('/labels/' + this.id());
+  const url = this.bitgo.url('/labels/' + this.id());
 
   return this.bitgo.get(url)
   .result('labels')
@@ -497,7 +497,7 @@ Wallet.prototype.setWalletName = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['label'], [], callback);
 
-  var url = this.bitgo.url('/wallet/' + this.id());
+  const url = this.bitgo.url('/wallet/' + this.id());
   return this.bitgo.put(url)
   .send({ label: params.label })
   .result()
@@ -518,7 +518,7 @@ Wallet.prototype.setLabel = function(params, callback) {
     throw new Error('Invalid bitcoin address: ' + params.address);
   }
 
-  var url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
+  const url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
 
   return this.bitgo.put(url)
   .send({ label: params.label })
@@ -540,7 +540,7 @@ Wallet.prototype.deleteLabel = function(params, callback) {
     throw new Error('Invalid bitcoin address: ' + params.address);
   }
 
-  var url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
+  const url = this.bitgo.url('/labels/' + this.id() + '/' + params.address);
 
   return this.bitgo.del(url)
   .result()
@@ -574,12 +574,12 @@ Wallet.prototype.unspents = function(params, callback) {
     throw new Error('invalid argument');
   }
 
-  var allUnspents = [];
+  const allUnspents = [];
   const self = this;
 
   const getUnspentsBatch = function(skip, limit) {
-    var url = self.url('/unspents');
-    var queryObject = {
+    const url = self.url('/unspents');
+    const queryObject = {
       minSize: params.minSize
     };
     if (params.instant) {
@@ -615,8 +615,8 @@ Wallet.prototype.unspents = function(params, callback) {
     .then(function(result) {
       // The API has its own limit handling. For example, the API does not support limits bigger than 500. If the limit
       // specified here is bigger than that, we will have to do multiple requests with necessary limit adjustment.
-      for (var i = 0; i < result.unspents.length; i++) {
-        var unspent = result.unspents[i];
+      for (let i = 0; i < result.unspents.length; i++) {
+        const unspent = result.unspents[i];
         allUnspents.push(unspent);
       }
 
@@ -626,13 +626,13 @@ Wallet.prototype.unspents = function(params, callback) {
         return allUnspents; // we aren't interested in any further unspents
       }
 
-      var totalUnspentCount = result.total;
+      const totalUnspentCount = result.total;
       // if no target is specified and the SDK indicates that there has been a limit, we need to fetch another batch
       if (!params.target && totalUnspentCount && totalUnspentCount > allUnspents.length) {
         // we need to fetch the next batch
         // let's just offset the current skip by the count
-        var newSkip = skip + result.count;
-        var newLimit = null;
+        const newSkip = skip + result.count;
+        let newLimit = null;
         if (limit > 0) {
           // we set the new limit to be precisely the number of missing unspents to hit our own limit
           newLimit = limit - allUnspents.length;
@@ -708,7 +708,7 @@ Wallet.prototype.transactions = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  var args = [];
+  const args = [];
   if (params.limit) {
     if (!_.isInteger(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
@@ -727,18 +727,18 @@ Wallet.prototype.transactions = function(params, callback) {
     }
     args.push('minHeight=' + params.minHeight);
   }
-  if (typeof (params.compact) != 'undefined') {
-    if (typeof (params.compact) != 'boolean') {
+  if (typeof (params.compact) !== 'undefined') {
+    if (typeof (params.compact) !== 'boolean') {
       throw new Error('invalid compact argument, expecting boolean');
     }
     args.push('compact=' + params.compact);
   }
-  var query = '';
+  let query = '';
   if (args.length) {
     query = '?' + args.join('&');
   }
 
-  var url = this.url('/tx' + query);
+  const url = this.url('/tx' + query);
 
   return this.bitgo.get(url)
   .result()
@@ -752,7 +752,7 @@ Wallet.prototype.getTransaction = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  var url = this.url('/tx/' + params.id);
+  const url = this.url('/tx/' + params.id);
 
   return this.bitgo.get(url)
   .result()
@@ -779,7 +779,7 @@ Wallet.prototype.pollForTransaction = function(params, callback) {
   params.delay = params.delay || 1000;
   params.timeout = params.timeout || 10000;
 
-  var start = new Date();
+  const start = new Date();
 
   const doNextPoll = function() {
     return self.getTransaction(params)
@@ -807,7 +807,7 @@ Wallet.prototype.getWalletTransactionBySequenceId = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['sequenceId'], [], callback);
 
-  var url = this.url('/tx/sequence/' + params.sequenceId);
+  const url = this.url('/tx/sequence/' + params.sequenceId);
 
   return this.bitgo.get(url)
   .result()
@@ -829,7 +829,7 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
       return self.bitgo.reject('No encrypted keychains on this wallet.', callback);
     }
 
-    var params = { "xpub": self.keychains[index].xpub };
+    const params = { xpub: self.keychains[index].xpub };
 
     return self.bitgo.keychains().get(params)
     .then(function(keychain) {
@@ -1001,7 +1001,7 @@ Wallet.prototype.createInvite = function(params, callback) {
   common.validateParams(params, ['email', 'permissions'], ['message'], callback);
 
   const self = this;
-  var options = {
+  const options = {
     toEmail: params.email,
     permissions: params.permissions
   };
@@ -1032,15 +1032,15 @@ Wallet.prototype.confirmInviteAndShareWallet = function(params, callback) {
   const self = this;
   return this.bitgo.wallets().listInvites()
   .then(function(invites) {
-    var outgoing = invites.outgoing;
-    var invite = _.find(outgoing, function(out) {
+    const outgoing = invites.outgoing;
+    const invite = _.find(outgoing, function(out) {
       return out.id === params.walletInviteId;
     });
     if (!invite) {
       throw new Error('wallet invite not found');
     }
 
-    var options = {
+    const options = {
       email: invite.toEmail,
       permissions: invite.permissions,
       message: invite.message,
@@ -1125,12 +1125,12 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('invalid argument for instant - boolean expected');
   }
 
-  var keychain;
-  var fee;
-  var feeRate;
-  var bitgoFee;
-  var travelInfos;
-  var finalResult;
+  let keychain;
+  let fee;
+  let feeRate;
+  let bitgoFee;
+  let travelInfos;
+  let finalResult;
 
   // Get the user keychain
   return this.createAndSignTransaction(params)
@@ -1223,12 +1223,12 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     throw new Error('invalid argument for instant - boolean expected');
   }
 
-  var keychain;
-  var fee;
-  var feeRate;
-  var bitgoFee;
-  var travelInfos;
-  var estimatedSize;
+  let keychain;
+  let fee;
+  let feeRate;
+  let bitgoFee;
+  let travelInfos;
+  let estimatedSize;
 
   return Promise.all([self.getAndPrepareSigningKeychain(params), self.createTransaction(params)])
   .spread(function(keychain, transaction) {
@@ -1301,7 +1301,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
   }
 
   // Caller provided an xprv - validate and construct keychain object
-  var xpub;
+  let xpub;
   try {
     xpub = bitcoin.HDNode.fromBase58(params.xprv).neutered().toBase58();
   } catch (e) {
@@ -1312,7 +1312,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
     throw new Error('xprv provided was not a private key (found xpub instead)');
   }
 
-  var walletXpubs = _.map(self.keychains, 'xpub');
+  const walletXpubs = _.map(self.keychains, 'xpub');
   if (!_.includes(walletXpubs, xpub)) {
     throw new Error('xprv provided was not a keychain on this wallet!');
   }
@@ -1477,13 +1477,13 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
  */
 Wallet.prototype.regroupUnspents = function(params, callback) {
   params = params || {};
-  var target = params.target;
+  const target = params.target;
   if (!_.isNumber(target) || target < 1 || (target % 1) !== 0) {
     // the target must be defined, be a number, be at least one, and be a natural number
     throw new Error('Target needs to be a positive integer');
   }
 
-  var minConfirms = params.minConfirms;
+  let minConfirms = params.minConfirms;
   if (minConfirms === undefined) {
     minConfirms = 1;
   }
@@ -1549,12 +1549,12 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     throw new Error('Maximum consolidation input count cannot be bigger than ' + MAX_INPUT_COUNT);
   }
 
-  var maxIterationCount = params.maxIterationCount || -1;
+  const maxIterationCount = params.maxIterationCount || -1;
   if (params.maxIterationCount && (!_.isNumber(maxIterationCount) || maxIterationCount < 1) || (maxIterationCount % 1) !== 0) {
     throw new Error('Maximum iteration count needs to be an integer equal to or bigger than 1');
   }
 
-  var minConfirms = params.minConfirms;
+  let minConfirms = params.minConfirms;
   if (minConfirms === undefined) {
     minConfirms = 1;
   }
@@ -1588,7 +1588,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
    * @returns {*}
    */
   const runNextConsolidation = co(function *() {
-    let consolidationTransactions = [];
+    const consolidationTransactions = [];
     let grossAmount;
     let isFinalConsolidation = false;
     let inputCount;
@@ -1738,15 +1738,15 @@ Wallet.prototype.shareWallet = function(params, callback) {
   if (params.skipKeychain !== undefined && !_.isBoolean(params.skipKeychain)) {
     throw new Error('Expected skipKeychain to be a boolean. ');
   }
-  var needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
+  const needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
 
   if (params.disableEmail !== undefined && !_.isBoolean(params.disableEmail)) {
     throw new Error('Expected disableEmail to be a boolean.');
   }
 
   const self = this;
-  var sharing;
-  var sharedKeychain;
+  let sharing;
+  let sharedKeychain;
   return this.bitgo.getSharingKey({ email: params.email })
   .then(function(result) {
     sharing = result;
@@ -1765,9 +1765,9 @@ Wallet.prototype.shareWallet = function(params, callback) {
             throw new Error('Unable to decrypt user keychain');
           }
 
-          var eckey = bitcoin.makeRandomKey();
-          var secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
-          var newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
+          const eckey = bitcoin.makeRandomKey();
+          const secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
+          const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
 
           sharedKeychain = {
             xpub: keychain.xpub,
@@ -1781,7 +1781,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
     }
   })
   .then(function() {
-    var options = {
+    const options = {
       user: sharing.userId,
       permissions: params.permissions,
       reshare: params.reshare,
@@ -1887,9 +1887,9 @@ Wallet.prototype.simulateWebhook = function(params, callback) {
   // but the server takes care of that
 
   // only take the txHash and pendingApprovalId properties
-  var filteredParams = _.pick(params, ['txHash', 'pendingApprovalId']);
+  const filteredParams = _.pick(params, ['txHash', 'pendingApprovalId']);
 
-  var webhookId = params.webhookId;
+  const webhookId = params.webhookId;
   return this.bitgo.post(this.url('/webhooks/' + webhookId + '/simulate'))
   .send(filteredParams)
   .result()
@@ -1929,7 +1929,7 @@ Wallet.prototype.estimateFee = function(params, callback) {
     throw new Error('invalid amount argument, expecting number');
   }
 
-  var recipients = params.recipients || [];
+  const recipients = params.recipients || [];
 
   if (params.amount) {
     // only the amount was passed in, so we need to make a false recipient to run createTransaction with
@@ -1939,7 +1939,7 @@ Wallet.prototype.estimateFee = function(params, callback) {
     });
   }
 
-  var transactionParams = _.extend({}, params);
+  const transactionParams = _.extend({}, params);
   transactionParams.amount = undefined;
   transactionParams.recipients = recipients;
 

@@ -30,7 +30,7 @@ EthBlockchain.prototype.getAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
-  return this.bitgo.get(this.bitgo.url("/eth/address/" + params.address))
+  return this.bitgo.get(this.bitgo.url('/eth/address/' + params.address))
   .result()
   .nodeify(callback);
 };
@@ -46,7 +46,7 @@ EthBlockchain.prototype.getAddressTransactions = function(params, callback) {
   common.validateParams(params, ['address'], [], callback);
 
   // TODO: support start and limit params
-  return this.bitgo.get(this.bitgo.url("/eth/address/" + params.address + "/tx"))
+  return this.bitgo.get(this.bitgo.url('/eth/address/' + params.address + '/tx'))
   .result()
   .nodeify(callback);
 };
@@ -62,7 +62,7 @@ EthBlockchain.prototype.getTransaction = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return this.bitgo.get(this.bitgo.url("/eth/tx/" + params.id))
+  return this.bitgo.get(this.bitgo.url('/eth/tx/' + params.id))
   .result()
   .nodeify(callback);
 };
@@ -78,7 +78,7 @@ EthBlockchain.prototype.getBlock = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  return this.bitgo.get(this.bitgo.url("/eth/block/" + params.id))
+  return this.bitgo.get(this.bitgo.url('/eth/block/' + params.id))
   .result()
   .nodeify(callback);
 };

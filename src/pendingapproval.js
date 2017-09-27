@@ -166,12 +166,12 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
   params = _.extend({}, params);
   common.validateParams(params, ['txHex'], [], callback);
 
-  var transaction = bitcoinCash.Transaction.fromHex(params.txHex);
+  const transaction = bitcoinCash.Transaction.fromHex(params.txHex);
   if (!transaction.outs) {
     throw new Error('transaction had no outputs or failed to parse successfully');
   }
 
-  var network = bitcoinCash.networks[common.getNetwork()];
+  const network = bitcoinCash.networks[common.getNetwork()];
   params.recipients = {};
 
   const self = this;
@@ -184,7 +184,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
     }
     if (transaction.outs.length <= 2) {
       transaction.outs.forEach(function (out) {
-        var outAddress = bitcoinCash.address.fromOutputScript(out.script, network).toBase58Check();
+        const outAddress = bitcoinCash.address.fromOutputScript(out.script, network).toBase58Check();
         if (self.info().transactionRequest.destinationAddress === outAddress) {
           // If this is the destination, then spend to it
           params.recipients[outAddress] = out.value;
@@ -195,11 +195,11 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
 
     // This looks like a sendmany
     // Attempt to figure out the outputs by choosing all outputs that were not going back to the wallet as change addresses
-    return self.wallet.addresses({chain: 1, sort: -1, limit:500})
+    return self.wallet.addresses({ chain: 1, sort: -1, limit: 500 })
     .then(function(result) {
-      var changeAddresses = _.keyBy(result.addresses, 'address');
+      const changeAddresses = _.keyBy(result.addresses, 'address');
       transaction.outs.forEach(function (out) {
-        var outAddress = bitcoinCash.address.fromOutputScript(out.script, network).toBase58Check();
+        const outAddress = bitcoinCash.address.fromOutputScript(out.script, network).toBase58Check();
         if (!changeAddresses[outAddress]) {
           // If this is not a change address, then spend to it
           params.recipients[outAddress] = out.value;
@@ -236,7 +236,7 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
   const self = this;
   return Promise.try(function() {
     if (self.type() === 'transactionRequest') {
-      var extendParams = { txHex: self.info().transactionRequest.transaction };
+      const extendParams = { txHex: self.info().transactionRequest.transaction };
       if (params.useOriginalFee) {
         extendParams.fee = self.info().transactionRequest.fee;
       }
@@ -256,7 +256,7 @@ PendingApproval.prototype.approve = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase', 'otp'], callback);
 
-  var canRecreateTransaction = true;
+  let canRecreateTransaction = true;
   if (this.type() === 'transactionRequest' && !(params.walletPassphrase || params.xprv)) {
     canRecreateTransaction = false;
   }
@@ -285,7 +285,7 @@ PendingApproval.prototype.approve = function(params, callback) {
     }
   })
   .then(function(transaction) {
-    var approvalParams = { 'state': 'approved', 'otp': params.otp };
+    const approvalParams = { state: 'approved', otp: params.otp };
     if (transaction) {
       approvalParams.tx = transaction.tx;
     }
@@ -300,7 +300,7 @@ PendingApproval.prototype.approve = function(params, callback) {
       error.message.indexOf('could not find unspent output for input') !== -1 ||
       error.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
     ) {
-      throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction')
+      throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
     }
     throw error;
   });
@@ -317,7 +317,7 @@ PendingApproval.prototype.reject = function(params, callback) {
   const self = this;
 
   return this.bitgo.put(this.url())
-  .send({'state': 'rejected'})
+  .send({ state: 'rejected' })
   .result()
   .nodeify(callback);
 };

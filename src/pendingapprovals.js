@@ -25,8 +25,8 @@ PendingApprovals.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletId', 'enterpriseId'], callback);
 
-  var args = [];
-  var queryParams = {};
+  const args = [];
+  const queryParams = {};
   if (_.isString(params.walletId)) {
     queryParams.walletId = params.walletId;
   }
