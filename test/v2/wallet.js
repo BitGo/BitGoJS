@@ -2,22 +2,22 @@
 // Tests for Wallets
 //
 
-var assert = require('assert');
-var should = require('should');
-var _ = require('lodash');
+const assert = require('assert');
+const should = require('should');
+const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 
-var common = require('../../src/common');
-var TestV2BitGo = require('../lib/test_bitgo');
+const common = require('../../src/common');
+const TestV2BitGo = require('../lib/test_bitgo');
 
 describe('V2 Wallet:', function() {
-  var bitgo;
-  var wallets;
-  var keychains;
-  var basecoin;
-  var wallet;
-  var sequenceId;
+  let bitgo;
+  let wallets;
+  let keychains;
+  let basecoin;
+  let wallet;
+  let sequenceId;
 
   // TODO: automate keeping test wallet full with bitcoin
   // If failures are occurring, make sure that the wallet at test.bitgo.com contains bitcoin.
@@ -35,7 +35,7 @@ describe('V2 Wallet:', function() {
 
     return bitgo.authenticateTestUser(bitgo.testUserOTP())
     .then(function() {
-      return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID })
+      return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID });
     })
     .then(function(testWallet) {
       wallet = testWallet;
@@ -98,7 +98,7 @@ describe('V2 Wallet:', function() {
         transactions.should.have.property('coin');
         transactions.should.have.property('transactions');
         transactions.transactions.length.should.be.greaterThan(2);
-        var firstTransaction = transactions.transactions[0];
+        const firstTransaction = transactions.transactions[0];
         firstTransaction.should.have.property('date');
         firstTransaction.should.have.property('entries');
         firstTransaction.should.have.property('fee');
@@ -117,7 +117,7 @@ describe('V2 Wallet:', function() {
         transactions.should.have.property('coin');
         transactions.should.have.property('transactions');
         transactions.transactions.length.should.eql(2);
-        var firstTransaction = transactions.transactions[0];
+        const firstTransaction = transactions.transactions[0];
         firstTransaction.should.have.property('date');
         firstTransaction.should.have.property('entries');
         firstTransaction.should.have.property('fee');
@@ -172,7 +172,7 @@ describe('V2 Wallet:', function() {
 
   describe('List Transfers', function() {
 
-    var thirdTransfer;
+    let thirdTransfer;
     it('transfers', function() {
       return wallet.transfers()
       .then(function(transfers) {
@@ -197,7 +197,7 @@ describe('V2 Wallet:', function() {
     });
 
     it('get a transfer by id', function() {
-      return wallet.getTransfer({ id: thirdTransfer.id})
+      return wallet.getTransfer({ id: thirdTransfer.id })
         .then(function(transfer) {
           transfer.should.have.property('coin');
           transfer.should.have.property('height');
@@ -209,7 +209,7 @@ describe('V2 Wallet:', function() {
     it('update comment', function() {
       return wallet.transfers()
       .then(function(result) {
-        var params = {
+        const params = {
           id: result.transfers[0].id,
           comment: 'testComment'
         };
@@ -224,7 +224,7 @@ describe('V2 Wallet:', function() {
     it('remove comment', function() {
       return wallet.transfers()
       .then(function(result) {
-        var params = {
+        const params = {
           id: result.transfers[0].id,
           comment: null
         };
@@ -245,14 +245,14 @@ describe('V2 Wallet:', function() {
 
     before(co(function *() {
       // TODO temporarily unlocking session to fix tests. Address unlock concept in BG-322.
-      yield bitgo.unlock({otp: bitgo.testUserOTP()});
+      yield bitgo.unlock({ otp: bitgo.testUserOTP() });
     }));
 
     it('should send transaction to the wallet itself with send', function() {
       return wallet.createAddress()
       .delay(3000) // wait three seconds before sending
       .then(function(recipientAddress) {
-        var params = {
+        const params = {
           amount: 0.01 * 1e8, // 0.01 tBTC
           address: recipientAddress.address,
           walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
@@ -290,15 +290,15 @@ describe('V2 Wallet:', function() {
     it('sendMany should error when given a non-array of recipients', function() {
       return wallet.createAddress()
       .then(function(recipientAddress) {
-        var params = {
+        const params = {
           recipients: {
             amount: 0.01 * 1e8, // 0.01 tBTC
-            address: recipientAddress.address,
+            address: recipientAddress.address
           },
           walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
         };
         assert.throws(function() {
-          wallet.sendMany(params)
+          wallet.sendMany(params);
         });
       });
     });
@@ -307,11 +307,11 @@ describe('V2 Wallet:', function() {
       return wallet.createAddress()
       .delay(3000) // wait three seconds before sending
       .then(function(recipientAddress) {
-        var params = {
+        const params = {
           recipients: [
             {
               amount: 0.01 * 1e8, // 0.01 tBTC
-              address: recipientAddress.address,
+              address: recipientAddress.address
             }
           ],
           walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
@@ -329,19 +329,19 @@ describe('V2 Wallet:', function() {
       return wallet.createAddress()
       .delay(3000) // wait three seconds before fetching unspents
       .then(function(recipientAddress) {
-        var params = {
+        const params = {
           recipients: [
             {
               amount: 0.01 * 1e8, // 0.01 tBTC
-              address: recipientAddress.address,
+              address: recipientAddress.address
             }
-          ],
+          ]
 
         };
         return wallet.prebuildTransaction(params);
       })
       .then(function(prebuild) {
-        var explanation = basecoin.explainTransaction(prebuild);
+        const explanation = basecoin.explainTransaction(prebuild);
         explanation.displayOrder.length.should.equal(6);
         explanation.outputs.length.should.equal(1);
         explanation.changeOutputs.length.should.equal(1);
@@ -353,7 +353,7 @@ describe('V2 Wallet:', function() {
           walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
           comment: 'Hello World!',
           txHex: 'should be overwritten'
-        })
+        });
       })
       .then(function(transaction) {
         transaction.should.have.property('status');
@@ -363,21 +363,21 @@ describe('V2 Wallet:', function() {
     });
 
     it('should prebuild a transaction to the wallet and manually sign and submit it', function() {
-      var keychain;
+      let keychain;
       return basecoin.keychains().get({ id: wallet._wallet.keys[0] })
       .then(function(key) {
         keychain = key;
-        return wallet.createAddress()
+        return wallet.createAddress();
       })
       .delay(3000) // wait three seconds before fetching unspents
       .then(function(recipientAddress) {
-        var params = {
+        const params = {
           recipients: [
             {
               amount: 0.01 * 1e8, // 0.01 tBTC
-              address: recipientAddress.address,
+              address: recipientAddress.address
             }
-          ],
+          ]
 
         };
         return wallet.prebuildTransaction(params);
@@ -389,7 +389,7 @@ describe('V2 Wallet:', function() {
           walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
           comment: 'Hello World!',
           txHex: 'should be overwritten'
-        })
+        });
       })
       .then(function(signedTransaction) {
         return wallet.submitTransaction(signedTransaction);
@@ -403,8 +403,8 @@ describe('V2 Wallet:', function() {
   });
 
   describe('Sharing & Pending Approvals', function() {
-    var sharingUserBitgo;
-    var sharingUserBasecoin;
+    let sharingUserBitgo;
+    let sharingUserBasecoin;
     before(function() {
       sharingUserBitgo = new TestV2BitGo({ env: 'test' });
       sharingUserBitgo.initializeTestVars();
@@ -414,7 +414,7 @@ describe('V2 Wallet:', function() {
 
     it('should extend invitation from main user to sharing user', function() {
       // take the main user wallet and invite this user
-      var share;
+      let share;
       return wallet.shareWallet({
         email: TestV2BitGo.TEST_SHARED_KEY_USER,
         permissions: 'view,spend,admin',
@@ -427,7 +427,7 @@ describe('V2 Wallet:', function() {
       .then(function() {
         return sharingUserBasecoin.wallets().acceptShare({
           walletShareId: share.id,
-          userPassword: TestV2BitGo.TEST_SHARED_KEY_PASSWORD,
+          userPassword: TestV2BitGo.TEST_SHARED_KEY_PASSWORD
         });
       })
       .then(function(acceptanceDetails) {
@@ -439,11 +439,11 @@ describe('V2 Wallet:', function() {
     });
 
     it('should have sharing user self-remove from accepted wallet and reject it', function() {
-      var receivedWalletId = wallet.id();
+      const receivedWalletId = wallet.id();
       console.log('This is received wallet ID', receivedWalletId);
       return sharingUserBasecoin.wallets().list()
       .then(function(sharedWallets) {
-        var receivedWallet = _.find(sharedWallets.wallets, function(w) { return w.id() === receivedWalletId; });
+        const receivedWallet = _.find(sharedWallets.wallets, function(w) { return w.id() === receivedWalletId; });
         return receivedWallet.removeUser({ userId: sharingUserBitgo._user.id });
       })
       .then(function(removal) {
@@ -454,7 +454,7 @@ describe('V2 Wallet:', function() {
         return updatedWallet.pendingApprovals();
       })
       .then(function(pendingApprovals) {
-        var pendingApproval = _.find(pendingApprovals, function(pa) { return pa.wallet.id() === receivedWalletId; });
+        const pendingApproval = _.find(pendingApprovals, function(pa) { return pa.wallet.id() === receivedWalletId; });
 
         pendingApproval.ownerType().should.equal('wallet');
         should.exist(pendingApproval.walletId());
@@ -473,10 +473,10 @@ describe('V2 Wallet:', function() {
     });
 
     it('should have sharing user self-remove from accepted wallet and approve it', function() {
-      var receivedWalletId = wallet.id();
+      const receivedWalletId = wallet.id();
       return sharingUserBasecoin.wallets().list()
       .then(function(sharedWallets) {
-        var receivedWallet = _.find(sharedWallets.wallets, function(w) { return w.id() === receivedWalletId; });
+        const receivedWallet = _.find(sharedWallets.wallets, function(w) { return w.id() === receivedWalletId; });
         return receivedWallet.removeUser({ userId: sharingUserBitgo._user.id });
       })
       .then(function(removal) {
@@ -487,7 +487,7 @@ describe('V2 Wallet:', function() {
         return updatedWallet.pendingApprovals();
       })
       .then(function(pendingApprovals) {
-        var pendingApproval = _.find(pendingApprovals, function(pa) { return pa.wallet.id() === receivedWalletId; });
+        const pendingApproval = _.find(pendingApprovals, function(pa) { return pa.wallet.id() === receivedWalletId; });
         return pendingApproval.approve({ otp: bitgo.testUserOTP() });
       })
       .then(function(approval) {

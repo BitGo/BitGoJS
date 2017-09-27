@@ -2,17 +2,17 @@
 // Tests for Wallets
 //
 
-var assert = require('assert');
-var should = require('should');
+const assert = require('assert');
+const should = require('should');
 
-var common = require('../../src/common');
-var TestV2BitGo = require('../lib/test_bitgo');
+const common = require('../../src/common');
+const TestV2BitGo = require('../lib/test_bitgo');
 
 describe('V2 Base Coin:', function() {
-  var bitgo;
-  var wallets;
-  var keychains;
-  var basecoin;
+  let bitgo;
+  let wallets;
+  let keychains;
+  let basecoin;
 
   before(function() {
     // TODO: replace dev with test

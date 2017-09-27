@@ -3,13 +3,13 @@ if (process.browser) {
   return;
 }
 
-var assert = require('assert');
-var should = require('should');
-var request = require("supertest-as-promised");
-var _ = require('lodash');
+const assert = require('assert');
+const should = require('should');
+const request = require('supertest-as-promised');
+const _ = require('lodash');
 
-var expressApp = require('../../src/expressApp');
-var TestBitGo = require('../lib/test_bitgo');
+const expressApp = require('../../src/expressApp');
+const TestBitGo = require('../lib/test_bitgo');
 
 describe('Bitgo Express V2', function() {
   let agent;
@@ -22,7 +22,7 @@ describe('Bitgo Express V2', function() {
     };
     bitgo = new TestBitGo();
     bitgo.initializeTestVars();
-    var app = expressApp(args);
+    const app = expressApp(args);
     agent = request.agent(app);
   });
 

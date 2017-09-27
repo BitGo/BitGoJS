@@ -2,19 +2,19 @@
 // Tests for Wallets
 //
 
-var assert = require('assert');
-var should = require('should');
-var bitcoin = require('bitcoinjs-lib');
+const assert = require('assert');
+const should = require('should');
+const bitcoin = require('bitcoinjs-lib');
 
-var common = require('../../src/common');
-var TestV2BitGo = require('../lib/test_bitgo');
-var Q = require('q');
+const common = require('../../src/common');
+const TestV2BitGo = require('../lib/test_bitgo');
+const Q = require('q');
 
 describe('V2 Wallets:', function() {
-  var bitgo;
-  var wallets;
-  var keychains;
-  var basecoin;
+  let bitgo;
+  let wallets;
+  let keychains;
+  let basecoin;
 
   before(function() {
     // TODO: replace dev with test
@@ -60,23 +60,23 @@ describe('V2 Wallets:', function() {
 
     it('skip', function(done) {
       // TODO server currently doesn't use this param
-      done()
+      done();
     });
 
     it('getbalances', function(done) {
       // TODO server currently doesn't use this param
-      done()
+      done();
     });
 
     it('prevId', function(done) {
       // TODO server currently doesn't use this param
-      done()
+      done();
     });
   });
 
   describe('Generate Wallet', function() {
-    var passphrase = 'yoplait';
-    var label = 'v2 wallet';
+    const passphrase = 'yoplait';
+    const label = 'v2 wallet';
 
     it('arguments', function() {
       assert.throws(function() {wallets.generateWallet();});
@@ -102,7 +102,7 @@ describe('V2 Wallets:', function() {
     });
 
     it('should make wallet with client-generated user and backup key', function() {
-      var params = {
+      const params = {
         passphrase: passphrase,
         label: label,
         disableTransactionNotifications: true
@@ -131,8 +131,8 @@ describe('V2 Wallets:', function() {
 
     it('should make wallet with client-generated user and krs backupkey', function() {
 
-      var xpub = keychains.create().pub; // random xpub
-      var params = {
+      const xpub = keychains.create().pub; // random xpub
+      const params = {
         passphrase: passphrase,
         label: label,
         backupXpub: xpub
@@ -150,9 +150,9 @@ describe('V2 Wallets:', function() {
     });
 
     it('should make wallet with provided user key and backup key', function() {
-      var backupXpub = keychains.create().pub; // random xpub
-      var userXpub = keychains.create().pub; // random xpub
-      var params = {
+      const backupXpub = keychains.create().pub; // random xpub
+      const userXpub = keychains.create().pub; // random xpub
+      const params = {
         label: label,
         backupXpub: backupXpub,
         userKey: userXpub
@@ -172,8 +172,8 @@ describe('V2 Wallets:', function() {
     });
 
     it('should make wallet with provided user key and custom derivation path', function() {
-      var userXpub = keychains.create().pub; // random xpub
-      var params = {
+      const userXpub = keychains.create().pub; // random xpub
+      const params = {
         label: label,
         userKey: userXpub,
         coldDerivationSeed: 'custom-derivation-seed',
@@ -196,9 +196,9 @@ describe('V2 Wallets:', function() {
     });
 
     it('should generate wallet and freeze it', function() {
-      var backupXpub = keychains.create().pub; // random xpub
-      var userXpub = keychains.create().pub; // random xpub
-      var params = {
+      const backupXpub = keychains.create().pub; // random xpub
+      const userXpub = keychains.create().pub; // random xpub
+      const params = {
         label: label,
         backupXpub: backupXpub,
         userKey: userXpub
@@ -220,57 +220,65 @@ describe('V2 Wallets:', function() {
 
   describe('Add Wallet', function() {
 
-    var userKeychainId;
-    var backupKeychainId;
-    var bitgoKeychainId;
+    let userKeychainId;
+    let backupKeychainId;
+    let bitgoKeychainId;
 
     it('arguments', function() {
       assert.throws(function() {wallets.add();});
       assert.throws(function() {wallets.add('invalid');});
       assert.throws(function() {wallets.add({}, 0);});
-      assert.throws(function() {wallets.add({
-        keys: [],
-        m: 'bad',
-        n: 3
-      }, 0);});
+      assert.throws(function() {
+        wallets.add({
+          keys: [],
+          m: 'bad',
+          n: 3
+        }, 0);
+      });
 
-      assert.throws(function() {wallets.add({
-        keys: [],
-        m: 1,
-        n: 3
-      }, 0);});
+      assert.throws(function() {
+        wallets.add({
+          keys: [],
+          m: 1,
+          n: 3
+        }, 0);
+      });
 
-      assert.throws(function() {wallets.add({
-        keys: [],
-        m: 2,
-        n: 3,
-        tags: 'bad arg'
-      }, 0);});
+      assert.throws(function() {
+        wallets.add({
+          keys: [],
+          m: 2,
+          n: 3,
+          tags: 'bad arg'
+        }, 0);
+      });
 
-      assert.throws(function() {wallets.add({
-        keys: [],
-        m: 2,
-        n: 3,
-        tags: [],
-        clientFlags: 'bad arg'
-      }, 0);});
+      assert.throws(function() {
+        wallets.add({
+          keys: [],
+          m: 2,
+          n: 3,
+          tags: [],
+          clientFlags: 'bad arg'
+        }, 0);
+      });
     });
 
     it('should add a wallet with pre generated keys', function() {
 
-      var userKeychain;
-      var backupKeychain;
-      var bitgoKeychain;
+      let userKeychain;
+      let backupKeychain;
+      let bitgoKeychain;
 
       // Add the user keychain
-      var userKeychainPromise = Q.fcall(function() {
+      const userKeychainPromise = Q.fcall(function() {
         userKeychain = keychains.create();
         return keychains.add(userKeychain);
       }).then(function(keychain) {
         userKeychainId = keychain.id;
       });
 
-      var backupKeychainPromise = Q.fcall(function() {
+      const backupKeychainPromise = Q.fcall(function() {
         backupKeychain = keychains.create();
         return keychains.add(backupKeychain);
       })
@@ -278,7 +286,7 @@ describe('V2 Wallets:', function() {
         backupKeychainId = newBackupKeychain.id;
       });
 
-      var bitgoKeychainPromise = keychains.createBitGo()
+      const bitgoKeychainPromise = keychains.createBitGo()
       .then(function(keychain) {
         bitgoKeychainId = keychain.id;
       });
@@ -286,15 +294,15 @@ describe('V2 Wallets:', function() {
       // Add the user keychain
       return Q.all([userKeychainPromise, backupKeychainPromise, bitgoKeychainPromise])
       .then(function() {
-        var params = {
+        const params = {
           label: 'sample wallet',
           m: 2,
           n: 3,
           keys: [userKeychainId, backupKeychainId, bitgoKeychainId],
           enterprise: '',
           isCold: true
-        }
-        return wallets.add(params)
+        };
+        return wallets.add(params);
       }).then(function(res) {
         res.should.have.property('wallet');
         res.wallet.should.have.property('_wallet');
@@ -323,13 +331,13 @@ describe('V2 Wallets:', function() {
         wallet.approvalsRequired.should.equal(1);
         wallet.m.should.equal(2);
         wallet.n.should.equal(3);
-      })
+      });
     });
 
     it('should add webhook to wallet, simulate it, and then remove it', function() {
-      var wallet;
-      var count;
-      var webhookId;
+      let wallet;
+      let count;
+      let webhookId;
       return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID })
       .then(function(currentWallet) {
         wallet = currentWallet;
@@ -361,7 +369,7 @@ describe('V2 Wallets:', function() {
         });
       }).then(function(simulation) {
         simulation.should.have.property('webhookNotifications');
-        var notification = simulation.webhookNotifications[0];
+        const notification = simulation.webhookNotifications[0];
         notification.url.should.equal('https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d');
         notification.hash.should.equal('e0119a0695efee3229978df74cbb066269890947d85c80ab630a4075b141b880');
         notification.type.should.equal('transaction');
@@ -378,7 +386,7 @@ describe('V2 Wallets:', function() {
       .then(function(webhooks) {
         webhooks.should.have.property('webhooks');
         webhooks.webhooks.length.should.equal(count);
-      })
+      });
     });
   });
 });
