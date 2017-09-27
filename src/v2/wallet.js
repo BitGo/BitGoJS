@@ -190,7 +190,6 @@ Wallet.prototype.transferBySequenceId = function(params, callback) {
  * Get the maximum amount you can spend in a single transaction
  *
  * @param params {Object} parameters object
- * -walletPassphrase {String} the users wallet passphrase
  * -limit {Number} maximum number of selectable unspents
  * -minValue {Number} the minimum value of unspents to use
  * -maxValue {Number} the maximum value of unspents to use
@@ -198,6 +197,7 @@ Wallet.prototype.transferBySequenceId = function(params, callback) {
  * -target {Number} sum of the outputs plus sum of fees and change
  * -plainTarget {Number} the sum of the outputs
  * -minConfirms {Number} all selected unspents will have at least this many conformations
+ * -enforceMinConfirmsForChange {Boolean} Enforces minConfirms on change inputs
  * -feeRate {Number} fee rate to use in calculation of maximum spendable
  * @param callback
  * @returns maxAmount {Number} the maximum amount you can send in a single transaction
@@ -205,7 +205,6 @@ Wallet.prototype.transferBySequenceId = function(params, callback) {
 Wallet.prototype.maximumSpendable = function maximumSpendable(params, callback) {
   return co(function *() {
     params = params || {};
-    common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
     const filteredParams = _.pick(params, [
       'minValue', 'maxValue', 'minHeight', 'target', 'plainTarget',
