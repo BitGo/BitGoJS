@@ -74,6 +74,19 @@ Wallet.prototype.pendingApprovals = function() {
 };
 
 /**
+ * Refresh the wallet object by syncing with the back-end
+ * @param callback
+ * @returns {Wallet}
+ */
+Wallet.prototype.refresh = function(params, callback) {
+  return co(function* () {
+    const res = yield this.bitgo.get(this.url()).result();
+    this._wallet = res;
+    return this;
+  }).call(this).asCallback(callback);
+};
+
+/**
  * List the transactions for a given wallet
  * @param params
  * @param callback
