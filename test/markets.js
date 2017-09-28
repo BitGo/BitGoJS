@@ -5,7 +5,7 @@
 //
 
 const assert = require('assert');
-const should = require('should');
+require('should');
 const BitGoJS = require('../src/index');
 
 describe('Market', function() {

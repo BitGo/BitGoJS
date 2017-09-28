@@ -111,11 +111,11 @@ describe('Bitgo Express TETH v2', function () {
 
   it('can do sendmany', co(function *() {
     // fetch two new address
-    let res, address1, address2;
+    let res;
     res = yield agent.post(`/api/v2/teth/wallet/${testWalletId}/address`).set(authHeader);
-    address1 = res.body.address;
+    const address1 = res.body.address;
     res = yield agent.post(`/api/v2/teth/wallet/${testWalletId}/address`).set(authHeader);
-    address2 = res.body.address;
+    const address2 = res.body.address;
 
     res = yield agent
       .post(`/api/v2/teth/wallet/${testWalletId}/sendmany`)

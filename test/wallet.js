@@ -10,7 +10,6 @@ const Q = require('q');
 
 const BitGoJS = require('../src/index');
 const Wallet = require('../src/wallet');
-const common = require('../src/common');
 const TestBitGo = require('./lib/test_bitgo');
 const TransactionBuilder = require('../src/transactionBuilder');
 const unspentData = require('./fixtures/largeunspents.json');
@@ -239,11 +238,7 @@ describe('Wallet API', function() {
 
     it('get sharing key for a user', function(done) {
       const keychains = bitgo.keychains();
-      const newKey = keychains.create();
-
-      const options = {
-        xpub: newKey.xpub
-      };
+      keychains.create();
 
       bitgo.getSharingKey({ email: TestBitGo.TEST_SHARED_KEY_USER })
       .done(function(result) {
@@ -608,7 +603,7 @@ describe('Wallet API', function() {
     it('list', function(done) {
       // delete all labels from wallet1
       wallet1.labels({}, function(err, labels) {
-        if (labels == null) {
+        if (labels === null) {
           return;
         }
 
@@ -710,7 +705,7 @@ describe('Wallet API', function() {
 
   describe('Unspents', function() {
 
-    let sharedWallet;
+    //let sharedWallet;
 
     before(function() {
       const consolidationBitgo = new TestBitGo();
@@ -724,7 +719,7 @@ describe('Wallet API', function() {
         return consolidationBitgo.wallets().get({ id: TestBitGo.TEST_WALLET2_ADDRESS });
       })
       .then(function(result) {
-        sharedWallet = result;
+        //sharedWallet = result;
       });
     });
 
@@ -1065,9 +1060,6 @@ describe('Wallet API', function() {
 
     it('get transaction with travel info', function() {
       let keychain;
-      const options = {
-        xpub: wallet1.keychains[0].xpub
-      };
       return bitgo.keychains().get({ xpub: wallet3.keychains[0].xpub })
       .then(function(res) {
         keychain = res;
@@ -1150,11 +1142,6 @@ describe('Wallet API', function() {
 
       it('spend from wallet with no unspents', function() {
         let wallet;
-        const options = {
-          passphrase: TestBitGo.TEST_WALLET1_PASSCODE,
-          label: 'temp-empty-wallet',
-          backupXpubProvider: 'keyvault-io'
-        };
 
         return bitgo.wallets().createWalletWithKeychains({
           passphrase: TestBitGo.TEST_WALLET1_PASSCODE,
@@ -1295,11 +1282,10 @@ describe('Wallet API', function() {
             unspents.count = filteredArray.length;
             unspents.unspents = filteredArray;
             // mock a very low unspent value
-            const mockedValue = unspents.unspents[2].value;
             unspents.unspents[2].value = 10;
             walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
 
-            for(i = 0; i < unspents.count; i++) {
+            for(let i = 0; i < unspents.count; i++) {
               // count the number of inputs that are below 1 sat/Byte
               if(unspents.unspents[i].value <= 1000 * 295 / 1000){
                 countLowInputs++;
@@ -1347,7 +1333,7 @@ describe('Wallet API', function() {
             walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
 
 
-            for(i = 0; i < unspents.count; i++) {
+            for(let i = 0; i < unspents.count; i++) {
               if(unspents.unspents[i].value <= 1000 * 295 / 1000){
                 countLowInputs++;
               }
@@ -1440,6 +1426,7 @@ describe('Wallet API', function() {
       let patch;
       let patch2;
       let patch3;
+      let patch4;
       before(function() {
         // Monkey patch wallet1 with simulated inputs
         patch = wallet1.unspents;
@@ -1529,7 +1516,6 @@ describe('Wallet API', function() {
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 6200 * 1e8;
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, noSplitChange: true })
         .then(function(result) {
-          const feeUsed = result.fee;
           // Note that the transaction size here will be fairly small, because the signatures have not
           // been applied.  But we had to estimate our fees already.
           result.feeRate.should.eql(0.000112 * 1e8);
@@ -1833,10 +1819,10 @@ describe('Wallet API', function() {
         assert.throws(function() { TransactionBuilder.signTransaction(); });
         assert.throws(function() { TransactionBuilder.signTransaction({ transactionHex: 'somestring' }); });
         assert.throws(function() { TransactionBuilder.signTransaction({ transactionHex: [] }); });
-        assert.throws(function() { TransactionBuilder.signTransaction({ transactionHex: 'somestring', unspents: [], keychain: boguskey }); });
+        assert.throws(function() { TransactionBuilder.signTransaction({ transactionHex: 'somestring', unspents: [], keychain: bogusKey }); });
         assert.throws(function() { TransactionBuilder.signTransaction({ transactionHex: unsignedTransaction.transactionHex, unspents: {} }); });
-        assert.throws(function() { TransactionBuilder.signTransaction({ transactionHex: unsignedTransaction.transactionHex, unspents: 'asdfasdds', keychain: boguskey }); });
-        assert.throws(function() { TransactionBuilder.signTransaction({ transactionHex: unsignedTransaction.transactionHex, unspents: {}, keychain: boguskey }); });
+        assert.throws(function() { TransactionBuilder.signTransaction({ transactionHex: unsignedTransaction.transactionHex, unspents: 'asdfasdds', keychain: bogusKey }); });
+        assert.throws(function() { TransactionBuilder.signTransaction({ transactionHex: unsignedTransaction.transactionHex, unspents: {}, keychain: bogusKey }); });
       });
 
       it('invalid key', function(done) {

@@ -8,13 +8,11 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 
-const common = require('../../src/common');
 const TestV2BitGo = require('../lib/test_bitgo');
 
 describe('V2 Wallet:', function() {
   let bitgo;
   let wallets;
-  let keychains;
   let basecoin;
   let wallet;
   let sequenceId;
@@ -31,7 +29,7 @@ describe('V2 Wallet:', function() {
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc');
     wallets = basecoin.wallets();
-    keychains = basecoin.keychains();
+    basecoin.keychains();
 
     return bitgo.authenticateTestUser(bitgo.testUserOTP())
     .then(function() {

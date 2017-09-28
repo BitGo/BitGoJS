@@ -5,16 +5,13 @@
 //
 
 const assert = require('assert');
-const should = require('should');
+require('should');
 const Q = require('q');
 
 const BitGoJS = require('../../src/index');
-const common = require('../../src/common');
 const TestBitGo = require('../lib/test_bitgo');
-const TransactionBuilder = require('../../src/transactionBuilder');
 const crypto = require('crypto');
 const _ = require('lodash');
-const bitcoin = BitGoJS.bitcoin;
 
 Q.longStackTrace = true;
 
@@ -56,7 +53,7 @@ describe('Ethereum Wallet API:', function() {
       // delete all labels from wallet1
       wallet1.labels({})
       .then(function(labels) {
-        if (labels == null) {
+        if (labels === null) {
           return;
         }
 
@@ -232,7 +229,6 @@ describe('Ethereum Wallet API:', function() {
         result.transactions.length.should.eql(result.count);
 
         const limitedTxes = reference.transactions;
-        const limitedTxesSubset = limitedTxes.slice(skipNum);
 
         // there should be no difference between these object arrays
         const difference = _.differenceWith(result.transactions, limitedTxes, _.isEqual);
@@ -266,7 +262,6 @@ describe('Ethereum Wallet API:', function() {
       assert.throws(function() { wallet1.transfers({}, 'invalid'); });
     });
 
-    let txHash0;
     it('list', function() {
       const options = {};
       return wallet1.transfers(options)
@@ -275,12 +270,10 @@ describe('Ethereum Wallet API:', function() {
         // result.should.have.property('total');
         result.should.have.property('count');
         result.start.should.eql(0);
-        txHash0 = result.transfers[0].id;
       });
     });
 
     const limitTestNumTransfers = 4;
-    let totalTransferCount;
     it('list with limit', function() {
       const options = { limit: limitTestNumTransfers };
       return wallet1.transfers(options)
@@ -507,8 +500,6 @@ describe('Ethereum Wallet API:', function() {
       })
       .then(function(result) {
         result.should.have.property('xpub');
-        const resultXpub = result.xpub;
-        const expectedXpub = TestBitGo.TEST_ETH_WALLET1_XPUB;
         result.xpub.should.equal(TestBitGo.TEST_ETH_WALLET1_XPUB);
         result.should.have.property('encryptedXprv');
       });

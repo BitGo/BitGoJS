@@ -5,20 +5,18 @@
 //
 
 const assert = require('assert');
-const should = require('should');
+require('should');
 let ethereumUtil = function() {};
 
-const BitGoJS = require('../../src/index');
-const common = require('../../src/common');
 const TestBitGo = require('../lib/test_bitgo');
 const Util = require('../../src/util');
 
 try {
   ethereumUtil = require('ethereumjs-util');
 } catch (e) {
+  // do nothing
 }
 
-const bitcoin = BitGoJS.bitcoin;
 
 const TEST_WALLET_LABEL = 'wallet management test';
 
@@ -194,6 +192,7 @@ describe('Ethereum Wallets API:', function() {
 
   describe('Create Ether Wallet', function() {
     it('arguments', function() {
+      const backupXpub = 1234567890;
       assert.throws(function() {
         wallets.generateWallet({
           passphrase: TestBitGo.TEST_WALLET1_PASSCODE,

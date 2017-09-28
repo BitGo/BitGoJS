@@ -4,9 +4,7 @@
 
 const assert = require('assert');
 const should = require('should');
-const bitcoin = require('bitcoinjs-lib');
 
-const common = require('../../src/common');
 const TestV2BitGo = require('../lib/test_bitgo');
 const Q = require('q');
 
@@ -268,7 +266,6 @@ describe('V2 Wallets:', function() {
 
       let userKeychain;
       let backupKeychain;
-      let bitgoKeychain;
 
       // Add the user keychain
       const userKeychainPromise = Q.fcall(function() {

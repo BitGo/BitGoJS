@@ -1,12 +1,9 @@
-const assert = require('assert');
-const should = require('should');
+require('should');
 
-const common = require('../../../src/common');
 const TestV2BitGo = require('../../lib/test_bitgo');
 
 describe('LTC:', function() {
   let bitgo;
-  let basecoin;
 
   before(function() {
     bitgo = new TestV2BitGo({ env: 'test' });

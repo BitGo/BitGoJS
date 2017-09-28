@@ -3,18 +3,17 @@ if (process.browser) {
   return;
 }
 
-const assert = require('assert');
-const should = require('should');
+require('should');
 const request = require('supertest-as-promised');
 const _ = require('lodash');
 
-const BitGoJS = require('../src/index');
 const expressApp = require('../src/expressApp');
 const TestBitGo = require('./lib/test_bitgo');
 const testUtil = require('./testutil');
 
 describe('Bitgo Express', function() {
   let agent;
+  let bitgo;
 
   before(function() {
     const args = {

@@ -2,11 +2,9 @@
 // Tests for Wallets
 //
 
-const assert = require('assert');
-const should = require('should');
+require('should');
 const nock = require('nock');
 
-const common = require('../../src/common');
 const TestV2BitGo = require('../lib/test_bitgo');
 
 describe('Recovery:', function() {

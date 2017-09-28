@@ -5,8 +5,7 @@
 //
 
 const assert = require('assert');
-const should = require('should');
-const Q = require('q');
+require('should');
 const _ = require('lodash');
 
 const BitGoJS = require('../src/index');
@@ -27,7 +26,7 @@ describe('Webhooks', function() {
     simulatedTransactionWebhookId = TestBitGo.TEST_WEBHOOK_TRANSACTION_SIMULATION_ID;
     simulatedPendingApprovalWebhookId = TestBitGo.TEST_WEBHOOK_PENDING_APPROVAL_SIMULATION_ID;
 
-    wallets = bitgo.wallets();
+    const wallets = bitgo.wallets();
     bitgo.authenticateTestUser(bitgo.testUserOTP(), function (err, response) {
       if (err) {
         console.log(err);

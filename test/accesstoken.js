@@ -7,7 +7,6 @@
 const assert = require('assert');
 const should = require('should');
 const moment = require('moment');
-const Q = require('q');
 const _ = require('lodash');
 
 const TestBitGo = require('./lib/test_bitgo');
@@ -191,7 +190,7 @@ describe('Access Token', function() {
         tokens.length.should.equal(INITIAL_TOKEN_COUNT);
       });
     });
-    
+
     it('should add and list single access token', function() {
       return bitgo.addAccessToken({ otp: bitgo.testUserOTP(), label: 'test token', scope: someScopes })
       .then(function(res) {

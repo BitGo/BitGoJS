@@ -5,17 +5,17 @@
 //
 
 const assert = require('assert');
-const should = require('should');
+require('should');
 
 const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');
 let BN = function() {};
 const Util = require('../../src/util');
-const _ = require('lodash');
 
 try {
   BN = require('ethereumjs-util').BN;
 } catch (e) {
+  // do nothing
 }
 
 // TODO: WORK IN PROGRESS

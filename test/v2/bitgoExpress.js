@@ -3,10 +3,8 @@ if (process.browser) {
   return;
 }
 
-const assert = require('assert');
-const should = require('should');
+require('should');
 const request = require('supertest-as-promised');
-const _ = require('lodash');
 
 const expressApp = require('../../src/expressApp');
 const TestBitGo = require('../lib/test_bitgo');
@@ -20,7 +18,7 @@ describe('Bitgo Express V2', function() {
       env: 'test',
       logfile: '/dev/null'
     };
-    bitgo = new TestBitGo();
+    const bitgo = new TestBitGo();
     bitgo.initializeTestVars();
     const app = expressApp(args);
     agent = request.agent(app);

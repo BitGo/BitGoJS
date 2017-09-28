@@ -5,11 +5,10 @@
 //
 
 const assert = require('assert');
-const should = require('should');
+require('should');
 const Q = require('q');
 
 const BitGoJS = require('../src/index');
-const common = require('../src/common');
 const TestBitGo = require('./lib/test_bitgo');
 
 const bitcoin = BitGoJS.bitcoin;
@@ -189,6 +188,7 @@ describe('Wallets', function() {
 
   describe('Create wallet with createWalletWithKeychains', function() {
     it('arguments', function() {
+      const backupXpub = 1234567890;
       assert.throws(function() { wallets.createWalletWithKeychains({ passphrase: TestBitGo.TEST_WALLET1_PASSCODE, backupXpub: backupXpub }); });
       assert.throws(function() { wallets.createWalletWithKeychains({ passphrase: TestBitGo.TEST_WALLET1_PASSCODE, label: TEST_WALLET_LABEL, backupXpub: backupXpub }); });
       assert.throws(function() { wallets.createWalletWithKeychains({ passphrase: TestBitGo.TEST_WALLET1_PASSCODE, label: TEST_WALLET_LABEL, backupXpub: 123 }); });

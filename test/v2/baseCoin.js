@@ -2,16 +2,12 @@
 // Tests for Wallets
 //
 
-const assert = require('assert');
-const should = require('should');
+require('should');
 
-const common = require('../../src/common');
 const TestV2BitGo = require('../lib/test_bitgo');
 
 describe('V2 Base Coin:', function() {
   let bitgo;
-  let wallets;
-  let keychains;
   let basecoin;
 
   before(function() {
@@ -19,8 +15,7 @@ describe('V2 Base Coin:', function() {
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('teth');
-    wallets = basecoin.wallets();
-    keychains = basecoin.keychains();
+    basecoin.keychains();
   });
 
   describe('Currenncy conversion', function() {

@@ -5,25 +5,19 @@
 //
 
 const assert = require('assert');
-const should = require('should');
+require('should');
 const _ = require('lodash');
-const Q = require('q');
 
 const BitGoJS = require('../src/index');
 const bitcoin = BitGoJS.bitcoin;
 const sjcl = require('../src/sjcl.min');
 const TestBitGo = require('./lib/test_bitgo');
 
-const networks = require('bitcoinjs-lib/src/networks');
-
 const txid = TestBitGo.TRAVEL_RULE_TXID;
 
 describe('Travel Rule API', function() {
   let bitgo;
   let travel;
-  let receiver;
-  let testWallet;      // Test will create this wallet
-  const keychains = [];  // Test will create these keychains
 
   before(function(done) {
     bitgo = new TestBitGo();
@@ -71,7 +65,9 @@ describe('Travel Rule API', function() {
 
   describe('Travel Rule - Validate Travel Info', function() {
     it('empty', function() {
-      assert.throws(function() { sender.validateTravelInfo({}); });
+      // was set to sender.validateTravelInfo({}) before eslint caught undefined variable, I assume it was
+      // meant to be travel
+      assert.throws(function() { travel.validateTravelInfo({}); });
     });
 
     it('invalid params', function() {

@@ -4,7 +4,6 @@
 
 const TestUtil = module.exports;
 const should = require('should');
-const moment = require('moment');
 const _ = require('lodash');
 const Q = require('q');
 
@@ -82,7 +81,7 @@ TestUtil.deleteTestTokens = function(bitgoObj, filterFunc) {
   .then(function(tokens) {
     // clear up access tokens which return true from the filter function
     tokenList = _.filter(tokens, filterFunc);
-    
+
     return TestUtil.promiseWhile(condition, body);
   });
 };

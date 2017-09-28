@@ -5,8 +5,7 @@
 //
 
 const assert = require('assert');
-const should = require('should');
-const _ = require('lodash');
+require('should');
 
 const BitGoJS = require('../src/index');
 const TestBitGo = require('./lib/test_bitgo');
@@ -58,29 +57,29 @@ describe('BitGo', function() {
   describe('Environments', function() {
     it('production', function() {
       BitGoJS.setNetwork('testnet');
-      const bitgo = new TestBitGo({ env: 'prod' });
+      new TestBitGo({ env: 'prod' });
       BitGoJS.getNetwork().should.equal('bitcoin');
     });
     it('staging', function() {
       BitGoJS.setNetwork('testnet');
-      const bitgo = new TestBitGo({ env: 'staging' });
+      new TestBitGo({ env: 'staging' });
       BitGoJS.getNetwork().should.equal('bitcoin');
     });
     it('test', function() {
       BitGoJS.setNetwork('bitcoin');
-      const bitgo = new TestBitGo({ env: 'test' });
+      new TestBitGo({ env: 'test' });
       BitGoJS.getNetwork().should.equal('testnet');
     });
     it('dev', function() {
-      const bitgo = new TestBitGo({ env: 'dev' });
+      new TestBitGo({ env: 'dev' });
       BitGoJS.getNetwork().should.equal('testnet');
     });
     it('custom network (prod)', function() {
-      const bitgo = new TestBitGo({ customBitcoinNetwork: 'bitcoin' });
+      new TestBitGo({ customBitcoinNetwork: 'bitcoin' });
       BitGoJS.getNetwork().should.equal('bitcoin');
     });
     it('custom network (testnet)', function() {
-      const bitgo = new TestBitGo({ customBitcoinNetwork: 'testnet' });
+      new TestBitGo({ customBitcoinNetwork: 'testnet' });
       BitGoJS.getNetwork().should.equal('testnet');
     });
     it('custom root uri (prod)', function() {
@@ -288,7 +287,6 @@ describe('BitGo', function() {
       });
     });
 
-    let target1confirmFee;
     it('get default', function() {
       return bitgo.estimateFee()
       .then(function(res) {
@@ -296,7 +294,6 @@ describe('BitGo', function() {
         res.should.have.property('numBlocks');
         res.numBlocks.should.eql(2);
         res.feePerKb.should.be.within(1000, 100000);
-        target1confirmFee = res.feePerKb;
       });
     });
 
@@ -368,7 +365,7 @@ describe('BitGo', function() {
         extensibleTokenBitGo.initializeTestVars();
         done();
       });
-      
+
       after(function() {
         // delete all extensible tokens, because if they're left around then the test/accessToken.js tests will
         // fail because there are more than 10 long lived tokens, and then we can't add any more long lived tokens
@@ -716,7 +713,7 @@ describe('BitGo', function() {
           response.should.have.property('expires_in');
           response.should.have.property('refresh_token');
 
-          bitgoWithNewToken = new BitGoJS.BitGo({
+          const bitgoWithNewToken = new BitGoJS.BitGo({
             clientId: TestBitGo.TEST_CLIENTID,
             clientSecret: TestBitGo.TEST_CLIENTSECRET,
             accessToken: response.access_token
@@ -751,7 +748,7 @@ describe('BitGo', function() {
             response.should.have.property('expires_in');
             response.should.have.property('refresh_token');
 
-            bitgoWithNewToken = new BitGoJS.BitGo({
+            const bitgoWithNewToken = new BitGoJS.BitGo({
               clientId: TestBitGo.TEST_CLIENTID,
               clientSecret: TestBitGo.TEST_CLIENTSECRET,
               accessToken: response.access_token

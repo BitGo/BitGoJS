@@ -4,8 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const assert = require('assert');
-const should = require('should');
+require('should');
 const bitcoin = require('../src/bitcoin');
 const HDNode = bitcoin.HDNode;
 

@@ -1,8 +1,7 @@
 const assert = require('assert');
 const crypto = require('crypto');
-const should = require('should');
+require('should');
 
-const common = require('../../../src/common');
 const prova = require('../../../src/prova');
 const rippleKeypairs = require('ripple-keypairs');
 const TestV2BitGo = require('../../lib/test_bitgo');
