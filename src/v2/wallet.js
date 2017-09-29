@@ -207,13 +207,11 @@ Wallet.prototype.transferBySequenceId = function(params, callback) {
  * -minValue {Number} the minimum value of unspents to use
  * -maxValue {Number} the maximum value of unspents to use
  * -minHeight {Number} the minimum height of unspents on the block chain to use
- * -target {Number} sum of the outputs plus sum of fees and change
- * -plainTarget {Number} the sum of the outputs
  * -minConfirms {Number} all selected unspents will have at least this many conformations
  * -enforceMinConfirmsForChange {Boolean} Enforces minConfirms on change inputs
  * -feeRate {Number} fee rate to use in calculation of maximum spendable
  * @param callback
- * @returns maxAmount {Number} the maximum amount you can send in a single transaction
+ * @returns {{maximumSpendable: Number, coin: String}}
  */
 Wallet.prototype.maximumSpendable = function maximumSpendable(params, callback) {
   return co(function *() {
