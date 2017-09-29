@@ -79,7 +79,7 @@ Wallet.prototype.pendingApprovals = function() {
  * @returns {Wallet}
  */
 Wallet.prototype.refresh = function(params, callback) {
-  return co(function* () {
+  return co(function *() {
     const res = yield this.bitgo.get(this.url()).result();
     this._wallet = res;
     return this;
@@ -399,7 +399,6 @@ Wallet.prototype.addresses = function(params, callback) {
  * @returns {*}
  */
 Wallet.prototype.createAddress = function(params, callback) {
-  const self = this;
   params = params || {};
   common.validateParams(params, [], [], callback);
 

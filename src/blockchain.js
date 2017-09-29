@@ -6,7 +6,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const request = require('superagent');
+require('superagent');
 const common = require('./common');
 const _ = require('lodash');
 

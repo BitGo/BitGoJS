@@ -95,6 +95,14 @@ Keychains.prototype.create = function(params) {
   };
 };
 
+//used by deriveLocal
+const apiResponse = function(status, result, message) {
+  const err = new Error(message);
+  err.status = status;
+  err.result = result;
+  return err;
+};
+
 //
 // deriveLocal
 // Locally derives a keychain from a top level BIP32 string, given a path.

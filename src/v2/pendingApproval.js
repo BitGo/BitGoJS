@@ -232,8 +232,6 @@ PendingApproval.prototype.reject = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const self = this;
-
   return this.bitgo.put(this.url())
   .send({ state: 'rejected' })
   .result()

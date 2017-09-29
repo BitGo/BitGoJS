@@ -8,8 +8,6 @@
 const Promise = require('bluebird');
 const bitcoin = require('./bitcoin');
 const bitcoinCash = require('./bitcoinCash');
-const common = require('./common');
-const Util = require('./util');
 const _ = require('lodash');
 
 const P2SH_INPUT_SIZE = 295;
@@ -84,8 +82,7 @@ exports.createTransaction = function(params) {
   }
 
   if (params.feeSingleKeyWIF) {
-    let feeSingleKey;
-    feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, bitcoin.getNetwork());
+    const feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, bitcoin.getNetwork());
     feeSingleKeySourceAddress = feeSingleKey.getAddress();
     // If the user specifies both, check to make sure the feeSingleKeySourceAddress corresponds to the address of feeSingleKeyWIF
     if (params.feeSingleKeySourceAddress &&
@@ -468,7 +465,7 @@ exports.createTransaction = function(params) {
         if (feeSingleKeySourceAddress) {
           const summedSingleKeyUnspents = _.sumBy(feeSingleKeyUnspents, 'value');
           if (totalFee > summedSingleKeyUnspents) {
-            var err = new Error('Insufficient fee amount available in single key fee source: ' + summedSingleKeyUnspents);
+            const err = new Error('Insufficient fee amount available in single key fee source: ' + summedSingleKeyUnspents);
             err.result = {
               fee: fee,
               feeRate: feeRate,
@@ -489,7 +486,7 @@ exports.createTransaction = function(params) {
           // having many small unspents and we hit our limit on the number of inputs we can use
           // in a txn, or it might have been that the filters the user passed in (like minConfirms)
           // disqualified too many of the unspents
-          var err;
+          let err;
           if (totalUnspentsCount === fetchedUnspentsCount) {
             // we fetched every unspent the wallet had, but it still wasn't enough
             err = new Error('Insufficient funds. Can send only ' + inputAmount + ' satoshis.');
@@ -817,8 +814,10 @@ exports.signTransaction = function(params) {
   }
 
   let hdPath;
+  let rootExtKey;
   if (keychain) {
-    var rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
+    //var is being used because of scope reference
+    rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
     hdPath = bitcoin.hdPath(rootExtKey);
   }
 
@@ -969,12 +968,12 @@ exports.verifyInputSignatures = function(transaction, inputIndex, pubScript, ign
     case 'scripthash':
       // Replace the pubScript with the P2SH Script.
       pubScript = decompiledSigScript[decompiledSigScript.length - 1];
-      var decompiledPubScript = bitcoin.script.decompile(pubScript);
+      const decompiledPubScript = bitcoin.script.decompile(pubScript);
       sigsNeeded = decompiledPubScript[0] - bitcoin.opcodes.OP_1 + 1;
-      for (var index = 1; index < decompiledSigScript.length - 1; ++index) {
+      for (let index = 1; index < decompiledSigScript.length - 1; ++index) {
         sigs.push(decompiledSigScript[index]);
       }
-      for (index = 1; index < decompiledPubScript.length - 2; ++index) {
+      for (let index = 1; index < decompiledPubScript.length - 2; ++index) {
         // we minus 1 because the key indexes start from the second chunk (first chunk is used for total keys)
         if (_.includes(ignoreKeyIndices, index - 1)) {
           // ignore this public key (do not treat it as valid for a signature)

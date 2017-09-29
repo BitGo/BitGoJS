@@ -5,7 +5,6 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 const common = require('./common');
-const Util = require('./util');
 const assert = require('assert');
 
 const bitcoinCash = require('./bitcoinCash');
@@ -313,8 +312,6 @@ PendingApproval.prototype.approve = function(params, callback) {
 PendingApproval.prototype.reject = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-
-  const self = this;
 
   return this.bitgo.put(this.url())
   .send({ state: 'rejected' })

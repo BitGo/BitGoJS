@@ -10,9 +10,7 @@ const bitcoin = require('./bitcoin');
 // TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
 const bitcoinCash = require('./bitcoinCash');
 const prova = require('prova-lib');
-const Keychains = require('./keychains');
 const PendingApproval = require('./pendingapproval');
-const Util = require('./util');
 
 const assert = require('assert');
 const common = require('./common');
@@ -232,9 +230,9 @@ Wallet.prototype.createAddress = function(params, callback) {
   // Default to client-side address validation on, for safety. Use validate=false to disable.
   const shouldValidate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
 
-  let allowExisting = params.allowExisting;
-  if (typeof params.allowExisting !== 'boolean') {
-    allowExisting = (params.allowExisting === 'true');
+  const allowExisting = params.allowExisting;
+  if (typeof allowExisting !== 'boolean') {
+    params.allowExisting = (allowExisting === 'true');
   }
 
   const isSegwit = this.bitgo.getConstants().enableSegwit;
@@ -298,7 +296,7 @@ Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold
   const pathComponents = path.split('/');
   const normalizedPathComponents = _.map(pathComponents, (component) => {
     if (component && component.length > 0) {
-      return parseInt(component);
+      return parseInt(component, 10);
     }
   });
   const pathDetails = _.filter(normalizedPathComponents, _.isInteger);
@@ -863,8 +861,6 @@ Wallet.prototype.createTransaction = function(params, callback) {
   params = _.extend({}, params);
   common.validateParams(params, [], [], callback);
 
-  const self = this;
-
   if ((!_.isNumber(params.fee) && !_.isUndefined(params.fee)) ||
   (!_.isNumber(params.feeRate) && !_.isUndefined(params.feeRate)) ||
   (!_.isNumber(params.minConfirms) && !_.isUndefined(params.minConfirms)) ||
@@ -904,8 +900,6 @@ Wallet.prototype.signTransaction = function(params, callback) {
   params = _.extend({}, params);
   common.validateParams(params, ['transactionHex'], [], callback);
 
-  const self = this;
-
   if (!Array.isArray(params.unspents)) {
     throw new Error('expecting the unspents array');
   }
@@ -940,7 +934,6 @@ Wallet.prototype.sendTransaction = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['tx'], ['message', 'otp'], callback);
 
-  const self = this;
   return this.bitgo.post(this.bitgo.url('/tx/send'))
   .send(params)
   .result()
@@ -981,7 +974,6 @@ Wallet.prototype.createShare = function(params, callback) {
     }
   }
 
-  const self = this;
   return this.bitgo.post(this.url('/share'))
   .send(params)
   .result()
@@ -1000,7 +992,6 @@ Wallet.prototype.createInvite = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['message'], callback);
 
-  const self = this;
   const options = {
     toEmail: params.email,
     permissions: params.permissions
@@ -1125,7 +1116,6 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('invalid argument for instant - boolean expected');
   }
 
-  let keychain;
   let fee;
   let feeRate;
   let bitgoFee;
@@ -1223,7 +1213,6 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     throw new Error('invalid argument for instant - boolean expected');
   }
 
-  let keychain;
   let fee;
   let feeRate;
   let bitgoFee;
@@ -1589,10 +1578,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
    */
   const runNextConsolidation = co(function *() {
     const consolidationTransactions = [];
-    let grossAmount;
     let isFinalConsolidation = false;
-    let inputCount;
-    let currentAddress;
     iterationCount++;
     /*
      We take a maximum of unspentBulkSizeLimit unspents from the wallet. We want to make sure that we swipe the wallet
@@ -1631,7 +1617,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     targetInputCount = Math.min(targetInputCount, allUnspents.length);
 
     // if the targetInputCount requires more inputs than we allow per batch, we reduce the number
-    inputCount = Math.min(targetInputCount, maxInputCount);
+    const inputCount = Math.min(targetInputCount, maxInputCount);
 
     // if either the number of inputs left to coalesce equals the number we will coalesce in this iteration
     // or if the number of iterations matches the maximum permitted number
@@ -1641,9 +1627,9 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     const changeChain = self.getChangeChain(params);
     const newAddress = yield self.createAddress({ chain: changeChain, validate: validate });
     const txParams = _.extend({}, params);
-    currentAddress = newAddress;
+    const currentAddress = newAddress;
     // the total amount that we are consolidating within this batch
-    grossAmount = _(currentChunk).map('value').sum(); // before fees
+    const grossAmount = _(currentChunk).map('value').sum(); // before fees
 
     txParams.unspents = currentChunk;
     txParams.recipients = {};

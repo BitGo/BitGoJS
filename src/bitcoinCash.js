@@ -63,11 +63,9 @@ const deriveFast = function (hdnode, index) {
   const indexBuffer = new Buffer(4);
   indexBuffer.writeUInt32BE(index, 0);
 
-  let data;
-
   // data = serP(point(kpar)) || ser32(index)
   //      = serP(Kpar) || ser32(index)
-  data = Buffer.concat([
+  const data = Buffer.concat([
     hdnode.keyPair.getPublicKeyBuffer(),
     indexBuffer
   ]);
@@ -84,7 +82,6 @@ const deriveFast = function (hdnode, index) {
   }
 
   // Private parent key -> private child key
-  let hd;
   // Ki = point(parse256(IL)) + Kpar
   //    = G*IL + Kpar
 
@@ -97,7 +94,7 @@ const deriveFast = function (hdnode, index) {
   }
 
   const keyPair = new bitcoin.ECPair(null, Ki, { network: hdnode.keyPair.network });
-  hd = new bitcoin.HDNode(keyPair, IR);
+  const hd = new bitcoin.HDNode(keyPair, IR);
 
   hd.depth = hdnode.depth + 1;
   hd.index = index;
@@ -152,7 +149,7 @@ bitcoin.hdPath = function(rootKey) {
     if (el[el.length - 1] === "'") {
       hardened = true;
     }
-    const index = parseInt(el);
+    const index = parseInt(el, 10);
     let derived;
     if (hardened) {
       derived = parentKey.deriveHardened(index);

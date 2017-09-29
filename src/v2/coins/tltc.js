@@ -1,6 +1,5 @@
 const Ltc = require('./ltc');
 const bitcoin = require('bitcoinjs-lib');
-const _ = require('lodash');
 
 const Tltc = function() {
   // this function is called externally from BaseCoin

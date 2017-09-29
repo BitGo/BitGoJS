@@ -8,8 +8,6 @@
 const bitcoin = require('./bitcoin');
 const Wallet = require('./wallet');
 const common = require('./common');
-const Util = require('./util');
-const Promise = require('bluebird');
 const _ = require('lodash');
 
 //
@@ -96,7 +94,6 @@ Wallets.prototype.listInvites = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const self = this;
   return this.bitgo.get(this.bitgo.url('/walletinvite'))
   .result()
   .nodeify(callback);
@@ -110,7 +107,6 @@ Wallets.prototype.cancelInvite = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['walletInviteId'], [], callback);
 
-  const self = this;
   return this.bitgo.del(this.bitgo.url('/walletinvite/' + params.walletInviteId))
   .result()
   .nodeify(callback);
@@ -124,7 +120,6 @@ Wallets.prototype.listShares = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const self = this;
   return this.bitgo.get(this.bitgo.url('/walletshare'))
   .result()
   .nodeify(callback);
@@ -452,7 +447,7 @@ Wallets.prototype.createForwardWallet = function(params, callback) {
   });
 };
 
-/** 
+/**
 * Add a new wallet (advanced mode).
 * This allows you to manually submit the keychains, type, m and n of the wallet
 * @param {string} label label of the wallet to be shown in UI
@@ -522,7 +517,6 @@ Wallets.prototype.remove = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['id'], [], callback);
 
-  const self = this;
   return this.bitgo.del(this.bitgo.url('/wallet/' + params.id))
   .result()
   .nodeify(callback);

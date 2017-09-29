@@ -1,6 +1,6 @@
 //
 //  An alternative to the sendToMany API call
-// 
+//
 //  Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
@@ -14,7 +14,7 @@ const accessToken = config.accessToken;
 const bitgo = new BitGoJS.BitGo({ env: 'test', accessToken: accessToken });
 
 //
-//    Loading Config Settings 
+//    Loading Config Settings
 //
 
 const sendingAddress = config.sendingAddress;
@@ -35,7 +35,7 @@ function setDestinationAddress () {
   sendCoins(destinationAddress);
 }
 
-var sendCoins = function(destinationAddress) {
+const sendCoins = function(destinationAddress) {
   bitgo.wallets().get({ id: sendingAddress }, function(err, wallet) {
     if (err) { console.log('Error getting wallet!'); console.dir(err); return process.exit(-1); }
     console.log('Balance is: ' + (wallet.balance() / 1e8).toFixed(4));

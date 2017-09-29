@@ -274,8 +274,8 @@ Btc.prototype.recover = function(params, callback) {
     const keys_0_0_1 = deriveKeys(keys_0_0, 1);
 
     // We want to get the wallet id, which is the first /0/0/0/0.
-    // Never used, but potentially useful for debugging
-    const walletAddress = createMultiSigAddress(deriveKeys(keys_0_0_0, 0));
+    // Never used, but potentially useful for debugging, uncomment to use
+    //const walletAddress = createMultiSigAddress(deriveKeys(keys_0_0_0, 0));
 
     let lookupThisBatch = [];
     let numSequentialAddressesWithoutTxs = 0;

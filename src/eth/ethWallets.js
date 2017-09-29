@@ -5,7 +5,6 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const bitcoin = require('../bitcoin');
 const EthWallet = require('./ethWallet');
 const common = require('../common');
 const Util = require('../util');

@@ -29,7 +29,7 @@ Promise.coroutine(function *() {
         address: newReceiveAddress2.address
       }
     ],
-    walletPassphrase: 'test@bitgo.com'
+    walletPassphrase: walletPassphrase
   });
   const explanation = basecoin.explainTransaction({ txHex: transaction.tx });
 

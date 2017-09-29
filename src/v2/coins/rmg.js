@@ -1,7 +1,5 @@
 const BaseCoin = require('../baseCoin');
-const common = require('../../common');
 const prova = require('../../prova');
-const _ = require('lodash');
 
 const Rmg = function() {
   // this function is called externally from BaseCoin

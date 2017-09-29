@@ -184,7 +184,6 @@ Wallets.prototype.generateWallet = co(function *(params, callback) {
   let userKeychain;
   let backupKeychain;
   let bitgoKeychain;
-  let userKeychainParams;
   let derivationPath;
 
   const passphrase = params.passphrase;

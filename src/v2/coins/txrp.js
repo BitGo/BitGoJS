@@ -1,5 +1,4 @@
 const Xrp = require('./xrp');
-const _ = require('lodash');
 
 const Txrp = function() {
   // this function is called externally from BaseCoin

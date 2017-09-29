@@ -6,7 +6,6 @@
 //
 
 const common = require('./common');
-const Util = require('./util');
 const PendingApproval = require('./pendingapproval');
 const _ = require('lodash');
 
@@ -25,7 +24,6 @@ PendingApprovals.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletId', 'enterpriseId'], callback);
 
-  const args = [];
   const queryParams = {};
   if (_.isString(params.walletId)) {
     queryParams.walletId = params.walletId;

@@ -10,8 +10,6 @@ const Util = require('../util');
 let ethAbi = function() {};
 let ethUtil = function() {};
 
-
-const assert = require('assert');
 const common = require('../common');
 const Promise = require('bluebird');
 const _ = require('lodash');

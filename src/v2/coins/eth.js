@@ -1,9 +1,5 @@
 const BaseCoin = require('../baseCoin');
 const BigNumber = require('bignumber.js');
-const crypto = require('crypto');
-const prova = require('../../prova');
-const Promise = require('bluebird');
-const common = require('../../common');
 const Util = require('../../util');
 const _ = require('lodash');
 let ethAbi = function() {};

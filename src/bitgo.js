@@ -31,7 +31,6 @@ const moment = require('moment');
 const _ = require('lodash');
 const url = require('url');
 const querystring = require('querystring');
-const crypto = require('crypto');
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);
@@ -1358,14 +1357,14 @@ BitGo.prototype.labels = function(params, callback) {
   .nodeify(callback);
 };
 
-/** 
+/**
 * Estimates approximate fee per kb needed for a tx to get into a block
 * @param {number} numBlocks target blocks for the transaction to be confirmed
 * @param {number} maxFee maximum fee willing to be paid (for safety)
 * @param {array[string]} inputs list of unconfirmed txIds from which this transaction uses inputs
 * @param {number} txSize estimated transaction size in bytes, optional parameter used for CPFP estimation.
 * @param {boolean} cpfpAware flag indicating fee should take into account CPFP
-* @returns 
+* @returns
 */
 BitGo.prototype.estimateFee = function(params, callback) {
   params = params || {};
@@ -1444,7 +1443,6 @@ BitGo.prototype.getBitGoFeeAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const self = this;
   return this.post(this.url('/billing/address'))
   .send({})
   .result()
@@ -1459,7 +1457,6 @@ BitGo.prototype.getWalletAddress = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['address'], [], callback);
 
-  const self = this;
   return this.get(this.url('/walletaddress/' + params.address))
   .result()
   .nodeify(callback);

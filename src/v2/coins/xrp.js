@@ -1,6 +1,5 @@
 const BaseCoin = require('../baseCoin');
 const BigNumber = require('bignumber.js');
-const crypto = require('crypto');
 const querystring = require('querystring');
 const ripple = require('../../ripple');
 const rippleAddressCodec = require('ripple-address-codec');
@@ -9,9 +8,6 @@ const rippleHashes = require('ripple-hashes');
 const rippleKeypairs = require('ripple-keypairs');
 const url = require('url');
 const prova = require('../../prova');
-const Promise = require('bluebird');
-const common = require('../../common');
-const _ = require('lodash');
 
 const Xrp = function() {
   // this function is called externally from BaseCoin
@@ -60,7 +56,7 @@ Xrp.prototype.isValidAddress = function(address) {
     return false;
   }
 
-  const parsedTag = parseInt(queryDetails.dt);
+  const parsedTag = parseInt(queryDetails.dt, 10);
   if (!Number.isSafeInteger(parsedTag)) {
     return false;
   }
@@ -149,7 +145,6 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
   .then(function(feeInfo) {
     // TODO: get recommended fee from server instead of doing number magic
     const fee = new BigNumber(feeInfo.xrpOpenLedgerFee).times(1.5).toFixed(0);
-    const ledgerVersion = feeInfo.height;
 
     // configure multisigners
     const multisigAssignmentTx = {
@@ -366,7 +361,7 @@ Xrp.prototype.recover = function(params, callback) {
     const queryDetails = querystring.parse(destinationDetails.query);
     const destinationAddress = destinationDetails.pathname;
     let destinationTag = undefined;
-    const parsedTag = parseInt(queryDetails.dt);
+    const parsedTag = parseInt(queryDetails.dt, 10);
     if (Number.isInteger(parsedTag)) {
       destinationTag = parsedTag;
     }

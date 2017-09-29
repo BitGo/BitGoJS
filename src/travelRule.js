@@ -5,13 +5,8 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const Util = require('./util');
-
-const assert = require('assert');
 const bitcoin = require('./bitcoin');
 const common = require('./common');
-const networks = require('bitcoinjs-lib/src/networks');
-const Promise = require('bluebird');
 const _ = require('lodash');
 const sjcl = require('./sjcl.min');
 
@@ -269,9 +264,6 @@ TravelRule.prototype.sendMany = function(params, callback) {
         sendParamsList.push(sendParams);
       }
     });
-
-    const results = [];
-    const errors = [];
 
     const result = {
       matched: sendParamsList.length,

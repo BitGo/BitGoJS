@@ -64,10 +64,10 @@ const collectInputs = function() {
   const getCreateOrDeleteVariables = function() {
     return function() {
       const deferred = Q.defer();
-      if (inputs.action == 'set') {
+      if (inputs.action === 'set') {
         return getVariable('address', 'On which address are we setting the label: ')()
                     .then(getVariable('label', 'What label do you want to set on the address: '));
-      } else if (inputs.action == 'delete') {
+      } else if (inputs.action === 'delete') {
         return getVariable('address', 'From which address are we removing the label: ')();
       } else {
         deferred.resolve();

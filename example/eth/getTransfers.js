@@ -12,7 +12,6 @@ const user = process.argv[2];
 const password = process.argv[3];
 const otp = '0000000';
 const walletId = process.argv[4];
-const _ = require('lodash');
 
 const bitgo = new BitGoJS.BitGo();
 

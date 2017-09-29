@@ -2,7 +2,6 @@
 // Sends an Ethereum transaction on BitGo
 //
 const BitGoJS = require('../../src/index.js');
-const BN = require('ethereumjs-util').BN;
 
 if (process.argv.length < 5) {
   console.log('usage:\n\t' + process.argv[0] + ' ' + process.argv[1] + ' <user> <password> <walletId>');
@@ -35,7 +34,7 @@ const getTransactions = function() {
       console.log('Start: ' + res.start);
       console.log('Limit: ' + res.limit);
       console.log('Transactions: ');
-      
+
       console.dir(prettyTxs);
     });
   });

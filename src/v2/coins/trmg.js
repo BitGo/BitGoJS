@@ -1,6 +1,5 @@
 const Rmg = require('./rmg');
 const prova = require('../../prova');
-const _ = require('lodash');
 
 const Trmg = function() {
   // this function is called externally from BaseCoin

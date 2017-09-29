@@ -1,6 +1,5 @@
 const Btc = require('./btc');
 const bitcoin = require('bcashjs-lib');
-const _ = require('lodash');
 
 const Bch = function() {
   // this function is called externally from BaseCoin

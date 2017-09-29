@@ -2,7 +2,6 @@
 // Sends an Ethereum transaction on BitGo
 //
 const BitGoJS = require('../../src/index.js');
-const BN = require('ethereumjs-util').BN;
 
 if (process.argv.length < 5) {
   console.log('usage:\n\t' + process.argv[0] + ' ' + process.argv[1] + ' <user> <password> <walletId>');
@@ -13,7 +12,6 @@ const user = process.argv[2];
 const password = process.argv[3];
 const otp = '0000000';
 const walletId = process.argv[4];
-const _ = require('lodash');
 
 const bitgo = new BitGoJS.BitGo();
 
