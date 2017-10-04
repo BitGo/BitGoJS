@@ -124,7 +124,7 @@ Wallet.prototype.transactions = function(params, callback) {
  * @param callback
  * @returns {*}
  */
-Wallet.prototype.getTransaction = function getTransaction(params, callback){
+Wallet.prototype.getTransaction = function getTransaction(params, callback) {
   params = params || {};
   common.validateParams(params, ['txHash'], [], callback);
 

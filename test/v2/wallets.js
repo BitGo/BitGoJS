@@ -27,7 +27,7 @@ describe('V2 Wallets:', function() {
   describe('Per-coin tests', function() {
     const coins = ['tbtc', 'txrp', 'teth', 'tltc', 'trmg'];
 
-    for (const currentCoin of coins){
+    for (const currentCoin of coins) {
       let basecoin;
       let wallets;
 

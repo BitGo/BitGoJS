@@ -166,7 +166,7 @@ describe('Wallet API', function() {
     // clean up any outstanding shares before proceeding
     before(function() {
       return bitgo.wallets().listShares({})
-      .then(function(result){
+      .then(function(result) {
         const cancels = result.outgoing.map(function(share) {
           return bitgo.wallets().cancelShare({ walletShareId: share.id });
         });
@@ -260,7 +260,7 @@ describe('Wallet API', function() {
           permissions: 'view'
         });
       })
-      .then(function(result){
+      .then(function(result) {
         result.should.have.property('walletId');
         result.should.have.property('fromUser');
         result.should.have.property('toUser');
@@ -284,7 +284,7 @@ describe('Wallet API', function() {
           user: TestBitGo.TEST_SHARED_KEY_USERID
         });
       })
-      .then(function(wallet){
+      .then(function(wallet) {
         wallet.adminCount.should.eql(1);
         wallet.admin.users.length.should.eql(1);
       });
@@ -299,7 +299,7 @@ describe('Wallet API', function() {
           permissions: 'view,spend'
         });
       })
-      .then(function(result){
+      .then(function(result) {
         result.should.have.property('walletId');
         result.should.have.property('fromUser');
         result.should.have.property('toUser');
@@ -325,7 +325,7 @@ describe('Wallet API', function() {
           permissions: 'view'
         });
       })
-      .then(function(result){
+      .then(function(result) {
         result.should.have.property('walletId');
         result.should.have.property('fromUser');
         result.should.have.property('toUser');
@@ -361,7 +361,7 @@ describe('Wallet API', function() {
     it('cancelled wallet share should not be in sender list', function(done) {
 
       bitgo.wallets().listShares({})
-      .then(function(result){
+      .then(function(result) {
         result.outgoing.should.not.containDeep([{ id: cancelledWalletShareId }]);
         done();
       })
@@ -370,7 +370,7 @@ describe('Wallet API', function() {
 
     it('wallet share should be in sender list', function(done) {
       bitgo.wallets().listShares({})
-      .then(function(result){
+      .then(function(result) {
         result.outgoing.should.containDeep([{ id: walletShareIdWithViewPermissions }]);
         result.outgoing.should.containDeep([{ id: walletShareIdWithSpendPermissions }]);
         done();
@@ -380,7 +380,7 @@ describe('Wallet API', function() {
 
     it('wallet share should be in receiver list', function(done) {
       bitgoSharedKeyUser.wallets().listShares({})
-      .then(function(result){
+      .then(function(result) {
         result.incoming.should.containDeep([{ id: walletShareIdWithViewPermissions }]);
         result.incoming.should.containDeep([{ id: walletShareIdWithSpendPermissions }]);
         done();
@@ -389,7 +389,7 @@ describe('Wallet API', function() {
     });
   });
 
-  describe('Accept wallet share', function (){
+  describe('Accept wallet share', function () {
     before(function(done) {
       bitgoSharedKeyUser = new TestBitGo();
       bitgoSharedKeyUser.initializeTestVars();
@@ -454,7 +454,7 @@ describe('Wallet API', function() {
           permissions: 'view,spend'
         });
       })
-      .then(function(result){
+      .then(function(result) {
         result.should.have.property('walletId');
         result.should.have.property('fromUser');
         result.should.have.property('toUser');
@@ -669,7 +669,7 @@ describe('Wallet API', function() {
       const originalWalletName = 'Even Better Test Wallet 1';
       const newWalletName = originalWalletName + '(' + renameIndicator + ')';
       return wallet1.setWalletName({ label: newWalletName })
-      .then(function(result){
+      .then(function(result) {
         result.should.have.property('id');
         result.should.have.property('label');
         result.id.should.eql(TestBitGo.TEST_WALLET1_ADDRESS);
@@ -678,7 +678,7 @@ describe('Wallet API', function() {
         // now, let's rename it back
         return wallet1.setWalletName({ label: originalWalletName });
       })
-      .catch(function(err){
+      .catch(function(err) {
         // it should never be in here
         assert.equal(err, null);
       });
@@ -789,7 +789,7 @@ describe('Wallet API', function() {
       });
     });
 
-    describe('Unspent Fanning And Consolidation', function(){
+    describe('Unspent Fanning And Consolidation', function() {
 
       let regroupWallet;
       before(function() {
@@ -802,7 +802,7 @@ describe('Wallet API', function() {
         });
       });
 
-      it('arguments', function(done){
+      it('arguments', function(done) {
         assert.throws(function() { regroupWallet.fanOutUnspents('invalid'); });
         assert.throws(function() { regroupWallet.fanOutUnspents({}); });
         assert.throws(function() { regroupWallet.fanOutUnspents({ target: -4 }); });
@@ -888,7 +888,7 @@ describe('Wallet API', function() {
       xit('consolidate unspents', function() {
         const maxInputCountPerConsolidation = 3;
         let progressCallbackCount = 0;
-        const progressCallback = function(progressDetails){
+        const progressCallback = function(progressDetails) {
           progressDetails.should.have.property('index');
           progressDetails.should.have.property('inputCount');
           progressDetails.index.should.equal(progressCallbackCount);
@@ -1285,9 +1285,9 @@ describe('Wallet API', function() {
             unspents.unspents[2].value = 10;
             walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
 
-            for(let i = 0; i < unspents.count; i++) {
+            for (let i = 0; i < unspents.count; i++) {
               // count the number of inputs that are below 1 sat/Byte
-              if(unspents.unspents[i].value <= 1000 * 295 / 1000){
+              if (unspents.unspents[i].value <= 1000 * 295 / 1000) {
                 countLowInputs++;
               }
             }
@@ -1333,8 +1333,8 @@ describe('Wallet API', function() {
             walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
 
 
-            for(let i = 0; i < unspents.count; i++) {
-              if(unspents.unspents[i].value <= 1000 * 295 / 1000){
+            for (let i = 0; i < unspents.count; i++) {
+              if (unspents.unspents[i].value <= 1000 * 295 / 1000) {
                 countLowInputs++;
               }
             }
@@ -3069,7 +3069,7 @@ describe('Wallet Prototype Methods', function() {
 
   describe('Create Transaction', function() {
 
-    before(co(function *(){
+    before(co(function *() {
       yield bitgo.authenticateTestUser(bitgo.testUserOTP());
       bitgo._token.should.not.be.empty;
     }));

@@ -34,7 +34,7 @@ describe('HDNode', function() {
       const hdnode = HDNode.fromSeedBuffer(new Buffer('000103030405060708090a0b0c0d0e0f', 'hex'));
       const hdpath = bitcoin.hdPath(hdnode);
       hdpath.derive("m/1/2'/3/4").toBase58().should.equal('xprvA1PudVPRZQFcfftzuHtMGwhs3siwHTKz2YjoJcVchrz7eugyW8riiaxYRyg1oXdzGxgFQ1Nz4Smokj7pi8NsWYTQwNqWXiRde2Jv37XwnDX');
-      for(let i=0; i<1000; i++) {
+      for (let i=0; i<1000; i++) {
         hdpath.derive("m/1/2'/3/4").toBase58().should.equal('xprvA1PudVPRZQFcfftzuHtMGwhs3siwHTKz2YjoJcVchrz7eugyW8riiaxYRyg1oXdzGxgFQ1Nz4Smokj7pi8NsWYTQwNqWXiRde2Jv37XwnDX');
       }
     });
@@ -43,7 +43,7 @@ describe('HDNode', function() {
       const hdnode = HDNode.fromSeedBuffer(new Buffer('000103030405060708090a0b0c0d0e0f', 'hex')).neutered();
       const hdpath = bitcoin.hdPath(hdnode);
       hdpath.derive('m/0/1/2/3').toBase58().should.equal('xpub6F46ySPYeyfcJzEZVS2zWVnx4ai5eSRbFXkdm3DCezF8jT1zE35L4SJbsMPyCSbyWppi9tuSH6PzAMxe5vWHPR8Bpstt3tyw5GBqeSXQLB5');
-      for(let i=0; i<1000; i++) {
+      for (let i=0; i<1000; i++) {
         hdpath.derive('m/0/1/2/3').toBase58().should.equal('xpub6F46ySPYeyfcJzEZVS2zWVnx4ai5eSRbFXkdm3DCezF8jT1zE35L4SJbsMPyCSbyWppi9tuSH6PzAMxe5vWHPR8Bpstt3tyw5GBqeSXQLB5');
       }
     });

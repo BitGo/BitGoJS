@@ -102,7 +102,7 @@ describe('Webhooks', function() {
   });
 
   describe('Simulate wallet webhooks', function() {
-    it('should enforce arguments', function(){
+    it('should enforce arguments', function() {
       assert.throws(function() { wallet.simulateWebhook({}, function() {}); });
       assert.throws(function() { wallet.simulateWebhook({ webhookId: simulatedTransactionWebhookId }, function() {}); });
       assert.throws(function() { wallet.simulateWebhook({ url: 'https://google.com' }, function() {}); });

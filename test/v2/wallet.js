@@ -148,20 +148,20 @@ describe('V2 Wallet:', function() {
       });
     });
 
-    it('should fail if not given a txHash', co(function *(){
+    it('should fail if not given a txHash', co(function *() {
       try {
         yield wallet.getTransaction();
         throw '';
-      } catch (error){
+      } catch (error) {
         error.message.should.equal('Missing parameter: txHash');
       }
     }));
 
-    it('should fail if limit is negative', co(function *(){
+    it('should fail if limit is negative', co(function *() {
       try {
         yield wallet.getTransaction({ txHash: '96b2376fb0ccfdbcc9472489ca3ec75df1487b08a0ea8d9d82c55da19d8cceea', limit: -1 });
         throw '';
-      } catch (error){
+      } catch (error) {
         error.message.should.equal('invalid limit argument, expecting positive integer');
       }
     }));

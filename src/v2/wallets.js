@@ -126,11 +126,11 @@ Wallets.prototype.add = function(params, callback) {
     walletParams.isCold = params.isCold;
   }
 
-  if(params.tags) {
+  if (params.tags) {
     walletParams.tags = params.tags;
   }
 
-  if(params.clientFlags) {
+  if (params.clientFlags) {
     walletParams.clientFlags = params.clientFlags;
   }
 

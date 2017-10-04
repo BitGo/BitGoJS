@@ -56,6 +56,9 @@
     "no-extra-semi": "error",
     "radix": "warn",
     "comma-spacing": ["error", { "before": false, "after": true }],
-    "comma-dangle": ["error", "never"]
+    "comma-dangle": ["error", "never"],
+    "no-multi-spaces": ["error", {"ignoreEOLComments": true}],
+    "keyword-spacing": ["error"],
+    "space-before-blocks": ["error"]
   }
 }

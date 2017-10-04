@@ -86,7 +86,7 @@ const createWallet = function() {
         });
       });
     });
-  } catch(e) {
+  } catch (e) {
     console.dir(e.message);
   }
 };

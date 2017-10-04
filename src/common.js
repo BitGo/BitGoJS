@@ -153,7 +153,7 @@ exports.getNetwork = function() {
   return bitcoinNetwork;
 };
 
-exports.getRmgNetwork = function(){
+exports.getRmgNetwork = function() {
   return rmgNetwork;
 };
 

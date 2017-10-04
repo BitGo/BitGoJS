@@ -1,6 +1,6 @@
 // This is a test file -> DO NOT USE IN PRODUCTION
 
-const addresses =  [
+const addresses = [
   '2N144WXPKqychf4jV9Zu9b2gQ5zgfD9yYyP',
   '2Mzv9Yx2euzgWKH5NMR4LFGdEaQSVtR5j86',
   '2NG3gg8Q3kbcSAbnnZeVJdR7ofzLcRRxnBz',
