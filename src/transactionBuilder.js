@@ -821,7 +821,7 @@ exports.signTransaction = function(params) {
     hdPath = bitcoin.hdPath(rootExtKey);
   }
 
-  const txb = bitcoinCash.TransactionBuilder.fromTransaction(transaction, rootExtKey.keyPair.network);
+  const txb = bitcoinCash.TransactionBuilder.fromTransaction(transaction, _.get(rootExtKey, 'keyPair.network', bitcoin.networks.bitcoin));
 
   for (let index = 0; index < txb.tx.ins.length; ++index) {
     const currentUnspent = params.unspents[index];
