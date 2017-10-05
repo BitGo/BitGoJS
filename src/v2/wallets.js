@@ -248,7 +248,11 @@ Wallets.prototype.generateWallet = co(function *(params, callback) {
     backupKeychain = _.extend({}, newBackupKeychain, backupKeychain);
   });
 
-  const bitgoKeychainPromise = self.baseCoin.keychains().createBitGo()
+  const bitgoKeychainParams = {
+    enterpriseId: params.enterprise
+  };
+
+  const bitgoKeychainPromise = self.baseCoin.keychains().createBitGo(bitgoKeychainParams)
   .then(function(keychain) {
     bitgoKeychain = keychain;
   });

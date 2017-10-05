@@ -122,6 +122,15 @@ BaseCoin.prototype.deriveKeyWithSeed = function({ key, seed }) {
   };
 };
 
+/**
+ * Perform additional checks before adding a bitgo key. Base controller
+ * is a no-op, but coin-specific controller may do something
+ * @param params
+ */
+BaseCoin.prototype.preCreateBitGo = function(params) {
+  return;
+};
+
 BaseCoin.prototype.initiateRecovery = function(params) {
   const keys = [];
   const userKey = params.userKey; // Box A

@@ -128,4 +128,15 @@ Eth.prototype.signTransaction = function(params) {
   return { halfSigned: txParams };
 };
 
+/**
+ * Ensure the enterpriseId is passed, so we can use the correct Enterprise fee address
+ * @param params
+ * @param params.enterpriseId {String} the enterprise id to associate with this key
+ */
+BaseCoin.prototype.preCreateBitGo = function(params) {
+  if (!params || !params.enterpriseId) {
+    throw new Error('expecting enterpriseId when adding BitGo key');
+  }
+};
+
 module.exports = Eth;
