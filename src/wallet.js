@@ -418,6 +418,21 @@ Wallet.prototype.stats = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * Refresh the wallet object by syncing with the back-end
+ * @param callback
+ * @returns {Wallet}
+ */
+Wallet.prototype.refresh = function(params, callback) {
+  return co(function *() {
+    // when set to true, gpk returns the private data of safe wallets
+    const query = _.extend({}, _.pick(params, ['gpk']));
+    const res = yield this.bitgo.get(this.url()).query(query).result();
+    this.wallet = res;
+    return this;
+  }).call(this).asCallback(callback);
+};
+
 //
 // address
 // Gets information about a single address on a HD wallet.
@@ -818,29 +833,31 @@ Wallet.prototype.getWalletTransactionBySequenceId = function(params, callback) {
 // The user key chain is typically the first keychain of the wallet and has the encrypted xpriv stored on BitGo.
 // Useful when trying to get the users' keychain from the server before decrypting to sign a transaction.
 Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, [], [], callback);
-  const self = this;
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], [], callback);
+    const self = this;
 
-  const tryKeyChain = function(index) {
-    if (!self.keychains || index >= self.keychains.length) {
-      return self.bitgo.reject('No encrypted keychains on this wallet.', callback);
-    }
+    const tryKeyChain = co(function *(index) {
+      if (!self.keychains || index >= self.keychains.length) {
+        const error = new Error('No encrypted keychains on this wallet.');
+        error.code = 'no_encrypted_keychain_on_wallet';
+        throw error;
+      }
 
-    const params = { xpub: self.keychains[index].xpub };
+      const params = { xpub: self.keychains[index].xpub };
 
-    return self.bitgo.keychains().get(params)
-    .then(function(keychain) {
-      // If we find the xpriv, then this is probably the user keychain we're looking for
+      const keychain = yield self.bitgo.keychains().get(params);
+      // If we find the xprv, then this is probably the user keychain we're looking for
       keychain.walletSubPath = self.keychains[index].path;
       if (keychain.encryptedXprv) {
         return keychain;
       }
       return tryKeyChain(index + 1);
     });
-  };
 
-  return tryKeyChain(0).nodeify(callback);
+    return tryKeyChain(0);
+  }).call(this).asCallback(callback);
 };
 
 //
@@ -1189,49 +1206,57 @@ Wallet.prototype.sendMany = function(params, callback) {
 // Returns:
 //
 Wallet.prototype.createAndSignTransaction = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, [], [], callback);
-  const self = this;
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], [], callback);
 
-  if (!_.isObject(params.recipients)) {
-    throw new Error('expecting recipients object');
-  }
+    if (!_.isObject(params.recipients)) {
+      throw new Error('expecting recipients object');
+    }
 
-  if (params.fee && !_.isNumber(params.fee)) {
-    throw new Error('invalid argument for fee - number expected');
-  }
+    if (params.fee && !_.isNumber(params.fee)) {
+      throw new Error('invalid argument for fee - number expected');
+    }
 
-  if (params.feeRate && !_.isNumber(params.feeRate)) {
-    throw new Error('invalid argument for feeRate - number expected');
-  }
+    if (params.feeRate && !_.isNumber(params.feeRate)) {
+      throw new Error('invalid argument for feeRate - number expected');
+    }
 
-  if (params.dynamicFeeConfirmTarget && !_.isNumber(params.dynamicFeeConfirmTarget)) {
-    throw new Error('invalid argument for confirmTarget - number expected');
-  }
+    if (params.dynamicFeeConfirmTarget && !_.isNumber(params.dynamicFeeConfirmTarget)) {
+      throw new Error('invalid argument for confirmTarget - number expected');
+    }
 
-  if (params.instant && !_.isBoolean(params.instant)) {
-    throw new Error('invalid argument for instant - boolean expected');
-  }
+    if (params.instant && !_.isBoolean(params.instant)) {
+      throw new Error('invalid argument for instant - boolean expected');
+    }
 
-  let fee;
-  let feeRate;
-  let bitgoFee;
-  let travelInfos;
-  let estimatedSize;
+    const transaction = yield this.createTransaction(params);
+    const fee = transaction.fee;
+    const feeRate = transaction.feeRate;
+    const estimatedSize = transaction.estimatedSize;
+    const bitgoFee = transaction.bitgoFee;
+    const travelInfos = transaction.travelInfos;
 
-  return Promise.all([self.getAndPrepareSigningKeychain(params), self.createTransaction(params)])
-  .spread(function(keychain, transaction) {
-    fee = transaction.fee;
-    feeRate = transaction.feeRate;
-    estimatedSize = transaction.estimatedSize;
     // Sign the transaction
-    transaction.keychain = keychain;
-    bitgoFee = transaction.bitgoFee;
-    travelInfos = transaction.travelInfos;
+    try {
+      const keychain = yield this.getAndPrepareSigningKeychain(params);
+      transaction.keychain = keychain;
+    } catch (e) {
+      if (e.code !== 'no_encrypted_keychain_on_wallet') {
+        throw e;
+      }
+      // this might be a safe wallet, so let's retrieve the private key info
+      yield this.refresh({ gpk: true });
+      const safeUserKey = _.get(this.wallet, 'private.userPrivKey');
+      if (_.isString(safeUserKey) && _.isString(params.walletPassphrase)) {
+        transaction.signingKey = this.bitgo.decrypt({ password: params.walletPassphrase, input: safeUserKey });
+      } else {
+        throw e;
+      }
+    }
+
     transaction.feeSingleKeyWIF = params.feeSingleKeyWIF;
-    return self.signTransaction(transaction);
-  })
-  .then(function(result) {
+    const result = yield this.signTransaction(transaction);
     return _.extend(result, {
       fee: fee,
       feeRate: feeRate,
@@ -1240,8 +1265,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
       travelInfos: travelInfos,
       estimatedSize: estimatedSize
     });
-  })
-  .nodeify(callback);
+  }).call(this).asCallback(callback);
 };
 
 //
@@ -1592,7 +1616,11 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      them, and therefore will be able to simplify this method.
      */
 
-    let allUnspents = yield self.unspents({ limit: target + maxInputCount, minConfirms: minConfirms, minSize: minSize });
+    let allUnspents = yield self.unspents({
+      limit: target + maxInputCount,
+      minConfirms: minConfirms,
+      minSize: minSize
+    });
     // this consolidation is essentially just a waste of money
     if (allUnspents.length <= target) {
       if (iterationCount <= 1) {
