@@ -79,7 +79,7 @@ describe('PendingApproval', function() {
         type: 'getApproval'
       },
       condition: {
-        amount: 1e8 + Math.round(Math.random()*1e8)
+        amount: 1e8 + Math.round(Math.random() * 1e8)
       },
       id: 'com.bitgo.limit.tx',
       type: 'transactionLimit'

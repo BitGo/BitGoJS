@@ -1313,7 +1313,7 @@ describe('Wallet API', function() {
           })
           .then(function(result) {
             // several inputs are below fee cost to add them and should be pruned
-            result.txInfo.nP2SHInputs.should.equal(15-1);
+            result.txInfo.nP2SHInputs.should.equal(15 - 1);
           });
       });
 
@@ -2104,7 +2104,7 @@ describe('Wallet API', function() {
           result.should.have.property('feeRate');
           result.should.have.property('instant');
           result.instant.should.eql(false);
-          result.feeRate.should.be.lessThan(0.01*1e8);
+          result.feeRate.should.be.lessThan(0.01 * 1e8);
         });
       });
 
@@ -2127,7 +2127,7 @@ describe('Wallet API', function() {
       });
 
       it('send coins - wallet1 to wallet3 using xprv and single key fee input', function () {
-        const seqId = Math.floor(Math.random()*1e16).toString(16);
+        const seqId = Math.floor(Math.random() * 1e16).toString(16);
         let txHash;
         return bitgo.unlock({ otp: '0000000' })
         .then(function() {
@@ -2143,7 +2143,7 @@ describe('Wallet API', function() {
           result.should.have.property('hash');
           result.should.have.property('fee');
           result.should.have.property('feeRate');
-          result.feeRate.should.be.lessThan(0.01*1e8);
+          result.feeRate.should.be.lessThan(0.01 * 1e8);
           txHash = result.hash;
           return wallet1.getWalletTransactionBySequenceId({ sequenceId: seqId });
         })
@@ -2297,7 +2297,7 @@ describe('Wallet API', function() {
             result.should.have.property('hash');
             result.should.have.property('fee');
             result.should.have.property('feeRate');
-            result.feeRate.should.be.lessThan(0.01*1e8);
+            result.feeRate.should.be.lessThan(0.01 * 1e8);
             done();
           });
       });
@@ -2600,8 +2600,8 @@ describe('Wallet API', function() {
             result.should.have.property('fee');
             result.should.have.property('feeRate');
             should.exist(result.fee);
-            result.fee.should.be.lessThan(0.01*1e8);
-            result.feeRate.should.be.lessThan(0.01*1e8);
+            result.fee.should.be.lessThan(0.01 * 1e8);
+            result.feeRate.should.be.lessThan(0.01 * 1e8);
             return wallet1.signTransaction({ transactionHex: result.transactionHex, unspents: result.unspents, keychain: keychain });
           })
         .then(function(result) {

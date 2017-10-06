@@ -54,11 +54,12 @@
     "prefer-const": "error",
     "no-compare-neg-zero": "error",
     "no-extra-semi": "error",
-    "radix": "warn",
+    "radix": "error",
     "comma-spacing": ["error", { "before": false, "after": true }],
     "comma-dangle": ["error", "never"],
     "no-multi-spaces": ["error", {"ignoreEOLComments": true}],
     "keyword-spacing": ["error"],
-    "space-before-blocks": ["error"]
+    "space-before-blocks": ["error"],
+    "space-infix-ops": ["error"]
   }
 }
