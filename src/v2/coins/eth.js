@@ -45,7 +45,28 @@ Eth.prototype.isValidAddress = function(address) {
   return ethUtil.isValidAddress(ethUtil.addHexPrefix(address));
 };
 
-const getOperationSha3ForExecuteAndConfirm = (recipients, expireTime, contractSequenceId) => {
+/**
+ * Get transfer operation for coin
+ * @param recipient recipient info
+ * @param expireTime expiry time
+ * @param contractSequenceId sequence id
+ * @returns {Array} operation array
+ */
+Eth.prototype.getOperation = function(recipient, expireTime, contractSequenceId) {
+  return [
+    ['string', 'address', 'uint', 'string', 'uint', 'uint'],
+    [
+      'ETHER',
+      new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
+      recipient.amount,
+      ethUtil.stripHexPrefix(recipient.data) || '',
+      expireTime,
+      contractSequenceId
+    ]
+  ];
+};
+
+Eth.prototype.getOperationSha3ForExecuteAndConfirm = function(recipients, expireTime, contractSequenceId) {
   if (!recipients || !Array.isArray(recipients)) {
     throw new Error('expecting array of recipients');
   }
@@ -84,17 +105,7 @@ const getOperationSha3ForExecuteAndConfirm = (recipients, expireTime, contractSe
   });
 
   const recipient = recipients[0];
-  return ethUtil.bufferToHex(ethAbi.soliditySHA3(
-    ['string', 'address', 'uint', 'string', 'uint', 'uint'],
-    [
-      'ETHER',
-      new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
-      recipient.amount,
-      ethUtil.stripHexPrefix(recipient.data) || '',
-      expireTime,
-      contractSequenceId
-    ]
-  ));
+  return ethUtil.bufferToHex(ethAbi.soliditySHA3(...this.getOperation(recipient, expireTime, contractSequenceId)));
 };
 
 /**
@@ -112,7 +123,7 @@ Eth.prototype.signTransaction = function(params) {
   const secondsSinceEpoch = Math.floor((new Date().getTime()) / 1000);
   const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
 
-  const operationHash = getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, txPrebuild.nextContractSequenceId);
+  const operationHash = this.getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, txPrebuild.nextContractSequenceId);
   const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
   const txParams = {

@@ -4,6 +4,7 @@ let PendingApprovals;
 let Wallet;
 let Wallets;
 let Markets;
+let Token;
 let coinGenerators;
 const bitcoin = require('bitcoinjs-lib');
 const prova = require('../prova');
@@ -11,7 +12,7 @@ const Promise = require('bluebird');
 const sjcl = require('../sjcl.min');
 
 const BaseCoin = function(bitgo, coin) {
-  const coinInstance = BaseCoin.initializeCoin(coin);
+  const coinInstance = BaseCoin.initializeCoin(coin, bitgo);
   coinInstance.bitgo = bitgo;
 
   coinInstance.type = coin;
@@ -63,7 +64,7 @@ const BaseCoin = function(bitgo, coin) {
   return coinInstance;
 };
 
-BaseCoin.initializeCoin = function(coin) {
+BaseCoin.initializeCoin = function(coin, bitgo) {
   if (!coinGenerators) {
     // initialization has to be asynchronous to avoid circular dependencies
     coinGenerators = {
@@ -81,10 +82,20 @@ BaseCoin.initializeCoin = function(coin) {
       txrp: require('./coins/txrp')
     };
   }
+  if (!Token) {
+    Token = require('./coins/token');
+  }
+
+  const tokens = bitgo.getConstants().eth.tokens;
+  tokens.forEach((token) => {
+    if (!coinGenerators[token.type]) {
+      coinGenerators[token.type] = Token(token);
+    }
+  });
 
   const CoinGenerator = coinGenerators[coin];
   if (!CoinGenerator) {
-    throw new Error('Coin type ' + coin + ' not supported');
+    throw new Error('Coin or token type ' + coin + ' not supported');
   }
   return new CoinGenerator();
 };

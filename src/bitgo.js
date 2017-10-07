@@ -26,6 +26,7 @@ const sjcl = require('./sjcl.min');
 const common = require('./common');
 const Util = require('./util');
 const Promise = require('bluebird');
+const co = Promise.coroutine;
 const pjson = require('../package.json');
 const moment = require('moment');
 const _ = require('lodash');
@@ -422,6 +423,17 @@ const BitGo = function(params) {
  */
 BitGo.prototype.coin = function(coinName) {
   return BaseCoin(this, coinName);
+};
+
+/**
+ * Create a basecoin object for a virtual token
+ * @param tokenName
+ */
+BitGo.prototype.token = function(tokenName, callback) {
+  return co(function *() {
+    yield this.fetchConstants();
+    return this.coin(tokenName);
+  }).call(this).asCallback(callback);
 };
 
 // Accessor object for Ethereum methods
@@ -1508,7 +1520,10 @@ BitGo.prototype.getConstants = function(params) {
     fallbackFeeRate: 50000,
     minOutputSize: 2730,
     minInstantFeeRate: 10000,
-    bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47'
+    bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47',
+    eth: {
+      tokens: []
+    }
   };
 
   this.fetchConstants(params);

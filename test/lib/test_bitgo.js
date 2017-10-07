@@ -5,6 +5,8 @@
 //
 
 const BitGo = require('../../src/bitgo.js');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 
 BitGo.TEST_USER = 'tester@bitgo.com';
 
@@ -177,6 +179,19 @@ BitGo.prototype.authenticateSharingTestUser = function(otp, callback) {
     response.should.have.property('user');
   })
   .nodeify(callback);
+};
+
+const fetchConstants = BitGo.prototype.fetchConstants;
+BitGo.prototype.fetchConstants = function(callback) {
+  return co(function *() {
+    yield fetchConstants.call(this);
+    this._constants[this.env].eth = this._constants[this.env].eth || {};
+    this._constants[this.env].eth.tokens = this._constants[this.env].eth.tokens || [];
+    this._constants[this.env].eth.tokens.push({
+      type: 'erc',
+      tokenContractAddress: '0x945ac907cf021a6bcd07852bb3b8c087051706a9'
+    });
+  }).call(this).asCallback(callback);
 };
 
 module.exports = BitGo;
