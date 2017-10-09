@@ -87,7 +87,7 @@
     "minimist": "0.2.0",
     "moment": "~2.18.1",
     "morgan": "1.5.3",
-    "prova-lib": "~0.2.6",
+    "prova-lib": "0.2.9",
     "ripple-lib": "~0.17.7",
     "sanitize-html": "1.13.0",
     "superagent": "~3.5.2",

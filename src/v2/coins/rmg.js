@@ -50,10 +50,18 @@ Rmg.prototype.signTransaction = function(params) {
   const keychain = prova.HDNode.fromBase58(userPrv, this.network);
   const hdPath = keychain.hdPath();
 
+  const signatureIssues = [];
+
   for (let index = 0; index < transaction.ins.length; ++index) {
     const currentUnspent = txPrebuild.txInfo.unspents[index];
     const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
     const privKey = hdPath.deriveKey(path);
+
+    const currentSignatureIssue = {
+      inputIndex: index,
+      unspent: currentUnspent,
+      path: path
+    };
 
     const unspentAddress = prova.Address.fromBase58(currentUnspent.address);
     const subscript = unspentAddress.toScript();
@@ -61,15 +69,39 @@ Rmg.prototype.signTransaction = function(params) {
     try {
       txb.sign(index, privKey, subscript, currentUnspent.value);
     } catch (e) {
-      throw new Error('Failed to sign input #' + index);
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+      continue;
     }
 
     transaction = txb.buildIncomplete();
+    const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
+    if (!isValidSignature) {
+      currentSignatureIssue.error = new Error('invalid signature');
+      signatureIssues.push(currentSignatureIssue);
+    }
+  }
+
+  if (signatureIssues.length > 0) {
+    const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
+    const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+    error.code = 'input_signature_failure';
+    error.signingErrors = signatureIssues;
+    throw error;
   }
 
   return {
     txHex: transaction.toHex()
   };
+};
+
+Rmg.prototype.verifySignature = function(transaction, inputIndex, amount) {
+  const currentInput = transaction.ins[inputIndex];
+  const signatureScript = currentInput.script;
+  const [publicKeyBuffer, signatureBuffer] = prova.script.decompile(signatureScript);
+  const publicKey = prova.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
+  const signatureHash = transaction.hashForWitnessV0(inputIndex, null, amount, prova.Transaction.SIGHASH_ALL);
+  return publicKey.verify(signatureHash, signatureBuffer);
 };
 
 Rmg.prototype.explainTransaction = function(params) {

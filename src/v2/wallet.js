@@ -705,6 +705,47 @@ Wallet.prototype.signTransaction = function(params, callback) {
   .nodeify(callback);
 };
 
+Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+
+    if (params.prebuildTx && params.recipients) {
+      const error = new Error('Only one of prebuildTx and recipients may be specified');
+      error.code = 'both_prebuildtx_and_recipients_specified';
+      throw error;
+    }
+
+    if (params.recipients && !Array.isArray(params.recipients)) {
+      const error = new Error('expecting recipients array');
+      error.code = 'recipients_not_array';
+      throw error;
+    }
+
+    // the prebuild can be overridden by providing an explicit tx
+    const txPrebuild = params.prebuildTx || (yield this.prebuildTransaction(params));
+    const userKeychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0] });
+    const signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
+
+    try {
+      return yield this.signTransaction(signingParams);
+    } catch (error) {
+      if (error.message.includes('insufficient funds')) {
+        error.code = 'insufficient_funds';
+        error.walletBalances = {
+          balanceString: this.balanceString(),
+          confirmedBalanceString: this.confirmedBalanceString(),
+          spendableBalanceString: this.spendableBalanceString(),
+          balance: this.balance(),
+          confirmedBalance: this.confirmedBalance(),
+          spendableBalance: this.spendableBalance()
+        };
+        error.txParams = _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']);
+      }
+      throw error;
+    }
+  }).call(this).asCallback(callback);
+};
+
 /**
  * Submits a half-signed transaction to BitGo
  * @param params
@@ -765,58 +806,18 @@ Wallet.prototype.send = function(params, callback) {
  * @returns {*}
  */
 Wallet.prototype.sendMany = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, [], ['comment', 'otp'], callback);
-  const self = this;
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], ['comment', 'otp'], callback);
 
-  if (params.prebuildTx && params.recipients) {
-    throw new Error('Only one of prebuildTx and recipients may be specified');
-  }
-
-  // TODO: use Array.isArray
-  if (params.recipients && !(params.recipients instanceof Array)) {
-    throw new Error('expecting recipients array');
-  }
-
-  // the prebuild can be overridden by providing an explicit tx
-  const txPrebuild = params.prebuildTx;
-  let txPrebuildPromise = null;
-  if (!txPrebuild) {
-    // if there is no prebuild, we need to calculate the prebuild in here
-    txPrebuildPromise = self.prebuildTransaction(params);
-  }
-
-  const userKeychainPromise = self.baseCoin.keychains().get({ id: self._wallet.keys[0] });
-
-  // pass in either the prebuild promise or, if undefined, the actual prebuild
-  return Promise.all([txPrebuildPromise || txPrebuild, userKeychainPromise])
-  .spread(function(txPrebuild, userKeychain) {
-    // TODO: fix blob for
-    const signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
-    return self.signTransaction(signingParams);
-  })
-  .catch(function(error) {
-    if (error.message.includes('insufficient funds')) {
-      error.walletBalances = {
-        balanceString: self.balanceString(),
-        confirmedBalanceString: self.confirmedBalanceString(),
-        spendableBalanceString: self.spendableBalanceString(),
-        balance: self.balance(),
-        confirmedBalance: self.confirmedBalance(),
-        spendableBalance: self.spendableBalance()
-      };
-      error.txParams = _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']);
-    }
-    throw error;
-  })
-  .then(function(halfSignedTransaction) {
+    const halfSignedTransaction = yield this.prebuildAndSignTransaction(params);
     const selectParams = _.pick(params, ['comment', 'otp', 'sequenceId']);
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
-    return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
+    return this.bitgo.post(this.url('/tx/send'))
     .send(finalTxParams)
     .result();
-  })
-  .nodeify(callback);
+
+  }).call(this).asCallback(callback);
 };
 
 module.exports = Wallet;
