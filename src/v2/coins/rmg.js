@@ -1,15 +1,15 @@
-const BaseCoin = require('../baseCoin');
+const baseCoinPrototype = require('../baseCoin').prototype;
 const prova = require('../../prova');
 
 const Rmg = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
-  this.__proto__ = Rmg.prototype;
   this.network = prova.networks.rmg;
 };
 
-Rmg.prototype.__proto__ = BaseCoin.prototype;
+Rmg.prototype = Object.create(baseCoinPrototype);
+Rmg.constructor = Rmg;
 
 /**
  * Returns the factor between the base unit and its smallest subdivison

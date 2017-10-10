@@ -1,4 +1,4 @@
-const BaseCoin = require('../baseCoin');
+const baseCoinPrototype = require('../baseCoin').prototype;
 const BigNumber = require('bignumber.js');
 const querystring = require('querystring');
 const ripple = require('../../ripple');
@@ -13,11 +13,11 @@ const Xrp = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
-  this.__proto__ = Xrp.prototype;
   // TODO: replace dependency with platform IMS
 };
 
-Xrp.prototype.__proto__ = BaseCoin.prototype;
+Xrp.prototype = Object.create(baseCoinPrototype);
+Xrp.constructor = Xrp;
 
 /**
  * Returns the factor between the base unit and its smallest subdivison

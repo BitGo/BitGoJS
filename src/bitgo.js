@@ -421,7 +421,7 @@ const BitGo = function(params) {
  * @param coinName
  */
 BitGo.prototype.coin = function(coinName) {
-  return new BaseCoin(this, coinName);
+  return BaseCoin(this, coinName);
 };
 
 // Accessor object for Ethereum methods

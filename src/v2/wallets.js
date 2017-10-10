@@ -249,7 +249,7 @@ Wallets.prototype.generateWallet = co(function *(params, callback) {
   });
 
   const bitgoKeychainParams = {
-    enterpriseId: params.enterprise
+    enterprise: params.enterprise
   };
 
   const bitgoKeychainPromise = self.baseCoin.keychains().createBitGo(bitgoKeychainParams)

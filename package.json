@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "4.9.0",
+  "version": "4.10.0",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -19,6 +19,7 @@
   "devDependencies": {
     "babelify": "7.3.0",
     "browserify": "13.1.0",
+    "bufferutil": "~3.0.2",
     "coveralls": "~2.13.1",
     "envify": "~3.4.0",
     "eslint": "4.8.0",
@@ -34,7 +35,8 @@
     "supertest": "~3.0.0",
     "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz",
     "uglify-js": "3.0.15",
-    "uglifyify": "~3.0.4"
+    "uglifyify": "~3.0.4",
+    "utf-8-validate": "~3.0.3"
   },
   "testling": {
     "browsers": [

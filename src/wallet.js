@@ -921,12 +921,11 @@ Wallet.prototype.signTransaction = function(params, callback) {
     throw new Error('expecting the unspents array');
   }
 
-  if (!_.isObject(params.keychain) || !params.keychain.xprv) {
-    if (_.isString(params.signingKey)) {
-      // allow passing in a WIF private key for legacy safe wallet support
-    } else {
-      throw new Error('expecting keychain object with xprv');
-    }
+  if ((!_.isObject(params.keychain) || !params.keychain.xprv) && !_.isString(params.signingKey)) {
+    // allow passing in a WIF private key for legacy safe wallet support
+    const error = new Error('expecting keychain object with xprv or signingKey WIF');
+    error.code = 'missing_keychain_or_signingKey';
+    throw error;
   }
 
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();

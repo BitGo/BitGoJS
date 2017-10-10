@@ -1,11 +1,10 @@
-const Btc = require('./btc');
+const btcPrototype = require('./btc').prototype;
 const bitcoin = require('bitcoinjs-lib');
 
 const Ltc = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
-  this.__proto__ = Ltc.prototype;
   this.network = {
     messagePrefix: '\x19Litecoin Signed Message:\n',
     bip32: {
@@ -24,7 +23,8 @@ const Ltc = function() {
   this.supportAltScriptDestination = false;
 };
 
-Ltc.prototype.__proto__ = Btc.prototype;
+Ltc.prototype = Object.create(btcPrototype);
+Ltc.constructor = Ltc;
 
 Ltc.prototype.getChain = function() {
   return 'ltc';

@@ -1,15 +1,15 @@
-const Btc = require('./btc');
+const btcPrototype = require('./btc').prototype;
 const bitcoin = require('bcashjs-lib');
 
 const Bch = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
-  this.__proto__ = Bch.prototype;
   this.network = this.network = bitcoin.networks.bitcoin;
 };
 
-Bch.prototype.__proto__ = Btc.prototype;
+Bch.prototype = Object.create(btcPrototype);
+Bch.constructor = Bch;
 
 Bch.prototype.getChain = function() {
   return 'bch';

@@ -1,4 +1,4 @@
-const BaseCoin = require('../baseCoin');
+const baseCoinPrototype = require('../baseCoin').prototype;
 const BigNumber = require('bignumber.js');
 const Util = require('../../util');
 const _ = require('lodash');
@@ -9,10 +9,10 @@ const Eth = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
-  this.__proto__ = Eth.prototype;
 };
 
-Eth.prototype.__proto__ = BaseCoin.prototype;
+Eth.prototype = Object.create(baseCoinPrototype);
+Eth.constructor = Eth;
 
 try {
   ethAbi = require('ethereumjs-abi');
@@ -129,13 +129,13 @@ Eth.prototype.signTransaction = function(params) {
 };
 
 /**
- * Ensure the enterpriseId is passed, so we can use the correct Enterprise fee address
+ * Ensure the enterprise is passed, so we can use the correct Enterprise fee address
  * @param params
- * @param params.enterpriseId {String} the enterprise id to associate with this key
+ * @param params.enterprise {String} the enterprise id to associate with this key
  */
-BaseCoin.prototype.preCreateBitGo = function(params) {
-  if (!params || !params.enterpriseId) {
-    throw new Error('expecting enterpriseId when adding BitGo key');
+Eth.prototype.preCreateBitGo = function(params) {
+  if (!params || !params.enterprise) {
+    throw new Error('expecting enterprise when adding BitGo key');
   }
 };
 

@@ -1,4 +1,4 @@
-const BaseCoin = require('../baseCoin');
+const baseCoinPrototype = require('../baseCoin').prototype;
 const common = require('../../common');
 const bitcoin = require('bitcoinjs-lib');
 const Promise = require('bluebird');
@@ -8,11 +8,11 @@ const Btc = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
-  this.__proto__ = Btc.prototype;
   this.network = bitcoin.networks.bitcoin;
 };
 
-Btc.prototype.__proto__ = BaseCoin.prototype;
+Btc.prototype = Object.create(baseCoinPrototype);
+Btc.constructor = Btc;
 
 /**
  * Returns the factor between the base unit and its smallest subdivison

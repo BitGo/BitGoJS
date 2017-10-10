@@ -46,7 +46,7 @@ Keychains.prototype.create = function(params) {
 
 Keychains.prototype.add = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterpriseId'], callback);
+  common.validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise'], callback);
 
 
 
@@ -58,7 +58,7 @@ Keychains.prototype.add = function(params, callback) {
     source: params.source,
     provider: params.provider,
     originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
-    enterpriseId: params.enterpriseId
+    enterprise: params.enterprise
   })
   .result()
   .nodeify(callback);

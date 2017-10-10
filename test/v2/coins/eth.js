@@ -11,13 +11,13 @@ describe('ETH:', function() {
   });
 
   describe('Keychains', function() {
-    it('should fail to create a key without an enterpriseId', function() {
+    it('should fail to create a key without an enterprise ID', function() {
       const ethKeychains = bitgo.coin('eth').keychains();
       try {
         ethKeychains.createBitGo();
         should.fail();
       } catch (e) {
-        e.message.should.equal('expecting enterpriseId when adding BitGo key');
+        e.message.should.equal('expecting enterprise when adding BitGo key');
       }
     });
   });

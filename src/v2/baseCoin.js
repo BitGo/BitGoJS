@@ -3,58 +3,59 @@ const BigNumber = require('bignumber.js');
 let PendingApprovals;
 let Wallet;
 let Wallets;
-let coinInstances;
+let coinGenerators;
 const bitcoin = require('bitcoinjs-lib');
 const prova = require('../prova');
 const Promise = require('bluebird');
 const sjcl = require('../sjcl.min');
 
 const BaseCoin = function(bitgo, coin) {
-  this.bitgo = bitgo;
-  this.initializeCoin(coin);
+  const coinInstance = BaseCoin.initializeCoin(coin);
+  coinInstance.bitgo = bitgo;
 
-  const self = this;
-  this.type = coin;
+  coinInstance.type = coin;
 
-  this.url = (suffix) => {
-    return bitgo._baseUrl + '/api/v2/' + this.getChain() + suffix;
+  coinInstance.url = (suffix) => {
+    return bitgo._baseUrl + '/api/v2/' + coinInstance.getChain() + suffix;
   };
 
-  this.wallets = function() {
-    if (!self.coinWallets) {
+  coinInstance.wallets = function() {
+    if (!coinInstance.coinWallets) {
       if (!Wallets) {
         Wallets = require('./wallets');
       }
-      self.coinWallets = new Wallets(bitgo, this);
+      coinInstance.coinWallets = new Wallets(bitgo, coinInstance);
     }
-    return self.coinWallets;
+    return coinInstance.coinWallets;
   };
 
-  this.keychains = function() {
-    if (!self.coinKeychains) {
+  coinInstance.keychains = function() {
+    if (!coinInstance.coinKeychains) {
       if (!Keychains) {
         Keychains = require('./keychains');
       }
-      self.coinKeychains = new Keychains(bitgo, this);
+      coinInstance.coinKeychains = new Keychains(bitgo, coinInstance);
     }
-    return self.coinKeychains;
+    return coinInstance.coinKeychains;
   };
 
-  this.pendingApprovals = function() {
-    if (!self.coinPendingApprovals) {
+  coinInstance.pendingApprovals = function() {
+    if (!coinInstance.coinPendingApprovals) {
       if (!PendingApprovals) {
         PendingApprovals = require('./pendingApprovals');
       }
-      self.coinPendingApprovals = new PendingApprovals(bitgo, this);
+      coinInstance.coinPendingApprovals = new PendingApprovals(bitgo, coinInstance);
     }
-    return self.coinPendingApprovals;
+    return coinInstance.coinPendingApprovals;
   };
+
+  return coinInstance;
 };
 
-BaseCoin.prototype.initializeCoin = function(coin) {
-  if (!coinInstances) {
+BaseCoin.initializeCoin = function(coin) {
+  if (!coinGenerators) {
     // initialization has to be asynchronous to avoid circular dependencies
-    coinInstances = {
+    coinGenerators = {
       btc: require('./coins/btc'),
       tbtc: require('./coins/tbtc'),
       bch: require('./coins/bch'),
@@ -70,11 +71,11 @@ BaseCoin.prototype.initializeCoin = function(coin) {
     };
   }
 
-  const coinInstance = coinInstances[coin];
-  if (!coinInstance) {
+  const CoinGenerator = coinGenerators[coin];
+  if (!CoinGenerator) {
     throw new Error('Coin type ' + coin + ' not supported');
   }
-  coinInstance.call(this);
+  return new CoinGenerator();
 };
 
 /**
