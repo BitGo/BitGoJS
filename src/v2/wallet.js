@@ -390,6 +390,21 @@ Wallet.prototype.addresses = function(params, callback) {
 };
 
 /**
+ * Get a single wallet address by its id
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.getAddress = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['address'], [], callback);
+
+  return this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${params.address}`))
+  .result()
+  .nodeify(callback);
+};
+
+/**
  * Create a new address for use with this wallet
  *
  * @param params
