@@ -3,6 +3,7 @@ const BigNumber = require('bignumber.js');
 let PendingApprovals;
 let Wallet;
 let Wallets;
+let Markets;
 let coinGenerators;
 const bitcoin = require('bitcoinjs-lib');
 const prova = require('../prova');
@@ -47,6 +48,16 @@ const BaseCoin = function(bitgo, coin) {
       coinInstance.coinPendingApprovals = new PendingApprovals(bitgo, coinInstance);
     }
     return coinInstance.coinPendingApprovals;
+  };
+
+  coinInstance.markets = function() {
+    if (!coinInstance.coinMarkets) {
+      if (!Markets) {
+        Markets = require('./markets');
+      }
+      coinInstance.coinMarkets = new Markets(bitgo, this);
+    }
+    return coinInstance.coinMarkets;
   };
 
   return coinInstance;
