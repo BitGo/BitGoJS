@@ -221,16 +221,19 @@ Xrp.prototype.supplementGenerateWallet = function(walletParams, keychains) {
  */
 Xrp.prototype.explainTransaction = function(params) {
   let transaction;
+  let txHex;
   try {
     transaction = rippleBinaryCodec.decode(params.txHex);
+    txHex = params.txHex;
   } catch (e) {
     try {
       transaction = JSON.parse(params.txHex);
+      txHex = rippleBinaryCodec.encode(transaction);
     } catch (e) {
       throw new Error('txHex needs to be either hex or JSON string for XRP');
     }
   }
-  const id = rippleHashes.computeBinaryTransactionHash(params.txHex);
+  const id = rippleHashes.computeBinaryTransactionHash(txHex);
   const changeAmount = 0;
   const explanation = {
     displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
@@ -247,7 +250,8 @@ Xrp.prototype.explainTransaction = function(params) {
   explanation.changeAmount = changeAmount;
 
   explanation.fee = {
-    miner: transaction.Fee
+    miner: transaction.Fee,
+    size: txHex.length / 2
   };
   return explanation;
 };
