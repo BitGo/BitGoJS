@@ -6,6 +6,7 @@
 
 const assert = require('assert');
 require('should');
+const _ = require('lodash');
 
 const BitGoJS = require('../src/index');
 const TestBitGo = require('./lib/test_bitgo');
@@ -160,6 +161,76 @@ describe('BitGo', function() {
       const opaque = bitgo.encrypt({ password: password, input: secret });
       assert.equal(bitgo.decrypt({ password: password, input: opaque }), secret);
     });
+  });
+
+  describe('Shamir Secret Sharing', () => {
+    const bitgo = new TestBitGo();
+    const seed = '8cc57dac9cdae42bf7848a2d12f2874d31eca1f9de8fe3f8fa13e7857b545d59';
+    const xpub = 'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN';
+    const passwords = ['mickey', 'mouse', 'donald', 'duck'];
+
+    it('should fail to split secret with wrong m', () => {
+      let error;
+      try {
+        bitgo.splitSecret({ seed, passwords: ['abc'], m: 0 });
+      } catch (e) {
+        error = e;
+      }
+      error.message.should.equal('m must be a positive integer greater than or equal to 2');
+    });
+
+    it('should fail to split secret with bad password count', () => {
+      let error;
+      try {
+        bitgo.splitSecret({ seed, passwords: ['abc'], m: 2 });
+      } catch (e) {
+        error = e;
+      }
+      error.message.should.equal('passwords array length cannot be less than m');
+    });
+
+    it('should split and fail to reconstitute secret with bad passwords', () => {
+      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
+      const shards = _.at(splitSecret.seedShares, [0, 2]);
+      const subsetPasswords = _.at(passwords, [0, 3]);
+      let error;
+      try {
+        bitgo.reconstituteSecret({ shards, passwords: subsetPasswords, xpub });
+      } catch (e) {
+        error = e;
+      }
+      error.message.should.equal('ccm: tag doesn\'t match');
+    });
+
+    it('should split and reconstitute secret', () => {
+      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
+      const shards = _.at(splitSecret.seedShares, [0, 2]);
+      const subsetPasswords = _.at(passwords, [0, 2]);
+      const reconstitutedSeed = bitgo.reconstituteSecret({ shards, passwords: subsetPasswords });
+      reconstitutedSeed.seed.should.equal(seed);
+      reconstitutedSeed.xpub.should.equal('xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN');
+      reconstitutedSeed.xprv.should.equal('xprv9s21ZrQH143K2Rnxdim5h3aws6o99QokXzP4o3CS6E5acSEtS9Zgfuw5ZWujhTHTWEAZDfmP3yxA1Ccn6myVkGEpRrT4xWgaEpoW7YiBAtC');
+    });
+
+    it('should split and incorrectly verify secret', () => {
+      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
+      const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2 });
+      isValid.should.equal(false);
+    });
+
+    it('should split and verify secret', () => {
+      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
+      const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2, xpub });
+      isValid.should.equal(true);
+    });
+
+    it('should split and verify secret with many parts', () => {
+      const allPws = ['0', '1', '2', '3', '4', '5', '6', '7'];
+      const splitSecret = bitgo.splitSecret({ seed, passwords: allPws, m: 3 });
+      const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords: allPws, m: 3, xpub });
+      isValid.should.equal(true);
+    });
+
   });
 
   describe('Logged Out', function() {

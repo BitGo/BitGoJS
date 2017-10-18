@@ -22,6 +22,7 @@ const Wallets = require('./wallets');
 const EthWallets = require('./eth/ethWallets');
 const Markets = require('./markets');
 const PendingApprovals = require('./pendingapprovals');
+const shamir = require('secrets.js-grempe');
 const sjcl = require('./sjcl.min');
 const common = require('./common');
 const Util = require('./util');
@@ -583,15 +584,158 @@ BitGo.prototype.encrypt = function(params) {
   return sjcl.encrypt(params.password, params.input, encryptOptions);
 };
 
-//
-// decrypt
-// Utility function to decrypt locally.
-//
+/**
+ *
+ * @param params.password The password
+ * @param params.input The input
+ * @returns {*}
+ */
 BitGo.prototype.decrypt = function(params) {
   params = params || {};
   common.validateParams(params, ['input', 'password'], []);
 
   return sjcl.decrypt(params.password, params.input);
+};
+
+/**
+ *
+ * @param seed A hexadecimal secret to split
+ * @param passwords An array of the passwords used to encrypt each share
+ * @param m The threshold number of shards necessary to reconstitute the secret
+ * @returns {{xpub: *, xprv: *}}
+ */
+BitGo.prototype.splitSecret = function({ seed, passwords, m }) {
+  if (!Array.isArray(passwords)) {
+    throw new Error('passwords must be an array');
+  }
+  if (!_.isInteger(m) || m < 2) {
+    throw new Error('m must be a positive integer greater than or equal to 2');
+  }
+
+  if (passwords.length < m) {
+    throw new Error('passwords array length cannot be less than m');
+  }
+
+  const n = passwords.length;
+  const secrets = shamir.share(seed, n, m);
+  const shards = _.zipWith(secrets, passwords, (shard, password) => {
+    return this.encrypt({ input: shard, password });
+  });
+  const node = bitcoin.HDNode.fromSeedHex(seed);
+  return {
+    xpub: node.neutered().toBase58(),
+    m,
+    n,
+    seedShares: shards
+  };
+};
+
+/**
+ *
+ * @param shards
+ * @param passwords
+ * @returns {{xpub: *, xprv: *}}
+ */
+BitGo.prototype.reconstituteSecret = function({ shards, passwords }) {
+  if (!Array.isArray(shards)) {
+    throw new Error('shards must be an array');
+  }
+  if (!Array.isArray(passwords)) {
+    throw new Error('passwords must be an array');
+  }
+
+  if (shards.length !== passwords.length) {
+    throw new Error('shards and passwords arrays must have same length');
+  }
+
+  const secrets = _.zipWith(shards, passwords, (shard, password) => {
+    return this.decrypt({ input: shard, password });
+  });
+  const seed = shamir.combine(secrets);
+  const node = bitcoin.HDNode.fromSeedHex(seed);
+  return {
+    xpub: node.neutered().toBase58(),
+    xprv: node.toBase58(),
+    seed
+  };
+};
+
+/**
+ *
+ * @param shards
+ * @param passwords
+ * @param m
+ * @param xpub Optional xpub to verify the results against
+ */
+BitGo.prototype.verifyShards = function({ shards, passwords, m, xpub }) {
+  /**
+   * Generate all possible combinations of a given array's values given subset size m
+   * @param array The array whose values are to be arranged in all combinations
+   * @param m The size of each subset
+   * @param entryIndices Recursively trailing set of currently chosen array indices for the combination subset under construction
+   * @returns {Array}
+   */
+  const generateCombinations = (array, m, entryIndices = []) => {
+
+    let combinations = [];
+
+    if (entryIndices.length === m) {
+      const currentCombination = _.at(array, entryIndices);
+      return [currentCombination];
+    }
+
+    // The highest index
+    let entryIndex = _.last(entryIndices);
+    // If there are currently no indices, assume -1
+    if (_.isUndefined(entryIndex)) {
+      entryIndex = -1;
+    }
+    for (let i = entryIndex + 1; i < array.length; i++) {
+      // append the current index to the trailing indices
+      const currentEntryIndices = [...entryIndices, i];
+      const newCombinations = generateCombinations(array, m, currentEntryIndices);
+      combinations = [...combinations, ...newCombinations];
+    }
+
+    return combinations;
+  };
+
+  if (!Array.isArray(shards)) {
+    throw new Error('shards must be an array');
+  }
+  if (!Array.isArray(passwords)) {
+    throw new Error('passwords must be an array');
+  }
+
+  if (shards.length !== passwords.length) {
+    throw new Error('shards and passwords arrays must have same length');
+  }
+
+  const secrets = _.zipWith(shards, passwords, (shard, password) => {
+    return this.decrypt({ input: shard, password });
+  });
+  const secretCombinations = generateCombinations(secrets, m);
+  const seeds = secretCombinations.map(currentCombination => {
+    return shamir.combine(currentCombination);
+  });
+  const uniqueSeeds = _.uniq(seeds);
+  if (uniqueSeeds.length !== 1) {
+    return false;
+  }
+  const seed = _.first(uniqueSeeds);
+  const node = bitcoin.HDNode.fromSeedHex(seed);
+  const restoredXpub = node.neutered().toBase58();
+
+  if (!_.isUndefined(xpub)) {
+    if (!_.isString(xpub)) {
+      throw new Error('xpub must be a string');
+    }
+    if (restoredXpub !== xpub) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
 //
