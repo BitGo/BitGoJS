@@ -259,6 +259,22 @@ const handleV2PendingApproval = co(function *(req) {
   return pendingApproval.reject(params);
 });
 
+// handle wallet share
+const handleV2ShareWallet = co(function *(req) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const wallet = yield coin.wallets().get({ id: req.params.id });
+  return wallet.shareWallet(req.body);
+});
+
+// handle accept wallet share
+const handleV2AcceptWalletShare = co(function *(req) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const params = _.extend({}, req.body, { walletShareId: req.params.id });
+  return coin.wallets().acceptShare(params);
+});
+
 // handle sign transaction
 const handleV2SignTx = function(req) {
   const bitgo = req.bitgo;
@@ -455,6 +471,9 @@ exports = module.exports = function(app, args) {
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleV2GenerateWallet, args));
 
+  // share wallet
+  app.post('/api/v2/:coin/wallet/:id/share', parseBody, prepareBitGo(args), promiseWrapper(handleV2ShareWallet, args));
+  app.post('/api/v2/:coin/walletshare/:id/acceptshare', parseBody, prepareBitGo(args), promiseWrapper(handleV2AcceptWalletShare, args));
   // sign transaction
   app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(args), promiseWrapper(handleV2SignTx, args));
 

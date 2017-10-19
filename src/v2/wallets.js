@@ -382,7 +382,7 @@ Wallets.prototype.cancelShare = function(params, callback) {
 //
 Wallets.prototype.acceptShare = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['walletShareId'], ['overrideEncryptedPrv'], callback);
+  common.validateParams(params, ['walletShareId'], ['overrideEncryptedPrv', 'userPassword', 'newWalletPassphrase'], callback);
 
   const self = this;
   let encryptedPrv = params.overrideEncryptedPrv;
