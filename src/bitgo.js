@@ -8,7 +8,7 @@
 
 const superagent = require('superagent');
 const bitcoin = require('./bitcoin');
-require('./bitcoinCash'); // this amends hdPath capabilities
+const bitcoinMessage = require('bitcoinjs-message');
 const sanitizeHtml = require('sanitize-html');
 const eol = require('eol');
 const BaseCoin = require('./v2/baseCoin');
@@ -1394,7 +1394,10 @@ BitGo.prototype.extendToken = function(params, callback) {
   const timestamp = Date.now();
   const duration = params.duration;
   const message = timestamp + '|' + this._token + '|' + duration;
-  const signature = bitcoin.message.sign(this._extensionKey, message, bitcoin.networks.bitcoin).toString('hex');
+  const privateKey = this._extensionKey.d.toBuffer();
+  const isCompressed = this._extensionKey.compressed;
+  const prefix = bitcoin.networks.bitcoin.messagePrefix;
+  const signature = bitcoinMessage.sign(message, privateKey, isCompressed, prefix).toString('hex');
 
   return this.post(this.url('/user/extendtoken'))
   .send(params)
@@ -1583,7 +1586,10 @@ BitGo.prototype.instantGuarantee = function(params, callback) {
       throw new Error('no signature found in guarantee response body');
     }
     const signingAddress = common.Environments[self.env].signingAddress;
-    if (!bitcoin.message.verify(signingAddress, new Buffer(body.signature, 'hex'), body.guarantee, bitcoin.getNetwork())) {
+    const signatureBuffer = new Buffer(body.signature, 'hex');
+    const prefix = bitcoin.getNetwork().messagePrefix;
+    const isValidSignature = bitcoinMessage.verify(body.guarantee, signingAddress, signatureBuffer, prefix);
+    if (!isValidSignature) {
       throw new Error('incorrect signature');
     }
     return body;

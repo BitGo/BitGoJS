@@ -8,7 +8,6 @@
 const TransactionBuilder = require('./transactionBuilder');
 const bitcoin = require('./bitcoin');
 // TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
-const bitcoinCash = require('./bitcoinCash');
 const prova = require('prova-lib');
 const PendingApproval = require('./pendingapproval');
 
@@ -310,16 +309,16 @@ Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold
   };
 
   // redeem script normally, witness script for segwit
-  const inputScript = bitcoinCash.script.multisig.output.encode(signatureThreshold, derivedKeys);
-  const inputScriptHash = bitcoinCash.crypto.hash160(inputScript);
-  let outputScript = bitcoinCash.script.scriptHash.output.encode(inputScriptHash);
+  const inputScript = bitcoin.script.multisig.output.encode(signatureThreshold, derivedKeys);
+  const inputScriptHash = bitcoin.crypto.hash160(inputScript);
+  let outputScript = bitcoin.script.scriptHash.output.encode(inputScriptHash);
   addressDetails.redeemScript = inputScript.toString('hex');
 
   if (isSegwit) {
-    const witnessScriptHash = bitcoinCash.crypto.sha256(inputScript);
-    const redeemScript = bitcoinCash.script.witnessScriptHash.output.encode(witnessScriptHash);
-    const redeemScriptHash = bitcoinCash.crypto.hash160(redeemScript);
-    outputScript = bitcoinCash.script.scriptHash.output.encode(redeemScriptHash);
+    const witnessScriptHash = bitcoin.crypto.sha256(inputScript);
+    const redeemScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
+    const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
+    outputScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
     addressDetails.witnessScript = inputScript.toString('hex');
     addressDetails.redeemScript = redeemScript.toString('hex');
   }

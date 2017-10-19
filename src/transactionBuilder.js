@@ -7,7 +7,6 @@
 
 const Promise = require('bluebird');
 const bitcoin = require('./bitcoin');
-const bitcoinCash = require('./bitcoinCash');
 const _ = require('lodash');
 
 const P2SH_INPUT_SIZE = 295;
@@ -808,7 +807,7 @@ exports.signTransaction = function(params) {
     feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, bitcoin.getNetwork());
   }
 
-  let transaction = bitcoinCash.Transaction.fromHex(params.transactionHex);
+  let transaction = bitcoin.Transaction.fromHex(params.transactionHex);
   if (transaction.ins.length !== params.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
   }
@@ -821,7 +820,7 @@ exports.signTransaction = function(params) {
     hdPath = bitcoin.hdPath(rootExtKey);
   }
 
-  const txb = bitcoinCash.TransactionBuilder.fromTransaction(transaction, _.get(rootExtKey, 'keyPair.network', bitcoin.getNetwork()));
+  const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, _.get(rootExtKey, 'keyPair.network', bitcoin.getNetwork()));
 
   for (let index = 0; index < txb.tx.ins.length; ++index) {
     const currentUnspent = params.unspents[index];
@@ -963,7 +962,7 @@ exports.verifyInputSignatures = function(transaction, inputIndex, pubScript, ign
   }
 
   // Check the script type to determine number of signatures, the pub keys, and the script to hash.
-  const inputClassification = bitcoinCash.script.classifyInput(sigScript, true);
+  const inputClassification = bitcoin.script.classifyInput(sigScript, true);
   switch (inputClassification) {
     case 'scripthash':
       // Replace the pubScript with the P2SH Script.

@@ -1,5 +1,5 @@
 const bchPrototype = require('./bch').prototype;
-const bitcoin = require('bcashjs-lib');
+const bitcoin = require('bitcoinjs-lib');
 
 const Tbch = function() {
   // this function is called externally from BaseCoin

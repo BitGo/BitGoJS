@@ -18,7 +18,8 @@ const Ltc = function() {
     dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
     feePerKb: 100000 // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
   };
-  this.altScriptHash = bitcoin.networks.litecoin.scriptHash;
+  // use legacy script hash version, which is the current Bitcoin one
+  this.altScriptHash = bitcoin.networks.bitcoin.scriptHash;
   // do not support alt destinations in prod
   this.supportAltScriptDestination = false;
 };

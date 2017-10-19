@@ -235,9 +235,9 @@ Btc.prototype.recover = function(params, callback) {
       publicKeys.push(k.getPublicKeyBuffer());
     });
 
-    const redeemScript = bitcoin.script.multisigOutput(2, publicKeys);
+    const redeemScript = bitcoin.script.multisig.output.encode(2, publicKeys);
     const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
-    const scriptHashScript = bitcoin.script.scriptHashOutput(redeemScriptHash);
+    const scriptHashScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
     const address = self.calculateRecoveryAddress(scriptHashScript);
     address.redeemScript = redeemScript;
     const addressObject = {
