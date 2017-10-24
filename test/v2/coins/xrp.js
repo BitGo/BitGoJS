@@ -2,8 +2,16 @@ const assert = require('assert');
 const crypto = require('crypto');
 require('should');
 
+const Promise = require('bluebird');
+const co = Promise.coroutine;
+
 const prova = require('../../../src/prova');
 const TestV2BitGo = require('../../lib/test_bitgo');
+const { BitGo } = require('../../../src');
+
+const rippleBinaryCodec = require('ripple-binary-codec');
+
+const nock = require('nock');
 
 describe('XRP:', function() {
   let bitgo;
@@ -83,6 +91,61 @@ describe('XRP:', function() {
     } catch (e) {
       e.message.should.equal('txHex needs to be either hex or JSON string for XRP');
     }
+  });
+
+
+  describe('Fee Management', () => {
+    const nockBitGo = new BitGo({ env: 'test' });
+    const nockBasecoin = nockBitGo.coin('txrp');
+    const keychains = {
+      userKeychain: {
+        pub: 'xpub661MyMwAqRbcH28Z4ssHaU5RBPshZPwqDMD5N2UgLCpRwjKCdmwU6Yv4fwKj3sbbpHNfvoDxTvBLxnrP4xmdd4GjC2sYchh4vPcZPmEwGC9',
+        ethAddress: '0x6a8da5c34f3de5e9f5d9eefaf57d0f2d5a036dad',
+        encryptedPrv: '{"iv":"a3RFke6i1P0HPNYm7wDrzA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"8iIApBSiaz4=","ct":"3AtrOygBC6WsKeoW60XfCPXpWtduG6TGZU2szpi+EhoGamnVlCp53wV30nqIi8ZsRuVcEtCE8Em+Ud6gilSNa01TdETDwuwzfqSDmelH4JKhRe87Qc7jB6O6G7iyRHaddvjgIBmyRv8nLEA4hZ6sdIlM5Sn2UOc="}',
+        prv: 'xprv9s21ZrQH143K4Y45xrLHDL8gdN3D9wDyr8HUZe54msHT4vz46EdDYkbapg3fh1SAsbfhepPZJsNdifvHvzjuCRGmAo8iF24PiqPqHkqyJe8'
+      },
+      backupKeychain: {
+        pub: 'xpub661MyMwAqRbcFsEYzcEnJLynVC2bGvo7As2GRAja1DWRYo7wesUKJNYx6S1vmrB779owGtprReF7AvqfNygT3t4uy3HNqgzw6ju8idgxV5J',
+        ethAddress: '0x1317a1c8cdc5c002ddf8660d981e2ca032e51ac8'
+      },
+      bitgoKeychain: {
+        pub: 'xpub661MyMwAqRbcGKfdv75qtk2ZCTaW52Y5zePWrj9MW6D5PYqQeXSG42Y2oZ495T5yzCd3cxyi37Z9UtKhDwie9JKvYdCf3BzeBvg9L1XsBwF',
+        ethAddress: '0xdf91dfdf0d2fd00be19d890f5d87d4aa01dace68',
+        isBitGo: true
+      }
+    };
+
+    it('Should supplement wallet generation with fees', co(function *() {
+      const fees = [{
+        open: '10',
+        median: '6000',
+        expected: '9000'
+      }, {
+        open: '7000',
+        median: '4000',
+        expected: '10500'
+      }];
+
+      for (const currentFees of fees) {
+        nock('https://test.bitgo.com/api/v2/txrp/public')
+        .get('/feeinfo')
+        .reply(200, {
+          date: '2017-10-18T18:28:13.083Z',
+          height: 3353255,
+          xrpBaseReserve: '20000000',
+          xrpIncReserve: '5000000',
+          xrpOpenLedgerFee: currentFees.open,
+          xrpMedianFee: currentFees.median
+        });
+        const details = yield nockBasecoin.supplementGenerateWallet({}, keychains);
+        const disableMasterKey = rippleBinaryCodec.decode(details.initializationTxs.disableMasterKey);
+        const forceDestinationTag = rippleBinaryCodec.decode(details.initializationTxs.forceDestinationTag);
+        const setMultisig = rippleBinaryCodec.decode(details.initializationTxs.setMultisig);
+        disableMasterKey.Fee.should.equal(currentFees.expected);
+        forceDestinationTag.Fee.should.equal(currentFees.expected);
+        setMultisig.Fee.should.equal(currentFees.expected);
+      }
+    }));
   });
 
 });
