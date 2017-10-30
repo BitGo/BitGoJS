@@ -362,9 +362,9 @@ Wallet.prototype.addresses = function(params, callback) {
     query.mine = !!params.mine;
   }
 
-  if (params.prevId) {
-    if (!_.isNumber(params.prevId)) {
-      throw new Error('invalid prevId argument, expecting number');
+  if (!_.isUndefined(params.prevId)) {
+    if (!_.isString(params.prevId)) {
+      throw new Error('invalid prevId argument, expecting string');
     }
     query.prevId = params.prevId;
   }
