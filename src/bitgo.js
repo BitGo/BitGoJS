@@ -593,8 +593,14 @@ BitGo.prototype.encrypt = function(params) {
 BitGo.prototype.decrypt = function(params) {
   params = params || {};
   common.validateParams(params, ['input', 'password'], []);
-
-  return sjcl.decrypt(params.password, params.input);
+  try {
+    return sjcl.decrypt(params.password, params.input);
+  } catch (error) {
+    if (error.message.includes('ccm: tag doesn\'t match')) {
+      error.message = 'password error - ' + error.message;
+    }
+    throw error;
+  }
 };
 
 /**
