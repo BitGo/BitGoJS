@@ -155,7 +155,15 @@ PendingApproval.prototype.approve = function(params, callback) {
   common.validateParams(params, [], ['walletPassphrase', 'otp'], callback);
 
   let canRecreateTransaction = true;
-  if (this.type() === 'transactionRequest' && !(params.walletPassphrase || params.xprv)) {
+  // cold wallets cannot recreate transactions if the only thing provided is the wallet passphrase
+  /*
+    The transaction can be recreated if either
+    – there is an xprv
+    – there is a walletPassphrase and the wallet is not cold (because if it's cold, the passphrase is of little use)
+    Therefore, if neither of these is true, the transaction cannot be recreated, which is reflected in the if
+    statement below.
+   */
+  if (!params.xprv && !(params.walletPassphrase && !this.wallet._wallet.isCold)) {
     canRecreateTransaction = false;
   }
 
@@ -175,21 +183,14 @@ PendingApproval.prototype.approve = function(params, callback) {
         };
       }
 
-      let transaction;
-      if (self.info && self.info().transactionRequest && self.info().transactionRequest.coinSpecific
-      && self.info().transactionRequest.coinSpecific[self.baseCoin.type]
-      && self.info().transactionRequest.coinSpecific[self.baseCoin.type].txHex) {
-        transaction = self.info().transactionRequest.coinSpecific[self.baseCoin.type];
-      }
+      const transaction = _.get(self.info(), `transactionRequest.coinSpecific.${self.baseCoin.type}`);
 
       // this user may not have spending privileges or a passphrase may not have been passed in
       if (!canRecreateTransaction) {
-        if (!transaction) {
-          throw new Error('missing txHex on pending approval');
+        if (!_.isObject(transaction)) {
+          throw new Error('there is neither an original transaction object nor can a new one be recreated');
         }
-        return {
-          txHex: transaction.txHex
-        };
+        return transaction;
       }
 
       return self.populateWallet()
@@ -201,11 +202,8 @@ PendingApproval.prototype.approve = function(params, callback) {
   .then(function(transaction) {
     const approvalParams = { state: 'approved', otp: params.otp };
     if (transaction) {
-      // if in the previous instance, we recreated a transaction, we need to add its hex to the approval params
-      approvalParams.txHex = transaction.txHex;
-      if (transaction.halfSigned) {
-        approvalParams.halfSigned = transaction.halfSigned;
-      }
+      // if the transaction already has a half signed property, we take that directly
+      approvalParams.halfSigned = transaction.halfSigned || transaction;
     }
     return self.bitgo.put(self.url())
     .send(approvalParams)
@@ -216,7 +214,7 @@ PendingApproval.prototype.approve = function(params, callback) {
     if (!canRecreateTransaction &&
     (
       error.message.indexOf('could not find unspent output for input') !== -1 ||
-    error.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
+      error.message.indexOf('transaction conflicts with an existing transaction in the send queue') !== -1)
     ) {
       throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
     }
