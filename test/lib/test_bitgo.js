@@ -171,12 +171,19 @@ BitGo.prototype.testUserOTP = function() {
 // Authenticate the test user.
 //
 BitGo.prototype.authenticateTestUser = function(otp, callback) {
-  return this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp })
-  .then(function(response) {
-    response.should.have.property('access_token');
-    response.should.have.property('user');
-  })
-  .nodeify(callback);
+  return co(function *() {
+    // We try/catch here because this throws an error if the user is already authenticated.
+    // Unfortunately, authentication calls _do_ happen multiple times in the test suite, and
+    // it's hard to predict which one will happen first. Therefore, we just swallow all errors
+    // in subsequent authentication attempts.
+    try {
+      const response = yield this.authenticate({ username: BitGo.TEST_USER, password: BitGo.TEST_PASSWORD, otp: otp });
+      response.should.have.property('access_token');
+      response.should.have.property('user');
+    } catch (e) {
+      console.log('Already logged in.');
+    }
+  }).call(this).asCallback(callback);
 };
 
 BitGo.prototype.authenticateSharingTestUser = function(otp, callback) {

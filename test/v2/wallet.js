@@ -292,7 +292,7 @@ describe('V2 Wallet:', function() {
 
     it('should fetch a transfer by its sequence Id', co(function *() {
       // Wait for worker to do its work
-      yield Promise.delay(5000);
+      yield Promise.delay(10000);
 
       const transfer = yield wallet.transferBySequenceId({ sequenceId: sequenceId });
       transfer.should.have.property('sequenceId');
