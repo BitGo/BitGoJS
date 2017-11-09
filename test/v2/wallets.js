@@ -4,7 +4,8 @@
 
 const assert = require('assert');
 const should = require('should');
-
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 const TestV2BitGo = require('../lib/test_bitgo');
 const Q = require('q');
 
@@ -41,6 +42,11 @@ describe('V2 Wallets:', function() {
           label: `Test ${currentCoin} wallet`,
           passphrase: 'yoplait'
         };
+
+        if (currentCoin === 'teth') {
+          params.enterprise = TestV2BitGo.TEST_ENTERPRISE;
+        }
+
         return wallets.generateWallet(params)
         .then(function(wallet) {
           const walletObject = wallet.wallet;
@@ -76,28 +82,33 @@ describe('V2 Wallets:', function() {
     const passphrase = 'yoplait';
     const label = 'v2 wallet';
 
-    it('arguments', function() {
-      assert.throws(function() {wallets.generateWallet();});
-      assert.throws(function() {wallets.generateWallet('invalid');});
-      assert.throws(function() {wallets.generateWallet({}, 0);});
-      assert.throws(function() {
-        wallets.generateWallet({
-          passphrase: passphrase,
-          label: label,
-          backupXpub: 'xpub',
-          backupXpubProvider: 'krs'
-        }, function() {
-        });
+    it('arguments', co(function *() {
+      let error;
+
+      error = wallets.generateWallet();
+      should.exist(error);
+
+      error = wallets.generateWallet('invalid');
+      should.exist(error);
+
+      error = wallets.generateWallet({}, 0);
+      should.exist(error);
+
+      error = wallets.generateWallet({
+        passphrase: passphrase,
+        label: label,
+        backupXpub: 'xpub',
+        backupXpubProvider: 'krs'
       });
-      assert.throws(function() {
-        wallets.generateWallet({
-          passphrase: passphrase,
-          label: label,
-          disableTransactionNotifications: 'blah'
-        }, function() {
-        });
+      should.exist(error);
+
+      error = wallets.generateWallet({
+        passphrase: passphrase,
+        label: label,
+        disableTransactionNotifications: 'blah'
       });
-    });
+      should.exist(error);
+    }));
 
     it('should make wallet with client-generated user and backup key', function() {
       const params = {
@@ -265,7 +276,6 @@ describe('V2 Wallets:', function() {
     it('should add a wallet with pre generated keys', function() {
 
       let userKeychain;
-      let backupKeychain;
 
       // Add the user keychain
       const userKeychainPromise = Q.fcall(function() {
@@ -276,8 +286,7 @@ describe('V2 Wallets:', function() {
       });
 
       const backupKeychainPromise = Q.fcall(function() {
-        backupKeychain = keychains.create();
-        return keychains.add(backupKeychain);
+        return keychains.createBackup();
       })
       .then(function(newBackupKeychain) {
         backupKeychainId = newBackupKeychain.id;
@@ -320,7 +329,7 @@ describe('V2 Wallets:', function() {
         wallet.should.have.property('bitgo');
         wallet.should.have.property('_wallet');
         wallet = wallet._wallet;
-        wallet.label.should.equal('v2 test wallet');
+        wallet.label.should.equal('Test Wallet');
         wallet.balance.should.be.greaterThan(0);
         wallet.confirmedBalance.should.be.greaterThan(0);
         wallet.coin.should.equal('tbtc');

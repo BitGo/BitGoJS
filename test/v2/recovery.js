@@ -4,6 +4,7 @@
 
 require('should');
 const nock = require('nock');
+nock.enableNetConnect();
 
 const TestV2BitGo = require('../lib/test_bitgo');
 
@@ -14,6 +15,10 @@ describe('Recovery:', function() {
     // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
+  });
+
+  after(function() {
+    nock.cleanAll();
   });
 
   describe('Recover Bitcoin', function() {

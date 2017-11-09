@@ -2,7 +2,6 @@
 // Tests for Wallets
 //
 
-const assert = require('assert');
 const should = require('should');
 const _ = require('lodash');
 const Promise = require('bluebird');
@@ -24,7 +23,7 @@ describe('V2 Wallet:', function() {
   // many of these tests to fail. If that is the case, send it some bitcoin with at least 2 transactions
   // to make sure the tests will pass.
 
-  before(function() {
+  before(co(function *() {
     // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
@@ -32,14 +31,11 @@ describe('V2 Wallet:', function() {
     wallets = basecoin.wallets();
     basecoin.keychains();
 
-    return bitgo.authenticateTestUser(bitgo.testUserOTP())
-    .then(function() {
-      return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID });
-    })
-    .then(function(testWallet) {
-      wallet = testWallet;
-    });
-  });
+    yield bitgo.authenticateTestUser(bitgo.testUserOTP());
+    wallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID });
+
+    yield bitgo.checkFunded();
+  }));
 
   describe('Create Address', function() {
 
@@ -277,6 +273,9 @@ describe('V2 Wallet:', function() {
     });
 
     it('should send transaction with sequence Id', co(function *() {
+      // Wait five seconds to send a new tx
+      yield Promise.delay(5000);
+
       sequenceId = Math.random().toString(36).slice(-10);
       const recipientAddress = yield wallet.createAddress();
       const params = {
@@ -292,26 +291,27 @@ describe('V2 Wallet:', function() {
     }));
 
     it('should fetch a transfer by its sequence Id', co(function *() {
+      // Wait for worker to do its work
+      yield Promise.delay(5000);
+
       const transfer = yield wallet.transferBySequenceId({ sequenceId: sequenceId });
       transfer.should.have.property('sequenceId');
       transfer.sequenceId.should.equal(sequenceId);
     }));
 
-    it('sendMany should error when given a non-array of recipients', function() {
-      return wallet.createAddress()
-      .then(function(recipientAddress) {
-        const params = {
-          recipients: {
-            amount: 0.01 * 1e8, // 0.01 tBTC
-            address: recipientAddress.address
-          },
-          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
-        };
-        assert.throws(function() {
-          wallet.sendMany(params);
-        });
-      });
-    });
+    it('sendMany should error when given a non-array of recipients', co(function *() {
+      const recipientAddress = yield wallet.createAddress();
+      const params = {
+        recipients: {
+          amount: 0.01 * 1e8, // 0.01 tBTC
+          address: recipientAddress.address
+        },
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+      };
+
+      const error = yield bitgo.getAsyncError(wallet.sendMany(params));
+      should.exist(error);
+    }));
 
     it('should send a transaction to the wallet itself with sendMany', function() {
       return wallet.createAddress()
@@ -379,7 +379,7 @@ describe('V2 Wallet:', function() {
         keychain = key;
         return wallet.createAddress();
       })
-      .delay(3000) // wait three seconds before fetching unspents
+      .delay(5000) // wait five seconds before fetching unspents
       .then(function(recipientAddress) {
         const params = {
           recipients: [

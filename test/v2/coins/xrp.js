@@ -12,6 +12,7 @@ const { BitGo } = require('../../../src');
 const rippleBinaryCodec = require('ripple-binary-codec');
 
 const nock = require('nock');
+nock.enableNetConnect();
 
 describe('XRP:', function() {
   let bitgo;
@@ -24,6 +25,10 @@ describe('XRP:', function() {
     .then(function() {
       basecoin = bitgo.coin('txrp');
     });
+  });
+
+  after(function() {
+    nock.cleanAll();
   });
 
   it('Should verify addresses', function() {
@@ -147,5 +152,4 @@ describe('XRP:', function() {
       }
     }));
   });
-
 });

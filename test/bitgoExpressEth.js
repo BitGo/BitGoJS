@@ -12,15 +12,11 @@ const TestBitGo = require('./lib/test_bitgo');
 const testUtil = require('./testutil');
 
 
-// this should exist on the test env hand have some eth funding
-const testWalletId = '598f606cd8fc24710d2ebadb1d9459bb';
-const testWalletPassphrase = 'moon';
-
-// this address belongs to the test wallet
-const testWalletFirstAddress = '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e';
-
 describe('Bitgo Express TETH v2', function () {
   let agent;
+  let testWalletId;
+  let testWalletPassphrase;
+  let testWalletFirstAddress;
 
   const authHeader = {
     Authorization: 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN
@@ -37,6 +33,15 @@ describe('Bitgo Express TETH v2', function () {
     const app = expressApp(args);
     agent = request.agent(app);
     yield testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15);
+
+    // this should exist on the test env hand have some eth funding
+    testWalletId = TestBitGo.V2.TEST_ETH_WALLET_ID;
+    testWalletPassphrase = TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE;
+
+    // this address belongs to the test wallet
+    testWalletFirstAddress = TestBitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS;
+
+    yield bitgo.checkFunded(agent);
   }));
 
   it('can create new wallet and delete it', co(function *() {
@@ -44,7 +49,7 @@ describe('Bitgo Express TETH v2', function () {
     let res = yield agent
       .post('/api/v2/teth/wallet/generate')
       .set(authHeader)
-      .send({ passphrase: testWalletPassphrase, label });
+      .send({ passphrase: testWalletPassphrase, label, enterprise: TestBitGo.TEST_ENTERPRISE });
     res.statusCode.should.equal(200);
 
     res = yield agent
@@ -92,17 +97,18 @@ describe('Bitgo Express TETH v2', function () {
   it('can do sendcoins', co(function *() {
     // fetch one new address
     let res = yield agent
-      .post(`/api/v2/teth/wallet/${testWalletId}/address`)
+      .get(`/api/v2/teth/wallet/${testWalletId}/addresses`)
       .set(authHeader);
     res.statusCode.should.equal(200);
-    const { address } = res.body;
+    const { addresses } = res.body;
+    const destAddress = addresses[1].address;
 
     res = yield agent
       .post(`/api/v2/teth/wallet/${testWalletId}/sendcoins`)
       .set(authHeader)
       .send({
         walletPassphrase: testWalletPassphrase,
-        address: address,
+        address: destAddress,
         amount: '10000'
       });
     res.statusCode.should.equal(200);
@@ -110,12 +116,14 @@ describe('Bitgo Express TETH v2', function () {
 
 
   it('can do sendmany', co(function *() {
-    // fetch two new address
-    let res;
-    res = yield agent.post(`/api/v2/teth/wallet/${testWalletId}/address`).set(authHeader);
-    const address1 = res.body.address;
-    res = yield agent.post(`/api/v2/teth/wallet/${testWalletId}/address`).set(authHeader);
-    const address2 = res.body.address;
+    // fetch two new addresses
+    let res = yield agent
+    .get(`/api/v2/teth/wallet/${testWalletId}/addresses`)
+    .set(authHeader);
+    res.statusCode.should.equal(200);
+    const { addresses } = res.body;
+    const destAddress1 = addresses[1].address;
+    const destAddress2 = addresses[2].address;
 
     res = yield agent
       .post(`/api/v2/teth/wallet/${testWalletId}/sendmany`)
@@ -123,8 +131,8 @@ describe('Bitgo Express TETH v2', function () {
       .send({
         walletPassphrase: testWalletPassphrase,
         recipients: [
-          { address: address1, amount: '10000' },
-          { address: address2, amount: '20000' }
+          { address: destAddress1, amount: '10000' },
+          { address: destAddress2, amount: '20000' }
         ]
       });
 
@@ -138,7 +146,7 @@ describe('Bitgo Express TETH v2', function () {
       .send({
         walletPassphrase: testWalletPassphrase,
         recipients: [
-          { address: address1, amount: '10000' }
+          { address: destAddress1, amount: '10000' }
         ]
       });
     res.statusCode.should.equal(200);

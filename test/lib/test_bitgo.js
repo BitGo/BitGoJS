@@ -5,6 +5,9 @@
 //
 
 const BitGo = require('../../src/bitgo.js');
+const expressApp = require('../../src/expressApp');
+const BigNumber = require('bignumber.js');
+const request = require('supertest-as-promised');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 
@@ -144,6 +147,10 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.V2.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
     BitGo.V2.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcFWFN9gpFpnSVy6bF3kMZAkSXtu3ZYKPgq2KUVo1xEMnMXDcavwDJ4zH57iUHVfEGVK7dEgo7ufKRzTkeWYSBDuye5g7w4pe';
     BitGo.V2.TEST_WALLET1_ID = '593f1ece99d37c23080a557283edcc89';
+
+    BitGo.V2.TEST_ETH_WALLET_ID = '598f606cd8fc24710d2ebadb1d9459bb';
+    BitGo.V2.TEST_ETH_WALLET_PASSPHRASE = 'moon';
+    BitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS = '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e';
   }
 
   BitGo.TEST_FEE_SINGLE_KEY_WIF = 'cRVQ6cbUyGHVvByPKF9GnEhaB4HUBFgLQ2jVX1kbQARHaTaD7WJ2';
@@ -193,5 +200,73 @@ BitGo.prototype.fetchConstants = function(callback) {
     });
   }).call(this).asCallback(callback);
 };
+
+BitGo.prototype.getAsyncError = co(function *throwsAsync(prom) {
+  // Hacky because we can't use assert.throws with async functions
+  let error;
+  try {
+    yield prom;
+  } catch (e) {
+    error = e;
+  }
+
+  return error;
+});
+
+BitGo.prototype.checkFunded = co(function *checkFunded(agent) {
+  // We are testing both BTC and ETH funds here, to make sure that
+  // we don't spend for already 'failed' test runs (e.g., spending ETH when we don't have enough BTC)
+  if (!agent) {
+    const args = {
+      debug: false,
+      env: 'test',
+      logfile: '/dev/null'
+    };
+
+    const app = expressApp(args);
+    agent = request.agent(app);
+  }
+
+  const authHeader = {
+    Authorization: 'Bearer ' + BitGo.TEST_ACCESSTOKEN
+  };
+
+  // Test we have enough ETH
+  const testWalletId = BitGo.V2.TEST_ETH_WALLET_ID;
+
+  // Check wallet balance to ensure we can run tests
+  const res = yield agent
+  .get(`/api/v2/teth/wallet/${testWalletId}`)
+  .set(authHeader);
+  res.statusCode.should.equal(200);
+
+  res.body.should.have.property('spendableBalanceString');
+  let balance = new BigNumber(res.body.spendableBalanceString);
+
+  // Check our balance is over 60000 (we spend 50000, add some cushion)
+  balance.gt(60000).should.be.true;
+
+  if (balance.lt(60000)) {
+    console.error(`The TETH wallet ${testWalletId} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+    process.exit(1);
+  }
+
+  // Test we have enough BTC
+  yield this.authenticateTestUser(this.testUserOTP());
+  const wallet = yield this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID });
+
+  // Check we have enough in the wallet to run test suite
+  wallet.should.have.property('spendableBalanceString');
+  balance = new BigNumber(wallet.spendableBalanceString());
+
+  // Check our balance is over 0.05 tBTC (we spend 0.04, add some cushion)
+  const minimumBalance = 0.05 * 1e8;
+  balance.gt(minimumBalance).should.be.true;
+
+  if (balance.lt(minimumBalance)) {
+    console.error(`The TBTC wallet ${wallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+    process.exit(1);
+  }
+});
 
 module.exports = BitGo;

@@ -2,6 +2,8 @@ const common = require('../common');
 const crypto = require('crypto');
 const prova = require('../prova');
 const _ = require('lodash');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 
 const Keychains = function(bitgo, baseCoin) {
   this.bitgo = bitgo;
@@ -49,7 +51,6 @@ Keychains.prototype.add = function(params, callback) {
   common.validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise'], callback);
 
 
-
   return this.bitgo.post(this.baseCoin.url('/key'))
   .send({
     pub: params.pub,
@@ -75,17 +76,20 @@ Keychains.prototype.createBitGo = function(params, callback) {
 };
 
 Keychains.prototype.createBackup = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, [], ['provider'], callback);
-  params.source = 'backup';
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], ['provider'], callback);
+    params.source = 'backup';
 
-  if (!params.provider) {
-    // if the provider is undefined, we generate a local key and add the source details
-    const key = this.create();
-    _.extend(params, key);
-  }
+    if (!params.provider) {
+      // if the provider is undefined, we generate a local key and add the source details
+      const key = this.create();
+      _.extend(params, key);
+    }
 
-  return this.add(params, callback);
+    const serverResponse = yield this.add(params, callback);
+    return _.extend({}, serverResponse, _.pick(params, ['prv', 'encryptedPrv', 'provider', 'source']));
+  }).call(this).asCallback(callback);
 };
 
 
