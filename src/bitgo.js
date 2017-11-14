@@ -900,7 +900,7 @@ BitGo.prototype.authenticate = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['username', 'password'], ['otp'], callback);
 
-  const username = params.username;
+  const username = params.username.toLowerCase();
   const password = params.password;
   const otp = params.otp;
   const trust = params.trust;

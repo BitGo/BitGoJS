@@ -578,7 +578,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
   const self = this;
   let sharing;
   let sharedKeychain;
-  return this.bitgo.getSharingKey({ email: params.email })
+  return this.bitgo.getSharingKey({ email: params.email.toLowerCase() })
   .then(function(result) {
     sharing = result;
 
