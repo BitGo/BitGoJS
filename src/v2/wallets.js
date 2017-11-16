@@ -60,6 +60,13 @@ Wallets.prototype.list = function(params, callback) {
     queryObject.limit = params.limit;
   }
 
+  if (params.allTokens) {
+    if (!_.isBoolean(params.allTokens)) {
+      throw new Error('invalid allTokens argument, expecting boolean');
+    }
+    queryObject.allTokens = params.allTokens;
+  }
+
   const self = this;
   return this.bitgo.get(this.baseCoin.url('/wallet'))
   .query(queryObject)
@@ -451,7 +458,17 @@ Wallets.prototype.getWallet = function(params, callback) {
 
   const self = this;
 
+  const query = {};
+
+  if (params.allTokens) {
+    if (!_.isBoolean(params.allTokens)) {
+      throw new Error('invalid allTokens argument, expecting boolean');
+    }
+    query.allTokens = params.allTokens;
+  }
+
   return this.bitgo.get(this.baseCoin.url('/wallet/' + params.id))
+  .query(query)
   .result()
   .then(function(wallet) {
     return new self.coinWallet(self.bitgo, self.baseCoin, wallet);

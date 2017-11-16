@@ -174,6 +174,13 @@ Wallet.prototype.transfers = function(params, callback) {
     query.limit = params.limit;
   }
 
+  if (params.allTokens) {
+    if (!_.isBoolean(params.allTokens)) {
+      throw new Error('invalid allTokens argument, expecting boolean');
+    }
+    query.allTokens = params.allTokens;
+  }
+
   return this.bitgo.get(this.url('/transfer'))
   .query(query)
   .result()
