@@ -705,7 +705,7 @@ describe('Wallet API', function() {
 
   describe('Unspents', function() {
 
-    //let sharedWallet;
+    // let sharedWallet;
 
     before(function() {
       const consolidationBitgo = new TestBitGo();
@@ -719,7 +719,7 @@ describe('Wallet API', function() {
         return consolidationBitgo.wallets().get({ id: TestBitGo.TEST_WALLET2_ADDRESS });
       })
       .then(function(result) {
-        //sharedWallet = result;
+        // sharedWallet = result;
       });
     });
 

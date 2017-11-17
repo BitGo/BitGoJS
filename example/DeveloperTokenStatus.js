@@ -24,4 +24,3 @@ bitgo.session({})
   console.log(err);
 });
 
-

@@ -247,7 +247,7 @@ const handleV2GenerateWallet = function(req) {
   });
 };
 
-//handle v2 approve transaction
+// handle v2 approve transaction
 const handleV2PendingApproval = co(function *(req) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);

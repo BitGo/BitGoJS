@@ -239,7 +239,7 @@ describe('Access Token', function() {
   });
 
   describe('Update', function() {
-    should.exist(true); //no-op
+    should.exist(true); // no-op
     // access tokens have no update API, they can only be created or removed
   });
 

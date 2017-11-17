@@ -95,7 +95,7 @@ Keychains.prototype.create = function(params) {
   };
 };
 
-//used by deriveLocal
+// used by deriveLocal
 const apiResponse = function(status, result, message) {
   const err = new Error(message);
   err.status = status;

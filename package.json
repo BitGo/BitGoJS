@@ -22,7 +22,7 @@
     "bufferutil": "~3.0.2",
     "coveralls": "~3.0.0",
     "envify": "~3.4.0",
-    "eslint": "4.8.0",
+    "eslint": "^4.11.0",
     "istanbul": "0.4.5",
     "karma": "~0.13.22",
     "karma-chrome-launcher": "~0.1.7",

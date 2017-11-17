@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const should = require('should');
+require('should');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const BitGoJS = require('../../src/index');

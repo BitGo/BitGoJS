@@ -60,6 +60,8 @@
     "no-multi-spaces": ["error", {"ignoreEOLComments": true}],
     "keyword-spacing": ["error"],
     "space-before-blocks": ["error"],
-    "space-infix-ops": ["error"]
+    "space-infix-ops": ["error"],
+    "spaced-comment": ["error", "always"],
+    "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 1 }]
   }
 }

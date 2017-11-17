@@ -419,7 +419,7 @@ exports.createTransaction = function(params) {
         nP2SHP2WSHInputs: segwitInputCount,
         nP2PKHInputs: feeSingleKeySourceAddress ? 1 : 0,
         nOutputs: (
-        recipients.length + 1 + // recipients and change
+          recipients.length + 1 + // recipients and change
         extraChangeAmounts.length + // extra change splitting
         (bitgoFeeInfo && bitgoFeeInfo.amount > 0 ? 1 : 0) + // add output for bitgo fee
         (feeSingleKeySourceAddress ? 1 : 0) // add single key source address change
@@ -815,7 +815,6 @@ exports.signTransaction = function(params) {
   let hdPath;
   let rootExtKey;
   if (keychain) {
-    //var is being used because of scope reference
     rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
     hdPath = bitcoin.hdPath(rootExtKey);
   }
