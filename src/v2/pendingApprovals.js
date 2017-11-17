@@ -1,6 +1,8 @@
 const common = require('../common');
 const PendingApproval = require('./pendingApproval');
 const _ = require('lodash');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 
 const PendingApprovals = function(bitgo, baseCoin) {
   this.bitgo = bitgo;
@@ -48,16 +50,21 @@ PendingApprovals.prototype.list = function(params, callback) {
 //   id:  the pending approval id
 //
 PendingApprovals.prototype.get = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, ['id'], [], callback);
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, ['id'], [], callback);
 
-  const self = this;
-  return this.bitgo.get(this.baseCoin.url('/pendingapprovals/' + params.id))
-  .result()
-  .then(function(body) {
-    return new self.coinPendingApproval(self.bitgo, self.baseCoin, body);
-  })
-  .nodeify(callback);
+    const approvalData = yield this.bitgo.get(this.baseCoin.url('/pendingapprovals/' + params.id)).result();
+    const pendingApproval = new this.coinPendingApproval(this.bitgo, this.baseCoin, approvalData);
+    if (approvalData.wallet) {
+      try {
+        pendingApproval.wallet = yield this.baseCoin.wallets().get({ id: approvalData.wallet });
+      } catch (e) {
+        // nothing to be done here, although it's probably noteworthy that a non-existent wallet is referenced
+      }
+    }
+    return pendingApproval;
+  }).call(this).asCallback(callback);
 };
 
 module.exports = PendingApprovals;

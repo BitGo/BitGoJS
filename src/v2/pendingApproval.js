@@ -163,7 +163,8 @@ PendingApproval.prototype.approve = function(params, callback) {
     Therefore, if neither of these is true, the transaction cannot be recreated, which is reflected in the if
     statement below.
    */
-  if (!params.xprv && !(params.walletPassphrase && !this.wallet._wallet.isCold)) {
+  const isColdWallet = !!_.get(this.wallet, '_wallet.isCold');
+  if (!params.xprv && !(params.walletPassphrase && !isColdWallet)) {
     canRecreateTransaction = false;
   }
 
