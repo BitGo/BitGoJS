@@ -1596,11 +1596,15 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      them, and therefore will be able to simplify this method.
      */
 
-    let allUnspents = yield self.unspents({
+    const queryParams = {
       limit: target + maxInputCount,
       minConfirms: minConfirms,
       minSize: minSize
-    });
+    };
+    if (params.maxSize) {
+      queryParams.maxSize = params.maxSize;
+    }
+    const allUnspents = yield self.unspents(queryParams);
     // this consolidation is essentially just a waste of money
     if (allUnspents.length <= target) {
       if (iterationCount <= 1) {
@@ -1613,11 +1617,6 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
     }
 
     const allUnspentsCount = allUnspents.length;
-    if (params.maxSize) {
-      allUnspents = allUnspents.filter(function(unspent) {
-        return unspent.value <= params.maxSize;
-      });
-    }
 
     // how many of the unspents do we want to consolidate?
     // the +1 is because the consolidated block becomes a new unspent later
