@@ -574,56 +574,20 @@ Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  if (params.minConfirms && !_.isInteger(params.minConfirms)) {
-    throw new Error('invalid minConfirms - should be number');
-  }
-
-  if (params.minSize && !_.isNumber(params.minSize)) {
-    throw new Error('invalid argument: minSize must be a number');
-  }
-
-  if (params.target && !_.isNumber(params.target)) {
-    throw new Error('invalid argument');
-  }
-
   const allUnspents = [];
   const self = this;
 
   const getUnspentsBatch = function(skip, limit) {
-    const url = self.url('/unspents');
-    const queryObject = {
-      minSize: params.minSize
-    };
-    if (params.instant) {
-      queryObject.instant = params.instant;
-    } else if (params.minConfirms) {
-      queryObject.minConfirms = params.minConfirms;
+
+    const queryObject = _.cloneDeep(params);
+    if (skip > 0) {
+      queryObject.skip = skip;
+    }
+    if (limit && limit > 0) {
+      queryObject.limit = limit;
     }
 
-    if (params.target) {
-      queryObject.target = params.target;
-    } else {
-      // if no target is specified, we can work with skips and limits
-      if (skip > 0) {
-        queryObject.skip = skip;
-      }
-      if (limit && limit > 0) {
-        queryObject.limit = limit;
-      }
-    }
-
-    // explicitly request segwit unspents, as platform behavior is opt-in
-    queryObject.segwit = true;
-    if (!_.isUndefined(params.segwit)) {
-      if (!_.isBoolean(params.segwit)) {
-        throw new Error('invalid argument: segwit must be a boolean');
-      }
-      queryObject.segwit = params.segwit;
-    }
-
-    return self.bitgo.get(url)
-    .query(queryObject)
-    .result()
+    return self.unspentsPaged(queryObject)
     .then(function(result) {
       // The API has its own limit handling. For example, the API does not support limits bigger than 500. If the limit
       // specified here is bigger than that, we will have to do multiple requests with necessary limit adjustment.
@@ -653,7 +617,6 @@ Wallet.prototype.unspents = function(params, callback) {
       }
 
       return allUnspents;
-
     });
   };
 
@@ -661,47 +624,66 @@ Wallet.prototype.unspents = function(params, callback) {
   .nodeify(callback);
 };
 
-//
-// unspentsPaged
-// List the unspents (paged) for a given wallet, returning the result as an object of unspents, count, skip and total
-// This method may not return all the unspents as the list is paged by the API
-//
-// Parameters include:
-//   limit:  the optional limit of unspents to collect in BTC
-//   skip: index in list of unspents to start paging from
-//   minConfirms: only include results with this number of confirmations
-//   target: the amount of btc to find to spend
-//   instant: only find instant transactions (must specify a target)
-//
+/**
+ * List the unspents (paged) for a given wallet, returning the result as an object of unspents, count, skip and total
+ * This method may not return all the unspents as the list is paged by the API
+ * @param params
+ * @param params.limit the optional limit of unspents to collect in BTC
+ * @param params.skip index in list of unspents to start paging from
+ * @param params.minConfirms only include results with this number of confirmations
+ * @param params.target the amount of btc to find to spend
+ * @param params.instant only find instant transactions (must specify a target)
+ * @param params.targetWalletUnspents desired number of unspents to have in the wallet after the tx goes through (requires target)
+ * @param params.minSize minimum unspent size in satoshis
+ * @param params.segwit request segwit unspents (defaults to true if undefined)
+ * @param callback
+ * @returns {*}
+ */
 Wallet.prototype.unspentsPaged = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  if (params.limit && !_.isInteger(params.limit)) {
+  if (!_.isUndefined(params.limit) && !_.isInteger(params.limit)) {
     throw new Error('invalid limit - should be number');
   }
-  if (params.skip && !_.isInteger(params.skip)) {
+  if (!_.isUndefined(params.skip) && !_.isInteger(params.skip)) {
     throw new Error('invalid skip - should be number');
   }
-  if (params.minConfirms && !_.isInteger(params.minConfirms)) {
+  if (!_.isUndefined(params.minConfirms) && !_.isInteger(params.minConfirms)) {
     throw new Error('invalid minConfirms - should be number');
   }
-  if (params.target && !_.isNumber(params.target)) {
+  if (!_.isUndefined(params.target) && !_.isNumber(params.target)) {
     throw new Error('invalid target - should be number');
   }
-  if (params.instant && !_.isBoolean(params.instant)) {
+  if (!_.isUndefined(params.instant) && !_.isBoolean(params.instant)) {
     throw new Error('invalid instant flag - should be boolean');
   }
-  if (params.targetWalletUnspents && !_.isInteger(params.targetWalletUnspents)) {
+  if (!_.isUndefined(params.segwit) && !_.isBoolean(params.segwit)) {
+    throw new Error('invalid segwit flag - should be boolean');
+  }
+  if (!_.isUndefined(params.targetWalletUnspents) && !_.isInteger(params.targetWalletUnspents)) {
     throw new Error('invalid targetWalletUnspents flag - should be number');
+  }
+  if (!_.isUndefined(params.minSize) && !_.isNumber(params.minSize)) {
+    throw new Error('invalid argument: minSize must be a number');
+  }
+  if (!_.isUndefined(params.instant) && !_.isUndefined(params.minConfirms)) {
+    throw new Error('only one of instant and minConfirms may be defined');
+  }
+  if (!_.isUndefined(params.targetWalletUnspents) && _.isUndefined(params.target)) {
+    throw new Error('targetWalletUnspents can only be specified in conjunction with a target');
   }
 
   const queryObject = _.cloneDeep(params);
+
+  if (!_.isUndefined(params.target)) {
+    // skip and limit are unavailable when a target is specified
+    delete queryObject.skip;
+    delete queryObject.limit;
+  }
+
   queryObject.segwit = true;
   if (!_.isUndefined(params.segwit)) {
-    if (!_.isBoolean(params.segwit)) {
-      throw new Error('invalid argument: segwit must be a boolean');
-    }
     queryObject.segwit = params.segwit;
   }
 
