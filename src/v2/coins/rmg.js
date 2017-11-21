@@ -1,5 +1,6 @@
 const baseCoinPrototype = require('../baseCoin').prototype;
 const prova = require('../../prova');
+const _ = require('lodash');
 
 const Rmg = function() {
   // this function is called externally from BaseCoin
@@ -41,10 +42,24 @@ Rmg.prototype.signTransaction = function(params) {
   const txPrebuild = params.txPrebuild;
   const userPrv = params.prv;
 
+  if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+    if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+      throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+    }
+    throw new Error('missing txPrebuild parameter');
+  }
+
   let transaction = prova.Transaction.fromHex(txPrebuild.txHex);
 
   if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
+  }
+
+  if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+    if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
+      throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+    }
+    throw new Error('missing prv parameter to sign transaction');
   }
 
   const keychain = prova.HDNode.fromBase58(userPrv, this.network);

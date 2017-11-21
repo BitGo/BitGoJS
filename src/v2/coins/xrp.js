@@ -8,6 +8,7 @@ const rippleHashes = require('ripple-hashes');
 const rippleKeypairs = require('ripple-keypairs');
 const url = require('url');
 const prova = require('../../prova');
+const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 
@@ -94,6 +95,21 @@ Xrp.prototype.getFeeInfo = function(params, callback) {
 Xrp.prototype.signTransaction = function(params) {
   const txPrebuild = params.txPrebuild;
   const userPrv = params.prv;
+
+  if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+    if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+      throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+    }
+    throw new Error('missing txPrebuild parameter');
+  }
+
+  if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+    if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
+      throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+    }
+    throw new Error('missing prv parameter to sign transaction');
+  }
+
   const userKey = prova.HDNode.fromBase58(userPrv).getKey();
   const userPrivateKey = userKey.getPrivateKeyBuffer();
   const userAddress = rippleKeypairs.deriveAddress(userKey.getPublicKeyBuffer().toString('hex'));

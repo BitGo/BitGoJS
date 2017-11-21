@@ -1,5 +1,6 @@
 const btcPrototype = require('./btc').prototype;
 const bitcoin = require('bitcoinjs-lib');
+const _ = require('lodash');
 
 const Bch = function() {
   // this function is called externally from BaseCoin
@@ -29,10 +30,24 @@ Bch.prototype.signTransaction = function(params) {
   const txPrebuild = params.txPrebuild;
   const userPrv = params.prv;
 
+  if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+    if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+      throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+    }
+    throw new Error('missing txPrebuild parameter');
+  }
+
   let transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
 
   if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
+  }
+
+  if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+    if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
+      throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+    }
+    throw new Error('missing prv parameter to sign transaction');
   }
 
   const sigHashType = bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;

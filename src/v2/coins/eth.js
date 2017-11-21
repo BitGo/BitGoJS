@@ -120,6 +120,20 @@ Eth.prototype.signTransaction = function(params) {
   const userPrv = params.prv;
   const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
 
+  if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+    if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+      throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+    }
+    throw new Error('missing txPrebuild parameter');
+  }
+
+  if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+    if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
+      throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+    }
+    throw new Error('missing prv parameter to sign transaction');
+  }
+
   const secondsSinceEpoch = Math.floor((new Date().getTime()) / 1000);
   const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
 
