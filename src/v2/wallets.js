@@ -481,4 +481,24 @@ Wallets.prototype.getWallet = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * Get a wallet by its address
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallets.prototype.getWalletByAddress = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['address'], [], callback);
+
+  const self = this;
+
+  return this.bitgo.get(this.baseCoin.url('/wallet/address/' + params.address))
+  .result()
+  .then(function(wallet) {
+    return new self.coinWallet(self.bitgo, self.baseCoin, wallet);
+  })
+  .nodeify(callback);
+};
+
 module.exports = Wallets;

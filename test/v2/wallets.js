@@ -341,6 +341,25 @@ describe('V2 Wallets:', function() {
       });
     });
 
+    it('should get wallet by address', function() {
+      return wallets.getWalletByAddress({ address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS })
+      .then(function(wallet) {
+        should.exist(wallet);
+        wallet.should.have.property('baseCoin');
+        wallet.should.have.property('bitgo');
+        wallet.should.have.property('_wallet');
+        wallet = wallet._wallet;
+        wallet.label.should.equal('Test Wallet');
+        wallet.balance.should.be.greaterThan(0);
+        wallet.confirmedBalance.should.be.greaterThan(0);
+        wallet.coin.should.equal('tbtc');
+        wallet.id.should.equal(TestV2BitGo.V2.TEST_WALLET1_ID);
+        wallet.approvalsRequired.should.equal(1);
+        wallet.m.should.equal(2);
+        wallet.n.should.equal(3);
+      });
+    });
+
     it('should add webhook to wallet, simulate it, and then remove it', function() {
       let wallet;
       let count;
