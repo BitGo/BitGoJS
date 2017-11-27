@@ -22,7 +22,7 @@
     "bufferutil": "~3.0.2",
     "coveralls": "~3.0.0",
     "envify": "~3.4.0",
-    "eslint": "^4.11.0",
+    "eslint": "^4.12.0",
     "istanbul": "0.4.5",
     "karma": "~0.13.22",
     "karma-chrome-launcher": "~0.1.7",
@@ -65,7 +65,6 @@
     "express": "node bin/bitgo-express -b 0.0.0.0",
     "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 20000 --reporter list --recursive test/",
     "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run",
-    "setup": "git submodule add https://github.com/tagview/arcanist-extensions.git .arcanist-extensions; npm install -g eslint; git submodule update --init",
     "lint": "./node_modules/.bin/eslint --ext .js ."
   },
   "dependencies": {

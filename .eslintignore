@@ -1,5 +1,4 @@
 node_modules
 .idea
-.arcanist-extensions
 public
 src/sjcl.min.js
