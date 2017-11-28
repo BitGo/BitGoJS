@@ -1987,5 +1987,4 @@ Wallet.prototype.getBitGoFee = function(params, callback) {
   .nodeify(callback);
 };
 
-
 module.exports = Wallet;

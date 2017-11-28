@@ -19,6 +19,10 @@ Bch.prototype.getFamily = function() {
   return 'bch';
 };
 
+Bch.prototype.getFullName = function() {
+  return 'Bitcoin Cash';
+};
+
 /**
  * Assemble keychain and half-sign prebuilt transaction
  * @param params

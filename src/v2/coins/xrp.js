@@ -37,6 +37,10 @@ Xrp.prototype.getFamily = function() {
   return 'xrp';
 };
 
+Xrp.prototype.getFullName = function() {
+  return 'Ripple';
+};
+
 /**
  * Evaluates whether an address string is valid for this coin
  * @param address

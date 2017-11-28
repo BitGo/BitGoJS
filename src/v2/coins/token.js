@@ -26,6 +26,10 @@ Token.prototype.getChain = function() {
   return this.type;
 };
 
+Token.prototype.getFullName = function() {
+  return 'ERC20 Token';
+};
+
 Token.prototype.getOperation = function(recipient, expireTime, contractSequenceId) {
   return [
     ['string', 'address', 'uint', 'address', 'uint', 'uint'],

@@ -15,4 +15,8 @@ Tbch.prototype.getChain = function() {
   return 'tbch';
 };
 
+Tbch.prototype.getFullName = function() {
+  return 'Testnet Bitcoin Cash';
+};
+
 module.exports = Tbch;

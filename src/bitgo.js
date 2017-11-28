@@ -24,6 +24,7 @@ const Markets = require('./markets');
 const PendingApprovals = require('./pendingapprovals');
 const shamir = require('secrets.js-grempe');
 const sjcl = require('./sjcl.min');
+const bs58 = require('bs58');
 const common = require('./common');
 const Util = require('./util');
 const Promise = require('bluebird');
@@ -601,6 +602,16 @@ BitGo.prototype.decrypt = function(params) {
     }
     throw error;
   }
+};
+
+/**
+ * Generate a random password on the client
+ * @param   {Number} numWords     Number of 32-bit words
+ * @returns {String}          base58 random password
+ */
+BitGo.prototype.generateRandomPassword = function(numWords = 5) {
+  const bytes = sjcl.codec.bytes.fromBits(sjcl.random.randomWords(numWords));
+  return bs58.encode(bytes);
 };
 
 /**

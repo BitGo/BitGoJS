@@ -17,4 +17,8 @@ Txrp.prototype.getRippledUrl = function() {
   return 'https://s.altnet.rippletest.net:51234';
 };
 
+Txrp.prototype.getFullName = function() {
+  return 'Testnet Ripple';
+};
+
 module.exports = Txrp;

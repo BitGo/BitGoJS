@@ -27,6 +27,10 @@ Rmg.prototype.getFamily = function() {
   return 'rmg';
 };
 
+Rmg.prototype.getFullName = function() {
+  return 'Royal Mint Gold';
+};
+
 Rmg.prototype.isValidAddress = function(address) {
   return prova.Address.validateBase58(address, this.network);
 };

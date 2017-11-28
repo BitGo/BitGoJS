@@ -34,6 +34,11 @@ Ltc.prototype.getFamily = function() {
   return 'ltc';
 };
 
+Ltc.prototype.getFullName = function() {
+  return 'Litecoin';
+};
+
+
 /**
  * Canonicalize a Litecoin address for a specific scriptHash version
  * @param address

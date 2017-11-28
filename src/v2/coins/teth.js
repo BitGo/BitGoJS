@@ -13,4 +13,9 @@ Teth.prototype.getChain = function() {
   return 'teth';
 };
 
+Teth.prototype.getFullName = function() {
+  return 'Testnet Ethereum';
+};
+
+
 module.exports = Teth;

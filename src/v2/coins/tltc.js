@@ -31,4 +31,8 @@ Tltc.prototype.getChain = function() {
   return 'tltc';
 };
 
+Tltc.prototype.getFullName = function() {
+  return 'Testnet Litecoin';
+};
+
 module.exports = Tltc;

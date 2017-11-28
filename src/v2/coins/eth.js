@@ -37,6 +37,10 @@ Eth.prototype.getFamily = function() {
   return 'eth';
 };
 
+Eth.prototype.getFullName = function() {
+  return 'Ethereum';
+};
+
 /**
  * Evaluates whether an address string is valid for this coin
  * @param address

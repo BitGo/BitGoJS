@@ -188,6 +188,10 @@ Wallets.prototype.generateWallet = co(function *(params, callback) {
     throw new Error('Expected disableTransactionNotifications to be a boolean. ');
   }
 
+  if (params.passcodeEncryptionCode && !_.isString(params.passcodeEncryptionCode)) {
+    throw new Error('passcodeEncryptionCode must be a string');
+  }
+
   let userKeychain;
   let backupKeychain;
   let bitgoKeychain;
@@ -219,7 +223,8 @@ Wallets.prototype.generateWallet = co(function *(params, callback) {
       userKeychain.encryptedPrv = self.bitgo.encrypt({ password: passphrase, input: userKeychain.prv });
       userKeychainParams = {
         pub: userKeychain.pub,
-        encryptedPrv: userKeychain.encryptedPrv
+        encryptedPrv: userKeychain.encryptedPrv,
+        originalPasscodeEncryptionCode: params.passcodeEncryptionCode
       };
     }
 

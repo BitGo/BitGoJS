@@ -50,7 +50,6 @@ Keychains.prototype.add = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise'], callback);
 
-
   return this.bitgo.post(this.baseCoin.url('/key'))
   .send({
     pub: params.pub,

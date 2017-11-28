@@ -5,7 +5,7 @@
 //
 
 const assert = require('assert');
-require('should');
+const should = require('should');
 const _ = require('lodash');
 
 const BitGoJS = require('../src/index');
@@ -160,6 +160,24 @@ describe('BitGo', function() {
       bitgo.initializeTestVars();
       const opaque = bitgo.encrypt({ password: password, input: secret });
       assert.equal(bitgo.decrypt({ password: password, input: opaque }), secret);
+    });
+  });
+
+  describe('Password Generation', function() {
+    it('generates a random password', function() {
+      const bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      const password = bitgo.generateRandomPassword();
+      should.exist(password);
+      password.should.have.length(28);
+    });
+
+    it('generates a random password with a numWords argument', function() {
+      const bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      const password = bitgo.generateRandomPassword(10);
+      should.exist(password);
+      password.should.have.length(55);
     });
   });
 

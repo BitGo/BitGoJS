@@ -15,4 +15,9 @@ Tbtc.prototype.getChain = function() {
   return 'tbtc';
 };
 
+Tbtc.prototype.getFullName = function() {
+  return 'Testnet Bitcoin';
+};
+
+
 module.exports = Tbtc;

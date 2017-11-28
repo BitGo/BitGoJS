@@ -15,4 +15,9 @@ Trmg.prototype.getChain = function() {
   return 'trmg';
 };
 
+Trmg.prototype.getFullName = function() {
+  return 'Testnet Royal Mint Gold';
+};
+
+
 module.exports = Trmg;

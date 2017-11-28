@@ -29,6 +29,10 @@ Btc.prototype.getFamily = function() {
   return 'btc';
 };
 
+Btc.prototype.getFullName = function() {
+  return 'Bitcoin';
+};
+
 Btc.prototype.isValidAddress = function(address, forceAltScriptSupport) {
   const validVersions = [
     this.network.pubKeyHash,
