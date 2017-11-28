@@ -144,9 +144,16 @@ BitGo.prototype.initializeTestVars = function() {
     // v2 variables
     BitGo.V2 = {};
     BitGo.V2.TEST_USERID = '543c11ed356d00cb7600000b98794503';
+
     BitGo.V2.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
     BitGo.V2.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcFWFN9gpFpnSVy6bF3kMZAkSXtu3ZYKPgq2KUVo1xEMnMXDcavwDJ4zH57iUHVfEGVK7dEgo7ufKRzTkeWYSBDuye5g7w4pe';
     BitGo.V2.TEST_WALLET1_ID = '593f1ece99d37c23080a557283edcc89';
+
+    // this wallet will do consolidate and fannout together, so the number of unspents can be known
+    BitGo.V2.TEST_WALLET2_UNSPENTS_LABEL = 'Test Wallet 2 Unspents';
+    BitGo.V2.TEST_WALLET2_UNSPENTS_PASSCODE = 'NXh65HxeZpzFqzW2n868';
+    BitGo.V2.TEST_WALLET2_UNSPENTS_XPUB = 'xpub661MyMwAqRbcFeeMZtyLiqECMeek7QD6X9NLX2ydBN2DutiBQqLw8nsMnnL9hk3CSWGXZgW1PLV96opu8NzuXwJjK57PuNBqe85jSN6Abm6';
+    BitGo.V2.TEST_WALLET2_UNSPENTS_ID = '5a1341e7c8421dc90710673b3166bbd5';
 
     BitGo.V2.TEST_ETH_WALLET_ID = '598f606cd8fc24710d2ebadb1d9459bb';
     BitGo.V2.TEST_ETH_WALLET_PASSPHRASE = 'moon';
@@ -267,11 +274,26 @@ BitGo.prototype.checkFunded = co(function *checkFunded(agent) {
   balance = new BigNumber(wallet.spendableBalanceString());
 
   // Check our balance is over 0.05 tBTC (we spend 0.04, add some cushion)
-  const minimumBalance = 0.05 * 1e8;
+  let minimumBalance = 0.05 * 1e8;
   balance.gt(minimumBalance).should.be.true;
 
   if (balance.lt(minimumBalance)) {
     console.error(`The TBTC wallet ${wallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+    process.exit(1);
+  }
+
+  const unspentWallet = yield this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID });
+
+  // Check we have enough in the wallet to run test suite
+  unspentWallet.should.have.property('spendableBalanceString');
+  balance = new BigNumber(wallet.spendableBalanceString());
+
+  // Check our balance is over 0.05 tBTC (we spend 0.04, add some cushion)
+  minimumBalance = 0.05 * 1e8;
+  balance.gt(minimumBalance).should.be.true;
+
+  if (balance.lt(minimumBalance)) {
+    console.error(`The TBTC wallet ${unspentWallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
     process.exit(1);
   }
 });

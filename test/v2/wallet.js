@@ -527,4 +527,60 @@ describe('V2 Wallet:', function() {
     });
   });
 
+  describe('Unspent Manipulation', function() {
+    let unspentWallet;
+
+    before(co(function *() {
+      unspentWallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_ID });
+      yield bitgo.unlock({ otp: bitgo.testUserOTP() });
+    }));
+
+    it('should consolidate the number of unspents to 4', co(function *() {
+      yield Promise.delay(3000);
+
+      const params = {
+        limit: 250,
+        targetUnspentPoolSize: 2,
+        minValue: 1000,
+        numBlocks: 12,
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_PASSCODE
+      };
+      const transaction = yield unspentWallet.consolidateUnspents(params);
+      transaction.should.have.property('status');
+      transaction.should.have.property('txid');
+      transaction.status.should.equal('signed');
+
+      yield Promise.delay(8000);
+
+      const unspentsResult = yield unspentWallet.unspents({ limit: 1000 });
+      const numUnspents = unspentsResult.unspents.length;
+      numUnspents.should.equal(2);
+
+      yield Promise.delay(3000);
+    }));
+
+    it('should fanout the number of unspents to 200', co(function *() {
+      yield Promise.delay(3000);
+
+      const params = {
+        minHeight: 1,
+        maxNumInputsToUse: 80, // should be 2, but if a test were to fail and need to be rerun we want to use more of them
+        numUnspentsToMake: 20,
+        numBlocks: 12,
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_PASSCODE
+      };
+      const transaction = yield unspentWallet.fanoutUnspents(params);
+
+      transaction.should.have.property('status');
+      transaction.should.have.property('txid');
+      transaction.status.should.equal('signed');
+
+      yield Promise.delay(8000);
+
+      const unspentsResult = yield unspentWallet.unspents({ limit: 1000 });
+      const numUnspents = unspentsResult.unspents.length;
+      numUnspents.should.equal(20);
+    }));
+  });
+
 });

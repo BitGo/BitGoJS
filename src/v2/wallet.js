@@ -317,6 +317,46 @@ Wallet.prototype.consolidateUnspents = function consolidateUnspents(params, call
 };
 
 /**
+ * Fanout unspents for a wallet
+ *
+ * @param params {Object} parameters object
+ * -walletPassphrase {String} the users wallet passphrase
+ * -xprv {String} the private key in string form if the walletPassphrase is not available
+ * -minValue {Number} the minimum value of unspents to use
+ * -maxValue {Number} the maximum value of unspents to use
+ * -minHeight {Number} the minimum height of unspents on the block chain to use
+ * -minConfirms {Number} all selected unspents will have at least this many conformations
+ * -maxFeePercentage {Number} the maximum proportion of an unspent you are willing to lose to fees
+ * -feeTxConfirmTarget {Number} The number of blocks to wait to confirm the transaction
+ * -maxNumInputsToUse {Number} the number of unspents you want to use in the transaction
+ * -numUnspentsToMake {Number} the number of new unspents to make
+ * @param callback
+ * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
+ */
+Wallet.prototype.fanoutUnspents = function fanoutUnspents(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
+
+    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'maxFeePercentage', 'feeTxConfirmTarget']);
+    const response = yield this.bitgo.post(this.url('/fanoutUnspents'))
+    .send(filteredParams)
+    .result();
+
+    const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0] });
+    const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain, prv: params.xprv });
+    const signedTransaction = yield this.signTransaction(transactionParams);
+
+    const selectParams = _.pick(params, ['comment', 'otp']);
+    const finalTxParams = _.extend({}, signedTransaction, selectParams);
+    return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
+    .send(finalTxParams)
+    .result();
+  }).call(this).asCallback(callback);
+
+};
+
+/**
  * Freeze a given wallet
  * @param params
  * @param callback
