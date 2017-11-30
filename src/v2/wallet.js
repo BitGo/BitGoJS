@@ -404,9 +404,18 @@ Wallet.prototype.addresses = function(params, callback) {
  */
 Wallet.prototype.getAddress = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address'], [], callback);
+  common.validateParams(params, [], ['address', 'id'], callback);
+  let query;
+  if (!params.address && !params.id) {
+    throw new Error('address or id of address required');
+  }
+  if (params.address) {
+    query = params.address;
+  } else {
+    query = params.id;
+  }
 
-  return this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${params.address}`))
+  return this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${query}`))
   .result()
   .nodeify(callback);
 };

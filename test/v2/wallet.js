@@ -16,6 +16,7 @@ describe('V2 Wallet:', function() {
   let wallet;
   let sequenceId;
   let walletAddress;
+  let walletAddressId;
 
   // TODO: automate keeping test wallet full with bitcoin
   // If failures are occurring, make sure that the wallet at test.bitgo.com contains bitcoin.
@@ -74,6 +75,7 @@ describe('V2 Wallet:', function() {
         addresses.should.have.property('addresses');
         addresses.addresses.length.should.be.greaterThan(2);
         walletAddress = _.head(addresses.addresses).address;
+        walletAddressId = _.head(addresses.addresses).id;
       });
     });
 
@@ -83,6 +85,17 @@ describe('V2 Wallet:', function() {
         address.should.have.property('coin');
         address.should.have.property('wallet');
         address.address.should.equal(walletAddress);
+        address.wallet.should.equal(wallet.id());
+      });
+    });
+
+    it('should get single address by id', function() {
+      return wallet.getAddress({ id: walletAddressId })
+      .then(function(address) {
+        address.should.have.property('coin');
+        address.should.have.property('wallet');
+        address.address.should.equal(walletAddress);
+        address.id.should.equal(walletAddressId);
         address.wallet.should.equal(wallet.id());
       });
     });
