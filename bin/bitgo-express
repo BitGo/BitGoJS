@@ -135,4 +135,5 @@ server.timeout = 300 * 1000; // 5 minutes
 process.on('uncaughtException', function (err) {
   console.log("Fatal error: " + err.message);
   console.log(err.stack);
+  process.exit(1);
 });
