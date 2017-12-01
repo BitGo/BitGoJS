@@ -72,7 +72,7 @@
     "bigi": "1.4.0",
     "bignumber.js": "~4.0.2",
     "bitcoinjs-lib": "2.1.4",
-    "bcashjs-lib": "git+ssh://git@github.com:BitGo/bcashjs-lib.git",
+    "bcashjs-lib": "git+https://github.com/BitGo/bcashjs-lib.git",
     "body-parser": "~1.17.2",
     "bs58": "2.0.1",
     "bs58check": "1.0.4",
