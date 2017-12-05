@@ -468,15 +468,29 @@ Wallet.prototype.getAddress = function(params, callback) {
  * @returns {*}
  */
 Wallet.prototype.createAddress = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, [], [], callback);
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], []);
 
-  // TODO: verify address generation
-  params.chain = params.chain || 0;
-  return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
-  .send(params)
-  .result()
-  .nodeify(callback);
+    const chainParams = {};
+    const chain = params.chain;
+    if (!_.isUndefined(chain)) {
+      if (!_.isInteger(chain)) {
+        throw new Error('chain has to be an integer');
+      }
+      chainParams.chain = chain;
+    }
+    const newAddress = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
+    .send(chainParams)
+    .result();
+
+    // verify the new address
+    const keychains = yield Promise.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k }));
+    newAddress.keychains = keychains;
+    this.baseCoin.verifyAddress(newAddress);
+
+    return newAddress;
+  }).call(this).asCallback(callback);
 };
 
 Wallet.prototype.listWebhooks = function(params, callback) {

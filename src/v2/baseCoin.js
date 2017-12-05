@@ -146,6 +146,16 @@ BaseCoin.prototype.deriveKeyWithSeed = function({ key, seed }) {
 };
 
 /**
+ * Verify an address and throw an error if it's invalid
+ * @param address Address string
+ */
+BaseCoin.prototype.verifyAddress = function({ address }) {
+  if (!this.isValidAddress(address)) {
+    throw new Error(`invalid address: ${address}`);
+  }
+};
+
+/**
  * Perform additional checks before adding a bitgo key. Base controller
  * is a no-op, but coin-specific controller may do something
  * @param params

@@ -2,6 +2,7 @@ const baseCoinPrototype = require('../baseCoin').prototype;
 const common = require('../../common');
 const bitcoin = require('bitcoinjs-lib');
 const Promise = require('bluebird');
+const prova = require('prova-lib');
 const _ = require('lodash');
 
 const Btc = function() {
@@ -54,6 +55,96 @@ Btc.prototype.isValidAddress = function(address, forceAltScriptSupport) {
 };
 
 /**
+ * Make sure an address is valid and throw an error if it's not.
+ * @param address The address string on the network
+ * @param keychains Keychain objects with xpubs
+ * @param coinSpecific Coin-specific details for the address such as a witness script
+ * @param chain Derivation chain
+ * @param index Derivation index
+ */
+Btc.prototype.verifyAddress = function({ address, keychains, coinSpecific, chain, index }) {
+  if (!this.isValidAddress(address)) {
+    throw new Error(`invalid address: ${address}`);
+  }
+
+  const expectedAddress = this.generateAddress({
+    segwit: !!coinSpecific.witnessScript,
+    keychains,
+    threshold: 2,
+    chain: chain,
+    index: index
+  });
+
+  if (expectedAddress.address !== address) {
+    throw new Error(`address validation failure: expected ${expectedAddress.address} but got ${address}`);
+  }
+};
+
+/**
+ * Generate an address for a wallet based on a set of configurations
+ * @param segwit True if segwit
+ * @param keychains Array of objects with xpubs
+ * @param threshold Minimum number of signatures
+ * @param chain Derivation chain
+ * @param index Derivation index
+ * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
+ */
+Btc.prototype.generateAddress = function({ segwit, keychains, threshold, chain, index }) {
+  const isSegwit = !!segwit;
+  let signatureThreshold = 2;
+  if (_.isInteger(threshold)) {
+    signatureThreshold = threshold;
+    if (signatureThreshold <= 0) {
+      throw new Error('threshold has to be positive');
+    }
+    if (signatureThreshold > keychains.length) {
+      throw new Error('threshold cannot exceed number of keys');
+    }
+  }
+
+  let derivationChain = 0;
+  if (_.isInteger(chain) && chain > 0) {
+    derivationChain = chain;
+  }
+
+  let derivationIndex = 0;
+  if (_.isInteger(index) && index > 0) {
+    derivationIndex = index;
+  }
+
+  const path = 'm/0/0/' + derivationChain + '/' + derivationIndex;
+  const hdNodes = keychains.map(({ pub }) => prova.HDNode.fromBase58(pub));
+  const derivedKeys = hdNodes.map(hdNode => hdNode.hdPath().deriveKey(path).getPublicKeyBuffer());
+
+  const inputScript = bitcoin.script.multisig.output.encode(signatureThreshold, derivedKeys);
+  const inputScriptHash = bitcoin.crypto.hash160(inputScript);
+  let outputScript = bitcoin.script.scriptHash.output.encode(inputScriptHash);
+
+  const addressDetails = {
+    chain: derivationChain,
+    index: derivationIndex,
+    coin: this.getChain(),
+    coinSpecific: {}
+  };
+
+  addressDetails.coinSpecific.redeemScript = inputScript.toString('hex');
+
+  if (isSegwit) {
+    const witnessScriptHash = bitcoin.crypto.sha256(inputScript);
+    const redeemScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
+    const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
+    outputScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
+    addressDetails.coinSpecific.witnessScript = inputScript.toString('hex');
+    addressDetails.coinSpecific.redeemScript = redeemScript.toString('hex');
+  }
+
+  addressDetails.coinSpecific.outputScript = outputScript.toString('hex');
+  addressDetails.address = bitcoin.address.fromOutputScript(outputScript, this.network);
+
+  return addressDetails;
+};
+
+/**
  * Assemble keychain and half-sign prebuilt transaction
  * @param params
  * - txPrebuild
@@ -85,25 +176,118 @@ Btc.prototype.signTransaction = function(params) {
 
   const keychain = bitcoin.HDNode.fromBase58(userPrv);
   const hdPath = bitcoin.hdPath(keychain);
+  const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
+
+  const signatureIssues = [];
 
   for (let index = 0; index < transaction.ins.length; ++index) {
-    const path = 'm/0/0/' + txPrebuild.txInfo.unspents[index].chain + '/' + txPrebuild.txInfo.unspents[index].index;
+    const currentUnspent = txPrebuild.txInfo.unspents[index];
+    const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
     const privKey = hdPath.deriveKey(path);
 
-    const subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
-    const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
+    const currentSignatureIssue = {
+      inputIndex: index,
+      unspent: currentUnspent,
+      path: path
+    };
+
+    const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
+    const isSegwit = !!currentUnspent.witnessScript;
     try {
-      txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);
+      if (isSegwit) {
+        const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
+        txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL, currentUnspent.value, witnessScript);
+      } else {
+        txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);
+      }
+
     } catch (e) {
-      throw new Error('Failed to sign input #' + index);
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+      continue;
     }
 
     transaction = txb.buildIncomplete();
+
+    const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
+    if (!isValidSignature) {
+      currentSignatureIssue.error = new Error('invalid signature');
+      signatureIssues.push(currentSignatureIssue);
+    }
+  }
+
+  if (signatureIssues.length > 0) {
+    const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
+    const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+    error.code = 'input_signature_failure';
+    error.signingErrors = signatureIssues;
+    throw error;
   }
 
   return {
     txHex: transaction.toBuffer().toString('hex')
   };
+};
+
+/**
+ * Verify the signature on a (half-signed) transaction
+ * @param transaction bitcoinjs-lib tx object
+ * @param inputIndex The input whererfore to check the signature
+ * @param amount For segwit and BCH, the input amount needs to be known for signature verification
+ * @returns {boolean}
+ */
+Btc.prototype.verifySignature = function(transaction, inputIndex, amount) {
+  const currentInput = transaction.ins[inputIndex];
+  let signatureScript = currentInput.script;
+  let decompiledSigScript = bitcoin.script.decompile(signatureScript);
+
+  const isSegwitInput = currentInput.witness.length > 0;
+  if (isSegwitInput) {
+    decompiledSigScript = currentInput.witness;
+    signatureScript = bitcoin.script.compile(decompiledSigScript);
+    if (!amount) {
+      return false;
+    }
+  }
+
+  const inputClassification = bitcoin.script.classifyInput(signatureScript, true);
+  if (inputClassification !== 'scripthash') {
+    return false;
+  }
+
+  // all but the last entry
+  const signatures = decompiledSigScript.slice(0, -1);
+  // the last entry
+  const pubScript = _.last(decompiledSigScript);
+  const decompiledPubScript = bitcoin.script.decompile(pubScript);
+  // the second through antepenultimate entries
+  const publicKeys = decompiledPubScript.slice(1, -2);
+
+  // get the first non-empty signature and verify it against all public keys
+  const signatureBuffer = _.find(signatures, s => !_.isEmpty(s));
+  if (signatureBuffer.length === 0) {
+    // signature buffer must not be empty
+    return false;
+  }
+  // slice the last byte from the signature hash input because it's the hash type
+  const signature = bitcoin.ECSignature.fromDER(signatureBuffer.slice(0, -1));
+  const hashType = _.last(signatureBuffer);
+
+  for (const publicKeyBuffer of publicKeys) {
+    const publicKey = bitcoin.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
+    let signatureHash = transaction.hashForSignature(inputIndex, pubScript, hashType);
+    if (isSegwitInput) {
+      signatureHash = transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
+    } else if (this.getFamily() === 'bch') {
+      signatureHash = transaction.hashForCashSignature(inputIndex, pubScript, amount, hashType);
+    }
+
+    if (publicKey.verify(signatureHash, signature)) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 Btc.prototype.explainTransaction = function(params) {
