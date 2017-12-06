@@ -17,12 +17,14 @@
     "npm": ">=5.5.1"
   },
   "devDependencies": {
-    "babelify": "7.3.0",
-    "browserify": "13.1.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
     "bufferutil": "~3.0.2",
     "coveralls": "~3.0.0",
-    "envify": "~3.4.0",
     "eslint": "^4.12.0",
+    "glob": "^7.1.2",
+    "html-webpack-plugin": "^2.30.1",
     "istanbul": "0.4.5",
     "karma": "~0.13.22",
     "karma-chrome-launcher": "~0.1.7",
@@ -35,8 +37,9 @@
     "supertest": "~3.0.0",
     "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz",
     "uglify-js": "3.0.15",
-    "uglifyify": "~3.0.4",
-    "utf-8-validate": "~3.0.3"
+    "uglifyjs-webpack-plugin": "^1.0.1",
+    "utf-8-validate": "~3.0.3",
+    "webpack": "^3.8.1"
   },
   "testling": {
     "browsers": [
@@ -58,9 +61,9 @@
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- --timeout 15000 --reporter list test/*.js",
     "coveralls": "sleep 300; ./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha --report lcovonly -- --timeout 50000 -R spec test/*.js test/bitcoin/*.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "babelify": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -t babelify -s BitGoJS -o browser/BitGoJS-babelify.js",
-    "compile": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -s BitGoJS -g uglifyify -o browser/BitGoJS-min.js",
-    "compile-dbg": "mkdir -p browser && ./node_modules/.bin/browserify ./src/index.js --exclude superagent-proxy --exclude morgan -s BitGoJS -o browser/BitGoJS.js",
-    "compile-test": "mkdir -p browser && ./node_modules/.bin/browserify --exclude superagent-proxy --exclude morgan -t envify ./test/*.js > ./browser/tests.js",
+    "compile": "webpack --progress --colors --env.prod",
+    "compile-dbg": "webpack --progress --colors --env.dev",
+    "compile-test": "webpack --progress --colors --env.test",
     "test": "npm run test-node",
     "express": "node bin/bitgo-express -b 0.0.0.0",
     "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 20000 --reporter list --recursive test/",

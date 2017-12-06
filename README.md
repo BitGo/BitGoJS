@@ -93,10 +93,12 @@ This ensures your keys never leave your network, and are not seen by BitGo. BitG
 
 For a full tutorial of how to install, authenticate, and use Bitgo Express, see the [Bitgo Express Quickstart](https://platform.bitgo.com/bitgo-express/)
 
-# Compile
+# Usage in Browser
 
-Creates a single file of javascript for inclusion in your applications.
+For use inside a browser, BitGoJS can be bundled with any module bundler. There is a Webpack configuration file already included, which can be triggered with package scripts.
 
-`npm run-script compile`
+For a production build: `npm run-script compile`
 
-`npm run-script compile-dbg`
+For a development (non-minified) build: `npm run-script compile-dbg`
+
+To build the test suite into a single test file: `npm run-script compile-test`

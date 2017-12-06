@@ -1,7 +1,3 @@
-if (process.browser) {
-  // Bitgo Express tests not supported in browser
-  return;
-}
 
 require('should');
 const request = require('supertest-as-promised');
@@ -16,6 +12,11 @@ describe('Bitgo Express', function() {
   let bitgo;
 
   before(function() {
+    if (process.browser) {
+      // Bitgo Express tests not supported in browser
+      this.skip();
+    }
+
     const args = {
       debug: false,
       env: 'test',
