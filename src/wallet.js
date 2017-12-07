@@ -1433,6 +1433,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
       let totalFee = baseFee;
       if (error.result.bitgoFee && error.result.bitgoFee.amount) {
         totalFee += error.result.bitgoFee.amount;
+        txParams.bitgoFee = error.result.bitgoFee;
       }
 
       // Need to clear these out since only 1 may be set
@@ -1441,7 +1442,8 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
       delete txParams.feeTxConfirmTarget;
       txParams.fee = baseFee;
       // in order to maintain the equal distribution, we need to subtract the fee from the cumulative funds
-      const netAmount = grossAmount - totalFee; // after fees
+      // in case some unspents got pruned, we need to use error.result.available
+      const netAmount = error.result.available - totalFee; // after fees
       // that means that the distribution has to be recalculated
       const remainingSplitAmounts = splitNumberIntoCloseNaturalNumbers(netAmount, target);
       // and the distribution again mapped to the new addresses
@@ -1665,17 +1667,18 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       if (error.result.bitgoFee && error.result.bitgoFee.amount) {
         bitgoFee = error.result.bitgoFee.amount;
         totalFee += bitgoFee;
+        txParams.bitgoFee = error.result.bitgoFee;
       }
 
       // if the net amount is negative, it should be replaced with the minimum output size
-      const netAmount = Math.max(grossAmount - totalFee, self.bitgo.getConstants().minOutputSize);
+      const netAmount = Math.max(error.result.available - totalFee, self.bitgo.getConstants().minOutputSize);
       // Need to clear these out since only 1 may be set
       delete txParams.fee;
       delete txParams.feeRate;
       delete txParams.feeTxConfirmTarget;
 
       // we set the fee explicitly
-      txParams.fee = grossAmount - netAmount - bitgoFee;
+      txParams.fee = error.result.available - netAmount - bitgoFee;
       txParams.recipients[newAddress.address] = netAmount;
     }
     // this transaction, on the other hand, should be created with no issues, because an appropriate fee is set
