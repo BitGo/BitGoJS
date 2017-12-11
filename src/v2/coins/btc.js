@@ -1,7 +1,9 @@
 const baseCoinPrototype = require('../baseCoin').prototype;
 const common = require('../../common');
+const BigNumber = require('bignumber.js');
 const bitcoin = require('bitcoinjs-lib');
 const Promise = require('bluebird');
+const co = Promise.coroutine;
 const prova = require('prova-lib');
 const _ = require('lodash');
 
@@ -55,6 +57,118 @@ Btc.prototype.isValidAddress = function(address, forceAltScriptSupport) {
 };
 
 /**
+ * Verify that a transaction prebuild complies with the original intention
+ * @param txParams params object passed to send
+ * @param txPrebuild prebuild object returned by server
+ * @param txPrebuild.txHex prebuilt transaction's txHex form
+ * @param wallet Wallet object to obtain keys to verify against
+ * @param callback
+ * @returns {boolean}
+ */
+Btc.prototype.verifyTransaction = function({ txParams, txPrebuild, wallet }, callback) {
+  return co(function *() {
+    const keychains = yield Promise.props({
+      user: this.keychains().get({ id: wallet._wallet.keys[0] }),
+      backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
+      bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
+    });
+    const keychainArray = [keychains.user, keychains.backup, keychains.bitgo];
+    const explanation = this.explainTransaction({
+      txHex: txPrebuild.txHex,
+      txInfo: txPrebuild.txInfo,
+      keychains: keychains
+    });
+    const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
+
+    const comparator = (recipient1, recipient2) => {
+      if (recipient1.address !== recipient2.address) {
+        return false;
+      }
+      const amount1 = new BigNumber(recipient1.amount);
+      const amount2 = new BigNumber(recipient2.amount);
+      return amount1.equals(amount2);
+    };
+
+    // verify that each recipient from txParams has their own output
+    const expectedOutputs = txParams.recipients;
+
+    const missingOutputs = _.differenceWith(expectedOutputs, allOutputs, comparator);
+    if (missingOutputs.length !== 0) {
+      // there are some outputs in the recipients list that have not made it into the actual transaction
+      throw new Error('expected outputs missing in transaction prebuild');
+    }
+
+    const self = this;
+
+    const allOutputDetails = yield Promise.all(_.map(allOutputs, co(function *(currentOutput) {
+      const currentAddress = currentOutput.address;
+      try {
+        // address details throws if the address isn't found, meaning it's external
+        const addressDetails = yield wallet.getAddress({ address: currentAddress });
+        // verify that the address is on the wallet
+        // verifyAddress throws if it fails to verify the address, meaning it's external
+        self.verifyAddress(_.extend({}, addressDetails, { keychains: keychainArray }));
+        return _.extend({}, currentOutput, addressDetails, { external: false });
+      } catch (e) {
+        return _.extend({}, currentOutput, { external: true });
+      }
+    })));
+
+    // these are all the outputs that were not originally explicitly specified in recipients
+    const extraOutputDetails = _.differenceWith(allOutputDetails, expectedOutputs, comparator);
+
+    // these are all the non-wallet outputs that had been originally explicitly specified in recipients
+    const intendedExternalOutputDetails = _.filter(_.intersectionWith(allOutputDetails, expectedOutputs, comparator), { external: true });
+
+    // this is the sum of all the originally explicitly specified non-wallet output values
+    const intendedExternalSpend = _.sumBy(intendedExternalOutputDetails, 'amount');
+
+    // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
+    const payAsYouGoLimit = intendedExternalSpend * 0.005; // 50 basis points is the absolute permitted maximum
+
+    /*
+    Some explanation for why we're doing what we're doing:
+    Some customers will have an output to BitGo's PAYGo wallet added to their transaction, and we need to account for
+    it here. To protect someone tampering with the output to make it send more than it should to BitGo, we define a
+    threshold for the output's value above which we'll throw an error, because the paygo output should never be that
+    high.
+     */
+
+    // make sure that all the extra addresses are change addresses
+    // get all the additional external outputs the server added and calculate their values
+    const nonChangeOutputs = _.filter(extraOutputDetails, { external: true });
+    const nonChangeAmount = _.sumBy(nonChangeOutputs, 'amount');
+
+    // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
+    if (nonChangeAmount > payAsYouGoLimit) {
+      // there are some addresses that are outside the scope of intended recipients that are not change addresses
+      throw new Error('prebuild attempts to spend to unintended external recipients');
+    }
+
+    const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
+    const transactionCache = {};
+    const inputs = yield Promise.all(transaction.ins.map(co(function *(currentInput) {
+      const transactionId = Buffer.from(currentInput.hash).reverse().toString('hex');
+      if (!transactionCache[transactionId]) {
+        transactionCache[transactionId] = yield self.bitgo.get(self.url(`/public/tx/${transactionId}`)).result();
+      }
+      const transactionDetails = transactionCache[transactionId];
+      return transactionDetails.outputs[currentInput.index];
+    })));
+
+    const inputAmount = _.sumBy(inputs, 'value');
+    const outputAmount = _.sumBy(allOutputs, 'amount');
+    const fee = inputAmount - outputAmount;
+
+    if (fee < 0) {
+      throw new Error(`attempting to spend ${outputAmount} satoshis, which exceeds the input amount (${inputAmount} satoshis) by ${-fee}`);
+    }
+
+    return true;
+  }).call(this).asCallback(callback);
+};
+
+/**
  * Make sure an address is valid and throw an error if it's not.
  * @param address The address string on the network
  * @param keychains Keychain objects with xpubs
@@ -67,7 +181,8 @@ Btc.prototype.verifyAddress = function({ address, keychains, coinSpecific, chain
     throw new Error(`invalid address: ${address}`);
   }
 
-  const expectedAddress = this.generateAddress({
+  const expectedAddress = this.
+  generateAddress({
     segwit: !!coinSpecific.witnessScript,
     keychains,
     threshold: 2,

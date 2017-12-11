@@ -111,6 +111,21 @@ BaseCoin.prototype.baseUnitsToBigUnits = function(baseUnits) {
 };
 
 /**
+ * Verify that a transaction prebuild complies with the original intention
+ */
+BaseCoin.prototype.verifyTransaction = Promise.method(function() {
+  return true;
+});
+
+/**
+ * Verify that an address belongs to a wallet
+ * @returns {boolean}
+ */
+BaseCoin.prototype.verifyAddress = function() {
+  return true;
+};
+
+/**
  * If a coin needs to add additional parameters to the wallet generation, it does it in this method
  * @param walletParams
  * @return {*}

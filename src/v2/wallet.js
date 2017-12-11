@@ -809,6 +809,13 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
     // the prebuild can be overridden by providing an explicit tx
     const txPrebuild = params.prebuildTx || (yield this.prebuildTransaction(params));
     const userKeychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0] });
+
+    try {
+      yield this.baseCoin.verifyTransaction({ txParams: params, txPrebuild, wallet: this });
+    } catch (e) {
+      throw new Error(`transaction prebuild failed local validation: ${e.message}`);
+    }
+
     const signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
 
     try {
@@ -848,13 +855,13 @@ Wallet.prototype.submitTransaction = function(params, callback) {
 /**
  * Send coins to a recipient
  * @param params
- * address - the destination address
- * amount - the amount in satoshis to be sent
- * message - optional message to attach to transaction
- * walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
- * prv - the private key in string form, if walletPassphrase is not available
- * minConfirms - the minimum confirmation threshold for inputs
- * enforceMinConfirmsForChange - whether to enforce minConfirms for change inputs
+ * @param params.address - the destination address
+ * @param params.amount - the amount in satoshis to be sent
+ * @param params.message - optional message to attach to transaction
+ * @param params.walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
+ * @param params.prv - the private key in string form, if walletPassphrase is not available
+ * @param params.minConfirms - the minimum confirmation threshold for inputs
+ * @param params.enforceMinConfirmsForChange - whether to enforce minConfirms for change inputs
  * @param callback
  * @returns {*}
  */
@@ -887,6 +894,9 @@ Wallet.prototype.send = function(params, callback) {
  * 4. Signs transaction with decrypted user key
  * 5. Sends the transaction to BitGo
  * @param params
+ * @param params.recipients {{address: string, amount: string}}[]
+ * @param params.comment
+ * @param params.otp
  * @param callback
  * @returns {*}
  */

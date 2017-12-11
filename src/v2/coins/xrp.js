@@ -41,40 +41,62 @@ Xrp.prototype.getFullName = function() {
   return 'Ripple';
 };
 
+Xrp.prototype.getAddressDetails = function(address) {
+  const destinationDetails = url.parse(address);
+  const queryDetails = querystring.parse(destinationDetails.query);
+  const destinationAddress = destinationDetails.pathname;
+  if (!rippleAddressCodec.isValidAddress(destinationAddress)) {
+    throw new Error('invalid address');
+  }
+  // there are no other properties like destination tags
+  if (destinationDetails.pathname === address) {
+    return {
+      address: address,
+      destinationTag: null
+    };
+  }
+
+  if (!queryDetails.dt) {
+    // if there are more properties, the query details need to contain the destination tag property
+    throw new Error('invalid address');
+  }
+
+  const parsedTag = parseInt(queryDetails.dt, 10);
+  if (!Number.isSafeInteger(parsedTag)) {
+    throw new Error('invalid address');
+  }
+
+  if (parsedTag > 0xFFFFFFFF || parsedTag < 0) {
+    throw new Error('invalid address');
+  }
+
+  return {
+    address: destinationAddress,
+    destinationTag: parsedTag
+  };
+};
+
+Xrp.prototype.normalizeAddress = function({ address, destinationTag }) {
+  if (!_.isString(address)) {
+    throw new Error('invalid address details');
+  }
+  if (_.isInteger(destinationTag)) {
+    return `${address}?dt=${destinationTag}`;
+  }
+  return address;
+};
+
 /**
  * Evaluates whether an address string is valid for this coin
  * @param address
  */
 Xrp.prototype.isValidAddress = function(address) {
-  const destinationDetails = url.parse(address);
-  const queryDetails = querystring.parse(destinationDetails.query);
-  const destinationAddress = destinationDetails.pathname;
-  if (!rippleAddressCodec.isValidAddress(destinationAddress)) {
+  try {
+    const addressDetails = this.getAddressDetails(address);
+    return address === this.normalizeAddress(addressDetails);
+  } catch (e) {
     return false;
   }
-
-  // there are no other properties like destination tags
-  if (destinationDetails.pathname === address) {
-    return true;
-  }
-
-  if (!queryDetails.dt) {
-    // if there are more properties, the query details need to contain the destination tag property
-    return false;
-  }
-
-  const parsedTag = parseInt(queryDetails.dt, 10);
-  if (!Number.isSafeInteger(parsedTag)) {
-    return false;
-  }
-
-  if (parsedTag > 0xFFFFFFFF || parsedTag < 0) {
-    return false;
-  }
-
-  // the simplest form, reconstruction after the deconstruction, should be deterministic
-  const normalizedAddress = `${destinationAddress}?dt=${parsedTag}`;
-  return normalizedAddress === address;
 };
 
 /**
@@ -267,10 +289,53 @@ Xrp.prototype.explainTransaction = function(params) {
   explanation.changeAmount = changeAmount;
 
   explanation.fee = {
-    miner: transaction.Fee,
+    fee: transaction.Fee,
+    feeRate: null,
     size: txHex.length / 2
   };
   return explanation;
+};
+
+/**
+ * Verify that a transaction prebuild complies with the original intention
+ * @param txParams params object passed to send
+ * @param txPrebuild prebuild object returned by server
+ * @param wallet
+ * @param callback
+ * @returns {boolean}
+ */
+Xrp.prototype.verifyTransaction = function({ txParams, txPrebuild, wallet }, callback) {
+  return co(function *() {
+    const explanation = this.explainTransaction({
+      txHex: txPrebuild.txHex
+    });
+
+    const output = [...explanation.outputs, ...explanation.changeOutputs][0];
+    const expectedOutput = txParams.recipients[0];
+
+    const comparator = (recipient1, recipient2) => {
+      if (recipient1.address !== recipient2.address) {
+        return false;
+      }
+      const amount1 = new BigNumber(recipient1.amount);
+      const amount2 = new BigNumber(recipient2.amount);
+      return amount1.toFixed() === amount2.toFixed();
+    };
+
+    if (!comparator(output, expectedOutput)) {
+      throw new Error('transaction prebuild does not match expected output');
+    }
+
+    return true;
+  }).call(this).asCallback(callback);
+};
+
+
+Xrp.prototype.verifyAddress = function({ address, wallet }) {
+  const receiveAddressDetails = this.getAddressDetails(wallet.receiveAddress());
+  if (address.address !== receiveAddressDetails.address) {
+    throw new Error('address validation failure: ' + address.address + ' vs. ' + receiveAddressDetails.address);
+  }
 };
 
 Xrp.prototype.getRippledUrl = function() {

@@ -388,7 +388,7 @@ describe('Recovery:', function() {
         recovery.outputs.length.should.equal(1);
         recovery.outputs[0].address.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345');
         recovery.outputs[0].amount.should.equal('9899000000');
-        recovery.fee.miner.should.equal('30');
+        recovery.fee.fee.should.equal('30');
       });
 
     });
