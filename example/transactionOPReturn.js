@@ -6,7 +6,7 @@
 //
 
 const BitGoJS = require('../src/index.js');
-const BitcoinJSLib = require('bitcoinjs-lib');
+const BitcoinJSLib = require('bitgo-bitcoinjs-lib');
 
 if (process.argv.length < 8) {
   console.log('usage:\n\t' + process.argv[0] + ' ' + process.argv[1] +

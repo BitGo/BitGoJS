@@ -10,7 +10,7 @@ const bitcoin = require('./bitcoin');
 const _ = require('lodash');
 
 const P2SH_INPUT_SIZE = 295;
-const P2SH_P2WSH_INPUT_SIZE = 138;
+const P2SH_P2WSH_INPUT_SIZE = 139;
 const P2PKH_INPUT_SIZE = 160;
 const OUTPUT_SIZE = 34;
 const TX_OVERHEAD_SIZE = 10;

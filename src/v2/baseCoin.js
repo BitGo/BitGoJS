@@ -6,7 +6,7 @@ let Wallets;
 let Markets;
 let Token;
 let coinGenerators;
-const bitcoin = require('bitcoinjs-lib');
+const bitcoin = require('bitgo-bitcoinjs-lib');
 const prova = require('../prova');
 const Promise = require('bluebird');
 const sjcl = require('../sjcl.min');
@@ -72,6 +72,8 @@ BaseCoin.initializeCoin = function(coin, bitgo) {
       tbtc: require('./coins/tbtc'),
       bch: require('./coins/bch'),
       tbch: require('./coins/tbch'),
+      btg: require('./coins/btg'),
+      tbtg: require('./coins/tbtg'),
       ltc: require('./coins/ltc'),
       tltc: require('./coins/tltc'),
       eth: require('./coins/eth'),

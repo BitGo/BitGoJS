@@ -2,25 +2,25 @@ const btcPrototype = require('./btc').prototype;
 const bitcoin = require('bitgo-bitcoinjs-lib');
 const _ = require('lodash');
 
-const Bch = function() {
+const Btg = function() {
   // this function is called externally from BaseCoin
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
-  this.network = this.network = bitcoin.networks.bitcoin;
+  this.network = bitcoin.networks.bitcoingold;
 };
 
-Bch.prototype = Object.create(btcPrototype);
-Bch.constructor = Bch;
+Btg.prototype = Object.create(btcPrototype);
+Btg.constructor = Btg;
 
-Bch.prototype.getChain = function() {
-  return 'bch';
+Btg.prototype.getChain = function() {
+  return 'btg';
 };
-Bch.prototype.getFamily = function() {
-  return 'bch';
+Btg.prototype.getFamily = function() {
+  return 'btg';
 };
 
-Bch.prototype.getFullName = function() {
-  return 'Bitcoin Cash';
+Btg.prototype.getFullName = function() {
+  return 'Bitcoin Gold';
 };
 
 /**
@@ -30,7 +30,7 @@ Bch.prototype.getFullName = function() {
  * - prv
  * @returns {{txHex}}
  */
-Bch.prototype.signTransaction = function(params) {
+Btg.prototype.signTransaction = function(params) {
   const txPrebuild = params.txPrebuild;
   const userPrv = params.prv;
 
@@ -58,23 +58,46 @@ Bch.prototype.signTransaction = function(params) {
   const keychain = bitcoin.HDNode.fromBase58(userPrv);
   const hdPath = bitcoin.hdPath(keychain);
 
+  const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
+  txb.enableBitcoinGold(true);
+  txb.setVersion(2);
+
+  const signatureIssues = [];
+
   for (let index = 0; index < transaction.ins.length; ++index) {
+    const currentUnspent = txPrebuild.txInfo.unspents[index];
     const path = 'm/0/0/' + txPrebuild.txInfo.unspents[index].chain + '/' + txPrebuild.txInfo.unspents[index].index;
     const privKey = hdPath.deriveKey(path);
-    const value = txPrebuild.txInfo.unspents[index].value;
 
-    const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
-    txb.enableBitcoinCash(true);
-    // TODO (arik): Figure out if version 2 is actually necessary
-    txb.setVersion(2);
+    const currentSignatureIssue = {
+      inputIndex: index,
+      unspent: currentUnspent,
+      path: path
+    };
+
     const subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
+    const isSegwit = !!currentUnspent.witnessScript;
+    let witnessScript;
+    if (isSegwit) {
+      witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
+    }
     try {
-      txb.sign(index, privKey, subscript, sigHashType, value);
+      txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value, witnessScript);
     } catch (e) {
-      throw new Error('Failed to sign input #' + index);
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+      continue;
     }
 
     transaction = txb.buildIncomplete();
+  }
+
+  if (signatureIssues.length > 0) {
+    const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
+    const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+    error.code = 'input_signature_failure';
+    error.signingErrors = signatureIssues;
+    throw error;
   }
 
   return {
@@ -82,4 +105,4 @@ Bch.prototype.signTransaction = function(params) {
   };
 };
 
-module.exports = Bch;
+module.exports = Btg;

@@ -1,4 +1,4 @@
-const bitcoin = require('bitcoinjs-lib');
+const bitcoin = require('bitgo-bitcoinjs-lib');
 const _ = require('lodash');
 
 exports.Environments = {

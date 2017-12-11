@@ -1,5 +1,5 @@
 const btcPrototype = require('./btc').prototype;
-const bitcoin = require('bitcoinjs-lib');
+const bitcoin = require('bitgo-bitcoinjs-lib');
 
 const Ltc = function() {
   // this function is called externally from BaseCoin

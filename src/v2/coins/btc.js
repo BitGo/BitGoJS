@@ -1,7 +1,7 @@
 const baseCoinPrototype = require('../baseCoin').prototype;
 const common = require('../../common');
 const BigNumber = require('bignumber.js');
-const bitcoin = require('bitcoinjs-lib');
+const bitcoin = require('bitgo-bitcoinjs-lib');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const prova = require('prova-lib');
@@ -390,11 +390,17 @@ Btc.prototype.verifySignature = function(transaction, inputIndex, amount) {
 
   for (const publicKeyBuffer of publicKeys) {
     const publicKey = bitcoin.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
-    let signatureHash = transaction.hashForSignature(inputIndex, pubScript, hashType);
-    if (isSegwitInput) {
-      signatureHash = transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
+    let signatureHash;
+    if (this.getFamily() === 'btg') {
+      signatureHash = transaction.hashForGoldSignature(inputIndex, pubScript, amount, hashType, isSegwitInput);
     } else if (this.getFamily() === 'bch') {
       signatureHash = transaction.hashForCashSignature(inputIndex, pubScript, amount, hashType);
+    } else { // btc/ltc
+      if (isSegwitInput) {
+        signatureHash = transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
+      } else {
+        signatureHash = transaction.hashForSignature(inputIndex, pubScript, hashType);
+      }
     }
 
     if (publicKey.verify(signatureHash, signature)) {

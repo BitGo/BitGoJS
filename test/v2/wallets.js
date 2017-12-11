@@ -26,6 +26,7 @@ describe('V2 Wallets:', function() {
   });
 
   describe('Per-coin tests', function() {
+    /** enable tbtg once btg is in test **/
     const coins = ['tbtc', 'tbch', 'txrp', 'teth', 'tltc', 'trmg'];
 
     for (const currentCoin of coins) {
