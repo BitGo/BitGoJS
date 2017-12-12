@@ -291,6 +291,14 @@ const handleV2SignTx = function(req) {
 };
 
 // handle wallet fanout unspents
+const handleV2ConsolidateUnspents = co(function *(req) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const wallet = yield coin.wallets().get({ id: req.params.id });
+  return wallet.consolidateUnspents(req.body);
+});
+
+// handle wallet fanout unspents
 const handleV2FanOutUnspents = co(function *(req) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
@@ -499,7 +507,8 @@ exports = module.exports = function(app, args) {
   app.post('/api/v2/:coin/wallet/:id/sendmany', parseBody, prepareBitGo(args), promiseWrapper(handleV2SendMany, args));
 
   // unspent changes
-  app.post('/api/v2/wallet/:id/fanoutunspents', parseBody, prepareBitGo(args), promiseWrapper(handleV2FanOutUnspents, args));
+  app.post('/api/v2/:coin/wallet/:id/consolidateunspents', parseBody, prepareBitGo(args), promiseWrapper(handleV2ConsolidateUnspents, args));
+  app.post('/api/v2/:coin/wallet/:id/fanoutunspents', parseBody, prepareBitGo(args), promiseWrapper(handleV2FanOutUnspents, args));
 
   // Miscellaneous
   app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(args), promiseWrapper(handleLtcCanonicalAddress, args));

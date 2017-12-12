@@ -328,6 +328,7 @@ Wallet.prototype.consolidateUnspents = function consolidateUnspents(params, call
  * -minConfirms {Number} all selected unspents will have at least this many conformations
  * -maxFeePercentage {Number} the maximum proportion of an unspent you are willing to lose to fees
  * -feeTxConfirmTarget {Number} The number of blocks to wait to confirm the transaction
+ * -feeRate {Number} The desired fee rate for the transaction in satoshis/kb
  * -maxNumInputsToUse {Number} the number of unspents you want to use in the transaction
  * -numUnspentsToMake {Number} the number of new unspents to make
  * @param callback
@@ -338,7 +339,7 @@ Wallet.prototype.fanoutUnspents = function fanoutUnspents(params, callback) {
     params = params || {};
     common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
-    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'maxFeePercentage', 'feeTxConfirmTarget']);
+    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'feeRate', 'maxFeePercentage', 'feeTxConfirmTarget']);
     const response = yield this.bitgo.post(this.url('/fanoutUnspents'))
     .send(filteredParams)
     .result();
@@ -1015,7 +1016,7 @@ Wallet.prototype.downloadKeycard = function(params, callback) {
         data: params.backupKeychain.pub
       };
     }
-    
+
     return qrData;
   };
 
