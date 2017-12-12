@@ -416,7 +416,12 @@ const BitGo = function(params) {
   }
 
   // Kick off first load of constants
-  this.fetchConstants();
+  this.fetchConstants({}, function(err) {
+    if (err) {
+      // make sure an error does not terminate the entire script
+      console.trace(err);
+    }
+  });
 };
 
 /**
@@ -1646,30 +1651,25 @@ BitGo.prototype.getWalletAddress = function(params, callback) {
 // Receives a TTL and refetches as necessary
 //
 BitGo.prototype.fetchConstants = function(params, callback) {
-  const env = this.env;
+  return co(function *() {
+    const env = this.env;
 
-  if (!BitGo.prototype._constants) {
-    BitGo.prototype._constants = {};
-  }
-  if (!BitGo.prototype._constantsExpire) {
-    BitGo.prototype._constantsExpire = {};
-  }
+    if (!BitGo.prototype._constants) {
+      BitGo.prototype._constants = {};
+    }
+    if (!BitGo.prototype._constantsExpire) {
+      BitGo.prototype._constantsExpire = {};
+    }
 
-  if (BitGo.prototype._constants[env] && BitGo.prototype._constantsExpire[env] && new Date() < BitGo.prototype._constantsExpire[env]) {
-    return Promise.try(function() {
+    if (BitGo.prototype._constants[env] && BitGo.prototype._constantsExpire[env] && new Date() < BitGo.prototype._constantsExpire[env]) {
       return BitGo.prototype._constants[env];
-    })
-    .nodeify(callback);
-  }
+    }
 
-  return this.get(this.url('/client/constants'))
-  .result()
-  .then(function(result) {
+    const result = yield this.get(this.url('/client/constants')).result();
     BitGo.prototype._constants[env] = result.constants;
     BitGo.prototype._constantsExpire[env] = moment.utc().add(result.ttl, 'second').toDate();
     return BitGo.prototype._constants[env];
-  })
-  .nodeify(callback);
+  }).call(this).asCallback(callback);
 };
 
 //
@@ -1693,7 +1693,12 @@ BitGo.prototype.getConstants = function(params) {
     }
   };
 
-  this.fetchConstants(params);
+  this.fetchConstants(params, function(err) {
+    if (err) {
+      // make sure an error does not terminate the entire script
+      console.trace(err);
+    }
+  });
 
   // use defaultConstants as the backup for keys that are not set in this._constants
   return _.merge({}, defaultConstants, BitGo.prototype._constants[this.env]);
