@@ -378,12 +378,33 @@ exports.createTransaction = function(params) {
         minInputValue = params.minUnspentSize;
       }
 
+      let prunedUnspentCount = 0;
+      const originalUnspentCount = unspents.length;
       unspents = _.filter(unspents, function(unspent) {
         const isSegwitInput = !!unspent.witnessScript;
         const currentInputSize = isSegwitInput ? P2SH_P2WSH_INPUT_SIZE : P2SH_INPUT_SIZE;
-        const currentMinInputValue = Math.max(minInputValue, (feeRate * currentInputSize) / 1000);
-        return unspent.value > currentMinInputValue;
+        const feeBasedMinInputValue = (feeRate * currentInputSize) / 1000;
+        const currentMinInputValue = Math.max(minInputValue, feeBasedMinInputValue);
+        if (currentMinInputValue > unspent.value || true) {
+          // pruning unspent
+          const pruneDetails = {
+            generalMinInputValue: minInputValue,
+            feeBasedMinInputValue,
+            currentMinInputValue,
+            feeRate,
+            inputSize: currentInputSize,
+            unspent: unspent
+          };
+          console.log(`pruning unspent: ${JSON.stringify(pruneDetails, null, 4)}`);
+          prunedUnspentCount++;
+          return false;
+        }
+        return true;
       });
+
+      if (prunedUnspentCount > 0) {
+        console.log(`pruned ${prunedUnspentCount} out of ${originalUnspentCount} unspents`);
+      }
 
       if (unspents.length === 0) {
         throw new Error('insufficient funds');
