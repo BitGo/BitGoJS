@@ -732,7 +732,8 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
     'recipients', 'numBlocks', 'feeRate', 'minConfirms',
     'enforceMinConfirmsForChange', 'targetWalletUnspents',
     'message', 'minValue', 'maxValue', 'sequenceId',
-    'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice'
+    'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
+    'noSplitChange'
   ]);
 
   const self = this;
