@@ -1438,6 +1438,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
 
       // Need to clear these out since only 1 may be set
       delete txParams.fee;
+      txParams.originalFeeRate = txParams.feeRate;
       delete txParams.feeRate;
       delete txParams.feeTxConfirmTarget;
       txParams.fee = baseFee;
@@ -1448,8 +1449,6 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
       const remainingSplitAmounts = splitNumberIntoCloseNaturalNumbers(netAmount, target);
       // and the distribution again mapped to the new addresses
       txParams.recipients = _.zipObject(_.map(newAddresses, 'address'), remainingSplitAmounts);
-      // and turn off pruning in the second pass
-      txParams.skipPruning = true;
     }
 
     // this time, the transaction creation should work
@@ -1676,14 +1675,13 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       const netAmount = Math.max(error.result.available - totalFee, self.bitgo.getConstants().minOutputSize);
       // Need to clear these out since only 1 may be set
       delete txParams.fee;
+      txParams.originalFeeRate = txParams.feeRate;
       delete txParams.feeRate;
       delete txParams.feeTxConfirmTarget;
 
       // we set the fee explicitly
       txParams.fee = error.result.available - netAmount - bitgoFee;
       txParams.recipients[newAddress.address] = netAmount;
-      // and turn off pruning in the second pass
-      txParams.skipPruning = true;
     }
     // this transaction, on the other hand, should be created with no issues, because an appropriate fee is set
     let sentTx;

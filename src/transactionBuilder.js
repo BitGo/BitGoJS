@@ -360,8 +360,8 @@ exports.createTransaction = function(params) {
     // Calculate the cost of spending a single input, i.e. the smallest economical unspent value
     return Promise.try(function() {
 
-      if (_.isNumber(params.feeRate)) {
-        return params.feeRate;
+      if (_.isNumber(params.feeRate) || _.isNumber(params.originalFeeRate)) {
+        return (!_.isUndefined(params.feeRate) ? params.feeRate : params.originalFeeRate);
       } else {
         return bitgo.estimateFee({
           numBlocks: params.feeTxConfirmTarget,
@@ -385,7 +385,7 @@ exports.createTransaction = function(params) {
         const currentInputSize = isSegwitInput ? P2SH_P2WSH_INPUT_SIZE : P2SH_INPUT_SIZE;
         const feeBasedMinInputValue = (feeRate * currentInputSize) / 1000;
         const currentMinInputValue = Math.max(minInputValue, feeBasedMinInputValue);
-        if (currentMinInputValue > unspent.value && !params.skipPruning) {
+        if (currentMinInputValue > unspent.value) {
           // pruning unspent
           const pruneDetails = {
             generalMinInputValue: minInputValue,
