@@ -473,16 +473,26 @@ Wallet.prototype.createAddress = function(params, callback) {
     params = params || {};
     common.validateParams(params, [], []);
 
-    const chainParams = {};
+    const addressParams = {};
+
     const chain = params.chain;
     if (!_.isUndefined(chain)) {
       if (!_.isInteger(chain)) {
         throw new Error('chain has to be an integer');
       }
-      chainParams.chain = chain;
+      addressParams.chain = chain;
     }
+
+    const gasPrice = params.gasPrice;
+    if (!_.isUndefined(gasPrice)) {
+      if (!_.isInteger(gasPrice)) {
+        throw new Error('gasPrice has to be an integer');
+      }
+      addressParams.gasPrice = gasPrice;
+    }
+
     const newAddress = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
-    .send(chainParams)
+    .send(addressParams)
     .result();
 
     // verify the new address
