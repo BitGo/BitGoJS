@@ -124,7 +124,7 @@ Btc.prototype.verifyTransaction = function({ txParams, txPrebuild, wallet }, cal
     const intendedExternalSpend = _.sumBy(intendedExternalOutputDetails, 'amount');
 
     // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
-    const payAsYouGoLimit = intendedExternalSpend * 0.005; // 50 basis points is the absolute permitted maximum
+    const payAsYouGoLimit = intendedExternalSpend * 0.015; // 150 basis points is the absolute permitted maximum
 
     /*
     Some explanation for why we're doing what we're doing:

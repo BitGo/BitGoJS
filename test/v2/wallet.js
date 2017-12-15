@@ -51,6 +51,36 @@ describe('V2 Wallet:', function() {
       });
     });
 
+    it('should fail to create a new address', co(function *() {
+      try {
+        yield wallet.createAddress({ gasPrice: {} });
+        throw new Error();
+      } catch (e) {
+        e.message.should.equal('gasPrice has to be an integer or numeric string');
+      }
+      try {
+        yield wallet.createAddress({ gasPrice: 'abc' });
+        throw new Error();
+      } catch (e) {
+        e.message.should.equal('gasPrice has to be an integer or numeric string');
+      }
+      try {
+        yield wallet.createAddress({ gasPrice: null });
+        throw new Error();
+      } catch (e) {
+        e.message.should.equal('gasPrice has to be an integer or numeric string');
+      }
+
+      const address1 = yield wallet.createAddress({ gasPrice: '12345' });
+      address1.chain.should.equal(0);
+
+      const address2 = yield wallet.createAddress({ gasPrice: '123456789111315171921' });
+      address2.chain.should.equal(0);
+
+      const address3 = yield wallet.createAddress({ gasPrice: 1234567 });
+      address3.chain.should.equal(0);
+    }));
+
   });
 
   describe('List Unspents', function() {

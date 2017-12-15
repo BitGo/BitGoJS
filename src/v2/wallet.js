@@ -485,8 +485,8 @@ Wallet.prototype.createAddress = function(params, callback) {
 
     const gasPrice = params.gasPrice;
     if (!_.isUndefined(gasPrice)) {
-      if (!_.isInteger(gasPrice)) {
-        throw new Error('gasPrice has to be an integer');
+      if (!_.isInteger(gasPrice) && (isNaN(Number(gasPrice)) || !_.isString(gasPrice))) {
+        throw new Error('gasPrice has to be an integer or numeric string');
       }
       addressParams.gasPrice = gasPrice;
     }
