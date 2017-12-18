@@ -377,8 +377,17 @@ const apiResponse = function(status, result, message) {
   return err;
 };
 
+const expressJSONParser = bodyParser.json();
+
 // Perform body parsing here only on routes we want
-const parseBody = bodyParser.json();
+const parseBody = function(req, res, next) {
+  // Set the default Content-Type, in case the client doesn't set it.  If
+  // Content-Type isn't specified, Express silently refuses to parse the
+  // request body.
+  req.headers['content-type'] = req.headers['content-type'] || 'application/json';
+  return expressJSONParser(req, res, next);
+};
+
 // Create the bitgo object in the request
 const prepareBitGo = function(args) {
   const params = { env: args.env };
