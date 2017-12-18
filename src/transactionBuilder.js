@@ -385,7 +385,7 @@ exports.createTransaction = function(params) {
         const currentInputSize = isSegwitInput ? P2SH_P2WSH_INPUT_SIZE : P2SH_INPUT_SIZE;
         const feeBasedMinInputValue = (feeRate * currentInputSize) / 1000;
         const currentMinInputValue = Math.max(minInputValue, feeBasedMinInputValue);
-        if (currentMinInputValue > unspent.value) {
+        if (currentMinInputValue > unspent.value && !params.skipPruning) {
           // pruning unspent
           const pruneDetails = {
             generalMinInputValue: minInputValue,
