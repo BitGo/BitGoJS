@@ -331,10 +331,9 @@ Xrp.prototype.verifyTransaction = function({ txParams, txPrebuild, wallet }, cal
 };
 
 
-Xrp.prototype.verifyAddress = function({ address, wallet }) {
-  const receiveAddressDetails = this.getAddressDetails(wallet.receiveAddress());
-  if (address.address !== receiveAddressDetails.address) {
-    throw new Error('address validation failure: ' + address.address + ' vs. ' + receiveAddressDetails.address);
+Xrp.prototype.verifyAddress = function({ address }) {
+  if (!this.isValidAddress(address)) {
+    throw new Error('address validation failure: ' + address);
   }
 };
 
