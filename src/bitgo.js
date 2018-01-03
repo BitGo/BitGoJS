@@ -1665,9 +1665,10 @@ BitGo.prototype.fetchConstants = function(params, callback) {
       return BitGo.prototype._constants[env];
     }
 
-    const result = yield this.get(this.url('/client/constants')).result();
-    BitGo.prototype._constants[env] = result.constants;
-    BitGo.prototype._constantsExpire[env] = moment.utc().add(result.ttl, 'second').toDate();
+    const result = yield superagent.get(this.url('/client/constants'));
+    BitGo.prototype._constants[env] = result.body.constants;
+
+    BitGo.prototype._constantsExpire[env] = moment.utc().add(result.body.ttl, 'second').toDate();
     return BitGo.prototype._constants[env];
   }).call(this).asCallback(callback);
 };
