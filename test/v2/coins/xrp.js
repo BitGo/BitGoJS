@@ -17,6 +17,7 @@ nock.enableNetConnect();
 describe('XRP:', function() {
   let bitgo;
   let basecoin;
+  const someWalletId = '595ecd567615fbc707c601324127abb7'; // one of the many random XRP wallets on this account
 
   before(function() {
     bitgo = new TestV2BitGo({ env: 'test' });
@@ -31,7 +32,7 @@ describe('XRP:', function() {
     nock.cleanAll();
   });
 
-  it('Should verify addresses', function() {
+  it('isValidAddress should be correct', function() {
     assert(basecoin.isValidAddress('r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=1893500718') === true);
     assert(basecoin.isValidAddress('r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8') === true);
     assert(basecoin.isValidAddress('r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?r=a') === false);
@@ -49,6 +50,27 @@ describe('XRP:', function() {
     assert(basecoin.isValidAddress('xrp://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295') === false);
     assert(basecoin.isValidAddress('http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295') === false);
     assert(basecoin.isValidAddress('http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?a=b&dt=4294967295') === false);
+  });
+
+  it('verifyAddress should work', function() {
+    basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=1893500718', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' });
+    basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8r=a', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'xrp://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967296', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=0x123', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=0x0', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=0', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=-1', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=1.5', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=a', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=b', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=a54b', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'xrp://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?a=b&dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'rDgocL7QpZh8ZhrPsax4zVqbGGxeAsiBoh' }); });
   });
 
   it('Should generate wallet with custom root address', function() {
@@ -79,6 +101,14 @@ describe('XRP:', function() {
       res.bitgoKeychain.should.not.have.property('encryptedPrv');
     });
   });
+
+  it('should create an XRP address', co(function *() {
+    const wallet = yield basecoin.wallets().get({ id: someWalletId });
+    const addrObj = yield wallet.createAddress();
+    addrObj.should.have.property('address');
+    addrObj.should.have.property('wallet');
+    addrObj.should.have.property('keychains');
+  }));
 
   it('Should be able to explain an XRP transaction', function() {
     const signedExplanation = basecoin.explainTransaction({ txHex: '120000228000000024000000072E00000000201B0018D07161400000000003DE2968400000000000002D73008114726D0D8A26568D5D9680AC80577C912236717191831449EE221CCACC4DD2BF8862B22B0960A84FC771D9F3E010732103AFBB6845826367D738B0D42EA0756C94547E70B064E8FE1260CF21354C898B0B74473045022100CA3A98AA6FC8CCA251C3A2754992E474EA469884EB8D489D2B180EB644AC7695022037EB886DCF57928E5844DB73C2E86DE553FB59DCFC9408F3FD5D802ADB69DFCC8114F0DBA9D34C77B6769F6142AB7C9D0AF67D113EBCE1F1' });

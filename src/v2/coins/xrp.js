@@ -330,10 +330,23 @@ Xrp.prototype.verifyTransaction = function({ txParams, txPrebuild, wallet }, cal
   }).call(this).asCallback(callback);
 };
 
-
-Xrp.prototype.verifyAddress = function({ address }) {
+/**
+ * Check if address is a valid XRP address, and then make sure the root addresses match.
+ * This prevents attacks where an attack may switch out the new address for one of their own
+ * @param address {String} the address to verify
+ * @param rootAddress {String} the wallet's root address
+ */
+Xrp.prototype.verifyAddress = function({ address, rootAddress }) {
   if (!this.isValidAddress(address)) {
-    throw new Error('address validation failure: ' + address);
+    throw new Error('address verification failure: ' + address);
+  }
+
+  const addressDetails = this.getAddressDetails(address);
+  const rootAddressDetails = this.getAddressDetails(rootAddress);
+
+  if (addressDetails.address !== rootAddressDetails.address) {
+    throw new Error('address validation failure: ' + addressDetails.address +
+      ' vs. ' + rootAddressDetails.address);
   }
 };
 

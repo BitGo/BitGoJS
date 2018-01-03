@@ -498,7 +498,9 @@ Wallet.prototype.createAddress = function(params, callback) {
     // verify the new address
     const keychains = yield Promise.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k }));
     newAddress.keychains = keychains;
-    this.baseCoin.verifyAddress(newAddress);
+
+    const verificationData = _.merge({}, newAddress, { rootAddress: this._wallet.receiveAddress.address });
+    this.baseCoin.verifyAddress(verificationData);
 
     return newAddress;
   }).call(this).asCallback(callback);
