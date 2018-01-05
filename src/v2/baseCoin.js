@@ -6,6 +6,7 @@ let Wallet;
 let Wallets;
 let Markets;
 let Token;
+let Webhooks;
 let coinGenerators;
 const bitcoin = require('bitgo-bitcoinjs-lib');
 const prova = require('../prova');
@@ -50,6 +51,16 @@ const BaseCoin = function(bitgo, coin) {
       coinInstance.coinKeychains = new Keychains(bitgo, coinInstance);
     }
     return coinInstance.coinKeychains;
+  };
+
+  coinInstance.webhooks = function() {
+    if (!coinInstance.coinWebhooks) {
+      if (!Webhooks) {
+        Webhooks = require('./webhooks');
+      }
+      coinInstance.coinWebhooks = new Webhooks(bitgo, coinInstance);
+    }
+    return coinInstance.coinWebhooks;
   };
 
   coinInstance.pendingApprovals = function() {
