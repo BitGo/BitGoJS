@@ -1704,6 +1704,12 @@ BitGo.prototype.listWebhookNotifications = function(params, callback) {
   common.validateParams(params, [], [], callback);
 
   const query = {};
+  if (params.prevId) {
+    if (!_.isString(params.prevId)) {
+      throw new Error('invalid prevId argument, expecting string');
+    }
+    query.prevId = params.prevId;
+  }
   if (params.limit) {
     if (!_.isNumber(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
