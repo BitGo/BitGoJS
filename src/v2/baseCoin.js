@@ -1,5 +1,6 @@
 let Keychains;
 const BigNumber = require('bignumber.js');
+let Enterprises;
 let PendingApprovals;
 let Wallet;
 let Wallets;
@@ -29,6 +30,16 @@ const BaseCoin = function(bitgo, coin) {
       coinInstance.coinWallets = new Wallets(bitgo, coinInstance);
     }
     return coinInstance.coinWallets;
+  };
+
+  coinInstance.enterprises = function() {
+    if (!coinInstance.coinEnterprises) {
+      if (!Enterprises) {
+        Enterprises = require('./enterprises');
+      }
+      coinInstance.coinEnterprises = new Enterprises(bitgo, coinInstance);
+    }
+    return coinInstance.coinEnterprises;
   };
 
   coinInstance.keychains = function() {
