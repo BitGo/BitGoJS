@@ -1646,6 +1646,101 @@ BitGo.prototype.getWalletAddress = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * Fetch list of user webhooks
+ *
+ * @param callback
+ * @returns {*}
+ */
+BitGo.prototype.listWebhooks = function(callback) {
+  return this.get(this.url('/webhooks'))
+  .result()
+  .nodeify(callback);
+};
+
+/**
+ * Add new user webhook
+ *
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+BitGo.prototype.addWebhook = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['url', 'type'], [], callback);
+
+  return this.post(this.url('/webhooks'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+/**
+ * Remove user webhook
+ *
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+BitGo.prototype.removeWebhook = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['url', 'type'], [], callback);
+
+  return this.del(this.url('/webhooks'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
+/**
+ * Fetch list of webhook notifications for the user
+ *
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+BitGo.prototype.listWebhookNotifications = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, [], [], callback);
+
+  const query = {};
+  if (params.prevId) {
+    if (!_.isString(params.prevId)) {
+      throw new Error('invalid prevId argument, expecting string');
+    }
+    query.prevId = params.prevId;
+  }
+  if (params.limit) {
+    if (!_.isNumber(params.limit)) {
+      throw new Error('invalid limit argument, expecting number');
+    }
+    query.limit = params.limit;
+  }
+
+  return this.get(this.url('/webhooks/notifications'))
+  .query(query)
+  .result()
+  .nodeify(callback);
+};
+
+/**
+ * Simulate a user webhook
+ *
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+BitGo.prototype.simulateWebhook = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['webhookId', 'blockId'], [], callback);
+
+  const webhookId = params.webhookId;
+  return this.post(this.url('/webhooks/' + webhookId + '/simulate'))
+  .send(params)
+  .result()
+  .nodeify(callback);
+};
+
 //
 // fetchConstants
 // Receives a TTL and refetches as necessary
