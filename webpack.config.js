@@ -57,7 +57,11 @@ function setupPlugins(env) {
 
   if (env.prod) {
     // Minimize output files in production
-    plugins.push(new UglifyJSPlugin());
+    plugins.push(new UglifyJSPlugin({
+      uglifyOptions: {
+        mangle: false
+      }
+    }));
   }
 
 
