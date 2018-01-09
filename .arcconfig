@@ -1,4 +1,4 @@
 {
   "phabricator.uri" : "https://phabricator.bitgo.com",
-  "immutable": true
+  "history.immutable": true
 }
