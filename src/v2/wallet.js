@@ -245,16 +245,8 @@ Wallet.prototype.maximumSpendable = function maximumSpendable(params, callback) 
  */
 Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], [], callback);
 
-  const query = _.pick(params, ['limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'plainTarget']);
-
-  if (params.prevId) {
-    if (!_.isString(params.prevId)) {
-      throw new Error('invalid prevId argument, expecting string');
-    }
-    query.prevId = params.prevId;
-  }
+  const query = _.pick(params, ['prevId', 'limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'plainTarget']);
 
   return this.bitgo.get(this.url('/unspents'))
   .query(query)
