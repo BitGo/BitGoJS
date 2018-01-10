@@ -192,8 +192,8 @@ Wallet.prototype.getTransfer = function(params, callback) {
   common.validateParams(params, ['id'], [], callback);
 
   return this.bitgo.get(this.url('/transfer/' + params.id))
-    .result()
-    .nodeify(callback);
+  .result()
+  .nodeify(callback);
 };
 
 // Get a transaction by sequence id for a given wallet
@@ -247,19 +247,13 @@ Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const query = {};
+  const query = _.pick(params, ['limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'plainTarget']);
+
   if (params.prevId) {
     if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
     }
     query.prevId = params.prevId;
-  }
-
-  if (params.limit) {
-    if (!_.isNumber(params.limit)) {
-      throw new Error('invalid limit argument, expecting number');
-    }
-    query.limit = params.limit;
   }
 
   return this.bitgo.get(this.url('/unspents'))
@@ -292,14 +286,8 @@ Wallet.prototype.consolidateUnspents = function consolidateUnspents(params, call
     params = params || {};
     common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
-    const targetUnspentPoolSize = params.targetUnspentPoolSize;
-    if (_.isUndefined(targetUnspentPoolSize) || !_.isNumber(targetUnspentPoolSize) || targetUnspentPoolSize < 1 || (targetUnspentPoolSize % 1) !== 0) {
-      // the target must be defined, be a number, be at least one, and be a natural number
-      throw new Error('targetUnspentPoolSize must be set and a positive integer');
-    }
-
     const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0] });
-    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'target', 'plainTarget', 'targetUnspentPoolSize', 'prevId', 'limit', 'minConfirms', 'feeRate', 'maxFeePercentage']);
+    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'numUnspentsToMake', 'feeTxConfirmTarget', 'limit', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeePercentage']);
     const response = yield this.bitgo.post(this.url('/consolidateUnspents'))
     .send(filteredParams)
     .result();
@@ -339,7 +327,7 @@ Wallet.prototype.fanoutUnspents = function fanoutUnspents(params, callback) {
     params = params || {};
     common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
-    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'feeRate', 'maxFeePercentage', 'feeTxConfirmTarget']);
+    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeePercentage', 'feeTxConfirmTarget']);
     const response = yield this.bitgo.post(this.url('/fanoutUnspents'))
     .send(filteredParams)
     .result();
