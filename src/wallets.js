@@ -126,6 +126,22 @@ Wallets.prototype.listShares = function(params, callback) {
 };
 
 //
+// resendShareInvite
+// Resend the invitation email which shares a wallet with another user
+// Params:
+//    walletShareId - the wallet share to get information on
+//
+Wallets.prototype.resendShareInvite = function(params, callback) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId'], [], callback);
+
+  const urlParts = params.walletShareId + '/resendemail';
+  return this.bitgo.post(this.bitgo.url('/walletshare/' + urlParts))
+  .result()
+  .nodeify(callback);
+};
+
+//
 // getShare
 // Gets a wallet share information, including the encrypted sharing keychain. requires unlock if keychain is present.
 // Params:
