@@ -1,6 +1,7 @@
 const common = require('../common');
 const assert = require('assert');
 const Promise = require('bluebird');
+const co = Promise.coroutine;
 const _ = require('lodash');
 
 const PendingApproval = function(bitgo, baseCoin, pendingApprovalData, wallet) {
@@ -250,23 +251,17 @@ PendingApproval.prototype.cancel = function(params, callback) {
  * @param params
  */
 PendingApproval.prototype.recreateAndSignTransaction = function(params) {
-  params = _.extend({}, params);
-  common.validateParams(params, [], []);
+  return co(function *() {
+    params = _.extend({}, params);
+    common.validateParams(params, [], []);
 
-  // this method only makes sense with existing transaction requests
-  assert(this.info().transactionRequest);
+    // this method only makes sense with existing transaction requests
+    assert(this.info().transactionRequest);
 
-  // let's prebuild this transaction
-  const wallet = this.wallet;
-  const recipients = this.info().transactionRequest.recipients;
-  const txPrebuildPromise = this.wallet.prebuildTransaction({ recipients: recipients });
-  const userKeychainPromise = this.baseCoin.keychains().get({ id: wallet._wallet.keys[0] });
-  return Promise.all([txPrebuildPromise, userKeychainPromise])
-  .spread(function(txPrebuild, userKeychain) {
-    const signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
-    signingParams.recipients = recipients;
-    return wallet.signTransaction(signingParams);
-  });
+    const recipients = this.info().transactionRequest.recipients;
+    const prebuildParams = _.extend({}, params, { recipients: recipients }, this.info().transactionRequest.buildParams);
+    return this.wallet.prebuildAndSignTransaction(prebuildParams);
+  }).call(this);
 };
 
 module.exports = PendingApproval;
