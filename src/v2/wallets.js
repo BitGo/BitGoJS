@@ -366,6 +366,23 @@ Wallets.prototype.updateShare = function(params, callback) {
 };
 
 //
+// resendShareInvite
+// Resends a wallet share invitation email
+// Params:
+//    walletShareId - the wallet share whose invitiation should be resent
+//
+Wallets.prototype.resendShareInvite = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, ['walletShareId'], [], callback);
+
+    const urlParts = params.walletShareId + '/resendemail';
+    return this.bitgo.post(this.baseCoin.url('/walletshare/' + urlParts))
+    .result();
+  }).call(this).asCallback(callback);
+};
+
+//
 // cancelShare
 // cancels a wallet share
 // Params:
