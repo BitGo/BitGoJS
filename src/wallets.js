@@ -9,6 +9,7 @@ const bitcoin = require('./bitcoin');
 const Wallet = require('./wallet');
 const common = require('./common');
 const _ = require('lodash');
+const co = require('bluebird').coroutine;
 
 //
 // Constructor
@@ -123,6 +124,23 @@ Wallets.prototype.listShares = function(params, callback) {
   return this.bitgo.get(this.bitgo.url('/walletshare'))
   .result()
   .nodeify(callback);
+};
+
+//
+// resendShareInvite
+// Resend the invitation email which shares a wallet with another user
+// Params:
+//    walletShareId - the wallet share to get information on
+//
+Wallets.prototype.resendShareInvite = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, ['walletShareId'], [], callback);
+
+    const urlParts = params.walletShareId + '/resendemail';
+    return this.bitgo.post(this.bitgo.url('/walletshare/' + urlParts))
+    .result();
+  }).call(this).asCallback(callback);
 };
 
 //
