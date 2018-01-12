@@ -580,6 +580,73 @@ describe('V2 Wallet:', function() {
 
   });
 
+  describe('Policies', function() {
+
+    it('should create a velocity limit policy and then remove it', co(function *() {
+      const policyRuleWallet = yield wallet.createPolicyRule({
+        action: {
+          type: 'getApproval'
+        },
+        condition: {
+          amountString: 100000,
+          excludeTags: [],
+          groupTags: [':tag'],
+          timeWindow: 86400
+        },
+        id: 'abcdef',
+        default: true,
+        type: 'velocityLimit'
+      });
+
+      const policyRules = policyRuleWallet.admin.policy.rules;
+      policyRules.length.should.equal(1);
+      const policyRule = policyRules[0];
+      policyRule.type.should.equal('velocityLimit');
+      policyRule.id.should.equal('abcdef');
+      policyRule.coin.should.equal('tbtc');
+      policyRule.condition.amountString.should.equal('100000');
+
+      const updatedRuleWallet = yield wallet.setPolicyRule({
+        action: {
+          type: 'getApproval'
+        },
+        condition: {
+          amountString: 50000,
+          excludeTags: [],
+          groupTags: [':tag'],
+          timeWindow: 86400
+        },
+        id: 'abcdef',
+        default: true,
+        type: 'velocityLimit'
+      });
+      const updatedRules = updatedRuleWallet.admin.policy.rules;
+      updatedRules.length.should.equal(1);
+      const updatedRule = updatedRules[0];
+      updatedRule.type.should.equal('velocityLimit');
+      updatedRule.id.should.equal('abcdef');
+      updatedRule.coin.should.equal('tbtc');
+      updatedRule.condition.amountString.should.equal('50000');
+
+      const removalWallet = yield wallet.removePolicyRule({
+        action: {
+          type: 'getApproval'
+        },
+        condition: {
+          amountString: 100000,
+          excludeTags: [],
+          groupTags: [':tag'],
+          timeWindow: 86400
+        },
+        id: 'abcdef',
+        default: true,
+        type: 'velocityLimit'
+      });
+      const newPolicyRules = removalWallet.admin.policy.rules;
+      newPolicyRules.length.should.equal(0);
+    }));
+  });
+
   describe('Unspent Manipulation', function() {
     let unspentWallet;
 

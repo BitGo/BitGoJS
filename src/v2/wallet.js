@@ -916,6 +916,78 @@ Wallet.prototype.sendMany = function(params, callback) {
 };
 
 /**
+ * Create a policy rule
+ * @param params
+ * @param params.condition condition object
+ * @param params.action action object
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.createPolicyRule = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, ['id', 'type'], ['message'], callback);
+
+    if (!_.isObject(params.condition)) {
+      throw new Error('missing parameter: conditions object');
+    }
+
+    if (!_.isObject(params.action)) {
+      throw new Error('missing parameter: action object');
+    }
+
+    return this.bitgo.post(this.url('/policy/rule'))
+    .send(params)
+    .result();
+  }).call(this).asCallback(callback);
+};
+
+/**
+ * Update a policy rule
+ * @param params
+ * @param params.condition condition object
+ * @param params.action action object
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.setPolicyRule = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, ['id', 'type'], ['message'], callback);
+
+    if (!_.isObject(params.condition)) {
+      throw new Error('missing parameter: conditions object');
+    }
+
+    if (!_.isObject(params.action)) {
+      throw new Error('missing parameter: action object');
+    }
+
+    return this.bitgo.put(this.url('/policy/rule'))
+    .send(params)
+    .result();
+  }).call(this).asCallback(callback);
+};
+
+/**
+ * Remove Policy Rule
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.removePolicyRule = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, ['id'], ['message'], callback);
+
+    return this.bitgo.del(this.url('/policy/rule'))
+    .send(params)
+    .result();
+  }).call(this).asCallback(callback);
+};
+
+
+/**
  * Creates and downloads PDF keycard for wallet (requires response from wallets.generateWallet)
  * @param params
  *   * jsPDF - an instance of the jsPDF library
