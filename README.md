@@ -25,7 +25,7 @@ We recommend using `nvm`, the [Node Version Manager](https://github.com/creation
 
 # Full Documentation
 
-View our [Javascript SDK Documentation](https://www.bitgo.com/api/?javascript#authentication).
+View our [Javascript SDK Documentation](https://www.bitgo.com/api/v2/).
 
 # Example Usage
 
