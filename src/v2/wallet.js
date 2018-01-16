@@ -900,7 +900,13 @@ Wallet.prototype.sendMany = function(params, callback) {
     common.validateParams(params, [], ['comment', 'otp'], callback);
 
     const halfSignedTransaction = yield this.prebuildAndSignTransaction(params);
-    const selectParams = _.pick(params, ['comment', 'otp', 'sequenceId']);
+    const selectParams = _.pick(params, [
+      'recipients', 'numBlocks', 'feeRate', 'minConfirms',
+      'enforceMinConfirmsForChange', 'targetWalletUnspents',
+      'message', 'minValue', 'maxValue', 'sequenceId',
+      'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
+      'noSplitChange', 'comment', 'otp'
+    ]);
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
     return this.bitgo.post(this.url('/tx/send'))
     .send(finalTxParams)
