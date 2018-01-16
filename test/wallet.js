@@ -344,6 +344,31 @@ describe('Wallet API', function() {
       })
       .done();
     });
+
+    it('share a wallet and then resend the share', function(done) {
+      bitgo.unlock({ otp: '0000000' })
+      .then(function() {
+        return wallet3.shareWallet({
+          email: TestBitGo.TEST_SHARED_KEY_USER,
+          walletPassphrase: TestBitGo.TEST_WALLET3_PASSCODE,
+          permissions: 'view'
+        });
+      })
+      .then(function(result) {
+        result.should.have.property('walletId');
+        result.should.have.property('fromUser');
+        result.should.have.property('toUser');
+        result.should.have.property('state');
+        result.walletId.should.equal(wallet3.id());
+        const walletShareIdToResend = result.id;
+
+        return bitgo.wallets().resendShareInvite({ walletShareId: walletShareIdToResend }, function(err, result) {
+          result.should.have.property('resent', true);
+          done();
+        });
+      })
+      .done();
+    });
   });
 
   let bitgoSharedKeyUser;
