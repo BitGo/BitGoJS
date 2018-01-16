@@ -13,7 +13,7 @@ const Bch = function() {
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
   this.network = this.network = bitcoin.networks.bitcoin;
-  this.bchPrefix = 'bitcoincash'
+  this.bchPrefix = 'bitcoincash';
 };
 
 Bch.prototype = Object.create(btcPrototype);
@@ -127,12 +127,12 @@ Bch.prototype.canonicalAddress = function(address, version = 'bech32') {
   let isValidBech32Address;
   try {
     isValidBase58Address = this.isValidAddress(address, true);
-  } catch(e) {
+  } catch (e) {
     // ignore
   }
   try {
     isValidBech32Address = !!cashaddress.decode(address);
-  } catch(e) {
+  } catch (e) {
     // try to coerce the address into a valid BCH bech32 address if we know it's not a base58 address
     // We do this to remain compliant with the spec at https://github.com/Bitcoin-UAHF/spec/blob/master/cashaddr.md,
     // which says addresses do not need the prefix, and can be all lowercase XOR all uppercase
@@ -147,7 +147,7 @@ Bch.prototype.canonicalAddress = function(address, version = 'bech32') {
 
         try {
           isValidBech32Address = !!cashaddress.decode(address);
-        } catch(e) {
+        } catch (e) {
           // ignore
         }
       }
@@ -159,14 +159,14 @@ Bch.prototype.canonicalAddress = function(address, version = 'bech32') {
   }
 
   // mapping to cashaddress's script versions
-  let versionMap = {
+  const versionMap = {
     [this.network.pubKeyHash]: 'pubkeyhash',
     [this.network.scriptHash]: 'scripthash'
   };
   // another mapping to cashaddress's script versions
-  let scriptVersionMap = {
-    'pubkeyhash': 'pubKeyHash',
-    'scripthash': 'scriptHash'
+  const scriptVersionMap = {
+    pubkeyhash: 'pubKeyHash',
+    scripthash: 'scriptHash'
   };
 
   // convert from base58
