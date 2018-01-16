@@ -110,13 +110,14 @@ const containsMixedCaseCharacters = (str) => {
  *
  * Starting on January 14th, 2018 Bitcoin Cash's bitcoin-abc node switched over to using bech32
  * encoding for all of their addresses in order to distinguish them from Bitcoin Core's
- * https://www.bitcoinabc.org/cashaddr
+ * https://www.bitcoinabc.org/cashaddr. We're sticking with the old base58 format because
+ * migrating over to the new format will be laborious, and we want to see how the space evolves
  *
  * @param address
- * @param version the version of the desired address, 'base58' or 'bech32' defaulting to 'bech32'
+ * @param version the version of the desired address, 'base58' or 'bech32' defaulting to 'base58'
  * @returns {*} address string
  */
-Bch.prototype.canonicalAddress = function(address, version = 'bech32') {
+Bch.prototype.canonicalAddress = function(address, version = 'base58') {
   if (!_.includes(_.keys(VALID_ADDRESS_VERSIONS), version)) {
     throw new Error('version needs to be either bech32 or base58');
   }

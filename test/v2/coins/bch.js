@@ -48,8 +48,8 @@ describe('BCH:', function() {
       // P2SH base58 -> base58
       bch.canonicalAddress('3LDsS579y7sruadqu11beEJoTjdFiFCdX4', 'base58').should.equal('3LDsS579y7sruadqu11beEJoTjdFiFCdX4');
 
-      // undefined version defaults to bech32
-      bch.canonicalAddress('3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC').should.equal('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq');
+      // undefined version defaults to base58
+      bch.canonicalAddress('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq').should.equal('3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC');
 
       // all capitalized
       bch.canonicalAddress('bitcoincash:QQQ3728YW0Y47SQN6L2NA30MCW6ZM78DZQRE909M2R', 'base58').should.equal('16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb');
