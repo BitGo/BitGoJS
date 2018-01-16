@@ -82,6 +82,7 @@
     "body-parser": "~1.18.2",
     "bs58": "2.0.1",
     "bs58check": "1.0.4",
+    "cashaddress": "1.1.0",
     "create-hmac": "~1.1.4",
     "ecurve": "~1.0.2",
     "eol": "0.5.0",

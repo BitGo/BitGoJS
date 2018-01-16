@@ -6,6 +6,7 @@ const Tbch = function() {
   // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
   // effectively, move the BaseCoin prototype one level away
   this.network = bitcoinCash.networks.testnet;
+  this.bchPrefix = 'bchtest'
 };
 
 Tbch.prototype = Object.create(bchPrototype);
