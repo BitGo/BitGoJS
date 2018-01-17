@@ -121,6 +121,18 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
   },
+  mock: {
+    uri: 'https://bitgo.fakeurl',
+    networks: {
+      tbtc: bitcoin.networks.testnet
+    },
+    network: 'testnet',
+    ethNetwork: 'ethereum',
+    rmgNetwork: 'rmgTest',
+    signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
+  },
   rmgLocal: {
     uri: 'http://rmglocalhost:3000',
     networks: {
