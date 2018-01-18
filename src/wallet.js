@@ -1119,6 +1119,13 @@ Wallet.prototype.sendMany = function(params, callback) {
   let travelInfos;
   let finalResult;
 
+  const acceptedBuildParams = [
+    'numBlocks', 'feeRate', 'minConfirms', 'enforceMinConfirmsForChange',
+    'targetWalletUnspents', 'message', 'minValue', 'maxValue',
+    'noSplitChange', 'comment'
+  ];
+  const preservedBuildParams = _.pick(params, acceptedBuildParams);
+
   // Get the user keychain
   return this.createAndSignTransaction(params)
   .then(function(transaction) {
@@ -1136,7 +1143,8 @@ Wallet.prototype.sendMany = function(params, callback) {
       // The below params are for logging only, and do not impact the API call
       estimatedSize: transaction.estimatedSize,
       feeRate: feeRate,
-      fee: fee
+      fee: fee,
+      buildParams: preservedBuildParams
     });
   })
   .then(function(result) {
