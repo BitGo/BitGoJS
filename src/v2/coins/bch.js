@@ -90,19 +90,7 @@ Bch.prototype.signTransaction = function(params) {
 };
 
 const containsMixedCaseCharacters = (str) => {
-  let containsLowercase = false;
-  let containsUppercase = false;
-
-  for (const c of str) {
-    if ((c >= 'a') && (c <= 'z')) {
-      containsLowercase = true;
-    }
-    if ((c >= 'A') && (c <= 'Z')) {
-      containsUppercase = true;
-    }
-  }
-
-  return containsLowercase && containsUppercase;
+  return str !== _.toLower(str) && str !== _.toUpper(str);
 };
 
 /**

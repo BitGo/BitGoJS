@@ -81,7 +81,7 @@ describe('BCH:', function() {
       assert.throws(function () { bch.canonicalAddress('bitcoin:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'base58'); });
 
       // mismatched capitalization
-      assert.throws(function () { bch.canonicalAddress('bitcoincash:qpm2Qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'bech32'); });
+      assert.throws(function () { bch.canonicalAddress('bitcoincash:QPM2Qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'bech32'); });
 
       // improper version
       assert.throws(function () { bch.canonicalAddress('bitcoincash:qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r', 'blah'); });

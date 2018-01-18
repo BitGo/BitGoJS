@@ -229,13 +229,13 @@ const handleV2VerifyAddress = function(req) {
 const handleCanonicalAddress = function(req) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  if (coin.getFamily() !== 'ltc' && coin.getFamily() !== 'bch') {
+  if (!['ltc', 'bch'].includes(coin.getFamily())) {
     throw new Error('only Litecoin/Bitcoin Cash address canonicalization is supported');
   }
   const address = req.body.address;
-  const version = req.body.scriptHashVersion; // deprecate
-  const newVersion = req.body.version;
-  return coin.canonicalAddress(address, newVersion || version);
+  const fallBackVersion = req.body.scriptHashVersion; // deprecate
+  const version = req.body.version;
+  return coin.canonicalAddress(address, version || fallBackVersion);
 };
 
 // handle new wallet creation
