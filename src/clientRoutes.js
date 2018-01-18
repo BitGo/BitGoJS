@@ -233,9 +233,9 @@ const handleCanonicalAddress = function(req) {
     throw new Error('only Litecoin/Bitcoin Cash address canonicalization is supported');
   }
   const address = req.body.address;
-  const fallBackVersion = req.body.scriptHashVersion; // deprecate
+  const fallbackVersion = req.body.scriptHashVersion; // deprecate
   const version = req.body.version;
-  return coin.canonicalAddress(address, version || fallBackVersion);
+  return coin.canonicalAddress(address, version || fallbackVersion);
 };
 
 // handle new wallet creation
