@@ -225,16 +225,17 @@ const handleV2VerifyAddress = function(req) {
   };
 };
 
-// handle Litecoin address canonicalization
-const handleLtcCanonicalAddress = function(req) {
+// handle address canonicalization
+const handleCanonicalAddress = function(req) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  if (coin.getFamily() !== 'ltc') {
-    throw new Error('only Litecoin address canonicalization is supported');
+  if (!['ltc', 'bch'].includes(coin.getFamily())) {
+    throw new Error('only Litecoin/Bitcoin Cash address canonicalization is supported');
   }
   const address = req.body.address;
-  const version = req.body.scriptHashVersion;
-  return coin.canonicalAddress(address, version);
+  const fallbackVersion = req.body.scriptHashVersion; // deprecate
+  const version = req.body.version;
+  return coin.canonicalAddress(address, version || fallbackVersion);
 };
 
 // handle new wallet creation
@@ -520,7 +521,7 @@ exports = module.exports = function(app, args) {
   app.post('/api/v2/:coin/wallet/:id/fanoutunspents', parseBody, prepareBitGo(args), promiseWrapper(handleV2FanOutUnspents, args));
 
   // Miscellaneous
-  app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(args), promiseWrapper(handleLtcCanonicalAddress, args));
+  app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(args), promiseWrapper(handleCanonicalAddress, args));
   app.post('/api/v2/:coin/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleV2VerifyAddress, args));
   app.put('/api/v2/:coin/pendingapprovals/:id', parseBody, prepareBitGo(args), promiseWrapper(handleV2PendingApproval, args));
 
