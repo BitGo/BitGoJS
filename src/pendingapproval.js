@@ -279,7 +279,8 @@ PendingApproval.prototype.approve = function(params, callback) {
 
       return self.populateWallet()
       .then(function() {
-        return self.recreateAndSignTransaction(_.extend(params, { txHex: self.info().transactionRequest.transaction }));
+        const recreationParams = _.extend({}, params, { txHex: self.info().transactionRequest.transaction }, self.info().transactionRequest.buildParams);
+        return self.recreateAndSignTransaction(recreationParams);
       });
     }
   })
