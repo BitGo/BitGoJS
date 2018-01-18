@@ -1,6 +1,4 @@
 {
   "phabricator.uri" : "https://phabricator.bitgo.com",
-  "history.immutable": true,
-  "arc.land.onto.default": "master",
-  "git.default-relative-commit": "origin/master"
+  "arc.land.onto.default": "master"
 }
