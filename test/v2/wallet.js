@@ -458,12 +458,17 @@ describe('V2 Wallet:', function() {
   describe('Sharing & Pending Approvals', function() {
     let sharingUserBitgo;
     let sharingUserBasecoin;
-    before(function() {
+    before(co(function *() {
       sharingUserBitgo = new TestV2BitGo({ env: 'test' });
       sharingUserBitgo.initializeTestVars();
       sharingUserBasecoin = sharingUserBitgo.coin('tbtc');
-      return sharingUserBitgo.authenticateSharingTestUser(sharingUserBitgo.testUserOTP());
-    });
+      yield sharingUserBitgo.authenticateSharingTestUser(sharingUserBitgo.testUserOTP());
+
+      // clean up all incoming wallet shares for the sharing (shared-to) user
+      const activeShares = yield sharingUserBasecoin.wallets().listShares({});
+      const cancelShare = (share) => sharingUserBasecoin.wallets().cancelShare({ walletShareId: share.id });
+      return Promise.all(_.map(activeShares.incoming, cancelShare));
+    }));
 
     it('should extend invitation from main user to sharing user', function() {
       // take the main user wallet and invite this user
@@ -555,6 +560,24 @@ describe('V2 Wallet:', function() {
         approval.wallet.should.equal(receivedWalletId);
       });
     });
+
+    it('should share a wallet and then resend the wallet invite', co(function *() {
+      // share this wallet
+      const share = yield wallet.shareWallet({
+        email: TestV2BitGo.TEST_SHARED_KEY_USER,
+        permissions: 'view',
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+      });
+
+      // resend the wallet share invitation
+      const resendDetails = yield basecoin.wallets().resendShareInvite({
+        walletShareId: share.id
+      });
+
+      // should get back an object like this: { resent: true }
+      resendDetails.should.have.property('resent', true);
+    }));
+
   });
 
   describe('Unspent Manipulation', function() {
