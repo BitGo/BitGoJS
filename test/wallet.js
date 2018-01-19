@@ -1050,6 +1050,46 @@ describe('Wallet API', function() {
       });
     });
 
+    it('list with maxHeight', function(done) {
+
+      const maxHeight = 530000;
+      const options = { maxHeight: maxHeight, limit: 500 };
+      wallet1.transactions(options, function(err, result) {
+        assert.equal(err, null);
+        assert.equal(Array.isArray(result.transactions), true);
+        result.should.have.property('total');
+        result.should.have.property('count');
+        result.start.should.eql(0);
+        result.transactions.length.should.eql(result.count);
+        result.transactions.forEach(function(transaction) {
+          if (!transaction.pending) {
+            transaction.height.should.be.below(maxHeight + 1);
+          }
+        });
+        result.total.should.be.below(totalTxCount);
+        done();
+      });
+    });
+
+    it('list with minConfirms', function(done) {
+
+      const minConfirms = 100000;
+      const options = { minConfirms: minConfirms, limit: 500 };
+      wallet1.transactions(options, function(err, result) {
+        assert.equal(err, null);
+        assert.equal(Array.isArray(result.transactions), true);
+        result.should.have.property('total');
+        result.should.have.property('count');
+        result.start.should.eql(0);
+        result.transactions.length.should.eql(result.count);
+        result.transactions.forEach(function(transaction) {
+          transaction.pending.should.eql(false);
+        });
+        result.total.should.be.below(totalTxCount);
+        done();
+      });
+    });
+
 
     it('list with limit and skip', function(done) {
       const skipNum = 2;
