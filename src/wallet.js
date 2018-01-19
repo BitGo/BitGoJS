@@ -733,8 +733,8 @@ Wallet.prototype.transactions = function(params, callback) {
     }
     args.push('minConfirms=' + params.minConfirms);
   }
-  if (_.isUndefined(params.compact)) {
-    if (_.isBoolean(params.compact)) {
+  if (!_.isUndefined(params.compact)) {
+    if (!_.isBoolean(params.compact)) {
       throw new Error('invalid compact argument, expecting boolean');
     }
     args.push('compact=' + params.compact);
