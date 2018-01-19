@@ -518,4 +518,22 @@ Wallets.prototype.getWalletByAddress = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * For any given supported coin, get total balances for all wallets of that
+ * coin type on the account.
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallets.prototype.getTotalBalances = function (params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], [], callback);
+
+    return this.bitgo.get(this.baseCoin.url('/wallet/balances'))
+    .result()
+    .nodeify(callback);
+  }).call(this).asCallback(callback);
+};
+
 module.exports = Wallets;

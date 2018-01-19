@@ -28,6 +28,13 @@ BitGo.TEST_SHARED_KEY_PASSWORD = BitGo.TEST_PASSWORD;
 BitGo.TEST_THIRD_USER = 'third_user_test@bitgo.com';
 BitGo.TEST_THIRD_PASSWORD = BitGo.TEST_PASSWORD;
 
+// account with a known total balance. Don't spend or receive coins
+// from any wallet in this account. Known total balance across
+// all TLTC wallets in this account is exactly 9999586400
+BitGo.TEST_KNOWN_BALANCE_USER = 'tyler+test-get-total-balances@bitgo.com';
+BitGo.TEST_KNOWN_BALANCE_PASSWORD = BitGo.TEST_PASSWORD;
+BitGo.TEST_KNOWN_BALANCE = 9999586400;
+
 BitGo.TEST_CLIENTID = 'test';
 BitGo.TEST_CLIENTSECRET = 'testclientsecret';
 
@@ -201,6 +208,14 @@ BitGo.prototype.authenticateSharingTestUser = function(otp, callback) {
     response.should.have.property('user');
   })
   .nodeify(callback);
+};
+
+BitGo.prototype.authenticateKnownBalanceTestUser = function (otp, callback) {
+  return co(function *() {
+    const response = yield this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp });
+    response.should.have.property('access_token');
+    response.should.have.property('user');
+  }).call(this).asCallback(callback);
 };
 
 const fetchConstants = BitGo.prototype.fetchConstants;
