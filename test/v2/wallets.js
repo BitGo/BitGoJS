@@ -415,4 +415,47 @@ describe('V2 Wallets:', function() {
       });
     });
   });
+
+  describe('Get total wallet balances', function() {
+    let knownBalanceBitgo;
+    let knownBalanceBasecoin;
+    let knownBalanceWallets;
+
+    before(co(function *() {
+      knownBalanceBitgo = new TestV2BitGo({ env: 'test' });
+      knownBalanceBitgo.initializeTestVars();
+      knownBalanceBasecoin = knownBalanceBitgo.coin('tltc');
+      knownBalanceWallets = knownBalanceBasecoin.wallets();
+      return knownBalanceBitgo.authenticateKnownBalanceTestUser(bitgo.testUserOTP());
+    }));
+
+    it('should get total balance across all wallets', co(function *() {
+      const result = yield knownBalanceWallets.getTotalBalances({});
+
+      // make sure result looks structurally correct
+      should.exist(result);
+      result.should.have.property('balance');
+      result.should.have.property('confirmedBalance');
+      result.should.have.property('spendableBalance');
+      result.should.have.property('balanceString');
+      result.should.have.property('confirmedBalanceString');
+      result.should.have.property('spendableBalanceString');
+
+      // verify property types
+      result.balance.should.be.a.Number;
+      result.confirmedBalance.should.be.a.Number;
+      result.spendableBalance.should.be.a.Number;
+      result.balanceString.should.be.a.String;
+      result.confirmedBalanceString.should.be.a.String;
+      result.spendableBalanceString.should.be.a.String;
+
+      // make sure balances match up with the known balance
+      result.balance.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE);
+      result.confirmedBalance.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE);
+      result.spendableBalance.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE);
+      result.balanceString.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE.toString());
+      result.confirmedBalanceString.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE.toString());
+      result.spendableBalanceString.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE.toString());
+    }));
+  });
 });
