@@ -721,8 +721,20 @@ Wallet.prototype.transactions = function(params, callback) {
     }
     args.push('minHeight=' + params.minHeight);
   }
-  if (typeof (params.compact) !== 'undefined') {
-    if (typeof (params.compact) !== 'boolean') {
+  if (params.maxHeight) {
+    if (!_.isInteger(params.maxHeight) || params.maxHeight < 0) {
+      throw new Error('invalid maxHeight argument, expecting positive integer');
+    }
+    args.push('maxHeight=' + params.maxHeight);
+  }
+  if (params.minConfirms) {
+    if (!_.isInteger(params.minConfirms) || params.minConfirms < 0) {
+      throw new Error('invalid minConfirms argument, expecting positive integer');
+    }
+    args.push('minConfirms=' + params.minConfirms);
+  }
+  if (!_.isUndefined(params.compact)) {
+    if (!_.isBoolean(params.compact)) {
       throw new Error('invalid compact argument, expecting boolean');
     }
     args.push('compact=' + params.compact);
