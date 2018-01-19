@@ -436,7 +436,7 @@ Wallet.prototype.getAddress = function(params, callback) {
     query = params.id;
   }
 
-  return this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${query}`))
+  return this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${encodeURIComponent(query)}`))
   .result()
   .nodeify(callback);
 };
