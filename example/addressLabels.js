@@ -1,8 +1,10 @@
-//
-// List, set, or delete labels on addresses for a given wallet
-//
-// Copyright 2015, BitGo, Inc.  All Rights Reserved.
-//
+/*
+
+List, set, or delete labels on addresses for a given wallet
+
+Copyright 2018, BitGo, Inc.  All Rights Reserved.
+*/
+
 
 const BitGoJS = require('../src/index.js');
 const readline = require('readline');
