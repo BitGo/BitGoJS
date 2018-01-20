@@ -4,19 +4,12 @@
   "description": "Blake2b implemented in WASM",
   "main": "index.js",
   "dependencies": {
-    "base64-to-uint8array": "^1.0.0",
-    "brfs": "^1.4.3",
     "nanoassert": "^1.0.0"
   },
   "devDependencies": {
     "blake2b": "^1.2.0",
     "browserify": "^14.4.0",
     "tape": "^4.6.3"
-  },
-  "browserify": {
-    "transform": [
-      "brfs"
-    ]
   },
   "scripts": {
     "compile": "wast2wasm blake2b.wat -o blake2b.wasm",

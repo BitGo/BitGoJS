@@ -73,12 +73,12 @@ blake2b.ready(function () {
 
 tape('.ready()', function (t) {
   var invokeCount = 0;
-  blake2b
-    .ready(function () {
+  blake2b.ready()
+    .then(function () {
       invokeCount++
       throw new Error()
     })
-    .catch(function () {
+    .catch(function (err) {
       t.same(invokeCount, 1)
       t.end()
     })
