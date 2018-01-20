@@ -46,6 +46,7 @@ function Blake2b (digestLength, key, salt, personal, noAssert) {
   if (salt) wasm.memory.set(salt, 32)
   if (personal) wasm.memory.set(personal, 48)
 
+  if (this.pointer + 216 > wasm.memory.length) wasm.realloc(this.pointer + 216) // we need 216 bytes for the state
   wasm.exports.blake2b_init(this.pointer, this.digestLength)
 
   if (key) {
@@ -60,6 +61,7 @@ Blake2b.prototype.update = function (input) {
   assert(this.finalized === false, 'Hash instance finalized')
   assert(input, 'input must be TypedArray or Buffer')
 
+  if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
   wasm.memory.set(input, head)
   wasm.exports.blake2b_update(this.pointer, head, head + input.length)
   return this
