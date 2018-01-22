@@ -93,7 +93,7 @@ Blake2b.prototype.digest = function (enc) {
 // libsodium compat
 Blake2b.prototype.final = Blake2b.prototype.digest
 
-Blake2b.WASM = wasm.buffer
+Blake2b.WASM = wasm && wasm.buffer
 Blake2b.SUPPORTED = typeof WebAssembly !== 'undefined'
 
 Blake2b.ready = function (cb) {
