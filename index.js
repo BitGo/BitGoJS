@@ -16,7 +16,7 @@ var PERSONALBYTES = module.exports.PERSONALBYTES = 16
 
 function Blake2b (digestLength, key, salt, personal, noAssert) {
   if (!(this instanceof Blake2b)) return new Blake2b(digestLength, key, salt, personal, noAssert)
-  if (!wasm.exports) throw new Error('WASM not loaded. Wait for Blake2b.ready(cb)')
+  if (!(wasm && wasm.exports)) throw new Error('WASM not loaded. Wait for Blake2b.ready(cb)')
   if (!digestLength) digestLength = 32
 
   if (noAssert !== true) {
