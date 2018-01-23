@@ -158,23 +158,19 @@ const BitGo = function(params) {
 
   // By default, we operate on the test server.
   // Deprecate useProduction in the future
+  let env;
+
   if (params.useProduction) {
     if (params.env && params.env !== 'prod') {
-      throw new Error('Cannot set test environment and use production');
+      throw new Error('cannot use useProduction when env=' + params.env);
     }
-    params.env = 'prod';
-  }
-
-  if (params.env === 'production') {
-    params.env = 'prod'; // make life easier
-  }
-
-  if (params.customRootURI ||
+    env = 'prod';
+  } else if (params.customRootURI ||
     params.customBitcoinNetwork ||
     params.customSigningAddress ||
     process.env.BITGO_CUSTOM_ROOT_URI ||
     process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
-    params.env = 'custom';
+    env = 'custom';
     if (params.customRootURI) {
       common.Environments['custom'].uri = params.customRootURI;
     }
@@ -184,29 +180,35 @@ const BitGo = function(params) {
     if (params.customSigningAddress) {
       common.Environments['custom'].customSigningAddress = params.customSigningAddress;
     }
+  } else {
+    env = params.env || process.env.BITGO_ENV;
   }
 
-  if (params.env) {
-    if (common.Environments[params.env]) {
-      this._baseUrl = common.Environments[params.env].uri;
+  if (env === 'production') {
+    env = 'prod'; // make life easier
+  }
+
+  if (env) {
+    if (common.Environments[env]) {
+      this._baseUrl = common.Environments[env].uri;
     } else {
-      throw new Error('invalid environment');
+      throw new Error('invalid environment ' + env + '. Supported environments: test, prod');
     }
   } else {
-    params.env = process.env.BITGO_ENV || 'test';
-    if (!testNetWarningMessage && params.env === 'test') {
+    env = 'test';
+    if (!testNetWarningMessage) {
       testNetWarningMessage = true;
-      console.log('BitGo SDK env not set - defaulting to testnet at test.bitgo.com.');
+      console.log('BitGo SDK env not set - defaulting to test at test.bitgo.com.');
     }
   }
-  this.env = params.env;
+  this.env = env;
 
-  common.setNetwork(common.Environments[params.env].network);
-  common.setEthNetwork(common.Environments[params.env].ethNetwork);
-  common.setRmgNetwork(common.Environments[params.env].rmgNetwork);
+  common.setNetwork(common.Environments[env].network);
+  common.setEthNetwork(common.Environments[env].ethNetwork);
+  common.setRmgNetwork(common.Environments[env].rmgNetwork);
 
   if (!this._baseUrl) {
-    this._baseUrl = common.Environments[params.env].uri;
+    this._baseUrl = common.Environments[env].uri;
   }
 
   this._baseApiUrl = this._baseUrl + '/api/v1';

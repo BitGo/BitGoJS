@@ -17,30 +17,6 @@ const co = Promise.coroutine;
 
 describe('BitGo', function() {
 
-  describe('Constructor', function() {
-    it('arguments', function() {
-      assert.throws(function() { new BitGoJS.BitGo('invalid'); });
-      assert.throws(function() { new BitGoJS.BitGo({ useProduction: 'invalid' }); });
-      assert.throws(function() { new BitGoJS.BitGo({ clientId: 'invalid' }); });
-      assert.throws(function() { new BitGoJS.BitGo({ clientSecret: 'invalid' }); });
-      assert.throws(function() { new BitGoJS.BitGo({ env: 'invalid' }); });
-      assert.throws(function() { new BitGoJS.BitGo({ env: 'testnet', useProduction: true }); });
-    });
-
-    it('methods', function() {
-      const bitgo = new TestBitGo();
-      bitgo.initializeTestVars();
-      bitgo.should.have.property('version');
-      bitgo.should.have.property('market');
-      bitgo.should.have.property('authenticate');
-      bitgo.should.have.property('logout');
-      bitgo.should.have.property('me');
-      bitgo.should.have.property('encrypt');
-      bitgo.should.have.property('decrypt');
-      bitgo.should.have.property('_validate');
-    });
-  });
-
   describe('validate', function() {
 
     it('should get', function() {
