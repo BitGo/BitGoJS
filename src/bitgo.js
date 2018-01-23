@@ -506,7 +506,11 @@ BitGo.prototype.getEnv = function() {
 };
 
 BitGo.prototype.clear = function() {
-  this._user = this._token = this._refreshToken = undefined;
+  // TODO: are there any other fields which should be cleared?
+  this._user = undefined;
+  this._token = undefined;
+  this._refreshToken = undefined;
+  this._ecdhXprv = undefined;
 };
 
 // Helper function to return a rejected promise or call callback with error

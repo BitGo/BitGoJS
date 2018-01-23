@@ -12,6 +12,8 @@ const BitGoJS = require('../src/index');
 const TestBitGo = require('./lib/test_bitgo');
 const TestUtil = require('./testutil');
 const bitcoin = BitGoJS.bitcoin;
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 
 describe('BitGo', function() {
 
@@ -856,4 +858,20 @@ describe('BitGo', function() {
     });
   });
 
+  describe('Change user', function() {
+
+    let bitgo;
+
+    before(co(function *() {
+      bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      return bitgo.authenticateTestUser(bitgo.testUserOTP());
+    }));
+
+    it('allows logout and login as a different user', co(function *() {
+      yield bitgo.logout();
+      // reuse known balance test user only for login purposes
+      return bitgo.authenticateKnownBalanceTestUser(bitgo.testUserOTP());
+    }));
+  });
 });
