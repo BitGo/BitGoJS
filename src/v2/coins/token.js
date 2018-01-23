@@ -30,6 +30,10 @@ Token.prototype.getFullName = function() {
   return 'ERC20 Token';
 };
 
+Token.prototype.getBaseFactor = function() {
+  return String(Math.pow(10, this.decimalPlaces));
+};
+
 Token.prototype.getOperation = function(recipient, expireTime, contractSequenceId) {
   return [
     ['string', 'address', 'uint', 'address', 'uint', 'uint'],
