@@ -28,6 +28,7 @@ Btc.prototype.getBaseFactor = function() {
 Btc.prototype.getChain = function() {
   return 'btc';
 };
+
 Btc.prototype.getFamily = function() {
   return 'btc';
 };
@@ -193,6 +194,10 @@ Btc.prototype.verifyAddress = function({ address, keychains, coinSpecific, chain
   if (expectedAddress.address !== address) {
     throw new Error(`address validation failure: expected ${expectedAddress.address} but got ${address}`);
   }
+};
+
+Btc.prototype.supportsBlockTarget = function() {
+  return true;
 };
 
 /**

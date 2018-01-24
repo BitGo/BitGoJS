@@ -30,4 +30,10 @@ describe('V2 Base Coin:', function() {
       basecoin.baseUnitsToBigUnits('1000000010000000000').should.equal('1.00000001');
     });
   });
+
+  describe('supportsBlockTarget', function() {
+    it('should return false', function() {
+      basecoin.supportsBlockTarget().should.equal(false);
+    });
+  });
 });
