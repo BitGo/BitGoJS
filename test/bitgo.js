@@ -61,24 +61,6 @@ describe('BitGo', function() {
       new TestBitGo({ customBitcoinNetwork: 'testnet' });
       BitGoJS.getNetwork().should.equal('testnet');
     });
-    it('custom root uri (prod)', function() {
-      const bitgo = new TestBitGo({ customRootURI: 'https://www.bitgo.com/' });
-      return bitgo.ping({})
-      .then(function(res) {
-        res.should.have.property('status');
-        res.should.have.property('environment');
-        res.environment.should.eql('BitGo');
-      });
-    });
-    it('custom root uri (testnet)', function() {
-      const bitgo = new TestBitGo({ customRootURI: 'https://test.bitgo.com/' });
-      return bitgo.ping({})
-      .then(function(res) {
-        res.should.have.property('status');
-        res.should.have.property('environment');
-        res.environment.should.eql('BitGo Testnet');
-      });
-    });
   });
 
   describe('Version', function() {
@@ -147,7 +129,6 @@ describe('BitGo', function() {
       bitgo.initializeTestVars();
       const password = bitgo.generateRandomPassword();
       should.exist(password);
-      password.should.have.length(28);
     });
 
     it('generates a random password with a numWords argument', function() {
@@ -195,7 +176,7 @@ describe('BitGo', function() {
       } catch (e) {
         error = e;
       }
-      error.message.should.equal('ccm: tag doesn\'t match');
+      error.message.should.match(/ccm: tag doesn't match/);
     });
 
     it('should split and reconstitute secret', () => {
