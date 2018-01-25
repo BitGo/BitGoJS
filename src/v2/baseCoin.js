@@ -169,6 +169,12 @@ BaseCoin.prototype.toJSON = function() {
   return undefined;
 };
 
+/**
+ * The cold wallet tool uses this function to derive an extended key that is based on the passed key and seed
+ * @param key
+ * @param seed
+ * @returns {{key: *, derivationPath: string}}
+ */
 BaseCoin.prototype.deriveKeyWithSeed = function({ key, seed }) {
   const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
   const derivationPathParts = [
