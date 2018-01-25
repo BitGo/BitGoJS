@@ -150,6 +150,14 @@ BaseCoin.prototype.verifyAddress = function() {
 };
 
 /**
+ * Check whether a coin supports blockTarget for transactions to be included in
+ * @returns {boolean}
+ */
+BaseCoin.prototype.supportsBlockTarget = function() {
+  return false;
+};
+
+/**
  * If a coin needs to add additional parameters to the wallet generation, it does it in this method
  * @param walletParams
  * @return {*}
