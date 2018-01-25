@@ -158,13 +158,33 @@ Eth.prototype.signTransaction = function(params) {
 };
 
 /**
- * Ensure the enterprise is passed, so we can use the correct Enterprise fee address
+ * Ensure either enterprise or newFeeAddress is passed, to know whether to create new key or use enterprise key
  * @param params
  * @param params.enterprise {String} the enterprise id to associate with this key
+ * @param params.newFeeAddress {Boolean} create a new fee address (enterprise not needed in this case)
  */
 Eth.prototype.preCreateBitGo = function(params) {
-  if (!params || !params.enterprise) {
-    throw new Error('expecting enterprise when adding BitGo key');
+
+  // We always need params object, since either enterprise or newFeeAddress is required
+  if (!_.isObject(params)) {
+    throw new Error(`preCreateBitGo must be passed a params object. Got ${params} (type ${typeof params})`);
+  }
+
+  if (_.isUndefined(params.enterprise) && _.isUndefined(params.newFeeAddress)) {
+    throw new Error('expecting enterprise when adding BitGo key. If you want to create a new ETH bitgo key, set the newFeeAddress parameter to true.');
+  }
+
+  // Check whether key should be an enterprise key or a BitGo key for a new fee address
+  if (!_.isUndefined(params.enterprise) && !_.isUndefined(params.newFeeAddress)) {
+    throw new Error(`Incompatible arguments - cannot pass both enterprise and newFeeAddress parameter.`);
+  }
+
+  if (!_.isUndefined(params.enterprise) && !_.isString(params.enterprise)) {
+    throw new Error(`enterprise should be a string - got ${params.enterprise} (type ${typeof params.enterprise})`);
+  }
+
+  if (!_.isUndefined(params.newFeeAddress) && !_.isBoolean(params.newFeeAddress)) {
+    throw new Error(`newFeeAddress should be a boolean - got ${params.newFeeAddress} (type ${typeof params.newFeeAddress})`);
   }
 };
 
