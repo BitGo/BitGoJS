@@ -35,7 +35,9 @@ describe('V2 Wallet:', function() {
     yield bitgo.authenticateTestUser(bitgo.testUserOTP());
     wallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID });
 
-    yield bitgo.checkFunded();
+    const fundingVerificationBitgo = new TestV2BitGo({ env: 'test' });
+    fundingVerificationBitgo.initializeTestVars();
+    yield fundingVerificationBitgo.checkFunded();
   }));
 
   describe('Create Address', function() {
@@ -358,7 +360,6 @@ describe('V2 Wallet:', function() {
 
     it('should send a transaction to the wallet itself with sendMany', function() {
       return wallet.createAddress()
-      .delay(3000) // wait three seconds before sending
       .then(function(recipientAddress) {
         const params = {
           recipients: [
@@ -380,7 +381,6 @@ describe('V2 Wallet:', function() {
 
     it('should prebuild a transaction to the wallet', function() {
       return wallet.createAddress()
-      .delay(3000) // wait three seconds before fetching unspents
       .then(function(recipientAddress) {
         const params = {
           recipients: [
@@ -422,7 +422,6 @@ describe('V2 Wallet:', function() {
         keychain = key;
         return wallet.createAddress();
       })
-      .delay(5000) // wait five seconds before fetching unspents
       .then(function(recipientAddress) {
         const params = {
           recipients: [
@@ -581,9 +580,18 @@ describe('V2 Wallet:', function() {
   });
 
   describe('Policies', function() {
+    let policyWallet;
+    before(co(function *() {
+      // create a throwaway wallet
+      const newWallet = yield bitgo.coin('tltc').wallets().generateWallet({
+        label: 'Policy Testing Wallet',
+        passphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+      });
+      policyWallet = newWallet.wallet;
+    }));
 
     it('should create a velocity limit policy and then remove it', co(function *() {
-      const policyRuleWallet = yield wallet.createPolicyRule({
+      const policyRuleWallet = yield policyWallet.createPolicyRule({
         action: {
           type: 'getApproval'
         },
@@ -603,10 +611,10 @@ describe('V2 Wallet:', function() {
       const policyRule = policyRules[0];
       policyRule.type.should.equal('velocityLimit');
       policyRule.id.should.equal('abcdef');
-      policyRule.coin.should.equal('tbtc');
+      policyRule.coin.should.equal('tltc');
       policyRule.condition.amountString.should.equal('100000');
 
-      const updatedRuleWallet = yield wallet.setPolicyRule({
+      const updatedRuleWallet = yield policyWallet.setPolicyRule({
         action: {
           type: 'getApproval'
         },
@@ -625,10 +633,10 @@ describe('V2 Wallet:', function() {
       const updatedRule = updatedRules[0];
       updatedRule.type.should.equal('velocityLimit');
       updatedRule.id.should.equal('abcdef');
-      updatedRule.coin.should.equal('tbtc');
+      updatedRule.coin.should.equal('tltc');
       updatedRule.condition.amountString.should.equal('50000');
 
-      const removalWallet = yield wallet.removePolicyRule({
+      const removalWallet = yield policyWallet.removePolicyRule({
         action: {
           type: 'getApproval'
         },
@@ -645,6 +653,10 @@ describe('V2 Wallet:', function() {
       const newPolicyRules = removalWallet.admin.policy.rules;
       newPolicyRules.length.should.equal(0);
     }));
+
+    after(co(function *() {
+      return policyWallet.remove();
+    }));
   });
 
   describe('Unspent Manipulation', function() {
@@ -655,12 +667,12 @@ describe('V2 Wallet:', function() {
       yield bitgo.unlock({ otp: bitgo.testUserOTP() });
     }));
 
-    it('should consolidate the number of unspents to 4', co(function *() {
+    it('should consolidate the number of unspents to 2', co(function *() {
       yield Promise.delay(3000);
 
       const params = {
         limit: 250,
-        targetUnspentPoolSize: 2,
+        numUnspentsToMake: 2,
         minValue: 1000,
         numBlocks: 12,
         walletPassphrase: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_PASSCODE

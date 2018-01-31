@@ -48,10 +48,18 @@ describe('V2 Wallets:', function() {
           params.enterprise = TestV2BitGo.TEST_ENTERPRISE;
         }
 
+        if (currentCoin === 'trmg') {
+          params.backupXpubProvider = 'trm';
+        }
+
         return wallets.generateWallet(params)
         .then(function(wallet) {
           const walletObject = wallet.wallet;
           walletObject._wallet.coin.should.equal(currentCoin);
+          return wallet.wallet.remove();
+        })
+        .then(function(removal) {
+          removal.deleted.should.equal(true);
         });
       });
     }
@@ -136,6 +144,10 @@ describe('V2 Wallets:', function() {
         res.bitgoKeychain.isBitGo.should.equal(true);
         res.bitgoKeychain.should.not.have.property('prv');
         res.bitgoKeychain.should.not.have.property('encryptedPrv');
+        return res.wallet.remove();
+      })
+      .then(function(removal) {
+        removal.deleted.should.equal(true);
       });
     });
 
@@ -156,6 +168,10 @@ describe('V2 Wallets:', function() {
 
         res.backupKeychain.should.have.property('pub');
         res.backupKeychain.should.not.have.property('prv');
+        return res.wallet.remove();
+      })
+      .then(function(removal) {
+        removal.deleted.should.equal(true);
       });
     });
 
@@ -178,6 +194,10 @@ describe('V2 Wallets:', function() {
         res.userKeychain.should.have.property('pub');
         res.userKeychain.should.not.have.property('prv');
         res.userKeychain.should.not.have.property('encryptedPrv');
+        return res.wallet.remove();
+      })
+      .then(function(removal) {
+        removal.deleted.should.equal(true);
       });
     });
 
@@ -202,6 +222,10 @@ describe('V2 Wallets:', function() {
         res.userKeychain.derivationPath.should.equal('m/999999/112305623/88990619');
         res.userKeychain.should.not.have.property('prv');
         res.userKeychain.should.not.have.property('encryptedPrv');
+        return res.wallet.remove();
+      })
+      .then(function(removal) {
+        removal.deleted.should.equal(true);
       });
     });
 
@@ -317,6 +341,10 @@ describe('V2 Wallets:', function() {
         res.wallet._wallet.keys[0].should.equal(userKeychainId);
         res.wallet._wallet.keys[1].should.equal(backupKeychainId);
         res.wallet._wallet.keys[2].should.equal(bitgoKeychainId);
+        return res.wallet.remove();
+      })
+      .then(function(removal) {
+        removal.deleted.should.equal(true);
       });
     });
   });

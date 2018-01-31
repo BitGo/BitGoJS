@@ -49,6 +49,9 @@ BitGo.TRAVEL_RULE_TXID = '33447753455651508cfd099c9ebe0db6a2243ccba4766319621fbc
 BitGo.TEST_WALLET_REGROUP_PASSCODE = 'test security fanout & coalesce';
 
 BitGo.prototype.initializeTestVars = function() {
+  this._promise.config({
+    longStackTraces: true
+  });
   if (this.getEnv() === 'dev' || this.getEnv() === 'local') {
     BitGo.TEST_USERID = '54d3e3a4b08fa6dc0a0002c07f8a9f86';
     BitGo.TEST_SHARED_KEY_USERID = '54d418de4ea11d050b0006186d08ea5c';

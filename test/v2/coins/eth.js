@@ -17,7 +17,7 @@ describe('ETH:', function() {
         ethKeychains.createBitGo();
         should.fail();
       } catch (e) {
-        e.message.should.equal('expecting enterprise when adding BitGo key');
+        e.message.should.include('expecting enterprise when adding BitGo key');
       }
     });
   });

@@ -988,6 +988,23 @@ Wallet.prototype.removePolicyRule = function(params, callback) {
 
 
 /**
+ * Remove Wallet
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.remove = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], [], callback);
+
+    return this.bitgo.del(this.url())
+    .result();
+  }).call(this).asCallback(callback);
+};
+
+
+/**
  * Creates and downloads PDF keycard for wallet (requires response from wallets.generateWallet)
  * @param params
  *   * jsPDF - an instance of the jsPDF library
