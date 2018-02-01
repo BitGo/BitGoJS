@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "4.19.0",
+  "version": "4.20.0",
   "description": "BitGo Javascript SDK",
   "main": "./src/index.js",
   "keywords": [
@@ -90,7 +90,7 @@
     "http-proxy": "1.11.1",
     "lodash": "4.13.1",
     "minimist": "0.2.0",
-    "moment": "~2.18.1",
+    "moment": "~2.20.1",
     "morgan": "1.9.0",
     "prova-lib": "0.2.9",
     "ripple-lib": "~0.17.7",
