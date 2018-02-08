@@ -350,13 +350,12 @@ Btc.prototype.signTransaction = function(params) {
 };
 
 /**
- * Verify the signature on a (half-signed) transaction
- * @param transaction bitcoinjs-lib tx object
- * @param inputIndex The input whererfore to check the signature
- * @param amount For segwit and BCH, the input amount needs to be known for signature verification
+ * Parse a transaction's signature script to obtain public keys, signatures, the sig script, and other properties
+ * @param transaction
+ * @param inputIndex
  * @returns {boolean}
  */
-Btc.prototype.verifySignature = function(transaction, inputIndex, amount) {
+Btc.prototype.parseSignatureScript = function (transaction, inputIndex) {
   const currentInput = transaction.ins[inputIndex];
   let signatureScript = currentInput.script;
   let decompiledSigScript = bitcoin.script.decompile(signatureScript);
@@ -365,14 +364,11 @@ Btc.prototype.verifySignature = function(transaction, inputIndex, amount) {
   if (isSegwitInput) {
     decompiledSigScript = currentInput.witness;
     signatureScript = bitcoin.script.compile(decompiledSigScript);
-    if (!amount) {
-      return false;
-    }
   }
 
   const inputClassification = bitcoin.script.classifyInput(signatureScript, true);
   if (inputClassification !== 'scripthash') {
-    return false;
+    return { isSegwitInput, inputClassification };
   }
 
   // all but the last entry
@@ -383,37 +379,123 @@ Btc.prototype.verifySignature = function(transaction, inputIndex, amount) {
   // the second through antepenultimate entries
   const publicKeys = decompiledPubScript.slice(1, -2);
 
-  // get the first non-empty signature and verify it against all public keys
-  const signatureBuffer = _.find(signatures, s => !_.isEmpty(s));
-  if (signatureBuffer.length === 0) {
-    // signature buffer must not be empty
+  return { signatures, publicKeys, isSegwitInput, inputClassification, pubScript };
+};
+
+/**
+ * Calculate the hash to verify the signature against
+ * @param transaction Transaction object
+ * @param inputIndex
+ * @param pubScript
+ * @param amount The previous output's amount
+ * @param hashType
+ * @param isSegwitInput
+ * @returns {*}
+ */
+Btc.prototype.calculateSignatureHash = function (transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
+  if (this.getFamily() === 'btg') {
+    return transaction.hashForGoldSignature(inputIndex, pubScript, amount, hashType, isSegwitInput);
+  } else if (this.getFamily() === 'bch') {
+    return transaction.hashForCashSignature(inputIndex, pubScript, amount, hashType);
+  } else { // btc/ltc
+    if (isSegwitInput) {
+      return transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
+    } else {
+      return transaction.hashForSignature(inputIndex, pubScript, hashType);
+    }
+  }
+};
+
+/**
+ * Verify the signature on a (half-signed) transaction
+ * @param transaction bitcoinjs-lib tx object
+ * @param inputIndex The input whererfore to check the signature
+ * @param amount For segwit and BCH, the input amount needs to be known for signature verification
+ * @param verificationSettings
+ * @param verificationSettings.signatureIndex The index of the signature to verify (only iterates over non-empty signatures)
+ * @param verificationSettings.publicKey The hex of the public key to verify (will verify all signatures)
+ * @returns {boolean}
+ */
+Btc.prototype.verifySignature = function (transaction, inputIndex, amount, verificationSettings = {}) {
+
+  const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(transaction, inputIndex);
+
+  if (inputClassification !== 'scripthash') {
     return false;
   }
-  // slice the last byte from the signature hash input because it's the hash type
-  const signature = bitcoin.ECSignature.fromDER(signatureBuffer.slice(0, -1));
-  const hashType = _.last(signatureBuffer);
 
-  for (const publicKeyBuffer of publicKeys) {
-    const publicKey = bitcoin.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
-    let signatureHash;
-    if (this.getFamily() === 'btg') {
-      signatureHash = transaction.hashForGoldSignature(inputIndex, pubScript, amount, hashType, isSegwitInput);
-    } else if (this.getFamily() === 'bch') {
-      signatureHash = transaction.hashForCashSignature(inputIndex, pubScript, amount, hashType);
-    } else { // btc/ltc
-      if (isSegwitInput) {
-        signatureHash = transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
-      } else {
-        signatureHash = transaction.hashForSignature(inputIndex, pubScript, hashType);
+  if (isSegwitInput && !amount) {
+    if (!amount) {
+      return false;
+    }
+  }
+
+  // get the first non-empty signature and verify it against all public keys
+  const nonEmptySignatures = _.filter(signatures, s => !_.isEmpty(s));
+
+  /*
+  We either want to verify all signature/pubkey combinations, or do an explicit combination
+
+  If a signature index is specified, only that signature is checked. It's verified against all public keys.
+  If a single public key is found to be valid, the function returns true.
+
+  If a public key is specified, we iterate over all signatures. If a single one matches the public key, the function
+  returns true.
+
+  If neither is specified, all signatures are checked against all public keys. Each signature must have its own distinct
+  public key that it matches for the function to return true.
+   */
+  let signaturesToCheck = nonEmptySignatures;
+  if (!_.isUndefined(verificationSettings.signatureIndex)) {
+    signaturesToCheck = [nonEmptySignatures[verificationSettings.signatureIndex]];
+  }
+
+  const publicKeyHex = verificationSettings.publicKey;
+  const matchedPublicKeyIndices = {};
+  let areAllSignaturesValid = true;
+
+  // go over all signatures
+  for (const signatureBuffer of signaturesToCheck) {
+    // slice the last byte from the signature hash input because it's the hash type
+    const signature = bitcoin.ECSignature.fromDER(signatureBuffer.slice(0, -1));
+    const hashType = _.last(signatureBuffer);
+    const signatureHash = this.calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput);
+    let isSignatureValid = false;
+
+    for (let publicKeyIndex = 0; publicKeyIndex < publicKeys.length; publicKeyIndex++) {
+
+      const publicKeyBuffer = publicKeys[publicKeyIndex];
+      if (!_.isUndefined(publicKeyHex) && publicKeyBuffer.toString('hex') !== publicKeyHex) {
+        // we are only looking to verify one specific public key's signature (publicKeyHex)
+        // this particular public key is not the one whose signature we're trying to verify
+        continue;
+      }
+
+      if (matchedPublicKeyIndices[publicKeyIndex]) {
+        continue;
+      }
+
+      const publicKey = bitcoin.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
+      if (publicKey.verify(signatureHash, signature)) {
+        isSignatureValid = true;
+        matchedPublicKeyIndices[publicKeyIndex] = true;
+        break;
       }
     }
 
-    if (publicKey.verify(signatureHash, signature)) {
+    if (!_.isUndefined(publicKeyHex) && isSignatureValid) {
+      // We were trying to see if any of the signatures was valid for the given public key. Evidently yes.
       return true;
     }
+
+    if (!isSignatureValid && _.isUndefined(publicKeyHex)) {
+      return false;
+    }
+
+    areAllSignaturesValid = isSignatureValid && areAllSignaturesValid;
   }
 
-  return false;
+  return areAllSignaturesValid;
 };
 
 Btc.prototype.explainTransaction = function(params) {

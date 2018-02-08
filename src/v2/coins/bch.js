@@ -65,23 +65,41 @@ Bch.prototype.signTransaction = function(params) {
   const keychain = bitcoin.HDNode.fromBase58(userPrv);
   const hdPath = bitcoin.hdPath(keychain);
 
+  const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
+  txb.enableBitcoinCash(true);
+  txb.setVersion(2);
+
+  const signatureIssues = [];
+
   for (let index = 0; index < transaction.ins.length; ++index) {
+    const currentUnspent = txPrebuild.txInfo.unspents[index];
     const path = 'm/0/0/' + txPrebuild.txInfo.unspents[index].chain + '/' + txPrebuild.txInfo.unspents[index].index;
     const privKey = hdPath.deriveKey(path);
-    const value = txPrebuild.txInfo.unspents[index].value;
 
-    const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
-    txb.enableBitcoinCash(true);
-    // TODO (arik): Figure out if version 2 is actually necessary
-    txb.setVersion(2);
+    const currentSignatureIssue = {
+      inputIndex: index,
+      unspent: currentUnspent,
+      path: path
+    };
+
     const subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
     try {
-      txb.sign(index, privKey, subscript, sigHashType, value);
+      txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value);
     } catch (e) {
-      throw new Error('Failed to sign input #' + index);
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+      continue;
     }
 
     transaction = txb.buildIncomplete();
+  }
+
+  if (signatureIssues.length > 0) {
+    const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
+    const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+    error.code = 'input_signature_failure';
+    error.signingErrors = signatureIssues;
+    throw error;
   }
 
   return {

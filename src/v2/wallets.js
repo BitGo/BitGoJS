@@ -171,6 +171,15 @@ Wallets.prototype.add = function(params, callback) {
  * 4. Creates the BitGo key on the service
  * 5. Creates the wallet on BitGo with the 3 public keys above
  * @param params
+ * @param params.label
+ * @param params.passphrase
+ * @param params.userKey User xpub
+ * @param params.backupXpub Backup xpub
+ * @param params.backupXpubProvider
+ * @param params.enterprise
+ * @param params.disableTransactionNotifications
+ * @param params.passcodeEncryptionCode
+ * @param params.coldDerivationSeed
  * @param callback
  * @returns {*}
  */
