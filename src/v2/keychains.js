@@ -24,6 +24,76 @@ Keychains.prototype.get = function(params, callback) {
   .nodeify(callback);
 };
 
+/**
+ * list the users keychains
+ * @param params.limit - Max number of results in a single call.
+ * @param params.prevId - Continue iterating (provided by nextBatchPrevId in the previous list)
+ * @param callback
+ * @returns {*}
+ */
+Keychains.prototype.list = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], [], callback);
+
+    const queryObject = {};
+
+    if (!_.isUndefined(params.limit)) {
+      if (!_.isNumber(params.limit)) {
+        throw new Error('invalid limit argument, expecting number');
+      }
+      queryObject.limit = params.limit;
+    }
+    if (!_.isUndefined(params.prevId)) {
+      if (!_.isString(params.prevId)) {
+        throw new Error('invalid prevId argument, expecting string');
+      }
+      queryObject.prevId = params.prevId;
+    }
+
+    return this.bitgo.get(this.baseCoin.url('/key')).query(queryObject).result();
+  }).call(this).asCallback(callback);
+};
+
+/**
+ * iterates through all keys associated with the user, decrypts them with the old password and encrypts them with the
+ * new password
+ * @param params.oldPassword - The old password used for encrypting the key
+ * @param params.newPassword - The new password to be used for encrypting the key
+ * @param callback
+ * @returns {*}
+ */
+Keychains.prototype.updatePassword = function(params, callback) {
+  return co(function *() {
+    common.validateParams(params, ['oldPassword', 'newPassword'], [], callback);
+    const changedKeys = {};
+    let prevId;
+    let keysLeft = true;
+    while (keysLeft) {
+      const result = yield this.list({ limit: 500, prevId });
+      for (const key of result.keys) {
+        const encryptedPrv = key.encryptedPrv;
+        if (_.isUndefined(encryptedPrv)) {
+          continue;
+        }
+        try {
+          const decryptedPrv = this.bitgo.decrypt({ input: key.encryptedPrv, password: params.oldPassword });
+          const encryptedPrv = this.bitgo.encrypt({ input: decryptedPrv, password: params.newPassword });
+          changedKeys[key.pub] = encryptedPrv;
+        } catch (e) {
+          // catching an error here means that the password was incorrect and hence there is nothing to change
+        }
+      }
+      if (result.nextBatchPrevId) {
+        prevId = result.nextBatchPrevId;
+      } else {
+        keysLeft = false;
+      }
+    }
+    return changedKeys;
+  }).call(this).asCallback(callback);
+};
+
 Keychains.prototype.create = function(params) {
   params = params || {};
   common.validateParams(params, [], []);

@@ -169,6 +169,10 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.V2.TEST_ETH_WALLET_ID = '598f606cd8fc24710d2ebadb1d9459bb';
     BitGo.V2.TEST_ETH_WALLET_PASSPHRASE = 'moon';
     BitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS = '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e';
+
+    BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER = 'leo+test_keychain_update_pw@bitgo.com';
+    BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD = BitGo.TEST_PASSWORD;
+
   }
 
   BitGo.TEST_FEE_SINGLE_KEY_WIF = 'cRVQ6cbUyGHVvByPKF9GnEhaB4HUBFgLQ2jVX1kbQARHaTaD7WJ2';
@@ -208,6 +212,18 @@ BitGo.prototype.authenticateSharingTestUser = function(otp, callback) {
 BitGo.prototype.authenticateKnownBalanceTestUser = function (otp, callback) {
   return co(function *() {
     const response = yield this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp });
+    response.should.have.property('access_token');
+    response.should.have.property('user');
+  }).call(this).asCallback(callback);
+};
+
+BitGo.prototype.authenticateKeychainUpdatePWTest = function(otp, callback) {
+  return co(function *() {
+    const response = yield this.authenticate({
+      username: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER,
+      password: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD,
+      otp: otp
+    });
     response.should.have.property('access_token');
     response.should.have.property('user');
   }).call(this).asCallback(callback);
