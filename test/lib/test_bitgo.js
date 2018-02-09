@@ -170,7 +170,7 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.V2.TEST_ETH_WALLET_PASSPHRASE = 'moon';
     BitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS = '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e';
 
-    BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER = 'leo+test_keychain_update_pw@bitgo.com';
+    BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER = 'update_password_test@bitgo.com';
     BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD = BitGo.TEST_PASSWORD;
 
   }
