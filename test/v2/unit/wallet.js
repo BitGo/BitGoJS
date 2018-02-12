@@ -19,7 +19,7 @@ describe('V2 Wallet:', function() {
     bitgo.initializeTestVars();
   }));
 
-  describe('Transaction Signature Verification', function () {
+  describe('Transaction Signature Verification', function() {
     let basecoin;
     let wallet;
     const userKeychain = {

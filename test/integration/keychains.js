@@ -192,21 +192,21 @@ describe('Keychains', function() {
   });
 
   describe('Create Backup', function() {
-    it('arguments', function () {
-      assert.throws(function () {
+    it('arguments', function() {
+      assert.throws(function() {
         keychains.createBackup('invalid');
       });
-      assert.throws(function () {
+      assert.throws(function() {
         keychains.createBackup();
       });
-      assert.throws(function () {
+      assert.throws(function() {
         keychains.createBackup({}, 0);
       });
     });
 
-    describe('prederived key', function () {
+    describe('prederived key', function() {
       let generatedXPub;
-      it('add', function () {
+      it('add', function() {
         const options = {
           provider: 'bitgo'
         };

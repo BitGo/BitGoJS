@@ -6,7 +6,6 @@ const should = require('should');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-const bitcoin = require('bitgo-bitcoinjs-lib');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 
@@ -250,12 +249,12 @@ describe('V2 Wallet:', function() {
 
     it('get a transfer by id', function() {
       return wallet.getTransfer({ id: thirdTransfer.id })
-        .then(function(transfer) {
-          transfer.should.have.property('coin');
-          transfer.should.have.property('height');
-          transfer.should.have.property('txid');
-          transfer.id.should.eql(thirdTransfer.id);
-        });
+      .then(function(transfer) {
+        transfer.should.have.property('coin');
+        transfer.should.have.property('height');
+        transfer.should.have.property('txid');
+        transfer.id.should.eql(thirdTransfer.id);
+      });
     });
 
     it('update comment', function() {

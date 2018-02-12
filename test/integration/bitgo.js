@@ -330,7 +330,7 @@ describe('BitGo', function() {
     });
 
     it('arguments', function() {
-      assert.throws(function () {
+      assert.throws(function() {
         bitgo.estimateFee({ numBlocks: 'none' });
       });
     });
@@ -622,7 +622,7 @@ describe('BitGo', function() {
       .then(function() {
         return bitgo.getECDHSharingKeychain();
       })
-      .then(function (result) {
+      .then(function(result) {
         result.xpub.should.equal(TestBitGo.TEST_USER_ECDH_XPUB);
       });
     });
@@ -649,12 +649,12 @@ describe('BitGo', function() {
     }
     let bitgo;
 
-    before(function (done) {
+    before(function(done) {
       bitgo = new BitGoJS.BitGo({ clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET });
       done();
     });
 
-    describe('Authenticate with auth code', function () {
+    describe('Authenticate with auth code', function() {
       it('arguments', function() {
         assert.throws(function() { bitgo.authenticateWithAuthCode(); });
         assert.throws(function() { bitgo.authenticateWithAuthCode({ authCode: 123 }); });
@@ -663,8 +663,8 @@ describe('BitGo', function() {
         assert.throws(function() { bitgoNoClientId.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function() {}); });
       });
 
-      it('bad code', function (done) {
-        bitgo.authenticateWithAuthCode({ authCode: 'BADCODE' }, function (err, response) {
+      it('bad code', function(done) {
+        bitgo.authenticateWithAuthCode({ authCode: 'BADCODE' }, function(err, response) {
           // Expect error
           assert.notEqual(err, null);
           err.message.should.equal('invalid_grant');
@@ -673,8 +673,8 @@ describe('BitGo', function() {
         });
       });
 
-      it('use auth code to get me', function (done) {
-        bitgo.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function (err, response) {
+      it('use auth code to get me', function(done) {
+        bitgo.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function(err, response) {
           // Expect no error
           assert.equal(err, null);
           response.should.have.property('token_type');
@@ -683,7 +683,7 @@ describe('BitGo', function() {
           response.should.have.property('refresh_token');
           refreshToken = response.refresh_token;
 
-          bitgo.me({}, function (err, me_result) {
+          bitgo.me({}, function(err, me_result) {
 
             me_result.should.have.property('username');
             me_result.should.have.property('email');
@@ -694,21 +694,21 @@ describe('BitGo', function() {
       });
     });
 
-    describe('Initialize with access token', function () {
-      it('arguments', function () {
-        assert.throws(function () {
+    describe('Initialize with access token', function() {
+      it('arguments', function() {
+        assert.throws(function() {
           bitgo.authenticateWithAuthCode({}, 123);
         });
       });
 
-      it('use bad access token', function (done) {
+      it('use bad access token', function(done) {
         const bitgoAT = new BitGoJS.BitGo({
           clientId: TestBitGo.TEST_CLIENTID,
           clientSecret: TestBitGo.TEST_CLIENTSECRET,
           accessToken: 'bad token'
         });
 
-        bitgoAT.me({}, function (err, me_result) {
+        bitgoAT.me({}, function(err, me_result) {
           assert.notEqual(err, null);
           err.message.should.equal('unauthorized');
           err.should.have.property('status');
@@ -716,14 +716,14 @@ describe('BitGo', function() {
         });
       });
 
-      it('use access token', function (done) {
+      it('use access token', function(done) {
         const bitgoAT = new BitGoJS.BitGo({
           clientId: TestBitGo.TEST_CLIENTID,
           clientSecret: TestBitGo.TEST_CLIENTSECRET,
           accessToken: TestBitGo.TEST_ACCESSTOKEN
         });
 
-        bitgoAT.me({}, function (err, me_result) {
+        bitgoAT.me({}, function(err, me_result) {
           me_result.should.have.property('username');
           me_result.should.have.property('email');
           me_result.should.have.property('phone');
@@ -733,7 +733,7 @@ describe('BitGo', function() {
     });
 
     describe('Use refresh token', function() {
-      it('arguments', function () {
+      it('arguments', function() {
         assert.throws(function() { bitgo.refresh_token(); });
         assert.throws(function() { bitgo.refresh_token(123); });
         assert.throws(function() { bitgo.refresh_token('foo', 123); });
@@ -742,8 +742,8 @@ describe('BitGo', function() {
         assert.throws(function() { bitgoNoClientId.refresh_token(TestBitGo.TEST_AUTHCODE, function() {}); });
       });
 
-      it('bad token', function (done) {
-        bitgo.refreshToken({ refreshToken: 'BADTOKEN' }, function (err, response) {
+      it('bad token', function(done) {
+        bitgo.refreshToken({ refreshToken: 'BADTOKEN' }, function(err, response) {
           // Expect error
           assert.notEqual(err, null);
           err.message.should.equal('invalid_grant');
@@ -752,8 +752,8 @@ describe('BitGo', function() {
         });
       });
 
-      it('use refresh token to get access token to get me', function (done) {
-        bitgo.refreshToken({ refreshToken: refreshToken }, function (err, response) {
+      it('use refresh token to get access token to get me', function(done) {
+        bitgo.refreshToken({ refreshToken: refreshToken }, function(err, response) {
           // Expect no error
           assert.equal(err, null);
           response.should.have.property('token_type');
@@ -767,7 +767,7 @@ describe('BitGo', function() {
             accessToken: response.access_token
           });
 
-          bitgoWithNewToken.me({}, function (err, me_result) {
+          bitgoWithNewToken.me({}, function(err, me_result) {
 
             me_result.should.have.property('username');
             me_result.should.have.property('email');
@@ -777,10 +777,10 @@ describe('BitGo', function() {
         });
       });
 
-      it('login with auth code then refresh with no args', function (done) {
+      it('login with auth code then refresh with no args', function(done) {
 
         bitgo = new BitGoJS.BitGo({ clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET });
-        bitgo.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function (err, response) {
+        bitgo.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function(err, response) {
           // Expect no error
           assert.equal(err, null);
           response.should.have.property('token_type');
@@ -788,7 +788,7 @@ describe('BitGo', function() {
           response.should.have.property('expires_in');
           response.should.have.property('refresh_token');
 
-          bitgo.refreshToken({ refreshToken: undefined }, function (err, response) {
+          bitgo.refreshToken({ refreshToken: undefined }, function(err, response) {
             // Expect no error
             assert.equal(err, null);
             response.should.have.property('token_type');
@@ -802,7 +802,7 @@ describe('BitGo', function() {
               accessToken: response.access_token
             });
 
-            bitgoWithNewToken.me({}, function (err, me_result) {
+            bitgoWithNewToken.me({}, function(err, me_result) {
 
               me_result.should.have.property('username');
               me_result.should.have.property('email');

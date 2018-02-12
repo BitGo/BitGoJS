@@ -23,7 +23,7 @@ const amountSatoshis = config.amountSatoshis;
 const setInterval = config.setInterval;
 let count = 0;
 
-function setDestinationAddress () {
+function setDestinationAddress() {
   console.log('\n-------- Queuing Transaction --------\n');
   const destinationAddress = addresses[count];
   if (destinationAddress === undefined) {

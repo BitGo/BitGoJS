@@ -5,7 +5,6 @@
 require('should');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-const _ = require('lodash');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 

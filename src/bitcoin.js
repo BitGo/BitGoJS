@@ -49,7 +49,7 @@ HDNode.prototype.getKey = function(network) {
  * @param   {Number} index   child index
  * @returns {HDNode}         derived HDNode
  */
-const deriveFast = function (hdnode, index) {
+const deriveFast = function(hdnode, index) {
   // no fast path for private key derivations -- delegate to standard method
   if (!secp256k1 || hdnode.keyPair.d) {
     return hdnode.derive(index);
@@ -104,7 +104,7 @@ const deriveFast = function (hdnode, index) {
 };
 
 if (secp256k1) {
-  bitcoin.ECPair.prototype.sign = function (hash) {
+  bitcoin.ECPair.prototype.sign = function(hash) {
     if (!this.d) {
       throw new Error('Missing private key');
     }
@@ -112,7 +112,7 @@ if (secp256k1) {
     return bitcoin.ECSignature.fromDER(secp256k1.signatureExport(sig));
   };
 
-  bitcoin.ECPair.prototype.verify = function (hash, signature) {
+  bitcoin.ECPair.prototype.verify = function(hash, signature) {
     signature = new bitcoin.ECSignature(signature.r, signature.s);
     signature = secp256k1.signatureNormalize(secp256k1.signatureImport(signature.toDER()));
     return secp256k1.verify(hash, signature, this.getPublicKeyBuffer());
@@ -128,8 +128,8 @@ if (secp256k1) {
  */
 bitcoin.hdPath = function(rootKey) {
   const cache = {};
-  const derive = function (path) {
-    const components = path.split('/').filter(function (c) {
+  const derive = function(path) {
+    const components = path.split('/').filter(function(c) {
       return c !== '';
     });
     // strip any extraneous / characters

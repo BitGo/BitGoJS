@@ -49,22 +49,22 @@ describe('XRP:', function() {
   it('verifyAddress should work', function() {
     basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=1893500718', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' });
     basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8r=a', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'xrp://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967296', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8r=a', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'xrp://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967296', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
     basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=0x123', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=0x0', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=0x123', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=0x0', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
     basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=0', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=-1', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=1.5', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=a', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=b', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=a54b', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'xrp://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?a=b&dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
-    assert.throws(function () { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'rDgocL7QpZh8ZhrPsax4zVqbGGxeAsiBoh' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=-1', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=1.5', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=a', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=b', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=a54b', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'xrp://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'http://r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?a=b&dt=4294967295', rootAddress: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+    assert.throws(function() { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8?dt=4294967295', rootAddress: 'rDgocL7QpZh8ZhrPsax4zVqbGGxeAsiBoh' }); });
   });
 
   it('Should be able to explain an XRP transaction', function() {

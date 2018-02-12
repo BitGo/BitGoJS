@@ -17,7 +17,7 @@ describe('Webhooks', function() {
   let simulatedTransactionWebhookId;
   let simulatedPendingApprovalWebhookId;
 
-  before(function (done) {
+  before(function(done) {
     BitGoJS.setNetwork('testnet');
 
     bitgo = new TestBitGo();
@@ -27,7 +27,7 @@ describe('Webhooks', function() {
     simulatedPendingApprovalWebhookId = TestBitGo.TEST_WEBHOOK_PENDING_APPROVAL_SIMULATION_ID;
 
     const wallets = bitgo.wallets();
-    bitgo.authenticateTestUser(bitgo.testUserOTP(), function (err, response) {
+    bitgo.authenticateTestUser(bitgo.testUserOTP(), function(err, response) {
       if (err) {
         console.log(err);
         throw err;
@@ -37,7 +37,7 @@ describe('Webhooks', function() {
       const options = {
         id: TestBitGo.TEST_WALLET1_ADDRESS
       };
-      wallets.get(options, function (err, result) {
+      wallets.get(options, function(err, result) {
         if (err) {
           throw err;
         }
@@ -47,35 +47,35 @@ describe('Webhooks', function() {
     });
   });
 
-  describe('Add webhook', function () {
-    it('arguments', function (done) {
-      assert.throws(function () {
+  describe('Add webhook', function() {
+    it('arguments', function(done) {
+      assert.throws(function() {
         wallet.addWebhook({});
       });
 
-      assert.throws(function () {
-        wallet.addWebhook({}, function () {
+      assert.throws(function() {
+        wallet.addWebhook({}, function() {
         });
       });
-      assert.throws(function () {
-        wallet.addWebhook({ url: 'http://satoshi.com/' }, function () {
+      assert.throws(function() {
+        wallet.addWebhook({ url: 'http://satoshi.com/' }, function() {
         });
       });
-      assert.throws(function () {
-        wallet.addWebhook({ type: 'transaction' }, function () {
+      assert.throws(function() {
+        wallet.addWebhook({ type: 'transaction' }, function() {
         });
       });
       done();
     });
 
-    it('add webhook with a bad url', function (done) {
+    it('add webhook with a bad url', function(done) {
 
       wallet.addWebhook({ url: 'illegalurl', type: 'transaction' })
       .done(
-        function (success) {
+        function(success) {
           success.should.eql(null);
         },
-        function (err) {
+        function(err) {
           err.status.should.eql(400);
           err.message.should.include('invalid webhook');
           done();
@@ -83,12 +83,12 @@ describe('Webhooks', function() {
       );
     });
 
-    it('success', function (done) {
+    it('success', function(done) {
 
       const url = 'http://test.com/';
       const type = 'transaction';
       wallet.addWebhook({ url: url, type: type })
-      .then(function (result) {
+      .then(function(result) {
         result.should.have.property('walletId');
         result.should.have.property('url');
         result.should.have.property('type');
@@ -158,19 +158,19 @@ describe('Webhooks', function() {
     });
   });
 
-  describe('List webhooks', function () {
-    it('arguments', function (done) {
-      assert.throws(function () {
+  describe('List webhooks', function() {
+    it('arguments', function(done) {
+      assert.throws(function() {
         wallet.listWebhooks({}, 'abc');
       });
       done();
     });
 
-    it('success', function (done) {
+    it('success', function(done) {
 
       const url = 'http://test.com/';
       wallet.listWebhooks()
-      .then(function (result) {
+      .then(function(result) {
         result.webhooks.length.should.not.eql(0);
         const urls = _.map(result.webhooks, 'url');
         urls.should.include(url);
@@ -180,42 +180,42 @@ describe('Webhooks', function() {
     });
   });
 
-  describe('Remove webhooks', function () {
-    it('arguments', function (done) {
-      assert.throws(function () {
+  describe('Remove webhooks', function() {
+    it('arguments', function(done) {
+      assert.throws(function() {
         wallet.removeWebhook({}, 'abc');
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet.removeWebhook({});
       });
 
-      assert.throws(function () {
-        wallet.removeWebhook({}, function () {
+      assert.throws(function() {
+        wallet.removeWebhook({}, function() {
         });
       });
-      assert.throws(function () {
-        wallet.removeWebhook({ url: 'http://satoshi.com/' }, function () {
+      assert.throws(function() {
+        wallet.removeWebhook({ url: 'http://satoshi.com/' }, function() {
         });
       });
-      assert.throws(function () {
-        wallet.removeWebhook({ type: 'transaction' }, function () {
+      assert.throws(function() {
+        wallet.removeWebhook({ type: 'transaction' }, function() {
         });
       });
       done();
     });
 
-    it('success', function (done) {
+    it('success', function(done) {
 
       const url = 'http://test.com/';
       const type = 'transaction';
       wallet.removeWebhook({ url: url, type: type })
-      .then(function (result) {
+      .then(function(result) {
         result.should.have.property('removed');
         result.removed.should.equal(1);
 
         return wallet.listWebhooks();
       })
-      .then(function (result) {
+      .then(function(result) {
         const urls = _.map(result, 'url');
         urls.should.not.include(url);
         done();

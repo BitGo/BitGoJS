@@ -39,18 +39,18 @@ if (!!process.argv[8]) {
 
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 
-const getTransactionInfo = function () {
+const getTransactionInfo = function() {
 
   return bitgo.authenticate({ username: user, password: password, otp: otp })
-  .then(function () {
+  .then(function() {
     return bitgo.unlock({ otp: otp });
   })
-  .then(function () {
+  .then(function() {
 
     // Fetch the specified wallet
     return bitgo.wallets().get({ id: walletId });
   })
-  .then(function (wallet) {
+  .then(function(wallet) {
 
     // Set recipients
     const recipients = {};
@@ -58,7 +58,7 @@ const getTransactionInfo = function () {
 
     // Create the transaction
     return wallet.createTransaction({ recipients: recipients, feeRate: feeRate });
-  }).then(function (transaction) {
+  }).then(function(transaction) {
     console.log('\nEstimated Transaction Info:\n');
     console.log('\tSending from:                        ' + walletId);
     console.log('\tSending to:                          ' + destinationAddress);
@@ -71,7 +71,7 @@ const getTransactionInfo = function () {
     console.log('\tBitGo fee:                           ' + (transaction.bitgoFee && transaction.bitgoFee.amount || 0) + ' satoshis');
     process.exit(-1);
   })
-  .catch(function (err) {
+  .catch(function(err) {
     console.log(err);
     process.exit(-1);
   });

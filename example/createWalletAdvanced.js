@@ -72,7 +72,7 @@ const createWallet = function() {
               { xpub: backupKey.xpub },
               { xpub: keychain.xpub }]
           };
-          bitgo.wallets().add(options, function (err, result) {
+          bitgo.wallets().add(options, function(err, result) {
             if (err) {
               console.dir(err);
               throw new Error('Could not add wallet on BitGo');

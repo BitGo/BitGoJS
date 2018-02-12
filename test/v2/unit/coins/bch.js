@@ -3,24 +3,24 @@ const assert = require('assert');
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 
-describe('BCH:', function () {
+describe('BCH:', function() {
   let bitgo;
   let tbch;
 
-  before(function () {
+  before(function() {
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
     tbch = bitgo.coin('tbch');
   });
 
-  describe('canonical addresses', function () {
+  describe('canonical addresses', function() {
     let bch;
-    before(function () {
+    before(function() {
       bch = bitgo.coin('bch');
     });
 
     // we use mainnet bch so we can reuse the mainnet address examples
-    it('should correctly convert addresses', function () {
+    it('should correctly convert addresses', function() {
       // P2PKH bech32 -> bech32
       bch.canonicalAddress('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'bech32').should.equal('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a');
 
@@ -63,54 +63,54 @@ describe('BCH:', function () {
       tbch.canonicalAddress('prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'bech32').should.equal('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f');
     });
 
-    it('should reject invalid addresses', function () {
+    it('should reject invalid addresses', function() {
       // improperly short data segment
-      assert.throws(function () {
+      assert.throws(function() {
         bch.canonicalAddress('bitcoincash:sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e', 'base58');
       });
 
       // mismatched data segment (bech32)
-      assert.throws(function () {
+      assert.throws(function() {
         bch.canonicalAddress('bitcoincash:yr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e', 'base58');
       });
 
       // double prefix
-      assert.throws(function () {
+      assert.throws(function() {
         bch.canonicalAddress('bitcoincash:bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e', 'base58');
       });
 
       // mismatched data segment (base58)
-      assert.throws(function () {
+      assert.throws(function() {
         bch.canonicalAddress('3DDsS579y7sruadqu11beEJoTjdFiFCdX4', 'base58');
       });
 
       // improper prefix
-      assert.throws(function () {
+      assert.throws(function() {
         bch.canonicalAddress(':qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'base58');
       });
-      assert.throws(function () {
+      assert.throws(function() {
         bch.canonicalAddress('bitcoin:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'base58');
       });
 
       // mismatched capitalization
-      assert.throws(function () {
+      assert.throws(function() {
         bch.canonicalAddress('bitcoincash:QPM2Qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'bech32');
       });
 
       // improper version
-      assert.throws(function () {
+      assert.throws(function() {
         bch.canonicalAddress('bitcoincash:qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r', 'blah');
       });
 
       // undefined address
-      assert.throws(function () {
+      assert.throws(function() {
         bch.canonicalAddress(undefined, 'blah');
       });
     });
   });
 
-  describe('Should sign transaction', function () {
-    it('should successfully sign a prebuilt transaction', function () {
+  describe('Should sign transaction', function() {
+    it('should successfully sign a prebuilt transaction', function() {
       const signedTransaction = tbch.signTransaction({
         txPrebuild: {
           txHex: '010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b80100000000ffffffff02e803000000000000116a0f426974476f2070327368207465737440a107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000',
@@ -130,7 +130,7 @@ describe('BCH:', function () {
       signedTransaction.txHex.should.equal('020000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b801000000b7004830450221009e63ff1c8b0860073bc06bbce84f20568251a31f7a12c0ce300dc024e416f28202200b0dcb4a3b6b2cda1886ea6c020884907efd517d23d97e84fbf411aa65d280dd4100004c695221031cd227e40ad61b4e137109cb2845eb6f5a584ed5c67d9d3135cdaa5045a842ea2103a2e7b54c7b2da0992555353b8e26c6acff4248f4351f08787bf3e2efc94b658321025c2a6cde33c2d73ccf12eecf64c54f08f722c2f073824498950695e9883b141253aeffffffff02e803000000000000116a0f426974476f2070327368207465737440a107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000');
     });
 
-    it('should fail to sign a prebuilt transaction with out a txPrebuild', function () {
+    it('should fail to sign a prebuilt transaction with out a txPrebuild', function() {
       const tbch = bitgo.coin('tbch');
       try {
         tbch.signTransaction({
@@ -157,7 +157,7 @@ describe('BCH:', function () {
       }
     });
 
-    it('should fail to sign a prebuilt transaction with if the length of unspents does not match the number of inputs in the transaction', function () {
+    it('should fail to sign a prebuilt transaction with if the length of unspents does not match the number of inputs in the transaction', function() {
       const tbch = bitgo.coin('tbch');
       try {
         tbch.signTransaction({
@@ -193,7 +193,7 @@ describe('BCH:', function () {
       }
     });
 
-    it('should fail to sign a prebuilt transaction with out passing in the prv', function () {
+    it('should fail to sign a prebuilt transaction with out passing in the prv', function() {
       const tbch = bitgo.coin('tbch');
       try {
         tbch.signTransaction({
@@ -220,7 +220,7 @@ describe('BCH:', function () {
       }
     });
 
-    it('should fail to sign if txPrebuild is not an object', function () {
+    it('should fail to sign if txPrebuild is not an object', function() {
       const tbch = bitgo.coin('tbch');
       try {
         tbch.signTransaction({
@@ -235,7 +235,7 @@ describe('BCH:', function () {
       }
     });
 
-    it('should fail to sign if prv is not a string', function () {
+    it('should fail to sign if prv is not a string', function() {
       const tbch = bitgo.coin('tbch');
       try {
         tbch.signTransaction({

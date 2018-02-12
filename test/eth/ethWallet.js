@@ -507,11 +507,11 @@ describe('Ethereum Wallet API:', function() {
   });
 
   describe('Freeze Wallet', function() {
-    it('arguments', function () {
-      assert.throws(function () {
+    it('arguments', function() {
+      assert.throws(function() {
         wallet2.freeze({ duration: 'asdfasdasd' });
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet2.freeze({ duration: 5 }, 'asdasdsa');
       });
     });

@@ -209,7 +209,7 @@ BitGo.prototype.authenticateSharingTestUser = function(otp, callback) {
   .nodeify(callback);
 };
 
-BitGo.prototype.authenticateKnownBalanceTestUser = function (otp, callback) {
+BitGo.prototype.authenticateKnownBalanceTestUser = function(otp, callback) {
   return co(function *() {
     const response = yield this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp });
     response.should.have.property('access_token');

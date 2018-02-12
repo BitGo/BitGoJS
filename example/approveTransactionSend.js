@@ -31,25 +31,25 @@ const pendingApprovalId = process.argv[6];
 
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 
-const approveTransaction = function () {
+const approveTransaction = function() {
 
   return bitgo.authenticate({ username: user, password: password, otp: otp })
-  .then(function () {
+  .then(function() {
     return bitgo.unlock({ otp: otp });
   })
   .then(function() {
     // Fetch the specified pending approval
     return bitgo.pendingApprovals().get({ id: pendingApprovalId });
   })
-  .then(function (pendingApproval) {
+  .then(function(pendingApproval) {
 
     // we need the wallet password to create the half-signed transaction locally
     return pendingApproval.approve({ walletPassphrase: walletPassphrase });
-  }).then(function (res) {
+  }).then(function(res) {
     console.dir(res);
     process.exit(-1);
   })
-  .catch(function (err) {
+  .catch(function(err) {
     console.log(err);
     process.exit(-1);
   });

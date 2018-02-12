@@ -56,7 +56,7 @@ module.exports = function(args) {
 
     const proxy = httpProxy.createProxyServer(options);
 
-    proxy.on('proxyReq', function (proxyReq, req, res, options) {
+    proxy.on('proxyReq', function(proxyReq, req, res, options) {
       // Need to rewrite the host, otherwise cross-site protection kicks in
       proxyReq.setHeader('host', url.parse(common.Environments[args.env].uri).hostname);
 
@@ -64,7 +64,7 @@ module.exports = function(args) {
       proxyReq.setHeader('User-Agent', userAgent);
     });
 
-    app.use(function (req, res) {
+    app.use(function(req, res) {
       req.isProxy = true;
       proxy.web(req, res, { target: common.Environments[args.env].uri, changeOrigin: true });
     });

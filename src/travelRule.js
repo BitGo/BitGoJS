@@ -233,11 +233,11 @@ TravelRule.prototype.sendMany = function(params, callback) {
 
   const self = this;
   const travelInfoMap = _(travelInfos)
-    .keyBy('outputIndex')
-    .mapValues(function(travelInfo) {
-      return self.validateTravelInfo(travelInfo);
-    })
-    .value();
+  .keyBy('outputIndex')
+  .mapValues(function(travelInfo) {
+    return self.validateTravelInfo(travelInfo);
+  })
+  .value();
 
   return self.getRecipients({ txid: params.txid })
   .then(function(recipients) {

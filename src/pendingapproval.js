@@ -182,7 +182,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
       return;
     }
     if (transaction.outs.length <= 2) {
-      transaction.outs.forEach(function (out) {
+      transaction.outs.forEach(function(out) {
         const outAddress = bitcoin.address.fromOutputScript(out.script, network).toBase58Check();
         if (self.info().transactionRequest.destinationAddress === outAddress) {
           // If this is the destination, then spend to it
@@ -197,7 +197,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
     return self.wallet.addresses({ chain: 1, sort: -1, limit: 500 })
     .then(function(result) {
       const changeAddresses = _.keyBy(result.addresses, 'address');
-      transaction.outs.forEach(function (out) {
+      transaction.outs.forEach(function(out) {
         const outAddress = bitcoin.address.fromOutputScript(out.script, network).toBase58Check();
         if (!changeAddresses[outAddress]) {
           // If this is not a change address, then spend to it

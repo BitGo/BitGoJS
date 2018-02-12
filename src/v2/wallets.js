@@ -534,7 +534,7 @@ Wallets.prototype.getWalletByAddress = function(params, callback) {
  * @param callback
  * @returns {*}
  */
-Wallets.prototype.getTotalBalances = function (params, callback) {
+Wallets.prototype.getTotalBalances = function(params, callback) {
   return co(function *() {
     params = params || {};
     common.validateParams(params, [], [], callback);

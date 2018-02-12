@@ -14,7 +14,7 @@ const TransactionBuilder = require('../../src/transactionBuilder');
 const crypto = require('crypto');
 const _ = require('lodash');
 const bitcoin = BitGoJS.bitcoin;
-const Promise = require('bluebird');
+const unspentData = require('./fixtures/largeunspents.json');
 
 Q.longStackTrace = true;
 
@@ -143,7 +143,7 @@ describe('Wallet API', function() {
       });
     });
 
-    it('can invite non bitgo user again', function (done) {
+    it('can invite non bitgo user again', function(done) {
       wallet1.createInvite({
         email: 'notfoundqery@bitgo.com',
         permissions: 'admin'
@@ -171,11 +171,11 @@ describe('Wallet API', function() {
       });
     });
 
-    it('arguments', function (done) {
-      assert.throws(function () { bitgo.getSharingKey({}); });
+    it('arguments', function(done) {
+      assert.throws(function() { bitgo.getSharingKey({}); });
 
-      assert.throws(function () { wallet1.shareWallet({}, function() {}); });
-      assert.throws(function () { wallet1.shareWallet({ email: 'tester@bitgo.com' }, function() {}); });
+      assert.throws(function() { wallet1.shareWallet({}, function() {}); });
+      assert.throws(function() { wallet1.shareWallet({ email: 'tester@bitgo.com' }, function() {}); });
       // assert.throws(function () { wallet1.shareWallet({ email:'notfoundqery@bitgo.com', walletPassphrase:'wrong' }, function() {}); });
       done();
     });
@@ -411,7 +411,7 @@ describe('Wallet API', function() {
     });
   });
 
-  describe('Accept wallet share', function () {
+  describe('Accept wallet share', function() {
     before(function(done) {
       bitgoSharedKeyUser = new TestBitGo();
       bitgoSharedKeyUser.initializeTestVars();
@@ -444,7 +444,7 @@ describe('Wallet API', function() {
       bitgoSharedKeyUser.unlock({ otp: '0000000' })
       .then(function() {
         return bitgoSharedKeyUser.wallets().acceptShare({ walletShareId: walletShareIdWithSpendPermissions, userPassword: TestBitGo.TEST_SHARED_KEY_PASSWORD })
-        .then(function (result) {
+        .then(function(result) {
           result.should.have.property('state');
           result.should.have.property('changed');
           result.state.should.equal('accepted');
@@ -453,7 +453,7 @@ describe('Wallet API', function() {
           // now check that the wallet share id is no longer there
           return bitgoSharedKeyUser.wallets().listShares();
         })
-        .then(function (result) {
+        .then(function(result) {
           result.incoming.should.not.containDeep([{ id: walletShareIdWithSpendPermissions }]);
           done();
         })
@@ -463,7 +463,7 @@ describe('Wallet API', function() {
     });
   });
 
-  describe('Wallet shares with skip keychain', function () {
+  describe('Wallet shares with skip keychain', function() {
 
     let walletShareId;
     it('share a wallet (spend) without keychain', function(done) {
@@ -497,7 +497,7 @@ describe('Wallet API', function() {
       bitgoSharedKeyUser.unlock({ otp: '0000000' })
       .then(function() {
         return bitgoSharedKeyUser.wallets().acceptShare({ walletShareId: walletShareId, overrideEncryptedXprv: 'test' })
-        .then(function (result) {
+        .then(function(result) {
           result.should.have.property('state');
           result.should.have.property('changed');
           result.state.should.equal('accepted');
@@ -506,7 +506,7 @@ describe('Wallet API', function() {
           // now check that the wallet share id is no longer there
           return bitgoSharedKeyUser.wallets().listShares();
         })
-        .then(function (result) {
+        .then(function(result) {
           result.incoming.should.not.containDeep([{ id: walletShareId }]);
           done();
         })
@@ -1282,40 +1282,40 @@ describe('Wallet API', function() {
 
         // prepare the mock
         return wallet1.unspentsPaged(arguments)
-          .then(function(unspents) {
-            // it's ascending by default, but we need it to be descending
-            const sortedUnspents = _.reverse(_.sortBy(unspents.unspents, 'value'));
+        .then(function(unspents) {
+          // it's ascending by default, but we need it to be descending
+          const sortedUnspents = _.reverse(_.sortBy(unspents.unspents, 'value'));
 
-            // limit the amount to no more than 15 unspents
-            const filteredArray = _.take(sortedUnspents, 15);
+          // limit the amount to no more than 15 unspents
+          const filteredArray = _.take(sortedUnspents, 15);
 
-            unspents.total = filteredArray.length;
-            unspents.count = filteredArray.length;
-            unspents.unspents = filteredArray;
-            walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
+          unspents.total = filteredArray.length;
+          unspents.count = filteredArray.length;
+          unspents.unspents = filteredArray;
+          walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
 
-            walletmock.unspentsPaged = function() {
-              return Q.fcall(function() {
-                return unspents;
-              });
-            };
-          })
-          .then(function() {
-            const recipients = {};
-            recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance();
-            return TransactionBuilder.createTransaction({
-              wallet: walletmock,
-              recipients: recipients,
-              fee: 0,
-              minConfirms: 0,
-              bitgoFee: { amount: 0, address: 'foo' }
+          walletmock.unspentsPaged = function() {
+            return Q.fcall(function() {
+              return unspents;
             });
-          })
-          .then(function(result) {
-            result.fee.should.equal(0);
-            result.changeAddresses.length.should.equal(0);
-            result.bitgoFee.amount.should.equal(0);
+          };
+        })
+        .then(function() {
+          const recipients = {};
+          recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance();
+          return TransactionBuilder.createTransaction({
+            wallet: walletmock,
+            recipients: recipients,
+            fee: 0,
+            minConfirms: 0,
+            bitgoFee: { amount: 0, address: 'foo' }
           });
+        })
+        .then(function(result) {
+          result.fee.should.equal(0);
+          result.changeAddresses.length.should.equal(0);
+          result.bitgoFee.amount.should.equal(0);
+        });
       });
 
       it('ok', function() {
@@ -1323,13 +1323,13 @@ describe('Wallet API', function() {
         recipients.push({ address: 'n3Eii3DYh5z3SMzWiq7ZVS43bQLvuArsd4', script: '76a914ee40c53bd6f0dcc34f024b6dd13803db2bc8beba88ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients })
-          .then(function(result) {
-            result.should.have.property('unspents');
-            result.txInfo.nP2PKHInputs.should.equal(15);
-            result.should.have.property('fee');
-            result.should.have.property('feeRate');
-            result.walletId.should.equal(wallet1.id());
-          });
+        .then(function(result) {
+          result.should.have.property('unspents');
+          result.txInfo.nP2PKHInputs.should.equal(15);
+          result.should.have.property('fee');
+          result.should.have.property('feeRate');
+          result.walletId.should.equal(wallet1.id());
+        });
       });
 
       it('Filter uneconomic unspents test, no feerate set', function() {
@@ -1337,46 +1337,46 @@ describe('Wallet API', function() {
         const walletmock = Object.create(wallet1);
         let countLowInputs = 0;
         return wallet1.unspentsPaged(arguments)
-          .then(function(unspents) {
+        .then(function(unspents) {
 
-            // limit the amount to no more than 15 unspents
-            const filteredArray = _.take(unspents.unspents, 15);
-            unspents.count = filteredArray.length;
-            unspents.unspents = filteredArray;
-            // mock a very low unspent value
-            unspents.unspents[2].value = 10;
-            walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
+          // limit the amount to no more than 15 unspents
+          const filteredArray = _.take(unspents.unspents, 15);
+          unspents.count = filteredArray.length;
+          unspents.unspents = filteredArray;
+          // mock a very low unspent value
+          unspents.unspents[2].value = 10;
+          walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
 
-            for (let i = 0; i < unspents.count; i++) {
-              // count the number of inputs that are below 1 sat/Byte
-              if (unspents.unspents[i].value <= 1000 * 295 / 1000) {
-                countLowInputs++;
-              }
+          for (let i = 0; i < unspents.count; i++) {
+            // count the number of inputs that are below 1 sat/Byte
+            if (unspents.unspents[i].value <= 1000 * 295 / 1000) {
+              countLowInputs++;
             }
-            countLowInputs.should.be.above(0);
+          }
+          countLowInputs.should.be.above(0);
 
-            // mock the unspentsPaged call to return an unspent with a very low value
-            walletmock.unspentsPaged = function() {
-              return Q.fcall(function() {
-                should.equal(unspents.count, 15);
-                return unspents;
-              });
-            };
-          })
-          .then(function() {
-            const recipients = {};
-            // Spend the complete wallet balance minus some for fees.
-            recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance() - 120000;
-            return TransactionBuilder.createTransaction({
-              wallet: walletmock,
-              recipients: recipients,
-              minConfirms: 1
+          // mock the unspentsPaged call to return an unspent with a very low value
+          walletmock.unspentsPaged = function() {
+            return Q.fcall(function() {
+              should.equal(unspents.count, 15);
+              return unspents;
             });
-          })
-          .then(function(result) {
-            // several inputs are below fee cost to add them and should be pruned
-            result.txInfo.nP2SHInputs.should.equal(15 - 1);
+          };
+        })
+        .then(function() {
+          const recipients = {};
+          // Spend the complete wallet balance minus some for fees.
+          recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance() - 120000;
+          return TransactionBuilder.createTransaction({
+            wallet: walletmock,
+            recipients: recipients,
+            minConfirms: 1
           });
+        })
+        .then(function(result) {
+          // several inputs are below fee cost to add them and should be pruned
+          result.txInfo.nP2SHInputs.should.equal(15 - 1);
+        });
       });
 
       it('Filter uneconomic unspents test, given feerate', function() {
@@ -1384,47 +1384,47 @@ describe('Wallet API', function() {
         const walletmock = Object.create(wallet1);
         let countLowInputs = 0;
         return wallet1.unspentsPaged(arguments)
-          .then(function(unspents) {
+        .then(function(unspents) {
 
-            // limit the amount to no more than 15 unspents
-            const filteredArray = _.take(unspents.unspents, 15);
-            unspents.count = filteredArray.length;
-            unspents.unspents = filteredArray;
-            // mock a very low unspent value
-            unspents.unspents[2].value = 10;
-            walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
+          // limit the amount to no more than 15 unspents
+          const filteredArray = _.take(unspents.unspents, 15);
+          unspents.count = filteredArray.length;
+          unspents.unspents = filteredArray;
+          // mock a very low unspent value
+          unspents.unspents[2].value = 10;
+          walletmock.wallet.balance = _.sumBy(filteredArray, 'value');
 
 
-            for (let i = 0; i < unspents.count; i++) {
-              if (unspents.unspents[i].value <= 1000 * 295 / 1000) {
-                countLowInputs++;
-              }
+          for (let i = 0; i < unspents.count; i++) {
+            if (unspents.unspents[i].value <= 1000 * 295 / 1000) {
+              countLowInputs++;
             }
+          }
 
-            countLowInputs.should.be.above(0);
+          countLowInputs.should.be.above(0);
 
-            walletmock.unspentsPaged = function() {
-              return Q.fcall(function() {
-                should.equal(unspents.count, 15);
-                return unspents;
-              });
-            };
-          })
-          .then(function() {
-            const recipients = {};
-            // Spend the complete wallet balance minus some for fees.
-            recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance() - 120000;
-            return TransactionBuilder.createTransaction({
-              wallet: walletmock,
-              recipients: recipients,
-              feeRate: 1000,
-              minConfirms: 1
+          walletmock.unspentsPaged = function() {
+            return Q.fcall(function() {
+              should.equal(unspents.count, 15);
+              return unspents;
             });
-          })
-          .then(function(result) {
-            // several inputs are below fee cost to add them and should be pruned
-            result.txInfo.nP2SHInputs.should.equal(15 - 1);
+          };
+        })
+        .then(function() {
+          const recipients = {};
+          // Spend the complete wallet balance minus some for fees.
+          recipients[TestBitGo.TEST_WALLET2_ADDRESS] = walletmock.balance() - 120000;
+          return TransactionBuilder.createTransaction({
+            wallet: walletmock,
+            recipients: recipients,
+            feeRate: 1000,
+            minConfirms: 1
           });
+        })
+        .then(function(result) {
+          // several inputs are below fee cost to add them and should be pruned
+          result.txInfo.nP2SHInputs.should.equal(15 - 1);
+        });
       });
 
       it('no change required', function() {
@@ -2029,14 +2029,14 @@ describe('Wallet API', function() {
   });
 
   describe('Send coins', function() {
-    it('arguments', function () {
-      assert.throws(function () {
+    it('arguments', function() {
+      assert.throws(function() {
         wallet1.sendCoins();
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet1.sendCoins({ address: 123 });
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet1.sendCoins({ address: 'string' });
       });
 
@@ -2105,8 +2105,8 @@ describe('Wallet API', function() {
       });
     });
 
-    describe('Bad input', function () {
-      it('send coins - insufficient funds', function () {
+    describe('Bad input', function() {
+      it('send coins - insufficient funds', function() {
         return wallet1.sendCoins(
           { address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 22 * 1e8 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE }
         )
@@ -2137,7 +2137,7 @@ describe('Wallet API', function() {
     });
 
     describe('Real transactions', function() {
-      it('send coins fails - not unlocked', function () {
+      it('send coins fails - not unlocked', function() {
         return bitgo.lock({})
         .then(function() {
           return wallet1.sendCoins(
@@ -2152,7 +2152,7 @@ describe('Wallet API', function() {
         });
       });
 
-      it('send coins - wallet1 to wallet3', function () {
+      it('send coins - wallet1 to wallet3', function() {
         return bitgo.unlock({ otp: '0000000' })
         .then(function() {
           return wallet1.sendCoins(
@@ -2188,7 +2188,7 @@ describe('Wallet API', function() {
         });
       });
 
-      it('send coins - wallet1 to wallet3 using xprv and single key fee input', function () {
+      it('send coins - wallet1 to wallet3 using xprv and single key fee input', function() {
         const seqId = Math.floor(Math.random() * 1e16).toString(16);
         let txHash;
         return bitgo.unlock({ otp: '0000000' })
@@ -2253,14 +2253,14 @@ describe('Wallet API', function() {
   });
 
   describe('Send many', function() {
-    it('arguments', function () {
-      assert.throws(function () {
+    it('arguments', function() {
+      assert.throws(function() {
         wallet1.sendMany();
       });
-      assert.throws(function () {
+      assert.throws(function() {
         const recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
-        wallet1.sendMany([{ recipients: recipients, walletPassphrase: 'badpasscode' }], function () {});
+        wallet1.sendMany([{ recipients: recipients, walletPassphrase: 'badpasscode' }], function() {});
       });
 
       return wallet1.sendMany({ recipients: { string: 123 }, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE })
@@ -2332,14 +2332,14 @@ describe('Wallet API', function() {
       });
     });
 
-    describe('Bad input', function () {
-      it('send many - insufficient funds', function (done) {
+    describe('Bad input', function() {
+      it('send many - insufficient funds', function(done) {
         const recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 22 * 1e8 * 1e8;
         wallet1.sendMany(
           { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
-          function (err, result) {
+          function(err, result) {
             assert.notEqual(err, null);
             done();
           }
@@ -2348,12 +2348,12 @@ describe('Wallet API', function() {
     });
 
     describe('Real transactions', function() {
-      it('send to legacy safe wallet from wallet1', function (done) {
+      it('send to legacy safe wallet from wallet1', function(done) {
         const recipients = {};
         recipients['2MvfC3e6njdTXqWDfGvNUqDs5kwimfaTGjK'] = 0.001 * 1e8;
         wallet1.sendMany(
           { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
-          function (err, result) {
+          function(err, result) {
             assert.equal(err, null);
             result.should.have.property('tx');
             result.should.have.property('hash');
@@ -2364,7 +2364,7 @@ describe('Wallet API', function() {
           });
       });
 
-      it('send from legacy safe wallet back to wallet1', function () {
+      it('send from legacy safe wallet back to wallet1', function() {
         const recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.0009 * 1e8;
         return safewallet.createTransaction({ recipients: recipients })
@@ -2379,12 +2379,12 @@ describe('Wallet API', function() {
         });
       });
 
-      it('send many - wallet1 to wallet3 (single output)', function (done) {
+      it('send many - wallet1 to wallet3 (single output)', function(done) {
         const recipients = {};
         recipients[TestBitGo.TEST_WALLET3_ADDRESS] = 0.001 * 1e8;
         wallet1.sendMany(
           { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE },
-          function (err, result) {
+          function(err, result) {
             assert.equal(err, null);
             result.should.have.property('tx');
             result.should.have.property('hash');
@@ -2395,14 +2395,14 @@ describe('Wallet API', function() {
         );
       });
 
-      it('send many - wallet3 to wallet1 (single output, using xprv instead of passphrase)', function () {
+      it('send many - wallet3 to wallet1 (single output, using xprv instead of passphrase)', function() {
         const recipients = [];
         recipients.push({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8 });
         return wallet3.sendMany({
           recipients: recipients,
           xprv: 'xprv9s21ZrQH143K3aLCRoCteo8TkJWojD5d8wQwJmcvUPx6TaDeLnEWq2Mw6ffDyThZNe4YgaNsdEAL9JN8ip8BdqisQsEpy9yR6HxVfvkgEEZ'
         })
-        .then(function (result) {
+        .then(function(result) {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
@@ -2410,7 +2410,7 @@ describe('Wallet API', function() {
         });
       });
 
-      it('send many - wallet3 to wallet1 (single output, using keychain)', function () {
+      it('send many - wallet3 to wallet1 (single output, using keychain)', function() {
         const recipients = [];
         recipients.push({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8 });
         return wallet3.getEncryptedUserKeychain()
@@ -2418,7 +2418,7 @@ describe('Wallet API', function() {
           keychain.xprv = 'xprv9s21ZrQH143K3aLCRoCteo8TkJWojD5d8wQwJmcvUPx6TaDeLnEWq2Mw6ffDyThZNe4YgaNsdEAL9JN8ip8BdqisQsEpy9yR6HxVfvkgEEZ';
           return wallet3.sendMany({ recipients: recipients, keychain: keychain });
         })
-        .then(function (result) {
+        .then(function(result) {
           result.should.have.property('tx');
           result.should.have.property('hash');
           result.should.have.property('fee');
@@ -2426,14 +2426,14 @@ describe('Wallet API', function() {
         });
       });
 
-      it('send many - wallet1 to wallet3 with dynamic fee', function (done) {
+      it('send many - wallet1 to wallet3 with dynamic fee', function(done) {
         const recipients = [];
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8 });
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS2, amount: 0.001 * 1e8 });
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS3, amount: 0.006 * 1e8 });
         wallet1.sendMany(
           { recipients: recipients, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE, feeTxConfirmTarget: 2 },
-          function (err, result) {
+          function(err, result) {
             assert.equal(err, null);
             result.should.have.property('tx');
             result.should.have.property('hash');
@@ -2443,7 +2443,7 @@ describe('Wallet API', function() {
         );
       });
 
-      it('send many - wallet1 to wallet3 with travel info', function () {
+      it('send many - wallet1 to wallet3 with travel info', function() {
         const recipients = [];
         recipients.push({
           address: TestBitGo.TEST_WALLET3_ADDRESS,
@@ -2490,7 +2490,7 @@ describe('Wallet API', function() {
         });
       });
 
-      it('send many - wallet3 to wallet1 with specified fee', function () {
+      it('send many - wallet3 to wallet1 with specified fee', function() {
         const recipients = {};
         recipients[TestBitGo.TEST_WALLET1_ADDRESS] = 0.001 * 1e8;
         recipients[TestBitGo.TEST_WALLET1_ADDRESS2] = 0.002 * 1e8;
@@ -2551,7 +2551,7 @@ describe('Wallet API', function() {
       assert.throws(function() { wallet1.sendTransaction(); });
       assert.throws(function() { wallet1.sendTransaction({}); });
 
-      assert.throws(function () { wallet1.createTransaction({ recipients: {}, fee: 0.0001 * 1e8, keychain: keychain }, function() {} );});
+      assert.throws(function() { wallet1.createTransaction({ recipients: {}, fee: 0.0001 * 1e8, keychain: keychain }, function() {} );});
       done();
     });
 
@@ -2658,14 +2658,14 @@ describe('Wallet API', function() {
         const recipients = {};
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.001 * 1e8;
         wallet1.createTransaction({ recipients: recipients })
-          .then(function(result) {
-            result.should.have.property('fee');
-            result.should.have.property('feeRate');
-            should.exist(result.fee);
-            result.fee.should.be.lessThan(0.01 * 1e8);
-            result.feeRate.should.be.lessThan(0.01 * 1e8);
-            return wallet1.signTransaction({ transactionHex: result.transactionHex, unspents: result.unspents, keychain: keychain });
-          })
+        .then(function(result) {
+          result.should.have.property('fee');
+          result.should.have.property('feeRate');
+          should.exist(result.fee);
+          result.fee.should.be.lessThan(0.01 * 1e8);
+          result.feeRate.should.be.lessThan(0.01 * 1e8);
+          return wallet1.signTransaction({ transactionHex: result.transactionHex, unspents: result.unspents, keychain: keychain });
+        })
         .then(function(result) {
           result.should.have.property('tx');
           tx = result.tx;
@@ -2836,23 +2836,23 @@ describe('Wallet API', function() {
   });
 
   describe('Policy', function() {
-    it('arguments', function (done) {
-      assert.throws(function () {
+    it('arguments', function(done) {
+      assert.throws(function() {
         wallet1.setPolicyRule({});
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet1.setPolicyRule({ id: 'policy1' });
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet1.setPolicyRule({ id: 'policy1', type: 'dailyLimit' });
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet1.setPolicyRule({ id: 'policy1', type: 'dailyLimit', action: { type: 'getApproval' } });
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet1.setPolicyRule({ id: 'policy1', type: 'dailyLimit', condition: { amount: 1e8 } });
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet1.removePolicyRule({});
       });
       done();
@@ -2911,26 +2911,26 @@ describe('Wallet API', function() {
   });
 
   describe('Freeze Wallet', function() {
-    it('arguments', function (done) {
-      assert.throws(function () {
+    it('arguments', function(done) {
+      assert.throws(function() {
         wallet2.freeze({ duration: 'asdfasdasd' });
       });
-      assert.throws(function () {
+      assert.throws(function() {
         wallet2.freeze({ duration: 5 }, 'asdasdsa');
       });
       done();
     });
 
-    it('perform freeze', function (done) {
-      wallet2.freeze({ duration: 6 }, function (err, freezeResult) {
+    it('perform freeze', function(done) {
+      wallet2.freeze({ duration: 6 }, function(err, freezeResult) {
         freezeResult.should.have.property('time');
         freezeResult.should.have.property('expires');
         done();
       });
     });
 
-    it('get wallet should show freeze', function (done) {
-      wallet2.get({}, function (err, res) {
+    it('get wallet should show freeze', function(done) {
+      wallet2.get({}, function(err, res) {
         const wallet = res.wallet;
         wallet.should.have.property('freeze');
         wallet.freeze.should.have.property('time');
@@ -2939,10 +2939,10 @@ describe('Wallet API', function() {
       });
     });
 
-    it('attempt to send funds', function (done) {
+    it('attempt to send funds', function(done) {
       wallet2.sendCoins(
         { address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_WALLET2_PASSCODE },
-        function (err, result) {
+        function(err, result) {
           err.should.not.equal(null);
           err.status.should.equal(403);
           err.message.should.include('wallet is frozen');

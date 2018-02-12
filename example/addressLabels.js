@@ -68,7 +68,7 @@ const collectInputs = function() {
       const deferred = Q.defer();
       if (inputs.action === 'set') {
         return getVariable('address', 'On which address are we setting the label: ')()
-                    .then(getVariable('label', 'What label do you want to set on the address: '));
+        .then(getVariable('label', 'What label do you want to set on the address: '));
       } else if (inputs.action === 'delete') {
         return getVariable('address', 'From which address are we removing the label: ')();
       } else {
@@ -79,12 +79,12 @@ const collectInputs = function() {
   };
 
   return getVariable('walletId', 'Enter the wallet ID: ')()
-        .then(getVariable('action', 'Which label action do you wish to perform? [list, set, delete]: '))
-        .then(getCreateOrDeleteVariables());
+  .then(getVariable('action', 'Which label action do you wish to perform? [list, set, delete]: '))
+  .then(getCreateOrDeleteVariables());
 };
 
 const authenticate = function() {
-  bitgo.authenticate({ username: inputs.user, password: inputs.password, otp: inputs.otp }, function (err, result) {
+  bitgo.authenticate({ username: inputs.user, password: inputs.password, otp: inputs.otp }, function(err, result) {
     if (err) {
       console.dir(err);
       throw new Error('Authentication failure!');
@@ -94,7 +94,7 @@ const authenticate = function() {
 
 const runCommands = function() {
   // Now get the wallet
-  bitgo.wallets().get({ type: 'bitcoin', id: inputs.walletId }, function (err, wallet) {
+  bitgo.wallets().get({ type: 'bitcoin', id: inputs.walletId }, function(err, wallet) {
     if (err) {
       console.log(err);
       process.exit(-1);
@@ -103,14 +103,14 @@ const runCommands = function() {
     switch (inputs.action) {
       case 'list':
         // Get the labels for the addresses in this wallet
-        wallet.labels({}, function (err, result) {
+        wallet.labels({}, function(err, result) {
           if (err) {
             console.log(err);
             process.exit(-1);
           }
           if (result) {
             const sortedLabels = _.sortBy(result, function(label) { return label.label + label.address; });
-            sortedLabels.forEach(function (label) {
+            sortedLabels.forEach(function(label) {
               const line = ' ' + _.string.rpad(label.address, 38) + _.string.prune(label.label, 60);
               console.log(line);
             });
@@ -118,7 +118,7 @@ const runCommands = function() {
         });
         break;
       case 'set':
-        wallet.setLabel({ label: inputs.label, address: inputs.address }, function (err, result) {
+        wallet.setLabel({ label: inputs.label, address: inputs.address }, function(err, result) {
           if (err) {
             console.log(err);
             process.exit(-1);
@@ -127,7 +127,7 @@ const runCommands = function() {
         });
         break;
       case 'delete':
-        wallet.deleteLabel({ address: inputs.address }, function (err, result) {
+        wallet.deleteLabel({ address: inputs.address }, function(err, result) {
           if (err) {
             console.log(err);
             process.exit(-1);
@@ -143,8 +143,8 @@ const runCommands = function() {
 
 authenticate();
 collectInputs()
-    .then(runCommands)
-    .catch(function(e) {
-      console.log(e);
-      console.log(e.stack);
-    });
+.then(runCommands)
+.catch(function(e) {
+  console.log(e);
+  console.log(e.stack);
+});

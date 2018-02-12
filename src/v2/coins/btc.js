@@ -355,7 +355,7 @@ Btc.prototype.signTransaction = function(params) {
  * @param inputIndex
  * @returns {boolean}
  */
-Btc.prototype.parseSignatureScript = function (transaction, inputIndex) {
+Btc.prototype.parseSignatureScript = function(transaction, inputIndex) {
   const currentInput = transaction.ins[inputIndex];
   let signatureScript = currentInput.script;
   let decompiledSigScript = bitcoin.script.decompile(signatureScript);
@@ -392,7 +392,7 @@ Btc.prototype.parseSignatureScript = function (transaction, inputIndex) {
  * @param isSegwitInput
  * @returns {*}
  */
-Btc.prototype.calculateSignatureHash = function (transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
+Btc.prototype.calculateSignatureHash = function(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
   if (this.getFamily() === 'btg') {
     return transaction.hashForGoldSignature(inputIndex, pubScript, amount, hashType, isSegwitInput);
   } else if (this.getFamily() === 'bch') {
@@ -416,7 +416,7 @@ Btc.prototype.calculateSignatureHash = function (transaction, inputIndex, pubScr
  * @param verificationSettings.publicKey The hex of the public key to verify (will verify all signatures)
  * @returns {boolean}
  */
-Btc.prototype.verifySignature = function (transaction, inputIndex, amount, verificationSettings = {}) {
+Btc.prototype.verifySignature = function(transaction, inputIndex, amount, verificationSettings = {}) {
 
   const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(transaction, inputIndex);
 

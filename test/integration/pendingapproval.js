@@ -343,28 +343,28 @@ describe('PendingApproval', function() {
   describe('Reject', function() {
     let pendingApproval;
 
-    before(function () {
+    before(function() {
       return Q.delay(500).then(function() {
         return createTransactionPendingApproval();
       })
-      .then(function (result) {
+      .then(function(result) {
         pendingApproval = result;
       });
     });
 
-    it('arguments', function () {
-      assert.throws(function () { pendingApproval.reject({}, 'invalid'); });
-      assert.throws(function () { pendingApproval.reject('invalid'); });
+    it('arguments', function() {
+      assert.throws(function() { pendingApproval.reject({}, 'invalid'); });
+      assert.throws(function() { pendingApproval.reject('invalid'); });
     });
 
-    it('can cancel', function () {
+    it('can cancel', function() {
       return pendingApproval.reject()
-      .then(function (result) {
+      .then(function(result) {
         result.state.should.eql('rejected');
       });
     });
 
-    it('can reject', function () {
+    it('can reject', function() {
       return bitgoSharedKeyUser.pendingApprovals().get({ id: pendingApproval.id() })
       .then(function(result) {
         return result.reject();
@@ -388,10 +388,10 @@ describe('PendingApproval', function() {
       .then(function() {
         return bitgoThirdUser.unlock({ otp: bitgoThirdUser.testUserOTP() });
       })
-      .then(function () {
+      .then(function() {
         return bitgoThirdUser.wallets().get({ id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS });
       })
-      .then(function (result) {
+      .then(function(result) {
         multipleApproversWallet = result;
 
         if (multipleApproversWallet.approvalsRequired() === 2) {
@@ -400,21 +400,21 @@ describe('PendingApproval', function() {
         }
 
         return multipleApproversWallet.updateApprovalsRequired({ approvalsRequired: 2 })
-        .then(function (result) {
+        .then(function(result) {
           return bitgoSharedKeyUser.pendingApprovals().get({ id: result.id });
         })
-        .then(function (result) {
+        .then(function(result) {
           pendingApproval = result;
           pendingApproval.approvalsRequired().should.equal(1);
           return result.approve({ otp: bitgo.testUserOTP() });
         })
-        .then(function (result) {
+        .then(function(result) {
           result.state.should.eql('approved');
 
           // update wallet variable with new approvalsRequired
           return bitgoThirdUser.wallets().get({ id: TestBitGo.TEST_WALLETMULTAPPROVERS_ADDRESS });
         })
-        .then(function (result) {
+        .then(function(result) {
           multipleApproversWallet = result;
         });
       });

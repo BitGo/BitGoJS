@@ -2,7 +2,7 @@
 // Tests for user webhooks
 //
 
-const should = require('should');
+require('should');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 

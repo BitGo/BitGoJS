@@ -15,11 +15,11 @@
     "ecmaVersion": 6
   },
   "rules": {
-    "indent": ["error", 2, {"SwitchCase": 1, "MemberExpression": "off"}],
+    "indent": ["error", 2, {"SwitchCase": 1, "MemberExpression": 0}],
     "linebreak-style": ["error", "unix"],
     "semi": ["error", "always"],
     "eqeqeq": ["warn", "always"],
-    "curly": "error",
+    "curly": ["error", "multi-line"],
     "no-extra-boolean-cast": "off",
     "no-unused-vars": ["error", {"vars": "all", "args": "none"}],
     "object-curly-spacing": ["error", "always", {"objectsInObjects": true, "arraysInObjects": true}],
@@ -62,6 +62,12 @@
     "space-before-blocks": ["error"],
     "space-infix-ops": ["error"],
     "spaced-comment": ["error", "always"],
-    "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 1 }]
+    "no-fallthrough": "error",
+    "no-octal": "error",
+    "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 1 }],
+    "space-before-function-paren": ["error", "never"],
+    "no-mixed-spaces-and-tabs": "error",
+    "no-dupe-keys": "error",
+    "no-redeclare": ["error", { "builtinGlobals": true }]
   }
 }

@@ -73,7 +73,7 @@ const sendBitcoin = function() {
           unspents: transaction.unspents,
           keychain: keychain
         },
-        function (err, transaction) {
+        function(err, transaction) {
           if (err) {
             console.log('Failed to sign transaction!');
             console.dir(err);
@@ -81,7 +81,7 @@ const sendBitcoin = function() {
           }
           console.dir(transaction);
           console.log('Sending transaction');
-          wallet.sendTransaction({ tx: transaction.tx }, function (err, callback) {
+          wallet.sendTransaction({ tx: transaction.tx }, function(err, callback) {
             if (err) {
               console.log('Failed to send transaction to BitGo!');
               console.dir(err);
