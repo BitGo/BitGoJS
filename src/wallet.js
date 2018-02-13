@@ -13,12 +13,10 @@ const PendingApproval = require('./pendingapproval');
 
 const assert = require('assert');
 const common = require('./common');
+const config = require('./config');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
-
-const CHANGE_CHAIN_P2SH = 1;
-const CHANGE_CHAIN_SEGWIT = 11;
 
 //
 // Constructor
@@ -211,7 +209,7 @@ Wallet.prototype.getChangeChain = function(params) {
     // if segwit is disabled through the constants, segwit change should still not be created
     useSegwitChange = this.bitgo.getConstants().enableSegwit && params.segwitChange;
   }
-  return useSegwitChange ? CHANGE_CHAIN_SEGWIT : CHANGE_CHAIN_P2SH;
+  return useSegwitChange ? config.chains.CHANGE_CHAIN_SEGWIT : config.chains.CHANGE_CHAIN_P2SH;
 };
 
 //
@@ -235,7 +233,7 @@ Wallet.prototype.createAddress = function(params, callback) {
   }
 
   const isSegwit = this.bitgo.getConstants().enableSegwit;
-  const defaultChain = isSegwit ? 10 : 0;
+  const defaultChain = isSegwit ? config.chains.CHAIN_SEGWIT : config.chains.CHAIN_P2SH;
 
   let chain = params.chain;
   if (chain === null || chain === undefined) {
@@ -1580,9 +1578,8 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
 
   let minSize = params.minSize || 0;
   if (params.feeRate) {
-    // fee rate is in satoshis per KB
-    // one input is 0.295 KB
-    const feeBasedMinSize = Math.ceil(0.295 * params.feeRate);
+    // fee rate is in satoshis per kB, input size in bytes
+    const feeBasedMinSize = Math.ceil(config.tx.P2SH_INPUT_SIZE * params.feeRate / 1000 );
     if (params.minSize && minSize < feeBasedMinSize) {
       throw new Error('provided minSize too low due to too high fee rate');
     }

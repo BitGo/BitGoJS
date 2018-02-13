@@ -7,13 +7,8 @@
 
 const Promise = require('bluebird');
 const bitcoin = require('./bitcoin');
+const config = require('./config');
 const _ = require('lodash');
-
-const P2SH_INPUT_SIZE = 295;
-const P2SH_P2WSH_INPUT_SIZE = 138;
-const P2PKH_INPUT_SIZE = 160;
-const OUTPUT_SIZE = 34;
-const TX_OVERHEAD_SIZE = 10;
 
 //
 // TransactionBuilder
@@ -382,7 +377,7 @@ exports.createTransaction = function(params) {
       const originalUnspentCount = unspents.length;
       unspents = _.filter(unspents, function(unspent) {
         const isSegwitInput = !!unspent.witnessScript;
-        const currentInputSize = isSegwitInput ? P2SH_P2WSH_INPUT_SIZE : P2SH_INPUT_SIZE;
+        const currentInputSize = isSegwitInput ? config.tx.P2SH_P2WSH_INPUT_SIZE : config.tx.P2SH_INPUT_SIZE;
         const feeBasedMinInputValue = (feeRate * currentInputSize) / 1000;
         const currentMinInputValue = Math.max(minInputValue, feeBasedMinInputValue);
         if (currentMinInputValue > unspent.value) {
@@ -746,12 +741,12 @@ const estimateTransactionSize = function(params) {
   }
 
 
-  const estimatedSize = P2SH_INPUT_SIZE * params.nP2SHInputs +
-  P2SH_P2WSH_INPUT_SIZE * (params.nP2SHP2WSHInputs || 0) +
-  P2PKH_INPUT_SIZE * (params.nP2PKHInputs || 0) +
-  OUTPUT_SIZE * params.nOutputs +
+  const estimatedSize = config.tx.P2SH_INPUT_SIZE * params.nP2SHInputs +
+  config.tx.P2SH_P2WSH_INPUT_SIZE * (params.nP2SHP2WSHInputs || 0) +
+  config.tx.P2PKH_INPUT_SIZE * (params.nP2PKHInputs || 0) +
+  config.tx.OUTPUT_SIZE * params.nOutputs +
   // if the tx contains at least one segwit input, the tx overhead is increased by 1
-  TX_OVERHEAD_SIZE + (params.nP2SHP2WSHInputs > 0 ? 1 : 0);
+  config.tx.TX_OVERHEAD_SIZE + (params.nP2SHP2WSHInputs > 0 ? 1 : 0);
 
   return estimatedSize;
 };

@@ -10,6 +10,7 @@ const Q = require('q');
 
 const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');
+const config = require('../../src/config');
 const TransactionBuilder = require('../../src/transactionBuilder');
 const crypto = require('crypto');
 const _ = require('lodash');
@@ -1349,7 +1350,7 @@ describe('Wallet API', function() {
 
           for (let i = 0; i < unspents.count; i++) {
             // count the number of inputs that are below 1 sat/Byte
-            if (unspents.unspents[i].value <= 1000 * 295 / 1000) {
+            if (unspents.unspents[i].value <= 1000 * config.tx.P2SH_INPUT_SIZE / 1000) {
               countLowInputs++;
             }
           }
@@ -1396,7 +1397,7 @@ describe('Wallet API', function() {
 
 
           for (let i = 0; i < unspents.count; i++) {
-            if (unspents.unspents[i].value <= 1000 * 295 / 1000) {
+            if (unspents.unspents[i].value <= 1000 * config.tx.P2SH_INPUT_SIZE / 1000) {
               countLowInputs++;
             }
           }

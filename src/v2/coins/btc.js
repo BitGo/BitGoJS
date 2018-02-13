@@ -1,5 +1,6 @@
 const baseCoinPrototype = require('../baseCoin').prototype;
 const common = require('../../common');
+const config = require('../../config');
 const BigNumber = require('bignumber.js');
 const bitcoin = require('bitgo-bitcoinjs-lib');
 const Promise = require('bluebird');
@@ -601,8 +602,7 @@ Btc.prototype.recover = function(params, callback) {
       });
     })
     .then(function(feePerByte) {
-      // assume 34 bytes for the single output and 295 bytes for each tx input
-      const approximateSize = new bitcoin.Transaction().toBuffer().length + 34 + (295 * unspents.length);
+      const approximateSize = new bitcoin.Transaction().toBuffer().length + config.tx.OUTPUT_SIZE + (config.tx.P2SH_INPUT_SIZE * unspents.length);
       const approximateFee = approximateSize * feePerByte;
 
       // Construct a transaction
