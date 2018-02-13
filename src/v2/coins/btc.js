@@ -456,30 +456,34 @@ Btc.prototype.verifySignature = function(transaction, inputIndex, amount, verifi
 
   // go over all signatures
   for (const signatureBuffer of signaturesToCheck) {
-    // slice the last byte from the signature hash input because it's the hash type
-    const signature = bitcoin.ECSignature.fromDER(signatureBuffer.slice(0, -1));
-    const hashType = _.last(signatureBuffer);
-    const signatureHash = this.calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput);
+
     let isSignatureValid = false;
 
-    for (let publicKeyIndex = 0; publicKeyIndex < publicKeys.length; publicKeyIndex++) {
+    if (_.isBuffer(signatureBuffer)) {
+      // slice the last byte from the signature hash input because it's the hash type
+      const signature = bitcoin.ECSignature.fromDER(signatureBuffer.slice(0, -1));
+      const hashType = _.last(signatureBuffer);
+      const signatureHash = this.calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput);
 
-      const publicKeyBuffer = publicKeys[publicKeyIndex];
-      if (!_.isUndefined(publicKeyHex) && publicKeyBuffer.toString('hex') !== publicKeyHex) {
-        // we are only looking to verify one specific public key's signature (publicKeyHex)
-        // this particular public key is not the one whose signature we're trying to verify
-        continue;
-      }
+      for (let publicKeyIndex = 0; publicKeyIndex < publicKeys.length; publicKeyIndex++) {
 
-      if (matchedPublicKeyIndices[publicKeyIndex]) {
-        continue;
-      }
+        const publicKeyBuffer = publicKeys[publicKeyIndex];
+        if (!_.isUndefined(publicKeyHex) && publicKeyBuffer.toString('hex') !== publicKeyHex) {
+          // we are only looking to verify one specific public key's signature (publicKeyHex)
+          // this particular public key is not the one whose signature we're trying to verify
+          continue;
+        }
 
-      const publicKey = bitcoin.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
-      if (publicKey.verify(signatureHash, signature)) {
-        isSignatureValid = true;
-        matchedPublicKeyIndices[publicKeyIndex] = true;
-        break;
+        if (matchedPublicKeyIndices[publicKeyIndex]) {
+          continue;
+        }
+
+        const publicKey = bitcoin.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
+        if (publicKey.verify(signatureHash, signature)) {
+          isSignatureValid = true;
+          matchedPublicKeyIndices[publicKeyIndex] = true;
+          break;
+        }
       }
     }
 
