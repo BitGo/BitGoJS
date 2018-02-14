@@ -74,9 +74,9 @@ describe('Enterprise', function() {
       const enterprise = yield bitgo.coin('tltc').enterprises().create({ name: 'Test Enterprise' });
       const refetchedEnterprise = yield bitgo.coin('tltc').enterprises().get({ id: enterprise.id });
       const users0 = yield refetchedEnterprise.users();
-      yield enterprise.addUser({ username: 'arik+test008@bitgo.com' });
+      yield enterprise.addUser({ username: 'enterprisetester@bitgo.com' });
       const users1 = yield refetchedEnterprise.users();
-      const removalPendingApproval = yield enterprise.removeUser({ username: 'arik+test008@bitgo.com' });
+      const removalPendingApproval = yield enterprise.removeUser({ username: 'enterprisetester@bitgo.com' });
       enterprise.id.should.equal(refetchedEnterprise.id);
       refetchedEnterprise.name.should.equal('Test Enterprise');
       users0.adminUsers.length.should.equal(1);
