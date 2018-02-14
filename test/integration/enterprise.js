@@ -10,7 +10,7 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const BigNumber = require('bignumber.js');
 
-const TestV2BitGo = require('./lib/test_bitgo');
+const TestV2BitGo = require('../lib/test_bitgo');
 
 describe('Enterprise', function() {
 

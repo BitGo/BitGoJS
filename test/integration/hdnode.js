@@ -5,7 +5,7 @@
 //
 
 require('should');
-const bitcoin = require('../src/bitcoin');
+const bitcoin = require('../../src/bitcoin');
 const HDNode = bitcoin.HDNode;
 
 describe('HDNode', function() {
