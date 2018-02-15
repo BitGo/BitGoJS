@@ -833,6 +833,10 @@ Btc.prototype.recover = function(params, callback) {
     .then(function(response) {
       const transactionDetails = response.data;
       transactionDetails.txHex = txSigningRequest.transactionHex;
+      const tx = bitcoin.Transaction.fromHex(transactionDetails.txHex);
+      if (transactionDetails.tx.hash !== tx.getId() || transactionDetails.tx.hash !== transactionDetails.tx.txid) {
+        throw new Error('inconsistent recovery transaction id');
+      }
       return transactionDetails;
     });
   })
