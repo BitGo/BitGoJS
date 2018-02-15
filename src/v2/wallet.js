@@ -718,25 +718,22 @@ Wallet.prototype.removeUser = function(params, callback) {
  * @returns {*}
  */
 Wallet.prototype.prebuildTransaction = function(params, callback) {
+  return co(function *() {
+    // Whitelist params to build tx (mostly around unspent selection)
+    const whitelistedParams = _.pick(params, [
+      'recipients', 'numBlocks', 'feeRate', 'minConfirms',
+      'enforceMinConfirmsForChange', 'targetWalletUnspents',
+      'message', 'minValue', 'maxValue', 'sequenceId',
+      'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
+      'noSplitChange'
+    ]);
 
-  // Whitelist params to build tx (mostly around unspent selection)
-  const whitelistedParams = _.pick(params, [
-    'recipients', 'numBlocks', 'feeRate', 'minConfirms',
-    'enforceMinConfirmsForChange', 'targetWalletUnspents',
-    'message', 'minValue', 'maxValue', 'sequenceId',
-    'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
-    'noSplitChange'
-  ]);
-
-  const self = this;
-  return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
-  .send(whitelistedParams)
-  .result()
-  .then(function(response) {
-    // extend the prebuild details with the wallet id
-    return _.extend({}, response, { walletId: self.id() });
-  })
-  .nodeify(callback);
+    let response = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
+    .send(whitelistedParams)
+    .result();
+    response = yield this.baseCoin.postProcessPrebuild(response);
+    return _.extend({}, response, { walletId: this.id() });
+  }).call(this).asCallback(callback);
 };
 
 /**

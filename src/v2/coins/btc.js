@@ -58,6 +58,16 @@ Btc.prototype.isValidAddress = function(address, forceAltScriptSupport) {
   return validVersions.indexOf(addressDetails.version) !== -1;
 };
 
+Btc.prototype.postProcessPrebuild = function(prebuild, callback) {
+  return co(function *() {
+    const chainhead = yield this.bitgo.get(this.url('/public/block/latest')).result();
+    const blockHeight = chainhead.height;
+    const transaction = bitcoin.Transaction.fromHex(prebuild.txHex);
+    transaction.locktime = blockHeight + 1;
+    return _.extend({}, prebuild, { txHex: transaction.toHex() });
+  }).call(this).asCallback(callback);
+};
+
 /**
  * Verify that a transaction prebuild complies with the original intention
  * @param txParams params object passed to send
@@ -546,6 +556,11 @@ Btc.prototype.explainTransaction = function(params) {
   if (params.feeInfo) {
     explanation.displayOrder.push('fee');
     explanation.fee = params.feeInfo;
+  }
+
+  if (_.isInteger(transaction.locktime) && transaction.locktime > 0) {
+    explanation.locktime = transaction.locktime;
+    explanation.displayOrder.push('locktime');
   }
   return explanation;
 };

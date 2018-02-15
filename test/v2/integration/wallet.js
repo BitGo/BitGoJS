@@ -379,41 +379,37 @@ describe('V2 Wallet:', function() {
       });
     });
 
-    it('should prebuild a transaction to the wallet', function() {
-      return wallet.createAddress()
-      .then(function(recipientAddress) {
-        const params = {
-          recipients: [
-            {
-              amount: 0.01 * 1e8, // 0.01 tBTC
-              address: recipientAddress.address
-            }
-          ]
+    it('should prebuild a transaction to the wallet', co(function *() {
+      const recipientAddress = yield wallet.createAddress();
+      const params = {
+        recipients: [
+          {
+            amount: 0.01 * 1e8, // 0.01 tBTC
+            address: recipientAddress.address
+          }
+        ]
 
-        };
-        return wallet.prebuildTransaction(params);
-      })
-      .then(function(prebuild) {
-        const explanation = basecoin.explainTransaction(prebuild);
-        explanation.displayOrder.length.should.equal(6);
-        explanation.outputs.length.should.equal(1);
-        explanation.changeOutputs.length.should.equal(1);
-        explanation.outputAmount.should.equal(0.01 * 1e8);
-        explanation.outputs[0].amount.should.equal(0.01 * 1e8);
-        explanation.should.have.property('fee');
-        return wallet.sendMany({
-          prebuildTx: prebuild,
-          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
-          comment: 'Hello World!',
-          txHex: 'should be overwritten'
-        });
-      })
-      .then(function(transaction) {
-        transaction.should.have.property('status');
-        transaction.should.have.property('txid');
-        transaction.status.should.equal('signed');
+      };
+      const prebuild = yield wallet.prebuildTransaction(params);
+      const explanation = basecoin.explainTransaction(prebuild);
+      explanation.displayOrder.length.should.equal(7);
+      explanation.outputs.length.should.equal(1);
+      explanation.changeOutputs.length.should.equal(1);
+      explanation.outputAmount.should.equal(0.01 * 1e8);
+      explanation.outputs[0].amount.should.equal(0.01 * 1e8);
+      const chainhead = yield bitgo.get(basecoin.url('/public/block/latest')).result();
+      explanation.locktime.should.be.greaterThan(chainhead.height);
+      explanation.should.have.property('fee');
+      const transaction = yield wallet.sendMany({
+        prebuildTx: prebuild,
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        comment: 'Hello World!',
+        txHex: 'should be overwritten'
       });
-    });
+      transaction.should.have.property('status');
+      transaction.should.have.property('txid');
+      transaction.status.should.equal('signed');
+    }));
 
     it('should prebuild a transaction to the wallet and manually sign and submit it', function() {
       let keychain;

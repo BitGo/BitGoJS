@@ -166,6 +166,13 @@ BaseCoin.prototype.supplementGenerateWallet = Promise.method(function(walletPara
   return walletParams;
 });
 
+/**
+ * Modify prebuild after receiving it from the server. Add things like nlocktime
+ */
+BaseCoin.prototype.postProcessPrebuild = Promise.method(function(prebuildResponse) {
+  return prebuildResponse;
+});
+
 BaseCoin.prototype.newWalletObject = function(walletParams) {
   if (!Wallet) {
     Wallet = require('./wallet');
