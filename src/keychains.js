@@ -11,6 +11,8 @@ const Util = require('./util');
 const bitcoin = require('./bitcoin');
 const _ = require('lodash');
 let ethereumUtil = function() {};
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 
 try {
   ethereumUtil = require('ethereumjs-util');
@@ -168,6 +170,40 @@ Keychains.prototype.list = function(params, callback) {
     return keychains;
   })
   .nodeify(callback);
+};
+
+/**
+ * iterates through all keys associated with the user, decrypts them with the old password and encrypts them with the
+ * new password
+ * @param params.oldPassword {String} - The old password used for encrypting the key
+ * @param params.newPassword {String} - The new password to be used for encrypting the key
+ * @param callback
+ * @returns result.keychains {Object} - e.g.:
+ *  {
+ *    xpub1: encryptedPrv1,
+ *    xpub2: encryptedPrv2,
+ *    ...
+ *  }
+ *  @returns result.version {Number}
+ */
+Keychains.prototype.updatePassword = function(params, callback) {
+  return co(function *coUpdatePassword() {
+    common.validateParams(params, ['oldPassword', 'newPassword'], [], callback);
+    const encrypted = yield this.bitgo.post(this.bitgo.url('/user/encrypted')).result();
+    const newKeychains = {};
+    const self = this;
+    _.forOwn(encrypted.keychains, function keychainsForOwn(oldEncryptedXprv, xpub) {
+      try {
+        const decryptedPrv = self.bitgo.decrypt({ input: oldEncryptedXprv, password: params.oldPassword });
+        const newEncryptedPrv = self.bitgo.encrypt({ input: decryptedPrv, password: params.newPassword });
+        newKeychains[xpub] = newEncryptedPrv;
+      } catch (e) {
+        // decrypting the keychain with the old password didn't work so we just keep it the way it is
+        newKeychains[xpub] = oldEncryptedXprv;
+      }
+    });
+    return { keychains: newKeychains, version: encrypted.version };
+  }).call(this).asCallback(callback);
 };
 
 //

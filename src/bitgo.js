@@ -336,11 +336,7 @@ const BitGo = function(params) {
           this.set('Authorization', 'Bearer ' + hash);
 
           // calculate the HMAC
-          const hmacKey = sjcl.codec.utf8String.toBits(bitgo._token);
-          const hmacDigest = (new sjcl.misc.hmac(hmacKey, sjcl.hash.sha256)).mac(signatureSubject);
-          const hmac = sjcl.codec.hex.fromBits(hmacDigest);
-
-          this.set('HMAC', hmac);
+          this.set('HMAC', self.calculateHMAC(bitgo._token, signatureSubject));
         }
 
         return this.prototypicalEnd.apply(this, arguments);
@@ -364,9 +360,7 @@ const BitGo = function(params) {
         const signatureSubject = [timestamp, queryPath, response.statusCode, response.text].join('|');
 
         // calculate the HMAC
-        const hmacKey = sjcl.codec.utf8String.toBits(req.authenticationToken);
-        const hmacDigest = (new sjcl.misc.hmac(hmacKey, sjcl.hash.sha256)).mac(signatureSubject);
-        const expectedHmac = sjcl.codec.hex.fromBits(hmacDigest);
+        const expectedHmac = self.calculateHMAC(req.authenticationToken, signatureSubject);
 
         const receivedHmac = response.headers.hmac;
         if (expectedHmac !== receivedHmac) {
@@ -424,6 +418,18 @@ const BitGo = function(params) {
       console.trace(err);
     }
   });
+};
+
+/**
+ * Calculate the HMAC for the given key and message
+ * @param key {String} - the key to use for the HMAC
+ * @param message {String} - the actual message to HMAC
+ * @returns {*} - the result of the HMAC operation
+ */
+BitGo.prototype.calculateHMAC = function(key, message) {
+  const hmacKey = sjcl.codec.utf8String.toBits(key);
+  const hmacDigest = (new sjcl.misc.hmac(hmacKey, sjcl.hash.sha256)).mac(message);
+  return sjcl.codec.hex.fromBits(hmacDigest);
 };
 
 /**
@@ -1344,6 +1350,45 @@ BitGo.prototype.getUser = function(params, callback) {
   return this.get(this.url('/user/' + params.id))
   .result('user')
   .nodeify(callback);
+};
+
+/**
+ * Change the password of the currently logged in user, also change all v1 and v2 keychain passwords if they match the
+ * given oldPassword. Returns nothing on success or throws an error when something went wrong.
+ * @param params.oldPassword {String} - the current password
+ * @param params.newPassword {String} - the new password
+ * @param callback
+ */
+BitGo.prototype.changePassword = function(params, callback) {
+  return co(function *coChangePassword() {
+    params = params || {};
+    common.validateParams(params, ['oldPassword', 'newPassword'], [], callback);
+
+    const validation = yield this.verifyPassword({ password: params.oldPassword });
+    if (!validation) {
+      throw new Error('the provided oldPassword is incorrect');
+    }
+
+    // it doesn't matter which coin we choose because the v2 updatePassword functions updates all v2 keychains
+    // we just need to choose a coin that exists in the current environment
+    const coin = common.Environments[this.getEnv()].network === 'bitcoin' ? 'btc' : 'tbtc';
+
+    const updateKeychainPasswordParams = { oldPassword: params.oldPassword, newPassword: params.newPassword };
+    const v1KeychainUpdatePWResult = yield this.keychains().updatePassword(updateKeychainPasswordParams);
+    const v2Keychains = yield this.coin(coin).keychains().updatePassword(updateKeychainPasswordParams);
+
+    const updatePasswordParams = {
+      keychains: v1KeychainUpdatePWResult.keychains,
+      v2_keychains: v2Keychains,
+      version: v1KeychainUpdatePWResult.version,
+      oldPassword: this.calculateHMAC(this.user().username, params.oldPassword),
+      password: this.calculateHMAC(this.user().username, params.newPassword)
+    };
+
+    return this.post(this.url('/user/changepassword'))
+    .send(updatePasswordParams)
+    .result();
+  }).call(this).asCallback(callback);
 };
 
 //

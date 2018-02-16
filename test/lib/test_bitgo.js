@@ -10,6 +10,7 @@ const BigNumber = require('bignumber.js');
 const request = require('supertest-as-promised');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
+require('should');
 
 BitGo.TEST_USER = 'tester@bitgo.com';
 
@@ -173,7 +174,7 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.V2.TEST_ETH_WALLET_PASSPHRASE = 'moon';
     BitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS = '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e';
 
-    BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER = 'update_password_test@bitgo.com';
+    BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER = 'update_pw_tester@bitgo.com';
     BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD = BitGo.TEST_PASSWORD;
 
   }
@@ -228,13 +229,15 @@ BitGo.prototype.authenticateEnterpriseCreatorTestUser = function(otp, callback) 
   }).call(this).asCallback(callback);
 };
 
-BitGo.prototype.authenticateKeychainUpdatePWTest = function(otp, callback) {
+BitGo.prototype.authenticateChangePWTestUser = function({ pw, otp }, callback) {
   return co(function *() {
-    const response = yield this.authenticate({
+    pw = pw || BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD;
+    const params = {
       username: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER,
-      password: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD,
+      password: pw,
       otp: otp
-    });
+    };
+    const response = yield this.authenticate(params);
     response.should.have.property('access_token');
     response.should.have.property('user');
   }).call(this).asCallback(callback);

@@ -6,6 +6,9 @@
 
 const assert = require('assert');
 require('should');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
+const _ = require('lodash');
 
 const TestBitGo = require('../lib/test_bitgo');
 
@@ -88,6 +91,36 @@ describe('Keychains', function() {
         done();
       });
     });
+  });
+
+  describe('Update Password', function() {
+    let bitgo;
+    let keychains;
+
+    before(co(function *beforeUpdatePassword() {
+      bitgo = new TestBitGo({ env: 'test' });
+      bitgo.initializeTestVars();
+      keychains = bitgo.keychains();
+      yield bitgo.authenticateChangePWTestUser({ otp: bitgo.testUserOTP() });
+      yield bitgo.unlock({ otp: bitgo.testUserOTP() });
+    }));
+
+    it('successful update the password for all v1 keychains that are encrypted with the old password', co(function *itUpdatePassword() {
+      const newPassword = 'newPassword';
+      const result = yield keychains.updatePassword({ oldPassword: TestBitGo.TEST_PASSWORD, newPassword });
+      _.forOwn(result.keychains, function(encryptedXprv, xpub) {
+        xpub.should.startWith('xpub');
+        try {
+          const decryptedPrv = bitgo.decrypt({ input: encryptedXprv, password: newPassword });
+          decryptedPrv.should.startWith('xprv');
+        } catch (e) {
+          // the decryption didn't work because of the wrong password, this is one of the keychains that wasn't
+          // encrypted with the old password
+          e.message.should.startWith('password error');
+        }
+      });
+      result.should.hasOwnProperty('version');
+    }));
   });
 
   describe('Get', function() {

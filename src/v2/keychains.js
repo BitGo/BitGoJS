@@ -61,7 +61,11 @@ Keychains.prototype.list = function(params, callback) {
  * @param params.oldPassword - The old password used for encrypting the key
  * @param params.newPassword - The new password to be used for encrypting the key
  * @param callback
- * @returns {*}
+ * @returns changedKeys Object - e.g.:
+ *  {
+ *    xpub1: encryptedPrv,
+ *    ...
+ *  }
  */
 Keychains.prototype.updatePassword = function(params, callback) {
   return co(function *() {
@@ -72,14 +76,14 @@ Keychains.prototype.updatePassword = function(params, callback) {
     while (keysLeft) {
       const result = yield this.list({ limit: 500, prevId });
       for (const key of result.keys) {
-        const encryptedPrv = key.encryptedPrv;
-        if (_.isUndefined(encryptedPrv)) {
+        const oldEncryptedPrv = key.encryptedPrv;
+        if (_.isUndefined(oldEncryptedPrv)) {
           continue;
         }
         try {
-          const decryptedPrv = this.bitgo.decrypt({ input: key.encryptedPrv, password: params.oldPassword });
-          const encryptedPrv = this.bitgo.encrypt({ input: decryptedPrv, password: params.newPassword });
-          changedKeys[key.pub] = encryptedPrv;
+          const decryptedPrv = this.bitgo.decrypt({ input: oldEncryptedPrv, password: params.oldPassword });
+          const newEncryptedPrv = this.bitgo.encrypt({ input: decryptedPrv, password: params.newPassword });
+          changedKeys[key.pub] = newEncryptedPrv;
         } catch (e) {
           // catching an error here means that the password was incorrect and hence there is nothing to change
         }

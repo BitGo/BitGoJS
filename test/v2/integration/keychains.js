@@ -20,20 +20,16 @@ describe('V2 Keychains', function() {
       bitgo.initializeTestVars();
       basecoin = bitgo.coin('tltc');
       keychains = basecoin.keychains();
-      yield bitgo.authenticateKeychainUpdatePWTest(bitgo.testUserOTP());
+      yield bitgo.authenticateChangePWTestUser({ otp: bitgo.testUserOTP() });
     }));
 
     it('should successfully update the passwords for all wallets that match the oldPassword', co(function *() {
-      const newPassword = '1234';
+      const newPassword = 'newPassword';
       const keys = yield keychains.updatePassword({ oldPassword: TestV2BitGo.TEST_PASSWORD, newPassword });
       _.each(keys, function(encryptedPrv, pub) {
-        try {
-          pub.should.startWith('xpub');
-          const decryptedPrv = bitgo.decrypt({ input: encryptedPrv, password: newPassword });
-          decryptedPrv.should.startWith('xprv');
-        } catch (e) {
-          throw new Error(e);
-        }
+        pub.should.startWith('xpub');
+        const decryptedPrv = bitgo.decrypt({ input: encryptedPrv, password: newPassword });
+        decryptedPrv.should.startWith('xprv');
       });
     }));
   });
