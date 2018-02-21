@@ -35,6 +35,9 @@ BitGo.TEST_KNOWN_BALANCE_USER = 'tyler+test-get-total-balances@bitgo.com';
 BitGo.TEST_KNOWN_BALANCE_PASSWORD = BitGo.TEST_PASSWORD;
 BitGo.TEST_KNOWN_BALANCE = 9999586400;
 
+BitGo.TEST_ENTERPRISE_CREATION_USER = 'enterprisecreator@bitgo.com';
+BitGo.TEST_ENTERPRISE_CREATION_PASSWORD = BitGo.TEST_PASSWORD;
+
 BitGo.TEST_CLIENTID = 'test';
 BitGo.TEST_CLIENTSECRET = 'testclientsecret';
 
@@ -212,6 +215,14 @@ BitGo.prototype.authenticateSharingTestUser = function(otp, callback) {
 BitGo.prototype.authenticateKnownBalanceTestUser = function(otp, callback) {
   return co(function *() {
     const response = yield this.authenticate({ username: BitGo.TEST_KNOWN_BALANCE_USER, password: BitGo.TEST_KNOWN_BALANCE_PASSWORD, otp: otp });
+    response.should.have.property('access_token');
+    response.should.have.property('user');
+  }).call(this).asCallback(callback);
+};
+
+BitGo.prototype.authenticateEnterpriseCreatorTestUser = function(otp, callback) {
+  return co(function *coAuthenticateEnterpriseCreatorTestUser() {
+    const response = yield this.authenticate({ username: BitGo.TEST_ENTERPRISE_CREATION_USER, password: BitGo.TEST_ENTERPRISE_CREATION_PASSWORD, otp: otp });
     response.should.have.property('access_token');
     response.should.have.property('user');
   }).call(this).asCallback(callback);

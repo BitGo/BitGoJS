@@ -1,6 +1,7 @@
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
+const CoinWallet = require('./wallet');
 
 class Enterprise {
 
@@ -37,6 +38,16 @@ class Enterprise {
   coinUrl(query) {
     const extra = query || '';
     return this.baseCoin.url('/enterprise/' + this.id + extra);
+  }
+
+  coinWallets(params, callback) {
+    return co(function *coCoinWallets() {
+      const walletData = yield this.bitgo.get(this.baseCoin.url('/wallet/enterprise/' + this.id)).result();
+      walletData.wallets = walletData.wallets.map((w) => {
+        return new CoinWallet(this.bitgo, this.baseCoin, w);
+      });
+      return walletData;
+    }).call(this).asCallback(callback);
   }
 
   users(params, callback) {

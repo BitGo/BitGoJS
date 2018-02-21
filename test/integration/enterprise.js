@@ -19,7 +19,7 @@ describe('Enterprise', function() {
   before(co(function *() {
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
-    yield bitgo.authenticateTestUser(bitgo.testUserOTP());
+    yield bitgo.authenticateEnterpriseCreatorTestUser(bitgo.testUserOTP());
 
   }));
 
@@ -30,8 +30,8 @@ describe('Enterprise', function() {
       const entList = yield enterprises.list();
       entList.length.should.be.greaterThan(6);
       const enterprise1 = entList[0];
-      enterprise1.id.should.equal('5578ebc76eb47487743b903166e6543a');
-      enterprise1.name.should.equal('SDKTest');
+      enterprise1.id.should.equal('5a84db9be4b3cab007c08ab59fb93ec3');
+      enterprise1.name.should.equal('Test Enterprise');
     }));
 
     it('should fetch the users of an enterprise', co(function *() {
@@ -41,19 +41,19 @@ describe('Enterprise', function() {
       users.should.have.property('adminUsers');
       users.should.have.property('walletUsers');
       const { adminUsers, walletUsers } = users;
-      adminUsers.length.should.equal(3);
-      walletUsers.length.should.equal(2);
+      adminUsers.length.should.equal(2);
+      walletUsers.length.should.equal(1);
       const walletUser = walletUsers[0];
       walletUser.should.have.property('id');
       walletUser.should.have.property('username');
-      walletUser.id.should.equal('543c11ed356d00cb7600000b98794503');
-      walletUser.username.should.equal('tester@bitgo.com');
+      walletUser.id.should.equal('5a84db312cd303af07897eebb5a0fba2');
+      walletUser.username.should.equal('enterprisecreator@bitgo.com');
       const adminUser = adminUsers[0];
       adminUser.should.have.property('id');
       adminUser.should.have.property('username');
       adminUser.should.have.property('verified');
-      adminUser.id.should.equal('543c11ed356d00cb7600000b98794503');
-      adminUser.username.should.equal('tester@bitgo.com');
+      adminUser.id.should.equal('5a849b8cb6f7cb5007b77741e632675a');
+      adminUser.username.should.equal('enterprisetester@bitgo.com');
       adminUser.verified.should.equal(true);
     }));
 
@@ -67,6 +67,7 @@ describe('Enterprise', function() {
     }));
   });
 
+  // TODO: remove enterprises after creating them once the functionality is available
   describe('Modify Enterprise', function() {
 
     // TODO: figure out how to approve the removal request from another user
@@ -84,6 +85,23 @@ describe('Enterprise', function() {
       users0.walletUsers.length.should.equal(0);
       users1.walletUsers.length.should.equal(0);
       removalPendingApproval.state.should.equal('pending');
+    }));
+
+    it('should add wallets and then list them on an enterprise', co(function *coEnterpriseWalletAdditionTest() {
+      const enterprise = yield bitgo.coin('tltc').enterprises().create({ name: 'Test Enterprise' });
+      const wallet = yield bitgo.coin('tltc').wallets().generateWallet({
+        label: 'Enterprise Test Wallet',
+        enterprise: enterprise.id,
+        passphrase: TestV2BitGo.TEST_WALLET1_PASSCODE
+      });
+      const enterpriseWallets = yield enterprise.coinWallets();
+      enterpriseWallets.should.have.property('wallets');
+      enterpriseWallets.wallets.length.should.equal(1);
+      enterpriseWallets.wallets[0].id().should.equal(wallet.wallet.id());
+      yield wallet.wallet.remove();
+      const updatedEnterpriseWallets = yield enterprise.coinWallets();
+      updatedEnterpriseWallets.should.have.property('wallets');
+      updatedEnterpriseWallets.wallets.length.should.equal(0);
     }));
 
   });
