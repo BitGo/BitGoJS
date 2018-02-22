@@ -170,6 +170,18 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.V2.TEST_WALLET2_UNSPENTS_XPUB = 'xpub661MyMwAqRbcFeeMZtyLiqECMeek7QD6X9NLX2ydBN2DutiBQqLw8nsMnnL9hk3CSWGXZgW1PLV96opu8NzuXwJjK57PuNBqe85jSN6Abm6';
     BitGo.V2.TEST_WALLET2_UNSPENTS_ID = '5a1341e7c8421dc90710673b3166bbd5';
 
+    BitGo.V2.TEST_SWEEP1_LABEL = 'Sweep 1';
+    BitGo.V2.TEST_SWEEP1_PASSCODE = 'T8n6S4AzktsDwCqvaE4692895YkjRT';
+    BitGo.V2.TEST_SWEEP1_XPUB = 'xpub661MyMwAqRbcFWJ1ZxzvmKm4QCkrgYQLbTGzLgxzKFcGkyQfCjugENuamFmF3WwLHRvP8zWQi16kU8SuTqyMYFhvJcg1U1w8AT1AHKa25sY';
+    BitGo.V2.TEST_SWEEP1_ID = '5a836a7e7cb43ca807371f123ab3a907';
+    BitGo.V2.TEST_SWEEP1_ADDRESS = '2N1rGQUpCRV797cSbT3hr34zayyNqS263g9';
+
+    BitGo.V2.TEST_SWEEP2_LABEL = 'Sweep 2';
+    BitGo.V2.TEST_SWEEP2_PASSCODE = 'bMY8jrF06pV2dxzRK42dGZqrmmURS7';
+    BitGo.V2.TEST_SWEEP2_XPUB = 'xpub661MyMwAqRbcFhBDq1dbwu51qrNQra923FnujGPxCBaHd2geU6AYZhviMo8jWj3cvwM7Aj2T79CtKqErP37K1vwYSAYgMmFaHiVdJgHJ1nk';
+    BitGo.V2.TEST_SWEEP2_ID = '5a836b5e1c0d699a07d42029ccd65836';
+    BitGo.V2.TEST_SWEEP2_ADDRESS = '2NGV9ChhafuXNK9iFW6L6CKru5bFkMxZjNX';
+
     BitGo.V2.TEST_ETH_WALLET_ID = '598f606cd8fc24710d2ebadb1d9459bb';
     BitGo.V2.TEST_ETH_WALLET_PASSPHRASE = 'moon';
     BitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS = '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e';
@@ -299,8 +311,6 @@ BitGo.prototype.checkFunded = co(function *checkFunded(agent) {
   let balance = new BigNumber(res.body.spendableBalanceString);
 
   // Check our balance is over 60000 (we spend 50000, add some cushion)
-  balance.gt(60000).should.be.true;
-
   if (balance.lt(60000)) {
     throw new Error(`The TETH wallet ${testWalletId} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
   }
@@ -315,8 +325,6 @@ BitGo.prototype.checkFunded = co(function *checkFunded(agent) {
 
   // Check our balance is over 0.05 tBTC (we spend 0.04, add some cushion)
   let minimumBalance = 0.05 * 1e8;
-  balance.gt(minimumBalance).should.be.true;
-
   if (balance.lt(minimumBalance)) {
     throw new Error(`The TBTC wallet ${wallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
   }
@@ -325,14 +333,25 @@ BitGo.prototype.checkFunded = co(function *checkFunded(agent) {
 
   // Check we have enough in the wallet to run test suite
   unspentWallet.should.have.property('spendableBalanceString');
-  balance = new BigNumber(wallet.spendableBalanceString());
+  balance = new BigNumber(unspentWallet.spendableBalanceString());
 
   // Check our balance is over 0.05 tBTC (we spend 0.04, add some cushion)
   minimumBalance = 0.05 * 1e8;
-  balance.gt(minimumBalance).should.be.true;
-
   if (balance.lt(minimumBalance)) {
     throw new Error(`The TBTC wallet ${unspentWallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+  }
+
+  const sweep1Wallet = yield this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_SWEEP1_ID });
+
+  // Check we have enough in the wallet to run test suite
+  sweep1Wallet.should.have.property('spendableBalanceString');
+  balance = new BigNumber(sweep1Wallet.spendableBalanceString());
+
+  // Since we will lose our unspents value to fees, make sure there is a large enough balance to continue
+  minimumBalance = 0.05 * 1e8;
+
+  if (balance.lt(minimumBalance)) {
+    throw new Error(`The TBTC wallet ${sweep1Wallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
   }
 });
 
