@@ -11,6 +11,7 @@ let coinGenerators;
 const bitcoin = require('bitgo-bitcoinjs-lib');
 const prova = require('../prova');
 const Promise = require('bluebird');
+const co = Promise.coroutine;
 const sjcl = require('../sjcl.min');
 
 const BaseCoin = function(bitgo, coin) {
@@ -183,6 +184,24 @@ BaseCoin.prototype.newWalletObject = function(walletParams) {
 BaseCoin.prototype.toJSON = function() {
   return undefined;
 };
+
+/**
+ * Fetch fee estimate information from the server
+ * @param {Object} params The params passed into the function
+ * @param {Integer} params.numBlocks The number of blocks to target for conformation (Only works for btc)
+ * @param callback
+ * @returns {Object} The info returned from the merchant server
+ */
+BaseCoin.prototype.feeEstimate = co(function *verifyTransaction(params, callback) {
+  return co(function *coFeeEstimate() {
+    const query = {};
+    if (params && params.numBlocks) {
+      query.numBlocks = params.numBlocks;
+    }
+
+    return this.bitgo.get(this.url('/tx/fee')).query(query).result();
+  }).call(this).asCallback(callback);
+});
 
 /**
  * The cold wallet tool uses this function to derive an extended key that is based on the passed key and seed
