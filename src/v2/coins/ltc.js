@@ -38,6 +38,10 @@ Ltc.prototype.getFullName = function() {
   return 'Litecoin';
 };
 
+Ltc.prototype.supportsBlockTarget = function() {
+  return false;
+};
+
 
 /**
  * Canonicalize a Litecoin address for a specific scriptHash version

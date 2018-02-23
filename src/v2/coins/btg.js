@@ -23,6 +23,10 @@ Btg.prototype.getFullName = function() {
   return 'Bitcoin Gold';
 };
 
+Btg.prototype.supportsBlockTarget = function() {
+  return false;
+};
+
 /**
  * Assemble keychain and half-sign prebuilt transaction
  * @param params
