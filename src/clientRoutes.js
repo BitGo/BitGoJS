@@ -475,6 +475,13 @@ const promiseWrapper = function(promiseRequestHandler, args) {
 };
 
 exports = module.exports = function(app, args) {
+  // When adding new routes to BitGo Express make sure that you also add the exact same routes to the server. Since
+  // some customers were confused when calling a BitGo Express route on the BitGo server, we now handle all BitGo
+  // Express routes on the BitGo server and return an error message that says that one should call BitGo Express
+  // instead.
+  // V1 routes should be added to www/config/routes.js
+  // V2 routes should be added to www/config/routesV2.js
+
   // auth
   app.post('/api/v[12]/user/login', parseBody, prepareBitGo(args), promiseWrapper(handleLogin, args));
 
