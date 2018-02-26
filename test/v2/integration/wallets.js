@@ -144,6 +144,12 @@ describe('V2 Wallets:', function() {
         res.bitgoKeychain.isBitGo.should.equal(true);
         res.bitgoKeychain.should.not.have.property('prv');
         res.bitgoKeychain.should.not.have.property('encryptedPrv');
+
+        res.wallet.should.have.property('_permissions');
+        res.wallet._permissions.length.should.equal(3);
+        res.wallet._permissions.should.include('admin');
+        res.wallet._permissions.should.include('view');
+        res.wallet._permissions.should.include('spend');
         return res.wallet.remove();
       })
       .then(function(removal) {

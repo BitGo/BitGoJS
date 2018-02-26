@@ -11,6 +11,11 @@ const Wallet = function(bitgo, baseCoin, walletData) {
   this.bitgo = bitgo;
   this.baseCoin = baseCoin;
   this._wallet = walletData;
+  const userId = _.get(bitgo, '_user.id');
+  if (_.isString(userId)) {
+    const userDetails = _.find(walletData.users, { user: userId });
+    this._permissions = _.get(userDetails, 'permissions');
+  }
 };
 
 Wallet.prototype.url = function(extra) {
@@ -849,6 +854,12 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
     if (params.recipients && !Array.isArray(params.recipients)) {
       const error = new Error('expecting recipients array');
       error.code = 'recipients_not_array';
+      throw error;
+    }
+
+    if (_.isArray(this._permissions) && !this._permissions.includes('spend')) {
+      const error = new Error('no spend permission on this wallet');
+      error.code = 'user_not_allowed_to_spend_from_wallet';
       throw error;
     }
 
