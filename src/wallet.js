@@ -17,6 +17,7 @@ const config = require('./config');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
+const request = require('superagent');
 
 //
 // Constructor
@@ -1191,6 +1192,400 @@ Wallet.prototype.sendMany = function(params, callback) {
     return finalResult;
   })
   .nodeify(callback);
+};
+
+/**
+ * Accelerate a stuck transaction using Child-Pays-For-Parent (CPFP).
+ *
+ * This should only be used for stuck transactions which have no unconfirmed inputs.
+ *
+ * @param {Object} params - Input parameters
+ * @param {String} params.transactionID - ID of transaction to accelerate
+ * @param {Number} params.feeRate - New effective fee rate for stuck transaction (sat per 1000 bytes)
+ * @param {Number} params.maxAdditionalUnspents - Maximum additional unspents to use from the wallet to cover any child fees that the parent unspent output cannot cover. Defaults to 100.
+ * @param {String} params.walletPassphrase - The passphrase which should be used to decrypt the wallet private key. One of either walletPassphrase or xprv is required.
+ * @param {String} params.xprv - The private key for the wallet. One of either walletPassphrase or xprv is required.
+ * @param {Function} callback
+ * @returns Result of sendTransaction() on the child transaction
+ */
+Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, callback) {
+
+  /**
+   * Helper function to estimate a transactions size in virtual bytes.
+   * Actual transactions may be slightly fewer virtual bytes, due to
+   * the fact that valid ECSDA signatures have a variable length
+   * between 8 and 73 virtual bytes.
+   *
+   * @param inputs.segwit The number of segwit inputs to the transaction
+   * @param inputs.P2SH The number of P2SH inputs to the transaction
+   * @param inputs.P2PKH The number of P2PKH inputs to the transaction
+   */
+  const estimateTxVSize = (inputs) => {
+    const segwit = inputs.segwit || 0;
+    const P2SH = inputs.P2SH || 0;
+    const P2PKH = inputs.P2PKH || 0;
+
+    const childFeeInfo = TransactionBuilder.calculateMinerFeeInfo({
+      nP2SHInputs: P2SH,
+      nP2PKHInputs: P2PKH,
+      nP2SHP2WSHInputs: segwit,
+      nOutputs: 1,
+      feeRate: 1
+    });
+
+    return childFeeInfo.size;
+  };
+
+  /**
+   * Calculate the number of satoshis that should be paid in fees by the child transaction
+   *
+   * @param inputs Inputs to the child transaction which are passed to estimateTxVSize
+   * @param parentFee The number of satoshis the parent tx originally paid in fees
+   * @param parentVSize The number of virtual bytes in the parent tx
+   * @param feeRate The new fee rate which should be paid by the combined CPFP transaction
+   * @returns {number} The number of satoshis the child tx should pay in fees
+   */
+  const estimateChildFee = ({ inputs, parentFee, parentVSize, feeRate }) => {
+    // calculate how much more we *should* have paid in parent fees,
+    // had the parent been originally sent with the new fee rate
+    const additionalParentFee = _.ceil(parentVSize * feeRate / 1000) - parentFee;
+
+    // calculate how much we would pay in fees for the child,
+    // if it were only paying for itself at the new fee rate
+    const childFee = estimateTxVSize(inputs) * feeRate / 1000;
+
+    return _.ceil(childFee + additionalParentFee);
+  };
+
+  /**
+   * Helper function to find additional unspents to use to pay the child tx fees.
+   * This function is called when the the parent tx output is not sufficient to
+   * cover the total fees which should be paid by the child tx.
+   *
+   * @param inputs Inputs to the child transaction which are passed to estimateTxVSize
+   * @param parentOutputValue The value of the output from the parent tx which we are using as an input to the child tx
+   * @param parentFee The number of satoshis the parent tx originally paid in fees
+   * @param parentVSize The number of virtual bytes in the parent tx
+   * @param maxUnspents The maximum number of additional unspents which should be used to cover the remaining child fees
+   * @returns An object with the additional unspents to use, the updated number of satoshis which should be paid by
+   *          the child tx, and the updated inputs for the child tx.
+   */
+  const findAdditionalUnspents = ({ inputs, parentOutputValue, parentFee, parentVSize, maxUnspents }) => {
+    return co(function *coFindAdditionalUnspents() {
+
+      const additionalUnspents = [];
+
+      // ask the server for enough unspents to cover the child fee, assuming
+      // that it can be done without additional unspents (which is not possible,
+      // since if that were the case, findAdditionalUnspents would not have been
+      // called in the first place. This will be corrected before returning)
+      let currentChildFeeEstimate = estimateChildFee({ inputs, parentFee, parentVSize, feeRate: params.feeRate });
+      let uncoveredChildFee = currentChildFeeEstimate - parentOutputValue;
+
+      while (uncoveredChildFee > 0 && additionalUnspents.length < maxUnspents) {
+        // try to get enough unspents to cover the rest of the child fee
+        const unspents = yield this.unspents({
+          minConfirms: 1,
+          target: uncoveredChildFee,
+          limit: maxUnspents - additionalUnspents.length
+        });
+
+        if (unspents.length === 0) {
+          // no more unspents are available
+          break;
+        }
+
+        let additionalUnspentValue = 0;
+
+        // consume all unspents returned by the server, even if we don't need
+        // all of them to cover the child fee. This is because the server will
+        // return enough unspent value to ensure that the minimum change amount
+        // is achieved for the child tx, and we can't leave out those unspents
+        // or else the minimum change amount constraint could be violated
+        _.forEach(unspents, (unspent) => {
+          // update the child tx inputs
+          const unspentChain = getChain(unspent);
+          if (unspentChain === config.chains.CHAIN_SEGWIT || unspentChain === config.chains.CHANGE_CHAIN_SEGWIT) {
+            inputs.segwit++;
+          } else {
+            inputs.P2SH++;
+          }
+
+          additionalUnspents.push(unspent);
+          additionalUnspentValue += unspent.value;
+        });
+
+        currentChildFeeEstimate = estimateChildFee({ inputs, parentFee, parentVSize, feeRate: params.feeRate });
+        uncoveredChildFee = currentChildFeeEstimate - parentOutputValue - additionalUnspentValue;
+      }
+
+      if (uncoveredChildFee > 0) {
+        // Unable to find enough unspents to cover the child fee
+        throw new Error(`Insufficient confirmed unspents available to cover the child fee`);
+      }
+
+      // found enough unspents
+      return {
+        additional: additionalUnspents,
+        newChildFee: currentChildFeeEstimate,
+        newInputs: inputs
+      };
+    }).call(this);
+  };
+
+  /**
+   * Helper function to get a full copy (including witness data) of an arbitrary tx using only the tx id.
+   *
+   * We have to use an external service for this (currently smartbit.com.au), since
+   * the v1 indexer service (based on bitcoinj) does not have segwit support and
+   * does not return any segwit related fields in the tx hex.
+   *
+   * @param parentTxId The ID of the transaction to get the full hex of
+   * @returns {Bluebird<any>} The full hex for the specified transaction
+   */
+  const getParentTxHex = ({ parentTxId }) => {
+    return co(function *coGetParentTxHex() {
+      const smartBitApiUrl = common.Environments[this.bitgo.getEnv()].smartBitApiBaseUrl + '/blockchain/tx/';
+      const txUrl = smartBitApiUrl + parentTxId + '/hex';
+      const result = yield request.get(txUrl);
+
+      if (!_.isBoolean(result.body.success) || !result.body.success) {
+        throw new Error('Did not successfully receive parent tx hex');
+      }
+
+      return result.body.hex[0].hex;
+    }).call(this);
+  };
+
+  /**
+   * Helper function to get the chain from an unspent or tx output.
+   *
+   * @param outputOrUnspent The output or unspent whose chain should be determined
+   * @returns {number} The chain for the given output or unspent
+   */
+  const getChain = (outputOrUnspent) => {
+    if (outputOrUnspent.chain !== undefined) {
+      return outputOrUnspent.chain;
+    }
+
+    if (outputOrUnspent.chainPath !== undefined) {
+      return _.toNumber(outputOrUnspent.chainPath.split('/')[1]);
+    }
+
+    // no way to tell the chain, let's just blow up now instead
+    // of blowing up later when the undefined return value is used.
+    // Note: for unspents the field to use is 'address', but for outputs
+    // the field to use is 'account'
+    throw Error(`Could not get chain for output on account ${outputOrUnspent.account || outputOrUnspent.address}`);
+  };
+
+  /**
+   * Helper function to calculate the actual value contribution an output or unspent will
+   * contribute to a transaction, were it to be used. Each type of output or unspent
+   * will have a different value contribution since each type has a different number
+   * of virtual bytes, and thus will cause a different fee to be paid.
+   *
+   * @param outputOrUnspent Output or unspent whose effective value should be determined
+   * @returns {number} The actual number of satoshis that this unspent or output
+   *                   would contribute to a transaction, were it to be used.
+   */
+  const effectiveValue = (outputOrUnspent) => {
+    const chain = getChain(outputOrUnspent);
+    if (chain === config.chains.CHAIN_SEGWIT || chain === config.chains.CHANGE_CHAIN_SEGWIT) {
+      // P2SH_P2WSH_INPUT_SIZE is in bytes, so we need to convert to kB
+      return outputOrUnspent.value - (config.tx.P2SH_P2WSH_INPUT_SIZE * params.feeRate / 1000);
+    }
+    // P2SH_INPUT_SIZE is in bytes, so we need to convert to kB
+    return outputOrUnspent.value - (config.tx.P2SH_INPUT_SIZE * params.feeRate / 1000);
+  };
+
+  /**
+   * Coroutine which actually implements the accelerateTransaction algorithm
+   *
+   * Described at a high level, the algorithm is as follows:
+   * 1) Find appropriate output from parent transaction to use as child transaction input
+   * 2) Find unspent corresponding to parent transaction output. If not found, return to step 1.
+   * 3) Determine if parent transaction unspent can cover entire child fee, plus minimum change
+   * 4) If yes, go to step 6
+   * 5) Otherwise, find additional unspents from the wallet to use to cover the remaining child fee
+   * 6) Create and sign the child transaction, using the parent transaction output
+   *    (and, if necessary, additional wallet unspents) as inputs
+   * 7) Broadcast the new child transaction
+   */
+  return co(function *coAccelerateTransaction() {
+    params = params || {};
+    common.validateParams(params, ['transactionID'], [], callback);
+
+    // validate fee rate
+    if (params.feeRate === undefined) {
+      throw new Error('Missing parameter: feeRate');
+    }
+    if (!_.isFinite(params.feeRate) || params.feeRate <= 0) {
+      throw new Error('Expecting positive finite number for parameter: feeRate');
+    }
+
+    // validate maxUnspents
+    if (params.maxAdditionalUnspents === undefined) {
+      // by default, use at most 100 additional unspents (not including the unspent output from the parent tx)
+      params.maxAdditionalUnspents = 100;
+    }
+
+    if (!_.isInteger(params.maxAdditionalUnspents) || params.maxAdditionalUnspents <= 0) {
+      throw Error('Expecting positive integer for parameter: maxAdditionalUnspents');
+    }
+
+    const parentTx = yield this.getTransaction({ id: params.transactionID });
+    if (parentTx.confirmations > 0) {
+      throw new Error(`Transaction ${params.transactionID} is already confirmed and cannot be accelerated`);
+    }
+
+    // get the outputs from the parent tx which are to our wallet
+    const walletOutputs = _.filter(parentTx.outputs, (output) => output.isMine);
+
+    if (walletOutputs.length === 0) {
+      throw new Error(`Transaction ${params.transactionID} contains no outputs to this wallet, and thus cannot be accelerated`);
+    }
+
+    // use an output from the parent with largest effective value,
+    // but check to make sure the output is actually unspent.
+    // An output could be spent already if the output was used in a
+    // child tx which itself has become stuck due to low fees and is
+    // also unconfirmed.
+    const sortedOutputs = _.sortBy(walletOutputs, effectiveValue);
+    let parentUnspentToUse;
+    let outputToUse;
+
+    while (sortedOutputs.length > 0 && parentUnspentToUse === undefined) {
+      outputToUse = sortedOutputs.pop();
+
+      // find the unspent corresponding to this particular output
+      // TODO: is there a better way to get this unspent?
+      // TODO: The best we can do here is set minSize = maxSize = outputToUse.value
+      const unspentsResult = yield this.unspents({
+        minSize: outputToUse.value,
+        maxSize: outputToUse.value
+      });
+
+      parentUnspentToUse = _.find(unspentsResult, (unspent) => {
+        // make sure unspent belongs to the given txid
+        if (unspent.tx_hash !== params.transactionID) {
+          return false;
+        }
+        // make sure unspent has correct v_out index
+        return unspent.tx_output_n === outputToUse.vout;
+      });
+    }
+
+    if (parentUnspentToUse === undefined) {
+      throw new Error(`Could not find unspent output from parent tx to use as child input`);
+    }
+
+    // get the full hex for the parent tx and decode it to get its vsize
+    const parentTxHex = yield getParentTxHex({ parentTxId: params.transactionID });
+    const decodedParent = bitcoin.Transaction.fromHex(parentTxHex);
+    const parentVSize = decodedParent.virtualSize();
+
+    // make sure id from decoded tx and given tx id match
+    // this should catch problems emanating from the use of an external service
+    // for getting the complete parent tx hex
+    if (decodedParent.getId() !== params.transactionID) {
+      throw new Error(`Decoded transaction id is ${decodedParent.getId()}, which does not match given txid ${params.transactionID}`);
+    }
+
+    // make sure new fee rate is greater than the parent's current fee rate
+    // virtualSize is returned in vbytes, so we need to convert to kvB
+    const parentRate = 1000 * parentTx.fee / parentVSize;
+    if (params.feeRate <= parentRate) {
+      throw new Error(`Cannot lower fee rate! (Parent tx fee rate is ${parentRate} sat/kB, and requested fee rate was ${params.feeRate} sat/kB)`);
+    }
+
+    // determine if parent output can cover child fee
+    const isParentOutputSegwit =
+      outputToUse.chain === config.chains.CHAIN_SEGWIT ||
+      outputToUse.chain === config.chains.CHANGE_CHAIN_SEGWIT;
+
+    let childInputs = {
+      segwit: isParentOutputSegwit ? 1 : 0,
+      P2SH: isParentOutputSegwit ? 0 : 1
+    };
+
+    let childFee = estimateChildFee({
+      inputs: childInputs,
+      parentFee: parentTx.fee,
+      feeRate: params.feeRate,
+      parentVSize
+    });
+
+    const unspentsToUse = [parentUnspentToUse];
+
+    // try to get the min change size from the server, otherwise default to 0.1 BTC
+    // TODO: minChangeSize is not currently a constant defined on the client and should be added
+    const minChangeSize = this.bitgo.getConstants().minChangeSize || 1e7;
+
+    if (outputToUse.value < childFee + minChangeSize) {
+      // parent output cannot cover child fee plus the minimum change,
+      // must find additional unspents to cover the difference
+      const { additional, newChildFee, newInputs } = yield findAdditionalUnspents({
+        inputs: childInputs,
+        parentOutputValue: outputToUse.value,
+        parentFee: parentTx.fee,
+        maxUnspents: params.maxAdditionalUnspents,
+        parentVSize
+      });
+      childFee = newChildFee;
+      childInputs = newInputs;
+      unspentsToUse.push(... additional);
+    }
+
+    // sanity check the fee rate we're paying for the combined tx
+    // to make sure it's under the max fee rate. Only the child tx
+    // can break this limit, but the combined tx shall not
+    const maxFeeRate = this.bitgo.getConstants().maxFeeRate;
+    const childVSize = estimateTxVSize(childInputs);
+    const combinedVSize = childVSize + parentVSize;
+    const combinedFee = parentTx.fee + childFee;
+    // combined fee rate must be in sat/kB, so we need to convert
+    const combinedFeeRate = 1000 * combinedFee / combinedVSize;
+
+    if (combinedFeeRate > maxFeeRate) {
+      throw new Error(`Transaction cannot be accelerated. Combined fee rate of ${combinedFeeRate} sat/kB exceeds maximum fee rate of ${maxFeeRate} sat/kB`);
+    }
+
+    // create a new change address and determine change amount.
+    // the tx builder will reject transactions which have no recipients,
+    // and such zero-output transactions are forbidden by the Bitcoin protocol,
+    // so we need at least a single recipient for the change which won't be pruned.
+    const changeAmount = _.sumBy(unspentsToUse, (unspent) => unspent.value) - childFee;
+    const changeChain = this.getChangeChain({});
+    const changeAddress = yield this.createAddress({ chain: changeChain });
+
+    // create the child tx and broadcast
+    const tx = yield this.createAndSignTransaction({
+      unspents: unspentsToUse,
+      recipients: [{
+        address: changeAddress.address,
+        amount: changeAmount
+      }],
+      fee: childFee,
+      bitgoFee: {
+        amount: 0,
+        address: ''
+      },
+      xprv: params.xprv,
+      walletPassphrase: params.walletPassphrase
+    });
+
+
+    // child fee rate must be in sat/kB, so we need to convert
+    const childFeeRate = 1000 * childFee / childVSize;
+    if (childFeeRate > maxFeeRate) {
+      // combined tx is within max fee rate limits, but the child tx is not.
+      // in this case, we need to use the ignoreMaxFeeRate flag to get the child tx to be accepted
+      tx.ignoreMaxFeeRate = true;
+    }
+
+    return this.sendTransaction(tx);
+  }).call(this).asCallback(callback);
 };
 
 //

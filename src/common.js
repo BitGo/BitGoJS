@@ -12,7 +12,8 @@ exports.Environments = {
     rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
-    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1'
   },
   rmgProd: {
     uri: 'https://rmg.bitgo.com',
@@ -24,7 +25,8 @@ exports.Environments = {
     rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
-    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1'
   },
   staging: {
     uri: 'https://staging.bitgo.com',
@@ -36,7 +38,8 @@ exports.Environments = {
     rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
-    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1'
   },
   rmgStaging: {
     uri: 'https://rmgstaging.bitgo.com',
@@ -48,7 +51,8 @@ exports.Environments = {
     rmgNetwork: 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
-    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1'
   },
   test: {
     uri: 'https://test.bitgo.com',
@@ -60,7 +64,8 @@ exports.Environments = {
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
-    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1'
   },
   rmgTest: {
     uri: 'https://rmgtest.bitgo.com',
@@ -71,7 +76,9 @@ exports.Environments = {
     ethNetwork: 'ethereum',
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
-    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1'
   },
   dev: {
     uri: 'https://webdev.bitgo.com',
@@ -83,7 +90,8 @@ exports.Environments = {
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
-    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1'
   },
   latest: {
     uri: 'https://latest.bitgo.com',
@@ -95,7 +103,8 @@ exports.Environments = {
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
-    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1'
   },
   rmgLatest: {
     uri: 'https://rmglatest.bitgo.com',
@@ -107,7 +116,8 @@ exports.Environments = {
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
-    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1'
   },
   rmgDev: {
     uri: 'https://rmgwebdev.bitgo.com',
@@ -119,7 +129,8 @@ exports.Environments = {
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
-    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1'
   },
   local: {
     uri: 'http://localhost:3000',
@@ -131,7 +142,8 @@ exports.Environments = {
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
-    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1'
   },
   mock: {
     uri: 'https://bitgo.fakeurl',
@@ -143,7 +155,8 @@ exports.Environments = {
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
-    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.fakeurl/v1'
   },
   rmgLocal: {
     uri: 'http://rmglocalhost:3000',
@@ -155,7 +168,8 @@ exports.Environments = {
     rmgNetwork: 'rmgTest',
     signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
-    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://tbtc.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1'
   },
   custom: {
     uri: process.env.BITGO_CUSTOM_ROOT_URI,
@@ -168,7 +182,8 @@ exports.Environments = {
     rmgNetwork: process.env.BITGO_CUSTOM_RMG_NETWORK || 'rmg',
     signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
     serverXpub: 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
-    blockrApiBaseUrl: 'https://btc.blockr.io/api/v1'
+    blockrApiBaseUrl: 'https://' + (process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin' ? 'tbtc' : 'btc') + '.blockr.io/api/v1',
+    smartBitApiBaseUrl: 'https://' + (process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin' ? 'testnet-api' : 'api') + '.smartbit.com.au/v1'
   }
 };
 

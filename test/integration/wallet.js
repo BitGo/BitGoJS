@@ -16,6 +16,11 @@ const crypto = require('crypto');
 const _ = require('lodash');
 const bitcoin = BitGoJS.bitcoin;
 const unspentData = require('./fixtures/largeunspents.json');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
+const common = require('../../src/common');
+const request = require('superagent');
+const Wallet = require('../../src/wallet');
 
 Q.longStackTrace = true;
 
@@ -2952,4 +2957,137 @@ describe('Wallet API', function() {
       );
     });
   });
+});
+
+describe('Accelerate Transaction (test server)', function accelerateTxDescribe() {
+
+  const bitgo = new TestBitGo();
+  bitgo.initializeTestVars();
+
+  const userKeypair = {
+    xprv: 'xprv9s21ZrQH143K2fJ91S4BRsupcYrE6mmY96fcX5HkhoTrrwmwjd16Cn87cWinJjByrfpojjx7ezsJLx7TAKLT8m8hM5Kax9YcoxnBeJZ3t2k',
+    xpub: 'xpub661MyMwAqRbcF9Nc7TbBo1rZAagiWEVPWKbDKThNG8zqjk76HAKLkaSbTn6dK2dQPfuD7xjicxCZVWvj67fP5nQ9W7QURmoMVAX8m6jZsGp',
+    rawPub: '02c103ac74481874b5ef0f385d12725e4f14aedc9e00bc814ce96f47f62ce7adf2',
+    rawPrv: '936c5af3f8af81f75cdad1b08f29e7d9c01e598e2db2d7be18b9e5a8646e87c6',
+    path: 'm',
+    walletSubPath: '/0/0'
+  };
+  const backupKeypair = {
+    xprv: 'xprv9s21ZrQH143K47sEkLkykgYmq1xF5ZWrPYhUZcmBpPFMQojvGUmEcr5jFXYGfr8CpFdpTvhQ7L9NN2rLtsBFjSix3BAjwJcBj6U3D5hxTPc',
+    xpub: 'xpub661MyMwAqRbcGbwhrNHz7pVWP3njV2Ehkmd5N1AoNinLHc54p25VAeQD6q2oTS3uuDMDnfnXnthbS9ufC8JVYpNnWU5Rn3pYaNuLCNywkw1',
+    rawPub: '03bbcb73997977068d9e36666bbd5cd37579acae8e2bd5ce9d0a6e5c150a423bc3',
+    rawPrv: '77a15f14796f4001d1092ae84f766bd869e9bee6bffae6547def5045b96fa943',
+    path: 'm',
+    walletSubPath: '/0/0'
+  };
+  const bitgoKey = {
+    xpub: 'xpub661MyMwAqRbcGQcVFiwcrtc7c3vopsX96jsJUYPcFMREcRTqAqsqbv2ZRyCJAPLm5NMHCy85E3ZwpT4EAUw9WGU7vMhG6z83hDeKXBWn6Lf',
+    path: 'm',
+    walletSubPath: '/0/0'
+  };
+
+  const wallet = new Wallet(bitgo, { id: '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4', private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });
+  const minWalletBalance = 100000;
+
+  // TODO: temporarily use hard coded fee rate limits due to race condition
+  //       in getConstants() causing max fee and min fee rates to change
+  //       behind our backs once the response returns from the server.
+  //       Additionally, the server lies to the client about the minimum fee
+  //       rate it enforces, causing send failures when tx's are sent with a fee
+  //       rate below the server's minimum rate, which is not exposed to the client
+
+  // const minFeeRate = bitgo.getConstants().minFeeRate;
+  // const maxFeeRate = bitgo.getConstants().maxFeeRate;
+  const minFeeRate = 2000;
+  const maxFeeRate = 10100;
+  let parentTx;
+  let parentTxFeeRate;
+
+  before(co(function *coAccelerateTxBefore() {
+    if (bitgo._token === undefined || bitgo._token === null) {
+      yield bitgo.authenticateTestUser(bitgo.testUserOTP());
+    }
+    yield bitgo.unlock({ otp: bitgo.testUserOTP() });
+    yield wallet.get();
+    const walletBalance = wallet.balance();
+    if (walletBalance < minWalletBalance) {
+      // ask to fund wallet if there are less than 100k satoshi
+      throw new Error(`The v1 TBTC Test Wallet ${wallet.id()} doesn't have enough funds to run the test suite. The current balance is ${walletBalance} and the minimum balance is ${minWalletBalance}. Please send at least ${minWalletBalance - walletBalance} TBTC to that address`);
+    }
+
+    // random low fee rate at most 10% above the min fee rate, with a minimum of 500 sat / 1000 bytes.
+    // Maximum must also be bounded by the maxFeeRate, which the parent tx cannot break
+    const randomFeeRate = Math.max(Math.floor(Math.random() * minFeeRate * 0.1) + minFeeRate, 500);
+    parentTxFeeRate = Math.min(Math.max(randomFeeRate, minFeeRate), maxFeeRate);
+
+    // create stuck parent tx
+    const address = yield wallet.createAddress();
+    parentTx = yield wallet.createAndSignTransaction({
+      recipients: [
+        {
+          address: address.address,
+          amount: 10000
+        }
+      ],
+      feeRate: parentTxFeeRate,
+      xprv: wallet.keychains[0].xprv
+    });
+
+    const sendResult = yield wallet.sendTransaction(parentTx);
+    parentTx = _.merge(parentTx, _.pick(sendResult, ['hash']));
+
+    // allow parent tx time to be indexed by smartbit
+    return Promise.delay(10000);
+  }));
+
+  function verifyTargetFeeRate({ parentTx, childTx, targetRate }, callback) {
+    return co(function *coVerifyTargetRate() {
+      const SMARTBIT_API = common.Environments[bitgo.getEnv()].smartBitApiBaseUrl;
+      const req_url = SMARTBIT_API + '/blockchain/tx/';
+      const parent_req_url = req_url + parentTx.hash;
+      const child_req_url = req_url + childTx.hash;
+
+      const parent = yield request.get(parent_req_url).send();
+      const child = yield request.get(child_req_url).send();
+
+      const childFee = child.body.transaction.fee_int;
+      const childVSize = child.body.transaction.vsize;
+      const parentFee = parent.body.transaction.fee_int;
+      const parentVSize = parent.body.transaction.vsize;
+
+      const combinedVSize = childVSize + parentVSize;
+      const combinedFee = childFee + parentFee;
+      const combinedRate = 1000 * combinedFee / combinedVSize;
+
+      // ensure the actual combined rate is within 2% of the target rate.
+      // This inexact fee rate result is usually due to the child tx witness
+      // signatures being one byte less than was estimated when creating
+      // the child transaction. It is also possible to create a valid
+      // signature which is more than one byte less than was estimated, but
+      // this case should be sufficiently rare that it is not handled in this test.
+      const tolerance = 0.02 * targetRate;
+      combinedRate.should.be.within(targetRate - tolerance, targetRate + tolerance);
+    }).call(this).asCallback(callback);
+  }
+
+  it('accelerates a stuck tx', co(function *coAcceleratesStuckTx() {
+    // random fee rate at least 10% above the parentTxFeeRate,
+    // but no more than the max fee rate
+    const minCombinedTxFeeRate = parentTxFeeRate * 1.1;
+    const combinedTxFeeRate = Math.floor(Math.random() * (maxFeeRate - minCombinedTxFeeRate) + minCombinedTxFeeRate);
+
+    const childTx = yield wallet.accelerateTransaction({
+      transactionID: parentTx.hash,
+      feeRate: combinedTxFeeRate,
+      xprv: userKeypair.xprv
+    });
+
+    // verify childTx
+    should.exist(childTx);
+    childTx.should.have.property('status', 'accepted');
+
+    // allow child tx time to be indexed by smartbit
+    yield Promise.delay(10000);
+    return verifyTargetFeeRate({ parentTx, childTx, targetRate: combinedTxFeeRate });
+  }));
 });

@@ -9,8 +9,10 @@ const TestBitGo = require('../lib/test_bitgo');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-
-require('should');
+const common = require('../../src/common');
+const bitcoin = require('../../src/bitcoin');
+const should = require('should');
+const nock = require('nock');
 
 describe('Wallet Prototype Methods', function() {
 
@@ -556,6 +558,988 @@ describe('Wallet Prototype Methods', function() {
       signature2.tx.should.equal('010000000001027c75f8b4061212ec4669ef10c7a85a6bd8b677e74ecffef72df1e35b0ace54f601000000fc0047304402201756f130805f0157e7756cf8be3cb67faedda02d14ac9036c762edd677c8a5cb02207207db2ff9fdd76d4f21132a116646100d0150b41fc505c7d6ebe05a25be41ee0147304402200ccf2cc2acdfae4424f6e6352c53fea0a2401b4279e117296d0cc914b23ce1b302207edafb4393d0194a26b425c2ae8177842345327a8aedf1b2c456a14b9b577b4c014c69522103da95b28a13aa2d4bb490d70628e2e5d912461d375fef381aadd89dc1256220752103121287a510c5f32e8ba72d2479e90eb52ba44a467173df339feb0ff215f100e32102977cdfbee76066ae739db72d55371ad49dc6712fb8f2f3f69bb1a4c2422b0b1a53aeffffffff249f4f3b89110526e9d71f33679c5303dbf00ef43dac90b867ae2f043f9c40a400000000232200208b91aa03eb0f7f31e3917088084168ba5282a915e7cde0a5a934b7ea02eb057bffffffff030084d71700000000206a1e426974476f206d6978656420703273682026207365677769742074657374d88ff9020000000017a9148153e7a35508088b6cf599226792c7de2dbff25287603f01000000000017a914d9f7be47975c036f94228b0bfd70701912758ba987000400483045022100c9569aeeb63bded2dab4ec118356da02e077a2d6571a27b3bb8c2fab5567650302200151ed8fd9f7218482484a154e3f7e0d3c90a8412ee7902ab5417669f528eda20147304402205b9770223ad9ce4f3f1a5bafe500278df7e299944f244d9865a7218d478dd9c8022040b7c2b32af8645f41f643b399761a1c41f64cd74183e009713235fb7edc94aa01695221030780186c0be5df0d2d62cf54cc2f3d2c09911e377aa95b5fe875fa352aed0a592103f3237edd2d87010e8fe9f43f34e8c63de6384283de909795d62af4ddb4d579542102ad03de5504ef947e4e6ee2fa6b15d150d553c21275f49f2ce2359d9fdedb9ade53ae00000000');
     }));
 
+  });
+
+
+  describe('Accelerate Transaction (server mocked)', function accelerateTxMockedDescribe() {
+
+    let bitgo;
+    let wallet;
+    let bgUrl;
+    let smartBitUrl;
+    let minChangeSize;
+
+    let parentTxId = '6a74b74df4991d93c32d751336c85b5f2d1ee544a2dfbae2e5f4beb4f914e5e0';
+    const outputIdx = 0;
+    const outputAddress = '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4';
+    const parentTxHex = '01000000000102e1c30f2a424bd339eada830a78286a5606c99d7f8e2e8be1955858d84d375f75000000002322002046d27566b5fa5bc2375cb43c86bfb46c9856c0a0b1bf99f8ec8f89fa6b13ca89ffffffff7c2d3cc1c05db074350595d47f719b5cef0a0fb549ba95b9b9f9cb1056d01cbf0000000023220020a05257bbe2d6db470ea8c367d7b948dff19e99d8d775ab09ee4973db478c8fddffffffff01404397000000000017a91488990f2994b2f11965e9542e0d01da61d9c019cf870400473044022046b0244399c0a56c8a0fdff3f150c520d24961a3de040e61f5b1ba90885710060220557e02802fac7086366cc4a477909372d4057188aaae8496f58d71e66d56869e014730440220161a729f4f9c59aa5ec86007701c8f0ea0c679da46c971c46739abd6ec0c20ef02205b849490fe98811617eeb06d99c7f9ad8b6c69b0c325f2f1e7a43212ab38b63601695221025b864106f997d8a6b2cb38ae96f8e16c64bc62ad2cc1b168fd34f3ba194538ee2102670baf6f5297999203c08c0e0ec24d7367f6b3d4cf7d593dda4a767d1e2c9ddd210371d5623a5e5ee232842631889adf2b7a6cf9a04ea8ad2488726b3f056ddd202053ae0400483045022100838fb910810bccaca63901b4ebec208442553b51df9a87ba0ffde2323730c09502201e567a3741ef3ed8eb4f3f69ef675f5623b631e464e0af9ca3eaf395eb7c52bf01483045022100bcb17e5cda35b70015184c2e795a05ff37b40bf573a1fb855b25117e32a85b1502204296cfbea889847f9fbfd062397a2c6b04f6aa1874326539905ae5c6d49080600169522102befcec96c8f9c785886b90d0b32d1f0b3f400c984221e575a24b69500ee77a5921037b35acc45dffa07bf2b39028797da52c69aefb56f92d2b2fcaaf9ba51c84bae921023fdfd3e337cf97fbe7872a9c6f9d992ca25369c4b0a978dd266d4727e0a2196c53ae00000000';
+    const unrelatedTxHex = '01000000000101d1c40822841db824893f4038660019ca443e00b83ed1f016b673d33e043a628801000000232200201b646106e3bd0e7541a2135376a6ee9362715c2f4ea74e2ea28d1de990021834ffffffff028eeb25020000000017a914b634d2464a22e99daa3822432d4903e55ae6482b87102700000000000017a914d682476e9bd54454a885f9dff1e604e99cef43dc870400483045022100c8c3ec442bfcddbc58da45c61252bfa2a50e0b2c91124fa3c5b0667eb8b785c002205e370a583d10a2d19785ae6b256638cb267b18478b5fc3de3d928f1c50e50bd401483045022100d7bd1ec22e2e5d0aa4e31f24d73d1fdefcc1c6caa85af17252a48021ca20b81002201ffa870ffa9d16ce9cd8c72e17bfb7f6698cef293afcc5b45b039114e9b64b200169522103bf0667e3b22adabdba9b05dc48cc5a5fc5c44b7dcbe7855284dee82333eea8b2210399c2e5dcadad8e980c58ea6099ea7a39b4b710576a3a03e65efaa71ff42de6bd21033b883beaa9c7eb0f69a6b3e53b0b267707b256e8764cd33bed87d181a43a272d53ae00000000';
+    const walletId = '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4';
+
+    /**
+     * Helper function to get the parent transaction ID from a transaction input
+     *
+     * This function converts `hash` (which is a Buffer object) to a usable txid string.
+     * The issue is that the bytes are stored in reverse order in the buffer, so
+     * the simple approach of just comparing the hex strings doesn't work.
+     * Instead, the Buffer is copied to a new Buffer object, the new Buffer
+     * object is reversed in-place, and then the new Buffer is converted to a
+     * hex string. After this, the result is a hex string which is the parent txid
+     *
+     * @param hash a bitcoinjs-lib transaction object's input hash
+     */
+    function inputParentTxId({ hash }) {
+      return Buffer.from(hash).reverse().toString('hex');
+    }
+
+    before(function accelerateTxMockedBefore() {
+      // no net connects allowed for these tests
+      nock.disableNetConnect();
+
+      nock('https://bitgo.fakeurl')
+      .get('/api/v1/client/constants')
+      .twice()
+      .reply(200, { ttl: 3600, constants: {} });
+
+      bitgo = new TestBitGo({ env: 'mock' });
+      bitgo.initializeTestVars();
+      bitgo.setValidate(false);
+      wallet = new Wallet(bitgo, { id: walletId, private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });
+      wallet.bitgo = bitgo;
+      bgUrl = common.Environments[bitgo.getEnv()].uri;
+      smartBitUrl = common.Environments[bitgo.getEnv()].smartBitApiBaseUrl;
+
+      // try to get the min change size from the server, otherwise default to 0.1 BTC
+      // TODO: minChangeSize is not currently a constant defined on the client and should be added
+      minChangeSize = bitgo.getConstants().minChangeSize || 1e7;
+    });
+
+    afterEach(function accelerateTxMockedAfterEach() {
+      // make sure all nocks are cleared or consumed after each test is run
+      nock.activeMocks().length.should.equal(0);
+    });
+
+    after(function accelerateTxMockedAfter() {
+      // reset nock net connect state to default
+      nock.enableNetConnect();
+    });
+
+    it('arguments', co(function *coArgumentsIt() {
+      try {
+        yield wallet.accelerateTransaction({ feeRate: 123 });
+        throw new Error();
+      } catch (e) {
+        e.message.should.match(/^Missing parameter: transactionID$/);
+      }
+
+      try {
+        yield wallet.accelerateTransaction({ transactionID: 123, feeRate: 123 });
+        throw new Error();
+      } catch (e) {
+        e.message.should.match(/^Expecting parameter string: transactionID but found number$/);
+      }
+
+      try {
+        yield wallet.accelerateTransaction({ transactionID: '123' });
+        throw new Error();
+      } catch (e) {
+        e.message.should.match(/^Missing parameter: feeRate$/);
+      }
+
+      const feeRatesParams = ['123', 0, -10, -Infinity, Infinity, NaN];
+
+      for (const feeRate of feeRatesParams) {
+        try {
+          yield wallet.accelerateTransaction({ transactionID: '123', feeRate });
+          throw new Error(`feeRate value ${feeRate} should have thrown but did not!`);
+        } catch (e) {
+          e.message.should.match(/^Expecting positive finite number for parameter: feeRate$/);
+        }
+      }
+    }));
+
+    describe('bad input', function badInputDescribe() {
+
+      it('non existant transaction ID', co(function *coNonExistantIt() {
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(404, 'transaction not found on this wallet');
+
+        try {
+          yield wallet.accelerateTransaction({ transactionID: parentTxId, feeRate: 123 });
+          throw new Error();
+        } catch (e) {
+          e.message.should.match(/^404\ntransaction not found on this wallet$/);
+        }
+      }));
+
+      it('confirmed transaction', co(function *coConfirmedTransactionIt() {
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          confirmations: 6
+        });
+
+        try {
+          yield wallet.accelerateTransaction({ transactionID: parentTxId, feeRate: 2000 });
+          throw new Error();
+        } catch (e) {
+          e.message.should.match(/^Transaction [0-9a-f]+ is already confirmed and cannot be accelerated$/);
+        }
+      }));
+
+      it('no outputs to wallet', co(function *coNoOutputsToWalletIt() {
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          outputs: [
+            {
+              account: outputAddress,
+              value: 1890000,
+              vout: 0,
+              chain: 0
+            }
+          ],
+          confirmations: 0
+        });
+
+        try {
+          yield wallet.accelerateTransaction({ transactionID: parentTxId, feeRate: 2000 });
+          throw new Error();
+        } catch (e) {
+          e.message.should.match(/^Transaction [0-9a-f]+ contains no outputs to this wallet, and thus cannot be accelerated$/);
+        }
+      }));
+
+      /*
+       * This test covers the case where a failure occurs during the process of
+       * converting an output from the parent transaction into an unspent which
+       * can be used to chain the child tx to the parent.
+       *
+       * This should never happen, but it is possible (for example, in the case
+       * of an attempted double spend of the output from the parent, or a race
+       * between finding the parent output, and retrieving the corresponding unspent).
+       */
+      it('cannot find correct unspent to use', co(function *coCannotFindCorrectUnspentIt() {
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          outputs: [
+            {
+              account: outputAddress,
+              value: 50 * 1e4,
+              vout: outputIdx,
+              isMine: true,
+              chain: 0
+            }
+          ],
+          confirmations: 0,
+          hex: parentTxId,
+          fee: 10
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          count: 0,
+          unspents: []
+        });
+
+        try {
+          yield wallet.accelerateTransaction({ transactionID: parentTxId, feeRate: 2000 });
+          throw new Error();
+        } catch (e) {
+          e.message.should.match(/^Could not find unspent output from parent tx to use as child input$/);
+        }
+      }));
+
+      it('Detects when an incorrect tx hex is returned by the external service', co(function *coIncorrectHexIt() {
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          outputs: [
+            {
+              account: outputAddress,
+              value: 10,
+              vout: outputIdx,
+              isMine: true,
+              chain: 0
+            }
+          ],
+          confirmations: 0,
+          hex: parentTxHex,
+          fee: 10
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          count: 1,
+          unspents: [
+            {
+              tx_hash: parentTxId,
+              tx_output_n: outputIdx
+            }
+          ]
+        });
+
+        nock(smartBitUrl)
+        .get(`/blockchain/tx/${parentTxId}/hex`)
+        .reply(200, {
+          success: true,
+          hex: [
+            {
+              hex: unrelatedTxHex
+            }
+          ]
+        });
+
+        try {
+          yield wallet.accelerateTransaction({ transactionID: parentTxId, feeRate: 2000 });
+          throw new Error();
+        } catch (e) {
+          e.message.should.match(/^Decoded transaction id is [0-9a-f]+, which does not match given txid [0-9a-f]+$/);
+        }
+      }));
+
+      it('cannot cover child fee with one parent output and one wallet unspent', co(function *coCannotCoverChildFeeIt() {
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          outputs: [
+            {
+              account: outputAddress,
+              value: 10,
+              vout: outputIdx,
+              isMine: true,
+              chain: 0
+            }
+          ],
+          confirmations: 0,
+          hex: parentTxHex,
+          fee: 10
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          count: 1,
+          unspents: [
+            {
+              tx_hash: parentTxId,
+              tx_output_n: outputIdx
+            }
+          ]
+        });
+
+        nock(smartBitUrl)
+        .get(`/blockchain/tx/${parentTxId}/hex`)
+        .reply(200, {
+          success: true,
+          hex: [
+            {
+              hex: parentTxHex
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          count: 0,
+          unspents: []
+        });
+
+        try {
+          yield wallet.accelerateTransaction({ transactionID: parentTxId, feeRate: 2000 });
+          throw new Error();
+        } catch (e) {
+          e.message.should.match(/^Insufficient confirmed unspents available to cover the child fee$/);
+        }
+      }));
+
+      it('cannot lower fee rate', co(function *coCannotLowerFeeRateIt() {
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          outputs: [
+            {
+              account: outputAddress,
+              value: 10,
+              vout: outputIdx,
+              isMine: true,
+              chain: 11
+            }
+          ],
+          confirmations: 0,
+          hex: parentTxHex,
+          fee: 10000 // large fee, and thus fee rate, for parent
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          count: 1,
+          unspents: [
+            {
+              tx_hash: parentTxId,
+              tx_output_n: outputIdx
+            }
+          ]
+        });
+
+        nock(smartBitUrl)
+        .get(`/blockchain/tx/${parentTxId}/hex`)
+        .reply(200, {
+          success: true,
+          hex: [
+            {
+              hex: parentTxHex
+            }
+          ]
+        });
+
+        try {
+          yield wallet.accelerateTransaction({ transactionID: parentTxId, feeRate: 2000 });
+          throw new Error();
+        } catch (e) {
+          e.message.should.match(/^Cannot lower fee rate! \(Parent tx fee rate is \d+\.?\d* sat\/kB, and requested fee rate was \d+\.?\d* sat\/kB\)$/);
+        }
+      }));
+
+      it('cannot break maximum fee limit for combined transaction', co(function *coCannotBreakMaxFeeLimitIt() {
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          outputs: [
+            {
+              account: outputAddress,
+              value: 3e7,
+              vout: outputIdx,
+              isMine: true,
+              chain: 11
+            }
+          ],
+          confirmations: 0,
+          hex: parentTxHex,
+          fee: 1000
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          count: 1,
+          unspents: [
+            {
+              tx_hash: parentTxId,
+              tx_output_n: outputIdx
+            }
+          ]
+        });
+
+        nock(smartBitUrl)
+        .get(`/blockchain/tx/${parentTxId}/hex`)
+        .reply(200, {
+          success: true,
+          hex: [
+            {
+              hex: parentTxHex
+            }
+          ]
+        });
+
+        try {
+          yield wallet.accelerateTransaction({ transactionID: parentTxId, feeRate: 2e6 });
+          throw new Error();
+        } catch (e) {
+          e.message.should.match(/^Transaction cannot be accelerated\. Combined fee rate of \d+\.?\d* sat\/kB exceeds maximum fee rate of \d+\.?\d* sat\/kB$/);
+        }
+      }));
+    });
+
+    describe('successful tx acceleration', function successfulTxDescribe() {
+      const feeRate = 20000;
+
+      beforeEach(function successfulTxBeforeEach() {
+        nock(bgUrl)
+        .post(`/api/v1/wallet/${wallet.id()}/address/1`)
+        .reply(200, {
+          address: '2NCYjG8Q56yr8tx9jazNoYnGKxjgB2MQSfY'
+        });
+
+        nock(bgUrl)
+        .post('/api/v1/billing/address')
+        .reply(200, {
+          address: '2NFbvo2HK4eXZm1aqDcSDGGqD64FPt7T6d8'
+        });
+
+        nock(bgUrl)
+        .get('/api/v1/tx/fee')
+        .query(true)
+        .reply(200, {
+          feePerKb: 0
+        });
+
+        nock(bgUrl)
+        .post(`/api/v1/keychain/${userKeypair.xpub}`, {})
+        .reply(200, {
+          encryptedXprv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
+          path: userKeypair.path + userKeypair.walletSubPath
+        });
+      });
+
+      it('accelerates a stuck tx without additional unspents', co(function *coAcceleratesWithoutAdditionalIt() {
+        parentTxId = '75cfc5a7b214c4b73c92c7b02608cde70b226767a9576f84c04407e43fd385bd';
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          fee: 434,
+          outputs: [
+            {
+              vout: 0,
+              value: 10348500,
+              isMine: true,
+              chain: 1
+            },
+            {
+              vout: 1,
+              value: 10000,
+              isMine: true,
+              chain: 11
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          unspents: [
+            {
+              tx_hash: parentTxId,
+              tx_output_n: 0,
+              value: 10348500,
+              redeemScript: '0020f7b58d455351b7b8ddd7c8986d98244f6a95f0746720091537323b967800f744',
+              chainPath: '/11/160',
+              witnessScript: '5221027f0b45bb4155ea532e3b4312fe0be80166f297d1e0753d2d4a9118c073ad6514210310aa9d68c98831625f329b7826b6c3e3b53e16736b1994b8902442bdcd6653d121026e0ca414f2488b0ab572b99e0ae5442911ab4e0821b2709d885175a527fd552b53ae'
+            }
+          ]
+        });
+
+        nock(smartBitUrl)
+        .get(`/blockchain/tx/${parentTxId}/hex`)
+        .reply(200, {
+          success: true,
+          hex: [
+            {
+              hex: '010000000001019cc0e63e8e037873d309f0f75b374202cd3bb228354f443f2751589016f9551f00000000232200209e70056b49ced4964c2abd091907a21bb2a6dd75f372460b009ec3b5e96f2730ffffffff02d4e79d000000000017a914f9a7950e9666348ae37826d83bfe96cd2e15312f87102700000000000017a914d682476e9bd54454a885f9dff1e604e99cef43dc8704004730440220647338bf8501a92f3b70e766806a29c0320afbd679bf1a72167908e45f592a80022079726e7e6c6a54e74c788025065a97cfc5d03cf780f082f5db4894928cc3567f0147304402200eef494043c0fced8370f7aaaa9d7328d439f9bda694ba6205f7b1e24c0de17002205b9078530524f27eb0c59fd4aafb8efa73646c90f8c9021e7a056531477624d00169522103abfd364d46f23e5ad8a166d2e42dda06014c86661a11e00947d1ed3f29277a2d2103cb22468f629363aba24e080a79828a660970c307977a51be1146ba2abe611fe921030cbcfec6a39f063a38332b60f0a29da571e02aa6624752f7dd031699d8f44fc653ae00000000'
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .post('/api/v1/tx/send', (body) => {
+          return !body.ignoreMaxFeeRate;
+        })
+        .reply(200, function(_, body) {
+          return {
+            transaction: JSON.parse(body).tx
+          };
+        });
+
+        const childTx = yield wallet.accelerateTransaction({
+          transactionID: parentTxId,
+          feeRate,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE
+        });
+
+        should.exist(childTx);
+        childTx.should.have.property('status', 'accepted');
+        childTx.should.have.property('tx');
+
+        // assert the following:
+        // 0) The child tx has exactly one input
+        // 1) The parent tx output is an input
+        // 2) The child tx has exactly one output
+        // 3) The child tx output meets the minimum change threshold
+        const decodedChild = bitcoin.Transaction.fromHex(childTx.tx);
+        decodedChild.ins.length.should.equal(1);
+        decodedChild.outs.length.should.equal(1);
+
+        const childInput = decodedChild.ins[0];
+        childInput.should.have.property('index', 0);
+        childInput.should.have.property('hash');
+
+        const inputTxId = inputParentTxId(childInput);
+        inputTxId.should.equal(parentTxId);
+
+        const childOutput = decodedChild.outs[0];
+        childOutput.should.have.property('value');
+        childOutput.value.should.be.above(minChangeSize);
+      }));
+
+      it('accelerates a stuck tx with one additional segwit unspent', co(function *coAcceleratesWithAdditionalSegwitIt() {
+        parentTxId = '8815f202c8654b6c8b295749545c711878cd845a14cb1ea982394d0c14945c33';
+        const additionalUnspentTxId = '07d6ee57b024ce2b6108f67847454a0a79a4fcfb98ab255553a2993a1a170b87';
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          fee: 1336,
+          outputs: [
+            {
+              vout: 0,
+              value: 10000,
+              isMine: true,
+              chain: 11
+            },
+            {
+              vout: 1,
+              value: 8664,
+              isMine: true,
+              chain: 1
+            }
+          ],
+          confirmations: 0
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          unspents: [
+            {
+              tx_hash: parentTxId,
+              tx_output_n: 0,
+              value: 10000,
+              redeemScript: '522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53ae',
+              chainPath: '/0/0'
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          unspents: [
+            {
+              tx_hash: additionalUnspentTxId,
+              tx_output_n: 0,
+              value: 19935526,
+              redeemScript: '0020d34ef6dd34ef2a4fbea67c541c1c796749a60afe4a97fee8ec7ded188bd749da',
+              chainPath: '/11/155',
+              witnessScript: '522102219d2aa8417633f0bce3911374a1604c1b64161f83a3c2ee409c27c42355f08e2102c9734920dc4da06c289fe69171dfcd75e3b9b4f190d0cbc3d5d0ff3f5fdeeaae2103ccd68d7fa8dc0d02dd45dad165557a48582eda4435fae7377b3c31e08ad065c953ae'
+            }
+          ]
+        });
+
+        nock(smartBitUrl)
+        .get(`/blockchain/tx/${parentTxId}/hex`)
+        .reply(200, {
+          success: true,
+          hex: [
+            {
+              hex: '01000000025f4acdcb5efe0b5800b8dda3ee8c37c322a9e4e2a92943bcd60f677cfb57fa2700000000fdfe0000483045022100fd5dcf7df6207a33e74c4846e2ba32b0759e7aaeac1cb7ce19d3ce01e209682302203340830e46b6f005f138b359118afa8f1ac5272860480c1e21d7b986011f151201483045022100ba9edc93c3aedeb2c82f1698f14d28cce4f61e193a9b9085739c78edc6b53b95022015e39c5b0453873fdc2cbd15f360da9d6be61fcd7e66be6e691d23f5c8e20ecc014c69522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53aeffffffffb8d7c3fe34a2a53033ec84e31880b9e47e4b70ff25c75ac42438d3a9b39da19201000000fc004730440220418e7695f5fb6b8b29e8bdd174e8a0379a6dc2af64554055eae751904fed78eb0220430bf2a2593b8b4c4442a9c4a949ce746ed4999dbbd272a3dc4d7572e1e27154014730440220227079fc5811fd6501046c255766afd3448676e98ec72fcc559dbf9986081ac302200a844b3187f0ff2a2a0fae3b258421eb057aeb8152702f6d6136dcb4818203c1014c69522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53aeffffffff02102700000000000017a914d682476e9bd54454a885f9dff1e604e99cef43dc87d82100000000000017a914afa36ee1e58397ab03059e53346b64c920ac0f0e8700000000'
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .post('/api/v1/tx/send', (body) => {
+          return !body.ignoreMaxFeeRate;
+        })
+        .reply(200, function(_, body) {
+          return {
+            transaction: JSON.parse(body).tx
+          };
+        });
+
+        const childTx = yield wallet.accelerateTransaction({
+          transactionID: parentTxId,
+          feeRate,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE
+        });
+
+        should.exist(childTx);
+        childTx.should.have.property('status', 'accepted');
+        childTx.should.have.property('tx');
+
+        // assert the following:
+        // 0) The child tx has exactly two inputs
+        // 1) The parent tx output is an input
+        // 2) The additional unspent output is an input
+        // 3) The child tx has exactly one output
+        // 4) The child tx output meets the minimum change threshold
+        const decodedChild = bitcoin.Transaction.fromHex(childTx.tx);
+        decodedChild.ins.length.should.equal(2);
+        decodedChild.outs.length.should.equal(1);
+
+        let inputFromParent = undefined;
+        let additionalInput = undefined;
+
+        _.forEach(decodedChild.ins, (input) => {
+          input.should.have.property('hash');
+          input.should.have.property('index');
+
+          const inputTxId = inputParentTxId(input);
+
+          if (inputTxId === parentTxId) {
+            inputFromParent = input;
+          } else {
+            additionalInput = input;
+          }
+        });
+
+        should.exist(inputFromParent);
+        const inputFromParentHash = inputParentTxId(inputFromParent);
+        inputFromParentHash.should.equal(parentTxId);
+        inputFromParent.index.should.equal(0);
+
+        should.exist(additionalInput);
+        const additionalInputHash = inputParentTxId(additionalInput);
+        additionalInputHash.should.equal(additionalUnspentTxId);
+        additionalInput.index.should.equal(0);
+
+        const childOutput = decodedChild.outs[0];
+        childOutput.should.have.property('value');
+        childOutput.value.should.be.above(minChangeSize);
+      }));
+
+      it('accelerates a stuck tx with one additional P2SH unspent', co(function *coAcceleratesWithAdditionalP2SHIt() {
+        parentTxId = '8815f202c8654b6c8b295749545c711878cd845a14cb1ea982394d0c14945c33';
+        const additionalUnspentTxId = 'e190310f2f3f71aa8846f1161cbce1533c24a857dd24e4501b131feb400aad58';
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          fee: 1336,
+          outputs: [
+            {
+              vout: 0,
+              value: 10000,
+              isMine: true,
+              chain: 11
+            },
+            {
+              vout: 1,
+              value: 8664,
+              isMine: true,
+              chain: 1
+            }
+          ],
+          confirmations: 0
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          unspents: [
+            {
+              tx_hash: parentTxId,
+              tx_output_n: 0,
+              value: 10000,
+              redeemScript: '522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53ae',
+              chainPath: '/0/0'
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          unspents: [
+            {
+              tx_hash: additionalUnspentTxId,
+              tx_output_n: 1,
+              value: 20000000,
+              redeemScript: '522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53ae',
+              chainPath: '/0/0'
+            }
+          ]
+        });
+
+        nock(smartBitUrl)
+        .get(`/blockchain/tx/${parentTxId}/hex`)
+        .reply(200, {
+          success: true,
+          hex: [
+            {
+              hex: '01000000025f4acdcb5efe0b5800b8dda3ee8c37c322a9e4e2a92943bcd60f677cfb57fa2700000000fdfe0000483045022100fd5dcf7df6207a33e74c4846e2ba32b0759e7aaeac1cb7ce19d3ce01e209682302203340830e46b6f005f138b359118afa8f1ac5272860480c1e21d7b986011f151201483045022100ba9edc93c3aedeb2c82f1698f14d28cce4f61e193a9b9085739c78edc6b53b95022015e39c5b0453873fdc2cbd15f360da9d6be61fcd7e66be6e691d23f5c8e20ecc014c69522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53aeffffffffb8d7c3fe34a2a53033ec84e31880b9e47e4b70ff25c75ac42438d3a9b39da19201000000fc004730440220418e7695f5fb6b8b29e8bdd174e8a0379a6dc2af64554055eae751904fed78eb0220430bf2a2593b8b4c4442a9c4a949ce746ed4999dbbd272a3dc4d7572e1e27154014730440220227079fc5811fd6501046c255766afd3448676e98ec72fcc559dbf9986081ac302200a844b3187f0ff2a2a0fae3b258421eb057aeb8152702f6d6136dcb4818203c1014c69522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53aeffffffff02102700000000000017a914d682476e9bd54454a885f9dff1e604e99cef43dc87d82100000000000017a914afa36ee1e58397ab03059e53346b64c920ac0f0e8700000000'
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .post('/api/v1/tx/send', (body) => {
+          return !body.ignoreMaxFeeRate;
+        })
+        .reply(200, function(_, body) {
+          return {
+            transaction: JSON.parse(body).tx
+          };
+        });
+
+        const childTx = yield wallet.accelerateTransaction({
+          transactionID: parentTxId,
+          feeRate,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE
+        });
+
+        should.exist(childTx);
+        childTx.should.have.property('status', 'accepted');
+        childTx.should.have.property('tx');
+
+        // assert the following:
+        // 0) The child tx has exactly two inputs
+        // 1) The parent tx output is an input
+        // 2) The additional unspent output is an input
+        // 3) The child tx has exactly one output
+        // 4) The child tx output meets the minimum change threshold
+        const decodedChild = bitcoin.Transaction.fromHex(childTx.tx);
+        decodedChild.ins.length.should.equal(2);
+        decodedChild.outs.length.should.equal(1);
+
+        let inputFromParent = undefined;
+        let additionalInput = undefined;
+
+        _.forEach(decodedChild.ins, (input) => {
+          input.should.have.property('hash');
+          input.should.have.property('index');
+
+          const inputHash = inputParentTxId(input);
+
+          if (inputHash === parentTxId) {
+            inputFromParent = input;
+          } else {
+            additionalInput = input;
+          }
+        });
+
+        should.exist(inputFromParent);
+        const inputFromParentHash = inputParentTxId(inputFromParent);
+        inputFromParentHash.should.equal(parentTxId);
+        inputFromParent.index.should.equal(0);
+
+        should.exist(additionalInput);
+        const additionalInputHash = inputParentTxId(additionalInput);
+        additionalInputHash.should.equal(additionalUnspentTxId);
+        additionalInput.index.should.equal(1);
+
+        const childOutput = decodedChild.outs[0];
+        childOutput.should.have.property('value');
+        childOutput.value.should.be.above(minChangeSize);
+      }));
+
+      it('accelerates a stuck tx with two additional unspents (segwit and P2SH)', co(function *coAcceleratesWithAdditionalP2SHIt() {
+        parentTxId = '8815f202c8654b6c8b295749545c711878cd845a14cb1ea982394d0c14945c33';
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          fee: 1336,
+          outputs: [
+            {
+              vout: 0,
+              value: 10000,
+              isMine: true,
+              chain: 11
+            },
+            {
+              vout: 1,
+              value: 8664,
+              isMine: true,
+              chain: 1
+            }
+          ],
+          confirmations: 0
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          unspents: [
+            {
+              tx_hash: parentTxId,
+              tx_output_n: 0,
+              value: 10000,
+              redeemScript: '522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53ae',
+              chainPath: '/0/0'
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          unspents: [
+            {
+              tx_hash: 'e190310f2f3f71aa8846f1161cbce1533c24a857dd24e4501b131feb400aad58',
+              tx_output_n: 1,
+              value: 800000,
+              redeemScript: '522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53ae',
+              chainPath: '/0/0'
+            },
+            {
+              tx_hash: '07d6ee57b024ce2b6108f67847454a0a79a4fcfb98ab255553a2993a1a170b87',
+              tx_output_n: 0,
+              value: 20006284,
+              redeemScript: '0020d34ef6dd34ef2a4fbea67c541c1c796749a60afe4a97fee8ec7ded188bd749da',
+              chainPath: '/11/155',
+              witnessScript: '522102219d2aa8417633f0bce3911374a1604c1b64161f83a3c2ee409c27c42355f08e2102c9734920dc4da06c289fe69171dfcd75e3b9b4f190d0cbc3d5d0ff3f5fdeeaae2103ccd68d7fa8dc0d02dd45dad165557a48582eda4435fae7377b3c31e08ad065c953ae'
+            }
+          ]
+        });
+
+        nock(smartBitUrl)
+        .get(`/blockchain/tx/${parentTxId}/hex`)
+        .reply(200, {
+          success: true,
+          hex: [
+            {
+              hex: '01000000025f4acdcb5efe0b5800b8dda3ee8c37c322a9e4e2a92943bcd60f677cfb57fa2700000000fdfe0000483045022100fd5dcf7df6207a33e74c4846e2ba32b0759e7aaeac1cb7ce19d3ce01e209682302203340830e46b6f005f138b359118afa8f1ac5272860480c1e21d7b986011f151201483045022100ba9edc93c3aedeb2c82f1698f14d28cce4f61e193a9b9085739c78edc6b53b95022015e39c5b0453873fdc2cbd15f360da9d6be61fcd7e66be6e691d23f5c8e20ecc014c69522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53aeffffffffb8d7c3fe34a2a53033ec84e31880b9e47e4b70ff25c75ac42438d3a9b39da19201000000fc004730440220418e7695f5fb6b8b29e8bdd174e8a0379a6dc2af64554055eae751904fed78eb0220430bf2a2593b8b4c4442a9c4a949ce746ed4999dbbd272a3dc4d7572e1e27154014730440220227079fc5811fd6501046c255766afd3448676e98ec72fcc559dbf9986081ac302200a844b3187f0ff2a2a0fae3b258421eb057aeb8152702f6d6136dcb4818203c1014c69522102cd3c8e6006a4627705021d1d016d097c2944d98100a47bf2da67a5fe15aeeb342102ee1fa9e812e779356aa3c31ebf317d0cffebab92864cfe38bab223e0820f98bc21026ba05752baa6eafd5c5659da62b7f0ac51fd2886b65c241d0afef1c4fdfa1cbc53aeffffffff02102700000000000017a914d682476e9bd54454a885f9dff1e604e99cef43dc87d82100000000000017a914afa36ee1e58397ab03059e53346b64c920ac0f0e8700000000'
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .post('/api/v1/tx/send', (body) => {
+          return !body.ignoreMaxFeeRate;
+        })
+        .reply(200, function(_, body) {
+          return {
+            transaction: JSON.parse(body).tx
+          };
+        });
+
+        const childTx = yield wallet.accelerateTransaction({
+          transactionID: parentTxId,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
+          feeRate
+        });
+
+        should.exist(childTx);
+        childTx.should.have.property('status', 'accepted');
+        childTx.should.have.property('tx');
+
+        // assert the following:
+        // 0) The child tx has exactly three inputs
+        // 1) The parent tx output is an input
+        // 2) The child tx has exactly one output
+        // 3) The child tx output meets the minimum change threshold
+        const decodedChild = bitcoin.Transaction.fromHex(childTx.tx);
+        decodedChild.ins.length.should.equal(3);
+        decodedChild.outs.length.should.equal(1);
+
+        let inputFromParent = undefined;
+        const additionalInputs = [];
+
+        _.forEach(decodedChild.ins, (input) => {
+          input.should.have.property('hash');
+          input.should.have.property('index');
+
+          const inputHash = inputParentTxId(input);
+
+          if (inputHash === parentTxId) {
+            inputFromParent = input;
+          } else {
+            additionalInputs.push(input);
+          }
+        });
+
+        should.exist(inputFromParent);
+        const inputFromParentHash = inputParentTxId(inputFromParent);
+        inputFromParentHash.should.equal(parentTxId);
+        inputFromParent.index.should.equal(0);
+
+        additionalInputs.length.should.equal(2);
+
+        const childOutput = decodedChild.outs[0];
+        childOutput.should.have.property('value');
+        childOutput.value.should.be.above(minChangeSize);
+      }));
+
+      it('correctly uses the ignoreMaxFeeRate parameter only when necessary', co(function *coUsesIgnoreMaxFeeRateIt() {
+        parentTxId = '75cfc5a7b214c4b73c92c7b02608cde70b226767a9576f84c04407e43fd385bd';
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/tx/${parentTxId}`)
+        .reply(200, {
+          fee: 434,
+          outputs: [
+            {
+              vout: 0,
+              value: 10348500,
+              isMine: true,
+              chain: 0
+            },
+            {
+              vout: 1,
+              value: 10000,
+              isMine: true,
+              chain: 11
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .get(`/api/v1/wallet/${wallet.id()}/unspents`)
+        .query(true)
+        .reply(200, {
+          unspents: [
+            {
+              tx_hash: parentTxId,
+              tx_output_n: 0,
+              value: 10348500,
+              redeemScript: '0020f7b58d455351b7b8ddd7c8986d98244f6a95f0746720091537323b967800f744',
+              chainPath: '/11/160',
+              witnessScript: '5221027f0b45bb4155ea532e3b4312fe0be80166f297d1e0753d2d4a9118c073ad6514210310aa9d68c98831625f329b7826b6c3e3b53e16736b1994b8902442bdcd6653d121026e0ca414f2488b0ab572b99e0ae5442911ab4e0821b2709d885175a527fd552b53ae'
+            }
+          ]
+        });
+
+        nock(smartBitUrl)
+        .get(`/blockchain/tx/${parentTxId}/hex`)
+        .reply(200, {
+          success: true,
+          hex: [
+            {
+              hex: '010000000001019cc0e63e8e037873d309f0f75b374202cd3bb228354f443f2751589016f9551f00000000232200209e70056b49ced4964c2abd091907a21bb2a6dd75f372460b009ec3b5e96f2730ffffffff02d4e79d000000000017a914f9a7950e9666348ae37826d83bfe96cd2e15312f87102700000000000017a914d682476e9bd54454a885f9dff1e604e99cef43dc8704004730440220647338bf8501a92f3b70e766806a29c0320afbd679bf1a72167908e45f592a80022079726e7e6c6a54e74c788025065a97cfc5d03cf780f082f5db4894928cc3567f0147304402200eef494043c0fced8370f7aaaa9d7328d439f9bda694ba6205f7b1e24c0de17002205b9078530524f27eb0c59fd4aafb8efa73646c90f8c9021e7a056531477624d00169522103abfd364d46f23e5ad8a166d2e42dda06014c86661a11e00947d1ed3f29277a2d2103cb22468f629363aba24e080a79828a660970c307977a51be1146ba2abe611fe921030cbcfec6a39f063a38332b60f0a29da571e02aa6624752f7dd031699d8f44fc653ae00000000'
+            }
+          ]
+        });
+
+        nock(bgUrl)
+        .post('/api/v1/tx/send', (body) => {
+          // ignore max fee rate must be set for this test
+          return body.ignoreMaxFeeRate;
+        })
+        .reply(200);
+
+        // monkey patch the bitgo getConstants() function
+        const oldGetConstants = bitgo.__proto__.getConstants;
+        bitgo.__proto__.getConstants = () => ({
+          // child fee rate in this test is 31378 sat/kb
+          // so set the max fee rate just below that limit,
+          // but above the combined fee rate of 20000
+          maxFeeRate: 30000
+        });
+
+        yield wallet.accelerateTransaction({
+          transactionID: parentTxId,
+          feeRate,
+          walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE
+        });
+
+        bitgo.__proto__.getConstants = oldGetConstants;
+      }));
+    });
   });
 
 });
