@@ -470,7 +470,7 @@ Btc.prototype.verifySignature = function(transaction, inputIndex, amount, verifi
 
     let isSignatureValid = false;
 
-    if (_.isBuffer(signatureBuffer)) {
+    if (Buffer.isBuffer(signatureBuffer) && signatureBuffer.length > 0) {
       // slice the last byte from the signature hash input because it's the hash type
       const signature = bitcoin.ECSignature.fromDER(signatureBuffer.slice(0, -1));
       const hashType = _.last(signatureBuffer);
