@@ -6,11 +6,15 @@
 
 const BitGo = require('../../src/bitgo.js');
 const expressApp = require('../../src/expressApp');
+const Wallet = require('../../src/v2/wallet');
 const BigNumber = require('bignumber.js');
 const request = require('supertest-as-promised');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 require('should');
+
+const nock = require('nock');
+nock.enableNetConnect();
 
 BitGo.TEST_USER = 'tester@bitgo.com';
 
@@ -189,6 +193,9 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER = 'update_pw_tester@bitgo.com';
     BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD = BitGo.TEST_PASSWORD;
 
+    // Contract address for Potatoken
+    BitGo.V2.TEST_ERC20_TOKEN_ADDRESS = '0x06d22e6fa60fda26b6ca28f73d2d4a81bd9aa2de';
+    BitGo.V2.TEST_ERC20_TOKEN_RECIPIENT = '0x52c8B29Ab8B0a49a01c2b75f8e7f11B23e0e3782';
   }
 
   BitGo.TEST_FEE_SINGLE_KEY_WIF = 'cRVQ6cbUyGHVvByPKF9GnEhaB4HUBFgLQ2jVX1kbQARHaTaD7WJ2';
@@ -354,5 +361,107 @@ BitGo.prototype.checkFunded = co(function *checkFunded(agent) {
     throw new Error(`The TBTC wallet ${sweep1Wallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
   }
 });
+
+BitGo.prototype.nockEthWallet = function() {
+  const walletData = {
+    id: '598f606cd8fc24710d2ebadb1d9459bb',
+    users: [
+      {
+        user: '543c11ed356d00cb7600000b98794503',
+        permissions: [Object]
+      }
+    ],
+    coin: 'teth',
+    label: 'my test ether wallet',
+    m: 2,
+    n: 3,
+    keys: [
+      '598f606cd8fc24710d2ebad89dce86c2',
+      '598f606cc8e43aef09fcb785221d9dd2',
+      '5935d59cf660764331bafcade1855fd7'
+    ],
+    tags: ['598f606cd8fc24710d2ebadb1d9459bb'],
+    disableTransactionNotifications: false,
+    freeze: {},
+    deleted: false,
+    approvalsRequired: 1,
+    isCold: false,
+    coinSpecific: {
+      deployedInBlock: false,
+      deployTxHash: '0x413ed27a9cdd341a4742baff13984e9d4ee262ec0edbca92b9872fb4e18f5106',
+      lastChainIndex: { 0: 701, 1: -1 },
+      baseAddress: '0xdf07117705a9f8dc4c2a78de66b7f1797dba9d4e',
+      pendingChainInitialization: false,
+      creationFailure: []
+    },
+    admin: {
+      policy: {
+        id: '598f606cd8fc24710d2ebadda4b955fb',
+        version: 0,
+        date: '2017-08-12T20:09:16.472Z',
+        rules: []
+      }
+    },
+    clientFlags: [],
+    allowBackupKeySigning: false,
+    balanceString: '10000000000000000000',
+    confirmedBalanceString: '10000000000000000000',
+    spendableBalanceString: '10000000000000000000',
+    receiveAddress: {
+      id: '5a8453c23fd075b907574338a878f4fb',
+      address: '0xa7f9ca5c1268b0082db1833d30f33d3cfd4286d8',
+      chain: 0,
+      index: 701,
+      coin: 'teth',
+      lastNonce: 0,
+      wallet: '598f606cd8fc24710d2ebadb1d9459bb',
+      coinSpecific: {
+        nonce: -1,
+        updateTime: '2018-02-14T15:20:34.188Z',
+        txCount: 0,
+        pendingChainInitialization: false,
+        creationFailure: []
+      }
+    },
+    pendingApprovals: []
+  };
+
+  const wallet = new Wallet(this, this.coin('teth'), walletData);
+
+  // Nock calls to platform for building transactions and getting user key
+  // Should be OK to persist these since they are wallet specific data reads
+  nock('https://test.bitgo.com/api/v2/teth')
+  .persist()
+  .filteringRequestBody(() => '*')
+  .post(`/wallet/${wallet.id()}/tx/build`, '*')
+  .reply(200, {
+    gasLimit: 500000,
+    gasPrice: 20000000000,
+    nextContractSequenceId: 101
+  })
+  .get(`/key/${wallet._wallet.keys[0]}`)
+  .reply(200, {
+    id: '598f606cd8fc24710d2ebad89dce86c2',
+    users: ['543c11ed356d00cb7600000b98794503'],
+    pub: 'xpub661MyMwAqRbcFXDcWD2vxuebcT1ZpTF4Vke6qmMW8yzddwNYpAPjvYEEL5jLfyYXW2fuxtAxY8TgjPUJLcf1C8qz9N6VgZxArKX4EwB8rH5',
+    ethAddress: '0x26a163ba9739529720c0914c583865dec0d37278',
+    encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}'
+  });
+
+  // Nock tokens stuck on the wallet
+  nock('https://kovan.etherscan.io')
+  .get('/api')
+  .query({
+    module: 'account',
+    action: 'tokenbalance',
+    contractaddress: BitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
+    address: BitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS,
+    tag: 'latest'
+  })
+  .reply(200, { status: '1', message: 'OK', result: '2400' });
+
+  return wallet;
+};
+
 
 module.exports = BitGo;

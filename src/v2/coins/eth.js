@@ -1,7 +1,11 @@
 const baseCoinPrototype = require('../baseCoin').prototype;
+const Wallet = require('../wallet');
 const BigNumber = require('bignumber.js');
 const Util = require('../../util');
 const _ = require('lodash');
+const Promise = require('bluebird');
+const request = require('superagent');
+const co = Promise.coroutine;
 let ethAbi = function() {};
 let ethUtil = function() {};
 
@@ -186,6 +190,119 @@ Eth.prototype.preCreateBitGo = function(params) {
   if (!_.isUndefined(params.newFeeAddress) && !_.isBoolean(params.newFeeAddress)) {
     throw new Error(`newFeeAddress should be a boolean - got ${params.newFeeAddress} (type ${typeof params.newFeeAddress})`);
   }
+};
+
+/**
+ * Recover an unsupported token from a BitGo multisig wallet
+ * This builds a half-signed transaction, for which there will be an admin route to co-sign and broadcast
+ * @param params
+ * @param params.wallet the wallet to recover the token from
+ * @param params.tokenContractAddress the contract address of the unsupported token
+ * @param params.recipient the destination address recovered tokens should be sent to
+ * @param params.walletPassphrase the wallet passphrase
+ * @param params.prv the xprv
+ */
+Eth.prototype.recoverToken = function(params, callback) {
+  return co(function *() {
+    if (!_.isObject(params)) {
+      throw new Error(`recoverToken must be passed a params object. Got ${params} (type ${typeof params})`);
+    }
+
+    if (_.isUndefined(params.tokenContractAddress) || !_.isString(params.tokenContractAddress)) {
+      throw new Error(`tokenContractAddress must be a string, got ${params.tokenContractAddress} (type ${typeof params.tokenContractAddress})`);
+    }
+
+    if (!this.isValidAddress(params.tokenContractAddress)) {
+      throw new Error('tokenContractAddress not a valid address');
+    }
+
+    if (_.isUndefined(params.wallet) || !(params.wallet instanceof Wallet)) {
+      throw new Error(`wallet must be a wallet instance, got ${params.wallet} (type ${typeof params.wallet})`);
+    }
+
+    if (_.isUndefined(params.recipient) || !_.isString(params.recipient)) {
+      throw new Error(`recipient must be a string, got ${params.recipient} (type ${typeof params.recipient})`);
+    }
+
+    if (!this.isValidAddress(params.recipient)) {
+      throw new Error('recipient not a valid address');
+    }
+
+    if (!ethUtil.bufferToHex || !ethAbi.soliditySHA3) {
+      throw new Error('ethereum not fully supported in this environment');
+    }
+
+    // Get token balance from external API
+    const walletContractAddress = params.wallet._wallet.coinSpecific.baseAddress;
+    const contractBalanceUrl = this.getWalletTokenBalanceUrl(params.tokenContractAddress, walletContractAddress);
+    const res = yield request.get(contractBalanceUrl);
+
+    if (res.status !== 200 || !res.body.result) {
+      throw new Error('Could not fetch token balance from etherscan');
+    }
+
+    const recoveryAmount = res.body.result;
+
+    const recipient = {
+      address: params.recipient,
+      amount: recoveryAmount
+    };
+
+    // This signature will be valid for one week
+    const expireTime = Math.floor((new Date().getTime()) / 1000) + (60 * 60 * 24 * 7);
+
+    // Get sequence ID. We do this by building a 'fake' eth transaction, so the platform will increment and return us the new sequence id
+    // This _does_ require the user to have a non-zero wallet balance
+    const { nextContractSequenceId, gasPrice, gasLimit } = yield params.wallet.prebuildTransaction({
+      recipients: [
+        {
+          address: params.recipient,
+          amount: '1'
+        }
+      ]
+    });
+
+    // Build sendData for ethereum tx
+    const operationTypes = ['string', 'address', 'uint', 'address', 'uint', 'uint'];
+    const operationArgs = [
+      // "ERC20" has been added here so that ether operation hashes, signatures cannot be re-used for tokenSending
+      'ERC20',
+      new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
+      recipient.amount,
+      new ethUtil.BN(ethUtil.stripHexPrefix(params.tokenContractAddress), 16),
+      expireTime,
+      nextContractSequenceId
+    ];
+
+    const operationHash = ethUtil.bufferToHex(ethAbi.soliditySHA3(operationTypes, operationArgs));
+
+    const userPrv = yield params.wallet.getPrv({
+      prv: params.prv,
+      walletPassphrase: params.walletPassphrase
+    });
+
+    const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+
+    const txParams = {
+      recipient: recipient,
+      expireTime: expireTime,
+      contractSequenceId: nextContractSequenceId,
+      operationHash: operationHash,
+      signature: signature,
+      gasLimit: gasLimit,
+      gasPrice: gasPrice,
+      tokenContractAddress: params.tokenContractAddress,
+      walletId: params.wallet.id()
+    };
+
+    return { halfSigned: txParams };
+  }).call(this).asCallback(callback);
+};
+
+Eth.prototype.getWalletTokenBalanceUrl = function(tokenContractAddress, walletContractAddress) {
+  const subdomain = this.getChain() === 'teth' ? 'kovan' : 'api';
+
+  return `https://${subdomain}.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContractAddress}&address=${walletContractAddress}&tag=latest`;
 };
 
 module.exports = Eth;

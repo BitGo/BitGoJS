@@ -291,6 +291,15 @@ const handleV2SignTx = function(req) {
   return coin.signTransaction(req.body);
 };
 
+// handle wallet recover token
+const handleV2RecoverToken = co(function *(req) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+
+  const wallet = yield coin.wallets().get({ id: req.params.id });
+  return wallet.recoverToken(req.body);
+});
+
 // handle wallet fanout unspents
 const handleV2ConsolidateUnspents = co(function *(req) {
   const bitgo = req.bitgo;
@@ -526,6 +535,7 @@ exports = module.exports = function(app, args) {
   // sign transaction
   app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(args), promiseWrapper(handleV2SignTx, args));
   app.post('/api/v2/:coin/wallet/:id/signtx', parseBody, prepareBitGo(args), promiseWrapper(handleV2SignTxWallet, args));
+  app.post('/api/v2/:coin/wallet/:id/recovertoken', parseBody, prepareBitGo(args), promiseWrapper(handleV2RecoverToken, args));
 
   // send transaction
   app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(args), promiseWrapper(handleV2SendOne, args));

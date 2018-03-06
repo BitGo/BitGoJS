@@ -2,7 +2,9 @@
 // Tests for Wallets
 //
 
-require('should');
+const should = require('should');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 const nock = require('nock');
 nock.enableNetConnect();
 
@@ -15,6 +17,7 @@ describe('Recovery:', function() {
     // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
+
   });
 
   after(function() {
@@ -535,4 +538,41 @@ describe('Recovery:', function() {
       });
     }
   });
+
+  describe('Recover ERC20', function() {
+    it('should successfully construct a recovery transaction for tokens stuck in a wallet', co(function *() {
+      const wallet = bitgo.nockEthWallet();
+
+      // There should be 24 Potatokens stuck in our test wallet (based on nock)
+      const tx = yield wallet.recoverToken({
+        tokenContractAddress: TestV2BitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
+        recipient: TestV2BitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
+        walletPassphrase: TestV2BitGo.V2.TEST_ETH_WALLET_PASSPHRASE
+      });
+
+      should.exist(tx);
+      tx.should.have.property('halfSigned');
+
+      const txInfo = tx.halfSigned;
+      txInfo.should.have.property('contractSequenceId');
+      txInfo.contractSequenceId.should.equal(101);
+      txInfo.should.have.property('expireTime');
+      txInfo.should.have.property('gasLimit');
+      txInfo.gasLimit.should.equal(500000);
+      txInfo.should.have.property('gasPrice');
+      txInfo.gasPrice.should.equal(20000000000);
+      txInfo.should.have.property('operationHash');
+      txInfo.should.have.property('signature');
+      txInfo.should.have.property('tokenContractAddress');
+      txInfo.tokenContractAddress.should.equal(TestV2BitGo.V2.TEST_ERC20_TOKEN_ADDRESS);
+      txInfo.should.have.property('walletId');
+      txInfo.walletId.should.equal(TestV2BitGo.V2.TEST_ETH_WALLET_ID);
+      txInfo.should.have.property('recipient');
+      txInfo.recipient.should.have.property('address');
+      txInfo.recipient.address.should.equal(TestV2BitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
+      txInfo.recipient.should.have.property('amount');
+      txInfo.recipient.amount.should.equal('2400');
+    }));
+  });
+
 });

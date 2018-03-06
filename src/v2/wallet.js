@@ -650,6 +650,44 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
   return tryKeyChain(0).nodeify(callback);
 };
 
+// Key chains
+// Gets the unencrypted private key for this wallet (be careful!)
+// Requires wallet passphrase
+Wallet.prototype.getPrv = function(params, callback) {
+  return co(function *() {
+    common.validateParams(params, [], ['walletPassphrase', 'prv'], callback);
+
+    // Prepare signing key
+    if (_.isUndefined(params.prv) && _.isUndefined(params.walletPassphrase)) {
+      throw new Error('must either provide prv or wallet passphrase');
+    }
+
+    if (!_.isUndefined(params.prv) && !_.isString(params.prv)) {
+      throw new Error('prv must be a string');
+    }
+
+    if (!_.isUndefined(params.walletPassphrase) && !_.isString(params.walletPassphrase)) {
+      throw new Error('walletPassphrase must be a string');
+    }
+
+    if (params.prv) {
+      return params.prv;
+    }
+
+    const userKeychain = yield this.getEncryptedUserKeychain();
+    const userEncryptedPrv = userKeychain.encryptedPrv;
+
+    let userPrv;
+    try {
+      userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
+    } catch (e) {
+      throw new Error('error decrypting wallet passphrase');
+    }
+
+    return userPrv;
+  }).call(this).asCallback(callback);
+};
+
 //
 // createShare
 // share the wallet with an existing BitGo user.
@@ -974,6 +1012,26 @@ Wallet.prototype.sendMany = function(params, callback) {
     return this.bitgo.post(this.url('/tx/send'))
     .send(finalTxParams)
     .result();
+
+  }).call(this).asCallback(callback);
+};
+
+/**
+ * Recover an unsupported token from a BitGo multisig wallet
+ * params are validated in Eth.prototype.recoverToken
+ * @param params
+ * @param params.tokenContractAddress the contract address of the unsupported token
+ * @param params.recipient the destination address recovered tokens should be sent to
+ * @param params.walletPassphrase the wallet passphrase
+ * @param params.prv the xprv
+ */
+Wallet.prototype.recoverToken = function(params, callback) {
+  return co(function *() {
+    if (this.baseCoin.getFamily() !== 'eth') {
+      throw new Error('token recovery only supported for eth wallets');
+    }
+
+    return this.baseCoin.recoverToken(_.merge(params, { wallet: this }));
 
   }).call(this).asCallback(callback);
 };
