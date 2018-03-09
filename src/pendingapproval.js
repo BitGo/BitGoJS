@@ -256,8 +256,19 @@ PendingApproval.prototype.approve = function(params, callback) {
   common.validateParams(params, [], ['walletPassphrase', 'otp'], callback);
 
   let canRecreateTransaction = true;
-  if (this.type() === 'transactionRequest' && !(params.walletPassphrase || params.xprv)) {
-    canRecreateTransaction = false;
+  if (this.type() === 'transactionRequest') {
+    if (!params.walletPassphrase && !params.xprv) {
+      canRecreateTransaction = false;
+    }
+
+    // check the wallet balance and compare it with the transaction amount and fee
+    const requestedAmount = this.pendingApproval.info.transactionRequest.requestedAmount || 0;
+    const walletBalance = this.wallet.wallet.spendableBalance;
+    const delta = Math.abs(requestedAmount - walletBalance);
+    if (delta <= 10000) {
+      // it's a sweep because we're within 10k satoshis of the wallet balance
+      canRecreateTransaction = false;
+    }
   }
 
   const self = this;

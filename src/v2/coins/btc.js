@@ -436,9 +436,7 @@ Btc.prototype.verifySignature = function(transaction, inputIndex, amount, verifi
   }
 
   if (isSegwitInput && !amount) {
-    if (!amount) {
-      return false;
-    }
+    return false;
   }
 
   // get the first non-empty signature and verify it against all public keys
