@@ -173,6 +173,15 @@ describe('V2 Wallet:', function() {
       // the second signature remains unmodifed and should still be valid
       const isSecondSignatureValid = basecoin.verifySignature(signedTransaction, 0, unspent.value, { signatureIndex: 1 });
       isSecondSignatureValid.should.equal(true);
+
+      const isPublicKeySignatureValid = basecoin.verifySignature(signedTransaction, 0, unspent.value, { publicKey: '0266824ac31b6a9d6568c3f7ced9aee1c720cd85994dd41d43dc63b0977195729e' });
+      isPublicKeySignatureValid.should.equal(true);
+
+      const isSignatureMappedPublicKeySignatureValid = basecoin.verifySignature(signedTransaction, 0, unspent.value, { publicKey: '0266824ac31b6a9d6568c3f7ced9aee1c720cd85994dd41d43dc63b0977195729e', signatureIndex: 1 });
+      isSignatureMappedPublicKeySignatureValid.should.equal(true);
+
+      const isMismappedPublicKeySignatureValid = basecoin.verifySignature(signedTransaction, 0, unspent.value, { publicKey: '0266824ac31b6a9d6568c3f7ced9aee1c720cd85994dd41d43dc63b0977195729e', signatureIndex: 0 });
+      isMismappedPublicKeySignatureValid.should.equal(false);
     }));
   });
 

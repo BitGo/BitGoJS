@@ -1,6 +1,7 @@
 const should = require('should');
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
+const prova = require('prova-lib');
 
 describe('RMG:', function() {
   let bitgo;
@@ -94,6 +95,40 @@ describe('RMG:', function() {
       should(generatedAddress.address).equal(null);
       should(generatedTestAddress.address).equal(null);
     });
+  });
+
+  describe('RMG Signature Verification', () => {
+
+    const txHex = '010000000152ff5e01929a5660e72ba6c4c5d48065ff518efa388a8ccbbe8ac8794f66f09002000000d52103057cf31112e18bab5fed7144568bc75ef369a04e87094d347044b1d117802b6447304402206d761c1937b27c71e4372b6288e95aa192d07407fe66588a5616da65ad6a28880220596645310f57e987296a6313dfbed682448343e32f4b09a436f71957e9c219e70121021497b39f2f32eeaa1083c52ee265d0fad85338fb82bf8c0ae4a1dbe746e4a45b483045022100bceefd4ac9ed65bd0960e6eeedf75ae32bb2a491437838b45ad59e556ee621df022070eb003e4deed0f80056159ec3c65cdd27bc90506ddb0202d113084f6e739dc801ffffffff0200a02526000000001a52140590ff812a7839b05fe89b68cd9e24c389947639605353bac8445a00000000001a5214c310015ff8d7bb5aa783d2f1020c7cf4e76340c0605353ba00000000';
+    const tx = prova.Transaction.fromHex(txHex);
+    const inputIndex = 0;
+    const amount = 645915848;
+
+    it('should verify signature', function shouldVerifySignature() {
+      let isSignatureValid;
+
+      isSignatureValid = basecoin.verifySignature(tx, inputIndex, amount);
+      isSignatureValid.should.equal(true);
+
+      isSignatureValid = basecoin.verifySignature(tx, inputIndex, amount, { publicKey: '03057cf31112e18bab5fed7144568bc75ef369a04e87094d347044b1d117802b64' });
+      isSignatureValid.should.equal(true);
+
+      isSignatureValid = basecoin.verifySignature(tx, inputIndex, amount, { publicKey: '03057cf31112e18bab5fed7144568bc75ef369a04e87094d347044b1d117802b645' });
+      isSignatureValid.should.equal(false);
+
+      isSignatureValid = basecoin.verifySignature(tx, inputIndex, amount, { publicKey: '03057cf31112e18bab5fed7144568bc75ef369a04e87094d347044b1d117802b64', signatureIndex: 0 });
+      isSignatureValid.should.equal(true);
+
+      isSignatureValid = basecoin.verifySignature(tx, inputIndex, amount, { publicKey: '03057cf31112e18bab5fed7144568bc75ef369a04e87094d347044b1d117802b64', signatureIndex: 1 });
+      isSignatureValid.should.equal(false);
+
+      isSignatureValid = basecoin.verifySignature(tx, inputIndex, amount, { signatureIndex: 1 });
+      isSignatureValid.should.equal(true);
+
+      isSignatureValid = basecoin.verifySignature(tx, inputIndex, amount, { signatureIndex: 2 });
+      isSignatureValid.should.equal(false);
+    });
+
   });
 
 });

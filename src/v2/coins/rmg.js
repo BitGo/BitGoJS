@@ -197,13 +197,72 @@ Rmg.prototype.signTransaction = function(params) {
   };
 };
 
-Rmg.prototype.verifySignature = function(transaction, inputIndex, amount) {
+/**
+ * Verify the signature(s) on a (half-signed) transaction
+ * @param transaction provajs-lib tx object
+ * @param inputIndex The input whose signature is to be verified
+ * @param amount The input amount needs to be known for signature verification
+ * @param verificationSettings
+ * @param verificationSettings.signatureIndex The index of the signature to verify (only iterates over non-empty signatures)
+ * @param verificationSettings.publicKey The hex of the public key to verify (will verify all signatures)
+ * @returns {boolean}
+ */
+Rmg.prototype.verifySignature = function(transaction, inputIndex, amount, verificationSettings = {}) {
+  if (!(transaction instanceof prova.Transaction)) {
+    throw new Error('transaction has to be an instance of prova.Transaction');
+  }
+
   const currentInput = transaction.ins[inputIndex];
   const signatureScript = currentInput.script;
-  const [publicKeyBuffer, signatureBuffer] = prova.script.decompile(signatureScript);
-  const publicKey = prova.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
-  const signatureHash = transaction.hashForWitnessV0(inputIndex, null, amount, prova.Transaction.SIGHASH_ALL);
-  return publicKey.verify(signatureHash, signatureBuffer);
+  const decompiledSigScript = prova.script.decompile(signatureScript);
+  // the public keys are all the even-indexed entries
+  const publicKeys = _.filter(decompiledSigScript, (item, index) => index % 2 === 0);
+  // convert the keys to their hex representations
+  const publicKeyHexes = _.map(publicKeys, k => k.toString('hex'));
+  // the signatures are all the odd-indexed ones
+  const signatures = _.filter(decompiledSigScript, (item, index) => index % 2 === 1);
+  // we map them to each other
+  const signaturesByKeys = _.zipObject(publicKeyHexes, signatures);
+
+  let publicKeysToVerify = publicKeyHexes;
+  const publicKeyHex = verificationSettings.publicKey;
+
+  if (!_.isUndefined(verificationSettings.signatureIndex)) {
+    publicKeysToVerify = [publicKeyHexes[verificationSettings.signatureIndex]];
+  }
+
+  let areAllSignaturesValid = true;
+  for (const currentPublicKeyHex of publicKeysToVerify) {
+
+    if (!_.isUndefined(publicKeyHex) && publicKeyHex !== currentPublicKeyHex) {
+      areAllSignaturesValid = false;
+      continue;
+    }
+
+    if (_.isEmpty(currentPublicKeyHex)) {
+      areAllSignaturesValid = false;
+      continue;
+    }
+
+    let isSignatureValid = false;
+    const publicKeyBuffer = Buffer.from(currentPublicKeyHex, 'hex');
+    const signatureBuffer = signaturesByKeys[currentPublicKeyHex];
+
+    if (Buffer.isBuffer(publicKeyBuffer) && publicKeyBuffer.length > 0 && Buffer.isBuffer(signatureBuffer) && signatureBuffer.length > 0) {
+      const publicKey = prova.ECPair.fromPublicKeyBuffer(publicKeyBuffer);
+      const signatureHash = transaction.hashForWitnessV0(inputIndex, null, amount, prova.Transaction.SIGHASH_ALL);
+      isSignatureValid = publicKey.verify(signatureHash, signatureBuffer);
+    }
+
+    if (!_.isUndefined(publicKeyHex) && isSignatureValid) {
+      // We were trying to see if any of the signatures was valid for the given public key. Evidently yes.
+      return true;
+    }
+
+    areAllSignaturesValid = isSignatureValid && areAllSignaturesValid;
+  }
+
+  return areAllSignaturesValid;
 };
 
 Rmg.prototype.explainTransaction = function(params) {
