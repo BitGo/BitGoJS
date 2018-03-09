@@ -16,12 +16,12 @@ describe('Virtual Token:', function() {
   });
 
   it('should wait for client constants before instantiating coin', Promise.coroutine(function *() {
-    const promise = bitgo.token('erc');
+    const promise = bitgo.token('terc');
     should(promise).be.instanceOf(Promise);
     const erc = yield promise;
     const BaseCoin = require('../../../../src/v2/baseCoin');
     erc.should.be.instanceOf(BaseCoin);
-    erc.type.should.equal('erc');
+    erc.type.should.equal('terc');
     erc.tokenContractAddress.should.equal('0x945ac907cf021a6bcd07852bb3b8c087051706a9');
   }));
 

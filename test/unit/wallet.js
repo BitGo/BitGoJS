@@ -601,6 +601,8 @@ describe('Wallet Prototype Methods', function() {
       .twice()
       .reply(200, { ttl: 3600, constants: {} });
 
+      TestBitGo.prototype._constants = undefined;
+
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
       bitgo.setValidate(false);

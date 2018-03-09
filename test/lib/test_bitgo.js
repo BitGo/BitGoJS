@@ -262,19 +262,6 @@ BitGo.prototype.authenticateChangePWTestUser = function({ pw, otp }, callback) {
   }).call(this).asCallback(callback);
 };
 
-const fetchConstants = BitGo.prototype.fetchConstants;
-BitGo.prototype.fetchConstants = function(callback) {
-  return co(function *fetchInnerConstants() {
-    yield fetchConstants.call(this);
-    this._constants[this.env].eth = this._constants[this.env].eth || {};
-    this._constants[this.env].eth.tokens = this._constants[this.env].eth.tokens || [];
-    this._constants[this.env].eth.tokens.push({
-      type: 'erc',
-      tokenContractAddress: '0x945ac907cf021a6bcd07852bb3b8c087051706a9'
-    });
-  }).call(this).asCallback(callback);
-};
-
 BitGo.prototype.getAsyncError = co(function *throwsAsync(prom) {
   // Hacky because we can't use assert.throws with async functions
   let error;

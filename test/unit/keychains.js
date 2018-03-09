@@ -22,6 +22,8 @@ describe('Keychains', function v2keychains() {
       .get('/api/v1/client/constants')
       .reply(200, { ttl: 3600, constants: {} });
 
+      TestBitGo.prototype._constants = undefined;
+
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
       bitgo.setValidate(false);

@@ -34,6 +34,7 @@ const moment = require('moment');
 const _ = require('lodash');
 const url = require('url');
 const querystring = require('querystring');
+const config = require('./config');
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);
@@ -415,6 +416,7 @@ const BitGo = function(params) {
   this.fetchConstants({}, function(err) {
     if (err) {
       // make sure an error does not terminate the entire script
+      console.error('failed to fetch initial client constants from BitGo');
       console.trace(err);
     }
   });
@@ -1819,36 +1821,32 @@ BitGo.prototype.fetchConstants = function(params, callback) {
   }).call(this).asCallback(callback);
 };
 
-//
-// getConstants
-// Get a set of constants from the server to use as defaults
-//
+/**
+ * Synchronously get constants which are relevant to the client.
+ *
+ * Note: This function has a known race condition. It may return different values over time,
+ * especially if called shortly after creation of the BitGo object.
+ *
+ * New code should call fetchConstants() directly instead.
+ *
+ * @deprecated
+ * @param params
+ * @return {Object} The client constants object
+ */
 BitGo.prototype.getConstants = function(params) {
   params = params || {};
 
-  // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
-  const defaultConstants = {
-    maxFee: 0.1e8,
-    maxFeeRate: 1000000,
-    minFeeRate: 5000,
-    fallbackFeeRate: 50000,
-    minOutputSize: 2730,
-    minInstantFeeRate: 10000,
-    bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47',
-    eth: {
-      tokens: []
-    }
-  };
-
+  // kick off a fresh request for the client constants
   this.fetchConstants(params, function(err) {
     if (err) {
       // make sure an error does not terminate the entire script
+      console.error('failed to fetch client constants from BitGo');
       console.trace(err);
     }
   });
 
   // use defaultConstants as the backup for keys that are not set in this._constants
-  return _.merge({}, defaultConstants, BitGo.prototype._constants[this.env]);
+  return _.merge({}, config.defaultConstants(this.env), BitGo.prototype._constants[this.env]);
 };
 
 module.exports = BitGo;

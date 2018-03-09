@@ -2,7 +2,7 @@
 // Tests for BitGo Object
 //
 
-require('should');
+const should = require('should');
 const nock = require('nock');
 
 const TestBitGo = require('../lib/test_bitgo');
@@ -10,32 +10,40 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const common = require('../../src/common');
 
-describe('BitGo', function describeBitGo() {
-  let bitgo;
-  let bgUrl;
 
-  before(co(function *coBeforeBitGo() {
-    nock('https://bitgo.fakeurl')
-    .get('/api/v1/client/constants')
-    .reply(200, { ttl: 3600, constants: {} });
+describe('BitGo Prototype Methods', function() {
 
-    nock('https://bitgo.fakeurl')
-    .post('/api/v1/user/login')
-    .reply(200, {
-      access_token: 'access_token',
-      user: { username: 'update_pw_tester@bitgo.com' }
-    });
+  before(function bitgoPrototypeMethodsBefore() {
+    // disable net connect for this suite (all unit test suites should do this)
+    nock.disableNetConnect();
+  });
 
-    bitgo = new TestBitGo({ env: 'mock' });
-    bitgo.initializeTestVars();
-    bitgo.setValidate(false);
+  describe('change password', function() {
+    let bitgo;
+    let bgUrl;
 
-    yield bitgo.authenticateChangePWTestUser({ otp: bitgo.testUserOTP() });
+    before(co(function *coBeforeChangePassword() {
+      nock('https://bitgo.fakeurl')
+      .get('/api/v1/client/constants')
+      .reply(200, { ttl: 3600, constants: {} });
 
-    bgUrl = common.Environments[bitgo.getEnv()].uri;
-  }));
+      nock('https://bitgo.fakeurl')
+      .post('/api/v1/user/login')
+      .reply(200, {
+        access_token: 'access_token',
+        user: { username: 'update_pw_tester@bitgo.com' }
+      });
 
-  describe('change password', function describeChangePW() {
+      TestBitGo.prototype._constants = undefined;
+
+      bitgo = new TestBitGo({ env: 'mock' });
+      bitgo.initializeTestVars();
+      bitgo.setValidate(false);
+
+      yield bitgo.authenticateChangePWTestUser({ otp: bitgo.testUserOTP() });
+
+      bgUrl = common.Environments[bitgo.getEnv()].uri;
+    }));
 
     const oldPassword = 'oldPassword';
     const newPassword = 'newPassword';
@@ -124,9 +132,41 @@ describe('BitGo', function describeBitGo() {
 
       yield bitgo.changePassword({ oldPassword, newPassword });
     }));
+
+    after(function afterChangePassword() {
+      nock.activeMocks().length.should.equal(0);
+    });
   });
 
-  after(function afterBitGo() {
-    nock.activeMocks().length.should.equal(0);
+  describe('Token Definitions at Startup', function() {
+
+    before(function tokenDefinitionsBefore() {
+      nock('https://bitgo.fakeurl')
+      .get('/api/v1/client/constants')
+      .twice()
+      .reply(200, {
+        ttl: 3600,
+        constants: {}
+      });
+      TestBitGo.prototype._constants = undefined;
+    });
+
+    it('Should return a non-empty list of tokens before the server responds', co(function *coTokenDefinitionsIt() {
+      const bitgo = new TestBitGo({ env: 'mock' });
+      bitgo.initializeTestVars();
+      const tokens = bitgo.getConstants().eth.tokens;
+
+      // currently two tokens are defined for non-production environments
+      should.exist(tokens);
+      tokens.length.should.equal(2);
+    }));
+
+    after(function tokenDefinitionsAfter() {
+      nock.activeMocks().length.should.equal(0);
+    });
+  });
+
+  after(function bitgoPrototypeMethodsAfter() {
+    nock.enableNetConnect();
   });
 });
