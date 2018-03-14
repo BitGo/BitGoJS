@@ -26,6 +26,10 @@ Btc.prototype.getBaseFactor = function() {
   return 1e8;
 };
 
+Btc.prototype.getCoinLibrary = function() {
+  return bitcoin;
+};
+
 Btc.prototype.getChain = function() {
   return 'btc';
 };
@@ -270,7 +274,7 @@ Btc.prototype.generateAddress = function({ segwit, keychains, threshold, chain, 
   }
 
   addressDetails.coinSpecific.outputScript = outputScript.toString('hex');
-  addressDetails.address = bitcoin.address.fromOutputScript(outputScript, this.network);
+  addressDetails.address = this.getCoinLibrary().address.fromOutputScript(outputScript, this.network);
 
   return addressDetails;
 };
@@ -280,6 +284,7 @@ Btc.prototype.generateAddress = function({ segwit, keychains, threshold, chain, 
  * @param params
  * - txPrebuild
  * - prv
+ * @param params.isLastSignature Ture if txb.build() should be called and not buildIncomplete()
  * @returns {{txHex}}
  */
 Btc.prototype.signTransaction = function(params) {
@@ -296,6 +301,12 @@ Btc.prototype.signTransaction = function(params) {
 
   if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
+  }
+
+  let isLastSignature = false;
+  if (_.isBoolean(params.isLastSignature)) {
+    // if build is called instead of buildIncomplete, no signature placeholders are left in the sig script
+    isLastSignature = params.isLastSignature;
   }
 
   if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
@@ -338,7 +349,11 @@ Btc.prototype.signTransaction = function(params) {
       continue;
     }
 
-    transaction = txb.buildIncomplete();
+    if (isLastSignature) {
+      transaction = txb.build();
+    } else {
+      transaction = txb.buildIncomplete();
+    }
 
     const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
     if (!isValidSignature) {

@@ -104,7 +104,11 @@ BaseCoin.initializeCoin = function(coin, bitgo) {
       rmg: require('./coins/rmg'),
       trmg: require('./coins/trmg'),
       xrp: require('./coins/xrp'),
-      txrp: require('./coins/txrp')
+      txrp: require('./coins/txrp'),
+      dash: require('./coins/dash'),
+      tdash: require('./coins/tdash'),
+      zec: require('./coins/zec'),
+      tzec: require('./coins/tzec')
     };
   }
   if (!Token) {
