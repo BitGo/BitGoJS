@@ -6,6 +6,9 @@ const PendingApproval = require('./pendingApproval');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
+const superagent = require('superagent');
+const moment = require('moment');
+const JsonPaymentProtocol = require('json-payment-protocol');
 
 const Wallet = function(bitgo, baseCoin, walletData) {
   this.bitgo = bitgo;
@@ -1035,6 +1038,121 @@ Wallet.prototype.recoverToken = function(params, callback) {
 
   }).call(this).asCallback(callback);
 };
+
+/**
+ * Fetch info from merchant server
+ * @param {Object} params The params passed into the function
+ * @param {String} params.url The Url to retrieve info from
+ * @param callback
+ * @returns {Object} The info returned from the merchant server
+ */
+Wallet.prototype.getPaymentInfo = function(params, callback) {
+  return co(function *coGetPaymentInfo() {
+    params = params || {};
+    common.validateParams(params, ['url'], [], callback);
+    const paymentProtocol = new JsonPaymentProtocol();
+    const response = yield paymentProtocol.getRawPaymentRequestAsync(params.url);
+    const paymentRequest = yield paymentProtocol.parsePaymentRequestAsync(response.rawBody, response.headers);
+
+    const coin = this.baseCoin.getFamily().toUpperCase();
+    const expectedCoin = paymentRequest.currency;
+    if (coin !== expectedCoin) {
+      throw new Error(`payment expected coin ${expectedCoin}, but wallet is type ${coin}`);
+    }
+
+    // TODO: remove this checker when more than just btc is ready, waiting on BG-3908
+    if (expectedCoin !== 'BTC') {
+      throw new Error('payment protocol only supports btc');
+    }
+
+    if (this.baseCoin.getChain().startsWith('t') && paymentRequest.network !== 'test') {
+      throw new Error('the payment requested bitcoin network does not match current wallet bitcoin network');
+    }
+
+    const now = moment().unix();
+    const expires = moment(paymentRequest.expires).unix();
+
+    if (now > expires) {
+      throw new Error('Payment request has expired');
+    }
+
+    const outputs = paymentRequest.outputs;
+
+    const recipients = [];
+    let sum = 0;
+    for (const output of outputs) {
+      sum += output.amount;
+    }
+
+    // if any output amounts were specified, filter out 0 amount outputs
+    if (sum !== 0) {
+      sum = 0;
+      for (const output of outputs) {
+        const amount = output.amount;
+        if (amount === 0) {
+          continue;
+        }
+        sum += amount;
+        recipients.push(output);
+      }
+
+    }
+
+    if (sum === 0) {
+      // ask the user how much to pay, pay to only the first output
+      const output = outputs[0];
+      recipients.push({
+        address: output.address,
+        amount: 0 // will need to be decided and changed by the user
+      });
+    }
+
+    paymentRequest.sum = sum;
+    paymentRequest.recipients = recipients;
+
+    return paymentRequest;
+  }).call(this).asCallback(callback);
+};
+
+/**
+ * Send json payment response
+ * @param {Object} params The params passed into the function
+ * @param {Array} params.recipients An array of recipients for the transaction
+ * @param {String} params.walletPassphrase The wallet pass phrase used to sign the transaction
+ * @param {String} params.paymentUrl The url to send the payment object to
+ * @param callback
+ * @returns {Object} The info returned from the merchant server Payment Ack
+ */
+Wallet.prototype.sendPaymentResponse = function(params, callback) {
+  return co(function *coSendPaymentResponse() {
+
+    const txParams = {
+      recipients: params.recipients,
+      walletPassphrase: params.walletPassphrase,
+      minConfirms: 1, // jsonPaymentProtocol requires all inputs be confirmed
+      enforceMinConfirmsForChange: true
+    };
+
+    const tx = yield this.prebuildAndSignTransaction(txParams);
+
+    const signedTx = yield this.bitgo.post(this.url('/tx/send'))
+    .send({ txHex: tx.txHex, silentSignature: true }) // this will sign the transaction without pushing it to the blockchain, allowing the merchant to verify it first
+    .result();
+
+    const paymentProtocol = new JsonPaymentProtocol();
+    const response = yield paymentProtocol.sendPaymentAsync(this.baseCoin.getFamily().toUpperCase(), signedTx.tx, params.paymentUrl);
+    // TODO: broadcast to bitcoin network after an ack response is received, ignoring for now because it is the merchants responsibility to send first
+
+    // TODO: implement our own push raw tx endpoint to allow us to push fully signed transactions to the block chain from the sdk
+    const network = params.network === 'test' ? 'BTCTEST' : 'BTC';
+    yield superagent
+    .post('https://chain.so/api/v2/send_tx/' + network)
+    .send({ tx_hex: signedTx.tx });
+
+    return response;
+  }).call(this).asCallback(callback);
+};
+
 
 /**
  * Create a policy rule
