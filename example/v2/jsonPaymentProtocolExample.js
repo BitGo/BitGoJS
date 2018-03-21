@@ -28,8 +28,16 @@ co(function *run() {
   console.log(`Are you sure you want to send ${info.sum} to merchant?`);
   console.log(`Merchant memo: ${info.memo}`);
 
-  // TODO: insert wallet passphrase here
-  info.walletPassphrase = null;
+  const txParams = {
+    recipients: info.recipients,
+    walletPassphrase: null, // TODO: insert wallet passphrase here
+    minConfirms: 1, // jsonPaymentProtocol requires all inputs be confirmed
+    enforceMinConfirmsForChange: true
+  };
+
+  const tx = yield wallet.prebuildAndSignTransaction(txParams);
+
+  info.txHex = tx.txHex;
 
   const res = yield wallet.sendPaymentResponse(info);
   console.dir(res);
