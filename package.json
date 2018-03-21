@@ -95,7 +95,6 @@
     "eol": "0.5.0",
     "express": "~4.16.2",
     "http-proxy": "1.11.1",
-    "json-payment-protocol": "https://github.com/BitGo/jsonPaymentProtocol.git",
     "lodash": "4.13.1",
     "minimist": "0.2.0",
     "moment": "~2.20.1",
