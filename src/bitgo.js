@@ -300,7 +300,7 @@ const BitGo = function(params) {
           }
           this._data = data;
 
-          let urlDetails = url.parse(req.url);
+          const urlDetails = url.parse(req.url);
 
           let queryString = null;
           if (req._query && req._query.length > 0) {
@@ -320,24 +320,16 @@ const BitGo = function(params) {
               urlDetails.search = '?' + queryString;
             }
             req.url = urlDetails.format();
-            urlDetails = url.parse(req.url);
           }
 
-          const queryPath = (urlDetails.query && urlDetails.query.length > 0) ? urlDetails.path : urlDetails.pathname;
-          const timestamp = Date.now();
-          const signatureSubject = [timestamp, queryPath, data].join('|');
-
-          this.set('Auth-Timestamp', timestamp);
-
-          // calculate the SHA256 hash of the token
-          const hashDigest = sjcl.hash.sha256.hash(bitgo._token);
-          const hash = sjcl.codec.hex.fromBits(hashDigest);
+          const requestProperties = bitgo.calculateRequestHeaders({ url: req.url, token: bitgo._token, text: data });
+          this.set('Auth-Timestamp', requestProperties.timestamp);
 
           // we're not sending the actual token, but only its hash
-          this.set('Authorization', 'Bearer ' + hash);
+          this.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
 
-          // calculate the HMAC
-          this.set('HMAC', self.calculateHMAC(bitgo._token, signatureSubject));
+          // set the HMAC
+          this.set('HMAC', requestProperties.hmac);
         }
 
         return this.prototypicalEnd.apply(this, arguments);
@@ -352,19 +344,20 @@ const BitGo = function(params) {
           return response;
         }
 
-        const urlDetails = url.parse(req.url);
+        const verificationResponse = bitgo.verifyResponse({
+          url: req.url,
+          hmac: response.headers.hmac,
+          statusCode: response.statusCode,
+          text: response.text,
+          timestamp: response.headers.timestamp,
+          token: req.authenticationToken
+        });
 
-        // verify the HMAC and timestamp
-        const timestamp = response.headers.timestamp;
-        const queryPath = (urlDetails.query && urlDetails.query.length > 0) ? urlDetails.path : urlDetails.pathname;
-
-        const signatureSubject = [timestamp, queryPath, response.statusCode, response.text].join('|');
-
-        // calculate the HMAC
-        const expectedHmac = self.calculateHMAC(req.authenticationToken, signatureSubject);
-
-        const receivedHmac = response.headers.hmac;
-        if (expectedHmac !== receivedHmac) {
+        if (!verificationResponse.isValid) {
+          // calculate the HMAC
+          const receivedHmac = response.headers.hmac;
+          const expectedHmac = verificationResponse.expectedHmac;
+          const signatureSubject = verificationResponse.signatureSubject;
           const errorDetails = {
             expectedHmac,
             receivedHmac,
@@ -873,7 +866,9 @@ BitGo.prototype.handleTokenIssuance = function(responseBody, password) {
   // make sure the response body contains the necessary properties
   common.validateParams(responseBody, ['derivationPath'], ['encryptedECDHXprv']);
 
-  const serverXpub = common.Environments[this.env].serverXpub;
+  const environment = this.env;
+  const environmentConfig = common.Environments[environment];
+  const serverXpub = environmentConfig.serverXpub;
   let ecdhXprv = this._ecdhXprv;
   if (!ecdhXprv) {
     if (!password || !responseBody.encryptedECDHXprv) {
@@ -916,25 +911,96 @@ BitGo.prototype.handleTokenIssuance = function(responseBody, password) {
   return response;
 };
 
-//
-// authenticate
-// Login to the bitgo system.
-// Params:
-// - forceV1Auth (boolean)
-// Returns:
-//   {
-//     token: <user's token>,
-//     user: <user object
-//   }
-BitGo.prototype.authenticate = function(params, callback) {
+/**
+ * Calculate the string that is to be HMACed for a certain HTTP request or response
+ * @param urlPath
+ * @param text
+ * @param timestamp
+ * @param statusCode Only set for HTTP responses, leave blank for requests
+ * @returns {string}
+ */
+BitGo.prototype.calculateHMACSubject = function({ urlPath, text, timestamp, statusCode }) {
+  const urlDetails = url.parse(urlPath);
+  const queryPath = (urlDetails.query && urlDetails.query.length > 0) ? urlDetails.path : urlDetails.pathname;
+  if (!_.isUndefined(statusCode) && _.isInteger(statusCode) && _.isFinite(statusCode)) {
+    return [timestamp, queryPath, statusCode, text].join('|');
+  }
+  return [timestamp, queryPath, text].join('|');
+};
+
+/**
+ * Calculate the HMAC for an HTTP request
+ * @param urlPath
+ * @param text
+ * @param timestamp
+ * @param token
+ * @returns {*}
+ */
+BitGo.prototype.calculateRequestHMAC = function({ url: urlPath, text, timestamp, token }) {
+  const signatureSubject = this.calculateHMACSubject({ urlPath, text, timestamp });
+
+  // calculate the HMAC
+  return this.calculateHMAC(token, signatureSubject);
+};
+
+/**
+ * Calculate request headers with HMAC
+ * @param url
+ * @param text
+ * @param token
+ * @returns {{hmac: *, timestamp: number, tokenHash: *}}
+ */
+BitGo.prototype.calculateRequestHeaders = function({ url, text, token }) {
+  const timestamp = Date.now();
+  const hmac = this.calculateRequestHMAC({ url, text, timestamp, token });
+
+  // calculate the SHA256 hash of the token
+  const hashDigest = sjcl.hash.sha256.hash(token);
+  const tokenHash = sjcl.codec.hex.fromBits(hashDigest);
+  return {
+    hmac,
+    timestamp,
+    tokenHash
+  };
+};
+
+/**
+ * Verify the HMAC for an HTTP response
+ * @param url
+ * @param statusCode
+ * @param text
+ * @param timestamp
+ * @param token Authentication token
+ * @param hmac
+ * @returns {{isValid: boolean, expectedHmac: *, signatureSubject: *}}
+ */
+BitGo.prototype.verifyResponse = function({ url: urlPath, statusCode, text, timestamp, token, hmac }) {
+  const signatureSubject = this.calculateHMACSubject({ urlPath, text, timestamp, statusCode });
+
+  // calculate the HMAC
+  const expectedHmac = this.calculateHMAC(token, signatureSubject);
+
+  // verify the HMAC and timestamp
+  return {
+    isValid: expectedHmac === hmac,
+    expectedHmac,
+    signatureSubject
+  };
+};
+
+/**
+ *
+ * @param params
+ * @param callback
+ */
+BitGo.prototype.preprocessAuthenticationParams = function(params) {
   params = params || {};
-  common.validateParams(params, ['username', 'password'], ['otp'], callback);
+  common.validateParams(params, ['username', 'password'], ['otp']);
 
   const username = params.username.toLowerCase();
   const password = params.password;
   const otp = params.otp;
   const trust = params.trust;
-  const forceV1Auth = !!params.forceV1Auth;
 
   // Calculate the password HMAC so we don't send clear-text passwords
   const key = sjcl.codec.utf8String.toBits(username);
@@ -959,6 +1025,26 @@ BitGo.prototype.authenticate = function(params, callback) {
     authParams.extensible = true;
     authParams.extensionAddress = this._extensionKey.getAddress();
   }
+
+  return authParams;
+};
+
+//
+// authenticate
+// Login to the bitgo system.
+// Params:
+// - forceV1Auth (boolean)
+// Returns:
+//   {
+//     token: <user's token>,
+//     user: <user object
+//   }
+BitGo.prototype.authenticate = function(params, callback) {
+  params = params || {};
+  const forceV1Auth = !!params.forceV1Auth;
+
+  const authParams = this.preprocessAuthenticationParams(params, callback);
+  const password = params.password;
 
   const self = this;
   if (this._token) {
