@@ -408,7 +408,7 @@ describe('V2 Wallets:', function() {
         count = webhooks.webhooks.length;
         return wallet.addWebhook({
           url: 'https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d',
-          type: 'transaction'
+          type: 'transfer'
         });
       })
       .then(function(webhook) {
@@ -425,18 +425,18 @@ describe('V2 Wallets:', function() {
         webhooks.webhooks.length.should.equal(count + 1);
         return wallet.simulateWebhook({
           webhookId: webhookId,
-          txHash: 'e0119a0695efee3229978df74cbb066269890947d85c80ab630a4075b141b880'
+          transferId: TestV2BitGo.V2.TEST_WEBHOOK_TRANSFER_SIMULATION_ID
         });
       }).then(function(simulation) {
         simulation.should.have.property('webhookNotifications');
         const notification = simulation.webhookNotifications[0];
         notification.url.should.equal('https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d');
-        notification.hash.should.equal('e0119a0695efee3229978df74cbb066269890947d85c80ab630a4075b141b880');
-        notification.type.should.equal('transaction');
-        notification.coin.should.equal('bitcoin');
+        notification.hash.should.equal('96b2376fb0ccfdbcc9472489ca3ec75df1487b08a0ea8d9d82c55da19d8cceea');
+        notification.type.should.equal('transfer');
+        notification.coin.should.equal('tbtc');
         return wallet.removeWebhook({
           url: 'https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d',
-          type: 'transaction'
+          type: 'transfer'
         });
       })
       .then(function(webhookRemoval) {

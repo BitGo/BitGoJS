@@ -572,26 +572,26 @@ Wallet.prototype.listWebhooks = function(params, callback) {
 };
 
 /**
- * Simulate wallet webhook, currently for webhooks of type transaction and pending approval
+ * Simulate wallet webhook, currently for webhooks of type transfer and pending approval
  * @param params
- * - webhookId (required): id of the webhook to be simulated
- * - txHash (optional but required for transaction webhooks) hash of the simulated transaction
+ * - webhookId (required) id of the webhook to be simulated
+ * - transferId (optional but required for transfer webhooks) id of the simulated transfer
  * - pendingApprovalId (optional but required for pending approval webhooks) id of the simulated pending approval
  * @param callback
  * @returns {*}
  */
 Wallet.prototype.simulateWebhook = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['webhookId'], ['txHash', 'pendingApprovalId'], callback);
+  common.validateParams(params, ['webhookId'], ['transferId', 'pendingApprovalId'], callback);
 
-  assert(!!params.txHash || !!params.pendingApprovalId, 'must supply either txHash or pendingApprovalId');
-  assert(!!params.txHash ^ !!params.pendingApprovalId, 'must supply either txHash or pendingApprovalId, but not both');
+  assert(!!params.transferId || !!params.pendingApprovalId, 'must supply either transferId or pendingApprovalId');
+  assert(!!params.transferId ^ !!params.pendingApprovalId, 'must supply either transferId or pendingApprovalId, but not both');
 
   // depending on the coin type of the wallet, the txHash has to adhere to its respective format
   // but the server takes care of that
 
-  // only take the txHash and pendingApprovalId properties
-  const filteredParams = _.pick(params, ['txHash', 'pendingApprovalId']);
+  // only take the transferId and pendingApprovalId properties
+  const filteredParams = _.pick(params, ['transferId', 'pendingApprovalId']);
 
   const webhookId = params.webhookId;
   return this.bitgo.post(this.url('/webhooks/' + webhookId + '/simulate'))
