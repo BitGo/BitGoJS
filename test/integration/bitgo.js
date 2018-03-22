@@ -648,7 +648,7 @@ describe('BitGo', function() {
           // in case we get an error back from the server we wait and try it again
           while (!passwordChangedBack && retried < 3) {
             try {
-              changePasswordBack();
+              yield changePasswordBack();
               passwordChangedBack = true;
             } catch (e) {
               console.log(`Changing back password unsuccessful: ${e.message}`);
