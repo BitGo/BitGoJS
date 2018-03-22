@@ -1,5 +1,9 @@
 const btcPrototype = require('./btc').prototype;
 const bitcoin = require('bitgo-bitcoinjs-lib');
+const request = require('superagent');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
+const common = require('../../common');
 const cashaddress = require('cashaddress');
 const _ = require('lodash');
 
@@ -64,7 +68,7 @@ Bch.prototype.signTransaction = function(params) {
     }
     throw new Error('missing prv parameter to sign transaction');
   }
-
+ 
   const sigHashType = bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
   const keychain = bitcoin.HDNode.fromBase58(userPrv);
   const hdPath = bitcoin.hdPath(keychain);
@@ -206,6 +210,92 @@ Bch.prototype.canonicalAddress = function(address, version = 'base58') {
 
   const rawBytes = cashaddress.decode(address);
   return bitcoin.address.toBase58Check(rawBytes.hash, this.network[scriptVersionMap[rawBytes.version]]);
+};
+
+/**
+ * Apply signatures to a funds recovery transaction using user + backup key
+ * @param txb {Object} a transaction builder object (with inputs and outputs)
+ * @param unspents {Array} the unspents to use in the transaction
+ * @param addresses {Array} the address and redeem script info for the unspents
+ */
+Bch.prototype.signRecoveryTransaction = function(txb, unspents, addresses) {
+  const sigHashType = bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
+  txb.enableBitcoinCash(true);
+  txb.setVersion(2);
+
+  // sign the inputs
+  const signatureIssues = [];
+  unspents.forEach((unspent, i) => {
+    const address = addresses[unspent.address];
+    const backupPrivateKey = address.backupKey.keyPair;
+    const userPrivateKey = address.userKey.keyPair;
+    // force-override networks
+    backupPrivateKey.network = this.network;
+    userPrivateKey.network = this.network;
+
+    const currentSignatureIssue = {
+      inputIndex: i,
+      unspent: unspent
+    };
+
+    try {
+      txb.sign(i, backupPrivateKey, address.redeemScript, sigHashType, unspent.amount);
+    } catch (e) {
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+    }
+
+    try {
+      txb.sign(i, userPrivateKey, address.redeemScript, sigHashType, unspent.amount);
+    } catch (e) {
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+    }
+  });
+
+  if (signatureIssues.length > 0) {
+    const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
+    const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+    error.code = 'input_signature_failure';
+    error.signingErrors = signatureIssues;
+    throw error;
+  }
+
+  return txb;
+};
+
+Bch.prototype.recoveryBlockchainExplorerUrl = function(url) {
+  return common.Environments[this.bitgo.env].bchExplorerBaseUrl + url;
+};
+
+Bch.prototype.getAddressInfoFromExplorer = function(addressBase58) {
+  return co(function *getAddressInfoFromExplorer() {
+    const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
+
+    addrInfo.txCount = addrInfo.txApperances;
+    addrInfo.totalBalance = addrInfo.balanceSat;
+
+    return addrInfo;
+  }).call(this);
+};
+
+Bch.prototype.getUnspentInfoFromExplorer = function(addressBase58) {
+  return co(function *getUnspentInfoFromExplorer() {
+    const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
+
+    unspents.forEach(function processUnspent(unspent) {
+      unspent.amount = unspent.satoshis;
+      unspent.n = unspent.vout;
+    });
+
+    return unspents;
+  }).call(this);
+};
+
+// Some of our BCH explorers do not have a tx decoder
+Bch.prototype.verifyRecoveryTransaction = function() {
+  // yieldable no-op
+  return co(function *noop() { return; }).call(this);
 };
 
 module.exports = Bch;

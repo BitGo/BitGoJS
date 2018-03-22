@@ -9,7 +9,6 @@ let Token;
 let Webhooks;
 let coinGenerators;
 const bitcoin = require('bitgo-bitcoinjs-lib');
-const prova = require('../prova');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const sjcl = require('../sjcl.min');
@@ -238,58 +237,62 @@ BaseCoin.prototype.preCreateBitGo = function(params) {
 };
 
 BaseCoin.prototype.initiateRecovery = function(params) {
-  const keys = [];
-  const userKey = params.userKey; // Box A
-  let backupKey = params.backupKey; // Box B
-  const bitgoXpub = params.bitgoKey; // Box C
-  const destinationAddress = params.recoveryDestination;
-  const passphrase = params.walletPassphrase;
+  return co(function *initiateRecovery() {
+    const keys = [];
+    const userKey = params.userKey; // Box A
+    let backupKey = params.backupKey; // Box B
+    const bitgoXpub = params.bitgoKey; // Box C
+    const destinationAddress = params.recoveryDestination;
+    const passphrase = params.walletPassphrase;
 
-  const validatePassphraseKey = function(userKey, passphrase) {
-    try {
-      if (!userKey.startsWith('xprv')) {
-        userKey = sjcl.decrypt(passphrase, userKey);
+    const validatePassphraseKey = function(userKey, passphrase) {
+      try {
+        if (!userKey.startsWith('xprv')) {
+          userKey = sjcl.decrypt(passphrase, userKey);
+        }
+        const userHDNode = bitcoin.HDNode.fromBase58(userKey);
+        return Promise.resolve(userHDNode);
+      } catch (e) {
+        throw new Error('Failed to decrypt user key with passcode - try again!');
       }
-      const userHDNode = prova.HDNode.fromBase58(userKey);
-      return Promise.resolve(userHDNode);
-    } catch (e) {
-      throw new Error('Failed to decrypt user key with passcode - try again!');
-    }
-  };
+    };
 
-  const self = this;
-  return Promise.try(function() {
-    // TODO: Arik add Ledger support
-    return validatePassphraseKey(userKey, passphrase);
-  })
-  .then(function(key) {
+    const key = yield validatePassphraseKey(userKey, passphrase);
+
     keys.push(key);
+
     // Validate the backup key
     try {
       if (!backupKey.startsWith('xprv')) {
         backupKey = sjcl.decrypt(passphrase, backupKey);
       }
-      const backupHDNode = prova.HDNode.fromBase58(backupKey);
+      const backupHDNode = bitcoin.HDNode.fromBase58(backupKey);
       keys.push(backupHDNode);
     } catch (e) {
       throw new Error('Failed to decrypt backup key with passcode - try again!');
     }
     try {
-      const bitgoHDNode = prova.HDNode.fromBase58(bitgoXpub);
+      const bitgoHDNode = bitcoin.HDNode.fromBase58(bitgoXpub);
       keys.push(bitgoHDNode);
     } catch (e) {
-      if (self.getFamily() !== 'xrp') {
+      if (this.getFamily() !== 'xrp') {
         // in XRP recoveries, the BitGo xpub is optional
         throw new Error('Failed to parse bitgo xpub!');
       }
     }
     // Validate the destination address
-    if (!self.isValidAddress(destinationAddress)) {
+    if (!this.isValidAddress(destinationAddress)) {
       throw new Error('Invalid destination address!');
     }
 
     return keys;
-  });
+  }).call(this);
+};
+
+// Some coins can have their tx info verified, if a public tx decoder is available
+BaseCoin.prototype.verifyRecoveryTransaction = function(txInfo) {
+  // yieldable no-op
+  return co(function *noop() { return; }).call(this);
 };
 
 module.exports = BaseCoin;

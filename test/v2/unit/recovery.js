@@ -9,6 +9,7 @@ const nock = require('nock');
 nock.enableNetConnect();
 
 const TestV2BitGo = require('../../lib/test_bitgo');
+const recoveryNocks = require('../lib/recovery-nocks');
 
 describe('Recovery:', function() {
   let bitgo;
@@ -25,356 +26,75 @@ describe('Recovery:', function() {
   });
 
   describe('Recover Bitcoin', function() {
-    it('should generate BTC recovery tx', function() {
-
-      nockBtcRecovery();
+    it('should generate BTC recovery tx', co(function *() {
+      recoveryNocks.nockBtcRecovery();
 
       const basecoin = bitgo.coin('tbtc');
-      return basecoin.recover({
+      const recovery = yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
         walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
-        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw'
-      })
-      .then(function(recovery) {
-        recovery.txHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004830450221008cd8aa5a09072242d355fa91afbcd619be7b6dce291fe1fb027b92fb87343c06022039c87bc18896f151fdc1f8e52f38e71e9c55cf476cd7310503c519b3d19ea7650147304402204aef39c6f5e50ab8b95bad3c067e4308afe17bf8d474b33c8ba9b8082ed2173802203172d2c7d36c28c83e41397dac445d7af6d61bc5994ed3fc9ca776d3ba34099c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0100447a000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
-        recovery.tx.hash.should.equal('89449b71d386a1e96654fa80d1a073e86a1c21258e292a08cf42a574ceb84748');
-        recovery.tx.size.should.equal(338);
-        recovery.tx.vin.length.should.equal(1);
-        recovery.tx.vout.length.should.equal(1);
-        recovery.tx.vin[0].txid.should.equal('e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74');
-        recovery.tx.vin[0].sequence.should.equal(4294967295);
-        recovery.tx.vin[0].scriptSig.asm.should.equal('0 3045022100e62e802500513f83e0db76d10be1eccfff97101c5e959ca8e060ec154652352a02204d1e9f7c116b82e0b2f5e3f5533a4209f0aab855e2365223bdc72cebbc838d6b[ALL] 3044022036586777d10d8058f5bedbf9882ae21c8143f15ac16c64eccf8ac7872153dc68022011c12a6240797e83a4743a30cc88e2fdf7cfca7e2c840433ebed18192613429a[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae');
-        recovery.tx.vin[0].scriptSig.hex.should.equal('00483045022100e62e802500513f83e0db76d10be1eccfff97101c5e959ca8e060ec154652352a02204d1e9f7c116b82e0b2f5e3f5533a4209f0aab855e2365223bdc72cebbc838d6b01473044022036586777d10d8058f5bedbf9882ae21c8143f15ac16c64eccf8ac7872153dc68022011c12a6240797e83a4743a30cc88e2fdf7cfca7e2c840433ebed18192613429a014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae');
-        recovery.tx.vout[0].n.should.equal(0);
-        recovery.tx.vout[0].value.should.equal(0.0801313);
-        recovery.tx.vout[0].scriptPubKey.asm.should.equal('OP_HASH160 c39dcc27823a8bd42cd3318a1dac8c25789b7ac7 OP_EQUAL');
-        recovery.tx.vout[0].scriptPubKey.hex.should.equal('a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787');
-        recovery.tx.vout[0].scriptPubKey.type.should.equal('scripthash');
-        recovery.tx.vout[0].scriptPubKey.reqSigs.should.equal(1);
-        recovery.tx.vout[0].scriptPubKey.addresses.length.should.equal(1);
-        recovery.tx.vout[0].scriptPubKey.addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
-      });
-    });
-
-    function nockBtcRecovery() {
-      nock('https://tbtc.blockr.io', { allowUnmocked: false })
-      .get('/api/v1/address/info/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw',
-          is_unknown: false,
-          balance: 0.08125,
-          balance_multisig: 0,
-          totalreceived: 0.08125,
-          nb_txs: 1,
-          first_tx: {
-            time_utc: '2017-06-12T23:17:43Z',
-            tx: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
-            block_nb: '1128383',
-            value: 0.08125,
-            confirmations: 2
-          },
-          last_tx: {
-            time_utc: '2017-06-12T23:17:43Z',
-            tx: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
-            block_nb: '1128383',
-            value: 0.08125,
-            confirmations: 2
-          },
-          is_valid: true
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/info/2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba',
-          is_unknown: true,
-          balance: 0,
-          balance_multisig: 0,
-          totalreceived: 0,
-          nb_txs: 0,
-          first_tx: null,
-          last_tx: null,
-          is_valid: false
-        },
-        code: 200,
-        message: ''
-      })
-      .get('/api/v1/address/unspent/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
-      .reply(200, {
-        status: 'success',
-        data: {
-          address: '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw',
-          unspent: [
-            {
-              tx: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
-              amount: '0.08125000',
-              n: 0,
-              confirmations: 3,
-              script: 'a9144db7dbb57102a2e13e4474dbe38058431012e74587'
-            }
-          ]
-        },
-        code: 200,
-        message: ''
-      })
-      .post('/api/v1/tx/decode', {
-        hex: '010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004830450221008cd8aa5a09072242d355fa91afbcd619be7b6dce291fe1fb027b92fb87343c06022039c87bc18896f151fdc1f8e52f38e71e9c55cf476cd7310503c519b3d19ea7650147304402204aef39c6f5e50ab8b95bad3c067e4308afe17bf8d474b33c8ba9b8082ed2173802203172d2c7d36c28c83e41397dac445d7af6d61bc5994ed3fc9ca776d3ba34099c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0100447a000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000'
-      })
-      .reply(200, {
-        status: 'success',
-        data: {
-          tx: {
-            txid: '89449b71d386a1e96654fa80d1a073e86a1c21258e292a08cf42a574ceb84748',
-            hash: '89449b71d386a1e96654fa80d1a073e86a1c21258e292a08cf42a574ceb84748',
-            size: 338,
-            vsize: 338,
-            version: 1,
-            locktime: 0,
-            vin: [
-              {
-                txid: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
-                vout: 0,
-                scriptSig: {
-                  asm: '0 3045022100e62e802500513f83e0db76d10be1eccfff97101c5e959ca8e060ec154652352a02204d1e9f7c116b82e0b2f5e3f5533a4209f0aab855e2365223bdc72cebbc838d6b[ALL] 3044022036586777d10d8058f5bedbf9882ae21c8143f15ac16c64eccf8ac7872153dc68022011c12a6240797e83a4743a30cc88e2fdf7cfca7e2c840433ebed18192613429a[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
-                  hex: '00483045022100e62e802500513f83e0db76d10be1eccfff97101c5e959ca8e060ec154652352a02204d1e9f7c116b82e0b2f5e3f5533a4209f0aab855e2365223bdc72cebbc838d6b01473044022036586777d10d8058f5bedbf9882ae21c8143f15ac16c64eccf8ac7872153dc68022011c12a6240797e83a4743a30cc88e2fdf7cfca7e2c840433ebed18192613429a014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae'
-                },
-                sequence: 4294967295
-              }
-            ],
-            vout: [
-              {
-                value: 0.0801313,
-                n: 0,
-                scriptPubKey: {
-                  asm: 'OP_HASH160 c39dcc27823a8bd42cd3318a1dac8c25789b7ac7 OP_EQUAL',
-                  hex: 'a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787',
-                  reqSigs: 1,
-                  type: 'scripthash',
-                  addresses: [
-                    '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw'
-                  ]
-                }
-              }
-            ]
-          },
-          statistics: {
-            vins_sum: '0.08125000',
-            vouts_sum: '0.08013130',
-            fee: '0.00111870'
-          }
-        },
-        code: 200,
-        message: ''
+        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        scan: 5
       });
 
-      nock('https://bitcoinfees.21.co')
-      .get('/api/v1/fees/recommended')
-      .reply(200, {
-        fastestFee: 420,
-        halfHourFee: 360,
-        hourFee: 330
+      recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd000048304502210091687819c7543a17d84768bca0019278c64ccc67e1c2a665422c091eb70bade902206be55b4ec25f80d433ea26ef7caa35b7b77791954f26b35e48f3535b0c4189a901473044022070328e7c3541f3acd83a0600834fcb0e0e566c93826434bd378c5913f09cb11c02201f33817cf92354dc5bc40a55a5070688949cfca93cd77860a7549a36acace2d3014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0100ed7b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
+      recovery.tx.TxId.should.equal('6a441c7263a1596b68434f4cd7c0dd209308391b23f7f21f37d7e154bb2239d1');
+      recovery.tx.Vin.length.should.equal(1);
+      recovery.tx.Vout.length.should.equal(1);
+      recovery.tx.Vin[0].TxId.should.equal('e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74');
+      recovery.tx.Vin[0].Sequence.should.equal('4294967295');
+      recovery.tx.Vin[0].ScriptSig.Asm.should.equal('0 304502210091687819c7543a17d84768bca0019278c64ccc67e1c2a665422c091eb70bade902206be55b4ec25f80d433ea26ef7caa35b7b77791954f26b35e48f3535b0c4189a9[ALL] 3044022070328e7c3541f3acd83a0600834fcb0e0e566c93826434bd378c5913f09cb11c02201f33817cf92354dc5bc40a55a5070688949cfca93cd77860a7549a36acace2d3[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae');
+      recovery.tx.Vin[0].ScriptSig.Hex.should.equal('0048304502210091687819c7543a17d84768bca0019278c64ccc67e1c2a665422c091eb70bade902206be55b4ec25f80d433ea26ef7caa35b7b77791954f26b35e48f3535b0c4189a901473044022070328e7c3541f3acd83a0600834fcb0e0e566c93826434bd378c5913f09cb11c02201f33817cf92354dc5bc40a55a5070688949cfca93cd77860a7549a36acace2d3014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae');
+      recovery.tx.Vout[0].N.should.equal(0);
+      recovery.tx.Vout[0].Value.should.equal(0.081216);
+      recovery.tx.Vout[0].ScriptPubKey.Asm.should.equal('OP_HASH160 c39dcc27823a8bd42cd3318a1dac8c25789b7ac7 OP_EQUAL');
+      recovery.tx.Vout[0].ScriptPubKey.Hex.should.equal('a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787');
+      recovery.tx.Vout[0].ScriptPubKey.Type.should.equal('scripthash');
+      recovery.tx.Vout[0].ScriptPubKey.ReqSigs.should.equal(1);
+      recovery.tx.Vout[0].ScriptPubKey.Addresses.length.should.equal(1);
+      recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
+    }));
+
+
+  });
+
+  describe('Recover Bitcoin Cash', function() {
+    it('should generate BCH recovery tx', co(function *() {
+      recoveryNocks.nockBchRecovery();
+
+      const basecoin = bitgo.coin('tbch');
+      const recovery = yield basecoin.recover({
+        userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+        ':"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11\n' +
+        'ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZ\n' +
+        't4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
+        backupKey: '{"iv":"JG0lyUpjHs7k2UVN9ox31w==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+        ':"ccm","adata":"","cipher":"aes","salt":"kEdza1Fy82E=","ct":"54fBDIs7EWVUp1\n' +
+        '6slxuM6nQsLJCrwgxXB3lzS6GMbAptVtHSDPURUnZnbRYl0CN9LnNGZEqfl7w4GbCbDeCe2IvyZ\n' +
+        'dgeFCVPRYiAL/0VZeC97/pAkP4tuybqho0XELLyrYOgwgGAtoqYs5gqmfexu8R/9wEp2iI="}\n',
+        bitgoKey: 'xpub661MyMwAqRbcFwmW1HYESGP4x6tKWhYCgSK3J9T3y1eaLXkGszcbBSd4h4tM6Nt17JkcZV768RWHYrqjeEpyYabj2gv9XtdNJyww4LnJZVK',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: '2MztSo6jqjLWcvH4g6QoMChbrWkJ3HHzQua',
+        scan: 5
       });
-    }
+
+      should.exist(recovery);
+      recovery.transactionHex.should.equal('02000000015a3319949e2a3741bbb062f63543f4327db3ce47d26eb3adb4bcdc31fbe8a6df00000000fdfd000047304402206b1809a6e92683976d26acc9a49256f0c36cae9eac2d50a2fe6ef6941139662902205df3393a7363512db6fe17ce6422993eee01ca5344ac074d6142b63096840f4d41483045022100d3c3cc60e547eb4dded6596ca7ae386d016357d7261f805a8a08d085d80e357f022036ed44555f2a9ebd5cb5f7b26e82f8d2155e6a352fc0dfce2c4411b9399ac7b3414c69522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453aeffffffff01ce6886470000000017a91453d2f642f1e40f888ba0ef57c359983ccfd40f908700000000');
+      recovery.should.have.property('inputs');
+      recovery.inputs.length.should.equal(1);
+      recovery.inputs[0].should.have.property('chainPath');
+      recovery.inputs[0].chainPath.should.equal('/0/0/1/1');
+      recovery.inputs[0].should.have.property('redeemScript');
+      recovery.inputs[0].redeemScript.should.equal('522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453ae');
+    }));
   });
 
   describe('Recover Ripple', function() {
     it('should generate XRP recovery tx', function() {
 
-      nockXrpRecovery();
+      recoveryNocks.nockXrpRecovery();
 
       const basecoin = bitgo.coin('txrp');
       return basecoin.recover({
@@ -395,148 +115,6 @@ describe('Recovery:', function() {
       });
 
     });
-
-    function nockXrpRecovery() {
-      nock('https://s.altnet.rippletest.net:51234', { allowUnmocked: false })
-      .post('/', {
-        method: 'account_info',
-        params: [{
-          account: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
-          strict: true,
-          ledger_index: 'current',
-          queue: true,
-          signer_lists: true
-        }]
-      })
-      .reply(200, {
-        result: {
-          account_data: {
-            Account: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
-            Balance: '9944000000',
-            Flags: 1179648,
-            LedgerEntryType: 'AccountRoot',
-            OwnerCount: 5,
-            PreviousTxnID: '82460E9FAF24F53388DC9CBA91934B3F82107148CD20BD26E80DF774323545C3',
-            PreviousTxnLgrSeq: 396996,
-            Sequence: 4,
-            index: 'C676D324BA53FEDF601F7EAFBC88DAC5E7440FF491EBC54066ECDB61A2B2D1EC',
-            signer_lists: [
-              {
-                Flags: 0,
-                LedgerEntryType: 'SignerList',
-                OwnerNode: '0000000000000000',
-                PreviousTxnID: '0E9BF2DBAA36539FA4CDB3FF8ABF5DC9A43859C33953385C9486AD63E451B2FC',
-                PreviousTxnLgrSeq: 396943,
-                SignerEntries: [
-                  {
-                    SignerEntry: {
-                      Account: 'raSYaBTfbeARRdacGBbs5tjA7XkyB1RC8x',
-                      SignerWeight: 1
-                    }
-                  },
-                  {
-                    SignerEntry: {
-                      Account: 'rGevN87RpWBbdLxKCF4FAqWgRoSyMJA81f',
-                      SignerWeight: 1
-                    }
-                  },
-                  {
-                    SignerEntry: {
-                      Account: 'rGmQHwvb5SZRbyhp4JBHdpRzSmgqADxPbE',
-                      SignerWeight: 1
-                    }
-                  }
-                ],
-                SignerListID: 0,
-                SignerQuorum: 2,
-                index: 'A36A7ED6108FF7F871C0EC3CF573FE23CC9780436D64A2EE069A8F27E8D40471'
-              }
-            ]
-          },
-          ledger_current_index: 397138,
-          queue_data: {
-            txn_count: 0
-          },
-          status: 'success',
-          validated: false
-        }
-      })
-      .post('/', { method: 'fee' })
-      .reply(200, {
-        result: {
-          current_ledger_size: '0',
-          current_queue_size: '0',
-          drops: {
-            base_fee: '10',
-            median_fee: '5000',
-            minimum_fee: '10',
-            open_ledger_fee: '10'
-          },
-          expected_ledger_size: '51',
-          ledger_current_index: 397138,
-          levels: {
-            median_level: '128000',
-            minimum_level: '256',
-            open_ledger_level: '256',
-            reference_level: '256'
-          },
-          max_queue_size: '1020',
-          status: 'success'
-        }
-      })
-      .post('/', { method: 'server_info' })
-      .reply(200, {
-        result: {
-          info: {
-            build_version: '0.70.1',
-            complete_ledgers: '386967-397137',
-            hostid: 'HI',
-            io_latency_ms: 1,
-            last_close: {
-              converge_time_s: 1.999,
-              proposers: 4
-            },
-            load_factor: 1,
-            peers: 4,
-            pubkey_node: 'n9KMmZw85d5erkaTv62Vz6SbDJSyeihAEB3jwnb3Bqnr2AydRVep',
-            server_state: 'proposing',
-            state_accounting: {
-              connected: {
-                duration_us: '4999941',
-                transitions: 1
-              },
-              disconnected: {
-                duration_us: '1202712',
-                transitions: 1
-              },
-              full: {
-                duration_us: '94064175867',
-                transitions: 1
-              },
-              syncing: {
-                duration_us: '6116096',
-                transitions: 1
-              },
-              tracking: {
-                duration_us: '3',
-                transitions: 1
-              }
-            },
-            uptime: 94077,
-            validated_ledger: {
-              age: 3,
-              base_fee_xrp: 0.00001,
-              hash: '918D326D224F8F49B07B02CD0A2207B7239BBFA824CF512F8D1D9DBCADC115E5',
-              reserve_base_xrp: 20,
-              reserve_inc_xrp: 5,
-              seq: 397137
-            },
-            validation_quorum: 4
-          },
-          status: 'success'
-        }
-      });
-    }
   });
 
   describe('Recover ERC20', function() {

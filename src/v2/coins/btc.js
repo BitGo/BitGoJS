@@ -3,6 +3,7 @@ const common = require('../../common');
 const config = require('../../config');
 const BigNumber = require('bignumber.js');
 const bitcoin = require('bitgo-bitcoinjs-lib');
+const request = require('superagent');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const prova = require('prova-lib');
@@ -578,10 +579,6 @@ Btc.prototype.explainTransaction = function(params) {
   return explanation;
 };
 
-Btc.prototype.getRecoveryBlockchainApiBaseUrl = function() {
-  return common.Environments[this.bitgo.env].blockrApiBaseUrl;
-};
-
 Btc.prototype.getRecoveryFeeRecommendationApiBaseUrl = function() {
   return 'https://bitcoinfees.21.co/api/v1/fees/recommended';
 };
@@ -602,258 +599,262 @@ Btc.prototype.getRecoveryFeePerBytes = function() {
  * - walletPassphrase: necessary if one of the xprvs is encrypted
  * - bitgoKey: xpub
  * - recoveryDestination: target address to send recovered funds to
+ * - scan: the amount of consecutive addresses without unspents to scan through before stopping
  * @param callback
  */
 Btc.prototype.recover = function(params, callback) {
-  const craftTransaction = function(unspents, destinationAddress) {
-    const txSigningRequest = {};
+  return co(function *recover() {
+    const self = this;
+    // ============================HELPER FUNCTIONS============================
+    function deriveKeys(keyArray, index) {
+      return keyArray.map((k) => k.derive(index));
+    }
 
+    const queryBlockchainUnspentsPath = co(function *queryBlockchainUnspentsPath(keyArray, basePath) {
+      const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
+      let numSequentialAddressesWithoutTxs = 0;
+
+      // get unspents for these addresses
+      const gatherUnspents = co(function *coGatherUnspents(addrIndex) {
+        const derivedKeys = deriveKeys(keyArray, addrIndex);
+        const address = createMultiSigAddress(derivedKeys);
+        const addressBase58 = address.address;
+
+        const addrInfo = yield self.getAddressInfoFromExplorer(addressBase58);
+
+        if (addrInfo.txCount === 0) {
+          numSequentialAddressesWithoutTxs++;
+        } else {
+          numSequentialAddressesWithoutTxs = 0;
+
+          if (addrInfo.totalBalance > 0) {
+            // this wallet has a balance
+            address.chainPath = basePath + '/' + addrIndex;
+            address.userKey = derivedKeys[0];
+            address.backupKey = derivedKeys[1];
+            addressesById[addressBase58] = address;
+
+            // try to find unspents on the address
+            const addressUnspents = yield self.getUnspentInfoFromExplorer(addressBase58);
+
+            addressUnspents.forEach(function addAddressToUnspent(unspent) {
+              unspent.address = address.address;
+              walletUnspents.push(unspent);
+            });
+          }
+        }
+
+        if (numSequentialAddressesWithoutTxs >= MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS) {
+          // stop searching for addresses with unspents in them, we've found 5 in a row with none
+          // we are done
+          return;
+        }
+
+        return gatherUnspents(addrIndex + 1);
+      });
+
+      const walletUnspents = [];
+      // This will populate walletAddresses
+      yield gatherUnspents(0);
+
+      if (walletUnspents.length === 0) {
+        // Couldn't find any addresses with funds
+        return [];
+      }
+
+      return walletUnspents;
+    });
+
+    function createMultiSigAddress(keyArray) {
+      const publicKeys = keyArray.map((k) => k.getPublicKeyBuffer());
+
+      const redeemScript = bitcoin.script.multisig.output.encode(2, publicKeys);
+      const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
+      const scriptHashScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
+      const address = self.calculateRecoveryAddress(scriptHashScript);
+      address.redeemScript = redeemScript;
+
+      return {
+        hash: scriptHashScript,
+        redeemScript: redeemScript,
+        address: address
+      };
+    }
+
+    // ============================LOGIC============================
+    if (_.isUndefined(params.userKey)) {
+      throw new Error('missing userKey');
+    }
+
+    if (_.isUndefined(params.backupKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    if (!_.isUndefined(params.scan) && (!_.isInteger(params.scan) || params.scan < 0)) {
+      throw new Error('scan must be a positive integer');
+    }
+
+    const keys = yield this.initiateRecovery(params);
+
+    // BitGo's key derivation paths are /0/0/0/i for user-generated addresses and /0/0/1/i for change adddresses.
+    // Derive these top level paths first for performance reasons
+    const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
+    const userKeyArray = deriveKeys(baseKeyPath, 0);
+    const changeKeyArray = deriveKeys(baseKeyPath, 1);
+
+    // Collect the unspents
+    const addressesById = {};
+    const userUnspents = yield queryBlockchainUnspentsPath(userKeyArray, '/0/0/0');
+    const changeUnspents = yield queryBlockchainUnspentsPath(changeKeyArray, '/0/0/1');
+    const unspents = userUnspents.concat(changeUnspents);
+
+    // Build the transaction
     const totalInputAmount = _.sumBy(unspents, 'amount');
     if (totalInputAmount <= 0) {
       throw new Error('No input to recover - aborting!');
     }
-    const transactionBuilder = new bitcoin.TransactionBuilder(self.network);
 
-    // try to find a realtime recommended fee rate so that we don't under or overpay
-    return Promise.try(function() {
-      let feePerByte = self.getRecoveryFeePerBytes(); // satoshis per byte of data
-      const externalGetRequest = self.bitgo.get(self.getRecoveryFeeRecommendationApiBaseUrl());
-      externalGetRequest.forceV1Auth = true;
-      return externalGetRequest
-      .result()
-      .then(function(response) {
-        if (Number.isInteger(response.hourFee)) {
-          // 21's fee estimates are in satoshis per byte
-          feePerByte = response.hourFee;
-        }
-        return feePerByte;
-      });
-    })
-    .then(function(feePerByte) {
-      const approximateSize = new bitcoin.Transaction().toBuffer().length + config.tx.OUTPUT_SIZE + (config.tx.P2SH_INPUT_SIZE * unspents.length);
-      const approximateFee = approximateSize * feePerByte;
+    const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
+    const txInfo = {};
 
-      // Construct a transaction
-      txSigningRequest.inputs = [];
-      _.forEach(unspents, function(unspent) {
-        const address = addresses[unspent.address];
-        transactionBuilder.addInput(unspent.tx, unspent.n, 0xffffffff, Buffer.from(unspent.script, 'hex'));
-        txSigningRequest.inputs.push({
-          chainPath: address.chainPath,
-          redeemScript: address.redeemScript.toString('hex')
-        });
-      });
-      transactionBuilder.addOutput(destinationAddress, totalInputAmount - approximateFee);
+    let feePerByte = this.getRecoveryFeePerBytes();
 
-      // Sign the inputs
+    const recoveryFeeUrl = this.getRecoveryFeeRecommendationApiBaseUrl();
 
-      if (isLedger) {
-        // TODO: arik add Ledger support
-        // return signLedgerTx(transactionBuilder);
-      } else {
-        let i = 0;
-        _.forEach(unspents, function(unspent) {
-          const address = addresses[unspent.address];
-          const backupPrivateKey = address.backupKey.keyPair;
-          const userPrivateKey = address.userKey.keyPair;
-          // force-override networks
-          backupPrivateKey.network = self.network;
-          userPrivateKey.network = self.network;
-          transactionBuilder.sign(i, backupPrivateKey, address.redeemScript, bitcoin.Transaction.SIGHASH_ALL);
-          transactionBuilder.sign(i++, userPrivateKey, address.redeemScript, bitcoin.Transaction.SIGHASH_ALL);
-        });
+    if (recoveryFeeUrl) {
+      const publicFeeDataReq = this.bitgo.get(recoveryFeeUrl);
+      publicFeeDataReq.forceV1Auth = true;
+      const publicFeeData = yield publicFeeDataReq.result();
+
+      if (_.isInteger(publicFeeData.hourFee)) {
+        feePerByte = publicFeeData.hourFee;
       }
-    })
-    .then(function() {
-      txSigningRequest.transactionHex = transactionBuilder.build().toBuffer().toString('hex');
-      return txSigningRequest;
-    });
-  };
-
-  const createMultiSigAddress = function(keyArray) {
-    const publicKeys = [];
-    keyArray.forEach(function(k) {
-      publicKeys.push(k.getPublicKeyBuffer());
-    });
-
-    const redeemScript = bitcoin.script.multisig.output.encode(2, publicKeys);
-    const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
-    const scriptHashScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
-    const address = self.calculateRecoveryAddress(scriptHashScript);
-    address.redeemScript = redeemScript;
-    const addressObject = {
-      hash: scriptHashScript,
-      redeemScript: redeemScript,
-      address: address
-    };
-    return addressObject;
-  };
-
-  const deriveKeys = function(keyArray, index) {
-    const results = [];
-    keyArray.forEach(function(k) {
-      results.push(k.derive(index));
-    });
-    return results;
-  };
-
-  const collectUnspents = function(keys) {
-
-    const unspents = [];
-    const txMap = {};
-
-    // BitGo's key derivation paths are /0/0/0/i for user-generated addresses and /0/0/1/i for change adddresses.
-    // Derive these top level paths first for performance reasons
-    let keys_0_0;
-    if (isLedger) {
-      // TODO: arik add ledger support
-      keys_0_0 = [keys[0]].concat(deriveKeys(deriveKeys(keys.slice(1), 0), 0));
-    } else {
-      keys_0_0 = deriveKeys(deriveKeys(keys, 0), 0);
     }
-    const keys_0_0_0 = deriveKeys(keys_0_0, 0);
-    const keys_0_0_1 = deriveKeys(keys_0_0, 1);
 
-    // We want to get the wallet id, which is the first /0/0/0/0.
-    // Never used, but potentially useful for debugging, uncomment to use
-    // const walletAddress = createMultiSigAddress(deriveKeys(keys_0_0_0, 0));
+    const approximateSize = new bitcoin.Transaction().toBuffer().length + config.tx.OUTPUT_SIZE + (config.tx.P2SH_INPUT_SIZE * unspents.length);
+    const approximateFee = approximateSize * feePerByte;
 
-    let lookupThisBatch = [];
-    let numSequentialAddressesWithoutTxs = 0;
+    // Construct a transaction
+    txInfo.inputs = unspents.map(function addInputForUnspent(unspent) {
+      const address = addressesById[unspent.address];
+      const redeemScript = new Buffer(address.redeemScript, 'hex');
+      const outputScript = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
 
-    const queryBlockchainUnspentsPath = function(keyArray, basePath) {
+      transactionBuilder.addInput(unspent.txid, unspent.n, 0xffffffff, outputScript);
 
-      const gatherUnspentAddresses = function(addrIndex) {
-        return Promise.try(function() {
-          // Derive the address
-          const derivedKeys = deriveKeys(keyArray, addrIndex);
-          const address = createMultiSigAddress(derivedKeys);
-          const addressBase58 = address.address;
-
-          // get address info from blockr and check for existence of unspents
-          const externalGetRequest = self.bitgo.get(blockrApiBaseUrl + '/address/info/' + addressBase58);
-          externalGetRequest.forceV1Auth = true;
-          return externalGetRequest
-          .result()
-          .then(function(body) {
-            if (body.data.nb_txs === 0) {
-              //
-              numSequentialAddressesWithoutTxs++;
-            } else {
-              numSequentialAddressesWithoutTxs = 0;
-            }
-
-            if (body.data.balance > 0) {
-              lookupThisBatch.push(addressBase58);
-              address.chainPath = basePath + '/' + addrIndex;
-              address.userKey = derivedKeys[0];
-              address.backupKey = derivedKeys[1];
-              addresses[addressBase58] = address;
-            }
-
-            if (numSequentialAddressesWithoutTxs >= MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS) {
-              numSequentialAddressesWithoutTxs = 0; // reset this in case this function will be called again
-              // stop searching for addresses with unspents in them
-              // we are done
-              return;
-            }
-
-            return gatherUnspentAddresses(addrIndex + 1);
-          });
-        });
+      return {
+        chainPath: address.chainPath,
+        redeemScript: address.redeemScript.toString('hex')
       };
+    });
 
-      return gatherUnspentAddresses(0)
-      .then(function() {
-        const unspentAddressList = lookupThisBatch.join(',');
-        if (unspentAddressList.length > 0) {
-          const url = blockrApiBaseUrl + '/address/unspent/' + lookupThisBatch.join(',');
+    transactionBuilder.addOutput(params.recoveryDestination, totalInputAmount - approximateFee);
 
-          // Make async call to blockr.io
-          const externalGetRequest = self.bitgo.get(url);
-          externalGetRequest.forceV1Auth = true;
-          return externalGetRequest
-          .result()
-          .then(function(response) {
-            let resultsWithUnspents = [];
+    const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById);
 
-            // blockr's api stupidly returns an object rather than an array if the only a single address's unspent is fine, so we have to deal with that here
-            if (!!response.data.address) { // is object
-              resultsWithUnspents = (response.data.unspent && response.data.unspent.length > 0) ? [response.data] : [];
-            } else { // is array
-              resultsWithUnspents = _.filter(response.data, function(singleAddressResult) { return singleAddressResult.unspent && singleAddressResult.unspent.length > 0; });
-            }
-            _.forEach(resultsWithUnspents, function(singleAddressResult) {
-              _.forEach(singleAddressResult.unspent, function(singleUnspent) {
-                const addUnspent = function() {
-                  singleUnspent.address = singleAddressResult.address;
-                  singleUnspent.amount = Math.round(parseFloat(singleUnspent.amount) * 1e8); // perform all handling in satoshis from here onwards
-                  unspents.push(singleUnspent);
-                };
-                // if recovering ledger wallet, gather full transactions (needed by ledger device for signing)
-                if (isLedger && !txMap[singleUnspent.tx]) {
-                  const url = blockrApiBaseUrl + '/tx/raw/' + singleUnspent.tx;
-                  const externalGetRequest = self.bitgo.get(url);
-                  externalGetRequest.forceV1Auth = true;
-                  return externalGetRequest
-                  .result()
-                  .then(function(response) {
-                    txMap[singleUnspent.tx] = response.data.tx.hex;
-                    addUnspent();
-                  });
-                } else {
-                  addUnspent();
-                }
-              });
-            });
-            lookupThisBatch = []; // reset this in case this function will be called again
-          });
-        } else { // skip making the request if we don't need to
-          lookupThisBatch = []; // reset this in case this function will be called again
-        }
-      });
+    txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
+    txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
+
+    return txInfo;
+  }).call(this).asCallback(callback);
+};
+
+/**
+ * Apply signatures to a funds recovery transaction using user + backup key
+ * @param txb {Object} a transaction builder object (with inputs and outputs)
+ * @param unspents {Array} the unspents to use in the transaction
+ * @param addresses {Array} the address and redeem script info for the unspents
+ */
+Btc.prototype.signRecoveryTransaction = function(txb, unspents, addresses) {
+  // sign the inputs
+  const signatureIssues = [];
+  unspents.forEach((unspent, i) => {
+    const address = addresses[unspent.address];
+    const backupPrivateKey = address.backupKey.keyPair;
+    const userPrivateKey = address.userKey.keyPair;
+    // force-override networks
+    backupPrivateKey.network = this.network;
+    userPrivateKey.network = this.network;
+
+    const currentSignatureIssue = {
+      inputIndex: i,
+      unspent: unspent
     };
 
-    return queryBlockchainUnspentsPath(keys_0_0_0, '/0/0/0')
-    .then(function() {
-      return queryBlockchainUnspentsPath(keys_0_0_1, '/0/0/1');
-    })
-    .then(function() {
-      return unspents;
-    });
-  };
+    try {
+      txb.sign(i, backupPrivateKey, address.redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+    } catch (e) {
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+    }
 
-  const isLedger = false;
-  const addresses = {};
+    try {
+      txb.sign(i, userPrivateKey, address.redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+    } catch (e) {
+      currentSignatureIssue.error = e;
+      signatureIssues.push(currentSignatureIssue);
+    }
+  });
 
-  const blockrApiBaseUrl = this.getRecoveryBlockchainApiBaseUrl();
-  const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = 5; // 20;
+  if (signatureIssues.length > 0) {
+    const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
+    const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+    error.code = 'input_signature_failure';
+    error.signingErrors = signatureIssues;
+    throw error;
+  }
 
-  const self = this;
-  return this.initiateRecovery(params)
-  .then(function(keys) {
-    return collectUnspents(keys);
-  })
-  .then(function(unspents) {
-    return craftTransaction(unspents, params.recoveryDestination);
-  })
-  .then(function(txSigningRequest) {
-    const externalPostRequest = self.bitgo.post(blockrApiBaseUrl + '/tx/decode');
-    externalPostRequest.forceV1Auth = true;
-    return externalPostRequest
-    .send({ hex: txSigningRequest.transactionHex })
-    .result()
-    .then(function(response) {
-      const transactionDetails = response.data;
-      transactionDetails.txHex = txSigningRequest.transactionHex;
-      const tx = bitcoin.Transaction.fromHex(transactionDetails.txHex);
-      if (transactionDetails.tx.hash !== tx.getId() || transactionDetails.tx.hash !== transactionDetails.tx.txid) {
-        throw new Error('inconsistent recovery transaction id');
-      }
-      return transactionDetails;
-    });
-  })
-  .nodeify(callback);
+  return txb;
+};
+
+Btc.prototype.recoveryBlockchainExplorerUrl = function(url) {
+  return common.Environments[this.bitgo.env].smartBitApiBaseUrl + '/blockchain' + url;
+};
+
+Btc.prototype.getAddressInfoFromExplorer = function(addressBase58) {
+  return co(function *getAddressInfoFromExplorer() {
+    const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/address/${addressBase58}`)).result();
+
+    addrInfo.txCount = addrInfo.address.total.transaction_count;
+    addrInfo.totalBalance = addrInfo.address.total.balance_int;
+
+    return addrInfo;
+  }).call(this);
+};
+
+Btc.prototype.getUnspentInfoFromExplorer = function(addressBase58) {
+  return co(function *getUnspentInfoFromExplorer() {
+    const unspentInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/address/${addressBase58}/unspent`)).result();
+
+    const unspents = unspentInfo.unspent;
+
+    unspents.forEach(function processUnspent(unspent) { unspent.amount = unspent.value_int; });
+
+    return unspents;
+  }).call(this);
+};
+
+Btc.prototype.verifyRecoveryTransaction = function(txInfo) {
+  return co(function *verifyRecoveryTransaction() {
+    const decodedTx = yield request.post(this.recoveryBlockchainExplorerUrl(`/decodetx`))
+    .send({ hex: txInfo.transactionHex })
+    .result();
+
+    const transactionDetails = decodedTx.transaction;
+
+    const tx = bitcoin.Transaction.fromHex(txInfo.transactionHex);
+    if (transactionDetails.TxId !== tx.getId()) {
+      console.log(transactionDetails.txId);
+      console.log(tx.getId());
+      throw new Error('inconsistent recovery transaction id');
+    }
+
+    return transactionDetails;
+  }).call(this);
 };
 
 module.exports = Btc;

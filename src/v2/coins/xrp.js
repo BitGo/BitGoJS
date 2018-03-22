@@ -11,6 +11,7 @@ const prova = require('../../prova');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
+const sjcl = require('../../sjcl.min');
 
 const Xrp = function() {
   // this function is called externally from BaseCoin
@@ -491,5 +492,59 @@ Xrp.prototype.recover = function(params, callback) {
   })
   .nodeify(callback);
 };
+
+Xrp.prototype.initiateRecovery = function(params) {
+  return co(function *initiateRecovery() {
+    const keys = [];
+    const userKey = params.userKey; // Box A
+    let backupKey = params.backupKey; // Box B
+    const bitgoXpub = params.bitgoKey; // Box C
+    const destinationAddress = params.recoveryDestination;
+    const passphrase = params.walletPassphrase;
+
+    const validatePassphraseKey = function(userKey, passphrase) {
+      try {
+        if (!userKey.startsWith('xprv')) {
+          userKey = sjcl.decrypt(passphrase, userKey);
+        }
+        const userHDNode = prova.HDNode.fromBase58(userKey);
+        return Promise.resolve(userHDNode);
+      } catch (e) {
+        throw new Error('Failed to decrypt user key with passcode - try again!');
+      }
+    };
+
+    const key = yield validatePassphraseKey(userKey, passphrase);
+
+    keys.push(key);
+
+    // Validate the backup key
+    try {
+      if (!backupKey.startsWith('xprv')) {
+        backupKey = sjcl.decrypt(passphrase, backupKey);
+      }
+      const backupHDNode = prova.HDNode.fromBase58(backupKey);
+      keys.push(backupHDNode);
+    } catch (e) {
+      throw new Error('Failed to decrypt backup key with passcode - try again!');
+    }
+    try {
+      const bitgoHDNode = prova.HDNode.fromBase58(bitgoXpub);
+      keys.push(bitgoHDNode);
+    } catch (e) {
+      if (this.getFamily() !== 'xrp') {
+        // in XRP recoveries, the BitGo xpub is optional
+        throw new Error('Failed to parse bitgo xpub!');
+      }
+    }
+    // Validate the destination address
+    if (!this.isValidAddress(destinationAddress)) {
+      throw new Error('Invalid destination address!');
+    }
+
+    return keys;
+  }).call(this);
+};
+
 
 module.exports = Xrp;
