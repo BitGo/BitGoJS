@@ -53,7 +53,7 @@ function loadWebAssembly (opts) {
 
 function toUint8Array (s) {
   if (typeof atob === 'function') return new Uint8Array(atob(s).split('').map(charCodeAt))
-  return new (require('buf' + 'fer').Buffer)(s, 'base64')
+  return (require('buf' + 'fer').Buffer).from(s, 'base64')
 }
 
 function charCodeAt (c) {
