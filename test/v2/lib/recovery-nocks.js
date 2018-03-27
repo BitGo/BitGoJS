@@ -1663,3 +1663,108 @@ module.exports.nockWrongChainRecoveries = function() {
     }
   ]);
 };
+
+module.exports.nockEthRecovery = function() {
+  nock('https://kovan.etherscan.io')
+  .get('/api')
+  .query({
+    module: 'account',
+    action: 'txlist',
+    address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924'
+  })
+  .reply(200, {
+    status: '0',
+    message: 'No transactions found',
+    result: []
+  })
+  .get('/api')
+  .query({
+    module: 'account',
+    action: 'balance',
+    address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924'
+  })
+  .reply(200, {
+    status: '1',
+    message: 'OK',
+    result: '100000000000000000'
+  })
+  .get('/api')
+  .query({
+    module: 'account',
+    action: 'balance',
+    address: '0x5df5a96b478bb1808140d87072143e60262e8670'
+  })
+  .reply(200, {
+    status: '1',
+    message: 'OK',
+    result: '2200000000000000000'
+  })
+  .get('/api')
+  .query({
+    module: 'account',
+    action: 'txlist',
+    address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6'
+  })
+  .reply(200, {
+    status: '0',
+    message: 'No transactions found',
+    result: []
+  })
+  .get('/api')
+  .query({
+    module: 'account',
+    action: 'balance',
+    address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6'
+  })
+  .reply(200, {
+    status: '1',
+    message: 'OK',
+    result: '0'
+  })
+  .get('/api')
+  .query({
+    module: 'account',
+    action: 'txlist',
+    address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924'
+  })
+  .reply(200, {
+    status: '0',
+    message: 'No transactions found',
+    result: []
+  })
+  .get('/api')
+  .query({
+    module: 'account',
+    action: 'balance',
+    address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924'
+  })
+  .reply(200, {
+    status: '1',
+    message: 'OK',
+    result: '100000000000000000'
+  })
+  .get('/api')
+  .query({
+    module: 'account',
+    action: 'balance',
+    address: '0x5df5a96b478bb1808140d87072143e60262e8670'
+  })
+  .reply(200, {
+    status: '1',
+    message: 'OK',
+    result: '2200000000000000000'
+  })
+  .get('/api')
+  .query({
+    module: 'proxy',
+    action: 'eth_call',
+    to: '0x5df5a96b478bb1808140d87072143e60262e8670',
+    data: 'a0b7967b',
+    tag: 'latest'
+  })
+  .reply(200, {
+    jsonrpc: '2.0',
+    result: '0x0000000000000000000000000000000000000000000000000000000000000001',
+    id: 1
+  });
+};

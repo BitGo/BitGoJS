@@ -1,13 +1,17 @@
 const baseCoinPrototype = require('../baseCoin').prototype;
 const Wallet = require('../wallet');
+const common = require('../../common');
 const BigNumber = require('bignumber.js');
 const Util = require('../../util');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const request = require('superagent');
+const prova = require('prova-lib');
+const sjcl = require('../../sjcl.min');
 const co = Promise.coroutine;
 let ethAbi = function() {};
 let ethUtil = function() {};
+let EthTx = function() {};
 
 const Eth = function() {
   // this function is called externally from BaseCoin
@@ -21,6 +25,7 @@ Eth.constructor = Eth;
 try {
   ethAbi = require('ethereumjs-abi');
   ethUtil = require('ethereumjs-util');
+  EthTx = require('ethereumjs-tx');
 } catch (e) {
   // ethereum currently not supported
 }
@@ -193,6 +198,154 @@ Eth.prototype.preCreateBitGo = function(params) {
 };
 
 /**
+ * Builds a funds recovery transaction without BitGo
+ * @param params.userKey {String} [encrypted] xprv
+ * @param params.backupKey {String} [encrypted] xrpv
+ * @param params.walletPassphrase {String} used to decrypt userKey and backupKey
+ * @param params.walletContractAddress {String} the ETH address of the wallet contract
+ * @param params.recoveryDestination {String} target address to send recovered funds to
+ * @param callback
+ */
+Eth.prototype.recover = function(params, callback) {
+  return co(function *recover() {
+    if (_.isUndefined(params.userKey)) {
+      throw new Error('missing userKey');
+    }
+
+    if (_.isUndefined(params.backupKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.walletPassphrase)) {
+      throw new Error('missing wallet passphrase');
+    }
+
+    if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+      throw new Error('invalid walletContractAddress');
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    // Clean up whitespace from entered values
+    const encryptedUserKey = params.userKey.replace(/\s/g, '');
+    const encryptedBackupKey = params.backupKey.replace(/\s/g, '');
+
+    // Set new eth tx fees (using default config values from platform)
+    const gasPrice = new ethUtil.BN('20000000000');
+    const gasLimit = new ethUtil.BN('500000');
+
+    // Decrypt private keys from KeyCard values
+    let userPrv;
+    try {
+      userPrv = sjcl.decrypt(params.walletPassphrase, encryptedUserKey);
+    } catch (e) {
+      throw new Error(`Error decrypting user keychain: ${e.message}`);
+    }
+
+    // Decrypt backup private key and get address
+    let backupPrv;
+    try {
+      backupPrv = sjcl.decrypt(params.walletPassphrase, encryptedBackupKey);
+    } catch (e) {
+      throw new Error(`Error decrypting backup keychain: ${e.message}`);
+    }
+
+    const backupHDNode = prova.HDNode.fromBase58(backupPrv);
+    const backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
+    const backupKeyAddress = `0x${ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
+
+    // Get nonce for backup key (should be 0)
+    let backupKeyNonce = 0;
+    let result;
+
+    result = yield request.get(this.recoveryBlockchainExplorerQuery(`module=account&action=txlist&address=${backupKeyAddress}`)).result();
+    const backupKeyTxList = result.result;
+    if (backupKeyTxList.length > 0) {
+      // Calculate last nonce used
+      const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === backupKeyAddress);
+      backupKeyNonce = outgoingTxs.length;
+    }
+
+    // get balance of wallet and deduct fees to get transaction amount
+    result = yield request.get(this.recoveryBlockchainExplorerQuery(`module=account&action=balance&address=${backupKeyAddress}`)).result();
+    const backupKeyBalance = new ethUtil.BN(result.result, 10);
+
+    if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
+      throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries`);
+    }
+
+    // get balance of wallet and deduct fees to get transaction amount
+    result = yield request.get(this.recoveryBlockchainExplorerQuery(`module=account&action=balance&address=${params.walletContractAddress}`)).result();
+    const balance = result.result;
+    const txAmount = new ethUtil.BN(balance, 10).toString(10);
+
+    // build recipients object
+    const recipients = [{
+      address: params.recoveryDestination,
+      amount: txAmount
+    }];
+
+    // Get sequence ID using contract call
+    const sequenceIdMethodSignature = ethAbi.methodID('getNextSequenceId', []);
+    const sequenceIdArgs = ethAbi.rawEncode([], []);
+    const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
+    result = yield request.get(this.recoveryBlockchainExplorerQuery(`module=proxy&action=eth_call&to=${params.walletContractAddress}&data=${sequenceIdData}&tag=latest`)).result();
+    const sequenceIdHex = result.result;
+    const sequenceId = new ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
+
+    // This signature will be valid for 1 week
+    const EXPIRETIME_DEFAULT = Math.floor((new Date().getTime()) / 1000) + (60 * 60 * 24 * 7);
+
+    // Get operation hash and sign it
+    const operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, EXPIRETIME_DEFAULT, sequenceId);
+    const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+
+    try {
+      Util.ecRecoverEthAddress(operationHash, signature);
+    } catch (e) {
+      throw new Error('Invalid signature');
+    }
+
+    const txInfo = {
+      recipient: recipients[0],
+      expireTime: EXPIRETIME_DEFAULT,
+      contractSequenceId: sequenceId,
+      operationHash: operationHash,
+      signature: signature,
+      gasLimit: gasLimit.toString(10)
+    };
+
+    // calculate send data
+    const sendMethodArgs = this.getSendMethodArgs(txInfo);
+    const methodSignature = ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
+    const encodedArgs = ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+    // Build contract call and sign it
+    const tx = new EthTx({
+      to: params.walletContractAddress,
+      nonce: backupKeyNonce,
+      value: 0,
+      gasPrice: gasPrice,
+      gasLimit: gasLimit,
+      data: sendData,
+      spendAmount: txAmount
+    });
+
+    tx.sign(backupSigningKey);
+
+    const signedTx = {
+      id: ethUtil.bufferToHex(tx.hash(true)),
+      tx: tx.serialize().toString('hex')
+    };
+
+    return signedTx;
+  }).call(this).asCallback(callback);
+};
+
+/**
  * Recover an unsupported token from a BitGo multisig wallet
  * This builds a half-signed transaction, for which there will be an admin route to co-sign and broadcast
  * @param params
@@ -299,10 +452,49 @@ Eth.prototype.recoverToken = function(params, callback) {
   }).call(this).asCallback(callback);
 };
 
-Eth.prototype.getWalletTokenBalanceUrl = function(tokenContractAddress, walletContractAddress) {
-  const subdomain = this.getChain() === 'teth' ? 'kovan' : 'api';
+Eth.prototype.getSendMethodArgs = function getSendMethodArgs(txInfo) {
+  // Method signature is
+  // sendMultiSig(address toAddress, uint value, bytes data, uint expireTime, uint sequenceId, bytes signature)
+  return [
+    {
+      name: 'toAddress',
+      type: 'address',
+      value: txInfo.recipient.address
+    },
+    {
+      name: 'value',
+      type: 'uint',
+      value: txInfo.recipient.amount
+    },
+    {
+      name: 'data',
+      type: 'bytes',
+      value: ethUtil.toBuffer(txInfo.recipient.data || '')
+    },
+    {
+      name: 'expireTime',
+      type: 'uint',
+      value: txInfo.expireTime
+    },
+    {
+      name: 'sequenceId',
+      type: 'uint',
+      value: txInfo.contractSequenceId
+    },
+    {
+      name: 'signature',
+      type: 'bytes',
+      value: ethUtil.toBuffer(txInfo.signature)
+    }
+  ];
+};
 
-  return `https://${subdomain}.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContractAddress}&address=${walletContractAddress}&tag=latest`;
+Eth.prototype.getWalletTokenBalanceUrl = function(tokenContractAddress, walletContractAddress) {
+  return this.recoveryBlockchainExplorerQuery(`module=account&action=tokenbalance&contractaddress=${tokenContractAddress}&address=${walletContractAddress}&tag=latest`);
+};
+
+Eth.prototype.recoveryBlockchainExplorerQuery = function(query) {
+  return common.Environments[this.bitgo.env].etherscanBaseUrl + '/api?' + query;
 };
 
 module.exports = Eth;

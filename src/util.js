@@ -96,4 +96,16 @@ if (isEthAvailable) {
     const ether = big.div('1000000000000000000');
     return ether.toPrecision();
   };
+
+  Util.ecRecoverEthAddress = function ecRecoverEthAddress(msgHash, signature) {
+    msgHash = ethUtil.stripHexPrefix(msgHash);
+    signature = ethUtil.stripHexPrefix(signature);
+
+    const v = parseInt(signature.slice(128, 130), 16);
+    const r = new Buffer(signature.slice(0, 64), 'hex');
+    const s = new Buffer(signature.slice(64, 128), 'hex');
+
+    const pubKey = ethUtil.ecrecover(new Buffer(msgHash, 'hex'), v, r, s);
+    return ethUtil.bufferToHex(ethUtil.pubToAddress(pubKey));
+  };
 }
