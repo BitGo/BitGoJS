@@ -1,5 +1,8 @@
 const btcPrototype = require('./btc').prototype;
 const bitcoin = require('bitgo-bitcoinjs-lib');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
+const RecoveryTool = require('../recovery');
 
 const Ltc = function() {
   // this function is called externally from BaseCoin
@@ -81,5 +84,53 @@ Ltc.prototype.calculateRecoveryAddress = function(scriptHashScript) {
   const blockrAddress = this.canonicalAddress(bitgoAddress, 1);
   return blockrAddress;
 };
+
+/**
+ * Recover LTC that was sent to the wrong chain
+ * @param coin {String} the coin type of the wallet that received the funds
+ * @param walletId {String} the wallet ID of the wallet that received the funds
+ * @param txid {String} The txid of the faulty transaction
+ * @param recoveryAddress {String} address to send recovered funds to
+ * @param walletPassphrase {String} the wallet passphrase
+ * @param xprv {String} the unencrypted xprv (used instead of wallet passphrase)
+ * @returns {{version: number, sourceCoin: string, recoveryCoin: string, walletId: string, recoveryAddres: string, recoveryAmount: number, txHex: string, txInfo: Object}}
+ */
+Ltc.prototype.recoverFromWrongChain = function(params, callback) {
+  return co(function *recoverFromWrongChain() {
+    const {
+      txid,
+      recoveryAddress,
+      wallet,
+      coin,
+      walletPassphrase,
+      xprv
+    } = params;
+
+    const allowedRecoveryCoins = ['btc'];
+
+    if (!allowedRecoveryCoins.includes(coin)) {
+      throw new Error(`ltc recoveries not supported for ${coin}`);
+    }
+
+    const recoveryTool = new RecoveryTool({
+      bitgo: this.bitgo,
+      sourceCoin: this.getFamily(),
+      recoveryType: coin,
+      test: !(this.bitgo.env === 'prod'),
+      logging: false
+    });
+
+    yield recoveryTool.buildTransaction({
+      wallet: wallet,
+      faultyTxId: txid,
+      recoveryAddress: recoveryAddress
+    });
+
+    yield recoveryTool.signTransaction({ passphrase: walletPassphrase, prv: xprv });
+
+    return recoveryTool.export();
+  }).call(this).asCallback(callback);
+};
+
 
 module.exports = Ltc;
