@@ -25,7 +25,7 @@ Tdash.prototype = Object.create(dashPrototype);
 Tdash.constructor = Tdash;
 
 Tdash.prototype.getChain = function() {
-  return 'Tdash';
+  return 'tdash';
 };
 
 Tdash.prototype.getFullName = function() {
