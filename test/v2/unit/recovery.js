@@ -117,6 +117,30 @@ describe('Recovery:', function() {
     });
   });
 
+  describe('Recover Litecoin', function() {
+    it('should generate LTC recovery tx', co(function *() {
+      recoveryNocks.nockLtcRecovery();
+
+      const basecoin = bitgo.coin('tltc');
+      const recovery = yield basecoin.recover({
+        userKey: `{"iv":"Vvthj0ZaCPywdNWM+s5GmA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hxZMB31kp34=","ct":"xGpBHnS3k0G6lU/uv9pC1gsdFqksNV6nLBQ18qL9iuWV9sM5JLyZ67wqnMVVoZgNWaI1fq0kSTCPYwGq2FNAS2GmN/JWb/Pl0UPmfVvhraOnzav0vDv0KaJjOT3S1D/omjzx/W3pw5qSwxov+T65Yt6E19YGGjc="}`,
+        backupKey: `{"iv":"/GM1AF21E0Ht6ZmgiWpd+g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"rGsRxlm/pGE=","ct":"cUBV7ELfNEIs0UkDrBjHiRpXvRNCRHLE5dx4X7gprHoTSBKJOJ+5McxHnSLeBvM2vIexSQO9RBzjtC2G1m6hozTOEjWkR0BtTBoi0uw3cXDmmL69pjrABZhLjmCF8znmaF/DCQk/lKQcHEwbImcR/egpq8u9W1A="}`,
+        bitgoKey: 'xpub661MyMwAqRbcFwmymyqkCoY6uaZ8PxbjXKWK2pLS8NUutytumJabLvJyGpXzDJRqXJAf4LoACStGgf1bYv6dkbT6D1MKEyhjYE7VHiw5bFP',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: 'Qhe8AWhZr1wBNV3iry2uVxnthbawRLhNcF',
+        scan: 5
+      });
+
+      recovery.transactionHex.should.equal('0100000001ffe4ac6dd97fbe9d4526a122c039d9c93ac5d595b1b8d1e0cf23df1b3caecfbc00000000fdfd0000483045022100fba1726e22e065850043ceb4088a767153d547ab5c417709ef718d0547d2484e02202ae9b632484e41b627758abbd197a5271eb962ac839aa2c7ac9ede7f96fa7b69014730440220365c73c7fcf97657abc856a4daa3247802ee231897b26e36abee909942257f3b02206e1728621d2a771477cd33178e596f2c2a741d1d9571fb0dd75f96b75333d2f0014c6952210353bcad5447cbed8af7a7e4b010412b1fcc748e7efd225047729bfc452735c10c2103e6f65db8d3718b8a851f0ea64c9bf776cbc9e089f03b12210c7360cadb980031210246cdc4f2c735ccbf5952eded3734a2179104f136a5ed9ec8a1bea50fcaa45d4e53aeffffffff0138b6c9010000000017a914e6c2329cb2f901f30b9606cf839ee09cfce8414e8700000000');
+      recovery.should.have.property('inputs');
+      recovery.inputs.length.should.equal(1);
+      recovery.inputs[0].should.have.property('chainPath');
+      recovery.inputs[0].chainPath.should.equal('/0/0/0/0');
+      recovery.inputs[0].should.have.property('redeemScript');
+      recovery.inputs[0].redeemScript.should.equal('52210353bcad5447cbed8af7a7e4b010412b1fcc748e7efd225047729bfc452735c10c2103e6f65db8d3718b8a851f0ea64c9bf776cbc9e089f03b12210c7360cadb980031210246cdc4f2c735ccbf5952eded3734a2179104f136a5ed9ec8a1bea50fcaa45d4e53ae');
+    }));
+  });
+
   describe('Recover ERC20', function() {
     it('should successfully construct a recovery transaction for tokens stuck in a wallet', co(function *() {
       const wallet = bitgo.nockEthWallet();

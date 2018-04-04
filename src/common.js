@@ -15,7 +15,8 @@ exports.Environments = {
     smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
-    etherscanBaseUrl: 'https://api.etherscan.io'
+    etherscanBaseUrl: 'https://api.etherscan.io',
+    ltcExplorerBaseUrl: 'https://insight.litecore.io/api'
   },
   rmgProd: {
     uri: 'https://rmg.bitgo.com',
@@ -30,7 +31,8 @@ exports.Environments = {
     smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
-    etherscanBaseUrl: 'https://api.etherscan.io'
+    etherscanBaseUrl: 'https://api.etherscan.io',
+    ltcExplorerBaseUrl: 'https://insight.litecore.io/api'
   },
   staging: {
     uri: 'https://staging.bitgo.com',
@@ -45,7 +47,8 @@ exports.Environments = {
     smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
-    etherscanBaseUrl: 'https://api.etherscan.io'
+    etherscanBaseUrl: 'https://api.etherscan.io',
+    ltcExplorerBaseUrl: 'https://insight.litecore.io/api'
   },
   rmgStaging: {
     uri: 'https://rmgstaging.bitgo.com',
@@ -60,7 +63,8 @@ exports.Environments = {
     smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
-    etherscanBaseUrl: 'https://api.etherscan.io'
+    etherscanBaseUrl: 'https://api.etherscan.io',
+    ltcExplorerBaseUrl: 'https://insight.litecore.io/api'
   },
   test: {
     uri: 'https://test.bitgo.com',
@@ -74,7 +78,8 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-    etherscanBaseUrl: 'https://kovan.etherscan.io'
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api'
   },
   rmgTest: {
     uri: 'https://rmgtest.bitgo.com',
@@ -88,7 +93,8 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-    etherscanBaseUrl: 'https://kovan.etherscan.io'
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api'
   },
   dev: {
     uri: 'https://webdev.bitgo.com',
@@ -102,7 +108,8 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-    etherscanBaseUrl: 'https://kovan.etherscan.io'
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api'
   },
   latest: {
     uri: 'https://latest.bitgo.com',
@@ -116,7 +123,8 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-    etherscanBaseUrl: 'https://kovan.etherscan.io'
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api'
   },
   rmgLatest: {
     uri: 'https://rmglatest.bitgo.com',
@@ -130,7 +138,8 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-    etherscanBaseUrl: 'https://kovan.etherscan.io'
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api'
   },
   rmgDev: {
     uri: 'https://rmgwebdev.bitgo.com',
@@ -144,7 +153,8 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-    etherscanBaseUrl: 'https://kovan.etherscan.io'
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api'
   },
   local: {
     uri: 'http://localhost:3000',
@@ -158,7 +168,8 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-    etherscanBaseUrl: 'https://kovan.etherscan.io'
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api'
   },
   mock: {
     uri: 'https://bitgo.fakeurl',
@@ -172,7 +183,8 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     smartBitApiBaseUrl: 'https://testnet-api.smartbit.fakeurl/v1',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.fakeurl/api',
-    etherscanBaseUrl: 'https://kovan.etherscan.io'
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api'
   },
   rmgLocal: {
     uri: 'http://rmglocalhost:3000',
@@ -186,7 +198,8 @@ exports.Environments = {
     serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
     smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-    etherscanBaseUrl: 'https://kovan.etherscan.io'
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api'
   },
   custom: {
     uri: process.env.BITGO_CUSTOM_ROOT_URI,
@@ -202,6 +215,7 @@ exports.Environments = {
     smartBitApiBaseUrl: 'https://' + (process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin' ? 'testnet-api' : 'api') + '.smartbit.com.au/v1',
     bchExplorerBaseUrl: process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin' ? 'https://test-bch-insight.bitpay.com/api' : 'https://blockdozer.com/insight-api',
     btgExplorerBaseUrl: process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin' ? null : 'https://btgexplorer.com/api',
+    ltcExplorerBaseUrl: process.env.BITGO_CUSTOM_LITECOIN_NETWORK !== 'litecoin' ? 'http://explorer.litecointools.com/api' : 'https://insight.litecore.io/api',
     etherscanBaseUrl: process.env.BITGO_CUSTOM_ETHEREUM_NETWORK !== 'ethereum' ? 'https://kovan.etherscan.io' : 'https://api.etherscan.io'
   }
 };

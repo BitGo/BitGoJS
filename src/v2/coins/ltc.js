@@ -2,6 +2,8 @@ const btcPrototype = require('./btc').prototype;
 const bitcoin = require('bitgo-bitcoinjs-lib');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
+const common = require('../../common');
+const request = require('superagent');
 const RecoveryTool = require('../recovery');
 
 const Ltc = function() {
@@ -75,14 +77,48 @@ Ltc.prototype.canonicalAddress = function(address, scriptHashVersion = 2) {
   return bitcoin.address.toBase58Check(addressDetails.hash, newScriptHash);
 };
 
-Ltc.prototype.getRecoveryBlockchainApiBaseUrl = function() {
-  return 'https://ltc.blockr.io/api/v1';
-};
-
 Ltc.prototype.calculateRecoveryAddress = function(scriptHashScript) {
   const bitgoAddress = bitcoin.address.fromOutputScript(scriptHashScript, this.network);
   const blockrAddress = this.canonicalAddress(bitgoAddress, 1);
   return blockrAddress;
+};
+
+Ltc.prototype.recoveryBlockchainExplorerUrl = function(url) {
+  return common.Environments[this.bitgo.env].ltcExplorerBaseUrl + url;
+};
+
+Ltc.prototype.getAddressInfoFromExplorer = function(addressBase58) {
+  return co(function *getAddressInfoFromExplorer() {
+    const address = this.canonicalAddress(addressBase58, 2);
+
+    const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}`)).result();
+
+    addrInfo.txCount = addrInfo.txApperances;
+    addrInfo.totalBalance = addrInfo.balanceSat;
+
+    return addrInfo;
+  }).call(this);
+};
+
+Ltc.prototype.getUnspentInfoFromExplorer = function(addressBase58) {
+  return co(function *getUnspentInfoFromExplorer() {
+    const address = this.canonicalAddress(addressBase58, 2);
+
+    const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}/utxo`)).result();
+
+    unspents.forEach(function processUnspent(unspent) {
+      unspent.amount = unspent.satoshis;
+      unspent.n = unspent.vout;
+    });
+
+    return unspents;
+  }).call(this);
+};
+
+// Some of our ltc explorers do not have a tx decoder
+Ltc.prototype.verifyRecoveryTransaction = function() {
+  // yieldable no-op
+  return co(function *noop() { return; }).call(this);
 };
 
 /**
