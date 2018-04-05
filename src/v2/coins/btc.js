@@ -4,6 +4,7 @@ const config = require('../../config');
 const BigNumber = require('bignumber.js');
 const bitcoin = require('bitgo-bitcoinjs-lib');
 const request = require('superagent');
+const bitcoinMessage = require('bitcoinjs-message');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const prova = require('prova-lib');
@@ -80,16 +81,76 @@ Btc.prototype.postProcessPrebuild = function(prebuild, callback) {
  * @param txPrebuild prebuild object returned by server
  * @param txPrebuild.txHex prebuilt transaction's txHex form
  * @param wallet Wallet object to obtain keys to verify against
+ * @param verification Object specifying some verification parameters
+ * @param verification.disableNetworking Disallow fetching any data from the internet for verification purposes
+ * @param verification.keychains Pass keychains manually rather than fetching them by id
+ * @param verification.addresses Address details to pass in for out-of-band verification
  * @param callback
  * @returns {boolean}
  */
-Btc.prototype.verifyTransaction = function({ txParams, txPrebuild, wallet }, callback) {
+Btc.prototype.verifyTransaction = function({ txParams, txPrebuild, wallet, verification = {} }, callback) {
   return co(function *() {
-    const keychains = yield Promise.props({
-      user: this.keychains().get({ id: wallet._wallet.keys[0] }),
-      backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
-      bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
-    });
+    const disableNetworking = !!verification.disableNetworking;
+
+    let keychains = verification.keychains;
+    if (!keychains && !disableNetworking) {
+      keychains = yield Promise.props({
+        user: this.keychains().get({ id: wallet._wallet.keys[0] }),
+        backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
+        bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
+      });
+    }
+
+    // let's verify these keychains
+    const keySignatures = _.get(wallet, '_wallet.keySignatures');
+    if (!_.isEmpty(keySignatures)) {
+      // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
+      const userPub = keychains.user.pub;
+      const userKey = bitcoin.HDNode.fromBase58(userPub);
+      let userPrv = keychains.user.prv;
+      if (_.isEmpty(userPrv)) {
+        const encryptedPrv = keychains.user.encryptedPrv;
+        if (!_.isEmpty(encryptedPrv)) {
+          // if the decryption fails, it will throw an error
+          userPrv = this.bitgo.decrypt({
+            input: encryptedPrv,
+            password: txParams.walletPassphrase
+          });
+        }
+      }
+      if (_.isEmpty(userPrv)) {
+        const errorMessage = 'user private key unavailable for verification';
+        if (disableNetworking) {
+          console.log(errorMessage);
+        } else {
+          throw new Error(errorMessage);
+        }
+      } else {
+        const userPrivateKey = bitcoin.HDNode.fromBase58(userPrv);
+        if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
+          throw new Error('user private key is only public');
+        }
+        if (userPrivateKey.neutered().toBase58() !== userPub) {
+          throw new Error('user private key does not match public key');
+        }
+      }
+
+      const backupPubSignature = keySignatures.backupPub;
+      const bitgoPubSignature = keySignatures.bitgoPub;
+      // verify the signatures against the user public key
+      const prefix = bitcoin.networks.bitcoin.messagePrefix;
+
+      const signingAddress = userKey.keyPair.getAddress();
+      const isValidBackupSignature = bitcoinMessage.verify(keychains.backup.pub, signingAddress, Buffer.from(backupPubSignature, 'hex'), prefix);
+      const isValidBitgoSignature = bitcoinMessage.verify(keychains.bitgo.pub, signingAddress, Buffer.from(bitgoPubSignature, 'hex'), prefix);
+      if (!isValidBackupSignature || !isValidBitgoSignature) {
+        throw new Error('secondary public key signatures invalid');
+      }
+    } else if (!disableNetworking) {
+      // these keys were obtained online and their signatures were not verified
+      // this could be dangerous
+      console.log('unsigned keys obtained online are being used for address verification');
+    }
     const keychainArray = [keychains.user, keychains.backup, keychains.bitgo];
     const explanation = this.explainTransaction({
       txHex: txPrebuild.txHex,
@@ -120,12 +181,17 @@ Btc.prototype.verifyTransaction = function({ txParams, txPrebuild, wallet }, cal
 
     const allOutputDetails = yield Promise.all(_.map(allOutputs, co(function *(currentOutput) {
       const currentAddress = currentOutput.address;
+      // address details throws if the address isn't found, meaning it's external
+      const addressDetailsPrebuild = _.get(txPrebuild, `txInfo.walletAddressDetails.${currentAddress}`, {});
+      const addressDetailsVerification = _.get(verification, `addresses.${currentAddress}`, {});
       try {
-        // address details throws if the address isn't found, meaning it's external
-        const addressDetails = yield wallet.getAddress({ address: currentAddress });
+        let addressDetails = _.extend({}, addressDetailsPrebuild, addressDetailsVerification);
+        if (_.isEmpty(addressDetails) && !disableNetworking) {
+          addressDetails = yield wallet.getAddress({ address: currentAddress });
+        }
         // verify that the address is on the wallet
         // verifyAddress throws if it fails to verify the address, meaning it's external
-        self.verifyAddress(_.extend({}, addressDetails, { keychains: keychainArray }));
+        self.verifyAddress(_.extend({}, addressDetails, { keychains: keychainArray, address: currentAddress }));
         return _.extend({}, currentOutput, addressDetails, { external: false });
       } catch (e) {
         return _.extend({}, currentOutput, { external: true });
@@ -165,9 +231,25 @@ Btc.prototype.verifyTransaction = function({ txParams, txPrebuild, wallet }, cal
 
     const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
     const transactionCache = {};
+    const network = this.network;
     const inputs = yield Promise.all(transaction.ins.map(co(function *(currentInput) {
       const transactionId = Buffer.from(currentInput.hash).reverse().toString('hex');
-      if (!transactionCache[transactionId]) {
+      const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
+      if (txHex) {
+        const localTx = bitcoin.Transaction.fromHex(txHex);
+        if (localTx.getId() !== transactionId) {
+          throw new Error('input transaction hex does not match id');
+        }
+        const currentOutput = localTx.outs[currentInput.index];
+        const address = bitcoin.address.fromOutputScript(currentOutput.script, network);
+        return {
+          address,
+          value: currentOutput.value
+        };
+      } else if (!transactionCache[transactionId]) {
+        if (disableNetworking) {
+          throw new Error('attempting to retrieve transaction details externally with networking disabled');
+        }
         transactionCache[transactionId] = yield self.bitgo.get(self.url(`/public/tx/${transactionId}`)).result();
       }
       const transactionDetails = transactionCache[transactionId];
@@ -199,9 +281,13 @@ Btc.prototype.verifyAddress = function({ address, keychains, coinSpecific, chain
     throw new Error(`invalid address: ${address}`);
   }
 
+  if (!(_.isFinite(chain) && _.isFinite(index))) {
+    throw new Error(`address validation failure: invalid chain (${chain}) or index (${index})`);
+  }
+
   const expectedAddress = this.
   generateAddress({
-    segwit: !!coinSpecific.witnessScript,
+    segwit: !!_.get(coinSpecific, 'witnessScript'),
     keychains,
     threshold: 2,
     chain: chain,
@@ -858,15 +944,18 @@ Btc.prototype.verifyRecoveryTransaction = function(txInfo) {
   }).call(this);
 };
 
+
 /**
  * Recover BTC that was sent to the wrong chain
- * @param coin {String} the coin type of the wallet that received the funds
- * @param walletId {String} the wallet ID of the wallet that received the funds
- * @param txid {String} The txid of the faulty transaction
- * @param recoveryAddress {String} address to send recovered funds to
- * @param walletPassphrase {String} the wallet passphrase
- * @param xprv {String} the unencrypted xprv (used instead of wallet passphrase)
- * @returns {{version: number, sourceCoin: string, recoveryCoin: string, walletId: string, recoveryAddres: string, recoveryAmount: number, txHex: string, txInfo: Object}}
+ * @param params
+ * @param params.txid {String} The txid of the faulty transaction
+ * @param params.recoveryAddress {String} address to send recovered funds to
+ * @param params.wallet {Wallet} the wallet that received the funds
+ * @param params.coin {String} the coin type of the wallet that received the funds
+ * @param params.walletPassphrase {String} the wallet passphrase
+ * @param params.xprv {String} the unencrypted xprv (used instead of wallet passphrase)
+ * @param callback
+ * @returns {*}
  */
 Btc.prototype.recoverFromWrongChain = function(params, callback) {
   return co(function *recoverFromWrongChain() {
