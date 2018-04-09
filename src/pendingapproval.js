@@ -262,12 +262,14 @@ PendingApproval.prototype.approve = function(params, callback) {
     }
 
     // check the wallet balance and compare it with the transaction amount and fee
-    const requestedAmount = this.pendingApproval.info.transactionRequest.requestedAmount || 0;
-    const walletBalance = this.wallet.wallet.spendableBalance;
-    const delta = Math.abs(requestedAmount - walletBalance);
-    if (delta <= 10000) {
-      // it's a sweep because we're within 10k satoshis of the wallet balance
-      canRecreateTransaction = false;
+    if (_.isObject(_.get(this, 'wallet.wallet'))) {
+      const requestedAmount = this.pendingApproval.info.transactionRequest.requestedAmount || 0;
+      const walletBalance = this.wallet.wallet.spendableBalance;
+      const delta = Math.abs(requestedAmount - walletBalance);
+      if (delta <= 10000) {
+        // it's a sweep because we're within 10k satoshis of the wallet balance
+        canRecreateTransaction = false;
+      }
     }
   }
 
