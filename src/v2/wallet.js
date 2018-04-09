@@ -71,6 +71,17 @@ Wallet.prototype.receiveAddress = function() {
   return this._wallet.receiveAddress.address;
 };
 
+/**
+ * Return the token flush thresholds for this wallet
+ * @return {*|Object} pairs of { [tokenName]: thresholds } base units
+ */
+Wallet.prototype.tokenFlushThresholds = function() {
+  if (this.baseCoin.getFamily() !== 'eth') {
+    throw new Error('not supported for this wallet');
+  }
+  return this._wallet.coinSpecific.tokenFlushThresholds;
+};
+
 Wallet.prototype.pendingApprovals = function() {
   const self = this;
   return this._wallet.pendingApprovals.map(function(currentApproval) {
@@ -340,6 +351,24 @@ Wallet.prototype.fanoutUnspents = function fanoutUnspents(params, callback) {
     .result();
   }).call(this).asCallback(callback);
 
+};
+
+/**
+ * Set the token flush thresholds for the wallet. Updates the wallet.
+ * Tokens will only be flushed from forwarder contracts if the balance is greater than the threshold defined here.
+ * @param thresholds {Object} - pairs of { [tokenName]: threshold } (base units)
+ * @param [callback]
+ */
+Wallet.prototype.updateTokenFlushThresholds = function(thresholds, callback) {
+  return co(function *() {
+    if (this.baseCoin.getFamily() !== 'eth') {
+      throw new Error('not supported for this wallet');
+    }
+
+    this._wallet = yield this.bitgo.put(this.url()).send({
+      tokenFlushThresholds: thresholds
+    }).result();
+  }).call(this).asCallback(callback);
 };
 
 /**

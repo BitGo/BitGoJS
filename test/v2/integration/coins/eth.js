@@ -104,4 +104,15 @@ describe('ETH:', function() {
       txInfo.recipient.amount.should.equal('4200');
     }));
   });
+
+  describe('Token Flush Thresholds', function() {
+    it('should be updated', co(function *() {
+      yield wallet.updateTokenFlushThresholds({ terc: 10 });
+      wallet.tokenFlushThresholds().should.match({ terc: '10' });
+
+      // tokens that are not updated remain unchanged
+      yield wallet.updateTokenFlushThresholds({ tbst: 100 });
+      wallet.tokenFlushThresholds().should.match({ tbst: '100', terc: '10' });
+    }));
+  });
 });
