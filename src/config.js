@@ -4,7 +4,7 @@ const _ = require('lodash');
 // Estimate for virtual sizes of various tx inputs
 exports.tx = {
   P2SH_INPUT_SIZE: 296,
-  P2SH_P2WSH_INPUT_SIZE: 138,
+  P2SH_P2WSH_INPUT_SIZE: 139,
   P2PKH_INPUT_SIZE: 160, // Uncompressed
   OUTPUT_SIZE: 34,
   TX_OVERHEAD_SIZE: 10
