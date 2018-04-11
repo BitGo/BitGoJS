@@ -260,6 +260,13 @@ const handleV2PendingApproval = co(function *(req) {
   return pendingApproval.reject(params);
 });
 
+// create a keychain
+const handleV2CreateLocalKeyChain = function(req) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  return coin.keychains().create(req.body);
+};
+
 // handle wallet share
 const handleV2ShareWallet = co(function *(req) {
   const bitgo = req.bitgo;
@@ -525,6 +532,9 @@ exports = module.exports = function(app, args) {
   app.use('/api/v[1]/*', parseBody, prepareBitGo(args), promiseWrapper(handleREST, args));
 
   // API v2
+
+  // create keychain
+  app.post('/api/v2/:coin/keychain/local', parseBody, prepareBitGo(args), promiseWrapper(handleV2CreateLocalKeyChain, args));
 
   // generate wallet
   app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleV2GenerateWallet, args));
