@@ -969,8 +969,9 @@ Wallet.prototype.send = function(params, callback) {
   try {
     amount = new BigNumber(params.amount);
     assert(!amount.isNegative());
+    assert(!amount.isZero());
   } catch (e) {
-    throw new Error('invalid argument for amount - positive number or numeric string expected');
+    throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
   }
 
   params.recipients = [{
@@ -1000,6 +1001,16 @@ Wallet.prototype.sendMany = function(params, callback) {
   return co(function *() {
     params = params || {};
     common.validateParams(params, [], ['comment', 'otp'], callback);
+
+    params.recipients.map(function(recipient) {
+      try {
+        const amount = new BigNumber(recipient.amount);
+        assert(!amount.isNegative());
+        assert(!amount.isZero());
+      } catch (e) {
+        throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+      }
+    });
 
     const halfSignedTransaction = yield this.prebuildAndSignTransaction(params);
     const selectParams = _.pick(params, [

@@ -2,7 +2,8 @@
 // Tests for Wallets
 //
 
-require('should');
+const should = require('should');
+const assert = require('assert');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const bitcoin = require('bitgo-bitcoinjs-lib');
@@ -183,6 +184,53 @@ describe('V2 Wallet:', function() {
       const isMismappedPublicKeySignatureValid = basecoin.verifySignature(signedTransaction, 0, unspent.value, { publicKey: '0266824ac31b6a9d6568c3f7ced9aee1c720cd85994dd41d43dc63b0977195729e', signatureIndex: 0 });
       isMismappedPublicKeySignatureValid.should.equal(false);
     }));
-  });
 
+    it('should error when amount is zero', co(function *() {
+      const params = {
+        amount: 0,
+        address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS,
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+      };
+      assert.throws(function() { wallet.send(params); }, Error);
+    }));
+
+    it('should error when amount is negative', co(function *() {
+      const params = {
+        amount: -1,
+        address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS,
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+      };
+      assert.throws(function() { wallet.send(params); }, Error);
+    }));
+
+    it('should error when send many and amount is zero', co(function *() {
+      const params = {
+        recipients: [{
+          address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS,
+          amount: 0
+        }, {
+          address: TestV2BitGo.V2.TEST_WALLET2_ADDRESS,
+          amount: 10
+        }],
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+      };
+      const error = yield bitgo.getAsyncError(wallet.sendMany(params));
+      should.exist(error);
+    }));
+
+    it('should error when send many and amount is negative', co(function *() {
+      const params = {
+        recipients: [{
+          address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS,
+          amount: 10
+        }, {
+          address: TestV2BitGo.V2.TEST_WALLET2_ADDRESS,
+          amount: -1
+        }],
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+      };
+      const error = yield bitgo.getAsyncError(wallet.sendMany(params));
+      should.exist(error);
+    }));
+  });
 });
