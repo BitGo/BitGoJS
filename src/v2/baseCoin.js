@@ -295,4 +295,13 @@ BaseCoin.prototype.verifyRecoveryTransaction = function(txInfo) {
   return co(function *noop() { return; }).call(this);
 };
 
+/**
+ * Generate a key pair on the curve used by the coin
+ *
+ * @param seed
+ */
+BaseCoin.prototype.generateKeyPair = function(seed) {
+  throw new Error('abstract method');
+};
+
 module.exports = BaseCoin;

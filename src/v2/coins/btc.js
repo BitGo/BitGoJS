@@ -3,6 +3,7 @@ const common = require('../../common');
 const config = require('../../config');
 const BigNumber = require('bignumber.js');
 const bitcoin = require('bitgo-bitcoinjs-lib');
+const crypto = require('crypto');
 const request = require('superagent');
 const bitcoinMessage = require('bitcoinjs-message');
 const Promise = require('bluebird');
@@ -992,6 +993,27 @@ Btc.prototype.recoverFromWrongChain = function(params, callback) {
 
     return recoveryTool.export();
   }).call(this).asCallback(callback);
+};
+
+/**
+ * Generate secp256k1 key pair
+ *
+ * @param seed
+ * @returns {Object} object with generated pub and prv
+ */
+Btc.prototype.generateKeyPair = function(seed) {
+  if (!seed) {
+    // An extended private key has both a normal 256 bit private key and a 256
+    // bit chain code, both of which must be random. 512 bits is therefore the
+    // maximum entropy and gives us maximum security against cracking.
+    seed = crypto.randomBytes(512 / 8);
+  }
+  const extendedKey = prova.HDNode.fromSeedBuffer(seed);
+  const xpub = extendedKey.neutered().toBase58();
+  return {
+    pub: xpub,
+    prv: extendedKey.toBase58()
+  };
 };
 
 module.exports = Btc;

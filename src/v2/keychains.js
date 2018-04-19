@@ -1,6 +1,4 @@
 const common = require('../common');
-const crypto = require('crypto');
-const prova = require('../prova');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
@@ -102,22 +100,7 @@ Keychains.prototype.create = function(params) {
   params = params || {};
   common.validateParams(params, [], []);
 
-  let seed;
-  if (!params.seed) {
-    // An extended private key has both a normal 256 bit private key and a 256
-    // bit chain code, both of which must be random. 512 bits is therefore the
-    // maximum entropy and gives us maximum security against cracking.
-    seed = crypto.randomBytes(512 / 8);
-  } else {
-    seed = params.seed;
-  }
-
-  const extendedKey = prova.HDNode.fromSeedBuffer(seed);
-  const xpub = extendedKey.neutered().toBase58();
-  return {
-    pub: xpub,
-    prv: extendedKey.toBase58()
-  };
+  return this.baseCoin.generateKeyPair(params.seed);
 };
 
 Keychains.prototype.add = function(params, callback) {

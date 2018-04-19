@@ -1,4 +1,4 @@
-const baseCoinPrototype = require('../baseCoin').prototype;
+const baseCoinPrototype = require('./btc').prototype;
 const prova = require('../../prova');
 const _ = require('lodash');
 

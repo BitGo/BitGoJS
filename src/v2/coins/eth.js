@@ -6,6 +6,7 @@ const Util = require('../../util');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const request = require('superagent');
+const crypto = require('crypto');
 const prova = require('prova-lib');
 const sjcl = require('../../sjcl.min');
 const co = Promise.coroutine;
@@ -495,6 +496,27 @@ Eth.prototype.getWalletTokenBalanceUrl = function(tokenContractAddress, walletCo
 
 Eth.prototype.recoveryBlockchainExplorerQuery = function(query) {
   return common.Environments[this.bitgo.env].etherscanBaseUrl + '/api?' + query;
+};
+
+/**
+ * Generate secp256k1 key pair
+ *
+ * @param seed
+ * @returns {Object} object with generated pub and prv
+ */
+Eth.prototype.generateKeyPair = function(seed) {
+  if (!seed) {
+    // An extended private key has both a normal 256 bit private key and a 256
+    // bit chain code, both of which must be random. 512 bits is therefore the
+    // maximum entropy and gives us maximum security against cracking.
+    seed = crypto.randomBytes(512 / 8);
+  }
+  const extendedKey = prova.HDNode.fromSeedBuffer(seed);
+  const xpub = extendedKey.neutered().toBase58();
+  return {
+    pub: xpub,
+    prv: extendedKey.toBase58()
+  };
 };
 
 module.exports = Eth;

@@ -6,6 +6,7 @@ const rippleAddressCodec = require('ripple-address-codec');
 const rippleBinaryCodec = require('ripple-binary-codec');
 const rippleHashes = require('ripple-hashes');
 const rippleKeypairs = require('ripple-keypairs');
+const crypto = require('crypto');
 const url = require('url');
 const prova = require('../../prova');
 const _ = require('lodash');
@@ -546,5 +547,25 @@ Xrp.prototype.initiateRecovery = function(params) {
   }).call(this);
 };
 
+/**
+ * Generate secp256k1 key pair
+ *
+ * @param seed
+ * @returns {Object} object with generated pub and prv
+ */
+Xrp.prototype.generateKeyPair = function(seed) {
+  if (!seed) {
+    // An extended private key has both a normal 256 bit private key and a 256
+    // bit chain code, both of which must be random. 512 bits is therefore the
+    // maximum entropy and gives us maximum security against cracking.
+    seed = crypto.randomBytes(512 / 8);
+  }
+  const extendedKey = prova.HDNode.fromSeedBuffer(seed);
+  const xpub = extendedKey.neutered().toBase58();
+  return {
+    pub: xpub,
+    prv: extendedKey.toBase58()
+  };
+};
 
 module.exports = Xrp;
