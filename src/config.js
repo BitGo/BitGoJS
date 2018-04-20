@@ -37,7 +37,8 @@ exports.tokens = {
         { type: 'eos', coin: 'eth', network: 'Mainnet', name: 'Eos', tokenContractAddress: '0x86fa049857e0209aa7d9e616f7eb3b3b78ecfdb0', decimalPlaces: 18 },
         { type: 'qrl', coin: 'eth', network: 'Mainnet', name: 'Qrl', tokenContractAddress: '0x697beac28b09e122c4332d163985e8a73121b97f', decimalPlaces: 8 },
         { type: 'nmr', coin: 'eth', network: 'Mainnet', name: 'Numeraire', tokenContractAddress: '0x1776e1f26f98b1a5df9cd347953a26dd3cb46671', decimalPlaces: 18 },
-        { type: 'brd', coin: 'eth', network: 'Mainnet', name: 'Bread', tokenContractAddress: '0x558ec3152e2eb2174905cd19aea4e34a23de9ad6', decimalPlaces: 18 }
+        { type: 'brd', coin: 'eth', network: 'Mainnet', name: 'Bread', tokenContractAddress: '0x558ec3152e2eb2174905cd19aea4e34a23de9ad6', decimalPlaces: 18 },
+        { type: 'wax', coin: 'eth', network: 'Mainnet', name: 'Wax', tokenContractAddress: '0x39bb259f66e1c59d5abef88375979b4d20d98022', decimalPlaces: 8 }
       ]
     }
   },
