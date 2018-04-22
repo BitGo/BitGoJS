@@ -432,7 +432,7 @@ BitGo.prototype.calculateHMAC = function(key, message) {
  * @param coinName
  */
 BitGo.prototype.coin = function(coinName) {
-  return BaseCoin(this, coinName);
+  return BaseCoin.getInstance(this, coinName);
 };
 
 /**

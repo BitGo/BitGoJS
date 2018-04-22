@@ -1,23 +1,21 @@
-const bchPrototype = require('./bch').prototype;
+const Bch = require('./bch');
 const bitcoinCash = require('bitgo-bitcoinjs-lib');
 
-const Tbch = function() {
-  // this function is called externally from BaseCoin
-  // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
-  // effectively, move the BaseCoin prototype one level away
-  this.network = bitcoinCash.networks.testnet;
-  this.bchPrefix = 'bchtest';
-};
+class Tbch extends Bch {
+  constructor() {
+    super();
+    this.network = bitcoinCash.networks.testnet;
+    this.bchPrefix = 'bchtest';
+  }
 
-Tbch.prototype = Object.create(bchPrototype);
-Tbch.constructor = Tbch;
+  getChain() {
+    return 'tbch';
+  }
 
-Tbch.prototype.getChain = function() {
-  return 'tbch';
-};
+  getFullName() {
+    return 'Testnet Bitcoin Cash';
+  }
 
-Tbch.prototype.getFullName = function() {
-  return 'Testnet Bitcoin Cash';
-};
+}
 
 module.exports = Tbch;

@@ -1,23 +1,21 @@
-const btcPrototype = require('./btc').prototype;
+const Btc = require('./btc');
 const bitcoin = require('bitgo-bitcoinjs-lib');
 
-const Tbtc = function() {
-  // this function is called externally from BaseCoin
-  // replace the BaseCoin prototype with the local override prototype, which inherits from BaseCoin
-  // effectively, move the BaseCoin prototype one level away
-  this.network = bitcoin.networks.testnet;
-};
+class Tbtc extends Btc {
 
-Tbtc.prototype = Object.create(btcPrototype);
-Tbtc.constructor = Tbtc;
+  constructor() {
+    super();
+    this.network = bitcoin.networks.testnet;
+  }
 
-Tbtc.prototype.getChain = function() {
-  return 'tbtc';
-};
+  getChain() {
+    return 'tbtc';
+  }
 
-Tbtc.prototype.getFullName = function() {
-  return 'Testnet Bitcoin';
-};
+  getFullName() {
+    return 'Testnet Bitcoin';
+  }
 
+}
 
 module.exports = Tbtc;
