@@ -41,7 +41,8 @@ exports.tokens = {
         { type: 'trx', coin: 'eth', network: 'Mainnet', name: 'Tron', tokenContractAddress: '0xf230b790e05390fc8295f4d3f60332c93bed42e2', decimalPlaces: 6 },
         { type: 'wax', coin: 'eth', network: 'Mainnet', name: 'Wax', tokenContractAddress: '0x39bb259f66e1c59d5abef88375979b4d20d98022', decimalPlaces: 8 },
         { type: 'mkr', coin: 'eth', network: 'Mainnet', name: 'Maker', tokenContractAddress: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', decimalPlaces: 18 },
-        { type: 'zil', coin: 'eth', network: 'Mainnet', name: 'Zilliqa', tokenContractAddress: '0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27', decimalPlaces: 12 }
+        { type: 'zil', coin: 'eth', network: 'Mainnet', name: 'Zilliqa', tokenContractAddress: '0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27', decimalPlaces: 12 },
+        { type: 'rdn', coin: 'eth', network: 'Mainnet', name: 'Raiden', tokenContractAddress: '0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6', decimalPlaces: 18 }
       ]
     }
   },
