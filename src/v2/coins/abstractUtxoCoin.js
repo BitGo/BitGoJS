@@ -52,7 +52,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
     let addressDetails;
     try {
-      addressDetails = bitcoin.address.fromBase58Check(address);
+      addressDetails = this.getCoinLibrary().address.fromBase58Check(address);
     } catch (e) {
       try {
         addressDetails = bitcoin.address.fromBech32(address);
@@ -650,7 +650,7 @@ class AbstractUtxoCoin extends BaseCoin {
       changeOutputs: []
     };
     transaction.outs.forEach(function(currentOutput) {
-      const currentAddress = bitcoin.address.fromOutputScript(currentOutput.script, self.network);
+      const currentAddress = self.getCoinLibrary().address.fromOutputScript(currentOutput.script, self.network);
       const currentAmount = currentOutput.value;
 
       if (changeAddresses.indexOf(currentAddress) !== -1) {
@@ -686,7 +686,7 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
   calculateRecoveryAddress(scriptHashScript) {
-    return bitcoin.address.fromOutputScript(scriptHashScript, this.network);
+    return this.getCoinLibrary().address.fromOutputScript(scriptHashScript, this.network);
   }
 
   getRecoveryFeePerBytes() {
