@@ -39,7 +39,8 @@ exports.tokens = {
         { type: 'nmr', coin: 'eth', network: 'Mainnet', name: 'Numeraire', tokenContractAddress: '0x1776e1f26f98b1a5df9cd347953a26dd3cb46671', decimalPlaces: 18 },
         { type: 'brd', coin: 'eth', network: 'Mainnet', name: 'Bread', tokenContractAddress: '0x558ec3152e2eb2174905cd19aea4e34a23de9ad6', decimalPlaces: 18 },
         { type: 'trx', coin: 'eth', network: 'Mainnet', name: 'Tron', tokenContractAddress: '0xf230b790e05390fc8295f4d3f60332c93bed42e2', decimalPlaces: 6 },
-        { type: 'wax', coin: 'eth', network: 'Mainnet', name: 'Wax', tokenContractAddress: '0x39bb259f66e1c59d5abef88375979b4d20d98022', decimalPlaces: 8 }
+        { type: 'wax', coin: 'eth', network: 'Mainnet', name: 'Wax', tokenContractAddress: '0x39bb259f66e1c59d5abef88375979b4d20d98022', decimalPlaces: 8 },
+        { type: 'mkr', coin: 'eth', network: 'Mainnet', name: 'Maker', tokenContractAddress: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', decimalPlaces: 18 }
       ]
     }
   },
