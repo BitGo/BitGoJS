@@ -62,7 +62,7 @@ describe('Recovery:', function() {
 
   describe('Recover Bitcoin Cash', function() {
     // Todo (kevin): fix test for other recovery source
-    xit('should generate BCH recovery tx', co(function *() {
+    it('should generate BCH recovery tx', co(function *() {
       recoveryNocks.nockBchRecovery();
 
       const basecoin = bitgo.coin('tbch');
@@ -82,7 +82,7 @@ describe('Recovery:', function() {
       });
 
       should.exist(recovery);
-      recovery.transactionHex.should.equal('02000000015a3319949e2a3741bbb062f63543f4327db3ce47d26eb3adb4bcdc31fbe8a6df00000000fdfd000047304402206b1809a6e92683976d26acc9a49256f0c36cae9eac2d50a2fe6ef6941139662902205df3393a7363512db6fe17ce6422993eee01ca5344ac074d6142b63096840f4d41483045022100d3c3cc60e547eb4dded6596ca7ae386d016357d7261f805a8a08d085d80e357f022036ed44555f2a9ebd5cb5f7b26e82f8d2155e6a352fc0dfce2c4411b9399ac7b3414c69522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453aeffffffff01ce6886470000000017a91453d2f642f1e40f888ba0ef57c359983ccfd40f908700000000');
+      recovery.transactionHex.should.equal('02000000015a3319949e2a3741bbb062f63543f4327db3ce47d26eb3adb4bcdc31fbe8a6df00000000fc00473044022017489d9aca2e99b84815ccea2ee036c6265b7621d23887e9603d507295cf26f402207b9d33926af1e960ca585773af5d2b14ba523e348737442f2bd203304203f8cc414730440220468a892964d8a892702b156b1f986d9a837e96eadb0f8f43657c9758c300093b02207ac672794471b7eb99be421e7023bd8a0150ff52549cea0e58f44fc8e6d61811414c69522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453aeffffffff0146f185470000000017a91453d2f642f1e40f888ba0ef57c359983ccfd40f908700000000');
       recovery.should.have.property('inputs');
       recovery.inputs.length.should.equal(1);
       recovery.inputs[0].should.have.property('chainPath');
@@ -120,7 +120,7 @@ describe('Recovery:', function() {
 
   describe('Recover Litecoin', function() {
     // Todo (kevin): fix test for other recovery source
-    xit('should generate LTC recovery tx', co(function *() {
+    it('should generate LTC recovery tx', co(function *() {
       recoveryNocks.nockLtcRecovery();
 
       const basecoin = bitgo.coin('tltc');
@@ -133,7 +133,7 @@ describe('Recovery:', function() {
         scan: 5
       });
 
-      recovery.transactionHex.should.equal('0100000001ffe4ac6dd97fbe9d4526a122c039d9c93ac5d595b1b8d1e0cf23df1b3caecfbc00000000fdfd0000483045022100fba1726e22e065850043ceb4088a767153d547ab5c417709ef718d0547d2484e02202ae9b632484e41b627758abbd197a5271eb962ac839aa2c7ac9ede7f96fa7b69014730440220365c73c7fcf97657abc856a4daa3247802ee231897b26e36abee909942257f3b02206e1728621d2a771477cd33178e596f2c2a741d1d9571fb0dd75f96b75333d2f0014c6952210353bcad5447cbed8af7a7e4b010412b1fcc748e7efd225047729bfc452735c10c2103e6f65db8d3718b8a851f0ea64c9bf776cbc9e089f03b12210c7360cadb980031210246cdc4f2c735ccbf5952eded3734a2179104f136a5ed9ec8a1bea50fcaa45d4e53aeffffffff0138b6c9010000000017a914e6c2329cb2f901f30b9606cf839ee09cfce8414e8700000000');
+      recovery.transactionHex.should.equal('0100000001ffe4ac6dd97fbe9d4526a122c039d9c93ac5d595b1b8d1e0cf23df1b3caecfbc00000000fc0047304402207c87fa565629d0d5bdf1cd4a34c54c90b3ff3a5c50c481ce41cad7709cc9d8d20220774791a635c79d344ccae60b448463ab10e88704405bae47f8c6ffe0eba6ffe80147304402205ebfc4377598dea11a3b50fe7b9e2b3bdb54869407cf651f8f119115738e4e7902201bf86eae5eb417d8355bdc5a5e3f3f306e569475660707e1380395366751600c014c6952210353bcad5447cbed8af7a7e4b010412b1fcc748e7efd225047729bfc452735c10c2103e6f65db8d3718b8a851f0ea64c9bf776cbc9e089f03b12210c7360cadb980031210246cdc4f2c735ccbf5952eded3734a2179104f136a5ed9ec8a1bea50fcaa45d4e53aeffffffff01b03ec9010000000017a914e6c2329cb2f901f30b9606cf839ee09cfce8414e8700000000');
       recovery.should.have.property('inputs');
       recovery.inputs.length.should.equal(1);
       recovery.inputs[0].should.have.property('chainPath');

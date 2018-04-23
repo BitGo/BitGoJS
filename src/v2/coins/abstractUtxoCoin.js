@@ -690,7 +690,11 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
   getRecoveryFeePerBytes() {
-    return 100;
+    return Promise.resolve(100);
+  }
+
+  getRecoveryFeeRecommendationApiBaseUrl() {
+    return Promise.reject(new Error('AbtractUtxoCoin method not implemented'));
   }
 
   /**
@@ -823,19 +827,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
       const txInfo = {};
 
-      let feePerByte = this.getRecoveryFeePerBytes();
-
-      const recoveryFeeUrl = this.getRecoveryFeeRecommendationApiBaseUrl();
-
-      if (recoveryFeeUrl) {
-        const publicFeeDataReq = this.bitgo.get(recoveryFeeUrl);
-        publicFeeDataReq.forceV1Auth = true;
-        const publicFeeData = yield publicFeeDataReq.result();
-
-        if (_.isInteger(publicFeeData.hourFee)) {
-          feePerByte = publicFeeData.hourFee;
-        }
-      }
+      const feePerByte = yield this.getRecoveryFeePerBytes();
 
       const approximateSize = new bitcoin.Transaction().toBuffer().length + config.tx.OUTPUT_SIZE + (config.tx.P2SH_INPUT_SIZE * unspents.length);
       const approximateFee = approximateSize * feePerByte;
@@ -859,7 +851,12 @@ class AbstractUtxoCoin extends BaseCoin {
       const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById);
 
       txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
-      txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
+
+      try {
+        txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
+      } catch (e) {
+        console.log('Could not verify recovery transaction');
+      }
 
       return txInfo;
     }).call(this).asCallback(callback);

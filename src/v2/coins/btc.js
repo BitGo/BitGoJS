@@ -2,6 +2,7 @@ const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const common = require('../../common');
 const bitcoin = require('bitgo-bitcoinjs-lib');
 const request = require('superagent');
+const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 
@@ -45,6 +46,22 @@ class Btc extends AbstractUtxoCoin {
 
   supportsBlockTarget() {
     return true;
+  }
+
+  getRecoveryFeePerBytes() {
+    return co(function *getRecoveryFeePerBytes() {
+      const recoveryFeeUrl = this.getRecoveryFeeRecommendationApiBaseUrl();
+
+      const publicFeeDataReq = this.bitgo.get(recoveryFeeUrl);
+      publicFeeDataReq.forceV1Auth = true;
+      const publicFeeData = yield publicFeeDataReq.result();
+
+      if (_.isInteger(publicFeeData.hourFee)) {
+        return publicFeeData.hourFee;
+      } else {
+        return 100;
+      }
+    }).call(this);
   }
 
   getRecoveryFeeRecommendationApiBaseUrl() {
