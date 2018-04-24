@@ -106,6 +106,8 @@ class BaseCoin {
         trmg: require('./coins/trmg'),
         xrp: require('./coins/xrp'),
         txrp: require('./coins/txrp'),
+        xlm: require('./coins/xlm'),
+        txlm: require('./coins/txlm'),
         dash: require('./coins/dash'),
         tdash: require('./coins/tdash'),
         zec: require('./coins/zec'),
