@@ -855,7 +855,7 @@ class AbstractUtxoCoin extends BaseCoin {
       try {
         txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
       } catch (e) {
-        console.log('Could not verify recovery transaction');
+        console.log('Could not verify recovery transaction', e.message);
       }
 
       return txInfo;
