@@ -1031,15 +1031,17 @@ Wallet.prototype.sendMany = function(params, callback) {
     params = params || {};
     common.validateParams(params, [], ['comment', 'otp'], callback);
 
-    params.recipients.map(function(recipient) {
-      try {
-        const amount = new BigNumber(recipient.amount);
-        assert(!amount.isNegative());
-        assert(!amount.isZero());
-      } catch (e) {
-        throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
-      }
-    });
+    if (_.isObject(params.recipients)) {
+      params.recipients.map(function(recipient) {
+        try {
+          const amount = new BigNumber(recipient.amount);
+          assert(!amount.isNegative());
+          assert(!amount.isZero());
+        } catch (e) {
+          throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+        }
+      });
+    }
 
     const halfSignedTransaction = yield this.prebuildAndSignTransaction(params);
     const selectParams = _.pick(params, [
