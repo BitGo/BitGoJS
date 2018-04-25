@@ -18,8 +18,11 @@ class BaseCoin {
   static getInstance(bitgo, coin) {
     const coinInstance = BaseCoin.initializeCoin(coin, bitgo);
     coinInstance.bitgo = bitgo;
-
-    coinInstance.type = coin;
+    // Incase of a token, the type is already set
+    // We don't want to override it because it can be instantiated with contract hash directly as well
+    if (coinInstance.getFullName() !== 'ERC20 Token') {
+      coinInstance.type = coin;
+    }
 
     coinInstance.url = (suffix) => {
       return bitgo._baseUrl + '/api/v2/' + coinInstance.getChain() + suffix;
@@ -120,14 +123,26 @@ class BaseCoin {
 
     const tokens = bitgo.getConstants().eth.tokens;
     tokens.forEach((tokenConfig) => {
+      const generatedToken = Token.generateToken(tokenConfig);
       if (!coinGenerators[tokenConfig.type]) {
-        coinGenerators[tokenConfig.type] = Token.generateToken(tokenConfig);
+        coinGenerators[tokenConfig.type] = generatedToken;
+      }
+      // users can specify a coin by the token contract hash
+      if (!coinGenerators[tokenConfig.tokenContractAddress]) {
+        coinGenerators[tokenConfig.tokenContractAddress] = generatedToken;
       }
     });
 
     const CoinGenerator = coinGenerators[coin];
     if (!CoinGenerator) {
-      throw new Error('Coin or token type ' + coin + ' not supported');
+      const ethCoin = new coinGenerators['eth']();
+      if (ethCoin.isValidAddress(coin)) {
+        // return a token which we don't support but can sign
+        const unknownToken = Token.generateToken({ type: 'unknown', coin: 'eth', network: 'Mainnet', name: 'Unknown', tokenContractAddress: coin, decimalPlaces: 0 });
+        return new unknownToken();
+      } else {
+        throw new Error('Coin or token type ' + coin + ' not supported');
+      }
     }
     return new CoinGenerator();
   }
