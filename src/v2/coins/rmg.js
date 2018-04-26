@@ -1,8 +1,8 @@
-const BaseCoin = require('../baseCoin');
+const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const prova = require('../../prova');
 const _ = require('lodash');
 
-class Rmg extends BaseCoin {
+class Rmg extends AbstractUtxoCoin {
   constructor() {
     super();
     this.network = prova.networks.rmg;
