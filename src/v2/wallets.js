@@ -181,6 +181,7 @@ Wallets.prototype.add = function(params, callback) {
  * @param params.disableTransactionNotifications
  * @param params.passcodeEncryptionCode
  * @param params.coldDerivationSeed
+ * @param params.gasPrice
  * @param callback
  * @returns {*}
  */
@@ -297,15 +298,28 @@ Wallets.prototype.generateWallet = function(params, callback) {
       };
     }
 
-    if (params.enterprise) {
+    if (!_.isUndefined(params.enterprise)) {
+      if (!_.isString(params.enterprise)) {
+        throw new Error('invalid enterprise argument, expecting string');
+      }
       walletParams.enterprise = params.enterprise;
     }
 
-    if (params.disableTransactionNotifications) {
+    if (!_.isUndefined(params.disableTransactionNotifications)) {
+      if (!_.isBoolean(params.disableTransactionNotifications)) {
+        throw new Error('invalid disableTransactionNotifications argument, expecting boolean');
+      }
       walletParams.disableTransactionNotifications = params.disableTransactionNotifications;
     }
 
-    if (self.baseCoin.getFamily() === 'xrp' && params.rootPrivateKey) {
+    if (!_.isUndefined(params.gasPrice)) {
+      if (!_.isNumber(params.gasPrice)) {
+        throw new Error('invalid gas price argument, expecting number');
+      }
+      walletParams.gasPrice = params.gasPrice;
+    }
+
+    if (self.baseCoin.getFamily() === 'xrp' && !_.isUndefined(params.rootPrivateKey)) {
       walletParams.rootPrivateKey = params.rootPrivateKey;
     }
 
@@ -323,11 +337,11 @@ Wallets.prototype.generateWallet = function(params, callback) {
       bitgoKeychain: bitgoKeychain
     };
 
-    if (backupKeychain.prv) {
+    if (!_.isUndefined(backupKeychain.prv)) {
       result.warning = 'Be sure to backup the backup keychain -- it is not stored anywhere else!';
     }
 
-    if (derivationPath) {
+    if (!_.isUndefined(derivationPath)) {
       userKeychain.derivationPath = derivationPath;
     }
 
