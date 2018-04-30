@@ -43,11 +43,12 @@ describe('V2 Wallet:', function() {
   describe('Create Address', function() {
 
     it('should create a new address', function() {
-      return wallet.createAddress()
+      return wallet.createAddress( { label: 'test run address' })
       .then(function(newAddress) {
         newAddress.should.have.property('address');
         newAddress.should.have.property('coin');
         newAddress.should.have.property('wallet');
+        newAddress.label.should.equal('test run address');
         newAddress.wallet.should.equal(wallet._wallet.id);
         newAddress.coin.should.equal(wallet._wallet.coin);
       });
@@ -74,13 +75,13 @@ describe('V2 Wallet:', function() {
       }
 
       const address1 = yield wallet.createAddress({ gasPrice: '12345' });
-      address1.chain.should.equal(0);
+      address1.chain.should.equal(10);
 
       const address2 = yield wallet.createAddress({ gasPrice: '123456789111315171921' });
-      address2.chain.should.equal(0);
+      address2.chain.should.equal(10);
 
       const address3 = yield wallet.createAddress({ gasPrice: 1234567 });
-      address3.chain.should.equal(0);
+      address3.chain.should.equal(10);
     }));
 
   });
