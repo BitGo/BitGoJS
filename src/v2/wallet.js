@@ -540,9 +540,9 @@ Wallet.prototype.getAddress = function(params, callback) {
 Wallet.prototype.createAddress = function(params, callback) {
   return co(function *() {
     params = params || {};
-    common.validateParams(params, [], []);
+    common.validateParams(params, [], ['label']);
 
-    const addressParams = {};
+    const addressParams = _.merge({}, params);
 
     const chain = params.chain;
     if (!_.isUndefined(chain)) {
