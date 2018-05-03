@@ -285,13 +285,20 @@ Wallets.prototype.generateWallet = function(params, callback) {
     };
 
     // add signatures
-    if (_.isString(userKeychain.prv)) {
+    if (_.isString(userKeychain.prv) && userKeychain.prv.substr(0, 4) === 'xprv') {
       const privateKey = bitcoin.HDNode.fromBase58(userKeychain.prv).getKey();
       const privateKeyBuffer = privateKey.d.toBuffer();
       const isCompressed = privateKey.compressed;
       const prefix = bitcoin.networks.bitcoin.messagePrefix;
       const backupPubSignature = bitcoinMessage.sign(backupKeychain.pub, privateKeyBuffer, isCompressed, prefix).toString('hex');
       const bitgoPubSignature = bitcoinMessage.sign(bitgoKeychain.pub, privateKeyBuffer, isCompressed, prefix).toString('hex');
+      walletParams.keySignatures = {
+        backup: backupPubSignature,
+        bitgo: bitgoPubSignature
+      };
+    } else {
+      const backupPubSignature = self.baseCoin.signMessage(userKeychain, backupKeychain.pub).toString('hex');
+      const bitgoPubSignature = self.baseCoin.signMessage(userKeychain, bitgoKeychain.pub).toString('hex');
       walletParams.keySignatures = {
         backup: backupPubSignature,
         bitgo: bitgoPubSignature
@@ -319,7 +326,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
       walletParams.gasPrice = params.gasPrice;
     }
 
-    if (self.baseCoin.getFamily() === 'xrp' && !_.isUndefined(params.rootPrivateKey)) {
+    if (_.includes(['xrp', 'xlm'], self.baseCoin.getFamily()) && !_.isUndefined(params.rootPrivateKey)) {
       walletParams.rootPrivateKey = params.rootPrivateKey;
     }
 
