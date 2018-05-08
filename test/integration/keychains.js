@@ -96,18 +96,20 @@ describe('Keychains', function() {
   describe('Update Password', function() {
     let bitgo;
     let keychains;
+    let correctPassword;
 
     before(co(function *beforeUpdatePassword() {
       bitgo = new TestBitGo({ env: 'test' });
       bitgo.initializeTestVars();
       keychains = bitgo.keychains();
-      yield bitgo.authenticateChangePWTestUser({ otp: bitgo.testUserOTP() });
+      const loginPasswords = yield bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
+      correctPassword = loginPasswords.password;
       yield bitgo.unlock({ otp: bitgo.testUserOTP() });
     }));
 
     it('successful update the password for all v1 keychains that are encrypted with the old password', co(function *itUpdatePassword() {
       const newPassword = 'newPassword';
-      const result = yield keychains.updatePassword({ oldPassword: TestBitGo.TEST_PASSWORD, newPassword });
+      const result = yield keychains.updatePassword({ oldPassword: correctPassword, newPassword });
       _.forOwn(result.keychains, function(encryptedXprv, xpub) {
         xpub.should.startWith('xpub');
         try {

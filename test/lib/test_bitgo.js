@@ -253,17 +253,30 @@ BitGo.prototype.authenticateEnterpriseCreatorTestUser = function(otp, callback) 
   }).call(this).asCallback(callback);
 };
 
-BitGo.prototype.authenticateChangePWTestUser = function({ pw, otp }, callback) {
+BitGo.prototype.authenticateChangePWTestUser = function(otp, callback) {
   return co(function *() {
-    pw = pw || BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD;
     const params = {
       username: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_USER,
-      password: pw,
+      password: BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD,
       otp: otp
     };
-    const response = yield this.authenticate(params);
+    let alternatePassword = `${params.password}_new`;
+    let response;
+
+    try {
+      response = yield this.authenticate(params);
+    } catch (e) {
+      if (e.message !== 'invalid_grant') {
+        throw new Error(e);
+      }
+      params.password = alternatePassword;
+      alternatePassword = BitGo.V2.TEST_KEYCHAIN_CHANGE_PW_PASSWORD;
+      response = yield this.authenticate(params);
+    }
     response.should.have.property('access_token');
     response.should.have.property('user');
+
+    return { password: params.password, alternatePassword };
   }).call(this).asCallback(callback);
 };
 

@@ -40,7 +40,7 @@ describe('BitGo Prototype Methods', function() {
       bitgo.initializeTestVars();
       bitgo.setValidate(false);
 
-      yield bitgo.authenticateChangePWTestUser({ otp: bitgo.testUserOTP() });
+      yield bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
 
       bgUrl = common.Environments[bitgo.getEnv()].uri;
     }));

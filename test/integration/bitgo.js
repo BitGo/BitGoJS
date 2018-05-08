@@ -602,64 +602,33 @@ describe('BitGo', function() {
 
   });
 
-  describe('Logged In (UpdatePW Test User)', function() {
+  describe('Change Password', function() {
     let bitgo;
-    const newPassword = 'newPassword';
+    let oldPassword;
+    let newPassword;
     const incorrectPassword = 'incorrectPassword';
-    let passwordChangeSuccessful = false;
 
-    const changePasswordBack = co(function *coChangePasswordBack() {
-      const freshBitgo = new TestBitGo({ env: 'test' });
-      freshBitgo.initializeTestVars();
-      yield freshBitgo.authenticateChangePWTestUser({ pw: newPassword, otp: bitgo.testUserOTP() });
-      yield freshBitgo.unlock({ otp: bitgo.testUserOTP() });
-
-      yield freshBitgo.changePassword({ oldPassword: newPassword, newPassword: TestBitGo.TEST_PASSWORD });
-    });
-
-    beforeEach(co(function *beforeLoggedInUpdatePW() {
+    before(co(function *beforeLoggedInUpdatePW() {
       bitgo = new TestBitGo({ env: 'test' });
       bitgo.initializeTestVars();
-      yield bitgo.authenticateChangePWTestUser({ otp: bitgo.testUserOTP() });
+      const loginPasswords = yield bitgo.authenticateChangePWTestUser(bitgo.testUserOTP());
       yield bitgo.unlock({ otp: bitgo.testUserOTP() });
+      oldPassword = loginPasswords.password;
+      newPassword = loginPasswords.alternatePassword;
     }));
 
-    describe('Change Password', function updatePasswordDescribe() {
-      it('wrong password', co(function *coWrongPassword() {
-        try {
-          yield bitgo.changePassword({ oldPassword: incorrectPassword, newPassword });
-          throw new Error();
-        } catch (e) {
-          e.message.should.equal('the provided oldPassword is incorrect');
-        }
-      }));
+    it('wrong password', co(function *coWrongPassword() {
+      try {
+        yield bitgo.changePassword({ oldPassword: incorrectPassword, newPassword });
+        throw new Error();
+      } catch (e) {
+        e.message.should.equal('the provided oldPassword is incorrect');
+      }
+    }));
 
-      it('successful password change', co(function *coSuccessfulPasswordChange() {
-        yield bitgo.changePassword({ oldPassword: TestBitGo.TEST_PASSWORD, newPassword });
-        passwordChangeSuccessful = true;
-      }));
-
-      after(co(function *afterChangePassword() {
-        if (passwordChangeSuccessful) {
-          // if the password change was successful then we need to change it back
-          let passwordChangedBack = false;
-          let retried = 0;
-          let delay = 100; // start with retry delay of 100 ms
-          // in case we get an error back from the server we wait and try it again
-          while (!passwordChangedBack && retried < 3) {
-            try {
-              yield changePasswordBack();
-              passwordChangedBack = true;
-            } catch (e) {
-              console.log(`Changing back password unsuccessful: ${e.message}`);
-              retried++;
-              yield Promise.delay(delay);
-              delay *= 2;
-            }
-          }
-        }
-      }));
-    });
+    it('successful password change', co(function *coSuccessfulPasswordChange() {
+      yield bitgo.changePassword({ oldPassword, newPassword });
+    }));
   });
 
   describe('ECDH sharing keychain', function() {
