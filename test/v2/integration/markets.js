@@ -30,11 +30,6 @@ describe('Market', function() {
         }
       });
 
-      it('latest arguments', co(function *() {
-        yield bitgo.coin(coin).markets().latest('invalid').should.be.rejected();
-        yield bitgo.coin(coin).markets().latest({}, 'invalid').should.be.rejected();
-      }));
-
       it('lastDays arguments', co(function *() {
         yield bitgo.coin(coin).markets().lastDays({ currencyName: '' }).should.be.rejected();
         yield bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: -1 }).should.be.rejected();
