@@ -175,7 +175,7 @@ describe('Address', function() {
         block.should.have.property('transactions');
         block.height.should.eql(326945);
         block.previous.should.eql('00000000eecd159babde9b094c6dbf1f4f63028ba100f6f092cacb65f04afc46');
-        block.transactions.should.include('e393422e5a0b4c011f511cf3c5911e9c09defdcadbcf16ceb12a47a80e257aaa');
+        block.transactions.should.containEql('e393422e5a0b4c011f511cf3c5911e9c09defdcadbcf16ceb12a47a80e257aaa');
         done();
       });
     });

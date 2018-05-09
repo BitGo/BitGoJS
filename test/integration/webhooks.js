@@ -77,7 +77,7 @@ describe('Webhooks', function() {
         },
         function(err) {
           err.status.should.eql(400);
-          err.message.should.include('invalid webhook');
+          err.message.should.containEql('invalid webhook');
           done();
         }
       );
@@ -173,7 +173,7 @@ describe('Webhooks', function() {
       .then(function(result) {
         result.webhooks.length.should.not.eql(0);
         const urls = _.map(result.webhooks, 'url');
-        urls.should.include(url);
+        urls.should.containEql(url);
         done();
       })
       .done();
@@ -217,7 +217,7 @@ describe('Webhooks', function() {
       })
       .then(function(result) {
         const urls = _.map(result, 'url');
-        urls.should.not.include(url);
+        urls.should.not.containEql(url);
         done();
       })
       .done();

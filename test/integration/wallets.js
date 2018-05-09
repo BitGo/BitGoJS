@@ -224,7 +224,7 @@ describe('Wallets', function() {
         result.userKeychain.should.have.property('encryptedXprv');
         result.backupKeychain.should.not.have.property('encryptedXprv');
         result.backupKeychain.should.have.property('xprv');
-        result.warning.should.include('backup the backup keychain -- it is not stored anywhere else');
+        result.warning.should.containEql('backup the backup keychain -- it is not stored anywhere else');
 
         wallet.delete({}, function() {});
         done();

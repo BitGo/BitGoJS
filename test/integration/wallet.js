@@ -232,7 +232,7 @@ describe('Wallet API', function() {
             success.should.equal(null);
           },
           function(err) {
-            err.message.should.include('Unable to decrypt user keychain');
+            err.message.should.containEql('Unable to decrypt user keychain');
             done();
           }
         );
@@ -981,7 +981,7 @@ describe('Wallet API', function() {
         return wallet1.instantBalance();
       })
       .catch(function(error) {
-        error.message.should.include('not an instant wallet');
+        error.message.should.containEql('not an instant wallet');
       });
     });
 
@@ -1239,7 +1239,7 @@ describe('Wallet API', function() {
           throw new Error('should not be here!!');
         })
         .catch(function(e) {
-          e.message.should.include('both script and address provided but they did not match');
+          e.message.should.containEql('both script and address provided but they did not match');
         });
       });
 
@@ -1542,7 +1542,7 @@ describe('Wallet API', function() {
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 10000 * 1e8;
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients })
         .catch(function(e) {
-          e.message.should.include('transaction too large');
+          e.message.should.containEql('transaction too large');
         });
       });
 
@@ -2051,63 +2051,63 @@ describe('Wallet API', function() {
         throw new Error('Unexpected result - expected to catch bad code');
       })
       .catch(function(err) {
-        err.message.should.include('one of xprv or walletPassphrase');
+        err.message.should.containEql('one of xprv or walletPassphrase');
         return wallet1.sendCoins({ address: 'string', amount: 123, walletPassphrase: ' ' });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad address');
       })
       .catch(function(err) {
-        err.message.should.include('invalid bitcoin address');
+        err.message.should.containEql('invalid bitcoin address');
         return wallet1.sendCoins({ address: 'string', amount: 123, walletPassphrase: 'advanced1' }, {});
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad code');
       })
       .catch(function(err) {
-        err.message.should.include('illegal callback argument');
+        err.message.should.containEql('illegal callback argument');
         return wallet1.sendCoins({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 1, walletPassphrase: 'badcode' });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad code');
       })
       .catch(function(err) {
-        err.message.should.include('Unable to decrypt user keychain');
+        err.message.should.containEql('Unable to decrypt user keychain');
         return wallet1.sendCoins({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: -1, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad amount');
       })
       .catch(function(err) {
-        err.message.should.include('invalid amount');
+        err.message.should.containEql('invalid amount');
         return wallet1.sendCoins({ address: 'bad address', amount: 1, walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad address');
       })
       .catch(function(err) {
-        err.message.should.include('invalid bitcoin address');
+        err.message.should.containEql('invalid bitcoin address');
         return wallet1.sendCoins({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 10000, xprv: 'abcdef' });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad xprv');
       })
       .catch(function(err) {
-        err.message.should.include('Unable to parse');
+        err.message.should.containEql('Unable to parse');
         return wallet1.sendCoins({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 10000, xprv: 'xprv9wHokC2KXdTSpEepFcu53hMDUHYfAtTaLEJEMyxBPAMf78hJg17WhL5FyeDUQH5KWmGjGgEb2j74gsZqgupWpPbZgP6uFmP8MYEy5BNbyET' });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch xprv not belonging on wallet');
       })
       .catch(function(err) {
-        err.message.should.include('not a keychain on this wallet');
+        err.message.should.containEql('not a keychain on this wallet');
         return wallet1.sendCoins({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 10000, xprv: 'xpub661MyMwAqRbcGU7FnXMKSHMwbWxARxYJUpKD1CoMJP6vonLT9bZZaWYq7A7tKPXmDFFXTKigT7VHMnbtEnjCmxQ1E93ZJe6HDKwxWD28M6f' });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch xpub provided instead of xprv');
       })
       .catch(function(err) {
-        err.message.should.include('not a private key');
+        err.message.should.containEql('not a private key');
       });
     });
 
@@ -2274,56 +2274,56 @@ describe('Wallet API', function() {
         throw new Error('Unexpected result - expected to catch bad recipient');
       })
       .catch(function(err) {
-        err.message.should.include('invalid bitcoin address');
+        err.message.should.containEql('invalid bitcoin address');
         return wallet1.sendMany({ recipients: ['string'], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad recipient');
       })
       .catch(function(err) {
-        err.message.should.include('invalid amount');
+        err.message.should.containEql('invalid amount');
         return wallet1.sendMany({ recipients: [{ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 12300 }], walletPassphrase: 'abc' });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad wallet passphrase');
       })
       .catch(function(err) {
-        err.message.should.include('Unable to decrypt user keychain');
+        err.message.should.containEql('Unable to decrypt user keychain');
         return wallet1.sendMany({ recipients: { string: 123 }, walletPassphrase: 'advanced1' }, {});
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad callback');
       })
       .catch(function(err) {
-        err.message.should.include('illegal callback argument');
+        err.message.should.containEql('illegal callback argument');
         return wallet1.sendMany({ recipients: [{ address: 'bad address', amount: 0.001 * 1e8 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch single bad address');
       })
       .catch(function(err) {
-        err.message.should.include('invalid bitcoin address');
+        err.message.should.containEql('invalid bitcoin address');
         return wallet1.sendMany({ recipients: [{ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE, xprv: 'xprv9wHokC2KXdTSpEepFcu53hMDUHYfAtTaLEJEMyxBPAMf78hJg17WhL5FyeDUQH5KWmGjGgEb2j74gsZqgupWpPbZgP6uFmP8MYEy5BNbyET' });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch double usage of xprv/walletpassphrase');
       })
       .catch(function(err) {
-        err.message.should.include('one of xprv or walletPassphrase');
+        err.message.should.containEql('one of xprv or walletPassphrase');
         return wallet1.sendMany({ recipients: [{ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 0.001 * 1e8 }, { address: 'bad address', amount: 0.001 * 1e8 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
       })
       .then(function(result) {
         throw new Error('Unexpected result - expected to catch bad address');
       })
       .catch(function(err) {
-        err.message.should.include('invalid bitcoin address');
+        err.message.should.containEql('invalid bitcoin address');
         return wallet1.sendMany({ recipients: [{ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: -100 }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
       })
       .then(function() {
         throw new Error('Unexpected result - expected to catch bad amount');
       })
       .catch(function(err) {
-        err.message.should.include('invalid amount');
+        err.message.should.containEql('invalid amount');
         // use a ridiculously high number for the minConfirms so that no viable unspents are returned
         return bitgo.unlock({ otp: '0000000' });
       })
@@ -2334,7 +2334,7 @@ describe('Wallet API', function() {
         throw new Error('Unexpected result - expected to catch 0 unspents');
       })
       .catch(function(err) {
-        err.message.should.include('0 unspents available for transaction creation');
+        err.message.should.containEql('0 unspents available for transaction creation');
       });
     });
 
@@ -2618,7 +2618,7 @@ describe('Wallet API', function() {
           assert(false);
         })
         .catch(function(err) {
-          err.message.should.include('incorrect type for field fromUserName in travel info');
+          err.message.should.containEql('incorrect type for field fromUserName in travel info');
         });
       });
 
@@ -2951,7 +2951,7 @@ describe('Wallet API', function() {
         function(err, result) {
           err.should.not.equal(null);
           err.status.should.equal(403);
-          err.message.should.include('wallet is frozen');
+          err.message.should.containEql('wallet is frozen');
           done();
         }
       );

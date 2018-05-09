@@ -21,7 +21,7 @@ TestUtil.throws = function(promise, errorMsg) {
   })
   .catch(function(e) {
     if (errorMsg) {
-      e.message.should.include(errorMsg);
+      e.message.should.containEql(errorMsg);
     }
     should.exist(e);
   });

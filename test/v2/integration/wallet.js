@@ -500,9 +500,9 @@ describe('V2 Wallet:', function() {
         const receivedWallet = _.find(sharedWallets.wallets, function(w) { return w.id() === receivedWalletId; });
         receivedWallet.should.have.property('_permissions');
         receivedWallet._permissions.length.should.equal(3);
-        receivedWallet._permissions.should.include('admin');
-        receivedWallet._permissions.should.include('view');
-        receivedWallet._permissions.should.include('spend');
+        receivedWallet._permissions.should.containEql('admin');
+        receivedWallet._permissions.should.containEql('view');
+        receivedWallet._permissions.should.containEql('spend');
         return receivedWallet.removeUser({ userId: sharingUserBitgo._user.id });
       })
       .then(function(removal) {

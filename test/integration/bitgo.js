@@ -373,7 +373,7 @@ describe('BitGo', function() {
         }
         res.should.have.property('status');
         res.should.have.property('environment');
-        res.environment.should.include('BitGo');
+        res.environment.should.containEql('BitGo');
       });
 
       done();
@@ -550,7 +550,7 @@ describe('BitGo', function() {
           throw new Error('unexpected success on non bitgo address');
         })
         .catch(function(error) {
-          error.message.should.include('not found');
+          error.message.should.containEql('not found');
         });
       });
 
@@ -574,7 +574,7 @@ describe('BitGo', function() {
         .then(function(result) {
           result.normalizedHash.should.eql('074d7bd485253bd050d669aa0d34217c6566b6518ac2bc628f9bdc29ba00a785');
           result.amount.should.eql(600000);
-          result.guarantee.should.include('BitGo Inc. guarantees the transaction');
+          result.guarantee.should.containEql('BitGo Inc. guarantees the transaction');
           result.signature.should.eql('1c4146bd7f54b6ac7cd18e27fd7e4369a312f5be727a6d7a3519cdee2aee2e05255d76ce320effe6777d87c03cc1ff1c2dfadfc0fcb74aaf1b58d0d3425980699a');
         });
       });
@@ -584,7 +584,7 @@ describe('BitGo', function() {
           throw new Error('should not be here!!');
         })
         .catch(function(error) {
-          error.message.should.include('Invalid signature');
+          error.message.should.containEql('Invalid signature');
         });
       });
     });

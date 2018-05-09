@@ -1,4 +1,5 @@
 require('should');
+require('should-http');
 const request = require('supertest-as-promised');
 
 const expressApp = require('../../../src/expressApp');

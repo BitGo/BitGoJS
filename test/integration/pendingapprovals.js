@@ -48,7 +48,7 @@ describe('PendingApprovals', function() {
         res.should.have.property('pendingApprovals');
         res.pendingApprovals.length.should.not.eql(0);
         const pendingApprovalIds = _.map(res.pendingApprovals, function(pa) { return pa.id(); });
-        pendingApprovalIds.should.include(TestBitGo.TEST_WALLET_PENDING_APPROVAL_ID);
+        pendingApprovalIds.should.containEql(TestBitGo.TEST_WALLET_PENDING_APPROVAL_ID);
       });
     });
 
@@ -58,7 +58,7 @@ describe('PendingApprovals', function() {
         const walletPendingApprovals = result.pendingApprovals();
         walletPendingApprovals.length.should.not.eql(0);
         const pendingApprovalIds = _.map(walletPendingApprovals, function(pa) { return pa.id(); });
-        pendingApprovalIds.should.include(TestBitGo.TEST_WALLET_PENDING_APPROVAL_ID);
+        pendingApprovalIds.should.containEql(TestBitGo.TEST_WALLET_PENDING_APPROVAL_ID);
         // the pending approval from the wallet object should have itself on it
         walletPendingApprovals[0].walletId().should.eql(walletPendingApprovals[0].wallet.id());
       });
@@ -70,7 +70,7 @@ describe('PendingApprovals', function() {
         res.should.have.property('pendingApprovals');
         res.pendingApprovals.length.should.not.eql(0);
         const pendingApprovalIds = _.map(res.pendingApprovals, function(pa) { return pa.id(); });
-        pendingApprovalIds.should.include(TestBitGo.TEST_ENTERPRISE_PENDING_APPROVAL_ID);
+        pendingApprovalIds.should.containEql(TestBitGo.TEST_ENTERPRISE_PENDING_APPROVAL_ID);
       });
     });
   });

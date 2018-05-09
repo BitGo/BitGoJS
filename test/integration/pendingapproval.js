@@ -190,7 +190,7 @@ describe('PendingApproval', function() {
         return pendingApproval.approve({ walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
       })
       .catch(function(err) {
-        err.message.should.include('cannot approve by self');
+        err.message.should.containEql('cannot approve by self');
         return pendingApproval.reject();
       });
     });
@@ -231,7 +231,7 @@ describe('PendingApproval', function() {
         return result.approve({ walletPassphrase: 'abcdef', otp: bitgo.testUserOTP() });
       })
       .catch(function(err) {
-        err.message.should.include('Unable to decrypt user keychain');
+        err.message.should.containEql('Unable to decrypt user keychain');
         return pendingApproval.reject();
       });
     });
@@ -300,9 +300,9 @@ describe('PendingApproval', function() {
         });
 
         // Output addresses should contain the 2 destinations, but not the change address
-        outputAddresses.should.include(TestBitGo.TEST_WALLET3_ADDRESS);
-        outputAddresses.should.include(TestBitGo.TEST_WALLET2_ADDRESS);
-        outputAddresses.should.not.include(TestBitGo.TEST_SHARED_WALLET_CHANGE_ADDRESS);
+        outputAddresses.should.containEql(TestBitGo.TEST_WALLET3_ADDRESS);
+        outputAddresses.should.containEql(TestBitGo.TEST_WALLET2_ADDRESS);
+        outputAddresses.should.not.containEql(TestBitGo.TEST_SHARED_WALLET_CHANGE_ADDRESS);
       });
     });
 
@@ -333,9 +333,9 @@ describe('PendingApproval', function() {
         });
 
         // Output addresses should contain the 2 destinations, but not the change address
-        outputAddresses.should.include(TestBitGo.TEST_WALLET3_ADDRESS);
-        outputAddresses.should.include(TestBitGo.TEST_WALLET2_ADDRESS);
-        outputAddresses.should.not.include(TestBitGo.TEST_SHARED_WALLET_CHANGE_ADDRESS);
+        outputAddresses.should.containEql(TestBitGo.TEST_WALLET3_ADDRESS);
+        outputAddresses.should.containEql(TestBitGo.TEST_WALLET2_ADDRESS);
+        outputAddresses.should.not.containEql(TestBitGo.TEST_SHARED_WALLET_CHANGE_ADDRESS);
       });
     });
   });
