@@ -852,7 +852,7 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
       'enforceMinConfirmsForChange', 'targetWalletUnspents',
       'message', 'minValue', 'maxValue', 'sequenceId',
       'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
-      'noSplitChange', 'unspents'
+      'noSplitChange', 'unspents', 'changeAddress'
     ]);
 
     let response = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
@@ -1049,7 +1049,7 @@ Wallet.prototype.sendMany = function(params, callback) {
       'enforceMinConfirmsForChange', 'targetWalletUnspents',
       'message', 'minValue', 'maxValue', 'sequenceId',
       'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
-      'noSplitChange', 'unspents', 'comment', 'otp'
+      'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress'
     ]);
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
     return this.bitgo.post(this.url('/tx/send'))
