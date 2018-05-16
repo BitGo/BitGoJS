@@ -10,6 +10,7 @@ class Btc extends AbstractUtxoCoin {
   constructor() {
     super();
     this.network = bitcoin.networks.bitcoin;
+    this.network.bech32Prefix = 'bc';
   }
 
   getChain() {
@@ -24,27 +25,11 @@ class Btc extends AbstractUtxoCoin {
     return 'Bitcoin';
   }
 
-  isValidAddress(address, forceAltScriptSupport) {
-    const validVersions = [
-      this.network.pubKeyHash,
-      this.network.scriptHash
-    ];
-    if (this.altScriptHash && (forceAltScriptSupport || this.supportAltScriptDestination)) {
-      validVersions.push(this.altScriptHash);
-    }
-
-    let addressDetails;
-    try {
-      addressDetails = bitcoin.address.fromBase58Check(address);
-    } catch (e) {
-      return false;
-    }
-
-    // the address version needs to be among the valid ones
-    return validVersions.indexOf(addressDetails.version) !== -1;
+  supportsBlockTarget() {
+    return true;
   }
 
-  supportsBlockTarget() {
+  supportsBech32() {
     return true;
   }
 

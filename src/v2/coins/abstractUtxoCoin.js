@@ -9,12 +9,12 @@ const prova = require('prova-lib');
 const crypto = require('crypto');
 const _ = require('lodash');
 const RecoveryTool = require('../recovery');
+const errors = require('../errors');
 
 class AbstractUtxoCoin extends BaseCoin {
   constructor() {
     super();
     this.network = bitcoin.networks.bitcoin;
-    this.network.bech32Prefix = 'bc';
   }
 
   /**
@@ -54,6 +54,10 @@ class AbstractUtxoCoin extends BaseCoin {
     try {
       addressDetails = this.getCoinLibrary().address.fromBase58Check(address);
     } catch (e) {
+      if (!this.supportsBech32()) {
+        return false;
+      }
+
       try {
         addressDetails = bitcoin.address.fromBech32(address);
         return addressDetails.prefix === this.network.bech32Prefix;
@@ -286,6 +290,10 @@ class AbstractUtxoCoin extends BaseCoin {
       throw new Error(`address validation failure: invalid chain (${chain}) or index (${index})`);
     }
 
+    if (!_.isObject(coinSpecific)) {
+      throw new Error('address validation failure: coinSpecific field must be an object');
+    }
+
     const expectedAddress = this.generateAddress({
       segwit: !!_.get(coinSpecific, 'witnessScript'),
       bech32: !_.get(coinSpecific, 'redeemScript'),
@@ -328,7 +336,15 @@ class AbstractUtxoCoin extends BaseCoin {
    */
   generateAddress({ segwit, bech32, keychains, threshold, chain, index }) {
     const isSegwit = !!segwit;
-    const isBech32 = isSegwit && !!bech32;
+    if (bech32) {
+      if (!this.supportsBech32()) {
+        throw new errors.Bech32UnsupportedError('bech32 not supported by this coin');
+      }
+      if (!isSegwit) {
+        throw new errors.SegwitRequiredError('bech32 requires that segwit be enabled');
+      }
+    }
+    const isBech32 = !!bech32;
     let signatureThreshold = 2;
     if (_.isInteger(threshold)) {
       signatureThreshold = threshold;
