@@ -2,6 +2,7 @@
 
 var assert = require('assert')
 var bscript = require('../src/script')
+var coins = require('../src/coins')
 var fixtures = require('./fixtures/transaction')
 var Transaction = require('../src/transaction')
 
@@ -84,6 +85,40 @@ describe('Transaction', function () {
       var tx = Transaction.fromHex(txHex)
       assert.equal(-1, tx.version)
       assert.equal(0xffffffff, tx.locktime)
+    })
+  })
+
+  describe('fromBuffer/fromHex for Zcash', function () {
+    fixtures.zcash.valid.forEach(function (testData) {
+      it('imports ' + testData.description, function () {
+        const tx = Transaction.fromHex(testData.hex, coins.ZEC)
+        assert.equal(tx.version, testData.version)
+        assert.equal(tx.versionGroupId, testData.versionGroupId)
+        assert.equal(tx.overwintered, testData.overwintered)
+        assert.equal(tx.locktime, testData.locktime)
+        assert.equal(tx.expiryHeight, testData.expiryHeight)
+        assert.equal(tx.ins.length, testData.insLength)
+        assert.equal(tx.outs.length, testData.outsLength)
+        assert.equal(tx.joinsplits.length, testData.joinsplitsLength)
+        assert.equal(tx.joinsplitPubkey.length, testData.joinsplitPubkeyLength)
+        assert.equal(tx.joinsplitSig.length, testData.joinsplitSigLength)
+      })
+    })
+
+    fixtures.zcash.valid.forEach(function (testData) {
+      it('exports ' + testData.description, function () {
+        const tx = Transaction.fromHex(testData.hex, coins.ZEC)
+        const hexTx = tx.toHex()
+        assert.equal(testData.hex, hexTx)
+      })
+    })
+
+    fixtures.zcash.valid.forEach(function (testData) {
+      it('clone ' + testData.description, function () {
+        const tx = Transaction.fromHex(testData.hex, coins.ZEC)
+        const clonedTx = tx.clone()
+        assert.equal(clonedTx.toHex(), testData.hex)
+      })
     })
   })
 

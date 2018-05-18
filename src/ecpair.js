@@ -65,7 +65,7 @@ ECPair.fromWIF = function (string, network) {
   if (types.Array(network)) {
     network = network.filter(function (x) {
       return version === x.wif
-    }).pop()
+    }).pop()  // We should not use pop since it depends on the order of the networks for the same wif
 
     if (!network) throw new Error('Unknown network version')
 

@@ -16,6 +16,7 @@ module.exports = {
   TransactionBuilder: require('./transaction_builder'),
 
   address: require('./address'),
+  coins: require('./coins'),
   crypto: require('./crypto'),
   networks: require('./networks'),
   opcodes: require('bitcoin-ops'),

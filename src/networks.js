@@ -2,6 +2,28 @@
 // Dogecoin BIP32 is a proposed standard: https://bitcointalk.org/index.php?topic=409731
 
 module.exports = {
+  zcash: {
+    messagePrefix: '\x18ZCash Signed Message:\n',
+    bech32: 'bc',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x1cb8,
+    scriptHash: 0x1cbd,
+    wif: 0x80
+  },
+  zcashTest: {
+    messagePrefix: '\x18ZCash Signed Message:\n',
+    bech32: 'tb',
+    bip32: {
+      public: 0x043587cf,
+      private: 0x04358394
+    },
+    pubKeyHash: 0x1d25,
+    scriptHash: 0x1cba,
+    wif: 0xef
+  },
   bitcoingold: {
     messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
     bip32: {
