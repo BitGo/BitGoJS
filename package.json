@@ -9,10 +9,11 @@
   "devDependencies": {
     "blake2b": "^1.2.0",
     "browserify": "^14.4.0",
-    "tape": "^4.6.3"
+    "tape": "^4.6.3",
+    "wat2js": "^1.1.1"
   },
   "scripts": {
-    "compile": "wast2wasm blake2b.wat -o blake2b.wasm",
+    "compile": "wat2js blake2b.wat -o blake2b.js",
     "demo": "browserify example.js > bundle.js",
     "test": "tape test.js"
   },
