@@ -65,8 +65,8 @@
           (then
             (i64.store (get_local $t) (i64.add (i64.load (get_local $t)) (i64.extend_u/i32 (get_local $i))))
             (set_local $i (i32.const 0))
-            get_local $ctx
-            call $blake2b_compress
+
+            (call $blake2b_compress (get_local $ctx))
           )
         )
 
@@ -112,8 +112,7 @@
     ;; ctx.c = i (for good meassure)
     (i64.store (get_local $c) (i64.extend_u/i32 (get_local $i)))
 
-    get_local $ctx
-    call $blake2b_compress
+    (call $blake2b_compress (get_local $ctx))
   )
 
   (func $blake2b_compress (export "blake2b_compress") (param $ctx i32)
