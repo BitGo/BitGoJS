@@ -7,6 +7,7 @@ var opcodes = require('bitcoin-ops')
 var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
+var blake2b = require('blake2b')
 
 function varSliceSize (someScript) {
   var length = someScript.length
@@ -22,12 +23,13 @@ function vectorSize (someVector) {
   }, 0)
 }
 
-function Transaction () {
+// By default, assume is a bitcoin transaction
+function Transaction (coin = coins.BTC) {
   this.version = 1
   this.locktime = 0
   this.ins = []
   this.outs = []
-  this.coin = coins.BTC   // By default, assume is a bitcoin transaction
+  this.coin = coin
   // ZCash version >= 2
   this.joinsplits = []
   this.joinsplitPubkey = []
@@ -324,7 +326,7 @@ Transaction.prototype.byteLength = function () {
 }
 
 Transaction.prototype.joinsplitByteLength = function () {
-  if (!this.fOverwintered && this.version < 2) {
+  if (!this.overwintered && this.version < 2) {
     return 0
   }
 
@@ -491,6 +493,185 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
   return bcrypto.hash256(buffer)
 }
 
+Transaction.prototype.getBlake2bHash = function(bufferToHash, personalization) {
+  var out = Buffer.allocUnsafe(32)
+  blake2b(out.length, null, null, personalization).update(bufferToHash).digest(out)
+  return out
+}
+
+/**
+ * Build a hash from all the transaction inputs if the hash type is not SIGHASH_ANYONECANPAY
+ * @param hashType
+ * @returns 256 hash or undefined
+ */
+Transaction.prototype.getPrevoutHash = function (hashType) {
+  var tmpBuffer, tmpOffset
+  function writeSlice (slice) { tmpOffset += slice.copy(tmpBuffer, tmpOffset) }
+  function writeUInt32 (i) { tmpOffset = tmpBuffer.writeUInt32LE(i, tmpOffset) }
+
+  if (!(hashType & Transaction.SIGHASH_ANYONECANPAY)) {
+    tmpBuffer = Buffer.allocUnsafe(36 * this.ins.length)
+    tmpOffset = 0
+
+    this.ins.forEach(function (txIn) {
+      writeSlice(txIn.hash)
+      writeUInt32(txIn.index)
+    })
+
+    if (coins.isZcash(this.coin)) {
+      return this.getBlake2bHash(tmpBuffer, 'ZcashPrevoutHash')
+    }
+    return bcrypto.hash256(tmpBuffer)
+  }
+  return ZERO
+}
+
+/**
+ * Build a hash from all the transaction inputs sequence numbers
+ * @param hashType
+ * @returns 256 hash or undefined
+ */
+Transaction.prototype.getSequenceHash = function (hashType) {
+  var tmpBuffer, tmpOffset
+  function writeUInt32 (i) { tmpOffset = tmpBuffer.writeUInt32LE(i, tmpOffset) }
+
+  if (!(hashType & Transaction.SIGHASH_ANYONECANPAY) &&
+    (hashType & 0x1f) !== Transaction.SIGHASH_SINGLE &&
+    (hashType & 0x1f) !== Transaction.SIGHASH_NONE) {
+    tmpBuffer = Buffer.allocUnsafe(4 * this.ins.length)
+    tmpOffset = 0
+
+    this.ins.forEach(function (txIn) {
+      writeUInt32(txIn.sequence)
+    })
+
+    if (coins.isZcash(this.coin)) {
+      return this.getBlake2bHash(tmpBuffer, 'ZcashSequencHash')
+    }
+    return bcrypto.hash256(tmpBuffer)
+  }
+  return ZERO
+}
+
+/**
+ * Build a hash from one or all of the transaction outputs
+ * @param hashType
+ * @param inIndex
+ * @returns 256 hash or undefined
+ */
+Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
+  var tmpBuffer, tmpOffset
+  function writeUInt64 (i) { tmpOffset = bufferutils.writeUInt64LE(tmpBuffer, i, tmpOffset) }
+  function writeSlice (slice) { tmpOffset += slice.copy(tmpBuffer, tmpOffset) }
+  function writeVarInt (i) {
+    varuint.encode(i, tmpBuffer, tmpOffset)
+    tmpOffset += varuint.encode.bytes
+  }
+  function writeVarSlice (slice) { writeVarInt(slice.length); writeSlice(slice) }
+
+  if ((hashType & 0x1f) !== Transaction.SIGHASH_SINGLE && (hashType & 0x1f) !== Transaction.SIGHASH_NONE) {
+    // Find out the size of the outputs and write them
+    var txOutsSize = this.outs.reduce(function (sum, output) {
+      return sum + 8 + varSliceSize(output.script)
+    }, 0)
+
+    tmpBuffer = Buffer.allocUnsafe(txOutsSize)
+    tmpOffset = 0
+
+    this.outs.forEach(function (out) {
+      writeUInt64(out.value)
+      writeVarSlice(out.script)
+    })
+
+    if (coins.isZcash(this.coin)) {
+      return this.getBlake2bHash(tmpBuffer, 'ZcashOutputsHash')
+    }
+    return bcrypto.hash256(tmpBuffer)
+  } else if ((hashType & 0x1f) === Transaction.SIGHASH_SINGLE && inIndex < this.outs.length) {
+    // Write only the output specified in inIndex
+    var output = this.outs[inIndex]
+
+    tmpBuffer = Buffer.allocUnsafe(8 + varSliceSize(output.script))
+    tmpOffset = 0
+    writeUInt64(output.value)
+    writeVarSlice(output.script)
+
+    if (coins.isZcash(this.coin)) {
+      return this.getBlake2bHash(tmpBuffer, 'ZcashOutputsHash')
+    }
+    return bcrypto.hash256(tmpBuffer)
+  }
+  return ZERO
+}
+
+Transaction.prototype.getHeader = function () {
+  var mask = (this.overwintered ? 1 : 0)
+  var header = this.version | (mask << 31)
+  return header
+}
+
+Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, value, hashType, consensusBranchId) {
+  typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
+  if (this.joinsplits.length > 0) {
+    throw new Error('Hash signature for Zcash protected transactions is not supported')
+  }
+  // TODO: move these functions to a util
+  var tmpBuffer, tmpOffset
+  function writeSlice (slice) { tmpOffset += slice.copy(tmpBuffer, tmpOffset) }
+  function writeInt32 (i) { tmpOffset = tmpBuffer.writeInt32LE(i, tmpOffset) }
+  function writeUInt32 (i) { tmpOffset = tmpBuffer.writeUInt32LE(i, tmpOffset) }
+  function writeUInt64 (i) { tmpOffset = bufferutils.writeUInt64LE(tmpBuffer, i, tmpOffset) }
+  function writeVarInt (i) {
+    varuint.encode(i, tmpBuffer, tmpOffset)
+    tmpOffset += varuint.encode.bytes
+  }
+  function writeVarSlice (slice) { writeVarInt(slice.length); writeSlice(slice) }
+
+  var hashPrevouts = this.getPrevoutHash(hashType)
+  var hashSequence = this.getSequenceHash(hashType)
+  var hashOutputs = this.getOutputsHash(hashType, inIndex)
+  var hashJoinSplits = ZERO
+
+  var baseBufferSize = 4 * 5 + 32 * 4
+  if (inIndex !== VALUE_UINT64_MAX) {
+    // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig), we need extra space
+    tmpBuffer = Buffer.allocUnsafe(baseBufferSize + 4 * 4 + 32 + varSliceSize(prevOutScript))
+  } else {
+    tmpBuffer = Buffer.allocUnsafe(baseBufferSize)
+  }
+  tmpOffset = 0
+
+  writeInt32(this.getHeader())
+  writeUInt32(this.versionGroupId)
+  writeSlice(hashPrevouts)
+  writeSlice(hashSequence)
+  writeSlice(hashOutputs)
+  writeSlice(hashJoinSplits)
+  writeUInt32(this.locktime)
+  writeUInt32(this.expiryHeight)
+  writeUInt32(hashType)
+
+  // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig):
+  if (inIndex !== VALUE_UINT64_MAX) {
+    // The input being signed (replacing the scriptSig with scriptCode + amount)
+    // The prevout may already be contained in hashPrevout, and the nSequence
+    // may already be contained in hashSequence.
+    var input = this.ins[inIndex]
+    writeSlice(input.hash)
+    writeUInt32(input.index)
+    writeVarSlice(prevOutScript)
+    writeUInt64(value)
+    writeUInt32(input.sequence)
+  }
+
+  var personalization = Buffer.alloc(16)
+  var prefix = 'ZcashSigHash'
+  personalization.write(prefix)
+  personalization.writeUInt32LE(consensusBranchId, prefix.length)
+
+  return this.getBlake2bHash(tmpBuffer, personalization)
+}
+
 Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value, hashType) {
   typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
 
@@ -504,60 +685,9 @@ Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value
   }
   function writeVarSlice (slice) { writeVarInt(slice.length); writeSlice(slice) }
 
-  var hashOutputs = ZERO
-  var hashPrevouts = ZERO
-  var hashSequence = ZERO
-
-  if (!(hashType & Transaction.SIGHASH_ANYONECANPAY)) {
-    tbuffer = Buffer.allocUnsafe(36 * this.ins.length)
-    toffset = 0
-
-    this.ins.forEach(function (txIn) {
-      writeSlice(txIn.hash)
-      writeUInt32(txIn.index)
-    })
-
-    hashPrevouts = bcrypto.hash256(tbuffer)
-  }
-
-  if (!(hashType & Transaction.SIGHASH_ANYONECANPAY) &&
-    (hashType & 0x1f) !== Transaction.SIGHASH_SINGLE &&
-    (hashType & 0x1f) !== Transaction.SIGHASH_NONE) {
-    tbuffer = Buffer.allocUnsafe(4 * this.ins.length)
-    toffset = 0
-
-    this.ins.forEach(function (txIn) {
-      writeUInt32(txIn.sequence)
-    })
-
-    hashSequence = bcrypto.hash256(tbuffer)
-  }
-
-  if ((hashType & 0x1f) !== Transaction.SIGHASH_SINGLE &&
-    (hashType & 0x1f) !== Transaction.SIGHASH_NONE) {
-    var txOutsSize = this.outs.reduce(function (sum, output) {
-      return sum + 8 + varSliceSize(output.script)
-    }, 0)
-
-    tbuffer = Buffer.allocUnsafe(txOutsSize)
-    toffset = 0
-
-    this.outs.forEach(function (out) {
-      writeUInt64(out.value)
-      writeVarSlice(out.script)
-    })
-
-    hashOutputs = bcrypto.hash256(tbuffer)
-  } else if ((hashType & 0x1f) === Transaction.SIGHASH_SINGLE && inIndex < this.outs.length) {
-    var output = this.outs[inIndex]
-
-    tbuffer = Buffer.allocUnsafe(8 + varSliceSize(output.script))
-    toffset = 0
-    writeUInt64(output.value)
-    writeVarSlice(output.script)
-
-    hashOutputs = bcrypto.hash256(tbuffer)
-  }
+  var hashPrevouts = this.getPrevoutHash(hashType)
+  var hashSequence = this.getSequenceHash(hashType)
+  var hashOutputs = this.getOutputsHash(hashType, inIndex)
 
   tbuffer = Buffer.allocUnsafe(156 + varSliceSize(prevOutScript))
   toffset = 0
@@ -669,7 +799,7 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
   }
 
   if (coins.isZcash(this.coin) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
-    const mask = (this.overwintered ? 1 : 0)
+    var mask = (this.overwintered ? 1 : 0)
     writeInt32(this.version | (mask << 31))  // Set overwinter bit
     writeUInt32(this.versionGroupId)
   } else {

@@ -320,4 +320,28 @@ describe('Transaction', function () {
       }, /Expected property "1" of type \[Buffer], got String "foobar"/)
     })
   })
+
+  describe('hashForZcashSignature', function () {
+    fixtures.hashForZcashSignature.valid.forEach(function (testData) {
+      it('should return ' + testData.hash + ' for ' + testData.description, function () {
+        var tx = Transaction.fromHex(testData.txHex, coins.ZEC)
+        var script = Buffer.from(testData.script, 'hex')
+
+        assert.strictEqual(
+          tx.hashForZcashSignature(testData.inIndex, script, testData.value, testData.type, testData.branchId).toString('hex'),
+          testData.hash)
+      })
+    })
+
+    fixtures.hashForZcashSignature.invalid.forEach(function (testData) {
+      it('should throw on ' + testData.description, function () {
+        var tx = Transaction.fromHex(testData.txHex, coins.ZEC)
+        var script = Buffer.from(testData.script, 'hex')
+
+        assert.throws(function () {
+          tx.hashForZcashSignature(testData.inIndex, script, testData.value, testData.type)
+        }, new RegExp(testData.exception))
+      })
+    })
+  })
 })
