@@ -35,6 +35,7 @@ const _ = require('lodash');
 const url = require('url');
 const querystring = require('querystring');
 const config = require('./config');
+const crypto = require('crypto');
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);
@@ -422,9 +423,7 @@ const BitGo = function(params) {
  * @returns {*} - the result of the HMAC operation
  */
 BitGo.prototype.calculateHMAC = function(key, message) {
-  const hmacKey = sjcl.codec.utf8String.toBits(key);
-  const hmacDigest = (new sjcl.misc.hmac(hmacKey, sjcl.hash.sha256)).mac(message);
-  return sjcl.codec.hex.fromBits(hmacDigest);
+  return crypto.createHmac('sha256', key).update(message).digest('hex');
 };
 
 /**
@@ -572,9 +571,7 @@ BitGo.prototype.verifyPassword = function(params, callback) {
   if (!this._user || !this._user.username) {
     throw new Error('no current user');
   }
-  const key = sjcl.codec.utf8String.toBits(this._user.username);
-  const hmac = new sjcl.misc.hmac(key, sjcl.hash.sha256);
-  const hmacPassword = sjcl.codec.hex.fromBits(hmac.encrypt(params.password));
+  const hmacPassword = this.calculateHMAC(this._user.username, params.password);
 
   return this.post(this.url('/user/verifypassword'))
   .send({ password: hmacPassword })
@@ -1003,9 +1000,7 @@ BitGo.prototype.preprocessAuthenticationParams = function(params) {
   const trust = params.trust;
 
   // Calculate the password HMAC so we don't send clear-text passwords
-  const key = sjcl.codec.utf8String.toBits(username);
-  const hmac = new sjcl.misc.hmac(key, sjcl.hash.sha256);
-  const hmacPassword = sjcl.codec.hex.fromBits(hmac.encrypt(password));
+  const hmacPassword = this.calculateHMAC(username, password);
 
   const authParams = {
     email: username,
