@@ -326,10 +326,13 @@ describe('Transaction', function () {
       it('should return ' + testData.hash + ' for ' + testData.description, function () {
         var tx = Transaction.fromHex(testData.txHex, coins.ZEC)
         var script = Buffer.from(testData.script, 'hex')
+        var hash = Buffer.from(testData.hash, 'hex')
+        hash.reverse()
+        hash = hash.toString('hex')
 
         assert.strictEqual(
           tx.hashForZcashSignature(testData.inIndex, script, testData.value, testData.type, testData.branchId).toString('hex'),
-          testData.hash)
+          hash)
       })
     })
 
