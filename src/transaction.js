@@ -421,6 +421,16 @@ Transaction.prototype.clone = function () {
 }
 
 /**
+ * Get Zcash header or version
+ * @returns {number}
+ */
+Transaction.prototype.getHeader = function () {
+  var mask = (this.overwintered ? 1 : 0)
+  var header = this.version | (mask << 31)
+  return header
+}
+
+/**
  * Hash transaction for signing a specific input.
  *
  * Bitcoin uses a different hash for each signed transaction input.
@@ -493,16 +503,21 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
   return bcrypto.hash256(buffer)
 }
 
+/**
+ * Blake2b hashing algorithm for Zcash
+ * @param bufferToHash
+ * @param personalization
+ * @returns 256-bit BLAKE2b hash
+ */
 Transaction.prototype.getBlake2bHash = function(bufferToHash, personalization) {
   var out = Buffer.allocUnsafe(32)
-  blake2b(out.length, null, null, Buffer.from(personalization)).update(bufferToHash).digest(out)
-  return out
+  return blake2b(out.length, null, null, Buffer.from(personalization)).update(bufferToHash).digest(out)
 }
 
 /**
- * Build a hash from all the transaction inputs if the hash type is not SIGHASH_ANYONECANPAY
+ * Build a hash for all or none of the transaction inputs depending on the hashtype
  * @param hashType
- * @returns 256 hash or undefined
+ * @returns double SHA-256, 256-bit BLAKE2b hash or 256-bit zero if doesn't apply
  */
 Transaction.prototype.getPrevoutHash = function (hashType) {
   var tmpBuffer, tmpOffset
@@ -527,9 +542,9 @@ Transaction.prototype.getPrevoutHash = function (hashType) {
 }
 
 /**
- * Build a hash from all the transaction inputs sequence numbers
+ * Build a hash for all or none of the transactions inputs sequence numbers depending on the hashtype
  * @param hashType
- * @returns 256 hash or undefined
+ * @returns double SHA-256, 256-bit BLAKE2b hash or 256-bit zero if doesn't apply
  */
 Transaction.prototype.getSequenceHash = function (hashType) {
   var tmpBuffer, tmpOffset
@@ -554,10 +569,10 @@ Transaction.prototype.getSequenceHash = function (hashType) {
 }
 
 /**
- * Build a hash from one or all of the transaction outputs
+ * Build a hash for one, all or none of the transaction outputs depending on the hashtype
  * @param hashType
  * @param inIndex
- * @returns 256 hash or undefined
+ * @returns double SHA-256, 256-bit BLAKE2b hash or 256-bit zero if doesn't apply
  */
 Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
   var tmpBuffer, tmpOffset
@@ -604,17 +619,25 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
   return ZERO
 }
 
-Transaction.prototype.getHeader = function () {
-  var mask = (this.overwintered ? 1 : 0)
-  var header = this.version | (mask << 31)
-  return header
-}
-
+/**
+ * Hash transaction for signing a transparent transaction in Zcash. Protected transactions are not supported.
+ * @param inIndex
+ * @param prevOutScript
+ * @param value
+ * @param hashType
+ * @param consensusBranchId
+ * @returns double SHA-256 or 256-bit BLAKE2b hash
+ */
 Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, value, hashType, consensusBranchId) {
   typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
   if (this.joinsplits.length > 0) {
     throw new Error('Hash signature for Zcash protected transactions is not supported')
   }
+
+  if (inIndex >= this.ins.length && inIndex !== VALUE_UINT64_MAX) {
+    throw new Error('Input index is out of range')
+  }
+
   // TODO: move these functions to a util
   var tmpBuffer, tmpOffset
   function writeSlice (slice) { tmpOffset += slice.copy(tmpBuffer, tmpOffset) }
@@ -627,49 +650,52 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
   }
   function writeVarSlice (slice) { writeVarInt(slice.length); writeSlice(slice) }
 
-  var hashPrevouts = this.getPrevoutHash(hashType)
-  var hashSequence = this.getSequenceHash(hashType)
-  var hashOutputs = this.getOutputsHash(hashType, inIndex)
-  var hashJoinSplits = ZERO
+  if (this.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+    var hashPrevouts = this.getPrevoutHash(hashType)
+    var hashSequence = this.getSequenceHash(hashType)
+    var hashOutputs = this.getOutputsHash(hashType, inIndex)
+    var hashJoinSplits = ZERO
 
-  var baseBufferSize = 4 * 5 + 32 * 4
-  if (inIndex !== VALUE_UINT64_MAX) {
-    // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig), we need extra space
-    tmpBuffer = Buffer.allocUnsafe(baseBufferSize + 4 * 4 + 32 + varSliceSize(prevOutScript))
-  } else {
-    tmpBuffer = Buffer.allocUnsafe(baseBufferSize)
+    var baseBufferSize = 4 * 5 + 32 * 4
+    if (inIndex !== VALUE_UINT64_MAX) {
+      // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig), we need extra space
+      tmpBuffer = Buffer.allocUnsafe(baseBufferSize + 4 * 4 + 32 + varSliceSize(prevOutScript))
+    } else {
+      tmpBuffer = Buffer.allocUnsafe(baseBufferSize)
+    }
+    tmpOffset = 0
+
+    writeInt32(this.getHeader())
+    writeUInt32(this.versionGroupId)
+    writeSlice(hashPrevouts)
+    writeSlice(hashSequence)
+    writeSlice(hashOutputs)
+    writeSlice(hashJoinSplits)
+    writeUInt32(this.locktime)
+    writeUInt32(this.expiryHeight)
+    writeUInt32(hashType)
+
+    // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig):
+    if (inIndex !== VALUE_UINT64_MAX) {
+      // The input being signed (replacing the scriptSig with scriptCode + amount)
+      // The prevout may already be contained in hashPrevout, and the nSequence
+      // may already be contained in hashSequence.
+      var input = this.ins[inIndex]
+      writeSlice(input.hash)
+      writeUInt32(input.index)
+      writeVarSlice(prevOutScript)
+      writeUInt64(value)
+      writeUInt32(input.sequence)
+    }
+
+    var personalization = Buffer.alloc(16)
+    var prefix = 'ZcashSigHash'
+    personalization.write(prefix)
+    personalization.writeUInt32LE(consensusBranchId, prefix.length)
+
+    return this.getBlake2bHash(tmpBuffer, personalization)
   }
-  tmpOffset = 0
-
-  writeInt32(this.getHeader())
-  writeUInt32(this.versionGroupId)
-  writeSlice(hashPrevouts)
-  writeSlice(hashSequence)
-  writeSlice(hashOutputs)
-  writeSlice(hashJoinSplits)
-  writeUInt32(this.locktime)
-  writeUInt32(this.expiryHeight)
-  writeUInt32(hashType)
-
-  // If this hash is for a transparent input signature (i.e. not for txTo.joinSplitSig):
-  if (inIndex !== VALUE_UINT64_MAX) {
-    // The input being signed (replacing the scriptSig with scriptCode + amount)
-    // The prevout may already be contained in hashPrevout, and the nSequence
-    // may already be contained in hashSequence.
-    var input = this.ins[inIndex]
-    writeSlice(input.hash)
-    writeUInt32(input.index)
-    writeVarSlice(prevOutScript)
-    writeUInt64(value)
-    writeUInt32(input.sequence)
-  }
-
-  var personalization = Buffer.alloc(16)
-  var prefix = 'ZcashSigHash'
-  personalization.write(prefix)
-  personalization.writeUInt32LE(consensusBranchId, prefix.length)
-
-  return this.getBlake2bHash(tmpBuffer, personalization)
+  // TODO: support non overwinter transactions
 }
 
 Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value, hashType) {
