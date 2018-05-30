@@ -495,7 +495,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
 
 Transaction.prototype.getBlake2bHash = function(bufferToHash, personalization) {
   var out = Buffer.allocUnsafe(32)
-  blake2b(out.length, null, null, personalization).update(bufferToHash).digest(out)
+  blake2b(out.length, null, null, Buffer.from(personalization)).update(bufferToHash).digest(out)
   return out
 }
 
