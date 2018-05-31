@@ -256,11 +256,32 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params) {
     common.validateParams(params, [], []);
 
     // this method only makes sense with existing transaction requests
-    assert(this.info().transactionRequest);
+    const transactionRequest = this.info().transactionRequest;
+    assert(transactionRequest);
 
-    const recipients = this.info().transactionRequest.recipients;
-    const prebuildParams = _.extend({}, params, { recipients: recipients }, this.info().transactionRequest.buildParams);
-    return this.wallet.prebuildAndSignTransaction(prebuildParams);
+    const originalPrebuild = transactionRequest.coinSpecific[this.baseCoin.type];
+
+    const recipients = transactionRequest.recipients;
+    const prebuildParams = _.extend({}, params, { recipients: recipients }, transactionRequest.buildParams);
+    const signedTransaction = yield this.wallet.prebuildAndSignTransaction(prebuildParams);
+    // compare PAYGo fees
+    const originalParsedTransaction = yield this.baseCoin.parseTransaction({
+      txParams: prebuildParams,
+      wallet: this.wallet,
+      txPrebuild: originalPrebuild
+    });
+    const recreatedParsedTransaction = yield this.baseCoin.parseTransaction({
+      txParams: prebuildParams,
+      wallet: this.wallet,
+      txPrebuild: signedTransaction
+    });
+    if (!_.isFinite(recreatedParsedTransaction.implicitExternalSpendAmount)) {
+      throw new Error('implicit external spend amount could not be determined');
+    }
+    if (recreatedParsedTransaction.implicitExternalSpendAmount > originalParsedTransaction.implicitExternalSpendAmount) {
+      throw new Error('recreated transaction is using a higher pay-as-you-go-fee');
+    }
+    return signedTransaction;
   }).call(this);
 };
 

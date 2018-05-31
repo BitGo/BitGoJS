@@ -1,6 +1,5 @@
 const BaseCoin = require('../baseCoin');
 const config = require('../../config');
-const BigNumber = require('bignumber.js');
 const bitcoin = require('bitgo-bitcoinjs-lib');
 const bitcoinMessage = require('bitcoinjs-message');
 const Promise = require('bluebird');
@@ -81,6 +80,156 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+   * Find outputs that are within expected outputs but not within actual outputs, including duplicates
+   * @param expectedOutputs
+   * @param actualOutputs
+   * @returns {Array}
+   */
+  static findMissingOutputs(expectedOutputs, actualOutputs) {
+    const keyFunc = ({ address, amount }) => `${address}:${Number(amount)}`;
+    const groupedOutputs = _.groupBy(expectedOutputs, keyFunc);
+
+    actualOutputs.forEach((output) => {
+      const group = groupedOutputs[keyFunc(output)];
+      if (group) {
+        group.pop();
+      }
+    });
+
+    return _.flatten(_.values(groupedOutputs));
+  }
+
+  /**
+   * Extract and fill transaction details such as internal/change spend, external spend (explicit vs. implicit), etc.
+   * @param txParams
+   * @param txPrebuild
+   * @param wallet
+   * @param verification
+   * @param callback
+   * @returns {*}
+   */
+  parseTransaction({ txParams, txPrebuild, wallet, verification = {} }, callback) {
+    return co(function *() {
+      if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
+        throw new Error('verification.disableNetworking must be a boolean');
+      }
+      const disableNetworking = !!verification.disableNetworking;
+
+      // obtain the keychains and key signatures
+      let keychains = verification.keychains;
+      if (!keychains && disableNetworking) {
+        throw new Error('cannot fetch keychains without networking');
+      } else if (!keychains) {
+        keychains = yield Promise.props({
+          user: this.keychains().get({ id: wallet._wallet.keys[0] }),
+          backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
+          bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
+        });
+      }
+      const keychainArray = [keychains.user, keychains.backup, keychains.bitgo];
+
+      const keySignatures = _.get(wallet, '_wallet.keySignatures');
+
+      // obtain all outputs
+      const explanation = this.explainTransaction({
+        txHex: txPrebuild.txHex,
+        txInfo: txPrebuild.txInfo,
+        keychains: keychains
+      });
+      const allOutputsOld = [...explanation.outputs, ...explanation.changeOutputs];
+      const allOutputs = allOutputsOld;
+
+      // verify that each recipient from txParams has their own output
+      const expectedOutputs = txParams.recipients;
+      const missingOutputs = this.constructor.findMissingOutputs(expectedOutputs, allOutputs);
+
+      // there is an array of expected outputs
+      // and there is an array of all outputs
+      // figure out the missing ones
+
+      const allOutputDetails = yield Promise.map(allOutputs, co(function *(currentOutput) {
+        const currentAddress = currentOutput.address;
+        const addressDetailsPrebuild = _.get(txPrebuild, `txInfo.walletAddressDetails.${currentAddress}`, {});
+        const addressDetailsVerification = _.get(verification, `addresses.${currentAddress}`, {});
+        try {
+          /**
+           * The only way to determine whether an address is known on the wallet is to initiate a network request and
+           * fetch it. Should the request fail and return a 404, it will throw and therefore has to be caught. For that
+           * reason, address wallet ownership detection is wrapped in a try/catch. Additionally, once the address
+           * details are fetched on the wallet, a local address validation is run, whose errors however are generated
+           * client-side and can therefore be analyzed with more granularity and type checking.
+           */
+          let addressDetails = _.extend({}, addressDetailsPrebuild, addressDetailsVerification);
+          if (_.isEmpty(addressDetails) && !disableNetworking) {
+            addressDetails = yield wallet.getAddress({ address: currentAddress });
+          }
+          // verify that the address is on the wallet
+          // verifyAddress throws if it fails to verify the address, meaning it's external
+          this.verifyAddress(_.extend({}, addressDetails, { keychains: keychainArray, address: currentAddress }));
+          return _.extend({}, currentOutput, addressDetails, { external: false });
+        } catch (e) {
+          // Todo: name server-side errors to avoid message-based checking [BG-5124]
+          const walletAddressNotFound = e.message.includes('wallet address not found');
+          const unexpectedAddress = (e instanceof errors.UnexpectedAddressError);
+          if (walletAddressNotFound || unexpectedAddress) {
+            // the address is not on the wallet, which simply means it's external
+            if (unexpectedAddress && !walletAddressNotFound) {
+              console.log(`an address (${currentAddress}) found on the wallet could not be reconstructed and is therefore presumed external`);
+            }
+            return _.extend({}, currentOutput, { external: true });
+          }
+          /**
+           * It might be a completely invalid address or a bad validation attempt or something else completely, in
+           * which case we do not proceed and rather rethrow the error, which is safer than assuming that the address
+           * validation failed simply because it's external to the wallet.
+           */
+          throw e;
+        }
+      }).bind(this));
+
+      const changeOutputs = _.filter(allOutputDetails, { external: false });
+
+      // these are all the outputs that were not originally explicitly specified in recipients
+      const implicitOutputs = this.constructor.findMissingOutputs(allOutputDetails, expectedOutputs);
+
+      const explicitOutputs = this.constructor.findMissingOutputs(allOutputDetails, implicitOutputs);
+
+      // these are all the non-wallet outputs that had been originally explicitly specified in recipients
+      const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
+
+      // this is the sum of all the originally explicitly specified non-wallet output values
+      const explicitExternalSpendAmount = _.sumBy(explicitExternalOutputs, 'amount');
+
+      /**
+       * The calculation of the implicit external spend amount pertains to verifying the pay-as-you-go-fee BitGo
+       * automatically applies to transactions sending money out of the wallet. The logic is fairly straightforward
+       * in that we compare the external spend amount that was specified explicitly by the user to the portion
+       * that was specified implicitly. To protect customers from people tampering with the transaction outputs, we
+       * define a threshold for the maximum percentage of the implicit external spend in relation to the explicit
+       * external spend.
+       */
+
+      // make sure that all the extra addresses are change addresses
+      // get all the additional external outputs the server added and calculate their values
+      const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
+      const implicitExternalSpendAmount = _.sumBy(implicitExternalOutputs, 'amount');
+
+      return {
+        keychains,
+        keySignatures,
+        outputs: allOutputDetails,
+        missingOutputs,
+        explicitExternalOutputs,
+        implicitExternalOutputs,
+        changeOutputs,
+        explicitExternalSpendAmount,
+        implicitExternalSpendAmount
+      };
+
+    }).call(this).asCallback(callback);
+  }
+
+  /**
    * Verify that a transaction prebuild complies with the original intention
    * @param txParams params object passed to send
    * @param txPrebuild prebuild object returned by server
@@ -96,18 +245,12 @@ class AbstractUtxoCoin extends BaseCoin {
   verifyTransaction({ txParams, txPrebuild, wallet, verification = {} }, callback) {
     return co(function *() {
       const disableNetworking = !!verification.disableNetworking;
+      const parsedTransaction = yield this.parseTransaction({ txParams, txPrebuild, wallet, verification });
 
-      let keychains = verification.keychains;
-      if (!keychains && !disableNetworking) {
-        keychains = yield Promise.props({
-          user: this.keychains().get({ id: wallet._wallet.keys[0] }),
-          backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
-          bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
-        });
-      }
+      const keychains = parsedTransaction.keychains;
 
       // let's verify these keychains
-      const keySignatures = _.get(wallet, '_wallet.keySignatures');
+      const keySignatures = parsedTransaction.keySignatures;
       if (!_.isEmpty(keySignatures)) {
         // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
         const userPub = keychains.user.pub;
@@ -156,61 +299,14 @@ class AbstractUtxoCoin extends BaseCoin {
         // this could be dangerous
         console.log('unsigned keys obtained online are being used for address verification');
       }
-      const keychainArray = [keychains.user, keychains.backup, keychains.bitgo];
-      const explanation = this.explainTransaction({
-        txHex: txPrebuild.txHex,
-        txInfo: txPrebuild.txInfo,
-        keychains: keychains
-      });
-      const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
 
-      const comparator = (recipient1, recipient2) => {
-        if (recipient1.address !== recipient2.address) {
-          return false;
-        }
-        const amount1 = new BigNumber(recipient1.amount);
-        const amount2 = new BigNumber(recipient2.amount);
-        return amount1.equals(amount2);
-      };
-
-      // verify that each recipient from txParams has their own output
-      const expectedOutputs = txParams.recipients;
-
-      const missingOutputs = _.differenceWith(expectedOutputs, allOutputs, comparator);
+      const missingOutputs = parsedTransaction.missingOutputs;
       if (missingOutputs.length !== 0) {
         // there are some outputs in the recipients list that have not made it into the actual transaction
         throw new Error('expected outputs missing in transaction prebuild');
       }
 
-      const self = this;
-
-      const allOutputDetails = yield Promise.all(_.map(allOutputs, co(function *(currentOutput) {
-        const currentAddress = currentOutput.address;
-        // address details throws if the address isn't found, meaning it's external
-        const addressDetailsPrebuild = _.get(txPrebuild, `txInfo.walletAddressDetails.${currentAddress}`, {});
-        const addressDetailsVerification = _.get(verification, `addresses.${currentAddress}`, {});
-        try {
-          let addressDetails = _.extend({}, addressDetailsPrebuild, addressDetailsVerification);
-          if (_.isEmpty(addressDetails) && !disableNetworking) {
-            addressDetails = yield wallet.getAddress({ address: currentAddress });
-          }
-          // verify that the address is on the wallet
-          // verifyAddress throws if it fails to verify the address, meaning it's external
-          self.verifyAddress(_.extend({}, addressDetails, { keychains: keychainArray, address: currentAddress }));
-          return _.extend({}, currentOutput, addressDetails, { external: false });
-        } catch (e) {
-          return _.extend({}, currentOutput, { external: true });
-        }
-      })));
-
-      // these are all the outputs that were not originally explicitly specified in recipients
-      const extraOutputDetails = _.differenceWith(allOutputDetails, expectedOutputs, comparator);
-
-      // these are all the non-wallet outputs that had been originally explicitly specified in recipients
-      const intendedExternalOutputDetails = _.filter(_.intersectionWith(allOutputDetails, expectedOutputs, comparator), { external: true });
-
-      // this is the sum of all the originally explicitly specified non-wallet output values
-      const intendedExternalSpend = _.sumBy(intendedExternalOutputDetails, 'amount');
+      const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
 
       // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
       const payAsYouGoLimit = intendedExternalSpend * 0.015; // 150 basis points is the absolute permitted maximum
@@ -225,8 +321,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
       // make sure that all the extra addresses are change addresses
       // get all the additional external outputs the server added and calculate their values
-      const nonChangeOutputs = _.filter(extraOutputDetails, { external: true });
-      const nonChangeAmount = _.sumBy(nonChangeOutputs, 'amount');
+      const nonChangeAmount = parsedTransaction.implicitExternalSpendAmount;
 
       // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
       if (nonChangeAmount > payAsYouGoLimit) {
@@ -234,10 +329,11 @@ class AbstractUtxoCoin extends BaseCoin {
         throw new Error('prebuild attempts to spend to unintended external recipients');
       }
 
+      const allOutputs = parsedTransaction.outputs;
       const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
       const transactionCache = {};
       const network = this.network;
-      const inputs = yield Promise.all(transaction.ins.map(co(function *(currentInput) {
+      const inputs = yield Promise.map(transaction.ins, co(function *(currentInput) {
         const transactionId = Buffer.from(currentInput.hash).reverse().toString('hex');
         const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
         if (txHex) {
@@ -255,11 +351,11 @@ class AbstractUtxoCoin extends BaseCoin {
           if (disableNetworking) {
             throw new Error('attempting to retrieve transaction details externally with networking disabled');
           }
-          transactionCache[transactionId] = yield self.bitgo.get(self.url(`/public/tx/${transactionId}`)).result();
+          transactionCache[transactionId] = yield this.bitgo.get(this.url(`/public/tx/${transactionId}`)).result();
         }
         const transactionDetails = transactionCache[transactionId];
         return transactionDetails.outputs[currentInput.index];
-      })));
+      }).bind(this));
 
       const inputAmount = _.sumBy(inputs, 'value');
       const outputAmount = _.sumBy(allOutputs, 'amount');
@@ -283,15 +379,15 @@ class AbstractUtxoCoin extends BaseCoin {
    */
   verifyAddress({ address, keychains, coinSpecific, chain, index }) {
     if (!this.isValidAddress(address)) {
-      throw new Error(`invalid address: ${address}`);
+      throw new errors.InvalidAddressError(`invalid address: ${address}`);
     }
 
     if (!(_.isFinite(chain) && _.isFinite(index))) {
-      throw new Error(`address validation failure: invalid chain (${chain}) or index (${index})`);
+      throw new errors.InvalidAddressVerificationObjectPropertyError(`address validation failure: invalid chain (${chain}) or index (${index})`);
     }
 
     if (!_.isObject(coinSpecific)) {
-      throw new Error('address validation failure: coinSpecific field must be an object');
+      throw new errors.InvalidAddressVerificationObjectPropertyError('address validation failure: coinSpecific field must be an object');
     }
 
     const expectedAddress = this.generateAddress({
@@ -304,7 +400,7 @@ class AbstractUtxoCoin extends BaseCoin {
     });
 
     if (expectedAddress.address !== address) {
-      throw new Error(`address validation failure: expected ${expectedAddress.address} but got ${address}`);
+      throw new errors.UnexpectedAddressError(`address validation failure: expected ${expectedAddress.address} but got ${address}`);
     }
   }
 
@@ -338,10 +434,10 @@ class AbstractUtxoCoin extends BaseCoin {
     const isSegwit = !!segwit;
     if (bech32) {
       if (!this.supportsBech32()) {
-        throw new errors.Bech32UnsupportedError('bech32 not supported by this coin');
+        throw new errors.Bech32UnsupportedError();
       }
       if (!isSegwit) {
-        throw new errors.SegwitRequiredError('bech32 requires that segwit be enabled');
+        throw new errors.SegwitRequiredError();
       }
     }
     const isBech32 = !!bech32;
@@ -516,7 +612,15 @@ class AbstractUtxoCoin extends BaseCoin {
     }
 
     const inputClassification = bitcoin.script.classifyInput(signatureScript, true);
-    if (inputClassification !== 'scripthash') {
+    if (inputClassification !== bitcoin.script.types.P2SH) {
+      if (inputClassification === bitcoin.script.types.P2PKH) {
+        const [signature, publicKey] = decompiledSigScript;
+        const publicKeys = [publicKey];
+        const signatures = [signature];
+
+        const pubScript = bitcoin.script.pubKeyHash.output.encode(bitcoin.crypto.hash160(publicKey));
+        return { signatures, publicKeys, isSegwitInput, inputClassification, pubScript: pubScript };
+      }
       return { isSegwitInput, inputClassification };
     }
 
@@ -569,7 +673,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
     const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(transaction, inputIndex);
 
-    if (inputClassification !== 'scripthash') {
+    if (![bitcoin.script.types.P2SH, bitcoin.script.types.P2PKH].includes(inputClassification)) {
       return false;
     }
 

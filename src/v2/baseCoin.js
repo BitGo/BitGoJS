@@ -316,6 +316,10 @@ class BaseCoin {
     return Promise.reject(new Error('BaseCoin method not implemented'));
   }
 
+  parseTransaction() {
+    return Promise.resolve({});
+  }
+
   /**
    * Generate a key pair on the curve used by the coin
    *
