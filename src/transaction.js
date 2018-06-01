@@ -37,7 +37,7 @@ function Transaction (coin = coins.BTC) {
   this.joinsplitSig = []
   // ZCash version >= 3
   this.overwintered = 0
-  this.versionGroupId = 0  // 0x03C48270 for overwinter
+  this.versionGroupId = 0  // 0x03C48270 (63210096) for overwinter
   this.expiryHeight = 0
 }
 

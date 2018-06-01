@@ -133,6 +133,25 @@ describe('TransactionBuilder', function () {
       })
     })
 
+    fixtures.zcash.valid.forEach(function (testData) {
+      it('returns TransactionBuilder, with ' + testData.description, function () {
+        var network = NETWORKS['zcash']
+        var tx = Transaction.fromHex(testData.hex, network.coin)
+        var txb = TransactionBuilder.fromTransaction(tx, network)
+
+        assert.equal(txb.tx.version, testData.version)
+        assert.equal(txb.tx.versionGroupId, testData.versionGroupId)
+        assert.equal(txb.tx.overwintered, testData.overwintered)
+        assert.equal(txb.tx.locktime, testData.locktime)
+        assert.equal(txb.tx.expiryHeight, testData.expiryHeight)
+        assert.equal(txb.tx.ins.length, testData.insLength)
+        assert.equal(txb.tx.outs.length, testData.outsLength)
+        assert.equal(txb.tx.joinsplits.length, testData.joinsplitsLength)
+        assert.equal(txb.tx.joinsplitPubkey.length, testData.joinsplitPubkeyLength)
+        assert.equal(txb.tx.joinsplitSig.length, testData.joinsplitSigLength)
+      })
+    })
+
     it('correctly classifies transaction inputs', function () {
       var tx = Transaction.fromHex(fixtures.valid.classification.hex)
       var txb = TransactionBuilder.fromTransaction(tx)
@@ -568,6 +587,33 @@ describe('TransactionBuilder', function () {
       tx.sign(0, keyPair)
       var txId2 = tx.build().getId()
       assert.equal(txId, txId2)
+    })
+  })
+  describe('change network', function () {
+    it('should succeed', function () {
+      var txb = new TransactionBuilder()
+      assert.deepEqual(txb.network, NETWORKS.bitcoin)
+
+      txb.enableBitcoinCash(false)
+      assert.deepEqual(txb.network, NETWORKS.bitcoin)
+
+      txb.enableBitcoinGold(false)
+      assert.deepEqual(txb.network, NETWORKS.bitcoin)
+
+      // BitcoinCash network is the same as Bitcoin but with a different coins property
+      txb.enableBitcoinCash(true)
+      assert.deepEqual(txb.network, NETWORKS.bitcoincash)
+
+      // This is a no-op because BTG is not the current network
+      txb.enableBitcoinGold(false)
+      assert.deepEqual(txb.network, NETWORKS.bitcoincash)
+
+      txb.enableBitcoinGold(true)
+      assert.deepEqual(txb.network, NETWORKS.bitcoingold)
+
+      // This is a no-op because BCH is not the current network
+      txb.enableBitcoinCash(false)
+      assert.deepEqual(txb.network, NETWORKS.bitcoingold)
     })
   })
 })

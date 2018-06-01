@@ -492,37 +492,22 @@ function TransactionBuilder (network, maximumFeeRate) {
 }
 
 TransactionBuilder.prototype.enableBitcoinCash = function (enable) {
-  if (typeof enable === 'undefined') {
-    enable = true
-  }
-  this.enableCoin(coins.BCH, enable)
-}
-
-TransactionBuilder.prototype.enableBitcoinGold = function (enable) {
-  if (typeof enable === 'undefined') {
-    enable = true
-  }
-  this.enableCoin(coins.BTG, enable)
-}
-
-TransactionBuilder.prototype.enableZcash = function (enable) {
-  if (typeof enable === 'undefined') {
-    enable = true
-  }
-  this.enableCoin(coins.ZEC, enable)
-}
-
-TransactionBuilder.prototype.enableCoin = function (coin, enable) {
-  if (!coins.isValidCoin(coin)) {
-    throw new Error(coin + ' is not a valid type of coin')
-  }
-  typeforce(types.Boolean, enable)
-  if (enable) {
-    this.coin = coin
+  if (typeof enable === 'undefined' || enable) {
+    this.network = networks['bitcoincash']
   } else {
     // Only change to the default coin if the target coin was set, otherwise, leave the current coin. This is to avoid
     // disabling a coin that was not set in the first place.
-    this.coin = (coins.isZcash(this.coin) ? coin : this.coin)
+    this.network = (coins.isBitcoinCash(this.network.coin) ? networks['bitcoin'] : this.network)
+  }
+}
+
+TransactionBuilder.prototype.enableBitcoinGold = function (enable) {
+  if (typeof enable === 'undefined' || enable) {
+    this.network = networks['bitcoingold']
+  } else {
+    // Only change to the default coin if the target coin was set, otherwise, leave the current coin. This is to avoid
+    // disabling a coin that was not set in the first place.
+    this.network = (coins.isBitcoinGold(this.network.coin) ? networks['bitcoin'] : this.network)
   }
 }
 
@@ -550,17 +535,39 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
   this.tx.version = version
 }
 
-TransactionBuilder.prototype.maybeSetVersionGroupId = function (versionGroupId = 0x03C48270) {
-  if (coins.isZcash(this.network.coin)) {
+TransactionBuilder.prototype.maybeSetVersionGroupId = function (versionGroupId) {
+  if (versionGroupId && coins.isZcash(this.network.coin)) {
     typeforce(types.UInt32, versionGroupId)
     this.tx.versionGroupId = versionGroupId
   }
 }
 
 TransactionBuilder.prototype.maybeSetExpiryHeight = function (expiryHeight) {
-  if (coins.isZcash(this.network.coin)) {
+  if (expiryHeight && coins.isZcash(this.network.coin)) {
     typeforce(types.UInt32, expiryHeight)
     this.tx.expiryHeight = expiryHeight
+  }
+}
+
+TransactionBuilder.prototype.maybeSetJoinSplits = function (transaction) {
+  if (transaction.joinsplits && coins.isZcash(this.network.coin)) {
+    this.tx.joinsplits = transaction.joinsplits.map(function (txJoinsplit) {
+      return {
+        vpubOld: txJoinsplit.vpubOld,
+        vpubNew: txJoinsplit.vpubNew,
+        anchor: txJoinsplit.anchor,
+        nullifiers: txJoinsplit.nullifiers,
+        commitments: txJoinsplit.commitments,
+        ephemeralKey: txJoinsplit.ephemeralKey,
+        randomSeed: txJoinsplit.randomSeed,
+        macs: txJoinsplit.macs,
+        zproof: txJoinsplit.zproof,
+        ciphertexts: txJoinsplit.ciphertexts
+      }
+    })
+
+    this.tx.joinsplitPubkey = transaction.joinsplitPubkey
+    this.tx.joinsplitSig = transaction.joinsplitSig
   }
 }
 
@@ -588,6 +595,9 @@ TransactionBuilder.fromTransaction = function (transaction, network, forkId) {
   // Copy Zcash overwinter fields. If the transaction builder is not for Zcash, they will be omitted
   txb.maybeSetVersionGroupId(transaction.versionGroupId)
   txb.maybeSetExpiryHeight(transaction.expiryHeight)
+  // We don't support protected transactions but we copy the joinsplits just to be consistent. However, the transaction
+  // builder will fail when we try to sign one of these transactions
+  txb.maybeSetJoinSplits(transaction)
 
   // Copy outputs (done first to avoid signature invalidation)
   transaction.outs.forEach(function (txOut) {
