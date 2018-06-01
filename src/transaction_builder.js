@@ -552,7 +552,7 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
 
 TransactionBuilder.prototype.maybeSetVersionGroupId = function (versionGroupId = 0x03C48270) {
   if (coins.isZcash(this.network.coin)) {
-    typeforce(types.Hex, versionGroupId)
+    typeforce(types.UInt32, versionGroupId)
     this.tx.versionGroupId = versionGroupId
   }
 }
