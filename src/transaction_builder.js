@@ -552,7 +552,7 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
 
 TransactionBuilder.prototype.maybeSetVersionGroupId = function (versionGroupId = 0x03C48270) {
   if (coins.isZcash(this.network.coin)) {
-    typeforce(types.Hex, versionGroupId)
+    typeforce(types.UInt32, versionGroupId)
     this.tx.versionGroupId = versionGroupId
   }
 }
@@ -786,7 +786,7 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
   } else if (coins.isBitcoinCash(this.network.coin)) {
     signatureHash = this.tx.hashForCashSignature(vin, input.signScript, witnessValue, hashType)
   } else if (coins.isZcash(this.network.coin)) {
-    signatureHash = this.hashForZcashSignature(vin, input.signScript, witnessValue, hashType, this.network.consensusBranchId)
+    signatureHash = this.tx.hashForZcashSignature(vin, input.signScript, witnessValue, hashType, this.network.consensusBranchId)
   } else {
     if (input.witness) {
       signatureHash = this.tx.hashForWitnessV0(vin, input.signScript, witnessValue, hashType)
