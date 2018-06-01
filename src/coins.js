@@ -9,28 +9,28 @@ const coins = {
   ZEC: 'zec'
 }
 
-coins.isBitcoin = function (value) {
-  return typeforce.String(value) && value === coins.BTC
+coins.isBitcoin = function (network) {
+  return typeforce.String(network.coin) && network.coin === coins.BTC
 }
 
-coins.isBitcoinCash = function (value) {
-  return typeforce.String(value) && value === coins.BCH
+coins.isBitcoinCash = function (network) {
+  return typeforce.String(network.coin) && network.coin === coins.BCH
 }
 
-coins.isBitcoinGold = function (value) {
-  return typeforce.String(value) && value === coins.BTG
+coins.isBitcoinGold = function (network) {
+  return typeforce.String(network.coin) && network.coin === coins.BTG
 }
 
-coins.isLitecoin = function (value) {
-  return typeforce.String(value) && value === coins.LTC
+coins.isLitecoin = function (network) {
+  return typeforce.String(network.coin) && network.coin === coins.LTC
 }
 
-coins.isZcash = function (value) {
-  return typeforce.String(value) && value === coins.ZEC
+coins.isZcash = function (network) {
+  return typeforce.String(network.coin) && network.coin === coins.ZEC
 }
 
-coins.isValidCoin = function (value) {
-  return typeforce.String(value) && value in [coins.BTC, coins.BCH, coins.BTG, coins.LTC, coins.ZEC]
+coins.isValidCoin = function (network) {
+  return typeforce.String(network.coin) && network.coin in [coins.BTC, coins.BCH, coins.BTG, coins.LTC, coins.ZEC]
 }
 
 module.exports = coins

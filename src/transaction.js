@@ -5,6 +5,7 @@ var bscript = require('./script')
 var bufferutils = require('./bufferutils')
 var coins = require('./coins')
 var opcodes = require('bitcoin-ops')
+var networks = require('./networks')
 var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
@@ -25,12 +26,12 @@ function vectorSize (someVector) {
 }
 
 // By default, assume is a bitcoin transaction
-function Transaction (coin = coins.BTC) {
+function Transaction (network = networks.bitcoin) {
   this.version = 1
   this.locktime = 0
   this.ins = []
   this.outs = []
-  this.coin = coin
+  this.network = network
   // ZCash version >= 2
   this.joinsplits = []
   this.joinsplitPubkey = []
@@ -71,7 +72,7 @@ Transaction.ZCASH_NOTECIPHERTEXT_SIZE = 1 + 8 + 32 + 32 + 512 + 16
 Transaction.ZCASH_G1_PREFIX_MASK = 0x02
 Transaction.ZCASH_G2_PREFIX_MASK = 0x0a
 
-Transaction.fromBuffer = function (buffer, coin = coins.BTC, __noStrict) {
+Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStrict) {
   var offset = 0
   function readSlice (n) {
     offset += n
@@ -140,7 +141,7 @@ Transaction.fromBuffer = function (buffer, coin = coins.BTC, __noStrict) {
   var tx = new Transaction()
   tx.version = readInt32()
 
-  if (coins.isZcash(coin)) {
+  if (coins.isZcash(network)) {
     // Split the header into fOverwintered and nVersion
     tx.overwintered = tx.version >>> 31  // Must be 1 for version 3 and up
     tx.version = tx.version & 0x07FFFFFFF  // 3 for overwinter
@@ -152,12 +153,12 @@ Transaction.fromBuffer = function (buffer, coin = coins.BTC, __noStrict) {
   var hasWitnesses = false
   if (marker === Transaction.ADVANCED_TRANSACTION_MARKER &&
       flag === Transaction.ADVANCED_TRANSACTION_FLAG &&
-      !coins.isZcash(coin)) {
+      !coins.isZcash(network)) {
     offset += 2
     hasWitnesses = true
   }
 
-  if (coins.isZcash(coin) && tx.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+  if (coins.isZcash(network) && tx.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
     tx.versionGroupId = readUInt32()
   }
 
@@ -191,11 +192,11 @@ Transaction.fromBuffer = function (buffer, coin = coins.BTC, __noStrict) {
 
   tx.locktime = readUInt32()
 
-  if (coins.isZcash(coin) && tx.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+  if (coins.isZcash(network) && tx.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
     tx.expiryHeight = readUInt32()
   }
 
-  if (coins.isZcash(coin) && tx.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
+  if (coins.isZcash(network) && tx.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
     var joinSplitsLen = readVarInt()
     for (i = 0; i < joinSplitsLen; ++i) {
       var vpubOld = readUInt64()
@@ -250,7 +251,7 @@ Transaction.fromBuffer = function (buffer, coin = coins.BTC, __noStrict) {
     }
   }
 
-  tx.coin = coin
+  tx.network = network
 
   if (__noStrict) return tx
   if (offset !== buffer.length) throw new Error('Transaction has unexpected data')
@@ -258,8 +259,8 @@ Transaction.fromBuffer = function (buffer, coin = coins.BTC, __noStrict) {
   return tx
 }
 
-Transaction.fromHex = function (hex, coin) {
-  return Transaction.fromBuffer(Buffer.from(hex, 'hex'), coin)
+Transaction.fromHex = function (hex, network) {
+  return Transaction.fromBuffer(Buffer.from(hex, 'hex'), network)
 }
 
 Transaction.isCoinbaseHash = function (buffer) {
@@ -331,7 +332,7 @@ Transaction.prototype.joinsplitByteLength = function () {
     return 0
   }
 
-  if (!coins.isZcash(this.coin)) {
+  if (!coins.isZcash(this.network)) {
     return 0
   }
 
@@ -358,7 +359,7 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
   var hasWitnesses = __allowWitness && this.hasWitnesses()
 
   return (
-    (coins.isZcash(this.coin) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION ? 8 : 0) +
+    (coins.isZcash(this.network) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION ? 8 : 0) +
     (hasWitnesses ? 10 : 8) +
     varuint.encodingLength(this.ins.length) +
     varuint.encodingLength(this.outs.length) +
@@ -373,9 +374,9 @@ Transaction.prototype.clone = function () {
   var newTx = new Transaction()
   newTx.version = this.version
   newTx.locktime = this.locktime
-  newTx.coin = this.coin
+  newTx.network = this.network
 
-  if (coins.isZcash(this.coin) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+  if (coins.isZcash(this.network) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
     newTx.overwintered = this.overwintered
     newTx.versionGroupId = this.versionGroupId
     newTx.expiryHeight = this.expiryHeight
@@ -398,7 +399,7 @@ Transaction.prototype.clone = function () {
     }
   })
 
-  if (coins.isZcash(this.coin) && this.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
+  if (coins.isZcash(this.network) && this.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
     newTx.joinsplits = this.joinsplits.map(function (txJoinsplit) {
       return {
         vpubOld: txJoinsplit.vpubOld,
@@ -529,7 +530,7 @@ Transaction.prototype.getPrevoutHash = function (hashType) {
       bufferWriter.writeUInt32(txIn.index)
     })
 
-    if (coins.isZcash(this.coin)) {
+    if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashPrevoutHash')
     }
     return bcrypto.hash256(bufferWriter.getBuffer())
@@ -552,7 +553,7 @@ Transaction.prototype.getSequenceHash = function (hashType) {
       bufferWriter.writeUInt32(txIn.sequence)
     })
 
-    if (coins.isZcash(this.coin)) {
+    if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashSequencHash')
     }
     return bcrypto.hash256(bufferWriter.getBuffer())
@@ -581,7 +582,7 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
       bufferWriter.writeVarSlice(out.script)
     })
 
-    if (coins.isZcash(this.coin)) {
+    if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashOutputsHash')
     }
     return bcrypto.hash256(bufferWriter.getBuffer())
@@ -593,7 +594,7 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
     bufferWriter.writeUInt64(output.value)
     bufferWriter.writeVarSlice(output.script)
 
-    if (coins.isZcash(this.coin)) {
+    if (coins.isZcash(this.network)) {
       return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashOutputsHash')
     }
     return bcrypto.hash256(bufferWriter.getBuffer())
@@ -607,10 +608,9 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
  * @param prevOutScript
  * @param value
  * @param hashType
- * @param consensusBranchId
  * @returns double SHA-256 or 256-bit BLAKE2b hash
  */
-Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, value, hashType, consensusBranchId) {
+Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, value, hashType) {
   typeforce(types.tuple(types.UInt32, types.Buffer, types.Satoshi, types.UInt32), arguments)
   if (this.joinsplits.length > 0) {
     throw new Error('Hash signature for Zcash protected transactions is not supported')
@@ -661,7 +661,7 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     var personalization = Buffer.alloc(16)
     var prefix = 'ZcashSigHash'
     personalization.write(prefix)
-    personalization.writeUInt32LE(consensusBranchId, prefix.length)
+    personalization.writeUInt32LE(this.network.consensusBranchId, prefix.length)
 
     return this.getBlake2bHash(bufferWriter.getBuffer(), personalization)
   }
@@ -782,7 +782,7 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     writeSlice(i.x)
   }
 
-  if (coins.isZcash(this.coin) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+  if (coins.isZcash(this.network) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
     var mask = (this.overwintered ? 1 : 0)
     writeInt32(this.version | (mask << 31))  // Set overwinter bit
     writeUInt32(this.versionGroupId)
@@ -825,11 +825,11 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
 
   writeUInt32(this.locktime)
 
-  if (coins.isZcash(this.coin) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+  if (coins.isZcash(this.network) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
     writeUInt32(this.expiryHeight)
   }
 
-  if (coins.isZcash(this.coin) && this.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
+  if (coins.isZcash(this.network) && this.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
     writeVarInt(this.joinsplits.length)
     this.joinsplits.forEach(function (joinsplit) {
       writeUInt64(joinsplit.vpubOld)

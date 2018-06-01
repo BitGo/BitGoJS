@@ -138,7 +138,7 @@ describe('TransactionBuilder', function () {
     fixtures.zcash.valid.forEach(function (testData) {
       it('returns TransactionBuilder, with ' + testData.description, function () {
         var network = NETWORKS['zcash']
-        var tx = Transaction.fromHex(testData.hex, network.coin)
+        var tx = Transaction.fromHex(testData.hex, network)
         var txb = TransactionBuilder.fromTransaction(tx, network)
 
         assert.equal(txb.tx.version, testData.version)
@@ -155,7 +155,7 @@ describe('TransactionBuilder', function () {
 
       it('throws if transaction builder network is incompatible for ' + testData.description, function () {
         var errorMessage = 'This transaction is not compatible with the transaction builder'
-        var tx = Transaction.fromHex(testData.hex, NETWORKS.zcash.coin)
+        var tx = Transaction.fromHex(testData.hex, NETWORKS.zcash)
 
         // Zcash transaction but different network
         assert.throws(function () {

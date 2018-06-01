@@ -497,7 +497,7 @@ TransactionBuilder.prototype.enableBitcoinCash = function (enable) {
   } else {
     // Only change to the default coin if the target coin was set, otherwise, leave the current coin. This is to avoid
     // disabling a coin that was not set in the first place.
-    this.network = (coins.isBitcoinCash(this.network.coin) ? networks['bitcoin'] : this.network)
+    this.network = (coins.isBitcoinCash(this.network) ? networks['bitcoin'] : this.network)
   }
 }
 
@@ -507,7 +507,7 @@ TransactionBuilder.prototype.enableBitcoinGold = function (enable) {
   } else {
     // Only change to the default coin if the target coin was set, otherwise, leave the current coin. This is to avoid
     // disabling a coin that was not set in the first place.
-    this.network = (coins.isBitcoinGold(this.network.coin) ? networks['bitcoin'] : this.network)
+    this.network = (coins.isBitcoinGold(this.network) ? networks['bitcoin'] : this.network)
   }
 }
 
@@ -529,28 +529,28 @@ TransactionBuilder.prototype.setLockTime = function (locktime) {
 TransactionBuilder.prototype.setVersion = function (version, overwinter = true) {
   typeforce(types.UInt32, version)
 
-  if (coins.isZcash(this.network.coin)) {
+  if (coins.isZcash(this.network)) {
     this.tx.overwintered = (overwinter ? 1 : 0)
   }
   this.tx.version = version
 }
 
 TransactionBuilder.prototype.maybeSetVersionGroupId = function (versionGroupId) {
-  if (versionGroupId && coins.isZcash(this.network.coin)) {
+  if (versionGroupId && coins.isZcash(this.network)) {
     typeforce(types.UInt32, versionGroupId)
     this.tx.versionGroupId = versionGroupId
   }
 }
 
 TransactionBuilder.prototype.maybeSetExpiryHeight = function (expiryHeight) {
-  if (expiryHeight && coins.isZcash(this.network.coin)) {
+  if (expiryHeight && coins.isZcash(this.network)) {
     typeforce(types.UInt32, expiryHeight)
     this.tx.expiryHeight = expiryHeight
   }
 }
 
 TransactionBuilder.prototype.maybeSetJoinSplits = function (transaction) {
-  if (transaction.joinsplits && coins.isZcash(this.network.coin)) {
+  if (transaction.joinsplits && coins.isZcash(this.network)) {
     this.tx.joinsplits = transaction.joinsplits.map(function (txJoinsplit) {
       return {
         vpubOld: txJoinsplit.vpubOld,
@@ -584,7 +584,7 @@ TransactionBuilder.fromTransaction = function (transaction, network, forkId) {
     }
   }
 
-  if (txb.network.coin !== transaction.coin) {
+  if (txb.network.coin !== transaction.network.coin) {
     throw new Error('This transaction is not compatible with the transaction builder')
   }
 
@@ -791,12 +791,12 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
 
   // ready to sign
   var signatureHash
-  if (coins.isBitcoinGold(this.network.coin)) {
+  if (coins.isBitcoinGold(this.network)) {
     signatureHash = this.tx.hashForGoldSignature(vin, input.signScript, witnessValue, hashType, input.witness)
-  } else if (coins.isBitcoinCash(this.network.coin)) {
+  } else if (coins.isBitcoinCash(this.network)) {
     signatureHash = this.tx.hashForCashSignature(vin, input.signScript, witnessValue, hashType)
-  } else if (coins.isZcash(this.network.coin)) {
-    signatureHash = this.tx.hashForZcashSignature(vin, input.signScript, witnessValue, hashType, this.network.consensusBranchId)
+  } else if (coins.isZcash(this.network)) {
+    signatureHash = this.tx.hashForZcashSignature(vin, input.signScript, witnessValue, hashType)
   } else {
     if (input.witness) {
       signatureHash = this.tx.hashForWitnessV0(vin, input.signScript, witnessValue, hashType)
