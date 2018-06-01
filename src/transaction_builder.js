@@ -3,6 +3,7 @@ var baddress = require('./address')
 var bcrypto = require('./crypto')
 var bscript = require('./script')
 var btemplates = require('./templates')
+var coins = require('./coins')
 var networks = require('./networks')
 var ops = require('bitcoin-ops')
 var typeforce = require('typeforce')
@@ -478,6 +479,7 @@ function buildInput (input, allowIncomplete) {
   }
 }
 
+// By default, assume is a bitcoin transaction
 function TransactionBuilder (network, maximumFeeRate) {
   this.prevTxMap = {}
   this.network = network || networks.bitcoin
@@ -486,25 +488,42 @@ function TransactionBuilder (network, maximumFeeRate) {
   this.maximumFeeRate = maximumFeeRate || 2500
 
   this.inputs = []
-  this.bitcoinCash = false
-  this.bitcoinGold = false
-  this.tx = new Transaction()
+  this.tx = new Transaction(this.network.coin)
 }
 
 TransactionBuilder.prototype.enableBitcoinCash = function (enable) {
   if (typeof enable === 'undefined') {
     enable = true
   }
-
-  this.bitcoinCash = enable
+  this.enableCoin(coins.BCH, enable)
 }
 
 TransactionBuilder.prototype.enableBitcoinGold = function (enable) {
   if (typeof enable === 'undefined') {
     enable = true
   }
+  this.enableCoin(coins.BTG, enable)
+}
 
-  this.bitcoinGold = enable
+TransactionBuilder.prototype.enableZcash = function (enable) {
+  if (typeof enable === 'undefined') {
+    enable = true
+  }
+  this.enableCoin(coins.ZEC, enable)
+}
+
+TransactionBuilder.prototype.enableCoin = function (coin, enable) {
+  if (!coins.isValidCoin(coin)) {
+    throw new Error(coin + ' is not a valid type of coin')
+  }
+  typeforce(types.Boolean, enable)
+  if (enable) {
+    this.coin = coin
+  } else {
+    // Only change to the default coin if the target coin was set, otherwise, leave the current coin. This is to avoid
+    // disabling a coin that was not set in the first place.
+    this.coin = (coins.isZcash(this.coin) ? coin : this.coin)
+  }
 }
 
 TransactionBuilder.prototype.setLockTime = function (locktime) {
@@ -522,16 +541,35 @@ TransactionBuilder.prototype.setLockTime = function (locktime) {
   this.tx.locktime = locktime
 }
 
-TransactionBuilder.prototype.setVersion = function (version) {
+TransactionBuilder.prototype.setVersion = function (version, overwinter = true) {
   typeforce(types.UInt32, version)
 
-  // XXX: this might eventually become more complex depending on what the versions represent
+  if (coins.isZcash(this.coin)) {
+    typeforce(types.Boolean, overwinter)
+    this.tx.overwintered = (overwinter ? 1 : 0)
+  }
   this.tx.version = version
 }
 
-TransactionBuilder.fromTransaction = function (transaction, network, forkId) {
-  var txb = new TransactionBuilder(network)
+TransactionBuilder.prototype.maybeSetVersionGroupId = function (versionGroupId = 0x03C48270) {
+  if (coins.isZcash(this.coin)) {
+    typeforce(types.Hex, versionGroupId)
+    this.tx.versionGroupId = versionGroupId
+  }
+}
 
+TransactionBuilder.prototype.maybeSetExpiryHeight = function (expiryHeight) {
+  if (coins.isZcash(this.coin)) {
+    typeforce(types.UInt32, expiryHeight)
+    this.tx.expiryHeight = expiryHeight
+  }
+}
+
+TransactionBuilder.fromTransaction = function (transaction, network, forkId) {
+  var txbNetwork = network || networks.bitcoin
+  var txb = new TransactionBuilder(txbNetwork)
+
+  // The forkId can change the coin type of the transaction builder
   if (typeof forkId === 'number') {
     if (forkId === Transaction.FORKID_BTG) {
       txb.enableBitcoinGold(true)
@@ -540,9 +578,17 @@ TransactionBuilder.fromTransaction = function (transaction, network, forkId) {
     }
   }
 
+  if (txb.network.coin !== transaction.coin) {
+    throw new Error('This transaction is not compatible with the transaction builder')
+  }
+
   // Copy transaction fields
-  txb.setVersion(transaction.version)
+  txb.setVersion(transaction.version, transaction.overwintered)
   txb.setLockTime(transaction.locktime)
+
+  // Copy Zcash overwinter fields. If the transaction builder is not for Zcash, they will be omitted
+  txb.maybeSetVersionGroupId(transaction.versionGroupId)
+  txb.maybeSetExpiryHeight(transaction.expiryHeight)
 
   // Copy outputs (done first to avoid signature invalidation)
   transaction.outs.forEach(function (txOut) {
@@ -736,10 +782,12 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
 
   // ready to sign
   var signatureHash
-  if (this.bitcoinGold) {
+  if (coins.isBitcoinGold(this.coin)) {
     signatureHash = this.tx.hashForGoldSignature(vin, input.signScript, witnessValue, hashType, input.witness)
-  } else if (this.bitcoinCash) {
+  } else if (coins.isBitcoinCash(this.coin)) {
     signatureHash = this.tx.hashForCashSignature(vin, input.signScript, witnessValue, hashType)
+  } else if (coins.isZcash(this.coin)) {
+    signatureHash = this.hashForZcashSignature(vin, input.signScript, witnessValue, hashType, this.network.consensusBranchId)
   } else {
     if (input.witness) {
       signatureHash = this.tx.hashForWitnessV0(vin, input.signScript, witnessValue, hashType)
