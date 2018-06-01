@@ -1,5 +1,6 @@
 // https://en.bitcoin.it/wiki/List_of_address_prefixes
 // Dogecoin BIP32 is a proposed standard: https://bitcointalk.org/index.php?topic=409731
+var coins = require('./coins')
 
 module.exports = {
   zcash: {
@@ -11,7 +12,9 @@ module.exports = {
     },
     pubKeyHash: 0x1cb8,
     scriptHash: 0x1cbd,
-    wif: 0x80
+    wif: 0x80,
+    consensusBranchId: 0x5ba81b19,
+    coin: coins.ZEC
   },
   zcashTest: {
     messagePrefix: '\x18ZCash Signed Message:\n',
@@ -22,7 +25,9 @@ module.exports = {
     },
     pubKeyHash: 0x1d25,
     scriptHash: 0x1cba,
-    wif: 0xef
+    wif: 0xef,
+    consensusBranchId: 0x5ba81b19,
+    coin: coins.ZEC
   },
   bitcoingold: {
     messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
@@ -32,7 +37,8 @@ module.exports = {
     },
     pubKeyHash: 0x26,
     scriptHash: 0x17,
-    wif: 0x80
+    wif: 0x80,
+    coin: coins.BTG
   },
   bitcoin: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -43,7 +49,8 @@ module.exports = {
     },
     pubKeyHash: 0x00,
     scriptHash: 0x05,
-    wif: 0x80
+    wif: 0x80,
+    coin: coins.BTC
   },
   testnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -54,7 +61,8 @@ module.exports = {
     },
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
-    wif: 0xef
+    wif: 0xef,
+    coin: coins.BTC
   },
   litecoin: {
     messagePrefix: '\x19Litecoin Signed Message:\n',
@@ -64,6 +72,7 @@ module.exports = {
     },
     pubKeyHash: 0x30,
     scriptHash: 0x32,
-    wif: 0xb0
+    wif: 0xb0,
+    coin: coins.LTC
   }
 }

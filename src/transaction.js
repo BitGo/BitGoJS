@@ -71,7 +71,7 @@ Transaction.ZCASH_NOTECIPHERTEXT_SIZE = 1 + 8 + 32 + 32 + 512 + 16
 Transaction.ZCASH_G1_PREFIX_MASK = 0x02
 Transaction.ZCASH_G2_PREFIX_MASK = 0x0a
 
-Transaction.fromBuffer = function (buffer, coin, __noStrict) {
+Transaction.fromBuffer = function (buffer, coin = coins.BTC, __noStrict) {
   var offset = 0
   function readSlice (n) {
     offset += n
