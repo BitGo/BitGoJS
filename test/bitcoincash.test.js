@@ -23,7 +23,7 @@ describe('TransactionBuilder', function () {
     var txb = new TransactionBuilder(network)
     txb.addInput(txid, vout, Transaction.DEFAULT_SEQUENCE, spk)
     txb.addOutput('mzDktdwPcWwqg8aZkPotx6aYi4mKvDD7ay', value)
-    txb.enableBitcoinCash(true)
+    network.coin = 'bch'
     txb.setVersion(2)
 
     var hashType = Transaction.SIGHASH_ALL | Transaction.SIGHASH_BITCOINCASHBIP143

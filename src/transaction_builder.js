@@ -488,7 +488,7 @@ function TransactionBuilder (network, maximumFeeRate) {
   this.maximumFeeRate = maximumFeeRate || 2500
 
   this.inputs = []
-  this.tx = new Transaction(this.network.coin)
+  this.tx = new Transaction(this.network)
 }
 
 TransactionBuilder.prototype.enableBitcoinCash = function (enable) {

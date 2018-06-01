@@ -54,7 +54,7 @@ Block.fromBuffer = function (buffer) {
   }
 
   function readTransaction () {
-    var tx = Transaction.fromBuffer(buffer.slice(offset), null, true)
+    var tx = Transaction.fromBuffer(buffer.slice(offset), undefined, true)
     offset += tx.byteLength()
     return tx
   }
