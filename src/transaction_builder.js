@@ -544,7 +544,7 @@ TransactionBuilder.prototype.setLockTime = function (locktime) {
 TransactionBuilder.prototype.setVersion = function (version, overwinter = true) {
   typeforce(types.UInt32, version)
 
-  if (coins.isZcash(this.coin)) {
+  if (coins.isZcash(this.network.coin)) {
     typeforce(types.Boolean, overwinter)
     this.tx.overwintered = (overwinter ? 1 : 0)
   }
@@ -552,14 +552,14 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
 }
 
 TransactionBuilder.prototype.maybeSetVersionGroupId = function (versionGroupId = 0x03C48270) {
-  if (coins.isZcash(this.coin)) {
+  if (coins.isZcash(this.network.coin)) {
     typeforce(types.Hex, versionGroupId)
     this.tx.versionGroupId = versionGroupId
   }
 }
 
 TransactionBuilder.prototype.maybeSetExpiryHeight = function (expiryHeight) {
-  if (coins.isZcash(this.coin)) {
+  if (coins.isZcash(this.network.coin)) {
     typeforce(types.UInt32, expiryHeight)
     this.tx.expiryHeight = expiryHeight
   }
@@ -782,11 +782,11 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
 
   // ready to sign
   var signatureHash
-  if (coins.isBitcoinGold(this.coin)) {
+  if (coins.isBitcoinGold(this.network.coin)) {
     signatureHash = this.tx.hashForGoldSignature(vin, input.signScript, witnessValue, hashType, input.witness)
-  } else if (coins.isBitcoinCash(this.coin)) {
+  } else if (coins.isBitcoinCash(this.network.coin)) {
     signatureHash = this.tx.hashForCashSignature(vin, input.signScript, witnessValue, hashType)
-  } else if (coins.isZcash(this.coin)) {
+  } else if (coins.isZcash(this.network.coin)) {
     signatureHash = this.hashForZcashSignature(vin, input.signScript, witnessValue, hashType, this.network.consensusBranchId)
   } else {
     if (input.witness) {
