@@ -595,7 +595,7 @@ TransactionBuilder.fromTransaction = function (transaction, network, forkId) {
   // Copy Zcash overwinter fields. If the transaction builder is not for Zcash, they will be omitted
   txb.maybeSetVersionGroupId(transaction.versionGroupId)
   txb.maybeSetExpiryHeight(transaction.expiryHeight)
-  // We don't support protected transactions but we copy the joinsplits just to be consistent. However, the transaction
+  // We don't support protected transactions but we copy the joinsplits for consistency. However, the transaction
   // builder will fail when we try to sign one of these transactions
   txb.maybeSetJoinSplits(transaction)
 

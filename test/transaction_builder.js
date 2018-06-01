@@ -20,6 +20,8 @@ function construct (f, dontSign) {
 
   if (f.version !== undefined) txb.setVersion(f.version)
   if (f.locktime !== undefined) txb.setLockTime(f.locktime)
+  if (f.expiryHeight !== undefined) txb.maybeSetExpiryHeight(f.expiryHeight)
+  if (f.versionGroupId !== undefined) txb.maybeSetVersionGroupId(f.versionGroupId)
 
   f.inputs.forEach(function (input) {
     var prevTx
@@ -149,6 +151,36 @@ describe('TransactionBuilder', function () {
         assert.equal(txb.tx.joinsplits.length, testData.joinsplitsLength)
         assert.equal(txb.tx.joinsplitPubkey.length, testData.joinsplitPubkeyLength)
         assert.equal(txb.tx.joinsplitSig.length, testData.joinsplitSigLength)
+      })
+
+      it('throws if transaction builder network is incompatible for ' + testData.description, function () {
+        var errorMessage = 'This transaction is not compatible with the transaction builder'
+        var tx = Transaction.fromHex(testData.hex, NETWORKS.zcash.coin)
+
+        // Zcash transaction but different network
+        assert.throws(function () {
+          TransactionBuilder.fromTransaction(tx)
+        }, new RegExp(errorMessage))
+
+        assert.throws(function () {
+          TransactionBuilder.fromTransaction(tx, NETWORKS.bitcoincash)
+        }, new RegExp(errorMessage))
+
+        assert.throws(function () {
+          TransactionBuilder.fromTransaction(tx, NETWORKS.bitcoingold)
+        }, new RegExp(errorMessage))
+
+        assert.throws(function () {
+          TransactionBuilder.fromTransaction(tx, NETWORKS.bitcoin)
+        }, new RegExp(errorMessage))
+
+        assert.throws(function () {
+          TransactionBuilder.fromTransaction(tx, NETWORKS.litecoin)
+        }, new RegExp(errorMessage))
+
+        assert.throws(function () {
+          TransactionBuilder.fromTransaction(tx, NETWORKS.testnet)
+        }, new RegExp(errorMessage))
       })
     })
 
