@@ -545,7 +545,6 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
   typeforce(types.UInt32, version)
 
   if (coins.isZcash(this.network.coin)) {
-    typeforce(types.Boolean, overwinter)
     this.tx.overwintered = (overwinter ? 1 : 0)
   }
   this.tx.version = version
