@@ -312,7 +312,7 @@ class Bch extends AbstractUtxoCoin {
         xprv
       } = params;
 
-      const allowedRecoveryCoins = ['btc'];
+      const allowedRecoveryCoins = ['btc', 'ltc'];
 
       if (!allowedRecoveryCoins.includes(coin)) {
         throw new Error(`bch recoveries not supported for ${coin}`);

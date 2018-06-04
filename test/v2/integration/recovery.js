@@ -80,5 +80,35 @@ describe('V2 Recoveries', function() {
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
     }));
+
+    /*
+    NOTE: The TBCH indexer is offline since the May 2018 hardfork (as of June 1, 2018). This test will not succeed
+          until the indexer issues are resolved. The BCH to LTC recovery route has been tested on the main BCH chain.
+    TODO: This test is not finished. Once the TBCH indexer is online, an invalid transaction will need to be
+          attempted in order to determine values for the txid, recoveryAmount, and txHex values.
+    */
+
+    /*
+    it('should recover BCH sent to LTC', co(function *() {
+      const recovery = yield bitgo.coin('tbch').recoverFromWrongChain({
+        coin: 'ltc',
+        txid: '',
+        recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
+        wallet: '5abacebe28d72fbd07e0b8cbba0ff39e',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE
+      });
+
+      should.exist(recovery);
+      recovery.recoveryAddress.should.equal('2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2');
+      recovery.recoveryAmount.should.equal();
+      recovery.recoveryCoin.should.equal('tltc');
+      recovery.sourceCoin.should.equal('tbch');
+      recovery.txHex.should.equal();
+      recovery.walletId.should.equal('5abacebe28d72fbd07e0b8cbba0ff39e');
+      recovery.should.have.property('txInfo');
+      recovery.txInfo.should.have.property('unspents');
+      recovery.txInfo.should.have.property('inputs');
+    }));
+    */
   });
 });
