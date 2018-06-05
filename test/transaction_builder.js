@@ -2,6 +2,7 @@
 
 var assert = require('assert')
 var baddress = require('../src/address')
+var coins = require('../src/coins')
 var bscript = require('../src/script')
 var btemplates = require('../src/templates')
 var ops = require('bitcoin-ops')
@@ -205,130 +206,145 @@ describe('TransactionBuilder', function () {
     })
   })
 
-  describe('addInput', function () {
-    var txb
-    beforeEach(function () {
-      txb = new TransactionBuilder()
-    })
+  var networksToTest = ['bitcoin', 'bitcoingold', 'bitcoincash', 'zcashTest']
+  networksToTest.forEach(function (network) {
+    describe('addInput for ' + network, function () {
+      var testNetwork = NETWORKS[network]
+      var txb
+      var testKeyPair = new ECPair(BigInteger.ONE, undefined, { network: testNetwork })
+      beforeEach(function () {
+        txb = new TransactionBuilder(testNetwork)
+        if (coins.isZcash(testNetwork)) {
+          txb.setVersion(3)
+        }
+      })
 
-    it('accepts a txHash, index [and sequence number]', function () {
-      var vin = txb.addInput(txHash, 1, 54)
-      assert.strictEqual(vin, 0)
+      it('accepts a txHash, index [and sequence number]', function () {
+        var vin = txb.addInput(txHash, 1, 54)
+        assert.strictEqual(vin, 0)
 
-      var txIn = txb.tx.ins[0]
-      assert.strictEqual(txIn.hash, txHash)
-      assert.strictEqual(txIn.index, 1)
-      assert.strictEqual(txIn.sequence, 54)
-      assert.strictEqual(txb.inputs[0].prevOutScript, undefined)
-    })
+        var txIn = txb.tx.ins[0]
+        assert.strictEqual(txIn.hash, txHash)
+        assert.strictEqual(txIn.index, 1)
+        assert.strictEqual(txIn.sequence, 54)
+        assert.strictEqual(txb.inputs[0].prevOutScript, undefined)
+      })
 
-    it('accepts a txHash, index [, sequence number and scriptPubKey]', function () {
-      var vin = txb.addInput(txHash, 1, 54, scripts[1])
-      assert.strictEqual(vin, 0)
+      it('accepts a txHash, index [, sequence number and scriptPubKey]', function () {
+        var vin = txb.addInput(txHash, 1, 54, scripts[1])
+        assert.strictEqual(vin, 0)
 
-      var txIn = txb.tx.ins[0]
-      assert.strictEqual(txIn.hash, txHash)
-      assert.strictEqual(txIn.index, 1)
-      assert.strictEqual(txIn.sequence, 54)
-      assert.strictEqual(txb.inputs[0].prevOutScript, scripts[1])
-    })
+        var txIn = txb.tx.ins[0]
+        assert.strictEqual(txIn.hash, txHash)
+        assert.strictEqual(txIn.index, 1)
+        assert.strictEqual(txIn.sequence, 54)
+        assert.strictEqual(txb.inputs[0].prevOutScript, scripts[1])
+      })
 
-    it('accepts a prevTx, index [and sequence number]', function () {
-      var prevTx = new Transaction()
-      prevTx.addOutput(scripts[0], 0)
-      prevTx.addOutput(scripts[1], 1)
+      it('accepts a prevTx, index [and sequence number]', function () {
+        var prevTx = new Transaction()
+        prevTx.addOutput(scripts[0], 0)
+        prevTx.addOutput(scripts[1], 1)
 
-      var vin = txb.addInput(prevTx, 1, 54)
-      assert.strictEqual(vin, 0)
+        var vin = txb.addInput(prevTx, 1, 54)
+        assert.strictEqual(vin, 0)
 
-      var txIn = txb.tx.ins[0]
-      assert.deepEqual(txIn.hash, prevTx.getHash())
-      assert.strictEqual(txIn.index, 1)
-      assert.strictEqual(txIn.sequence, 54)
-      assert.strictEqual(txb.inputs[0].prevOutScript, scripts[1])
-    })
+        var txIn = txb.tx.ins[0]
+        assert.deepEqual(txIn.hash, prevTx.getHash())
+        assert.strictEqual(txIn.index, 1)
+        assert.strictEqual(txIn.sequence, 54)
+        assert.strictEqual(txb.inputs[0].prevOutScript, scripts[1])
+      })
 
-    it('returns the input index', function () {
-      assert.strictEqual(txb.addInput(txHash, 0), 0)
-      assert.strictEqual(txb.addInput(txHash, 1), 1)
-    })
+      it('returns the input index', function () {
+        assert.strictEqual(txb.addInput(txHash, 0), 0)
+        assert.strictEqual(txb.addInput(txHash, 1), 1)
+      })
 
-    it('throws if SIGHASH_ALL has been used to sign any existing scriptSigs', function () {
-      txb.addInput(txHash, 0)
-      txb.sign(0, keyPair)
-
-      assert.throws(function () {
+      it('throws if SIGHASH_ALL has been used to sign any existing scriptSigs', function () {
         txb.addInput(txHash, 0)
-      }, /No, this would invalidate signatures/)
+        txb.sign(0, testKeyPair, undefined, undefined, 0)
+
+        assert.throws(function () {
+          txb.addInput(txHash, 0)
+        }, /No, this would invalidate signatures/)
+      })
     })
   })
 
-  describe('addOutput', function () {
-    var txb
-    beforeEach(function () {
-      txb = new TransactionBuilder()
-    })
+  networksToTest.forEach(function (network) {
+    describe('addOutput for ' + network, function () {
+      var testNetwork = NETWORKS[network]
+      var txb
+      var testKeyPair = new ECPair(BigInteger.ONE, undefined, { network: testNetwork })
+      beforeEach(function () {
+        txb = new TransactionBuilder(testNetwork)
+        if (coins.isZcash(testNetwork)) {
+          txb.setVersion(3)
+        }
+      })
 
-    it('accepts an address string and value', function () {
-      var vout = txb.addOutput(keyPair.getAddress(), 1000)
-      assert.strictEqual(vout, 0)
+      it('accepts an address string and value', function () {
+        var vout = txb.addOutput(testKeyPair.getAddress(), 1000)
+        assert.strictEqual(vout, 0)
 
-      var txout = txb.tx.outs[0]
-      assert.deepEqual(txout.script, scripts[0])
-      assert.strictEqual(txout.value, 1000)
-    })
+        var txout = txb.tx.outs[0]
+        assert.deepEqual(txout.script, scripts[0])
+        assert.strictEqual(txout.value, 1000)
+      })
 
-    it('accepts a ScriptPubKey and value', function () {
-      var vout = txb.addOutput(scripts[0], 1000)
-      assert.strictEqual(vout, 0)
+      it('accepts a ScriptPubKey and value', function () {
+        var vout = txb.addOutput(scripts[0], 1000)
+        assert.strictEqual(vout, 0)
 
-      var txout = txb.tx.outs[0]
-      assert.deepEqual(txout.script, scripts[0])
-      assert.strictEqual(txout.value, 1000)
-    })
+        var txout = txb.tx.outs[0]
+        assert.deepEqual(txout.script, scripts[0])
+        assert.strictEqual(txout.value, 1000)
+      })
 
-    it('throws if address is of the wrong network', function () {
-      assert.throws(function () {
-        txb.addOutput('2NGHjvjw83pcVFgMcA7QvSMh2c246rxLVz9', 1000)
-      }, /2NGHjvjw83pcVFgMcA7QvSMh2c246rxLVz9 has no matching Script/)
-    })
+      it('throws if address is of the wrong network', function () {
+        assert.throws(function () {
+          txb.addOutput('2NGHjvjw83pcVFgMcA7QvSMh2c246rxLVz9', 1000)
+        }, /2NGHjvjw83pcVFgMcA7QvSMh2c246rxLVz9 has no matching Script/)
+      })
 
-    it('add second output after signed first input with SIGHASH_NONE', function () {
-      txb.addInput(txHash, 0)
-      txb.addOutput(scripts[0], 2000)
-      txb.sign(0, keyPair, undefined, Transaction.SIGHASH_NONE)
-      assert.equal(txb.addOutput(scripts[1], 9000), 1)
-    })
-
-    it('add first output after signed first input with SIGHASH_NONE', function () {
-      txb.addInput(txHash, 0)
-      txb.sign(0, keyPair, undefined, Transaction.SIGHASH_NONE)
-      assert.equal(txb.addOutput(scripts[0], 2000), 0)
-    })
-
-    it('add second output after signed first input with SIGHASH_SINGLE', function () {
-      txb.addInput(txHash, 0)
-      txb.addOutput(scripts[0], 2000)
-      txb.sign(0, keyPair, undefined, Transaction.SIGHASH_SINGLE)
-      assert.equal(txb.addOutput(scripts[1], 9000), 1)
-    })
-
-    it('add first output after signed first input with SIGHASH_SINGLE', function () {
-      txb.addInput(txHash, 0)
-      txb.sign(0, keyPair, undefined, Transaction.SIGHASH_SINGLE)
-      assert.throws(function () {
+      it('add second output after signed first input with SIGHASH_NONE', function () {
+        txb.addInput(txHash, 0)
         txb.addOutput(scripts[0], 2000)
-      }, /No, this would invalidate signatures/)
-    })
+        txb.sign(0, testKeyPair, undefined, Transaction.SIGHASH_NONE, 0)
+        assert.equal(txb.addOutput(scripts[1], 9000), 1)
+      })
 
-    it('throws if SIGHASH_ALL has been used to sign any existing scriptSigs', function () {
-      txb.addInput(txHash, 0)
-      txb.addOutput(scripts[0], 2000)
-      txb.sign(0, keyPair)
+      it('add first output after signed first input with SIGHASH_NONE', function () {
+        txb.addInput(txHash, 0)
+        txb.sign(0, testKeyPair, undefined, Transaction.SIGHASH_NONE, 0)
+        assert.equal(txb.addOutput(scripts[0], 2000), 0)
+      })
 
-      assert.throws(function () {
-        txb.addOutput(scripts[1], 9000)
-      }, /No, this would invalidate signatures/)
+      it('add second output after signed first input with SIGHASH_SINGLE', function () {
+        txb.addInput(txHash, 0)
+        txb.addOutput(scripts[0], 2000)
+        txb.sign(0, testKeyPair, undefined, Transaction.SIGHASH_SINGLE, 0)
+        assert.equal(txb.addOutput(scripts[1], 9000), 1)
+      })
+
+      it('add first output after signed first input with SIGHASH_SINGLE', function () {
+        txb.addInput(txHash, 0)
+        txb.sign(0, testKeyPair, undefined, Transaction.SIGHASH_SINGLE, 0)
+        assert.throws(function () {
+          txb.addOutput(scripts[0], 2000)
+        }, /No, this would invalidate signatures/)
+      })
+
+      it('throws if SIGHASH_ALL has been used to sign any existing scriptSigs', function () {
+        txb.addInput(txHash, 0)
+        txb.addOutput(scripts[0], 2000)
+        txb.sign(0, testKeyPair, undefined, undefined, 0)
+
+        assert.throws(function () {
+          txb.addOutput(scripts[1], 9000)
+        }, /No, this would invalidate signatures/)
+      })
     })
   })
 
