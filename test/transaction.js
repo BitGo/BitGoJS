@@ -321,14 +321,6 @@ describe('Transaction', function () {
     })
   })
 
-  describe('test', function () {
-    it('test', function () {
-      var txHex = '030000807082c40302ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000b6004730440220797b00bbd7d1a4bf842c6a53653c1ab6c78d6d92a00ae69abef0a321ebe04a8902201765cba901a20438e538ab1c6a4f6fc7f71c69f7f8045ef31bcd35c60b88a0960100004c69522102c906a14ab17d556d369aae073e6b5574202156cc7c2759d98286dfe9c76ac1032102be8869ea63dc7106e8f7b63ae49f74993db3521dff615795e56378f736a0bca82103eb95ea6e1f0c554327f16bdb44f75598546e7e4267e3d03f280b4b1bd675ea5753aeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01000000b60047304402202621614762ef3d816c9fc751f381ffa046cfcecfb313e2920cc6ea1171503b4b022038a0e3cf938b7602490bab7fa996dfabfe64374fd4baa93cf692fb1bb74ec4cc0100004c69522102fe3abd28ca58a13eedf288ebc82fca4d5974e11d3e20d453a3e2bf533770821b21025ceec133b4955fe50f2e1f5dc5b5a3ffd80695d04d7e52d681d06c18d194c36a21024afed6b8d752bf75137e8b9b0fc931d9fec4e9d5abfedbaf978a60061ae31e3e53aeffffffff01102700000000000017a914ee721cc2a149e40e934c7b5ba5229778c1f595d887000000000000000000'
-      var tx = Transaction.fromHex(txHex, networks.zcashTest)
-
-    })
-  })
-
   describe('hashForZcashSignature', function () {
     fixtures.hashForZcashSignature.valid.forEach(function (testData) {
       it('should return ' + testData.hash + ' for ' + testData.description, function () {

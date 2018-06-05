@@ -13,7 +13,8 @@ module.exports = {
     pubKeyHash: 0x00,
     scriptHash: 0x05,
     wif: 0x80,
-    coin: coins.BCH
+    coin: coins.BCH,
+    forkId: 0x00
   },
   zcash: {
     messagePrefix: '\x18ZCash Signed Message:\n',
@@ -50,7 +51,8 @@ module.exports = {
     pubKeyHash: 0x26,
     scriptHash: 0x17,
     wif: 0x80,
-    coin: coins.BTG
+    coin: coins.BTG,
+    forkId: 0x4F /* 79 */
   },
   bitcoin: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',

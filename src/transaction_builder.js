@@ -175,10 +175,11 @@ function expandInput (scriptSig, witnessStack) {
 }
 
 // could be done in expandInput, but requires the original Transaction for hashForSignature
-function fixMultisigOrder (input, transaction, vin, value, forkId) {
+function fixMultisigOrder (input, transaction, vin, value, network) {
   if (input.redeemScriptType !== scriptTypes.MULTISIG || !input.redeemScript) return
   if (input.pubKeys.length === input.signatures.length) return
 
+  network = network || networks.bitcoin
   var unmatched = input.signatures.concat()
 
   input.signatures = input.pubKeys.map(function (pubKey) {
@@ -193,12 +194,18 @@ function fixMultisigOrder (input, transaction, vin, value, forkId) {
       // TODO: avoid O(n) hashForSignature
       var parsed = ECSignature.parseScriptSignature(signature)
       var hash
-      switch (forkId) {
-        case Transaction.FORKID_BCH:
+      switch (network.coin) {
+        case coins.BCH:
           hash = transaction.hashForCashSignature(vin, input.signScript, value, parsed.hashType)
           break
-        case Transaction.FORKID_BTG:
+        case coins.BTG:
           hash = transaction.hashForGoldSignature(vin, input.signScript, value, parsed.hashType)
+          break
+        case coins.ZEC:
+          if (value === undefined) {
+            return false
+          }
+          hash = transaction.hashForZcashSignature(vin, input.signScript, value, parsed.hashType)
           break
         default:
           if (input.witness) {
@@ -491,26 +498,6 @@ function TransactionBuilder (network, maximumFeeRate) {
   this.tx = new Transaction(this.network)
 }
 
-TransactionBuilder.prototype.enableBitcoinCash = function (enable) {
-  if (typeof enable === 'undefined' || enable) {
-    this.network = networks['bitcoincash']
-  } else {
-    // Only change to the default coin if the target coin was set, otherwise, leave the current coin. This is to avoid
-    // disabling a coin that was not set in the first place.
-    this.network = (coins.isBitcoinCash(this.network) ? networks['bitcoin'] : this.network)
-  }
-}
-
-TransactionBuilder.prototype.enableBitcoinGold = function (enable) {
-  if (typeof enable === 'undefined' || enable) {
-    this.network = networks['bitcoingold']
-  } else {
-    // Only change to the default coin if the target coin was set, otherwise, leave the current coin. This is to avoid
-    // disabling a coin that was not set in the first place.
-    this.network = (coins.isBitcoinGold(this.network) ? networks['bitcoin'] : this.network)
-  }
-}
-
 TransactionBuilder.prototype.setLockTime = function (locktime) {
   typeforce(types.UInt32, locktime)
 
@@ -571,21 +558,12 @@ TransactionBuilder.prototype.maybeSetJoinSplits = function (transaction) {
   }
 }
 
-TransactionBuilder.fromTransaction = function (transaction, network, forkId) {
+TransactionBuilder.fromTransaction = function (transaction, network) {
   var txbNetwork = network || networks.bitcoin
   var txb = new TransactionBuilder(txbNetwork)
 
-  // The forkId can change the coin type of the transaction builder
-  if (typeof forkId === 'number') {
-    if (forkId === Transaction.FORKID_BTG) {
-      txb.enableBitcoinGold(true)
-    } else if (forkId === Transaction.FORKID_BCH) {
-      txb.enableBitcoinCash(true)
-    }
-  }
-
   if (txb.network.coin !== transaction.network.coin) {
-    throw new Error('This transaction is not compatible with the transaction builder')
+    throw new Error('This transaction is incompatible with the transaction builder')
   }
 
   // Copy transaction fields
@@ -616,7 +594,7 @@ TransactionBuilder.fromTransaction = function (transaction, network, forkId) {
 
   // fix some things not possible through the public API
   txb.inputs.forEach(function (input, i) {
-    fixMultisigOrder(input, transaction, i, input.value, forkId)
+    fixMultisigOrder(input, transaction, i, input.value, txbNetwork)
   })
 
   return txb

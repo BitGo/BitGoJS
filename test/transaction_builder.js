@@ -154,7 +154,7 @@ describe('TransactionBuilder', function () {
       })
 
       it('throws if transaction builder network is incompatible for ' + testData.description, function () {
-        var errorMessage = 'This transaction is not compatible with the transaction builder'
+        var errorMessage = 'This transaction is incompatible with the transaction builder'
         var tx = Transaction.fromHex(testData.hex, NETWORKS.zcash)
 
         // Zcash transaction but different network
@@ -619,33 +619,6 @@ describe('TransactionBuilder', function () {
       tx.sign(0, keyPair)
       var txId2 = tx.build().getId()
       assert.equal(txId, txId2)
-    })
-  })
-  describe('change network', function () {
-    it('should succeed', function () {
-      var txb = new TransactionBuilder()
-      assert.deepEqual(txb.network, NETWORKS.bitcoin)
-
-      txb.enableBitcoinCash(false)
-      assert.deepEqual(txb.network, NETWORKS.bitcoin)
-
-      txb.enableBitcoinGold(false)
-      assert.deepEqual(txb.network, NETWORKS.bitcoin)
-
-      // BitcoinCash network is the same as Bitcoin but with a different coins property
-      txb.enableBitcoinCash(true)
-      assert.deepEqual(txb.network, NETWORKS.bitcoincash)
-
-      // This is a no-op because BTG is not the current network
-      txb.enableBitcoinGold(false)
-      assert.deepEqual(txb.network, NETWORKS.bitcoincash)
-
-      txb.enableBitcoinGold(true)
-      assert.deepEqual(txb.network, NETWORKS.bitcoingold)
-
-      // This is a no-op because BCH is not the current network
-      txb.enableBitcoinCash(false)
-      assert.deepEqual(txb.network, NETWORKS.bitcoingold)
     })
   })
 })

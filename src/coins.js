@@ -10,27 +10,27 @@ const coins = {
 }
 
 coins.isBitcoin = function (network) {
-  return typeforce.String(network.coin) && network.coin === coins.BTC
+  return typeforce.value(coins.BTC)(network.coin)
 }
 
 coins.isBitcoinCash = function (network) {
-  return typeforce.String(network.coin) && network.coin === coins.BCH
+  return typeforce.value(coins.BCH)(network.coin)
 }
 
 coins.isBitcoinGold = function (network) {
-  return typeforce.String(network.coin) && network.coin === coins.BTG
+  return typeforce.value(coins.BTG)(network.coin)
 }
 
 coins.isLitecoin = function (network) {
-  return typeforce.String(network.coin) && network.coin === coins.LTC
+  return typeforce.value(coins.LTC)(network.coin)
 }
 
 coins.isZcash = function (network) {
-  return typeforce.String(network.coin) && network.coin === coins.ZEC
+  return typeforce.value(coins.ZEC)(network.coin)
 }
 
 coins.isValidCoin = function (network) {
-  return typeforce.String(network.coin) && network.coin in [coins.BTC, coins.BCH, coins.BTG, coins.LTC, coins.ZEC]
+  return typeforce.oneOf(coins.BTC, coins.BCH, coins.BTG, coins.LTC, coins.ZEC)(network.coin)
 }
 
 module.exports = coins

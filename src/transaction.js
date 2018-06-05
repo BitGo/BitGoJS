@@ -50,8 +50,6 @@ Transaction.SIGHASH_ANYONECANPAY = 0x80
 Transaction.SIGHASH_BITCOINCASHBIP143 = 0x40
 Transaction.ADVANCED_TRANSACTION_MARKER = 0x00
 Transaction.ADVANCED_TRANSACTION_FLAG = 0x01
-Transaction.FORKID_BTG = 0x4F // 79
-Transaction.FORKID_BCH = 0x00
 
 var EMPTY_SCRIPT = Buffer.allocUnsafe(0)
 var EMPTY_WITNESS = []
@@ -729,7 +727,7 @@ Transaction.prototype.hashForGoldSignature = function (inIndex, prevOutScript, i
   var nForkHashType = hashType
   var fUseForkId = (hashType & Transaction.SIGHASH_BITCOINCASHBIP143) > 0
   if (fUseForkId) {
-    nForkHashType |= Transaction.FORKID_BTG << 8
+    nForkHashType |= this.network.forkId << 8
   }
 
   // BIP143 sighash activated in BitcoinCash via 0x40 bit

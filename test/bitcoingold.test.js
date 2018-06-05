@@ -24,7 +24,6 @@ describe('TransactionBuilder', function () {
     var txb = new TransactionBuilder(network)
     txb.addInput(txid, vout, Transaction.DEFAULT_SEQUENCE, spk)
     txb.addOutput('GfEHv6hKvAX8HYfFzabMY2eiYDtC9eViqe', value)
-    txb.enableBitcoinGold(true)
     txb.setVersion(2)
 
     var hashType = Transaction.SIGHASH_ALL | Transaction.SIGHASH_BITCOINCASHBIP143
@@ -43,7 +42,7 @@ describe('TransactionBuilder', function () {
     var tx = Transaction.fromHex(txHex, network)
     tx.ins[0].value = value
 
-    var txb = TransactionBuilder.fromTransaction(tx, network, Transaction.FORKID_BTG)
+    var txb = TransactionBuilder.fromTransaction(tx, network)
 
     assert.equal(undefined, txb.inputs[0].signatures[0])
     assert.equal(
@@ -62,7 +61,7 @@ describe('TransactionBuilder', function () {
     var tx = Transaction.fromHex(txHex, network)
     tx.ins[0].value = value
 
-    var txb = TransactionBuilder.fromTransaction(tx, network, Transaction.FORKID_BTG)
+    var txb = TransactionBuilder.fromTransaction(tx, network)
 
     assert.equal(
       '3044022025cb6ee7a63c7403645be2ed4ffcf9cd41d773ee3ba57a05dc335c4427f647660220323a038daac698efdc700ffa8d90e6641ed9eb4ab82808df0506a9da08863d2941',
