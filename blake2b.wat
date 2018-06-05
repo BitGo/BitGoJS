@@ -6,43 +6,43 @@
     ;; setup param block (expect memory to be cleared)
 
     ;; b array: 0-128
-    (i64.store (get_local $ptr) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 8)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 16)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 24)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 32)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 40)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 48)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 56)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 64)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 72)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 80)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 88)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 96)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 104)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 112)) (i64.const 0))
-    (i64.store (i32.add (get_local $ptr) (i32.const 120)) (i64.const 0))
+    (i64.store offset=0 (get_local $ptr) (i64.const 0))
+    (i64.store offset=8 (get_local $ptr) (i64.const 0))
+    (i64.store offset=16 (get_local $ptr) (i64.const 0))
+    (i64.store offset=24 (get_local $ptr) (i64.const 0))
+    (i64.store offset=32 (get_local $ptr) (i64.const 0))
+    (i64.store offset=40 (get_local $ptr) (i64.const 0))
+    (i64.store offset=48 (get_local $ptr) (i64.const 0))
+    (i64.store offset=56 (get_local $ptr) (i64.const 0))
+    (i64.store offset=64 (get_local $ptr) (i64.const 0))
+    (i64.store offset=72 (get_local $ptr) (i64.const 0))
+    (i64.store offset=80 (get_local $ptr) (i64.const 0))
+    (i64.store offset=88 (get_local $ptr) (i64.const 0))
+    (i64.store offset=96 (get_local $ptr) (i64.const 0))
+    (i64.store offset=104 (get_local $ptr) (i64.const 0))
+    (i64.store offset=112 (get_local $ptr) (i64.const 0))
+    (i64.store offset=120 (get_local $ptr) (i64.const 0))
 
     ;; h array: 128-192, (8 * i64)
     ;; TODO: support xor against param block and stuff, for now just xor against length
 
-    (i64.store (i32.add (get_local $ptr) (i32.const 128)) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.load (i32.const 0))))
-    (i64.store (i32.add (get_local $ptr) (i32.const 136)) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.load (i32.const 8))))
-    (i64.store (i32.add (get_local $ptr) (i32.const 144)) (i64.xor (i64.const 0x3c6ef372fe94f82b) (i64.load (i32.const 16))))
-    (i64.store (i32.add (get_local $ptr) (i32.const 152)) (i64.xor (i64.const 0xa54ff53a5f1d36f1) (i64.load (i32.const 24))))
-    (i64.store (i32.add (get_local $ptr) (i32.const 160)) (i64.xor (i64.const 0x510e527fade682d1) (i64.load (i32.const 32))))
-    (i64.store (i32.add (get_local $ptr) (i32.const 168)) (i64.xor (i64.const 0x9b05688c2b3e6c1f) (i64.load (i32.const 40))))
-    (i64.store (i32.add (get_local $ptr) (i32.const 176)) (i64.xor (i64.const 0x1f83d9abfb41bd6b) (i64.load (i32.const 48))))
-    (i64.store (i32.add (get_local $ptr) (i32.const 184)) (i64.xor (i64.const 0x5be0cd19137e2179) (i64.load (i32.const 56))))
+    (i64.store offset=128 (get_local $ptr) (i64.xor (i64.const 0x6a09e667f3bcc908) (i64.load (i32.const 0))))
+    (i64.store offset=136 (get_local $ptr) (i64.xor (i64.const 0xbb67ae8584caa73b) (i64.load (i32.const 8))))
+    (i64.store offset=144 (get_local $ptr) (i64.xor (i64.const 0x3c6ef372fe94f82b) (i64.load (i32.const 16))))
+    (i64.store offset=152 (get_local $ptr) (i64.xor (i64.const 0xa54ff53a5f1d36f1) (i64.load (i32.const 24))))
+    (i64.store offset=160 (get_local $ptr) (i64.xor (i64.const 0x510e527fade682d1) (i64.load (i32.const 32))))
+    (i64.store offset=168 (get_local $ptr) (i64.xor (i64.const 0x9b05688c2b3e6c1f) (i64.load (i32.const 40))))
+    (i64.store offset=176 (get_local $ptr) (i64.xor (i64.const 0x1f83d9abfb41bd6b) (i64.load (i32.const 48))))
+    (i64.store offset=184 (get_local $ptr) (i64.xor (i64.const 0x5be0cd19137e2179) (i64.load (i32.const 56))))
 
     ;; t int.64: 192-200
-    (i64.store (i32.add (get_local $ptr) (i32.const 192)) (i64.const 0))
+    (i64.store offset=192 (get_local $ptr) (i64.const 0))
 
     ;; c int.64: 200-208
-    (i64.store (i32.add (get_local $ptr) (i32.const 200)) (i64.const 0))
+    (i64.store offset=200 (get_local $ptr) (i64.const 0))
 
     ;; f int.64: 208-216
-    (i64.store (i32.add (get_local $ptr) (i32.const 208)) (i64.const 0))
+    (i64.store offset=208 (get_local $ptr) (i64.const 0))
   )
 
   (func (export "blake2b_update") (param $ctx i32) (param $input i32) (param $input_end i32)
@@ -94,7 +94,7 @@
     (i64.store (get_local $t) (i64.add (i64.load (get_local $t)) (i64.load (get_local $c))))
 
     ;; set ctx.f to last_block
-    (i64.store (i32.add (get_local $ctx) (i32.const 208)) (i64.const 0xffffffffffffffff))
+    (i64.store offset=208 (get_local $ctx) (i64.const 0xffffffffffffffff))
 
     ;; i = ctx.c
     (set_local $i (i32.wrap/i64 (i64.load (get_local $c))))
@@ -191,28 +191,28 @@
     (set_local $v15 (i64.const 0x5be0cd19137e2179))
 
     ;; set m[0-16] to ctx[0-128]
-    (set_local $m0 (i64.load (get_local $ctx)))
-    (set_local $m1 (i64.load (i32.add (get_local $ctx) (i32.const 8))))
-    (set_local $m2 (i64.load (i32.add (get_local $ctx) (i32.const 16))))
-    (set_local $m3 (i64.load (i32.add (get_local $ctx) (i32.const 24))))
-    (set_local $m4 (i64.load (i32.add (get_local $ctx) (i32.const 32))))
-    (set_local $m5 (i64.load (i32.add (get_local $ctx) (i32.const 40))))
-    (set_local $m6 (i64.load (i32.add (get_local $ctx) (i32.const 48))))
-    (set_local $m7 (i64.load (i32.add (get_local $ctx) (i32.const 56))))
-    (set_local $m8 (i64.load (i32.add (get_local $ctx) (i32.const 64))))
-    (set_local $m9 (i64.load (i32.add (get_local $ctx) (i32.const 72))))
-    (set_local $m10 (i64.load (i32.add (get_local $ctx) (i32.const 80))))
-    (set_local $m11 (i64.load (i32.add (get_local $ctx) (i32.const 88))))
-    (set_local $m12 (i64.load (i32.add (get_local $ctx) (i32.const 96))))
-    (set_local $m13 (i64.load (i32.add (get_local $ctx) (i32.const 104))))
-    (set_local $m14 (i64.load (i32.add (get_local $ctx) (i32.const 112))))
-    (set_local $m15 (i64.load (i32.add (get_local $ctx) (i32.const 120))))
+    (set_local $m0 (i64.load offset=0 (get_local $ctx)))
+    (set_local $m1 (i64.load offset=8 (get_local $ctx)))
+    (set_local $m2 (i64.load offset=16 (get_local $ctx)))
+    (set_local $m3 (i64.load offset=24 (get_local $ctx)))
+    (set_local $m4 (i64.load offset=32 (get_local $ctx)))
+    (set_local $m5 (i64.load offset=40 (get_local $ctx)))
+    (set_local $m6 (i64.load offset=48 (get_local $ctx)))
+    (set_local $m7 (i64.load offset=56 (get_local $ctx)))
+    (set_local $m8 (i64.load offset=64 (get_local $ctx)))
+    (set_local $m9 (i64.load offset=72 (get_local $ctx)))
+    (set_local $m10 (i64.load offset=80 (get_local $ctx)))
+    (set_local $m11 (i64.load offset=88 (get_local $ctx)))
+    (set_local $m12 (i64.load offset=96 (get_local $ctx)))
+    (set_local $m13 (i64.load offset=104 (get_local $ctx)))
+    (set_local $m14 (i64.load offset=112 (get_local $ctx)))
+    (set_local $m15 (i64.load offset=120 (get_local $ctx)))
 
     ;; v12 = v12 ^ ctx.t
     (set_local $v12
       (i64.xor
         (get_local $v12)
-        (i64.load (i32.add (get_local $ctx) (i32.const 192)))
+        (i64.load offset=192 (get_local $ctx))
       )
     )
 
@@ -220,7 +220,7 @@
     (set_local $v14
       (i64.xor
         (get_local $v14)
-        (i64.load (i32.add (get_local $ctx) (i32.const 208)))
+        (i64.load  offset=208 (get_local $ctx))
       )
     )
 
