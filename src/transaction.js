@@ -32,14 +32,16 @@ function Transaction (network = networks.bitcoin) {
   this.ins = []
   this.outs = []
   this.network = network
-  // ZCash version >= 2
-  this.joinsplits = []
-  this.joinsplitPubkey = []
-  this.joinsplitSig = []
-  // ZCash version >= 3
-  this.overwintered = 0
-  this.versionGroupId = 0  // 0x03C48270 (63210096) for overwinter
-  this.expiryHeight = 0
+  if (coins.isZcash(network)) {
+    // ZCash version >= 2
+    this.joinsplits = []
+    this.joinsplitPubkey = []
+    this.joinsplitSig = []
+    // ZCash version >= 3
+    this.overwintered = 0
+    this.versionGroupId = 0  // 0x03C48270 (63210096) for overwinter
+    this.expiryHeight = 0
+  }
 }
 
 Transaction.DEFAULT_SEQUENCE = 0xffffffff
@@ -136,7 +138,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     }
   }
 
-  var tx = new Transaction()
+  var tx = new Transaction(network)
   tx.version = readInt32()
 
   if (coins.isZcash(network)) {
@@ -369,7 +371,7 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
 }
 
 Transaction.prototype.clone = function () {
-  var newTx = new Transaction()
+  var newTx = new Transaction(this.network)
   newTx.version = this.version
   newTx.locktime = this.locktime
   newTx.network = this.network
@@ -509,7 +511,7 @@ Transaction.prototype.hashForSignature = function (inIndex, prevOutScript, hashT
  * @param personalization
  * @returns 256-bit BLAKE2b hash
  */
-Transaction.prototype.getBlake2bHash = function(bufferToHash, personalization) {
+Transaction.prototype.getBlake2bHash = function (bufferToHash, personalization) {
   var out = Buffer.allocUnsafe(32)
   return blake2b(out.length, null, null, Buffer.from(personalization)).update(bufferToHash).digest(out)
 }

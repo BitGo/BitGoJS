@@ -1,4 +1,4 @@
-/* global describe, it */
+/* global describe, xit */
 
 var assert = require('assert')
 var bscript = require('../src/script')

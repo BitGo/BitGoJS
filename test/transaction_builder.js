@@ -21,8 +21,8 @@ function construct (f, dontSign) {
 
   if (f.version !== undefined) txb.setVersion(f.version)
   if (f.locktime !== undefined) txb.setLockTime(f.locktime)
-  if (f.expiryHeight !== undefined) txb.maybeSetExpiryHeight(f.expiryHeight)
-  if (f.versionGroupId !== undefined) txb.maybeSetVersionGroupId(f.versionGroupId)
+  if (f.expiryHeight !== undefined) txb.setExpiryHeight(f.expiryHeight)
+  if (f.versionGroupId !== undefined) txb.setVersionGroupId(f.versionGroupId)
 
   f.inputs.forEach(function (input) {
     var prevTx
@@ -242,7 +242,7 @@ describe('TransactionBuilder', function () {
       })
 
       it('accepts a prevTx, index [and sequence number]', function () {
-        var prevTx = new Transaction()
+        var prevTx = new Transaction(testNetwork)
         prevTx.addOutput(scripts[0], 0)
         prevTx.addOutput(scripts[1], 1)
 
@@ -509,7 +509,12 @@ describe('TransactionBuilder', function () {
         var network = NETWORKS[f.network]
 
         f.inputs.forEach(function (input, i) {
-          var redeemScript = bscript.fromASM(input.redeemScript)
+          var redeemScript
+          if (input.redeemScript) {
+            redeemScript = bscript.fromASM(input.redeemScript)
+          } else if (input.redeemScriptHex) {
+            redeemScript = Buffer.from(input.redeemScriptHex, 'hex')
+          }
 
           input.signs.forEach(function (sign) {
             // rebuild the transaction each-time after the first
@@ -532,7 +537,7 @@ describe('TransactionBuilder', function () {
             }
 
             var keyPair2 = ECPair.fromWIF(sign.keyPair, network)
-            txb.sign(i, keyPair2, redeemScript, sign.hashType)
+            txb.sign(i, keyPair2, redeemScript, sign.hashType, sign.value)
 
             // update the tx
             tx = txb.buildIncomplete()
