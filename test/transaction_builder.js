@@ -509,7 +509,12 @@ describe('TransactionBuilder', function () {
         var network = NETWORKS[f.network]
 
         f.inputs.forEach(function (input, i) {
-          var redeemScript = bscript.fromASM(input.redeemScript)
+          var redeemScript
+          if (input.redeemScript) {
+            redeemScript = bscript.fromASM(input.redeemScript)
+          } else if (input.redeemScriptHex) {
+            redeemScript = Buffer.from(input.redeemScriptHex, 'hex')
+          }
 
           input.signs.forEach(function (sign) {
             // rebuild the transaction each-time after the first
@@ -532,7 +537,7 @@ describe('TransactionBuilder', function () {
             }
 
             var keyPair2 = ECPair.fromWIF(sign.keyPair, network)
-            txb.sign(i, keyPair2, redeemScript, sign.hashType)
+            txb.sign(i, keyPair2, redeemScript, sign.hashType, sign.value)
 
             // update the tx
             tx = txb.buildIncomplete()
