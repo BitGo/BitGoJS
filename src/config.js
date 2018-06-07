@@ -121,7 +121,8 @@ exports.tokens = {
         { type: 'dew', coin: 'eth', network: 'Mainnet', name: 'Dew', tokenContractAddress: '0x20e94867794dba030ee287f1406e100d03c84cd3', decimalPlaces: 18 },
         { type: 'smt', coin: 'eth', network: 'Mainnet', name: 'SmartMesh', tokenContractAddress: '0x55f93985431fc9304077687a35a1ba103dc1e081', decimalPlaces: 18 },
         { type: 'ruff', coin: 'eth', network: 'Mainnet', name: 'Ruff', tokenContractAddress: '0xf278c1ca969095ffddded020290cf8b5c424ace2', decimalPlaces: 18 },
-        { type: 'ost', coin: 'eth', network: 'Mainnet', name: 'Ost', tokenContractAddress: '0x2c4e8f2d746113d0696ce89b35f0d8bf88e0aeca', decimalPlaces: 18 }
+        { type: 'ost', coin: 'eth', network: 'Mainnet', name: 'Ost', tokenContractAddress: '0x2c4e8f2d746113d0696ce89b35f0d8bf88e0aeca', decimalPlaces: 18 },
+        { type: 'tkx', coin: 'eth', network: 'Mainnet', name: 'Tokenize', tokenContractAddress: '0x667102bd3413bfeaa3dffb48fa8288819e480a88', decimalPlaces: 8 }
       ]
     }
   },
