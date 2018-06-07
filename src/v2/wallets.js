@@ -112,35 +112,17 @@ Wallets.prototype.add = function(params, callback) {
     throw new Error('invalid argument for isCold - boolean expected');
   }
 
+  if (params.isCustodial && !_.isBoolean(params.isCustodial)) {
+    throw new Error('invalid argument for isCustodial - boolean expected');
+  }
+
   // TODO: support more types of multisig
   if (params.m !== 2 || params.n !== 3) {
     throw new Error('unsupported multi-sig type');
   }
 
   const self = this;
-  const walletParams = {
-    label: params.label,
-    m: params.m,
-    n: params.n,
-    keys: params.keys
-  };
-
-  // TODO: replace all IFs with single pick line
-  if (params.enterprise) {
-    walletParams.enterprise = params.enterprise;
-  }
-
-  if (params.isCold) {
-    walletParams.isCold = params.isCold;
-  }
-
-  if (params.tags) {
-    walletParams.tags = params.tags;
-  }
-
-  if (params.clientFlags) {
-    walletParams.clientFlags = params.clientFlags;
-  }
+  const walletParams = _.pick(params, ['label', 'm', 'n', 'keys', 'enterprise', 'isCold', 'isCustodial', 'tags', 'clientFlags']);
 
   // Additional params needed for xrp
   if (params.rootPub) {
