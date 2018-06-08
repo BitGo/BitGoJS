@@ -246,6 +246,25 @@ describe('Recovery:', function() {
       recovery.txInfo.should.have.property('unspents');
       recovery.txInfo.should.have.property('inputs');
     }));
+
+    it('should generate an unsigned recovery transaction', co(function *() {
+      const recovery = yield bitgo.coin('tbtc').recoverFromWrongChain({
+        coin: bitgo.coin('tltc'),
+        txid: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
+        recoveryAddress: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
+        wallet: '5abacebe28d72fbd07e0b8cbba0ff39e',
+        signed: false
+      });
+
+      should.exist(recovery);
+      recovery.txHex.should.equal('0100000001c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410000000000ffffffff01000540010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
+      recovery.walletId.should.equal('5abacebe28d72fbd07e0b8cbba0ff39e');
+      recovery.address.should.equal('2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm');
+      recovery.amount.should.equal(20972800);
+      recovery.coin.should.equal('tbtc');
+      recovery.should.have.property('txInfo');
+      recovery.txInfo.should.have.property('unspents');
+    }));
   });
 
   describe('Recover Ethereum', function() {

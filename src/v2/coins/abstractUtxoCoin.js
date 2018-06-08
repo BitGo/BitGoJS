@@ -1060,6 +1060,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param params.recoveryAddress {String} address to send recovered funds to
    * @param params.wallet {Wallet} the wallet that received the funds
    * @param params.coin {Coin} the coin type of the wallet that received the funds
+   * @param params.signed {Boolean} return a half-signed transaction (default=true)
    * @param params.walletPassphrase {String} the wallet passphrase
    * @param params.xprv {String} the unencrypted xprv (used instead of wallet passphrase)
    * @param callback
@@ -1075,6 +1076,8 @@ class AbstractUtxoCoin extends BaseCoin {
         walletPassphrase,
         xprv
       } = params;
+
+      const signed = params.signed !== false;
 
       const allowedRecoveryCoins = ['ltc', 'bch'];
 
@@ -1095,9 +1098,12 @@ class AbstractUtxoCoin extends BaseCoin {
         recoveryAddress: recoveryAddress
       });
 
-      yield recoveryTool.signTransaction({ passphrase: walletPassphrase, prv: xprv });
-
-      return recoveryTool.export();
+      if (signed) {
+        yield recoveryTool.signTransaction({ passphrase: walletPassphrase, prv: xprv });
+        return recoveryTool.export();
+      } else {
+        return yield recoveryTool.buildUnsigned();
+      }
     }).call(this).asCallback(callback);
   }
 

@@ -419,6 +419,7 @@ class CrossChainRecoveryTool {
         throw new Error('You have an encrypted user keychain - please provide the passphrase to decrypt it');
       }
 
+
       if (this.wallet.isV1) {
         if (!keychain) {
           throw new Error('V1 wallets need a user keychain - could not find the proper keychain. Aborting');
@@ -438,14 +439,6 @@ class CrossChainRecoveryTool {
     }).call(this).asCallback(callback);
   }
 
-  /**
-   * Builds an unsigned recovery transaction
-   * @param wallet {String} ID of the 'receiving' wallet
-   * @param faultyTxId {String} txid of the cross-chain transaction
-   * @param recoveryAddress {String} address to send the recovered funds to
-   * @param callback
-   * @returns {Object} recovery transaction
-   */
   buildTransaction({ wallet, faultyTxId, recoveryAddress }, callback) {
     return co(function *buildTransaction() {
       yield this.setWallet(wallet);
@@ -459,10 +452,55 @@ class CrossChainRecoveryTool {
     }).call(this).asCallback(callback);
   }
 
-  /**
-   * Exports the half-signed recovery transaction
-   * @returns {Object} recovery transaction
-   */
+  buildUnsigned(callback) {
+    return co(function *() {
+      if (!this.txInfo) {
+        throw new Error('Could not find txInfo. Please build a transaction');
+      }
+      const incomplete = this.recoveryTx.buildIncomplete();
+
+      const txInfo = {
+        nP2SHInputs: 0,
+        nSegwitInputs: 0
+      };
+
+      for (const input of this.txInfo.inputs) {
+        if (input.chain === 10 || input.chain === 11) {
+          txInfo.nSegwitInputs++;
+        } else {
+          txInfo.nP2SHInputs++;
+        }
+      }
+
+      txInfo.nOutputs = 1;
+      txInfo.unspents = _.map(this.txInfo.inputs, _.partialRight(_.pick, ['chain', 'index', 'redeemScript', 'id', 'address', 'value']));
+      txInfo.changeAddresses = [];
+      txInfo.walletAddressDetails = {};
+
+      const feeInfo = {};
+
+      const INPUT_SIZE = config.tx.P2SH_INPUT_SIZE;
+      const OUTPUT_SIZE = config.tx.OUTPUT_SIZE;
+      const OVERHEAD_SIZE = config.tx.TX_OVERHEAD_SIZE;
+      feeInfo.size = OVERHEAD_SIZE + (INPUT_SIZE * this.txInfo.inputs.length) + OUTPUT_SIZE;
+
+      feeInfo.feeRate = this.feeRates[this.sourceCoin.type];
+      feeInfo.fee = Math.round(feeInfo.size / 1000 * feeInfo.feeRate);
+      feeInfo.payGoFee = 0;
+      feeInfo.payGoFeeString = '0';
+
+      return {
+        txHex: incomplete.toHex(),
+        txInfo: txInfo,
+        feeInfo: feeInfo,
+        walletId: this.wallet.id(),
+        amount: this.recoveryAmount,
+        address: this.recoveryAddress,
+        coin: this.sourceCoin.type
+      };
+    }).call(this).asCallback(callback);
+  }
+
   export() {
     return {
       version: this.wallet.isV1 ? 1 : 2,
