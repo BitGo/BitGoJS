@@ -575,6 +575,23 @@ Wallet.prototype.createAddress = function(params, callback) {
   }).call(this).asCallback(callback);
 };
 
+/**
+ *
+ * @param params
+ * @param callback
+ * @returns {*}
+ */
+Wallet.prototype.updateAddress = function(params, callback) {
+  return co(function *gUpdateAddress() {
+    const address = params.address;
+
+    const putParams = _.pick(params, ['label']);
+    const url = this.url('/address/' + encodeURIComponent(address));
+
+    return this.bitgo.put(url).send(putParams).result();
+  }).call(this).asCallback(callback);
+};
+
 Wallet.prototype.listWebhooks = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);

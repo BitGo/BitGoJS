@@ -54,6 +54,17 @@ describe('V2 Wallet:', function() {
       });
     });
 
+    it('should label a new address', co(function *() {
+      const originalAddress = yield wallet.createAddress({ label: 'old_label' });
+      const postParams = { address: originalAddress.id, label: 'label_01' };
+      let updatedAddress = yield wallet.updateAddress(postParams);
+      updatedAddress.label.should.equal('label_01');
+      postParams.address = originalAddress.address;
+      postParams.label = 'label_02';
+      updatedAddress = yield wallet.updateAddress(postParams);
+      updatedAddress.label.should.equal('label_02');
+    }));
+
     it('should fail to create a new address', co(function *() {
       try {
         yield wallet.createAddress({ gasPrice: {} });
