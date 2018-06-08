@@ -60,6 +60,68 @@ class Eth extends BaseCoin {
   }
 
   /**
+   * Default gas price from platform
+   * @returns {BigNumber}
+   */
+  getRecoveryGasPrice() {
+    return new ethUtil.BN('20000000000');
+  }
+
+  /**
+   * Default gas limit from platform
+   * @returns {BigNumber}
+   */
+  getRecoveryGasLimit() {
+    return new ethUtil.BN('500000');
+  }
+
+  /**
+   * Default expire time for a contract call (1 week)
+   * @returns {number} Time in seconds
+   */
+  getDefaultExpireTime() {
+    return Math.floor((new Date().getTime()) / 1000) + (60 * 60 * 24 * 7);
+  }
+
+  /**
+   * Query Etherscan for the balance of an address
+   * @param address {String} the ETH address
+   * @param callback
+   * @returns {BigNumber} address balance
+   */
+  queryAddressBalance(address, callback) {
+    return co(function *() {
+      const result = yield this.recoveryBlockchainExplorerQuery({
+        module: 'account',
+        action: 'balance',
+        address: address
+      });
+      return new ethUtil.BN(result.result, 10);
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Query Etherscan for the balance of an address for a token
+   * @param tokenContractAddress {String} address where the token smart contract is hosted
+   * @param walletContractAddress {String} address of the wallet
+   * @param callback
+   * @returns {BigNumber} token balaance in base units
+   */
+  queryAddressTokenBalance(tokenContractAddress, walletContractAddress, callback) {
+    return co(function *() {
+      const result = yield this.recoveryBlockchainExplorerQuery({
+        module: 'account',
+        action: 'tokenbalance',
+        contractaddress: tokenContractAddress,
+        address: walletContractAddress,
+        tag: 'latest'
+      });
+
+      return new ethUtil.BN(result.result, 10);
+    }).call(this).asCallback(callback);
+  }
+
+  /**
    * Get transfer operation for coin
    * @param recipient recipient info
    * @param expireTime expiry time
@@ -120,6 +182,30 @@ class Eth extends BaseCoin {
 
     const recipient = recipients[0];
     return ethUtil.bufferToHex(ethAbi.soliditySHA3(...this.getOperation(recipient, expireTime, contractSequenceId)));
+  }
+
+  /**
+   * Queries the contract (via Etherscan) for the next sequence ID
+   * @param address {String} address of the contract
+   * @param callback
+   * @returns {Number} sequence ID
+   */
+  querySequenceId(address, callback) {
+    return co(function *() {
+      // Get sequence ID using contract call
+      const sequenceIdMethodSignature = ethAbi.methodID('getNextSequenceId', []);
+      const sequenceIdArgs = ethAbi.rawEncode([], []);
+      const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
+      const result = yield this.recoveryBlockchainExplorerQuery({
+        module: 'proxy',
+        action: 'eth_call',
+        to: address,
+        data: sequenceIdData,
+        tag: 'latest'
+      });
+      const sequenceIdHex = result.result;
+      return new ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
+    }).call(this).asCallback(callback);
   }
 
   /**
@@ -234,8 +320,8 @@ class Eth extends BaseCoin {
       const encryptedBackupKey = params.backupKey.replace(/\s/g, '');
 
       // Set new eth tx fees (using default config values from platform)
-      const gasPrice = new ethUtil.BN('20000000000');
-      const gasLimit = new ethUtil.BN('500000');
+      const gasPrice = this.getRecoveryGasPrice();
+      const gasLimit = this.getRecoveryGasLimit();
 
       // Decrypt private keys from KeyCard values
       let userPrv;
@@ -259,9 +345,12 @@ class Eth extends BaseCoin {
 
       // Get nonce for backup key (should be 0)
       let backupKeyNonce = 0;
-      let result;
 
-      result = yield request.get(this.recoveryBlockchainExplorerQuery(`module=account&action=txlist&address=${backupKeyAddress}`)).result();
+      const result = yield this.recoveryBlockchainExplorerQuery({
+        module: 'account',
+        action: 'txlist',
+        address: backupKeyAddress
+      });
       const backupKeyTxList = result.result;
       if (backupKeyTxList.length > 0) {
         // Calculate last nonce used
@@ -270,37 +359,26 @@ class Eth extends BaseCoin {
       }
 
       // get balance of wallet and deduct fees to get transaction amount
-      result = yield request.get(this.recoveryBlockchainExplorerQuery(`module=account&action=balance&address=${backupKeyAddress}`)).result();
-      const backupKeyBalance = new ethUtil.BN(result.result, 10);
+      const backupKeyBalance = yield this.queryAddressBalance(backupKeyAddress);
 
       if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
         throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries`);
       }
 
       // get balance of wallet and deduct fees to get transaction amount
-      result = yield request.get(this.recoveryBlockchainExplorerQuery(`module=account&action=balance&address=${params.walletContractAddress}`)).result();
-      const balance = result.result;
-      const txAmount = new ethUtil.BN(balance, 10).toString(10);
+      const txAmount = yield this.queryAddressBalance(params.walletContractAddress);
 
       // build recipients object
       const recipients = [{
         address: params.recoveryDestination,
-        amount: txAmount
+        amount: txAmount.toString(10)
       }];
 
       // Get sequence ID using contract call
-      const sequenceIdMethodSignature = ethAbi.methodID('getNextSequenceId', []);
-      const sequenceIdArgs = ethAbi.rawEncode([], []);
-      const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
-      result = yield request.get(this.recoveryBlockchainExplorerQuery(`module=proxy&action=eth_call&to=${params.walletContractAddress}&data=${sequenceIdData}&tag=latest`)).result();
-      const sequenceIdHex = result.result;
-      const sequenceId = new ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
-
-      // This signature will be valid for 1 week
-      const EXPIRETIME_DEFAULT = Math.floor((new Date().getTime()) / 1000) + (60 * 60 * 24 * 7);
+      const sequenceId = yield this.querySequenceId(params.walletContractAddress);
 
       // Get operation hash and sign it
-      const operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, EXPIRETIME_DEFAULT, sequenceId);
+      const operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
       const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
       try {
@@ -311,7 +389,7 @@ class Eth extends BaseCoin {
 
       const txInfo = {
         recipient: recipients[0],
-        expireTime: EXPIRETIME_DEFAULT,
+        expireTime: this.getDefaultExpireTime(),
         contractSequenceId: sequenceId,
         operationHash: operationHash,
         signature: signature,
@@ -388,18 +466,11 @@ class Eth extends BaseCoin {
 
       // Get token balance from external API
       const walletContractAddress = params.wallet._wallet.coinSpecific.baseAddress;
-      const contractBalanceUrl = this.getWalletTokenBalanceUrl(params.tokenContractAddress, walletContractAddress);
-      const res = yield request.get(contractBalanceUrl);
-
-      if (res.status !== 200 || !res.body.result) {
-        throw new Error('Could not fetch token balance from etherscan');
-      }
-
-      const recoveryAmount = res.body.result;
+      const recoveryAmount = yield this.queryAddressTokenBalance(params.tokenContractAddress, walletContractAddress);
 
       const recipient = {
         address: params.recipient,
-        amount: recoveryAmount
+        amount: recoveryAmount.toString(10)
       };
 
       // This signature will be valid for one week
@@ -490,14 +561,24 @@ class Eth extends BaseCoin {
     ];
   }
 
-  getWalletTokenBalanceUrl(tokenContractAddress, walletContractAddress) {
-    return this.recoveryBlockchainExplorerQuery(`module=account&action=tokenbalance&contractaddress=${tokenContractAddress}&address=${walletContractAddress}&tag=latest`);
-  }
+  /**
+   * Make a query to Etherscan for information such as balance, token balance, solidity calls
+   * @param query {Object} key-value pairs of parameters to append after /api
+   * @param callback
+   * @returns {Object} response from Etherscan
+   */
+  recoveryBlockchainExplorerQuery(query, callback) {
+    return co(function *() {
+      const response = yield request.get(common.Environments[this.bitgo.env].etherscanBaseUrl + '/api')
+      .query(query);
 
-  recoveryBlockchainExplorerQuery(query) {
-    return common.Environments[this.bitgo.env].etherscanBaseUrl + '/api?' + query;
-  }
+      if (!response.ok) {
+        throw new Error('could not reach Etherscan');
+      }
 
+      return response.body;
+    }).call(this).asCallback(callback);
+  }
 }
 
 /**
