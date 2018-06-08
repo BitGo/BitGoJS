@@ -26,7 +26,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/BitGo/bitcoinjs-lib.git"
+    "url": "https://github.com/BitGo/bitgo-utxo-lib.git"
   },
   "files": [
     "src"
