@@ -21,7 +21,7 @@
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.1",
     "browserify": "~16.1.1",
-    "bufferutil": "~3.0.2",
+    "bufferutil": "~3.0.5",
     "coveralls": "~3.0.0",
     "eslint": "^4.17.0",
     "glob": "^7.1.2",
@@ -44,7 +44,7 @@
     "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz",
     "uglify-js": "3.0.15",
     "uglifyjs-webpack-plugin": "^1.0.1",
-    "utf-8-validate": "~3.0.3",
+    "utf-8-validate": "~4.0.2",
     "webpack": "^3.8.1"
   },
   "testling": {
