@@ -29,8 +29,12 @@ coins.isZcash = function (network) {
   return typeforce.value(coins.ZEC)(network.coin)
 }
 
-coins.isValidCoin = function (network) {
-  return typeforce.oneOf(coins.BTC, coins.BCH, coins.BTG, coins.LTC, coins.ZEC)(network.coin)
-}
+coins.isValidCoin = typeforce.oneOf(
+  coins.isBitcoin,
+  coins.isBitcoinCash,
+  coins.isBitcoinGold,
+  coins.isLitecoin,
+  coins.isZcash
+)
 
 module.exports = coins
