@@ -1,17 +1,19 @@
 {
-  "name": "bitgo-bitcoinjs-lib",
-  "version": "3.2.0",
+  "name": "bitgo-utxo-lib",
+  "version": "1.0.0",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./src/index.js",
   "engines": {
     "node": ">=4.0.0"
   },
   "keywords": [
+    "bitgo",
+    "utxo",
     "bitcoinjs",
     "bitcoin",
+    "zcash",
     "browserify",
-    "javascript",
-    "bitcoinjs"
+    "javascript"
   ],
   "scripts": {
     "coverage-report": "nyc report --reporter=lcov",
