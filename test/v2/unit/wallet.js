@@ -6,7 +6,7 @@ const should = require('should');
 const assert = require('assert');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 const Wallet = require('../../../src/v2/wallet');
 
 const TestV2BitGo = require('../../lib/test_bitgo');

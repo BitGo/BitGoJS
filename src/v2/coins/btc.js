@@ -1,6 +1,6 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const common = require('../../common');
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 const request = require('superagent');
 const _ = require('lodash');
 const Promise = require('bluebird');
@@ -90,7 +90,7 @@ class Btc extends AbstractUtxoCoin {
 
       const transactionDetails = decodedTx.transaction;
 
-      const tx = bitcoin.Transaction.fromHex(txInfo.transactionHex);
+      const tx = bitcoin.Transaction.fromHex(txInfo.transactionHex, this.network);
       if (transactionDetails.TxId !== tx.getId()) {
         console.log(transactionDetails.txId);
         console.log(tx.getId());

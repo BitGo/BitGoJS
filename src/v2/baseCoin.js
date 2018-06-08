@@ -8,7 +8,7 @@ let Markets;
 let Token;
 let Webhooks;
 let coinGenerators;
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const sjcl = require('../sjcl.min');

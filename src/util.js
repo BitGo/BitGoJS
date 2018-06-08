@@ -1,5 +1,5 @@
 const Util = module.exports;
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 let ethUtil = function() {};
 const Big = require('big.js');
 const _ = require('lodash');

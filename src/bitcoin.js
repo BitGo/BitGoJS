@@ -1,5 +1,5 @@
 const common = require('./common');
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
 const BigInteger = require('bigi');

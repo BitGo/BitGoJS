@@ -1,6 +1,6 @@
 const BaseCoin = require('../baseCoin');
 const config = require('../../config');
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 const bitcoinMessage = require('bitcoinjs-message');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
@@ -14,6 +14,15 @@ class AbstractUtxoCoin extends BaseCoin {
   constructor() {
     super();
     this.network = bitcoin.networks.bitcoin;
+  }
+
+  get network() {
+    return this._network;
+  }
+
+  set network(network) {
+    this._network = network || {};
+    this._network.coin = this.getFamily();
   }
 
   /**
@@ -73,7 +82,7 @@ class AbstractUtxoCoin extends BaseCoin {
     return co(function *() {
       const chainhead = yield this.bitgo.get(this.url('/public/block/latest')).result();
       const blockHeight = chainhead.height;
-      const transaction = bitcoin.Transaction.fromHex(prebuild.txHex);
+      const transaction = bitcoin.Transaction.fromHex(prebuild.txHex, this.network);
       transaction.locktime = blockHeight + 1;
       return _.extend({}, prebuild, { txHex: transaction.toHex() });
     }).call(this).asCallback(callback);
@@ -330,19 +339,18 @@ class AbstractUtxoCoin extends BaseCoin {
       }
 
       const allOutputs = parsedTransaction.outputs;
-      const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
+      const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, this.network);
       const transactionCache = {};
-      const network = this.network;
       const inputs = yield Promise.map(transaction.ins, co(function *(currentInput) {
         const transactionId = Buffer.from(currentInput.hash).reverse().toString('hex');
         const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
         if (txHex) {
-          const localTx = bitcoin.Transaction.fromHex(txHex);
+          const localTx = bitcoin.Transaction.fromHex(txHex, this.network);
           if (localTx.getId() !== transactionId) {
             throw new Error('input transaction hex does not match id');
           }
           const currentOutput = localTx.outs[currentInput.index];
-          const address = bitcoin.address.fromOutputScript(currentOutput.script, network);
+          const address = bitcoin.address.fromOutputScript(currentOutput.script, this.network);
           return {
             address,
             value: currentOutput.value
@@ -516,7 +524,7 @@ class AbstractUtxoCoin extends BaseCoin {
       }
       throw new Error('missing txPrebuild parameter');
     }
-    let transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
+    let transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, this.network);
 
     if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
       throw new Error('length of unspents array should equal to the number of transaction inputs');
@@ -537,7 +545,8 @@ class AbstractUtxoCoin extends BaseCoin {
 
     const keychain = bitcoin.HDNode.fromBase58(userPrv);
     const hdPath = bitcoin.hdPath(keychain);
-    const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
+    const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, this.network);
+    this.constructor.prepareTransactionBuilder(txb);
 
     const signatureIssues = [];
 
@@ -545,6 +554,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const currentUnspent = txPrebuild.txInfo.unspents[index];
       const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
       const privKey = hdPath.deriveKey(path);
+      privKey.network = this.network;
 
       const currentSignatureIssue = {
         inputIndex: index,
@@ -554,12 +564,13 @@ class AbstractUtxoCoin extends BaseCoin {
 
       const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
       const isSegwit = !!currentUnspent.witnessScript;
+      const sigHashType = this.constructor.defaultSigHashType;
       try {
         if (isSegwit) {
           const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
-          txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL, currentUnspent.value, witnessScript);
+          txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value, witnessScript);
         } else {
-          txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL);
+          txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value);
         }
 
       } catch (e) {
@@ -592,6 +603,23 @@ class AbstractUtxoCoin extends BaseCoin {
     return {
       txHex: transaction.toBuffer().toString('hex')
     };
+  }
+
+  /**
+   * Modify the transaction builder to comply with the specific coin's requirements such as version and branch id
+   * @param txBuilder
+   * @returns {*}
+   */
+  static prepareTransactionBuilder(txBuilder) {
+    return txBuilder;
+  }
+
+  /**
+   *
+   * @returns {number}
+   */
+  static get defaultSigHashType() {
+    return bitcoin.Transaction.SIGHASH_ALL;
   }
 
   /**
@@ -646,16 +674,10 @@ class AbstractUtxoCoin extends BaseCoin {
    * @returns {*}
    */
   calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
-    if (this.getFamily() === 'btg') {
-      return transaction.hashForGoldSignature(inputIndex, pubScript, amount, hashType, isSegwitInput);
-    } else if (this.getFamily() === 'bch') {
-      return transaction.hashForCashSignature(inputIndex, pubScript, amount, hashType);
-    } else { // btc/ltc
-      if (isSegwitInput) {
-        return transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
-      } else {
-        return transaction.hashForSignature(inputIndex, pubScript, hashType);
-      }
+    if (isSegwitInput) {
+      return transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
+    } else {
+      return transaction.hashForSignature(inputIndex, pubScript, hashType);
     }
   }
 
@@ -755,7 +777,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
   explainTransaction(params) {
     const self = this;
-    const transaction = bitcoin.Transaction.fromBuffer(new Buffer(params.txHex, 'hex'));
+    const transaction = bitcoin.Transaction.fromBuffer(new Buffer(params.txHex, 'hex'), this.network);
     const id = transaction.getId();
     let changeAddresses = [];
     let spendAmount = 0;
@@ -945,6 +967,7 @@ class AbstractUtxoCoin extends BaseCoin {
       }
 
       const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
+      this.constructor.prepareTransactionBuilder(transactionBuilder);
       const txInfo = {};
 
       const feePerByte = yield this.getRecoveryFeePerBytes();
@@ -1005,14 +1028,14 @@ class AbstractUtxoCoin extends BaseCoin {
       };
 
       try {
-        txb.sign(i, backupPrivateKey, address.redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+        txb.sign(i, backupPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount);
       } catch (e) {
         currentSignatureIssue.error = e;
         signatureIssues.push(currentSignatureIssue);
       }
 
       try {
-        txb.sign(i, userPrivateKey, address.redeemScript, bitcoin.Transaction.SIGHASH_ALL);
+        txb.sign(i, userPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount);
       } catch (e) {
         currentSignatureIssue.error = e;
         signatureIssues.push(currentSignatureIssue);

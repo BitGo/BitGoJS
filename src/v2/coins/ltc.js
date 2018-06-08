@@ -1,5 +1,5 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const common = require('../../common');

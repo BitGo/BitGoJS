@@ -1,5 +1,5 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 const request = require('superagent');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
@@ -21,7 +21,7 @@ class Bch extends AbstractUtxoCoin {
 
   constructor() {
     super();
-    this.network = this.network = bitcoin.networks.bitcoin;
+    this.network = bitcoin.networks.bitcoincash;
     this.bchPrefix = 'bitcoincash';
   }
 
@@ -39,83 +39,6 @@ class Bch extends AbstractUtxoCoin {
 
   supportsBlockTarget() {
     return false;
-  }
-
-  /**
-   * Assemble keychain and half-sign prebuilt transaction
-   * @param params
-   * - txPrebuild
-   * - prv
-   * @returns {{txHex}}
-   */
-  signTransaction(params) {
-    const txPrebuild = params.txPrebuild;
-    const userPrv = params.prv;
-
-    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
-      }
-      throw new Error('missing txPrebuild parameter');
-    }
-
-    let transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex);
-
-    if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
-      throw new Error('length of unspents array should equal to the number of transaction inputs');
-    }
-
-    if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-      if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
-        throw new Error(`prv must be a string, got type ${typeof userPrv}`);
-      }
-      throw new Error('missing prv parameter to sign transaction');
-    }
-
-    const sigHashType = bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
-    const keychain = bitcoin.HDNode.fromBase58(userPrv);
-    const hdPath = bitcoin.hdPath(keychain);
-
-    const txb = bitcoin.TransactionBuilder.fromTransaction(transaction);
-    txb.enableBitcoinCash(true);
-    txb.setVersion(2);
-
-    const signatureIssues = [];
-
-    for (let index = 0; index < transaction.ins.length; ++index) {
-      const currentUnspent = txPrebuild.txInfo.unspents[index];
-      const path = 'm/0/0/' + txPrebuild.txInfo.unspents[index].chain + '/' + txPrebuild.txInfo.unspents[index].index;
-      const privKey = hdPath.deriveKey(path);
-
-      const currentSignatureIssue = {
-        inputIndex: index,
-        unspent: currentUnspent,
-        path: path
-      };
-
-      const subscript = new Buffer(txPrebuild.txInfo.unspents[index].redeemScript, 'hex');
-      try {
-        txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value);
-      } catch (e) {
-        currentSignatureIssue.error = e;
-        signatureIssues.push(currentSignatureIssue);
-        continue;
-      }
-
-      transaction = txb.buildIncomplete();
-    }
-
-    if (signatureIssues.length > 0) {
-      const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
-      const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
-      error.code = 'input_signature_failure';
-      error.signingErrors = signatureIssues;
-      throw error;
-    }
-
-    return {
-      txHex: transaction.toBuffer().toString('hex')
-    };
   }
 
   /**
@@ -212,55 +135,35 @@ class Bch extends AbstractUtxoCoin {
   }
 
   /**
-   * Apply signatures to a funds recovery transaction using user + backup key
-   * @param txb {Object} a transaction builder object (with inputs and outputs)
-   * @param unspents {Array} the unspents to use in the transaction
-   * @param addresses {Array} the address and redeem script info for the unspents
+   *
+   * @param txBuilder
+   * @returns {*}
    */
-  signRecoveryTransaction(txb, unspents, addresses) {
-    const sigHashType = bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
-    txb.enableBitcoinCash(true);
-    txb.setVersion(2);
+  static prepareTransactionBuilder(txBuilder) {
+    txBuilder.setVersion(2);
+    return txBuilder;
+  }
 
-    // sign the inputs
-    const signatureIssues = [];
-    unspents.forEach((unspent, i) => {
-      const address = addresses[unspent.address];
-      const backupPrivateKey = address.backupKey.keyPair;
-      const userPrivateKey = address.userKey.keyPair;
-      // force-override networks
-      backupPrivateKey.network = this.network;
-      userPrivateKey.network = this.network;
+  /**
+   * Calculate the hash to verify the signature against
+   * @param transaction Transaction object
+   * @param inputIndex
+   * @param pubScript
+   * @param amount The previous output's amount
+   * @param hashType
+   * @param isSegwitInput
+   * @returns {*}
+   */
+  calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
+    return transaction.hashForCashSignature(inputIndex, pubScript, amount, hashType);
+  }
 
-      const currentSignatureIssue = {
-        inputIndex: i,
-        unspent: unspent
-      };
-
-      try {
-        txb.sign(i, backupPrivateKey, address.redeemScript, sigHashType, unspent.amount);
-      } catch (e) {
-        currentSignatureIssue.error = e;
-        signatureIssues.push(currentSignatureIssue);
-      }
-
-      try {
-        txb.sign(i, userPrivateKey, address.redeemScript, sigHashType, unspent.amount);
-      } catch (e) {
-        currentSignatureIssue.error = e;
-        signatureIssues.push(currentSignatureIssue);
-      }
-    });
-
-    if (signatureIssues.length > 0) {
-      const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
-      const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
-      error.code = 'input_signature_failure';
-      error.signingErrors = signatureIssues;
-      throw error;
-    }
-
-    return txb;
+  /**
+   *
+   * @returns {number}
+   */
+  static get defaultSigHashType() {
+    return bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
   }
 
   recoveryBlockchainExplorerUrl(url) {

@@ -2,7 +2,7 @@ const request = require('superagent');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 const config = require('../config');
 
 /**
@@ -67,7 +67,6 @@ CrossChainRecoveryTool.prototype._setCoinInstances = function _setCoinInstances(
   this.recoveryTx = new bitcoin.TransactionBuilder(network);
 
   if (sourceCoin === 'bch') {
-    this.recoveryTx.enableBitcoinCash(true);
     this.recoveryTx.setVersion(2);
   }
 };

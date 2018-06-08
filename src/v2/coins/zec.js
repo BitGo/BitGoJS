@@ -1,24 +1,12 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
-const zcashjs = require('bitcoinjs-lib-zcash');
+const bitcoin = require('bitgo-utxo-lib');
 
 class Zec extends AbstractUtxoCoin {
   constructor() {
     super();
 
     // https://github.com/zcash/zcash/blob/master/src/chainparams.cpp#L140
-    this.network = {
-      messagePrefix: '\x19ZCash Signed Message:\n',
-      bip32: {
-        public: 0x0488b21e,
-        private: 0x0488ade4
-      },
-      pubKeyHash: 0x1cb8,
-      scriptHash: 0x1cbd,
-      wif: 0x80,
-      dustThreshold: 0, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L360-L365
-      dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
-      feePerKb: 100000 // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
-    };
+    this.network = bitcoin.networks.zcash;
   }
 
   getChain() {
@@ -30,7 +18,7 @@ class Zec extends AbstractUtxoCoin {
   }
 
   getCoinLibrary() {
-    return zcashjs;
+    return bitcoin;
   }
 
   getFullName() {
@@ -39,6 +27,31 @@ class Zec extends AbstractUtxoCoin {
 
   supportsBlockTarget() {
     return false;
+  }
+
+  /**
+   *
+   * @param txBuilder
+   * @returns {*}
+   */
+  static prepareTransactionBuilder(txBuilder) {
+    txBuilder.setVersion(3);
+    txBuilder.setVersionGroupId(63210096);
+    return txBuilder;
+  }
+
+  /**
+   * Calculate the hash to verify the signature against
+   * @param transaction Transaction object
+   * @param inputIndex
+   * @param pubScript
+   * @param amount The previous output's amount
+   * @param hashType
+   * @param isSegwitInput
+   * @returns {*}
+   */
+  calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
+    return transaction.hashForZcashSignature(inputIndex, pubScript, amount, hashType);
   }
 
 }

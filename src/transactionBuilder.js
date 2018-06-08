@@ -809,9 +809,12 @@ exports.signTransaction = function(params) {
   if (!_.isBoolean(validate)) {
     throw new Error('expecting validate to be a boolean');
   }
+  let network = bitcoin.getNetwork();
+  const enableBCH = (_.isBoolean(params.forceBCH) && params.forceBCH === true);
+
   if (!_.isObject(keychain) || !_.isString(keychain.xprv)) {
     if (_.isString(params.signingKey)) {
-      privKey = bitcoin.ECPair.fromWIF(params.signingKey, bitcoin.getNetwork());
+      privKey = bitcoin.ECPair.fromWIF(params.signingKey, network);
       keychain = undefined;
     } else {
       throw new Error('expecting the keychain object with xprv');
@@ -820,12 +823,25 @@ exports.signTransaction = function(params) {
 
   let feeSingleKey;
   if (params.feeSingleKeyWIF) {
-    feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, bitcoin.getNetwork());
+    feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, network);
   }
 
-  let transaction = bitcoin.Transaction.fromHex(params.transactionHex);
+  if (enableBCH) {
+    network = _.extend({}, network, { coin: 'bch' });
+  }
+
+  let transaction = bitcoin.Transaction.fromHex(params.transactionHex, network);
   if (transaction.ins.length !== params.unspents.length) {
     throw new Error('length of unspents array should equal to the number of transaction inputs');
+  }
+
+  // decorate transaction with input values for TransactionBuilder instantiation
+  const isUtxoTx = _.isObject(transaction) && Array.isArray(transaction.ins);
+  const areValidUnspents = _.isObject(params) && Array.isArray(params.unspents);
+  if (isUtxoTx && areValidUnspents) {
+    // extend the transaction inputs with the values
+    const inputValues = _.map(params.unspents, (u => _.pick(u, 'value')));
+    transaction.ins.map((currentItem, index) => _.extend(currentItem, inputValues[index]));
   }
 
   let hdPath;
@@ -835,12 +851,7 @@ exports.signTransaction = function(params) {
     hdPath = bitcoin.hdPath(rootExtKey);
   }
 
-  const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, _.get(rootExtKey, 'keyPair.network', bitcoin.getNetwork()));
-  const enableBCH = (_.isBoolean(params.forceBCH) && params.forceBCH === true);
-  if (enableBCH) {
-    txb.enableBitcoinCash(enableBCH);
-    txb.setVersion(2);
-  }
+  const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, network);
 
   for (let index = 0; index < txb.tx.ins.length; ++index) {
     const currentUnspent = params.unspents[index];
@@ -848,6 +859,10 @@ exports.signTransaction = function(params) {
       // this is the input from a single key fee address
       if (!feeSingleKey) {
         throw new Error('single key address used in input but feeSingleKeyWIF not provided');
+      }
+
+      if (enableBCH) {
+        feeSingleKey.network = network;
       }
 
       txb.sign(index, feeSingleKey);
@@ -860,6 +875,8 @@ exports.signTransaction = function(params) {
       const path = keychain.path + subPath + chainPath;
       privKey = hdPath.deriveKey(path);
     }
+
+    privKey.network = network;
 
     const isSegwitInput = !!currentUnspent.witnessScript;
 
@@ -906,9 +923,8 @@ exports.signTransaction = function(params) {
       e.result = {
         unspent: currentUnspent
       };
-      e.message = `${e.message} — ${JSON.stringify(e.result, null, 4)}`;
-      console.trace(e);
-      return Promise.reject('Failed to sign input #' + index);
+      e.message = `'Failed to sign input #${index} — ${e.message} — ${JSON.stringify(e.result, null, 4)}`;
+      return Promise.reject(e);
     }
 
   }

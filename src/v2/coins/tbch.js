@@ -1,5 +1,5 @@
 const Bch = require('./bch');
-const bitcoinCash = require('bitgo-bitcoinjs-lib');
+const bitcoinCash = require('bitgo-utxo-lib');
 
 class Tbch extends Bch {
   constructor() {

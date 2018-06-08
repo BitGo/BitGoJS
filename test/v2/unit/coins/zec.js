@@ -5,6 +5,7 @@ const co = Promise.coroutine;
 const _ = require('lodash');
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const Wallet = require('../../../../src/v2/wallet');
+const bitcoin = require('bitgo-utxo-lib');
 
 describe('ZEC:', function() {
   let bitgo;
@@ -88,27 +89,60 @@ describe('ZEC:', function() {
 
     describe('Should test transaction signing', () => {
 
-      it('should sign transaction', co(function *() {
+      it('should create local prebuild', co(function *() {
 
-        const wallet = new Wallet(bitgo, testCoin, {});
+        const fundingAddress = 't2CgWUKFKRaKzPXQF2cooNFtVZR1gTM8xxM';
+        const fundingRedeemScript = '522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae';
+
+        const receiveAddress = 't2HPJLxLLXLbKkfQngpwhZCGKAhHuqyqPk4';
+        const unspent = {
+          id: '8047839532dcfec617661120e1baa0e3b9135662ac8e1f97561e500d430dccb1:0',
+          address: fundingAddress,
+          value: 300000000,
+          valueString: '300000000',
+          blockHeight: 999999999,
+          date: '2018-05-20T01:44:13.713Z'
+        };
+        const [txHash, vout] = unspent.id.split(':');
+
+        const txb = new bitcoin.TransactionBuilder(testCoin.network);
+        txb.addInput(txHash, parseInt(vout), 0xffffffff);
+        txb.addOutput(receiveAddress, unspent.value - 50000);
+        txb.setVersion(3);
+
+        // todo: make this easier!!!
+        const tx = txb.buildIncomplete();
+        tx.coin = coin.type;
+        tx.overwintered = 1;
+        tx.versionGroupId = 0x03C48270;
+        tx.expiryHeight = 249133;
+
         const prebuild = {
-          txHex: '01000000013f5cdd55fac42f620796ac33f3acbce8417e75fde7457662fdc612c8759d400a0100000000ffffffff01601ce0110000000017a914040c4ab99a665c767adaa50fb28dce2ae514363b8700000000',
+          txHex: tx.toHex(),
           txInfo: {
             unspents: [
               {
-                chain: 0,
-                index: 0,
-                redeemScript: '5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae'
+                chain: 1,
+                index: 113,
+                redeemScript: fundingRedeemScript,
+                value: 300000000
               }
             ]
           }
         };
 
+        const wallet = new Wallet(bitgo, testCoin, {});
         const halfSigned = yield wallet.signTransaction({
           txPrebuild: prebuild,
           prv: keychains[0].prv
         });
-        halfSigned.txHex.should.equal('01000000013f5cdd55fac42f620796ac33f3acbce8417e75fde7457662fdc612c8759d400a01000000b6004730440220785552c1ce40d5eba426b9a3b0e4e58cb243334f35290902d58746755c13531a02200801731fbda2a334f76b21732a5213b344edc2b966e149301ea688fc0df0abf90100004c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff01601ce0110000000017a914040c4ab99a665c767adaa50fb28dce2ae514363b8700000000');
+        const halfSignedTx = bitcoin.Transaction.fromHex(halfSigned.txHex, coin.network);
+        halfSignedTx.network.coin.should.equal('zec');
+        halfSignedTx.version.should.equal(3);
+        halfSignedTx.versionGroupId.should.equal(63210096);
+        halfSignedTx.overwintered.should.equal(1);
+        halfSignedTx.expiryHeight.should.equal(249133);
+        halfSigned.txHex.should.equal('030000807082c40301b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000b70048304502210087bcf8dafc07ec8bc54fb355dfd0d1b5b0b146070cd656e9a26e45a849e8a84d02206bad301853757010ca4aab379e5ba2cce8ad67e8526ea7c209e92e80283c1fb50100004c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce609387000000002dcd030000');
 
         const halfSignedPrebuild = _.extend({}, prebuild, halfSigned);
         const fullySigned = yield wallet.signTransaction({
@@ -116,11 +150,18 @@ describe('ZEC:', function() {
           prv: keychains[2].prv,
           isLastSignature: true
         });
+        const fullySignedTx = bitcoin.Transaction.fromHex(fullySigned.txHex, coin.network);
+        fullySignedTx.network.coin.should.equal('zec');
+        fullySignedTx.version.should.equal(3);
+        fullySignedTx.versionGroupId.should.equal(63210096);
+        fullySignedTx.overwintered.should.equal(1);
+        fullySignedTx.expiryHeight.should.equal(249133);
+        fullySignedTx.getId().should.equal('fb51b4f5f8dd7200ef59593afb1e1c228ad1ce91d464ae2aabd92dd094fa320b');
 
-        // https://explorer.testnet.z.cash/tx/372602847af17b4b2df37a9d2d3f6e9fc2d602ccb6240ac4cd8c8d2f89145c9f
-        fullySigned.txHex.should.equal('01000000013f5cdd55fac42f620796ac33f3acbce8417e75fde7457662fdc612c8759d400a01000000fdfd00004730440220785552c1ce40d5eba426b9a3b0e4e58cb243334f35290902d58746755c13531a02200801731fbda2a334f76b21732a5213b344edc2b966e149301ea688fc0df0abf901483045022100fa5027215031352af57ad343b6680aa47bbae174abec3450aaaf1811c9942a6d02202ce3d68ecc468381e0c4610493ff043ba61c8875e74d7d65b46f6e17f0583752014c695221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853aeffffffff01601ce0110000000017a914040c4ab99a665c767adaa50fb28dce2ae514363b8700000000');
-
+        // https://explorer.testnet.z.cash/tx/fb51b4f5f8dd7200ef59593afb1e1c228ad1ce91d464ae2aabd92dd094fa320b
+        fullySigned.txHex.should.equal('030000807082c40301b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000fdfd000048304502210087bcf8dafc07ec8bc54fb355dfd0d1b5b0b146070cd656e9a26e45a849e8a84d02206bad301853757010ca4aab379e5ba2cce8ad67e8526ea7c209e92e80283c1fb501473044022026d2ea6586959935df811476d9828f313dd0432de7141562560a4d69bf855a3f02204de5896641eefdc1cb39056546bbfe41513f1117f2d02afa51eda595ec29ad81014c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce609387000000002dcd030000');
       }));
+
     });
 
   });

@@ -1,5 +1,5 @@
 const Btc = require('./btc');
-const bitcoin = require('bitgo-bitcoinjs-lib');
+const bitcoin = require('bitgo-utxo-lib');
 
 class Tbtc extends Btc {
 
