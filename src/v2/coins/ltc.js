@@ -133,7 +133,7 @@ class Ltc extends AbstractUtxoCoin {
         xprv
       } = params;
 
-      const allowedRecoveryCoins = ['btc'];
+      const allowedRecoveryCoins = ['btc', 'bch'];
 
       if (!allowedRecoveryCoins.includes(coin)) {
         throw new Error(`ltc recoveries not supported for ${coin}`);

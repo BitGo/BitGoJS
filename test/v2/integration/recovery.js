@@ -110,5 +110,26 @@ describe('V2 Recoveries', function() {
       recovery.txInfo.should.have.property('inputs');
     }));
     */
+
+    it('should recover LTC sent to BCH', co(function *() {
+      const recovery = yield bitgo.coin('tltc').recoverFromWrongChain({
+        coin: 'bch',
+        txid: '4bab9c6238f390c113fb10f2e3a4580c90f956a782feab581640516a94918c15',
+        recoveryAddress: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
+        wallet: '5abacf7e3cddfbb607d83d276777f55a',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE
+      });
+
+      should.exist(recovery);
+      recovery.recoveryAddress.should.equal('2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx');
+      recovery.recoveryAmount.should.equal(9966000);
+      recovery.recoveryCoin.should.equal('tbch');
+      recovery.sourceCoin.should.equal('tltc');
+      recovery.txHex.should.equal('0100000001158c91946a51401658abfe82a756f9900c58a4e3f210fb13c190f338629cab4b01000000b7004830450221008fd893d588cf4c05ba32fdde8f7d81713e1d1baaeff57f9cae0fbc4e8cec51e002206aad45bb8f8c48dd71234a675c1c73dcb5be5eb9287fa60535b178f9229b6c610100004c6952210388d574f35d3454b9ed0af9862bc83f9abb2c2c5bec298248f8da9b50fb0fe1d72103fbe5cf926752281de99adc5a42257ad9081178ab46b42a85b7ae76f15f75cf17210346f91ff493951e85008ae28665a1c272ef9e84bfeddca2014bc1cc821c39a87e53aeffffffff01b01198000000000017a9149e71e9125ef730c576b027d2c10cbdbe1ee1a5528700000000');
+      recovery.walletId.should.equal('5abacf7e3cddfbb607d83d276777f55a');
+      recovery.should.have.property('txInfo');
+      recovery.txInfo.should.have.property('unspents');
+      recovery.txInfo.should.have.property('inputs');
+    }));
   });
 });
