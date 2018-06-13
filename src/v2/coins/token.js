@@ -122,7 +122,7 @@ class Token extends Eth {
       }
 
       // get token balance of wallet
-      const txAmount = yield this.queryAddressTokenBalance(params.walletContractAddress);
+      const txAmount = yield this.queryAddressTokenBalance(this.tokenContractAddress, params.walletContractAddress);
 
       // build recipients object
       const recipients = [{

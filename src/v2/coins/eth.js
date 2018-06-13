@@ -109,6 +109,13 @@ class Eth extends BaseCoin {
    */
   queryAddressTokenBalance(tokenContractAddress, walletContractAddress, callback) {
     return co(function *() {
+      if (!ethUtil.isValidAddress(tokenContractAddress)) {
+        throw new Error('cannot get balance for invalid token address');
+      }
+      if (!ethUtil.isValidAddress(walletContractAddress)) {
+        throw new Error('cannot get token balance for invalid wallet address');
+      }
+
       const result = yield this.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'tokenbalance',
