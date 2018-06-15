@@ -233,7 +233,7 @@ const BitGo = function(params) {
 
   // Create superagent methods specific to this BitGo instance.
   this.request = {};
-  const methods = ['get', 'post', 'put', 'del'];
+  const methods = ['get', 'post', 'put', 'del', 'patch'];
 
   if (!params.proxy && process.env.BITGO_USE_PROXY) {
     params.proxy = process.env.BITGO_USE_PROXY;

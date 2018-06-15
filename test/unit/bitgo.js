@@ -280,6 +280,39 @@ describe('BitGo Prototype Methods', function() {
     });
   });
 
+  describe('superagent wrappers', function() {
+
+    let bitgo;
+    let bgUrl;
+    before(co(function *() {
+      nock('https://bitgo.fakeurl')
+      .get('/api/v1/client/constants')
+      .reply(200, {
+        ttl: 3600,
+        constants: {}
+      });
+      TestBitGo.prototype._constants = undefined;
+      bitgo = new TestBitGo({ env: 'mock' });
+      bitgo.initializeTestVars();
+
+      bgUrl = common.Environments[bitgo.getEnv()].uri;
+
+      nock(bgUrl)
+      .patch('/')
+      .reply(200);
+    }));
+
+    it('PATCH requests', co(function *() {
+      const res = yield bitgo.patch(bgUrl);
+
+      res.status.should.equal(200);
+    }));
+
+    after(function() {
+      nock.activeMocks().length.should.equal(0);
+    });
+  });
+
   after(function bitgoPrototypeMethodsAfter() {
     nock.enableNetConnect();
   });
