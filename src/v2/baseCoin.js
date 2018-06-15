@@ -109,8 +109,9 @@ class BaseCoin {
         trmg: require('./coins/trmg'),
         xrp: require('./coins/xrp'),
         txrp: require('./coins/txrp'),
-        xlm: require('./coins/xlm'),
-        txlm: require('./coins/txlm'),
+        // TODO: Temporarily disabled because the stellar-base library breaks grunt in the client (BG-5326)
+        // xlm: require('./coins/xlm'),
+        // txlm: require('./coins/txlm'),
         dash: require('./coins/dash'),
         tdash: require('./coins/tdash'),
         zec: require('./coins/zec'),
