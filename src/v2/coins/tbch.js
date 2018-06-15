@@ -1,10 +1,10 @@
 const Bch = require('./bch');
-const bitcoinCash = require('bitgo-utxo-lib');
+const bitcoin = require('bitgo-utxo-lib');
 
 class Tbch extends Bch {
   constructor() {
     super();
-    this.network = bitcoinCash.networks.testnet;
+    this.network = bitcoin.networks.bitcoincashTestnet;
     this.bchPrefix = 'bchtest';
   }
 

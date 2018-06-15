@@ -186,7 +186,7 @@ describe('Recovery:', function() {
 
     it('should recover BTC sent to the wrong chain', co(function *() {
       const recovery = yield bitgo.coin('tbtc').recoverFromWrongChain({
-        coin: 'ltc',
+        coin: bitgo.coin('tltc'),
         txid: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
         recoveryAddress: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
         wallet: '5abacebe28d72fbd07e0b8cbba0ff39e',
@@ -207,7 +207,7 @@ describe('Recovery:', function() {
 
     it('should recover LTC sent to the wrong chain', co(function *() {
       const recovery = yield bitgo.coin('tltc').recoverFromWrongChain({
-        coin: 'btc',
+        coin: bitgo.coin('tbtc'),
         txid: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
         recoveryAddress: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
         wallet: '5abace103cddfbb607d8239d806671bf',
@@ -215,7 +215,7 @@ describe('Recovery:', function() {
       });
 
       should.exist(recovery);
-      recovery.recoveryAddress.should.equal('2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx');
+      recovery.recoveryAddress.should.equal('Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V');
       recovery.recoveryAmount.should.equal(39966000);
       recovery.recoveryCoin.should.equal('tbtc');
       recovery.sourceCoin.should.equal('tltc');
@@ -228,7 +228,7 @@ describe('Recovery:', function() {
 
     it('should recover BCH sent to the wrong chain', co(function *() {
       const recovery = yield bitgo.coin('tbch').recoverFromWrongChain({
-        coin: 'btc',
+        coin: bitgo.coin('tbtc'),
         txid: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
         recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
         wallet: '5abace103cddfbb607d8239d806671bf',

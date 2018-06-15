@@ -295,7 +295,7 @@ class AbstractUtxoCoin extends BaseCoin {
         const backupPubSignature = keySignatures.backupPub;
         const bitgoPubSignature = keySignatures.bitgoPub;
         // verify the signatures against the user public key
-        const prefix = bitcoin.networks.bitcoin.messagePrefix;
+        const prefix = this.network.messagePrefix;
 
         const signingAddress = userKey.keyPair.getAddress();
         const isValidBackupSignature = bitcoinMessage.verify(keychains.backup.pub, signingAddress, Buffer.from(backupPubSignature, 'hex'), prefix);
@@ -1059,7 +1059,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param params.txid {String} The txid of the faulty transaction
    * @param params.recoveryAddress {String} address to send recovered funds to
    * @param params.wallet {Wallet} the wallet that received the funds
-   * @param params.coin {String} the coin type of the wallet that received the funds
+   * @param params.coin {Coin} the coin type of the wallet that received the funds
    * @param params.walletPassphrase {String} the wallet passphrase
    * @param params.xprv {String} the unencrypted xprv (used instead of wallet passphrase)
    * @param callback
@@ -1070,23 +1070,22 @@ class AbstractUtxoCoin extends BaseCoin {
       const {
         txid,
         recoveryAddress,
-        wallet,
         coin,
+        wallet,
         walletPassphrase,
         xprv
       } = params;
 
       const allowedRecoveryCoins = ['ltc', 'bch'];
 
-      if (!allowedRecoveryCoins.includes(coin)) {
-        throw new Error(`btc recoveries not supported for ${coin}`);
+      if (!allowedRecoveryCoins.includes(coin.getFamily())) {
+        throw new Error(`btc recoveries not supported for ${coin.getFamily()}`);
       }
 
       const recoveryTool = new RecoveryTool({
         bitgo: this.bitgo,
-        sourceCoin: this.getFamily(),
-        recoveryType: coin,
-        test: !(this.bitgo.env === 'prod'),
+        sourceCoin: this,
+        recoveryCoin: coin,
         logging: false
       });
 

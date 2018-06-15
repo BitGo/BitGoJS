@@ -196,7 +196,7 @@ class Bch extends AbstractUtxoCoin {
 
   /**
    * Recover BCH that was sent to the wrong chain
-   * @param coin {String} the coin type of the wallet that received the funds
+   * @param coin {Coin} the coin type of the wallet that received the funds
    * @param walletId {String} the wallet ID of the wallet that received the funds
    * @param txid {String} The txid of the faulty transaction
    * @param recoveryAddress {String} address to send recovered funds to
@@ -209,23 +209,22 @@ class Bch extends AbstractUtxoCoin {
       const {
         txid,
         recoveryAddress,
-        wallet,
         coin,
+        wallet,
         walletPassphrase,
         xprv
       } = params;
 
       const allowedRecoveryCoins = ['btc', 'ltc'];
 
-      if (!allowedRecoveryCoins.includes(coin)) {
-        throw new Error(`bch recoveries not supported for ${coin}`);
+      if (!allowedRecoveryCoins.includes(coin.getFamily())) {
+        throw new Error(`bch recoveries not supported for ${coin.getFamily()}`);
       }
 
       const recoveryTool = new RecoveryTool({
         bitgo: this.bitgo,
-        sourceCoin: this.getFamily(),
-        recoveryType: coin,
-        test: !(this.bitgo.env === 'prod'),
+        sourceCoin: this,
+        recoveryCoin: coin,
         logging: false
       });
 
