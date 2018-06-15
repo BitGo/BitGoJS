@@ -1,5 +1,9 @@
 const assert = require('assert');
 const crypto = require('crypto');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
+const Wallet = require('../../../../src/v2/wallet');
+
 require('should');
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
@@ -60,10 +64,109 @@ xdescribe('XLM:', function() {
   });
 
   it('verifyAddress should work', function() {
-    basecoin.verifyAddress({ address: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4' });
-    basecoin.verifyAddress({ address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2' });
+    basecoin.verifyAddress({ address: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4', rootAddress: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4' });
+    basecoin.verifyAddress({ address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=1', rootAddress: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2' });
+    assert.throws(() => { basecoin.verifyAddress({ address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=243432', rootAddress: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4' }); });
+    assert.throws(() => { basecoin.verifyAddress({ address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2=x', rootAddress: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2' }); });
     assert.throws(() => { basecoin.verifyAddress({ address: 'SBKGCMBY56MHTT4EGE3YJIYL4CPWKSGJ7VDEQF4J3B3YO576KNL7DOYJ' }); });
     assert.throws(() => { basecoin.verifyAddress({ address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8' }); });
+  });
+
+  describe('Transaction Verification', function() {
+    let basecoin;
+    let wallet;
+    const userKeychain = {
+      pub: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
+      prv: 'SDADJSTZNIKF46NM7LE3ZHMX4TJ2VJBL7PTERNDLWHZ5U6KNO5S7XFJD',
+      rawPub: '37c6be1c677873e42a90f3d0ed3b0e4f3ba8591f285769d8c922f7024ae0c009',
+      rawPrv: 'c034ca796a145e79acfac9bc9d97e4d3aaa42bfbe648b46bb1f3da794d7765fb'
+    };
+    const prebuild = {
+      txBase64: 'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAA==',
+      txInfo: {
+        fee: 100,
+        sequence: '35995558267060226',
+        source: 'GBSGOXQNPULNPBX7XTHXP2GDBOZMHPIZOOA7CQXYTLHYKF5J2JDCF7LT',
+        operations: [
+          {
+            amount: '12.8', // 12.8 XLM
+            asset: { code: 'XLM' },
+            destination: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
+            type: 'payment'
+          }
+        ],
+        signatures: []
+      },
+      feeInfo: {
+        height: 123456,
+        xlmBaseFee: '100',
+        xlmBaseReserve: '5000000'
+      },
+      walletId: '5a78dd561c6258a907f1eeaee132f796'
+    };
+    const signedTxBase64 = 'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAUrgwAkAAABAOExcvVJIUJv9HuVfbV0y7lRPRARv4wDtcdhHG7QN40h5wQ2uwPF52OGQ8KY+66a1A/8lNKB75sgj2xj44s8lDQ==';
+
+    before(co(function *() {
+      basecoin = bitgo.coin('txlm');
+      const walletData = {
+        id: '5a78dd561c6258a907f1eeaee132f796',
+        users: [
+          {
+            user: '543c11ed356d00cb7600000b98794503',
+            permissions: [
+              'admin',
+              'view',
+              'spend'
+            ]
+          }
+        ],
+        coin: 'txlm',
+        label: 'Verification Wallet',
+        m: 2,
+        n: 3,
+        keys: [
+          '5a78dd56bfe424aa07aa068651b194fd',
+          '5a78dd5674a70eb4079f58797dfe2f5e',
+          '5a78dd561c6258a907f1eea9f1d079e2'
+        ],
+        tags: [
+          '5a78dd561c6258a907f1eeaee132f796'
+        ],
+        disableTransactionNotifications: false,
+        freeze: {},
+        deleted: false,
+        approvalsRequired: 1,
+        isCold: true,
+        coinSpecific: {},
+        clientFlags: [],
+        balance: 650000000,
+        confirmedBalance: 650000000,
+        spendableBalance: 650000000,
+        balanceString: '650000000',
+        confirmedBalanceString: '650000000',
+        spendableBalanceString: '650000000',
+        receiveAddress: {
+          id: '5a78de2bbfe424aa07aa131ec03c8dc1',
+          address: 'GBSGOXQNPULNPBX7XTHXP2GDBOZMHPIZOOA7CQXYTLHYKF5J2JDCF7LT',
+          chain: 0,
+          index: 0,
+          coin: 'txlm',
+          wallet: '5a78dd561c6258a907f1eeaee132f796',
+          coinSpecific: {}
+        },
+        pendingApprovals: []
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    }));
+
+    it('should sign a prebuild', co(function *() {
+      // sign transaction
+      const halfSignedTransaction = yield wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: userKeychain.rawPrv
+      });
+      halfSignedTransaction.halfSigned.txBase64.should.equal(signedTxBase64);
+    }));
   });
 });
 

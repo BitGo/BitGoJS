@@ -103,7 +103,7 @@
     "ripple-lib": "~0.17.7",
     "sanitize-html": "1.13.0",
     "secrets.js-grempe": "1.1.0",
-    "stellar-sdk": "~0.8.0",
+    "stellar-base": "~0.7.7",
     "superagent": "~3.5.2",
     "superagent-proxy": "~1.0.0",
     "underscore.string": "2.4.0"

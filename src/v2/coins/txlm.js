@@ -1,6 +1,12 @@
 const Xlm = require('./xlm');
+const stellar = require('stellar-base');
 
 class Txlm extends Xlm {
+
+  constructor() {
+    super();
+    stellar.Network.use(new stellar.Network(stellar.Networks.TESTNET));
+  }
 
   getChain() {
     return 'txlm';

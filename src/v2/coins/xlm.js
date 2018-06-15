@@ -1,14 +1,21 @@
+const _ = require('lodash');
 const BigNumber = require('bignumber.js');
-const url = require('url');
 const querystring = require('querystring');
+const url = require('url');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 
 const BaseCoin = require('../baseCoin');
-const stellar = require('stellar-sdk');
+const stellar = require('stellar-base');
+
+const maxMemoId = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
 
 class Xlm extends BaseCoin {
 
+  constructor() {
+    super();
+    stellar.Network.use(new stellar.Network(stellar.Networks.PUBLIC));
+  }
   /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
@@ -97,14 +104,13 @@ class Xlm extends BaseCoin {
       return false;
     }
 
-    const maxUnsigned64BitNumber = '0xFFFFFFFFFFFFFFFF'; // 18446744073709551615
-    return (memoId.greaterThan(0) && memoId.lessThan(maxUnsigned64BitNumber));
+    return (memoId.greaterThan(0) && memoId.lt(maxMemoId));
   }
 
   /**
    * Process address into address and memo id
    *
-   * @param address {String}
+   * @param address {String} the address
    * @returns {Object} object containing address and memo id
    */
   getAddressDetails(address) {
@@ -177,14 +183,57 @@ class Xlm extends BaseCoin {
   }
 
   /**
-   * Check if address is a valid XLM address
+   * Check if address is a valid XLM address, and then make sure it matches the root address.
    *
    * @param address {String} the address to verify
+   * @param rootAddress {String} the wallet's root address
    */
-  verifyAddress({ address }) {
+  verifyAddress({ address, rootAddress }) {
     if (!this.isValidAddress(address)) {
       throw new Error(`invalid address: ${address}`);
     }
+
+    const addressDetails = this.getAddressDetails(address);
+    const rootAddressDetails = this.getAddressDetails(rootAddress);
+
+    if (addressDetails.address !== rootAddressDetails.address) {
+      throw new Error(`address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`);
+    }
+  }
+
+  /**
+   * Assemble keychain and half-sign prebuilt transaction
+   *
+   * @param params
+   * @param params.txPrebuild {Object} prebuild object returned by platform
+   * @param params.prv {String} user prv
+   */
+  signTransaction(params) {
+    const { txPrebuild, prv } = params;
+
+    if (_.isUndefined(txPrebuild)) {
+      throw new Error('missing txPrebuild parameter');
+    }
+    if (!_.isObject(txPrebuild)) {
+      throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+    }
+
+    if (_.isUndefined(prv)) {
+      throw new Error('missing prv parameter to sign transaction');
+    }
+    if (!_.isString(prv)) {
+      throw new Error(`prv must be a string, got type ${typeof prv}`);
+    }
+
+    const keyPair = stellar.Keypair.fromSecret(this.getPrvFromRaw(prv));
+    const tx = new stellar.Transaction(txPrebuild.txBase64);
+    tx.sign(keyPair);
+
+    return {
+      halfSigned: {
+        txBase64: tx.toEnvelope().toXDR('base64')
+      }
+    };
   }
 
   /**
@@ -221,6 +270,52 @@ class Xlm extends BaseCoin {
     const seed = Buffer.from(key.prv, 'hex');
     const keypair = stellar.Keypair.fromRawEd25519Seed(seed);
     return keypair.sign(message);
+  }
+
+  /**
+   * Verify that a transaction prebuild complies with the original intention
+   *
+   * @param txParams {Object} params object passed to send
+   * @param txPrebuild {Object} prebuild object returned by platform
+   * @param txPrebuild.txBase64 {String} prebuilt transaction encoded as base64 string
+   * @param wallet {Wallet} wallet object to obtain keys to verify against
+   * @param callback
+   * @returns {boolean}
+   */
+  verifyTransaction({ txParams, txPrebuild, wallet }, callback) {
+    // TODO Add parseTransaction and verify signatures BG-5006
+    return co(function *() {
+      const tx = new stellar.Transaction(txPrebuild.txBase64);
+      const outputOperation = _.filter(tx.operations, operation =>
+        operation.type === 'createAccount' || operation.type === 'payment'
+      );
+
+      if (outputOperation.length !== 1) {
+        throw new Error('transaction prebuild should have exactly 1 recipient');
+      }
+
+      const expectedOutput = txParams.recipients[0];
+      const output = outputOperation[0];
+      let outputAmount, expectedOutputAmount;
+
+      if (output.destination !== expectedOutput.destination) {
+        throw new Error('transaction prebuild does not match expected recipient');
+      }
+
+      if (output.type === 'createAccount') {
+        outputAmount = new BigNumber(output.startingBalance);
+        expectedOutputAmount = new BigNumber(expectedOutput.startingBalance);
+      } else {
+        // it's a payment operation
+        outputAmount = new BigNumber(output.amount);
+        expectedOutputAmount = new BigNumber(expectedOutput.amount);
+      }
+
+      if (!outputAmount.eq(expectedOutputAmount)) {
+        throw new Error('transaction prebuild does not match expected amount');
+      }
+
+    }).call(this).asCallback(callback);
   }
 }
 
