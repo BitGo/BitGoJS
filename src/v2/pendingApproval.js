@@ -275,10 +275,15 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params) {
       wallet: this.wallet,
       txPrebuild: signedTransaction
     });
+
+    if (_.isUndefined(recreatedParsedTransaction.implicitExternalSpendAmount)) {
+      return signedTransaction;
+    }
+
     if (!_.isFinite(recreatedParsedTransaction.implicitExternalSpendAmount)) {
       throw new Error('implicit external spend amount could not be determined');
     }
-    if (recreatedParsedTransaction.implicitExternalSpendAmount > originalParsedTransaction.implicitExternalSpendAmount) {
+    if (!_.isUndefined(originalParsedTransaction.implicitExternalSpendAmount) && (recreatedParsedTransaction.implicitExternalSpendAmount > originalParsedTransaction.implicitExternalSpendAmount)) {
       throw new Error('recreated transaction is using a higher pay-as-you-go-fee');
     }
     return signedTransaction;
