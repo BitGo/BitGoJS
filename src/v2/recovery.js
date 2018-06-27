@@ -146,7 +146,7 @@ class CrossChainRecoveryTool {
           try {
             address = this.sourceCoin.canonicalAddress(address, 1);
           } catch (e) {
-            break;
+            continue;
           }
         }
 
@@ -154,7 +154,7 @@ class CrossChainRecoveryTool {
           try {
             address = this.recoveryCoin.canonicalAddress(address, 2);
           } catch (e) {
-            break;
+            continue;
           }
         }
 
