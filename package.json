@@ -73,8 +73,9 @@
     "compile-test": "webpack --progress --colors --env.test",
     "test": "npm run test-node",
     "express": "node bin/bitgo-express -b 0.0.0.0",
-    "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 20000 --reporter list --recursive test/",
+    "test-node": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 20000 --reporter list --recursive test/unit/ test/v2/unit/",
     "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run",
+    "test-integration": "./node_modules/.bin/istanbul test ./node_modules/.bin/_mocha -- --timeout 20000 --reporter list --recursive test/integration/ test/v2/integration/",
     "lint": "./node_modules/.bin/eslint --ext .js ."
   },
   "dependencies": {
