@@ -273,18 +273,39 @@ class Xlm extends BaseCoin {
   }
 
   /**
+   * Verifies if signature for message is valid.
+   *
+   * @param pub {String} raw public key
+   * @param message {String} signed message
+   * @param signature {Buffer} signature to verify
+   * @returns {Boolean} true if signature is valid.
+   */
+  verifySignature(pub, message, signature) {
+    if (!this.isValidPub(pub)) {
+      throw new Error(`invalid pub: ${pub}`);
+    }
+    const keyPair = stellar.Keypair.fromPublicKey(this.getPubFromRaw(pub));
+    return keyPair.verify(message, signature);
+  };
+
+  /**
    * Verify that a transaction prebuild complies with the original intention
    *
    * @param txParams {Object} params object passed to send
    * @param txPrebuild {Object} prebuild object returned by platform
    * @param txPrebuild.txBase64 {String} prebuilt transaction encoded as base64 string
    * @param wallet {Wallet} wallet object to obtain keys to verify against
+   * @param verification Object specifying some verification parameters
+   * @param verification.disableNetworking Disallow fetching any data from the internet for verification purposes
+   * @param verification.keychains Pass keychains manually rather than fetching them by id
    * @param callback
    * @returns {boolean}
    */
-  verifyTransaction({ txParams, txPrebuild, wallet }, callback) {
-    // TODO Add parseTransaction and verify signatures BG-5006
+  verifyTransaction({ txParams, txPrebuild, wallet, verification = {} }, callback) {
+    // TODO BG-5600 Add parseTransaction / improve verification
     return co(function *() {
+      const disableNetworking = !!verification.disableNetworking;
+
       const tx = new stellar.Transaction(txPrebuild.txBase64);
       const outputOperation = _.filter(tx.operations, operation =>
         operation.type === 'createAccount' || operation.type === 'payment'
@@ -315,6 +336,34 @@ class Xlm extends BaseCoin {
         throw new Error('transaction prebuild does not match expected amount');
       }
 
+      // verify transaction signatures
+      if (!tx || tx.signatures.length === 0) {
+        throw new Error('missing signature');
+      }
+      if (tx.signatures.length > 1) {
+        throw new Error('transaction should only have one signature before being co-signed by BitGo');
+      }
+      const signature = tx.signatures[0].signature();
+
+      // obtain the keychains and key signatures
+      let keychains = verification.keychains;
+      if (!keychains && disableNetworking) {
+        throw new Error('cannot fetch keychains without networking');
+      } else if (!keychains) {
+        keychains = yield Promise.props({
+          user: this.keychains().get({ id: wallet._wallet.keys[0] }),
+          backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
+          bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
+        });
+      }
+
+      if (this.verifySignature(keychains.backup.pub, tx.hash(), signature)) {
+        throw new Error('transaction signed with wrong key');
+      }
+
+      if (!this.verifySignature(keychains.user.pub, tx.hash(), signature)) {
+        throw new Error('transaction signature invalid');
+      }
     }).call(this).asCallback(callback);
   }
 }
