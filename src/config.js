@@ -38,7 +38,6 @@ exports.tokens = {
         { type: 'qrl', coin: 'eth', network: 'Mainnet', name: 'Qrl', tokenContractAddress: '0x697beac28b09e122c4332d163985e8a73121b97f', decimalPlaces: 8 },
         { type: 'nmr', coin: 'eth', network: 'Mainnet', name: 'Numeraire', tokenContractAddress: '0x1776e1f26f98b1a5df9cd347953a26dd3cb46671', decimalPlaces: 18 },
         { type: 'brd', coin: 'eth', network: 'Mainnet', name: 'Bread', tokenContractAddress: '0x558ec3152e2eb2174905cd19aea4e34a23de9ad6', decimalPlaces: 18 },
-        { type: 'trx', coin: 'eth', network: 'Mainnet', name: 'Tron', tokenContractAddress: '0xf230b790e05390fc8295f4d3f60332c93bed42e2', decimalPlaces: 6 },
         { type: 'wax', coin: 'eth', network: 'Mainnet', name: 'Wax', tokenContractAddress: '0x39bb259f66e1c59d5abef88375979b4d20d98022', decimalPlaces: 8 },
         { type: 'mkr', coin: 'eth', network: 'Mainnet', name: 'Maker', tokenContractAddress: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', decimalPlaces: 18 },
         { type: 'trx', coin: 'eth', network: 'Mainnet', name: 'Tronix', tokenContractAddress: '0xf230b790e05390fc8295f4d3f60332c93bed42e2', decimalPlaces: 6 },
@@ -51,7 +50,6 @@ exports.tokens = {
         { type: 'rhoc', coin: 'eth', network: 'Mainnet', name: 'RHOC', tokenContractAddress: '0x168296bb09e24a88805cb9c33356536b980d3fc5', decimalPlaces: 8 },
         { type: 'ae', coin: 'eth', network: 'Mainnet', name: 'Aeternity', tokenContractAddress: '0x5ca9a71b1d01849c0a95490cc00559717fcf0d1d', decimalPlaces: 18 },
         { type: 'eto', coin: 'eth', network: 'Mainnet', name: 'Ethos Coin', tokenContractAddress: '0x5af2be193a6abca9c8817001f45744777db30756', decimalPlaces: 8 },
-        { type: 'snt', coin: 'eth', network: 'Mainnet', name: 'Status Network', tokenContractAddress: '0x744d70fdbe2ba4cf95131626614a1763df805b9e', decimalPlaces: 18 },
         { type: 'zil', coin: 'eth', network: 'Mainnet', name: 'Zilliqa', tokenContractAddress: '0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27', decimalPlaces: 12 },
         { type: 'iost', coin: 'eth', network: 'Mainnet', name: 'IOSToken', tokenContractAddress: '0xfa1a856cfa3409cfa145fa4e20eb270df3eb21ab', decimalPlaces: 18 },
         { type: 'lrc', coin: 'eth', network: 'Mainnet', name: 'loopring', tokenContractAddress: '0xef68e7c694f40c8202821edf525de3782458639f', decimalPlaces: 18 },
@@ -69,14 +67,11 @@ exports.tokens = {
         { type: 'link', coin: 'eth', network: 'Mainnet', name: 'ChainLink', tokenContractAddress: '0x514910771af9ca656af840dff83e8264ecf986ca', decimalPlaces: 18 },
         { type: 'ncash', coin: 'eth', network: 'Mainnet', name: 'Nucleus Vision', tokenContractAddress: '0x809826cceab68c387726af962713b64cb5cb3cca', decimalPlaces: 18 },
         { type: 'storm', coin: 'eth', network: 'Mainnet', name: 'Storm Token', tokenContractAddress: '0xd0a4b8946cb52f0661273bfbc6fd0e0c75fc6433', decimalPlaces: 18 },
-        { type: 'powr', coin: 'eth', network: 'Mainnet', name: 'PowerLedger ', tokenContractAddress: '0x595832f8fc6bf59c85c527fec3740a1b7a361269', decimalPlaces: 6 },
-        { type: 'wax', coin: 'eth', network: 'Mainnet', name: 'Wax', tokenContractAddress: '0x39bb259f66e1c59d5abef88375979b4d20d98022', decimalPlaces: 8 },
         { type: 'bnt', coin: 'eth', network: 'Mainnet', name: 'Bancor Network Token', tokenContractAddress: '0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c', decimalPlaces: 18 },
         { type: 'eng', coin: 'eth', network: 'Mainnet', name: 'Enigma', tokenContractAddress: '0xf0ee6b27b759c9893ce4f094b49ad28fd15a23e4', decimalPlaces: 8 },
         { type: 'req', coin: 'eth', network: 'Mainnet', name: 'Request Network', tokenContractAddress: '0x8f8221afbb33998d8584a2b05749ba73c37a938a', decimalPlaces: 18 },
         { type: 'dent', coin: 'eth', network: 'Mainnet', name: 'Dent', tokenContractAddress: '0x3597bfd533a99c9aa083587b074434e61eb0a258', decimalPlaces: 8 },
-        { type: 'storj', coin: 'eth', network: 'Mainnet', name: 'StorjToken', tokenContractAddress: '0xb64ef51c888972c908cfacf59b47c1afbc0ab8ac', decimalPlaces: 8 },
-        { type: 'dcn', coin: 'eth', network: 'Mainnet', name: 'Dentacoin', tokenContractAddress: '0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6', decimalPlaces: 0 },
+        { type: 'dcn', coin: 'eth', network: 'Mainnet', name: 'Dentacoin', tokenContractAddress: '0x08d32b0da63e2c3bcf8019c9c5d849d7a9d791e6', decimalPlaces: 0 },
         { type: 'hpb', coin: 'eth', network: 'Mainnet', name: 'High Performance Blockchain', tokenContractAddress: '0x38c6a68304cdefb9bec48bbfaaba5c5b47818bb2', decimalPlaces: 18 },
         { type: 'fsn', coin: 'eth', network: 'Mainnet', name: 'Fusion', tokenContractAddress: '0xd0352a019e9ab9d757776f532377aaebd36fd541', decimalPlaces: 18 },
         { type: 'cnd', coin: 'eth', network: 'Mainnet', name: 'Cindicator', tokenContractAddress: '0xd4c435f5b09f855c3317c8524cb1f586e42795fa', decimalPlaces: 18 },
@@ -91,7 +86,7 @@ exports.tokens = {
         { type: 'enj', coin: 'eth', network: 'Mainnet', name: 'Enjin Coin', tokenContractAddress: '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c', decimalPlaces: 18 },
         { type: 'agi', coin: 'eth', network: 'Mainnet', name: 'SingularityNET', tokenContractAddress: '0x8eb24319393716668d768dcec29356ae9cffe285', decimalPlaces: 8 },
         { type: 'qsp', coin: 'eth', network: 'Mainnet', name: 'Quantstamp', tokenContractAddress: '0x99ea4db9ee77acd40b119bd1dc4e33e1c070b80d', decimalPlaces: 18 },
-        { type: 'auto', coin: 'eth', network: 'Mainnet', name: 'Cube', tokenContractAddress: '0x622dFfCc4e83C64ba959530A5a5580687a57581b', decimalPlaces: 18 },
+        { type: 'auto', coin: 'eth', network: 'Mainnet', name: 'Cube', tokenContractAddress: '0x622dffcc4e83c64ba959530a5a5580687a57581b', decimalPlaces: 18 },
         { type: 'tms', coin: 'eth', network: 'Mainnet', name: 'Time New Bank', tokenContractAddress: '0xf7920b0768ecb20a123fac32311d07d193381d6f', decimalPlaces: 18 },
         { type: 'mtl', coin: 'eth', network: 'Mainnet', name: 'Metal', tokenContractAddress: '0xf433089366899d83a9f26a773d59ec7ecf30355e', decimalPlaces: 8 },
         { type: 'rlc', coin: 'eth', network: 'Mainnet', name: 'Iexec Rlc', tokenContractAddress: '0x607f4c5bb672230e8672085532f7e901544a7375', decimalPlaces: 9 },
@@ -125,7 +120,6 @@ exports.tokens = {
         { type: 'shk', coin: 'eth', network: 'Mainnet', name: 'iShook', tokenContractAddress: '0xebe4a49df7885d015329c919bf43e6460a858f1e', decimalPlaces: 18 },
         { type: 'xrl', coin: 'eth', network: 'Mainnet', name: 'Rialto', tokenContractAddress: '0xb24754be79281553dc1adc160ddf5cd9b74361a4', decimalPlaces: 9 },
         { type: 'kin', coin: 'eth', network: 'Mainnet', name: 'Kin', tokenContractAddress: '0x818fc6c2ec5986bc6e2cbf00939d90556ab12ce5', decimalPlaces: 18 },
-        { type: 'salt', coin: 'eth', network: 'Mainnet', name: 'Salt', tokenContractAddress: '0x4156d3342d5c385a87d264f90653733592000581', decimalPlaces: 8 },
         { type: 'qash', coin: 'eth', network: 'Mainnet', name: 'QASH', tokenContractAddress: '0x618e75ac90b12c6049ba3b27f5d5f8651b0037f6', decimalPlaces: 6 },
         { type: 'echt', coin: 'eth', network: 'Mainnet', name: 'eChat', tokenContractAddress: '0x1aadead0d2e0b6d888ae1d73b11db65a8447634a', decimalPlaces: 0 },
         { type: 'cag', coin: 'eth', network: 'Mainnet', name: 'Change', tokenContractAddress: '0x7d4b8cce0591c9044a22ee543533b72e976e36c3', decimalPlaces: 18 },
@@ -143,13 +137,9 @@ exports.tokens = {
         { type: 'qvt', coin: 'eth', network: 'Mainnet', name: 'Qvolta', tokenContractAddress: '0x1183f92a5624d68e85ffb9170f16bf0443b4c242', decimalPlaces: 18 },
         { type: 'pro', coin: 'eth', network: 'Mainnet', name: 'Propy', tokenContractAddress: '0x9041fe5b3fdea0f5e4afdc17e75180738d877a01', decimalPlaces: 18 },
         { type: 'ast', coin: 'eth', network: 'Mainnet', name: 'AirSwap', tokenContractAddress: '0x27054b13b1b798b345b591a4d22e6562d47ea75a', decimalPlaces: 4 },
-        { type: 'wtc', coin: 'eth', network: 'Mainnet', name: 'WaltonChain', tokenContractAddress: '0xb7cb1c96db6b22b0d3d9536e0108d062bd488f74', decimalPlaces: 18 },
-        { type: 'nas', coin: 'eth', network: 'Mainnet', name: 'Nebulas', tokenContractAddress: '0x5d65d971895edc438f465c17db6992698a52318d', decimalPlaces: 18 },
         { type: 'storj', coin: 'eth', network: 'Mainnet', name: 'Storj', tokenContractAddress: '0xb64ef51c888972c908cfacf59b47c1afbc0ab8ac', decimalPlaces: 8 },
         { type: 'chsb', coin: 'eth', network: 'Mainnet', name: 'SwissBorg', tokenContractAddress: '0xba9d4199fab4f26efe3551d490e3821486f135ba', decimalPlaces: 8 },
-        { type: 'ant', coin: 'eth', network: 'Mainnet', name: 'Aragon', tokenContractAddress: '0x960b236a07cf122663c4303350609a66a7b288c0', decimalPlaces: 18 },
         { type: 'elf', coin: 'eth', network: 'Mainnet', name: 'Aelf', tokenContractAddress: '0xbf2179859fc6d5bee9bf9158632dc51678a4100e', decimalPlaces: 18 },
-        { type: 'ppt', coin: 'eth', network: 'Mainnet', name: 'Populous', tokenContractAddress: '0xd4fa1460f537bb9085d22c7bccb5dd450ef28e3a', decimalPlaces: 8 },
         { type: 'opt', coin: 'eth', network: 'Mainnet', name: 'OPTin Token', tokenContractAddress: '0xde8893346ce8052a02606b62d13b142648e062dd', decimalPlaces: 18 },
         { type: 'aion', coin: 'eth', network: 'Mainnet', name: 'AION', tokenContractAddress: '0x4ceda7906a5ed2179785cd3a40a69ee8bc99c466', decimalPlaces: 8 },
         { type: 'cel', coin: 'eth', network: 'Mainnet', name: 'Celsius', tokenContractAddress: '0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d', decimalPlaces: 4 },
@@ -173,6 +163,30 @@ exports.tokens = {
     }
   }
 };
+
+const mainnetTokens = {};
+_.forEach(exports.tokens.bitcoin.eth.tokens, function(value) {
+  if (mainnetTokens[value.type]) {
+    throw new Error('token : ' + value.type + ' duplicated.');
+  }
+  mainnetTokens[value.type] = true;
+
+  if (value.tokenContractAddress !== _.toLower(value.tokenContractAddress)) {
+    throw new Error('token contract: ' + value.type + ' is not all lower case: ' + value.tokenContractAddress);
+  }
+});
+
+const testnetTokens = {};
+_.forEach(exports.tokens.testnet.eth.tokens, function(value) {
+  if (testnetTokens[value.type]) {
+    throw new Error('token : ' + value.type + ' duplicated.');
+  }
+  testnetTokens[value.type] = true;
+
+  if (value.tokenContractAddress !== _.toLower(value.tokenContractAddress)) {
+    throw new Error('token contract: ' + value.type + ' is not all lower case: ' + value.tokenContractAddress);
+  }
+});
 
 const defaults = {
   maxFee: 0.1e8,
