@@ -4,7 +4,6 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const common = require('../../common');
 const request = require('superagent');
-const RecoveryTool = require('../recovery');
 
 class Ltc extends AbstractUtxoCoin {
   constructor() {
@@ -111,53 +110,6 @@ class Ltc extends AbstractUtxoCoin {
       return unspents;
     }).call(this);
   }
-
-  /**
-   * Recover LTC that was sent to the wrong chain
-   * @param coin {Coin} the coin type of the wallet that received the funds
-   * @param walletId {String} the wallet ID of the wallet that received the funds
-   * @param txid {String} The txid of the faulty transaction
-   * @param recoveryAddress {String} address to send recovered funds to
-   * @param walletPassphrase {String} the wallet passphrase
-   * @param xprv {String} the unencrypted xprv (used instead of wallet passphrase)
-   * @returns {{version: number, sourceCoin: string, recoveryCoin: string, walletId: string, recoveryAddres: string, recoveryAmount: number, txHex: string, txInfo: Object}}
-   */
-  recoverFromWrongChain(params, callback) {
-    return co(function *recoverFromWrongChain() {
-      const {
-        txid,
-        recoveryAddress,
-        coin,
-        wallet,
-        walletPassphrase,
-        xprv
-      } = params;
-
-      const allowedRecoveryCoins = ['btc', 'bch'];
-
-      if (!allowedRecoveryCoins.includes(coin.getFamily())) {
-        throw new Error(`ltc recoveries not supported for ${coin.getFamily()}`);
-      }
-
-      const recoveryTool = new RecoveryTool({
-        bitgo: this.bitgo,
-        sourceCoin: this,
-        recoveryCoin: coin,
-        logging: false
-      });
-
-      yield recoveryTool.buildTransaction({
-        wallet: wallet,
-        faultyTxId: txid,
-        recoveryAddress: recoveryAddress
-      });
-
-      yield recoveryTool.signTransaction({ passphrase: walletPassphrase, prv: xprv });
-
-      return recoveryTool.export();
-    }).call(this).asCallback(callback);
-  }
-
 }
 
 module.exports = Ltc;

@@ -100,7 +100,6 @@ class Btc extends AbstractUtxoCoin {
       return transactionDetails;
     }).call(this);
   }
-
 }
 
 module.exports = Btc;

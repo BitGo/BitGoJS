@@ -1059,7 +1059,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param params.txid {String} The txid of the faulty transaction
    * @param params.recoveryAddress {String} address to send recovered funds to
    * @param params.wallet {Wallet} the wallet that received the funds
-   * @param params.coin {Coin} the coin type of the wallet that received the funds
+   * @param params.recoveryCoin {Coin} the coin type of the wallet that received the funds
    * @param params.signed {Boolean} return a half-signed transaction (default=true)
    * @param params.walletPassphrase {String} the wallet passphrase
    * @param params.xprv {String} the unencrypted xprv (used instead of wallet passphrase)
@@ -1071,24 +1071,28 @@ class AbstractUtxoCoin extends BaseCoin {
       const {
         txid,
         recoveryAddress,
-        coin,
         wallet,
         walletPassphrase,
         xprv
       } = params;
 
+      // params.recoveryCoin used to be params.coin, backwards compatibility
+      const recoveryCoin = params.coin || params.recoveryCoin;
+      // signed should default to true, and only be disabled if explicitly set to false (not undefined)
       const signed = params.signed !== false;
+      
+      const sourceCoinFamily = this.getFamily();
+      const recoveryCoinFamily = recoveryCoin.getFamily();
+      const supportedRecoveryCoins = config.supportedCrossChainRecoveries[sourceCoinFamily];
 
-      const allowedRecoveryCoins = ['ltc', 'bch'];
-
-      if (!allowedRecoveryCoins.includes(coin.getFamily())) {
-        throw new Error(`btc recoveries not supported for ${coin.getFamily()}`);
+      if (_.isUndefined(supportedRecoveryCoins) || !supportedRecoveryCoins.includes(recoveryCoinFamily)) {
+        throw new Error(`Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`);
       }
 
       const recoveryTool = new RecoveryTool({
         bitgo: this.bitgo,
         sourceCoin: this,
-        recoveryCoin: coin,
+        recoveryCoin: recoveryCoin,
         logging: false
       });
 

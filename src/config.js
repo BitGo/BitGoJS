@@ -198,6 +198,14 @@ const defaults = {
   bitgoEthAddress: '0x0f47ea803926926f299b7f1afc8460888d850f47'
 };
 
+// Supported cross-chain recovery routes. The coin to be recovered is the index, the valid coins for recipient wallets
+// are listed in the array.
+exports.supportedCrossChainRecoveries = {
+  btc: ['bch', 'ltc'],
+  bch: ['btc', 'ltc'],
+  ltc: ['btc', 'bch']
+};
+
 // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
 exports.defaultConstants = (env) => {
 
