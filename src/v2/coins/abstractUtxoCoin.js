@@ -294,12 +294,15 @@ class AbstractUtxoCoin extends BaseCoin {
 
         const backupPubSignature = keySignatures.backupPub;
         const bitgoPubSignature = keySignatures.bitgoPub;
-        // verify the signatures against the user public key
-        const prefix = this.network.messagePrefix;
 
+        // verify the signatures against the user public key
         const signingAddress = userKey.keyPair.getAddress();
-        const isValidBackupSignature = bitcoinMessage.verify(keychains.backup.pub, signingAddress, Buffer.from(backupPubSignature, 'hex'), prefix);
-        const isValidBitgoSignature = bitcoinMessage.verify(keychains.bitgo.pub, signingAddress, Buffer.from(bitgoPubSignature, 'hex'), prefix);
+
+        // BG-5703: use BTC mainnet prefix for all key signature operations
+        // (this means do not pass a prefix parameter, and let it use the default prefix instead)
+        const isValidBackupSignature = bitcoinMessage.verify(keychains.backup.pub, signingAddress, Buffer.from(backupPubSignature, 'hex'));
+        const isValidBitgoSignature = bitcoinMessage.verify(keychains.bitgo.pub, signingAddress, Buffer.from(bitgoPubSignature, 'hex'));
+
         if (!isValidBackupSignature || !isValidBitgoSignature) {
           throw new Error('secondary public key signatures invalid');
         }
@@ -1080,7 +1083,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const recoveryCoin = params.coin || params.recoveryCoin;
       // signed should default to true, and only be disabled if explicitly set to false (not undefined)
       const signed = params.signed !== false;
-      
+
       const sourceCoinFamily = this.getFamily();
       const recoveryCoinFamily = recoveryCoin.getFamily();
       const supportedRecoveryCoins = config.supportedCrossChainRecoveries[sourceCoinFamily];
