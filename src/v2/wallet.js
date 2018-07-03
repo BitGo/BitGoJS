@@ -246,7 +246,7 @@ Wallet.prototype.maximumSpendable = function maximumSpendable(params, callback) 
     ]);
 
     return this.bitgo.get(this.url('/maximumSpendable'))
-    .send(filteredParams)
+    .query(filteredParams)
     .result();
 
   }).call(this).asCallback(callback);
