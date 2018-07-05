@@ -1966,3 +1966,187 @@ module.exports.nockLtcRecovery = function() {
     transactions: []
   });
 };
+
+module.exports.nockZecRecovery = function() {
+  nock('https://explorer.testnet.z.cash/api')
+  .get('/addr/t2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS')
+  .reply(200, {
+    addrStr: 't2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS',
+    balance: 0.3,
+    balanceSat: 30000000,
+    totalReceived: 0.3,
+    totalReceivedSat: 30000000,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 1,
+    transactions: [
+      '754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f'
+    ]
+  })
+  .get('/addr/t2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS/utxo')
+  .reply(200, [
+    {
+      address: 't2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS',
+      txid: '754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f',
+      vout: 0,
+      scriptPubKey: 'a914b6dfccf23872e01a01d746dbf063730887d4457f87',
+      amount: 0.3,
+      satoshis: 30000000,
+      height: 260745,
+      confirmations: 3
+    }
+  ])
+  .get('/addr/t2HKLixbkdGCJBKvfknMF9Bz4k4nTkUXwNJ')
+  .reply(200, {
+    addrStr: 't2HKLixbkdGCJBKvfknMF9Bz4k4nTkUXwNJ',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/t2UQsXsYj1ViDGLKbyHAFNpSzEJmfggq9n1')
+  .reply(200, {
+    addrStr: 't2UQsXsYj1ViDGLKbyHAFNpSzEJmfggq9n1',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/t2KmVCRvzBcmDaNLgUnSx4BUJTzLWT7EGTG')
+  .reply(200, {
+    addrStr: 't2KmVCRvzBcmDaNLgUnSx4BUJTzLWT7EGTG',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/t2UkU8n1FhZKs5dP8cSogKJtSb9AuVZhRh4')
+  .reply(200, {
+    addrStr: 't2UkU8n1FhZKs5dP8cSogKJtSb9AuVZhRh4',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/t2KNfjD9RLrnyadU83zJvgLaRowGEojstbJ')
+  .reply(200, {
+    addrStr: 't2KNfjD9RLrnyadU83zJvgLaRowGEojstbJ',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/t27tCPuhsuS2fB89TAxVuLTfYcL6Gbqk9zD')
+  .reply(200, {
+    addrStr: 't27tCPuhsuS2fB89TAxVuLTfYcL6Gbqk9zD',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/t2P2TaEYseCb6FYz8mgzAuSpy89txz4cEGh')
+  .reply(200, {
+    addrStr: 't2P2TaEYseCb6FYz8mgzAuSpy89txz4cEGh',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/t2Br6W3MSa32Esd3xr5whZoK5McattTTqMB')
+  .reply(200, {
+    addrStr: 't2Br6W3MSa32Esd3xr5whZoK5McattTTqMB',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/t28kz5GJ5GkjK3iWPNkHgssFGeJ58MngaJK')
+  .reply(200, {
+    addrStr: 't28kz5GJ5GkjK3iWPNkHgssFGeJ58MngaJK',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/t2MxFfe497FetSzqLomcQ6JLxWPsgkdnLWe')
+  .reply(200, {
+    addrStr: 't2MxFfe497FetSzqLomcQ6JLxWPsgkdnLWe',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  });
+};
