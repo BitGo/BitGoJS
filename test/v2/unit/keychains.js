@@ -12,27 +12,40 @@ const _ = require('lodash');
 const TestV2BitGo = require('../../lib/test_bitgo');
 
 describe('V2 Keychains', function v2keychains() {
+  let bitgo;
+  let basecoin;
+  let keychains;
+  let bgUrl;
+
+  before(function before() {
+    nock('https://bitgo.fakeurl')
+    .get('/api/v1/client/constants')
+    .twice()
+    .reply(200, { ttl: 3600, constants: {} });
+
+    bitgo = new TestV2BitGo({ env: 'mock' });
+    bitgo.initializeTestVars();
+    bitgo.setValidate(false);
+    basecoin = bitgo.coin('tltc');
+    keychains = basecoin.keychains();
+
+    bgUrl = common.Environments[bitgo.getEnv()].uri;
+  });
+
+  describe('Add Keychain', function addKeychain() {
+    it('should add a keychain', co(function *addKeychain() {
+      nock(bgUrl)
+      .post('/api/v2/tltc/key', function(body) {
+        body.pub.should.equal('pub');
+        body.derivedFromParentWithSeed.should.equal('derivedFromParentWithSeed');
+        return true;
+      })
+      .reply(200, {});
+      yield keychains.add({ pub: 'pub', derivedFromParentWithSeed: 'derivedFromParentWithSeed' });
+    }));
+  });
+
   describe('Update Password', function updatePassword() {
-    let bitgo;
-    let basecoin;
-    let keychains;
-    let bgUrl;
-
-    before(function beforeUpdatePassword() {
-      nock('https://bitgo.fakeurl')
-      .get('/api/v1/client/constants')
-      .twice()
-      .reply(200, { ttl: 3600, constants: {} });
-
-      bitgo = new TestV2BitGo({ env: 'mock' });
-      bitgo.initializeTestVars();
-      bitgo.setValidate(false);
-      basecoin = bitgo.coin('tltc');
-      keychains = basecoin.keychains();
-
-      bgUrl = common.Environments[bitgo.getEnv()].uri;
-    });
-
     it('should fail to update the password', co(function *coItFail() {
       try {
         yield keychains.updatePassword({ newPassword: '5678' });
