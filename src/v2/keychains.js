@@ -105,7 +105,7 @@ Keychains.prototype.create = function(params) {
 
 Keychains.prototype.add = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise'], callback);
+  common.validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise', 'derivedFromParentWithSeed'], callback);
 
   return this.bitgo.post(this.baseCoin.url('/key'))
   .send({
@@ -115,7 +115,8 @@ Keychains.prototype.add = function(params, callback) {
     source: params.source,
     provider: params.provider,
     originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
-    enterprise: params.enterprise
+    enterprise: params.enterprise,
+    derivedFromParentWithSeed: params.derivedFromParentWithSeed
   })
   .result()
   .nodeify(callback);
