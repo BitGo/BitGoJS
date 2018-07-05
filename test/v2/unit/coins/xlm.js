@@ -1,5 +1,6 @@
 const assert = require('assert');
 const crypto = require('crypto');
+const stellar = require('stellar-base');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const Wallet = require('../../../../src/v2/wallet');
@@ -75,11 +76,19 @@ xdescribe('XLM:', function() {
   describe('Transaction Verification', function() {
     let basecoin;
     let wallet;
+    let halfSignedTransaction;
+
     const userKeychain = {
       pub: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
       prv: 'SDADJSTZNIKF46NM7LE3ZHMX4TJ2VJBL7PTERNDLWHZ5U6KNO5S7XFJD',
       rawPub: '37c6be1c677873e42a90f3d0ed3b0e4f3ba8591f285769d8c922f7024ae0c009',
       rawPrv: 'c034ca796a145e79acfac9bc9d97e4d3aaa42bfbe648b46bb1f3da794d7765fb'
+    };
+    const backupKeychain = {
+      pub: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
+      prv: 'SA22TDBINLZMGYUDVXGUP2JMYIQ3DTJE53PNQUVCDK73XRS6TDVYU7WW',
+      rawPub: 'b63de5ad57cc75b256483bc1c1de82689497eaf27a930896e7733f418acf9eca',
+      rawPrv: '35a98c286af2c36283adcd47e92cc221b1cd24eeded852a21abfbbc65e98eb8a'
     };
     const prebuild = {
       txBase64: 'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAA==',
@@ -161,11 +170,136 @@ xdescribe('XLM:', function() {
 
     it('should sign a prebuild', co(function *() {
       // sign transaction
-      const halfSignedTransaction = yield wallet.signTransaction({
+      halfSignedTransaction = yield wallet.signTransaction({
         txPrebuild: prebuild,
         prv: userKeychain.rawPrv
       });
       halfSignedTransaction.halfSigned.txBase64.should.equal(signedTxBase64);
+    }));
+
+    it('should verify the user signature on a tx', co(function *() {
+      const userPub = userKeychain.rawPub;
+      const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64);
+      const validSignature = basecoin.verifySignature(userPub, tx.hash(), tx.signatures[0].signature());
+      validSignature.should.equal(true);
+    }));
+
+    it('should fail to verify the wrong signature on a tx', co(function *() {
+      const keyPair = basecoin.generateKeyPair();
+      const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64);
+      const validSignature = basecoin.verifySignature(keyPair.pub, tx.hash(), tx.signatures[0].signature());
+      validSignature.should.equal(false);
+    }));
+
+    it('should fail to verify a transaction signed with the wrong key', co(function *() {
+      // sign transaction
+      const tx = yield wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: backupKeychain.rawPrv
+      });
+
+      const txParams = {
+        recipients: [{
+          address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
+          amount: '128000000'
+        }]
+      };
+      const txPrebuild = {
+        txBase64: tx.halfSigned.txBase64
+      };
+      const verification = {
+        disableNetworking: true,
+        keychains: {
+          user: { pub: userKeychain.rawPub },
+          backup: { pub: backupKeychain.rawPub }
+        }
+      };
+      try {
+        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      } catch (e) {
+        e.message.should.equal('transaction signed with wrong key');
+      }
+    }));
+
+    it('should fail to verify a transaction to the wrong recipient', co(function *() {
+      // sign transaction
+      const tx = yield wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: backupKeychain.rawPrv
+      });
+
+      const txParams = {
+        recipients: [{
+          address: 'GAK3NSB43EVCZKDH4PYGJPCVPOYZ7X7KIR3ZTWSYRKRMJWGG5TABM6TH',
+          amount: '128000000'
+        }]
+      };
+      const txPrebuild = {
+        txBase64: tx.halfSigned.txBase64
+      };
+      const verification = {
+        disableNetworking: true,
+        keychains: {
+          user: { pub: userKeychain.rawPub },
+          backup: { pub: backupKeychain.rawPub }
+        }
+      };
+      try {
+        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      } catch (e) {
+        e.message.should.equal('transaction prebuild does not match expected recipient');
+      }
+    }));
+
+    it('should fail to verify a transaction with the wrong amount', co(function *() {
+      // sign transaction
+      const tx = yield wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: backupKeychain.rawPrv
+      });
+
+      const txParams = {
+        recipients: [{
+          address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
+          amount: '130000000'
+        }]
+      };
+      const txPrebuild = {
+        txBase64: tx.halfSigned.txBase64
+      };
+      const verification = {
+        disableNetworking: true,
+        keychains: {
+          user: { pub: userKeychain.rawPub },
+          backup: { pub: backupKeychain.rawPub }
+        }
+      };
+      try {
+        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      } catch (e) {
+        e.message.should.equal('transaction prebuild does not match expected amount');
+      }
+    }));
+
+    it('should verify a transaction', co(function *() {
+      const txParams = {
+        recipients: [{
+          address: 'GCNFRU774FPHLV3HAB6CR54XJYFYITOLU6KS2J5BNCLDPYN7I3DOMIPY',
+          amount: '128000000'
+        }]
+      };
+      const txPrebuild = {
+        txBase64: halfSignedTransaction.halfSigned.txBase64
+      };
+      const verification = {
+        disableNetworking: true,
+        keychains: {
+          user: { pub: userKeychain.rawPub },
+          backup: { pub: backupKeychain.rawPub }
+        }
+      };
+      const validTransaction = yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      validTransaction.should.equal(true);
     }));
   });
 });

@@ -149,13 +149,28 @@ class BaseCoin {
   }
 
   /**
-   * Convert a currency amount represented in base units (satoshi, wei, atoms, drops) to big units (btc, eth, rmg, xrp)
+   * Convert a currency amount represented in base units (satoshi, wei, atoms, drops, stroops)
+   * to big units (btc, eth, rmg, xrp, xlm)
    * @param baseUnits
    */
   baseUnitsToBigUnits(baseUnits) {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     return bigNumber.toFormat();
+  }
+
+  /**
+   * Convert a currency amount represented in big units (btc, eth, rmg, xrp, xlm)
+   * to base units (satoshi, wei, atoms, drops, stroops)
+   * @param bigUnits
+   */
+  bigUnitsToBaseUnits(bigUnits) {
+    const multiplier = this.getBaseFactor();
+    const bigNumber = new BigNumber(bigUnits).times(multiplier);
+    if (!bigNumber.isInteger()) {
+      throw new Error(`non-integer output resulted from multiplying ${bigUnits} by ${multiplier}`);
+    }
+    return bigNumber.toFixed(0);
   }
 
   /**
