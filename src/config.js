@@ -147,7 +147,8 @@ exports.tokens = {
         { type: 'bid', coin: 'eth', network: 'Mainnet', name: 'Blockbid', tokenContractAddress: '0xf1f64f6b8e17dd68c1db10b0eed3d2541a6c09ab', decimalPlaces: 8 },
         { type: 'trst', coin: 'eth', network: 'Mainnet', name: 'WeTrust', tokenContractAddress: '0xcb94be6f13a1182e4a4b6140cb7bf2025d28e41b', decimalPlaces: 6 },
         { type: 'bnty', coin: 'eth', network: 'Mainnet', name: 'Bounty0x', tokenContractAddress: '0xd2d6158683aee4cc838067727209a0aaf4359de3', decimalPlaces: 18 },
-        { type: 'ind', coin: 'eth', network: 'Mainnet', name: 'Indorse', tokenContractAddress: '0xf8e386eda857484f5a12e4b5daa9984e06e73705', decimalPlaces: 18 }
+        { type: 'ind', coin: 'eth', network: 'Mainnet', name: 'Indorse', tokenContractAddress: '0xf8e386eda857484f5a12e4b5daa9984e06e73705', decimalPlaces: 18 },
+        { type: 'tusd', coin: 'eth', network: 'Mainnet', name: 'TrueUSD', tokenContractAddress: '0x8dd5fbce2f6a956c3022ba3663759011dd51e73e', decimalPlaces: 18 }
       ]
     }
   },
