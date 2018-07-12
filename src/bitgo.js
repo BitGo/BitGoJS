@@ -243,6 +243,8 @@ const BitGo = function(params) {
     throw new Error('cannot use https proxy params while in browser');
   }
 
+  this.proxy = params.proxy;
+
   const self = this;
 
   // This is a patching function which can apply our authorization
@@ -250,8 +252,8 @@ const BitGo = function(params) {
   const createPatch = function(method) {
     return function() {
       let req = superagent[method].apply(null, arguments);
-      if (params.proxy) {
-        req = req.proxy(params.proxy);
+      if (self.proxy) {
+        req = req.proxy(self.proxy);
       }
 
       // Patch superagent to return promises
@@ -1894,7 +1896,11 @@ BitGo.prototype.fetchConstants = function(params, callback) {
       return BitGo.prototype._constants[env];
     }
 
-    const result = yield superagent.get(this.url('/client/constants'));
+    // client constants call cannot be authenticated using the normal HMAC validation
+    // scheme, so we need to use a raw superagent instance to do this request.
+    // Proxy settings must still be respected however
+    const resultPromise = superagent.get(this.url('/client/constants'));
+    const result = yield (this.proxy ? resultPromise.proxy(this.proxy) : resultPromise);
     BitGo.prototype._constants[env] = result.body.constants;
 
     BitGo.prototype._constantsExpire[env] = moment.utc().add(result.body.ttl, 'second').toDate();
