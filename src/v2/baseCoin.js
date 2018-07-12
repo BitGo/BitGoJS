@@ -9,6 +9,7 @@ let Token;
 let Webhooks;
 let coinGenerators;
 const bitcoin = require('bitgo-utxo-lib');
+const bitcoinMessage = require('bitcoinjs-message');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const sjcl = require('../sjcl.min');
@@ -156,6 +157,20 @@ class BaseCoin {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     return bigNumber.toFormat();
+  }
+
+  /**
+   * Sign message with private key
+   *
+   * @param key
+   * @param message
+   */
+  signMessage(key, message) {
+    const privateKey = bitcoin.HDNode.fromBase58(key.prv).getKey();
+    const privateKeyBuffer = privateKey.d.toBuffer();
+    const isCompressed = privateKey.compressed;
+    const prefix = bitcoin.networks.bitcoin.messagePrefix;
+    return bitcoinMessage.sign(message, privateKeyBuffer, isCompressed, prefix);
   }
 
   /**

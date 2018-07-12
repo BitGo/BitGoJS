@@ -1,5 +1,4 @@
 const bitcoin = require('../bitcoin');
-const bitcoinMessage = require('bitcoinjs-message');
 const common = require('../common');
 const Wallet = require('./wallet');
 const Promise = require('bluebird');
@@ -267,23 +266,10 @@ Wallets.prototype.generateWallet = function(params, callback) {
     };
 
     // add signatures
-    if (_.isString(userKeychain.prv) && userKeychain.prv.substr(0, 4) === 'xprv') {
-      const privateKey = bitcoin.HDNode.fromBase58(userKeychain.prv).getKey();
-      const privateKeyBuffer = privateKey.d.toBuffer();
-      const isCompressed = privateKey.compressed;
-      const prefix = bitcoin.networks.bitcoin.messagePrefix;
-      const backupPubSignature = bitcoinMessage.sign(backupKeychain.pub, privateKeyBuffer, isCompressed, prefix).toString('hex');
-      const bitgoPubSignature = bitcoinMessage.sign(bitgoKeychain.pub, privateKeyBuffer, isCompressed, prefix).toString('hex');
+    if (_.isString(userKeychain.prv)) {
       walletParams.keySignatures = {
-        backup: backupPubSignature,
-        bitgo: bitgoPubSignature
-      };
-    } else {
-      const backupPubSignature = self.baseCoin.signMessage(userKeychain, backupKeychain.pub).toString('hex');
-      const bitgoPubSignature = self.baseCoin.signMessage(userKeychain, bitgoKeychain.pub).toString('hex');
-      walletParams.keySignatures = {
-        backup: backupPubSignature,
-        bitgo: bitgoPubSignature
+        backup: self.baseCoin.signMessage(userKeychain, backupKeychain.pub).toString('hex'),
+        bitgo: self.baseCoin.signMessage(userKeychain, bitgoKeychain.pub).toString('hex')
       };
     }
 
