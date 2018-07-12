@@ -248,7 +248,7 @@ class Xlm extends BaseCoin {
       let seed;
       const rootPrv = walletParams.rootPrivateKey;
       if (rootPrv) {
-        if (!this.isValidSecret(rootPrv)) {
+        if (!this.isValidPrv(rootPrv)) {
           throw new Error('rootPrivateKey needs to be a private key hex');
         }
         seed = Buffer.from(rootPrv, 'hex');
