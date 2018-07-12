@@ -955,7 +955,8 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
       const verificationParams = _.pick(params.verification || {}, ['disableNetworking', 'keychains', 'addresses']);
       yield this.baseCoin.verifyTransaction({ txParams: params, txPrebuild, wallet: this, verification: verificationParams });
     } catch (e) {
-      throw new Error(`transaction prebuild failed local validation: ${e.message}`);
+      console.error('transaction prebuild failed local validation:');
+      throw e;
     }
 
     const signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });

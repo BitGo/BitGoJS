@@ -14,9 +14,7 @@ bitgo.initializeTestVars();
 
 describe('V2 Base Coin:', function() {
 
-  // TODO: replace xdescribe with decsribe once the fee estimate route is running in test
-  // these tests pass when run against a local server with the appropriate route
-  xdescribe('fee estimate call', function() {
+  describe('fee estimate call', function() {
 
     _.forEach(['tbtc', 'trmg', 'tltc', 'tbch', 'tbtg'], function(coin) {
       const basecoin = bitgo.coin(coin);

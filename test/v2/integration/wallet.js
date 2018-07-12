@@ -674,7 +674,7 @@ describe('V2 Wallet:', function() {
 
   describe('Unspent Manipulation', function() {
 
-    it('should consolidate the number of unspents to 2, and fanout the number of unspents to 200', co(function *() {
+    xit('should consolidate the number of unspents to 2, and fanout the number of unspents to 200', co(function *() {
       const unspentWallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_ID });
       yield bitgo.unlock({ otp: bitgo.testUserOTP() });
       yield Promise.delay(3000);

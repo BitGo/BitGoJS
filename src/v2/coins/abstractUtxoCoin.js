@@ -149,7 +149,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const allOutputs = allOutputsOld;
 
       // verify that each recipient from txParams has their own output
-      const expectedOutputs = txParams.recipients;
+      const expectedOutputs = _.get(txParams, 'recipients', []);
       const missingOutputs = this.constructor.findMissingOutputs(expectedOutputs, allOutputs);
 
       // there is an array of expected outputs
