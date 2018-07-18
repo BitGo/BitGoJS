@@ -54,6 +54,22 @@ describe('V2 Wallet:', function() {
       });
     });
 
+    it('should create new addresses in bulk', co(function *() {
+      const result = yield wallet.createAddress({ count: 3 });
+      result.should.have.property('addresses');
+      result.addresses.should.have.length(3);
+
+      _.forEach(result.addresses, (addr) => {
+        addr.should.have.property('id');
+        addr.should.have.property('address');
+        addr.should.have.property('chain');
+        addr.should.have.property('index');
+        addr.should.have.property('coin', wallet.coin());
+        addr.should.have.property('wallet', wallet.id());
+        addr.should.have.property('keychains');
+      });
+    }));
+
     it('should label a new address', co(function *() {
       const originalAddress = yield wallet.createAddress({ label: 'old_label' });
       const postParams = { address: originalAddress.id, label: 'label_01' };
@@ -65,26 +81,7 @@ describe('V2 Wallet:', function() {
       updatedAddress.label.should.equal('label_02');
     }));
 
-    it('should fail to create a new address', co(function *() {
-      try {
-        yield wallet.createAddress({ gasPrice: {} });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('gasPrice has to be an integer or numeric string');
-      }
-      try {
-        yield wallet.createAddress({ gasPrice: 'abc' });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('gasPrice has to be an integer or numeric string');
-      }
-      try {
-        yield wallet.createAddress({ gasPrice: null });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('gasPrice has to be an integer or numeric string');
-      }
-
+    it('should set gas price for a new address', co(function *() {
       const address1 = yield wallet.createAddress({ gasPrice: '12345' });
       address1.chain.should.equal(10);
 
@@ -94,7 +91,6 @@ describe('V2 Wallet:', function() {
       const address3 = yield wallet.createAddress({ gasPrice: 1234567 });
       address3.chain.should.equal(10);
     }));
-
   });
 
   describe('List Unspents', function() {

@@ -11,13 +11,17 @@ const Wallet = require('../../../src/v2/wallet');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 
+
 describe('V2 Wallet:', function() {
   let bitgo;
+  let wallet;
 
   before(co(function *() {
     // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    yield bitgo.authenticateTestUser(bitgo.testUserOTP());
+    wallet = yield bitgo.coin('tbtc').wallets().get({ id: TestV2BitGo.V2.TEST_WALLET1_ID });
   }));
 
   describe('Transaction Signature Verification', function() {
@@ -231,6 +235,27 @@ describe('V2 Wallet:', function() {
       };
       const error = yield bitgo.getAsyncError(wallet.sendMany(params));
       should.exist(error);
+    }));
+  });
+
+  describe('Create Address', () => {
+    it('should correctly validate arguments to create address', co(function *() {
+      let message = 'gasPrice has to be an integer or numeric string';
+      yield wallet.createAddress({ gasPrice: {} }).should.be.rejectedWith(message);
+      yield wallet.createAddress({ gasPrice: 'abc' }).should.be.rejectedWith(message);
+      yield wallet.createAddress({ gasPrice: null }).should.be.rejectedWith(message);
+
+      message = 'chain has to be an integer';
+      yield wallet.createAddress({ chain: {} }).should.be.rejectedWith(message);
+      yield wallet.createAddress({ chain: 'abc' }).should.be.rejectedWith(message);
+      yield wallet.createAddress({ chain: null }).should.be.rejectedWith(message);
+
+      message = 'count has to be a positive integer';
+      yield wallet.createAddress({ count: {} }).should.be.rejectedWith(message);
+      yield wallet.createAddress({ count: 'abc' }).should.be.rejectedWith(message);
+      yield wallet.createAddress({ count: null }).should.be.rejectedWith(message);
+      yield wallet.createAddress({ count: -1 }).should.be.rejectedWith(message);
+      yield wallet.createAddress({ count: 0 }).should.be.rejectedWith(message);
     }));
   });
 });

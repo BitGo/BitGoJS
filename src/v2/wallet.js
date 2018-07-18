@@ -531,20 +531,22 @@ Wallet.prototype.getAddress = function(params, callback) {
 };
 
 /**
- * Create a new address for use with this wallet
+ * Create one or more new address(es) for use with this wallet.
  *
- * @param params
+ * If the `count` field is defined and greater than 1, an object with a single
+ * array property named `addresses` containing `count` address objects
+ * will be returned. Otherwise, a single address object is returned.
+ *
+ * @param {Number} [chain] on which the new address should be created
+ * @param {(Number|String)} [gasPrice] gas price for new address creation, if applicable
+ * @param {String} [label] label for the new address(es)
+ * @param {Number} [count=1] number of new addresses which should be created
  * @param callback
- * @returns {*}
  */
-Wallet.prototype.createAddress = function(params, callback) {
-  return co(function *() {
-    params = params || {};
-    common.validateParams(params, [], ['label']);
+Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label } = {}, callback) {
+  return co(function *createAddress() {
+    const addressParams = {};
 
-    const addressParams = _.merge({}, params);
-
-    const chain = params.chain;
     if (!_.isUndefined(chain)) {
       if (!_.isInteger(chain)) {
         throw new Error('chain has to be an integer');
@@ -552,7 +554,6 @@ Wallet.prototype.createAddress = function(params, callback) {
       addressParams.chain = chain;
     }
 
-    const gasPrice = params.gasPrice;
     if (!_.isUndefined(gasPrice)) {
       if (!_.isInteger(gasPrice) && (isNaN(Number(gasPrice)) || !_.isString(gasPrice))) {
         throw new Error('gasPrice has to be an integer or numeric string');
@@ -560,18 +561,39 @@ Wallet.prototype.createAddress = function(params, callback) {
       addressParams.gasPrice = gasPrice;
     }
 
-    const newAddress = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
-    .send(addressParams)
-    .result();
+    if (!_.isUndefined(label)) {
+      if (!_.isString(label)) {
+        throw new Error('label has to be a string');
+      }
+      addressParams.label = label;
+    }
 
-    // verify the new address
+    if (!_.isInteger(count) || count <= 0) {
+      throw new Error('count has to be a positive integer');
+    }
+
+    // get keychains for address verification
     const keychains = yield Promise.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k }));
-    newAddress.keychains = keychains;
 
-    const verificationData = _.merge({}, newAddress, { rootAddress: this._wallet.receiveAddress.address });
-    this.baseCoin.verifyAddress(verificationData);
+    const newAddresses = _.times(count, co(function *createAndVerifyAddress() {
+      const newAddress = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
+      .send(addressParams)
+      .result();
 
-    return newAddress;
+      newAddress.keychains = keychains;
+      const verificationData = _.merge({}, newAddress, { rootAddress: this._wallet.receiveAddress.address });
+      this.baseCoin.verifyAddress(verificationData);
+
+      return newAddress;
+    }).bind(this));
+
+    if (newAddresses.length === 1) {
+      return newAddresses[0];
+    }
+
+    return {
+      addresses: yield Promise.all(newAddresses)
+    };
   }).call(this).asCallback(callback);
 };
 
