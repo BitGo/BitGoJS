@@ -10,7 +10,8 @@ const coin = new stellar();
 const nock = require('nock');
 nock.enableNetConnect();
 
-describe('XLM:', function() {
+// TODO Enable when the key server is updated to support XLM in test
+xdescribe('XLM:', function() {
   let bitgo;
   let basecoin;
   const someWalletId = ''; // todo set to one of the XLM wallets on this account
