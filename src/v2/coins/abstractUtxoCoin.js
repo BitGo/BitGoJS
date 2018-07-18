@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const _ = require('lodash');
 const RecoveryTool = require('../recovery');
 const errors = require('../errors');
+const debug = require('debug')('bitgo:v2:utxo');
 
 class AbstractUtxoCoin extends BaseCoin {
   constructor() {
@@ -160,6 +161,7 @@ class AbstractUtxoCoin extends BaseCoin {
         const currentAddress = currentOutput.address;
         const addressDetailsPrebuild = _.get(txPrebuild, `txInfo.walletAddressDetails.${currentAddress}`, {});
         const addressDetailsVerification = _.get(verification, `addresses.${currentAddress}`, {});
+        debug('Parsing address details for %s', currentAddress);
         try {
           /**
            * The only way to determine whether an address is known on the wallet is to initiate a network request and
@@ -169,24 +171,31 @@ class AbstractUtxoCoin extends BaseCoin {
            * client-side and can therefore be analyzed with more granularity and type checking.
            */
           let addressDetails = _.extend({}, addressDetailsPrebuild, addressDetailsVerification);
+          debug('Locally available address %s details: %O', currentAddress, addressDetails);
           if (_.isEmpty(addressDetails) && !disableNetworking) {
             addressDetails = yield wallet.getAddress({ address: currentAddress });
+            debug('Downloaded address %s details: %O', currentAddress, addressDetails);
           }
           // verify that the address is on the wallet
           // verifyAddress throws if it fails to verify the address, meaning it's external
           this.verifyAddress(_.extend({}, addressDetails, { keychains: keychainArray, address: currentAddress }));
+          debug('Address %s verification passed', currentAddress);
           return _.extend({}, currentOutput, addressDetails, { external: false });
         } catch (e) {
+          debug('Address %s verification threw an error:', currentAddress, e);
           // Todo: name server-side errors to avoid message-based checking [BG-5124]
           const walletAddressNotFound = e.message.includes('wallet address not found');
           const unexpectedAddress = (e instanceof errors.UnexpectedAddressError);
           if (walletAddressNotFound || unexpectedAddress) {
             // the address is not on the wallet, which simply means it's external
+            debug('Address %s presumed external', currentAddress);
             if (unexpectedAddress && !walletAddressNotFound) {
+              debug('Address %s was found on wallet but could not be reconstructed and is therefore presumed external', currentAddress);
               console.log(`an address (${currentAddress}) found on the wallet could not be reconstructed and is therefore presumed external`);
             }
             return _.extend({}, currentOutput, { external: true });
           }
+          debug('Address %s verification failed', currentAddress);
           /**
            * It might be a completely invalid address or a bad validation attempt or something else completely, in
            * which case we do not proceed and rather rethrow the error, which is safer than assuming that the address
@@ -554,6 +563,7 @@ class AbstractUtxoCoin extends BaseCoin {
     const signatureIssues = [];
 
     for (let index = 0; index < transaction.ins.length; ++index) {
+      debug('Signing input %d of %d', index + 1, transaction.ins.length);
       const currentUnspent = txPrebuild.txInfo.unspents[index];
       const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
       const privKey = hdPath.deriveKey(path);
@@ -564,19 +574,23 @@ class AbstractUtxoCoin extends BaseCoin {
         unspent: currentUnspent,
         path: path
       };
+      debug('Input details: %O', currentSignatureIssue);
 
       const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
       const isSegwit = !!currentUnspent.witnessScript;
       const sigHashType = this.constructor.defaultSigHashType;
       try {
         if (isSegwit) {
+          debug('Signing segwit input');
           const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
           txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value, witnessScript);
         } else {
+          debug('Signing p2sh input');
           txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value);
         }
 
       } catch (e) {
+        debug('Failed to sign input:', e);
         currentSignatureIssue.error = e;
         signatureIssues.push(currentSignatureIssue);
         continue;
@@ -590,6 +604,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
       const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
       if (!isValidSignature) {
+        debug('Invalid signature');
         currentSignatureIssue.error = new Error('invalid signature');
         signatureIssues.push(currentSignatureIssue);
       }

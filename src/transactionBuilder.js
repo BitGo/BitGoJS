@@ -9,6 +9,7 @@ const Promise = require('bluebird');
 const bitcoin = require('./bitcoin');
 const config = require('./config');
 const _ = require('lodash');
+const debug = require('debug')('bitgo:v1:txb');
 
 //
 // TransactionBuilder
@@ -826,8 +827,12 @@ exports.signTransaction = function(params) {
     feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, network);
   }
 
+  debug('Network: %O', network);
+
   if (enableBCH) {
+    debug('Enabling BCH…');
     network = _.extend({}, network, { coin: 'bch' });
+    debug('New network: %O', network);
   }
 
   let transaction = bitcoin.Transaction.fromHex(params.transactionHex, network);
@@ -892,6 +897,10 @@ exports.signTransaction = function(params) {
     try {
 
       if (isSegwitInput) {
+        debug('Signing segwit input…');
+        if (enableBCH) {
+          throw new Error('BCH does not support segwit inputs');
+        }
         let signatures = _.cloneDeep(txb.inputs[index].signatures);
         const witnessScript = new Buffer(currentUnspent.witnessScript, 'hex');
         currentUnspent.validationScript = witnessScript;
@@ -915,6 +924,9 @@ exports.signTransaction = function(params) {
         if (enableBCH) {
           sigHashType |= bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
         }
+        debug('Signing non-segwit input');
+        debug('BCH parameter: %d', bchParameter);
+        debug('Sighash type: %d', sigHashType);
         txb.sign(index, privKey, subscript, sigHashType, bchParameter);
       }
 

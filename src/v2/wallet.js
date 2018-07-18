@@ -6,6 +6,7 @@ const PendingApproval = require('./pendingApproval');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
+const debug = require('debug')('bitgo:v2:wallet');
 
 const Wallet = function(bitgo, baseCoin, walletData) {
   this.bitgo = bitgo;
@@ -977,6 +978,7 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
       const verificationParams = _.pick(params.verification || {}, ['disableNetworking', 'keychains', 'addresses']);
       yield this.baseCoin.verifyTransaction({ txParams: params, txPrebuild, wallet: this, verification: verificationParams });
     } catch (e) {
+      debug('Transaction prebuild failure:', e);
       console.error('transaction prebuild failed local validation:');
       throw e;
     }

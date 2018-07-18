@@ -36,6 +36,7 @@ const url = require('url');
 const querystring = require('querystring');
 const config = require('./config');
 const crypto = require('crypto');
+const debug = require('debug')('bitgo:index');
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);
@@ -368,7 +369,8 @@ const BitGo = function(params) {
             requestToken: req.authenticationToken,
             bitgoToken: bitgo._token
           };
-          const error = new Error(`invalid response HMAC, possible man-in-the-middle-attack: ${JSON.stringify(errorDetails, null, 4)}`);
+          debug('Invalid response HMAC: %O', errorDetails);
+          const error = new Error('invalid response HMAC, possible man-in-the-middle-attack');
           error.result = errorDetails;
           error.status = 511;
           throw error;

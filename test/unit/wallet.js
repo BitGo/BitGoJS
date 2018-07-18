@@ -360,6 +360,57 @@ describe('Wallet Prototype Methods', function() {
       signature2.tx.should.equal('010000000001011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000023220020440e858228b753544b4c57e300296b55717f811053883f9be9b6a712eacd931cffffffff02e803000000000000136a11426974476f207365677769742074657374180f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a870400483045022100c0755d4b42ba0b21396e356b7548cfd3dda6c8c8f69e8f3adc96dc1550ed2a8502207232c77f9b4826012cc7398828f7f7725a95f0def294f684280173893fcc6162014730440220067b11c6b55693620c233d9f9462f30df60c800d1f59e68aa8ecbdafbfe0f2b502202bbda09dd09d3bc427f0e2c6729f033ec34db4ba94761a50bb658a68edfb8d7501695221032c505fc8a1e4b56811b27366a371e61c9faf565dd2fabaff7a70eac19c32157c210251160b583bd5dc0f0d48096505131c4347ab65b4f21ed57d76c38157499c003d2102679712d62a2560917cc43fd2cc3a1b9b61f528c88bc64905bae6ee079e60609f53ae00000000');
     }));
 
+    it('BCH segwit should fail', co(function *() {
+      const segwitAddress = fakeWallet.generateAddress({ path: '/10/13', segwit: true });
+      const unspent = {
+        addresses: [
+          '2MxKkH8yB3S9YWmTQRbvmborYQyQnH5petP'
+        ],
+        value: '0.18750000',
+        value_int: 18750000,
+        txid: '7d282878a85daee5d46e043827daed57596d75d1aa6e04fd0c09a36f9130881f',
+        n: 0,
+        script_pub_key: {
+          asm: 'OP_HASH160 37b393fce627a0ec634eb543dda1e608e2d1c78a OP_EQUAL',
+          hex: 'a91437b393fce627a0ec634eb543dda1e608e2d1c78a87'
+        },
+        req_sigs: 1,
+        type: 'scripthash',
+        confirmations: 0,
+        id: 61331617
+      };
+      _.extend(unspent, segwitAddress);
+      unspent.value = unspent.value_int;
+      unspent.tx_hash = unspent.txid;
+      unspent.tx_output_n = unspent.n;
+      unspent.script = unspent.outputScript;
+
+      const transaction = yield fakeWallet.createTransaction({
+        changeAddress: segwitAddress.address,
+        unspents: [unspent],
+        recipients: {},
+        noSplitChange: true,
+        forceChangeAtEnd: true,
+        feeRate: 10000,
+        bitgoFee: {
+          amount: 0,
+          address: ''
+        },
+        opReturns: { 'BitGo segwit test': 1000 }
+      });
+      transaction.transactionHex.should.equal('01000000011f8830916fa3090cfd046eaad1756d5957edda2738046ed4e5ae5da87828287d0000000000ffffffff02e803000000000000136a11426974476f207365677769742074657374180f1e010000000017a91437b393fce627a0ec634eb543dda1e608e2d1c78a8700000000');
+
+      // add first signature
+      transaction.keychain = userKeypair;
+      transaction.forceBCH = true;
+      try {
+        yield fakeWallet.signTransaction(transaction);
+        throw new Error();
+      } catch (e) {
+        e.message.should.containEql('BCH does not support segwit inputs');
+      }
+    }));
+
     it('3/5 p2sh', co(function *() {
       const p2shAddress = fakeWallet.generateAddress({ path: '/1/13', segwit: false, keychains: keychains, threshold: 3 });
       const unspent = {

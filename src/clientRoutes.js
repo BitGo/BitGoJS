@@ -8,6 +8,7 @@ const co = Promise.coroutine;
 const url = require('url');
 const _ = require('lodash');
 const pjson = require('../package.json');
+const debug = require('debug')('bitgo:express');
 
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
 
@@ -450,6 +451,7 @@ const promiseWrapper = function(promiseRequestHandler, args) {
     if (args.debug) {
       console.log('handle: ' + url.parse(req.url).pathname);
     }
+    debug('handle: ' + url.parse(req.url).pathname);
     Promise.try(promiseRequestHandler, req, res, next)
     .then(function(result) {
       let status = 200;
