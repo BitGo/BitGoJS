@@ -4,22 +4,25 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-Originally a fork of bitcoinjs-lib [https://github.com/BitGo/bitcoinjs-lib]; we evolved this library to support different UTXO based coins.
+Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we evolved this library to support the transaction building process of different UTXO based coins.
 
+## Supported coins
+- Bitcoin
+- Bitcoin Cash
+- Bitcoin Gold
+- Zcash (overwinter support)
 
 ## Features
 - Clean: Pure JavaScript, concise code, easy to read.
 - Tested: Coverage > 90%, third-party integration tests.
-- Careful: Two person approval process for small, focused pull requests.
 - Compatible: Works on Node.js and all modern browsers.
 - Powerful: Support for advanced features, such as multi-sig, HD Wallets.
 - Secure: Strong random number generation, PGP signed releases, trusted developers.
-- Principled: No support for browsers with crap RNG (IE < 11)
+- Principled: No support for browsers with RNG (IE < 11)
 - Standardized: Node community coding style, Browserify, Node's stdlib and Buffers.
-- Fast: Optimized code, uses typed arrays instead of byte arrays for performance.
-- Experiment-friendly: Bitcoin Mainnet and Testnet support.
-- Altcoin-ready: Capable of working with bitcoin-derived cryptocurrencies (such as Dogecoin).
-
+- Experiment-friendly: Mainnet and Testnet support.
+- Multicoin support: Configurable behaviour based on [network](https://github.com/BitGo/bitgo-utxo-lib/blob/master/src/networks.js) objects.
+- Backed by [BitGo](https://www.bitgo.com/info/)
 
 ## Installation
 ``` bash
@@ -40,11 +43,11 @@ These steps are advisory only,  and may not be suitable for your application.
 
 For your project, create an `index.js` file
 ``` javascript
-let bitcoin = require('bitgo-utxo-lib')
+let bitGoUTXO = require('bitgo-utxo-lib')
 
 // your code here
 function myFunction () {
-	return bitcoin.ECPair.makeRandom().toWIF()
+	return bitGoUTXO.ECPair.makeRandom().toWIF()
 }
 
 module.exports = {
@@ -85,23 +88,12 @@ import { HDNode, Transaction } from 'bitgo-utxo-lib'
 
 For VSCode (and other editors), users are advised to install the type declarations, as Intellisense uses that information to help you code (autocompletion, static analysis).
 
-Report any typescript related bugs at [@dlebrecht DefinitelyTyped fork](https://github.com/dlebrecht/DefinitelyTyped),  submit PRs to [DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped)
-
-
-### Flow
-Definitions for [Flow typechecker](https://flowtype.org/) are available in flow-typed repository.
-
-[You can either download them directly](https://github.com/flowtype/flow-typed/blob/master/definitions/npm/bitcoinjs-lib_v2.x.x/flow_v0.17.x-/bitcoinjs-lib_v2.x.x.js) from the repo, or with the flow-typed CLI
-
-    # npm install -g flow-typed
-    $ flow-typed install -f 0.27 bitcoinjs-lib@2.2.0 # 0.27 for flow version, 2.2.0 for bitcoinjs-lib version
-
-The definitions are complete and up to date with version 2.2.0. The definitions are maintained by [@runn1ng](https://github.com/runn1ng).
-
 ## Examples
 The below examples are implemented as integration tests, they should be very easy to understand.
 Otherwise, pull requests are appreciated.
 Some examples interact (via HTTPS) with a 3rd Party Blockchain Provider (3PBP).
+
+### Bitcoin
 
 - [Generate a random address](https://github.com/BitGo/bitgo-utxo-lib/blob/master/test/integration/addresses.js#L12)
 - [Generate an address from a SHA256 hash](https://github.com/BitGo/bitgo-utxo-lib/blob/master/test/integration/addresses.js#L19)
