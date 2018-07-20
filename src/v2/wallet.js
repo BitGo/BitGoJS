@@ -541,7 +541,7 @@ Wallet.prototype.getAddress = function(params, callback) {
  * @param {Number} [chain] on which the new address should be created
  * @param {(Number|String)} [gasPrice] gas price for new address creation, if applicable
  * @param {String} [label] label for the new address(es)
- * @param {Number} [count=1] number of new addresses which should be created
+ * @param {Number} [count=1] number of new addresses which should be created (maximum 250)
  * @param callback
  */
 Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label } = {}, callback) {
@@ -569,8 +569,8 @@ Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label } 
       addressParams.label = label;
     }
 
-    if (!_.isInteger(count) || count <= 0) {
-      throw new Error('count has to be a positive integer');
+    if (!_.isInteger(count) || count <= 0 || count > 250) {
+      throw new Error('count has to be a number between 1 and 250');
     }
 
     // get keychains for address verification

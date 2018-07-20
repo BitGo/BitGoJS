@@ -250,12 +250,13 @@ describe('V2 Wallet:', function() {
       yield wallet.createAddress({ chain: 'abc' }).should.be.rejectedWith(message);
       yield wallet.createAddress({ chain: null }).should.be.rejectedWith(message);
 
-      message = 'count has to be a positive integer';
+      message = 'count has to be a number between 1 and 250';
       yield wallet.createAddress({ count: {} }).should.be.rejectedWith(message);
       yield wallet.createAddress({ count: 'abc' }).should.be.rejectedWith(message);
       yield wallet.createAddress({ count: null }).should.be.rejectedWith(message);
       yield wallet.createAddress({ count: -1 }).should.be.rejectedWith(message);
       yield wallet.createAddress({ count: 0 }).should.be.rejectedWith(message);
+      yield wallet.createAddress({ count: 251 }).should.be.rejectedWith(message);
     }));
   });
 });
