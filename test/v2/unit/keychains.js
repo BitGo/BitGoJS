@@ -23,6 +23,8 @@ describe('V2 Keychains', function v2keychains() {
     .twice()
     .reply(200, { ttl: 3600, constants: {} });
 
+    TestV2BitGo.prototype._constants = undefined;
+
     bitgo = new TestV2BitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     bitgo.setValidate(false);
