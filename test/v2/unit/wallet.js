@@ -4,13 +4,12 @@
 
 const should = require('should');
 const assert = require('assert');
+const nock = require('nock');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const bitcoin = require('bitgo-utxo-lib');
 const Wallet = require('../../../src/v2/wallet');
-const nock = require('nock');
 const common = require('../../../src/common');
-
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 
@@ -27,9 +26,66 @@ describe('V2 Wallet:', function() {
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
+  describe('Wallet transfers', function() {
+    it('should search in wallet for a transfer', co(function *() {
+      const params = { limit: 1, searchLabel: 'test' };
+
+      const scope =
+        nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/transfer`)
+        .query(params)
+        .reply(200, {
+          coin: 'tbch',
+          transfers: [
+            {
+              wallet: wallet.id(),
+              comment: 'tests'
+            }
+          ]
+        });
+
+      try {
+        yield wallet.transfers(params);
+      } catch (e) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+
+      scope.isDone().should.be.True();
+    }));
+  });
+
+  describe('Wallet addresses', function() {
+    it('should search in wallet addresses', co(function *() {
+      const params = { limit: 1, labelContains: 'test' };
+
+      const scope =
+        nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/addresses`)
+        .query(params)
+        .reply(200, {
+          coin: 'tbch',
+          transfers: [
+            {
+              wallet: wallet.id(),
+              comment: 'tests'
+            }
+          ]
+        });
+
+      try {
+        yield wallet.addresses(params);
+      } catch (e) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+
+      scope.isDone().should.be.True();
+    }));
+  });
+
   describe('Transaction Signature Verification', function() {
-    let basecoin;
     let wallet;
+    let basecoin;
+
     const userKeychain = {
       prv: 'xprv9s21ZrQH143K3hekyNj7TciR4XNYe1kMj68W2ipjJGNHETWP7o42AjDnSPgKhdZ4x8NBAvaL72RrXjuXNdmkMqLERZza73oYugGtbLFXG8g',
       pub: 'xpub661MyMwAqRbcGBjE5QG7pkf9cZD33UUD6K46q7ELrbuG7FqXfLNGiXYGHeEnGBb5AWREnk1eA28g8ArZvURbhshXWkTtddHRo54fgyVvLdb',

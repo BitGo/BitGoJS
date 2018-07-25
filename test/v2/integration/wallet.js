@@ -255,6 +255,15 @@ describe('V2 Wallet:', function() {
       });
     });
 
+    it('transfers with a searchLabel', function() {
+      return wallet.transfers({ limit: 2, searchLabel: 'test' })
+      .then(function(transfers) {
+        transfers.should.have.property('transfers');
+        transfers.transfers.length.should.eql(2);
+        return wallet.transfers({ prevId: transfers.nextBatchPrevId });
+      });
+    });
+
     it('get a transfer by id', function() {
       return wallet.getTransfer({ id: thirdTransfer.id })
       .then(function(transfer) {

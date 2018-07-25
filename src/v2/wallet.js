@@ -198,6 +198,13 @@ Wallet.prototype.transfers = function(params, callback) {
     query.allTokens = params.allTokens;
   }
 
+  if (params.searchLabel) {
+    if (!_.isString(params.searchLabel)) {
+      throw new Error('invalid searchLabel argument, expecting string');
+    }
+    query.searchLabel = params.searchLabel;
+  }
+
   return this.bitgo.get(this.url('/transfer'))
   .query(query)
   .result()
@@ -501,6 +508,13 @@ Wallet.prototype.addresses = function(params, callback) {
       throw new Error('invalid limit argument, expecting number');
     }
     query.limit = params.limit;
+  }
+
+  if (params.labelContains) {
+    if (!_.isString(params.labelContains)) {
+      throw new Error('invalid labelContains argument, expecting string');
+    }
+    query.labelContains = params.labelContains;
   }
 
   return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
