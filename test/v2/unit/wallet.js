@@ -8,20 +8,23 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const bitcoin = require('bitgo-utxo-lib');
 const Wallet = require('../../../src/v2/wallet');
+const nock = require('nock');
+const common = require('../../../src/common');
+
 
 const TestV2BitGo = require('../../lib/test_bitgo');
-
 
 describe('V2 Wallet:', function() {
   let bitgo;
   let wallet;
+  let bgUrl;
 
   before(co(function *() {
-    // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
     yield bitgo.authenticateTestUser(bitgo.testUserOTP());
     wallet = yield bitgo.coin('tbtc').wallets().get({ id: TestV2BitGo.V2.TEST_WALLET1_ID });
+    bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
   describe('Transaction Signature Verification', function() {
@@ -259,4 +262,109 @@ describe('V2 Wallet:', function() {
       yield wallet.createAddress({ count: 251 }).should.be.rejectedWith(message);
     }));
   });
+
+  describe('maxFeeRate verification', function() {
+    const address = '5b34252f1bf349930e34020a';
+    const recipients = [{
+      address,
+      amount: 0
+    }];
+    const maxFeeRate = 10000;
+    let basecoin;
+    let wallet;
+
+    before(co(function *() {
+      basecoin = bitgo.coin('tbtc');
+      const walletData = {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: [
+          '5b3424f91bf349930e340175'
+        ]
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    }));
+
+    it('should pass maxFeeRate parameter when building transactions', co(function *() {
+      const response = nock(bgUrl)
+      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, {
+        recipients, maxFeeRate
+      }).reply(200);
+
+      try {
+        yield wallet.prebuildTransaction({
+          recipients, maxFeeRate
+        });
+      } catch (e) {
+        // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
+        // we only care about /tx/build and whether maxFeeRate is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    }));
+
+    it('should pass maxFeeRate parameter when consolidating unspents', co(function *() {
+      const response = nock(bgUrl)
+      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`, {
+        maxFeeRate
+      }).reply(200);
+
+      nock(bgUrl)
+      .get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`)
+      .reply(200);
+
+      wallet.bitgo._token = wallet.bitgo._token.substring(3); // removing the first 3 to avoid HMAC validation : 'v2x'
+      try {
+        yield wallet.consolidateUnspents({
+          recipients: recipients,
+          maxFeeRate: maxFeeRate
+        });
+      } catch (e) {
+        // the consolidateUnspents method will probably throw an exception for not having all of the correct nocks
+        // we only care about /consolidateUnspents and whether maxFeeRate is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    }));
+
+    it('should pass maxFeeRate parameter when calling sweep wallets', co(function *() {
+      const response = nock(bgUrl)
+      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`, {
+        address: address,
+        maxFeeRate: maxFeeRate
+      }).reply(200);
+
+      try {
+        yield wallet.sweep({
+          address: address,
+          maxFeeRate: maxFeeRate
+        });
+      } catch (e) {
+        // the sweep method will probably throw an exception for not having all of the correct nocks
+        // we only care about /sweepWallet and whether maxFeeRate is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    }));
+
+    it('should pass maxFeeRate parameter when calling fanout unspents', co(function *() {
+      const response = nock(bgUrl)
+      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`, {
+        maxFeeRate: maxFeeRate
+      }).reply(200);
+
+      try {
+        yield wallet.fanoutUnspents({
+          address: address,
+          maxFeeRate: maxFeeRate
+        });
+      } catch (e) {
+        // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
+        // we only care about /fanoutUnspents and whether maxFeeRate is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    }));
+  });
+
 });

@@ -226,16 +226,18 @@ Wallet.prototype.transferBySequenceId = function(params, callback) {
 /**
  * Get the maximum amount you can spend in a single transaction
  *
- * @param params {Object} parameters object
- * -limit {Number} maximum number of selectable unspents
- * -minValue {Number} the minimum value of unspents to use
- * -maxValue {Number} the maximum value of unspents to use
- * -minHeight {Number} the minimum height of unspents on the block chain to use
- * -minConfirms {Number} all selected unspents will have at least this many conformations
- * -enforceMinConfirmsForChange {Boolean} Enforces minConfirms on change inputs
- * -feeRate {Number} fee rate to use in calculation of maximum spendable
+ * @param {Object} params - parameters object
+ * @param {Number} params.limit - maximum number of selectable unspents
+ * @param {Number} params.minValue - the minimum value of unspents to use in satoshis
+ * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis
+ * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
+ * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
+ * @param {Boolean} params.enforceMinConfirmsForChange - Enforces minConfirms on change inputs
+ * @param {Number} params.feeRate - fee rate to use in calculation of maximum spendable in satoshis/kB
+ * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
  * @param callback
  * @returns {{maximumSpendable: Number, coin: String}}
+ * NOTE : feeTxConfirmTarget omitted on purpose because gauging the maximum spendable amount with dynamic fees does not make sense
  */
 Wallet.prototype.maximumSpendable = function maximumSpendable(params, callback) {
   return co(function *() {
@@ -243,7 +245,7 @@ Wallet.prototype.maximumSpendable = function maximumSpendable(params, callback) 
 
     const filteredParams = _.pick(params, [
       'minValue', 'maxValue', 'minHeight', 'target', 'plainTarget',
-      'limit', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate'
+      'limit', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate'
     ]);
 
     return this.bitgo.get(this.url('/maximumSpendable'))
@@ -274,19 +276,18 @@ Wallet.prototype.unspents = function(params, callback) {
 /**
  * Consolidate unspents on a wallet
  *
- * @param params {Object} parameters object
- * -walletPassphrase {String} the users wallet passphrase
- * -prevId {String} used in batch requests
- * -limit {Number} used by mongoose to limit the amount of queries
- * -minValue {Number} the minimum value of unspents to use
- * -maxValue {Number} the maximum value of unspents to use
- * -minHeight {Number} the minimum height of unspents on the block chain to use
- * -target {Number} sum of the outputs plus sum of fees and change
- * -plainTarget {Number} the sum of the outputs
- * -targetUnspentPoolSize {Number} the number of unspents you want after the consolidation of valid unspents
- * -minConfirms {Number} all selected unspents will have at least this many conformations
- * -feeRate {Number} The fee rate to use for the consolidation
- * -maxFeePercentage {Number} The maximum value of the unspents you are willing to lose
+ * @param {Object} params - parameters object
+ * @param {String} params.walletPassphrase - the users wallet passphrase
+ * @param {String} params.prevId - used in batch requests
+ * @param {Number} params.limit - the number of unspents retrieved per call
+ * @param {Number} params.minValue - the minimum value of unspents to use in satoshis/kB
+ * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis/kB
+ * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
+ * @param {Number} params.targetUnspentPoolSize - the number of unspents you want after the consolidation of valid unspents
+ * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
+ * @param {Number} params.feeRate - The fee rate to use for the consolidation in satoshis/kB
+ * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
+ * @param {Number} params.maxFeePercentage - the maximum relative portion that you're willing to spend towards fees
  * @param callback
  * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
  */
@@ -296,38 +297,38 @@ Wallet.prototype.consolidateUnspents = function consolidateUnspents(params, call
     common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
     const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0] });
-    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'numUnspentsToMake', 'feeTxConfirmTarget', 'limit', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeePercentage']);
+    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'numUnspentsToMake', 'feeTxConfirmTarget', 'limit', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'maxFeePercentage']);
     const response = yield this.bitgo.post(this.url('/consolidateUnspents'))
     .send(filteredParams)
     .result();
 
     const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain });
     const signedTransaction = yield this.signTransaction(transactionParams);
-
     const selectParams = _.pick(params, ['comment', 'otp']);
     const finalTxParams = _.extend({}, signedTransaction, selectParams);
+
     return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
     .send(finalTxParams)
     .result();
   }).call(this).asCallback(callback);
-
 };
 
 /**
  * Fanout unspents for a wallet
  *
- * @param params {Object} parameters object
- * -walletPassphrase {String} the users wallet passphrase
- * -xprv {String} the private key in string form if the walletPassphrase is not available
- * -minValue {Number} the minimum value of unspents to use
- * -maxValue {Number} the maximum value of unspents to use
- * -minHeight {Number} the minimum height of unspents on the block chain to use
- * -minConfirms {Number} all selected unspents will have at least this many conformations
- * -maxFeePercentage {Number} the maximum proportion of an unspent you are willing to lose to fees
- * -feeTxConfirmTarget {Number} The number of blocks to wait to confirm the transaction
- * -feeRate {Number} The desired fee rate for the transaction in satoshis/kb
- * -maxNumInputsToUse {Number} the number of unspents you want to use in the transaction
- * -numUnspentsToMake {Number} the number of new unspents to make
+ * @param {Object} params - parameters object
+ * @param {String} params.walletPassphrase - the users wallet passphrase
+ * @param {String} params.xprv - the private key in string form if the walletPassphrase is not available
+ * @param {Number} params.minValue - the minimum value of unspents to use
+ * @param {Number} params.maxValue - the maximum value of unspents to use
+ * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
+ * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
+ * @param {Number} params.maxFeePercentage - the maximum proportion of an unspent you are willing to lose to fees
+ * @param {Number} params.feeTxConfirmTarget - estimate the fees to aim for first confirmation with this number of blocks
+ * @param {Number} params.feeRate - The desired fee rate for the transaction in satoshis/kB
+ * @param {Number} params.maxFeeRate - The max limit for a fee rate in satoshis/kB
+ * @param {Number} params.maxNumInputsToUse - the number of unspents you want to use in the transaction
+ * @param {Number} params.numUnspentsToMake - the number of new unspents to make
  * @param callback
  * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
  */
@@ -336,7 +337,7 @@ Wallet.prototype.fanoutUnspents = function fanoutUnspents(params, callback) {
     params = params || {};
     common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
-    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeePercentage', 'feeTxConfirmTarget']);
+    const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'maxFeePercentage', 'feeTxConfirmTarget']);
     const response = yield this.bitgo.post(this.url('/fanoutUnspents'))
     .send(filteredParams)
     .result();
@@ -375,13 +376,14 @@ Wallet.prototype.updateTokenFlushThresholds = function(thresholds, callback) {
 /**
  * Sweep funds for a wallet
  *
- * @param params {Object} parameters object
- * @param params.address {String} The address to send all the funds in the wallet to
- * @param params.walletPassphrase {String} the users wallet passphrase
- * @param [params.xprv] {String} the private key in string form if the walletPassphrase is not available
- * @param [params.otp] {String} Two factor auth code to enable sending the transaction
- * @param [params.feeTxConfirmTarget] {number} The number of blocks to wait to confirm the transaction
- * @param [params.feeRate] {number} The desired fee rate for the transaction in satoshis/kb
+ * @param {Object} params - parameters object
+ * @param {String} params.address - The address to send all the funds in the wallet to
+ * @param {String} params.walletPassphrase - the users wallet passphrase
+ * @param {String} params.xprv - the private key in string form if the walletPassphrase is not available
+ * @param {String} params.otp - Two factor auth code to enable sending the transaction
+ * @param {Number} params.feeTxConfirmTarget - Estimate the fees to aim for first confirmation within this number of blocks
+ * @param {Number} params.feeRate - The desired fee rate for the transaction in satoshis/kB
+ * @param {Number} [params.maxFeeRate] - upper limit for feeRate in satoshis/kB
  * @param [callback]
  * @returns txHex {String} the txHex of the signed transaction
  */
@@ -408,7 +410,7 @@ Wallet.prototype.sweep = function sweep(params, callback) {
     }
     // the following flow works for all UTXO coins
 
-    const filteredParams = _.pick(params, ['address', 'feeRate', 'feeTxConfirmTarget']);
+    const filteredParams = _.pick(params, ['address', 'feeRate', 'maxFeeRate', 'feeTxConfirmTarget']);
     const response = yield this.bitgo.post(this.url('/sweepWallet'))
     .send(filteredParams)
     .result();
@@ -880,7 +882,20 @@ Wallet.prototype.removeUser = function(params, callback) {
 
 /**
  *
- * @param params
+ * @param {Object} params
+ * @param {{address: string, amount: string}} params.recipients - list of recipients and necessary recipient information
+ * @param {Number} params.numBlocks - Estimates the approximate fee per kilobyte necessary for a transaction confirmation within numBlocks blocks
+ * @param {Number} param.feeRate - the desired feeRate for the transaction in satoshis/kB
+ * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
+ * @param {Number} params.minValue - Ignore unspents smaller than this amount of satoshis
+ * @param {Number} params.maxValue - Ignore unspents larger than this amount of satoshis
+ * @param {Number} params.sequenceId - The sequence ID of the transaction
+ * @param {Number} params.lastLedgerSequence - Absolute max ledger the transaction should be accepted in, whereafter it will be rejected.
+ * @param {String} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.
+ * @param {Number} params.gasPrice - Custom gas price to be used for sending the transaction
+ * @param {Boolean} params.noSplitChange - Set to true to disable automatic change splitting for purposes of unspent management
+ * @param {Array} params.unspents - The unspents to use in the transaction. Each unspent should be in the form prevTxId:nOutput
+ * @param {String} params.changeAddress - Specifies the destination of the change output
  * @param callback
  * @returns {*}
  */
@@ -888,7 +903,7 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
   return co(function *() {
     // Whitelist params to build tx (mostly around unspent selection)
     const whitelistedParams = _.pick(params, [
-      'recipients', 'numBlocks', 'feeRate', 'minConfirms',
+      'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms',
       'enforceMinConfirmsForChange', 'targetWalletUnspents',
       'message', 'minValue', 'maxValue', 'sequenceId',
       'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
@@ -937,6 +952,7 @@ Wallet.prototype.signTransaction = function(params, callback) {
     if (!params.walletPassphrase) {
       throw new Error('walletPassphrase property missing');
     }
+
     userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
   }
 
@@ -1061,10 +1077,26 @@ Wallet.prototype.send = function(params, callback) {
  * 3. Creates the transaction with default fee
  * 4. Signs transaction with decrypted user key
  * 5. Sends the transaction to BitGo
- * @param params
- * @param params.recipients {{address: string, amount: string}}[]
- * @param params.comment
- * @param params.otp
+ * @param {object} params
+ * @param {{address: string, amount: string}} params.recipients - list of recipients and necessary recipient information
+ * @param {Number} params.numBlocks - Estimates the approximate fee per kilobyte necessary for a transaction confirmation within numBlocks blocks
+ * @param {Number} params.feeRate - the desired feeRate for the transaction in satothis/kB
+ * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
+ * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
+ * @param {Boolean} params.enforceMinConfirmsForChange - Enforces minConfirms on change inputs
+ * @param {Number} params.targetWalletUnspents - The desired count of unspents in the wallet
+ * @param {String} params.message - optional message to attach to transaction
+ * @param {Number} params.minValue - Ignore unspents smaller than this amount of satoshis
+ * @param {Number} params.maxValue - Ignore unspents larger than this amount of satoshis
+ * @param {Number} params.sequenceId - The sequence ID of the transaction
+ * @param {Number} params.lastLedgerSequence - Absolute max ledger the transaction should be accepted in, whereafter it will be rejected.
+ * @param {String} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.
+ * @param {Number} params.gasPrice - Custom gas price to be used for sending the transaction
+ * @param {Boolean} params.noSplitChange - Set to true to disable automatic change splitting for purposes of unspent management
+ * @param {Array} params.unspents - The unspents to use in the transaction. Each unspent should be in the form prevTxId:nOutput
+ * @param {String} params.comment - Any additional comment to attach to the transaction
+ * @param {String} params.otp - Two factor auth code to enable sending the transaction
+ * @param {String} params.changeAddress - Specifies the destination of the change output
  * @param callback
  * @returns {*}
  */
@@ -1087,7 +1119,7 @@ Wallet.prototype.sendMany = function(params, callback) {
 
     const halfSignedTransaction = yield this.prebuildAndSignTransaction(params);
     const selectParams = _.pick(params, [
-      'recipients', 'numBlocks', 'feeRate', 'minConfirms',
+      'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms',
       'enforceMinConfirmsForChange', 'targetWalletUnspents',
       'message', 'minValue', 'maxValue', 'sequenceId',
       'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
