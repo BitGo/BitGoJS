@@ -65,8 +65,6 @@ exports.tokens = {
         { type: 'salt', coin: 'eth', network: 'Mainnet', name: 'Salt', tokenContractAddress: '0x4156d3342d5c385a87d264f90653733592000581', decimalPlaces: 8 },
         { type: 'link', coin: 'eth', network: 'Mainnet', name: 'ChainLink', tokenContractAddress: '0x514910771af9ca656af840dff83e8264ecf986ca', decimalPlaces: 18 },
         { type: 'ncash', coin: 'eth', network: 'Mainnet', name: 'Nucleus Vision', tokenContractAddress: '0x809826cceab68c387726af962713b64cb5cb3cca', decimalPlaces: 18 },
-        { type: 'storm', coin: 'eth', network: 'Mainnet', name: 'Storm Token', tokenContractAddress: '0xd0a4b8946cb52f0661273bfbc6fd0e0c75fc6433', decimalPlaces: 18 },
-        { type: 'bnt', coin: 'eth', network: 'Mainnet', name: 'Bancor Network Token', tokenContractAddress: '0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c', decimalPlaces: 18 },
         { type: 'eng', coin: 'eth', network: 'Mainnet', name: 'Enigma', tokenContractAddress: '0xf0ee6b27b759c9893ce4f094b49ad28fd15a23e4', decimalPlaces: 8 },
         { type: 'req', coin: 'eth', network: 'Mainnet', name: 'Request Network', tokenContractAddress: '0x8f8221afbb33998d8584a2b05749ba73c37a938a', decimalPlaces: 18 },
         { type: 'dent', coin: 'eth', network: 'Mainnet', name: 'Dent', tokenContractAddress: '0x3597bfd533a99c9aa083587b074434e61eb0a258', decimalPlaces: 8 },
@@ -87,7 +85,6 @@ exports.tokens = {
         { type: 'qsp', coin: 'eth', network: 'Mainnet', name: 'Quantstamp', tokenContractAddress: '0x99ea4db9ee77acd40b119bd1dc4e33e1c070b80d', decimalPlaces: 18 },
         { type: 'auto', coin: 'eth', network: 'Mainnet', name: 'Cube', tokenContractAddress: '0x622dffcc4e83c64ba959530a5a5580687a57581b', decimalPlaces: 18 },
         { type: 'tms', coin: 'eth', network: 'Mainnet', name: 'Time New Bank', tokenContractAddress: '0xf7920b0768ecb20a123fac32311d07d193381d6f', decimalPlaces: 18 },
-        { type: 'mtl', coin: 'eth', network: 'Mainnet', name: 'Metal', tokenContractAddress: '0xf433089366899d83a9f26a773d59ec7ecf30355e', decimalPlaces: 8 },
         { type: 'rlc', coin: 'eth', network: 'Mainnet', name: 'Iexec Rlc', tokenContractAddress: '0x607f4c5bb672230e8672085532f7e901544a7375', decimalPlaces: 9 },
         { type: 'mco', coin: 'eth', network: 'Mainnet', name: 'Monaco', tokenContractAddress: '0xb63b606ac810a52cca15e44bb630fd42d8d1d83d', decimalPlaces: 8 },
         { type: 'rdn', coin: 'eth', network: 'Mainnet', name: 'Raiden Network', tokenContractAddress: '0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6', decimalPlaces: 18 },
@@ -148,7 +145,17 @@ exports.tokens = {
         { type: 'trst', coin: 'eth', network: 'Mainnet', name: 'WeTrust', tokenContractAddress: '0xcb94be6f13a1182e4a4b6140cb7bf2025d28e41b', decimalPlaces: 6 },
         { type: 'bnty', coin: 'eth', network: 'Mainnet', name: 'Bounty0x', tokenContractAddress: '0xd2d6158683aee4cc838067727209a0aaf4359de3', decimalPlaces: 18 },
         { type: 'ind', coin: 'eth', network: 'Mainnet', name: 'Indorse', tokenContractAddress: '0xf8e386eda857484f5a12e4b5daa9984e06e73705', decimalPlaces: 18 },
-        { type: 'tusd', coin: 'eth', network: 'Mainnet', name: 'TrueUSD', tokenContractAddress: '0x8dd5fbce2f6a956c3022ba3663759011dd51e73e', decimalPlaces: 18 }
+        { type: 'tusd', coin: 'eth', network: 'Mainnet', name: 'TrueUSD', tokenContractAddress: '0x8dd5fbce2f6a956c3022ba3663759011dd51e73e', decimalPlaces: 18 },
+        { type: 'mfg', coin: 'eth', network: 'Mainnet', name: 'SyncFab', tokenContractAddress: '0x6710c63432a2de02954fc0f851db07146a6c0312', decimalPlaces: 18 },
+        { type: 'mtl', coin: 'eth', network: 'Mainnet', name: 'Metal', tokenContractAddress: '0xf433089366899d83a9f26a773d59ec7ecf30355e', decimalPlaces: 8 },
+        { type: 'neu', coin: 'eth', network: 'Mainnet', name: 'Neumark', tokenContractAddress: '0xa823e6722006afe99e91c30ff5295052fe6b8e32', decimalPlaces: 18 },
+        { type: 'cdt', coin: 'eth', network: 'Mainnet', name: 'Blox', tokenContractAddress: '0x177d39ac676ed1c67a2b268ad7f1e58826e5b0af', decimalPlaces: 18 },
+        { type: 'bnt', coin: 'eth', network: 'Mainnet', name: 'Bancor', tokenContractAddress: '0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c', decimalPlaces: 18 },
+        { type: 'cln', coin: 'eth', network: 'Mainnet', name: 'Colu Local Network', tokenContractAddress: '0x4162178b78d6985480a308b2190ee5517460406d', decimalPlaces: 18 },
+        { type: 'gen', coin: 'eth', network: 'Mainnet', name: 'DAOstack', tokenContractAddress: '0x543ff227f64aa17ea132bf9886cab5db55dcaddf', decimalPlaces: 18 },
+        { type: 'storm', coin: 'eth', network: 'Mainnet', name: 'Storm', tokenContractAddress: '0xd0a4b8946cb52f0661273bfbc6fd0e0c75fc6433', decimalPlaces: 18 },
+        { type: 'ten', coin: 'eth', network: 'Mainnet', name: 'Tokenomy', tokenContractAddress: '0xdd16ec0f66e54d453e6756713e533355989040e4', decimalPlaces: 18 },
+        { type: 'btt', coin: 'eth', network: 'Mainnet', name: 'Blocktrade', tokenContractAddress: '0xfa456cf55250a839088b27ee32a424d7dacb54ff', decimalPlaces: 18 }
       ]
     }
   },
