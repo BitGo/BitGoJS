@@ -7,6 +7,7 @@ const co = Promise.coroutine;
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const { BitGo } = require('../../../../src/index');
 
+const ripple = require('../../../../src/ripple');
 const rippleBinaryCodec = require('ripple-binary-codec');
 
 const nock = require('nock');
@@ -74,6 +75,25 @@ describe('XRP:', function() {
     signedExplanation.id.should.equal('D52681436CC5B94E9D00BC8172047B1A6F3C028D2D0A5CDFB81680039C48ADFD');
     unsignedExplanation.outputAmount.should.equal('253481');
     signedExplanation.outputAmount.should.equal('253481');
+  });
+
+  it('should be able to cosign XRP transaction in any form', function() {
+    const unsignedTxHex = '120000228000000024000000072E00000000201B0018D07161400000000003DE2968400000000000002D8114726D0D8A26568D5D9680AC80577C912236717191831449EE221CCACC4DD2BF8862B22B0960A84FC771D9';
+    const unsignedTxJson = '{"TransactionType":"Payment","Account":"rBSpCz8PafXTJHppDcNnex7dYnbe3tSuFG","Destination":"rfjub8A4dpSD5nnszUFTsLprxu1W398jwc","DestinationTag":0,"Amount":"253481","Flags":2147483648,"LastLedgerSequence":1626225,"Fee":"45","Sequence":7}';
+
+    const signer = {
+      prv: 'xprv9s21ZrQH143K36cPP1rLoWsp9JQp9JEJGo2LFdfaufqcYSp5qJk5S5zN94SnXLiBEnU4dH8RDWfsSSLzdKwdEdqBZrRvZ3LqX1VXYWXFcpD',
+      pub: 'xpub661MyMwAqRbcFagrV3PMAepYhLFJYkx9e1ww425CU1NbRF9ENr4KytJqzLWZwWQ7b1CWLDhV3kthPRAyT33CApQ9QWZDvSq4bFHp2yL8Eob',
+      rawPub: '02d15efd7200d9da40e10d3f5a3149ed006c6db8f3b2d22912597f0b6b74785490',
+      rawPrv: '49187695ec4da97486feb904f532769c8792555e989a050f486a6d3172a137e7',
+      xrpAddress: 'rJBWFy35Ya3qDZD89DuWBwm8oBbYmqb3H9'
+    };
+
+    const rippleLib = ripple();
+    const coSignedHexTransaction = rippleLib.signWithPrivateKey(unsignedTxHex, signer.rawPrv, { signAs: signer.xrpAddress });
+    const coSignedJsonTransaction = rippleLib.signWithPrivateKey(unsignedTxJson, signer.rawPrv, { signAs: signer.xrpAddress });
+    coSignedHexTransaction.signedTransaction.should.equal(coSignedJsonTransaction.signedTransaction);
+    coSignedHexTransaction.id.should.equal(coSignedJsonTransaction.id);
   });
 
   it('Should be unable to explain bogus XRP transaction', function() {

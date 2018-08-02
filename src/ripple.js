@@ -12,7 +12,14 @@ function computeSignature(tx, privateKey, signAs) {
   return keypairs.sign(signingData, privateKey);
 }
 
-const signWithPrivateKey = function(txJSON, privateKey, options) {
+/**
+ * Sign Ripple transaction with a secp256k1 private key
+ * @param txHex
+ * @param privateKey
+ * @param options
+ * @returns {{signedTransaction: *, id}}
+ */
+const signWithPrivateKey = function(txHex, privateKey, options) {
   let privateKeyBuffer = new Buffer(privateKey, 'hex');
   if (privateKeyBuffer.length === 33 && privateKeyBuffer[0] === 0) {
     privateKeyBuffer = privateKeyBuffer.slice(1, 33);
@@ -20,9 +27,18 @@ const signWithPrivateKey = function(txJSON, privateKey, options) {
   const privateKeyObject = prova.ECPair.fromPrivateKeyBuffer(privateKeyBuffer);
   const publicKey = privateKeyObject.getPublicKeyBuffer().toString('hex').toUpperCase();
 
-  const tx = JSON.parse(txJSON);
+  let tx;
+  try {
+    tx = binary.decode(txHex);
+  } catch (e) {
+    try {
+      tx = JSON.parse(txHex);
+    } catch (e) {
+      throw new Error('txHex needs to be either hex or JSON string for XRP');
+    }
+  }
   if (tx.TxnSignature || tx.Signers) {
-    throw new Error('txJSON must not contain "TxnSignature" or "Signers" properties');
+    throw new Error('transaction must not contain "TxnSignature" or "Signers" properties');
   }
 
   tx.SigningPubKey = (options && options.signAs) ? '' : publicKey;
