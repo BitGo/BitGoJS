@@ -122,6 +122,35 @@ describe('Transaction', function () {
     })
   })
 
+  describe('fromBuffer/fromHex for Testnet Dash', function () {
+    fixtures.dasht.valid.forEach(function (testData) {
+      it('imports ' + testData.description, function () {
+        const tx = Transaction.fromHex(testData.hex, networks.dashTest)
+        assert.equal(tx.version, testData.version)
+        assert.equal(tx.versionGroupId, testData.versionGroupId)
+        assert.equal(tx.locktime, testData.locktime)
+        assert.equal(tx.ins.length, testData.vin.length)
+        assert.equal(tx.outs.length, testData.vout.length)
+      })
+    })
+
+    fixtures.dasht.valid.forEach(function (testData) {
+      it('exports ' + testData.description, function () {
+        const tx = Transaction.fromHex(testData.hex, networks.dashTest)
+        const hexTx = tx.toHex()
+        assert.equal(testData.hex, hexTx)
+      })
+    })
+
+    fixtures.dasht.valid.forEach(function (testData) {
+      it('clone ' + testData.description, function () {
+        const tx = Transaction.fromHex(testData.hex, networks.dashTest)
+        const clonedTx = tx.clone()
+        assert.equal(clonedTx.toHex(), testData.hex)
+      })
+    })
+  })
+
   describe('toBuffer/toHex', function () {
     fixtures.valid.forEach(function (f) {
       it('exports ' + f.description + ' (' + f.id + ')', function () {

@@ -6,7 +6,8 @@ const coins = {
   BTC: 'btc',
   BTG: 'btg',
   LTC: 'ltc',
-  ZEC: 'zec'
+  ZEC: 'zec',
+  DASH: 'dash'
 }
 
 coins.isBitcoin = function (network) {

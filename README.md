@@ -12,6 +12,7 @@ Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we
 - Bitcoin Cash
 - Bitcoin Gold
 - Zcash (overwinter support)
+- Dash
 
 ## Features
 - Clean: Pure JavaScript, concise code, easy to read.
