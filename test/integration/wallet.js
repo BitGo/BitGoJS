@@ -1201,10 +1201,10 @@ describe('Wallet API', function() {
           e.message.should.eql('Insufficient funds');
           e.result.should.have.property('fee');
           e.result.should.have.property('txInfo');
-          e.result.txInfo.should.have.property('nP2SHInputs');
-          e.result.txInfo.should.have.property('nP2PKHInputs');
+          e.result.txInfo.should.have.property('nP2shInputs');
+          e.result.txInfo.should.have.property('nP2pkhInputs');
           e.result.txInfo.should.have.property('nOutputs');
-          e.result.txInfo.nP2PKHInputs.should.eql(0);
+          e.result.txInfo.nP2pkhInputs.should.eql(0);
         });
       });
 
@@ -1331,7 +1331,7 @@ describe('Wallet API', function() {
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients })
         .then(function(result) {
           result.should.have.property('unspents');
-          result.txInfo.nP2PKHInputs.should.equal(15);
+          result.txInfo.nP2pkhInputs.should.equal(15);
           result.should.have.property('fee');
           result.should.have.property('feeRate');
           result.walletId.should.equal(wallet1.id());
@@ -1381,7 +1381,7 @@ describe('Wallet API', function() {
         })
         .then(function(result) {
           // several inputs are below fee cost to add them and should be pruned
-          result.txInfo.nP2SHInputs.should.equal(15 - 1);
+          result.txInfo.nP2shInputs.should.equal(15 - 1);
         });
       });
 
@@ -1429,7 +1429,7 @@ describe('Wallet API', function() {
         })
         .then(function(result) {
           // several inputs are below fee cost to add them and should be pruned
-          result.txInfo.nP2SHInputs.should.equal(15 - 1);
+          result.txInfo.nP2shInputs.should.equal(15 - 1);
         });
       });
 
@@ -1590,8 +1590,8 @@ describe('Wallet API', function() {
           result.walletId = wallet1.id;
           result.fee.should.eql(843663);
           result.should.have.property('txInfo');
-          result.txInfo.nP2SHInputs.should.eql(255);
-          result.txInfo.nP2PKHInputs.should.eql(0);
+          result.txInfo.nP2shInputs.should.eql(255);
+          result.txInfo.nP2pkhInputs.should.eql(0);
           result.txInfo.nOutputs.should.eql(3);
         });
       });
@@ -1626,8 +1626,8 @@ describe('Wallet API', function() {
           const feeUsed = result.fee;
           assert.equal(feeUsed, 1039513); // tx size will be 75kb * 0.000138 * 1e8
           result.should.have.property('txInfo');
-          result.txInfo.nP2SHInputs.should.eql(255);
-          result.txInfo.nP2PKHInputs.should.eql(0);
+          result.txInfo.nP2shInputs.should.eql(255);
+          result.txInfo.nP2pkhInputs.should.eql(0);
           result.txInfo.nOutputs.should.eql(3);
         });
       });
@@ -1707,8 +1707,8 @@ describe('Wallet API', function() {
         .then(function(result) {
           result.changeAddresses.length.should.equal(1);
           result.should.have.property('txInfo');
-          result.txInfo.nP2SHInputs.should.eql(255);
-          result.txInfo.nP2PKHInputs.should.eql(0);
+          result.txInfo.nP2shInputs.should.eql(255);
+          result.txInfo.nP2pkhInputs.should.eql(0);
           result.txInfo.nOutputs.should.eql(3);
         });
       });
@@ -1729,8 +1729,8 @@ describe('Wallet API', function() {
         .then(function(result) {
           result.changeAddresses.length.should.equal(3);
           result.should.have.property('txInfo');
-          result.txInfo.nP2SHInputs.should.eql(255);
-          result.txInfo.nP2PKHInputs.should.eql(0);
+          result.txInfo.nP2shInputs.should.eql(255);
+          result.txInfo.nP2pkhInputs.should.eql(0);
           result.txInfo.nOutputs.should.eql(5);
         });
       });
@@ -1790,8 +1790,8 @@ describe('Wallet API', function() {
           result.unspents[result.unspents.length - 1].redeemScript.should.eql(false);
           result.changeAddresses.length.should.eql(2); // we expect 2 changeaddresses - 1 for the usual wallet, and 1 for the fee address
           result.should.have.property('txInfo');
-          result.txInfo.nP2SHInputs.should.eql(1);
-          result.txInfo.nP2PKHInputs.should.eql(1);
+          result.txInfo.nP2shInputs.should.eql(1);
+          result.txInfo.nP2pkhInputs.should.eql(1);
           result.txInfo.nOutputs.should.eql(3);
         });
       });
@@ -2122,10 +2122,10 @@ describe('Wallet API', function() {
         .catch(function(err) {
           err.message.should.eql('Insufficient funds');
           err.result.should.have.property('txInfo');
-          err.result.txInfo.should.have.property('nP2SHInputs');
-          err.result.txInfo.should.have.property('nP2PKHInputs');
+          err.result.txInfo.should.have.property('nP2shInputs');
+          err.result.txInfo.should.have.property('nP2pkhInputs');
           err.result.txInfo.should.have.property('nOutputs');
-          err.result.txInfo.nP2PKHInputs.should.eql(0);
+          err.result.txInfo.nP2pkhInputs.should.eql(0);
         });
       });
 

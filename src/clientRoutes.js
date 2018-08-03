@@ -166,9 +166,9 @@ const handleCalculateMinerFeeInfo = function(req) {
   return TransactionBuilder.calculateMinerFeeInfo({
     bitgo: req.bitgo,
     feeRate: req.body.feeRate,
-    nP2SHInputs: req.body.nP2SHInputs,
-    nP2PKHInputs: req.body.nP2PKHInputs,
-    nP2SHP2WSHInputs: req.body.nP2SHP2WSHInputs,
+    nP2shInputs: req.body.nP2shInputs,
+    nP2pkhInputs: req.body.nP2pkhInputs,
+    nP2shP2wshInputs: req.body.nP2shP2wshInputs,
     nOutputs: req.body.nOutputs
   });
 };

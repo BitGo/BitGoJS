@@ -432,9 +432,9 @@ exports.createTransaction = function(params) {
       }
 
       txInfo = {
-        nP2SHInputs: transaction.tx.ins.length - (feeSingleKeySourceAddress ? 1 : 0) - segwitInputCount,
-        nP2SHP2WSHInputs: segwitInputCount,
-        nP2PKHInputs: feeSingleKeySourceAddress ? 1 : 0,
+        nP2shInputs: transaction.tx.ins.length - (feeSingleKeySourceAddress ? 1 : 0) - segwitInputCount,
+        nP2shP2wshInputs: segwitInputCount,
+        nP2pkhInputs: feeSingleKeySourceAddress ? 1 : 0,
         nOutputs: (
           recipients.length + 1 + // recipients and change
         extraChangeAmounts.length + // extra change splitting
@@ -444,9 +444,9 @@ exports.createTransaction = function(params) {
       };
 
       estTxSize = estimateTransactionSize({
-        nP2SHInputs: txInfo.nP2SHInputs,
-        nP2SHP2WSHInputs: txInfo.nP2SHP2WSHInputs,
-        nP2PKHInputs: txInfo.nP2PKHInputs,
+        nP2shInputs: txInfo.nP2shInputs,
+        nP2shP2wshInputs: txInfo.nP2shP2wshInputs,
+        nP2pkhInputs: txInfo.nP2pkhInputs,
         nOutputs: txInfo.nOutputs
       });
     }).then(getDynamicFeeRateEstimate)
@@ -454,9 +454,9 @@ exports.createTransaction = function(params) {
       minerFeeInfo = exports.calculateMinerFeeInfo({
         bitgo: params.wallet.bitgo,
         feeRate: feeRate,
-        nP2SHInputs: txInfo.nP2SHInputs,
-        nP2SHP2WSHInputs: txInfo.nP2SHP2WSHInputs,
-        nP2PKHInputs: txInfo.nP2PKHInputs,
+        nP2shInputs: txInfo.nP2shInputs,
+        nP2shP2wshInputs: txInfo.nP2shP2wshInputs,
+        nP2pkhInputs: txInfo.nP2pkhInputs,
         nOutputs: txInfo.nOutputs
       });
 
@@ -717,37 +717,37 @@ exports.createTransaction = function(params) {
  * Estimate the size of a transaction in bytes based on the number of
  * inputs and outputs present.
  * @params params {
- *   nP2SHInputs: number of P2SH (multisig) inputs
- *   nP2PKHInputs: number of P2PKH (single sig) inputs
+ *   nP2shInputs: number of P2SH (multisig) inputs
+ *   nP2pkhInputs: number of P2PKH (single sig) inputs
  *   nOutputs: number of outputs
  * }
  *
  * @returns size: estimated size of the transaction in bytes
  */
 const estimateTransactionSize = function(params) {
-  if (!_.isInteger(params.nP2SHInputs) || params.nP2SHInputs < 0) {
-    throw new Error('expecting positive nP2SHInputs');
+  if (!_.isInteger(params.nP2shInputs) || params.nP2shInputs < 0) {
+    throw new Error('expecting positive nP2shInputs');
   }
-  if (!_.isInteger(params.nP2PKHInputs) || params.nP2PKHInputs < 0) {
-    throw new Error('expecting positive nP2PKHInputs to be numeric');
+  if (!_.isInteger(params.nP2pkhInputs) || params.nP2pkhInputs < 0) {
+    throw new Error('expecting positive nP2pkhInputs to be numeric');
   }
-  if (!_.isInteger(params.nP2SHP2WSHInputs) || params.nP2SHP2WSHInputs < 0) {
-    throw new Error('expecting positive nP2SHP2WSHInputs to be numeric');
+  if (!_.isInteger(params.nP2shP2wshInputs) || params.nP2shP2wshInputs < 0) {
+    throw new Error('expecting positive nP2shP2wshInputs to be numeric');
   }
-  if ((params.nP2SHInputs + params.nP2SHP2WSHInputs) < 1) {
-    throw new Error('expecting at least one nP2SHInputs or nP2SHP2WSHInputs');
+  if ((params.nP2shInputs + params.nP2shP2wshInputs) < 1) {
+    throw new Error('expecting at least one nP2shInputs or nP2shP2wshInputs');
   }
   if (!_.isInteger(params.nOutputs) || params.nOutputs < 1) {
     throw new Error('expecting positive nOutputs');
   }
 
 
-  const estimatedSize = config.tx.P2SH_INPUT_SIZE * params.nP2SHInputs +
-  config.tx.P2SH_P2WSH_INPUT_SIZE * (params.nP2SHP2WSHInputs || 0) +
-  config.tx.P2PKH_INPUT_SIZE * (params.nP2PKHInputs || 0) +
+  const estimatedSize = config.tx.P2SH_INPUT_SIZE * params.nP2shInputs +
+  config.tx.P2SH_P2WSH_INPUT_SIZE * (params.nP2shP2wshInputs || 0) +
+  config.tx.P2PKH_INPUT_SIZE * (params.nP2pkhInputs || 0) +
   config.tx.OUTPUT_SIZE * params.nOutputs +
   // if the tx contains at least one segwit input, the tx overhead is increased by 1
-  config.tx.TX_OVERHEAD_SIZE + (params.nP2SHP2WSHInputs > 0 ? 1 : 0);
+  config.tx.TX_OVERHEAD_SIZE + (params.nP2shP2wshInputs > 0 ? 1 : 0);
 
   return estimatedSize;
 };
@@ -758,8 +758,8 @@ const estimateTransactionSize = function(params) {
  * @params params {
  *   bitgo: bitgo object
  *   feeRate: satoshis per kilobyte
- *   nP2SHInputs: number of P2SH (multisig) inputs
- *   nP2PKHInputs: number of P2PKH (single sig) inputs
+ *   nP2shInputs: number of P2SH (multisig) inputs
+ *   nP2pkhInputs: number of P2PKH (single sig) inputs
  *   nOutputs: number of outputs
  * }
  *

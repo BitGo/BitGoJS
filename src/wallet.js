@@ -1226,9 +1226,9 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     const P2PKH = inputs.P2PKH || 0;
 
     const childFeeInfo = TransactionBuilder.calculateMinerFeeInfo({
-      nP2SHInputs: P2SH,
-      nP2PKHInputs: P2PKH,
-      nP2SHP2WSHInputs: segwit,
+      nP2shInputs: P2SH,
+      nP2pkhInputs: P2PKH,
+      nP2shP2wshInputs: segwit,
       nOutputs: 1,
       feeRate: 1
     });
