@@ -257,8 +257,8 @@ describe('Bitgo Express', function() {
       .then(function(res) {
         res.status.should.eql(200);
         const txInfo = res.body.txInfo;
-        txInfo.nP2SHInputs.should.be.greaterThan(0);
-        txInfo.nP2PKHInputs.should.eql(0);
+        txInfo.nP2shInputs.should.be.greaterThan(0);
+        txInfo.nP2pkhInputs.should.eql(0);
         txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
       });
     });
@@ -295,8 +295,8 @@ describe('Bitgo Express', function() {
         res.body.result.fee.should.be.greaterThan(546);
         res.body.result.available.should.be.greaterThan(546);
         const txInfo = res.body.result.txInfo;
-        txInfo.nP2SHInputs.should.be.greaterThan(0);
-        txInfo.nP2PKHInputs.should.eql(0);
+        txInfo.nP2shInputs.should.be.greaterThan(0);
+        txInfo.nP2pkhInputs.should.eql(0);
         txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
       });
     });
@@ -317,8 +317,8 @@ describe('Bitgo Express', function() {
         result.should.have.property('fee');
         result.fee.should.equal(0.0003 * 1e8);
         const txInfo = res.body.result.txInfo;
-        txInfo.nP2SHInputs.should.be.greaterThan(0);
-        txInfo.nP2PKHInputs.should.eql(0);
+        txInfo.nP2shInputs.should.be.greaterThan(0);
+        txInfo.nP2pkhInputs.should.eql(0);
         txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
       });
     });
@@ -403,9 +403,9 @@ describe('Bitgo Express', function() {
       return agent.post('/api/v1/calculateminerfeeinfo')
       .send({
         feeRate: 20000,
-        nP2SHInputs: 2,
-        nP2PKHInputs: 1,
-        nP2SHP2WSHInputs: 0,
+        nP2shInputs: 2,
+        nP2pkhInputs: 1,
+        nP2shP2wshInputs: 0,
         nOutputs: 4
       })
       .then(function(res) {
