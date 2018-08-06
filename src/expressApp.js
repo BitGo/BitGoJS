@@ -4,6 +4,8 @@ const url = require('url');
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
+const _ = require('lodash');
+const debug = require('debug');
 
 const common = require('./common');
 const pjson = require('../package.json');
@@ -32,6 +34,11 @@ module.exports = function(args) {
     req.url = req.url.replace(/\/\//g, '/');
     next();
   });
+
+  // enable specified debug namespaces
+  if (_.isArray(args.debugnamespace)) {
+    _.forEach(args.debugnamespace, (ns) => debug.enable(ns));
+  }
 
   // Decorate the client routes
   require('./clientRoutes')(app, args);

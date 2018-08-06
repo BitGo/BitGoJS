@@ -897,13 +897,16 @@ exports.signTransaction = function(params) {
     try {
 
       if (isSegwitInput) {
-        debug('Signing segwit input…');
+        debug('Signing segwit input #%d', index);
         if (enableBCH) {
           throw new Error('BCH does not support segwit inputs');
         }
         let signatures = _.cloneDeep(txb.inputs[index].signatures);
         const witnessScript = new Buffer(currentUnspent.witnessScript, 'hex');
         currentUnspent.validationScript = witnessScript;
+
+        debug('Current unspent value: %d', currentUnspent.value);
+
         txb.sign(index, privKey, subscript, bitcoin.Transaction.SIGHASH_ALL, currentUnspent.value, witnessScript);
 
         if (Array.isArray(signatures)) {
@@ -918,13 +921,14 @@ exports.signTransaction = function(params) {
         }
 
       } else {
+        debug('Signing non-segwit input #%d', index);
+
         // only if bitcoin cash is enabled, which should only be in unit tests anyway
         const bchParameter = enableBCH ? currentUnspent.value : undefined;
         let sigHashType = bitcoin.Transaction.SIGHASH_ALL;
         if (enableBCH) {
           sigHashType |= bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
         }
-        debug('Signing non-segwit input');
         debug('BCH parameter: %d', bchParameter);
         debug('Sighash type: %d', sigHashType);
         txb.sign(index, privKey, subscript, sigHashType, bchParameter);
@@ -935,7 +939,8 @@ exports.signTransaction = function(params) {
       e.result = {
         unspent: currentUnspent
       };
-      e.message = `'Failed to sign input #${index} — ${e.message} — ${JSON.stringify(e.result, null, 4)}`;
+      e.message = `Failed to sign input #${index} — ${e.message} — ${JSON.stringify(e.result, null, 4)}`;
+      console.trace(e);
       return Promise.reject(e);
     }
 
