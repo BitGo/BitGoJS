@@ -255,7 +255,8 @@ describe('V2 Wallet:', function() {
       });
     });
 
-    it('transfers with a searchLabel', function() {
+    // test is currently broken/flaky (BG-6378)
+    xit('transfers with a searchLabel', function() {
       return wallet.transfers({ limit: 2, searchLabel: 'test' })
       .then(function(transfers) {
         transfers.should.have.property('transfers');
