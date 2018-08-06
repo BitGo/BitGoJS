@@ -35,8 +35,16 @@ var getArgs = function () {
 
   parser.addArgument(
   ['-d', '--debug'], {
-    action: 'storeTrue',
-    help: 'Debug logging'
+    action: 'appendConst',
+    dest: 'debugnamespace',
+    constant: 'bitgo:express',
+    help: 'Enable basic debug logging for incoming requests'
+  });
+
+  parser.addArgument(
+  ['-D', '--debugnamespace'], {
+    action: 'append',
+    help: 'Enable a specific debugging namespace for more fine-grained debug output. May be given more than once.'
   });
 
   parser.addArgument(

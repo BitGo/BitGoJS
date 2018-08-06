@@ -448,9 +448,6 @@ const prepareBitGo = function(args) {
 // Promise handler wrapper to handle sending responses and error cases
 const promiseWrapper = function(promiseRequestHandler, args) {
   return function(req, res, next) {
-    if (args.debug) {
-      console.log('handle: ' + url.parse(req.url).pathname);
-    }
     debug('handle: ' + url.parse(req.url).pathname);
     Promise.try(promiseRequestHandler, req, res, next)
     .then(function(result) {
