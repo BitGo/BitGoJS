@@ -34,7 +34,7 @@ npm install bitgo-utxo-lib
 ## Setup
 ### Node.js
 ``` javascript
-var bitcoin = require('bitgo-utxo-lib')
+var bitGoUTXO = require('bitgo-utxo-lib')
 ```
 
 ### Browser
