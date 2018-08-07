@@ -16,6 +16,8 @@ var ECPair = require('./ecpair')
 var ECSignature = require('./ecsignature')
 var Transaction = require('./transaction')
 
+var debug = require('debug')('bitgo:utxolib:txbuilder')
+
 function supportedType (type) {
   return SIGNABLE.indexOf(type) !== -1
 }
@@ -756,6 +758,9 @@ function canSign (input) {
 }
 
 TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashType, witnessValue, witnessScript) {
+  debug('Signing transaction: (input: %d, hashType: %d, witnessVal: %s, witnessScript: %j)', vin, hashType, witnessValue, witnessScript)
+  debug('Transaction Builder network: %j', this.network)
+
   // TODO: remove keyPair.network matching in 4.0.0
   if (keyPair.network && keyPair.network !== this.network) throw new TypeError('Inconsistent network')
   if (!this.inputs[vin]) throw new Error('No input at index: ' + vin)
@@ -778,6 +783,8 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
       input.value = witnessValue
     }
 
+    debug('Preparing input %d for signing', vin)
+
     if (!canSign(input)) prepareInput(input, kpPubKey, redeemScript, witnessValue, witnessScript)
     if (!canSign(input)) throw Error(input.prevOutType + ' not supported')
   }
@@ -786,15 +793,20 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
   var signatureHash
   if (coins.isBitcoinGold(this.network)) {
     signatureHash = this.tx.hashForGoldSignature(vin, input.signScript, witnessValue, hashType, input.witness)
+    debug('Calculated BTG sighash (%s)', signatureHash.toString('hex'))
   } else if (coins.isBitcoinCash(this.network)) {
     signatureHash = this.tx.hashForCashSignature(vin, input.signScript, witnessValue, hashType)
+    debug('Calculated BCH sighash (%s)', signatureHash.toString('hex'))
   } else if (coins.isZcash(this.network)) {
     signatureHash = this.tx.hashForZcashSignature(vin, input.signScript, witnessValue, hashType)
+    debug('Calculated ZEC sighash (%s)', signatureHash.toString('hex'))
   } else {
     if (input.witness) {
       signatureHash = this.tx.hashForWitnessV0(vin, input.signScript, witnessValue, hashType)
+      debug('Calculated witnessv0 sighash (%s)', signatureHash)
     } else {
       signatureHash = this.tx.hashForSignature(vin, input.signScript, hashType)
+      debug('Calculated sighash (%s)', signatureHash.toString('hex'))
     }
   }
 
@@ -807,6 +819,8 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
 
     var signature = keyPair.sign(signatureHash)
     if (Buffer.isBuffer(signature)) signature = ECSignature.fromRSBuffer(signature)
+
+    debug('Produced signature (r: %s, s: %s)', signature.r, signature.s)
 
     input.signatures[i] = signature.toScriptSignature(hashType)
     return true
