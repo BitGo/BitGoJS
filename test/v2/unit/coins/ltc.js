@@ -2,13 +2,12 @@ require('should');
 
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-const assert = require('assert');
 const _ = require('lodash');
 const bitcoin = require('bitgo-utxo-lib');
 const prova = require('prova-lib');
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const Wallet = require('../../../../src/v2/wallet');
-const errors = require('../../../../src/v2/errors');
+const AbstractUtxoCoin = require('../../../../src/v2/coins/abstractUtxoCoin');
 
 describe('LTC:', function() {
   let bitgo;
@@ -101,15 +100,28 @@ describe('LTC:', function() {
       testCoin.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
     });
 
-    it('should fail to generate custom chain p2sh address when attempting bech32', function() {
-      assert.throws(() => {
-        coin.generateAddress({ keychains, chain: 1, index: 113, bech32: true });
-      }, errors.Bech32UnsupportedError);
+    it('should generate custom chain bech32 p2wsh address', () => {
+      const generatedAddress = coin.generateAddress({ keychains, chain: 21, index: 113, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
+      const generatedTestAddress = testCoin.generateAddress({ keychains, chain: 21, index: 113, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
+
+      [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
+        currentAddress.chain.should.equal(21);
+        currentAddress.index.should.equal(113);
+        currentAddress.coinSpecific.outputScript.should.equal('0020079225c736a65198b0aa75de0d385890e250820ef8731d6f8a3a744e27a3b45d');
+        currentAddress.coinSpecific.should.not.have.property('redeemScript');
+        currentAddress.coinSpecific.witnessScript.should.equal('5221027ec22f583acba5af0a6c5ed43cffb204811cb62cc7cad0e37673ce2ae7693b492103b5324d802f60116366261abb759758629d3d7bd7f2a2d8ff0ee78bfb9e2b387121039e17f3ca6f256ae24cfa9664cf08add84a3cc39ae96c56cacf6b0f846a6d07d853ae');
+      });
+
+      generatedAddress.address.should.equal('ltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3wspfryg7');
+      generatedTestAddress.address.should.equal('tltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3ws2x86ht');
+
+      coin.verifyAddress(_.extend({}, generatedAddress, { keychains }));
+      testCoin.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
     });
 
     it('should generate p2sh-wrapped segwit address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, segwit: true });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, segwit: true });
+      const generatedAddress = coin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH });
+      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
         currentAddress.chain.should.equal(0);
@@ -142,11 +154,11 @@ describe('LTC:', function() {
     });
 
     it('should generate 3/3 custom chain p2sh-wrapped segwit address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, segwit: true, chain: 20, index: 756 });
+      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH, chain: 20, index: 756 });
       const generatedTestAddress = testCoin.generateAddress({
         keychains,
         threshold: 3,
-        segwit: true,
+        addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH,
         chain: 20,
         index: 756
       });

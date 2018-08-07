@@ -1,8 +1,10 @@
 require('should');
-const assert = require('assert');
-const errors = require('../../../../src/v2/errors');
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
+const Wallet = require('../../../../src/v2/wallet');
+const AbstractUtxoCoin = require('../../../../src/v2/coins/abstractUtxoCoin');
 
 describe('BTC:', function() {
   let bitgo;
@@ -78,15 +80,9 @@ describe('BTC:', function() {
       testCoin.isValidAddress(generatedAddress.address).should.equal(false);
     });
 
-    it('should fail to generate custom chain p2sh address when attempting bech32', function() {
-      assert.throws(() => {
-        coin.generateAddress({ keychains, chain: 1, index: 113, bech32: true });
-      }, errors.SegwitRequiredError);
-    });
-
     it('should generate p2sh-wrapped segwit address', function() {
-      const generatedAddress = coin.generateAddress({ keychains, segwit: true });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, segwit: true });
+      const generatedAddress = coin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH });
+      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
         currentAddress.chain.should.equal(0);
@@ -106,8 +102,8 @@ describe('BTC:', function() {
     });
 
     it('should generate native bech32 address', function() {
-      const generatedAddress = coin.generateAddress({ keychains, segwit: true, bech32: true });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, segwit: true, bech32: true });
+      const generatedAddress = coin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
+      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
         currentAddress.chain.should.equal(0);
@@ -148,11 +144,11 @@ describe('BTC:', function() {
     });
 
     it('should generate 3/3 custom chain p2sh-wrapped segwit address', function() {
-      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, segwit: true, chain: 20, index: 756 });
+      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH, chain: 20, index: 756 });
       const generatedTestAddress = testCoin.generateAddress({
         keychains,
         threshold: 3,
-        segwit: true,
+        addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH,
         chain: 20,
         index: 756
       });
@@ -178,16 +174,14 @@ describe('BTC:', function() {
       const generatedAddress = coin.generateAddress({
         keychains,
         threshold: 3,
-        segwit: true,
-        bech32: true,
+        addressType: AbstractUtxoCoin.AddressTypes.P2WSH,
         chain: 20,
         index: 756
       });
       const generatedTestAddress = testCoin.generateAddress({
         keychains,
         threshold: 3,
-        segwit: true,
-        bech32: true,
+        addressType: AbstractUtxoCoin.AddressTypes.P2WSH,
         chain: 20,
         index: 756
       });
@@ -208,6 +202,154 @@ describe('BTC:', function() {
       coin.isValidAddress(generatedTestAddress.address).should.equal(false);
       testCoin.isValidAddress(generatedAddress.address).should.equal(false);
     });
+  });
+
+  describe('Should test bech32 transaction signing', function() {
+
+    let basecoin;
+    let wallet;
+
+    const userKeychain = {
+      prv: 'xprv9s21ZrQH143K3xQwj4yx3fHjDieEdqFDweBvFxn28qGvfQGvweUWuUuDRpepDu6opq3jiWHU9h3yYTKk5vvu4ykRuGA4i4Kz1vmFMPLTsoC',
+      pub: 'xpub661MyMwAqRbcGSVQq6WxQoETmkUj3Hy5Js7X4MBdhAouYCc5VBnmTHDhH7p9RpeGWjkcwbTVuqib1EdusAntf4VEgQJcVMatBU5thweF2Jz',
+      rawPub: '03f10de9f369f304f5af215812471804b418d2227f44b0a93660b1d27299e2479f',
+      rawPrv: 'd87c332ea93243f46f9ad5e9f6c5d51ae67508a7e46b8dd836b5e21668986e34'
+    };
+    const backupKeychain = {
+      prv: 'xprv9s21ZrQH143K3ZijERhwuqfED1hLNWMN6A1ByMs6LtcFw6mexXLcPkRPXGPdMT658HJkaSCktjPNA6iujYdFgUwAVqwhtptvsQfHD2WEizC',
+      pub: 'xpub661MyMwAqRbcG3oCLTExGybxm3Xpmy5DTNvnmkGhuE9Eou6oW4erwYjsNYmWrc5YBCZPgpR6hJGpgdFpNwta9zBnta8jL2vAjRF42KB1Xmv',
+      rawPub: '0320e7370ace2e0dd974b8bdafa3a672e108ad12ab9c5ffd3786c303b2198e3f23',
+      rawPrv: '6f84aa9081fef0b95955ed399fd17bb72c94cec87f3fed92d2e7e9e074f0f00e'
+    };
+
+    const signedTxHex = '01000000000101d58f82d996dd872012675adadf4606734906b25a413f6e2ee535c0c10aef96020000000000ffffffff028de888000000000017a914c91aa24f65827eecec775037d886f2952b73cbe48740420f000000000017a9149304d18497b9bfe9532778a0f06d9fff3b3befaf870400473044022023d7210ba6d8bbd7a28b8af226f40f7235caab79156f93f9c9969fc459ea7f73022050fbdca788fba3de686b66b3501853695ff9d6f375867470207d233b099576e001483045022100a4d9f100e4054e56a93b8abb99bb67f399090f1918a30722bd01bfc9e38437eb022035e3bf7446380000a514fe0791fc579b553542dc6204c40418ae24f05f3f03b80169522103d4788cda52f91c1f6c82eb91491ca76108c9c5f0839bc4f02eccc55fedb3311c210391bcef9dcc89570a79ba3c7514e65cd48e766a8868eca2769fa9242fdcc796662102ef3c5ebac4b54df70dea1bb2655126368be10ca0462382fcb730e55cddd2dd6a53aec8b11400';
+
+    before(co(function *() {
+      basecoin = bitgo.coin('tbtc');
+      const walletData = {
+        id: '5a78dd561c6258a907f1eeaee132f796',
+        users: [
+          {
+            user: '543c11ed356d00cb7600000b98794503',
+            permissions: [
+              'admin',
+              'view',
+              'spend'
+            ]
+          }
+        ],
+        coin: 'tbch',
+        label: 'Signature Verification Wallet',
+        m: 2,
+        n: 3,
+        keys: [
+          '5a78dd56bfe424aa07aa068651b194fd',
+          '5a78dd5674a70eb4079f58797dfe2f5e',
+          '5a78dd561c6258a907f1eea9f1d079e2'
+        ],
+        tags: [
+          '5a78dd561c6258a907f1eeaee132f796'
+        ],
+        disableTransactionNotifications: false,
+        freeze: {},
+        deleted: false,
+        approvalsRequired: 1,
+        isCold: true,
+        coinSpecific: {},
+        admin: {
+          policy: {
+            id: '5a78dd561c6258a907f1eeaf50991950',
+            version: 0,
+            date: '2018-02-05T22:40:22.761Z',
+            mutableUpToDate: '2018-02-07T22:40:22.761Z',
+            rules: []
+          }
+        },
+        clientFlags: [],
+        balance: 650000000,
+        confirmedBalance: 650000000,
+        spendableBalance: 650000000,
+        balanceString: '650000000',
+        confirmedBalanceString: '650000000',
+        spendableBalanceString: '650000000',
+        receiveAddress: {
+          id: '5b5f83121d13489f7ff32f9d5729c6de',
+          address: 'tb1qtxxqmkkdx4n4lcp0nt2cct89uh3h3dlcu940kw9fcqyyq36peh0st94hfp',
+          chain: 20,
+          index: 2,
+          coin: 'tbtc',
+          wallet: '5b5f81a78d2152514ab99a15ee9e0781',
+          coinSpecific: {
+            witnessScript: '522103d4788cda52f91c1f6c82eb91491ca76108c9c5f0839bc4f02eccc55fedb3311c210391bcef9dcc89570a79ba3c7514e65cd48e766a8868eca2769fa9242fdcc796662102ef3c5ebac4b54df70dea1bb2655126368be10ca0462382fcb730e55cddd2dd6a53ae'
+          },
+          addressType: AbstractUtxoCoin.AddressTypes.P2WSH
+        },
+        pendingApprovals: []
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    }));
+
+    it('should half-sign and fully signed transaction prebuild', co(function *() {
+
+      const prebuild = {
+        txHex: '0100000001d58f82d996dd872012675adadf4606734906b25a413f6e2ee535c0c10aef96020000000000ffffffff028de888000000000017a914c91aa24f65827eecec775037d886f2952b73cbe48740420f000000000017a9149304d18497b9bfe9532778a0f06d9fff3b3befaf87c8b11400',
+        txInfo: {
+          nP2SHInputs: 0,
+          nSegwitInputs: 1,
+          nOutputs: 2,
+          unspents: [
+            {
+              chain: 20,
+              index: 2,
+              witnessScript: '522103d4788cda52f91c1f6c82eb91491ca76108c9c5f0839bc4f02eccc55fedb3311c210391bcef9dcc89570a79ba3c7514e65cd48e766a8868eca2769fa9242fdcc796662102ef3c5ebac4b54df70dea1bb2655126368be10ca0462382fcb730e55cddd2dd6a53ae',
+              id: '0296ef0ac1c035e52e6e3f415ab20649730646dfda5a67122087dd96d9828fd5:0',
+              address: 'tb1qtxxqmkkdx4n4lcp0nt2cct89uh3h3dlcu940kw9fcqyyq36peh0st94hfp',
+              addressType: AbstractUtxoCoin.AddressTypes.P2WSH,
+              value: 10000000
+            }
+          ],
+          changeAddresses: [
+            '2NBaZiQX2xdj2VrJwpAPo4swbzvDyozvbBR'
+          ],
+          walletAddressDetails: {
+            '2NBaZiQX2xdj2VrJwpAPo4swbzvDyozvbBR': {
+              chain: 11,
+              index: 2,
+              coinSpecific: {
+                redeemScript: '0020d743abf2484b6e4b76522b13e1860f08ded95a6355f0418557117314ae418926',
+                witnessScript: '5221029052d1c6ca8adabe4559d9ccebce46629b17d7a26abd4cda3f837d4c14a83fae2102a6660deeb18ef3c9ec965c8600b942669652d83959c384409f4320a87e40ed7a2102abbd970ecde03a424663cb7d5171282673c30f865275b718bf56860dd37958b253ae'
+              }
+            }
+          }
+        },
+        feeInfo: {
+          size: 218,
+          feeRate: 126468,
+          fee: 27571,
+          payGoFee: 0,
+          payGoFeeString: '0'
+        },
+        walletId: '5b5f81a78d2152514ab99a15ee9e0781'
+      };
+
+      // half-sign with the user key
+      const halfSignedTransaction = yield wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: userKeychain.prv
+      });
+
+      // fully sign transaction
+      prebuild.txHex = halfSignedTransaction.txHex;
+      const signedTransaction = yield wallet.signTransaction({
+        txPrebuild: prebuild,
+        prv: backupKeychain.prv,
+        isLastSignature: true
+      });
+      // broadcast here: https://testnet.smartbit.com.au/tx/5fb17d5ac94f180ba58be7f5a814a6e92a3c31bc00e39604c59c936dcef958bc
+      signedTransaction.txHex.should.equal(signedTxHex);
+
+    }));
+
   });
 
 });

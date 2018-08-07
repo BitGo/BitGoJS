@@ -1,6 +1,7 @@
 require('should');
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
+const AbstractUtxoCoin = require('../../../../src/v2/coins/abstractUtxoCoin');
 
 describe('BTG:', function() {
   let bitgo;
@@ -236,7 +237,7 @@ describe('BTG:', function() {
     });
 
     it('should generate standard segwit address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, segwit: true });
+      const generatedAddress = coin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH });
       generatedAddress.chain.should.equal(0);
       generatedAddress.index.should.equal(0);
       generatedAddress.coinSpecific.outputScript.should.equal('a91426e34781478f08fff903cb70ae67311c3f9bc6a987');
@@ -255,7 +256,7 @@ describe('BTG:', function() {
     });
 
     it('should generate 3/3 custom chain segwit address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, segwit: true, chain: 20, index: 756 });
+      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH, chain: 20, index: 756 });
       generatedAddress.chain.should.equal(20);
       generatedAddress.index.should.equal(756);
       generatedAddress.coinSpecific.outputScript.should.equal('a91424ba55e2753970236fae8593ca2b49654bf9f4c487');

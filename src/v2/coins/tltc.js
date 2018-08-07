@@ -11,6 +11,7 @@ class Tltc extends Ltc {
         public: 0x0488b21e,
         private: 0x0488ade4
       },
+      bech32: 'tltc',
       pubKeyHash: 0x6f,
       scriptHash: 0x3a,
       wif: 0xb0,

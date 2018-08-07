@@ -14,6 +14,7 @@ class Ltc extends AbstractUtxoCoin {
         public: 0x0488b21e,
         private: 0x0488ade4
       },
+      bech32: 'ltc',
       pubKeyHash: 0x30,
       scriptHash: 0x32,
       wif: 0xb0,
@@ -41,6 +42,10 @@ class Ltc extends AbstractUtxoCoin {
 
   supportsBlockTarget() {
     return false;
+  }
+
+  supportsP2wsh() {
+    return true;
   }
 
 

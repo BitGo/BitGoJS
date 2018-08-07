@@ -1,12 +1,12 @@
-class Bech32UnsupportedError extends Error {
+class P2wshUnsupportedError extends Error {
   constructor(message) {
-    super(message || 'bech32 not supported by this coin');
+    super(message || 'p2wsh not supported by this coin');
   }
 }
 
-class SegwitRequiredError extends Error {
+class UnsupportedAddressTypeError extends Error {
   constructor(message) {
-    super(message || 'bech32 requires that segwit be enabled');
+    super(message || 'invalid address type');
   }
 }
 
@@ -29,8 +29,8 @@ class UnexpectedAddressError extends Error {
 }
 
 module.exports = {
-  Bech32UnsupportedError,
-  SegwitRequiredError,
+  P2wshUnsupportedError,
+  UnsupportedAddressTypeError,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   UnexpectedAddressError

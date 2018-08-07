@@ -272,7 +272,7 @@ Wallet.prototype.maximumSpendable = function maximumSpendable(params, callback) 
 Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
 
-  const query = _.pick(params, ['prevId', 'limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'plainTarget']);
+  const query = _.pick(params, ['prevId', 'limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'plainTarget', 'bech32']);
 
   return this.bitgo.get(this.url('/unspents'))
   .query(query)
@@ -517,6 +517,27 @@ Wallet.prototype.addresses = function(params, callback) {
     query.labelContains = params.labelContains;
   }
 
+  if (!_.isUndefined(params.p2sh)) {
+    if (!_.isBoolean(params.p2sh)) {
+      throw new Error('invalid p2sh argument, expecting boolean');
+    }
+    query.p2sh = params.p2sh;
+  }
+
+  if (!_.isUndefined(params.segwit)) {
+    if (!_.isBoolean(params.segwit)) {
+      throw new Error('invalid segwit argument, expecting boolean');
+    }
+    query.segwit = params.segwit;
+  }
+
+  if (!_.isUndefined(params.bech32)) {
+    if (!_.isBoolean(params.bech32)) {
+      throw new Error('invalid bech32 argument, expecting boolean');
+    }
+    query.bech32 = params.bech32;
+  }
+
   return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
   .query(query)
   .result()
@@ -560,7 +581,7 @@ Wallet.prototype.getAddress = function(params, callback) {
  * @param {Number} [count=1] number of new addresses which should be created (maximum 250)
  * @param callback
  */
-Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label } = {}, callback) {
+Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label, bech32 } = {}, callback) {
   return co(function *createAddress() {
     const addressParams = {};
 
@@ -589,6 +610,17 @@ Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label } 
       throw new Error('count has to be a number between 1 and 250');
     }
 
+    if (!_.isUndefined(bech32)) {
+      if (!_.isBoolean(bech32)) {
+        throw new Error('bech32 has to be a boolean');
+      }
+      addressParams.bech32 = bech32;
+    }
+
+    if (!_.isInteger(count) || count <= 0) {
+      throw new Error('count has to be a positive integer');
+    }
+
     // get keychains for address verification
     const keychains = yield Promise.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k }));
 
@@ -596,6 +628,11 @@ Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label } 
       const newAddress = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
       .send(addressParams)
       .result();
+
+      // infer its address type
+      if (_.isObject(newAddress.coinSpecific) && _.isFunction(this.baseCoin.constructor.inferAddressType)) {
+        newAddress.addressType = this.baseCoin.constructor.inferAddressType(newAddress);
+      }
 
       newAddress.keychains = keychains;
       const verificationData = _.merge({}, newAddress, { rootAddress: this._wallet.receiveAddress.address });
@@ -921,8 +958,12 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
       'enforceMinConfirmsForChange', 'targetWalletUnspents',
       'message', 'minValue', 'maxValue', 'sequenceId',
       'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
-      'noSplitChange', 'unspents', 'changeAddress'
+      'noSplitChange', 'unspents', 'changeAddress', 'unspentTypes', 'changeAddressType'
     ]);
+
+    if (_.isUndefined(whitelistedParams.unspentTypes)) {
+      whitelistedParams.unspentTypes = ['p2sh', 'p2sh-p2wsh', 'p2wsh'];
+    }
 
     let response = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
     .send(whitelistedParams)

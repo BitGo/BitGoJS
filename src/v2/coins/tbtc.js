@@ -6,7 +6,6 @@ class Tbtc extends Btc {
   constructor() {
     super();
     this.network = bitcoin.networks.testnet;
-    this.network.bech32Prefix = 'tb';
   }
 
   getChain() {

@@ -26,6 +26,10 @@ class AbstractUtxoCoin extends BaseCoin {
     this._network.coin = this.getFamily();
   }
 
+  static get validAddressTypes() {
+    return _.values(this.AddressTypes);
+  }
+
   /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
@@ -63,13 +67,13 @@ class AbstractUtxoCoin extends BaseCoin {
     try {
       addressDetails = this.getCoinLibrary().address.fromBase58Check(address);
     } catch (e) {
-      if (!this.supportsBech32()) {
+      if (!this.supportsP2wsh()) {
         return false;
       }
 
       try {
         addressDetails = bitcoin.address.fromBech32(address);
-        return addressDetails.prefix === this.network.bech32Prefix;
+        return addressDetails.prefix === this.network.bech32;
       } catch (e) {
         return false;
       }
@@ -107,6 +111,23 @@ class AbstractUtxoCoin extends BaseCoin {
     });
 
     return _.flatten(_.values(groupedOutputs));
+  }
+
+  /**
+   * Determine an address' type based on its witness and redeem script presence
+   * @param addressDetails
+   */
+  static inferAddressType(addressDetails) {
+    if (_.isObject(addressDetails.coinSpecific)) {
+      if (_.isString(addressDetails.coinSpecific.redeemScript) && _.isString(addressDetails.coinSpecific.witnessScript)) {
+        return this.AddressTypes.P2SH_P2WSH;
+      } else if (_.isString(addressDetails.coinSpecific.redeemScript)) {
+        return this.AddressTypes.P2SH;
+      } else if (_.isString(addressDetails.coinSpecific.witnessScript)) {
+        return this.AddressTypes.P2WSH;
+      }
+    }
+    return null;
   }
 
   /**
@@ -178,7 +199,11 @@ class AbstractUtxoCoin extends BaseCoin {
           }
           // verify that the address is on the wallet
           // verifyAddress throws if it fails to verify the address, meaning it's external
-          this.verifyAddress(_.extend({}, addressDetails, { keychains: keychainArray, address: currentAddress }));
+          const addressType = this.constructor.inferAddressType(addressDetails);
+          this.verifyAddress(_.extend({ addressType }, addressDetails, {
+            keychains: keychainArray,
+            address: currentAddress
+          }));
           debug('Address %s verification passed', currentAddress);
           return _.extend({}, currentOutput, addressDetails, { external: false });
         } catch (e) {
@@ -392,12 +417,13 @@ class AbstractUtxoCoin extends BaseCoin {
   /**
    * Make sure an address is valid and throw an error if it's not.
    * @param address The address string on the network
+   * @param addressType
    * @param keychains Keychain objects with xpubs
    * @param coinSpecific Coin-specific details for the address such as a witness script
    * @param chain Derivation chain
    * @param index Derivation index
    */
-  verifyAddress({ address, keychains, coinSpecific, chain, index }) {
+  verifyAddress({ address, addressType, keychains, coinSpecific, chain, index }) {
     if (!this.isValidAddress(address)) {
       throw new errors.InvalidAddressError(`invalid address: ${address}`);
     }
@@ -410,9 +436,9 @@ class AbstractUtxoCoin extends BaseCoin {
       throw new errors.InvalidAddressVerificationObjectPropertyError('address validation failure: coinSpecific field must be an object');
     }
 
+
     const expectedAddress = this.generateAddress({
-      segwit: !!_.get(coinSpecific, 'witnessScript'),
-      bech32: !_.get(coinSpecific, 'redeemScript'),
+      addressType,
       keychains,
       threshold: 2,
       chain: chain,
@@ -433,34 +459,41 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin supports bech32 addresses
+   * Indicates whether a coin supports pay-to-witness script hash addresses
    * @returns {boolean}
    */
-  supportsBech32() {
+  supportsP2wsh() {
     return false;
   }
 
   /**
    * Generate an address for a wallet based on a set of configurations
-   * @param segwit True if segwit
-   * @param bech32 True if native segwit (segwit needs to be set to true, too)
+   * @param addressType
    * @param keychains Array of objects with xpubs
    * @param threshold Minimum number of signatures
    * @param chain Derivation chain
    * @param index Derivation index
+   * @param segwit
+   * @param bech32
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
    */
-  generateAddress({ segwit, bech32, keychains, threshold, chain, index }) {
-    const isSegwit = !!segwit;
-    if (bech32) {
-      if (!this.supportsBech32()) {
-        throw new errors.Bech32UnsupportedError();
+  generateAddress({ addressType, keychains, threshold, chain, index, segwit, bech32 }) {
+    if (addressType === this.constructor.AddressTypes.P2WSH && !this.supportsP2wsh()) {
+      throw new errors.P2wshUnsupportedError();
+    }
+
+    if (!_.isUndefined(addressType) && !this.constructor.validAddressTypes.includes(addressType)) {
+      throw new errors.UnsupportedAddressTypeError();
+    } else if (_.isUndefined(addressType)) {
+      addressType = this.constructor.AddressTypes.P2SH;
+      if (_.isBoolean(segwit) && segwit) {
+        addressType = this.constructor.AddressTypes.P2SH_P2WSH;
       }
-      if (!isSegwit) {
-        throw new errors.SegwitRequiredError();
+      if (_.isBoolean(bech32) && bech32) {
+        addressType = this.constructor.AddressTypes.P2WSH;
       }
     }
-    const isBech32 = !!bech32;
+
     let signatureThreshold = 2;
     if (_.isInteger(threshold)) {
       signatureThreshold = threshold;
@@ -494,19 +527,20 @@ class AbstractUtxoCoin extends BaseCoin {
       chain: derivationChain,
       index: derivationIndex,
       coin: this.getChain(),
-      coinSpecific: {}
+      coinSpecific: {},
+      addressType
     };
 
     addressDetails.coinSpecific.redeemScript = inputScript.toString('hex');
 
-    if (isSegwit) {
+    if (['p2sh-p2wsh', 'p2wsh'].includes(addressType)) {
       const witnessScriptHash = bitcoin.crypto.sha256(inputScript);
       const redeemScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
       const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
       outputScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
       addressDetails.coinSpecific.witnessScript = inputScript.toString('hex');
       addressDetails.coinSpecific.redeemScript = redeemScript.toString('hex');
-      if (this.supportsBech32() && isBech32) {
+      if (addressType === 'p2wsh') {
         outputScript = redeemScript;
         delete addressDetails.coinSpecific.redeemScript;
       }
@@ -561,6 +595,7 @@ class AbstractUtxoCoin extends BaseCoin {
     this.constructor.prepareTransactionBuilder(txb);
 
     const signatureIssues = [];
+    const bech32Indices = [];
 
     for (let index = 0; index < transaction.ins.length; ++index) {
       debug('Signing input %d of %d', index + 1, transaction.ins.length);
@@ -576,17 +611,26 @@ class AbstractUtxoCoin extends BaseCoin {
       };
       debug('Input details: %O', currentSignatureIssue);
 
-      const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
+
+      const isBech32 = !currentUnspent.redeemScript;
       const isSegwit = !!currentUnspent.witnessScript;
       const sigHashType = this.constructor.defaultSigHashType;
       try {
-        if (isSegwit) {
-          debug('Signing segwit input');
+        if (isBech32) {
           const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
-          txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value, witnessScript);
+          const witnessScriptHash = bitcoin.crypto.sha256(witnessScript);
+          const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
+          txb.sign(index, privKey, prevOutScript, sigHashType, currentUnspent.value, witnessScript);
         } else {
-          debug('Signing p2sh input');
-          txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value);
+          const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
+          if (isSegwit) {
+            debug('Signing segwit input');
+            const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
+            txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value, witnessScript);
+          } else {
+            debug('Signing p2sh input');
+            txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value);
+          }
         }
 
       } catch (e) {
@@ -600,6 +644,12 @@ class AbstractUtxoCoin extends BaseCoin {
         transaction = txb.build();
       } else {
         transaction = txb.buildIncomplete();
+      }
+
+      // after signature validation, prepare bech32 setup
+      if (isBech32) {
+        transaction.setInputScript(index, Buffer.alloc(0));
+        bech32Indices.push(index);
       }
 
       const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
@@ -616,6 +666,10 @@ class AbstractUtxoCoin extends BaseCoin {
       error.code = 'input_signature_failure';
       error.signingErrors = signatureIssues;
       throw error;
+    }
+
+    for (const bech32Index of bech32Indices) {
+      transaction.setInputScript(bech32Index, Buffer.alloc(0));
     }
 
     return {
@@ -652,9 +706,18 @@ class AbstractUtxoCoin extends BaseCoin {
     let decompiledSigScript = bitcoin.script.decompile(signatureScript);
 
     const isSegwitInput = currentInput.witness.length > 0;
+    const isBech32Input = isSegwitInput && (signatureScript.length === 0);
     if (isSegwitInput) {
       decompiledSigScript = currentInput.witness;
       signatureScript = bitcoin.script.compile(decompiledSigScript);
+      if (isBech32Input) {
+        const lastWitness = _.last(transaction.ins[inputIndex].witness);
+        // const inputScriptHash = bitcoin.crypto.hash160(lastWitness);
+        const witnessScriptHash = bitcoin.crypto.sha256(lastWitness);
+        const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
+        // we are faking a signature script for the verification
+        signatureScript = bitcoin.script.compile([prevOutScript]);
+      }
     }
 
     const inputClassification = bitcoin.script.classifyInput(signatureScript, true);
@@ -1151,5 +1214,12 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
 }
+
+// add a static field that can only be done outside the class scope
+AbstractUtxoCoin.AddressTypes = Object.freeze({
+  P2SH: 'p2sh',
+  P2SH_P2WSH: 'p2sh-p2wsh',
+  P2WSH: 'p2wsh'
+});
 
 module.exports = AbstractUtxoCoin;

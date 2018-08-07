@@ -10,7 +10,6 @@ class Btc extends AbstractUtxoCoin {
   constructor() {
     super();
     this.network = bitcoin.networks.bitcoin;
-    this.network.bech32Prefix = 'bc';
   }
 
   getChain() {
@@ -29,7 +28,7 @@ class Btc extends AbstractUtxoCoin {
     return true;
   }
 
-  supportsBech32() {
+  supportsP2wsh() {
     return true;
   }
 
