@@ -82,6 +82,31 @@ describe('ECPair', function () {
     }))
   })
 
+  describe('getPrivateKeyBuffer', function () {
+    it('pads short private keys', sinon.test(function () {
+      var keyPair = new ECPair(BigInteger.ONE)
+      assert.strictEqual(keyPair.getPrivateKeyBuffer().byteLength, 32)
+      assert.strictEqual(keyPair.getPrivateKeyBuffer().toString('hex'),
+        '0000000000000000000000000000000000000000000000000000000000000001')
+    }))
+
+    it('does not pad 32 bytes private keys', sinon.test(function () {
+      var hexString = 'a000000000000000000000000000000000000000000000000000000000000000'
+      var keyPair = new ECPair(new BigInteger(hexString, 16))
+      assert.strictEqual(keyPair.getPrivateKeyBuffer().byteLength, 32)
+      assert.strictEqual(keyPair.getPrivateKeyBuffer().toString('hex'), hexString)
+    }))
+
+    it('throws if the key is too long', sinon.test(function () {
+      var hexString = '10000000000000000000000000000000000000000000000000000000000000000'
+
+      assert.throws(function () {
+        var keyPair = new ECPair(new BigInteger(hexString, 16))
+        keyPair.getPrivateKeyBuffer()
+      }, new RegExp('Private key must be less than the curve order'))
+    }))
+  })
+
   describe('fromWIF', function () {
     fixtures.valid.forEach(function (f) {
       it('imports ' + f.WIF + ' (' + f.network + ')', function () {

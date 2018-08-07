@@ -112,6 +112,24 @@ ECPair.prototype.getPublicKeyBuffer = function () {
   return this.Q.getEncoded(this.compressed)
 }
 
+/**
+ * Get the private key as a 32 bytes buffer. If it is smaller than 32 bytes, pad it with zeros
+ * @return Buffer
+ */
+ECPair.prototype.getPrivateKeyBuffer = function () {
+  if (!this.d) throw new Error('Missing private key')
+
+  var bigIntBuffer = this.d.toBuffer()
+  if (bigIntBuffer.length > 32) throw new Error('Private key size exceeds 32 bytes')
+
+  if (bigIntBuffer.length === 32) {
+    return bigIntBuffer
+  }
+  var newBuffer = Buffer.alloc(32)
+  bigIntBuffer.copy(newBuffer, newBuffer.length - bigIntBuffer.length, 0, bigIntBuffer.length)
+  return newBuffer
+}
+
 ECPair.prototype.sign = function (hash) {
   if (!this.d) throw new Error('Missing private key')
 
