@@ -45,8 +45,8 @@ class Xlm extends BaseCoin {
   generateKeyPair(seed) {
     const pair = seed ? stellar.Keypair.fromRawEd25519Seed(seed) : stellar.Keypair.random();
     return {
-      pub: pair.rawPublicKey().toString('hex'),
-      prv: pair.rawSecretKey().toString('hex')
+      pub: pair.publicKey(),
+      prv: pair.secret()
     };
   }
 
@@ -77,8 +77,7 @@ class Xlm extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPub(pub) {
-    // WARNING: An encoded prv key could still be considered a valid pub
-    return stellar.StrKey.isValidEd25519PublicKey(this.getPubFromRaw(pub));
+    return stellar.StrKey.isValidEd25519PublicKey(pub);
   }
 
   /**
@@ -88,7 +87,7 @@ class Xlm extends BaseCoin {
    * @returns {Boolean} is it valid?
    */
   isValidPrv(prv) {
-    return stellar.StrKey.isValidEd25519SecretSeed(this.getPrvFromRaw(prv));
+    return stellar.StrKey.isValidEd25519SecretSeed(prv);
   }
 
   /**
@@ -104,7 +103,7 @@ class Xlm extends BaseCoin {
       return false;
     }
 
-    return (memoId.greaterThan(0) && memoId.lt(maxMemoId));
+    return (memoId.gte(0) && memoId.lt(maxMemoId));
   }
 
   /**
@@ -225,7 +224,7 @@ class Xlm extends BaseCoin {
       throw new Error(`prv must be a string, got type ${typeof prv}`);
     }
 
-    const keyPair = stellar.Keypair.fromSecret(this.getPrvFromRaw(prv));
+    const keyPair = stellar.Keypair.fromSecret(prv);
     const tx = new stellar.Transaction(txPrebuild.txBase64);
     tx.sign(keyPair);
 
@@ -267,16 +266,21 @@ class Xlm extends BaseCoin {
    * @param message
    */
   signMessage(key, message) {
-    const seed = Buffer.from(key.prv, 'hex');
-    const keypair = stellar.Keypair.fromRawEd25519Seed(seed);
+    if (!this.isValidPrv(key.prv)) {
+      throw new Error(`invalid prv: ${key.prv}`);
+    }
+    if (!Buffer.isBuffer(message)) {
+      message = Buffer.from(message);
+    }
+    const keypair = stellar.Keypair.fromSecret(key.prv);
     return keypair.sign(message);
   }
 
   /**
    * Verifies if signature for message is valid.
    *
-   * @param pub {String} raw public key
-   * @param message {String} signed message
+   * @param pub {String} public key
+   * @param message {Buffer|String} signed message
    * @param signature {Buffer} signature to verify
    * @returns {Boolean} true if signature is valid.
    */
@@ -284,7 +288,10 @@ class Xlm extends BaseCoin {
     if (!this.isValidPub(pub)) {
       throw new Error(`invalid pub: ${pub}`);
     }
-    const keyPair = stellar.Keypair.fromPublicKey(this.getPubFromRaw(pub));
+    if (!Buffer.isBuffer(message)) {
+      message = Buffer.from(message);
+    }
+    const keyPair = stellar.Keypair.fromPublicKey(pub);
     return keyPair.verify(message, signature);
   }
 
@@ -308,18 +315,19 @@ class Xlm extends BaseCoin {
 
       const tx = new stellar.Transaction(txPrebuild.txBase64);
       // Stellar txs are made up of operations. We only care about Create Account and Payment for sending funds.
-      const outputOperation = _.filter(tx.operations, operation =>
+      const outputOperations = _.filter(tx.operations, operation =>
         operation.type === 'createAccount' || operation.type === 'payment'
       );
 
-      if (outputOperation.length !== 1) {
+      if (outputOperations.length !== 1) {
         throw new Error('transaction prebuild should have exactly 1 recipient');
       }
 
       const expectedOutput = txParams.recipients[0];
-      const output = outputOperation[0];
+      const expectedOutputAddress = this.getAddressDetails(expectedOutput.address);
+      const output = outputOperations[0];
 
-      if (output.destination !== expectedOutput.address) {
+      if (output.destination !== expectedOutputAddress.address) {
         throw new Error('transaction prebuild does not match expected recipient');
       }
 
@@ -332,33 +340,28 @@ class Xlm extends BaseCoin {
         throw new Error('transaction prebuild does not match expected amount');
       }
 
-      // verify transaction signatures
-      if (!tx || tx.signatures.length === 0) {
-        throw new Error('missing signature');
-      }
-      if (tx.signatures.length > 1) {
-        throw new Error('transaction should only have one signature before being co-signed by BitGo');
-      }
-      const signature = tx.signatures[0].signature();
+      // Verify the user signature, if the tx is half-signed
+      if (!_.isEmpty(tx.signatures)) {
+        const userSignature = tx.signatures[0].signature();
 
-      // obtain the keychains and key signatures
-      let keychains = verification.keychains;
-      if (!keychains && disableNetworking) {
-        throw new Error('cannot fetch keychains without networking');
-      } else if (!keychains) {
-        keychains = yield Promise.props({
-          user: this.keychains().get({ id: wallet._wallet.keys[0] }),
-          backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
-          bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
-        });
-      }
+        // obtain the keychains and key signatures
+        let keychains = verification.keychains;
+        if (!keychains && disableNetworking) {
+          throw new Error('cannot fetch keychains without networking');
+        } else if (!keychains) {
+          keychains = yield Promise.props({
+            user: this.keychains().get({ id: wallet._wallet.keys[0] }),
+            backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
+            bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
+          });
+        }
 
-      if (this.verifySignature(keychains.backup.pub, tx.hash(), signature)) {
-        throw new Error('transaction signed with wrong key');
-      }
-
-      if (!this.verifySignature(keychains.user.pub, tx.hash(), signature)) {
-        throw new Error('transaction signature invalid');
+        if (this.verifySignature(keychains.backup.pub, tx.hash(), userSignature)) {
+          throw new Error('transaction signed with wrong key');
+        }
+        if (!this.verifySignature(keychains.user.pub, tx.hash(), userSignature)) {
+          throw new Error('transaction signature invalid');
+        }
       }
 
       return true;

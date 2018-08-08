@@ -31,7 +31,7 @@ describe('XLM:', function() {
     keyPair.should.have.property('pub');
     keyPair.should.have.property('prv');
 
-    const address = basecoin.getPubFromRaw(keyPair.pub);
+    const address = keyPair.pub;
     basecoin.isValidAddress(address).should.equal(true);
 
     basecoin.isValidPub(keyPair.pub).should.equal(true);
@@ -44,14 +44,14 @@ describe('XLM:', function() {
     keyPair.should.have.property('pub');
     keyPair.should.have.property('prv');
 
-    const address = basecoin.getPubFromRaw(keyPair.pub);
+    const address = keyPair.pub;
     basecoin.isValidAddress(address).should.equal(true);
 
     basecoin.isValidPub(keyPair.pub).should.equal(true);
     basecoin.isValidPrv(keyPair.prv).should.equal(true);
 
-    const secret = basecoin.getPrvFromRaw(keyPair.prv);
-    secret.should.equal(basecoin.getPrvFromRaw(seed));
+    const secret = keyPair.prv;
+    stellar.StrKey.encodeEd25519SecretSeed(seed).should.equal(secret);
   });
 
   it('should validate address', function() {
@@ -79,15 +79,11 @@ describe('XLM:', function() {
 
     const userKeychain = {
       pub: 'GA34NPQ4M54HHZBKSDZ5B3J3BZHTXKCZD4UFO2OYZERPOASK4DAATSIB',
-      prv: 'SDADJSTZNIKF46NM7LE3ZHMX4TJ2VJBL7PTERNDLWHZ5U6KNO5S7XFJD',
-      rawPub: '37c6be1c677873e42a90f3d0ed3b0e4f3ba8591f285769d8c922f7024ae0c009',
-      rawPrv: 'c034ca796a145e79acfac9bc9d97e4d3aaa42bfbe648b46bb1f3da794d7765fb'
+      prv: 'SDADJSTZNIKF46NM7LE3ZHMX4TJ2VJBL7PTERNDLWHZ5U6KNO5S7XFJD'
     };
     const backupKeychain = {
       pub: 'GC3D3ZNNK7GHLMSWJA54DQO6QJUJJF7K6J5JGCEW45ZT6QMKZ6PMUHUM',
-      prv: 'SA22TDBINLZMGYUDVXGUP2JMYIQ3DTJE53PNQUVCDK73XRS6TDVYU7WW',
-      rawPub: 'b63de5ad57cc75b256483bc1c1de82689497eaf27a930896e7733f418acf9eca',
-      rawPrv: '35a98c286af2c36283adcd47e92cc221b1cd24eeded852a21abfbbc65e98eb8a'
+      prv: 'SA22TDBINLZMGYUDVXGUP2JMYIQ3DTJE53PNQUVCDK73XRS6TDVYU7WW'
     };
     const prebuild = {
       txBase64: 'AAAAAGRnXg19FteG/7zPd+jDC7LDvRlzgfFC+JrPhRep0kYiAAAAZAB/4cUAAAACAAAAAAAAAAAAAAABAAAAAQAAAABkZ14NfRbXhv+8z3fowwuyw70Zc4HxQviaz4UXqdJGIgAAAAEAAAAAmljT/+FedddnAHwo95dOC4RNy6eVLSehaJY34b9GxuYAAAAAAAAAAAehIAAAAAAAAAAAAA==',
@@ -171,13 +167,13 @@ describe('XLM:', function() {
       // sign transaction
       halfSignedTransaction = yield wallet.signTransaction({
         txPrebuild: prebuild,
-        prv: userKeychain.rawPrv
+        prv: userKeychain.prv
       });
       halfSignedTransaction.halfSigned.txBase64.should.equal(signedTxBase64);
     }));
 
     it('should verify the user signature on a tx', co(function *() {
-      const userPub = userKeychain.rawPub;
+      const userPub = userKeychain.pub;
       const tx = new stellar.Transaction(halfSignedTransaction.halfSigned.txBase64);
       const validSignature = basecoin.verifySignature(userPub, tx.hash(), tx.signatures[0].signature());
       validSignature.should.equal(true);
@@ -194,7 +190,7 @@ describe('XLM:', function() {
       // sign transaction
       const tx = yield wallet.signTransaction({
         txPrebuild: prebuild,
-        prv: backupKeychain.rawPrv
+        prv: backupKeychain.prv
       });
 
       const txParams = {
@@ -209,8 +205,8 @@ describe('XLM:', function() {
       const verification = {
         disableNetworking: true,
         keychains: {
-          user: { pub: userKeychain.rawPub },
-          backup: { pub: backupKeychain.rawPub }
+          user: { pub: userKeychain.pub },
+          backup: { pub: backupKeychain.pub }
         }
       };
       try {
@@ -224,7 +220,7 @@ describe('XLM:', function() {
       // sign transaction
       const tx = yield wallet.signTransaction({
         txPrebuild: prebuild,
-        prv: backupKeychain.rawPrv
+        prv: backupKeychain.prv
       });
 
       const txParams = {
@@ -239,8 +235,8 @@ describe('XLM:', function() {
       const verification = {
         disableNetworking: true,
         keychains: {
-          user: { pub: userKeychain.rawPub },
-          backup: { pub: backupKeychain.rawPub }
+          user: { pub: userKeychain.pub },
+          backup: { pub: backupKeychain.pub }
         }
       };
       try {
@@ -254,7 +250,7 @@ describe('XLM:', function() {
       // sign transaction
       const tx = yield wallet.signTransaction({
         txPrebuild: prebuild,
-        prv: backupKeychain.rawPrv
+        prv: backupKeychain.prv
       });
 
       const txParams = {
@@ -269,8 +265,8 @@ describe('XLM:', function() {
       const verification = {
         disableNetworking: true,
         keychains: {
-          user: { pub: userKeychain.rawPub },
-          backup: { pub: backupKeychain.rawPub }
+          user: { pub: userKeychain.pub },
+          backup: { pub: backupKeychain.pub }
         }
       };
       try {
@@ -293,8 +289,8 @@ describe('XLM:', function() {
       const verification = {
         disableNetworking: true,
         keychains: {
-          user: { pub: userKeychain.rawPub },
-          backup: { pub: backupKeychain.rawPub }
+          user: { pub: userKeychain.pub },
+          backup: { pub: backupKeychain.pub }
         }
       };
       const validTransaction = yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
