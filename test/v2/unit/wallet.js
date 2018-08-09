@@ -7,6 +7,7 @@ const assert = require('assert');
 const nock = require('nock');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
+const _ = require('lodash');
 const bitcoin = require('bitgo-utxo-lib');
 const Wallet = require('../../../src/v2/wallet');
 const common = require('../../../src/common');
@@ -342,15 +343,13 @@ describe('V2 Wallet:', function() {
     }));
 
     it('should pass maxFeeRate parameter when building transactions', co(function *() {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
       const response = nock(bgUrl)
-      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`, {
-        recipients, maxFeeRate
-      }).reply(200);
+      .post(path, _.matches({ recipients, maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
+      .reply(200);
 
       try {
-        yield wallet.prebuildTransaction({
-          recipients, maxFeeRate
-        });
+        yield wallet.prebuildTransaction({ recipients, maxFeeRate });
       } catch (e) {
         // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
         // we only care about /tx/build and whether maxFeeRate is an allowed parameter
@@ -360,10 +359,10 @@ describe('V2 Wallet:', function() {
     }));
 
     it('should pass maxFeeRate parameter when consolidating unspents', co(function *() {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`;
       const response = nock(bgUrl)
-      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`, {
-        maxFeeRate
-      }).reply(200);
+      .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
+      .reply(200);
 
       nock(bgUrl)
       .get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`)
@@ -371,10 +370,7 @@ describe('V2 Wallet:', function() {
 
       wallet.bitgo._token = wallet.bitgo._token.substring(3); // removing the first 3 to avoid HMAC validation : 'v2x'
       try {
-        yield wallet.consolidateUnspents({
-          recipients: recipients,
-          maxFeeRate: maxFeeRate
-        });
+        yield wallet.consolidateUnspents({ recipients, maxFeeRate });
       } catch (e) {
         // the consolidateUnspents method will probably throw an exception for not having all of the correct nocks
         // we only care about /consolidateUnspents and whether maxFeeRate is an allowed parameter
@@ -384,17 +380,13 @@ describe('V2 Wallet:', function() {
     }));
 
     it('should pass maxFeeRate parameter when calling sweep wallets', co(function *() {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
       const response = nock(bgUrl)
-      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`, {
-        address: address,
-        maxFeeRate: maxFeeRate
-      }).reply(200);
+      .post(path, _.matches({ address, maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
+      .reply(200);
 
       try {
-        yield wallet.sweep({
-          address: address,
-          maxFeeRate: maxFeeRate
-        });
+        yield wallet.sweep({ address, maxFeeRate });
       } catch (e) {
         // the sweep method will probably throw an exception for not having all of the correct nocks
         // we only care about /sweepWallet and whether maxFeeRate is an allowed parameter
@@ -404,16 +396,13 @@ describe('V2 Wallet:', function() {
     }));
 
     it('should pass maxFeeRate parameter when calling fanout unspents', co(function *() {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
       const response = nock(bgUrl)
-      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`, {
-        maxFeeRate: maxFeeRate
-      }).reply(200);
+      .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
+      .reply(200);
 
       try {
-        yield wallet.fanoutUnspents({
-          address: address,
-          maxFeeRate: maxFeeRate
-        });
+        yield wallet.fanoutUnspents({ address, maxFeeRate });
       } catch (e) {
         // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
         // we only care about /fanoutUnspents and whether maxFeeRate is an allowed parameter
