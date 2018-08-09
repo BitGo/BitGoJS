@@ -78,6 +78,7 @@ module.exports = {
   },
   bitcoingold: {
     messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
+    bech32: 'btg',
     bip32: {
       public: 0x0488b21e,
       private: 0x0488ade4
