@@ -12,6 +12,16 @@ const debug = require('debug')('bitgo:express');
 
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
 
+const handlePing = function(req) {
+  return req.bitgo.ping();
+};
+
+const handlePingExpress = function(req) {
+  return {
+    status: 'express server is ok!'
+  };
+};
+
 const handleLogin = function(req) {
   const username = req.body.username || req.body.email;
   const body = req.body;
@@ -496,6 +506,12 @@ exports = module.exports = function(app, args) {
   // instead.
   // V1 routes should be added to www/config/routes.js
   // V2 routes should be added to www/config/routesV2.js
+
+  // ping
+  // /api/v[12]/pingexpress is the only exception to the rule above, as it explicitly checks the health of the
+  // express server without running into rate limiting with the BitGo server.
+  app.get('/api/v[12]/ping', prepareBitGo(args), promiseWrapper(handlePing, args));
+  app.get('/api/v[12]/pingexpress', promiseWrapper(handlePingExpress, args));
 
   // auth
   app.post('/api/v[12]/user/login', parseBody, prepareBitGo(args), promiseWrapper(handleLogin, args));
