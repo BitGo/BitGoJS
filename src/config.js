@@ -155,7 +155,12 @@ exports.tokens = {
         { type: 'gen', coin: 'eth', network: 'Mainnet', name: 'DAOstack', tokenContractAddress: '0x543ff227f64aa17ea132bf9886cab5db55dcaddf', decimalPlaces: 18 },
         { type: 'storm', coin: 'eth', network: 'Mainnet', name: 'Storm', tokenContractAddress: '0xd0a4b8946cb52f0661273bfbc6fd0e0c75fc6433', decimalPlaces: 18 },
         { type: 'ten', coin: 'eth', network: 'Mainnet', name: 'Tokenomy', tokenContractAddress: '0xdd16ec0f66e54d453e6756713e533355989040e4', decimalPlaces: 18 },
-        { type: 'btt', coin: 'eth', network: 'Mainnet', name: 'Blocktrade', tokenContractAddress: '0xfa456cf55250a839088b27ee32a424d7dacb54ff', decimalPlaces: 18 }
+        { type: 'btt', coin: 'eth', network: 'Mainnet', name: 'Blocktrade', tokenContractAddress: '0xfa456cf55250a839088b27ee32a424d7dacb54ff', decimalPlaces: 18 },
+        { type: 'ukg', coin: 'eth', network: 'Mainnet', name: 'UnikoinGold', tokenContractAddress: '0x24692791bc444c5cd0b81e3cbcaba4b04acd1f3b', decimalPlaces: 18 },
+        { type: 'tnt', coin: 'eth', network: 'Mainnet', name: 'Tierion', tokenContractAddress: '0x08f5a9235b08173b7569f83645d2c7fb55e8ccd8', decimalPlaces: 8 },
+        { type: 'bcap', coin: 'eth', network: 'Mainnet', name: 'BCAP', tokenContractAddress: '0xff3519eeeea3e76f1f699ccce5e23ee0bdda41ac', decimalPlaces: 0 },
+        { type: 'cbc', coin: 'eth', network: 'Mainnet', name: 'CashBet Coin', tokenContractAddress: '0x26db5439f651caf491a87d48799da81f191bdb6b', decimalPlaces: 8 },
+        { type: 'dai', coin: 'eth', network: 'Mainnet', name: 'Dai', tokenContractAddress: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359', decimalPlaces: 18 }
       ]
     }
   },
