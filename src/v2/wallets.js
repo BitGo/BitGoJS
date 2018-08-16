@@ -229,7 +229,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
         return self.baseCoin.keychains().createBackup({
           provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
           disableKRSEmail: params.disableKRSEmail,
-          type: null
+          type: self.baseCoin.getChain()
         });
       }
 

@@ -148,6 +148,28 @@ class BaseCoin {
     return new CoinGenerator();
   }
 
+
+  /**
+   * Name of the chain which supports this coin (eg, 'btc', 'eth')
+   */
+  getChain() {
+    throw new Error('Basecoin method not implemented');
+  }
+
+  /**
+   * Name of the coin family (eg. for tbtc, this would be btc)
+   */
+  getFamily() {
+    throw new Error('Basecoin method not implemented');
+  }
+
+  /**
+   * Human readable full name for the coin
+   */
+  getFullName() {
+    throw new Error('Basecoin method not implemented');
+  }
+
   /**
    * Convert a currency amount represented in base units (satoshi, wei, atoms, drops, stroops)
    * to big units (btc, eth, rmg, xrp, xlm)

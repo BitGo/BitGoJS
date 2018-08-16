@@ -42,18 +42,6 @@ class AbstractUtxoCoin extends BaseCoin {
     return bitcoin;
   }
 
-  getChain() {
-    throw new Error('AbstractUtxoCoin method not implemented');
-  }
-
-  getFamily() {
-    throw new Error('AbstractUtxoCoin method not implemented');
-  }
-
-  getFullName() {
-    throw new Error('AbstractUtxoCoin method not implemented');
-  }
-
   isValidAddress(address, forceAltScriptSupport) {
     const validVersions = [
       this.network.pubKeyHash,
