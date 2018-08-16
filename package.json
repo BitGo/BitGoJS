@@ -27,7 +27,7 @@
     "glob": "^7.1.2",
     "html-webpack-plugin": "^2.30.1",
     "istanbul": "0.4.5",
-    "karma": "~0.13.22",
+    "karma": "^3.0.0",
     "karma-chrome-launcher": "~0.1.7",
     "karma-mocha": "~0.1.10",
     "mocha": "^4.0.1",
