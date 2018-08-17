@@ -3,9 +3,9 @@ const prova = require('../../prova');
 const _ = require('lodash');
 
 class Rmg extends AbstractUtxoCoin {
-  constructor() {
-    super();
-    this.network = prova.networks.rmg;
+  constructor(network) {
+    // TODO: move to bitgo-utxo-lib (BG-6821)
+    super(network || prova.networks.rmg);
   }
 
   /**

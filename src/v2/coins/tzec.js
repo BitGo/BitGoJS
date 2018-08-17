@@ -3,10 +3,8 @@ const bitcoin = require('bitgo-utxo-lib');
 
 class Tzec extends Zec {
   constructor() {
-    super();
-
-    // https://github.com/zcash/zcash/blob/master/src/chainparams.cpp#L295
-    this.network = bitcoin.networks.zcashTest;
+    // TODO: move to bitgo-utxo-lib (BG-6821)
+    super(bitcoin.networks.zcashTest);
   }
 
   getChain() {

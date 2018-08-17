@@ -18,9 +18,8 @@ const containsMixedCaseCharacters = (str) => {
 
 class Bch extends AbstractUtxoCoin {
 
-  constructor() {
-    super();
-    this.network = bitcoin.networks.bitcoincash;
+  constructor(network) {
+    super(network || bitcoin.networks.bitcoincash);
     this.bchPrefix = 'bitcoincash';
   }
 

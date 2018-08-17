@@ -7,9 +7,8 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 
 class Btc extends AbstractUtxoCoin {
-  constructor() {
-    super();
-    this.network = bitcoin.networks.bitcoin;
+  constructor(network) {
+    super(network || bitcoin.networks.bitcoin);
   }
 
   getChain() {

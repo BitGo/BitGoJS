@@ -6,9 +6,9 @@ const common = require('../../common');
 const request = require('superagent');
 
 class Ltc extends AbstractUtxoCoin {
-  constructor() {
-    super();
-    this.network = {
+  constructor(network) {
+    // TODO: move to bitgo-utxo-lib (BG-6821)
+    super(network || {
       messagePrefix: '\x19Litecoin Signed Message:\n',
       bip32: {
         public: 0x0488b21e,
@@ -21,7 +21,7 @@ class Ltc extends AbstractUtxoCoin {
       dustThreshold: 0, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L360-L365
       dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
       feePerKb: 100000 // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
-    };
+    });
     // use legacy script hash version, which is the current Bitcoin one
     this.altScriptHash = bitcoin.networks.bitcoin.scriptHash;
     // do not support alt destinations in prod

@@ -6,9 +6,8 @@ const co = Promise.coroutine;
 const common = require('../../common');
 
 class Btg extends Btc {
-  constructor() {
-    super();
-    this.network = bitcoin.networks.bitcoingold;
+  constructor(network) {
+    super(network || bitcoin.networks.bitcoingold);
   }
 
   getChain() {
