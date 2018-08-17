@@ -6,11 +6,8 @@ const common = require('../../common');
 const request = require('superagent');
 
 class Zec extends AbstractUtxoCoin {
-  constructor() {
-    super();
-
-    // https://github.com/zcash/zcash/blob/master/src/chainparams.cpp#L140
-    this.network = bitcoin.networks.zcash;
+  constructor(network) {
+    super(network || bitcoin.networks.zcash);
   }
 
   getChain() {

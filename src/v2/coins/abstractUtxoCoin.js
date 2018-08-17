@@ -12,18 +12,16 @@ const errors = require('../errors');
 const debug = require('debug')('bitgo:v2:utxo');
 
 class AbstractUtxoCoin extends BaseCoin {
-  constructor() {
+  constructor(network) {
     super();
-    this.network = bitcoin.networks.bitcoin;
+    if (!_.isObject(network)) {
+      throw new Error('network must be an object');
+    }
+    this._network = network;
   }
 
   get network() {
     return this._network;
-  }
-
-  set network(network) {
-    this._network = network || {};
-    this._network.coin = this.getFamily();
   }
 
   static get validAddressTypes() {

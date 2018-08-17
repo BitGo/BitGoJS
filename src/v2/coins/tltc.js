@@ -3,8 +3,8 @@ const bitcoin = require('bitgo-utxo-lib');
 
 class Tltc extends Ltc {
   constructor() {
-    super();
-    this.network = {
+    // TODO: move to bitgo-utxo-lib (BG-6821)
+    super({
       magic: 0xd9b4bef9,
       messagePrefix: '\x19Litecoin Signed Message:\n',
       bip32: {
@@ -18,7 +18,7 @@ class Tltc extends Ltc {
       dustThreshold: 0, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L360-L365
       dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
       feePerKb: 100000 // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
-    };
+    });
     this.altScriptHash = bitcoin.networks.testnet.scriptHash;
     // support alt destinations on test
     this.supportAltScriptDestination = false;

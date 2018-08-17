@@ -3,8 +3,8 @@ const prova = require('../../prova');
 
 class Trmg extends Rmg {
   constructor() {
-    super();
-    this.network = prova.networks.rmgTest;
+    // TODO: move to bitgo-utxo-lib (BG-6821)
+    super(prova.networks.rmgTest);
   }
 
   getChain() {

@@ -4,8 +4,7 @@ const bitcoin = require('bitgo-utxo-lib');
 class Tbtc extends Btc {
 
   constructor() {
-    super();
-    this.network = bitcoin.networks.testnet;
+    super(bitcoin.networks.testnet);
   }
 
   getChain() {
