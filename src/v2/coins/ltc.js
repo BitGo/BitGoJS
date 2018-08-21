@@ -20,7 +20,8 @@ class Ltc extends AbstractUtxoCoin {
       wif: 0xb0,
       dustThreshold: 0, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L360-L365
       dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
-      feePerKb: 100000 // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
+      feePerKb: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
+      coin: 'ltc'
     });
     // use legacy script hash version, which is the current Bitcoin one
     this.altScriptHash = bitcoin.networks.bitcoin.scriptHash;
