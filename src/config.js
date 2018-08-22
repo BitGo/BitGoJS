@@ -217,6 +217,20 @@ exports.supportedCrossChainRecoveries = {
   ltc: ['btc', 'bch']
 };
 
+// KRS providers and their fee structures
+exports.krsProviders = {
+  keyternal: {
+    feeType: 'flatUsd',
+    feeAmount: 99,
+    supportedCoins: ['btc', 'eth'],
+    feeAddresses: {
+      btc: '' // TODO [BG-6965] Get address from Keyternal - recovery will fail for now until Keyternal is ready
+    }
+  }
+};
+
+exports.bitcoinAverageBaseUrl = 'https://apiv2.bitcoinaverage.com/indices/global/ticker/';
+
 // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
 exports.defaultConstants = (env) => {
 

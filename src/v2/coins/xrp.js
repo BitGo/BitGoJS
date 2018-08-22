@@ -13,6 +13,7 @@ const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const sjcl = require('../../sjcl.min');
+const config = require('../../config');
 
 class Xrp extends BaseCoin {
 
@@ -356,9 +357,10 @@ class Xrp extends BaseCoin {
    * @param params
    * - rootAddress: root XRP wallet address to recover funds from
    * - userKey: [encrypted] xprv
-   * - backupKey: [encrypted] xrpv
+   * - backupKey: [encrypted] xprv, or xpub if the xprv is held by a KRS provider
    * - walletPassphrase: necessary if one of the xprvs is encrypted
    * - bitgoKey: xpub
+   * - krsProvider: necessary if backup key is held by KRS
    * - recoveryDestination: target address to send recovered funds to
    * @param callback
    * @returns {Function|*}
@@ -366,6 +368,8 @@ class Xrp extends BaseCoin {
   recover(params, callback) {
     const rippledUrl = this.getRippledUrl();
     const self = this;
+    const isKrsRecovery = params.backupKey.startsWith('xpub');
+
     return this.initiateRecovery(params)
     .then(function(keys) {
       const addressDetailsPromise = self.bitgo.post(rippledUrl)
@@ -475,15 +479,26 @@ class Xrp extends BaseCoin {
       const txJSON = JSON.stringify(transaction);
 
       const userKey = keys[0].getKey().getPrivateKeyBuffer().toString('hex');
-      const backupKey = keys[1].getKey().getPrivateKeyBuffer().toString('hex');
-
       const rippleLib = ripple();
       const userSignature = rippleLib.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
-      const backupSignature = rippleLib.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
-      const signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
+
+      let signedTransaction;
+
+      if (isKrsRecovery) {
+        signedTransaction = userSignature;
+      } else {
+        const backupKey = keys[1].getKey().getPrivateKeyBuffer().toString('hex');
+        const backupSignature = rippleLib.signWithPrivateKey(txJSON, backupKey, { signAs: backupAddress });
+        signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
+      }
 
       const transactionExplanation = self.explainTransaction({ txHex: signedTransaction.signedTransaction });
       transactionExplanation.txHex = signedTransaction.signedTransaction;
+
+      if (isKrsRecovery) {
+        transactionExplanation.coin = self.getChain();
+      }
+
       return transactionExplanation;
     })
     .nodeify(callback);
@@ -497,6 +512,12 @@ class Xrp extends BaseCoin {
       const bitgoXpub = params.bitgoKey; // Box C
       const destinationAddress = params.recoveryDestination;
       const passphrase = params.walletPassphrase;
+
+      const isKrsRecovery = backupKey.startsWith('xpub');
+
+      if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
+        throw new Error('unknown key recovery service provider');
+      }
 
       const validatePassphraseKey = function(userKey, passphrase) {
         try {
@@ -516,7 +537,7 @@ class Xrp extends BaseCoin {
 
       // Validate the backup key
       try {
-        if (!backupKey.startsWith('xprv')) {
+        if (!backupKey.startsWith('xprv') && !isKrsRecovery) {
           backupKey = sjcl.decrypt(passphrase, backupKey);
         }
         const backupHDNode = prova.HDNode.fromBase58(backupKey);

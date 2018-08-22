@@ -6,6 +6,7 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const prova = require('prova-lib');
 const crypto = require('crypto');
+const request = require('superagent');
 const _ = require('lodash');
 const RecoveryTool = require('../recovery');
 const errors = require('../errors');
@@ -906,13 +907,27 @@ class AbstractUtxoCoin extends BaseCoin {
     return Promise.reject(new Error('AbtractUtxoCoin method not implemented'));
   }
 
+  getRecoveryMarketPrice() {
+    return co(function *getRecoveryMarketPrice() {
+      const bitcoinAverageUrl = config.bitcoinAverageBaseUrl + this.getFamily().toUpperCase() + 'USD';
+      const response = yield request.get(bitcoinAverageUrl).retry(2).result();
+
+      if (response === null || typeof response.last !== 'number') {
+        throw new Error('unable to reach BitcoinAverage for price data');
+      }
+
+      return response.last;
+    }).call(this);
+  }
+
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
    * - userKey: [encrypted] xprv
-   * - backupKey: [encrypted] xrpv
+   * - backupKey: [encrypted] xprv, or xpub if the xprv is held by a KRS provider
    * - walletPassphrase: necessary if one of the xprvs is encrypted
    * - bitgoKey: xpub
+   * - krsProvider: necessary if backup key is held by KRS
    * - recoveryDestination: target address to send recovered funds to
    * - scan: the amount of consecutive addresses without unspents to scan through before stopping
    * @param callback
@@ -1013,6 +1028,17 @@ class AbstractUtxoCoin extends BaseCoin {
         throw new Error('scan must be a positive integer');
       }
 
+      const isKrsRecovery = params.backupKey.startsWith('xpub');
+      const krsProvider = config.krsProviders[params.krsProvider];
+
+      if (isKrsRecovery && _.isUndefined(krsProvider)) {
+        throw new Error('unknown key recovery service provider');
+      }
+
+      if (isKrsRecovery && !(krsProvider.supportedCoins.includes(this.getFamily()))) {
+        throw new Error('specified key recovery service does not support recoveries for this coin');
+      }
+
       const keys = yield this.initiateRecovery(params);
 
       // BitGo's key derivation paths are /0/0/0/i for user-generated addresses and /0/0/1/i for change adddresses.
@@ -1039,7 +1065,9 @@ class AbstractUtxoCoin extends BaseCoin {
 
       const feePerByte = yield this.getRecoveryFeePerBytes();
 
-      const approximateSize = new bitcoin.Transaction().toBuffer().length + config.tx.OUTPUT_SIZE + (config.tx.P2SH_INPUT_SIZE * unspents.length);
+      // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees
+      const outputSize = isKrsRecovery ? 2 * config.tx.OUTPUT_SIZE : config.tx.OUTPUT_SIZE;
+      const approximateSize = config.tx.TX_OVERHEAD_SIZE + outputSize + (config.tx.P2SH_INPUT_SIZE * unspents.length);
       const approximateFee = approximateSize * feePerByte;
 
       // Construct a transaction
@@ -1056,9 +1084,30 @@ class AbstractUtxoCoin extends BaseCoin {
         };
       });
 
-      transactionBuilder.addOutput(params.recoveryDestination, totalInputAmount - approximateFee);
+      let recoveryAmount = totalInputAmount - approximateFee;
+      let krsFee;
+      if (isKrsRecovery) {
+        krsFee = yield this.calculateFeeAmount({ provider: params.krsProvider, amount: recoveryAmount });
+        recoveryAmount -= krsFee;
+      }
 
-      const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById);
+      if (recoveryAmount < 0) {
+        throw new Error('this wallet\'s balance is too low to pay the fees specified by the KRS provider');
+      }
+
+      transactionBuilder.addOutput(params.recoveryDestination, recoveryAmount);
+
+      if (isKrsRecovery && krsFee > 0) {
+        const krsFeeAddress = krsProvider.feeAddresses[this.getChain()];
+
+        if (!krsFeeAddress) {
+          throw new Error('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
+        }
+
+        transactionBuilder.addOutput(krsFeeAddress, krsFee);
+      }
+
+      const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
 
       txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
 
@@ -1066,6 +1115,12 @@ class AbstractUtxoCoin extends BaseCoin {
         txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
       } catch (e) {
         console.log('Could not verify recovery transaction', e.message);
+      }
+
+      if (isKrsRecovery) {
+        txInfo.coin = this.getChain();
+        txInfo.backupKey = params.backupKey;
+        txInfo.recoveryAmount = recoveryAmount;
       }
 
       return txInfo;
@@ -1077,8 +1132,9 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param txb {Object} a transaction builder object (with inputs and outputs)
    * @param unspents {Array} the unspents to use in the transaction
    * @param addresses {Array} the address and redeem script info for the unspents
+   * @param cosign {Boolean} whether to cosign this transaction with the user's backup key (false if KRS recovery)
    */
-  signRecoveryTransaction(txb, unspents, addresses) {
+  signRecoveryTransaction(txb, unspents, addresses, cosign) {
     // sign the inputs
     const signatureIssues = [];
     unspents.forEach((unspent, i) => {
@@ -1094,11 +1150,13 @@ class AbstractUtxoCoin extends BaseCoin {
         unspent: unspent
       };
 
-      try {
-        txb.sign(i, backupPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount);
-      } catch (e) {
-        currentSignatureIssue.error = e;
-        signatureIssues.push(currentSignatureIssue);
+      if (cosign) {
+        try {
+          txb.sign(i, backupPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount);
+        } catch (e) {
+          currentSignatureIssue.error = e;
+          signatureIssues.push(currentSignatureIssue);
+        }
       }
 
       try {
@@ -1118,6 +1176,34 @@ class AbstractUtxoCoin extends BaseCoin {
     }
 
     return txb;
+  }
+
+  /**
+   * Calculates the amount (in base units) to pay a KRS provider when building a recovery transaction
+   * @param params
+   * @param params.provider {String} the KRS provider that holds the backup key
+   * @param params.amount {Number} amount (in base units) to be recovered
+   * @param callback
+   * @returns {*}
+   */
+  calculateFeeAmount(params, callback) {
+    return co(function *calculateFeeAmount() {
+      const krsProvider = config.krsProviders[params.provider];
+
+      if (krsProvider === undefined) {
+        throw new Error(`no fee structure specified for provider ${params.provider}`);
+      }
+
+      if (krsProvider.feeType === 'flatUsd') {
+        const feeAmountUsd = krsProvider.feeAmount;
+        const currentPrice = yield this.getRecoveryMarketPrice();
+
+        return Math.round(feeAmountUsd / currentPrice * this.getBaseFactor());
+      } else {
+        // we can add more fee structures here as needed for different providers, such as percentage of recovery amount
+        throw new Error('Fee structure not implemented');
+      }
+    }).call(this).asCallback(callback);
   }
 
   /**

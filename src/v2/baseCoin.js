@@ -318,6 +318,8 @@ class BaseCoin {
       const destinationAddress = params.recoveryDestination;
       const passphrase = params.walletPassphrase;
 
+      const isKrsRecovery = backupKey.startsWith('xpub');
+
       const validatePassphraseKey = function(userKey, passphrase) {
         try {
           if (!userKey.startsWith('xprv')) {
@@ -336,7 +338,7 @@ class BaseCoin {
 
       // Validate the backup key
       try {
-        if (!backupKey.startsWith('xprv')) {
+        if (!backupKey.startsWith('xprv') && !isKrsRecovery) {
           backupKey = sjcl.decrypt(passphrase, backupKey);
         }
         const backupHDNode = bitcoin.HDNode.fromBase58(backupKey);
