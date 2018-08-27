@@ -78,7 +78,7 @@ const createWallet = function() {
             console.dir(result.wallet);
             console.log('\n\nBACK THIS UP: ');
             console.log('User keychain encrypted xPrv - WRITE IT DOWN: ' + bitgo.encrypt({ password: walletPassPhrase, input: userKey.xprv }));
-            console.log('Backup keychain encrypted xPrv - WRITE IT DOWN: ' + bitgo.encrypt({ password: walletPassPhrase, input: userKey.xprv }));
+            console.log('Backup keychain encrypted xPrv - WRITE IT DOWN: ' + bitgo.encrypt({ password: walletPassPhrase, input: backupKey.xprv }));
 
             bitgo.wallets().list({}, function(err, result) {
               console.dir(result);
