@@ -111,8 +111,7 @@ const runCommands = function() {
           if (result) {
             const sortedLabels = _.sortBy(result, function(label) { return label.label + label.address; });
             sortedLabels.forEach(function(label) {
-              const line = ' ' + _.string.rpad(label.address, 38) + _.string.prune(label.label, 60);
-              console.log(line);
+              console.log(' ' + label.address + label.label);
             });
           }
         });
