@@ -362,12 +362,14 @@ const BitGo = function(params) {
           const receivedHmac = response.headers.hmac;
           const expectedHmac = verificationResponse.expectedHmac;
           const signatureSubject = verificationResponse.signatureSubject;
+          // Log only the first 10 characters of the token to ensure the full token isn't logged.
+          const partialBitgoToken = bitgo._token.substring(0, 10);
           const errorDetails = {
             expectedHmac,
             receivedHmac,
             hmacInput: signatureSubject,
             requestToken: req.authenticationToken,
-            bitgoToken: bitgo._token
+            bitgoToken: partialBitgoToken
           };
           debug('Invalid response HMAC: %O', errorDetails);
           const error = new Error('invalid response HMAC, possible man-in-the-middle-attack');
