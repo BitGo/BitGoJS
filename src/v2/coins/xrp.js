@@ -496,6 +496,7 @@ class Xrp extends BaseCoin {
       transactionExplanation.txHex = signedTransaction.signedTransaction;
 
       if (isKrsRecovery) {
+        transactionExplanation.backupKey = params.backupKey;
         transactionExplanation.coin = self.getChain();
       }
 
