@@ -2,6 +2,8 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
 const CoinWallet = require('./wallet');
+const internal = require('./internal');
+const common = require('../common');
 
 class Enterprise {
 
@@ -71,6 +73,15 @@ class Enterprise {
   removeUser(params, callback) {
     return co(function *() {
       return this.bitgo.del(this.url('/user')).send(params).result();
+    }).call(this).asCallback(callback);
+  }
+
+  getFirstPendingTransaction(params, callback) {
+    return co(function *() {
+      params = params || {};
+      common.validateParams(params, [], [], callback);
+      const query = { enterpriseId: this.id };
+      return internal.getFirstPendingTransaction(query, this.baseCoin, this.bitgo);
     }).call(this).asCallback(callback);
   }
 

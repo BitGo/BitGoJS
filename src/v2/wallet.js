@@ -7,6 +7,7 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
 const debug = require('debug')('bitgo:v2:wallet');
+const internal = require('./internal');
 
 const Wallet = function(bitgo, baseCoin, walletData) {
   this.bitgo = bitgo;
@@ -1205,6 +1206,40 @@ Wallet.prototype.recoverToken = function(params, callback) {
 
     return this.baseCoin.recoverToken(_.merge(params, { wallet: this }));
 
+  }).call(this).asCallback(callback);
+};
+
+/**
+ * Get transaction metadata for the oldest transaction that is still pending or attempted
+ * @param callback
+ * @param params.walletId [Optional] The ID of the wallet (must provide one of walletId and enterpriseId)
+ * @param params.enterpriseId [Optional] The ID of the enterprise (must provide one of walletId and enterpriseId)
+ * @returns {Object} Object with txid, walletId, tx, and fee (if supported for coin)
+ */
+Wallet.prototype.getFirstPendingTransaction = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, [], [], callback);
+    const query = { walletId: this.id() };
+    return internal.getFirstPendingTransaction(query, this.baseCoin, this.bitgo);
+  }).call(this).asCallback(callback);
+};
+
+/**
+ * Change the fee on the pending transaction that corresponds to the given txid to the given new fee
+ * @param {String} params.txid The transaction Id corresponding to the transaction whose fee is to be changed
+ * @param {Integer} params.fee The new fee to apply to the denoted transaction
+ * @param callback
+ * @returns {String} The transaction ID of the new transaction that contains the new fee rate
+ */
+Wallet.prototype.changeFee = function(params, callback) {
+  return co(function *() {
+    params = params || {};
+    common.validateParams(params, ['txid', 'fee'], [], callback);
+
+    return this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/changeFee'))
+    .send(params)
+    .result();
   }).call(this).asCallback(callback);
 };
 

@@ -298,6 +298,43 @@ describe('V2 Wallet:', function() {
     }));
   });
 
+  describe('Wallet Transactions', function() {
+
+    it('should search for pending transaction correctly', co(function *() {
+      const params = { walletId: wallet.id() };
+
+      const scope =
+        nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/tx/pending/first`)
+        .query(params)
+        .reply(200);
+      try {
+        yield wallet.getFirstPendingTransaction();
+        throw '';
+      } catch (error) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+      scope.isDone().should.be.True();
+    }));
+
+    it('should try to change the fee correctly', co(function *() {
+      const params = { txid: '0xffffffff', fee: '10000000' };
+
+      const scope =
+        nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/changeFee`, params)
+        .reply(200);
+
+      try {
+        yield wallet.changeFee({ txid: '0xffffffff', fee: '10000000' });
+        throw '';
+      } catch (error) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+      scope.isDone().should.be.True();
+    }));
+  });
+
   describe('Create Address', () => {
     it('should correctly validate arguments to create address', co(function *() {
       let message = 'gasPrice has to be an integer or numeric string';
