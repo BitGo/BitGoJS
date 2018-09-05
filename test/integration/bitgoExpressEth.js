@@ -30,7 +30,7 @@ describe('Bitgo Express TETH v2', function() {
     };
     const bitgo = new TestBitGo();
     bitgo.initializeTestVars();
-    const app = expressApp(args);
+    const app = expressApp.app(args);
     agent = request.agent(app);
     yield testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15);
 

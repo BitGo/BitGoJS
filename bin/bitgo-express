@@ -1,146 +1,23 @@
 #!/usr/bin/env node
-var argumentParser = require('argparse').ArgumentParser;
-var expressApp = require('../src/expressApp');
-var fs = require('fs');
-var http = require('http');
-var https = require('https');
-var pjson = require('../package.json');
-var constants = require('constants');
 
-// Handle arguments
-var getArgs = function () {
-  var parser = new argumentParser({
-    version: pjson.version,
-    addHelp: true,
-    description: 'BitGo-Express'
-  });
+const Promise = require('bluebird');
 
-  parser.addArgument(
-  ['-p', '--port'], {
-    defaultValue: 3080,
-    help: 'Port to listen on'
-  });
+const { app, parseArgs, createBaseUri, createServer, startup } = require('../src/expressApp');
 
-  parser.addArgument(
-  ['-b', '--bind'], {
-    defaultValue: 'localhost',
-    help: 'Bind to given address to listen for connections (default: localhost)'
-  });
+if (require.main === module) {
+  (Promise.coroutine(function *main() {
+    const args = parseArgs();
 
-  parser.addArgument(
-  ['-e', '--env'], {
-    defaultValue: 'test',
-    help: 'BitGo environment to proxy against (prod, test)'
-  });
+    const { port, bind, keypath, crtpath } = args;
+    const tls = Boolean(keypath && crtpath);
+    const baseUri = createBaseUri(args, tls);
+    const server = yield createServer(args, tls, app(args));
 
-  parser.addArgument(
-  ['-d', '--debug'], {
-    action: 'appendConst',
-    dest: 'debugnamespace',
-    constant: 'bitgo:express',
-    help: 'Enable basic debug logging for incoming requests'
-  });
-
-  parser.addArgument(
-  ['-D', '--debugnamespace'], {
-    action: 'append',
-    help: 'Enable a specific debugging namespace for more fine-grained debug output. May be given more than once.'
-  });
-
-  parser.addArgument(
-  ['-k', '--keypath'], {
-    help: 'Path to the SSL Key file (required if running production)'
-  });
-
-  parser.addArgument(
-  ['-c', '--crtpath'], {
-    help: 'Path to the SSL Crt file (required if running production)'
-  });
-
-  parser.addArgument(
-  ['-u', '--customrooturi'], {
-    help: 'Force custom root BitGo URI (e.g. https://test.bitgo.com)'
-  });
-
-  parser.addArgument(
-  ['-n', '--custombitcoinnetwork'], {
-    help: 'Force custom bitcoin network (e.g. testnet)'
-  });
-
-  parser.addArgument(
-  ['-l', '--logfile'], {
-    help: 'Filepath to write the access log'
-  });
-
-  parser.addArgument(
-  ['--disablessl'], {
-    action: 'storeTrue',
-    help: 'Allow running against production in non-SSL mode (at your own risk!)'
-  });
-
-  parser.addArgument(
-  ['--disableproxy'], {
-    action: 'storeTrue',
-    help: 'disable the proxy, not routing any non-express routes'
-  });
-
-  return parser.parseArgs();
-};
-
-args = getArgs();
-
-if (args.env === 'prod') {
-  if (args.bind !== 'localhost' && (!args.keypath || !args.crtpath)) {
-    if (!args.disablessl) {
-      throw new Error("Must provide keypath and crtpath for SSL when running against prod and listening on external interfaces!");
-    }
-  }
+    server.listen(port, bind, startup(args, baseUri));
+    server.timeout = 300 * 1000; // 5 minutes
+  })
+  .catch(err => {
+    console.log(`Fatal error: ${err.message}`);
+    console.log(err.stack);
+  }))();
 }
-
-if ((!!args.keypath !== !!args.crtpath)) {
-  throw new Error("Must provide both keypath and crtpath!");
-}
-
-// Get express app
-var app = expressApp(args);
-
-// Start up http server
-var server;
-var baseUri = "http";
-if (args.keypath && args.crtpath) {
-  // Run in SSL mode
-  var privateKey  = fs.readFileSync(args.keypath, 'utf8');
-  var certificate = fs.readFileSync(args.crtpath, 'utf8');
-  baseUri += "s";
-
-  server = https.createServer({
-    secureOptions: constants.SSL_OP_NO_TLSv1,
-    key: privateKey,
-    cert: certificate
-  }, app);
-} else {
-  server = http.createServer(app);
-}
-
-server.listen(args.port, args.bind, function () {
-  baseUri += "://" + args.bind;
-  if (!((args.port == 80 && !args.keypath) || (args.port == 443 && args.keypath))) {
-    baseUri += ":" + args.port;
-  }
-  console.log('BitGo-Express running');
-  console.log('Environment: ' + args.env);
-  console.log('Base URI: ' + baseUri);
-  if (args.customrooturi) {
-    console.log('Custom root Uri: ' + args.customrooturi);
-  }
-  if (args.custombitcoinnetwork) {
-    console.log('Custom bitcoin network: ' + args.custombitcoinnetwork);
-  }
-});
-
-server.timeout = 300 * 1000; // 5 minutes
-
-process.on('uncaughtException', function (err) {
-  console.log("Fatal error: " + err.message);
-  console.log(err.stack);
-});

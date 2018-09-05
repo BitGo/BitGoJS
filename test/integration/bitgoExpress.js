@@ -24,7 +24,7 @@ describe('Bitgo Express', function() {
     };
     bitgo = new TestBitGo();
     bitgo.initializeTestVars();
-    const app = expressApp(args);
+    const app = expressApp.app(args);
     agent = request.agent(app);
   });
 

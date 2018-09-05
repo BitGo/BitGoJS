@@ -306,7 +306,7 @@ BitGo.prototype.checkFunded = co(function *checkFunded(agent) {
       logfile: '/dev/null'
     };
 
-    const app = expressApp(args);
+    const app = expressApp.app(args);
     agent = request.agent(app);
   }
 
