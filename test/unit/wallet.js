@@ -14,9 +14,11 @@ const bitcoin = require('../../src/bitcoin');
 const should = require('should');
 const nock = require('nock');
 
+nock.disableNetConnect();
+
 describe('Wallet Prototype Methods', function() {
 
-  const bitgo = new TestBitGo();
+  const bitgo = new TestBitGo({ env: 'test' });
   bitgo.initializeTestVars();
 
   const userKeypair = {
@@ -63,6 +65,8 @@ describe('Wallet Prototype Methods', function() {
   const fakeWallet = new Wallet(bitgo, { id: '2NCoSfHH6Ls4CdTS5QahgC9k7x9RfXeSwY4', private: { keychains: [userKeypair, backupKeypair, bitgoKey] } });
 
   describe('Generate Address', function() {
+
+    before(() => nock.activeMocks().should.be.empty());
 
     it('generate first address', function() {
       const idAddress = fakeWallet.generateAddress({ path: '/0/0', segwit: false });
@@ -192,9 +196,11 @@ describe('Wallet Prototype Methods', function() {
 
   describe('Create Transaction', function() {
 
+    let bgUrl;
+
     before(co(function *() {
-      yield bitgo.authenticateTestUser(bitgo.testUserOTP());
-      bitgo._token.should.not.be.empty;
+      nock.activeMocks().should.be.empty();
+      bgUrl = common.Environments[bitgo.getEnv()].uri;
     }));
 
     it('default p2sh', co(function *() {
@@ -221,6 +227,10 @@ describe('Wallet Prototype Methods', function() {
       unspent.tx_hash = unspent.txid;
       unspent.tx_output_n = unspent.n;
       unspent.script = unspent.outputScript;
+
+      nock(bgUrl)
+      .post('/api/v1/billing/address')
+      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = yield fakeWallet.createTransaction({
         changeAddress: p2shAddress.address,
@@ -275,6 +285,10 @@ describe('Wallet Prototype Methods', function() {
       unspent.tx_hash = unspent.txid;
       unspent.tx_output_n = unspent.n;
       unspent.script = unspent.outputScript;
+
+      nock(bgUrl)
+      .post('/api/v1/billing/address')
+      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = yield fakeWallet.createTransaction({
         changeAddress: p2shAddress.address,
@@ -331,6 +345,10 @@ describe('Wallet Prototype Methods', function() {
       unspent.tx_output_n = unspent.n;
       unspent.script = unspent.outputScript;
 
+      nock(bgUrl)
+      .post('/api/v1/billing/address')
+      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
+
       const transaction = yield fakeWallet.createTransaction({
         changeAddress: segwitAddress.address,
         unspents: [unspent],
@@ -385,6 +403,10 @@ describe('Wallet Prototype Methods', function() {
       unspent.tx_output_n = unspent.n;
       unspent.script = unspent.outputScript;
 
+      nock(bgUrl)
+      .post('/api/v1/billing/address')
+      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
+
       const transaction = yield fakeWallet.createTransaction({
         changeAddress: segwitAddress.address,
         unspents: [unspent],
@@ -435,6 +457,10 @@ describe('Wallet Prototype Methods', function() {
       unspent.tx_hash = unspent.txid;
       unspent.tx_output_n = unspent.n;
       unspent.script = unspent.outputScript;
+
+      nock(bgUrl)
+      .post('/api/v1/billing/address')
+      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = yield fakeWallet.createTransaction({
         changeAddress: p2shAddress.address,
@@ -495,6 +521,10 @@ describe('Wallet Prototype Methods', function() {
       unspent.tx_hash = unspent.txid;
       unspent.tx_output_n = unspent.n;
       unspent.script = unspent.outputScript;
+
+      nock(bgUrl)
+      .post('/api/v1/billing/address')
+      .reply(200, { address: '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco' });
 
       const transaction = yield fakeWallet.createTransaction({
         changeAddress: segwitAddress.address,
@@ -644,15 +674,7 @@ describe('Wallet Prototype Methods', function() {
     }
 
     before(function accelerateTxMockedBefore() {
-      // no net connects allowed for these tests
-      nock.disableNetConnect();
-
-      nock('https://bitgo.fakeurl')
-      .get('/api/v1/client/constants')
-      .twice()
-      .reply(200, { ttl: 3600, constants: {} });
-
-      TestBitGo.prototype._constants = undefined;
+      nock.activeMocks().should.be.empty();
 
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
@@ -667,14 +689,9 @@ describe('Wallet Prototype Methods', function() {
       minChangeSize = bitgo.getConstants().minChangeSize || 1e7;
     });
 
-    afterEach(function accelerateTxMockedAfterEach() {
-      // make sure all nocks are cleared or consumed after each test is run
-      nock.activeMocks().length.should.equal(0);
-    });
-
     after(function accelerateTxMockedAfter() {
-      // reset nock net connect state to default
-      nock.enableNetConnect();
+      // make sure all nocks are cleared or consumed after the tests are complete
+      nock.activeMocks().should.be.empty();
     });
 
     it('arguments', co(function *coArgumentsIt() {
@@ -712,6 +729,11 @@ describe('Wallet Prototype Methods', function() {
     }));
 
     describe('bad input', function badInputDescribe() {
+      after(function accelerateTxMockedAfter() {
+        // make sure all nocks are cleared or consumed after the tests are complete
+        nock.activeMocks().should.be.empty();
+      });
+
 
       it('non existant transaction ID', co(function *coNonExistantIt() {
         nock(bgUrl)
@@ -1589,6 +1611,7 @@ describe('Wallet Prototype Methods', function() {
           feeRate,
           walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE
         });
+        nock.activeMocks().should.be.empty();
 
         bitgo.__proto__.getConstants = oldGetConstants;
       }));

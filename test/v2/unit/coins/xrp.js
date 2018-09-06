@@ -5,13 +5,12 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
-const { BitGo } = require('../../../../src/index');
 
 const ripple = require('../../../../src/ripple');
 const rippleBinaryCodec = require('ripple-binary-codec');
 
 const nock = require('nock');
-nock.enableNetConnect();
+nock.disableNetConnect();
 
 describe('XRP:', function() {
   let bitgo;
@@ -24,7 +23,7 @@ describe('XRP:', function() {
   });
 
   after(function() {
-    nock.cleanAll();
+    nock.activeMocks().should.be.empty();
   });
 
   it('isValidAddress should be correct', function() {
@@ -107,7 +106,7 @@ describe('XRP:', function() {
 
 
   describe('Fee Management', () => {
-    const nockBitGo = new BitGo({ env: 'test' });
+    const nockBitGo = new TestV2BitGo({ env: 'test' });
     const nockBasecoin = nockBitGo.coin('txrp');
     const keychains = {
       userKeychain: {

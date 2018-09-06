@@ -18,11 +18,7 @@ describe('Keychains', function v2keychains() {
     let bgUrl;
 
     before(function beforeDescribe() {
-      nock('https://bitgo.fakeurl')
-      .get('/api/v1/client/constants')
-      .reply(200, { ttl: 3600, constants: {} });
-
-      TestBitGo.prototype._constants = undefined;
+      nock.activeMocks().should.be.empty();
 
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
@@ -94,6 +90,6 @@ describe('Keychains', function v2keychains() {
   });
 
   after(function afterKeychains() {
-    nock.activeMocks().length.should.equal(0);
+    nock.activeMocks().should.be.empty();
   });
 });

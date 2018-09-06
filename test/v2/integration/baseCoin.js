@@ -16,6 +16,8 @@ describe('V2 Base Coin:', function() {
 
   describe('fee estimate call', function() {
 
+    before(() => require('nock').restore());
+
     _.forEach(['tbtc', 'trmg', 'tltc', 'tbch', 'tbtg'], function(coin) {
       const basecoin = bitgo.coin(coin);
 

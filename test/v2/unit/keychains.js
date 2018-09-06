@@ -18,13 +18,6 @@ describe('V2 Keychains', function v2keychains() {
   let bgUrl;
 
   before(function before() {
-    nock('https://bitgo.fakeurl')
-    .get('/api/v1/client/constants')
-    .twice()
-    .reply(200, { ttl: 3600, constants: {} });
-
-    TestV2BitGo.prototype._constants = undefined;
-
     bitgo = new TestV2BitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     bitgo.setValidate(false);
@@ -155,7 +148,7 @@ describe('V2 Keychains', function v2keychains() {
     });
 
     after(function afterUpdatePassword() {
-      nock.activeMocks().length.should.equal(0);
+      nock.activeMocks().should.be.empty();
     });
   });
 });

@@ -412,12 +412,15 @@ const BitGo = function(params) {
     self[method] = createPatch(method);
   }
 
+  // capture outer stack so we have useful debug information if fetch constants fails
+  const e = new Error();
+
   // Kick off first load of constants
   this.fetchConstants({}, function(err) {
     if (err) {
       // make sure an error does not terminate the entire script
       console.error('failed to fetch initial client constants from BitGo');
-      console.trace(err);
+      console.trace(e.stack);
     }
   });
 };

@@ -64,6 +64,7 @@ BitGo.prototype.initializeTestVars = function() {
   } catch (e) {
     console.error('failed to enable long stack traces as a promise has already been created. Is BITGO_USE_PROXY set?');
   }
+
   if (this.getEnv() === 'dev' || this.getEnv() === 'local') {
     BitGo.TEST_USERID = '54d3e3a4b08fa6dc0a0002c07f8a9f86';
     BitGo.TEST_SHARED_KEY_USERID = '54d418de4ea11d050b0006186d08ea5c';
@@ -439,16 +440,16 @@ BitGo.prototype.nockEthWallet = function() {
 
   // Nock calls to platform for building transactions and getting user key
   // Should be OK to persist these since they are wallet specific data reads
-  nock('https://test.bitgo.com/api/v2/teth')
+  nock(this._baseUrl)
   .persist()
   .filteringRequestBody(() => '*')
-  .post(`/wallet/${wallet.id()}/tx/build`, '*')
+  .post(`/api/v2/teth/wallet/${wallet.id()}/tx/build`, '*')
   .reply(200, {
     gasLimit: 500000,
     gasPrice: 20000000000,
     nextContractSequenceId: 101
   })
-  .get(`/key/${wallet._wallet.keys[0]}`)
+  .get(`/api/v2/teth/key/${wallet._wallet.keys[0]}`)
   .reply(200, {
     id: '598f606cd8fc24710d2ebad89dce86c2',
     users: ['543c11ed356d00cb7600000b98794503'],
@@ -470,6 +471,18 @@ BitGo.prototype.nockEthWallet = function() {
   .reply(200, { status: '1', message: 'OK', result: '2400' });
 
   return wallet;
+};
+
+const oldFetchConstants = BitGo.prototype.fetchConstants;
+BitGo.prototype.fetchConstants = function() {
+  nock(this._baseUrl)
+  .get('/api/v1/client/constants')
+  .reply(200, { ttl: 3600, constants: {} });
+
+  // force client constants reload
+  BitGo.prototype._constants = undefined;
+
+  return oldFetchConstants.apply(this, arguments);
 };
 
 

@@ -6,17 +6,17 @@ const should = require('should');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const nock = require('nock');
-nock.enableNetConnect();
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 const recoveryNocks = require('../lib/recovery-nocks');
 const config = require('../../../src/config');
 
+nock.disableNetConnect();
+
 describe('Recovery:', function() {
   let bitgo;
 
   before(function() {
-    // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
 

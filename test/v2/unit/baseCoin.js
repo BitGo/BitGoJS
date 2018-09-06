@@ -3,9 +3,12 @@
 //
 
 require('should');
+const nock = require('nock');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 const Token = require('../../../src/v2/coins/token');
+
+nock.disableNetConnect();
 
 describe('V2 Base Coin:', function() {
   let bitgo;
@@ -14,7 +17,6 @@ describe('V2 Base Coin:', function() {
   let basecoinTokenWithContractHash;
 
   before(function() {
-    // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoinEth = bitgo.coin('teth');

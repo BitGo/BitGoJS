@@ -11,12 +11,9 @@ const co = Promise.coroutine;
 const common = require('../../src/common');
 const rp = require('request-promise');
 
-describe('BitGo Prototype Methods', function() {
+nock.disableNetConnect();
 
-  before(function bitgoPrototypeMethodsBefore() {
-    // disable net connect for this suite (all unit test suites should do this)
-    nock.disableNetConnect();
-  });
+describe('BitGo Prototype Methods', function() {
 
   describe('change password', function() {
     let bitgo;
@@ -24,17 +21,11 @@ describe('BitGo Prototype Methods', function() {
 
     before(co(function *coBeforeChangePassword() {
       nock('https://bitgo.fakeurl')
-      .get('/api/v1/client/constants')
-      .reply(200, { ttl: 3600, constants: {} });
-
-      nock('https://bitgo.fakeurl')
       .post('/api/v1/user/login')
       .reply(200, {
         access_token: 'access_token',
         user: { username: 'update_pw_tester@bitgo.com' }
       });
-
-      TestBitGo.prototype._constants = undefined;
 
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
@@ -133,8 +124,8 @@ describe('BitGo Prototype Methods', function() {
       yield bitgo.changePassword({ oldPassword, newPassword });
     }));
 
-    after(function afterChangePassword() {
-      nock.activeMocks().length.should.equal(0);
+    afterEach(function afterChangePassword() {
+      nock.activeMocks().should.be.empty();
     });
   });
 
@@ -143,11 +134,6 @@ describe('BitGo Prototype Methods', function() {
     const token = 'v2x5b735fed2486593f8fea19113e5c717308f90a5fb00e740e46c7bfdcc078cfd0';
 
     before(() => {
-      nock('https://bitgo.fakeurl')
-      .get('/api/v1/client/constants')
-      .reply(200, { ttl: 3600, constants: {} });
-
-      TestBitGo.prototype._constants = undefined;
       bitgo = new TestBitGo({ env: 'mock' });
     });
 
@@ -254,17 +240,6 @@ describe('BitGo Prototype Methods', function() {
 
   describe('Token Definitions at Startup', function() {
 
-    before(function tokenDefinitionsBefore() {
-      nock('https://bitgo.fakeurl')
-      .get('/api/v1/client/constants')
-      .twice()
-      .reply(200, {
-        ttl: 3600,
-        constants: {}
-      });
-      TestBitGo.prototype._constants = undefined;
-    });
-
     it('Should return a non-empty list of tokens before the server responds', co(function *coTokenDefinitionsIt() {
       const bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
@@ -276,7 +251,7 @@ describe('BitGo Prototype Methods', function() {
     }));
 
     after(function tokenDefinitionsAfter() {
-      nock.activeMocks().length.should.equal(0);
+      nock.activeMocks().should.be.empty();
     });
   });
 
@@ -285,13 +260,6 @@ describe('BitGo Prototype Methods', function() {
     let bitgo;
     let bgUrl;
     before(co(function *() {
-      nock('https://bitgo.fakeurl')
-      .get('/api/v1/client/constants')
-      .reply(200, {
-        ttl: 3600,
-        constants: {}
-      });
-      TestBitGo.prototype._constants = undefined;
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
 
@@ -309,7 +277,7 @@ describe('BitGo Prototype Methods', function() {
     }));
 
     after(function() {
-      nock.activeMocks().length.should.equal(0);
+      nock.activeMocks().should.be.empty();
     });
   });
 

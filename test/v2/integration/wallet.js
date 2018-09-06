@@ -25,7 +25,6 @@ describe('V2 Wallet:', function() {
   // to make sure the tests will pass.
 
   before(co(function *() {
-    // TODO: replace dev with test
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc');
@@ -412,7 +411,8 @@ describe('V2 Wallet:', function() {
       const explanation = basecoin.explainTransaction(prebuild);
       explanation.displayOrder.length.should.equal(7);
       explanation.outputs.length.should.equal(1);
-      explanation.changeOutputs.length.should.equal(1);
+      // sometimes the change output is below the dust threshold and gets dumped to fees, so it may be missing
+      explanation.changeOutputs.length.should.be.within(0, 1);
       explanation.outputAmount.should.equal(0.01 * 1e8);
       explanation.outputs[0].amount.should.equal(0.01 * 1e8);
       const chainhead = yield bitgo.get(basecoin.url('/public/block/latest')).result();

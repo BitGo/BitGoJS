@@ -20,7 +20,6 @@ describe('Enterprise:', function() {
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
     baseCoin = bitgo.coin('tbtc');
-    yield bitgo.authenticateTestUser(bitgo.testUserOTP());
     enterprise = new Enterprise(bitgo, baseCoin, { id: '593f1ece99d37c23080a557283edcc89' });
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));

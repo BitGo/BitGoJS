@@ -14,6 +14,8 @@ const common = require('../../../src/common');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 
+nock.disableNetConnect();
+
 describe('V2 Wallet:', function() {
   let bitgo;
   let wallet;
@@ -22,8 +24,15 @@ describe('V2 Wallet:', function() {
   before(co(function *() {
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
-    yield bitgo.authenticateTestUser(bitgo.testUserOTP());
-    wallet = yield bitgo.coin('tbtc').wallets().get({ id: TestV2BitGo.V2.TEST_WALLET1_ID });
+    const basecoin = bitgo.coin('tbtc');
+    const walletData = {
+      id: '5b34252f1bf349930e34020a',
+      coin: 'tbtc',
+      keys: [
+        '5b3424f91bf349930e340175'
+      ]
+    };
+    wallet = new Wallet(bitgo, basecoin, walletData);
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
@@ -405,7 +414,6 @@ describe('V2 Wallet:', function() {
       .get(`/api/v2/${wallet.coin()}/key/${wallet.keyIds()[0]}`)
       .reply(200);
 
-      wallet.bitgo._token = wallet.bitgo._token.substring(3); // removing the first 3 to avoid HMAC validation : 'v2x'
       try {
         yield wallet.consolidateUnspents({ recipients, maxFeeRate });
       } catch (e) {

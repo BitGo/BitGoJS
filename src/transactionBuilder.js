@@ -939,8 +939,8 @@ exports.signTransaction = function(params) {
       e.result = {
         unspent: currentUnspent
       };
-      e.message = `Failed to sign input #${index} — ${e.message} — ${JSON.stringify(e.result, null, 4)}`;
-      console.trace(e);
+      e.message = `Failed to sign input #${index} - ${e.message} - ${JSON.stringify(e.result, null, 4)} - \n${e.stack}`;
+      debug('input sign failed: %s', e.message);
       return Promise.reject(e);
     }
 
