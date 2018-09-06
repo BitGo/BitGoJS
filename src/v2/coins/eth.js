@@ -138,18 +138,18 @@ class Eth extends BaseCoin {
    */
   getOperation(recipient, expireTime, contractSequenceId) {
     return [
-      ['string', 'address', 'uint', 'string', 'uint', 'uint'],
+      ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
       [
         'ETHER',
         new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        ethUtil.stripHexPrefix(recipient.data) || '',
+        new Buffer(ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
         expireTime,
         contractSequenceId
       ]
     ];
   }
-
+  
   getOperationSha3ForExecuteAndConfirm(recipients, expireTime, contractSequenceId) {
     if (!recipients || !Array.isArray(recipients)) {
       throw new Error('expecting array of recipients');
