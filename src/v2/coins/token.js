@@ -5,6 +5,7 @@ const co = Promise.coroutine;
 const sjcl = require('../../sjcl.min');
 const prova = require('prova-lib');
 const Util = require('../../util');
+const config = require('../../config');
 let ethUtil = function() {};
 let ethAbi = function() {};
 let EthTx = function() {};
@@ -43,10 +44,11 @@ class Token extends Eth {
   /**
    * Builds a token recovery transaction without BitGo
    * @param params.userKey {String} [encrypted] xprv
-   * @param params.backupKey {String} [encrypted] xprv
+   * @param params.backupKey {String} [encrypted] xprv or xpub if the xprv is held by a KRS providers
    * @param params.walletPassphrase {String} used to decrypt userKey and backupKey
    * @param params.walletContractAddress {String} the ETH address of the wallet contract
    * @param params.recoveryDestination {String} target address to send recovered funds to
+   * @param params.krsProvider {String} necessary if backup key is held by KRS
    * @param callback
    */
   recover(params, callback) {
@@ -71,9 +73,15 @@ class Token extends Eth {
         throw new Error('invalid recoveryDestination');
       }
 
+      const isKrsRecovery = params.backupKey.startsWith('xpub');
+
+      if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
+        throw new Error('unknown key recovery service provider');
+      }
+
       // Clean up whitespace from entered values
-      const encryptedUserKey = params.userKey.replace(/\s/g, '');
-      const encryptedBackupKey = params.backupKey.replace(/\s/g, '');
+      const userKey = params.userKey.replace(/\s/g, '');
+      const backupKey = params.backupKey.replace(/\s/g, '');
 
       // Set new eth tx fees (using default config values from platform)
       const gasPrice = this.getRecoveryGasPrice();
@@ -82,22 +90,31 @@ class Token extends Eth {
       // Decrypt private keys from KeyCard values
       let userPrv;
       try {
-        userPrv = sjcl.decrypt(params.walletPassphrase, encryptedUserKey);
+        userPrv = sjcl.decrypt(params.walletPassphrase, userKey);
       } catch (e) {
         throw new Error(`Error decrypting user keychain: ${e.message}`);
       }
 
-      // Decrypt backup private key and get address
-      let backupPrv;
-      try {
-        backupPrv = sjcl.decrypt(params.walletPassphrase, encryptedBackupKey);
-      } catch (e) {
-        throw new Error(`Error decrypting backup keychain: ${e.message}`);
-      }
+      let backupKeyAddress;
+      let backupSigningKey;
 
-      const backupHDNode = prova.HDNode.fromBase58(backupPrv);
-      const backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
-      const backupKeyAddress = `0x${ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
+      if (isKrsRecovery) {
+        const backupHDNode = prova.HDNode.fromBase58(backupKey);
+        backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
+        backupKeyAddress = `0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
+      } else {
+        let backupPrv;
+
+        try {
+          backupPrv = sjcl.decrypt(params.walletPassphrase, backupKey);
+        } catch (e) {
+          throw new Error(`Error decrypting backup keychain: ${e.message}`);
+        }
+
+        const backupHDNode = prova.HDNode.fromBase58(backupPrv);
+        backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
+        backupKeyAddress = `0x${ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
+      }
 
       // Get nonce for backup key (should be 0)
       let backupKeyNonce = 0;
@@ -168,12 +185,19 @@ class Token extends Eth {
         spendAmount: txAmount
       });
 
-      tx.sign(backupSigningKey);
+      if (!isKrsRecovery) {
+        tx.sign(backupSigningKey);
+      }
 
       const signedTx = {
         id: ethUtil.bufferToHex(tx.hash(true)),
         tx: tx.serialize().toString('hex')
       };
+
+      if (isKrsRecovery) {
+        signedTx.backupKey = backupKey;
+        signedTx.coin = 'erc20';
+      }
 
       return signedTx;
     }).call(this).asCallback(callback);
