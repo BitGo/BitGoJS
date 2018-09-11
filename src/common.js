@@ -167,6 +167,22 @@ exports.Environments = {
     zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
   },
   local: {
+    uri: 'https://localhost:3000',
+    networks: {
+      tbtc: bitcoin.networks.testnet
+    },
+    network: 'testnet',
+    ethNetwork: 'ethereum',
+    rmgNetwork: 'rmgTest',
+    signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
+    bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+  },
+  localNonSecure: {
     uri: 'http://localhost:3000',
     networks: {
       tbtc: bitcoin.networks.testnet
@@ -199,6 +215,22 @@ exports.Environments = {
     zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
   },
   rmgLocal: {
+    uri: 'https://rmglocalhost:3000',
+    networks: {
+      tbtc: bitcoin.networks.testnet
+    },
+    network: 'testnet',
+    ethNetwork: 'ethereum',
+    rmgNetwork: 'rmgTest',
+    signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
+    serverXpub: 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+    smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
+    bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
+    etherscanBaseUrl: 'https://kovan.etherscan.io',
+    ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+  },
+  rmglocalNonSecure: {
     uri: 'http://rmglocalhost:3000',
     networks: {
       tbtc: bitcoin.networks.testnet
