@@ -878,7 +878,7 @@ module.exports.nockBtcRecovery = function nockBtcRecovery(isKrsRecovery) {
   if (isKrsRecovery) {
     // unnecessary market data removed
     nock('https://apiv2.bitcoinaverage.com')
-    .get('/indices/global/ticker/BTCUSD')
+    .get('/indices/local/ticker/BTCUSD')
     .reply(200, {
       last: 10000
     });
@@ -1092,7 +1092,7 @@ module.exports.nockBchRecovery = function nockBchRecovery(isKrsRecovery) {
   if (isKrsRecovery) {
     // unnecessary market data removed
     nock('https://apiv2.bitcoinaverage.com')
-    .get('/indices/global/ticker/BCHUSD')
+    .get('/indices/local/ticker/BCHUSD')
     .reply(200, {
       last: 1000
     });
@@ -2038,7 +2038,7 @@ module.exports.nockLtcRecovery = function(isKrsRecovery) {
   if (isKrsRecovery) {
     // unnecessary market data removed
     nock('https://apiv2.bitcoinaverage.com')
-    .get('/indices/global/ticker/LTCUSD')
+    .get('/indices/local/ticker/LTCUSD')
     .reply(200, {
       last: 1000
     });
@@ -2231,7 +2231,140 @@ module.exports.nockZecRecovery = function(isKrsRecovery) {
   if (isKrsRecovery) {
     // unnecessary market data removed
     nock('https://apiv2.bitcoinaverage.com')
-    .get('/indices/global/ticker/ZECUSD')
+    .get('/indices/local/ticker/ZECUSD')
+    .reply(200, {
+      last: 1000
+    });
+  }
+};
+
+module.exports.nockDashRecovery = function(isKrsRecovery) {
+  nock('https://testnet-insight.dashevo.org/insight-api')
+  .get('/addr/8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW')
+  .reply(200, {
+    addrStr: '8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW',
+    balance: 0.1,
+    balanceSat: 10000000,
+    totalReceived: 0.1,
+    totalReceivedSat: 10000000,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 1,
+    transactions: [
+      '53fdc68a122288214c1ccedbf49bdb1a39220eacc1ac1cf0407103927a67daed'
+    ]
+  })
+  .get('/addr/8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW/utxo')
+  .reply(200, [
+    {
+      address: '8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW',
+      txid: '53fdc68a122288214c1ccedbf49bdb1a39220eacc1ac1cf0407103927a67daed',
+      vout: 1,
+      scriptPubKey: 'a9148bd32681a9c8a6ed07fccf499e22267db8ce0c6987',
+      amount: 0.1,
+      satoshis: 10000000,
+      height: 224276,
+      confirmations: 1
+    }
+  ])
+  .get('/addr/8fKrinrA9f6ipbJZZZ5dcBzbP5GDtwfeAw')
+  .reply(200, {
+    addrStr: '8fKrinrA9f6ipbJZZZ5dcBzbP5GDtwfeAw',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/8ktwroXmaNqbvTnrmiQrPCCBrFcVBUn5DL')
+  .reply(200, {
+    addrStr: '8ktwroXmaNqbvTnrmiQrPCCBrFcVBUn5DL',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/8sVHyDTpJ6iYtUBpdjv5Xx7wMvaUxDtFbZ')
+  .reply(200, {
+    addrStr: '8sVHyDTpJ6iYtUBpdjv5Xx7wMvaUxDtFbZ',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/8vwsgS5ykkd257WAk8Xk9jfyTfCaPukh1k')
+  .reply(200, {
+    addrStr: '8vwsgS5ykkd257WAk8Xk9jfyTfCaPukh1k',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/8wwFXCuu6URcYXxvtYxmMBUqUuSGcGw6bn')
+  .reply(200, {
+    addrStr: '8wwFXCuu6URcYXxvtYxmMBUqUuSGcGw6bn',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  })
+  .get('/addr/8n9g7B3daAPaBGohTziTAfsqNxoM2jqao3')
+  .reply(200, {
+    addrStr: '8n9g7B3daAPaBGohTziTAfsqNxoM2jqao3',
+    balance: 0,
+    balanceSat: 0,
+    totalReceived: 0,
+    totalReceivedSat: 0,
+    totalSent: 0,
+    totalSentSat: 0,
+    unconfirmedBalance: 0,
+    unconfirmedBalanceSat: 0,
+    unconfirmedTxApperances: 0,
+    txApperances: 0,
+    transactions: []
+  });
+
+  if (isKrsRecovery) {
+    // unnecessary market data removed
+    nock('https://apiv2.bitcoinaverage.com')
+    .get('/indices/local/ticker/DASHUSD')
     .reply(200, {
       last: 1000
     });

@@ -234,7 +234,7 @@ exports.krsProviders = {
   }
 };
 
-exports.bitcoinAverageBaseUrl = 'https://apiv2.bitcoinaverage.com/indices/global/ticker/';
+exports.bitcoinAverageBaseUrl = 'https://apiv2.bitcoinaverage.com/indices/local/ticker/';
 
 // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
 exports.defaultConstants = (env) => {

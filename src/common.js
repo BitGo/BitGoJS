@@ -17,7 +17,8 @@ exports.Environments = {
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
     etherscanBaseUrl: 'https://api.etherscan.io',
     ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
-    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api'
+    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api',
+    dashExplorerBaseUrl: 'https://insight.dash.org/insight-api'
   },
   rmgProd: {
     uri: 'https://rmg.bitgo.com',
@@ -34,7 +35,8 @@ exports.Environments = {
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
     etherscanBaseUrl: 'https://api.etherscan.io',
     ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
-    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api'
+    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api',
+    dashExplorerBaseUrl: 'https://insight.dash.org/insight-api'
   },
   staging: {
     uri: 'https://staging.bitgo.com',
@@ -51,7 +53,8 @@ exports.Environments = {
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
     etherscanBaseUrl: 'https://api.etherscan.io',
     ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
-    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api'
+    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api',
+    dashExplorerBaseUrl: 'https://insight.dash.org/insight-api'
   },
   rmgStaging: {
     uri: 'https://rmgstaging.bitgo.com',
@@ -68,7 +71,8 @@ exports.Environments = {
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
     etherscanBaseUrl: 'https://api.etherscan.io',
     ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
-    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api'
+    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api',
+    dashExplorerBaseUrl: 'https://insight.dash.org/insight-api'
   },
   test: {
     uri: 'https://test.bitgo.com',
@@ -84,7 +88,8 @@ exports.Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
     etherscanBaseUrl: 'https://kovan.etherscan.io',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
+    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api'
   },
   rmgTest: {
     uri: 'https://rmgtest.bitgo.com',
@@ -100,7 +105,8 @@ exports.Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
     etherscanBaseUrl: 'https://kovan.etherscan.io',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
+    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api'
   },
   dev: {
     uri: 'https://webdev.bitgo.com',
@@ -116,7 +122,8 @@ exports.Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
     etherscanBaseUrl: 'https://kovan.etherscan.io',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
+    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api'
   },
   latest: {
     uri: 'https://latest.bitgo.com',
@@ -132,7 +139,8 @@ exports.Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
     etherscanBaseUrl: 'https://kovan.etherscan.io',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
+    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api'
   },
   rmgLatest: {
     uri: 'https://rmglatest.bitgo.com',
@@ -148,7 +156,8 @@ exports.Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
     etherscanBaseUrl: 'https://kovan.etherscan.io',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
+    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api'
   },
   rmgDev: {
     uri: 'https://rmgwebdev.bitgo.com',
@@ -164,7 +173,8 @@ exports.Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
     etherscanBaseUrl: 'https://kovan.etherscan.io',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
+    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api'
   },
   local: {
     uri: 'https://localhost:3000',
@@ -196,7 +206,8 @@ exports.Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
     etherscanBaseUrl: 'https://kovan.etherscan.io',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
+    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api'
   },
   mock: {
     uri: 'https://bitgo.fakeurl',
@@ -212,7 +223,8 @@ exports.Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.fakeurl/api',
     etherscanBaseUrl: 'https://kovan.etherscan.io',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
+    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api'
   },
   rmgLocal: {
     uri: 'https://rmglocalhost:3000',
@@ -244,7 +256,8 @@ exports.Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
     etherscanBaseUrl: 'https://kovan.etherscan.io',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
-    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api'
+    zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
+    dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api'
   },
   custom: {
     uri: process.env.BITGO_CUSTOM_ROOT_URI,
@@ -262,7 +275,8 @@ exports.Environments = {
     btgExplorerBaseUrl: process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin' ? null : 'https://btgexplorer.com/api',
     ltcExplorerBaseUrl: process.env.BITGO_CUSTOM_LITECOIN_NETWORK !== 'litecoin' ? 'http://explorer.litecointools.com/api' : 'https://insight.litecore.io/api',
     etherscanBaseUrl: process.env.BITGO_CUSTOM_ETHEREUM_NETWORK !== 'ethereum' ? 'https://kovan.etherscan.io' : 'https://api.etherscan.io',
-    zecExplorerBaseUrl: process.env.BITGO_CUSTOM_ZCASH_NETWORK !== 'zcash' ? 'https://explorer.testnet.z.cash/api' : 'https://zcash.blockexplorer.com/api'
+    zecExplorerBaseUrl: process.env.BITGO_CUSTOM_ZCASH_NETWORK !== 'zcash' ? 'https://explorer.testnet.z.cash/api' : 'https://zcash.blockexplorer.com/api',
+    dashExplorerBaseUrl: process.env.BITGO_CUSTOM_DASH_NETWORK !== 'dash' ? 'https://testnet-insight.dashevo.org/insight-api' : 'https://insight.dash.org/insight-api'
   }
 };
 
