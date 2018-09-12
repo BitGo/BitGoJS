@@ -16,3 +16,5 @@ bin/server.crt
 example/test.js
 example/eth/test.js
 *.iml
+.nyc_output/
+coverage.lcov
