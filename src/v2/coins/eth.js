@@ -53,6 +53,22 @@ class Eth extends BaseCoin {
   }
 
   /**
+   * Flag for sending value of 0
+   * @returns {boolean} True if okay to send 0 value, false otherwise
+   */
+  valuelessTransferAllowed() {
+    return true;
+  }
+
+  /**
+   * Flag for sending data along with transactions
+   * @returns {boolean} True if okay to send tx data (ETH), false otherwise
+   */
+  transactionDataAllowed() {
+    return true;
+  }
+
+  /**
    * Evaluates whether an address string is valid for this coin
    * @param address
    */
@@ -149,7 +165,7 @@ class Eth extends BaseCoin {
       ]
     ];
   }
-  
+
   getOperationSha3ForExecuteAndConfirm(recipients, expireTime, contractSequenceId) {
     if (!recipients || !Array.isArray(recipients)) {
       throw new Error('expecting array of recipients');

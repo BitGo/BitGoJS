@@ -42,6 +42,22 @@ class Token extends Eth {
   }
 
   /**
+   * Flag for sending value of 0
+   * @returns {boolean} True if okay to send 0 value, false otherwise
+   */
+  valuelessTransferAllowed() {
+    return false;
+  }
+
+  /**
+   * Flag for sending data along with transactions
+   * @returns {boolean} True if okay to send tx data (ETH), false otherwise
+   */
+  transactionDataAllowed() {
+    return false;
+  }
+
+  /**
    * Builds a token recovery transaction without BitGo
    * @param params.userKey {String} [encrypted] xprv
    * @param params.backupKey {String} [encrypted] xprv or xpub if the xprv is held by a KRS providers

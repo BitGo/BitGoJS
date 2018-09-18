@@ -308,6 +308,20 @@ describe('V2 Wallet:', function() {
   });
 
   describe('Wallet Transactions', function() {
+    let ethWallet;
+
+    before(co(function *() {
+      const walletData = {
+        id: '598f606cd8fc24710d2ebadb1d9459bb',
+        coin: 'teth',
+        keys: [
+          '598f606cd8fc24710d2ebad89dce86c2',
+          '598f606cc8e43aef09fcb785221d9dd2',
+          '5935d59cf660764331bafcade1855fd7'
+        ]
+      };
+      ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
+    }));
 
     it('should search for pending transaction correctly', co(function *() {
       const params = { walletId: wallet.id() };
@@ -341,6 +355,46 @@ describe('V2 Wallet:', function() {
         // test is successful if nock is consumed, HMAC errors expected
       }
       scope.isDone().should.be.True();
+    }));
+
+    it('should pass data parameter and amount: 0 when using sendTransaction', co(function *() {
+      const path = `/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`;
+      const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
+      const recipients = [{
+        address: recipientAddress,
+        amount: 0,
+        data: '0x00110011'
+      }];
+      const response = nock(bgUrl)
+      .post(path, _.matches({ recipients })) // use _.matches to do a partial match on request body object instead of strict matching
+      .reply(200);
+
+      try {
+        yield ethWallet.send({ address: recipients[0].address, data: recipients[0].data, amount: recipients[0].amount });
+      } catch (e) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+      response.isDone().should.be.true();
+    }));
+
+    it('should pass data parameter and amount: 0 when using sendMany', co(function *() {
+      const path = `/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`;
+      const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
+      const recipients = [{
+        address: recipientAddress,
+        amount: 0,
+        data: '0x00110011'
+      }];
+      const response = nock(bgUrl)
+      .post(path, _.matches({ recipients })) // use _.matches to do a partial match on request body object instead of strict matching
+      .reply(200);
+
+      try {
+        yield ethWallet.sendMany({ recipients });
+      } catch (e) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+      response.isDone().should.be.true();
     }));
   });
 

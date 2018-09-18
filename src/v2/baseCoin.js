@@ -171,6 +171,22 @@ class BaseCoin {
   }
 
   /**
+   * Flag for sending value of 0
+   * @returns {boolean} True if okay to send 0 value, false otherwise
+   */
+  valuelessTransferAllowed() {
+    return false;
+  }
+
+  /**
+   * Flag for sending data along with transactions
+   * @returns {boolean} True if okay to send tx data (ETH), false otherwise
+   */
+  transactionDataAllowed() {
+    return false;
+  }
+
+  /**
    * Convert a currency amount represented in base units (satoshi, wei, atoms, drops, stroops)
    * to big units (btc, eth, rmg, xrp, xlm)
    * @param baseUnits

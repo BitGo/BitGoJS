@@ -1103,8 +1103,9 @@ Wallet.prototype.submitTransaction = function(params, callback) {
  * Send coins to a recipient
  * @param params
  * @param params.address - the destination address
- * @param params.amount - the amount in satoshis to be sent
+ * @param params.amount - the amount in satoshis/wei/base value to be sent
  * @param params.message - optional message to attach to transaction
+ * @param params.data - [Ethereum Specific] optional data to pass to transaction
  * @param params.walletPassphrase - the passphrase to be used to decrypt the user key on this wallet
  * @param params.prv - the private key in string form, if walletPassphrase is not available
  * @param params.minConfirms - the minimum confirmation threshold for inputs
@@ -1114,13 +1115,15 @@ Wallet.prototype.submitTransaction = function(params, callback) {
  */
 Wallet.prototype.send = function(params, callback) {
   params = params || {};
-  common.validateParams(params, ['address'], ['message'], callback);
+  common.validateParams(params, ['address'], ['message', 'data'], callback);
+  const coin = this.baseCoin;
 
-  let amount;
   try {
-    amount = new BigNumber(params.amount);
+    const amount = new BigNumber(params.amount);
     assert(!amount.isNegative());
-    assert(!amount.isZero());
+    if (!coin.valuelessTransferAllowed()) {
+      assert(!amount.isZero());
+    }
   } catch (e) {
     throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
   }
@@ -1129,6 +1132,9 @@ Wallet.prototype.send = function(params, callback) {
     address: params.address,
     amount: params.amount
   }];
+  if (params.data && coin.transactionDataAllowed()) {
+    params.recipients[0].data = params.data;
+  }
 
   return this.sendMany(params)
   .nodeify(callback);
@@ -1168,13 +1174,15 @@ Wallet.prototype.sendMany = function(params, callback) {
   return co(function *() {
     params = params || {};
     common.validateParams(params, [], ['comment', 'otp'], callback);
-
+    const coin = this.baseCoin;
     if (_.isObject(params.recipients)) {
       params.recipients.map(function(recipient) {
         try {
           const amount = new BigNumber(recipient.amount);
           assert(!amount.isNegative());
-          assert(!amount.isZero());
+          if (!coin.valuelessTransferAllowed()) {
+            assert(!amount.isZero());
+          }
         } catch (e) {
           throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
         }
