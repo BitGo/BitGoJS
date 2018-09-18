@@ -160,7 +160,12 @@ exports.tokens = {
         { type: 'tnt', coin: 'eth', network: 'Mainnet', name: 'Tierion', tokenContractAddress: '0x08f5a9235b08173b7569f83645d2c7fb55e8ccd8', decimalPlaces: 8 },
         { type: 'bcap', coin: 'eth', network: 'Mainnet', name: 'BCAP', tokenContractAddress: '0xff3519eeeea3e76f1f699ccce5e23ee0bdda41ac', decimalPlaces: 0 },
         { type: 'cbc', coin: 'eth', network: 'Mainnet', name: 'CashBet Coin', tokenContractAddress: '0x26db5439f651caf491a87d48799da81f191bdb6b', decimalPlaces: 8 },
-        { type: 'dai', coin: 'eth', network: 'Mainnet', name: 'Dai', tokenContractAddress: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359', decimalPlaces: 18 }
+        { type: 'dai', coin: 'eth', network: 'Mainnet', name: 'Dai', tokenContractAddress: '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359', decimalPlaces: 18 },
+        { type: 'reb', coin: 'eth', network: 'Mainnet', name: 'Regblo', tokenContractAddress: '0x61383ac89988b498df5363050ff07fe5c52ecdda', decimalPlaces: 18 },
+        { type: 'mdx', coin: 'eth', network: 'Mainnet', name: 'Mandala', tokenContractAddress: '0x9d03393d297e42c135625d450c814892505f1a84', decimalPlaces: 18 },
+        { type: 'lion', coin: 'eth', network: 'Mainnet', name: 'CoinLion', tokenContractAddress: '0x2167fb82309cf76513e83b25123f8b0559d6b48f', decimalPlaces: 18 },
+        { type: 'hold', coin: 'eth', network: 'Mainnet', name: 'Hold', tokenContractAddress: '0xd6e1401a079922469e9b965cb090ea6ff64c6839', decimalPlaces: 18 },
+        { type: 'cpay', coin: 'eth', network: 'Mainnet', name: 'Cryptopay', tokenContractAddress: '0x0ebb614204e47c09b6c3feb9aaecad8ee060e23e', decimalPlaces: 0 }
       ]
     }
   },
