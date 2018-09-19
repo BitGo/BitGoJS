@@ -16,6 +16,14 @@ require('should');
 const nock = require('nock');
 nock.enableNetConnect();
 
+try {
+  Promise.config({
+    longStackTraces: true
+  });
+} catch (e) {
+  console.error('failed to enable long stack traces as a promise has already been created. Is BITGO_USE_PROXY set?');
+}
+
 BitGo.TEST_USER = 'tester@bitgo.com';
 
 if (process.env.BITGOJS_TEST_PASSWORD) {
@@ -57,13 +65,6 @@ BitGo.TRAVEL_RULE_TXID = '33447753455651508cfd099c9ebe0db6a2243ccba4766319621fbc
 BitGo.TEST_WALLET_REGROUP_PASSCODE = 'test security fanout & coalesce';
 
 BitGo.prototype.initializeTestVars = function() {
-  try {
-    this._promise.config({
-      longStackTraces: true
-    });
-  } catch (e) {
-    console.error('failed to enable long stack traces as a promise has already been created. Is BITGO_USE_PROXY set?');
-  }
 
   if (this.getEnv() === 'dev' || this.getEnv() === 'local') {
     BitGo.TEST_USERID = '54d3e3a4b08fa6dc0a0002c07f8a9f86';

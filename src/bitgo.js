@@ -191,6 +191,10 @@ const BitGo = function(params) {
     env = 'prod'; // make life easier
   }
 
+  if (env === 'custom' && _.isUndefined(common.Environments[env].uri)) {
+    throw new Error('must use --customrooturi or set the BITGO_CUSTOM_ROOT_URI environment variable when using the custom environment');
+  }
+
   if (env) {
     if (common.Environments[env]) {
       this._baseUrl = common.Environments[env].uri;
@@ -1046,6 +1050,10 @@ BitGo.prototype.preprocessAuthenticationParams = function(params) {
 BitGo.prototype.authenticate = function(params, callback) {
   params = params || {};
   const forceV1Auth = !!params.forceV1Auth;
+
+  if (callback && !_.isFunction(callback)) {
+    throw new Error('callback parameter must be a function');
+  }
 
   const authParams = this.preprocessAuthenticationParams(params, callback);
   const password = params.password;

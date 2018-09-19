@@ -4,16 +4,220 @@
 
 const should = require('should');
 const nock = require('nock');
-
-const TestBitGo = require('../lib/test_bitgo');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
+
+const BitGoJS = require('../../src/index');
+const TestBitGo = require('../lib/test_bitgo');
 const common = require('../../src/common');
 const rp = require('request-promise');
+const _ = require('lodash');
 
 nock.disableNetConnect();
 
 describe('BitGo Prototype Methods', function() {
+
+  describe('Version', () => {
+    it('version', function() {
+      const bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      const version = bitgo.version();
+      version.should.be.a.String();
+    });
+  });
+
+  describe('validate', () => {
+    it('should get', () => {
+      const bitgo = new TestBitGo();
+      bitgo.getValidate().should.equal(true);
+    });
+
+    it('should set', () => {
+      const bitgo = new TestBitGo();
+      bitgo.setValidate(false);
+      bitgo.getValidate().should.equal(false);
+      bitgo._validate.should.equal(false);
+    });
+  });
+
+  describe('Environments', () => {
+    it('production', () => {
+      BitGoJS.setNetwork('testnet');
+      new TestBitGo({ env: 'prod' });
+      BitGoJS.getNetwork().should.equal('bitcoin');
+    });
+
+    it('staging', () => {
+      BitGoJS.setNetwork('testnet');
+      new TestBitGo({ env: 'staging' });
+      BitGoJS.getNetwork().should.equal('bitcoin');
+    });
+
+    it('test', () => {
+      BitGoJS.setNetwork('bitcoin');
+      new TestBitGo({ env: 'test' });
+      BitGoJS.getNetwork().should.equal('testnet');
+    });
+
+    it('dev', () => {
+      new TestBitGo({ env: 'dev' });
+      BitGoJS.getNetwork().should.equal('testnet');
+    });
+
+    it('custom network (prod)', () => {
+      new TestBitGo({ customBitcoinNetwork: 'bitcoin', customRootURI: 'http://rooturi.example' });
+      BitGoJS.getNetwork().should.equal('bitcoin');
+    });
+
+    it('custom network (testnet)', () => {
+      new TestBitGo({ customBitcoinNetwork: 'testnet', customRootURI: 'http://rooturi.example' });
+      BitGoJS.getNetwork().should.equal('testnet');
+    });
+  });
+
+  describe('Verify Address', () => {
+    let bitgo;
+    before(() => {
+      bitgo = new TestBitGo();
+    });
+
+    it('errors', () => {
+      (() => bitgo.verifyAddress()).should.throw();
+      (() => bitgo.verifyAddress({})).should.throw();
+
+      bitgo.verifyAddress({ address: 'xyzzy' }).should.be.false();
+    });
+
+    it('standard', () => {
+      BitGoJS.setNetwork('bitcoin');
+      bitgo.verifyAddress({ address: '1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd' }).should.be.true();
+      // wrong version byte:
+      bitgo.verifyAddress({ address: '9Ef7HsuByGBogqkjoF5Yng7MYkq5UCdmZz' }).should.be.false();
+      BitGoJS.setNetwork('testnet');
+      bitgo.verifyAddress({ address: 'n4DNhSiEaodqaiF9tLYXTCh4kFbdUzxBHs' }).should.be.true();
+    });
+
+    it('p2sh', () => {
+      BitGoJS.setNetwork('bitcoin');
+      bitgo.verifyAddress({ address: '3QJmV3qfvL9SuYo34YihAf3sRCW3qSinyC' }).should.be.true();
+      // wrong version byte:
+      bitgo.verifyAddress({ address: 'HV8swrGkmeN7Xig4vENr93aQSrX4iHjg7D' }).should.be.false();
+      BitGoJS.setNetwork('testnet');
+      bitgo.verifyAddress({ address: '2NEeFWbfu4EA1rcKx48e82Mj8d6FKcWawZw' }).should.be.true();
+    });
+  });
+
+  describe('Encrypt/Decrypt', () => {
+    const password = 'mickey mouse';
+    const secret = 'this is a secret';
+
+    it('invalid password', () => {
+      const bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      const opaque = bitgo.encrypt({ password: password, input: secret });
+      (() => bitgo.decrypt({ password: 'hack hack', input: opaque })).should.throw();
+    });
+
+    it('valid password', () => {
+      const bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      const opaque = bitgo.encrypt({ password: password, input: secret });
+      bitgo.decrypt({ password: password, input: opaque }).should.equal(secret);
+    });
+  });
+
+  describe('Password Generation', () => {
+    it('generates a random password', () => {
+      const bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      const password = bitgo.generateRandomPassword();
+      should.exist(password);
+    });
+
+    it('generates a random password with a numWords argument', () => {
+      const bitgo = new TestBitGo();
+      bitgo.initializeTestVars();
+      const password = bitgo.generateRandomPassword(10);
+      should.exist(password);
+      password.should.have.length(55);
+    });
+  });
+
+  describe('Shamir Secret Sharing', () => {
+    const bitgo = new TestBitGo();
+    const seed = '8cc57dac9cdae42bf7848a2d12f2874d31eca1f9de8fe3f8fa13e7857b545d59';
+    const xpub = 'xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN';
+    const passwords = ['mickey', 'mouse', 'donald', 'duck'];
+
+    it('should fail to split secret with wrong m', () => {
+      (() => bitgo.splitSecret({
+        seed,
+        passwords: ['abc'],
+        m: 0
+      })).should.throw('m must be a positive integer greater than or equal to 2');
+    });
+
+    it('should fail to split secret with bad password count', () => {
+      (() => bitgo.splitSecret({
+        seed,
+        passwords: ['abc'],
+        m: 2
+      })).should.throw('passwords array length cannot be less than m');
+    });
+
+    it('should split and fail to reconstitute secret with bad passwords', () => {
+      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
+      const shards = _.at(splitSecret.seedShares, [0, 2]);
+      const subsetPasswords = _.at(passwords, [0, 3]);
+      (() => bitgo.reconstituteSecret({
+        shards,
+        passwords: subsetPasswords,
+        xpub
+      })).should.throw(/ccm: tag doesn't match/);
+    });
+
+    it('should split and reconstitute secret', () => {
+      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
+      const shards = _.at(splitSecret.seedShares, [0, 2]);
+      const subsetPasswords = _.at(passwords, [0, 2]);
+      const reconstitutedSeed = bitgo.reconstituteSecret({ shards, passwords: subsetPasswords });
+      reconstitutedSeed.seed.should.equal(seed);
+      reconstitutedSeed.xpub.should.equal('xpub661MyMwAqRbcEusRjkJ64BXgR8ddYsXbuDJfbRc3eZcZVEa2ygswDiFZQpHFsA5N211YDvi2N898h4KrcXcfsR8PLhjJaPUwCUqg1ptBBHN');
+      reconstitutedSeed.xprv.should.equal('xprv9s21ZrQH143K2Rnxdim5h3aws6o99QokXzP4o3CS6E5acSEtS9Zgfuw5ZWujhTHTWEAZDfmP3yxA1Ccn6myVkGEpRrT4xWgaEpoW7YiBAtC');
+    });
+
+    it('should split and incorrectly verify secret', () => {
+      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 3 });
+      const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2 });
+      isValid.should.equal(false);
+    });
+
+    it('should split and verify secret', () => {
+      const splitSecret = bitgo.splitSecret({ seed, passwords: passwords, m: 2 });
+      const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords, m: 2, xpub });
+      isValid.should.equal(true);
+    });
+
+    it('should split and verify secret with many parts', () => {
+      const allPws = ['0', '1', '2', '3', '4', '5', '6', '7'];
+      const splitSecret = bitgo.splitSecret({ seed, passwords: allPws, m: 3 });
+      const isValid = bitgo.verifyShards({ shards: splitSecret.seedShares, passwords: allPws, m: 3, xpub });
+      isValid.should.equal(true);
+    });
+
+  });
+
+  describe('ECDH sharing secret', () => {
+    it('should calculate a new ECDH sharing secret correctly', () => {
+      const bitgo = new TestBitGo();
+      const eckey1 = BitGoJS.bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
+      const eckey2 = BitGoJS.bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
+      const sharingKey1 = bitgo.getECDHSecret({ eckey: eckey1, otherPubKeyHex: eckey2.getPublicKeyBuffer().toString('hex') });
+      const sharingKey2 = bitgo.getECDHSecret({ eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex') });
+      sharingKey1.should.equal(sharingKey2);
+    });
+
+  });
 
   describe('change password', function() {
     let bitgo;
@@ -279,9 +483,5 @@ describe('BitGo Prototype Methods', function() {
     after(function() {
       nock.activeMocks().should.be.empty();
     });
-  });
-
-  after(function bitgoPrototypeMethodsAfter() {
-    nock.enableNetConnect();
   });
 });
