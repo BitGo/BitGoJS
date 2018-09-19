@@ -2,13 +2,14 @@ const express = require('express');
 const httpProxy = require('http-proxy');
 const url = require('url');
 const morgan = require('morgan');
-const fs = require('fs');
+const Promise = require('bluebird');
+const fs = Promise.promisifyAll(require('fs'));
 const path = require('path');
 const _ = require('lodash');
 const debug = require('debug');
 const https = require('https');
 const http = require('http');
-const co = require('bluebird').coroutine;
+const co = Promise.coroutine;
 const { ArgumentParser } = require('argparse');
 const { SSL_OP_NO_TLSv1 } = require('constants');
 
@@ -123,8 +124,8 @@ function configureProxy(app, { env }) {
  */
 function createHttpsServer({ keypath, crtpath }, app) {
   return co(function *createHttpsServer() {
-    const privateKeyPromise = fs.readFile(keypath, 'utf8');
-    const certificatePromise = fs.readFile(crtpath, 'utf8');
+    const privateKeyPromise = fs.readFileAsync(keypath, 'utf8');
+    const certificatePromise = fs.readFileAsync(crtpath, 'utf8');
 
     const [key, cert] = yield Promise.all([privateKeyPromise, certificatePromise]);
 
