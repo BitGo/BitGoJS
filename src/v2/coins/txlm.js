@@ -20,6 +20,9 @@ class Txlm extends Xlm {
     return 'Testnet Stellar';
   }
 
+  getHorizonUrl() {
+    return 'https://horizon-testnet.stellar.org';
+  }
 }
 
 module.exports = Txlm;

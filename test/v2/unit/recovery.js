@@ -21,7 +21,7 @@ describe('Recovery:', function() {
     bitgo.initializeTestVars();
 
     // pretend that Keyternal accepts recoveries for all coins
-    config.krsProviders.keyternal.supportedCoins = ['btc', 'eth', 'xrp', 'bch', 'ltc', 'zec', 'dash'];
+    config.krsProviders.keyternal.supportedCoins = ['btc', 'eth', 'xrp', 'bch', 'ltc', 'zec', 'dash', 'xlm'];
     config.krsProviders.keyternal.feeAddresses = {
       tbtc: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
       tbch: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
@@ -45,6 +45,36 @@ describe('Recovery:', function() {
         backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
         walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        scan: 5
+      });
+
+      recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fb0046304302202f51d7ad8d2feea3194ab0238297fae860e87fe02b789858ce92fb374629faf0021f48011d587171984e95524c3ecdfe9bae8ebe4c8a282881b416da8f713751e9014730440220673b1a059e2d851059dd7f1b0501af4bf6d205c81249f49828e7ae987f4a90c5022047f73ff3d4e17ce6ebfe9565351796851d2a4472223acecd7ee00e2729824f38014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0178757b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
+      recovery.tx.TxId.should.equal('a37acbc58d367b717909e69b25a95e06a4daf4e164825e555dd29797a92d7495');
+      recovery.tx.Vin.length.should.equal(1);
+      recovery.tx.Vout.length.should.equal(1);
+      recovery.tx.Vin[0].TxId.should.equal('e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74');
+      recovery.tx.Vin[0].Sequence.should.equal('4294967295');
+      recovery.tx.Vin[0].ScriptSig.Asm.should.equal('0 304302202f51d7ad8d2feea3194ab0238297fae860e87fe02b789858ce92fb374629faf0021f48011d587171984e95524c3ecdfe9bae8ebe4c8a282881b416da8f713751e9[ALL] 30440220673b1a059e2d851059dd7f1b0501af4bf6d205c81249f49828e7ae987f4a90c5022047f73ff3d4e17ce6ebfe9565351796851d2a4472223acecd7ee00e2729824f38[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae');
+      recovery.tx.Vin[0].ScriptSig.Hex.should.equal('0046304302202f51d7ad8d2feea3194ab0238297fae860e87fe02b789858ce92fb374629faf0021f48011d587171984e95524c3ecdfe9bae8ebe4c8a282881b416da8f713751e9014730440220673b1a059e2d851059dd7f1b0501af4bf6d205c81249f49828e7ae987f4a90c5022047f73ff3d4e17ce6ebfe9565351796851d2a4472223acecd7ee00e2729824f38014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae');
+      recovery.tx.Vout[0].N.should.equal(0);
+      recovery.tx.Vout[0].Value.should.equal(0.08091);
+      recovery.tx.Vout[0].ScriptPubKey.Asm.should.equal('OP_HASH160 c39dcc27823a8bd42cd3318a1dac8c25789b7ac7 OP_EQUAL');
+      recovery.tx.Vout[0].ScriptPubKey.Hex.should.equal('a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787');
+      recovery.tx.Vout[0].ScriptPubKey.Type.should.equal('scripthash');
+      recovery.tx.Vout[0].ScriptPubKey.ReqSigs.should.equal(1);
+      recovery.tx.Vout[0].ScriptPubKey.Addresses.length.should.equal(1);
+      recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
+    }));
+
+    it('should generate BTC recovery tx with unencrypted keys', co(function *() {
+      recoveryNocks.nockBtcRecovery(false);
+
+      const basecoin = bitgo.coin('tbtc');
+      const recovery = yield basecoin.recover({
+        userKey: 'xprv9s21ZrQH143K44auQTYjyFpU8aGEpbsbcU5yGjbwfyKpbBpvHPhUHEu3QR6G74rLPyM9ucop7oyXtKYDrjNkU8YeSryQbKU476ijp2qWcBm',
+        backupKey: 'xprv9s21ZrQH143K2cvHDcdruLPTQBUJBDd1XAVbAzFMBFGjcMSH2DgR7T37Dy6YwcRwkh24UkXQKcFAhmkb6g9PXJNqPvfDBAe1eaUK2kJ9stv',
+        bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         scan: 5
       });
@@ -397,6 +427,62 @@ describe('Recovery:', function() {
       recovery.coin.should.equal('tdash');
       recovery.backupKey.should.equal('xpub661MyMwAqRbcFvZZLVBGTPBZf6CN2imxDEZcQHMSjUPatWi5RhkmGNBiHUrLuLYDnt16aThj9ZQQ9oBTjvAaJB4BSGm9F3rHBaRbWJ75iay');
       recovery.recoveryAmount.should.equal(62600);
+    }));
+  });
+
+  describe('Recover Stellar', function() {
+    it('should generate XLM recovery tx', co(function *() {
+      recoveryNocks.nockXlmRecovery();
+
+      const basecoin = bitgo.coin('txlm');
+      const recovery = yield basecoin.recover({
+        userKey: `{"iv":"PiLveA+5AFPURwaU7iijBQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KlJc8NSKHpw=","ct":"YcdNOFpzXgDnRqjlR3W9R+5eztysyhpCTuRBHsnPyPDst9nvL+GeSORbLY9xVThTdyV6llRgfUr5O7y4l9s9Fg=="}`,
+        backupKey: `{"iv":"TmiAIHr0vCX6g2BKkc6/7g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"wOkMJEm5B6U=","ct":"HJPS56/FuMieiH6K2s5k5jFp8RPHQqZa9qi8hDkjOqNUFjD4XKq8Sy3BDhpwzozTBW6EmQGSF0kpc7eZ9CucKw=="}`,
+        rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ'
+      });
+
+      recovery.should.have.property('tx');
+      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAX133AAAAAAAAAAAutRLrcAAABAODYZNOgtjY4mENqKEpcSmYtEt/FScp+EJJVH+ipB5q5kCi2kIoyg8eAnvb+tfaBfh8TyVK4bxQrXog4qKoHgAX+tfcMAAABA8hXW+/0zlQnapwiKv3F7v078VheWzgR143fHxblJsSGRAjP8HMnfNHB733+d4hlPqRdbKkItDfjRxeUd4IufAw==');
+      recovery.should.have.property('recoveryAmount');
+      recovery.recoveryAmount.should.equal('9.9999600');
+    }));
+
+    it('should generate XLM recovery tx with unencrypted keys', co(function *() {
+      recoveryNocks.nockXlmRecovery();
+
+      const basecoin = bitgo.coin('txlm');
+      const recovery = yield basecoin.recover({
+        userKey: `SAMF5XS7O5BL4OOTB625DELCVNW5JMHF2DDM7NSIVPNQQEKPKLBQFNJ3`,
+        backupKey: `SCXZ7UFVSIFIYJVPLWEAY22TZJOR4L2Z4HE6BMZGZHBBJ4UAABTFMK3V`,
+        rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ'
+      });
+
+      recovery.should.have.property('tx');
+      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAX133AAAAAAAAAAAutRLrcAAABAODYZNOgtjY4mENqKEpcSmYtEt/FScp+EJJVH+ipB5q5kCi2kIoyg8eAnvb+tfaBfh8TyVK4bxQrXog4qKoHgAX+tfcMAAABA8hXW+/0zlQnapwiKv3F7v078VheWzgR143fHxblJsSGRAjP8HMnfNHB733+d4hlPqRdbKkItDfjRxeUd4IufAw==');
+      recovery.should.have.property('recoveryAmount');
+      recovery.recoveryAmount.should.equal('9.9999600');
+    }));
+
+    it('should generate XLM recovery tx with KRS', co(function *() {
+      recoveryNocks.nockXlmRecovery();
+
+      const basecoin = bitgo.coin('txlm');
+      const recovery = yield basecoin.recover({
+        userKey: `{"iv":"PiLveA+5AFPURwaU7iijBQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KlJc8NSKHpw=","ct":"YcdNOFpzXgDnRqjlR3W9R+5eztysyhpCTuRBHsnPyPDst9nvL+GeSORbLY9xVThTdyV6llRgfUr5O7y4l9s9Fg=="}`,
+        backupKey: 'GCBABJPE3UTZ3JPUEIZEXAQQ5CMNX5UPYKOB7HHXSHBCIGD7VV64H6KU',
+        rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
+        krsProvider: 'keyternal'
+      });
+
+      recovery.should.have.property('tx');
+      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAX133AAAAAAAAAAAetRLrcAAABAODYZNOgtjY4mENqKEpcSmYtEt/FScp+EJJVH+ipB5q5kCi2kIoyg8eAnvb+tfaBfh8TyVK4bxQrXog4qKoHgAQ==');
+      recovery.should.have.property('recoveryAmount');
+      recovery.recoveryAmount.should.equal('9.9999600');
     }));
   });
 

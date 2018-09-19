@@ -4,8 +4,11 @@ const querystring = require('querystring');
 const url = require('url');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
+const sjcl = require('sjcl');
+const request = require('superagent');
 
 const BaseCoin = require('../baseCoin');
+const config = require('../../config');
 const stellar = require('stellar-base');
 
 const maxMemoId = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
@@ -198,6 +201,135 @@ class Xlm extends BaseCoin {
     if (addressDetails.address !== rootAddressDetails.address) {
       throw new Error(`address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`);
     }
+  }
+
+  /**
+   * Generates Stellar keypairs from the user key and backup key
+   * @param params
+   *  - userKey: user keypair private key (encrypted or plaintext)
+   *  - backupKey: backup keypair public key (plaintext) or private key (encrypted or plaintext)
+   * @returns {stellar.Keypair[]} array of user and backup keypairs
+   */
+  initiateRecovery(params) {
+    const keys = [];
+    let userKey = params.userKey;
+    let backupKey = params.backupKey;
+
+    // Stellar's Ed25519 public keys start with a G, while private keys start with an S
+    const isKrsRecovery = backupKey.startsWith('G');
+
+    if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
+      throw new Error(`Unknown key recovery service provider - ${params.krsProvider}`);
+    }
+
+    if (isKrsRecovery && !config.krsProviders[params.krsProvider].supportedCoins.includes(this.getFamily())) {
+      throw new Error(`Specified key recovery service does not support recoveries for ${this.getChain()}`);
+    }
+
+    if (!this.isValidAddress(params.recoveryDestination)) {
+      throw new Error('Invalid destination address!');
+    }
+
+    try {
+      if (!userKey.startsWith('S')) {
+        userKey = sjcl.decrypt(params.walletPassphrase, userKey);
+      }
+
+      keys.push(stellar.Keypair.fromSecret(userKey));
+    } catch (e) {
+      throw new Error('Failed to decrypt user key with passcode - try again!');
+    }
+
+    try {
+      if (!backupKey.startsWith('S') && !isKrsRecovery) {
+        backupKey = sjcl.decrypt(params.walletPassphrase, backupKey);
+      }
+
+      if (isKrsRecovery) {
+        keys.push(stellar.Keypair.fromPublicKey(backupKey));
+      } else {
+        keys.push(stellar.Keypair.fromSecret(backupKey));
+      }
+    } catch (e) {
+      throw new Error('Failed to decrypt backup key with passcode - try again!');
+    }
+
+    return keys;
+  }
+
+  getHorizonUrl() {
+    return 'https://horizon.stellar.org';
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo
+   * @param params
+   * - userKey: [encrypted] Stellar private key
+   * - backupKey: [encrypted] Stellar private key, or public key if the private key is held by a KRS provider
+   * - walletPassphrase: necessary if one of the private keys is encrypted
+   * - rootAddress: base address of the wallet to recover funds from
+   * - krsProvider: necessary if backup key is held by KRS
+   * - recoveryDestination: target address to send recovered funds to
+   * @param callback
+   * @returns {Function|*}
+   */
+  recover(params, callback) {
+    return co(function *() {
+      const [userKey, backupKey] = this.initiateRecovery(params);
+      const isKrsRecovery = params.backupKey.startsWith('G');
+
+      if (!stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
+        throw new Error(`Invalid wallet address: ${ params.rootAddress }`);
+      }
+
+      const accountDataUrl = `${ this.getHorizonUrl() }/accounts/${ params.rootAddress }`;
+
+      let accountData;
+      try {
+        accountData = yield request.get(`${ accountDataUrl }`).result();
+      } catch (e) {
+        throw new Error('Unable to reach the Stellar network via Horizon.');
+      }
+
+      if (!accountData.sequence || !accountData.balances) {
+        throw new Error('Horizon server error - unable to retrieve sequence ID or account balance');
+      }
+
+      const account = new stellar.Account(params.rootAddress, accountData.sequence);
+
+      // Stellar supports multiple assets on chain, we're only interested in the balances entry whose type is "native" (XLM)
+      const nativeBalanceInfo = accountData.balances.find(assetBalance => assetBalance['asset_type'] === 'native');
+
+      if (!nativeBalanceInfo) {
+        throw new Error('Provided wallet has a balance of 0 XLM, recovery aborted');
+      }
+
+      const txBuilder = new stellar.TransactionBuilder(account)
+      .addOperation(stellar.Operation.payment({
+        destination: params.recoveryDestination,
+        asset: stellar.Asset.native(),
+        amount: nativeBalanceInfo.balance
+      }))
+      .build();
+
+      txBuilder.sign(userKey);
+
+      if (!isKrsRecovery) {
+        txBuilder.sign(backupKey);
+      }
+
+      const transaction = {
+        tx: txBuilder.toEnvelope().toXDR('base64'),
+        recoveryAmount: nativeBalanceInfo.balance
+      };
+
+      if (isKrsRecovery) {
+        transaction.backupKey = params.backupKey;
+        transaction.coin = this.getChain();
+      }
+
+      return transaction;
+    }).call(this);
   }
 
   /**

@@ -2370,3 +2370,59 @@ module.exports.nockDashRecovery = function(isKrsRecovery) {
     });
   }
 };
+
+module.exports.nockXlmRecovery = function() {
+  nock('https://horizon-testnet.stellar.org')
+  .get('/accounts/GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB')
+  .reply(200, {
+    id: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+    paging_token: '',
+    account_id: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+    sequence: '47339455954026497',
+    subentry_count: 3,
+    thresholds: {
+      low_threshold: 1,
+      med_threshold: 2,
+      high_threshold: 3
+    },
+    flags: {
+      auth_required: false,
+      auth_revocable: false
+    },
+    balances: [
+      {
+        balance: '9.9999600',
+        buying_liabilities: '0.0000000',
+        selling_liabilities: '0.0000000',
+        asset_type: 'native'
+      }
+    ],
+    signers: [
+      {
+        public_key: 'GBNK4FJO6FDQNBVLUP7MICEJUVINPNJZCDDTTYS3LVFC6J7LKEXLOBKM',
+        weight: 1,
+        key: 'GBNK4FJO6FDQNBVLUP7MICEJUVINPNJZCDDTTYS3LVFC6J7LKEXLOBKM',
+        type: 'ed25519_public_key'
+      },
+      {
+        public_key: 'GCBABJPE3UTZ3JPUEIZEXAQQ5CMNX5UPYKOB7HHXSHBCIGD7VV64H6KU',
+        weight: 1,
+        key: 'GCBABJPE3UTZ3JPUEIZEXAQQ5CMNX5UPYKOB7HHXSHBCIGD7VV64H6KU',
+        type: 'ed25519_public_key'
+      },
+      {
+        public_key: 'GBSKZM7HG4S2W4N4H65XHTGS724HQA7EFMSSCVLPWW53ZFL6SNVFJKJO',
+        weight: 1,
+        key: 'GBSKZM7HG4S2W4N4H65XHTGS724HQA7EFMSSCVLPWW53ZFL6SNVFJKJO',
+        type: 'ed25519_public_key'
+      },
+      {
+        public_key: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        weight: 0,
+        key: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        type: 'ed25519_public_key'
+      }
+    ],
+    data: {}
+  });
+};
