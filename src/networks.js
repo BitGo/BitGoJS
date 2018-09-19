@@ -60,7 +60,13 @@ module.exports = {
     pubKeyHash: 0x1cb8,
     scriptHash: 0x1cbd,
     wif: 0x80,
-    consensusBranchId: 0x5ba81b19,
+    // This parameter was introduced in version 3 to allow soft forks, for version 1 and 2 transactions we add a
+    // dummy value.
+    consensusBranchId: {
+      1: 0x00,
+      2: 0x00,
+      3: 0x5ba81b19
+    },
     coin: coins.ZEC
   },
   zcashTest: {
@@ -73,7 +79,12 @@ module.exports = {
     pubKeyHash: 0x1d25,
     scriptHash: 0x1cba,
     wif: 0xef,
-    consensusBranchId: 0x5ba81b19,
+    consensusBranchId: {
+      1: 0x00,
+      2: 0x00,
+      3: 0x5ba81b19,
+      4: 0x76b809bb
+    },
     coin: coins.ZEC
   },
   bitcoingold: {

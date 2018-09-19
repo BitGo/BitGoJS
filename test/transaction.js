@@ -93,7 +93,7 @@ describe('Transaction', function () {
       it('imports ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.zcashTest)
         assert.equal(tx.version, testData.version)
-        assert.equal(tx.versionGroupId, testData.versionGroupId)
+        assert.equal(tx.versionGroupId, parseInt(testData.versionGroupId, 16))
         assert.equal(tx.overwintered, testData.overwintered)
         assert.equal(tx.locktime, testData.locktime)
         assert.equal(tx.expiryHeight, testData.expiryHeight)
@@ -102,6 +102,22 @@ describe('Transaction', function () {
         assert.equal(tx.joinsplits.length, testData.joinsplitsLength)
         assert.equal(tx.joinsplitPubkey.length, testData.joinsplitPubkeyLength)
         assert.equal(tx.joinsplitSig.length, testData.joinsplitSigLength)
+
+        if (testData.valueBalance) {
+          assert.equal(tx.valueBalance, testData.valueBalance)
+        }
+        if (testData.nShieldedSpend > 0) {
+          for (var i = 0; i < testData.nShieldedSpend; ++i) {
+            assert.equal(tx.vShieldedSpend[i].cv.toString('hex'), testData.vShieldedSpend[i].cv)
+            assert.equal(tx.vShieldedSpend[i].anchor.toString('hex'), testData.vShieldedSpend[i].anchor)
+            assert.equal(tx.vShieldedSpend[i].nullifier.toString('hex'), testData.vShieldedSpend[i].nullifier)
+            assert.equal(tx.vShieldedSpend[i].rk.toString('hex'), testData.vShieldedSpend[i].rk)
+            assert.equal(tx.vShieldedSpend[i].zkproof.sA.toString('hex') +
+              tx.vShieldedSpend[i].zkproof.sB.toString('hex') +
+              tx.vShieldedSpend[i].zkproof.sC.toString('hex'), testData.vShieldedSpend[i].zkproof)
+            assert.equal(tx.vShieldedSpend[i].spendAuthSig.toString('hex'), testData.vShieldedSpend[i].spendAuthSig)
+          }
+        }
       })
     })
 
@@ -354,7 +370,7 @@ describe('Transaction', function () {
     fixtures.hashForZcashSignature.valid.forEach(function (testData) {
       it('should return ' + testData.hash + ' for ' + testData.description, function () {
         var network = networks.zcash
-        network.consensusBranchId = testData.branchId
+        network.consensusBranchId[testData.version] = parseInt(testData.branchId, 16)
         var tx = Transaction.fromHex(testData.txHex, network)
         var script = Buffer.from(testData.script, 'hex')
         var hash = Buffer.from(testData.hash, 'hex')

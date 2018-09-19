@@ -519,13 +519,16 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
   typeforce(types.UInt32, version)
 
   if (coins.isZcash(this.network)) {
+    if (!this.network.consensusBranchId.hasOwnProperty(this.tx.version)) {
+      throw new Error('Unsupported Zcash transaction')
+    }
     this.tx.overwintered = (overwinter ? 1 : 0)
   }
   this.tx.version = version
 }
 
 TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
-  if (!(coins.isZcash(this.network) && this.tx.version >= Transaction.ZCASH_OVERWINTER_VERSION)) {
+  if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
@@ -534,7 +537,7 @@ TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
 }
 
 TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
-  if (!(coins.isZcash(this.network) && this.tx.version >= Transaction.ZCASH_OVERWINTER_VERSION)) {
+  if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
@@ -543,7 +546,7 @@ TransactionBuilder.prototype.setExpiryHeight = function (expiryHeight) {
 }
 
 TransactionBuilder.prototype.setJoinSplits = function (transaction) {
-  if (!(coins.isZcash(this.network) && this.tx.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION)) {
+  if (!(coins.isZcash(this.network) && this.tx.supportsJoinSplits())) {
     throw new Error('joinsplits can only be set for Zcash starting at version 2. Current network coin: ' +
       this.network.coin + ', version: ' + this.tx.version)
   }
@@ -584,13 +587,13 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
 
   if (coins.isZcash(txbNetwork)) {
     // Copy Zcash overwinter fields. If the transaction builder is not for Zcash, they will be omitted
-    if (txb.tx.version >= Transaction.ZCASH_OVERWINTER_VERSION) {
+    if (txb.tx.isOverwinterCompatible()) {
       txb.setVersionGroupId(transaction.versionGroupId)
       txb.setExpiryHeight(transaction.expiryHeight)
     }
     // We don't support protected transactions but we copy the joinsplits for consistency. However, the transaction
     // builder will fail when we try to sign one of these transactions
-    if (txb.tx.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION) {
+    if (txb.tx.supportsJoinSplits()) {
       txb.setJoinSplits(transaction)
     }
   }

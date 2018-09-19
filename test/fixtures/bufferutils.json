@@ -113,5 +113,19 @@
         "hexPD": "4e"
       }
     ]
-  }
+  },
+  "negative": [
+    {
+      "dec": -1,
+      "hex64": "FFFFFFFFFFFFFFFF"
+    },
+    {
+      "dec": -255,
+      "hex64": "01FFFFFFFFFFFFFF"
+    },
+    {
+      "dec": -9223372036854775808,
+      "hex64": "0000000000000080"
+    }
+  ]
 }
