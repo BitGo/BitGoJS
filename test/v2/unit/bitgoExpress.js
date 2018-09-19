@@ -88,7 +88,7 @@ describe('Bitgo Express', function() {
 
     it('should create an https server when using TLS', co(function *() {
       sinon.stub(https, 'createServer');
-      sinon.stub(fs, 'readFile')
+      sinon.stub(fs, 'readFileAsync')
       .onFirstCall().resolves('key')
       .onSecondCall().resolves('cert');
 
@@ -105,7 +105,7 @@ describe('Bitgo Express', function() {
       https.createServer.should.be.calledWith({ secureOptions: SSL_OP_NO_TLSv1, key: 'key', cert: 'cert' });
 
       https.createServer.restore();
-      fs.readFile.restore();
+      fs.readFileAsync.restore();
     }));
 
     it('should output basic information upon server startup', () => {
