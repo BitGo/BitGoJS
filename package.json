@@ -86,7 +86,7 @@
     "bigi": "1.4.0",
     "bignumber.js": "~4.0.2",
     "bitcoinjs-message": "~2.0.0",
-    "bitgo-utxo-lib": "https://github.com/BitGo/bitgo-utxo-lib.git#6044efd45cca0a0fd598cd8ab6b96eec5180dff9",
+    "bitgo-utxo-lib": "git+https://github.com/BitGo/bitgo-utxo-lib.git#648a6cf9bf7dc883803fc962cccee641baac7f49",
     "bluebird": "~3.5.0",
     "body-parser": "~1.18.2",
     "bs58": "2.0.1",

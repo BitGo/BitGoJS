@@ -5,7 +5,7 @@ const co = Promise.coroutine;
 const _ = require('lodash');
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const Wallet = require('../../../../src/v2/wallet');
-const bitcoin = require('bitgo-utxo-lib');
+const bitGoUtxoLib = require('bitgo-utxo-lib');
 
 describe('ZEC:', function() {
   let bitgo;
@@ -90,7 +90,6 @@ describe('ZEC:', function() {
     describe('Should test transaction signing', () => {
 
       it('should create local prebuild', co(function *() {
-
         const fundingAddress = 't2CgWUKFKRaKzPXQF2cooNFtVZR1gTM8xxM';
         const fundingRedeemScript = '522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae';
 
@@ -105,17 +104,14 @@ describe('ZEC:', function() {
         };
         const [txHash, vout] = unspent.id.split(':');
 
-        const txb = new bitcoin.TransactionBuilder(testCoin.network);
-        txb.addInput(txHash, parseInt(vout), 0xffffffff);
+        const txb = new bitGoUtxoLib.TransactionBuilder(testCoin.network);
+        txb.addInput(txHash, parseInt(vout, 16), 0xffffffff);
         txb.addOutput(receiveAddress, unspent.value - 50000);
-        txb.setVersion(3);
 
-        // todo: make this easier!!!
         const tx = txb.buildIncomplete();
         tx.coin = coin.type;
         tx.overwintered = 1;
         tx.versionGroupId = 0x03C48270;
-        tx.expiryHeight = 249133;
 
         const prebuild = {
           txHex: tx.toHex(),
@@ -136,13 +132,13 @@ describe('ZEC:', function() {
           txPrebuild: prebuild,
           prv: keychains[0].prv
         });
-        const halfSignedTx = bitcoin.Transaction.fromHex(halfSigned.txHex, coin.network);
+        const halfSignedTx = bitGoUtxoLib.Transaction.fromHex(halfSigned.txHex, testCoin.network);
         halfSignedTx.network.coin.should.equal('zec');
-        halfSignedTx.version.should.equal(3);
-        halfSignedTx.versionGroupId.should.equal(63210096);
+        halfSignedTx.version.should.equal(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
+        halfSignedTx.versionGroupId.should.equal(2301567109);
         halfSignedTx.overwintered.should.equal(1);
-        halfSignedTx.expiryHeight.should.equal(249133);
-        halfSigned.txHex.should.equal('030000807082c40301b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000b70048304502210087bcf8dafc07ec8bc54fb355dfd0d1b5b0b146070cd656e9a26e45a849e8a84d02206bad301853757010ca4aab379e5ba2cce8ad67e8526ea7c209e92e80283c1fb50100004c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce609387000000002dcd030000');
+        halfSignedTx.expiryHeight.should.equal(0);
+        halfSigned.txHex.should.equal('0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000b600473044022034c624b44051fd6d3cf665b6117a614c683c918f9b6087d65d7043479bb60c3402205eef0d7032c98902c56a4337c4de7feba44704786fa9d4968af1699e1eede5b80100004c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000');
 
         const halfSignedPrebuild = _.extend({}, prebuild, halfSigned);
         const fullySigned = yield wallet.signTransaction({
@@ -150,20 +146,16 @@ describe('ZEC:', function() {
           prv: keychains[2].prv,
           isLastSignature: true
         });
-        const fullySignedTx = bitcoin.Transaction.fromHex(fullySigned.txHex, coin.network);
+        const fullySignedTx = bitGoUtxoLib.Transaction.fromHex(fullySigned.txHex, testCoin.network);
         fullySignedTx.network.coin.should.equal('zec');
-        fullySignedTx.version.should.equal(3);
-        fullySignedTx.versionGroupId.should.equal(63210096);
+        fullySignedTx.version.should.equal(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
+        fullySignedTx.versionGroupId.should.equal(2301567109);
         fullySignedTx.overwintered.should.equal(1);
-        fullySignedTx.expiryHeight.should.equal(249133);
-        fullySignedTx.getId().should.equal('fb51b4f5f8dd7200ef59593afb1e1c228ad1ce91d464ae2aabd92dd094fa320b');
+        fullySignedTx.expiryHeight.should.equal(0);
+        fullySignedTx.getId().should.equal('d16b14e8312661ca7570f587b102610c35e97e87c0668349ea216f9b0173864d');
 
-        // https://explorer.testnet.z.cash/tx/fb51b4f5f8dd7200ef59593afb1e1c228ad1ce91d464ae2aabd92dd094fa320b
-        fullySigned.txHex.should.equal('030000807082c40301b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000fdfd000048304502210087bcf8dafc07ec8bc54fb355dfd0d1b5b0b146070cd656e9a26e45a849e8a84d02206bad301853757010ca4aab379e5ba2cce8ad67e8526ea7c209e92e80283c1fb501473044022026d2ea6586959935df811476d9828f313dd0432de7141562560a4d69bf855a3f02204de5896641eefdc1cb39056546bbfe41513f1117f2d02afa51eda595ec29ad81014c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce609387000000002dcd030000');
+        fullySigned.txHex.should.equal('0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000fc00473044022034c624b44051fd6d3cf665b6117a614c683c918f9b6087d65d7043479bb60c3402205eef0d7032c98902c56a4337c4de7feba44704786fa9d4968af1699e1eede5b801473044022052df70f6e0e40082382cea9ce4f76347c436f92f56523ca9a2198a45de5145fa0220782f43b17d9013c9a611a027ab139f45c45a0f0e942525aa3e6e63796df1918f014c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000');
       }));
-
     });
-
   });
-
 });

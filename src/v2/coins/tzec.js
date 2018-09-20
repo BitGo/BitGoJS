@@ -1,10 +1,9 @@
 const Zec = require('./zec');
-const bitcoin = require('bitgo-utxo-lib');
+const bitGoUtxoLib = require('bitgo-utxo-lib');
 
 class Tzec extends Zec {
   constructor() {
-    // TODO: move to bitgo-utxo-lib (BG-6821)
-    super(bitcoin.networks.zcashTest);
+    super(bitGoUtxoLib.networks.zcashTest);
   }
 
   getChain() {
@@ -15,6 +14,16 @@ class Tzec extends Zec {
     return 'Testnet ZCash';
   }
 
+  /**
+   * Set up default parameters to send a Zcash Sapling compatible transaction
+   * @param txBuilder
+   * @returns {*}
+   */
+  static prepareTransactionBuilder(txBuilder) {
+    txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
+    txBuilder.setVersionGroupId(0x892f2085);
+    return txBuilder;
+  }
 }
 
 module.exports = Tzec;

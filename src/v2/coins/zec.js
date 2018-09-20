@@ -1,5 +1,5 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
-const bitcoin = require('bitgo-utxo-lib');
+const bitGoUtxoLib = require('bitgo-utxo-lib');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const common = require('../../common');
@@ -7,7 +7,7 @@ const request = require('superagent');
 
 class Zec extends AbstractUtxoCoin {
   constructor(network) {
-    super(network || bitcoin.networks.zcash);
+    super(network || bitGoUtxoLib.networks.zcash);
   }
 
   getChain() {
@@ -19,7 +19,7 @@ class Zec extends AbstractUtxoCoin {
   }
 
   getCoinLibrary() {
-    return bitcoin;
+    return bitGoUtxoLib;
   }
 
   getFullName() {
@@ -36,7 +36,7 @@ class Zec extends AbstractUtxoCoin {
    * @returns {*}
    */
   static prepareTransactionBuilder(txBuilder) {
-    txBuilder.setVersion(3);
+    txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_OVERWINTER_VERSION);
     txBuilder.setVersionGroupId(63210096);
     return txBuilder;
   }
