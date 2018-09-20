@@ -11,7 +11,7 @@ Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we
 - Bitcoin
 - Bitcoin Cash
 - Bitcoin Gold
-- Zcash (overwinter support)
+- Zcash (Overwinter support in mainnet and Sapling in testnet)
 - Dash
 
 ## Features
