@@ -535,6 +535,10 @@ class Eth extends BaseCoin {
         ]
       });
 
+      // these recoveries need to be processed by support, but if the customer sends any transactions before recovery is
+      // complete the sequence ID will be invalid. artificially inflate the sequence ID to allow more time for processing
+      const safeSequenceId = nextContractSequenceId + 1000;
+
       // Build sendData for ethereum tx
       const operationTypes = ['string', 'address', 'uint', 'address', 'uint', 'uint'];
       const operationArgs = [
@@ -544,7 +548,7 @@ class Eth extends BaseCoin {
         recipient.amount,
         new ethUtil.BN(ethUtil.stripHexPrefix(params.tokenContractAddress), 16),
         expireTime,
-        nextContractSequenceId
+        safeSequenceId
       ];
 
       const operationHash = ethUtil.bufferToHex(ethAbi.soliditySHA3(operationTypes, operationArgs));
@@ -559,7 +563,7 @@ class Eth extends BaseCoin {
       const txParams = {
         recipient: recipient,
         expireTime: expireTime,
-        contractSequenceId: nextContractSequenceId,
+        contractSequenceId: safeSequenceId,
         operationHash: operationHash,
         signature: signature,
         gasLimit: gasLimit,

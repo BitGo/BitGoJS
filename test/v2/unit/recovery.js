@@ -502,7 +502,7 @@ describe('Recovery:', function() {
 
       const txInfo = tx.halfSigned;
       txInfo.should.have.property('contractSequenceId');
-      txInfo.contractSequenceId.should.equal(101);
+      txInfo.contractSequenceId.should.equal(1101);
       txInfo.should.have.property('expireTime');
       txInfo.should.have.property('gasLimit');
       txInfo.gasLimit.should.equal(500000);
