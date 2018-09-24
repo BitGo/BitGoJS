@@ -18,7 +18,7 @@ describe('V2 Base Coin:', function() {
 
     before(() => require('nock').restore());
 
-    _.forEach(['tbtc', 'trmg', 'tltc', 'tbch', 'tbtg'], function(coin) {
+    _.forEach(['tbtc', 'trmg', 'tltc', 'tbch'], function(coin) {
       const basecoin = bitgo.coin(coin);
 
       it('should fetch fee info for utxo coins', co(function *() {
