@@ -109,6 +109,24 @@ class Xlm extends BaseCoin {
   }
 
   /**
+   * Minimum balance of a 2-of-3 multisig wallet
+   * @returns {number} minimum balance in stroops
+   */
+  getMinimumReserve() {
+    // 2.5 XLM
+    return 2.5 * this.getBaseFactor();
+  }
+
+  /**
+   * Transaction fee for each operation
+   * @returns {number} transaction fee in stroops
+   */
+  getBaseTransactionFee() {
+    // 100 stroops
+    return 100;
+  }
+
+  /**
    * Process address into address and memo id
    *
    * @param address {String} the address
@@ -309,11 +327,14 @@ class Xlm extends BaseCoin {
         throw new Error('Provided wallet has a balance of 0 XLM, recovery aborted');
       }
 
+      const walletBalance = nativeBalanceInfo.balance * this.getBaseFactor();
+      const recoveryAmount = walletBalance - this.getMinimumReserve() - this.getBaseTransactionFee();
+
       const txBuilder = new stellar.TransactionBuilder(account)
       .addOperation(stellar.Operation.payment({
         destination: params.recoveryDestination,
         asset: stellar.Asset.native(),
-        amount: nativeBalanceInfo.balance
+        amount: (recoveryAmount / this.getBaseFactor()).toString()
       }))
       .build();
 
@@ -325,7 +346,7 @@ class Xlm extends BaseCoin {
 
       const transaction = {
         tx: txBuilder.toEnvelope().toXDR('base64'),
-        recoveryAmount: nativeBalanceInfo.balance
+        recoveryAmount
       };
 
       if (isKrsRecovery) {

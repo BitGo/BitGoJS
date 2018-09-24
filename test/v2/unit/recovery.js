@@ -444,9 +444,9 @@ describe('Recovery:', function() {
       });
 
       recovery.should.have.property('tx');
-      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAX133AAAAAAAAAAAutRLrcAAABAODYZNOgtjY4mENqKEpcSmYtEt/FScp+EJJVH+ipB5q5kCi2kIoyg8eAnvb+tfaBfh8TyVK4bxQrXog4qKoHgAX+tfcMAAABA8hXW+/0zlQnapwiKv3F7v078VheWzgR143fHxblJsSGRAjP8HMnfNHB733+d4hlPqRdbKkItDfjRxeUd4IufAw==');
+      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAR4ZswAAAAAAAAAAutRLrcAAABAa1RDEZI9aRYXLd5N7Pvf2Sk0szE9GeZEbQFarXwGpDU++o60M6NrG3ZPrAWrvqvG4C5CUoqh1vvfwiQRvIQ4DX+tfcMAAABATa4B08rJdylJF1YneVUVNj7Mz7BEJCj7h7SvE/F5PptRF1zxAQ97Acj0NypTCLXL8ibZPgRelPvHnMpbf07bDg==');
       recovery.should.have.property('recoveryAmount');
-      recovery.recoveryAmount.should.equal('9.9999600');
+      recovery.recoveryAmount.should.equal(74999500);
     }));
 
     it('should generate XLM recovery tx with unencrypted keys', co(function *() {
@@ -461,9 +461,9 @@ describe('Recovery:', function() {
       });
 
       recovery.should.have.property('tx');
-      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAX133AAAAAAAAAAAutRLrcAAABAODYZNOgtjY4mENqKEpcSmYtEt/FScp+EJJVH+ipB5q5kCi2kIoyg8eAnvb+tfaBfh8TyVK4bxQrXog4qKoHgAX+tfcMAAABA8hXW+/0zlQnapwiKv3F7v078VheWzgR143fHxblJsSGRAjP8HMnfNHB733+d4hlPqRdbKkItDfjRxeUd4IufAw==');
+      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAR4ZswAAAAAAAAAAutRLrcAAABAa1RDEZI9aRYXLd5N7Pvf2Sk0szE9GeZEbQFarXwGpDU++o60M6NrG3ZPrAWrvqvG4C5CUoqh1vvfwiQRvIQ4DX+tfcMAAABATa4B08rJdylJF1YneVUVNj7Mz7BEJCj7h7SvE/F5PptRF1zxAQ97Acj0NypTCLXL8ibZPgRelPvHnMpbf07bDg==');
       recovery.should.have.property('recoveryAmount');
-      recovery.recoveryAmount.should.equal('9.9999600');
+      recovery.recoveryAmount.should.equal(74999500);
     }));
 
     it('should generate XLM recovery tx with KRS', co(function *() {
@@ -480,9 +480,9 @@ describe('Recovery:', function() {
       });
 
       recovery.should.have.property('tx');
-      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAX133AAAAAAAAAAAetRLrcAAABAODYZNOgtjY4mENqKEpcSmYtEt/FScp+EJJVH+ipB5q5kCi2kIoyg8eAnvb+tfaBfh8TyVK4bxQrXog4qKoHgAQ==');
+      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAR4ZswAAAAAAAAAAetRLrcAAABAa1RDEZI9aRYXLd5N7Pvf2Sk0szE9GeZEbQFarXwGpDU++o60M6NrG3ZPrAWrvqvG4C5CUoqh1vvfwiQRvIQ4DQ==');
       recovery.should.have.property('recoveryAmount');
-      recovery.recoveryAmount.should.equal('9.9999600');
+      recovery.recoveryAmount.should.equal(74999500);
     }));
   });
 
