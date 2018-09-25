@@ -472,7 +472,7 @@ class Xrp extends BaseCoin {
         DestinationTag: destinationTag,
         Amount: recoverableBalance.toFixed(0),
         Flags: 2147483648,
-        LastLedgerSequence: currentLedger + 100, // give it 100 ledgers' time
+        LastLedgerSequence: currentLedger + 1000000, // give it 1 million ledgers' time (~1 month, suitable for KRS)
         Fee: openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
         Sequence: sequenceId
       };
