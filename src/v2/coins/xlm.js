@@ -4,7 +4,6 @@ const querystring = require('querystring');
 const url = require('url');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-const sjcl = require('sjcl');
 const request = require('superagent');
 
 const BaseCoin = require('../baseCoin');
@@ -232,7 +231,10 @@ class Xlm extends BaseCoin {
 
     try {
       if (!userKey.startsWith('S')) {
-        userKey = sjcl.decrypt(params.walletPassphrase, userKey);
+        userKey = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase
+        });
       }
 
       keys.push(stellar.Keypair.fromSecret(userKey));
@@ -242,7 +244,10 @@ class Xlm extends BaseCoin {
 
     try {
       if (!backupKey.startsWith('S') && !isKrsRecovery) {
-        backupKey = sjcl.decrypt(params.walletPassphrase, backupKey);
+        backupKey = this.bitgo.decrypt({
+          input: backupKey,
+          password: params.walletPassphrase
+        });
       }
 
       if (isKrsRecovery) {
