@@ -1,6 +1,6 @@
 const assert = require('assert');
 const crypto = require('crypto');
-const stellar = require('stellar-base');
+const stellar = require('stellar-sdk');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const Wallet = require('../../../../src/v2/wallet');
@@ -61,6 +61,15 @@ describe('XLM:', function() {
     basecoin.isValidAddress('GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=x').should.equal(false);
     basecoin.isValidAddress('SBKGCMBY56MHTT4EGE3YJIYL4CPWKSGJ7VDEQF4J3B3YO576KNL7DOYJ').should.equal(false); // private key
     basecoin.isValidAddress('r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8').should.equal(false); // xrp account
+  });
+
+  it('should validate stellar username', function() {
+    basecoin.isValidStellarUsername('foo@bar.baz').should.equal(true);
+    basecoin.isValidStellarUsername('foo_bar9.baz').should.equal(true);
+    basecoin.isValidStellarUsername('foo+bar_9.baz').should.equal(true);
+    basecoin.isValidStellarUsername('').should.equal(false);
+    basecoin.isValidStellarUsername('foo bar.baz').should.equal(false); // whitespace is not allowed
+    basecoin.isValidStellarUsername('Foo@bar.baz').should.equal(false); // only lowercase letters are allowed
   });
 
   it('verifyAddress should work', function() {
@@ -296,6 +305,140 @@ describe('XLM:', function() {
       const validTransaction = yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
       validTransaction.should.equal(true);
     }));
+
+    describe('Federation lookups:', function() {
+      describe('Look up by stellar address:', function() {
+        it('should fail to loop up an invalid stellar address with a bitgo.com domain', co(function *() {
+          const stellarAddress = 'invalid*bitgo.com';
+          try {
+            yield basecoin.federationLookupByName(stellarAddress);
+          } catch (e) {
+            e.message.should.equal('account not found');
+          }
+        }));
+
+        it('should resolve a stellar address into an account', co(function *() {
+          const stellarAddress = 'test12345*lobstr.co';
+          const accountId = 'GB5MEYCR4V2NRZH4NSI465ZEFRXPBZ74P43BMYN7AWVMAI5NNCKNZSVY';
+
+          nock('https://lobstr.co')
+          .get('/.well-known/stellar.toml')
+          .reply(200, 'FEDERATION_SERVER=\'https://lobstr.co/federation\'');
+
+          nock('https://lobstr.co')
+          .get('/federation')
+          .query({
+            q: stellarAddress,
+            type: 'name'
+          })
+          .reply(200, {
+            stellar_address: stellarAddress,
+            account_id: accountId
+          });
+
+          const res = yield basecoin.federationLookupByName(stellarAddress);
+          res.should.have.property('stellar_address');
+          res.should.have.property('account_id');
+          res.stellar_address.should.equal(stellarAddress);
+          res.account_id.should.equal(accountId);
+        }));
+
+        it('should resolve a stellar address with a bitgo.com domain', co(function *() {
+          const stellarAddress = 'tester*bitgo.com';
+
+          nock('https://test.bitgo.com')
+          .get('/api/v2/txlm/federation')
+          .query({
+            q: stellarAddress,
+            type: 'name'
+          })
+          .reply(200, {
+            stellar_address: stellarAddress,
+            account_id: 'GCBYY3S62QY43PMEKGJHRCBHEFJOHCLGSMWXREUZYDQHJHQ2LK4I42JA',
+            memo_type: 'id',
+            memo: '0'
+          });
+
+          const res = yield basecoin.federationLookupByName(stellarAddress);
+          res.should.have.property('stellar_address');
+          res.should.have.property('account_id');
+          res.should.have.property('memo_type');
+          res.should.have.property('memo');
+          res.stellar_address.should.equal(stellarAddress);
+          res.account_id.should.equal('GCBYY3S62QY43PMEKGJHRCBHEFJOHCLGSMWXREUZYDQHJHQ2LK4I42JA');
+          res.memo_type.should.equal('id');
+          res.memo.should.equal('0');
+        }));
+      });
+
+      describe('Look up by account id:', function() {
+        it('should fail to look up an account if the account id is invalid', co(function *() {
+          const accountId = '123';
+
+          nock('https://test.bitgo.com')
+          .get('/api/v2/txlm/federation')
+          .query({
+            q: accountId,
+            type: 'id'
+          })
+          .reply(400, {
+            detail: 'invalid id: ' + accountId
+          });
+
+          try {
+            yield basecoin.federationLookupByAccountId(accountId);
+          } catch (e) {
+            e.message.should.equal(`invalid id: ${accountId}`);
+          }
+        }));
+
+        it('should return only account_id for non-bitgo accounts', co(function *() {
+          const accountId = 'GCROXHYJSTCS3CQQIU7GFC7YQIRIVGPYZQRZEM6PN7P7TAZ3PU4CHJRG';
+
+          nock('https://test.bitgo.com')
+          .get('/api/v2/txlm/federation')
+          .query({
+            q: accountId,
+            type: 'id'
+          })
+          .reply(200, {
+            account_id: accountId
+          });
+
+          const res = yield basecoin.federationLookupByAccountId(accountId);
+          res.should.not.have.property('stellar_address');
+          res.should.not.have.property('memo_type');
+          res.should.not.have.property('memo');
+          res.should.have.property('account_id');
+          res.account_id.should.equal(accountId);
+        }));
+
+        it('should resolve a valid account id into an account', co(function *() {
+          const accountId = 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH';
+
+          nock('https://test.bitgo.com')
+          .get('/api/v2/txlm/federation')
+          .query({
+            q: accountId,
+            type: 'id'
+          })
+          .reply(200, {
+            stellar_address: 'tester*bitgo.com',
+            account_id: accountId,
+            memo_type: 'id',
+            memo: '0'
+          });
+
+          const res = yield basecoin.federationLookupByAccountId(accountId);
+          res.should.have.property('stellar_address');
+          res.should.have.property('account_id');
+          res.should.have.property('memo_type');
+          res.should.have.property('memo');
+          res.account_id.should.equal(accountId);
+          res.stellar_address.should.equal('tester*bitgo.com');
+        }));
+      });
+    });
   });
 });
 

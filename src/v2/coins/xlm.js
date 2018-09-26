@@ -8,7 +8,7 @@ const request = require('superagent');
 
 const BaseCoin = require('../baseCoin');
 const config = require('../../config');
-const stellar = require('stellar-base');
+const stellar = require('stellar-sdk');
 
 const maxMemoId = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
 
@@ -17,6 +17,8 @@ class Xlm extends BaseCoin {
   constructor() {
     super();
     stellar.Network.use(new stellar.Network(stellar.Networks.PUBLIC));
+    this.federationServer = new stellar.FederationServer(this.getFederationServerUrl(), 'bitgo.com');
+    this.homeDomain = 'bitgo.com'; // used for reverse federation lookup
   }
   /**
    * Returns the factor between the base unit and its smallest subdivison
@@ -36,6 +38,14 @@ class Xlm extends BaseCoin {
 
   getFullName() {
     return 'Stellar';
+  }
+
+  getFederationServerUrl() {
+    return 'https://www.bitgo.com/api/v2/xlm/federation';
+  }
+
+  getHorizonUrl() {
+    return 'https://horizon.stellar.org';
   }
 
   /**
@@ -202,6 +212,63 @@ class Xlm extends BaseCoin {
   }
 
   /**
+   * Evaluate whether a stellar username has valid format
+   * This method is used by the client when a stellar address is being added to a wallet
+   * Example of a common stellar username: foo@bar.baz
+   * The above example would result in the Stellar address: foo@bar.baz*bitgo.com
+   *
+   * @param {String} username - stellar username
+   * @return {boolean} true if stellar username is valid
+   */
+  isValidStellarUsername(username) {
+    return /^[a-z0-9\-\_\.\+\@]+$/.test(username);
+  }
+
+  /**
+   * Attempt to resolve a stellar address into a stellar account
+   * If address domain matches bitgo's then resolve on our federation server
+   * Else, make the request to the federation server hosting the address
+   *
+   * @param {String} address - stellar address to look for
+   * @return {Promise}
+   */
+  federationLookupByName(address) {
+    return co(function *() {
+      const addressParts = _.split(address, '*');
+      if (addressParts.length !== 2) {
+        throw new Error(`invalid stellar address: ${address}`);
+      }
+      const [, homeDomain] = addressParts;
+      try {
+        if (homeDomain === this.homeDomain) {
+          return yield this.federationServer.resolveAddress(address);
+        } else {
+          return yield stellar.FederationServer.resolve(address);
+        }
+      } catch (e) {
+        throw new Error('account not found');
+      }
+    }).call(this);
+  }
+
+  /**
+   * Attempt to resolve an account id into a stellar account
+   * Only works for accounts that can be resolved by our federation server
+   *
+   * @param {String} accountId - stellar account id
+   * @return {Promise}
+   */
+  federationLookupByAccountId(accountId) {
+    return co(function *() {
+      try {
+        return yield this.federationServer.resolveAccountId(accountId);
+      } catch (e) {
+        throw new Error(e.response.data.detail);
+      }
+    }).call(this);
+  }
+
+  /**
    * Check if address is a valid XLM address, and then make sure it matches the root address.
    *
    * @param address {String} the address to verify
@@ -278,10 +345,6 @@ class Xlm extends BaseCoin {
     }
 
     return keys;
-  }
-
-  getHorizonUrl() {
-    return 'https://horizon.stellar.org';
   }
 
   /**

@@ -398,7 +398,6 @@ class BaseCoin {
   generateKeyPair(seed) {
     throw new Error('abstract method');
   }
-
 }
 
 
