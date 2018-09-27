@@ -956,6 +956,7 @@ Wallet.prototype.removeUser = function(params, callback) {
  * @param {Boolean} params.noSplitChange - Set to true to disable automatic change splitting for purposes of unspent management
  * @param {Array} params.unspents - The unspents to use in the transaction. Each unspent should be in the form prevTxId:nOutput
  * @param {String} params.changeAddress - Specifies the destination of the change output
+ * @param {Boolean} params.instant - Build this transaction to conform with instant sending coin-specific method (if available)
  * @param callback
  * @returns {*}
  */
@@ -967,7 +968,8 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
       'enforceMinConfirmsForChange', 'targetWalletUnspents',
       'message', 'minValue', 'maxValue', 'sequenceId',
       'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
-      'noSplitChange', 'unspents', 'changeAddress', 'unspentTypes', 'changeAddressType'
+      'noSplitChange', 'unspents', 'changeAddress', 'unspentTypes', 'changeAddressType',
+      'instant'
     ]);
 
     if (_.isUndefined(whitelistedParams.unspentTypes)) {
@@ -1167,6 +1169,7 @@ Wallet.prototype.send = function(params, callback) {
  * @param {String} params.comment - Any additional comment to attach to the transaction
  * @param {String} params.otp - Two factor auth code to enable sending the transaction
  * @param {String} params.changeAddress - Specifies the destination of the change output
+ * @param {Boolean} params.instant - Send this transaction using coin-specific instant sending method (if available)
  * @param callback
  * @returns {*}
  */
@@ -1195,7 +1198,8 @@ Wallet.prototype.sendMany = function(params, callback) {
       'enforceMinConfirmsForChange', 'targetWalletUnspents',
       'message', 'minValue', 'maxValue', 'sequenceId',
       'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
-      'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress'
+      'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress',
+      'instant'
     ]);
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
     return this.bitgo.post(this.url('/tx/send'))
