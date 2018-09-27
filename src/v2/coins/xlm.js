@@ -123,8 +123,24 @@ class Xlm extends BaseCoin {
    * @returns {number} minimum balance in stroops
    */
   getMinimumReserve() {
-    // 2.5 XLM
-    return 2.5 * this.getBaseFactor();
+    return co(function *() {
+      const server = new stellar.Server(this.getHorizonUrl());
+
+      const horizonLedgerInfo = yield server
+      .ledgers()
+      .order('desc')
+      .limit(1)
+      .call();
+
+      if (!horizonLedgerInfo) {
+        throw new Error('unable to connect to Horizon for reserve requirement data');
+      }
+
+      const baseReserve = horizonLedgerInfo.records[0].base_reserve_in_stroops;
+
+      // 2-of-3 wallets have a minimum reserve of 5x the base reserve
+      return 5 * baseReserve;
+    }).call(this);
   }
 
   /**
@@ -132,8 +148,21 @@ class Xlm extends BaseCoin {
    * @returns {number} transaction fee in stroops
    */
   getBaseTransactionFee() {
-    // 100 stroops
-    return 100;
+    return co(function *() {
+      const server = new stellar.Server(this.getHorizonUrl());
+
+      const horizonLedgerInfo = yield server
+      .ledgers()
+      .order('desc')
+      .limit(1)
+      .call();
+
+      if (!horizonLedgerInfo) {
+        throw new Error('unable to connect to Horizon for reserve requirement data');
+      }
+
+      return horizonLedgerInfo.records[0].base_fee_in_stroops;
+    }).call(this);
   }
 
   /**
@@ -391,7 +420,9 @@ class Xlm extends BaseCoin {
       }
 
       const walletBalance = nativeBalanceInfo.balance * this.getBaseFactor();
-      const recoveryAmount = walletBalance - this.getMinimumReserve() - this.getBaseTransactionFee();
+      const minimumReserve = yield this.getMinimumReserve();
+      const baseTxFee = yield this.getBaseTransactionFee();
+      const recoveryAmount = walletBalance - minimumReserve - baseTxFee;
 
       const txBuilder = new stellar.TransactionBuilder(account)
       .addOperation(stellar.Operation.payment({

@@ -2424,5 +2424,63 @@ module.exports.nockXlmRecovery = function() {
       }
     ],
     data: {}
+  })
+  .get('/ledgers')
+  .query(true)
+  .times(2)
+  .reply(200, {
+    _links: {
+      self: {
+        href: 'https://horizon-testnet.stellar.org/ledgers?c=0.37643100613718006&cursor=&limit=1&order=desc'
+      },
+      next: {
+        href: 'https://horizon-testnet.stellar.org/ledgers?c=0.37643100613718006&cursor=48419653113872384&limit=1&order=desc'
+      },
+      prev: {
+        href: 'https://horizon-testnet.stellar.org/ledgers?c=0.37643100613718006&cursor=48419653113872384&limit=1&order=asc'
+      }
+    },
+    _embedded: {
+      records: [
+        {
+          _links: {
+            self: {
+              href: 'https://horizon-testnet.stellar.org/ledgers/11273579'
+            },
+            transactions: {
+              href: 'https://horizon-testnet.stellar.org/ledgers/11273579/transactions{?cursor,limit,order}',
+              templated: true
+            },
+            operations: {
+              href: 'https://horizon-testnet.stellar.org/ledgers/11273579/operations{?cursor,limit,order}',
+              templated: true
+            },
+            payments: {
+              href: 'https://horizon-testnet.stellar.org/ledgers/11273579/payments{?cursor,limit,order}',
+              templated: true
+            },
+            effects: {
+              href: 'https://horizon-testnet.stellar.org/ledgers/11273579/effects{?cursor,limit,order}',
+              templated: true
+            }
+          },
+          id: '5fab170a47afa15cc130790f8c3bcb846fa295b1fa51139437c4d120878e850f',
+          paging_token: '48419653113872384',
+          hash: '5fab170a47afa15cc130790f8c3bcb846fa295b1fa51139437c4d120878e850f',
+          prev_hash: '5efe6f32662af8ab2d8a5f8984c027ad330f181bf5b9e3812d5a08f62e2cb978',
+          sequence: 11273579,
+          transaction_count: 0,
+          operation_count: 0,
+          closed_at: '2018-09-27T22:13:35Z',
+          total_coins: '104284715255.7420028',
+          fee_pool: '1708880873.6769687',
+          base_fee_in_stroops: 100,
+          base_reserve_in_stroops: 5000000,
+          max_tx_set_size: 50,
+          protocol_version: 10,
+          header_xdr: 'AAAACl7+bzJmKvirLYpfiYTAJ60zDxgb9bnjgS1aCPYuLLl4NB4MFpS0jQk8X3Ut93c2Q7cYEEWnhZ3tteMhZnztSM8AAAAAW61WDwAAAAAAAAAALzWviJxVDV+wrzVnS4YoI8xI050aKnAfney+tZxfcY2aFysDFVMF16cqgZjw8yiyzyfc1u0eqpLtLrZyYEam/ACsBWsOeO/1wzZt/AA8ti5WY8aXAAAA3QAAAAAAC4SRAAAAZABMS0AAAAAyuglBsLFyGmBOqJ250fDa76bY5/c1v9TBQl0ALhzx2G6vXcdZSm8aoCBPWHZBrK7GfpHa4DbiDqIav4yzjanIUSJ9CWKlXQXHWff9yKUlpaVJJy4TcELJV3w0nlwaNbRzLf+JwGVYb6BnB2GiZESvf1yEibvlU21ZVeEBsccbkg4AAAAA'
+        }
+      ]
+    }
   });
 };
