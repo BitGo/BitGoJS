@@ -12,7 +12,6 @@ const bitcoin = require('bitgo-utxo-lib');
 const bitcoinMessage = require('bitcoinjs-message');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-const sjcl = require('../sjcl.min');
 
 class BaseCoin {
 
@@ -327,6 +326,7 @@ class BaseCoin {
 
   initiateRecovery(params) {
     return co(function *initiateRecovery() {
+      const self = this;
       const keys = [];
       const userKey = params.userKey; // Box A
       let backupKey = params.backupKey; // Box B
@@ -339,7 +339,10 @@ class BaseCoin {
       const validatePassphraseKey = function(userKey, passphrase) {
         try {
           if (!userKey.startsWith('xprv')) {
-            userKey = sjcl.decrypt(passphrase, userKey);
+            userKey = self.bitgo.decrypt({
+              input: userKey,
+              password: passphrase
+            });
           }
           const userHDNode = bitcoin.HDNode.fromBase58(userKey);
           return Promise.resolve(userHDNode);
@@ -355,7 +358,10 @@ class BaseCoin {
       // Validate the backup key
       try {
         if (!backupKey.startsWith('xprv') && !isKrsRecovery) {
-          backupKey = sjcl.decrypt(passphrase, backupKey);
+          backupKey = self.bitgo.decrypt({
+            input: backupKey,
+            password: passphrase
+          });
         }
         const backupHDNode = bitcoin.HDNode.fromBase58(backupKey);
         keys.push(backupHDNode);

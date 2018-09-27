@@ -8,7 +8,6 @@
 const bitcoin = require('./bitcoin');
 const common = require('./common');
 const _ = require('lodash');
-const sjcl = require('./sjcl.min');
 
 //
 // Constructor
@@ -119,7 +118,10 @@ TravelRule.prototype.decryptReceivedTravelInfo = function(params) {
       otherPubKeyHex: info.fromPubKey
     });
     try {
-      const decrypted = sjcl.decrypt(secret, info.encryptedTravelInfo);
+      const decrypted = this.bitgo.decrypt({
+        input: info.encryptedTravelInfo,
+        password: secret
+      });
       info.travelInfo = JSON.parse(decrypted);
     } catch (err) {
       console.error('failed to decrypt or parse travel info for ', info.transactionId + ':' + info.outputIndex);
@@ -165,7 +167,10 @@ TravelRule.prototype.prepareParams = function(params) {
 
   // JSON-ify and encrypt the payload
   const travelInfoJSON = JSON.stringify(travelInfo);
-  const encryptedTravelInfo = sjcl.encrypt(sharedSecret, travelInfoJSON);
+  const encryptedTravelInfo = this.bitgo.encrypt({
+    input: travelInfoJSON,
+    password: sharedSecret
+  });
 
   const result = {
     txid: txid,

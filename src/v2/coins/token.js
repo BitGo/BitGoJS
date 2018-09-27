@@ -2,7 +2,6 @@ const Eth = require('./eth');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-const sjcl = require('../../sjcl.min');
 const prova = require('prova-lib');
 const Util = require('../../util');
 const config = require('../../config');
@@ -106,7 +105,10 @@ class Token extends Eth {
       // Decrypt private keys from KeyCard values
       let userPrv;
       try {
-        userPrv = sjcl.decrypt(params.walletPassphrase, userKey);
+        userPrv = this.bitgo.decrypt({
+          input: userKey,
+          password: params.walletPassphrase
+        });
       } catch (e) {
         throw new Error(`Error decrypting user keychain: ${e.message}`);
       }
@@ -122,7 +124,10 @@ class Token extends Eth {
         let backupPrv;
 
         try {
-          backupPrv = sjcl.decrypt(params.walletPassphrase, backupKey);
+          backupPrv = this.bitgo.decrypt({
+            input: backupKey,
+            password: params.walletPassphrase
+          });
         } catch (e) {
           throw new Error(`Error decrypting backup keychain: ${e.message}`);
         }

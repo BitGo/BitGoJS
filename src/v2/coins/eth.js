@@ -9,7 +9,6 @@ const Promise = require('bluebird');
 const request = require('superagent');
 const crypto = require('crypto');
 const prova = require('prova-lib');
-const sjcl = require('../../sjcl.min');
 const co = Promise.coroutine;
 
 let ethAbi = function() {
@@ -357,7 +356,10 @@ class Eth extends BaseCoin {
       // Decrypt private keys from KeyCard values
       let userPrv;
       try {
-        userPrv = sjcl.decrypt(params.walletPassphrase, encryptedUserKey);
+        userPrv = this.bitgo.decrypt({
+          input: encryptedUserKey,
+          password: params.walletPassphrase
+        });
       } catch (e) {
         throw new Error(`Error decrypting user keychain: ${e.message}`);
       }
@@ -374,7 +376,10 @@ class Eth extends BaseCoin {
         let backupPrv;
 
         try {
-          backupPrv = sjcl.decrypt(params.walletPassphrase, backupKey);
+          backupPrv = this.bitgo.decrypt({
+            input: backupKey,
+            password: params.walletPassphrase
+          });
         } catch (e) {
           throw new Error(`Error decrypting backup keychain: ${e.message}`);
         }
