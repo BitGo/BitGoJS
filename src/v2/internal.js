@@ -23,3 +23,13 @@ exports.getFirstPendingTransaction = function(params, baseCoin, bitgo) {
   .query(params)
   .result();
 };
+
+// convert a 4 element Uint8Array to a 4 byte Number
+exports.bytesToWord = (bytes) => {
+  if (!(bytes instanceof Uint8Array) || bytes.length !== 4) {
+    throw new Error('bytes must be a Uint8Array with length 4');
+  }
+
+  return bytes.reduce((num, byte) => num * 0x100 + byte, 0);
+};
+

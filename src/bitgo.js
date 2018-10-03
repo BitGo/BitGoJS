@@ -37,6 +37,7 @@ const querystring = require('querystring');
 const config = require('./config');
 const crypto = require('crypto');
 const debug = require('debug')('bitgo:index');
+const { bytesToWord } = require('./v2/internal');
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);
@@ -600,10 +601,16 @@ BitGo.prototype.encrypt = function(params) {
   params = params || {};
   common.validateParams(params, ['input', 'password'], []);
 
-  // SJCL internally reuses salts for the same password, so we force a new random salt everytime
-  // We use random.randomWords(2,0) because it's what SJCL uses for randomness by default
-  const randomSalt = sjcl.random.randomWords(2, 0);
-  const encryptOptions = { iter: 10000, ks: 256, salt: randomSalt };
+  const randomSalt = crypto.randomBytes(8);
+  const encryptOptions = {
+    iter: 10000,
+    ks: 256,
+    salt: [
+      bytesToWord(randomSalt.slice(0, 4)),
+      bytesToWord(randomSalt.slice(4))
+    ]
+  };
+
   return sjcl.encrypt(params.password, params.input, encryptOptions);
 };
 
