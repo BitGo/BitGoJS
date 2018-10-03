@@ -110,12 +110,35 @@ class Xlm extends BaseCoin {
    */
   isValidMemoId(memoId) {
     try {
+      stellar.Memo.id(memoId); // throws if the value is not valid memo id
       memoId = new BigNumber(memoId);
     } catch (e) {
       return false;
     }
 
     return (memoId.gte(0) && memoId.lt(maxMemoId));
+  }
+
+  /**
+   * Evaluates whether a memo is valid
+   *
+   * @param value {String} value of the memo
+   * @param type {String} type of the memo
+   * @returns {Boolean} true if value and type are a valid
+   */
+  isValidMemo({ value, type }) {
+    if (!value || !type) {
+      return false;
+    }
+    try {
+      // throws if the value is not valid for the type
+      // valid types are: 'id', 'text', 'hash', 'return'
+      // See https://www.stellar.org/developers/guides/concepts/transactions.html#memo
+      stellar.Memo[type](value);
+    } catch (e) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -191,20 +214,19 @@ class Xlm extends BaseCoin {
       throw new Error(`invalid address: ${address}`);
     }
 
-    let memoId;
     try {
-      memoId = new BigNumber(queryDetails.memoId);
+      new BigNumber(queryDetails.memoId);
     } catch (e) {
       throw new Error(`invalid address: ${address}`);
     }
 
-    if (!this.isValidMemoId(memoId)) {
+    if (!this.isValidMemoId(queryDetails.memoId)) {
       throw new Error(`invalid address: ${address}`);
     }
 
     return {
       address: destinationAddress,
-      memoId: memoId.toFixed(0)
+      memoId: queryDetails.memoId
     };
   }
 
