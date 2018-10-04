@@ -165,7 +165,13 @@ exports.tokens = {
         { type: 'mdx', coin: 'eth', network: 'Mainnet', name: 'Mandala', tokenContractAddress: '0x9d03393d297e42c135625d450c814892505f1a84', decimalPlaces: 18 },
         { type: 'lion', coin: 'eth', network: 'Mainnet', name: 'CoinLion', tokenContractAddress: '0x2167fb82309cf76513e83b25123f8b0559d6b48f', decimalPlaces: 18 },
         { type: 'hold', coin: 'eth', network: 'Mainnet', name: 'Hold', tokenContractAddress: '0xd6e1401a079922469e9b965cb090ea6ff64c6839', decimalPlaces: 18 },
-        { type: 'cpay', coin: 'eth', network: 'Mainnet', name: 'Cryptopay', tokenContractAddress: '0x0ebb614204e47c09b6c3feb9aaecad8ee060e23e', decimalPlaces: 0 }
+        { type: 'cpay', coin: 'eth', network: 'Mainnet', name: 'Cryptopay', tokenContractAddress: '0x0ebb614204e47c09b6c3feb9aaecad8ee060e23e', decimalPlaces: 0 },
+        { type: 'fmf', coin: 'eth', network: 'Mainnet', name: 'Formosa Financial', tokenContractAddress: '0xb4d0fdfc8497aef97d3c2892ae682ee06064a2bc', decimalPlaces: 18 },
+        { type: 'gno', coin: 'eth', network: 'Mainnet', name: 'Gnosis', tokenContractAddress: '0x6810e776880c02933d47db1b9fc05908e5386b96', decimalPlaces: 18 },
+        { type: 'npxs', coin: 'eth', network: 'Mainnet', name: 'Pundi X', tokenContractAddress: '0xa15c7ebe1f07caf6bff097d8a589fb8ac49ae5b3', decimalPlaces: 18 },
+        { type: 'dgx', coin: 'eth', network: 'Mainnet', name: 'Digix', tokenContractAddress: '0x4f3afec4e5a3f2a6a1a411def7d7dfe50ee057bf', decimalPlaces: 9 },
+        { type: 'gusd', coin: 'eth', network: 'Mainnet', name: 'Gemini Dollar', tokenContractAddress: '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd', decimalPlaces: 2 },
+        { type: 'pax', coin: 'eth', network: 'Mainnet', name: 'Paxos', tokenContractAddress: '0x8e870d67f660d95d5be530380d0ec0bd388289e1', decimalPlaces: 18 }
       ]
     }
   },
