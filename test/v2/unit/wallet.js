@@ -62,6 +62,46 @@ describe('V2 Wallet:', function() {
 
       scope.isDone().should.be.True();
     }));
+
+    it('should pass filter parameters if they exist', co(function *() {
+      const params = {
+        limit: 1,
+        address: 'sendLabel',
+        dateGte: 'dateString0',
+        dateLt: 'dateString1',
+        valueGte: 0,
+        valueLt: 300000000
+      };
+
+      // The actual api request will only send strings, but the SDK expects numbers for some values
+      const apiParams = _.mapValues(params, value => value.toString());
+
+      const scope =
+        nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/transfer`)
+        .query(_.matches(apiParams))
+        .reply(200);
+
+      try {
+        yield wallet.transfers(params);
+      } catch (e) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+
+      scope.isDone().should.be.True();
+    }));
+
+    it('should throw errors for invalid expected parameters', co(function *() {
+      (() => wallet.transfers({ address: 13375 })).should.throw('invalid address argument, expecting string');
+
+      (() => wallet.transfers({ dateGte: 20101904 })).should.throw('invalid dateGte argument, expecting string');
+
+      (() => wallet.transfers({ dateLt: 20101904 })).should.throw('invalid dateLt argument, expecting string');
+
+      (() => wallet.transfers({ valueGte: '10230005' })).should.throw('invalid valueGte argument, expecting number');
+
+      (() => wallet.transfers({ valueLt: '-5e8' })).should.throw('invalid valueLt argument, expecting number');
+    }));
   });
 
   describe('Wallet addresses', function() {

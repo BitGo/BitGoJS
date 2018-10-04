@@ -206,6 +206,41 @@ Wallet.prototype.transfers = function(params, callback) {
     query.searchLabel = params.searchLabel;
   }
 
+  if (params.address) {
+    if (!_.isString(params.address)) {
+      throw new Error('invalid address argument, expecting string');
+    }
+    query.address = params.address;
+  }
+
+  if (params.dateGte) {
+    if (!_.isString(params.dateGte)) {
+      throw new Error('invalid dateGte argument, expecting string');
+    }
+    query.dateGte = params.dateGte;
+  }
+
+  if (params.dateLt) {
+    if (!_.isString(params.dateLt)) {
+      throw new Error('invalid dateLt argument, expecting string');
+    }
+    query.dateLt = params.dateLt;
+  }
+
+  if (!_.isNil(params.valueGte)) {
+    if (!_.isNumber(params.valueGte)) {
+      throw new Error('invalid valueGte argument, expecting number');
+    }
+    query.valueGte = params.valueGte;
+  }
+
+  if (!_.isNil(params.valueLt)) {
+    if (!_.isNumber(params.valueLt)) {
+      throw new Error('invalid valueLt argument, expecting number');
+    }
+    query.valueLt = params.valueLt;
+  }
+
   return this.bitgo.get(this.url('/transfer'))
   .query(query)
   .result()
