@@ -31,13 +31,9 @@ describe('V2 Base Coin:', function() {
     _.forEach(['teth', 'txrp'], function(coin) {
       const basecoin = bitgo.coin(coin);
 
-      it('should fail to to fetch fee info for account coin', co(function *() {
-        try {
-          yield basecoin.feeEstimate();
-          throw new Error();
-        } catch (err) {
-          err.message.should.equal('cannot get fee estimate data for ' + coin);
-        }
+      it('should fetch fee info for account coin', co(function *() {
+        const feeInfo = yield basecoin.feeEstimate();
+        feeInfo.should.have.property('feeEstimate');
       }));
     });
   });
