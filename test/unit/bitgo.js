@@ -137,9 +137,14 @@ describe('BitGo Prototype Methods', function() {
     it('generates a random password with a numWords argument', () => {
       const bitgo = new TestBitGo();
       bitgo.initializeTestVars();
-      const password = bitgo.generateRandomPassword(10);
-      should.exist(password);
-      password.should.have.length(55);
+      for (let i = 0; i < 1000; i++) {
+        const password = bitgo.generateRandomPassword(10);
+        should.exist(password);
+        // randomly generated password should be 55 characters roughly 92.5% of the time,
+        // 54 characters roughly 7.5% of the time, 53 characters 0.001% of the time,
+        // and fewer than 53 characters very, very rarely
+        password.length.should.be.within(53, 55);
+      }
     });
   });
 
