@@ -207,7 +207,7 @@ Wallet.prototype.transfers = function(params, callback) {
   }
 
   if (params.address) {
-    if (!_.isArray(params.address) || !_.isString) {
+    if (!_.isArray(params.address) && !_.isString(params.address)) {
       throw new Error('invalid address argument, expecting string or array');
     }
     if (_.isArray(params.address)) {

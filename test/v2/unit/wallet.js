@@ -98,6 +98,32 @@ describe('V2 Wallet:', function() {
       scope.isDone().should.be.True();
     }));
 
+    it('should accept a string argument for address', co(function *() {
+      const params = {
+        limit: 1,
+        address: 'stringAddress'
+      };
+
+      const apiParams = {
+        limit: '1',
+        address: 'stringAddress'
+      };
+
+      const scope =
+        nock(bgUrl)
+        .get(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/transfer`)
+        .query(_.matches(apiParams))
+        .reply(200);
+
+      try {
+        yield wallet.transfers(params);
+      } catch (e) {
+        // test is successful if nock is consumed, HMAC errors expected
+      }
+
+      scope.isDone().should.be.True();
+    }));
+
     it('should throw errors for invalid expected parameters', co(function *() {
       (() => wallet.transfers({ address: 13375 })).should.throw('invalid address argument, expecting string or array');
 
