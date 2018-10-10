@@ -257,6 +257,13 @@ class Eth extends BaseCoin {
       throw new Error('missing prv parameter to sign transaction');
     }
 
+    params.recipients = params.recipients || txPrebuild.recipients;
+
+    // if no recipients in either params or txPrebuild, then throw an error
+    if (!params.recipients || !Array.isArray(params.recipients)) {
+      throw new Error('recipients missing or not array');
+    }
+
     const secondsSinceEpoch = Math.floor((new Date().getTime()) / 1000);
     const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
 
