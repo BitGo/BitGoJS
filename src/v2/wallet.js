@@ -207,8 +207,15 @@ Wallet.prototype.transfers = function(params, callback) {
   }
 
   if (params.address) {
-    if (!_.isString(params.address)) {
-      throw new Error('invalid address argument, expecting string');
+    if (!_.isArray(params.address) || !_.isString) {
+      throw new Error('invalid address argument, expecting string or array');
+    }
+    if (_.isArray(params.address)) {
+      params.address.forEach(address => {
+        if (!_.isString(address)) {
+          throw new Error('invalid address argument, expecting array of address strings');
+        }
+      });
     }
     query.address = params.address;
   }
