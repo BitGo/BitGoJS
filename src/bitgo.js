@@ -602,12 +602,19 @@ BitGo.prototype.encrypt = function(params) {
   common.validateParams(params, ['input', 'password'], []);
 
   const randomSalt = crypto.randomBytes(8);
+  const randomIV = crypto.randomBytes(16);
   const encryptOptions = {
     iter: 10000,
     ks: 256,
     salt: [
       bytesToWord(randomSalt.slice(0, 4)),
       bytesToWord(randomSalt.slice(4))
+    ],
+    iv: [
+      bytesToWord(randomIV.slice(0, 4)),
+      bytesToWord(randomIV.slice(4, 8)),
+      bytesToWord(randomIV.slice(8, 12)),
+      bytesToWord(randomIV.slice(12, 16))
     ]
   };
 
