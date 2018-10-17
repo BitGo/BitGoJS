@@ -12,7 +12,7 @@ describe('Virtual Token:', function() {
   });
 
   it('should not instantiate coin interface before loading client constants', function() {
-    (() => bitgo.coin('mycrappytoken')).should.throw('Coin or token type mycrappytoken not supported');
+    (() => bitgo.coin('mycrappytoken')).should.throw('Coin or token type mycrappytoken not supported or not compiled');
   });
 
   it('should wait for client constants before instantiating coin', Promise.coroutine(function *() {

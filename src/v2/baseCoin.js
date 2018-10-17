@@ -91,32 +91,7 @@ class BaseCoin {
     return coinInstance;
   }
 
-  static initializeCoin(coin, bitgo) {
-    if (!coinGenerators) {
-      // initialization has to be asynchronous to avoid circular dependencies
-      coinGenerators = {
-        btc: require('./coins/btc'),
-        tbtc: require('./coins/tbtc'),
-        bch: require('./coins/bch'),
-        tbch: require('./coins/tbch'),
-        btg: require('./coins/btg'),
-        tbtg: require('./coins/tbtg'),
-        ltc: require('./coins/ltc'),
-        tltc: require('./coins/tltc'),
-        eth: require('./coins/eth'),
-        teth: require('./coins/teth'),
-        rmg: require('./coins/rmg'),
-        trmg: require('./coins/trmg'),
-        xrp: require('./coins/xrp'),
-        txrp: require('./coins/txrp'),
-        xlm: require('./coins/xlm'),
-        txlm: require('./coins/txlm'),
-        dash: require('./coins/dash'),
-        tdash: require('./coins/tdash'),
-        zec: require('./coins/zec'),
-        tzec: require('./coins/tzec')
-      };
-    }
+  static setupTokens(coins, bitgo) {
     if (!Token) {
       Token = require('./coins/token');
     }
@@ -124,26 +99,103 @@ class BaseCoin {
     const tokens = bitgo.getConstants().eth.tokens;
     tokens.forEach((tokenConfig) => {
       const generatedToken = Token.generateToken(tokenConfig);
-      if (!coinGenerators[tokenConfig.type]) {
-        coinGenerators[tokenConfig.type] = generatedToken;
+      if (!coins[tokenConfig.type]) {
+        coins[tokenConfig.type] = generatedToken;
       }
       // users can specify a coin by the token contract hash
-      if (!coinGenerators[tokenConfig.tokenContractAddress]) {
-        coinGenerators[tokenConfig.tokenContractAddress] = generatedToken;
+      if (!coins[tokenConfig.tokenContractAddress]) {
+        coins[tokenConfig.tokenContractAddress] = generatedToken;
       }
     });
+  }
+
+  /**
+   * This feature is mostly for browsers where we don't want to have a build with coins that people don't need
+   * In order to specify the coins you want, you must pass the env.coins="csv coins"
+   * If nothing is passed, all coins are going to be available.
+   * In webpack, we have to define via plugin what we want. to exclude but also we want to include the coins if the
+   * user didn't specify anything or in node environments
+   * @returns {}
+   */
+  static getCoinsToInitialize(bitgo) {
+    const coins = {};
+
+    if (process.env.BITGO_EXCLUDE_BTC !== 'exclude') {
+      coins.btc = require('./coins/btc');
+      coins.tbtc = require('./coins/tbtc');
+    }
+
+    if (process.env.BITGO_EXCLUDE_BCH !== 'exclude') {
+      coins.bch = require('./coins/bch');
+      coins.tbch = require('./coins/tbch');
+    }
+
+    if (process.env.BITGO_EXCLUDE_BTG !== 'exclude') {
+      coins.btg = require('./coins/btg');
+      coins.tbtg = require('./coins/tbtg');
+    }
+
+    if (process.env.BITGO_EXCLUDE_LTC !== 'exclude') {
+      coins.ltc = require('./coins/ltc');
+      coins.tltc = require('./coins/tltc');
+    }
+
+    if (process.env.BITGO_EXCLUDE_ETH !== 'exclude') {
+      coins.eth = require('./coins/eth');
+      coins.teth = require('./coins/teth');
+
+      // Initialize the tokens
+      BaseCoin.setupTokens(coins, bitgo);
+    }
+
+    if (process.env.BITGO_EXCLUDE_RMG !== 'exclude') {
+      coins.rmg = require('./coins/rmg');
+      coins.trmg = require('./coins/trmg');
+    }
+
+    if (process.env.BITGO_EXCLUDE_XRP !== 'exclude') {
+      coins.xrp = require('./coins/xrp');
+      coins.txrp = require('./coins/txrp');
+    }
+
+    if (process.env.BITGO_EXCLUDE_XLM !== 'exclude') {
+      coins.xlm = require('./coins/xlm');
+      coins.txlm = require('./coins/txlm');
+    }
+
+    if (process.env.BITGO_EXCLUDE_DASH !== 'exclude') {
+      coins.dash = require('./coins/dash');
+      coins.tdash = require('./coins/tdash');
+    }
+
+    if (process.env.BITGO_EXCLUDE_ZEC !== 'exclude') {
+      coins.zec = require('./coins/zec');
+      coins.tzec = require('./coins/tzec');
+    }
+
+    return coins;
+  }
+
+  static initializeCoin(coin, bitgo) {
+    if (!coinGenerators) {
+      // initialization has to be asynchronous to avoid circular dependencies
+      coinGenerators = BaseCoin.getCoinsToInitialize(bitgo);
+    }
 
     const CoinGenerator = coinGenerators[coin];
-    if (!CoinGenerator) {
+    if (!CoinGenerator && coinGenerators['eth']) {
       const ethCoin = new coinGenerators['eth']();
       if (ethCoin.isValidAddress(coin)) {
         // return a token which we don't support but can sign
         const unknownToken = Token.generateToken({ type: 'unknown', coin: 'eth', network: 'Mainnet', name: 'Unknown', tokenContractAddress: coin, decimalPlaces: 0 });
         return new unknownToken();
-      } else {
-        throw new Error('Coin or token type ' + coin + ' not supported');
       }
     }
+
+    if (!CoinGenerator) {
+      throw new Error('Coin or token type ' + coin + ' not supported or not compiled');
+    }
+
     return new CoinGenerator();
   }
 

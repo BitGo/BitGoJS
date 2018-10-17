@@ -1,5 +1,4 @@
-BitGoJS
-=======
+# BitGoJS
 
 BitGo JavaScript SDK
 
@@ -102,3 +101,5 @@ For a production build: `npm run-script compile`
 For a development (non-minified) build: `npm run-script compile-dbg`
 
 To build the test suite into a single test file: `npm run-script compile-test`
+
+To build for specific coins: `npm run compile -- --env.coins="eth, btc, ..."`

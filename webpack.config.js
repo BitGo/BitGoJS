@@ -41,13 +41,51 @@ function setupExternals() {
   return externals;
 }
 
+/**
+ * This feature is mostly for browsers where we don't want to have a build with coins that people don't need
+ * In order to specify the coins you want, you must pass the --env.coins="csv coins" flag
+ * If nothing is passed, all coins are going to be available.
+ * In webpack, we have to define via plugin what we want.to exclude but also we want to include the coins if the
+ * user didn't specify anything or in node environments
+ * @param env
+ * @returns [webpack.DefinePlugin]
+ */
+function getCoinsToExclude(env) {
+  if (!env.coins) {
+    return [];
+  }
+
+  const allCoins = ['btc', 'bch', 'btg', 'ltc', 'eth', 'rmg', 'xrp', 'xlm', 'dash', 'zec'];
+  const compileCoins = env.coins.split(',').map(coin => coin.trim().toLowerCase());
+  const invalidCoins = compileCoins.filter(allCoin => {
+    return !allCoins.includes(allCoin);
+  });
+
+  if (invalidCoins.length) {
+    throw new Error(`Invalid coins: ${invalidCoins.join(',')} \n Valid options are: ${allCoins.join(',')}`);
+  }
+
+  return allCoins.filter(allCoin => {
+    return !compileCoins.includes(allCoin);
+  })
+  .map(coin => {
+    return new webpack.DefinePlugin({
+      'process.env': {
+        [`BITGO_EXCLUDE_${coin.toUpperCase()}`]: JSON.stringify('exclude')
+      }
+    });
+  });
+}
+
 // Used for extra processing that does not involve transpilation (e.g. minification)
 function setupPlugins(env) {
+  const excludeCoins = getCoinsToExclude(env);
   const plugins = [
     // This is for handling dynamic requires in third-party libraries
     // By default, webpack will bundle _everything_ that could possibly match the expression
     // inside a dynamic 'require'. This changes Webpack so that it bundles nothing.
-    new webpack.ContextReplacementPlugin(/.*$/, /$NEVER_MATCH^/)
+    new webpack.ContextReplacementPlugin(/.*$/, /$NEVER_MATCH^/),
+    ...excludeCoins
   ];
 
   if (!env.test) {
