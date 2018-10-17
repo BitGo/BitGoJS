@@ -987,10 +987,13 @@ Wallet.prototype.removeUser = function(params, callback) {
  * @param {Object} params
  * @param {{address: string, amount: string}} params.recipients - list of recipients and necessary recipient information
  * @param {Number} params.numBlocks - Estimates the approximate fee per kilobyte necessary for a transaction confirmation within numBlocks blocks
- * @param {Number} param.feeRate - the desired feeRate for the transaction in satoshis/kB
- * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
- * @param {Number} params.minValue - Ignore unspents smaller than this amount of satoshis
- * @param {Number} params.maxValue - Ignore unspents larger than this amount of satoshis
+ * @param {Number} params.feeRate - the desired feeRate for the transaction in base units/kB
+ * @param {Number} params.maxFeeRate - upper limit for feeRate in base units/kB
+ * @param {Number} params.minConfirms - Minimum number of confirmations unspents going into this transaction should have
+ * @param {Boolean} params.enforceMinConfirmsForChange - Enforce minimum number of confirmations on change (internal) inputs.
+ * @param {Number} params.targetWalletUnspents - The desired count of unspents in the wallet. If the wallet’s current unspent count is lower than the target, up to four additional change outputs will be added to the transaction.
+ * @param {Number} params.minValue - Ignore unspents smaller than this amount of base units
+ * @param {Number} params.maxValue - Ignore unspents larger than this amount of base units
  * @param {Number} params.sequenceId - The sequence ID of the transaction
  * @param {Number} params.lastLedgerSequence - Absolute max ledger the transaction should be accepted in, whereafter it will be rejected.
  * @param {String} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.
@@ -1000,6 +1003,7 @@ Wallet.prototype.removeUser = function(params, callback) {
  * @param {String} params.changeAddress - Specifies the destination of the change output
  * @param {Boolean} params.instant - Build this transaction to conform with instant sending coin-specific method (if available)
  * @param {{value: String, type: String}} params.memo - Memo to use in transaction (supported by Stellar)
+ * @param {String} params.addressType - The type of address to create for change. One of `p2sh`, `p2shP2wsh`, and `p2wsh`. Case-sensitive.
  * @param callback
  * @returns {*}
  */
@@ -1007,17 +1011,10 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
   return co(function *() {
     // Whitelist params to build tx (mostly around unspent selection)
     const whitelistedParams = _.pick(params, [
-      'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms',
-      'enforceMinConfirmsForChange', 'targetWalletUnspents',
-      'message', 'minValue', 'maxValue', 'sequenceId',
-      'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
-      'noSplitChange', 'unspents', 'changeAddress', 'unspentTypes',
-      'changeAddressType', 'instant', 'memo'
+      'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
+      'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
+      'ledgerSequenceDelta', 'gasPrice', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType'
     ]);
-
-    if (_.isUndefined(whitelistedParams.unspentTypes)) {
-      whitelistedParams.unspentTypes = ['p2sh', 'p2sh-p2wsh', 'p2wsh'];
-    }
 
     let response = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
     .send(whitelistedParams)
