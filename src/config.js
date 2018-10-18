@@ -171,7 +171,10 @@ exports.tokens = {
         { type: 'npxs', coin: 'eth', network: 'Mainnet', name: 'Pundi X', tokenContractAddress: '0xa15c7ebe1f07caf6bff097d8a589fb8ac49ae5b3', decimalPlaces: 18 },
         { type: 'dgx', coin: 'eth', network: 'Mainnet', name: 'Digix', tokenContractAddress: '0x4f3afec4e5a3f2a6a1a411def7d7dfe50ee057bf', decimalPlaces: 9 },
         { type: 'gusd', coin: 'eth', network: 'Mainnet', name: 'Gemini Dollar', tokenContractAddress: '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd', decimalPlaces: 2 },
-        { type: 'pax', coin: 'eth', network: 'Mainnet', name: 'Paxos', tokenContractAddress: '0x8e870d67f660d95d5be530380d0ec0bd388289e1', decimalPlaces: 18 }
+        { type: 'pax', coin: 'eth', network: 'Mainnet', name: 'Paxos', tokenContractAddress: '0x8e870d67f660d95d5be530380d0ec0bd388289e1', decimalPlaces: 18 },
+        { type: 'zco', coin: 'eth', network: 'Mainnet', name: 'Zebi Coin', tokenContractAddress: '0x2008e3057bd734e10ad13c9eae45ff132abc1722', decimalPlaces: 8 },
+        { type: 'incx', coin: 'eth', network: 'Mainnet', name: 'InternationalCryptoX', tokenContractAddress: '0xa984a92731c088f1ea4d53b71a2565a399f7d8d5', decimalPlaces: 18 },
+        { type: 'hyb', coin: 'eth', network: 'Mainnet', name: 'Hybrid Block', tokenContractAddress: '0x6059f55751603ead7dc6d280ad83a7b33d837c90', decimalPlaces: 18 }
       ]
     }
   },
@@ -180,7 +183,8 @@ exports.tokens = {
     eth: {
       tokens: [
         { type: 'terc', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x945ac907cf021a6bcd07852bb3b8c087051706a9', decimalPlaces: 0, name: 'ERC Test Token' },
-        { type: 'tbst', coin: 'teth', network: 'Kovan', tokenContractAddress: '0xe5cdf77835ca2095881dd0803a77e844c87483cd', decimalPlaces: 0, name: 'Test BitGo Shield Token' }
+        { type: 'tbst', coin: 'teth', network: 'Kovan', tokenContractAddress: '0xe5cdf77835ca2095881dd0803a77e844c87483cd', decimalPlaces: 0, name: 'Test BitGo Shield Token' },
+        { type: 'schz', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x050e25a2630b2aee94546589fd39785254de112c', decimalPlaces: 18, name: 'SchnauzerCoin' }
       ]
     }
   }

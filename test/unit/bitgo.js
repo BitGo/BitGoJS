@@ -454,9 +454,9 @@ describe('BitGo Prototype Methods', function() {
       bitgo.initializeTestVars();
       const tokens = bitgo.getConstants().eth.tokens;
 
-      // currently two tokens are defined for non-production environments
+      // currently three tokens are defined for non-production environments
       should.exist(tokens);
-      tokens.length.should.equal(2);
+      tokens.length.should.equal(3);
     }));
 
     after(function tokenDefinitionsAfter() {
