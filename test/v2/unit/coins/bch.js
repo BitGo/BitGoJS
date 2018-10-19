@@ -261,5 +261,10 @@ describe('BCH:', function() {
         e.message.should.equal('prv must be a string, got type object');
       }
     });
+
+    it('should validate pub key', () => {
+      const { pub } = tbch.keychains().create();
+      tbch.isValidPub(pub).should.equal(true);
+    });
   });
 });

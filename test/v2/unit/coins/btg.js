@@ -264,6 +264,11 @@ describe('BTG:', function() {
       generatedAddress.coinSpecific.witnessScript.should.equal('532103db7ec7ef3c549705582d6bb5ee258b3bc14d147ec3b069dfd4fd80adb4e9373e210387b1f7cacb6e0c78b79062e94ed0aee691bdfa34a0d1b522103c434205587ad52102044a9f965fd9b54d82e5afe9d4338d0f59027a4e11cff3a39b90fbf5978ae7e753ae');
       generatedAddress.address.should.equal('AK85CDm4wUcVnsX46becFcXjucn5ptct7F');
     });
+
+    it('should validate pub key', () => {
+      const { pub } = coin.keychains().create();
+      coin.isValidPub(pub).should.equal(true);
+    });
   });
 
 });

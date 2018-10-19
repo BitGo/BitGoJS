@@ -202,6 +202,11 @@ describe('BTC:', function() {
       coin.isValidAddress(generatedTestAddress.address).should.equal(false);
       testCoin.isValidAddress(generatedAddress.address).should.equal(false);
     });
+
+    it('should validate pub key', () => {
+      const { pub } = testCoin.keychains().create();
+      testCoin.isValidPub(pub).should.equal(true);
+    });
   });
 
   describe('Should test bech32 transaction signing', function() {

@@ -85,6 +85,11 @@ describe('ZEC:', function() {
         generatedAddress.address.should.equal('t3VQ7JHECesyxCxq3m5wf1a5g4D4jweEYrd');
         generatedTestAddress.address.should.equal('t2HPJLxLLXLbKkfQngpwhZCGKAhHuqyqPk4');
       });
+
+      it('should validate pub key', () => {
+        const { pub } = coin.keychains().create();
+        coin.isValidPub(pub).should.equal(true);
+      });
     });
 
     describe('Should test transaction signing', () => {

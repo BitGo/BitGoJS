@@ -93,6 +93,11 @@ describe('XLM:', function() {
     basecoin.isValidMemo({ value: '1', type: 'return' }).should.equal(false);
   });
 
+  it('should validate pub key', () => {
+    const { pub } = basecoin.keychains().create();
+    basecoin.isValidPub(pub).should.equal(true);
+  });
+
   describe('Transaction Verification', function() {
     let basecoin;
     let wallet;

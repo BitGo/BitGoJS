@@ -174,6 +174,11 @@ describe('LTC:', function() {
       generatedAddress.address.should.equal('MBFMn9or7M89saHPkveDLzsyuEjZ22ftmo');
       generatedTestAddress.address.should.equal('QPxBf2C9nnqAR3Q5xHJmE14GwGo6fwNtii');
     });
+
+    it('should validate pub key', () => {
+      const { pub } = coin.keychains().create();
+      coin.isValidPub(pub).should.equal(true);
+    });
   });
 
   describe('Should correctly sign segwit transactions', () => {
