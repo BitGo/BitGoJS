@@ -570,6 +570,67 @@ class Xlm extends BaseCoin {
   }
 
   /**
+   * Explain/parse transaction
+   * @param params
+   * - txBase64: transaction encoded as base64 string
+   * @returns {{displayOrder: [string,string,string,string,string], id: *, outputs: Array, changeOutputs: Array}}
+   */
+  explainTransaction(params) {
+    const { txBase64 } = params;
+    let tx;
+
+    try {
+      tx = new stellar.Transaction(txBase64);
+    } catch (e) {
+      throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
+    }
+    const id = tx.hash().toString('hex');
+    const explanation = {
+      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+      id,
+      outputs: [],
+      changeOutputs: [],
+      memo: {}
+    };
+
+    // In a Stellar tx, the _memo property is an object with the methods:
+    // value() and arm() that provide memo value and type, respectively.
+    if (_.result(tx, '_memo.value') && _.result(tx, '_memo.arm')) {
+      explanation.memo = {
+        value: _.result(tx, '_memo.value').toString(),
+        type: _.result(tx, '_memo.arm')
+      };
+    }
+
+    let spendAmount = new BigNumber(0);
+    // Process only operations of the native asset (XLM)
+    const operations = _.filter(tx.operations, operation => !operation.asset || operation.asset.getCode() === 'XLM');
+    if (_.isEmpty(operations)) {
+      throw new Error('missing operations');
+    }
+    explanation.outputs = _.map(operations, operation => {
+      // Get memo to attach to address, if type is 'id'
+      const memoId = (_.get(explanation, 'memo.type') === 'id' && ! _.get(explanation, 'memo.value') ? `?memoId=${explanation.memo.value}` : '');
+      const output = {
+        amount: this.bigUnitsToBaseUnits(operation.startingBalance || operation.amount),
+        address: operation.destination + memoId
+      };
+      spendAmount = spendAmount.add(output.amount);
+      return output;
+    });
+
+    explanation.outputAmount = spendAmount.toFixed(0);
+    explanation.changeAmount = '0';
+
+    explanation.fee = {
+      fee: tx.fee.toFixed(0),
+      feeRate: null,
+      size: null
+    };
+    return explanation;
+  }
+
+  /**
    * Verify that a transaction prebuild complies with the original intention
    *
    * @param txParams {Object} params object passed to send
