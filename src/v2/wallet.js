@@ -315,7 +315,7 @@ Wallet.prototype.maximumSpendable = function maximumSpendable(params, callback) 
 Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
 
-  const query = _.pick(params, ['prevId', 'limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'plainTarget', 'bech32']);
+  const query = _.pick(params, ['prevId', 'limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'segwit', 'chains']);
 
   return this.bitgo.get(this.url('/unspents'))
   .query(query)
@@ -560,13 +560,6 @@ Wallet.prototype.addresses = function(params, callback) {
     query.labelContains = params.labelContains;
   }
 
-  if (!_.isUndefined(params.p2sh)) {
-    if (!_.isBoolean(params.p2sh)) {
-      throw new Error('invalid p2sh argument, expecting boolean');
-    }
-    query.p2sh = params.p2sh;
-  }
-
   if (!_.isUndefined(params.segwit)) {
     if (!_.isBoolean(params.segwit)) {
       throw new Error('invalid segwit argument, expecting boolean');
@@ -574,11 +567,11 @@ Wallet.prototype.addresses = function(params, callback) {
     query.segwit = params.segwit;
   }
 
-  if (!_.isUndefined(params.bech32)) {
-    if (!_.isBoolean(params.bech32)) {
-      throw new Error('invalid bech32 argument, expecting boolean');
+  if (!_.isUndefined(params.chains)) {
+    if (!_.isArray(params.chains)) {
+      throw new Error('invalid chains argument, expecting array of numbers');
     }
-    query.bech32 = params.bech32;
+    query.chains = params.chains;
   }
 
   return this.bitgo.get(this.baseCoin.url('/wallet/' + this._wallet.id + '/addresses'))
