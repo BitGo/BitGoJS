@@ -84,6 +84,11 @@ describe('DASH:', function() {
         generatedAddress.address.should.equal('7dF9896EVYHzc6K76Go3D8yQj6i2yy4SvW');
         generatedTestAddress.address.should.equal('8qFx5Tz6d5gd4PjNAXnzfWnmccUs9YmxqR');
       });
+
+      it('should validate pub key', () => {
+        const { pub } = coin.keychains().create();
+        coin.isValidPub(pub).should.equal(true);
+      });
     });
 
     describe('Should test transaction signing', () => {

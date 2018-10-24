@@ -76,6 +76,21 @@ class Eth extends BaseCoin {
   }
 
   /**
+   * Return boolean indicating whether input is valid public key for the coin.
+   *
+   * @param {String} pub the pub to be checked
+   * @returns {Boolean} is it valid?
+   */
+  isValidPub(pub) {
+    try {
+      prova.HDNode.fromBase58(pub);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
    * Default gas price from platform
    * @returns {BigNumber}
    */

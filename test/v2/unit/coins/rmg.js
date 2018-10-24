@@ -95,6 +95,11 @@ describe('RMG:', function() {
       should(generatedAddress.address).equal(null);
       should(generatedTestAddress.address).equal(null);
     });
+
+    it('should validate pub key', () => {
+      const { pub } = coin.keychains().create();
+      coin.isValidPub(pub).should.equal(true);
+    });
   });
 
   describe('RMG Signature Verification', () => {

@@ -36,8 +36,8 @@ class Zec extends AbstractUtxoCoin {
    * @returns {*}
    */
   static prepareTransactionBuilder(txBuilder) {
-    txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_OVERWINTER_VERSION);
-    txBuilder.setVersionGroupId(63210096);
+    txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
+    txBuilder.setVersionGroupId(0x892f2085);
     return txBuilder;
   }
 
