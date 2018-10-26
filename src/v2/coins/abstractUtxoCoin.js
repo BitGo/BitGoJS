@@ -70,21 +70,6 @@ class AbstractUtxoCoin extends BaseCoin {
     return validVersions.includes(addressDetails.version);
   }
 
-  /**
-   * Return boolean indicating whether input is valid public key for the coin.
-   *
-   * @param {String} pub the pub to be checked
-   * @returns {Boolean} is it valid?
-   */
-  isValidPub(pub) {
-    try {
-      bitcoin.HDNode.fromBase58(pub);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
-
   postProcessPrebuild(prebuild, callback) {
     return co(function *() {
       const chainhead = yield this.bitgo.get(this.url('/public/block/latest')).result();

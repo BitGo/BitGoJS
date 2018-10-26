@@ -456,16 +456,6 @@ class BaseCoin {
   generateKeyPair(seed) {
     throw new Error('abstract method');
   }
-
-  /**
-   * Return boolean indicating whether input is valid public key for the coin.
-   *
-   * @param {String} pub the pub to be checked
-   * @returns {Boolean} is it valid?
-   */
-  isValidPub(pub) {
-    throw new Error('Basecoin method not implemented');
-  }
 }
 
 

@@ -92,18 +92,11 @@ Wallets.prototype.list = function(params, callback) {
 */
 Wallets.prototype.add = function(params, callback) {
   params = params || {};
-  common.validateParams(params, [], ['label', 'enterprise', 'type'], callback);
+  common.validateParams(params, [], ['label', 'enterprise'], callback);
 
-  // no need to pass keys for (single) custodial wallets
-  if (params.type !== 'custodial') {
-    if (Array.isArray(params.keys) === false || !_.isNumber(params.m) || !_.isNumber(params.n)) {
-      throw new Error('invalid argument');
-    }
-
-    // TODO: support more types of multisig
-    if (params.m !== 2 || params.n !== 3) {
-      throw new Error('unsupported multi-sig type');
-    }
+  if (Array.isArray(params.keys) === false || !_.isNumber(params.m) ||
+    !_.isNumber(params.n)) {
+    throw new Error('invalid argument');
   }
 
   if (params.tags && Array.isArray(params.tags) === false) {
@@ -122,8 +115,13 @@ Wallets.prototype.add = function(params, callback) {
     throw new Error('invalid argument for isCustodial - boolean expected');
   }
 
+  // TODO: support more types of multisig
+  if (params.m !== 2 || params.n !== 3) {
+    throw new Error('unsupported multi-sig type');
+  }
+
   const self = this;
-  const walletParams = _.pick(params, ['label', 'm', 'n', 'keys', 'enterprise', 'isCold', 'isCustodial', 'tags', 'clientFlags', 'type']);
+  const walletParams = _.pick(params, ['label', 'm', 'n', 'keys', 'enterprise', 'isCold', 'isCustodial', 'tags', 'clientFlags']);
 
   // Additional params needed for xrp
   if (params.rootPub) {

@@ -157,10 +157,5 @@ describe('XRP:', function() {
         setMultisig.Fee.should.equal(currentFees.expected);
       }
     }));
-
-    it('should validate pub key', () => {
-      const { pub } = basecoin.keychains().create();
-      basecoin.isValidPub(pub).should.equal(true);
-    });
   });
 });
