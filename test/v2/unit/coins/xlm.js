@@ -319,6 +319,59 @@ describe('XLM:', function() {
       }
     }));
 
+    it('should fail to verify a transaction without recipients', co(function *() {
+
+      const prebuilt = {
+        txBase64: 'AAAAAP1qe44j+i4uIT+arbD4QDQBt8ryEeJd7a0jskQ3nwDeAAAAAAB/4cUAAAACAAAAAAAAAAIAAAAAAAAAAQAAAAAAAAAAAAAAAA==',
+        txInfo: {
+          fee: 0,
+          sequence: '35995558267060226',
+          source: 'GD6WU64OEP5C4LRBH6NK3MHYIA2ADN6K6II6EXPNVUR3ERBXT4AN4ACD',
+          operations: [],
+          signatures: []
+        },
+        feeInfo: {
+          height: 123456,
+          xlmBaseFee: '100',
+          xlmBaseReserve: '5000000'
+        },
+        walletId: '5a78dd561c6258a907f1eeaee132f796'
+      };
+
+      const keyPair = {
+        pub: 'GAA4LVBE2HEKECNWDRT2NLTSBWFIZRGTEQFC7BLOREMMPNDHFRUGP3VZ',
+        prv: 'SCIVSTUJX7SYJZHKMJI4YF7YWA27FU7XN5EH4OWBFL2Y2KTYI7IP2DFZ'
+      };
+
+      // sign transaction
+      const tx = yield wallet.signTransaction({
+        txPrebuild: prebuilt,
+        prv: keyPair.prv
+      });
+
+      const txParams = {
+        recipients: [{
+          address: 'GAUKA3ZTH3DZ6THBCPL6AOQBCEEBIFYDU4FGXUCHOC7PILXGUPTUBJ6E',
+          amount: '130000000'
+        }]
+      };
+      const txPrebuild = {
+        txBase64: tx.halfSigned.txBase64
+      };
+      const verification = {
+        disableNetworking: true,
+        keychains: {
+          user: { pub: userKeychain.pub },
+          backup: { pub: backupKeychain.pub }
+        }
+      };
+      try {
+        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+      } catch (e) {
+        e.message.should.equal('transaction prebuild does not have any operations');
+      }
+    }));
+
     it('should verify a transaction', co(function *() {
       const txParams = {
         recipients: [{

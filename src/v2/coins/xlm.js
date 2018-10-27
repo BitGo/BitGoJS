@@ -649,31 +649,36 @@ class Xlm extends BaseCoin {
       const disableNetworking = !!verification.disableNetworking;
 
       const tx = new stellar.Transaction(txPrebuild.txBase64);
+
+      if (txParams.recipients.length !== 1) {
+        throw new Error('cannot specify more than 1 recipient');
+      }
+
       // Stellar txs are made up of operations. We only care about Create Account and Payment for sending funds.
       const outputOperations = _.filter(tx.operations, operation =>
         operation.type === 'createAccount' || operation.type === 'payment'
       );
 
-      if (outputOperations.length !== 1) {
-        throw new Error('transaction prebuild should have exactly 1 recipient');
+      if (_.isEmpty(outputOperations)) {
+        throw new Error('transaction prebuild does not have any operations');
       }
 
-      const expectedOutput = txParams.recipients[0];
-      const expectedOutputAddress = this.getAddressDetails(expectedOutput.address);
-      const output = outputOperations[0];
+      _.forEach(txParams.recipients, (expectedOutput, index) => {
+        const expectedOutputAddress = this.getAddressDetails(expectedOutput.address);
+        const output = outputOperations[index];
+        if (output.destination !== expectedOutputAddress.address) {
+          throw new Error('transaction prebuild does not match expected recipient');
+        }
 
-      if (output.destination !== expectedOutputAddress.address) {
-        throw new Error('transaction prebuild does not match expected recipient');
-      }
+        const expectedOutputAmount = new BigNumber(expectedOutput.amount);
+        // The output amount is expressed as startingBalance in createAccount operations and as amount in payment operations.
+        let outputAmount = (output.type === 'createAccount') ? output.startingBalance : output.amount;
+        outputAmount = new BigNumber(this.bigUnitsToBaseUnits(outputAmount));
 
-      const expectedOutputAmount = new BigNumber(expectedOutput.amount);
-      // The output amount is expressed as startingBalance in createAccount operations and as amount in payment operations.
-      let outputAmount = (output.type === 'createAccount') ? output.startingBalance : output.amount;
-      outputAmount = new BigNumber(this.bigUnitsToBaseUnits(outputAmount));
-
-      if (!outputAmount.eq(expectedOutputAmount)) {
-        throw new Error('transaction prebuild does not match expected amount');
-      }
+        if (!outputAmount.eq(expectedOutputAmount)) {
+          throw new Error('transaction prebuild does not match expected amount');
+        }
+      });
 
       // Verify the user signature, if the tx is half-signed
       if (!_.isEmpty(tx.signatures)) {
