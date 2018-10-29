@@ -174,7 +174,8 @@ exports.tokens = {
         { type: 'pax', coin: 'eth', network: 'Mainnet', name: 'Paxos', tokenContractAddress: '0x8e870d67f660d95d5be530380d0ec0bd388289e1', decimalPlaces: 18 },
         { type: 'zco', coin: 'eth', network: 'Mainnet', name: 'Zebi Coin', tokenContractAddress: '0x2008e3057bd734e10ad13c9eae45ff132abc1722', decimalPlaces: 8 },
         { type: 'incx', coin: 'eth', network: 'Mainnet', name: 'InternationalCryptoX', tokenContractAddress: '0xa984a92731c088f1ea4d53b71a2565a399f7d8d5', decimalPlaces: 18 },
-        { type: 'hyb', coin: 'eth', network: 'Mainnet', name: 'Hybrid Block', tokenContractAddress: '0x6059f55751603ead7dc6d280ad83a7b33d837c90', decimalPlaces: 18 }
+        { type: 'hyb', coin: 'eth', network: 'Mainnet', name: 'Hybrid Block', tokenContractAddress: '0x6059f55751603ead7dc6d280ad83a7b33d837c90', decimalPlaces: 18 },
+        { type: 'usdc', coin: 'eth', network: 'Mainnet', name: 'USD Coin', tokenContractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimalPlaces: 6 }
       ]
     }
   },
