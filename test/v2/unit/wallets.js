@@ -7,6 +7,7 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const nock = require('nock');
 const common = require('../../../src/common');
+const _ = require('lodash');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 
@@ -33,7 +34,7 @@ describe('V2 Wallets:', function() {
     nock.activeMocks().length.should.equal(0);
   });
 
-  describe('wallet add', function() {
+  describe('Add Wallet:', function() {
     it('throws on invalid arguments', function() {
       try {
         // isCustodial flag is not a boolean
@@ -76,6 +77,86 @@ describe('V2 Wallets:', function() {
       })
       .reply(200, {});
       yield wallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial' });
+    }));
+  });
+
+  describe('Generate wallet:', function() {
+    it('should validate parameters', co(function *() {
+      let params = {};
+      yield wallets.generateWallet(params).should.be.rejectedWith('Missing parameter: label');
+
+      params = {
+        label: 'abc',
+        backupXpub: 'backup',
+        backupXpubProvider: 'provider'
+      };
+
+      yield wallets.generateWallet(params).should.be.rejectedWith('Cannot provide more than one backupXpub or backupXpubProvider flag');
+
+      params = {
+        label: 'abc',
+        passcodeEncryptionCode: 123
+      };
+      yield wallets.generateWallet(params).should.be.rejectedWith('passcodeEncryptionCode must be a string');
+
+      params = {
+        label: 'abc',
+        enterprise: 1234
+      };
+      yield wallets.generateWallet(params).should.be.rejectedWith('invalid enterprise argument, expecting string');
+
+      params = {
+        label: 'abc',
+        disableTransactionNotifications: 'string'
+      };
+
+      yield wallets.generateWallet(params).should.be.rejectedWith('invalid disableTransactionNotifications argument, expecting boolean');
+
+      params = {
+        label: 'abc',
+        gasPrice: 'string'
+      };
+
+      yield wallets.generateWallet(params).should.be.rejectedWith('invalid gas price argument, expecting number');
+
+      params = {
+        label: 'abc',
+        disableKRSEmail: 'string'
+      };
+
+      yield wallets.generateWallet(params).should.be.rejectedWith('invalid disableKRSEmail argument, expecting boolean');
+    }));
+
+    it('should correctly disable krs emails when creating backup keychains', co(function *() {
+      const params = {
+        label: 'my_wallet',
+        disableKRSEmail: true,
+        backupXpubProvider: 'test',
+        passphrase: 'test123',
+        userKey: 'xpub123'
+      };
+
+      // bitgo key
+      nock(bgUrl)
+      .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
+      .reply(200);
+
+      // user key
+      nock(bgUrl)
+      .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+      .reply(200);
+
+      // backup key
+      nock(bgUrl)
+      .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, disableKRSEmail: true }))
+      .reply(200);
+
+      // wallet
+      nock(bgUrl)
+      .post('/api/v2/tbtc/wallet')
+      .reply(200);
+
+      yield wallets.generateWallet(params);
     }));
   });
 });
