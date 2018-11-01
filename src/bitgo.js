@@ -269,6 +269,18 @@ const BitGo = function(params) {
         const bitgo = self;
         this.set('BitGo-SDK-Version', bitgo.version());
 
+        if (!_.isUndefined(bitgo._reqId)) {
+          this.set('Request-ID', bitgo._reqId.toString());
+
+          // increment after setting the header so the sequence numbers start at 0
+          bitgo._reqId.inc();
+
+          // request ids must be set before each request instead of being kept
+          // inside the bitgo object. This is to prevent reentrancy issues where
+          // multiple simultaneous requests could cause incorrect reqIds to be used
+          delete bitgo._reqId;
+        }
+
         // if there is no token, and we're not logged in, the request cannot be v2 authenticated
         this.isV2Authenticated = true;
         this.authenticationToken = bitgo._token;

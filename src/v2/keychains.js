@@ -17,6 +17,9 @@ Keychains.prototype.get = function(params, callback) {
   }
 
   const id = params.id;
+  if (params.reqId) {
+    this.bitgo._reqId = params.reqId;
+  }
   return this.bitgo.get(this.baseCoin.url('/key/' + encodeURIComponent(id)))
   .result()
   .nodeify(callback);
@@ -113,6 +116,9 @@ Keychains.prototype.add = function(params, callback) {
     }
   }
 
+  if (params.reqId) {
+    this.bitgo._reqId = params.reqId;
+  }
   return this.bitgo.post(this.baseCoin.url('/key'))
   .send({
     pub: params.pub,

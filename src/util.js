@@ -3,6 +3,7 @@ const bitcoin = require('bitgo-utxo-lib');
 let ethUtil = function() {};
 const Big = require('big.js');
 const _ = require('lodash');
+const crypto = require('crypto');
 let isEthAvailable = false;
 
 try {
@@ -52,6 +53,17 @@ Util.preparePageableQuery = function(params) {
     query.skip = params.skip;
   }
   return query;
+};
+
+Util.createRequestId = function() {
+  return {
+    _seed: crypto.randomBytes(10),
+    _seq: 0,
+    inc: function() { this._seq++; },
+    toString: function() {
+      return `${this._seed.toString('hex')}-${_.padStart(this._seq.toString(16), 4, '0')}`;
+    }
+  };
 };
 
 if (isEthAvailable) {

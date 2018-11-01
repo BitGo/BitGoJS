@@ -5,6 +5,7 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const _ = require('lodash');
 const RmgCoin = require('./coins/rmg');
+const util = require('../util');
 
 const Wallets = function(bitgo, baseCoin) {
   this.bitgo = bitgo;
@@ -224,6 +225,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
     const passphrase = params.passphrase;
     const canEncrypt = (!!passphrase && typeof passphrase === 'string');
     const isCold = (!canEncrypt || !!params.userKey);
+    const reqId = util.createRequestId();
 
     // Add the user keychain
     const userKeychainPromise = co(function *() {
@@ -253,6 +255,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
         };
       }
 
+      userKeychainParams.reqId = reqId;
       const newUserKeychain = yield self.baseCoin.keychains().add(userKeychainParams);
       return _.extend({}, newUserKeychain, userKeychain);
     })();
@@ -263,27 +266,28 @@ Wallets.prototype.generateWallet = function(params, callback) {
         return self.baseCoin.keychains().createBackup({
           provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
           disableKRSEmail: params.disableKRSEmail,
-          type: self.baseCoin.getChain()
+          type: self.baseCoin.getChain(),
+          reqId
         });
       }
 
       // User provided backup xpub
       if (params.backupXpub) {
         // user provided backup ethereum address
-        return self.baseCoin.keychains().add({ pub: params.backupXpub, source: 'backup' });
+        return self.baseCoin.keychains().add({ pub: params.backupXpub, source: 'backup', reqId });
       } else {
         if (!canEncrypt) {
           throw new Error('cannot generate backup keypair without passphrase');
         }
         // No provided backup xpub or address, so default to creating one here
-        return self.baseCoin.keychains().createBackup();
+        return self.baseCoin.keychains().createBackup({ reqId });
       }
     });
 
     const { userKeychain, backupKeychain, bitgoKeychain } = yield Promise.props({
       userKeychain: userKeychainPromise,
       backupKeychain: backupKeychainPromise,
-      bitgoKeychain: self.baseCoin.keychains().createBitGo({ enterprise: params.enterprise })
+      bitgoKeychain: self.baseCoin.keychains().createBitGo({ enterprise: params.enterprise, reqId })
     });
 
     walletParams.keys = [
@@ -311,6 +315,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
       bitgoKeychain
     };
     walletParams = yield self.baseCoin.supplementGenerateWallet(walletParams, keychains);
+    self.bitgo._reqId = reqId;
     const newWallet = yield self.bitgo.post(self.baseCoin.url('/wallet')).send(walletParams).result();
     const result = {
       wallet: new self.coinWallet(self.bitgo, self.baseCoin, newWallet),
