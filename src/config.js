@@ -175,7 +175,13 @@ exports.tokens = {
         { type: 'zco', coin: 'eth', network: 'Mainnet', name: 'Zebi Coin', tokenContractAddress: '0x2008e3057bd734e10ad13c9eae45ff132abc1722', decimalPlaces: 8 },
         { type: 'incx', coin: 'eth', network: 'Mainnet', name: 'InternationalCryptoX', tokenContractAddress: '0xa984a92731c088f1ea4d53b71a2565a399f7d8d5', decimalPlaces: 18 },
         { type: 'hyb', coin: 'eth', network: 'Mainnet', name: 'Hybrid Block', tokenContractAddress: '0x6059f55751603ead7dc6d280ad83a7b33d837c90', decimalPlaces: 18 },
-        { type: 'usdc', coin: 'eth', network: 'Mainnet', name: 'USD Coin', tokenContractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimalPlaces: 6 }
+        { type: 'usdc', coin: 'eth', network: 'Mainnet', name: 'USD Coin', tokenContractAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimalPlaces: 6 },
+        { type: 'rby', coin: 'eth', network: 'Mainnet', name: 'Ruby X', tokenContractAddress: '0xf7705dee19a63e0bc1a240f723c5c0f570c78572', decimalPlaces: 18 },
+        { type: 'uqc', coin: 'eth', network: 'Mainnet', name: 'Uquid Coin', tokenContractAddress: '0xd01db73e047855efb414e6202098c4be4cd2423b', decimalPlaces: 18 },
+        { type: 'mft', coin: 'eth', network: 'Mainnet', name: 'Mainframe', tokenContractAddress: '0xdf2c7238198ad8b389666574f2d8bc411a4b7428', decimalPlaces: 18 },
+        { type: 'aoa', coin: 'eth', network: 'Mainnet', name: 'Aurora', tokenContractAddress: '0x9ab165d795019b6d8b3e971dda91071421305e5a', decimalPlaces: 18 },
+        { type: 'hot', coin: 'eth', network: 'Mainnet', name: 'Holo', tokenContractAddress: '0x6c6ee5e31d828de241282b9606c8e98ea48526e2', decimalPlaces: 18 },
+        { type: 'met', coin: 'eth', network: 'Mainnet', name: 'Metronome', tokenContractAddress: '0xa3d58c4e56fedcae3a7c43a725aee9a71f0ece4e', decimalPlaces: 18 }
       ]
     }
   },
