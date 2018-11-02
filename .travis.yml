@@ -1,6 +1,5 @@
 language: node_js
 before_install:
-  - npm install -g npm
   - npm install -g codecov
 node_js:
   - '6'
@@ -12,7 +11,7 @@ env:
     - TEST_SUITE=test-node
   global:
     secure: gbQ8VqPQWU19sPvCQy0YUdgrdOK/zPPS9oBm0DQrL06mue5sd+IXGOUH/hqgSGNJxR/CbNQt7dTC6Ex0mTXHUasFlrrQUKn1Hr4Esqqqog1A2PgnuXK7AmHuXI18Cva4f8wU1h+HVMLfW9MJ+r1WtwyIg+DAdxWwDKUbIvCtIto=
-script: 
+script:
   - npm run $TEST_SUITE
   - npm run audit
 after_success: npm run coverage
