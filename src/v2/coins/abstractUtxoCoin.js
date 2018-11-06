@@ -859,14 +859,19 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
   explainTransaction(params) {
-    const self = this;
-    const transaction = bitcoin.Transaction.fromBuffer(new Buffer(params.txHex, 'hex'), this.network);
+    const { txHex, txInfo } = params;
+
+    if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
+      throw new Error('invalid tx hex, must be a valid hex string');
+    }
+
+    const transaction = bitcoin.Transaction.fromHex(params.txHex, this.network);
     const id = transaction.getId();
     let changeAddresses = [];
     let spendAmount = 0;
     let changeAmount = 0;
-    if (params.txInfo && params.txInfo.changeAddresses) {
-      changeAddresses = params.txInfo.changeAddresses;
+    if (txInfo && txInfo.changeAddresses) {
+      changeAddresses = txInfo.changeAddresses;
     }
     const explanation = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
@@ -874,8 +879,9 @@ class AbstractUtxoCoin extends BaseCoin {
       outputs: [],
       changeOutputs: []
     };
-    transaction.outs.forEach(function(currentOutput) {
-      const currentAddress = self.getCoinLibrary().address.fromOutputScript(currentOutput.script, self.network);
+
+    transaction.outs.forEach((currentOutput) => {
+      const currentAddress = this.getCoinLibrary().address.fromOutputScript(currentOutput.script, this.network);
       const currentAmount = currentOutput.value;
 
       if (changeAddresses.indexOf(currentAddress) !== -1) {
@@ -907,6 +913,75 @@ class AbstractUtxoCoin extends BaseCoin {
       explanation.locktime = transaction.locktime;
       explanation.displayOrder.push('locktime');
     }
+
+    const unspentValues = {};
+
+    // get information on tx inputs
+    const inputSignatures = transaction.ins.map((input, idx) => {
+      const hasSigScript = !_.isEmpty(input.script);
+      const hasWitnessScript = !_.isEmpty(input.witness);
+
+      if (!hasSigScript && !hasWitnessScript) {
+        // no sig script or witness data for this input
+        debug('no script sig or witness script data for input %s', idx);
+        return 0;
+      }
+
+      const sigScript = this.parseSignatureScript(transaction, idx);
+
+      if (hasWitnessScript) {
+        if (!txInfo.unspents) {
+          // segwit txs require input values, cannot validate signatures
+          debug('unable to retrieve input amounts from unspents - cannot validate segwit input signatures');
+          return 0;
+        }
+
+        // lazily populate unspent values
+        if (_.isEmpty(unspentValues)) {
+          txInfo.unspents.forEach((unspent) => {
+            unspentValues[unspent.id] = unspent.value;
+          });
+        }
+      }
+
+      if (hasSigScript) {
+        // p2sh or p2sh-p2wsh
+        const nonEmptySignatures = sigScript.signatures.filter((sig) => !_.isEmpty(sig));
+        const validSignatures = nonEmptySignatures.map((sig, sigIndex) => {
+          if (_.isEmpty(sig)) {
+            return false;
+          }
+
+          const verificationParams = {
+            signatureIndex: sigIndex
+          };
+
+          if (hasWitnessScript) {
+            // p2sh-p2wsh
+            const parentTxId = Buffer.from(input.hash).reverse().toString('hex');
+            const inputId = `${parentTxId}:${input.index}`;
+            const amount = unspentValues[inputId];
+
+            return this.verifySignature(transaction, idx, amount, verificationParams);
+          }
+
+          // p2sh
+          return this.verifySignature(transaction, idx, undefined, verificationParams);
+        });
+
+        return validSignatures.reduce((validCount, isValid) => isValid ? validCount + 1 : validCount, 0);
+      }
+
+      if (!hasSigScript && hasWitnessScript) {
+        // p2wsh
+        debug('signature count for native segwit not yet supported');
+      }
+
+      return 0;
+    });
+
+    explanation.inputSignatures = inputSignatures;
+    explanation.signatures = _.max(inputSignatures);
     return explanation;
   }
 
