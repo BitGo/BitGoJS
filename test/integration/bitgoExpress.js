@@ -52,6 +52,7 @@ describe('Bitgo Express', function() {
       return disabledProxyAgent.get('/api/v1/market/latest')
       .send()
       .then(function(res) {
+        res.body.should.match({ bitgoExpress: /^BitGoExpress.*/ });
         res.should.have.status(404);
       });
     });
