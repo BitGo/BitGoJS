@@ -23,7 +23,7 @@ var blake2b = require('blake2b')
 var output = new Uint8Array(64)
 var input = Buffer.from('hello world')
 
-blake2b(output, input)
+console.log('hash:', blake2b(output.length).update(input).digest('hex'))
 ```
 
 ## API
