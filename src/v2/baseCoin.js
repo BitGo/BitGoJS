@@ -173,6 +173,10 @@ class BaseCoin {
       coins.tzec = require('./coins/tzec');
     }
 
+    if (process.env.BITGO_EXCLUDE_OFC !== 'exclude') {
+      coins.ofc = require('./coins/ofc');
+    }
+
     return coins;
   }
 
@@ -466,6 +470,14 @@ class BaseCoin {
   isValidPub(pub) {
     throw new Error('Basecoin method not implemented');
   }
+
+  /**
+   * Return wether the given m of n wallet signers/ key amounts are valid for the coin
+   */
+  isValidMofNSetup({ m, n }) {
+    return m === 2 && n === 3;
+  }
+
 }
 
 

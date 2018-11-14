@@ -102,7 +102,7 @@ Wallets.prototype.add = function(params, callback) {
     }
 
     // TODO: support more types of multisig
-    if (params.m !== 2 || params.n !== 3) {
+    if (!this.baseCoin.isValidMofNSetup(params)) {
       throw new Error('unsupported multi-sig type');
     }
   }
