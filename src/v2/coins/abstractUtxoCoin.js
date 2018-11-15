@@ -640,6 +640,11 @@ class AbstractUtxoCoin extends BaseCoin {
     for (let index = 0; index < transaction.ins.length; ++index) {
       debug('Signing input %d of %d', index + 1, transaction.ins.length);
       const currentUnspent = txPrebuild.txInfo.unspents[index];
+      // FIXME: this is a hack, is there a better way to do this?
+      if (_.isUndefined(currentUnspent.index)) {
+        debug('Skipping tainted input %d of %d', index + 1, transaction.ins.length);
+        continue;
+      }
       const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
       const privKey = hdPath.deriveKey(path);
       privKey.network = this.network;
