@@ -357,7 +357,7 @@ Wallet.prototype.consolidateUnspents = function consolidateUnspents(params, call
 
     const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain });
     const signedTransaction = yield this.signTransaction(transactionParams);
-    const selectParams = _.pick(params, ['comment', 'otp']);
+    const selectParams = _.pick(params, ['comment', 'otp', 'unsafeSplit']);
     const finalTxParams = _.extend({}, signedTransaction, selectParams);
 
     this.bitgo._reqId = reqId;
@@ -402,7 +402,7 @@ Wallet.prototype.fanoutUnspents = function fanoutUnspents(params, callback) {
     const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain, prv: params.xprv });
     const signedTransaction = yield this.signTransaction(transactionParams);
 
-    const selectParams = _.pick(params, ['comment', 'otp']);
+    const selectParams = _.pick(params, ['comment', 'otp', 'unsafeSplit']);
     const finalTxParams = _.extend({}, signedTransaction, selectParams);
     this.bitgo._reqId = reqId;
     return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
@@ -479,7 +479,7 @@ Wallet.prototype.sweep = function sweep(params, callback) {
     const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain, prv: params.xprv });
     const signedTransaction = yield this.signTransaction(transactionParams);
 
-    const selectParams = _.pick(params, ['otp']);
+    const selectParams = _.pick(params, ['otp', 'unsafeSplit']);
     const finalTxParams = _.extend({}, signedTransaction, selectParams);
     this.bitgo._reqId = reqId;
     return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
@@ -1142,7 +1142,7 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
  * @param callback
  */
 Wallet.prototype.submitTransaction = function(params, callback) {
-  common.validateParams(params, [], ['otp', 'txHex'], callback);
+  common.validateParams(params, [], ['otp', 'txHex', 'unsafeSplit'], callback);
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
   .send(params)
   .result()
@@ -1250,7 +1250,7 @@ Wallet.prototype.sendMany = function(params, callback) {
       'message', 'minValue', 'maxValue', 'sequenceId',
       'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
       'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress',
-      'instant', 'memo'
+      'instant', 'memo', 'unsafeSplit'
     ]);
     const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
     this.bitgo._reqId = reqId;
