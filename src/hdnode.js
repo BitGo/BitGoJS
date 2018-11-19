@@ -260,7 +260,7 @@ HDNode.prototype.derive = function (index) {
     // Ki = point(parse256(IL)) + Kpar
     //    = G*IL + Kpar
     var point = fastcurve.publicKeyCreate(IL, false)
-    var Ki = point
+    var Ki = point !== undefined
       ? ecurve.Point.decodeFrom(curve, point).add(this.keyPair.Q)
       : curve.G.multiply(pIL).add(this.keyPair.Q)
 
@@ -348,7 +348,7 @@ HDNode.prototype.cloneKeypair = function () {
   // if Q is not set here, it will be lazily computed via the slow path
   if (!result.__Q) {
     var point = fastcurve.publicKeyCreate(k.d.toBuffer(32), false)
-    if (point) {
+    if (point !== undefined) {
       result.__Q = ecurve.Point.decodeFrom(curve, point)
     }
   }

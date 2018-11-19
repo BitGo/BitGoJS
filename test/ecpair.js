@@ -288,6 +288,15 @@ describe('ECPair', function () {
 
         keyPair.verify(hash, signature)
       }))
+
+      it('handles falsey return values from fastcurve.verify', sinon.test(function () {
+        this.mock(fastcurve).expects('verify')
+        .once().withArgs(hash, signature, keyPair.getPublicKeyBuffer()).returns(false)
+
+        this.mock(ecdsa).expects('verify').never()
+
+        keyPair.verify(hash, signature)
+      }))
     })
   })
 })

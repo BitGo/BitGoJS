@@ -136,8 +136,7 @@ ECPair.prototype.sign = function (hash) {
   if (!this.d) throw new Error('Missing private key')
 
   var sig = fastcurve.sign(hash, this.d)
-
-  if (sig) return sig
+  if (sig !== undefined) return sig
   return ecdsa.sign(hash, this.d)
 }
 
@@ -149,7 +148,7 @@ ECPair.prototype.toWIF = function () {
 
 ECPair.prototype.verify = function (hash, signature) {
   var fastsig = fastcurve.verify(hash, signature, this.getPublicKeyBuffer())
-  if (fastsig) return fastsig
+  if (fastsig !== undefined) return fastsig
   return ecdsa.verify(hash, signature, this.Q)
 }
 
