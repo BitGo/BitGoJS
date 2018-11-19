@@ -806,7 +806,7 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
   } else {
     if (input.witness) {
       signatureHash = this.tx.hashForWitnessV0(vin, input.signScript, witnessValue, hashType)
-      debug('Calculated witnessv0 sighash (%s)', signatureHash)
+      debug('Calculated witnessv0 sighash (%s)', signatureHash.toString('hex'))
     } else {
       signatureHash = this.tx.hashForSignature(vin, input.signScript, hashType)
       debug('Calculated sighash (%s)', signatureHash.toString('hex'))

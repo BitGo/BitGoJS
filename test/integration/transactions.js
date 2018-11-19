@@ -42,7 +42,8 @@ describe('bitcoinjs-lib (transactions)', function () {
     assert.strictEqual(txb.build().toHex(), '01000000024c94e48a870b85f41228d33cf25213dfcc8dd796e7211ed6b1f9a014809dbbb5060000006a473044022041450c258ce7cac7da97316bf2ea1ce66d88967c4df94f3e91f4c2a30f5d08cb02203674d516e6bb2b0afd084c3551614bd9cec3c2945231245e891b145f2d6951f0012103e05ce435e462ec503143305feb6c00e06a3ad52fbf939e85c65f3a765bb7baacffffffff3077d9de049574c3af9bc9c09a7c9db80f2d94caaf63988c9166249b955e867d000000006b483045022100aeb5f1332c79c446d3f906e4499b2e678500580a3f90329edf1ba502eec9402e022072c8b863f8c8d6c26f4c691ac9a6610aa4200edc697306648ee844cfbc089d7a012103df7940ee7cddd2f97763f67e1fb13488da3fbdd7f9c68ec5ef0864074745a289ffffffff0220bf0200000000001976a9147dd65592d0ab2fe0d0257d571abf032cd9db93dc88ac10980200000000001976a914c42e7ef92fdb603af844d064faad95db9bcdfd3d88ac00000000')
   })
 
-  it('can create (and broadcast via 3PBP) a typical Transaction', function (done) {
+  // disabled due to the 3rd party blockchain provider (3PBP) being down
+  it.skip('can create (and broadcast via 3PBP) a typical Transaction', function (done) {
     this.timeout(30000)
 
     var alice1 = bitcoin.ECPair.makeRandom({ network: regtest })
@@ -74,7 +75,8 @@ describe('bitcoinjs-lib (transactions)', function () {
     })
   })
 
-  it('can create (and broadcast via 3PBP) a Transaction with an OP_RETURN output', function (done) {
+  // disabled due to the 3rd party blockchain provider (3PBP) being down
+  it.skip('can create (and broadcast via 3PBP) a Transaction with an OP_RETURN output', function (done) {
     this.timeout(30000)
 
     var keyPair = bitcoin.ECPair.makeRandom({ network: regtest })
@@ -96,7 +98,8 @@ describe('bitcoinjs-lib (transactions)', function () {
     })
   })
 
-  it('can create (and broadcast via 3PBP) a Transaction with a 2-of-4 P2SH(multisig) input', function (done) {
+  // disabled due to the 3rd party blockchain provider (3PBP) being down
+  it.skip('can create (and broadcast via 3PBP) a Transaction with a 2-of-4 P2SH(multisig) input', function (done) {
     this.timeout(30000)
 
     var keyPairs = [
@@ -136,7 +139,8 @@ describe('bitcoinjs-lib (transactions)', function () {
     })
   })
 
-  it('can create (and broadcast via 3PBP) a Transaction with a SegWit P2SH(P2WPKH) input', function (done) {
+  // disabled due to the 3rd party blockchain provider (3PBP) being down
+  it.skip('can create (and broadcast via 3PBP) a Transaction with a SegWit P2SH(P2WPKH) input', function (done) {
     this.timeout(30000)
 
     var keyPair = bitcoin.ECPair.fromWIF('cMahea7zqjxrtgAbB7LSGbcQUr1uX1ojuat9jZodMN87JcbXMTcA', regtest)
@@ -172,7 +176,8 @@ describe('bitcoinjs-lib (transactions)', function () {
     })
   })
 
-  it('can create (and broadcast via 3PBP) a Transaction with a SegWit 3-of-4 P2SH(P2WSH(multisig)) input', function (done) {
+  // disabled due to the 3rd party blockchain provider (3PBP) being down
+  it.skip('can create (and broadcast via 3PBP) a Transaction with a SegWit 3-of-4 P2SH(P2WSH(multisig)) input', function (done) {
     this.timeout(50000)
 
     var keyPairs = [

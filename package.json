@@ -63,5 +63,8 @@
     "sinon": "^1.12.2",
     "standard": "^9.0.2"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "optionalDependencies": {
+    "secp256k1": "^3.5.2"
+  }
 }

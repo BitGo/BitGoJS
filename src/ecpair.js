@@ -12,6 +12,8 @@ var BigInteger = require('bigi')
 var ecurve = require('ecurve')
 var secp256k1 = ecdsa.__curve
 
+var fastcurve = require('./fastcurve')
+
 function ECPair (d, Q, options) {
   if (options) {
     typeforce({
@@ -133,6 +135,9 @@ ECPair.prototype.getPrivateKeyBuffer = function () {
 ECPair.prototype.sign = function (hash) {
   if (!this.d) throw new Error('Missing private key')
 
+  var sig = fastcurve.sign(hash, this.d)
+
+  if (sig) return sig
   return ecdsa.sign(hash, this.d)
 }
 
@@ -143,6 +148,8 @@ ECPair.prototype.toWIF = function () {
 }
 
 ECPair.prototype.verify = function (hash, signature) {
+  var fastsig = fastcurve.verify(hash, signature, this.getPublicKeyBuffer())
+  if (fastsig) return fastsig
   return ecdsa.verify(hash, signature, this.Q)
 }
 

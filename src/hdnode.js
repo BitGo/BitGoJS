@@ -12,6 +12,8 @@ var ECPair = require('./ecpair')
 var ecurve = require('ecurve')
 var curve = ecurve.getCurveByName('secp256k1')
 
+var fastcurve = require('./fastcurve')
+
 function HDNode (keyPair, chainCode) {
   typeforce(types.tuple('ECPair', types.Buffer256bit), arguments)
 
@@ -22,6 +24,7 @@ function HDNode (keyPair, chainCode) {
   this.depth = 0
   this.index = 0
   this.parentFingerprint = 0x00000000
+  this.derivationCache = {}
 }
 
 HDNode.HIGHEST_BIT = 0x80000000
@@ -256,7 +259,10 @@ HDNode.prototype.derive = function (index) {
   } else {
     // Ki = point(parse256(IL)) + Kpar
     //    = G*IL + Kpar
-    var Ki = curve.G.multiply(pIL).add(this.keyPair.Q)
+    var point = fastcurve.publicKeyCreate(IL, false)
+    var Ki = point
+      ? ecurve.Point.decodeFrom(curve, point).add(this.keyPair.Q)
+      : curve.G.multiply(pIL).add(this.keyPair.Q)
 
     // In case Ki is the point at infinity, proceed with the next value for i
     if (curve.isInfinity(Ki)) {
@@ -289,8 +295,11 @@ HDNode.prototype.isNeutered = function () {
   return !(this.keyPair.d)
 }
 
-HDNode.prototype.derivePath = function (path) {
+HDNode.prototype.derivePath = function (path, cache) {
   typeforce(types.BIP32Path, path)
+  typeforce(types.maybe(types.Object), cache)
+
+  cache = cache || this.derivationCache
 
   var splitPath = path.split('/')
   if (splitPath[0] === 'm') {
@@ -303,14 +312,47 @@ HDNode.prototype.derivePath = function (path) {
 
   return splitPath.reduce(function (prevHd, indexStr) {
     var index
+    var cacheObject = cache[indexStr] || {}
+    if (cacheObject.node) {
+      cache = cacheObject.next
+      return cacheObject.node
+    }
     if (indexStr.slice(-1) === "'") {
       index = parseInt(indexStr.slice(0, -1), 10)
-      return prevHd.deriveHardened(index)
+      cacheObject.node = prevHd.deriveHardened(index)
     } else {
       index = parseInt(indexStr, 10)
-      return prevHd.derive(index)
+      cacheObject.node = prevHd.derive(index)
     }
+
+    cache[indexStr] = cacheObject
+    cacheObject.next = {}
+    cache = cacheObject.next
+    return cacheObject.node
   }, this)
+}
+
+/**
+ * Create a new ECPair object from this HDNode's ECPair.
+ *
+ * Uses secp256k1 if available for accelerated computation of the cloned public key.
+ * @return {ECPair}
+ */
+HDNode.prototype.cloneKeypair = function () {
+  var k = this.keyPair
+  var result = new ECPair(k.d, k.d ? null : k.Q, {
+    network: k.network,
+    compressed: k.compressed
+  })
+  // Creating Q from d takes ~25ms, so if it's not created, use native bindings to pre-compute
+  // if Q is not set here, it will be lazily computed via the slow path
+  if (!result.__Q) {
+    var point = fastcurve.publicKeyCreate(k.d.toBuffer(32), false)
+    if (point) {
+      result.__Q = ecurve.Point.decodeFrom(curve, point)
+    }
+  }
+  return result
 }
 
 module.exports = HDNode
