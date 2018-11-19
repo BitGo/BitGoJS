@@ -184,7 +184,7 @@ exports.tokens = {
         { type: 'met', coin: 'eth', network: 'Mainnet', name: 'Metronome', tokenContractAddress: '0xa3d58c4e56fedcae3a7c43a725aee9a71f0ece4e', decimalPlaces: 18 },
         { type: 'drv', coin: 'eth', network: 'Mainnet', name: 'Drive', tokenContractAddress: '0x0b9d89a71bdabd231d4d497b7b7b879740d739c4', decimalPlaces: 18 },
         { type: 'mtcn', coin: 'eth', network: 'Mainnet', name: 'Multiven', tokenContractAddress: '0xf6117cc92d7247f605f11d4c942f0feda3399cb5', decimalPlaces: 18 },
-        { type: 'data', coin: 'eth', network: 'Mainnet', name: 'Steamr DATAcoin', tokenContractAddress: '0x0cf0ee63788a0849fe5297f3407f701e122cc023', decimalPlaces: 18 },
+        { type: 'data', coin: 'eth', network: 'Mainnet', name: 'Streamr DATAcoin', tokenContractAddress: '0x0cf0ee63788a0849fe5297f3407f701e122cc023', decimalPlaces: 18 },
         { type: 'medx', coin: 'eth', network: 'Mainnet', name: 'Medibloc', tokenContractAddress: '0xfd1e80508f243e64ce234ea88a5fd2827c71d4b7', decimalPlaces: 8 }
       ]
     }
