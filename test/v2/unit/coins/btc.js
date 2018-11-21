@@ -414,6 +414,14 @@ describe('BTC:', function() {
           (() => coin.explainTransaction({
             txHex: 1234
           })).should.throw('invalid tx hex, must be a valid hex string');
+
+        });
+
+        it('should handle undefined txInfo', () => {
+         coin.explainTransaction({
+            txHex: txs['p2sh-p2wsh'].halfSigned,
+            txInfo: undefined
+          });
         });
 
       });
