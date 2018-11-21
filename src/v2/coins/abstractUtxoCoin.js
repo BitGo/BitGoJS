@@ -902,7 +902,7 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
   explainTransaction(params) {
-    const { txHex, txInfo } = params;
+    const { txHex, txInfo = {} } = params;
 
     if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
       throw new Error('invalid tx hex, must be a valid hex string');
