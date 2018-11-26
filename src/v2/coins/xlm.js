@@ -8,6 +8,7 @@ const request = require('superagent');
 
 const BaseCoin = require('../baseCoin');
 const config = require('../../config');
+const common = require('../../common');
 const stellar = require('stellar-sdk');
 
 const maxMemoId = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
@@ -16,9 +17,8 @@ class Xlm extends BaseCoin {
 
   constructor() {
     super();
-    stellar.Network.use(new stellar.Network(stellar.Networks.PUBLIC));
-    this.federationServer = new stellar.FederationServer(this.getFederationServerUrl(), 'bitgo.com');
     this.homeDomain = 'bitgo.com'; // used for reverse federation lookup
+    stellar.Network.use(new stellar.Network(stellar.Networks.PUBLIC));
   }
   /**
    * Returns the factor between the base unit and its smallest subdivison
@@ -41,7 +41,7 @@ class Xlm extends BaseCoin {
   }
 
   getFederationServerUrl() {
-    return 'https://www.bitgo.com/api/v2/xlm/federation';
+    return common.Environments[this.bitgo.env].stellarFederationServerUrl;
   }
 
   getHorizonUrl() {
@@ -276,6 +276,18 @@ class Xlm extends BaseCoin {
   }
 
   /**
+   * Get an instance of FederationServer for BitGo lookups
+   *
+   * @returns {FederationServer} instance of BitGo Federation Server
+   */
+  getBitGoFederationServer() {
+    // Identify the URI scheme in case we need to allow connecting to HTTP server.
+    const isNonSecureEnv = !_.startsWith(common.Environments[this.bitgo.env].uri, 'https');
+    const federationServerOptions = { allowHttp: isNonSecureEnv };
+    return new stellar.FederationServer(this.getFederationServerUrl(), 'bitgo.com', federationServerOptions);
+  }
+
+  /**
    * Attempt to resolve a stellar address into a stellar account
    * If address domain matches bitgo's then resolve on our federation server
    * Else, make the request to the federation server hosting the address
@@ -292,7 +304,8 @@ class Xlm extends BaseCoin {
       const [, homeDomain] = addressParts;
       try {
         if (homeDomain === this.homeDomain) {
-          return yield this.federationServer.resolveAddress(address);
+          const federationServer = this.getBitGoFederationServer();
+          return yield federationServer.resolveAddress(address);
         } else {
           return yield stellar.FederationServer.resolve(address);
         }
@@ -312,7 +325,8 @@ class Xlm extends BaseCoin {
   federationLookupByAccountId(accountId) {
     return co(function *() {
       try {
-        return yield this.federationServer.resolveAccountId(accountId);
+        const federationServer = this.getBitGoFederationServer();
+        return yield federationServer.resolveAccountId(accountId);
       } catch (e) {
         throw new Error(e.response.data.detail);
       }
