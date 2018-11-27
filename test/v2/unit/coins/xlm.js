@@ -110,6 +110,19 @@ describe('XLM:', function() {
     basecoin.isValidMemo({ value: '1', type: 'return' }).should.equal(false);
   });
 
+  it('should supplement wallet generation', co(function *() {
+    const walletParams = yield basecoin.supplementGenerateWallet({});
+    walletParams.should.have.property('rootPrivateKey');
+    basecoin.isValidPrv(walletParams.rootPrivateKey).should.equal(true);
+  }));
+
+  it('should supplement wallet generation with provided private key', co(function *() {
+    const rootPrivateKey = basecoin.generateKeyPair().prv;
+    const walletParams = yield basecoin.supplementGenerateWallet({ rootPrivateKey });
+    walletParams.should.have.property('rootPrivateKey');
+    walletParams.rootPrivateKey.should.equal(rootPrivateKey);
+  }));
+
   it('should validate pub key', () => {
     const { pub } = basecoin.keychains().create();
     basecoin.isValidPub(pub).should.equal(true);
