@@ -561,7 +561,6 @@ class Eth extends BaseCoin {
           }
         ]
       });
-
       // these recoveries need to be processed by support, but if the customer sends any transactions before recovery is
       // complete the sequence ID will be invalid. artificially inflate the sequence ID to allow more time for processing
       const safeSequenceId = nextContractSequenceId + 1000;
@@ -598,7 +597,6 @@ class Eth extends BaseCoin {
         tokenContractAddress: params.tokenContractAddress,
         walletId: params.wallet.id()
       };
-
       return { halfSigned: txParams };
     }).call(this).asCallback(callback);
   }
