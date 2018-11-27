@@ -188,7 +188,6 @@ exports.tokens = {
         { type: 'medx', coin: 'eth', network: 'Mainnet', name: 'Medibloc', tokenContractAddress: '0xfd1e80508f243e64ce234ea88a5fd2827c71d4b7', decimalPlaces: 8 },
         { type: 'box', coin: 'eth', network: 'Mainnet', name: 'ContentBox', tokenContractAddress: '0x63f584fa56e60e4d0fe8802b27c7e6e3b33e007f', decimalPlaces: 18 },
         { type: 'mvl', coin: 'eth', network: 'Mainnet', name: 'Mass Vehicle Ledger', tokenContractAddress: '0xa849eaae994fb86afa73382e9bd88c2b6b18dc71', decimalPlaces: 18 },
-        { type: 'loom', coin: 'eth', network: 'Mainnet', name: 'Loom Network', tokenContractAddress: '0xa4e8c3ec456107ea67d3075bf9e3df3a75823db0', decimalPlaces: 18 },
         { type: 'edr', coin: 'eth', network: 'Mainnet', name: 'Endor Protocol', tokenContractAddress: '0xc528c28fec0a90c083328bc45f587ee215760a0f', decimalPlaces: 18 },
         { type: 'pma', coin: 'eth', network: 'Mainnet', name: 'PumaPay', tokenContractAddress: '0x846c66cf71c43f80403b51fe3906b3599d63336f', decimalPlaces: 18 },
         { type: 'meta', coin: 'eth', network: 'Mainnet', name: 'Metadium', tokenContractAddress: '0xde2f7766c8bf14ca67193128535e5c7454f8387c', decimalPlaces: 18 }
