@@ -186,13 +186,10 @@ exports.tokens = {
         { type: 'mtcn', coin: 'eth', network: 'Mainnet', name: 'Multiven', tokenContractAddress: '0xf6117cc92d7247f605f11d4c942f0feda3399cb5', decimalPlaces: 18 },
         { type: 'data', coin: 'eth', network: 'Mainnet', name: 'Streamr DATAcoin', tokenContractAddress: '0x0cf0ee63788a0849fe5297f3407f701e122cc023', decimalPlaces: 18 },
         { type: 'medx', coin: 'eth', network: 'Mainnet', name: 'Medibloc', tokenContractAddress: '0xfd1e80508f243e64ce234ea88a5fd2827c71d4b7', decimalPlaces: 8 },
-        { type: 'mith', coin: 'eth', network: 'Mainnet', name: 'Mithril', tokenContractAddress: '0x3893b9422cd5d70a81edeffe3d5a1c6a978310bb', decimalPlaces: 18 },
         { type: 'box', coin: 'eth', network: 'Mainnet', name: 'ContentBox', tokenContractAddress: '0x63f584fa56e60e4d0fe8802b27c7e6e3b33e007f', decimalPlaces: 18 },
         { type: 'mvl', coin: 'eth', network: 'Mainnet', name: 'Mass Vehicle Ledger', tokenContractAddress: '0xa849eaae994fb86afa73382e9bd88c2b6b18dc71', decimalPlaces: 18 },
         { type: 'loom', coin: 'eth', network: 'Mainnet', name: 'Loom Network', tokenContractAddress: '0xa4e8c3ec456107ea67d3075bf9e3df3a75823db0', decimalPlaces: 18 },
         { type: 'edr', coin: 'eth', network: 'Mainnet', name: 'Endor Protocol', tokenContractAddress: '0xc528c28fec0a90c083328bc45f587ee215760a0f', decimalPlaces: 18 },
-        { type: 'enj', coin: 'eth', network: 'Mainnet', name: 'Enjin Coin', tokenContractAddress: '0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c', decimalPlaces: 18 },
-        { type: 'gto', coin: 'eth', network: 'Mainnet', name: 'Gifto', tokenContractAddress: '0xc5bbae50781be1669306b9e001eff57a2957b09d', decimalPlaces: 5 },
         { type: 'pma', coin: 'eth', network: 'Mainnet', name: 'PumaPay', tokenContractAddress: '0x846c66cf71c43f80403b51fe3906b3599d63336f', decimalPlaces: 18 },
         { type: 'meta', coin: 'eth', network: 'Mainnet', name: 'Metadium', tokenContractAddress: '0xde2f7766c8bf14ca67193128535e5c7454f8387c', decimalPlaces: 18 }
       ]
