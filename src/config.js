@@ -258,6 +258,11 @@ exports.krsProviders = {
     feeAddresses: {
       btc: '' // TODO [BG-6965] Get address from Keyternal - recovery will fail for now until Keyternal is ready
     }
+  },
+  bitgoKRSv2: {
+    feeType: 'flatUsd',
+    feeAmount: 0, // we will receive payments off-chain
+    supportedCoins: ['btc', 'eth']
   }
 };
 
