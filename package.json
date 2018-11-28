@@ -53,7 +53,7 @@
     "lodash": "~4.17.10",
     "minimist": "0.2.0",
     "moment": "~2.20.1",
-    "morgan": "1.9.0",
+    "morgan": "^1.9.1",
     "prova-lib": "0.2.9",
     "ripple-lib": "~0.22.0",
     "sanitize-html": "1.13.0",
