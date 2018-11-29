@@ -221,8 +221,12 @@ Wallets.prototype.generateWallet = function(params, callback) {
     }
 
     if (!_.isUndefined(params.krsSpecific)) {
-      if (!_.isString(params.krsSpecific)) {
-        throw new Error('invalid krsSpecific argument, expecting string');
+      const krsKeys = Object.keys(params.krsSpecific);
+      for (let i = 0; i < krsKeys.length; i++) {
+        const val = params.krsSpecific[krsKeys[i]];
+        if (!_.isBoolean(val) && !_.isString(val) && !_.isNumber(val)) {
+          throw new Error('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
+        }
       }
     }
 

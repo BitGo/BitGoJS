@@ -128,10 +128,16 @@ describe('V2 Wallets:', function() {
 
       params = {
         label: 'abc',
-        krsSpecific: true
+        krsSpecific: {
+          malicious: {
+            javascript: {
+              code: 'bad.js'
+            }
+          }
+        }
       };
 
-      yield wallets.generateWallet(params).should.be.rejectedWith('invalid krsSpecific argument, expecting string');
+      yield wallets.generateWallet(params).should.be.rejectedWith('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
     }));
 
     it('should correctly disable krs emails when creating backup keychains', co(function *() {
@@ -172,7 +178,7 @@ describe('V2 Wallets:', function() {
         backupXpubProvider: 'test',
         passphrase: 'test123',
         userKey: 'xpub123',
-        krsSpecific: 'insurance'
+        krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 }
       };
 
       // bitgo key
@@ -187,7 +193,7 @@ describe('V2 Wallets:', function() {
 
       // backup key
       nock(bgUrl)
-      .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, krsSpecific: 'insurance' }))
+      .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 }}))
       .reply(200);
 
       // wallet
@@ -197,6 +203,5 @@ describe('V2 Wallets:', function() {
 
       yield wallets.generateWallet(params);
     }));
-
   });
 });
