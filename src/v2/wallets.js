@@ -220,14 +220,14 @@ Wallets.prototype.generateWallet = function(params, callback) {
       }
     }
 
+    // Ensure each krsSpecific param is either a string, boolean, or number
     if (!_.isUndefined(params.krsSpecific)) {
-      const krsKeys = Object.keys(params.krsSpecific);
-      for (let i = 0; i < krsKeys.length; i++) {
-        const val = params.krsSpecific[krsKeys[i]];
+      Object.keys(params.krsSpecific).forEach(key => {
+        const val = params.krsSpecific[key];
         if (!_.isBoolean(val) && !_.isString(val) && !_.isNumber(val)) {
           throw new Error('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
         }
-      }
+      });
     }
 
     let derivationPath = undefined;
