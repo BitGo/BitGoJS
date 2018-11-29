@@ -220,6 +220,12 @@ Wallets.prototype.generateWallet = function(params, callback) {
       }
     }
 
+    if (!_.isUndefined(params.krsSpecific)) {
+      if (!_.isString(params.krsSpecific)) {
+        throw new Error('invalid krsSpecific argument, expecting string');
+      }
+    }
+
     let derivationPath = undefined;
 
     const passphrase = params.passphrase;
@@ -266,6 +272,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
         return self.baseCoin.keychains().createBackup({
           provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
           disableKRSEmail: params.disableKRSEmail,
+          krsSpecific: params.krsSpecific,
           type: self.baseCoin.getChain(),
           reqId
         });

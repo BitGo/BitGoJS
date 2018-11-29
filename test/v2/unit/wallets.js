@@ -125,6 +125,13 @@ describe('V2 Wallets:', function() {
       };
 
       yield wallets.generateWallet(params).should.be.rejectedWith('invalid disableKRSEmail argument, expecting boolean');
+
+      params = {
+        label: 'abc',
+        krsSpecific: true
+      };
+
+      yield wallets.generateWallet(params).should.be.rejectedWith('invalid krsSpecific argument, expecting string');
     }));
 
     it('should correctly disable krs emails when creating backup keychains', co(function *() {
@@ -158,5 +165,38 @@ describe('V2 Wallets:', function() {
 
       yield wallets.generateWallet(params);
     }));
+
+    it('should correctly pass through the krsSpecific param when creating backup keychains', co(function *() {
+      const params = {
+        label: 'my_wallet',
+        backupXpubProvider: 'test',
+        passphrase: 'test123',
+        userKey: 'xpub123',
+        krsSpecific: 'insurance'
+      };
+
+      // bitgo key
+      nock(bgUrl)
+      .post('/api/v2/tbtc/key', _.matches({ source: 'bitgo' }))
+      .reply(200);
+
+      // user key
+      nock(bgUrl)
+      .post('/api/v2/tbtc/key', _.conforms({ pub: (p) => p.startsWith('xpub') }))
+      .reply(200);
+
+      // backup key
+      nock(bgUrl)
+      .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, krsSpecific: 'insurance' }))
+      .reply(200);
+
+      // wallet
+      nock(bgUrl)
+      .post('/api/v2/tbtc/wallet')
+      .reply(200);
+
+      yield wallets.generateWallet(params);
+    }));
+
   });
 });
