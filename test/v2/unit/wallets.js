@@ -193,7 +193,7 @@ describe('V2 Wallets:', function() {
 
       // backup key
       nock(bgUrl)
-      .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 }}))
+      .post('/api/v2/tbtc/key', _.matches({ source: 'backup', provider: params.backupXpubProvider, krsSpecific: { coverage: 'insurance', expensive: true, howExpensive: 25 } }))
       .reply(200);
 
       // wallet
