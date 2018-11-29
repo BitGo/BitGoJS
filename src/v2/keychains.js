@@ -129,7 +129,8 @@ Keychains.prototype.add = function(params, callback) {
     originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
     enterprise: params.enterprise,
     derivedFromParentWithSeed: params.derivedFromParentWithSeed,
-    disableKRSEmail: params.disableKRSEmail
+    disableKRSEmail: params.disableKRSEmail,
+    krsSpecific: params.krsSpecific
   })
   .result()
   .nodeify(callback);
