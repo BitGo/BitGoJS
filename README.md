@@ -11,8 +11,9 @@ Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we
 - Bitcoin
 - Bitcoin Cash
 - Bitcoin Gold
-- Zcash (Sapling compatible)
 - Dash
+- Litecoin
+- Zcash (Sapling compatible)
 
 ## Features
 - Clean: Pure JavaScript, concise code, easy to read.
