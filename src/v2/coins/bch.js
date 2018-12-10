@@ -133,6 +133,15 @@ class Bch extends AbstractUtxoCoin {
   }
 
   /**
+   * Checks if the unspent comes from the BitGo taint provider address
+   * @param unspent
+   * @returns {boolean}
+   */
+  isBitGoTaintedUnspent(unspent) {
+    return unspent.address === '33p1q7mTGyeM5UnZERGiMcVUkY12SCsatA';
+  }
+
+  /**
    *
    * @param txBuilder
    * @returns {*}

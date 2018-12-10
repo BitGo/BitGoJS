@@ -220,6 +220,16 @@ Wallets.prototype.generateWallet = function(params, callback) {
       }
     }
 
+    // Ensure each krsSpecific param is either a string, boolean, or number
+    if (!_.isUndefined(params.krsSpecific)) {
+      Object.keys(params.krsSpecific).forEach(key => {
+        const val = params.krsSpecific[key];
+        if (!_.isBoolean(val) && !_.isString(val) && !_.isNumber(val)) {
+          throw new Error('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
+        }
+      });
+    }
+
     let derivationPath = undefined;
 
     const passphrase = params.passphrase;
@@ -266,6 +276,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
         return self.baseCoin.keychains().createBackup({
           provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
           disableKRSEmail: params.disableKRSEmail,
+          krsSpecific: params.krsSpecific,
           type: self.baseCoin.getChain(),
           reqId
         });
