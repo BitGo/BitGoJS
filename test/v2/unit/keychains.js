@@ -41,41 +41,49 @@ describe('V2 Keychains', function v2keychains() {
   });
 
   describe('Update Password', function updatePassword() {
+
+    const oldPassword = 'oldPassword';
+    const newPassword = 'newPassword';
+    const otherPassword = 'otherPassword';
+
     it('should fail to update the password', co(function *coItFail() {
-      try {
-        yield keychains.updatePassword({ newPassword: '5678' });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('Missing parameter: oldPassword');
-      }
+      yield keychains.updatePassword({ newPassword: '5678' })
+      .should.be.rejectedWith('Missing parameter: oldPassword');
 
-      try {
-        yield keychains.updatePassword({ oldPassword: 1234, newPassword: '5678' });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('Expecting parameter string: oldPassword but found number');
-      }
+      yield keychains.updatePassword({ oldPassword: 1234, newPassword: '5678' })
+      .should.be.rejectedWith('Expecting parameter string: oldPassword but found number');
 
-      try {
-        yield keychains.updatePassword({ oldPassword: '1234' });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('Missing parameter: newPassword');
-      }
+      yield keychains.updatePassword({ oldPassword: '1234' })
+      .should.be.rejectedWith('Missing parameter: newPassword');
 
-      try {
-        yield keychains.updatePassword({ oldPassword: '1234', newPassword: 5678 });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('Expecting parameter string: newPassword but found number');
-      }
+      yield keychains.updatePassword({ oldPassword: '1234', newPassword: 5678 })
+      .should.be.rejectedWith('Expecting parameter string: newPassword but found number');
+    }));
+
+    it('should fail to update the password for a single keychain', co(function *coItFail() {
+      (() => keychains.updateSingleKeychainPassword({ newPassword: '5678' }))
+      .should.throw('expected old password to be a string');
+
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: 1234, newPassword: '5678' }))
+      .should.throw('expected old password to be a string');
+
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234' }))
+      .should.throw('expected new password to be a string');
+
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: 5678 }))
+      .should.throw('expected new password to be a string');
+
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: '5678' }))
+      .should.throw('expected keychain to be an object with an encryptedPrv property');
+
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: '5678', keychain: {} }))
+      .should.throw('expected keychain to be an object with an encryptedPrv property');
+
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: '5678', keychain: { encryptedPrv: 123 } }))
+      .should.throw('expected keychain to be an object with an encryptedPrv property');
     }));
 
     describe('successful password update', function describeSuccess() {
-      const oldPassword = 'oldPassword';
-      const newPassword = 'newPassword';
-      const otherPassword = 'otherPassword';
-
       const validateKeys = function(keys, newPassword) {
         _.each(keys, function(encryptedPrv, pub) {
           pub.should.startWith('xpub');
@@ -145,6 +153,19 @@ describe('V2 Keychains', function v2keychains() {
         const keys = yield keychains.updatePassword({ oldPassword: oldPassword, newPassword: newPassword });
         validateKeys(keys, newPassword);
       }));
+
+      it('single keychain password update', () => {
+        const prv = 'xprvtest';
+        const keychain = {
+          xpub: 'xpub123',
+          encryptedPrv: bitgo.encrypt({ input: prv, password: oldPassword })
+        };
+
+        const newKeychain = keychains.updateSingleKeychainPassword({ keychain, oldPassword, newPassword });
+
+        const decryptedPrv = bitgo.decrypt({ input: newKeychain.encryptedPrv, password: newPassword });
+        decryptedPrv.should.equal(prv);
+      });
     });
 
     after(function afterUpdatePassword() {
