@@ -413,7 +413,7 @@ const apiResponse = function(status, result, message) {
   return err;
 };
 
-const expressJSONParser = bodyParser.json();
+const expressJSONParser = bodyParser.json({ limit: '20mb' });
 
 // Perform body parsing here only on routes we want
 const parseBody = function(req, res, next) {
