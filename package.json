@@ -54,7 +54,7 @@
     "minimist": "0.2.0",
     "moment": "~2.20.1",
     "morgan": "^1.9.1",
-    "prova-lib": "0.2.9",
+    "prova-lib": "0.2.10",
     "ripple-lib": "~0.22.0",
     "sanitize-html": "1.13.0",
     "secrets.js-grempe": "1.1.0",
