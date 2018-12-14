@@ -630,7 +630,7 @@ class Xlm extends BaseCoin {
         amount: this.bigUnitsToBaseUnits(operation.startingBalance || operation.amount),
         address: operation.destination + memoId
       };
-      spendAmount = spendAmount.add(output.amount);
+      spendAmount = spendAmount.plus(output.amount);
       return output;
     });
 
