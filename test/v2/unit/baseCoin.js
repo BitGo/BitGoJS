@@ -13,6 +13,7 @@ nock.disableNetConnect();
 describe('V2 Base Coin:', function() {
   let bitgo;
   let basecoinEth;
+  let basecoinBtc;
   let basecoinTokenWithName;
   let basecoinTokenWithContractHash;
 
@@ -20,6 +21,7 @@ describe('V2 Base Coin:', function() {
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoinEth = bitgo.coin('teth');
+    basecoinBtc = bitgo.coin('tbtc');
     basecoinEth.keychains();
     basecoinTokenWithName = bitgo.coin('terc');
     basecoinTokenWithContractHash = bitgo.coin('0x945ac907cf021a6bcd07852bb3b8c087051706a9');
@@ -35,6 +37,19 @@ describe('V2 Base Coin:', function() {
       basecoinEth.baseUnitsToBigUnits('1000000000000000000').should.equal('1');
       // others
       basecoinEth.baseUnitsToBigUnits('1000000010000000000').should.equal('1.00000001');
+    });
+
+    it('should convert satoshi amounts to BTC', function() {
+      // 1 satoshi
+      basecoinBtc.baseUnitsToBigUnits(1).should.equal('0.00000001');
+      // 100 satoshi
+      basecoinBtc.baseUnitsToBigUnits(100).should.equal('0.000001');
+      // 1 BTC
+      basecoinBtc.baseUnitsToBigUnits(100000000).should.equal('1');
+      // 2000 BTC
+      basecoinBtc.baseUnitsToBigUnits(200000000000).should.equal('2000');
+      // others
+      basecoinBtc.baseUnitsToBigUnits(200000397901).should.equal('2000.00397901');
     });
   });
 
