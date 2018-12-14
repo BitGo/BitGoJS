@@ -1018,7 +1018,8 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
     const whitelistedParams = _.pick(params, [
       'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
       'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
-      'ledgerSequenceDelta', 'gasPrice', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType'
+      'ledgerSequenceDelta', 'gasPrice', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
+      'cpfpTxIds', 'cpfpFeeRate', 'maxFee'
     ]);
 
     if (params.reqId) {
@@ -1132,6 +1133,28 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
       }
       throw error;
     }
+  }).call(this).asCallback(callback);
+};
+
+Wallet.prototype.accelerateTransaction = function(params, callback) {
+  return co(function *() {
+    // TODO(BG-9349): change the last check to > 0 and the error message once platform allows multiple transactions to
+    //                be bumped in the same CPFP transaction
+    if (_.isUndefined(params.cpfpTxIds) || !Array.isArray(params.cpfpTxIds) || params.cpfpTxIds.length !== 1) {
+      const error = new Error('expecting cpfpTxIds to be an array of length 1');
+      error.code = 'cpfptxids_not_array';
+      throw error;
+    }
+
+    if (_.isUndefined(params.cpfpFeeRate) && _.isUndefined(params.maxFeeRate)) {
+      debug('neither cpfpFeeRate nor maxFeeRate set in accelerateTransaction');
+    }
+
+    if (_.isUndefined(params.maxFee)) {
+      debug('maxFee not set in accelerateTransaction');
+    }
+
+    return yield this.prebuildAndSignTransaction(params);
   }).call(this).asCallback(callback);
 };
 
