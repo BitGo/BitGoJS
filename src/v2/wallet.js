@@ -1154,7 +1154,8 @@ Wallet.prototype.accelerateTransaction = function(params, callback) {
       debug('maxFee not set in accelerateTransaction');
     }
 
-    return yield this.prebuildAndSignTransaction(params);
+    const submitParams = Object.assign(yield this.prebuildAndSignTransaction(params), _.pick(params, ['otp']));
+    return yield this.submitTransaction(submitParams);
   }).call(this).asCallback(callback);
 };
 
