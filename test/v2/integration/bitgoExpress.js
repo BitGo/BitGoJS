@@ -163,4 +163,11 @@ describe('Bitgo Express', function() {
       res.should.have.status(413);
     }));
   });
+
+  describe('Only API routes are proxied', () => {
+    it('should not proxy a non-api route', co(function *() {
+      const res = yield agent.get('/info/solutions').send();
+      res.should.have.status(404);
+    }));
+  });
 });

@@ -7,11 +7,8 @@ node_js:
   - '9'
   - '10'
 env:
-  matrix:
-    - TEST_SUITE=test-node
   global:
     secure: gbQ8VqPQWU19sPvCQy0YUdgrdOK/zPPS9oBm0DQrL06mue5sd+IXGOUH/hqgSGNJxR/CbNQt7dTC6Ex0mTXHUasFlrrQUKn1Hr4Esqqqog1A2PgnuXK7AmHuXI18Cva4f8wU1h+HVMLfW9MJ+r1WtwyIg+DAdxWwDKUbIvCtIto=
 script:
-  - npm run $TEST_SUITE
-  - npm run audit
+  - npm run test-travis
 after_success: npm run coverage

@@ -109,8 +109,14 @@ function configureProxy(app, { env }) {
   });
 
   app.use(function(req, res) {
-    req.isProxy = true;
-    proxy.web(req, res, { target: common.Environments[env].uri, changeOrigin: true });
+    if (req.url && /^\/api\/v[12]\/.*$/.test(req.url)) {
+      req.isProxy = true;
+      proxy.web(req, res, { target: common.Environments[env].uri, changeOrigin: true });
+      return;
+    }
+
+    // user tried to access a url which is not an api route, do not proxy
+    res.status(404).send('bitgo-express can only proxy BitGo API requests');
   });
 }
 
