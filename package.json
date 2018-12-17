@@ -28,6 +28,7 @@
     "test-node": "./node_modules/.bin/nyc -- ./node_modules/.bin/_mocha --timeout 20000 --reporter list --recursive test/unit/ test/v2/unit/",
     "test-browser": "npm run compile-test && ./node_modules/karma/bin/karma start .karma.conf.js --log-level debug --single-run",
     "test-integration": "./node_modules/.bin/_mocha --timeout 20000 --reporter list --recursive test/integration/ test/v2/integration/",
+    "test-travis": "bash test/scripts/ci.sh",
     "lint": "./node_modules/.bin/eslint --ext .js .",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi"
   },
