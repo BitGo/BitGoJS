@@ -1139,10 +1139,12 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
  * Submits a half-signed transaction to BitGo
  * @param params
  * - txHex: transaction hex to submit
+ * - halfSigned: object containing transaction (txHex or txBase64) to submit
  * @param callback
  */
 Wallet.prototype.submitTransaction = function(params, callback) {
   common.validateParams(params, [], ['otp', 'txHex'], callback);
+  assert(!!params.txHex ^ !!params.halfSigned, 'must supply either txHex or halfSigned, but not both');
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
   .send(params)
   .result()
