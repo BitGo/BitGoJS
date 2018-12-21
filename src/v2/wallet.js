@@ -1146,15 +1146,36 @@ Wallet.prototype.accelerateTransaction = function(params, callback) {
       throw error;
     }
 
-    if (_.isUndefined(params.cpfpFeeRate) && _.isUndefined(params.maxFeeRate)) {
-      debug('neither cpfpFeeRate nor maxFeeRate set in accelerateTransaction');
+    if (_.isUndefined(params.cpfpFeeRate)) {
+      if (params.noCpfpFeeRate !== true) {
+        const error = new Error('cpfpFeeRate must be set unless noCpfpFeeRate is set');
+        error.code = 'cpfpfeerate_not_set';
+        throw error;
+      }
+    } else {
+      if (!_.isInteger(params.cpfpFeeRate) || params.cpfpFeeRate > 0) {
+        const error = new Error('cpfpFeeRate must be a non-negative integer');
+        error.code = 'cpfpfeerate_not_nonnegative_integer';
+        throw error;
+      }
     }
 
     if (_.isUndefined(params.maxFee)) {
-      debug('maxFee not set in accelerateTransaction');
+      if (params.noMaxFee !== true) {
+        const error = new Error('maxFee must be set unless noMaxFee is set');
+        error.code = 'maxfee_not_set';
+        throw error;
+      }
+    } else {
+      if (!_.isInteger(params.maxFee) || params.maxFee > 0) {
+        const error = new Error('maxFee must be a non-negative integer');
+        error.code = 'maxfee_not_nonnegative_integer';
+        throw error;
+      }
     }
 
-    const submitParams = Object.assign(yield this.prebuildAndSignTransaction(params), _.pick(params, ['otp']));
+    // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
+    const submitParams = Object.assign(params, yield this.prebuildAndSignTransaction(params));
     return yield this.submitTransaction(submitParams);
   }).call(this).asCallback(callback);
 };
