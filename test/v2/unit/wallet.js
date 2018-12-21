@@ -3,6 +3,9 @@
 //
 
 const should = require('should');
+const sinon = require('sinon');
+require('should-sinon');
+require('../lib/asserts');
 const assert = require('assert');
 const nock = require('nock');
 const Promise = require('bluebird');
@@ -496,92 +499,73 @@ describe('V2 Wallet:', function() {
   });
 
   describe('Accelerate Transaction', function() {
-    it('should fail if cpfpTxIds is not passed', co(function *() {
-      try {
-        yield wallet.accelerateTransaction({});
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('cpfptxids_not_array');
-      }
+    it('fails if cpfpTxIds is not passed', co(function *() {
+      yield wallet.accelerateTransaction({})
+      .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
     }));
 
-    it('should fail if cpfpTxIds is not an array', co(function *() {
-      try {
-        yield wallet.accelerateTransaction({ cpfpTxIds: {} });
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('cpfptxids_not_array');
-      }
+    it('fails if cpfpTxIds is not an array', co(function *() {
+      yield wallet.accelerateTransaction({ cpfpTxIds: {} })
+      .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
     }));
 
-    it('should fail if cpfpTxIds is not of length 1', co(function *() {
-      try {
-        yield wallet.accelerateTransaction({ cpfpTxIds: [] });
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('cpfptxids_not_array');
-      }
-
-      try {
-        yield wallet.accelerateTransaction({ cpfpTxIds: ['id1', 'id2'] });
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('cpfptxids_not_array');
-      }
+    it('fails if cpfpTxIds is not of length 1', co(function *() {
+      yield wallet.accelerateTransaction({ cpfpTxIds: [] })
+      .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
+      yield wallet.accelerateTransaction({ cpfpTxIds: ['id1', 'id2'] })
+      .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
     }));
 
-    it('should fail if cpfpFeeRate is not passed and neither is noCpfpFeeRate', co(function *() {
-      try {
-        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'] });
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('cpfpfeerate_not_set');
-      }
+    it('fails if cpfpFeeRate is not passed and neither is noCpfpFeeRate', co(function *() {
+      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'] })
+      .should.be.rejectedWith({ code: 'cpfpfeerate_not_set' });
     }));
 
-    it('should fail if cpfpFeeRate is not an integer', co(function *() {
-      try {
-        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' });
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('cpfpfeerate_not_nonnegative_integer');
-      }
+    it('fails if cpfpFeeRate is not an integer', co(function *() {
+      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' })
+      .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
     }));
 
-    it('should fail if cpfpFeeRate is negative', co(function *() {
-      try {
-        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: -1 });
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('cpfpfeerate_not_nonnegative_integer');
-      }
+    it('fails if cpfpFeeRate is negative', co(function *() {
+      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: -1 })
+      .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
     }));
 
-    it('should fail if maxFee is not passed and neither is maxFee', co(function *() {
-      try {
-        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true });
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('maxfee_not_set');
-      }
+    it('fails if maxFee is not passed and neither is noMaxFee', co(function *() {
+      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true })
+      .should.be.rejectedWith({ code: 'maxfee_not_set' });
     }));
 
-    it('should fail if maxFee is not an integer', co(function *() {
-      try {
-        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' });
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('maxfee_not_nonnegative_integer');
-      }
+    it('fails if maxFee is not an integer', co(function *() {
+      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' })
+      .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
     }));
 
-    it('should fail if maxFee is negative', co(function *() {
-      try {
-        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: -1 });
-        throw new Error('make sure error is thrown');
-      } catch (e) {
-        e.code.should.equal('maxfee_not_nonnegative_integer');
-      }
+    it('fails if maxFee is negative', co(function *() {
+      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: -1 })
+      .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
+    }));
+
+    it('submits a transaction with all cpfp specific parameters', co(function *() {
+      const params = {
+        cpfpTxIds: ['id'],
+        cpfpFeeRate: 1,
+        maxFee: 1
+      };
+
+      const prebuildReturn = Object.assign({ txHex: '123' }, params);
+      const prebuildStub = sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
+      nock(bgUrl)
+      .post(path, _.matches(prebuildReturn))
+      .reply(200);
+
+      yield wallet.accelerateTransaction(params);
+
+      prebuildStub.should.have.been.calledOnceWith(params);
+
+      sinon.restore();
     }));
   });
 
