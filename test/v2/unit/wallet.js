@@ -495,6 +495,96 @@ describe('V2 Wallet:', function() {
     }));
   });
 
+  describe('Accelerate Transaction', function() {
+    it('should fail if cpfpTxIds is not passed', co(function *() {
+      try {
+        yield wallet.accelerateTransaction({});
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('cpfptxids_not_array');
+      }
+    }));
+
+    it('should fail if cpfpTxIds is not an array', co(function *() {
+      try {
+        yield wallet.accelerateTransaction({ cpfpTxIds: {} });
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('cpfptxids_not_array');
+      }
+    }));
+
+    it('should fail if cpfpTxIds is not of length 1', co(function *() {
+      try {
+        yield wallet.accelerateTransaction({ cpfpTxIds: [] });
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('cpfptxids_not_array');
+      }
+
+      try {
+        yield wallet.accelerateTransaction({ cpfpTxIds: ['id1', 'id2'] });
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('cpfptxids_not_array');
+      }
+    }));
+
+    it('should fail if cpfpFeeRate is not passed and neither is noCpfpFeeRate', co(function *() {
+      try {
+        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'] });
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('cpfpfeerate_not_set');
+      }
+    }));
+
+    it('should fail if cpfpFeeRate is not an integer', co(function *() {
+      try {
+        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' });
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('cpfpfeerate_not_nonnegative_integer');
+      }
+    }));
+
+    it('should fail if cpfpFeeRate is negative', co(function *() {
+      try {
+        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: -1 });
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('cpfpfeerate_not_nonnegative_integer');
+      }
+    }));
+
+    it('should fail if maxFee is not passed and neither is maxFee', co(function *() {
+      try {
+        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true });
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('maxfee_not_set');
+      }
+    }));
+
+    it('should fail if maxFee is not an integer', co(function *() {
+      try {
+        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' });
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('maxfee_not_nonnegative_integer');
+      }
+    }));
+
+    it('should fail if maxFee is negative', co(function *() {
+      try {
+        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: -1 });
+        throw new Error('make sure error is thrown');
+      } catch (e) {
+        e.code.should.equal('maxfee_not_nonnegative_integer');
+      }
+    }));
+  });
+
   describe('maxFeeRate verification', function() {
     const address = '5b34252f1bf349930e34020a';
     const recipients = [{

@@ -1153,7 +1153,7 @@ Wallet.prototype.accelerateTransaction = function(params, callback) {
         throw error;
       }
     } else {
-      if (!_.isInteger(params.cpfpFeeRate) || params.cpfpFeeRate > 0) {
+      if (!_.isInteger(params.cpfpFeeRate) || params.cpfpFeeRate < 0) {
         const error = new Error('cpfpFeeRate must be a non-negative integer');
         error.code = 'cpfpfeerate_not_nonnegative_integer';
         throw error;
@@ -1167,7 +1167,7 @@ Wallet.prototype.accelerateTransaction = function(params, callback) {
         throw error;
       }
     } else {
-      if (!_.isInteger(params.maxFee) || params.maxFee > 0) {
+      if (!_.isInteger(params.maxFee) || params.maxFee < 0) {
         const error = new Error('maxFee must be a non-negative integer');
         error.code = 'maxfee_not_nonnegative_integer';
         throw error;
