@@ -13,7 +13,7 @@ Please join us on our [Slack channel](https://bitgodevs.slack.com) if you have q
 
 # Installation
 
-Please make sure you are running at least Node version 6 (`6.9.5` recommended) and NPM version 3 (`3.10.10` recommended).
+Please make sure you are running at least Node version 6 (`6.12.3` recommended) and NPM version 3 (`3.10.10` recommended).
 We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node version.
 
 `git clone https://github.com/BitGo/BitGoJS`
@@ -30,9 +30,9 @@ View our [Javascript SDK Documentation](https://www.bitgo.com/api/?javascript#au
 
 ## Initialize SDK
 Create an access token by logging into your bitgo account, going to the API access tab [in the settings area](https://www.bitgo.com/settings) and making a developer token.
-```
-var BitGo = require('bitgo');
-var bitgo = new BitGo.BitGo({ accessToken: ACCESS_TOKEN }); // defaults to testnet. add env: 'prod' if you want to go against mainnet
+```js
+const BitGo = require('bitgo');
+const bitgo = new BitGo.BitGo({ accessToken: ACCESS_TOKEN }); // defaults to testnet. add env: 'prod' if you want to go against mainnet
 bitgo.session({}, function(err,res) {
   console.dir(err);
   console.dir(res);
@@ -40,12 +40,12 @@ bitgo.session({}, function(err,res) {
 ```
 
 ## Create Wallet
-```
-var wallet;
-var params = { 
+```js
+let wallet;
+const params = { 
   "passphrase": "replaceme", 
   "label": "firstwallet"
-}
+};
 bitgo.wallets().createWalletWithKeychains(params, function(err, result) {
   wallet = result.wallet; 
   console.dir(wallet.wallet);
@@ -54,21 +54,21 @@ bitgo.wallets().createWalletWithKeychains(params, function(err, result) {
 ```
 
 ## Create new address
-```
+```js
 wallet.createAddress({ "chain": 0 }, function callback(err, address) {
     console.dir(address);
 });
 ```
 
 ## View transactions
-```
+```js
 wallet.transactions({}, function callback(err, transactions) {
     console.dir(transactions);
 });
 ```
 
 ## Send coins
-```
+```js
 wallet.sendCoins({ 
   address: "2NEe9QhKPB2gnQLB3hffMuDcoFKZFjHYJYx", 
   amount: 0.01 * 1e8, 

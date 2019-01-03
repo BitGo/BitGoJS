@@ -6,23 +6,24 @@ const expressApp = require('../../../src/expressApp').app;
 
 describe('Bitgo Express', function() {
 
+  let agent;
+  before(() => {
+    if (process.browser) {
+      // Bitgo Express tests not supported in browser
+      this.skip();
+    }
+
+    const args = {
+      debug: false,
+      env: 'test',
+      logfile: '/dev/null'
+    };
+
+    const app = expressApp(args);
+    agent = request.agent(app);
+  });
+
   describe('verify address', function() {
-    let agent;
-    before(() => {
-      if (process.browser) {
-        // Bitgo Express tests not supported in browser
-        this.skip();
-      }
-
-      const args = {
-        debug: false,
-        env: 'test',
-        logfile: '/dev/null'
-      };
-
-      const app = expressApp(args);
-      agent = request.agent(app);
-    });
 
     describe('failure', function() {
       it('should mark as invalid bad btc address', co(function *() {
@@ -135,5 +136,38 @@ describe('Bitgo Express', function() {
         res.body.isValid.should.equal(true);
       }));
     });
+  });
+
+  describe('Request body size limits', () => {
+    it('should handle request bodies <=20mb', co(function *() {
+      // actual number of bytes sent will be roughly 6x the number of bytes in
+      // the buffer. Therefore, to create a request body between 12mb and 20mb,
+      // we should create a buffer with between 2e6 and 3.3e6 bytes
+      const numBytes = Math.floor(Math.random() * 2e6 + 1.3e6);
+      const res = yield agent.post('/api/v2/btc/verifyaddress')
+      .send({ address: '3P14159f73E4gFr7JterCCQh9QjiTjiZrG', garbage: Buffer.alloc(numBytes).toString('utf8') });
+
+      res.should.have.status(200);
+      res.body.isValid.should.equal(true);
+    }));
+
+    it('should fail for request bodies >20mb', co(function *() {
+      // actual number of bytes sent will be roughly 6x the number of bytes in
+      // the buffer. Therefore, to create a request body between 20mb and 25mb,
+      // we should create a buffer with between 3.334e6 and 4.166e6 bytes.
+      // we use 3.5e6 instead to give a bit of buffer space (no pun intended)
+      const numBytes = Math.floor(Math.random() * 0.826e6 + 3.5e6);
+      const res = yield agent.post('/api/v2/btc/verifyaddress')
+      .send({ address: '3P14159f73E4gFr7JterCCQh9QjiTjiZrG', garbage: Buffer.alloc(numBytes).toString('utf8') });
+
+      res.should.have.status(413);
+    }));
+  });
+
+  describe('Only API routes are proxied', () => {
+    it('should not proxy a non-api route', co(function *() {
+      const res = yield agent.get('/info/solutions').send();
+      res.should.have.status(404);
+    }));
   });
 });

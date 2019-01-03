@@ -190,7 +190,10 @@ exports.tokens = {
         { type: 'mvl', coin: 'eth', network: 'Mainnet', name: 'Mass Vehicle Ledger', tokenContractAddress: '0xa849eaae994fb86afa73382e9bd88c2b6b18dc71', decimalPlaces: 18 },
         { type: 'edr', coin: 'eth', network: 'Mainnet', name: 'Endor Protocol', tokenContractAddress: '0xc528c28fec0a90c083328bc45f587ee215760a0f', decimalPlaces: 18 },
         { type: 'pma', coin: 'eth', network: 'Mainnet', name: 'PumaPay', tokenContractAddress: '0x846c66cf71c43f80403b51fe3906b3599d63336f', decimalPlaces: 18 },
-        { type: 'meta', coin: 'eth', network: 'Mainnet', name: 'Metadium', tokenContractAddress: '0xde2f7766c8bf14ca67193128535e5c7454f8387c', decimalPlaces: 18 }
+        { type: 'meta', coin: 'eth', network: 'Mainnet', name: 'Metadium', tokenContractAddress: '0xde2f7766c8bf14ca67193128535e5c7454f8387c', decimalPlaces: 18 },
+        { type: 'aergo', coin: 'eth', network: 'Mainnet', name: 'Aergo', tokenContractAddress: '0xae31b85bfe62747d0836b82608b4830361a3d37a', decimalPlaces: 18 },
+        { type: 'fxrt', coin: 'eth', network: 'Mainnet', name: 'FXRT', tokenContractAddress: '0x506742a24c54b77c5af4065b2626ab96c641f90e', decimalPlaces: 3 },
+        { type: 'bcio', coin: 'eth', network: 'Mainnet', name: 'Blockchain.io', tokenContractAddress: '0xcdc412f306e0c51e3249b88c65423cd16b322673', decimalPlaces: 18 }
       ]
     }
   },
@@ -263,6 +266,11 @@ exports.krsProviders = {
     feeType: 'flatUsd',
     feeAmount: 0, // we will receive payments off-chain
     supportedCoins: ['btc', 'eth']
+  },
+  dai: {
+    feeType: 'flatUsd',
+    feeAmount: 0, // dai will receive payments off-chain
+    supportedCoins: ['btc', 'eth', 'xlm', 'xrp', 'dash', 'zec', 'ltc', 'bch']
   }
 };
 
