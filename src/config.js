@@ -145,7 +145,7 @@ exports.tokens = {
         { type: 'trst', coin: 'eth', network: 'Mainnet', name: 'WeTrust', tokenContractAddress: '0xcb94be6f13a1182e4a4b6140cb7bf2025d28e41b', decimalPlaces: 6 },
         { type: 'bnty', coin: 'eth', network: 'Mainnet', name: 'Bounty0x', tokenContractAddress: '0xd2d6158683aee4cc838067727209a0aaf4359de3', decimalPlaces: 18 },
         { type: 'ind', coin: 'eth', network: 'Mainnet', name: 'Indorse', tokenContractAddress: '0xf8e386eda857484f5a12e4b5daa9984e06e73705', decimalPlaces: 18 },
-        { type: 'tusd', coin: 'eth', network: 'Mainnet', name: 'TrueUSD', tokenContractAddress: '0x0000000000085d4780B73119b644AE5ecd22b376', decimalPlaces: 18 },
+        { type: 'tusd', coin: 'eth', network: 'Mainnet', name: 'TrueUSD', tokenContractAddress: '0x0000000000085d4780b73119b644ae5ecd22b376', decimalPlaces: 18 },
         { type: 'mfg', coin: 'eth', network: 'Mainnet', name: 'SyncFab', tokenContractAddress: '0x6710c63432a2de02954fc0f851db07146a6c0312', decimalPlaces: 18 },
         { type: 'mtl', coin: 'eth', network: 'Mainnet', name: 'Metal', tokenContractAddress: '0xf433089366899d83a9f26a773d59ec7ecf30355e', decimalPlaces: 8 },
         { type: 'neu', coin: 'eth', network: 'Mainnet', name: 'Neumark', tokenContractAddress: '0xa823e6722006afe99e91c30ff5295052fe6b8e32', decimalPlaces: 18 },
