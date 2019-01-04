@@ -255,6 +255,12 @@ PendingApproval.prototype.approve = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase', 'otp'], callback);
 
+  // We expect retryCount to be undefined when this function is called from the outside
+  // retryCount is only incremented if we are retrying (i.e. calling this method from itself - see end of function)
+  if (_.isUndefined(params.retryCount)) {
+    params.retryCount = 0;
+  }
+
   let canRecreateTransaction = true;
   if (this.type() === 'transactionRequest') {
     if (!params.walletPassphrase && !params.xprv) {
@@ -315,7 +321,15 @@ PendingApproval.prototype.approve = function(params, callback) {
     ) {
       throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
     }
-    throw error;
+    if (error.message.indexOf('could not find unspent output for input') !== -1 && params.retryCount < 2) {
+      // if the unspents can't be found, we must retry with a newly constructed transaction, so we delete the tx and try again
+      // deleting params.tx will force the code to reach the 'recreateAndSignTransaction' function
+      delete params.tx;
+      params.retryCount++;
+      this.approve(params, callback);
+    } else {
+      throw error;
+    }
   });
 };
 
