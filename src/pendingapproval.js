@@ -277,6 +277,7 @@ PendingApproval.prototype.approve = function(params, callback) {
         canRecreateTransaction = false;
       }
     }
+
   }
 
   const self = this;
@@ -299,6 +300,7 @@ PendingApproval.prototype.approve = function(params, callback) {
       return self.populateWallet()
       .then(function() {
         const recreationParams = _.extend({}, params, { txHex: self.info().transactionRequest.transaction }, self.info().transactionRequest.buildParams);
+        delete recreationParams.unspents; // we delete the previous unspents, because we want to recreate a tx with new ones
         return self.recreateAndSignTransaction(recreationParams);
       });
     }
@@ -321,12 +323,12 @@ PendingApproval.prototype.approve = function(params, callback) {
     ) {
       throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
     }
-    if (error.message.indexOf('could not find unspent output for input') !== -1 && params.retryCount < 2) {
+    if (params.retryCount < 2 && error.message.indexOf('could not find unspent output for input') !== -1 ) {
       // if the unspents can't be found, we must retry with a newly constructed transaction, so we delete the tx and try again
       // deleting params.tx will force the code to reach the 'recreateAndSignTransaction' function
       delete params.tx;
       params.retryCount++;
-      this.approve(params, callback);
+      self.approve(params, callback);
     } else {
       throw error;
     }
