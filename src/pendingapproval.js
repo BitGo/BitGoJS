@@ -255,12 +255,6 @@ PendingApproval.prototype.approve = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletPassphrase', 'otp'], callback);
 
-  // We expect retryCount to be undefined when this function is called from the outside
-  // retryCount is only incremented if we are retrying (i.e. calling this method from itself - see end of function)
-  if (_.isUndefined(params.retryCount)) {
-    params.retryCount = 0;
-  }
-
   let canRecreateTransaction = true;
   if (this.type() === 'transactionRequest') {
     if (!params.walletPassphrase && !params.xprv) {
@@ -268,7 +262,7 @@ PendingApproval.prototype.approve = function(params, callback) {
     }
 
     // check the wallet balance and compare it with the transaction amount and fee
-    if (_.isObject(_.get(this, 'wallet.wallet'))) {
+    if (_.isUndefined(params.forceRecreate) && _.isObject(_.get(this, 'wallet.wallet'))) {
       const requestedAmount = this.pendingApproval.info.transactionRequest.requestedAmount || 0;
       const walletBalance = this.wallet.wallet.spendableBalance;
       const delta = Math.abs(requestedAmount - walletBalance);
@@ -322,11 +316,11 @@ PendingApproval.prototype.approve = function(params, callback) {
     ) {
       throw new Error('unspents expired, wallet passphrase or xprv required to recreate transaction');
     }
-    if (params.retryCount < 2 && error.message.indexOf('could not find unspent output for input') !== -1 ) {
+    if (_.isUndefined(params.forceRecreate) && error.message.indexOf('could not find unspent output for input') !== -1 ) {
       // if the unspents can't be found, we must retry with a newly constructed transaction, so we delete the tx and try again
       // deleting params.tx will force the code to reach the 'recreateAndSignTransaction' function
       delete params.tx;
-      params.retryCount++;
+      params.forceRecreate = true;
       self.approve(params, callback);
     } else {
       throw error;
