@@ -277,7 +277,6 @@ PendingApproval.prototype.approve = function(params, callback) {
         canRecreateTransaction = false;
       }
     }
-
   }
 
   const self = this;
