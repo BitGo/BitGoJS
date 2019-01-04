@@ -244,12 +244,14 @@ class BaseCoin {
   /**
    * Convert a currency amount represented in base units (satoshi, wei, atoms, drops, stroops)
    * to big units (btc, eth, rmg, xrp, xlm)
-   * @param baseUnits
+   * @param {string|number} baseUnits
+   * @returns {string}
    */
   baseUnitsToBigUnits(baseUnits) {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
-    return bigNumber.toFormat();
+    // set the format so commas aren't added to large coin amounts
+    return bigNumber.toFormat(null, null, { groupSeparator: '', decimalSeparator: '.' });
   }
 
   /**

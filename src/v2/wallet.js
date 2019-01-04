@@ -1018,7 +1018,8 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
     const whitelistedParams = _.pick(params, [
       'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
       'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
-      'ledgerSequenceDelta', 'gasPrice', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType'
+      'ledgerSequenceDelta', 'gasPrice', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
+      'cpfpTxIds', 'cpfpFeeRate', 'maxFee'
     ]);
 
     if (params.reqId) {
@@ -1135,14 +1136,60 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
   }).call(this).asCallback(callback);
 };
 
+Wallet.prototype.accelerateTransaction = function(params, callback) {
+  return co(function *() {
+    // TODO(BG-9349): change the last check to > 0 and the error message once platform allows multiple transactions to
+    //                be bumped in the same CPFP transaction
+    if (_.isUndefined(params.cpfpTxIds) || !Array.isArray(params.cpfpTxIds) || params.cpfpTxIds.length !== 1) {
+      const error = new Error('expecting cpfpTxIds to be an array of length 1');
+      error.code = 'cpfptxids_not_array';
+      throw error;
+    }
+
+    if (_.isUndefined(params.cpfpFeeRate)) {
+      if (params.noCpfpFeeRate !== true) {
+        const error = new Error('cpfpFeeRate must be set unless noCpfpFeeRate is set');
+        error.code = 'cpfpfeerate_not_set';
+        throw error;
+      }
+    } else {
+      if (!_.isInteger(params.cpfpFeeRate) || params.cpfpFeeRate < 0) {
+        const error = new Error('cpfpFeeRate must be a non-negative integer');
+        error.code = 'cpfpfeerate_not_nonnegative_integer';
+        throw error;
+      }
+    }
+
+    if (_.isUndefined(params.maxFee)) {
+      if (params.noMaxFee !== true) {
+        const error = new Error('maxFee must be set unless noMaxFee is set');
+        error.code = 'maxfee_not_set';
+        throw error;
+      }
+    } else {
+      if (!_.isInteger(params.maxFee) || params.maxFee < 0) {
+        const error = new Error('maxFee must be a non-negative integer');
+        error.code = 'maxfee_not_nonnegative_integer';
+        throw error;
+      }
+    }
+
+    // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
+    const submitParams = Object.assign(params, yield this.prebuildAndSignTransaction(params));
+    return yield this.submitTransaction(submitParams);
+  }).call(this).asCallback(callback);
+};
+
 /**
  * Submits a half-signed transaction to BitGo
  * @param params
  * - txHex: transaction hex to submit
+ * - halfSigned: object containing transaction (txHex or txBase64) to submit
  * @param callback
  */
 Wallet.prototype.submitTransaction = function(params, callback) {
   common.validateParams(params, [], ['otp', 'txHex'], callback);
+  assert(!!params.txHex ^ !!params.halfSigned, 'must supply either txHex or halfSigned, but not both');
   return this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/send'))
   .send(params)
   .result()

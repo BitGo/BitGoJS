@@ -342,6 +342,14 @@ const handleV2Sweep = co(function *handleV2Sweep(req) {
   return wallet.sweep(req.body);
 });
 
+// handle CPFP accelerate transaction creation
+const handleV2AccelerateTransaction = co(function *handleV2AccelerateTransaction(req) {
+  const bitgo = req.bitgo;
+  const coin = bitgo.coin(req.params.coin);
+  const wallet = yield coin.wallets().get({ id: req.params.id });
+  return wallet.accelerateTransaction(req.body);
+});
+
 // handle send one
 const handleV2SendOne = function(req) {
   const bitgo = req.bitgo;
@@ -572,6 +580,8 @@ exports = module.exports = function(app, args) {
 
   app.post('/api/v2/:coin/wallet/:id/sweep', parseBody, prepareBitGo(args), promiseWrapper(handleV2Sweep, args));
 
+  // CPFP
+  app.post('/api/v2/:coin/wallet/:id/acceleratetx', parseBody, prepareBitGo(args), promiseWrapper(handleV2AccelerateTransaction, args));
 
   // Miscellaneous
   app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(args), promiseWrapper(handleCanonicalAddress, args));
