@@ -609,6 +609,10 @@ Wallet.prototype.getAddress = function(params, callback) {
     query = params.id;
   }
 
+  if (params.reqId) {
+    this.bitgo._reqId = params.reqId;
+  }
+
   return this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${encodeURIComponent(query)}`))
   .result()
   .nodeify(callback);
@@ -1021,6 +1025,7 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
       'ledgerSequenceDelta', 'gasPrice', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
       'cpfpTxIds', 'cpfpFeeRate', 'maxFee'
     ]);
+    debug('prebuilding transaction: %O', whitelistedParams);
 
     if (params.reqId) {
       this.bitgo._reqId = params.reqId;
@@ -1028,8 +1033,18 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
     let response = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
     .send(whitelistedParams)
     .result();
+
+    debug('postprocessing transaction prebuild: %O', response);
+
+    // postProcess prebuild may make more requests
+    if (params.reqId) {
+      response._reqId = params.reqId;
+    }
     response = yield this.baseCoin.postProcessPrebuild(response);
-    return _.extend({}, response, { walletId: this.id() });
+    response = _.extend({}, response, { walletId: this.id() });
+
+    debug('final transaction prebuild: %O', response);
+    return response;
   }).call(this).asCallback(callback);
 };
 
@@ -1107,7 +1122,7 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
 
     try {
       const verificationParams = _.pick(params.verification || {}, ['disableNetworking', 'keychains', 'addresses']);
-      yield this.baseCoin.verifyTransaction({ txParams: params, txPrebuild, wallet: this, verification: verificationParams });
+      yield this.baseCoin.verifyTransaction({ txParams: params, txPrebuild, wallet: this, verification: verificationParams, reqId: params.reqId });
     } catch (e) {
       debug('Transaction prebuild failure:', e);
       console.error('transaction prebuild failed local validation:');
@@ -1273,7 +1288,8 @@ Wallet.prototype.sendMany = function(params, callback) {
   return co(function *() {
     params = params || {};
     common.validateParams(params, [], ['comment', 'otp'], callback);
-    const reqId = util.createRequestId();
+    debug('sendMany called');
+    const reqId = params.reqId || util.createRequestId();
     params.reqId = reqId;
     const coin = this.baseCoin;
     if (_.isObject(params.recipients)) {

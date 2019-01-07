@@ -516,6 +516,8 @@ Wallets.prototype.getWallet = function(params, callback) {
     query.allTokens = params.allTokens;
   }
 
+  this.bitgo._reqId = params.reqId || util.createRequestId();
+
   return this.bitgo.get(this.baseCoin.url('/wallet/' + params.id))
   .query(query)
   .result()
@@ -536,6 +538,8 @@ Wallets.prototype.getWalletByAddress = function(params, callback) {
   common.validateParams(params, ['address'], [], callback);
 
   const self = this;
+
+  this.bitgo._reqId = params.reqId || util.createRequestId();
 
   return this.bitgo.get(this.baseCoin.url('/wallet/address/' + params.address))
   .result()
