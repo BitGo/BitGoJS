@@ -348,6 +348,9 @@ const handleV2AccelerateTransaction = co(function *handleV2AccelerateTransaction
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const wallet = yield coin.wallets().get({ id: req.params.id });
+  if (!isNaN(req.body.maxFee)) {
+    req.body.maxFee = Number(req.body.maxFee);
+  }
   return wallet.accelerateTransaction(req.body);
 });
 

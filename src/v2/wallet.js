@@ -1151,6 +1151,18 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
   }).call(this).asCallback(callback);
 };
 
+/**
+ * Accelerate pending transaction by increasing the fee rate. (Beta)
+ *
+ * Currently only implemented for Bitcoin as Child-Pays-For-Parent (CPFP).
+ * Creates a child transaction for given cpfpTxIds with a fee that accelerates the parent transaction.
+ *
+ * @param {Array} params.cpfpTxIds - txids of transactions to bump (currently limited to 1)
+ * @param {Number} params.cpfpFeeRate - the fee rate of the combined ancestor set
+ * @param {Number} params.maxFee - the total fee paid (in base units). Can be Infinity.
+ * @param callback
+ * @return {*}
+ */
 Wallet.prototype.accelerateTransaction = function(params, callback) {
   return co(function *() {
     // TODO(BG-9349): change the last check to > 0 and the error message once platform allows multiple transactions to
@@ -1175,19 +1187,18 @@ Wallet.prototype.accelerateTransaction = function(params, callback) {
       }
     }
 
-    if (_.isUndefined(params.maxFee)) {
-      if (params.noMaxFee !== true) {
-        const error = new Error('maxFee must be set unless noMaxFee is set');
-        error.code = 'maxfee_not_set';
-        throw error;
-      }
-    } else {
-      if (!_.isInteger(params.maxFee) || params.maxFee < 0) {
-        const error = new Error('maxFee must be a non-negative integer');
-        error.code = 'maxfee_not_nonnegative_integer';
-        throw error;
-      }
+    if (params.maxFee === Infinity) {
+      delete params.maxFee;
+    } else if (!_.isInteger(params.maxFee) || params.maxFee < 0) {
+      const error = new Error('maxFee must be a non-negative integer or Infinity');
+      error.code = 'maxfee_not_valid';
+      throw error;
     }
+
+    if (!_.isUndefined(params.recipients)) {
+      throw new Error('recipients must not be set');
+    }
+    params.recipients = [];
 
     // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
     const submitParams = Object.assign(params, yield this.prebuildAndSignTransaction(params));

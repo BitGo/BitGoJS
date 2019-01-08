@@ -531,41 +531,49 @@ describe('V2 Wallet:', function() {
       .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
     }));
 
-    it('fails if maxFee is not passed and neither is noMaxFee', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true })
-      .should.be.rejectedWith({ code: 'maxfee_not_set' });
-    }));
-
-    it('fails if maxFee is not an integer', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' })
-      .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
-    }));
-
-    it('fails if maxFee is negative', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: -1 })
-      .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
+    it('fails if maxFee is not passed', co(function *() {
+      for (const maxFee of [undefined, -1, 1.1]) {
+        yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 1, maxFee })
+        .should.be.rejectedWith({ code: 'maxfee_not_valid' });
+      }
     }));
 
     it('submits a transaction with all cpfp specific parameters', co(function *() {
-      const params = {
-        cpfpTxIds: ['id'],
-        cpfpFeeRate: 1,
-        maxFee: 1
-      };
+      const testWithParams = co(function *(params) {
+        const prebuildReturn = {
+          txHex: '123',
+          recipients: [],
+          cpfpFeeRate: params.cpfpFeeRate,
+          cpfpTxIds: params.cpfpTxIds
+        };
+        if (params.maxFee !== Infinity) {
+          prebuildReturn.maxFee = params.maxFee;
+        }
+        const prebuildStub = sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
 
-      const prebuildReturn = Object.assign({ txHex: '123' }, params);
-      const prebuildStub = sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+        const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
+        nock(bgUrl)
+        .post(path, _.matches(prebuildReturn))
+        .reply(200);
 
-      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
-      nock(bgUrl)
-      .post(path, _.matches(prebuildReturn))
-      .reply(200);
+        yield wallet.accelerateTransaction(params);
 
-      yield wallet.accelerateTransaction(params);
+        prebuildStub.should.have.been.calledOnceWith(params);
+        sinon.restore();
+      }.bind(this));
 
-      prebuildStub.should.have.been.calledOnceWith(params);
+      const validFeeRates = [1, 10, 100];
+      const validMaxFees = [0, 1, 1000, Infinity];
 
-      sinon.restore();
+      for (const cpfpFeeRate of validFeeRates) {
+        for (const maxFee of validMaxFees) {
+          yield testWithParams({
+            cpfpTxIds: ['id'],
+            cpfpFeeRate,
+            maxFee
+          });
+        }
+      }
     }));
   });
 
