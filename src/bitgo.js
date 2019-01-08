@@ -1628,6 +1628,10 @@ BitGo.prototype.ping = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
+  if (params.reqId) {
+    this._reqId = params.reqId;
+  }
+
   return this.get(this.url('/ping'))
   .result()
   .nodeify(callback);

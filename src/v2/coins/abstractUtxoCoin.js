@@ -87,6 +87,9 @@ class AbstractUtxoCoin extends BaseCoin {
 
   postProcessPrebuild(prebuild, callback) {
     return co(function *() {
+      if (prebuild._reqId) {
+        this.bitgo._reqId = prebuild._reqId;
+      }
       const chainhead = yield this.bitgo.get(this.url('/public/block/latest')).result();
       const blockHeight = chainhead.height;
       const transaction = bitcoin.Transaction.fromHex(prebuild.txHex, this.network);
@@ -141,7 +144,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  parseTransaction({ txParams, txPrebuild, wallet, verification = {} }, callback) {
+  parseTransaction({ txParams, txPrebuild, wallet, verification = {}, reqId }, callback) {
     return co(function *() {
       if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
         throw new Error('verification.disableNetworking must be a boolean');
@@ -154,9 +157,9 @@ class AbstractUtxoCoin extends BaseCoin {
         throw new Error('cannot fetch keychains without networking');
       } else if (!keychains) {
         keychains = yield Promise.props({
-          user: this.keychains().get({ id: wallet._wallet.keys[0] }),
-          backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
-          bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
+          user: this.keychains().get({ id: wallet._wallet.keys[0], reqId }),
+          backup: this.keychains().get({ id: wallet._wallet.keys[1], reqId }),
+          bitgo: this.keychains().get({ id: wallet._wallet.keys[2], reqId })
         });
       }
       const keychainArray = [keychains.user, keychains.backup, keychains.bitgo];
@@ -199,7 +202,7 @@ class AbstractUtxoCoin extends BaseCoin {
           let addressDetails = _.extend({}, addressDetailsPrebuild, addressDetailsVerification);
           debug('Locally available address %s details: %O', currentAddress, addressDetails);
           if (_.isEmpty(addressDetails) && !disableNetworking) {
-            addressDetails = yield wallet.getAddress({ address: currentAddress });
+            addressDetails = yield wallet.getAddress({ address: currentAddress, reqId });
             debug('Downloaded address %s details: %O', currentAddress, addressDetails);
           }
           // verify that the address is on the wallet. verifyAddress throws if
@@ -325,10 +328,10 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {boolean}
    */
-  verifyTransaction({ txParams, txPrebuild, wallet, verification = {} }, callback) {
+  verifyTransaction({ txParams, txPrebuild, wallet, verification = {}, reqId }, callback) {
     return co(function *() {
       const disableNetworking = !!verification.disableNetworking;
-      const parsedTransaction = yield this.parseTransaction({ txParams, txPrebuild, wallet, verification });
+      const parsedTransaction = yield this.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
 
       const keychains = parsedTransaction.keychains;
 
@@ -435,6 +438,9 @@ class AbstractUtxoCoin extends BaseCoin {
         } else if (!transactionCache[transactionId]) {
           if (disableNetworking) {
             throw new Error('attempting to retrieve transaction details externally with networking disabled');
+          }
+          if (reqId) {
+            this.bitgo._reqId = reqId;
           }
           transactionCache[transactionId] = yield this.bitgo.get(this.url(`/public/tx/${transactionId}`)).result();
         }
