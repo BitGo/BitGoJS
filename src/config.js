@@ -193,7 +193,20 @@ exports.tokens = {
         { type: 'meta', coin: 'eth', network: 'Mainnet', name: 'Metadium', tokenContractAddress: '0xde2f7766c8bf14ca67193128535e5c7454f8387c', decimalPlaces: 18 },
         { type: 'aergo', coin: 'eth', network: 'Mainnet', name: 'Aergo', tokenContractAddress: '0xae31b85bfe62747d0836b82608b4830361a3d37a', decimalPlaces: 18 },
         { type: 'fxrt', coin: 'eth', network: 'Mainnet', name: 'FXRT', tokenContractAddress: '0x506742a24c54b77c5af4065b2626ab96c641f90e', decimalPlaces: 3 },
-        { type: 'bcio', coin: 'eth', network: 'Mainnet', name: 'Blockchain.io', tokenContractAddress: '0xcdc412f306e0c51e3249b88c65423cd16b322673', decimalPlaces: 18 }
+        { type: 'bcio', coin: 'eth', network: 'Mainnet', name: 'Blockchain.io', tokenContractAddress: '0xcdc412f306e0c51e3249b88c65423cd16b322673', decimalPlaces: 18 },
+        { type: 'xcd', coin: 'eth', network: 'Mainnet', name: 'CapdaxToken', tokenContractAddress: '0xca00bc15f67ebea4b20dfaaa847cace113cc5501', decimalPlaces: 18 },
+        { type: 'zix', coin: 'eth', network: 'Mainnet', name: 'Zeex Token', tokenContractAddress: '0xf3c092ca8cd6d3d4ca004dc1d0f1fe8ccab53599', decimalPlaces: 18 },
+        { type: 'buy', coin: 'eth', network: 'Mainnet', name: 'buying.com', tokenContractAddress: '0x0d7f0fa3a79bfedbab291da357958596c74e27d7', decimalPlaces: 18 },
+        { type: 'onl', coin: 'eth', network: 'Mainnet', name: 'On.Live', tokenContractAddress: '0x6863be0e7cf7ce860a574760e9020d519a8bdc47', decimalPlaces: 18 },
+        { type: 'wpx', coin: 'eth', network: 'Mainnet', name: 'WalletPlusX', tokenContractAddress: '0x888cfdf68abe850cd628769ade6e59fddb42602f', decimalPlaces: 18 },
+        { type: 'isr', coin: 'eth', network: 'Mainnet', name: 'Insureum', tokenContractAddress: '0xb16d3ed603d62b125c6bd45519eda40829549489', decimalPlaces: 18 },
+        { type: 'key', coin: 'eth', network: 'Mainnet', name: 'SelfKey', tokenContractAddress: '0x4cc19356f2d37338b9802aa8e8fc58b0373296e7', decimalPlaces: 18 },
+        { type: 'bird', coin: 'eth', network: 'Mainnet', name: 'BirdCoin', tokenContractAddress: '0x026e62dded1a6ad07d93d39f96b9eabd59665e0d', decimalPlaces: 18 },
+        { type: 'zoom', coin: 'eth', network: 'Mainnet', name: 'CoinZoom', tokenContractAddress: '0x69cf3091c91eb72db05e45c76e58225177dea742', decimalPlaces: 18 },
+        { type: 'bnk', coin: 'eth', network: 'Mainnet', name: 'Bankera', tokenContractAddress: '0xc80c5e40220172b36adee2c951f26f2a577810c5', decimalPlaces: 8 },
+        { type: 'jbc', coin: 'eth', network: 'Mainnet', name: 'Japan Brand Coin', tokenContractAddress: '0x3635e381c67252405c1c0e550973155832d5e490', decimalPlaces: 18 },
+        { type: 'mcx', coin: 'eth', network: 'Mainnet', name: 'MachiX Token', tokenContractAddress: '0xd15ecdcf5ea68e3995b2d0527a0ae0a3258302f8', decimalPlaces: 18 },
+        { type: 'ysey', coin: 'eth', network: 'Mainnet', name: 'YSEY Utility Token', tokenContractAddress: '0x1358efe5d9bfc2005918c0b2f220a4345c9ee7a3', decimalPlaces: 3 }
       ]
     }
   },
