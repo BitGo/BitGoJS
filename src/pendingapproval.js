@@ -294,6 +294,7 @@ PendingApproval.prototype.approve = function(params, callback) {
       .then(function() {
         const recreationParams = _.extend({}, params, { txHex: self.info().transactionRequest.transaction }, self.info().transactionRequest.buildParams);
         delete recreationParams.unspents; // we delete the previous unspents, because we want to recreate a tx with new ones
+        delete recreationParams.feeRate;
         return self.recreateAndSignTransaction(recreationParams);
       });
     }
