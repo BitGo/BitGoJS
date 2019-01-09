@@ -35,7 +35,7 @@ describe('Market', function() {
         yield bitgo.coin(coin).markets().lastDays({ currencyName: 'USD', days: -1 }).should.be.rejected();
       }));
 
-      it('latest', co(function *() {
+      xit('latest', co(function *() {
         const marketData = yield bitgo.coin(coin).markets().latest({});
 
         marketData.should.have.property('latest');
