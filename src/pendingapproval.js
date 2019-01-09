@@ -293,11 +293,12 @@ PendingApproval.prototype.approve = function(params, callback) {
       return self.populateWallet()
       .then(function() {
         const recreationParams = _.extend({}, params, { txHex: self.info().transactionRequest.transaction }, self.info().transactionRequest.buildParams);
-        delete recreationParams.fee; // always need to delete fee, because feeRate is specified and can't have both
-        delete recreationParams.unspents; // we delete the previous unspents, because we want to recreate a tx with new ones
-        if (params.forceRecreate) { // if we're forcing a recreate, then we must delete some of the build params so that the tx rebuilds
-          delete recreationParams.feeRate; // delete feeRate and fee so that recreate will calculate a new fee based on the new unspents
-        }
+        // delete the old build params because we want 'recreateAndSign' to recreate the transaction
+        delete recreationParams.fee;
+        delete recreationParams.unspents;
+        delete recreationParams.txInfo;
+        delete recreationParams.estimatedSize;
+        delete recreationParams.changeAddresses;
         return self.recreateAndSignTransaction(recreationParams);
       });
     }
