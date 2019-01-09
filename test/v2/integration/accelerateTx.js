@@ -1,5 +1,6 @@
 require('should');
-const co = require('bluebird').coroutine;
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 
 const BitGoJS = require('../../../src');
 
@@ -40,6 +41,8 @@ describe('accelerateTransaction', function() {
   let unconfirmedTx;
 
   before(co(function *() {
+    const MILLISECONDS_WAIT_IMS = 2000;
+
     this.timeout(0);
     console.log('unlocking account...');
     yield bitgo.unlock({ otp: '0000000' });
@@ -51,11 +54,13 @@ describe('accelerateTransaction', function() {
     unconfirmedTx = yield getUnconfirmedTx(wallet);
     console.log('created tx', unconfirmedTx);
     (unconfirmedTx === undefined).should.eql(false);
+
+    console.log(`waiting ${MILLISECONDS_WAIT_IMS / 1000}s for IMS to see tx...`);
+    yield Promise.delay(MILLISECONDS_WAIT_IMS);
   }));
 
   it('can accelerate an unconfirmed tx', co(function *() {
-    console.log('acclerateTx...');
-    // FIXME: the tx is not found in the db when we go to access it
+    // FIXME: Error `cannot build transaction without available unspents`
     const result = yield wallet.accelerateTransaction({
       cpfpTxIds: [unconfirmedTx],
       cpfpFeeRate,
