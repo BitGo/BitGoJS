@@ -3,7 +3,7 @@ const co = require('bluebird').coroutine;
 
 const BitGoJS = require('../../../src');
 
-describe('AccelerateTx', function() {
+describe('accelerateTransaction', function() {
   // latest.bitgo.com / otto-latest@bitgo.com
   const accessToken = 'v2x0f5a14ab6aa4c3d4a420444ed6494157b7259de634ad3836ba748335812c6252';
   // wallet "cpfptest2"
@@ -32,6 +32,11 @@ describe('AccelerateTx', function() {
     return transfer.txid;
   }.bind(this));
 
+  const getConfirmedTx = co(function *(wallet) {
+    const { transfers } = yield wallet.transfers({ limit: 1, minConfirms: 1 });
+    return transfers[0].txid;
+  }.bind(this));
+
   let unconfirmedTx;
 
   before(co(function *() {
@@ -48,14 +53,45 @@ describe('AccelerateTx', function() {
     (unconfirmedTx === undefined).should.eql(false);
   }));
 
-  it('can accelerate unconfirmed tx', co(function *() {
-    console.log('acclerateTx..');
+  it('can accelerate an unconfirmed tx', co(function *() {
+    console.log('acclerateTx...');
+    // FIXME: the tx is not found in the db when we go to access it
     const result = yield wallet.accelerateTransaction({
       cpfpTxIds: [unconfirmedTx],
       cpfpFeeRate,
-      maxFee: 1000000
+      maxFee: 1000000,
+      recipients: [] // TODO: remove me when #179 lands
     });
     console.log('result', result);
+  }));
+
+  it('fails when there are insufficient funds to bump the transaction', co(function *() {
+
+  }));
+
+  it('fails when the fee needed to accelerate the tx is above the maxFeeRate passed', co(function *() {
+
+  }));
+
+  it('can accelerate an entire ancestor set', co(function *() {
+
+  }));
+
+  it('fails when attempting to bump an already confirmed transaction', co(function *() {
+    const confirmedTx = yield getConfirmedTx(wallet);
+    try {
+      yield wallet.accelerateTransaction({
+        cpfpTxIds: [confirmedTx],
+        cpfpFeeRate,
+        maxFee: 1000000,
+        recipients: [] // TODO: remove me when #179 lands
+      });
+      throw new Error('expected error was not thrown');
+    } catch (err) {
+      // error message format below
+      // no unconfirmed tx with id {tx id} requestId={request id}
+      err.message.should.containEql(`no unconfirmed tx with id ${confirmedTx}`);
+    }
   }));
 });
 
