@@ -49,7 +49,6 @@ describe('Market', function() {
         marketData.latest.currencies.USD.should.have.property('24h_avg');
 
         if (isMainnet(coin)) {
-          marketData.latest.currencies.USD.should.have.property('prevDayHigh');
           marketData.latest.currencies.USD.should.have.property('prevDayLow');
           marketData.latest.currencies.USD.should.have.property('total_vol');
           marketData.latest.currencies.USD.should.have.property('timestamp');
@@ -57,7 +56,6 @@ describe('Market', function() {
           marketData.latest.currencies.USD.should.have.property('monthlyLow');
           marketData.latest.currencies.USD.should.have.property('monthlyHigh');
           marketData.latest.currencies.USD.should.have.property('prevDayLow');
-          marketData.latest.currencies.USD.should.have.property('prevDayHigh');
           marketData.latest.currencies.USD.should.have.property('lastHourLow');
           marketData.latest.currencies.USD.should.have.property('lastHourHigh');
         }

@@ -37,7 +37,6 @@ describe('Market', function() {
       marketData.latest.currencies.USD.should.have.property('ask');
       marketData.latest.currencies.USD.should.have.property('last');
       marketData.latest.currencies.USD.should.have.property('total_vol');
-      marketData.latest.currencies.USD.should.have.property('prevDayHigh');
       marketData.latest.currencies.USD.should.have.property('prevDayLow');
       marketData.latest.currencies.USD.should.have.property('24h_avg');
       marketData.latest.currencies.USD.should.have.property('total_vol');
@@ -46,7 +45,6 @@ describe('Market', function() {
       marketData.latest.currencies.USD.should.have.property('monthlyLow');
       marketData.latest.currencies.USD.should.have.property('monthlyHigh');
       marketData.latest.currencies.USD.should.have.property('prevDayLow');
-      marketData.latest.currencies.USD.should.have.property('prevDayHigh');
       marketData.latest.currencies.USD.should.have.property('lastHourLow');
       marketData.latest.currencies.USD.should.have.property('lastHourHigh');
       done();
