@@ -9,6 +9,7 @@ const url = require('url');
 const _ = require('lodash');
 const pjson = require('../package.json');
 const debug = require('debug')('bitgo:express');
+const util = require('./util');
 
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
 
@@ -354,8 +355,10 @@ const handleV2AccelerateTransaction = co(function *handleV2AccelerateTransaction
 const handleV2SendOne = function(req) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  return coin.wallets().get({ id: req.params.id })
+  const reqId = util.createRequestId();
+  return coin.wallets().get({ id: req.params.id, reqId })
   .then(function(wallet) {
+    req.body.reqId = reqId;
     return wallet.send(req.body);
   })
   .catch(function(err) {
@@ -374,8 +377,10 @@ const handleV2SendOne = function(req) {
 const handleV2SendMany = function(req) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  return coin.wallets().get({ id: req.params.id })
+  const reqId = util.createRequestId();
+  return coin.wallets().get({ id: req.params.id, reqId })
   .then(function(wallet) {
+    req.body.reqId = reqId;
     return wallet.sendMany(req.body);
   })
   .catch(function(err) {
