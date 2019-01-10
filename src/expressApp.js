@@ -37,8 +37,12 @@ function validateArgs(args) {
     throw new TlsConfigurationError('Must provide both keypath and crtpath when running in TLS mode!');
   }
 
-  if (env === 'prod' && process.env.NODE_ENV !== 'production' && !disableenvcheck) {
-    throw new NodeEnvironmentError('NODE_ENV should be set to production when running against prod environment. Use --disableenvcheck if you really want to run in a non-production node configuration.');
+  if (env === 'prod' && process.env.NODE_ENV !== 'production') {
+    if (!disableenvcheck) {
+      throw new NodeEnvironmentError('NODE_ENV should be set to production when running against prod environment. Use --disableenvcheck if you really want to run in a non-production node configuration.');
+    } else {
+      console.warn(`warning: unsafe NODE_ENV '${process.env.NODE_ENV}'. NODE_ENV must be set to 'production' when running against BitGo production environment.`);
+    }
   }
 
   return args;
@@ -226,6 +230,7 @@ module.exports.parseArgs = function() {
 
   parser.addArgument(['--disableenvcheck'], {
     action: 'storeTrue',
+    defaultValue: true, // BG-9584: temporarily disable env check while we give users time to react to change in runtime behavior
     help: 'disable checking for proper NODE_ENV when running in prod environment'
   });
 
