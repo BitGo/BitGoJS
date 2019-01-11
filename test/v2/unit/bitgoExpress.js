@@ -15,7 +15,7 @@ const httpProxy = require('http-proxy');
 const { Environments } = require('../../../src/common');
 const co = require('bluebird').coroutine;
 const { SSL_OP_NO_TLSv1 } = require('constants');
-const { TlsConfigurationError } = require('../../../src/errors');
+const { TlsConfigurationError, NodeEnvironmentError } = require('../../../src/errors');
 
 nock.disableNetConnect();
 
@@ -29,10 +29,45 @@ const {
 describe('Bitgo Express', function() {
 
   describe('server initialization', function() {
+
+    it('should require NODE_ENV to be production when running against prod env', function() {
+      const envStub = sinon.stub(process, 'env').value({ NODE_ENV: 'production' });
+
+      try {
+        (() => expressApp({
+          env: 'prod',
+          bind: 'localhost'
+        })).should.not.throw();
+
+        process.env.NODE_ENV = 'dev';
+        (() => expressApp({
+          env: 'prod',
+          bind: 'localhost'
+        })).should.throw(NodeEnvironmentError);
+      } finally {
+        envStub.restore();
+      }
+    });
+
+    it('should disable NODE_ENV check if disableenvcheck argument is given', function() {
+      const envStub = sinon.stub(process, 'env').value({ NODE_ENV: 'dev' });
+
+      try {
+        (() => expressApp({
+          env: 'prod',
+          bind: 'localhost',
+          disableenvcheck: true
+        })).should.not.throw();
+      } finally {
+        envStub.restore();
+      }
+    });
+
     it('should require TLS for prod env when listening on external interfaces', function() {
       const args = {
         env: 'prod',
-        bind: '1'
+        bind: '1',
+        disableenvcheck: true
       };
 
       (() => expressApp(args)).should.throw(TlsConfigurationError);
@@ -55,6 +90,7 @@ describe('Bitgo Express', function() {
       delete args.crtpath;
       args.keypath = '/tmp/key.pem';
       (() => expressApp(args)).should.throw(TlsConfigurationError);
+
     });
 
     it('should require both keypath and crtpath when using TLS, but TLS is not required', function() {
@@ -273,7 +309,8 @@ describe('Bitgo Express', function() {
 
       const args = {
         env: 'prod',
-        disablessl: true
+        disablessl: true,
+        disableenvcheck: true
       };
 
       expressApp(args);

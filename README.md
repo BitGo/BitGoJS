@@ -24,7 +24,7 @@ We recommend using `nvm`, the [Node Version Manager](https://github.com/creation
 
 # Full Documentation
 
-View our [Javascript SDK Documentation](https://www.bitgo.com/api/?javascript#authentication).
+View our [Javascript SDK Documentation](https://www.bitgo.com/api/v2).
 
 # Example Usage
 
@@ -79,7 +79,7 @@ wallet.sendCoins({
 ```
 
 ## More examples
-Further demos and examples can be found in the [example](example/) directory and [documented here](https://www.bitgo.com/api/?javascript#examples).
+Further demos and examples can be found in the [example](example/) directory and [documented here](https://www.bitgo.com/api/v2/?javascript#examples).
 
 # BitGo Express Local Signing Server (REST API)
 
@@ -89,6 +89,8 @@ BitGo Express runs as a service in your own datacenter, and handles the client-s
 This ensures your keys never leave your network, and are not seen by BitGo. BitGo Express can also proxy the standard BitGo REST APIs, providing a unified interface to BitGo through a single REST API.
 
 `bin/bitgo-express [-h] [-v] [-p PORT] [-b BIND] [-e ENV] [-d] [-l LOGFILEPATH] [-k KEYPATH] [-c CRTPATH]`
+
+**Note:** When running against the BitGo production environment, you must run node in a production configuration as well. You can do that by running `export NODE_ENV=production` prior to starting bitgo-express.
 
 For a full tutorial of how to install, authenticate, and use Bitgo Express, see the [Bitgo Express Quickstart](https://platform.bitgo.com/bitgo-express/)
 
