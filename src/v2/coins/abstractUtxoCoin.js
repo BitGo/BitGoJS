@@ -474,6 +474,10 @@ class AbstractUtxoCoin extends BaseCoin {
       throw new errors.InvalidAddressError(`invalid address: ${address}`);
     }
 
+    if (_.isUndefined(chain) && _.isUndefined(index)) {
+      return; // if both chain and index are undefined, then the address is a custom address and need not be verified through chain and index
+    }
+
     if (!(_.isFinite(chain) && _.isFinite(index))) {
       throw new errors.InvalidAddressVerificationObjectPropertyError(`address validation failure: invalid chain (${chain}) or index (${index})`);
     }
