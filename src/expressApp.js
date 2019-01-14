@@ -15,7 +15,7 @@ const { SSL_OP_NO_TLSv1 } = require('constants');
 
 const common = require('./common');
 const pjson = require('../package.json');
-const { TlsConfigurationError } = require('./errors');
+const { TlsConfigurationError, NodeEnvironmentError } = require('./errors');
 
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
 
@@ -26,7 +26,7 @@ const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
  * @return {*}
  */
 function validateArgs(args) {
-  const { env, bind, disablessl, crtpath, keypath } = args;
+  const { env, bind, disablessl, crtpath, keypath, disableenvcheck } = args;
   const needsTLS = env === 'prod' && bind !== 'localhost' && !disablessl;
 
   if (needsTLS && !(keypath && crtpath)) {
@@ -35,6 +35,14 @@ function validateArgs(args) {
 
   if (Boolean(keypath) !== Boolean(crtpath)) {
     throw new TlsConfigurationError('Must provide both keypath and crtpath when running in TLS mode!');
+  }
+
+  if (env === 'prod' && process.env.NODE_ENV !== 'production') {
+    if (!disableenvcheck) {
+      throw new NodeEnvironmentError('NODE_ENV should be set to production when running against prod environment. Use --disableenvcheck if you really want to run in a non-production node configuration.');
+    } else {
+      console.warn(`warning: unsafe NODE_ENV '${process.env.NODE_ENV}'. NODE_ENV must be set to 'production' when running against BitGo production environment.`);
+    }
   }
 
   return args;
@@ -218,6 +226,12 @@ module.exports.parseArgs = function() {
   parser.addArgument(['--disableproxy'], {
     action: 'storeTrue',
     help: 'disable the proxy, not routing any non-express routes'
+  });
+
+  parser.addArgument(['--disableenvcheck'], {
+    action: 'storeTrue',
+    defaultValue: true, // BG-9584: temporarily disable env check while we give users time to react to change in runtime behavior
+    help: 'disable checking for proper NODE_ENV when running in prod environment'
   });
 
   return parser.parseArgs();
