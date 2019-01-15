@@ -262,7 +262,7 @@ class AbstractUtxoCoin extends BaseCoin {
             debug('Address %s presumed external', currentAddress);
             return _.extend({}, currentOutput, { external: true });
           } else if (e.message.includes('address validation failure: invalid chain') && currentAddress === txParams.changeAddress) {
-            // expect to see this error when passing in a changeAddress with no chain or index
+            // expect to see this error when passing in a custom changeAddress with no chain or index
             return _.extend({}, currentOutput, { external: false });
           }
 
