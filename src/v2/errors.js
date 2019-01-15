@@ -28,10 +28,17 @@ class UnexpectedAddressError extends Error {
   }
 }
 
+class InvalidAddressDerivationProperty extends Error {
+  constructor(message) {
+    super(message || 'address chain and/or index are invalid');
+  }
+}
+
 module.exports = {
   P2wshUnsupportedError,
   UnsupportedAddressTypeError,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
-  UnexpectedAddressError
+  UnexpectedAddressError,
+  InvalidAddressDerivationProperty
 };
