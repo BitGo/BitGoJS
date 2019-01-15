@@ -15,7 +15,14 @@ class TlsConfigurationError extends BitGoJsError {
   }
 }
 
+class NodeEnvironmentError extends BitGoJsError {
+  constructor(message) {
+    super(message || 'NODE_ENV is invalid for the current bitgo environment');
+  }
+}
+
 module.exports = {
   BitGoJsError,
-  TlsConfigurationError
+  TlsConfigurationError,
+  NodeEnvironmentError
 };

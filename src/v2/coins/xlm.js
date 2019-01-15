@@ -310,7 +310,11 @@ class Xlm extends BaseCoin {
           return yield stellar.FederationServer.resolve(address);
         }
       } catch (e) {
-        throw new Error('account not found');
+        if (e.message === 'Network Error') {
+          throw e;
+        } else {
+          throw new Error('account not found');
+        }
       }
     }).call(this);
   }
