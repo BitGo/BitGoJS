@@ -3,6 +3,7 @@ const typeforce = require('typeforce')
 
 const coins = {
   BCH: 'bch',
+  BSV: 'bsv',
   BTC: 'btc',
   BTG: 'btg',
   LTC: 'ltc',
@@ -16,6 +17,10 @@ coins.isBitcoin = function (network) {
 
 coins.isBitcoinCash = function (network) {
   return typeforce.value(coins.BCH)(network.coin)
+}
+
+coins.isBitcoinSV = function (network) {
+  return typeforce.value(coins.BSV)(network.coin)
 }
 
 coins.isBitcoinGold = function (network) {
@@ -33,6 +38,7 @@ coins.isZcash = function (network) {
 coins.isValidCoin = typeforce.oneOf(
   coins.isBitcoin,
   coins.isBitcoinCash,
+  coins.isBitcoinSV,
   coins.isBitcoinGold,
   coins.isLitecoin,
   coins.isZcash

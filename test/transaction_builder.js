@@ -168,6 +168,10 @@ describe('TransactionBuilder', function () {
         }, new RegExp(errorMessage))
 
         assert.throws(function () {
+          TransactionBuilder.fromTransaction(tx, NETWORKS.bitcoinsv)
+        }, new RegExp(errorMessage))
+
+        assert.throws(function () {
           TransactionBuilder.fromTransaction(tx, NETWORKS.bitcoingold)
         }, new RegExp(errorMessage))
 
@@ -206,7 +210,7 @@ describe('TransactionBuilder', function () {
     })
   })
 
-  var networksToTest = ['bitcoin', 'bitcoingold', 'bitcoincash', 'zcashTest']
+  var networksToTest = ['bitcoin', 'bitcoincash', 'bitcoingold', 'bitcoinsv', 'dash', 'litecoin', 'zcash']
   networksToTest.forEach(function (network) {
     describe('addInput for ' + network, function () {
       var testNetwork = NETWORKS[network]

@@ -197,6 +197,7 @@ function fixMultisigOrder (input, transaction, vin, value, network) {
       var parsed = ECSignature.parseScriptSignature(signature)
       var hash
       switch (network.coin) {
+        case coins.BSV:
         case coins.BCH:
           hash = transaction.hashForCashSignature(vin, input.signScript, value, parsed.hashType)
           break
@@ -797,7 +798,7 @@ TransactionBuilder.prototype.sign = function (vin, keyPair, redeemScript, hashTy
   if (coins.isBitcoinGold(this.network)) {
     signatureHash = this.tx.hashForGoldSignature(vin, input.signScript, witnessValue, hashType, input.witness)
     debug('Calculated BTG sighash (%s)', signatureHash.toString('hex'))
-  } else if (coins.isBitcoinCash(this.network)) {
+  } else if (coins.isBitcoinCash(this.network) || coins.isBitcoinSV(this.network)) {
     signatureHash = this.tx.hashForCashSignature(vin, input.signScript, witnessValue, hashType)
     debug('Calculated BCH sighash (%s)', signatureHash.toString('hex'))
   } else if (coins.isZcash(this.network)) {
