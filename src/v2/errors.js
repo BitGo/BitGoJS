@@ -28,7 +28,7 @@ class UnexpectedAddressError extends Error {
   }
 }
 
-class InvalidAddressDerivationProperty extends Error {
+class InvalidAddressDerivationPropertyError extends Error {
   constructor(message) {
     super(message || 'address chain and/or index are invalid');
   }
@@ -40,5 +40,5 @@ module.exports = {
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   UnexpectedAddressError,
-  InvalidAddressDerivationProperty
+  InvalidAddressDerivationPropertyError
 };
