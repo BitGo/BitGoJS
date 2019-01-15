@@ -261,6 +261,9 @@ class AbstractUtxoCoin extends BaseCoin {
             // the address was found, but not on the wallet, which simply means it's external
             debug('Address %s presumed external', currentAddress);
             return _.extend({}, currentOutput, { external: true });
+          } else if (e instanceof errors.InvalidAddressDerivationPropertyError && currentAddress === txParams.changeAddress) {
+            // expect to see this error when passing in a custom changeAddress with no chain or index
+            return _.extend({}, currentOutput, { external: false });
           }
 
           debug('Address %s verification failed', currentAddress);
@@ -474,8 +477,8 @@ class AbstractUtxoCoin extends BaseCoin {
       throw new errors.InvalidAddressError(`invalid address: ${address}`);
     }
 
-    if (!(_.isFinite(chain) && _.isFinite(index))) {
-      throw new errors.InvalidAddressVerificationObjectPropertyError(`address validation failure: invalid chain (${chain}) or index (${index})`);
+    if ((_.isUndefined(chain) && _.isUndefined(index)) || (!(_.isFinite(chain) && _.isFinite(index)))) {
+      throw new errors.InvalidAddressDerivationPropertyError(`address validation failure: invalid chain (${chain}) or index (${index})`);
     }
 
     if (!_.isObject(coinSpecific)) {

@@ -88,5 +88,34 @@ describe('Abstract UTXO Coin:', () => {
       coin.explainTransaction.restore();
       coin.verifyAddress.restore();
     }));
+
+    it('should accept a custom change address', co(function *() {
+
+      const changeAddress = '33a9a4TTT47i2VSpNZA3YT7v3sKYaZFAYz';
+      const outputAmount = 10000;
+      const recipients = [];
+
+      sinon.stub(coin, 'explainTransaction')
+        .returns({
+          outputs: [],
+          changeOutputs: [{
+            address: changeAddress,
+            amount: outputAmount
+          }]
+        });
+
+      const parsedTransaction = yield coin.parseTransaction({ txParams: { changeAddress, recipients }, txPrebuild: {}, wallet, verification });
+
+      should.exist(parsedTransaction.outputs[0]);
+      parsedTransaction.outputs[0].should.deepEqual({
+        address: changeAddress,
+        amount: outputAmount,
+        external: false
+      });
+
+      coin.explainTransaction.restore();
+    }));
+
+
   });
 });
