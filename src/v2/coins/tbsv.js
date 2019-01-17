@@ -3,7 +3,7 @@ const bitcoin = require('bitgo-utxo-lib');
 
 class Tbsv extends Bsv {
   constructor() {
-    super(bitcoin.networks.bitcoincashTestnet);
+    super(bitcoin.networks.bitcoinsvTestnet);
   }
 
   getChain() {
@@ -11,7 +11,7 @@ class Tbsv extends Bsv {
   }
 
   getFullName() {
-    return 'Testnet Bitcoin SVV';
+    return 'Testnet Bitcoin SV';
   }
 
   getAddressPrefix() {

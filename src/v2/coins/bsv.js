@@ -4,6 +4,7 @@ const request = require('superagent');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const common = require('../../common');
+const errors = require('../errors');
 
 class Bsv extends Bch {
 
@@ -29,7 +30,7 @@ class Bsv extends Bch {
     // TODO BG-9989: There is no explorer api for Bitcoin SV yet. Once we have one, add it to src/common.js and update
     // this method.
     if (!baseUrl) {
-      throw new Error(`Recoveries not supported for ${this.getChain()} - no explorer available`);
+      throw new errors.WalletRecoveryUnsupported(`Recoveries not supported for ${this.getChain()} - no explorer available`);
     }
 
     return common.Environments[this.bitgo.env].bsvExplorerBaseUrl + url;
