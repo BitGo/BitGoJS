@@ -44,7 +44,7 @@ BitGo.TEST_THIRD_PASSWORD = BitGo.TEST_PASSWORD;
 // account with a known total balance. Don't spend or receive coins
 // from any wallet in this account. Known total balance across
 // all TLTC wallets in this account is exactly 9999586400
-BitGo.TEST_KNOWN_BALANCE_USER = 'tyler+test-get-total-balances@bitgo.com';
+BitGo.TEST_KNOWN_BALANCE_USER = 'noemail@fakebitgofake.com';
 BitGo.TEST_KNOWN_BALANCE_PASSWORD = BitGo.TEST_PASSWORD;
 BitGo.TEST_KNOWN_BALANCE = 9999586400;
 
