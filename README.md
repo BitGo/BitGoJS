@@ -11,6 +11,7 @@ Originally a fork of [bitcoinjs-lib](https://github.com/BitGo/bitcoinjs-lib); we
 - Bitcoin
 - Bitcoin Cash
 - Bitcoin Gold
+- Bitcoin SV (Satoshi Vision)
 - Dash
 - Litecoin
 - Zcash (Sapling compatible)
