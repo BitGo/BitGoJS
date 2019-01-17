@@ -179,6 +179,7 @@ describe('Abstract UTXO Coin:', () => {
       tx.transactionHex.should.equal(expectedTxHex);
 
       nock.cleanAll();
+      nock.restore();
 
     }));
 
