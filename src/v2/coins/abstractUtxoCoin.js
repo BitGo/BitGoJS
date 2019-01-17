@@ -1005,7 +1005,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * - krsProvider: necessary if backup key is held by KRS
    * - recoveryDestination: target address to send recovered funds to
    * - scan: the amount of consecutive addresses without unspents to scan through before stopping
-   * - ignoreAddressTypes: array of AddressTypes to ignore. these are strings defined in AbstractUtxoCoin.AddressTypes
+   * - ignoreAddressTypes: (optional) array of AddressTypes to ignore. these are strings defined in AbstractUtxoCoin.AddressTypes
    *        for example: ['p2sh-p2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
    * @param callback
    */
