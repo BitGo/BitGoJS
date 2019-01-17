@@ -1135,19 +1135,28 @@ class AbstractUtxoCoin extends BaseCoin {
       // Collect the unspents
       const addressesById = {};
       // Gather the queries, to be executed in parallel
-      const queries = [
+      let queries = [
         queryBlockchainUnspentsPath(userKeyArray, '/0/0/0', false),
-        queryBlockchainUnspentsPath(changeKeyArray, '/0/0/1', false),
-        queryBlockchainUnspentsPath(userKeyArraySW, '/0/0/10', true),
-        queryBlockchainUnspentsPath(changeKeyArraySW, '/0/0/11', true)
-      ];
+        queryBlockchainUnspentsPath(changeKeyArray, '/0/0/1', false)]
+      if (!params.ignoreSegwit) {
+        console.log('\n\n\ including segwit\n\n\n');
+        queries = queries.concat([queryBlockchainUnspentsPath(userKeyArraySW, '/0/0/10', true), queryBlockchainUnspentsPath(changeKeyArraySW, '/0/0/11', true)]);
+      }
       const queryResponse = yield Promise.all(queries);
       const userUnspents = queryResponse[0];
       const changeUnspents = queryResponse[1];
-      const userUnspentsSW = queryResponse[2];
-      const changeUnspentsSW = queryResponse[3];
+      let userUnspentsSW, changeUnspentsSW;
+      if (!params.ignoreSegwit) {
+        userUnspentsSW = queryResponse[2];
+        changeUnspentsSW = queryResponse[3];
+      }
 
-      const unspents = userUnspents.concat(changeUnspents).concat(userUnspentsSW).concat(changeUnspentsSW);
+      let unspents;
+      if (params.ignoreSegwit) {
+        unspents = userUnspents.concat(changeUnspents);
+      } else {
+        unspents = userUnspents.concat(changeUnspents).concat(userUnspentsSW).concat(changeUnspentsSW);
+      }
 
       // Build the transaction
       const totalInputAmount = _.sumBy(unspents, 'amount');
