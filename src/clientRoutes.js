@@ -241,8 +241,8 @@ const handleV2VerifyAddress = function(req) {
 const handleCanonicalAddress = function(req) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  if (!['ltc', 'bch'].includes(coin.getFamily())) {
-    throw new Error('only Litecoin/Bitcoin Cash address canonicalization is supported');
+  if (!['ltc', 'bch', 'bsv'].includes(coin.getFamily())) {
+    throw new Error('only Litecoin/Bitcoin Cash/Bitcoin SV address canonicalization is supported');
   }
   const address = req.body.address;
   const fallbackVersion = req.body.scriptHashVersion; // deprecate
