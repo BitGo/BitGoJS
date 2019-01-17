@@ -1016,14 +1016,14 @@ class AbstractUtxoCoin extends BaseCoin {
         return keyArray.map((k) => k.derive(index));
       }
 
-      const queryBlockchainUnspentsPath = co(function *queryBlockchainUnspentsPath(keyArray, basePath) {
+      const queryBlockchainUnspentsPath = co(function *queryBlockchainUnspentsPath(keyArray, basePath, segwit) {
         const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
         let numSequentialAddressesWithoutTxs = 0;
 
         // get unspents for these addresses
         const gatherUnspents = co(function *coGatherUnspents(addrIndex) {
           const derivedKeys = deriveKeys(keyArray, addrIndex);
-          const address = createMultiSigAddress(derivedKeys);
+          const address = createMultiSigAddress(derivedKeys, segwit);
           const addressBase58 = address.address;
 
           const addrInfo = yield self.getAddressInfoFromExplorer(addressBase58);
@@ -1071,16 +1071,24 @@ class AbstractUtxoCoin extends BaseCoin {
         return walletUnspents;
       });
 
-      function createMultiSigAddress(keyArray) {
+      function createMultiSigAddress(keyArray, segwit) {
         const publicKeys = keyArray.map((k) => k.getPublicKeyBuffer());
 
-        const redeemScript = bitcoin.script.multisig.output.encode(2, publicKeys);
+        const multisigProgram = bitcoin.script.multisig.output.encode(2, publicKeys);
+        let redeemScript, witnessScript;
+        if (segwit) {
+          witnessScript = multisigProgram;
+          redeemScript = bitcoin.script.witnessScriptHash.output.encode(bitcoin.crypto.sha256(witnessScript));
+        } else {
+          redeemScript = multisigProgram;
+        }
         const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
         const scriptHashScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
         const address = self.calculateRecoveryAddress(scriptHashScript);
 
         return {
           hash: scriptHashScript,
+          witnessScript: witnessScript,
           redeemScript: redeemScript,
           address: address
         };
@@ -1121,12 +1129,25 @@ class AbstractUtxoCoin extends BaseCoin {
       const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
       const userKeyArray = deriveKeys(baseKeyPath, 0);
       const changeKeyArray = deriveKeys(baseKeyPath, 1);
+      const userKeyArraySW = deriveKeys(baseKeyPath, 10);
+      const changeKeyArraySW = deriveKeys(baseKeyPath, 11);
 
       // Collect the unspents
       const addressesById = {};
-      const userUnspents = yield queryBlockchainUnspentsPath(userKeyArray, '/0/0/0');
-      const changeUnspents = yield queryBlockchainUnspentsPath(changeKeyArray, '/0/0/1');
-      const unspents = userUnspents.concat(changeUnspents);
+      // Gather the queries, to be executed in parallel
+      const queries = [
+        queryBlockchainUnspentsPath(userKeyArray, '/0/0/0', false),
+        queryBlockchainUnspentsPath(changeKeyArray, '/0/0/1', false),
+        queryBlockchainUnspentsPath(userKeyArraySW, '/0/0/10', true),
+        queryBlockchainUnspentsPath(changeKeyArraySW, '/0/0/11', true)
+      ];
+      const queryResponse = yield Promise.all(queries);
+      const userUnspents = queryResponse[0];
+      const changeUnspents = queryResponse[1];
+      const userUnspentsSW = queryResponse[2];
+      const changeUnspentsSW = queryResponse[3];
+
+      const unspents = userUnspents.concat(changeUnspents).concat(userUnspentsSW).concat(changeUnspentsSW);
 
       // Build the transaction
       const totalInputAmount = _.sumBy(unspents, 'amount');
@@ -1148,14 +1169,14 @@ class AbstractUtxoCoin extends BaseCoin {
       // Construct a transaction
       txInfo.inputs = unspents.map(function addInputForUnspent(unspent) {
         const address = addressesById[unspent.address];
-        const redeemScript = new Buffer(address.redeemScript, 'hex');
-        const outputScript = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
+        const outputScript = address.hash;
 
         transactionBuilder.addInput(unspent.txid, unspent.n, 0xffffffff, outputScript);
 
         return {
           chainPath: address.chainPath,
-          redeemScript: address.redeemScript.toString('hex')
+          redeemScript: address.redeemScript.toString('hex'),
+          witnessScript: address.witnessScript && address.witnessScript.toString('hex')
         };
       });
 
@@ -1227,7 +1248,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
       if (cosign) {
         try {
-          txb.sign(i, backupPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount);
+          txb.sign(i, backupPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount, address.witnessScript);
         } catch (e) {
           currentSignatureIssue.error = e;
           signatureIssues.push(currentSignatureIssue);
@@ -1235,7 +1256,7 @@ class AbstractUtxoCoin extends BaseCoin {
       }
 
       try {
-        txb.sign(i, userPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount);
+        txb.sign(i, userPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount, address.witnessScript);
       } catch (e) {
         currentSignatureIssue.error = e;
         signatureIssues.push(currentSignatureIssue);
