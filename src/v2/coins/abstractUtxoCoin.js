@@ -1139,7 +1139,6 @@ class AbstractUtxoCoin extends BaseCoin {
         queryBlockchainUnspentsPath(userKeyArray, '/0/0/0', false),
         queryBlockchainUnspentsPath(changeKeyArray, '/0/0/1', false)]
       if (!params.ignoreSegwit) {
-        console.log('\n\n\ including segwit\n\n\n');
         queries = queries.concat([queryBlockchainUnspentsPath(userKeyArraySW, '/0/0/10', true), queryBlockchainUnspentsPath(changeKeyArraySW, '/0/0/11', true)]);
       }
       const queryResponse = yield Promise.all(queries);
