@@ -1005,6 +1005,8 @@ class AbstractUtxoCoin extends BaseCoin {
    * - krsProvider: necessary if backup key is held by KRS
    * - recoveryDestination: target address to send recovered funds to
    * - scan: the amount of consecutive addresses without unspents to scan through before stopping
+   * - ignoreAddressTypes: array of AddressTypes to ignore. these are strings defined in AbstractUtxoCoin.AddressTypes
+   *        for example: ['p2sh-p2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
    * @param callback
    */
   recover(params, callback) {
@@ -1016,14 +1018,15 @@ class AbstractUtxoCoin extends BaseCoin {
         return keyArray.map((k) => k.derive(index));
       }
 
-      const queryBlockchainUnspentsPath = co(function *queryBlockchainUnspentsPath(keyArray, basePath, segwit) {
+      const queryBlockchainUnspentsPath = co(function *queryBlockchainUnspentsPath(keyArray, basePath) {
         const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
         let numSequentialAddressesWithoutTxs = 0;
 
         // get unspents for these addresses
         const gatherUnspents = co(function *coGatherUnspents(addrIndex) {
           const derivedKeys = deriveKeys(keyArray, addrIndex);
-          const address = createMultiSigAddress(derivedKeys, segwit);
+          const chain = basePath.split('/').pop(); // extracts the chain from the basePath
+          const address = createMultiSigAddress(derivedKeys, chain);
           const addressBase58 = address.address;
 
           const addrInfo = yield self.getAddressInfoFromExplorer(addressBase58);
@@ -1071,12 +1074,12 @@ class AbstractUtxoCoin extends BaseCoin {
         return walletUnspents;
       });
 
-      function createMultiSigAddress(keyArray, segwit) {
+      function createMultiSigAddress(keyArray, chain) {
         const publicKeys = keyArray.map((k) => k.getPublicKeyBuffer());
-
+        const isSegwit = (chain === '10' || chain === '11');
         const multisigProgram = bitcoin.script.multisig.output.encode(2, publicKeys);
         let redeemScript, witnessScript;
-        if (segwit) {
+        if (isSegwit) {
           witnessScript = multisigProgram;
           redeemScript = bitcoin.script.witnessScriptHash.output.encode(bitcoin.crypto.sha256(witnessScript));
         } else {
@@ -1135,28 +1138,24 @@ class AbstractUtxoCoin extends BaseCoin {
       // Collect the unspents
       const addressesById = {};
       // Gather the queries, to be executed in parallel
+      const includeP2SH_P2WSH = _.isUndefined(params.ignoreAddressTypes) || _.isEmpty(params.ignoreAddressTypes) || !_.includes(params.ignoreAddressTypes, AbstractUtxoCoin.AddressTypes.P2SH_P2WSH);
       let queries = [
         queryBlockchainUnspentsPath(userKeyArray, '/0/0/0', false),
         queryBlockchainUnspentsPath(changeKeyArray, '/0/0/1', false)]
-      if (!params.ignoreSegwit) {
+      if (includeP2SH_P2WSH) {
         queries = queries.concat([queryBlockchainUnspentsPath(userKeyArraySW, '/0/0/10', true), queryBlockchainUnspentsPath(changeKeyArraySW, '/0/0/11', true)]);
       }
       const queryResponse = yield Promise.all(queries);
       const userUnspents = queryResponse[0];
       const changeUnspents = queryResponse[1];
-      let userUnspentsSW, changeUnspentsSW;
-      if (!params.ignoreSegwit) {
+      let unspents, userUnspentsSW, changeUnspentsSW;
+      if (includeP2SH_P2WSH) {
         userUnspentsSW = queryResponse[2];
         changeUnspentsSW = queryResponse[3];
-      }
-
-      let unspents;
-      if (params.ignoreSegwit) {
-        unspents = userUnspents.concat(changeUnspents);
-      } else {
         unspents = userUnspents.concat(changeUnspents).concat(userUnspentsSW).concat(changeUnspentsSW);
+      } else {
+        unspents = userUnspents.concat(changeUnspents);
       }
-
       // Build the transaction
       const totalInputAmount = _.sumBy(unspents, 'amount');
       if (totalInputAmount <= 0) {

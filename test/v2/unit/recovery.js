@@ -10,6 +10,7 @@ const nock = require('nock');
 const TestV2BitGo = require('../../lib/test_bitgo');
 const recoveryNocks = require('../lib/recovery-nocks');
 const config = require('../../../src/config');
+const AddressTypes = require('../../../src/v2/coins/abstractUtxoCoin').AddressTypes;
 
 nock.disableNetConnect();
 
@@ -47,7 +48,7 @@ describe('Recovery:', function() {
         walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fb0046304302202f51d7ad8d2feea3194ab0238297fae860e87fe02b789858ce92fb374629faf0021f48011d587171984e95524c3ecdfe9bae8ebe4c8a282881b416da8f713751e9014730440220673b1a059e2d851059dd7f1b0501af4bf6d205c81249f49828e7ae987f4a90c5022047f73ff3d4e17ce6ebfe9565351796851d2a4472223acecd7ee00e2729824f38014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0178757b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
@@ -78,7 +79,7 @@ describe('Recovery:', function() {
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fb0046304302202f51d7ad8d2feea3194ab0238297fae860e87fe02b789858ce92fb374629faf0021f48011d587171984e95524c3ecdfe9bae8ebe4c8a282881b416da8f713751e9014730440220673b1a059e2d851059dd7f1b0501af4bf6d205c81249f49828e7ae987f4a90c5022047f73ff3d4e17ce6ebfe9565351796851d2a4472223acecd7ee00e2729824f38014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0178757b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
@@ -111,7 +112,7 @@ describe('Recovery:', function() {
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         krsProvider: 'keyternal',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000b40047304402201e998e77860b1dc62fac80f60b1db62d14abd7bdbff29767718c024413b908380220200cdf49e76a8d41e60d8ef646e88c26352717fe759083322de5516865d50b65014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff02004d6c000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787301b0f000000000017a9141b60c33def13c3eda4cf4835e11a633e4b3302ec8700000000');
@@ -155,7 +156,7 @@ describe('Recovery:', function() {
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         krsProvider: 'keyternal',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       }));
 
       should.exist(error);
@@ -179,7 +180,7 @@ describe('Recovery:', function() {
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         krsProvider: 'keyternal',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       }));
 
       should.exist(error);
@@ -205,7 +206,7 @@ describe('Recovery:', function() {
         walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '2MztSo6jqjLWcvH4g6QoMChbrWkJ3HHzQua',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       should.exist(recovery);
@@ -230,7 +231,7 @@ describe('Recovery:', function() {
         krsProvider: 'keyternal',
         recoveryDestination: '2MztSo6jqjLWcvH4g6QoMChbrWkJ3HHzQua',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       should.exist(recovery);
@@ -305,7 +306,7 @@ describe('Recovery:', function() {
         walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'Qhe8AWhZr1wBNV3iry2uVxnthbawRLhNcF',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       recovery.transactionHex.should.equal('0100000001ffe4ac6dd97fbe9d4526a122c039d9c93ac5d595b1b8d1e0cf23df1b3caecfbc00000000fc0047304402207c87fa565629d0d5bdf1cd4a34c54c90b3ff3a5c50c481ce41cad7709cc9d8d20220774791a635c79d344ccae60b448463ab10e88704405bae47f8c6ffe0eba6ffe80147304402205ebfc4377598dea11a3b50fe7b9e2b3bdb54869407cf651f8f119115738e4e7902201bf86eae5eb417d8355bdc5a5e3f3f306e569475660707e1380395366751600c014c6952210353bcad5447cbed8af7a7e4b010412b1fcc748e7efd225047729bfc452735c10c2103e6f65db8d3718b8a851f0ea64c9bf776cbc9e089f03b12210c7360cadb980031210246cdc4f2c735ccbf5952eded3734a2179104f136a5ed9ec8a1bea50fcaa45d4e53aeffffffff01b03ec9010000000017a914e6c2329cb2f901f30b9606cf839ee09cfce8414e8700000000');
@@ -329,7 +330,7 @@ describe('Recovery:', function() {
         recoveryDestination: 'Qhe8AWhZr1wBNV3iry2uVxnthbawRLhNcF',
         krsProvider: 'keyternal',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       recovery.transactionHex.should.equal('0100000001ffe4ac6dd97fbe9d4526a122c039d9c93ac5d595b1b8d1e0cf23df1b3caecfbc00000000b4004730440220735cb8b3597cdfecf0292007f4861986a86ee5baf8ab6682f563425b1011f4d302205c8544f9c60ed9d7872dc45f9a94afa3b3e567280284cae73a1338ee4e7bd8db014c6952210353bcad5447cbed8af7a7e4b010412b1fcc748e7efd225047729bfc452735c10c2103e6f65db8d3718b8a851f0ea64c9bf776cbc9e089f03b12210c7360cadb980031210246cdc4f2c735ccbf5952eded3734a2179104f136a5ed9ec8a1bea50fcaa45d4e53aeffffffff02882132010000000017a914e6c2329cb2f901f30b9606cf839ee09cfce8414e87e00f97000000000017a914d115b837da7f1563069a3925daf4b243bdd3cb238700000000');
@@ -354,7 +355,7 @@ describe('Recovery:', function() {
         walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 't2GnC5sFN5Km2UuYaYjHNBQRJBDAXVQqSfJ',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       recovery.transactionHex.should.equal('0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f775497500000000fc00473044022051814041484343dc52fa435be57a892a9084be2672801ae319328149ad96618e022029d36c49865b9df3b4c5820aec7ed44ba5ad787bca997d42313197c62b43473e01473044022027c7c2f527c2f5e3794e2e51611611e5f4b341e1736b0fde660cb4425ba9220702202f4e5ae7047bb2615680fa92ff29397d51a3da8acc3dc2f930899c613c8d33fe014c6952210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153aeffffffff01b03ec9010000000017a91470391ef30163f580806ee8a5f0aacc724e7f68558700000000000000000000000000000000000000');
@@ -378,7 +379,7 @@ describe('Recovery:', function() {
         recoveryDestination: 't2GnC5sFN5Km2UuYaYjHNBQRJBDAXVQqSfJ',
         krsProvider: 'keyternal',
         scan: 5,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       recovery.transactionHex.should.equal('0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f775497500000000b500483045022100e4d64617ed56e178384ca219d7839882cff305803fc934845e832345777bda3802205983abea1d0da7ead06e178010fce086ea77f1fbb81d7a0842fc7ef2163d009b014c6952210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153aeffffffff02882132010000000017a91470391ef30163f580806ee8a5f0aacc724e7f685587e00f97000000000017a9142ad735dfc86e2835100b9dc6476facddad6c87ec8700000000000000000000000000000000000000');
@@ -403,7 +404,7 @@ describe('Recovery:', function() {
         walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '8hh6nS2vpKCnebjoWcKJF7ebyEt4yNnEzW',
         scan: 3,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       recovery.transactionHex.should.equal('0100000001edda677a92037140f01cacc1ac0e22391adb9bf4dbce1c4c218822128ac6fd5301000000fc0047304402204a6e7373fa43494d78f3013ea4a0ea0f73a002d48cc29bfe8816b696280c2b08022056a5ad97886b5add39bca9135d445f36c99928b3c83bb0fc613c2a4a00feb93401473044022048de910b7a969ed2729fd9b628377cfdd1d2aa93036694a21bc39271b2f5e30a0220460b9a53ad4166738403bf60628ee4336f7ac984ac2ae1dce1398b30e30226a3014c69522103944ef399da9b45f26407dc3d7abd3544ef6fe6c32236bd6fe39f0db339f267a1210281941b32001f6fd10140e7a8f9a8df881f28d96f172528143e275d96c951a0422103a8ad848ac08c1fc598a91cb0786d6b663084ed3e399072de7c15c397629f2c6f53aeffffffff01b01198000000000017a91423dd90d164d5dfd07ba41814142a5bff0ad5446f8700000000');
@@ -427,7 +428,7 @@ describe('Recovery:', function() {
         krsProvider: 'keyternal',
         recoveryDestination: '8hh6nS2vpKCnebjoWcKJF7ebyEt4yNnEzW',
         scan: 3,
-        ignoreSegwit: true
+        ignoreAddressTypes: ['p2wsh', 'p2sh-p2wsh']
       });
 
       recovery.transactionHex.should.equal('0100000001edda677a92037140f01cacc1ac0e22391adb9bf4dbce1c4c218822128ac6fd5301000000b500483045022100c70ade07a526cdfdf29e0c16bd02ef38005695e2b140b937dbe2578253bee90402206611a571593272630a05406d653d5dc6950152665f24a0ac19fb006c2db33f8c014c69522103944ef399da9b45f26407dc3d7abd3544ef6fe6c32236bd6fe39f0db339f267a1210281941b32001f6fd10140e7a8f9a8df881f28d96f172528143e275d96c951a0422103a8ad848ac08c1fc598a91cb0786d6b663084ed3e399072de7c15c397629f2c6f53aeffffffff0288f400000000000017a91423dd90d164d5dfd07ba41814142a5bff0ad5446f87e00f97000000000017a91405437769516c39063ef0c4ed50cd323495cc913d8700000000');
