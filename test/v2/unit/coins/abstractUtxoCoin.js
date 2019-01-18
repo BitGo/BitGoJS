@@ -4,7 +4,7 @@ const sinon = require('sinon');
 
 const TestBitGo = require('../../../lib/test_bitgo');
 
-const errors = require('../../../../src/v2/errors');
+const errors = require('../../../../src/errors');
 
 describe('Abstract UTXO Coin:', () => {
 

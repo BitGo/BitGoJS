@@ -12,6 +12,7 @@ const bitcoin = require('bitgo-utxo-lib');
 const bitcoinMessage = require('bitcoinjs-message');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
+const errors = require('../errors');
 
 class BaseCoin {
 
@@ -197,7 +198,7 @@ class BaseCoin {
     }
 
     if (!CoinGenerator) {
-      throw new Error('Coin or token type ' + coin + ' not supported or not compiled');
+      throw new errors.UnsupportedCoinError(coin);
     }
 
     return new CoinGenerator();
