@@ -36,7 +36,7 @@ class InvalidAddressDerivationPropertyError extends Error {
 
 class WalletRecoveryUnsupported extends Error {
   constructor(message) {
-    super(message || 'wallet wecovery is not supported by this coin');
+    super(message || 'wallet recovery is not supported by this coin');
   }
 }
 
