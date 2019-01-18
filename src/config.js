@@ -198,7 +198,7 @@ exports.tokens = {
         { type: 'zix', coin: 'eth', network: 'Mainnet', name: 'Zeex Token', tokenContractAddress: '0xf3c092ca8cd6d3d4ca004dc1d0f1fe8ccab53599', decimalPlaces: 18 },
         { type: 'buy', coin: 'eth', network: 'Mainnet', name: 'buying.com', tokenContractAddress: '0x0d7f0fa3a79bfedbab291da357958596c74e27d7', decimalPlaces: 18 },
         { type: 'onl', coin: 'eth', network: 'Mainnet', name: 'On.Live', tokenContractAddress: '0x6863be0e7cf7ce860a574760e9020d519a8bdc47', decimalPlaces: 18 },
-        { type: 'wpx', coin: 'eth', network: 'Mainnet', name: 'WalletPlusX', tokenContractAddress: '0x888cfdf68abe850cd628769ade6e59fddb42602f', decimalPlaces: 18 },
+        { type: 'wpx', coin: 'eth', network: 'Mainnet', name: 'WalletPlusX', tokenContractAddress: '0x4bb0a085db8cedf43344bd2fbec83c2c79c4e76b', decimalPlaces: 18 },
         { type: 'isr', coin: 'eth', network: 'Mainnet', name: 'Insureum', tokenContractAddress: '0xb16d3ed603d62b125c6bd45519eda40829549489', decimalPlaces: 18 },
         { type: 'key', coin: 'eth', network: 'Mainnet', name: 'SelfKey', tokenContractAddress: '0x4cc19356f2d37338b9802aa8e8fc58b0373296e7', decimalPlaces: 18 },
         { type: 'bird', coin: 'eth', network: 'Mainnet', name: 'BirdCoin', tokenContractAddress: '0x026e62dded1a6ad07d93d39f96b9eabd59665e0d', decimalPlaces: 18 },
