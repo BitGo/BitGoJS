@@ -34,18 +34,11 @@ class InvalidAddressDerivationPropertyError extends Error {
   }
 }
 
-class WalletRecoveryUnsupported extends Error {
-  constructor(message) {
-    super(message || 'wallet recovery is not supported by this coin');
-  }
-}
-
 module.exports = {
   P2wshUnsupportedError,
   UnsupportedAddressTypeError,
   InvalidAddressError,
   InvalidAddressVerificationObjectPropertyError,
   UnexpectedAddressError,
-  InvalidAddressDerivationPropertyError,
-  WalletRecoveryUnsupported
+  InvalidAddressDerivationPropertyError
 };

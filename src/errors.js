@@ -21,8 +21,15 @@ class NodeEnvironmentError extends BitGoJsError {
   }
 }
 
+class WalletRecoveryUnsupported extends Error {
+  constructor(message) {
+    super(message || 'wallet recovery is not supported by this coin');
+  }
+}
+
 module.exports = {
   BitGoJsError,
   TlsConfigurationError,
-  NodeEnvironmentError
+  NodeEnvironmentError,
+  WalletRecoveryUnsupported
 };

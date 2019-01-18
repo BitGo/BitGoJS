@@ -4,7 +4,7 @@ const request = require('superagent');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const common = require('../../common');
-const errors = require('../errors');
+const errors = require('../../errors');
 
 class Bsv extends Bch {
 
