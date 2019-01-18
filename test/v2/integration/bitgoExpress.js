@@ -1,7 +1,8 @@
 require('should');
 require('should-http');
 const request = require('supertest-as-promised');
-const co = require('bluebird').coroutine;
+const Promise = require('bluebird');
+const co = Promise.coroutine;
 const expressApp = require('../../../src/expressApp').app;
 
 describe('Bitgo Express', function() {
@@ -164,10 +165,23 @@ describe('Bitgo Express', function() {
     }));
   });
 
-  describe('Only API routes are proxied', () => {
-    it('should not proxy a non-api route', co(function *() {
-      const res = yield agent.get('/info/solutions').send();
-      res.should.have.status(404);
-    }));
-  });
+  it('should not proxy a non-api route', co(function *() {
+    const res = yield agent.get('/info/solutions').send();
+    res.should.have.status(404);
+  }));
+
+  it('should handle coinless routes', co(function *() {
+    const routes = [
+      agent.get('/api/v2/reports/'),
+      agent.get('/api/v2/wallet/balances/merged/'),
+      agent.get('/api/v2/enterprise/1234/'),
+      agent.post('/api/v2/sendlabels/'),
+      agent.put('/api/v2/sendlabels/123'),
+      agent.delete('/api/v2/sendlabels/323')
+    ];
+
+    for (const res of yield Promise.all(routes)) {
+      res.should.have.status(401);
+    }
+  }));
 });

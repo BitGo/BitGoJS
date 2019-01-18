@@ -9,7 +9,7 @@ const crypto = require('crypto');
 const request = require('superagent');
 const _ = require('lodash');
 const RecoveryTool = require('../recovery');
-const errors = require('../errors');
+const errors = require('../../errors');
 const debug = require('debug')('bitgo:v2:utxo');
 
 class AbstractUtxoCoin extends BaseCoin {
