@@ -437,7 +437,7 @@ const BitGo = function(params) {
     if (err) {
       // make sure an error does not terminate the entire script
       console.error('failed to fetch initial client constants from BitGo');
-      console.trace(e.stack);
+      debug(e.stack);
     }
   });
 };
