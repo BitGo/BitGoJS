@@ -1,6 +1,6 @@
 const BaseCoin = require('../baseCoin');
 const crypto = require('crypto');
-const prova = require('prova-lib');
+const bitGoUtxoLib = require('bitgo-utxo-lib');
 
 class Ofc extends BaseCoin {
 
@@ -21,12 +21,16 @@ class Ofc extends BaseCoin {
       // maximum entropy and gives us maximum security against cracking.
       seed = crypto.randomBytes(512 / 8);
     }
-    const extendedKey = prova.HDNode.fromSeedBuffer(seed);
+    const extendedKey = bitGoUtxoLib.HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
       prv: extendedKey.toBase58()
     };
+  }
+
+  getFamily() {
+    return 'ofc';
   }
 
   getFullName() {
@@ -38,6 +42,21 @@ class Ofc extends BaseCoin {
    */
   isValidMofNSetup({ m, n }) {
     return m === 1 && n === 1;
+  }
+
+  /**
+   * Return boolean indicating whether input is valid public key for the coin.
+   *
+   * @param {String} pub the pub to be checked
+   * @returns {Boolean} is it valid?
+   */
+  isValidPub(pub) {
+    try {
+      bitGoUtxoLib.HDNode.fromBase58(pub);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }
 
