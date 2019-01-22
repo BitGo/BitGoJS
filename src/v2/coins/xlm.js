@@ -442,7 +442,7 @@ class Xlm extends BaseCoin {
 
       let accountData;
       try {
-        accountData = yield request.get(`${ accountDataUrl }`).result();
+        accountData = yield request.get(accountDataUrl).result();
       } catch (e) {
         throw new Error('Unable to reach the Stellar network via Horizon.');
       }
@@ -450,7 +450,7 @@ class Xlm extends BaseCoin {
       // Now check if the destination account is empty or not
       let unfundedDestination = false;
       try {
-        yield request.get(`${ destinationUrl }`).result();
+        yield request.get(destinationUrl);
       } catch (e) {
         if (e.status === 404) {
           // If the destination account does not yet exist, horizon responds with 404
@@ -471,27 +471,27 @@ class Xlm extends BaseCoin {
         throw new Error('Provided wallet has a balance of 0 XLM, recovery aborted');
       }
 
-      const walletBalance = nativeBalanceInfo.balance * this.getBaseFactor();
+      const walletBalance = this.bigUnitsToBaseUnits(nativeBalanceInfo.balance);
       const minimumReserve = yield this.getMinimumReserve();
       const baseTxFee = yield this.getBaseTransactionFee();
       const recoveryAmount = walletBalance - minimumReserve - baseTxFee;
-      const formattedRecoveryAmount = (recoveryAmount / this.getBaseFactor()).toString();
+      const formattedRecoveryAmount = (this.baseUnitsToBigUnits(recoveryAmount)).toString();
 
       let txBuilder = new stellar.TransactionBuilder(account);
-
+      let operation;
       if (unfundedDestination) { // In this case, we need to create the account
-        txBuilder = txBuilder.addOperation(stellar.Operation.createAccount({
+        operation = stellar.Operation.createAccount({
           destination: params.recoveryDestination,
           startingBalance: formattedRecoveryAmount
-        })).build();
+        });
       } else { // Otherwise if the account already exists, we do a normal send
-        txBuilder = txBuilder.addOperation(stellar.Operation.payment({
+        operation = stellar.Operation.payment({
           destination: params.recoveryDestination,
           asset: stellar.Asset.native(),
           amount: formattedRecoveryAmount
-        })).build();
+        });
       }
-
+      txBuilder = txBuilder.addOperation(operation).build();
       txBuilder.sign(userKey);
 
       if (!isKrsRecovery) {
