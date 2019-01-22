@@ -10,6 +10,7 @@ const _ = require('lodash');
 const pjson = require('../package.json');
 const debug = require('debug')('bitgo:express');
 const util = require('./util');
+const errors = require('./errors');
 
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
 
@@ -399,9 +400,20 @@ const handleV2SendMany = function(req) {
 const handleV2CoinSpecificREST = function(req, res, next) {
   const method = req.method;
   const bitgo = req.bitgo;
-  const coin = bitgo.coin(req.params.coin);
-  const coinURL = coin.url(createAPIPath(req));
-  return redirectRequest(bitgo, method, coinURL, req, next);
+
+  try {
+    const coin = bitgo.coin(req.params.coin);
+    const coinURL = coin.url(createAPIPath(req));
+    return redirectRequest(bitgo, method, coinURL, req, next);
+  } catch (e) {
+    if (e instanceof errors.UnsupportedCoinError) {
+      const url = bitgo.url(req.baseUrl.replace(/^\/api\/v2/, ''), 2);
+      debug(`coin ${req.params.coin} not supported, attempting to handle as a coinless route with url ${url}`);
+      return redirectRequest(bitgo, method, url, req, next);
+    }
+
+    throw e;
+  }
 };
 
 const redirectRequest = function(bitgo, method, url, req, next) {
@@ -471,7 +483,7 @@ const prepareBitGo = function(args) {
 // Promise handler wrapper to handle sending responses and error cases
 const promiseWrapper = function(promiseRequestHandler, args) {
   return function(req, res, next) {
-    debug('handle: ' + url.parse(req.url).pathname);
+    debug(`handle: ${req.method} ${req.originalUrl}`);
     Promise.try(promiseRequestHandler, req, res, next)
     .then(function(result) {
       let status = 200;
