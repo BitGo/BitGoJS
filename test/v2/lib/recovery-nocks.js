@@ -2373,6 +2373,14 @@ module.exports.nockDashRecovery = function(isKrsRecovery) {
 
 module.exports.nockXlmRecovery = function() {
   nock('https://horizon-testnet.stellar.org')
+  .get('/accounts/GAGCQLUGMX76XC24JRCRJWOHXK23ONURH4433JOEPU6CH7Z44CCYUCEL')
+  .reply(404, {
+    status: 404
+  })
+  .get('/accounts/GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ')
+  .reply(200, {
+    balance: "10"
+  })
   .get('/accounts/GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB')
   .reply(200, {
     id: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
