@@ -6,6 +6,7 @@ let Wallet;
 let Wallets;
 let Markets;
 let Token;
+let OFCToken;
 let Webhooks;
 let coinGenerators;
 const bitcoin = require('bitgo-utxo-lib');
@@ -13,6 +14,7 @@ const bitcoinMessage = require('bitcoinjs-message');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const errors = require('../errors');
+const _ = require('lodash');
 
 class BaseCoin {
 
@@ -110,6 +112,23 @@ class BaseCoin {
     });
   }
 
+
+  static setupOffchainTokens(coins, bitgo) {
+    if (!OFCToken) {
+      OFCToken = require('./coins/ofcToken');
+    }
+
+    const constants = bitgo.getConstants();
+    const tokens = _.get(constants, 'ofc.tokens');
+    if (tokens) {
+      tokens.forEach((tokenConfig) => {
+        const generatedToken = OFCToken.generateToken(tokenConfig);
+        if (!coins[tokenConfig.type]) {
+          coins[tokenConfig.type] = generatedToken;
+        }
+      });
+    }
+  }
   /**
    * This feature is mostly for browsers where we don't want to have a build with coins that people don't need
    * In order to specify the coins you want, you must pass the env.coins="csv coins"
@@ -176,6 +195,9 @@ class BaseCoin {
 
     if (process.env.BITGO_EXCLUDE_OFC !== 'exclude') {
       coins.ofc = require('./coins/ofc');
+
+      // Initialize the tokens
+      BaseCoin.setupOffchainTokens(coins, bitgo);
     }
 
     return coins;
