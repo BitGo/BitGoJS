@@ -995,10 +995,36 @@ class AbstractUtxoCoin extends BaseCoin {
     }).call(this);
   }
 
+
+  /**
+   * Helper function for recover()
+   * This transforms the txInfo from recover into the format that offline-signing-tool expects
+   * @param txInfo
+   * @param txHex
+   * @returns {{txHex: *, txInfo: {unspents: *}, feeInfo: {}, coin: void}}
+   */
+  formatForOfflineVault(txInfo, txHex) {
+    const response = {
+      txHex,
+      txInfo: {
+        unspents: txInfo.inputs
+      },
+      feeInfo: {},
+      coin: this.getChain()
+    };
+    _.map(response.txInfo.unspents, function(unspent) {
+      const pathArray = unspent.chainPath.split('/');
+      // Note this code works because we assume our chainPath is m/0/0/chain/index - this will be incorrect for custom derivation schemes
+      unspent.index = pathArray[4];
+      unspent.chain = pathArray[3];
+    });
+    return response;
+  }
+
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
-   * - userKey: [encrypted] xprv
+   * - userKey: [encrypted] xprv, or xpub
    * - backupKey: [encrypted] xprv, or xpub if the xprv is held by a KRS provider
    * - walletPassphrase: necessary if one of the xprvs is encrypted
    * - bitgoKey: xpub
@@ -1119,7 +1145,8 @@ class AbstractUtxoCoin extends BaseCoin {
         params.ignoreAddressTypes = [AbstractUtxoCoin.AddressTypes.P2WSH];
       }
 
-      const isKrsRecovery = params.backupKey.startsWith('xpub');
+      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
+      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
       const krsProvider = config.krsProviders[params.krsProvider];
 
       if (isKrsRecovery && _.isUndefined(krsProvider)) {
@@ -1179,7 +1206,8 @@ class AbstractUtxoCoin extends BaseCoin {
         return {
           chainPath: address.chainPath,
           redeemScript: address.redeemScript.toString('hex'),
-          witnessScript: address.witnessScript && address.witnessScript.toString('hex')
+          witnessScript: address.witnessScript && address.witnessScript.toString('hex'),
+          value: unspent.value_int
         };
       });
 
@@ -1206,14 +1234,21 @@ class AbstractUtxoCoin extends BaseCoin {
         transactionBuilder.addOutput(krsFeeAddress, krsFee);
       }
 
-      const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
+      if (isUnsignedSweep) {
+        const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
+        return this.formatForOfflineVault(txInfo, txHex);
+      } else {
+        const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
+        txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
+        try {
+          txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
+        } catch (e) {
 
-      txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
-
-      try {
-        txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
-      } catch (e) {
-        console.log('Could not verify recovery transaction', e.message);
+          if (!(e instanceof errors.MethodNotImplementedError)) {
+            // some coins don't have a reliable third party verification endpoint, so we continue without verification for those coins
+            throw new Error('could not verify recovery transaction');
+          }
+        }
       }
 
       if (isKrsRecovery) {

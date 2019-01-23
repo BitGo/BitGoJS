@@ -69,6 +69,13 @@ class WalletRecoveryUnsupported extends Error {
   }
 }
 
+
+class MethodNotImplementedError extends BitGoJsError {
+  constructor(message) {
+    super(message || 'method not implemented');
+  }
+}
+
 module.exports = {
   BitGoJsError,
   TlsConfigurationError,
@@ -80,5 +87,7 @@ module.exports = {
   InvalidAddressVerificationObjectPropertyError,
   UnexpectedAddressError,
   InvalidAddressDerivationPropertyError,
-  UnsupportedCoinError
+  UnsupportedCoinError,
+  MethodNotImplementedError
 };
+

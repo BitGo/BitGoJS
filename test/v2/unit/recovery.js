@@ -10,7 +10,6 @@ const nock = require('nock');
 const TestV2BitGo = require('../../lib/test_bitgo');
 const recoveryNocks = require('../lib/recovery-nocks');
 const config = require('../../../src/config');
-const AddressTypes = require('../../../src/v2/coins/abstractUtxoCoin').AddressTypes;
 
 nock.disableNetConnect();
 
