@@ -206,7 +206,12 @@ exports.tokens = {
         { type: 'bnk', coin: 'eth', network: 'Mainnet', name: 'Bankera', tokenContractAddress: '0xc80c5e40220172b36adee2c951f26f2a577810c5', decimalPlaces: 8 },
         { type: 'jbc', coin: 'eth', network: 'Mainnet', name: 'Japan Brand Coin', tokenContractAddress: '0x3635e381c67252405c1c0e550973155832d5e490', decimalPlaces: 18 },
         { type: 'mcx', coin: 'eth', network: 'Mainnet', name: 'MachiX Token', tokenContractAddress: '0xd15ecdcf5ea68e3995b2d0527a0ae0a3258302f8', decimalPlaces: 18 },
-        { type: 'ysey', coin: 'eth', network: 'Mainnet', name: 'YSEY Utility Token', tokenContractAddress: '0x1358efe5d9bfc2005918c0b2f220a4345c9ee7a3', decimalPlaces: 3 }
+        { type: 'ysey', coin: 'eth', network: 'Mainnet', name: 'YSEY Utility Token', tokenContractAddress: '0x1358efe5d9bfc2005918c0b2f220a4345c9ee7a3', decimalPlaces: 3 },
+        { type: 'hedg', coin: 'eth', network: 'Mainnet', name: 'HedgeTrade', tokenContractAddress: '0x3363d570f6df3c74d486bb8785d3ebfb9e2347d3', decimalPlaces: 18 },
+        { type: 'hqt', coin: 'eth', network: 'Mainnet', name: 'HyperQuant', tokenContractAddress: '0x3e1d5a855ad9d948373ae68e4fe1f094612b1322', decimalPlaces: 18 },
+        { type: 'hlc', coin: 'eth', network: 'Mainnet', name: 'HalalChain', tokenContractAddress: '0x58c69ed6cd6887c0225d1fccecc055127843c69b', decimalPlaces: 9 },
+        { type: 'wbtc', coin: 'eth', network: 'Mainnet', name: 'Wrapped Bitcoin', tokenContractAddress: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', decimalPlaces: 8 },
+        { type: 'usdt', coin: 'eth', network: 'Mainnet', name: 'Tether', tokenContractAddress: '0xdac17f958d2ee523a2206206994597c13d831ec7', decimalPlaces: 6 }
       ]
     }
   },
