@@ -55,7 +55,7 @@ function getCoinsToExclude(env) {
     return [];
   }
 
-  const allCoins = ['btc', 'bch', 'btg', 'ltc', 'eth', 'rmg', 'xrp', 'xlm', 'dash', 'zec'];
+  const allCoins = ['btc', 'bch', 'bsv', 'btg', 'ltc', 'eth', 'rmg', 'xrp', 'xlm', 'dash', 'zec'];
   const compileCoins = env.coins.split(',').map(coin => coin.trim().toLowerCase());
   const invalidCoins = compileCoins.filter(allCoin => {
     return !allCoins.includes(allCoin);
