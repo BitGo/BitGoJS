@@ -463,6 +463,24 @@ describe('Recovery:', function() {
       recovery.recoveryAmount.should.equal(74999500);
     }));
 
+    it('should recover to an unfunded XLM wallet', co(function *() {
+      recoveryNocks.nockXlmRecovery();
+
+      const basecoin = bitgo.coin('txlm');
+      const recovery = yield basecoin.recover({
+        userKey: `{"iv":"PiLveA+5AFPURwaU7iijBQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KlJc8NSKHpw=","ct":"YcdNOFpzXgDnRqjlR3W9R+5eztysyhpCTuRBHsnPyPDst9nvL+GeSORbLY9xVThTdyV6llRgfUr5O7y4l9s9Fg=="}`,
+        backupKey: `{"iv":"TmiAIHr0vCX6g2BKkc6/7g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"wOkMJEm5B6U=","ct":"HJPS56/FuMieiH6K2s5k5jFp8RPHQqZa9qi8hDkjOqNUFjD4XKq8Sy3BDhpwzozTBW6EmQGSF0kpc7eZ9CucKw=="}`,
+        rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: 'GAGCQLUGMX76XC24JRCRJWOHXK23ONURH4433JOEPU6CH7Z44CCYUCEL'
+      });
+
+      recovery.should.have.property('tx');
+      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAADCguhmX/64tcTEUU2ce6tbc2kT85vaXEfTwj/zzghYoAAAAABHhmzAAAAAAAAAAC61EutwAAAEDfGa7MmH6GRt8CX5QGmI/LTwOr3bHKe7BhjdtZ2bIosOO59tVqwhJUvBkoe/BittLL2Padn1C/uwcU0hQhOEkHf619wwAAAEBSGbgQZc346piAk/a1lAuFOua30NJGjcWFMXwqE7RbN9u2/6OhIKZ3ywy9Ul+oijvmnu9SluMfSpFh8ZE9hUQO');
+      recovery.should.have.property('recoveryAmount');
+      recovery.recoveryAmount.should.equal(74999500);
+    }));
+
     it('should generate XLM recovery tx with unencrypted keys', co(function *() {
       recoveryNocks.nockXlmRecovery();
 
