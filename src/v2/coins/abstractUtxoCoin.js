@@ -1151,7 +1151,7 @@ class AbstractUtxoCoin extends BaseCoin {
       // Execute the queries and gather the unspents
       const addressesById = {};
       const queryResponses = yield Promise.all(queries);
-      const unspents = [].concat.apply([], queryResponses); // this flattens the array (turns an array of arrays into just one array)
+      const unspents = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
       const totalInputAmount = _.sumBy(unspents, 'amount');
       if (totalInputAmount <= 0) {
         throw new Error('No input to recover - aborting!');
