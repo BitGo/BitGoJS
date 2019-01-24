@@ -20,7 +20,6 @@ class Bch extends AbstractUtxoCoin {
 
   constructor(network) {
     super(network || bitcoin.networks.bitcoincash);
-    this.bchPrefix = 'bitcoincash';
   }
 
   getChain() {
@@ -33,6 +32,10 @@ class Bch extends AbstractUtxoCoin {
 
   getFullName() {
     return 'Bitcoin Cash';
+  }
+
+  getAddressPrefix() {
+    return 'bitcoincash';
   }
 
   supportsBlockTarget() {
@@ -72,8 +75,8 @@ class Bch extends AbstractUtxoCoin {
       // We do this to remain compliant with the spec at https://github.com/Bitcoin-UAHF/spec/blob/master/cashaddr.md,
       // which says addresses do not need the prefix, and can be all lowercase XOR all uppercase
       if (!isValidBase58Address) {
-        if (!_.startsWith(address, this.bchPrefix + ':')) {
-          address = this.bchPrefix + ':' + address;
+        if (!_.startsWith(address, this.getAddressPrefix() + ':')) {
+          address = this.getAddressPrefix() + ':' + address;
         }
         if (containsMixedCaseCharacters(address.split(':')[1])) {
           // we should reject these addresses
@@ -119,7 +122,7 @@ class Bch extends AbstractUtxoCoin {
         throw new Error('invalid address version: ' + addressVersionString + '. Expected one of ' + _.keys(versionMap));
       }
 
-      return cashaddress.encode(this.bchPrefix, versionMap[addressVersionString], addressDetails.hash);
+      return cashaddress.encode(this.getAddressPrefix(), versionMap[addressVersionString], addressDetails.hash);
     }
 
     // convert from bech32
