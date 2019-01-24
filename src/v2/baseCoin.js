@@ -150,6 +150,11 @@ class BaseCoin {
       coins.tbch = require('./coins/tbch');
     }
 
+    if (process.env.BITGO_EXCLUDE_BSV !== 'exclude') {
+      coins.bsv = require('./coins/bsv');
+      coins.tbsv = require('./coins/tbsv');
+    }
+
     if (process.env.BITGO_EXCLUDE_BTG !== 'exclude') {
       coins.btg = require('./coins/btg');
       coins.tbtg = require('./coins/tbtg');
