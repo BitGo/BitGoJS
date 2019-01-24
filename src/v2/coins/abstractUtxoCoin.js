@@ -1005,6 +1005,8 @@ class AbstractUtxoCoin extends BaseCoin {
    * - krsProvider: necessary if backup key is held by KRS
    * - recoveryDestination: target address to send recovered funds to
    * - scan: the amount of consecutive addresses without unspents to scan through before stopping
+   * - ignoreAddressTypes: (optional) array of AddressTypes to ignore. these are strings defined in AbstractUtxoCoin.AddressTypes
+   *        for example: ['p2sh-p2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
    * @param callback
    */
   recover(params, callback) {
@@ -1023,7 +1025,8 @@ class AbstractUtxoCoin extends BaseCoin {
         // get unspents for these addresses
         const gatherUnspents = co(function *coGatherUnspents(addrIndex) {
           const derivedKeys = deriveKeys(keyArray, addrIndex);
-          const address = createMultiSigAddress(derivedKeys);
+          const chain = basePath.split('/').pop(); // extracts the chain from the basePath
+          const address = createMultiSigAddress(derivedKeys, chain);
           const addressBase58 = address.address;
 
           const addrInfo = yield self.getAddressInfoFromExplorer(addressBase58);
@@ -1071,16 +1074,24 @@ class AbstractUtxoCoin extends BaseCoin {
         return walletUnspents;
       });
 
-      function createMultiSigAddress(keyArray) {
+      function createMultiSigAddress(keyArray, chain) {
         const publicKeys = keyArray.map((k) => k.getPublicKeyBuffer());
-
-        const redeemScript = bitcoin.script.multisig.output.encode(2, publicKeys);
+        const isSegwit = (chain === '10' || chain === '11');
+        const multisigProgram = bitcoin.script.multisig.output.encode(2, publicKeys);
+        let redeemScript, witnessScript;
+        if (isSegwit) {
+          witnessScript = multisigProgram;
+          redeemScript = bitcoin.script.witnessScriptHash.output.encode(bitcoin.crypto.sha256(witnessScript));
+        } else {
+          redeemScript = multisigProgram;
+        }
         const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
         const scriptHashScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
         const address = self.calculateRecoveryAddress(scriptHashScript);
 
         return {
           hash: scriptHashScript,
+          witnessScript: witnessScript,
           redeemScript: redeemScript,
           address: address
         };
@@ -1103,6 +1114,11 @@ class AbstractUtxoCoin extends BaseCoin {
         throw new Error('scan must be a positive integer');
       }
 
+      // By default, we will ignore P2WSH until we officially support it
+      if (_.isUndefined(params.ignoreAddressTypes)) {
+        params.ignoreAddressTypes = [AbstractUtxoCoin.AddressTypes.P2WSH];
+      }
+
       const isKrsRecovery = params.backupKey.startsWith('xpub');
       const krsProvider = config.krsProviders[params.krsProvider];
 
@@ -1116,24 +1132,32 @@ class AbstractUtxoCoin extends BaseCoin {
 
       const keys = yield this.initiateRecovery(params);
 
-      // BitGo's key derivation paths are /0/0/0/i for user-generated addresses and /0/0/1/i for change adddresses.
-      // Derive these top level paths first for performance reasons
       const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
-      const userKeyArray = deriveKeys(baseKeyPath, 0);
-      const changeKeyArray = deriveKeys(baseKeyPath, 1);
 
-      // Collect the unspents
+      const queries = [];
+
+      _.forEach(AbstractUtxoCoin.AddressTypes, function(addressType) {
+        // If we aren't ignoring the address type, we derive the public key and construct the query for the main and change indices
+        if (!_.includes(params.ignoreAddressTypes, addressType)) {
+          const mainIndex = AbstractUtxoCoin.AddressTypeChains[addressType].main;
+          const changeIndex = AbstractUtxoCoin.AddressTypeChains[addressType].change;
+          const mainKey = deriveKeys(baseKeyPath, mainIndex);
+          const changeKey = deriveKeys(baseKeyPath, changeIndex);
+          queries.push(queryBlockchainUnspentsPath(mainKey, '/0/0/' + mainIndex));
+          queries.push(queryBlockchainUnspentsPath(changeKey, '/0/0/' + changeIndex));
+        }
+      });
+
+      // Execute the queries and gather the unspents
       const addressesById = {};
-      const userUnspents = yield queryBlockchainUnspentsPath(userKeyArray, '/0/0/0');
-      const changeUnspents = yield queryBlockchainUnspentsPath(changeKeyArray, '/0/0/1');
-      const unspents = userUnspents.concat(changeUnspents);
-
-      // Build the transaction
+      const queryResponses = yield Promise.all(queries);
+      const unspents = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
       const totalInputAmount = _.sumBy(unspents, 'amount');
       if (totalInputAmount <= 0) {
         throw new Error('No input to recover - aborting!');
       }
 
+      // Build the transaction
       const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
       this.constructor.prepareTransactionBuilder(transactionBuilder);
       const txInfo = {};
@@ -1148,14 +1172,14 @@ class AbstractUtxoCoin extends BaseCoin {
       // Construct a transaction
       txInfo.inputs = unspents.map(function addInputForUnspent(unspent) {
         const address = addressesById[unspent.address];
-        const redeemScript = new Buffer(address.redeemScript, 'hex');
-        const outputScript = bitcoin.script.scriptHash.output.encode(bitcoin.crypto.hash160(redeemScript));
+        const outputScript = address.hash;
 
         transactionBuilder.addInput(unspent.txid, unspent.n, 0xffffffff, outputScript);
 
         return {
           chainPath: address.chainPath,
-          redeemScript: address.redeemScript.toString('hex')
+          redeemScript: address.redeemScript.toString('hex'),
+          witnessScript: address.witnessScript && address.witnessScript.toString('hex')
         };
       });
 
@@ -1227,7 +1251,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
       if (cosign) {
         try {
-          txb.sign(i, backupPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount);
+          txb.sign(i, backupPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount, address.witnessScript);
         } catch (e) {
           currentSignatureIssue.error = e;
           signatureIssues.push(currentSignatureIssue);
@@ -1235,7 +1259,7 @@ class AbstractUtxoCoin extends BaseCoin {
       }
 
       try {
-        txb.sign(i, userPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount);
+        txb.sign(i, userPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount, address.witnessScript);
       } catch (e) {
         currentSignatureIssue.error = e;
         signatureIssues.push(currentSignatureIssue);
@@ -1367,6 +1391,21 @@ AbstractUtxoCoin.AddressTypes = Object.freeze({
   P2SH: 'p2sh',
   P2SH_P2WSH: 'p2sh-p2wsh',
   P2WSH: 'p2wsh'
+});
+
+AbstractUtxoCoin.AddressTypeChains = Object.freeze({
+  p2sh: {
+    main: 0,
+    change: 1
+  },
+  'p2sh-p2wsh': {
+    main: 10,
+    change: 11
+  },
+  p2wsh: {
+    main: 20,
+    change: 21
+  }
 });
 
 module.exports = AbstractUtxoCoin;
