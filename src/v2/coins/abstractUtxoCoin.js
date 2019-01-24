@@ -1114,6 +1114,11 @@ class AbstractUtxoCoin extends BaseCoin {
         throw new Error('scan must be a positive integer');
       }
 
+      // By default, we will ignore P2WSH until we officially support it
+      if (_.isUndefined(params.ignoreAddressTypes)) {
+        params.ignoreAddressTypes = [AbstractUtxoCoin.AddressTypes.P2WSH];
+      }
+
       const isKrsRecovery = params.backupKey.startsWith('xpub');
       const krsProvider = config.krsProviders[params.krsProvider];
 
@@ -1127,41 +1132,32 @@ class AbstractUtxoCoin extends BaseCoin {
 
       const keys = yield this.initiateRecovery(params);
 
-      // BitGo's key derivation paths are /0/0/0/i for user-generated addresses and /0/0/1/i for change adddresses.
-      // Derive these top level paths first for performance reasons
       const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
-      const userKeyArray = deriveKeys(baseKeyPath, 0);
-      const changeKeyArray = deriveKeys(baseKeyPath, 1);
-      const userKeyArraySW = deriveKeys(baseKeyPath, 10);
-      const changeKeyArraySW = deriveKeys(baseKeyPath, 11);
 
-      // Collect the unspents
+      const queries = [];
+
+      _.forEach(AbstractUtxoCoin.AddressTypes, function(addressType) {
+        // If we aren't ignoring the address type, we derive the public key and construct the query for the main and change indices
+        if (!_.includes(params.ignoreAddressTypes, addressType)) {
+          const mainIndex = AbstractUtxoCoin.AddressTypeChains[addressType].main;
+          const changeIndex = AbstractUtxoCoin.AddressTypeChains[addressType].change;
+          const mainKey = deriveKeys(baseKeyPath, mainIndex);
+          const changeKey = deriveKeys(baseKeyPath, changeIndex);
+          queries.push(queryBlockchainUnspentsPath(mainKey, '/0/0/' + mainIndex));
+          queries.push(queryBlockchainUnspentsPath(changeKey, '/0/0/' + changeIndex));
+        }
+      });
+
+      // Execute the queries and gather the unspents
       const addressesById = {};
-      // Gather the queries, to be executed in parallel
-      const includeP2SH_P2WSH = _.isUndefined(params.ignoreAddressTypes) || _.isEmpty(params.ignoreAddressTypes) || !_.includes(params.ignoreAddressTypes, AbstractUtxoCoin.AddressTypes.P2SH_P2WSH);
-      let queries = [
-        queryBlockchainUnspentsPath(userKeyArray, '/0/0/0', false),
-        queryBlockchainUnspentsPath(changeKeyArray, '/0/0/1', false)]
-      if (includeP2SH_P2WSH) {
-        queries = queries.concat([queryBlockchainUnspentsPath(userKeyArraySW, '/0/0/10', true), queryBlockchainUnspentsPath(changeKeyArraySW, '/0/0/11', true)]);
-      }
-      const queryResponse = yield Promise.all(queries);
-      const userUnspents = queryResponse[0];
-      const changeUnspents = queryResponse[1];
-      let unspents, userUnspentsSW, changeUnspentsSW;
-      if (includeP2SH_P2WSH) {
-        userUnspentsSW = queryResponse[2];
-        changeUnspentsSW = queryResponse[3];
-        unspents = userUnspents.concat(changeUnspents).concat(userUnspentsSW).concat(changeUnspentsSW);
-      } else {
-        unspents = userUnspents.concat(changeUnspents);
-      }
-      // Build the transaction
+      const queryResponses = yield Promise.all(queries);
+      const unspents = [].concat.apply([], queryResponses); // this flattens the array (turns an array of arrays into just one array)
       const totalInputAmount = _.sumBy(unspents, 'amount');
       if (totalInputAmount <= 0) {
         throw new Error('No input to recover - aborting!');
       }
 
+      // Build the transaction
       const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
       this.constructor.prepareTransactionBuilder(transactionBuilder);
       const txInfo = {};
@@ -1395,6 +1391,21 @@ AbstractUtxoCoin.AddressTypes = Object.freeze({
   P2SH: 'p2sh',
   P2SH_P2WSH: 'p2sh-p2wsh',
   P2WSH: 'p2wsh'
+});
+
+AbstractUtxoCoin.AddressTypeChains = Object.freeze({
+  p2sh: {
+    main: 0,
+    change: 1
+  },
+  'p2sh-p2wsh': {
+    main: 10,
+    change: 11
+  },
+  p2wsh: {
+    main: 20,
+    change: 21
+  }
 });
 
 module.exports = AbstractUtxoCoin;
