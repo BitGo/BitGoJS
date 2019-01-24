@@ -219,6 +219,11 @@ exports.tokens = {
         { type: 'schz', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x050e25a2630b2aee94546589fd39785254de112c', decimalPlaces: 18, name: 'SchnauzerCoin' },
         { type: 'tcat', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x63137319f3a14a985eb31547370e0e3bd39b03b8', decimalPlaces: 18, name: 'Test CAT-20 Token' }
       ]
+    },
+    ofc: {
+      tokens: [
+        { type: 'otestusd', coin: 'ofc', decimalPlaces:2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat:true }
+      ]
     }
   }
 };
