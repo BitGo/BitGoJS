@@ -4,7 +4,6 @@ const bitcoin = require('bitgo-utxo-lib');
 class Tbch extends Bch {
   constructor() {
     super(bitcoin.networks.bitcoincashTestnet);
-    this.bchPrefix = 'bchtest';
   }
 
   getChain() {
@@ -15,6 +14,10 @@ class Tbch extends Bch {
     return 'Testnet Bitcoin Cash';
   }
 
+  getAddressPrefix() {
+    return 'bchtest';
+  }
+
   /**
    * Checks if the unspent comes from the BitGo taint provider address
    * @param unspent
@@ -23,7 +26,6 @@ class Tbch extends Bch {
   isBitGoTaintedUnspent(unspent) {
     return unspent.address === '2MuMnPoSDgWEpNWH28X2nLtYMXQJCyT61eY';
   }
-
 }
 
 module.exports = Tbch;
