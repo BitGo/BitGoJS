@@ -22,4 +22,9 @@ describe('OFC:', function() {
     ofcCoin.isValidMofNSetup({ m: 1, n: 3 }).should.be.false();
     ofcCoin.isValidMofNSetup({ m: 1, n: 1 }).should.be.true();
   });
+
+  it('should validate pub key', () => {
+    const { pub } = ofcCoin.keychains().create();
+    ofcCoin.isValidPub(pub).should.equal(true);
+  });
 });

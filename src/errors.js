@@ -21,8 +21,57 @@ class NodeEnvironmentError extends BitGoJsError {
   }
 }
 
+class UnsupportedCoinError extends BitGoJsError {
+  constructor(coin) {
+    super(`Coin or token type ${coin} not supported or not compiled`);
+  }
+}
+
+class P2wshUnsupportedError extends BitGoJsError {
+  constructor(message) {
+    super(message || 'p2wsh not supported by this coin');
+  }
+}
+
+class UnsupportedAddressTypeError extends BitGoJsError {
+  constructor(message) {
+    super(message || 'invalid address type');
+  }
+}
+
+class InvalidAddressError extends BitGoJsError {
+  constructor(message) {
+    super(message || 'invalid address');
+  }
+}
+
+class InvalidAddressVerificationObjectPropertyError extends BitGoJsError {
+  constructor(message) {
+    super(message || 'address validation failure');
+  }
+}
+
+class UnexpectedAddressError extends BitGoJsError {
+  constructor(message) {
+    super(message || 'address validation failure');
+  }
+}
+
+class InvalidAddressDerivationPropertyError extends BitGoJsError {
+  constructor(message) {
+    super(message || 'address chain and/or index are invalid');
+  }
+}
+
 module.exports = {
   BitGoJsError,
   TlsConfigurationError,
-  NodeEnvironmentError
+  NodeEnvironmentError,
+  P2wshUnsupportedError,
+  UnsupportedAddressTypeError,
+  InvalidAddressError,
+  InvalidAddressVerificationObjectPropertyError,
+  UnexpectedAddressError,
+  InvalidAddressDerivationPropertyError,
+  UnsupportedCoinError
 };
