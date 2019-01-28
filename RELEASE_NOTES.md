@@ -1,4 +1,15 @@
-# BitGoJS Change Log
+# BitGoJS Release Notes
+
+## 4.45.0
+### New Features
+- Add support for recovering BTC segwit unspents
+- Add support for new ERC 20 Tokens (HEDG, HQT, HLC, WBTC)
+- Add some plumbing for BSV and OFC support
+- Support coinless API routes in Bitgo Express
+
+### Bug Fixes
+- Allow XLM recovery to previously unfunded addresses
+- Correctly handle sends with a custom change address
 
 ## 4.44.0
 ### New Features
