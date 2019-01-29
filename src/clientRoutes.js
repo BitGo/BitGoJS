@@ -407,7 +407,14 @@ const handleV2CoinSpecificREST = function(req, res, next) {
     return redirectRequest(bitgo, method, coinURL, req, next);
   } catch (e) {
     if (e instanceof errors.UnsupportedCoinError) {
-      const url = bitgo.url(req.baseUrl.replace(/^\/api\/v2/, ''), 2);
+      const queryParams = _.transform(req.query, (acc, value, key) => {
+        for (const val of _.castArray(value)) {
+          acc.push(`${key}=${val}`);
+        }
+      }, []);
+      const baseUrl = bitgo.url(req.baseUrl.replace(/^\/api\/v2/, ''), 2);
+      const url = _.isEmpty(queryParams) ? baseUrl : `${baseUrl}?${queryParams.join('&')}`;
+
       debug(`coin ${req.params.coin} not supported, attempting to handle as a coinless route with url ${url}`);
       return redirectRequest(bitgo, method, url, req, next);
     }

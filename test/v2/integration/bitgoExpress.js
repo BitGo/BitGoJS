@@ -1,5 +1,6 @@
-require('should');
+const should = require('should');
 require('should-http');
+
 const request = require('supertest-as-promised');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
@@ -183,5 +184,22 @@ describe('Bitgo Express', function() {
     for (const res of yield Promise.all(routes)) {
       res.should.have.status(401);
     }
+  }));
+
+  it('should handle coinless routes with multiple query params', co(function *() {
+    const res = yield agent.get('/api/v2/market/latest?coin=tbtc&coin=tltc');
+    res.should.have.status(200);
+    should.exist(res.body.marketData);
+    res.body.marketData.should.have.length(2);
+    res.body.marketData[0].should.have.property('coin', 'tbtc');
+    res.body.marketData[1].should.have.property('coin', 'tltc');
+  }));
+
+  it('should handle coinless routes with a single query param', co(function *() {
+    const res = yield agent.get('/api/v2/market/latest?coin=tbtc');
+    res.should.have.status(200);
+    should.exist(res.body.marketData);
+    res.body.marketData.should.have.length(1);
+    res.body.marketData[0].should.have.property('coin', 'tbtc');
   }));
 });
