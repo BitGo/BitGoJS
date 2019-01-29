@@ -9,6 +9,7 @@ const Promise = require('bluebird');
 const request = require('superagent');
 const crypto = require('crypto');
 const prova = require('prova-lib');
+const utxoLib = require('bitgo-utxo-lib');
 const co = Promise.coroutine;
 
 let ethAbi = function() {
@@ -248,10 +249,12 @@ class Eth extends BaseCoin {
 
   /**
    * Helper function for signTransaction for the rare case that SDK is doing the second signature
-   * params:
-   * - txPrebuild
-   * - prv
    * Note: we are expecting this to be called from the offline vault
+   * @param params.txPrebuild
+   * @param params.signingKeyNonce
+   * @param params.walletContractAddress
+   * @param params.prv
+   * @returns {{txHex: *}}
    */
   signFinal(params) {
     const txPrebuild = params.txPrebuild;
@@ -263,7 +266,7 @@ class Eth extends BaseCoin {
       throw new Error('params must include walletContractAddress, but got undefined');
     }
 
-    const signingNode = prova.HDNode.fromBase58(params.prv);
+    const signingNode = utxoLib.HDNode.fromBase58(params.prv);
     const signingKey = signingNode.getKey().getPrivateKeyBuffer();
 
     const txInfo = {
@@ -290,8 +293,7 @@ class Eth extends BaseCoin {
 
     const ethTx = new EthTx(ethTxParams);
     ethTx.sign(signingKey);
-    const txHex = ethTx.serialize().toString('hex');
-    return { txHex };
+    return { txHex: ethTx.serialize().toString('hex') };
   }
 
   /**
@@ -383,6 +385,12 @@ class Eth extends BaseCoin {
     }
   }
 
+  /**
+   * Queries public block explorer to get the next ETH nonce that should be used for the given ETH address
+   * @param address
+   * @param callback
+   * @returns {*}
+   */
   getAddressNonce(address, callback) {
     return co(function *() {
       // Get nonce for backup key (should be 0)
@@ -399,11 +407,9 @@ class Eth extends BaseCoin {
         const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
         nonce = outgoingTxs.length;
       }
-
       return nonce;
     }).call(this).asCallback(callback);
   }
-
 
   /**
    * Helper function for recover()
@@ -415,9 +421,9 @@ class Eth extends BaseCoin {
    * @returns {{tx: *, userKey: *, backupKey: *, coin: string, amount: string, gasPrice: string, gasLimit: string, recipients: ({address, amount}|{address: ({address, amount}|string), amount: string}|string)[]}}
    */
   formatForOfflineVault(txInfo, ethTx, userKey, backupKey, gasPrice, gasLimit, callback) {
-    const backupHDNode = prova.HDNode.fromBase58(backupKey);
-    const backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
     return co(function *() {
+      const backupHDNode = utxoLib.HDNode.fromBase58(backupKey);
+      const backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
       const response = {
         tx: ethTx.serialize().toString('hex'),
         userKey,
@@ -438,7 +444,7 @@ class Eth extends BaseCoin {
     }).call(this).asCallback(callback);
   }
 
-    /**
+  /**
    * Builds a funds recovery transaction without BitGo
    * @param params.userKey {String} [encrypted] xprv
    * @param params.backupKey {String} [encrypted] xprv or xpub if the xprv is held by a KRS provider
