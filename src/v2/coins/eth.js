@@ -9,6 +9,7 @@ const Promise = require('bluebird');
 const request = require('superagent');
 const crypto = require('crypto');
 const prova = require('prova-lib');
+const utxoLib = require('bitgo-utxo-lib');
 const co = Promise.coroutine;
 
 let ethAbi = function() {
@@ -247,6 +248,55 @@ class Eth extends BaseCoin {
   }
 
   /**
+   * Helper function for signTransaction for the rare case that SDK is doing the second signature
+   * Note: we are expecting this to be called from the offline vault
+   * @param params.txPrebuild
+   * @param params.signingKeyNonce
+   * @param params.walletContractAddress
+   * @param params.prv
+   * @returns {{txHex: *}}
+   */
+  signFinal(params) {
+    const txPrebuild = params.txPrebuild;
+
+    if (!_.isNumber(params.signingKeyNonce)) {
+      throw new Error('must have signingKeyNonce as a parameter, and it must be a number');
+    }
+    if (_.isUndefined(params.walletContractAddress)) {
+      throw new Error('params must include walletContractAddress, but got undefined');
+    }
+
+    const signingNode = utxoLib.HDNode.fromBase58(params.prv);
+    const signingKey = signingNode.getKey().getPrivateKeyBuffer();
+
+    const txInfo = {
+      recipient: txPrebuild.recipients[0],
+      expireTime: txPrebuild.halfSigned.expireTime,
+      contractSequenceId: txPrebuild.halfSigned.contractSequenceId,
+      signature: txPrebuild.halfSigned.signature
+    }
+
+    const sendMethodArgs = this.getSendMethodArgs(txInfo);
+    const methodSignature = ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
+    const encodedArgs = ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+    const ethTxParams = {
+      to: params.walletContractAddress,
+      nonce: params.signingKeyNonce,
+      value: 0,
+      gasPrice: new ethUtil.BN(txPrebuild.gasPrice),
+      gasLimit: new ethUtil.BN(txPrebuild.gasLimit),
+      data: sendData,
+      spendAmount: params.recipients[0].amount
+    }
+
+    const ethTx = new EthTx(ethTxParams);
+    ethTx.sign(signingKey);
+    return { txHex: ethTx.serialize().toString('hex') };
+  }
+
+  /**
    * Assemble keychain and half-sign prebuilt transaction
    * @param params
    * - txPrebuild
@@ -277,6 +327,12 @@ class Eth extends BaseCoin {
     // if no recipients in either params or txPrebuild, then throw an error
     if (!params.recipients || !Array.isArray(params.recipients)) {
       throw new Error('recipients missing or not array');
+    }
+
+    // Normally the SDK provides the first signature for an ETH tx, but occasionally it provides the second and final one.
+    if (params.isLastSignature) {
+      // In this case when we're doing the second (final) signature, the logic is different.
+      return this.signFinal(params);
     }
 
     const secondsSinceEpoch = Math.floor((new Date().getTime()) / 1000);
@@ -330,6 +386,65 @@ class Eth extends BaseCoin {
   }
 
   /**
+   * Queries public block explorer to get the next ETH nonce that should be used for the given ETH address
+   * @param address
+   * @param callback
+   * @returns {*}
+   */
+  getAddressNonce(address, callback) {
+    return co(function *() {
+      // Get nonce for backup key (should be 0)
+      let nonce = 0;
+
+      const result = yield this.recoveryBlockchainExplorerQuery({
+        module: 'account',
+        action: 'txlist',
+        address
+      });
+      const backupKeyTxList = result.result;
+      if (backupKeyTxList.length > 0) {
+        // Calculate last nonce used
+        const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
+        nonce = outgoingTxs.length;
+      }
+      return nonce;
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Helper function for recover()
+   * This transforms the unsigned transaction information into a format the BitGo offline vault expects
+   * @param txInfo
+   * @param ethTx
+   * @param userKey
+   * @param backupKey
+   * @returns {{tx: *, userKey: *, backupKey: *, coin: string, amount: string, gasPrice: string, gasLimit: string, recipients: ({address, amount}|{address: ({address, amount}|string), amount: string}|string)[]}}
+   */
+  formatForOfflineVault(txInfo, ethTx, userKey, backupKey, gasPrice, gasLimit, callback) {
+    return co(function *() {
+      const backupHDNode = utxoLib.HDNode.fromBase58(backupKey);
+      const backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
+      const response = {
+        tx: ethTx.serialize().toString('hex'),
+        userKey,
+        backupKey,
+        coin: this.getChain(),
+        gasPrice: ethUtil.bufferToInt(gasPrice).toFixed(),
+        gasLimit,
+        recipients: [
+          txInfo.recipient
+        ],
+        walletContractAddress: '0x' + ethTx.to.toString('hex'),
+        amount: txInfo.recipient.amount,
+        backupKeyNonce: yield this.getAddressNonce(`0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`)
+      };
+      _.extend(response, txInfo);
+      response.nextContractSequenceId = response.contractSequenceId
+      return response;
+    }).call(this).asCallback(callback);
+  }
+
+  /**
    * Builds a funds recovery transaction without BitGo
    * @param params.userKey {String} [encrypted] xprv
    * @param params.backupKey {String} [encrypted] xprv or xpub if the xprv is held by a KRS provider
@@ -349,7 +464,7 @@ class Eth extends BaseCoin {
         throw new Error('missing backupKey');
       }
 
-      if (_.isUndefined(params.walletPassphrase)) {
+      if (_.isUndefined(params.walletPassphrase) && !params.userKey.startsWith('xpub')) {
         throw new Error('missing wallet passphrase');
       }
 
@@ -361,35 +476,37 @@ class Eth extends BaseCoin {
         throw new Error('invalid recoveryDestination');
       }
 
-      const isKrsRecovery = params.backupKey.startsWith('xpub');
+      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
+      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
       if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new Error('unknown key recovery service provider');
       }
 
       // Clean up whitespace from entered values
-      const encryptedUserKey = params.userKey.replace(/\s/g, '');
+      let userKey = params.userKey.replace(/\s/g, '');
       const backupKey = params.backupKey.replace(/\s/g, '');
 
       // Set new eth tx fees (using default config values from platform)
       const gasPrice = this.getRecoveryGasPrice();
       const gasLimit = this.getRecoveryGasLimit();
 
-      // Decrypt private keys from KeyCard values
-      let userPrv;
-      try {
-        userPrv = this.bitgo.decrypt({
-          input: encryptedUserKey,
-          password: params.walletPassphrase
-        });
-      } catch (e) {
-        throw new Error(`Error decrypting user keychain: ${e.message}`);
+      // Decrypt private keys from KeyCard values if necessary
+      if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
+        try {
+          userKey = this.bitgo.decrypt({
+            input: userKey,
+            password: params.walletPassphrase
+          });
+        } catch (e) {
+          throw new Error(`Error decrypting user keychain: ${e.message}`);
+        }
       }
 
       let backupKeyAddress;
       let backupSigningKey;
 
-      if (isKrsRecovery) {
+      if (isKrsRecovery || isUnsignedSweep) {
         const backupHDNode = prova.HDNode.fromBase58(backupKey);
         backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
         backupKeyAddress = `0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
@@ -411,26 +528,13 @@ class Eth extends BaseCoin {
         backupKeyAddress = `0x${ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
       }
 
-      // Get nonce for backup key (should be 0)
-      let backupKeyNonce = 0;
+      const backupKeyNonce = yield this.getAddressNonce(backupKeyAddress);
 
-      const result = yield this.recoveryBlockchainExplorerQuery({
-        module: 'account',
-        action: 'txlist',
-        address: backupKeyAddress
-      });
-      const backupKeyTxList = result.result;
-      if (backupKeyTxList.length > 0) {
-        // Calculate last nonce used
-        const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === backupKeyAddress);
-        backupKeyNonce = outgoingTxs.length;
-      }
-
-      // get balance of wallet and deduct fees to get transaction amount
+      // get balance of backupKey to ensure funds are available to pay fees
       const backupKeyBalance = yield this.queryAddressBalance(backupKeyAddress);
 
       if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
-        throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries`);
+        throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.`);
       }
 
       // get balance of wallet and deduct fees to get transaction amount
@@ -445,14 +549,17 @@ class Eth extends BaseCoin {
       // Get sequence ID using contract call
       const sequenceId = yield this.querySequenceId(params.walletContractAddress);
 
+      let operationHash, signature;
       // Get operation hash and sign it
-      const operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
-      const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+      if (!isUnsignedSweep) {
+        operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
+        signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
 
-      try {
-        Util.ecRecoverEthAddress(operationHash, signature);
-      } catch (e) {
-        throw new Error('Invalid signature');
+        try {
+          Util.ecRecoverEthAddress(operationHash, signature);
+        } catch (e) {
+          throw new Error('Invalid signature');
+        }
       }
 
       const txInfo = {
@@ -480,6 +587,10 @@ class Eth extends BaseCoin {
         data: sendData,
         spendAmount: txAmount
       });
+
+      if (isUnsignedSweep) {
+        return this.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
+      }
 
       if (!isKrsRecovery) {
         tx.sign(backupSigningKey);
