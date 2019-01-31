@@ -707,7 +707,7 @@ describe('Recovery:', function() {
       }));
 
       should.exist(error);
-      error.message.should.equal('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0. This address must have a balance of at least 0.01 ETH to perform recoveries');
+      error.message.should.equal('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.');
     }));
   });
 });

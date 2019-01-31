@@ -5,6 +5,8 @@ require('should');
 const TestV2BitGo = require('../../lib/test_bitgo');
 const sinon = require('sinon');
 const Util = require('../../../src/util');
+const fixtures = require('../fixtures/eth.js');
+const EthTx = require('ethereumjs-tx');
 
 describe('Sign ETH Transaction', co(function *() {
 
@@ -43,3 +45,31 @@ describe('Sign ETH Transaction', co(function *() {
   }));
 
 }));
+
+describe('Add final signature to ETH tx from offline vault', function() {
+
+  let paramsFromVault, expectedResult, bitgo, coin;
+  before(function() {
+    const vals = fixtures.getHalfSignedTethFromVault();
+    paramsFromVault = vals.paramsFromVault;
+    expectedResult = vals.expectedResult;
+    bitgo = new TestV2BitGo({ env: 'test' });
+    coin = bitgo.coin('teth');
+  });
+
+  it('should successfully fully sign a half-signed transaction from the offline vault', function() {
+    const response = coin.signTransaction(paramsFromVault);
+    const expectedTx = new EthTx(expectedResult.txHex);
+    const actualTx = new EthTx(response.txHex);
+    actualTx.nonce.should.deepEqual(expectedTx.nonce);
+    actualTx.to.should.deepEqual(expectedTx.to);
+    actualTx.value.should.deepEqual(expectedTx.value);
+    actualTx.data.should.deepEqual(expectedTx.data);
+    actualTx.v.should.deepEqual(expectedTx.v);
+    actualTx.r.should.deepEqual(expectedTx.r);
+    actualTx.s.should.deepEqual(expectedTx.s);
+    actualTx.gasPrice.should.deepEqual(expectedTx.gasPrice);
+    actualTx.gasLimit.should.deepEqual(expectedTx.gasLimit);
+    response.txHex.should.equal(expectedResult.txHex);
+  });
+});
