@@ -128,17 +128,10 @@ describe('Abstract UTXO Coin:', () => {
     before(() => {
       bitgo = new TestBitGo({ env: 'mock' });
       coin = bitgo.coin('tbtc');
+      sinon.stub(coin, 'verifyRecoveryTransaction').resolvesArg(0);
     });
 
-    // Note: when running this test we expect to see a message in the console: "Could not verify recovery transaction Nock..... "url": ... /decodetx ... etc"
-    // This is expected. We are deliberately *not* nocking this decodeTx api call because it would be overwriting the transaction we just made
-    // and we want to make sure the code is constructing the transaction properly
-    // The transaction we create in this test was originally in a BitGo testnet wallet, and contains two unspents: one is segwit, one is non-segwit
-    // On the first time running the test, we did not nock any external api calls
-    // After building this test, the testnet transaction was broadcast successfully
-    // The external api calls have now been replaced with nocks based on what they used to return, and the constructed transaction has been saved as "expectedTxHex"
     it('should construct a recovery transaction with segwit unspents', co(function *() {
-
       const { params, expectedTxHex } = fixtures.recoverBtcSegwitFixtures();
       recoveryNocks.nockBtcSegwitRecovery();
       const tx = yield coin.recover(params);
@@ -147,11 +140,21 @@ describe('Abstract UTXO Coin:', () => {
       transaction.outs.length.should.equal(1);
       transaction.outs[0].value.should.equal(57184);
       tx.transactionHex.should.equal(expectedTxHex);
+    }));
 
+    it('should construct an unsigned recovery transaction for the offline vault', co(function *() {
+      const { params, expectedTxHex } = fixtures.recoverBtcUnsignedFixtures();
+      recoveryNocks.nockBtcUnsignedRecovery();
+      const txPrebuild = yield coin.recover(params);
+      txPrebuild.txHex.should.equal(expectedTxHex);
+      txPrebuild.should.have.property('feeInfo');
+      txPrebuild.coin.should.equal('tbtc');
+      txPrebuild.txInfo.unspents.length.should.equal(2);
     }));
 
     after(function() {
       nock.cleanAll();
+      coin.verifyRecoveryTransaction.restore();
     });
 
   });

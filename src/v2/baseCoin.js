@@ -420,11 +420,11 @@ class BaseCoin {
       const destinationAddress = params.recoveryDestination;
       const passphrase = params.walletPassphrase;
 
-      const isKrsRecovery = backupKey.startsWith('xpub');
+      const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
 
       const validatePassphraseKey = function(userKey, passphrase) {
         try {
-          if (!userKey.startsWith('xprv')) {
+          if (!userKey.startsWith('xprv') && !userKey.startsWith('xpub')) {
             userKey = self.bitgo.decrypt({
               input: userKey,
               password: passphrase
@@ -443,7 +443,7 @@ class BaseCoin {
 
       // Validate the backup key
       try {
-        if (!backupKey.startsWith('xprv') && !isKrsRecovery) {
+        if (!backupKey.startsWith('xprv') && !isKrsRecovery && !backupKey.startsWith('xpub')) {
           backupKey = self.bitgo.decrypt({
             input: backupKey,
             password: passphrase
@@ -475,7 +475,7 @@ class BaseCoin {
   // Some coins can have their tx info verified, if a public tx decoder is available
   verifyRecoveryTransaction(txInfo) {
     // yieldable no-op
-    return Promise.reject(new Error('BaseCoin method not implemented'));
+    return Promise.reject(new errors.MethodNotImplementedError());
   }
 
   parseTransaction() {
