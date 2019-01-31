@@ -17,6 +17,15 @@ class Tbsv extends Bsv {
   getAddressPrefix() {
     return 'bchtest';
   }
+
+  /**
+   * Checks if the unspent comes from the BitGo taint provider address
+   * @param unspent
+   * @returns {boolean}
+   */
+  isBitGoTaintedUnspent(unspent) {
+    return unspent.address === '2MuMnPoSDgWEpNWH28X2nLtYMXQJCyT61eY';
+  }
 }
 
 module.exports = Tbsv;
