@@ -33,6 +33,7 @@
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi"
   },
   "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^1.2.0",
     "argparse": "~1.0.10",
     "assert": "0.4.9",
     "big.js": "~3.1.3",
@@ -64,14 +65,17 @@
     "superagent-proxy": "~1.0.0"
   },
   "devDependencies": {
+    "@typescript-eslint/parser": "^1.2.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.1",
     "browserify": "^16.2.3",
     "bufferutil": "~3.0.5",
-    "eslint": "^4.17.0",
+    "eslint": "^5.0.0",
+    "eslint-config-prettier": "^4.0.0",
     "glob": "^7.1.2",
     "html-webpack-plugin": "^2.30.1",
+    "husky": "^1.3.1",
     "karma": "^3.0.0",
     "karma-chrome-launcher": "~0.1.7",
     "karma-mocha": "~0.1.10",
@@ -80,6 +84,8 @@
     "mocha-lcov-reporter": "0.0.2",
     "nock": "~9.0.13",
     "nyc": "^13.3.0",
+    "precise-commits": "^1.0.2",
+    "prettier": "1.16.3",
     "q": "1.1.2",
     "request": "^2.88.0",
     "request-promise": "~4.2.2",
@@ -90,6 +96,7 @@
     "sjcl": "~1.0.7",
     "supertest": "~3.0.0",
     "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz",
+    "typescript": "^3.3.1",
     "uglify-js": "3.0.15",
     "uglifyjs-webpack-plugin": "^1.0.1",
     "utf-8-validate": "~4.0.2",
@@ -101,20 +108,9 @@
     "ethereumjs-util": "~4.4.1",
     "secp256k1": "^3.5.0"
   },
-  "testling": {
-    "browsers": [
-      "chrome/latest",
-      "firefox/latest",
-      "safari/latest",
-      "opera/latest",
-      "iphone/latest",
-      "ipad/latest",
-      "android-browser/4.2..latest"
-    ],
-    "harness": "mocha",
-    "files": [
-      "test/*.js",
-      "test/bitcoin/*.js"
-    ]
+  "husky": {
+    "hooks": {
+      "pre-commit": "precise-commits"
+    }
   }
 }

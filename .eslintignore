@@ -2,3 +2,5 @@ node_modules
 .idea
 public
 src/sjcl.min.js
+build
+browser

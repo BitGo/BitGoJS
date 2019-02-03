@@ -5,14 +5,21 @@
     "node": true,
     "mocha": true
   },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
   "globals": {
     "app": true,        // BitGo side-effect from testutil
     "ethUtil": true,    // BitGo side-effect from testutil
     "requireCommon": true
   },
-  //"extends": "eslint:recommended",  //possibly to be added in the future
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "prettier",
+    "prettier/@typescript-eslint"
+  ],
   "parserOptions": {
-    "ecmaVersion": 6
+    "ecmaVersion": 6,
+    "project": "./tsconfig.json"
   },
   "rules": {
     "indent": ["error", 2, {"SwitchCase": 1, "MemberExpression": 0}],
@@ -68,6 +75,9 @@
     "space-before-function-paren": ["error", "never"],
     "no-mixed-spaces-and-tabs": "error",
     "no-dupe-keys": "error",
-    "no-redeclare": ["error", { "builtinGlobals": true }]
+    "no-redeclare": ["error", { "builtinGlobals": true }],
+    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "@typescript-eslint/camelcase": "warn"
   }
 }
