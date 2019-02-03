@@ -6,7 +6,12 @@ const glob = require('glob');
 
 // Loaders handle certain extensions and apply transforms
 function setupRules(env) {
-  const rules = [];
+  const rules = [
+    {
+      test: /\.ts$/,
+      loader: "awesome-typescript-loader"
+    }
+  ];
 
   if (env.prod) {
     // TODO: If we want to add babel, uncomment this. Maybe add an IE flag to CME
@@ -138,16 +143,19 @@ module.exports = function setupWebpack(env) {
 
   // Compile source code
   return {
+    resolve: {
+      extensions: [".ts", ".js"]
+    },
     // Main project entry point
-    entry: path.join(__dirname, 'src', 'index.js'),
+    entry: path.join(__dirname, "src", "index.js"),
 
     // Output directory and filename
     // Library acts like 'standalone' for browserify, defines it globally if module system not found
     output: {
-      path: path.join(__dirname, 'browser'),
-      filename: env.prod ? 'BitGoJS.min.js' : 'BitGoJS.js',
-      library: 'BitGoJS',
-      libraryTarget: 'umd'
+      path: path.join(__dirname, "browser"),
+      filename: env.prod ? "BitGoJS.min.js" : "BitGoJS.js",
+      library: "BitGoJS",
+      libraryTarget: "umd"
     },
 
     // All of our transpilation settings. Should really only need 'loaders' for now
@@ -160,6 +168,6 @@ module.exports = function setupWebpack(env) {
     plugins: setupPlugins(env),
 
     // Create a source map for the bundled code (dev and test only)
-    devtool: !env.prod && 'cheap-eval-source-map'
+    devtool: !env.prod && "source-map"
   };
 };
