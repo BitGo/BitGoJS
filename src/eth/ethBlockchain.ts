@@ -7,7 +7,7 @@
 //
 
 require('superagent');
-const common = require('../common');
+import common = require('../common');
 
 //
 // Constructor

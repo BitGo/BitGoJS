@@ -3,13 +3,14 @@
     "module": "commonjs",
     "target": "es5",
     "sourceMap": true,
-    "allowJs": true,
-    "outDir": "./build"
+    "outDir": "./lib",
+    "declaration": true
   },
   "exclude": [
     "node_modules",
     "build",
     "example",
-    "browser"
+    "browser",
+    "lib"
   ]
 }

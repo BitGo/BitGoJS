@@ -6,9 +6,8 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-require('superagent');
-const common = require('./common');
-const _ = require('lodash');
+import common = require('./common');
+import _ = require('lodash');
 
 //
 // Constructor

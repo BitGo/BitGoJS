@@ -1,5 +1,4 @@
 let Keychains;
-const BigNumber = require('bignumber.js');
 let Enterprises;
 let PendingApprovals;
 let Wallet;
@@ -9,16 +8,31 @@ let Token;
 let OFCToken;
 let Webhooks;
 let coinGenerators;
-const bitcoin = require('bitgo-utxo-lib');
-const bitcoinMessage = require('bitcoinjs-message');
-const Promise = require('bluebird');
-const co = Promise.coroutine;
-const errors = require('../errors');
-const _ = require('lodash');
+import BigNumber from 'bignumber.js';
+import bitcoin = require('bitgo-utxo-lib');
+import bitcoinMessage = require('bitcoinjs-message');
+import errors = require('../errors');
+import _ = require('lodash');
 
-class BaseCoin {
+abstract class BaseCoin {
 
-  static getInstance(bitgo, coin) {
+  private bitgo;
+  private type;
+  public url;
+  public wallets;
+  private coinWallets;
+  public enterprises;
+  private coinEnterprises;
+  public keychains;
+  private coinKeychains;
+  public webhooks;
+  private coinWebhooks;
+  public pendingApprovals;
+  private coinPendingApprovals;
+  public markets;
+  private coinMarkets;
+
+  public static getInstance(bitgo, coin): BaseCoin {
     const coinInstance = BaseCoin.initializeCoin(coin, bitgo);
     coinInstance.bitgo = bitgo;
     // Incase of a token, the type is already set
@@ -94,7 +108,7 @@ class BaseCoin {
     return coinInstance;
   }
 
-  static setupTokens(coins, bitgo) {
+  private static setupTokens(coins, bitgo) {
     if (!Token) {
       Token = require('./coins/token');
     }
@@ -113,7 +127,7 @@ class BaseCoin {
   }
 
 
-  static setupOffchainTokens(coins, bitgo) {
+  private static setupOffchainTokens(coins, bitgo) {
     if (!OFCToken) {
       OFCToken = require('./coins/ofcToken');
     }
@@ -137,8 +151,8 @@ class BaseCoin {
    * user didn't specify anything or in node environments
    * @returns {}
    */
-  static getCoinsToInitialize(bitgo) {
-    const coins = {};
+  private static getCoinsToInitialize(bitgo) {
+    const coins: any = {};
 
     if (process.env.BITGO_EXCLUDE_BTC !== 'exclude') {
       coins.btc = require('./coins/btc');
@@ -213,7 +227,7 @@ class BaseCoin {
     return coins;
   }
 
-  static initializeCoin(coin, bitgo) {
+  public static initializeCoin(coin, bitgo): BaseCoin {
     if (!coinGenerators) {
       // initialization has to be asynchronous to avoid circular dependencies
       coinGenerators = BaseCoin.getCoinsToInitialize(bitgo);
@@ -240,29 +254,23 @@ class BaseCoin {
   /**
    * Name of the chain which supports this coin (eg, 'btc', 'eth')
    */
-  getChain() {
-    throw new Error('Basecoin method not implemented');
-  }
+  public abstract getChain();
 
   /**
    * Name of the coin family (eg. for tbtc, this would be btc)
    */
-  getFamily() {
-    throw new Error('Basecoin method not implemented');
-  }
+  public abstract getFamily();
 
   /**
    * Human readable full name for the coin
    */
-  getFullName() {
-    throw new Error('Basecoin method not implemented');
-  }
+  public abstract getFullName();
 
   /**
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
-  valuelessTransferAllowed() {
+  public valuelessTransferAllowed() {
     return false;
   }
 
@@ -270,7 +278,7 @@ class BaseCoin {
    * Flag for sending data along with transactions
    * @returns {boolean} True if okay to send tx data (ETH), false otherwise
    */
-  transactionDataAllowed() {
+  public transactionDataAllowed() {
     return false;
   }
 
@@ -280,7 +288,7 @@ class BaseCoin {
    * @param {string|number} baseUnits
    * @returns {string}
    */
-  baseUnitsToBigUnits(baseUnits) {
+  public baseUnitsToBigUnits(baseUnits) {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts
@@ -292,7 +300,7 @@ class BaseCoin {
    * to base units (satoshi, wei, atoms, drops, stroops)
    * @param bigUnits
    */
-  bigUnitsToBaseUnits(bigUnits) {
+  public bigUnitsToBaseUnits(bigUnits) {
     const multiplier = this.getBaseFactor();
     const bigNumber = new BigNumber(bigUnits).times(multiplier);
     if (!bigNumber.isInteger()) {
@@ -307,7 +315,7 @@ class BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key, message) {
+  public signMessage(key, message) {
     const privateKey = bitcoin.HDNode.fromBase58(key.prv).getKey();
     const privateKeyBuffer = privateKey.d.toBuffer();
     const isCompressed = privateKey.compressed;
@@ -318,71 +326,54 @@ class BaseCoin {
   /**
    * Verify that a transaction prebuild complies with the original intention
    */
-  verifyTransaction() {
-    return Promise.resolve(true);
-  }
+  public abstract verifyTransaction();
 
   /**
    * Verify that an address belongs to a wallet
    * @returns {boolean}
    */
-  verifyAddress() {
-    return true;
-  }
+  public abstract verifyAddress();
 
   /**
    * Check whether a coin supports blockTarget for transactions to be included in
    * @returns {boolean}
    */
-  supportsBlockTarget() {
-    return false;
-  }
+  public abstract supportsBlockTarget();
 
   /**
    * If a coin needs to add additional parameters to the wallet generation, it does it in this method
    * @param walletParams
    * @return {*}
    */
-  supplementGenerateWallet(walletParams) {
-    return Promise.resolve(walletParams);
-  }
+  public abstract async supplementGenerateWallet(walletParams);
 
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
-  postProcessPrebuild(prebuildResponse) {
-    return Promise.method(function() {
-      return prebuildResponse;
-    }).call(this);
-  }
+  public abstract async postProcessPrebuild(prebuildResponse);
 
-  newWalletObject(walletParams) {
+  public newWalletObject(walletParams) {
     if (!Wallet) {
       Wallet = require('./wallet');
     }
     return new Wallet(this.bitgo, this, walletParams);
   }
 
-  toJSON() {
-    return undefined;
-  }
+  public abstract toJSON();
 
   /**
    * Fetch fee estimate information from the server
    * @param {Object} params The params passed into the function
-   * @param {Integer} params.numBlocks The number of blocks to target for conformation (Only works for btc)
-   * @param callback
+   * @param {number} params.numBlocks The number of blocks to target for conformation (Only works for btc)
    * @returns {Object} The info returned from the merchant server
    */
-  feeEstimate(params, callback) {
-    return co(function *coFeeEstimate() {
-      const query = {};
-      if (params && params.numBlocks) {
-        query.numBlocks = params.numBlocks;
-      }
+  public async feeEstimate(params: { numBlocks?: number } = {}) {
+    const query: any = {};
+    if (params && params.numBlocks && _.isInteger(params.numBlocks)) {
+      query.numBlocks = params.numBlocks;
+    }
 
-      return this.bitgo.get(this.url('/tx/fee')).query(query).result();
-    }).call(this).asCallback(callback);
+    return this.bitgo.get(this.url('/tx/fee')).query(query).result();
   }
 
   /**
@@ -391,7 +382,7 @@ class BaseCoin {
    * @param seed
    * @returns {{key: *, derivationPath: string}}
    */
-  deriveKeyWithSeed({ key, seed }) {
+  public deriveKeyWithSeed({ key, seed }) {
     const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
     const derivationPathParts = [
       parseInt(derivationPathInput.slice(0, 7), 16),
@@ -411,90 +402,79 @@ class BaseCoin {
    * is a no-op, but coin-specific controller may do something
    * @param params
    */
-  preCreateBitGo(params) {
-    return;
-  }
+  public abstract preCreateBitGo(params);
 
-  initiateRecovery(params) {
-    return co(function *initiateRecovery() {
-      const self = this;
-      const keys = [];
-      const userKey = params.userKey; // Box A
-      let backupKey = params.backupKey; // Box B
-      const bitgoXpub = params.bitgoKey; // Box C
-      const destinationAddress = params.recoveryDestination;
-      const passphrase = params.walletPassphrase;
+  public async initiateRecovery(params) {
+    const self = this;
+    const keys = [];
+    const userKey = params.userKey; // Box A
+    let backupKey = params.backupKey; // Box B
+    const bitgoXpub = params.bitgoKey; // Box C
+    const destinationAddress = params.recoveryDestination;
+    const passphrase = params.walletPassphrase;
 
-      const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
+    const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
 
-      const validatePassphraseKey = function(userKey, passphrase) {
-        try {
-          if (!userKey.startsWith('xprv') && !userKey.startsWith('xpub')) {
-            userKey = self.bitgo.decrypt({
-              input: userKey,
-              password: passphrase
-            });
-          }
-          const userHDNode = bitcoin.HDNode.fromBase58(userKey);
-          return Promise.resolve(userHDNode);
-        } catch (e) {
-          throw new Error('Failed to decrypt user key with passcode - try again!');
-        }
-      };
-
-      const key = yield validatePassphraseKey(userKey, passphrase);
-
-      keys.push(key);
-
-      // Validate the backup key
+    const validatePassphraseKey = function(userKey, passphrase) {
       try {
-        if (!backupKey.startsWith('xprv') && !isKrsRecovery && !backupKey.startsWith('xpub')) {
-          backupKey = self.bitgo.decrypt({
-            input: backupKey,
+        if (!userKey.startsWith('xprv') && !userKey.startsWith('xpub')) {
+          userKey = self.bitgo.decrypt({
+            input: userKey,
             password: passphrase
           });
         }
-        const backupHDNode = bitcoin.HDNode.fromBase58(backupKey);
-        keys.push(backupHDNode);
+        const userHDNode = bitcoin.HDNode.fromBase58(userKey);
+        return Promise.resolve(userHDNode);
       } catch (e) {
-        throw new Error('Failed to decrypt backup key with passcode - try again!');
+        throw new Error('Failed to decrypt user key with passcode - try again!');
       }
-      try {
-        const bitgoHDNode = bitcoin.HDNode.fromBase58(bitgoXpub);
-        keys.push(bitgoHDNode);
-      } catch (e) {
-        if (this.getFamily() !== 'xrp') {
-          // in XRP recoveries, the BitGo xpub is optional
-          throw new Error('Failed to parse bitgo xpub!');
-        }
-      }
-      // Validate the destination address
-      if (!this.isValidAddress(destinationAddress)) {
-        throw new Error('Invalid destination address!');
-      }
+    };
 
-      return keys;
-    }).call(this);
+    const key = await validatePassphraseKey(userKey, passphrase);
+
+    keys.push(key);
+
+    // Validate the backup key
+    try {
+      if (!backupKey.startsWith('xprv') && !isKrsRecovery && !backupKey.startsWith('xpub')) {
+        backupKey = self.bitgo.decrypt({
+          input: backupKey,
+          password: passphrase
+        });
+      }
+      const backupHDNode = bitcoin.HDNode.fromBase58(backupKey);
+      keys.push(backupHDNode);
+    } catch (e) {
+      throw new Error('Failed to decrypt backup key with passcode - try again!');
+    }
+    try {
+      const bitgoHDNode = bitcoin.HDNode.fromBase58(bitgoXpub);
+      keys.push(bitgoHDNode);
+    } catch (e) {
+      if (this.getFamily() !== 'xrp') {
+        // in XRP recoveries, the BitGo xpub is optional
+        throw new Error('Failed to parse bitgo xpub!');
+      }
+    }
+    // Validate the destination address
+    if (!this.isValidAddress(destinationAddress)) {
+      throw new Error('Invalid destination address!');
+    }
+
+    return keys;
   }
 
   // Some coins can have their tx info verified, if a public tx decoder is available
-  verifyRecoveryTransaction(txInfo) {
-    // yieldable no-op
-    return Promise.reject(new errors.MethodNotImplementedError());
-  }
+  public abstract async verifyRecoveryTransaction(txInfo);
 
-  parseTransaction() {
-    return Promise.resolve({});
-  }
+  public abstract parseTransaction();
 
   /**
    * Generate a key pair on the curve used by the coin
    *
    * @param seed
    */
-  generateKeyPair(seed) {
-    throw new Error('abstract method');
-  }
+  public abstract generateKeyPair(seed): any;
 
   /**
    * Return boolean indicating whether input is valid public key for the coin.
@@ -502,17 +482,17 @@ class BaseCoin {
    * @param {String} pub the pub to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidPub(pub) {
-    throw new Error('Basecoin method not implemented');
-  }
+  public abstract isValidPub(pub): boolean;
 
   /**
    * Return wether the given m of n wallet signers/ key amounts are valid for the coin
    */
-  isValidMofNSetup({ m, n }) {
+  public isValidMofNSetup({ m, n }) {
     return m === 2 && n === 3;
   }
 
+  public abstract getBaseFactor(): string | number;
+  public abstract isValidAddress(address): boolean;
 }
 
 

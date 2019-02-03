@@ -3,7 +3,7 @@
 //
 
 require('should');
-const nock = require('nock');
+import nock = require('nock');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 const Token = require('../../../src/v2/coins/token');

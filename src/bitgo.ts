@@ -6,38 +6,41 @@
 
 // signed commit test
 
-const superagent = require('superagent');
-const bitcoin = require('./bitcoin');
-const bitcoinMessage = require('bitcoinjs-message');
-const sanitizeHtml = require('sanitize-html');
-const eol = require('eol');
-const BaseCoin = require('./v2/baseCoin');
-const Blockchain = require('./blockchain');
-const EthBlockchain = require('./eth/ethBlockchain');
-const Keychains = require('./keychains');
-const TravelRule = require('./travelRule');
-const Wallet = require('./wallet');
-const EthWallet = require('./eth/ethWallet');
-const Wallets = require('./wallets');
-const EthWallets = require('./eth/ethWallets');
-const Markets = require('./markets');
-const PendingApprovals = require('./pendingapprovals');
-const shamir = require('secrets.js-grempe');
-const sjcl = require('./sjcl.min');
-const bs58 = require('bs58');
-const common = require('./common');
-const Util = require('./util');
-const Promise = require('bluebird');
-const co = Promise.coroutine;
-const pjson = require('../package.json');
-const moment = require('moment');
-const _ = require('lodash');
-const url = require('url');
-const querystring = require('querystring');
-const config = require('./config');
-const crypto = require('crypto');
-const debug = require('debug')('bitgo:index');
-const { bytesToWord } = require('./v2/internal');
+import superagent = require('superagent');
+import bitcoin = require('./bitcoin');
+import bitcoinMessage = require('bitcoinjs-message');
+import sanitizeHtml = require('sanitize-html');
+import eol = require('eol');
+import BaseCoin = require('./v2/baseCoin');
+import Blockchain = require('./blockchain');
+import EthBlockchain = require('./eth/ethBlockchain');
+import Keychains = require('./keychains');
+import TravelRule = require('./travelRule');
+import Wallet = require('./wallet');
+import EthWallet = require('./eth/ethWallet');
+import Wallets = require('./wallets');
+import EthWallets = require('./eth/ethWallets');
+import Markets = require('./markets');
+import PendingApprovals = require('./pendingapprovals');
+import shamir = require('secrets.js-grempe');
+import sjcl = require('./sjcl.min');
+import bs58 = require('bs58');
+import common = require('./common');
+import Util = require('./util');
+import Promise = require('bluebird');
+import co = Promise.coroutine;
+import pjson = require('../package.json');
+import moment = require('moment');
+import _ = require('lodash');
+import url = require('url');
+import querystring = require('querystring');
+import config = require('./config');
+import crypto = require('crypto');
+import debugLib = require('debug');
+import internal = require('./v2/internal');
+
+let debug = debugLib('bitgo:index');
+let { bytesToWord } = internal;
 
 if (!process.browser) {
   require('superagent-proxy')(superagent);

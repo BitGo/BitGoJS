@@ -3,8 +3,8 @@
 //
 
 require('should');
-const Promise = require('bluebird');
-const co = Promise.coroutine;
+import bluebird = require('bluebird');
+const co = bluebird.coroutine;
 const nock = require('nock');
 const common = require('../../../src/common');
 const _ = require('lodash');

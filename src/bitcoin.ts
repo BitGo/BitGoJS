@@ -14,13 +14,6 @@ try {
   console.log('running without secp256k1 acceleration');
 }
 
-// Check for IE, and disable secp256k1, due to:
-// https://github.com/indutny/bn.js/issues/133
-const isIE = (({}).constructor.name === undefined);
-if (isIE) {
-  secp256k1 = undefined;
-}
-
 bitcoin.getNetwork = function(network) {
   network = network || common.getNetwork();
   return bitcoin.networks[network];
@@ -103,22 +96,6 @@ const deriveFast = function(hdnode, index) {
   return hd;
 };
 
-if (secp256k1) {
-  bitcoin.ECPair.prototype.sign = function(hash) {
-    if (!this.d) {
-      throw new Error('Missing private key');
-    }
-    const sig = secp256k1.sign(hash, this.d.toBuffer(32)).signature;
-    return bitcoin.ECSignature.fromDER(secp256k1.signatureExport(sig));
-  };
-
-  bitcoin.ECPair.prototype.verify = function(hash, signature) {
-    signature = new bitcoin.ECSignature(signature.r, signature.s);
-    signature = secp256k1.signatureNormalize(secp256k1.signatureImport(signature.toDER()));
-    return secp256k1.verify(hash, signature, this.getPublicKeyBuffer());
-  };
-}
-
 /**
  *  Derive a BIP32 path, given a root key
  *  We cache keys at each level of hierarchy we derive, to avoid re-deriving (approx 25ms per derivation)
@@ -171,4 +148,4 @@ bitcoin.hdPath = function(rootKey) {
   };
 };
 
-module.exports = bitcoin;
+export = bitcoin;

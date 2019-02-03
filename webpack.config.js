@@ -9,8 +9,8 @@ function setupRules(env) {
   const rules = [
     {
       test: /\.ts$/,
-      loader: "awesome-typescript-loader"
-    }
+      loader: 'awesome-typescript-loader',
+    },
   ];
 
   if (env.prod) {
@@ -70,16 +70,17 @@ function getCoinsToExclude(env) {
     throw new Error(`Invalid coins: ${invalidCoins.join(',')} \n Valid options are: ${allCoins.join(',')}`);
   }
 
-  return allCoins.filter(allCoin => {
-    return !compileCoins.includes(allCoin);
-  })
-  .map(coin => {
-    return new webpack.DefinePlugin({
-      'process.env': {
-        [`BITGO_EXCLUDE_${coin.toUpperCase()}`]: JSON.stringify('exclude')
-      }
+  return allCoins
+    .filter(allCoin => {
+      return !compileCoins.includes(allCoin);
+    })
+    .map(coin => {
+      return new webpack.DefinePlugin({
+        'process.env': {
+          [`BITGO_EXCLUDE_${coin.toUpperCase()}`]: JSON.stringify('exclude'),
+        },
+      });
     });
-  });
 }
 
 // Used for extra processing that does not involve transpilation (e.g. minification)
@@ -90,23 +91,29 @@ function setupPlugins(env) {
     // By default, webpack will bundle _everything_ that could possibly match the expression
     // inside a dynamic 'require'. This changes Webpack so that it bundles nothing.
     new webpack.ContextReplacementPlugin(/.*$/, /$NEVER_MATCH^/),
-    ...excludeCoins
+    ...excludeCoins,
   ];
 
   if (!env.test) {
     // Create a browser.html which automatically includes BitGoJS
-    plugins.push(new HTMLWebpackPlugin({ filename: 'browser.html', title: 'BitGo SDK Sandbox' }));
+    plugins.push(
+      new HTMLWebpackPlugin({
+        filename: 'browser.html',
+        title: 'BitGo SDK Sandbox',
+      })
+    );
   }
 
   if (env.prod) {
     // Minimize output files in production
-    plugins.push(new UglifyJSPlugin({
-      uglifyOptions: {
-        mangle: false
-      }
-    }));
+    plugins.push(
+      new UglifyJSPlugin({
+        uglifyOptions: {
+          mangle: false,
+        },
+      })
+    );
   }
-
 
   return plugins;
 }
@@ -120,11 +127,11 @@ function getTestConfig(env) {
     // Output everything into browser/tests.js
     output: {
       path: path.join(__dirname, 'browser'),
-      filename: 'tests.js'
+      filename: 'tests.js',
     },
 
     externals: setupExternals(env),
-    plugins: setupPlugins(env)
+    plugins: setupPlugins(env),
   };
 }
 
@@ -132,7 +139,9 @@ function getTestConfig(env) {
 module.exports = function setupWebpack(env) {
   // If no env is provided, default to dev
   if (!env) {
-    console.log('No environment provided - defaulting to dev. Use the npm `compile` tasks for a better build experience.');
+    console.log(
+      'No environment provided - defaulting to dev. Use the npm `compile` tasks for a better build experience.'
+    );
     env = { dev: true };
   }
 
@@ -144,18 +153,18 @@ module.exports = function setupWebpack(env) {
   // Compile source code
   return {
     resolve: {
-      extensions: [".ts", ".js"]
+      extensions: ['.ts', '.js'],
     },
     // Main project entry point
-    entry: path.join(__dirname, "src", "index.js"),
+    entry: path.join(__dirname, 'src', 'index.js'),
 
     // Output directory and filename
     // Library acts like 'standalone' for browserify, defines it globally if module system not found
     output: {
-      path: path.join(__dirname, "browser"),
-      filename: env.prod ? "BitGoJS.min.js" : "BitGoJS.js",
-      library: "BitGoJS",
-      libraryTarget: "umd"
+      path: path.join(__dirname, 'browser'),
+      filename: env.prod ? 'BitGoJS.min.js' : 'BitGoJS.js',
+      library: 'BitGoJS',
+      libraryTarget: 'umd',
     },
 
     // All of our transpilation settings. Should really only need 'loaders' for now
@@ -168,6 +177,6 @@ module.exports = function setupWebpack(env) {
     plugins: setupPlugins(env),
 
     // Create a source map for the bundled code (dev and test only)
-    devtool: !env.prod && "source-map"
+    devtool: !env.prod && 'source-map',
   };
 };
