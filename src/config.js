@@ -224,15 +224,50 @@ exports.tokens = {
   testnet: {
     eth: {
       tokens: [
-        { type: 'terc', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x945ac907cf021a6bcd07852bb3b8c087051706a9', decimalPlaces: 0, name: 'ERC Test Token' },
-        { type: 'tbst', coin: 'teth', network: 'Kovan', tokenContractAddress: '0xe5cdf77835ca2095881dd0803a77e844c87483cd', decimalPlaces: 0, name: 'Test BitGo Shield Token' },
-        { type: 'schz', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x050e25a2630b2aee94546589fd39785254de112c', decimalPlaces: 18, name: 'SchnauzerCoin' },
-        { type: 'tcat', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x63137319f3a14a985eb31547370e0e3bd39b03b8', decimalPlaces: 18, name: 'Test CAT-20 Token' }
+        {
+          type: "terc",
+          coin: "teth",
+          network: "Kovan",
+          tokenContractAddress: "0x945ac907cf021a6bcd07852bb3b8c087051706a9",
+          decimalPlaces: 0,
+          name: "ERC Test Token"
+        },
+        {
+          type: "tbst",
+          coin: "teth",
+          network: "Kovan",
+          tokenContractAddress: "0xe5cdf77835ca2095881dd0803a77e844c87483cd",
+          decimalPlaces: 0,
+          name: "Test BitGo Shield Token"
+        },
+        {
+          type: "schz",
+          coin: "teth",
+          network: "Kovan",
+          tokenContractAddress: "0x050e25a2630b2aee94546589fd39785254de112c",
+          decimalPlaces: 18,
+          name: "SchnauzerCoin"
+        },
+        {
+          type: "tcat",
+          coin: "teth",
+          network: "Kovan",
+          tokenContractAddress: "0x63137319f3a14a985eb31547370e0e3bd39b03b8",
+          decimalPlaces: 18,
+          name: "Test CAT-20 Token"
+        }
       ]
     },
     ofc: {
       tokens: [
-        { type: 'otestusd', coin: 'ofc', decimalPlaces:2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat:true }
+        {
+          type: "otestusd",
+          coin: "ofc",
+          decimalPlaces: 2,
+          name: "Offchain Test USD",
+          backingCoin: "tsusd",
+          isFiat: true
+        }
       ]
     }
   }
