@@ -1207,7 +1207,7 @@ class AbstractUtxoCoin extends BaseCoin {
           chainPath: address.chainPath,
           redeemScript: address.redeemScript.toString('hex'),
           witnessScript: address.witnessScript && address.witnessScript.toString('hex'),
-          value: unspent.value_int
+          value: unspent.amount
         };
       });
 
