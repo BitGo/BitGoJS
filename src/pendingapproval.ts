@@ -4,13 +4,13 @@
 //
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
-const common = require('./common');
-const assert = require('assert');
+import common = require('./common');
+import assert = require('assert');
 
-const bitcoin = require('./bitcoin');
+import bitcoin = require('./bitcoin');
 
-const Promise = require('bluebird');
-const _ = require('lodash');
+import Promise = require('bluebird');
+import _ = require('lodash');
 
 //
 // Constructor
@@ -235,7 +235,7 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
   const self = this;
   return Promise.try(function() {
     if (self.type() === 'transactionRequest') {
-      const extendParams = { txHex: self.info().transactionRequest.transaction };
+      const extendParams: any = { txHex: self.info().transactionRequest.transaction };
       if (params.useOriginalFee) {
         extendParams.fee = self.info().transactionRequest.fee;
       }
@@ -304,7 +304,7 @@ PendingApproval.prototype.approve = function(params, callback) {
     }
   })
   .then(function(transaction) {
-    const approvalParams = { state: 'approved', otp: params.otp };
+    const approvalParams: any = { state: 'approved', otp: params.otp };
     if (transaction) {
       approvalParams.tx = transaction.tx;
     }

@@ -10,7 +10,7 @@ const _ = require('lodash');
 
 const BitGoJS = require('../../src/index');
 const bitcoin = BitGoJS.bitcoin;
-const sjcl = require('../../src/sjcl.min');
+const sjcl = require('../../vendor/sjcl.min');
 const TestBitGo = require('../lib/test_bitgo');
 
 const txid = TestBitGo.TRAVEL_RULE_TXID;

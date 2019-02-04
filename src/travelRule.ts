@@ -5,9 +5,9 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const bitcoin = require('./bitcoin');
-const common = require('./common');
-const _ = require('lodash');
+import bitcoin = require('./bitcoin');
+import common = require('./common');
+import _ = require('lodash');
 
 //
 // Constructor
@@ -54,7 +54,7 @@ TravelRule.prototype.validateTravelInfo = function(info) {
     extra: { type: 'object' }
   };
 
-  _.forEach(fields, function(field, fieldName) {
+  _.forEach(fields, function(field: any, fieldName) {
     // No required fields yet -- should there be?
     if (field.required) {
       if (info[fieldName] === undefined) {
@@ -172,7 +172,7 @@ TravelRule.prototype.prepareParams = function(params) {
     password: sharedSecret
   });
 
-  const result = {
+  const result: any = {
     txid: txid,
     outputIndex: recipient.outputIndex,
     toPubKey: recipient.pubKey,

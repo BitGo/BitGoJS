@@ -5,11 +5,12 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const Promise = require('bluebird');
-const bitcoin = require('./bitcoin');
-const config = require('./config');
-const _ = require('lodash');
-const debug = require('debug')('bitgo:v1:txb');
+import Promise = require('bluebird');
+import bitcoin = require('./bitcoin');
+import config = require('./config');
+import _ = require('lodash');
+import debugLib = require('debug');
+const debug = debugLib('bitgo:v1:txb');
 
 //
 // TransactionBuilder
@@ -93,9 +94,19 @@ exports.createTransaction = function(params) {
     throw new Error('recipients must be array of { address: abc, amount: 100000 } objects');
   }
 
-  const feeParamsDefined = (!_.isUndefined(params.fee)) +
-  (!_.isUndefined(params.feeRate)) +
-  (!_.isUndefined(params.feeTxConfirmTarget));
+  let feeParamsDefined = 0;
+  if (!_.isUndefined(params.fee)) {
+    feeParamsDefined++;
+  }
+
+  if (!_.isUndefined(params.feeRate)) {
+    feeParamsDefined++;
+  }
+
+  if (!_.isUndefined(params.feeTxConfirmTarget)) {
+    feeParamsDefined++;
+  }
+
   if (feeParamsDefined > 1) {
     throw new Error('cannot specify more than one of fee, feeRate and feeTxConfirmTarget');
   }
@@ -342,8 +353,8 @@ exports.createTransaction = function(params) {
     }
   };
 
-  let minerFeeInfo = {};
-  let txInfo = {};
+  let minerFeeInfo: any = {};
+  let txInfo: any = {};
 
   // Iterate unspents, sum the inputs, and save _inputs with the total
   // input amount and final list of inputs to use with the transaction.
@@ -484,7 +495,7 @@ exports.createTransaction = function(params) {
       if (feeSingleKeySourceAddress) {
         const summedSingleKeyUnspents = _.sumBy(feeSingleKeyUnspents, 'value');
         if (totalFee > summedSingleKeyUnspents) {
-          const err = new Error('Insufficient fee amount available in single key fee source: ' + summedSingleKeyUnspents);
+          const err: any = new Error('Insufficient fee amount available in single key fee source: ' + summedSingleKeyUnspents);
           err.result = {
             fee: fee,
             feeRate: feeRate,
@@ -671,14 +682,14 @@ exports.createTransaction = function(params) {
   // Serialize the transaction, returning what is needed to sign it
   const serialize = function() {
     // only need to return the unspents that were used and just the chainPath, redeemScript, and instant flag
-    const pickedUnspents = _.map(unspents, function(unspent) {
+    const pickedUnspents: any = _.map(unspents, function(unspent) {
       return _.pick(unspent, ['chainPath', 'redeemScript', 'instant', 'witnessScript', 'script', 'value']);
     });
     const prunedUnspents = _.slice(pickedUnspents, 0, transaction.tx.ins.length - feeSingleKeyUnspentsUsed.length);
     _.each(feeSingleKeyUnspentsUsed, function(feeUnspent) {
       prunedUnspents.push({ redeemScript: false, chainPath: false }); // mark as false to signify a non-multisig address
     });
-    const result = {
+    const result: any = {
       transactionHex: transaction.buildIncomplete().toHex(),
       unspents: prunedUnspents,
       fee: fee,

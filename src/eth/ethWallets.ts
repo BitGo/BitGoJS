@@ -5,11 +5,11 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const EthWallet = require('./ethWallet');
-const common = require('../common');
-const Util = require('../util');
-const Promise = require('bluebird');
-const _ = require('lodash');
+import EthWallet = require('./ethWallet');
+import common = require('../common');
+import Util = require('../util');
+import Promise = require('bluebird');
+import _ = require('lodash');
 
 //
 // Constructor
@@ -122,7 +122,8 @@ EthWallets.prototype.generateWallet = function(params, callback) {
   common.validateParams(params, ['passphrase', 'label'], ['backupAddress', 'backupXpub', 'backupXpubProvider', 'enterprise'], callback);
   const self = this;
 
-  if ((!!params.backupAddress + !!params.backupXpub + !!params.backupXpubProvider) > 1) {
+  const backupParams = _(params).pick('backupAddress', 'backupXpub', 'backupXpubProvider').keys().value();
+  if (backupParams.length > 1) {
     throw new Error('Cannot provide more than one backupAddress or backupXpub or backupXpubProvider flag');
   }
 
@@ -211,7 +212,7 @@ EthWallets.prototype.generateWallet = function(params, callback) {
     return self.add(walletParams);
   })
   .then(function(newWallet) {
-    const result = {
+    const result: any = {
       wallet: newWallet,
       userKeychain: userKeychain,
       backupKeychain: backupKeychain

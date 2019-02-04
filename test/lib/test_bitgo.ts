@@ -5,7 +5,6 @@
 //
 
 const BitGo = require('../../src/bitgo.js');
-const expressApp = require('../../src/expressApp');
 const Wallet = require('../../src/v2/wallet');
 const BigNumber = require('bignumber.js');
 const request = require('supertest-as-promised');
@@ -298,35 +297,17 @@ BitGo.prototype.getAsyncError = co(function *throwsAsync(prom) {
   return error;
 });
 
-BitGo.prototype.checkFunded = co(function *checkFunded(agent) {
+BitGo.prototype.checkFunded = co(function *checkFunded() {
   // We are testing both BTC and ETH funds here, to make sure that
   // we don't spend for already 'failed' test runs (e.g., spending ETH when we don't have enough BTC)
-  if (!agent) {
-    const args = {
-      debug: false,
-      env: 'test',
-      logfile: '/dev/null'
-    };
-
-    const app = expressApp.app(args);
-    agent = request.agent(app);
-  }
-
-  const authHeader = {
-    Authorization: 'Bearer ' + BitGo.TEST_ACCESSTOKEN
-  };
 
   // Test we have enough ETH
   const testWalletId = BitGo.V2.TEST_ETH_WALLET_ID;
 
-  // Check wallet balance to ensure we can run tests
-  const res = yield agent
-  .get(`/api/v2/teth/wallet/${testWalletId}`)
-  .set(authHeader);
-  res.statusCode.should.equal(200);
+  const testWallet = yield this.coin('teth').wallets().get({ id: testWalletId });
+  const spendableBalance = testWallet.spendableBalanceString;
 
-  res.body.should.have.property('spendableBalanceString');
-  let balance = new BigNumber(res.body.spendableBalanceString);
+  let balance = new BigNumber(spendableBalance);
 
   // Check our balance is over 60000 (we spend 50000, add some cushion)
   if (balance.lt(60000)) {

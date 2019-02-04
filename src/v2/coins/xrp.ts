@@ -12,7 +12,7 @@ const prova = require('../../prova');
 const _ = require('lodash');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-const sjcl = require('../../sjcl.min');
+const sjcl = require('../../../vendor/sjcl.min');
 const config = require('../../config');
 
 class Xrp extends BaseCoin {

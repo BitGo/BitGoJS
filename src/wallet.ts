@@ -5,11 +5,11 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const TransactionBuilder = require('./transactionBuilder');
-const bitcoin = require('./bitcoin');
+import TransactionBuilder = require('./transactionBuilder');
+import bitcoin = require('./bitcoin');
 // TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
-const prova = require('prova-lib');
-const PendingApproval = require('./pendingapproval');
+import prova = require('prova-lib');
+import PendingApproval = require('./pendingapproval');
 
 const assert = require('assert');
 const common = require('./common');
@@ -299,7 +299,7 @@ Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold
   });
   const pathDetails = _.filter(normalizedPathComponents, _.isInteger);
 
-  const addressDetails = {
+  const addressDetails: any = {
     chainPath: path,
     path: path,
     chain: pathDetails[0],
@@ -2411,4 +2411,4 @@ Wallet.prototype.getBitGoFee = function(params, callback) {
   .nodeify(callback);
 };
 
-module.exports = Wallet;
+export = Wallet;

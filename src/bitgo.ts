@@ -4,8 +4,6 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-// signed commit test
-
 import superagent = require('superagent');
 import bitcoin = require('./bitcoin');
 import bitcoinMessage = require('bitcoinjs-message');
@@ -23,7 +21,7 @@ import EthWallets = require('./eth/ethWallets');
 import Markets = require('./markets');
 import PendingApprovals = require('./pendingapprovals');
 import shamir = require('secrets.js-grempe');
-import sjcl = require('./sjcl.min');
+import sjcl = require('../vendor/sjcl.min');
 import bs58 = require('bs58');
 import common = require('./common');
 import Util = require('./util');
@@ -39,10 +37,10 @@ import crypto = require('crypto');
 import debugLib = require('debug');
 import internal = require('./v2/internal');
 
-let debug = debugLib('bitgo:index');
-let { bytesToWord } = internal;
+const debug = debugLib('bitgo:index');
+const { bytesToWord } = internal;
 
-if (!process.browser) {
+if (!(process as any).browser) {
   require('superagent-proxy')(superagent);
 }
 
@@ -76,7 +74,7 @@ superagent.Request.prototype.result = function(optionalField) {
   return this.then(handleResponseResult(optionalField), handleResponseError);
 };
 
-const handleResponseResult = function(optionalField) {
+const handleResponseResult = function(optionalField: any = false) {
   return function(res) {
     if (_.isNumber(res.status) && res.status >= 200 && res.status < 300) {
       return optionalField ? res.body[optionalField] : res.body;
@@ -87,7 +85,7 @@ const handleResponseResult = function(optionalField) {
 
 const errFromResponse = function(res) {
   const errString = createResponseErrorString(res);
-  const err = new Error(errString);
+  const err: any = new Error(errString);
 
   err.status = res.status;
   if (res.body) {
@@ -185,7 +183,7 @@ const BitGo = function(params) {
       common.Environments['custom'].network = params.customBitcoinNetwork;
     }
     if (params.customSigningAddress) {
-      common.Environments['custom'].customSigningAddress = params.customSigningAddress;
+      (common.Environments['custom'] as any).customSigningAddress = params.customSigningAddress;
     }
   } else {
     env = params.env || process.env.BITGO_ENV;
@@ -215,7 +213,7 @@ const BitGo = function(params) {
   this.env = env;
 
   common.setNetwork(common.Environments[env].network);
-  common.setEthNetwork(common.Environments[env].ethNetwork);
+  common.setEthNetwork();
   common.setRmgNetwork(common.Environments[env].rmgNetwork);
 
   if (!this._baseUrl) {
@@ -249,7 +247,7 @@ const BitGo = function(params) {
     params.proxy = process.env.BITGO_USE_PROXY;
   }
 
-  if (process.browser && params.proxy) {
+  if ((process as any).browser && params.proxy) {
     throw new Error('cannot use https proxy params while in browser');
   }
 
@@ -306,9 +304,6 @@ const BitGo = function(params) {
           // do a localized data serialization process
           let data = this._data;
           if (typeof data !== 'string') {
-            function isJSON(mime) {
-              return /[\/+]json\b/.test(mime);
-            }
 
             let contentType = this.getHeader('Content-Type');
             // Parse out just the content type from the header (ignore the charset)
@@ -316,7 +311,7 @@ const BitGo = function(params) {
               contentType = contentType.split(';')[0];
             }
             let serialize = superagent.serialize[contentType];
-            if (!serialize && isJSON(contentType)) {
+            if (!serialize && /[\/+]json\b/.test(contentType)) {
               serialize = superagent.serialize['application/json'];
             }
             if (serialize) {
@@ -325,7 +320,7 @@ const BitGo = function(params) {
           }
           this._data = data;
 
-          const urlDetails = url.parse(req.url);
+          const urlDetails: any = url.parse(req.url);
 
           let queryString = null;
           if (req._query && req._query.length > 0) {
@@ -393,7 +388,7 @@ const BitGo = function(params) {
             bitgoToken: partialBitgoToken
           };
           debug('Invalid response HMAC: %O', errorDetails);
-          const error = new Error('invalid response HMAC, possible man-in-the-middle-attack');
+          const error: any = new Error('invalid response HMAC, possible man-in-the-middle-attack');
           error.result = errorDetails;
           error.status = 511;
           throw error;
@@ -415,7 +410,7 @@ const BitGo = function(params) {
         return lastPromise;
       };
 
-      if (!process.browser) {
+      if (!(process as any).browser) {
         // If not in the browser, set the User-Agent. Browsers don't allow
         // setting of User-Agent, so we must disable this when run in the
         // browser (browserify sets process.browser).
@@ -423,7 +418,7 @@ const BitGo = function(params) {
       }
 
       // Set the request timeout to just above 5 minutes by default
-      req.timeout(process.env.BITGO_TIMEOUT * 1000 || 305 * 1000);
+      req.timeout((process.env.BITGO_TIMEOUT as any) * 1000 || 305 * 1000);
       return req;
     };
   };
@@ -937,7 +932,7 @@ BitGo.prototype.handleTokenIssuance = function(responseBody, password) {
   const secret = secretPoint.getEncoded().toString('hex');
 
   // decrypt token with symmetric ECDH key
-  const response = {};
+  const response: any = {};
   try {
     response.token = this.decrypt({ input: responseBody.encryptedToken, password: secret });
   } catch (e) {
@@ -1045,7 +1040,7 @@ BitGo.prototype.preprocessAuthenticationParams = function(params) {
   // Calculate the password HMAC so we don't send clear-text passwords
   const hmacPassword = this.calculateHMAC(username, password);
 
-  const authParams = {
+  const authParams: any = {
     email: username,
     password: hmacPassword,
     forceSMS: !!params.forceSMS
@@ -1417,8 +1412,8 @@ BitGo.prototype.addAccessToken = function(params, callback) {
 BitGo.prototype.removeAccessToken = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['id', 'label'], callback);
-  const exactlyOne = !!params.id ^ !!params.label;
-  if (!exactlyOne) {
+  const labelIdCount = _(params).pick('id', 'label').keys().value();
+  if (labelIdCount.length !== 1) {
     throw new Error('must provide exactly one of id or label');
   }
 
@@ -1436,7 +1431,7 @@ BitGo.prototype.removeAccessToken = function(params, callback) {
         throw new Error('token with this label does not exist');
       }
 
-      const matchingTokens = _.filter(tokens, { label: params.label });
+      const matchingTokens: any = _.filter(tokens, { label: params.label });
       if (matchingTokens.length > 1) {
         throw new Error('ambiguous call: multiple tokens matching this label');
       }
@@ -1742,7 +1737,7 @@ BitGo.prototype.estimateFee = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const queryParams = { version: 12 };
+  const queryParams: any = { version: 12 };
   if (params.numBlocks) {
     if (!_.isNumber(params.numBlocks)) {
       throw new Error('invalid argument');
@@ -1894,7 +1889,7 @@ BitGo.prototype.listWebhookNotifications = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const query = {};
+  const query: any = {};
   if (params.prevId) {
     if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');

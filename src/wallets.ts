@@ -5,11 +5,10 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const bitcoin = require('./bitcoin');
-const Wallet = require('./wallet');
-const common = require('./common');
-const _ = require('lodash');
-const co = require('bluebird').coroutine;
+import bitcoin = require('./bitcoin');
+import Wallet = require('./wallet');
+import common = require('./common');
+import _ = require('lodash');
 
 //
 // Constructor
@@ -132,15 +131,13 @@ Wallets.prototype.listShares = function(params, callback) {
 // Params:
 //    walletShareId - the wallet share to get information on
 //
-Wallets.prototype.resendShareInvite = function(params, callback) {
-  return co(function *() {
-    params = params || {};
-    common.validateParams(params, ['walletShareId'], [], callback);
+Wallets.prototype.resendShareInvite = async function(params) {
+  params = params || {};
+  common.validateParams(params, ['walletShareId']);
 
-    const urlParts = params.walletShareId + '/resendemail';
-    return this.bitgo.post(this.bitgo.url('/walletshare/' + urlParts))
-    .result();
-  }).call(this).asCallback(callback);
+  const urlParts = params.walletShareId + '/resendemail';
+  return this.bitgo.post(this.bitgo.url('/walletshare/' + urlParts))
+  .result();
 };
 
 //
@@ -247,7 +244,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
     });
   })
   .then(function(walletShare) {
-    const updateParams = {
+    const updateParams: any = {
       walletShareId: params.walletShareId,
       state: 'accepted'
     };
@@ -268,10 +265,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
 //   address: <address>
 //   key: <key, in WIF format>
 // }
-Wallets.prototype.createKey = function(params) {
-  params = params || {};
-  common.validateParams(params);
-
+Wallets.prototype.createKey = function(params = {}) {
   const key = bitcoin.makeRandomKey();
   return {
     address: key.getAddress(),
@@ -317,7 +311,7 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   const userKeychain = this.bitgo.keychains().create();
   userKeychain.encryptedXprv = this.bitgo.encrypt({ password: params.passphrase, input: userKeychain.xprv });
 
-  const keychainData = {
+  const keychainData: any = {
     xpub: userKeychain.xpub,
     encryptedXprv: userKeychain.encryptedXprv
   };
@@ -326,7 +320,8 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
     keychainData.originalPasscodeEncryptionCode = params.passcodeEncryptionCode;
   }
 
-  if ((!!params.backupXpub + !!params.backupXpubProvider) > 1) {
+  const backupParams = _(params).pick('backupXpub', 'backupXpubProvider').keys().value();
+  if (backupParams.length > 1) {
     throw new Error('Cannot provide more than one backupXpub or backupXpubProvider flag');
   }
 
@@ -367,7 +362,7 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
   })
   .then(function(keychain) {
     bitgoKeychain = keychain;
-    const walletParams = {
+    const walletParams: any = {
       label: label,
       m: 2,
       n: 3,
@@ -388,7 +383,7 @@ Wallets.prototype.createWalletWithKeychains = function(params, callback) {
     return self.add(walletParams);
   })
   .then(function(newWallet) {
-    const result = {
+    const result: any = {
       wallet: newWallet,
       userKeychain: userKeychain,
       backupKeychain: backupKeychain,
@@ -446,7 +441,7 @@ Wallets.prototype.createForwardWallet = function(params, callback) {
     // Create new address on the destination wallet to receive coins
     newDestinationAddress = result.address;
 
-    const walletParams = {
+    const walletParams: any = {
       type: 'forward',
       sourceAddress: params.sourceAddress,
       destinationAddress: newDestinationAddress,
@@ -491,7 +486,7 @@ Wallets.prototype.add = function(params, callback) {
 
   const self = this;
   const keychains = params.keychains.map(function(k) { return { xpub: k.xpub }; });
-  const walletParams = {
+  const walletParams: any = {
     label: params.label,
     m: params.m,
     n: params.n,

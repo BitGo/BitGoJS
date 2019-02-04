@@ -18,3 +18,4 @@ example/eth/test.js
 *.iml
 .nyc_output/
 coverage.lcov
+lib/

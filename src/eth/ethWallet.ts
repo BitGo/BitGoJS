@@ -5,15 +5,15 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const bitcoin = require('../bitcoin');
-const Util = require('../util');
-let ethAbi = function() {};
-let ethUtil = function() {};
+import bitcoin = require('../bitcoin');
+import Util = require('../util');
 
-const common = require('../common');
-const Promise = require('bluebird');
-const _ = require('lodash');
+import common = require('../common');
+import Promise = require('bluebird');
+import _ = require('lodash');
 
+let ethAbi;
+let ethUtil;
 try {
   ethAbi = require('ethereumjs-abi');
   ethUtil = require('ethereumjs-util');
@@ -593,4 +593,4 @@ EthWallet.prototype.removeWebhook = function(params, callback) {
   .nodeify(callback);
 };
 
-module.exports = EthWallet;
+export = EthWallet;

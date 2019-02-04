@@ -1,8 +1,8 @@
-const common = require('./common');
-const _ = require('lodash');
+import common = require('./common');
+import _ = require('lodash');
 
 // Estimate for virtual sizes of various tx inputs
-exports.tx = {
+const tx = {
   P2SH_INPUT_SIZE: 296,
   P2SH_P2WSH_INPUT_SIZE: 139,
   P2PKH_INPUT_SIZE: 160, // Uncompressed
@@ -11,14 +11,14 @@ exports.tx = {
 };
 
 // The derivation paths of the different address chains
-exports.chains = {
+const chains = {
   CHAIN_P2SH: 0,
   CHANGE_CHAIN_P2SH: 1,
   CHAIN_SEGWIT: 10,
   CHANGE_CHAIN_SEGWIT: 11
 };
 
-exports.tokens = {
+const tokens = {
   // network name for production environments (prod tokens must be added here)
   bitcoin: {
     eth: {
@@ -225,47 +225,47 @@ exports.tokens = {
     eth: {
       tokens: [
         {
-          type: "terc",
-          coin: "teth",
-          network: "Kovan",
-          tokenContractAddress: "0x945ac907cf021a6bcd07852bb3b8c087051706a9",
+          type: 'terc',
+          coin: 'teth',
+          network: 'Kovan',
+          tokenContractAddress: '0x945ac907cf021a6bcd07852bb3b8c087051706a9',
           decimalPlaces: 0,
-          name: "ERC Test Token"
+          name: 'ERC Test Token'
         },
         {
-          type: "tbst",
-          coin: "teth",
-          network: "Kovan",
-          tokenContractAddress: "0xe5cdf77835ca2095881dd0803a77e844c87483cd",
+          type: 'tbst',
+          coin: 'teth',
+          network: 'Kovan',
+          tokenContractAddress: '0xe5cdf77835ca2095881dd0803a77e844c87483cd',
           decimalPlaces: 0,
-          name: "Test BitGo Shield Token"
+          name: 'Test BitGo Shield Token'
         },
         {
-          type: "schz",
-          coin: "teth",
-          network: "Kovan",
-          tokenContractAddress: "0x050e25a2630b2aee94546589fd39785254de112c",
+          type: 'schz',
+          coin: 'teth',
+          network: 'Kovan',
+          tokenContractAddress: '0x050e25a2630b2aee94546589fd39785254de112c',
           decimalPlaces: 18,
-          name: "SchnauzerCoin"
+          name: 'SchnauzerCoin'
         },
         {
-          type: "tcat",
-          coin: "teth",
-          network: "Kovan",
-          tokenContractAddress: "0x63137319f3a14a985eb31547370e0e3bd39b03b8",
+          type: 'tcat',
+          coin: 'teth',
+          network: 'Kovan',
+          tokenContractAddress: '0x63137319f3a14a985eb31547370e0e3bd39b03b8',
           decimalPlaces: 18,
-          name: "Test CAT-20 Token"
+          name: 'Test CAT-20 Token'
         }
       ]
     },
     ofc: {
       tokens: [
         {
-          type: "otestusd",
-          coin: "ofc",
+          type: 'otestusd',
+          coin: 'ofc',
           decimalPlaces: 2,
-          name: "Offchain Test USD",
-          backingCoin: "tsusd",
+          name: 'Offchain Test USD',
+          backingCoin: 'tsusd',
           isFiat: true
         }
       ]
@@ -274,7 +274,7 @@ exports.tokens = {
 };
 
 const mainnetTokens = {};
-_.forEach(exports.tokens.bitcoin.eth.tokens, function(value) {
+_.forEach(tokens.bitcoin.eth.tokens, function(value) {
   if (mainnetTokens[value.type]) {
     throw new Error('token : ' + value.type + ' duplicated.');
   }
@@ -286,7 +286,7 @@ _.forEach(exports.tokens.bitcoin.eth.tokens, function(value) {
 });
 
 const testnetTokens = {};
-_.forEach(exports.tokens.testnet.eth.tokens, function(value) {
+_.forEach(tokens.testnet.eth.tokens, function(value) {
   if (testnetTokens[value.type]) {
     throw new Error('token : ' + value.type + ' duplicated.');
   }
@@ -309,14 +309,14 @@ const defaults = {
 
 // Supported cross-chain recovery routes. The coin to be recovered is the index, the valid coins for recipient wallets
 // are listed in the array.
-exports.supportedCrossChainRecoveries = {
+const supportedCrossChainRecoveries = {
   btc: ['bch', 'ltc'],
   bch: ['btc', 'ltc'],
   ltc: ['btc', 'bch']
 };
 
 // KRS providers and their fee structures
-exports.krsProviders = {
+const krsProviders = {
   keyternal: {
     feeType: 'flatUsd',
     feeAmount: 99,
@@ -337,15 +337,26 @@ exports.krsProviders = {
   }
 };
 
-exports.bitcoinAverageBaseUrl = 'https://apiv2.bitcoinaverage.com/indices/local/ticker/';
+const bitcoinAverageBaseUrl = 'https://apiv2.bitcoinaverage.com/indices/local/ticker/';
 
 // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
-exports.defaultConstants = (env) => {
+const defaultConstants = (env) => {
 
   if (common.Environments[env] === undefined) {
     throw Error(`invalid environment ${env}`);
   }
 
   const network = common.Environments[env].network;
-  return _.merge({}, defaults, exports.tokens[network]);
+  return _.merge({}, defaults, tokens[network]);
+};
+
+export = {
+  tx,
+  chains,
+  tokens,
+  defaults,
+  supportedCrossChainRecoveries,
+  krsProviders,
+  bitcoinAverageBaseUrl,
+  defaultConstants
 };
