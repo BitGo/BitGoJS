@@ -12,22 +12,9 @@ const prova = require('prova-lib');
 const utxoLib = require('bitgo-utxo-lib');
 const co = Promise.coroutine;
 
-let ethAbi = function() {
-};
-
-let ethUtil = function() {
-};
-
-let EthTx = function() {
-};
-
-try {
-  ethAbi = require('ethereumjs-abi');
-  ethUtil = require('ethereumjs-util');
-  EthTx = require('ethereumjs-tx');
-} catch (e) {
-  // ethereum currently not supported
-}
+const ethAbi = require('ethereumjs-abi');
+const ethUtil = require('ethereumjs-util');
+const EthTx = require('ethereumjs-tx');
 
 class Eth extends BaseCoin {
 
@@ -274,7 +261,7 @@ class Eth extends BaseCoin {
       expireTime: txPrebuild.halfSigned.expireTime,
       contractSequenceId: txPrebuild.halfSigned.contractSequenceId,
       signature: txPrebuild.halfSigned.signature
-    }
+    };
 
     const sendMethodArgs = this.getSendMethodArgs(txInfo);
     const methodSignature = ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
@@ -289,7 +276,7 @@ class Eth extends BaseCoin {
       gasLimit: new ethUtil.BN(txPrebuild.gasLimit),
       data: sendData,
       spendAmount: params.recipients[0].amount
-    }
+    };
 
     const ethTx = new EthTx(ethTxParams);
     ethTx.sign(signingKey);
@@ -439,7 +426,7 @@ class Eth extends BaseCoin {
         backupKeyNonce: yield this.getAddressNonce(`0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`)
       };
       _.extend(response, txInfo);
-      response.nextContractSequenceId = response.contractSequenceId
+      response.nextContractSequenceId = response.contractSequenceId;
       return response;
     }).call(this).asCallback(callback);
   }
