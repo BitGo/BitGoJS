@@ -205,6 +205,11 @@ class BaseCoin {
       BaseCoin.setupOffchainTokens(coins, bitgo);
     }
 
+    if (process.env.BITGO_EXCLUDE_SUSD !== 'exclude') {
+      coins.susd = require('./coins/susd');
+      coins.tsusd = require('./coins/tsusd');
+    }
+
     return coins;
   }
 
