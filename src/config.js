@@ -211,7 +211,12 @@ exports.tokens = {
         { type: 'hqt', coin: 'eth', network: 'Mainnet', name: 'HyperQuant', tokenContractAddress: '0x3e1d5a855ad9d948373ae68e4fe1f094612b1322', decimalPlaces: 18 },
         { type: 'hlc', coin: 'eth', network: 'Mainnet', name: 'HalalChain', tokenContractAddress: '0x58c69ed6cd6887c0225d1fccecc055127843c69b', decimalPlaces: 9 },
         { type: 'wbtc', coin: 'eth', network: 'Mainnet', name: 'Wrapped Bitcoin', tokenContractAddress: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', decimalPlaces: 8 },
-        { type: 'usdt', coin: 'eth', network: 'Mainnet', name: 'Tether', tokenContractAddress: '0xdac17f958d2ee523a2206206994597c13d831ec7', decimalPlaces: 6 }
+        { type: 'usdt', coin: 'eth', network: 'Mainnet', name: 'Tether', tokenContractAddress: '0xdac17f958d2ee523a2206206994597c13d831ec7', decimalPlaces: 6 },
+        { type: 'amon', coin: 'eth', network: 'Mainnet', name: 'AmonD', tokenContractAddress: '0x00059ae69c1622a7542edc15e8d17b060fe307b6', decimalPlaces: 18 },
+        { type: 'crpt', coin: 'eth', network: 'Mainnet', name: 'Crypterium', tokenContractAddress: '0x80a7e048f37a50500351c204cb407766fa3bae7f', decimalPlaces: 18 },
+        { type: 'axpr', coin: 'eth', network: 'Mainnet', name: 'aXpire', tokenContractAddress: '0xc39e626a04c5971d770e319760d7926502975e47', decimalPlaces: 18 },
+        { type: 'got', coin: 'eth', network: 'Mainnet', name: 'GOExchange', tokenContractAddress: '0xf11f2550769dac4226731b7732dd4e17e72b1b01', decimalPlaces: 18 },
+        { type: 'eurs', coin: 'eth', network: 'Mainnet', name: 'Stasis EURS', tokenContractAddress: '0xdb25f211ab05b1c97d595516f45794528a807ad8', decimalPlaces: 2 }
       ]
     }
   },
