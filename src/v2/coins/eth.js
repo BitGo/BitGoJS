@@ -12,9 +12,9 @@ const prova = require('prova-lib');
 const utxoLib = require('bitgo-utxo-lib');
 const co = Promise.coroutine;
 
-const ethAbi = require('ethereumjs-abi');
-const ethUtil = require('ethereumjs-util');
-const EthTx = require('ethereumjs-tx');
+const getEthAbi = () => require('ethereumjs-abi');
+const getEthUtil = () => require('ethereumjs-util');
+const getEthTx = () => require('ethereumjs-tx');
 
 class Eth extends BaseCoin {
 
@@ -60,7 +60,7 @@ class Eth extends BaseCoin {
    * @param address
    */
   isValidAddress(address) {
-    return ethUtil.isValidAddress(ethUtil.addHexPrefix(address));
+    return getEthUtil().isValidAddress(getEthUtil().addHexPrefix(address));
   }
 
   /**
@@ -83,7 +83,7 @@ class Eth extends BaseCoin {
    * @returns {BigNumber}
    */
   getRecoveryGasPrice() {
-    return new ethUtil.BN('20000000000');
+    return new getEthUtil().BN('20000000000');
   }
 
   /**
@@ -91,7 +91,7 @@ class Eth extends BaseCoin {
    * @returns {BigNumber}
    */
   getRecoveryGasLimit() {
-    return new ethUtil.BN('500000');
+    return new getEthUtil().BN('500000');
   }
 
   /**
@@ -115,7 +115,7 @@ class Eth extends BaseCoin {
         action: 'balance',
         address: address
       });
-      return new ethUtil.BN(result.result, 10);
+      return new getEthUtil().BN(result.result, 10);
     }).call(this).asCallback(callback);
   }
 
@@ -128,10 +128,10 @@ class Eth extends BaseCoin {
    */
   queryAddressTokenBalance(tokenContractAddress, walletContractAddress, callback) {
     return co(function *() {
-      if (!ethUtil.isValidAddress(tokenContractAddress)) {
+      if (!getEthUtil().isValidAddress(tokenContractAddress)) {
         throw new Error('cannot get balance for invalid token address');
       }
-      if (!ethUtil.isValidAddress(walletContractAddress)) {
+      if (!getEthUtil().isValidAddress(walletContractAddress)) {
         throw new Error('cannot get token balance for invalid wallet address');
       }
 
@@ -143,7 +143,7 @@ class Eth extends BaseCoin {
         tag: 'latest'
       });
 
-      return new ethUtil.BN(result.result, 10);
+      return new getEthUtil().BN(result.result, 10);
     }).call(this).asCallback(callback);
   }
 
@@ -159,9 +159,9 @@ class Eth extends BaseCoin {
       ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
       [
         'ETHER',
-        new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
+        new getEthUtil().BN(getEthUtil().stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        new Buffer(ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
+        new Buffer(getEthUtil().stripHexPrefix(recipient.data) || '', 'hex'),
         expireTime,
         contractSequenceId
       ]
@@ -188,7 +188,7 @@ class Eth extends BaseCoin {
 
     // Check inputs
     recipients.forEach(function(recipient) {
-      if (!_.isString(recipient.address) || !ethUtil.isValidAddress(ethUtil.addHexPrefix(recipient.address))) {
+      if (!_.isString(recipient.address) || !getEthUtil().isValidAddress(getEthUtil().addHexPrefix(recipient.address))) {
         throw new Error('Invalid address: ' + recipient.address);
       }
 
@@ -207,7 +207,7 @@ class Eth extends BaseCoin {
     });
 
     const recipient = recipients[0];
-    return ethUtil.bufferToHex(ethAbi.soliditySHA3(...this.getOperation(recipient, expireTime, contractSequenceId)));
+    return getEthUtil().bufferToHex(getEthAbi().soliditySHA3(...this.getOperation(recipient, expireTime, contractSequenceId)));
   }
 
   /**
@@ -219,8 +219,8 @@ class Eth extends BaseCoin {
   querySequenceId(address, callback) {
     return co(function *() {
       // Get sequence ID using contract call
-      const sequenceIdMethodSignature = ethAbi.methodID('getNextSequenceId', []);
-      const sequenceIdArgs = ethAbi.rawEncode([], []);
+      const sequenceIdMethodSignature = getEthAbi().methodID('getNextSequenceId', []);
+      const sequenceIdArgs = getEthAbi().rawEncode([], []);
       const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
       const result = yield this.recoveryBlockchainExplorerQuery({
         module: 'proxy',
@@ -230,7 +230,7 @@ class Eth extends BaseCoin {
         tag: 'latest'
       });
       const sequenceIdHex = result.result;
-      return new ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
+      return new getEthUtil().BN(sequenceIdHex.slice(2), 16).toNumber();
     }).call(this).asCallback(callback);
   }
 
@@ -264,20 +264,21 @@ class Eth extends BaseCoin {
     };
 
     const sendMethodArgs = this.getSendMethodArgs(txInfo);
-    const methodSignature = ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
-    const encodedArgs = ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const methodSignature = getEthAbi().methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
+    const encodedArgs = getEthAbi().rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
     const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
     const ethTxParams = {
       to: params.walletContractAddress,
       nonce: params.signingKeyNonce,
       value: 0,
-      gasPrice: new ethUtil.BN(txPrebuild.gasPrice),
-      gasLimit: new ethUtil.BN(txPrebuild.gasLimit),
+      gasPrice: new getEthUtil().BN(txPrebuild.gasPrice),
+      gasLimit: new getEthUtil().BN(txPrebuild.gasLimit),
       data: sendData,
       spendAmount: params.recipients[0].amount
     };
 
+    const EthTx = getEthTx();
     const ethTx = new EthTx(ethTxParams);
     ethTx.sign(signingKey);
     return { txHex: ethTx.serialize().toString('hex') };
@@ -416,14 +417,14 @@ class Eth extends BaseCoin {
         userKey,
         backupKey,
         coin: this.getChain(),
-        gasPrice: ethUtil.bufferToInt(gasPrice).toFixed(),
+        gasPrice: getEthUtil().bufferToInt(gasPrice).toFixed(),
         gasLimit,
         recipients: [
           txInfo.recipient
         ],
         walletContractAddress: '0x' + ethTx.to.toString('hex'),
         amount: txInfo.recipient.amount,
-        backupKeyNonce: yield this.getAddressNonce(`0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`)
+        backupKeyNonce: yield this.getAddressNonce(`0x${getEthUtil().publicToAddress(backupSigningKey, true).toString('hex')}`)
       };
       _.extend(response, txInfo);
       response.nextContractSequenceId = response.contractSequenceId;
@@ -496,7 +497,7 @@ class Eth extends BaseCoin {
       if (isKrsRecovery || isUnsignedSweep) {
         const backupHDNode = prova.HDNode.fromBase58(backupKey);
         backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
-        backupKeyAddress = `0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
+        backupKeyAddress = `0x${getEthUtil().publicToAddress(backupSigningKey, true).toString('hex')}`;
       } else {
         // Decrypt backup private key and get address
         let backupPrv;
@@ -512,7 +513,7 @@ class Eth extends BaseCoin {
 
         const backupHDNode = prova.HDNode.fromBase58(backupPrv);
         backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
-        backupKeyAddress = `0x${ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
+        backupKeyAddress = `0x${getEthUtil().privateToAddress(backupSigningKey).toString('hex')}`;
       }
 
       const backupKeyNonce = yield this.getAddressNonce(backupKeyAddress);
@@ -560,11 +561,12 @@ class Eth extends BaseCoin {
 
       // calculate send data
       const sendMethodArgs = this.getSendMethodArgs(txInfo);
-      const methodSignature = ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
-      const encodedArgs = ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+      const methodSignature = getEthAbi().methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
+      const encodedArgs = getEthAbi().rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
       const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
       // Build contract call and sign it
+      const EthTx = getEthTx();
       const tx = new EthTx({
         to: params.walletContractAddress,
         nonce: backupKeyNonce,
@@ -584,7 +586,7 @@ class Eth extends BaseCoin {
       }
 
       const signedTx = {
-        id: ethUtil.bufferToHex(tx.hash(true)),
+        id: getEthUtil().bufferToHex(tx.hash(true)),
         tx: tx.serialize().toString('hex')
       };
 
@@ -633,7 +635,7 @@ class Eth extends BaseCoin {
         throw new Error('recipient not a valid address');
       }
 
-      if (!ethUtil.bufferToHex || !ethAbi.soliditySHA3) {
+      if (!getEthUtil().bufferToHex || !getEthAbi().soliditySHA3) {
         throw new Error('ethereum not fully supported in this environment');
       }
 
@@ -669,14 +671,14 @@ class Eth extends BaseCoin {
       const operationArgs = [
         // "ERC20" has been added here so that ether operation hashes, signatures cannot be re-used for tokenSending
         'ERC20',
-        new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
+        new getEthUtil().BN(getEthUtil().stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        new ethUtil.BN(ethUtil.stripHexPrefix(params.tokenContractAddress), 16),
+        new getEthUtil().BN(getEthUtil().stripHexPrefix(params.tokenContractAddress), 16),
         expireTime,
         safeSequenceId
       ];
 
-      const operationHash = ethUtil.bufferToHex(ethAbi.soliditySHA3(operationTypes, operationArgs));
+      const operationHash = getEthUtil().bufferToHex(getEthAbi().soliditySHA3(operationTypes, operationArgs));
 
       const userPrv = yield params.wallet.getPrv({
         prv: params.prv,
@@ -718,7 +720,7 @@ class Eth extends BaseCoin {
       {
         name: 'data',
         type: 'bytes',
-        value: ethUtil.toBuffer(txInfo.recipient.data || '')
+        value: getEthUtil().toBuffer(txInfo.recipient.data || '')
       },
       {
         name: 'expireTime',
@@ -733,7 +735,7 @@ class Eth extends BaseCoin {
       {
         name: 'signature',
         type: 'bytes',
-        value: ethUtil.toBuffer(txInfo.signature)
+        value: getEthUtil().toBuffer(txInfo.signature)
       }
     ];
   }
