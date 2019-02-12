@@ -219,6 +219,7 @@ const BitGo = function(params) {
     this._baseUrl = common.Environments[env].uri;
   }
 
+  this._microservicesUrl = params.microservicesUri;
   this._baseApiUrl = this._baseUrl + '/api/v1';
   this._baseApiUrlV2 = this._baseUrl + '/api/v2';
   this._user = null;
@@ -1089,7 +1090,9 @@ BitGo.prototype.authenticate = function(params, callback) {
     return this.reject('already logged in', callback);
   }
 
-  const request = this.post(this.url('/user/login'));
+  const authUrl = this._microservicesUrl ? this.microservicesUrl('/api/v1/auth/session') : this.url('/user/login');
+  const request = this.post(authUrl);
+
   if (forceV1Auth) {
     request.forceV1Auth = true;
     // tell the server that the client was forced to downgrade the authentication protocol
@@ -1704,6 +1707,10 @@ BitGo.prototype.newWalletObject = function(walletParams) {
 BitGo.prototype.url = function(path, version = 1) {
   const baseUrl = version === 2 ? this._baseApiUrlV2 : this._baseApiUrl;
   return baseUrl + path;
+};
+
+BitGo.prototype.microservicesUrl = function(path) {
+  return this._microservicesUrl + path;
 };
 
 //
