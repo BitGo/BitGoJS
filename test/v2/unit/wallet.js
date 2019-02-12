@@ -23,11 +23,12 @@ describe('V2 Wallet:', function() {
   let bitgo;
   let wallet;
   let bgUrl;
+  let basecoin;
 
   before(co(function *() {
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
-    const basecoin = bitgo.coin('tbtc');
+    basecoin = bitgo.coin('tbtc');
     const walletData = {
       id: '5b34252f1bf349930e34020a',
       coin: 'tbtc',
@@ -657,6 +658,44 @@ describe('V2 Wallet:', function() {
       }
 
       response.isDone().should.be.true();
+    }));
+  });
+
+  describe('Transaction prebuilds', function() {
+    it('prebuild should call build and getLatestBlockHeight for utxo coins', co(function *() {
+      const params = {};
+      nock(bgUrl)
+      .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+      .query(params)
+      .reply(200, {});
+      const blockHeight = 100;
+      const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
+      yield wallet.prebuildTransaction(params);
+      blockHeightStub.should.have.been.calledOnce();
+      postProcessStub.should.have.been.calledOnceWith({ blockHeight });
+    }));
+
+    it('prebuild should call build but not getLatestBlockHeight for account coins', co(function *() {
+      ['txrp', 'txlm', 'teth'].forEach(co(function *(coin) {
+        const accountcoin = bitgo.coin(coin);
+        const walletData = {
+          id: '5b34252f1bf349930e34021a',
+          coin,
+          keys: [
+            '5b3424f91bf349930e340175'
+          ]
+        };
+        const accountWallet = new Wallet(bitgo, accountcoin, walletData);
+        const params = {};
+        nock(bgUrl)
+        .post(`/api/v2/${accountWallet.coin()}/wallet/${accountWallet.id()}/tx/build`)
+        .query(params)
+        .reply(200, {});
+        const postProcessStub = sinon.stub(accountcoin, 'postProcessPrebuild').resolves({});
+        yield accountWallet.prebuildTransaction(params);
+        postProcessStub.should.have.been.calledOnceWith({ });
+      }));
     }));
   });
 
