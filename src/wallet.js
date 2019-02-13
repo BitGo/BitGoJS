@@ -635,6 +635,7 @@ Wallet.prototype.unspents = function(params, callback) {
  * @param params.targetWalletUnspents desired number of unspents to have in the wallet after the tx goes through (requires target)
  * @param params.minSize minimum unspent size in satoshis
  * @param params.segwit request segwit unspents (defaults to true if undefined)
+ * @param params.allowLedgerSegwit allow segwit unspents for ledger devices (defaults to false if undefined)
  * @param callback
  * @returns {*}
  */
@@ -672,6 +673,9 @@ Wallet.prototype.unspentsPaged = function(params, callback) {
   if (!_.isUndefined(params.targetWalletUnspents) && _.isUndefined(params.target)) {
     throw new Error('targetWalletUnspents can only be specified in conjunction with a target');
   }
+  if (!_.isUndefined(params.allowLedgerSegwit) && !_.isBoolean(params.allowLedgerSegwit)) {
+    throw new Error('invalid argument: allowLedgerSegwit must be a boolean');
+  }
 
   const queryObject = _.cloneDeep(params);
 
@@ -684,6 +688,10 @@ Wallet.prototype.unspentsPaged = function(params, callback) {
   queryObject.segwit = true;
   if (!_.isUndefined(params.segwit)) {
     queryObject.segwit = params.segwit;
+  }
+
+  if (!_.isUndefined(params.allowLedgerSegwit)) {
+    queryObject.allowLedgerSegwit = params.allowLedgerSegwit;
   }
 
   return this.bitgo.get(this.url('/unspents'))
