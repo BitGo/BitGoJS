@@ -29,6 +29,7 @@ const debug = require('debug')('bitgo:v1:txb');
 //   minUnspentSize: The minimum size in satoshis of unspent to use (to prevent spending unspents worth less than fee added). Defaults to 0.
 //   feeSingleKeySourceAddress: Use this single key address to pay fees
 //   feeSingleKeyWIF: Use the address based on this private key to pay fees
+//   unspentsFetchParams: Extra parameters to use for fetching unspents for this transaction
 exports.createTransaction = function(params) {
   const minConfirms = params.minConfirms || 0;
   const validate = params.validate === undefined ? true : params.validate;
@@ -55,7 +56,8 @@ exports.createTransaction = function(params) {
   (params.unspents && (!Array.isArray(params.unspents) || params.unspents.length < 1)) ||
   (params.feeTxConfirmTarget && !_.isInteger(params.feeTxConfirmTarget)) ||
   (params.instant && !_.isBoolean(params.instant)) ||
-  (params.bitgoFee && !_.isObject(params.bitgoFee))
+  (params.bitgoFee && !_.isObject(params.bitgoFee)) ||
+  (params.unspentsFetchParams && !_.isObject(params.unspentsFetchParams))
   ) {
     throw new Error('invalid argument');
   }
@@ -276,12 +278,12 @@ exports.createTransaction = function(params) {
     }
 
     // Get enough unspents for the requested amount
-    const options = {
+    const options = _.merge({}, params.unspentsFetchParams || {}, {
       target: totalAmount,
       minSize: params.minUnspentSize || 0,
       instant: params.instant, // insist on instant unspents only
       targetWalletUnspents: params.targetWalletUnspents
-    };
+    });
     if (params.instant) {
       options.instant = params.instant; // insist on instant unspents only
     }

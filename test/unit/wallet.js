@@ -203,6 +203,37 @@ describe('Wallet Prototype Methods', function() {
       bgUrl = common.Environments[bitgo.getEnv()].uri;
     }));
 
+    it('extra unspent fetch params', co(function *() {
+      const billingAddress = '2MswQjkvN6oWYdE7L2brJ5cAAMjPmG59oco';
+      const customUnspentsFetchParams = { test: 123 };
+      const sendAmount = 1e5;
+
+      nock(bgUrl)
+      .post('/api/v1/billing/address')
+      .reply(200, { address: billingAddress });
+
+      const scope = nock(bgUrl)
+      .get(`/api/v1/wallet/${fakeWallet.id()}/unspents`)
+      .query(_.merge(customUnspentsFetchParams, {
+        segwit: true,
+        target: sendAmount,
+        minSize: 0
+      }))
+      .reply(200, { unspents: [] });
+
+      yield fakeWallet.createTransaction({
+        unspentsFetchParams: customUnspentsFetchParams,
+        recipients: { [billingAddress]: sendAmount },
+        feeRate: 10000,
+        bitgoFee: {
+          amount: 0,
+          address: ''
+        }
+      }).should.be.rejectedWith('0 unspents available for transaction creation');
+
+      scope.isDone().should.be.true();
+    }));
+
     it('default p2sh', co(function *() {
       const p2shAddress = fakeWallet.generateAddress({ path: '/0/13', segwit: false });
       const unspent = {
