@@ -1,5 +1,5 @@
 const BaseCoin = require('../baseCoin');
-const crypto = require('crypto');
+import crypto = require('crypto');
 const bitGoUtxoLib = require('bitgo-utxo-lib');
 
 class Ofc extends BaseCoin {

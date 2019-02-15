@@ -3,8 +3,8 @@
 //
 
 const should = require('should');
-const _ = require('lodash');
-const Promise = require('bluebird');
+import * as _ from 'lodash';
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 
 const TestV2BitGo = require('../../lib/test_bitgo');

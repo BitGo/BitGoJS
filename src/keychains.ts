@@ -9,7 +9,7 @@ import crypto = require('crypto');
 import common = require('./common');
 import Util = require('./util');
 import bitcoin = require('./bitcoin');
-import _ = require('lodash');
+import * as _ from 'lodash';
 let ethereumUtil;
 
 try {

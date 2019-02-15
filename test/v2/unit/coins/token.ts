@@ -1,4 +1,4 @@
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const should = require('should');
 
 const TestV2BitGo = require('../../../lib/test_bitgo');

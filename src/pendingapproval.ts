@@ -10,7 +10,7 @@ import assert = require('assert');
 import bitcoin = require('./bitcoin');
 
 import Promise = require('bluebird');
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 //
 // Constructor

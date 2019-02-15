@@ -1,9 +1,9 @@
 const bitcoin = require('../bitcoin');
-const common = require('../common');
+import common = require('../common');
 const Wallet = require('./wallet');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const _ = require('lodash');
+import * as _ from 'lodash';
 const RmgCoin = require('./coins/rmg');
 const util = require('../util');
 
@@ -36,7 +36,14 @@ Wallets.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const queryObject = {};
+  interface Query {
+    getbalances?: boolean;
+    prevId?: string;
+    limit?: number;
+    allTokens?: boolean;
+  }
+
+  const queryObject: Query = {};
 
   if (params.skip && params.prevId) {
     throw new Error('cannot specify both skip and prevId');
@@ -124,7 +131,7 @@ Wallets.prototype.add = function(params, callback) {
   }
 
   const self = this;
-  const walletParams = _.pick(params, ['label', 'm', 'n', 'keys', 'enterprise', 'isCold', 'isCustodial', 'tags', 'clientFlags', 'type']);
+  const walletParams: any = _.pick(params, ['label', 'm', 'n', 'keys', 'enterprise', 'isCold', 'isCustodial', 'tags', 'clientFlags', 'type']);
 
   // Additional params needed for xrp
   if (params.rootPub) {
@@ -177,7 +184,20 @@ Wallets.prototype.generateWallet = function(params, callback) {
     const self = this;
     const label = params.label;
 
-    let walletParams = {
+    interface WalletParams {
+      label: any;
+      m: number;
+      n: number;
+      enterprise?: string;
+      disableTransactionNotifications?: boolean;
+      gasPrice?: number;
+      keys?: any[];
+      isCold?: boolean;
+      keySignatures?: any;
+      rootPrivateKey?: any;
+    }
+
+    let walletParams: WalletParams = {
       label: label,
       m: 2,
       n: 3
@@ -328,7 +348,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
     walletParams = yield self.baseCoin.supplementGenerateWallet(walletParams, keychains);
     self.bitgo._reqId = reqId;
     const newWallet = yield self.bitgo.post(self.baseCoin.url('/wallet')).send(walletParams).result();
-    const result = {
+    const result: any = {
       wallet: new self.coinWallet(self.bitgo, self.baseCoin, newWallet),
       userKeychain: userKeychain,
       backupKeychain: backupKeychain,
@@ -481,7 +501,13 @@ Wallets.prototype.acceptShare = function(params, callback) {
     });
   })
   .then(function() {
-    const updateParams = {
+    interface UpdateParams {
+      walletShareId: any;
+      state: string;
+      encryptedPrv?: any;
+    }
+
+    const updateParams: UpdateParams = {
       walletShareId: params.walletShareId,
       state: 'accepted'
     };
@@ -507,7 +533,11 @@ Wallets.prototype.getWallet = function(params, callback) {
 
   const self = this;
 
-  const query = {};
+  interface Query {
+    allTokens?: boolean;
+  }
+
+  const query: Query = {};
 
   if (params.allTokens) {
     if (!_.isBoolean(params.allTokens)) {

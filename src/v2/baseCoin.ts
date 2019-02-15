@@ -12,7 +12,7 @@ import BigNumber from 'bignumber.js';
 import bitcoin = require('bitgo-utxo-lib');
 import bitcoinMessage = require('bitcoinjs-message');
 import errors = require('../errors');
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 abstract class BaseCoin {
 

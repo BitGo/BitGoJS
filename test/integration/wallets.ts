@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const assert = require('assert');
+import { strict as assert } from 'assert';
 require('should');
 const Q = require('q');
 

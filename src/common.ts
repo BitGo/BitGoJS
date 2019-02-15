@@ -1,5 +1,5 @@
 import bitcoin = require('bitgo-utxo-lib');
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 let bitcoinNetwork;
 let ethereumNetwork;

@@ -4,11 +4,11 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const assert = require('assert');
+import { strict as assert } from 'assert';
 require('should');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 const TestBitGo = require('../lib/test_bitgo');
 
@@ -290,7 +290,7 @@ describe('Keychains', function() {
     });
 
     it('update ', function(done) {
-      const options = {
+      const options: any = {
         xpub: newKey.xpub
       };
       keychains.add(options, function(err, keychain) {

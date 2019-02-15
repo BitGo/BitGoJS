@@ -1,6 +1,6 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const prova = require('../../prova');
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 class Rmg extends AbstractUtxoCoin {
   constructor(network) {
@@ -45,7 +45,7 @@ class Rmg extends AbstractUtxoCoin {
       throw new Error(`invalid address: ${address}`);
     }
 
-    const expectedAddress = this.generateAddress({
+    const expectedAddress: any = this.generateAddress({
       keychains,
       threshold: 2,
       chain: chain,
@@ -97,7 +97,7 @@ class Rmg extends AbstractUtxoCoin {
     const provaAddress = new prova.Address(derivedUserKey, aspKeyIds, this.network);
     provaAddress.signatureCount = signatureThreshold;
 
-    const addressDetails = {
+    const addressDetails: any = {
       chain: derivationChain,
       index: derivationIndex,
       coin: this.getChain(),
@@ -157,7 +157,7 @@ class Rmg extends AbstractUtxoCoin {
       const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
       const privKey = hdPath.deriveKey(path);
 
-      const currentSignatureIssue = {
+      const currentSignatureIssue: any = {
         inputIndex: index,
         unspent: currentUnspent,
         path: path
@@ -184,7 +184,7 @@ class Rmg extends AbstractUtxoCoin {
 
     if (signatureIssues.length > 0) {
       const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
-      const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+      const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
       error.code = 'input_signature_failure';
       error.signingErrors = signatureIssues;
       throw error;
@@ -205,7 +205,7 @@ class Rmg extends AbstractUtxoCoin {
    * @param verificationSettings.publicKey The hex of the public key to verify (will verify all signatures)
    * @returns {boolean}
    */
-  verifySignature(transaction, inputIndex, amount, verificationSettings = {}) {
+  verifySignature(transaction, inputIndex, amount, verificationSettings: any = {}) {
     if (!(transaction instanceof prova.Transaction)) {
       throw new Error('transaction has to be an instance of prova.Transaction');
     }
@@ -273,7 +273,7 @@ class Rmg extends AbstractUtxoCoin {
     if (params.txInfo && params.txInfo.changeAddresses) {
       changeAddresses = params.txInfo.changeAddresses;
     }
-    const explanation = {
+    const explanation: any = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
       id: id,
       outputs: [],

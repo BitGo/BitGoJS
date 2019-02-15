@@ -4,12 +4,12 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-const assert = require('assert');
+import { strict as assert } from 'assert';
 require('should');
 
 const TestBitGo = require('../lib/test_bitgo');
 
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 describe('PendingApprovals', function() {
   let bitgo;

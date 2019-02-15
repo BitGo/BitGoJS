@@ -1,6 +1,6 @@
-const common = require('../common');
-const _ = require('lodash');
-const Promise = require('bluebird');
+import common = require('../common');
+import * as _ from 'lodash';
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 
 const Keychains = function(bitgo, baseCoin) {
@@ -37,7 +37,12 @@ Keychains.prototype.list = function(params, callback) {
     params = params || {};
     common.validateParams(params, [], [], callback);
 
-    const queryObject = {};
+    interface Query {
+      limit?: number;
+      prevId?: string;
+    }
+
+    const queryObject: Query = {};
 
     if (!_.isUndefined(params.limit)) {
       if (!_.isNumber(params.limit)) {

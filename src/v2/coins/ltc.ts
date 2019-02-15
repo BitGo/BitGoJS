@@ -1,8 +1,8 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const bitcoin = require('bitgo-utxo-lib');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const common = require('../../common');
+import common = require('../../common');
 const request = require('superagent');
 
 class Ltc extends AbstractUtxoCoin {

@@ -1,4 +1,4 @@
-const should = require('should');
+import should = require('should');
 const co = require('bluebird').coroutine;
 const sinon = require('sinon');
 const recoveryNocks = require('../../lib/recovery-nocks');

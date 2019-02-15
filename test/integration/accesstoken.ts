@@ -4,10 +4,10 @@
 // Copyright 2016, BitGo, Inc.  All Rights Reserved.
 //
 
-const assert = require('assert');
+import { strict as assert } from 'assert';
 const should = require('should');
 const moment = require('moment');
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 const TestBitGo = require('../lib/test_bitgo');
 const TestUtil = require('./testutil');

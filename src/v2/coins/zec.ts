@@ -1,8 +1,8 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const bitGoUtxoLib = require('bitgo-utxo-lib');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const common = require('../../common');
+import common = require('../../common');
 const request = require('superagent');
 
 class Zec extends AbstractUtxoCoin {

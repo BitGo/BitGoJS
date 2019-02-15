@@ -1,7 +1,7 @@
-const assert = require('assert');
+import { strict as assert } from 'assert';
 const crypto = require('crypto');
 const stellar = require('stellar-sdk');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const Wallet = require('../../../../src/v2/wallet');
 

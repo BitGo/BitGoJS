@@ -9,7 +9,7 @@ import EthWallet = require('./ethWallet');
 import common = require('../common');
 import Util = require('../util');
 import Promise = require('bluebird');
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 //
 // Constructor

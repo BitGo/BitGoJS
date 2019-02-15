@@ -3,7 +3,7 @@
 //
 
 const nock = require('nock');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const Enterprise = require('../../../src/v2/enterprise');
 const common = require('../../../src/common');

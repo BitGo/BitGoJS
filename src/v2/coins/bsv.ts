@@ -1,9 +1,9 @@
 const Bch = require('./bch');
 const bitcoin = require('bitgo-utxo-lib');
 const request = require('superagent');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const common = require('../../common');
+import common = require('../../common');
 const errors = require('../../errors');
 
 class Bsv extends Bch {

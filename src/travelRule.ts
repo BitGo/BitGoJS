@@ -7,7 +7,7 @@
 
 import bitcoin = require('./bitcoin');
 import common = require('./common');
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 //
 // Constructor

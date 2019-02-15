@@ -6,7 +6,7 @@
 
 require('should');
 
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const BigNumber = require('bignumber.js');
 

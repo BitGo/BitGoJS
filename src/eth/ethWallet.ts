@@ -10,7 +10,7 @@ import Util = require('../util');
 
 import common = require('../common');
 import Promise = require('bluebird');
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 let ethAbi;
 let ethUtil;

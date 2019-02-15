@@ -5,9 +5,9 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 
-const common = require('./common');
+import common = require('./common');
 const PendingApproval = require('./pendingapproval');
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 //
 // Constructor
@@ -24,7 +24,12 @@ PendingApprovals.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletId', 'enterpriseId'], callback);
 
-  const queryParams = {};
+  interface Query {
+    walletId?: string;
+    enterprise?: string;
+  }
+
+  const queryParams: Query = {};
   if (_.isString(params.walletId)) {
     queryParams.walletId = params.walletId;
   }

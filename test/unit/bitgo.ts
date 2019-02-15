@@ -4,14 +4,14 @@
 
 const should = require('should');
 const nock = require('nock');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 
 const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');
 const common = require('../../src/common');
 const rp = require('request-promise');
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 nock.disableNetConnect();
 

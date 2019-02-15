@@ -1,5 +1,5 @@
 require('should');
-const assert = require('assert');
+import { strict as assert } from 'assert';
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 

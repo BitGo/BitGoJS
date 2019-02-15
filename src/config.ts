@@ -1,5 +1,5 @@
 import common = require('./common');
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 // Estimate for virtual sizes of various tx inputs
 const tx = {

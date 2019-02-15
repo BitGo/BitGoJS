@@ -1,7 +1,7 @@
-const common = require('../common');
+import common = require('../common');
 const PendingApproval = require('./pendingApproval');
-const _ = require('lodash');
-const Promise = require('bluebird');
+import * as _ from 'lodash';
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 
 const PendingApprovals = function(bitgo, baseCoin) {
@@ -18,7 +18,12 @@ PendingApprovals.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], ['walletId', 'enterpriseId'], callback);
 
-  const queryParams = {};
+  interface Query {
+    walletId?: string;
+    enterprise?: string;
+  }
+
+  const queryParams: Query = {};
   if (_.isString(params.walletId)) {
     queryParams.walletId = params.walletId;
   }

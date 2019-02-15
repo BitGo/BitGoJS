@@ -1,13 +1,13 @@
 const Eth = require('./eth');
-const _ = require('lodash');
-const Promise = require('bluebird');
+import * as _ from 'lodash';
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const prova = require('prova-lib');
 const Util = require('../../util');
 const config = require('../../config');
-let ethUtil = function() {};
-let ethAbi = function() {};
-let EthTx = function() {};
+let ethUtil: any = function() {};
+let ethAbi: any = function() {};
+let EthTx: any = function() {};
 
 try {
   ethUtil = require('ethereumjs-util');
@@ -210,7 +210,7 @@ class Token extends Eth {
         tx.sign(backupSigningKey);
       }
 
-      const signedTx = {
+      const signedTx: any = {
         id: ethUtil.bufferToHex(tx.hash(true)),
         tx: tx.serialize().toString('hex')
       };

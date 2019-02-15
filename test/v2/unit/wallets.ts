@@ -7,7 +7,7 @@ import bluebird = require('bluebird');
 const co = bluebird.coroutine;
 const nock = require('nock');
 const common = require('../../../src/common');
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 

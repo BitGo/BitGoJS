@@ -9,8 +9,8 @@ const rippleHashes = require('ripple-hashes');
 const rippleKeypairs = require('ripple-keypairs');
 const url = require('url');
 const prova = require('../../prova');
-const _ = require('lodash');
-const Promise = require('bluebird');
+import * as _ from 'lodash';
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const sjcl = require('../../../vendor/sjcl.min');
 const config = require('../../config');
@@ -287,7 +287,7 @@ class Xrp extends BaseCoin {
     }
     const id = rippleHashes.computeBinaryTransactionHash(txHex);
     const changeAmount = 0;
-    const explanation = {
+    const explanation: any = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
       id: id,
       outputs: [],

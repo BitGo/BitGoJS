@@ -2,9 +2,9 @@
 // Tests for basecoin
 //
 
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 require('should');
 

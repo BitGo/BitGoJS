@@ -1,5 +1,5 @@
 const Zec = require('./zec');
-const bitGoUtxoLib = require('bitgo-utxo-lib');
+import bitGoUtxoLib = require('bitgo-utxo-lib');
 
 class Tzec extends Zec {
   constructor() {

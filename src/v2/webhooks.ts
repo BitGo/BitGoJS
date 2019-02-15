@@ -1,7 +1,7 @@
 // User webhook handler for v2 coins and tokens
 
-const common = require('../common');
-const _ = require('lodash');
+import common = require('../common');
+import * as _ from 'lodash';
 
 const Webhooks = function(bitgo, baseCoin) {
   this.bitgo = bitgo;
@@ -65,7 +65,12 @@ Webhooks.prototype.listNotifications = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const query = {};
+  interface Query {
+    prevId?: string;
+    limit?: number;
+  }
+
+  const query: Query = {};
   if (params.prevId) {
     if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');

@@ -1,9 +1,9 @@
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const request = require('superagent');
 
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
-const common = require('../../common');
+import common = require('../../common');
 
 class Dash extends AbstractUtxoCoin {
   constructor(network) {

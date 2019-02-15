@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const assert = require('assert');
+import { strict as assert } from 'assert';
 const should = require('should');
 const Q = require('q');
 
@@ -13,10 +13,10 @@ const TestBitGo = require('../lib/test_bitgo');
 const config = require('../../src/config');
 const TransactionBuilder = require('../../src/transactionBuilder');
 const crypto = require('crypto');
-const _ = require('lodash');
+import * as _ from 'lodash';
 const bitcoin = BitGoJS.bitcoin;
 const unspentData = require('./fixtures/largeunspents.json');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const common = require('../../src/common');
 const request = require('superagent');
@@ -3088,6 +3088,6 @@ describe('Accelerate Transaction (test server)', function accelerateTxDescribe()
 
     // allow child tx time to be indexed by smartbit
     yield Promise.delay(10000);
-    return verifyTargetFeeRate({ parentTx, childTx, targetRate: combinedTxFeeRate });
+    return verifyTargetFeeRate({ parentTx, childTx, targetRate: combinedTxFeeRate }, undefined);
   }));
 });

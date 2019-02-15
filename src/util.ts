@@ -1,6 +1,6 @@
 import bitcoin = require('bitgo-utxo-lib');
 import Big = require('big.js');
-import _ = require('lodash');
+import * as _ from 'lodash';
 import crypto = require('crypto');
 import errors = require('./errors');
 

@@ -4,7 +4,7 @@
 
 const TestUtil = module.exports;
 const should = require('should');
-const _ = require('lodash');
+import * as _ from 'lodash';
 const Q = require('q');
 
 /**

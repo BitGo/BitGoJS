@@ -6,7 +6,7 @@ const { bytesToWord } = require('../../../src/v2/internal');
 describe('Internal:', () => {
   describe('bytesToWord', () => {
     it('should fail if input is not a Uint8Array', () => {
-      let inputArr = [0, 0, 0, 0];
+      let inputArr: any = [0, 0, 0, 0];
       (() => bytesToWord(inputArr)).should.throw();
 
       inputArr = {};

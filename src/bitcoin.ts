@@ -1,4 +1,4 @@
-const common = require('./common');
+import common = require('./common');
 const bitcoin = require('bitgo-utxo-lib');
 const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');

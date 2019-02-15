@@ -1,11 +1,15 @@
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const _ = require('lodash');
+import * as _ from 'lodash';
 const CoinWallet = require('./wallet');
 const internal = require('./internal');
-const common = require('../common');
+import common = require('../common');
 
 class Enterprise {
+
+  bitgo: any;
+  baseCoin: any;
+  _enterprise: any;
 
   constructor(bitgo, baseCoin, enterpriseData) {
     this.bitgo = bitgo;

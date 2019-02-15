@@ -1,7 +1,7 @@
 const request = require('superagent');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const _ = require('lodash');
+import * as _ from 'lodash';
 const bitcoin = require('bitgo-utxo-lib');
 const config = require('../config');
 
@@ -13,6 +13,20 @@ const config = require('../config');
  *   - recoveryCoin: the type of address the faulty transaction was sent to
  */
 class CrossChainRecoveryTool {
+  bitgo: any;
+  sourceCoin: any;
+  recoveryCoin: any;
+  logging: any;
+  supportedCoins: string[];
+  wallet: any;
+  feeRates: {[key: string]: number};
+  recoveryTx: any;
+  logger: any;
+  txInfo: any;
+  recoveryAddress: any;
+  recoveryAmount: any;
+  halfSignedRecoveryTx: any;
+
   constructor(opts) {
     this.bitgo = opts.bitgo;
     this.sourceCoin = opts.sourceCoin;
@@ -207,7 +221,7 @@ class CrossChainRecoveryTool {
         throw new Error('Could not find unspents. Either supply an argument or call findUnspents');
       }
 
-      const txInfo = {
+      const txInfo: any = {
         inputAmount: 0,
         outputAmount: 0,
         spendAmount: 0,
@@ -459,7 +473,7 @@ class CrossChainRecoveryTool {
       }
       const incomplete = this.recoveryTx.buildIncomplete();
 
-      const txInfo = {
+      const txInfo: any = {
         nP2SHInputs: 0,
         nSegwitInputs: 0
       };
@@ -477,7 +491,7 @@ class CrossChainRecoveryTool {
       txInfo.changeAddresses = [];
       txInfo.walletAddressDetails = {};
 
-      const feeInfo = {};
+      const feeInfo: any = {};
 
       const INPUT_SIZE = config.tx.P2SH_INPUT_SIZE;
       const OUTPUT_SIZE = config.tx.OUTPUT_SIZE;

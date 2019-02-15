@@ -1,8 +1,8 @@
-const common = require('../common');
-const assert = require('assert');
-const Promise = require('bluebird');
+import common = require('../common');
+import { strict as assert } from 'assert';
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 const PendingApproval = function(bitgo, baseCoin, pendingApprovalData, wallet) {
   this.bitgo = bitgo;
@@ -202,7 +202,13 @@ PendingApproval.prototype.approve = function(params, callback) {
     }
   })
   .then(function(transaction) {
-    const approvalParams = { state: 'approved', otp: params.otp };
+    interface ApprovalParams {
+      state: string;
+      otp: string;
+      halfSigned?: any;
+    }
+
+    const approvalParams: ApprovalParams = { state: 'approved', otp: params.otp };
     if (transaction) {
       // if the transaction already has a half signed property, we take that directly
       approvalParams.halfSigned = transaction.halfSigned || transaction;

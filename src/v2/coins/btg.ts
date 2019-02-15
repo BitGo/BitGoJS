@@ -1,9 +1,9 @@
 const Btc = require('./btc');
 const bitcoin = require('bitgo-utxo-lib');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const request = require('superagent');
 const co = Promise.coroutine;
-const common = require('../../common');
+import common = require('../../common');
 
 class Btg extends Btc {
   constructor(network) {

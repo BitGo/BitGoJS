@@ -1,3 +1,5 @@
+import { RippleAPI } from 'ripple-lib';
+
 const rippleKeypairs = require('ripple-keypairs');
 const ripple = require('ripple-lib');
 const prova = require('./prova');
@@ -55,7 +57,7 @@ const signWithPrivateKey = function(txHex, privateKey, options) {
     };
     tx.Signers = [{ Signer: signer }];
   } else {
-    tx.TxnSignature = computeSignature(tx, privateKey);
+    tx.TxnSignature = computeSignature(tx, privateKey, undefined);
   }
 
   const serialized = binary.encode(tx);
@@ -66,7 +68,12 @@ const signWithPrivateKey = function(txHex, privateKey, options) {
 };
 
 module.exports = (params) => {
-  const rippleLib = new ripple.RippleAPI(params);
+
+  interface RippleLib extends RippleAPI {
+    signWithPrivateKey: Function;
+  }
+
+  const rippleLib = new ripple.RippleAPI(params) as RippleLib;
   rippleLib.signWithPrivateKey = signWithPrivateKey;
   return rippleLib;
 };

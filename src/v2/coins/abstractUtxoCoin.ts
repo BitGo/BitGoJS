@@ -2,12 +2,12 @@ const BaseCoin = require('../baseCoin');
 const config = require('../../config');
 const bitcoin = require('bitgo-utxo-lib');
 const bitcoinMessage = require('bitcoinjs-message');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const prova = require('prova-lib');
 const crypto = require('crypto');
 const request = require('superagent');
-const _ = require('lodash');
+import * as _ from 'lodash';
 const RecoveryTool = require('../recovery');
 const errors = require('../../errors');
 const debug = require('debug')('bitgo:v2:utxo');
@@ -144,7 +144,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  parseTransaction({ txParams, txPrebuild, wallet, verification = {}, reqId }, callback) {
+  parseTransaction({ txParams, txPrebuild, wallet, verification = {} as any, reqId }, callback) {
     return co(function *() {
       if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
         throw new Error('verification.disableNetworking must be a boolean');
@@ -331,7 +331,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {boolean}
    */
-  verifyTransaction({ txParams, txPrebuild, wallet, verification = {}, reqId }, callback) {
+  verifyTransaction({ txParams, txPrebuild, wallet, verification = {}, reqId }: { txParams: any, txPrebuild: any, wallet: any, verification: any, reqId: any }, callback) {
     return co(function *() {
       const disableNetworking = !!verification.disableNetworking;
       const parsedTransaction = yield this.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
@@ -473,7 +473,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param index Derivation index
    */
   verifyAddress({ address, addressType, keychains, coinSpecific, chain, index }) {
-    if (!this.isValidAddress(address)) {
+    if (!this.isValidAddress(address, undefined)) {
       throw new errors.InvalidAddressError(`invalid address: ${address}`);
     }
 
@@ -486,12 +486,14 @@ class AbstractUtxoCoin extends BaseCoin {
     }
 
 
-    const expectedAddress = this.generateAddress({
+    const expectedAddress: any = this.generateAddress({
       addressType,
       keychains,
       threshold: 2,
       chain: chain,
-      index: index
+      index: index,
+      segwit: undefined,
+      bech32: undefined
     });
 
     if (expectedAddress.address !== address) {
@@ -526,7 +528,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param bech32
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
    */
-  generateAddress({ addressType, keychains, threshold, chain, index, segwit, bech32 }) {
+  generateAddress({ addressType, keychains, threshold, chain, index, segwit, bech32 }: { addressType: any, keychains: any, threshold: number, chain: number, index: number, segwit: boolean, bech32: boolean }) {
     if (addressType === this.constructor.AddressTypes.P2WSH && !this.supportsP2wsh()) {
       throw new errors.P2wshUnsupportedError();
     }
@@ -572,11 +574,11 @@ class AbstractUtxoCoin extends BaseCoin {
     const inputScriptHash = bitcoin.crypto.hash160(inputScript);
     let outputScript = bitcoin.script.scriptHash.output.encode(inputScriptHash);
 
-    const addressDetails = {
+    const addressDetails: any = {
       chain: derivationChain,
       index: derivationIndex,
       coin: this.getChain(),
-      coinSpecific: {},
+      coinSpecific: {} as any,
       addressType
     };
 
@@ -715,7 +717,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
     if (signatureIssues.length > 0) {
       const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
-      const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+      const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
       error.code = 'input_signature_failure';
       error.signingErrors = signatureIssues;
       throw error;
@@ -834,7 +836,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param verificationSettings.publicKey The hex of the public key to verify (will verify all signatures)
    * @returns {boolean}
    */
-  verifySignature(transaction, inputIndex, amount, verificationSettings = {}) {
+  verifySignature(transaction, inputIndex, amount, verificationSettings = {} as any) {
 
     const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(transaction, inputIndex);
 
@@ -928,12 +930,24 @@ class AbstractUtxoCoin extends BaseCoin {
     if (params.txInfo && params.txInfo.changeAddresses) {
       changeAddresses = params.txInfo.changeAddresses;
     }
+
+    interface Explanation {
+      displayOrder: string[];
+      id: any;
+      outputs: any;
+      changeOutputs: any;
+      outputAmount: number;
+      changeAmount: number;
+      fee?: any;
+      locktime?: number;
+    }
+
     const explanation = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
       id: id,
       outputs: [],
       changeOutputs: []
-    };
+    } as Explanation;
     transaction.outs.forEach(function(currentOutput) {
       const currentAddress = self.getCoinLibrary().address.fromOutputScript(currentOutput.script, self.network);
       const currentAmount = currentOutput.value;
@@ -1052,7 +1066,7 @@ class AbstractUtxoCoin extends BaseCoin {
         const gatherUnspents = co(function *coGatherUnspents(addrIndex) {
           const derivedKeys = deriveKeys(keyArray, addrIndex);
           const chain = basePath.split('/').pop(); // extracts the chain from the basePath
-          const address = createMultiSigAddress(derivedKeys, chain);
+          const address: any = createMultiSigAddress(derivedKeys, chain);
           const addressBase58 = address.address;
 
           const addrInfo = yield self.getAddressInfoFromExplorer(addressBase58);
@@ -1187,7 +1201,7 @@ class AbstractUtxoCoin extends BaseCoin {
       // Build the transaction
       const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
       this.constructor.prepareTransactionBuilder(transactionBuilder);
-      const txInfo = {};
+      const txInfo: any = {};
 
       const feePerByte = yield this.getRecoveryFeePerBytes();
 
@@ -1197,7 +1211,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const approximateFee = approximateSize * feePerByte;
 
       // Construct a transaction
-      txInfo.inputs = unspents.map(function addInputForUnspent(unspent) {
+      txInfo.inputs = unspents.map(function addInputForUnspent(unspent: any) {
         const address = addressesById[unspent.address];
         const outputScript = address.hash;
 
@@ -1303,7 +1317,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
     if (signatureIssues.length > 0) {
       const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
-      const error = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+      const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
       error.code = 'input_signature_failure';
       error.signingErrors = signatureIssues;
       throw error;

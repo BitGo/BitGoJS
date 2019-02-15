@@ -4,7 +4,8 @@
 // Copyright 2018, BitGo, Inc.  All Rights Reserved.
 //
 
-const assert = require('assert');
+// import { strict as assert } from 'assert';
+import { strict as assert } from 'assert';
 require('should');
 const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');

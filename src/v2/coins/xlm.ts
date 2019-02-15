@@ -1,14 +1,14 @@
-const _ = require('lodash');
+import * as _ from 'lodash';
 const BigNumber = require('bignumber.js');
 const querystring = require('querystring');
 const url = require('url');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const request = require('superagent');
 
 const BaseCoin = require('../baseCoin');
 const config = require('../../config');
-const common = require('../../common');
+import common = require('../../common');
 const stellar = require('stellar-sdk');
 
 const maxMemoId = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
@@ -498,7 +498,7 @@ class Xlm extends BaseCoin {
         txBuilder.sign(backupKey);
       }
 
-      const transaction = {
+      const transaction: any = {
         tx: txBuilder.toEnvelope().toXDR('base64'),
         recoveryAmount
       };
@@ -624,7 +624,7 @@ class Xlm extends BaseCoin {
       throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
     }
     const id = tx.hash().toString('hex');
-    const explanation = {
+    const explanation: any = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
       id,
       outputs: [],
@@ -682,7 +682,7 @@ class Xlm extends BaseCoin {
    * @param callback
    * @returns {boolean}
    */
-  verifyTransaction({ txParams, txPrebuild, wallet, verification = {} }, callback) {
+  verifyTransaction({ txParams, txPrebuild, wallet, verification = {} }: { txParams: any, txPrebuild: any, wallet: any, verification: any }, callback) {
     // TODO BG-5600 Add parseTransaction / improve verification
     return co(function *() {
       const disableNetworking = !!verification.disableNetworking;

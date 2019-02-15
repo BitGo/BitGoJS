@@ -4,9 +4,9 @@
 // Copyright 2016, BitGo, Inc.  All Rights Reserved.
 //
 
-const assert = require('assert');
+import { strict as assert } from 'assert';
 require('should');
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 const BitGoJS = require('../../src/index');
 const bitcoin = BitGoJS.bitcoin;

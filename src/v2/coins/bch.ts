@@ -1,11 +1,11 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const bitcoin = require('bitgo-utxo-lib');
 const request = require('superagent');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const common = require('../../common');
+import common = require('../../common');
 const cashaddress = require('cashaddress');
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 const VALID_ADDRESS_VERSIONS = {
   base58: 'base58',

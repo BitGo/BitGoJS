@@ -1,11 +1,11 @@
-const common = require('../common');
-const assert = require('assert');
+import common = require('../common');
+import { strict as assert } from 'assert';
 const BigNumber = require('bignumber.js');
 const bitcoin = require('../bitcoin');
 const PendingApproval = require('./pendingApproval');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const _ = require('lodash');
+import * as _ from 'lodash';
 const debug = require('debug')('bitgo:v2:wallet');
 const internal = require('./internal');
 const util = require('../util');
@@ -115,7 +115,12 @@ Wallet.prototype.transactions = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const query = {};
+  interface Query {
+    prevId?: string;
+    limit?: number;
+  }
+
+  const query: Query = {};
   if (params.prevId) {
     if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
@@ -147,7 +152,12 @@ Wallet.prototype.getTransaction = function getTransaction(params, callback) {
   params = params || {};
   common.validateParams(params, ['txHash'], [], callback);
 
-  const query = {};
+  interface Query {
+    prevId?: string;
+    limit?: number;
+  }
+
+  const query: Query = {};
   if (!_.isUndefined(params.prevId)) {
     if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
@@ -178,7 +188,19 @@ Wallet.prototype.transfers = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const query = {};
+  interface Query {
+    prevId?: string;
+    limit?: number;
+    allTokens?: boolean;
+    searchLabel?: string;
+    address?: string | string[];
+    dateGte?: string;
+    dateLt?: string;
+    valueGte?: number;
+    valueLt?: number;
+  }
+
+  const query: Query = {};
   if (params.prevId) {
     if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
@@ -536,7 +558,17 @@ Wallet.prototype.addresses = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const query = {};
+  interface Query {
+    mine?: boolean;
+    prevId?: string;
+    sort?: number;
+    limit?: number;
+    labelContains?: string;
+    segwit?: boolean;
+    chains?: number[];
+  }
+
+  const query: Query = {};
 
   if (params.mine) {
     query.mine = !!params.mine;
@@ -632,9 +664,18 @@ Wallet.prototype.getAddress = function(params, callback) {
  * @param {Boolean} [lowPriority] Ethereum-specific param to create address using low priority fee address
  * @param callback
  */
-Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label, bech32, lowPriority } = {}, callback) {
+Wallet.prototype.createAddress = function({ chain = undefined, gasPrice = undefined, count = 1, label = undefined, bech32 = undefined, lowPriority =undefined } = {}, callback) {
   return co(function *createAddress() {
-    const addressParams = {};
+
+    interface AddressParams {
+      chain?: number;
+      gasPrice?: number | string;
+      label?: string;
+      bech32?: boolean;
+      lowPriority?: boolean;
+    }
+
+    const addressParams: AddressParams = {};
     const reqId = util.createRequestId();
 
     if (!_.isUndefined(chain)) {
@@ -732,7 +773,12 @@ Wallet.prototype.listWebhooks = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const query = {};
+  interface Query {
+    prevId?: string;
+    limit?: number;
+  }
+
+  const query: Query = {};
   if (params.prevId) {
     if (!_.isString(params.prevId)) {
       throw new Error('invalid prevId argument, expecting string');
@@ -955,7 +1001,16 @@ Wallet.prototype.shareWallet = function(params, callback) {
     }
   })
   .then(function() {
-    const options = {
+    interface Options {
+      user: any;
+      permissions: string;
+      reshare: boolean;
+      message: string;
+      disableEmail: any;
+      keychain?: any
+    }
+
+    const options: Options = {
       user: sharing.userId,
       permissions: params.permissions,
       reshare: params.reshare,
@@ -1099,19 +1154,19 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
     params = params || {};
 
     if (params.prebuildTx && params.recipients) {
-      const error = new Error('Only one of prebuildTx and recipients may be specified');
+      const error: NodeJS.ErrnoException = new Error('Only one of prebuildTx and recipients may be specified');
       error.code = 'both_prebuildtx_and_recipients_specified';
       throw error;
     }
 
     if (params.recipients && !Array.isArray(params.recipients)) {
-      const error = new Error('expecting recipients array');
+      const error: NodeJS.ErrnoException = new Error('expecting recipients array');
       error.code = 'recipients_not_array';
       throw error;
     }
 
     if (_.isArray(this._permissions) && !this._permissions.includes('spend')) {
-      const error = new Error('no spend permission on this wallet');
+      const error: NodeJS.ErrnoException = new Error('no spend permission on this wallet');
       error.code = 'user_not_allowed_to_spend_from_wallet';
       throw error;
     }
@@ -1156,20 +1211,20 @@ Wallet.prototype.accelerateTransaction = function(params, callback) {
     // TODO(BG-9349): change the last check to > 0 and the error message once platform allows multiple transactions to
     //                be bumped in the same CPFP transaction
     if (_.isUndefined(params.cpfpTxIds) || !Array.isArray(params.cpfpTxIds) || params.cpfpTxIds.length !== 1) {
-      const error = new Error('expecting cpfpTxIds to be an array of length 1');
+      const error: NodeJS.ErrnoException = new Error('expecting cpfpTxIds to be an array of length 1');
       error.code = 'cpfptxids_not_array';
       throw error;
     }
 
     if (_.isUndefined(params.cpfpFeeRate)) {
       if (params.noCpfpFeeRate !== true) {
-        const error = new Error('cpfpFeeRate must be set unless noCpfpFeeRate is set');
+        const error: NodeJS.ErrnoException = new Error('cpfpFeeRate must be set unless noCpfpFeeRate is set');
         error.code = 'cpfpfeerate_not_set';
         throw error;
       }
     } else {
       if (!_.isInteger(params.cpfpFeeRate) || params.cpfpFeeRate < 0) {
-        const error = new Error('cpfpFeeRate must be a non-negative integer');
+        const error: NodeJS.ErrnoException = new Error('cpfpFeeRate must be a non-negative integer');
         error.code = 'cpfpfeerate_not_nonnegative_integer';
         throw error;
       }
@@ -1177,13 +1232,13 @@ Wallet.prototype.accelerateTransaction = function(params, callback) {
 
     if (_.isUndefined(params.maxFee)) {
       if (params.noMaxFee !== true) {
-        const error = new Error('maxFee must be set unless noMaxFee is set');
+        const error: NodeJS.ErrnoException = new Error('maxFee must be set unless noMaxFee is set');
         error.code = 'maxfee_not_set';
         throw error;
       }
     } else {
       if (!_.isInteger(params.maxFee) || params.maxFee < 0) {
-        const error = new Error('maxFee must be a non-negative integer');
+        const error: NodeJS.ErrnoException = new Error('maxFee must be a non-negative integer');
         error.code = 'maxfee_not_nonnegative_integer';
         throw error;
       }
@@ -1542,7 +1597,7 @@ Wallet.prototype.downloadKeycard = function(params, callback) {
     }
 
     // PDF QR Code data
-    const qrData = {
+    const qrData: any = {
       user: {
         title: 'A: User Key',
         desc: 'This is your private key, encrypted with your passcode.',

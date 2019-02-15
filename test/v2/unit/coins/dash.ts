@@ -1,8 +1,8 @@
 require('should');
 
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const _ = require('lodash');
+import * as _ from 'lodash';
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const Wallet = require('../../../../src/v2/wallet');
 

@@ -1,5 +1,5 @@
 const Bsv = require('./bsv');
-const bitcoin = require('bitgo-utxo-lib');
+import bitcoin = require('bitgo-utxo-lib');
 
 class Tbsv extends Bsv {
   constructor() {

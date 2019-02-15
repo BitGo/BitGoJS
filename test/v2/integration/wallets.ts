@@ -2,9 +2,9 @@
 // Tests for Wallets
 //
 
-const assert = require('assert');
+import { strict as assert } from 'assert';
 const should = require('should');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 const TestV2BitGo = require('../../lib/test_bitgo');
 const Q = require('q');
@@ -40,7 +40,7 @@ describe('V2 Wallets:', function() {
       });
 
       it(`generates ${currentCoin} wallet`, function() {
-        const params = {
+        const params: any = {
           label: `Test ${currentCoin} wallet`,
           passphrase: 'yoplait'
         };

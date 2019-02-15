@@ -4,13 +4,13 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const assert = require('assert');
+import { strict as assert } from 'assert';
 
 const BitGoJS = require('../../../src/index');
 const TestBitGo = require('../../lib/test_bitgo');
 
 const TestUtil = require('../../integration/testutil');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 
 describe('BitGo', function() {
@@ -464,7 +464,7 @@ describe('BitGo', function() {
 
   let refreshToken;
   describe('Oauth test', function() {
-    if (process.browser) {
+    if ((process as any).browser) {
       // Oauth tests not supported in browser due to same-origin policy
       return;
     }

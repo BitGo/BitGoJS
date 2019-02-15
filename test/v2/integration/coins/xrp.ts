@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 require('should');
 
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
 
 const prova = require('../../../../src/prova');

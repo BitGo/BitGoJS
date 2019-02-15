@@ -8,7 +8,7 @@
 import Promise = require('bluebird');
 import bitcoin = require('./bitcoin');
 import config = require('./config');
-import _ = require('lodash');
+import * as _ from 'lodash';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 

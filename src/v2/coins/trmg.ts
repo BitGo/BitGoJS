@@ -1,5 +1,5 @@
 const Rmg = require('./rmg');
-const prova = require('../../prova');
+import prova = require('../../prova');
 
 class Trmg extends Rmg {
   constructor() {

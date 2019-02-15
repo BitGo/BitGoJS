@@ -5,18 +5,18 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import TransactionBuilder = require('./transactionBuilder');
+const TransactionBuilder = require('./transactionBuilder');
 import bitcoin = require('./bitcoin');
 // TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
 import prova = require('prova-lib');
 import PendingApproval = require('./pendingapproval');
 
-const assert = require('assert');
-const common = require('./common');
+import { strict as assert } from 'assert';
+import common = require('./common');
 const config = require('./config');
-const Promise = require('bluebird');
+import * as Promise from 'bluebird'
 const co = Promise.coroutine;
-const _ = require('lodash');
+import * as _ from 'lodash';
 const request = require('superagent');
 
 //
@@ -352,7 +352,7 @@ Wallet.prototype.addresses = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const query = {};
+  const query: any = {};
   if (params.details) {
     query.details = 1;
   }
@@ -840,7 +840,7 @@ Wallet.prototype.getEncryptedUserKeychain = function(params, callback) {
 
     const tryKeyChain = co(function *(index) {
       if (!self.keychains || index >= self.keychains.length) {
-        const error = new Error('No encrypted keychains on this wallet.');
+        const error: NodeJS.ErrnoException = new Error('No encrypted keychains on this wallet.');
         error.code = 'no_encrypted_keychain_on_wallet';
         throw error;
       }
@@ -923,7 +923,7 @@ Wallet.prototype.signTransaction = function(params, callback) {
 
   if ((!_.isObject(params.keychain) || !params.keychain.xprv) && !_.isString(params.signingKey)) {
     // allow passing in a WIF private key for legacy safe wallet support
-    const error = new Error('expecting keychain object with xprv or signingKey WIF');
+    const error: NodeJS.ErrnoException = new Error('expecting keychain object with xprv or signingKey WIF');
     error.code = 'missing_keychain_or_signingKey';
     throw error;
   }
@@ -1008,7 +1008,13 @@ Wallet.prototype.createInvite = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['email', 'permissions'], ['message'], callback);
 
-  const options = {
+  interface Options {
+    toEmail: string;
+    permissions: string;
+    message?: string;
+  }
+
+  const options: Options = {
     toEmail: params.email,
     permissions: params.permissions
   };
@@ -2019,7 +2025,14 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
      them, and therefore will be able to simplify this method.
      */
 
-    const queryParams = {
+    interface Query {
+      limit: number;
+      minConfirms: number;
+      minSize: number;
+      maxSize?: number;
+    }
+
+    const queryParams: Query = {
       limit: target + maxInputCount,
       minConfirms: minConfirms,
       minSize: minSize
@@ -2199,7 +2212,17 @@ Wallet.prototype.shareWallet = function(params, callback) {
     }
   })
   .then(function() {
-    const options = {
+    interface Options {
+      user: any;
+      permissions: string;
+      reshare: boolean;
+      message: string;
+      disableEmail: any;
+      keychain?: any;
+      skipKeychain?: boolean
+    }
+
+    const options: Options = {
       user: sharing.userId,
       permissions: params.permissions,
       reshare: params.reshare,

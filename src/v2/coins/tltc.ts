@@ -1,5 +1,5 @@
 const Ltc = require('./ltc');
-const bitcoin = require('bitgo-utxo-lib');
+import bitcoin = require('bitgo-utxo-lib');
 
 class Tltc extends Ltc {
   constructor() {
