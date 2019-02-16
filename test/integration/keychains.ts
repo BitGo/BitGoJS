@@ -6,7 +6,7 @@
 
 import { strict as assert } from 'assert';
 require('should');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 

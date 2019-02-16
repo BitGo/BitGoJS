@@ -1,6 +1,6 @@
 import common = require('../common');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
 const Keychains = function(bitgo, baseCoin) {

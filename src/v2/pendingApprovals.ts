@@ -1,7 +1,7 @@
 import common = require('../common');
 const PendingApproval = require('./pendingApproval');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
 const PendingApprovals = function(bitgo, baseCoin) {

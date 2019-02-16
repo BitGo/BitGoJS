@@ -16,6 +16,7 @@
     "node_modules",
     "build",
     "example",
-    "browser"
+    "browser",
+    "ts-out"
   ]
 }

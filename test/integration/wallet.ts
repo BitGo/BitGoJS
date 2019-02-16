@@ -16,7 +16,7 @@ const crypto = require('crypto');
 import * as _ from 'lodash';
 const bitcoin = BitGoJS.bitcoin;
 const unspentData = require('./fixtures/largeunspents.json');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const common = require('../../src/common');
 const request = require('superagent');

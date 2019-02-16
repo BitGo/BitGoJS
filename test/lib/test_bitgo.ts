@@ -8,7 +8,7 @@ const BitGo = require('../../src/bitgo.js');
 const Wallet = require('../../src/v2/wallet');
 const BigNumber = require('bignumber.js');
 const request = require('supertest-as-promised');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 require('should');
 

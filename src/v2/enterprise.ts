@@ -1,4 +1,4 @@
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 const CoinWallet = require('./wallet');

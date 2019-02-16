@@ -7,7 +7,7 @@
 
 
 import common = require('../common');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
 //

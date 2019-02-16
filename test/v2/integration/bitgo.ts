@@ -10,7 +10,7 @@ const BitGoJS = require('../../../src/index');
 const TestBitGo = require('../../lib/test_bitgo');
 
 const TestUtil = require('../../integration/testutil');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
 describe('BitGo', function() {

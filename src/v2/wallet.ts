@@ -3,7 +3,7 @@ import { strict as assert } from 'assert';
 const BigNumber = require('bignumber.js');
 const bitcoin = require('../bitcoin');
 const PendingApproval = require('./pendingApproval');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 const debug = require('debug')('bitgo:v2:wallet');

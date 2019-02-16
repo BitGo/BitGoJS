@@ -4,7 +4,7 @@
 
 const should = require('should');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
 const TestV2BitGo = require('../../lib/test_bitgo');

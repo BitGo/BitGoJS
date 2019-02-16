@@ -14,7 +14,7 @@ import PendingApproval = require('./pendingapproval');
 import { strict as assert } from 'assert';
 import common = require('./common');
 const config = require('./config');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 const request = require('superagent');

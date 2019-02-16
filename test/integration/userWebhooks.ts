@@ -3,7 +3,7 @@
 //
 
 require('should');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
 const TestV2BitGo = require('../lib/test_bitgo');

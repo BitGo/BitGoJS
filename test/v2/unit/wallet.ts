@@ -8,7 +8,7 @@ require('should-sinon');
 require('../lib/asserts');
 import { strict as assert } from 'assert';
 const nock = require('nock');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 const bitcoin = require('bitgo-utxo-lib');

@@ -1,7 +1,7 @@
 const bitcoin = require('../bitcoin');
 import common = require('../common');
 const Wallet = require('./wallet');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 const RmgCoin = require('./coins/rmg');

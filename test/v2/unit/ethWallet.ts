@@ -1,5 +1,5 @@
 
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 require('should');
 const TestV2BitGo = require('../../lib/test_bitgo');

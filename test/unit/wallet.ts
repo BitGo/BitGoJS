@@ -7,7 +7,7 @@
 const Wallet = require('../../src/wallet');
 const TestBitGo = require('../lib/test_bitgo');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const common = require('../../src/common');
 const bitcoin = require('../../src/bitcoin');
