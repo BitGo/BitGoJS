@@ -7,7 +7,7 @@
       "es2016"
     ],
     "sourceMap": true,
-    "outDir": "./lib",
+    "outDir": "./ts-out",
     "declaration": true,
     "resolveJsonModule": true,
     "skipLibCheck": true
@@ -16,7 +16,6 @@
     "node_modules",
     "build",
     "example",
-    "browser",
-    "lib"
+    "browser"
   ]
 }
