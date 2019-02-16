@@ -214,11 +214,11 @@ class Rmg extends AbstractUtxoCoin {
     const signatureScript = currentInput.script;
     const decompiledSigScript = prova.script.decompile(signatureScript);
     // the public keys are all the even-indexed entries
-    const publicKeys = _.filter(decompiledSigScript, (item, index) => index % 2 === 0);
+    const publicKeys = _.filter(decompiledSigScript, (item, index: number) => index % 2 === 0);
     // convert the keys to their hex representations
-    const publicKeyHexes = _.map(publicKeys, k => k.toString('hex'));
+    const publicKeyHexes = _.map(publicKeys, k => (k as any).toString('hex'));
     // the signatures are all the odd-indexed ones
-    const signatures = _.filter(decompiledSigScript, (item, index) => index % 2 === 1);
+    const signatures = _.filter(decompiledSigScript, (item, index: number) => index % 2 === 1);
     // we map them to each other
     const signaturesByKeys = _.zipObject(publicKeyHexes, signatures);
 

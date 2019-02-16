@@ -5,7 +5,7 @@ const config = require('../../config');
 const BigNumber = require('bignumber.js');
 const Util = require('../../util');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const request = require('superagent');
 const crypto = require('crypto');
 const prova = require('prova-lib');

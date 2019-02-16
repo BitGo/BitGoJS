@@ -10,7 +10,7 @@ const rippleKeypairs = require('ripple-keypairs');
 const url = require('url');
 const prova = require('../../prova');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const sjcl = require('../../../vendor/sjcl.min');
 const config = require('../../config');

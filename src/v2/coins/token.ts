@@ -1,6 +1,6 @@
 const Eth = require('./eth');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const prova = require('prova-lib');
 const Util = require('../../util');
@@ -25,7 +25,7 @@ class Token extends Eth {
 
   constructor() {
     super();
-    Object.assign(this, this.constructor.tokenConfig);
+    Object.assign(this, this.tokenConfig);
   }
 
   getChain() {

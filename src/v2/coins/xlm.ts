@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 const BigNumber = require('bignumber.js');
 const querystring = require('querystring');
 const url = require('url');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const request = require('superagent');
 

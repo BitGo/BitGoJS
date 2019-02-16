@@ -8,7 +8,7 @@ class OFCToken extends Ofc {
 
   constructor() {
     super();
-    Object.assign(this, this.constructor.tokenConfig);
+    Object.assign(this, this.tokenConfig);
   }
 
   getChain() {
@@ -31,7 +31,7 @@ class OFCToken extends Ofc {
     return false;
   }
 
-  static generateToken(config) {
+  static generateToken(config): typeof OFCToken {
     // dynamically generate a new class
     class CurrentToken extends OFCToken {
       static get tokenConfig() {

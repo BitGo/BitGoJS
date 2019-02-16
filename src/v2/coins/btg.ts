@@ -1,6 +1,6 @@
 const Btc = require('./btc');
 const bitcoin = require('bitgo-utxo-lib');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const request = require('superagent');
 const co = Promise.coroutine;
 import common = require('../../common');

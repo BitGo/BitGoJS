@@ -1,7 +1,7 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const bitcoin = require('bitgo-utxo-lib');
 const request = require('superagent');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import common = require('../../common');
 const cashaddress = require('cashaddress');

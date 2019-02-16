@@ -4,8 +4,8 @@ import prova = require('../../prova');
 class Trmg extends Rmg {
   constructor() {
     // TODO: move to bitgo-utxo-lib (BG-6821)
-    prova.networks.rmgTest.coin = 'rmg';
-    super(prova.networks.rmgTest);
+    (prova as any).networks.rmgTest.coin = 'rmg';
+    super((prova as any).networks.rmgTest);
   }
 
   getChain() {

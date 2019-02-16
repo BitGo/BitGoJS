@@ -1,4 +1,4 @@
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const request = require('superagent');
 
