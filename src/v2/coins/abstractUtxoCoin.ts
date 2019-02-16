@@ -2,7 +2,7 @@ const BaseCoin = require('../baseCoin');
 const config = require('../../config');
 const bitcoin = require('bitgo-utxo-lib');
 const bitcoinMessage = require('bitcoinjs-message');
-import * as Promise from 'bluebird'
+import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const prova = require('prova-lib');
 const crypto = require('crypto');
@@ -13,6 +13,27 @@ const errors = require('../../errors');
 const debug = require('debug')('bitgo:v2:utxo');
 
 class AbstractUtxoCoin extends BaseCoin {
+  static AddressTypes = Object.freeze({
+    P2SH: 'p2sh',
+    P2SH_P2WSH: 'p2sh-p2wsh',
+    P2WSH: 'p2wsh'
+  });
+
+  static AddressTypeChains = Object.freeze({
+    p2sh: {
+      main: 0,
+      change: 1
+    },
+    'p2sh-p2wsh': {
+      main: 10,
+      change: 11
+    },
+    p2wsh: {
+      main: 20,
+      change: 21
+    }
+  });
+
   constructor(network) {
     super();
     if (!_.isObject(network)) {
@@ -425,7 +446,8 @@ class AbstractUtxoCoin extends BaseCoin {
       const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, this.network);
       const transactionCache = {};
       const inputs = yield Promise.map(transaction.ins, co(function *(currentInput) {
-        const transactionId = Buffer.from(currentInput.hash).reverse().toString('hex');
+        const transactionIdBuffer = Buffer.from(currentInput.hash).reverse() as Buffer;
+        const transactionId = transactionIdBuffer.toString('hex');
         const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
         if (txHex) {
           const localTx = bitcoin.Transaction.fromHex(txHex, this.network);
@@ -529,19 +551,19 @@ class AbstractUtxoCoin extends BaseCoin {
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
    */
   generateAddress({ addressType, keychains, threshold, chain, index, segwit, bech32 }: { addressType: any, keychains: any, threshold: number, chain: number, index: number, segwit: boolean, bech32: boolean }) {
-    if (addressType === this.constructor.AddressTypes.P2WSH && !this.supportsP2wsh()) {
+    if (addressType === this.AddressTypes.P2WSH && !this.supportsP2wsh()) {
       throw new errors.P2wshUnsupportedError();
     }
 
-    if (!_.isUndefined(addressType) && !this.constructor.validAddressTypes.includes(addressType)) {
+    if (!_.isUndefined(addressType) && !this.validAddressTypes.includes(addressType)) {
       throw new errors.UnsupportedAddressTypeError();
     } else if (_.isUndefined(addressType)) {
-      addressType = this.constructor.AddressTypes.P2SH;
+      addressType = this.AddressTypes.P2SH;
       if (_.isBoolean(segwit) && segwit) {
-        addressType = this.constructor.AddressTypes.P2SH_P2WSH;
+        addressType = this.AddressTypes.P2SH_P2WSH;
       }
       if (_.isBoolean(bech32) && bech32) {
-        addressType = this.constructor.AddressTypes.P2WSH;
+        addressType = this.AddressTypes.P2WSH;
       }
     }
 
@@ -643,7 +665,7 @@ class AbstractUtxoCoin extends BaseCoin {
     const keychain = bitcoin.HDNode.fromBase58(userPrv);
     const hdPath = bitcoin.hdPath(keychain);
     const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, this.network);
-    this.constructor.prepareTransactionBuilder(txb);
+    this.prepareTransactionBuilder(txb);
 
     const signatureIssues = [];
     const bech32Indices = [];
@@ -662,14 +684,15 @@ class AbstractUtxoCoin extends BaseCoin {
       const currentSignatureIssue = {
         inputIndex: index,
         unspent: currentUnspent,
-        path: path
+        path: path,
+        error: undefined
       };
       debug('Input details: %O', currentSignatureIssue);
 
 
       const isBech32 = !currentUnspent.redeemScript;
       const isSegwit = !!currentUnspent.witnessScript;
-      const sigHashType = this.constructor.defaultSigHashType;
+      const sigHashType = this.defaultSigHashType;
       try {
         if (isBech32) {
           const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
@@ -925,8 +948,6 @@ class AbstractUtxoCoin extends BaseCoin {
     const transaction = bitcoin.Transaction.fromBuffer(new Buffer(params.txHex, 'hex'), this.network);
     const id = transaction.getId();
     let changeAddresses = [];
-    let spendAmount = 0;
-    let changeAmount = 0;
     if (params.txInfo && params.txInfo.changeAddresses) {
       changeAddresses = params.txInfo.changeAddresses;
     }
@@ -942,19 +963,21 @@ class AbstractUtxoCoin extends BaseCoin {
       locktime?: number;
     }
 
-    const explanation = {
+    const explanation: Explanation = {
       displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
       id: id,
       outputs: [],
-      changeOutputs: []
-    } as Explanation;
+      changeOutputs: [],
+      outputAmount: 0,
+      changeAmount: 0
+    };
     transaction.outs.forEach(function(currentOutput) {
       const currentAddress = self.getCoinLibrary().address.fromOutputScript(currentOutput.script, self.network);
       const currentAmount = currentOutput.value;
 
       if (changeAddresses.indexOf(currentAddress) !== -1) {
         // this is change
-        changeAmount += currentAmount;
+        explanation.changeAmount += currentAmount;
         explanation.changeOutputs.push({
           address: currentAddress,
           amount: currentAmount
@@ -962,14 +985,12 @@ class AbstractUtxoCoin extends BaseCoin {
         return;
       }
 
-      spendAmount += currentAmount;
+      explanation.outputAmount += currentAmount;
       explanation.outputs.push({
         address: currentAddress,
         amount: currentAmount
       });
     });
-    explanation.outputAmount = spendAmount;
-    explanation.changeAmount = changeAmount;
 
     // add fee info if available
     if (params.feeInfo) {
@@ -1295,12 +1316,13 @@ class AbstractUtxoCoin extends BaseCoin {
 
       const currentSignatureIssue = {
         inputIndex: i,
-        unspent: unspent
+        unspent: unspent,
+        error: undefined
       };
 
       if (cosign) {
         try {
-          txb.sign(i, backupPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount, address.witnessScript);
+          txb.sign(i, backupPrivateKey, address.redeemScript, this.defaultSigHashType, unspent.amount, address.witnessScript);
         } catch (e) {
           currentSignatureIssue.error = e;
           signatureIssues.push(currentSignatureIssue);
@@ -1308,7 +1330,7 @@ class AbstractUtxoCoin extends BaseCoin {
       }
 
       try {
-        txb.sign(i, userPrivateKey, address.redeemScript, this.constructor.defaultSigHashType, unspent.amount, address.witnessScript);
+        txb.sign(i, userPrivateKey, address.redeemScript, this.defaultSigHashType, unspent.amount, address.witnessScript);
       } catch (e) {
         currentSignatureIssue.error = e;
         signatureIssues.push(currentSignatureIssue);
@@ -1434,27 +1456,5 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
 }
-
-// add a static field that can only be done outside the class scope
-AbstractUtxoCoin.AddressTypes = Object.freeze({
-  P2SH: 'p2sh',
-  P2SH_P2WSH: 'p2sh-p2wsh',
-  P2WSH: 'p2wsh'
-});
-
-AbstractUtxoCoin.AddressTypeChains = Object.freeze({
-  p2sh: {
-    main: 0,
-    change: 1
-  },
-  'p2sh-p2wsh': {
-    main: 10,
-    change: 11
-  },
-  p2wsh: {
-    main: 20,
-    change: 21
-  }
-});
 
 module.exports = AbstractUtxoCoin;

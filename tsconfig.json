@@ -4,7 +4,7 @@
     "target": "es5",
     "lib": [
       "dom",
-      "es7"
+      "es2016"
     ],
     "sourceMap": true,
     "outDir": "./lib",

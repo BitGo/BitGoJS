@@ -78,6 +78,7 @@
     "no-redeclare": ["error", { "builtinGlobals": true }],
     "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/no-use-before-define": "off",
-    "@typescript-eslint/camelcase": "warn"
+    "@typescript-eslint/camelcase": "warn",
+    "@typescript-eslint/explicit-member-accessibility": "warn"
   }
 }
