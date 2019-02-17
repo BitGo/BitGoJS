@@ -2,8 +2,7 @@ const BaseCoin = require('../baseCoin');
 const config = require('../../config');
 const bitcoin = require('bitgo-utxo-lib');
 const bitcoinMessage = require('bitcoinjs-message');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as bb from 'bluebird';
 const prova = require('prova-lib');
 const crypto = require('crypto');
 const request = require('superagent');
@@ -16,22 +15,22 @@ class AbstractUtxoCoin extends BaseCoin {
   public static readonly AddressTypes = Object.freeze({
     P2SH: 'p2sh',
     P2SH_P2WSH: 'p2sh-p2wsh',
-    P2WSH: 'p2wsh'
+    P2WSH: 'p2wsh',
   });
 
   public static readonly AddressTypeChains = Object.freeze({
     p2sh: {
       main: 0,
-      change: 1
+      change: 1,
     },
     'p2sh-p2wsh': {
       main: 10,
-      change: 11
+      change: 11,
     },
     p2wsh: {
       main: 20,
-      change: 21
-    }
+      change: 21,
+    },
   });
 
   constructor(network) {
@@ -62,11 +61,8 @@ class AbstractUtxoCoin extends BaseCoin {
     return bitcoin;
   }
 
-  isValidAddress(address, forceAltScriptSupport) {
-    const validVersions = [
-      this.network.pubKeyHash,
-      this.network.scriptHash
-    ];
+  isValidAddress(address, forceAltScriptSupport = false) {
+    const validVersions = [this.network.pubKeyHash, this.network.scriptHash];
     if (this.altScriptHash && (forceAltScriptSupport || this.supportAltScriptDestination)) {
       validVersions.push(this.altScriptHash);
     }
@@ -106,17 +102,15 @@ class AbstractUtxoCoin extends BaseCoin {
     }
   }
 
-  postProcessPrebuild(prebuild, callback) {
-    return co(function *() {
-      if (prebuild._reqId) {
-        this.bitgo._reqId = prebuild._reqId;
-      }
-      const chainhead = yield this.bitgo.get(this.url('/public/block/latest')).result();
-      const blockHeight = chainhead.height;
-      const transaction = bitcoin.Transaction.fromHex(prebuild.txHex, this.network);
-      transaction.locktime = blockHeight + 1;
-      return _.extend({}, prebuild, { txHex: transaction.toHex() });
-    }).call(this).asCallback(callback);
+  async postProcessPrebuild(prebuild) {
+    if (prebuild._reqId) {
+      this.bitgo._reqId = prebuild._reqId;
+    }
+    const chainhead = await this.bitgo.get(this.url('/public/block/latest')).result();
+    const blockHeight = chainhead.height;
+    const transaction = bitcoin.Transaction.fromHex(prebuild.txHex, this.network);
+    transaction.locktime = blockHeight + 1;
+    return _.extend({}, prebuild, { txHex: transaction.toHex() });
   }
 
   /**
@@ -129,7 +123,7 @@ class AbstractUtxoCoin extends BaseCoin {
     const keyFunc = ({ address, amount }) => `${address}:${Number(amount)}`;
     const groupedOutputs = _.groupBy(expectedOutputs, keyFunc);
 
-    actualOutputs.forEach((output) => {
+    actualOutputs.forEach(output => {
       const group = groupedOutputs[keyFunc(output)];
       if (group) {
         group.pop();
@@ -145,7 +139,10 @@ class AbstractUtxoCoin extends BaseCoin {
    */
   static inferAddressType(addressDetails) {
     if (_.isObject(addressDetails.coinSpecific)) {
-      if (_.isString(addressDetails.coinSpecific.redeemScript) && _.isString(addressDetails.coinSpecific.witnessScript)) {
+      if (
+        _.isString(addressDetails.coinSpecific.redeemScript) &&
+        _.isString(addressDetails.coinSpecific.witnessScript)
+      ) {
         return this.AddressTypes.P2SH_P2WSH;
       } else if (_.isString(addressDetails.coinSpecific.redeemScript)) {
         return this.AddressTypes.P2SH;
@@ -165,46 +162,47 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  parseTransaction({ txParams, txPrebuild, wallet, verification = {} as any, reqId }, callback) {
-    return co(function *() {
-      if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
-        throw new Error('verification.disableNetworking must be a boolean');
-      }
-      const disableNetworking = !!verification.disableNetworking;
+  async parseTransaction({ txParams, txPrebuild, wallet, verification = {} as any, reqId }) {
+    if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
+      throw new Error('verification.disableNetworking must be a boolean');
+    }
+    const disableNetworking = !!verification.disableNetworking;
 
-      // obtain the keychains and key signatures
-      let keychains = verification.keychains;
-      if (!keychains && disableNetworking) {
-        throw new Error('cannot fetch keychains without networking');
-      } else if (!keychains) {
-        keychains = yield Promise.props({
-          user: this.keychains().get({ id: wallet._wallet.keys[0], reqId }),
-          backup: this.keychains().get({ id: wallet._wallet.keys[1], reqId }),
-          bitgo: this.keychains().get({ id: wallet._wallet.keys[2], reqId })
-        });
-      }
-      const keychainArray = [keychains.user, keychains.backup, keychains.bitgo];
-
-      const keySignatures = _.get(wallet, '_wallet.keySignatures');
-
-      // obtain all outputs
-      const explanation = this.explainTransaction({
-        txHex: txPrebuild.txHex,
-        txInfo: txPrebuild.txInfo,
-        keychains: keychains
+    // obtain the keychains and key signatures
+    let keychains = verification.keychains;
+    if (!keychains && disableNetworking) {
+      throw new Error('cannot fetch keychains without networking');
+    } else if (!keychains) {
+      keychains = await bb.props({
+        user: this.keychains().get({ id: wallet._wallet.keys[0], reqId }),
+        backup: this.keychains().get({ id: wallet._wallet.keys[1], reqId }),
+        bitgo: this.keychains().get({ id: wallet._wallet.keys[2], reqId }),
       });
+    }
+    const keychainArray = [keychains.user, keychains.backup, keychains.bitgo];
 
-      const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
+    const keySignatures = _.get(wallet, '_wallet.keySignatures');
 
-      // verify that each recipient from txParams has their own output
-      const expectedOutputs = _.get(txParams, 'recipients', []);
-      const missingOutputs = this.constructor.findMissingOutputs(expectedOutputs, allOutputs);
+    // obtain all outputs
+    const explanation = this.explainTransaction({
+      txHex: txPrebuild.txHex,
+      txInfo: txPrebuild.txInfo,
+      keychains: keychains,
+    });
 
-      /**
-       * Loop through all the outputs and classify each of them as either internal spends
-       * or external spends by setting the "external" property to true or false on the output object.
-       */
-      const allOutputDetails = yield Promise.map(allOutputs, co(function *(currentOutput) {
+    const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
+
+    // verify that each recipient from txParams has their own output
+    const expectedOutputs = _.get(txParams, 'recipients', []);
+    const missingOutputs = this.findMissingOutputs(expectedOutputs, allOutputs);
+
+    /**
+     * Loop through all the outputs and classify each of them as either internal spends
+     * or external spends by setting the "external" property to true or false on the output object.
+     */
+    const allOutputDetails = await bb.map(
+      allOutputs,
+      async(currentOutput) => {
         const currentAddress = currentOutput.address;
 
         // attempt to grab the address details from either the prebuilt tx, or the verification params.
@@ -223,16 +221,18 @@ class AbstractUtxoCoin extends BaseCoin {
           let addressDetails = _.extend({}, addressDetailsPrebuild, addressDetailsVerification);
           debug('Locally available address %s details: %O', currentAddress, addressDetails);
           if (_.isEmpty(addressDetails) && !disableNetworking) {
-            addressDetails = yield wallet.getAddress({ address: currentAddress, reqId });
+            addressDetails = await wallet.getAddress({ address: currentAddress, reqId });
             debug('Downloaded address %s details: %O', currentAddress, addressDetails);
           }
           // verify that the address is on the wallet. verifyAddress throws if
           // it fails to correctly rederive the address, meaning it's external
-          const addressType = this.constructor.inferAddressType(addressDetails);
-          this.verifyAddress(_.extend({ addressType }, addressDetails, {
-            keychains: keychainArray,
-            address: currentAddress
-          }));
+          const addressType = this.inferAddressType(addressDetails);
+          this.verifyAddress(
+            _.extend({ addressType }, addressDetails, {
+              keychains: keychainArray,
+              address: currentAddress,
+            })
+          );
           debug('Address %s verification passed', currentAddress);
 
           // verify address succeeded without throwing, so the address was
@@ -243,7 +243,7 @@ class AbstractUtxoCoin extends BaseCoin {
           debug('Address %s verification threw an error:', currentAddress, e);
           // Todo: name server-side errors to avoid message-based checking [BG-5124]
           const walletAddressNotFound = e.message.includes('wallet address not found');
-          const unexpectedAddress = (e instanceof errors.UnexpectedAddressError);
+          const unexpectedAddress = e instanceof errors.UnexpectedAddressError;
           if (walletAddressNotFound || unexpectedAddress) {
             if (unexpectedAddress && !walletAddressNotFound) {
               /**
@@ -282,7 +282,10 @@ class AbstractUtxoCoin extends BaseCoin {
             // the address was found, but not on the wallet, which simply means it's external
             debug('Address %s presumed external', currentAddress);
             return _.extend({}, currentOutput, { external: true });
-          } else if (e instanceof errors.InvalidAddressDerivationPropertyError && currentAddress === txParams.changeAddress) {
+          } else if (
+            e instanceof errors.InvalidAddressDerivationPropertyError &&
+            currentAddress === txParams.changeAddress
+          ) {
             // expect to see this error when passing in a custom changeAddress with no chain or index
             return _.extend({}, currentOutput, { external: false });
           }
@@ -295,48 +298,46 @@ class AbstractUtxoCoin extends BaseCoin {
            */
           throw e;
         }
-      }).bind(this));
+      });
 
-      const changeOutputs = _.filter(allOutputDetails, { external: false });
+    const changeOutputs = _.filter(allOutputDetails, out => !out.external);
 
-      // these are all the outputs that were not originally explicitly specified in recipients
-      const implicitOutputs = this.constructor.findMissingOutputs(allOutputDetails, expectedOutputs);
+    // these are all the outputs that were not originally explicitly specified in recipients
+    const implicitOutputs = this.findMissingOutputs(allOutputDetails, expectedOutputs);
 
-      const explicitOutputs = this.constructor.findMissingOutputs(allOutputDetails, implicitOutputs);
+    const explicitOutputs = this.findMissingOutputs(allOutputDetails, implicitOutputs);
 
-      // these are all the non-wallet outputs that had been originally explicitly specified in recipients
-      const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
+    // these are all the non-wallet outputs that had been originally explicitly specified in recipients
+    const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
 
-      // this is the sum of all the originally explicitly specified non-wallet output values
-      const explicitExternalSpendAmount = _.sumBy(explicitExternalOutputs, 'amount');
+    // this is the sum of all the originally explicitly specified non-wallet output values
+    const explicitExternalSpendAmount = _.sumBy(explicitExternalOutputs, 'amount');
 
-      /**
-       * The calculation of the implicit external spend amount pertains to verifying the pay-as-you-go-fee BitGo
-       * automatically applies to transactions sending money out of the wallet. The logic is fairly straightforward
-       * in that we compare the external spend amount that was specified explicitly by the user to the portion
-       * that was specified implicitly. To protect customers from people tampering with the transaction outputs, we
-       * define a threshold for the maximum percentage of the implicit external spend in relation to the explicit
-       * external spend.
-       */
+    /**
+     * The calculation of the implicit external spend amount pertains to verifying the pay-as-you-go-fee BitGo
+     * automatically applies to transactions sending money out of the wallet. The logic is fairly straightforward
+     * in that we compare the external spend amount that was specified explicitly by the user to the portion
+     * that was specified implicitly. To protect customers from people tampering with the transaction outputs, we
+     * define a threshold for the maximum percentage of the implicit external spend in relation to the explicit
+     * external spend.
+     */
 
-      // make sure that all the extra addresses are change addresses
-      // get all the additional external outputs the server added and calculate their values
-      const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
-      const implicitExternalSpendAmount = _.sumBy(implicitExternalOutputs, 'amount');
+    // make sure that all the extra addresses are change addresses
+    // get all the additional external outputs the server added and calculate their values
+    const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
+    const implicitExternalSpendAmount = _.sumBy(implicitExternalOutputs, 'amount');
 
-      return {
-        keychains,
-        keySignatures,
-        outputs: allOutputDetails,
-        missingOutputs,
-        explicitExternalOutputs,
-        implicitExternalOutputs,
-        changeOutputs,
-        explicitExternalSpendAmount,
-        implicitExternalSpendAmount
-      };
-
-    }).call(this).asCallback(callback);
+    return {
+      keychains,
+      keySignatures,
+      outputs: allOutputDetails,
+      missingOutputs,
+      explicitExternalOutputs,
+      implicitExternalOutputs,
+      changeOutputs,
+      explicitExternalSpendAmount,
+      implicitExternalSpendAmount,
+    };
   }
 
   /**
@@ -352,100 +353,109 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {boolean}
    */
-  verifyTransaction({ txParams, txPrebuild, wallet, verification = {}, reqId }: { txParams: any, txPrebuild: any, wallet: any, verification: any, reqId: any }, callback) {
-    return co(function *() {
-      const disableNetworking = !!verification.disableNetworking;
-      const parsedTransaction = yield this.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
+  async verifyTransaction({ txParams, txPrebuild, wallet, verification = {}, reqId }: { txParams: any, txPrebuild: any, wallet: any, verification: any, reqId: any }) {
+    const disableNetworking = !!verification.disableNetworking;
+    const parsedTransaction = await this.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
 
-      const keychains = parsedTransaction.keychains;
+    const keychains = parsedTransaction.keychains;
 
-      // let's verify these keychains
-      const keySignatures = parsedTransaction.keySignatures;
-      if (!_.isEmpty(keySignatures)) {
-        // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
-        const userPub = keychains.user.pub;
-        const userKey = bitcoin.HDNode.fromBase58(userPub);
-        let userPrv = keychains.user.prv;
-        if (_.isEmpty(userPrv)) {
-          const encryptedPrv = keychains.user.encryptedPrv;
-          if (!_.isEmpty(encryptedPrv)) {
-            // if the decryption fails, it will throw an error
-            userPrv = this.bitgo.decrypt({
-              input: encryptedPrv,
-              password: txParams.walletPassphrase
-            });
-          }
+    // let's verify these keychains
+    const keySignatures = parsedTransaction.keySignatures;
+    if (!_.isEmpty(keySignatures)) {
+      // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
+      const userPub = keychains.user.pub;
+      const userKey = bitcoin.HDNode.fromBase58(userPub);
+      let userPrv = keychains.user.prv;
+      if (_.isEmpty(userPrv)) {
+        const encryptedPrv = keychains.user.encryptedPrv;
+        if (!_.isEmpty(encryptedPrv)) {
+          // if the decryption fails, it will throw an error
+          userPrv = this.bitgo.decrypt({
+            input: encryptedPrv,
+            password: txParams.walletPassphrase,
+          });
         }
-        if (_.isEmpty(userPrv)) {
-          const errorMessage = 'user private key unavailable for verification';
-          if (disableNetworking) {
-            console.log(errorMessage);
-          } else {
-            throw new Error(errorMessage);
-          }
+      }
+      if (_.isEmpty(userPrv)) {
+        const errorMessage = 'user private key unavailable for verification';
+        if (disableNetworking) {
+          console.log(errorMessage);
         } else {
-          const userPrivateKey = bitcoin.HDNode.fromBase58(userPrv);
-          if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
-            throw new Error('user private key is only public');
-          }
-          if (userPrivateKey.neutered().toBase58() !== userPub) {
-            throw new Error('user private key does not match public key');
-          }
+          throw new Error(errorMessage);
         }
-
-        const backupPubSignature = keySignatures.backupPub;
-        const bitgoPubSignature = keySignatures.bitgoPub;
-
-        // verify the signatures against the user public key
-        const signingAddress = userKey.keyPair.getAddress();
-
-        // BG-5703: use BTC mainnet prefix for all key signature operations
-        // (this means do not pass a prefix parameter, and let it use the default prefix instead)
-        const isValidBackupSignature = bitcoinMessage.verify(keychains.backup.pub, signingAddress, Buffer.from(backupPubSignature, 'hex'));
-        const isValidBitgoSignature = bitcoinMessage.verify(keychains.bitgo.pub, signingAddress, Buffer.from(bitgoPubSignature, 'hex'));
-
-        if (!isValidBackupSignature || !isValidBitgoSignature) {
-          throw new Error('secondary public key signatures invalid');
+      } else {
+        const userPrivateKey = bitcoin.HDNode.fromBase58(userPrv);
+        if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
+          throw new Error('user private key is only public');
         }
-      } else if (!disableNetworking) {
-        // these keys were obtained online and their signatures were not verified
-        // this could be dangerous
-        console.log('unsigned keys obtained online are being used for address verification');
+        if (userPrivateKey.neutered().toBase58() !== userPub) {
+          throw new Error('user private key does not match public key');
+        }
       }
 
-      const missingOutputs = parsedTransaction.missingOutputs;
-      if (missingOutputs.length !== 0) {
-        // there are some outputs in the recipients list that have not made it into the actual transaction
-        throw new Error('expected outputs missing in transaction prebuild');
+      const backupPubSignature = keySignatures.backupPub;
+      const bitgoPubSignature = keySignatures.bitgoPub;
+
+      // verify the signatures against the user public key
+      const signingAddress = userKey.keyPair.getAddress();
+
+      // BG-5703: use BTC mainnet prefix for all key signature operations
+      // (this means do not pass a prefix parameter, and let it use the default prefix instead)
+      const isValidBackupSignature = bitcoinMessage.verify(
+        keychains.backup.pub,
+        signingAddress,
+        Buffer.from(backupPubSignature, 'hex')
+      );
+      const isValidBitgoSignature = bitcoinMessage.verify(
+        keychains.bitgo.pub,
+        signingAddress,
+        Buffer.from(bitgoPubSignature, 'hex')
+      );
+
+      if (!isValidBackupSignature || !isValidBitgoSignature) {
+        throw new Error('secondary public key signatures invalid');
       }
+    } else if (!disableNetworking) {
+      // these keys were obtained online and their signatures were not verified
+      // this could be dangerous
+      console.log('unsigned keys obtained online are being used for address verification');
+    }
 
-      const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
+    const missingOutputs = parsedTransaction.missingOutputs;
+    if (missingOutputs.length !== 0) {
+      // there are some outputs in the recipients list that have not made it into the actual transaction
+      throw new Error('expected outputs missing in transaction prebuild');
+    }
 
-      // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
-      const payAsYouGoLimit = intendedExternalSpend * 0.015; // 150 basis points is the absolute permitted maximum
+    const intendedExternalSpend = parsedTransaction.explicitExternalSpendAmount;
 
-      /*
-      Some explanation for why we're doing what we're doing:
-      Some customers will have an output to BitGo's PAYGo wallet added to their transaction, and we need to account for
-      it here. To protect someone tampering with the output to make it send more than it should to BitGo, we define a
-      threshold for the output's value above which we'll throw an error, because the paygo output should never be that
-      high.
-       */
+    // this is a limit we impose for the total value that is amended to the transaction beyond what was originally intended
+    const payAsYouGoLimit = intendedExternalSpend * 0.015; // 150 basis points is the absolute permitted maximum
 
-      // make sure that all the extra addresses are change addresses
-      // get all the additional external outputs the server added and calculate their values
-      const nonChangeAmount = parsedTransaction.implicitExternalSpendAmount;
+    /*
+    Some explanation for why we're doing what we're doing:
+    Some customers will have an output to BitGo's PAYGo wallet added to their transaction, and we need to account for
+    it here. To protect someone tampering with the output to make it send more than it should to BitGo, we define a
+    threshold for the output's value above which we'll throw an error, because the paygo output should never be that
+    high.
+     */
 
-      // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
-      if (nonChangeAmount > payAsYouGoLimit) {
-        // there are some addresses that are outside the scope of intended recipients that are not change addresses
-        throw new Error('prebuild attempts to spend to unintended external recipients');
-      }
+    // make sure that all the extra addresses are change addresses
+    // get all the additional external outputs the server added and calculate their values
+    const nonChangeAmount = parsedTransaction.implicitExternalSpendAmount;
 
-      const allOutputs = parsedTransaction.outputs;
-      const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, this.network);
-      const transactionCache = {};
-      const inputs = yield Promise.map(transaction.ins, co(function *(currentInput) {
+    // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
+    if (nonChangeAmount > payAsYouGoLimit) {
+      // there are some addresses that are outside the scope of intended recipients that are not change addresses
+      throw new Error('prebuild attempts to spend to unintended external recipients');
+    }
+
+    const allOutputs = parsedTransaction.outputs;
+    const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, this.network);
+    const transactionCache = {};
+    const inputs = await bb.map(
+      transaction.ins,
+      async(currentInput: any) => {
         const transactionIdBuffer = Buffer.from(currentInput.hash).reverse() as Buffer;
         const transactionId = transactionIdBuffer.toString('hex');
         const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
@@ -458,7 +468,7 @@ class AbstractUtxoCoin extends BaseCoin {
           const address = bitcoin.address.fromOutputScript(currentOutput.script, this.network);
           return {
             address,
-            value: currentOutput.value
+            value: currentOutput.value,
           };
         } else if (!transactionCache[transactionId]) {
           if (disableNetworking) {
@@ -467,22 +477,23 @@ class AbstractUtxoCoin extends BaseCoin {
           if (reqId) {
             this.bitgo._reqId = reqId;
           }
-          transactionCache[transactionId] = yield this.bitgo.get(this.url(`/public/tx/${transactionId}`)).result();
+          transactionCache[transactionId] = await this.bitgo.get(this.url(`/public/tx/${transactionId}`)).result();
         }
         const transactionDetails = transactionCache[transactionId];
         return transactionDetails.outputs[currentInput.index];
-      }).bind(this));
+      });
 
-      const inputAmount = _.sumBy(inputs, 'value');
-      const outputAmount = _.sumBy(allOutputs, 'amount');
-      const fee = inputAmount - outputAmount;
+    const inputAmount = _.sumBy(inputs, 'value');
+    const outputAmount = _.sumBy(allOutputs, 'amount');
+    const fee = inputAmount - outputAmount;
 
-      if (fee < 0) {
-        throw new Error(`attempting to spend ${outputAmount} satoshis, which exceeds the input amount (${inputAmount} satoshis) by ${-fee}`);
-      }
+    if (fee < 0) {
+      throw new Error(
+        `attempting to spend ${outputAmount} satoshis, which exceeds the input amount (${inputAmount} satoshis) by ${-fee}`
+      );
+    }
 
-      return true;
-    }).call(this).asCallback(callback);
+    return true;
   }
 
   /**
@@ -499,14 +510,17 @@ class AbstractUtxoCoin extends BaseCoin {
       throw new errors.InvalidAddressError(`invalid address: ${address}`);
     }
 
-    if ((_.isUndefined(chain) && _.isUndefined(index)) || (!(_.isFinite(chain) && _.isFinite(index)))) {
-      throw new errors.InvalidAddressDerivationPropertyError(`address validation failure: invalid chain (${chain}) or index (${index})`);
+    if ((_.isUndefined(chain) && _.isUndefined(index)) || !(_.isFinite(chain) && _.isFinite(index))) {
+      throw new errors.InvalidAddressDerivationPropertyError(
+        `address validation failure: invalid chain (${chain}) or index (${index})`
+      );
     }
 
     if (!_.isObject(coinSpecific)) {
-      throw new errors.InvalidAddressVerificationObjectPropertyError('address validation failure: coinSpecific field must be an object');
+      throw new errors.InvalidAddressVerificationObjectPropertyError(
+        'address validation failure: coinSpecific field must be an object'
+      );
     }
-
 
     const expectedAddress: any = this.generateAddress({
       addressType,
@@ -515,11 +529,13 @@ class AbstractUtxoCoin extends BaseCoin {
       chain: chain,
       index: index,
       segwit: undefined,
-      bech32: undefined
+      bech32: undefined,
     });
 
     if (expectedAddress.address !== address) {
-      throw new errors.UnexpectedAddressError(`address validation failure: expected ${expectedAddress.address} but got ${address}`);
+      throw new errors.UnexpectedAddressError(
+        `address validation failure: expected ${expectedAddress.address} but got ${address}`
+      );
     }
   }
 
@@ -601,7 +617,7 @@ class AbstractUtxoCoin extends BaseCoin {
       index: derivationIndex,
       coin: this.getChain(),
       coinSpecific: {} as any,
-      addressType
+      addressType,
     };
 
     addressDetails.coinSpecific.redeemScript = inputScript.toString('hex');
@@ -674,7 +690,11 @@ class AbstractUtxoCoin extends BaseCoin {
       debug('Signing input %d of %d', index + 1, transaction.ins.length);
       const currentUnspent = txPrebuild.txInfo.unspents[index];
       if (this.isBitGoTaintedUnspent(currentUnspent)) {
-        debug('Skipping input %d of %d (unspent from replay protection address which is platform signed only)', index + 1, transaction.ins.length);
+        debug(
+          'Skipping input %d of %d (unspent from replay protection address which is platform signed only)',
+          index + 1,
+          transaction.ins.length
+        );
         continue;
       }
       const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
@@ -685,10 +705,9 @@ class AbstractUtxoCoin extends BaseCoin {
         inputIndex: index,
         unspent: currentUnspent,
         path: path,
-        error: undefined
+        error: undefined,
       };
       debug('Input details: %O', currentSignatureIssue);
-
 
       const isBech32 = !currentUnspent.redeemScript;
       const isSegwit = !!currentUnspent.witnessScript;
@@ -710,7 +729,6 @@ class AbstractUtxoCoin extends BaseCoin {
             txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value);
           }
         }
-
       } catch (e) {
         debug('Failed to sign input:', e);
         currentSignatureIssue.error = e;
@@ -751,7 +769,7 @@ class AbstractUtxoCoin extends BaseCoin {
     }
 
     return {
-      txHex: transaction.toBuffer().toString('hex')
+      txHex: transaction.toBuffer().toString('hex'),
     };
   }
 
@@ -777,7 +795,7 @@ class AbstractUtxoCoin extends BaseCoin {
    *
    * @returns {number}
    */
-  static get defaultSigHashType() {
+  get defaultSigHashType() {
     return bitcoin.Transaction.SIGHASH_ALL;
   }
 
@@ -793,7 +811,7 @@ class AbstractUtxoCoin extends BaseCoin {
     let decompiledSigScript = bitcoin.script.decompile(signatureScript);
 
     const isSegwitInput = currentInput.witness.length > 0;
-    const isBech32Input = isSegwitInput && (signatureScript.length === 0);
+    const isBech32Input = isSegwitInput && signatureScript.length === 0;
     if (isSegwitInput) {
       decompiledSigScript = currentInput.witness;
       signatureScript = bitcoin.script.compile(decompiledSigScript);
@@ -860,8 +878,10 @@ class AbstractUtxoCoin extends BaseCoin {
    * @returns {boolean}
    */
   verifySignature(transaction, inputIndex, amount, verificationSettings = {} as any) {
-
-    const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(transaction, inputIndex);
+    const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(
+      transaction,
+      inputIndex
+    );
 
     if (![bitcoin.script.types.P2SH, bitcoin.script.types.P2PKH].includes(inputClassification)) {
       return false;
@@ -897,17 +917,22 @@ class AbstractUtxoCoin extends BaseCoin {
 
     // go over all signatures
     for (const signatureBuffer of signaturesToCheck) {
-
       let isSignatureValid = false;
 
       if (Buffer.isBuffer(signatureBuffer) && signatureBuffer.length > 0) {
         // slice the last byte from the signature hash input because it's the hash type
         const signature = bitcoin.ECSignature.fromDER(signatureBuffer.slice(0, -1));
         const hashType = _.last(signatureBuffer);
-        const signatureHash = this.calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput);
+        const signatureHash = this.calculateSignatureHash(
+          transaction,
+          inputIndex,
+          pubScript,
+          amount,
+          hashType,
+          isSegwitInput
+        );
 
         for (let publicKeyIndex = 0; publicKeyIndex < publicKeys.length; publicKeyIndex++) {
-
           const publicKeyBuffer = publicKeys[publicKeyIndex];
           if (!_.isUndefined(publicKeyHex) && publicKeyBuffer.toString('hex') !== publicKeyHex) {
             // we are only looking to verify one specific public key's signature (publicKeyHex)
@@ -969,7 +994,7 @@ class AbstractUtxoCoin extends BaseCoin {
       outputs: [],
       changeOutputs: [],
       outputAmount: 0,
-      changeAmount: 0
+      changeAmount: 0,
     };
     transaction.outs.forEach(function(currentOutput) {
       const currentAddress = self.getCoinLibrary().address.fromOutputScript(currentOutput.script, self.network);
@@ -980,7 +1005,7 @@ class AbstractUtxoCoin extends BaseCoin {
         explanation.changeAmount += currentAmount;
         explanation.changeOutputs.push({
           address: currentAddress,
-          amount: currentAmount
+          amount: currentAmount,
         });
         return;
       }
@@ -988,7 +1013,7 @@ class AbstractUtxoCoin extends BaseCoin {
       explanation.outputAmount += currentAmount;
       explanation.outputs.push({
         address: currentAddress,
-        amount: currentAmount
+        amount: currentAmount,
       });
     });
 
@@ -1017,19 +1042,19 @@ class AbstractUtxoCoin extends BaseCoin {
     return Promise.reject(new Error('AbtractUtxoCoin method not implemented'));
   }
 
-  getRecoveryMarketPrice() {
-    return co(function *getRecoveryMarketPrice() {
-      const bitcoinAverageUrl = config.bitcoinAverageBaseUrl + this.getFamily().toUpperCase() + 'USD';
-      const response = yield request.get(bitcoinAverageUrl).retry(2).result();
+  async getRecoveryMarketPrice() {
+    const bitcoinAverageUrl = config.bitcoinAverageBaseUrl + this.getFamily().toUpperCase() + 'USD';
+    const response = await request
+      .get(bitcoinAverageUrl)
+      .retry(2)
+      .result();
 
-      if (response === null || typeof response.last !== 'number') {
-        throw new Error('unable to reach BitcoinAverage for price data');
-      }
+    if (response === null || typeof response.last !== 'number') {
+      throw new Error('unable to reach BitcoinAverage for price data');
+    }
 
-      return response.last;
-    }).call(this);
+    return response.last;
   }
-
 
   /**
    * Helper function for recover()
@@ -1042,10 +1067,10 @@ class AbstractUtxoCoin extends BaseCoin {
     const response = {
       txHex,
       txInfo: {
-        unspents: txInfo.inputs
+        unspents: txInfo.inputs,
       },
       feeInfo: {},
-      coin: this.getChain()
+      coin: this.getChain(),
     };
     _.map(response.txInfo.unspents, function(unspent) {
       const pathArray = unspent.chainPath.split('/');
@@ -1070,231 +1095,234 @@ class AbstractUtxoCoin extends BaseCoin {
    *        for example: ['p2sh-p2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
    * @param callback
    */
-  recover(params, callback) {
-    return co(function *recover() {
-      const self = this;
+  async recover(params, callback) {
+    // ============================HELPER FUNCTIONS============================
+    function deriveKeys(keyArray, index) {
+      return keyArray.map(k => k.derive(index));
+    }
 
-      // ============================HELPER FUNCTIONS============================
-      function deriveKeys(keyArray, index) {
-        return keyArray.map((k) => k.derive(index));
-      }
+    const coin = this;
+    async function queryBlockchainUnspentsPath(keyArray, basePath) {
+      const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
+      let numSequentialAddressesWithoutTxs = 0;
 
-      const queryBlockchainUnspentsPath = co(function *queryBlockchainUnspentsPath(keyArray, basePath) {
-        const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
-        let numSequentialAddressesWithoutTxs = 0;
+      // get unspents for these addresses
+      async function gatherUnspents(addrIndex) {
+        const derivedKeys = deriveKeys(keyArray, addrIndex);
+        const chain = basePath.split('/').pop(); // extracts the chain from the basePath
+        const address: any = createMultiSigAddress(derivedKeys, chain);
+        const addressBase58 = address.address;
 
-        // get unspents for these addresses
-        const gatherUnspents = co(function *coGatherUnspents(addrIndex) {
-          const derivedKeys = deriveKeys(keyArray, addrIndex);
-          const chain = basePath.split('/').pop(); // extracts the chain from the basePath
-          const address: any = createMultiSigAddress(derivedKeys, chain);
-          const addressBase58 = address.address;
+        const addrInfo = await coin.getAddressInfoFromExplorer(addressBase58);
 
-          const addrInfo = yield self.getAddressInfoFromExplorer(addressBase58);
-
-          if (addrInfo.txCount === 0) {
-            numSequentialAddressesWithoutTxs++;
-          } else {
-            numSequentialAddressesWithoutTxs = 0;
-
-            if (addrInfo.totalBalance > 0) {
-              // this wallet has a balance
-              address.chainPath = basePath + '/' + addrIndex;
-              address.userKey = derivedKeys[0];
-              address.backupKey = derivedKeys[1];
-              addressesById[addressBase58] = address;
-
-              // try to find unspents on the address
-              const addressUnspents = yield self.getUnspentInfoFromExplorer(addressBase58);
-
-              addressUnspents.forEach(function addAddressToUnspent(unspent) {
-                unspent.address = address.address;
-                walletUnspents.push(unspent);
-              });
-            }
-          }
-
-          if (numSequentialAddressesWithoutTxs >= MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS) {
-            // stop searching for addresses with unspents in them, we've found 5 in a row with none
-            // we are done
-            return;
-          }
-
-          return gatherUnspents(addrIndex + 1);
-        });
-
-        const walletUnspents = [];
-        // This will populate walletAddresses
-        yield gatherUnspents(0);
-
-        if (walletUnspents.length === 0) {
-          // Couldn't find any addresses with funds
-          return [];
-        }
-
-        return walletUnspents;
-      });
-
-      function createMultiSigAddress(keyArray, chain) {
-        const publicKeys = keyArray.map((k) => k.getPublicKeyBuffer());
-        const isSegwit = (chain === '10' || chain === '11');
-        const multisigProgram = bitcoin.script.multisig.output.encode(2, publicKeys);
-        let redeemScript, witnessScript;
-        if (isSegwit) {
-          witnessScript = multisigProgram;
-          redeemScript = bitcoin.script.witnessScriptHash.output.encode(bitcoin.crypto.sha256(witnessScript));
+        if (addrInfo.txCount === 0) {
+          numSequentialAddressesWithoutTxs++;
         } else {
-          redeemScript = multisigProgram;
-        }
-        const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
-        const scriptHashScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
-        const address = self.calculateRecoveryAddress(scriptHashScript);
+          numSequentialAddressesWithoutTxs = 0;
 
-        return {
-          hash: scriptHashScript,
-          witnessScript: witnessScript,
-          redeemScript: redeemScript,
-          address: address
-        };
-      }
+          if (addrInfo.totalBalance > 0) {
+            // this wallet has a balance
+            address.chainPath = basePath + '/' + addrIndex;
+            address.userKey = derivedKeys[0];
+            address.backupKey = derivedKeys[1];
+            addressesById[addressBase58] = address;
 
-      // ============================LOGIC============================
-      if (_.isUndefined(params.userKey)) {
-        throw new Error('missing userKey');
-      }
+            // try to find unspents on the address
+            const addressUnspents = await coin.getUnspentInfoFromExplorer(addressBase58);
 
-      if (_.isUndefined(params.backupKey)) {
-        throw new Error('missing backupKey');
-      }
-
-      if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
-        throw new Error('invalid recoveryDestination');
-      }
-
-      if (!_.isUndefined(params.scan) && (!_.isInteger(params.scan) || params.scan < 0)) {
-        throw new Error('scan must be a positive integer');
-      }
-
-      // By default, we will ignore P2WSH until we officially support it
-      if (_.isUndefined(params.ignoreAddressTypes)) {
-        params.ignoreAddressTypes = [AbstractUtxoCoin.AddressTypes.P2WSH];
-      }
-
-      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
-      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
-      const krsProvider = config.krsProviders[params.krsProvider];
-
-      if (isKrsRecovery && _.isUndefined(krsProvider)) {
-        throw new Error('unknown key recovery service provider');
-      }
-
-      if (isKrsRecovery && !(krsProvider.supportedCoins.includes(this.getFamily()))) {
-        throw new Error('specified key recovery service does not support recoveries for this coin');
-      }
-
-      const keys = yield this.initiateRecovery(params);
-
-      const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
-
-      const queries = [];
-
-      _.forEach(AbstractUtxoCoin.AddressTypes, function(addressType) {
-        // If we aren't ignoring the address type, we derive the public key and construct the query for the main and change indices
-        if (!_.includes(params.ignoreAddressTypes, addressType)) {
-          const mainIndex = AbstractUtxoCoin.AddressTypeChains[addressType].main;
-          const changeIndex = AbstractUtxoCoin.AddressTypeChains[addressType].change;
-          const mainKey = deriveKeys(baseKeyPath, mainIndex);
-          const changeKey = deriveKeys(baseKeyPath, changeIndex);
-          queries.push(queryBlockchainUnspentsPath(mainKey, '/0/0/' + mainIndex));
-          queries.push(queryBlockchainUnspentsPath(changeKey, '/0/0/' + changeIndex));
-        }
-      });
-
-      // Execute the queries and gather the unspents
-      const addressesById = {};
-      const queryResponses = yield Promise.all(queries);
-      const unspents = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
-      const totalInputAmount = _.sumBy(unspents, 'amount');
-      if (totalInputAmount <= 0) {
-        throw new Error('No input to recover - aborting!');
-      }
-
-      // Build the transaction
-      const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
-      this.prepareTransactionBuilder(transactionBuilder);
-      const txInfo: any = {};
-
-      const feePerByte = yield this.getRecoveryFeePerBytes();
-
-      // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees
-      const outputSize = isKrsRecovery ? 2 * config.tx.OUTPUT_SIZE : config.tx.OUTPUT_SIZE;
-      const approximateSize = config.tx.TX_OVERHEAD_SIZE + outputSize + (config.tx.P2SH_INPUT_SIZE * unspents.length);
-      const approximateFee = approximateSize * feePerByte;
-
-      // Construct a transaction
-      txInfo.inputs = unspents.map(function addInputForUnspent(unspent: any) {
-        const address = addressesById[unspent.address];
-        const outputScript = address.hash;
-
-        transactionBuilder.addInput(unspent.txid, unspent.n, 0xffffffff, outputScript);
-
-        return {
-          chainPath: address.chainPath,
-          redeemScript: address.redeemScript.toString('hex'),
-          witnessScript: address.witnessScript && address.witnessScript.toString('hex'),
-          value: unspent.amount
-        };
-      });
-
-      let recoveryAmount = totalInputAmount - approximateFee;
-      let krsFee;
-      if (isKrsRecovery) {
-        krsFee = yield this.calculateFeeAmount({ provider: params.krsProvider, amount: recoveryAmount });
-        recoveryAmount -= krsFee;
-      }
-
-      if (recoveryAmount < 0) {
-        throw new Error('this wallet\'s balance is too low to pay the fees specified by the KRS provider');
-      }
-
-      transactionBuilder.addOutput(params.recoveryDestination, recoveryAmount);
-
-      if (isKrsRecovery && krsFee > 0) {
-        const krsFeeAddress = krsProvider.feeAddresses[this.getChain()];
-
-        if (!krsFeeAddress) {
-          throw new Error('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
-        }
-
-        transactionBuilder.addOutput(krsFeeAddress, krsFee);
-      }
-
-      if (isUnsignedSweep) {
-        const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
-        return this.formatForOfflineVault(txInfo, txHex);
-      } else {
-        const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
-        txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
-        try {
-          txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
-        } catch (e) {
-
-          if (!(e instanceof errors.MethodNotImplementedError)) {
-            // some coins don't have a reliable third party verification endpoint, so we continue without verification for those coins
-            throw e;
-            // throw new Error('could not verify recovery transaction');
+            addressUnspents.forEach((unspent) => {
+              unspent.address = address.address;
+              walletUnspents.push(unspent);
+            });
           }
         }
+
+        if (numSequentialAddressesWithoutTxs >= MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS) {
+          // stop searching for addresses with unspents in them, we've found 5 in a row with none
+          // we are done
+          return;
+        }
+
+        return gatherUnspents(addrIndex + 1);
       }
 
-      if (isKrsRecovery) {
-        txInfo.coin = this.getChain();
-        txInfo.backupKey = params.backupKey;
-        txInfo.recoveryAmount = recoveryAmount;
+      const walletUnspents = [];
+      // This will populate walletAddresses
+      await gatherUnspents(0);
+
+      if (walletUnspents.length === 0) {
+        // Couldn't find any addresses with funds
+        return [];
       }
 
-      return txInfo;
-    }).call(this).asCallback(callback);
+      return walletUnspents;
+    }
+
+    function createMultiSigAddress(keyArray, chain) {
+      const publicKeys = keyArray.map(k => k.getPublicKeyBuffer());
+      const isSegwit = chain === '10' || chain === '11';
+      const multisigProgram = bitcoin.script.multisig.output.encode(2, publicKeys);
+      let redeemScript, witnessScript;
+      if (isSegwit) {
+        witnessScript = multisigProgram;
+        redeemScript = bitcoin.script.witnessScriptHash.output.encode(bitcoin.crypto.sha256(witnessScript));
+      } else {
+        redeemScript = multisigProgram;
+      }
+      const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
+      const scriptHashScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
+      const address = coin.calculateRecoveryAddress(scriptHashScript);
+
+      return {
+        hash: scriptHashScript,
+        witnessScript: witnessScript,
+        redeemScript: redeemScript,
+        address: address,
+      };
+    }
+
+    // ============================LOGIC============================
+    if (_.isUndefined(params.userKey)) {
+      throw new Error('missing userKey');
+    }
+
+    if (_.isUndefined(params.backupKey)) {
+      throw new Error('missing backupKey');
+    }
+
+    if (_.isUndefined(params.recoveryDestination) || !coin.isValidAddress(params.recoveryDestination)) {
+      throw new Error('invalid recoveryDestination');
+    }
+
+    if (!_.isUndefined(params.scan) && (!_.isInteger(params.scan) || params.scan < 0)) {
+      throw new Error('scan must be a positive integer');
+    }
+
+    // By default, we will ignore P2WSH until we officially support it
+    if (_.isUndefined(params.ignoreAddressTypes)) {
+      params.ignoreAddressTypes = [AbstractUtxoCoin.AddressTypes.P2WSH];
+    }
+
+    const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
+    const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+    const krsProvider = config.krsProviders[params.krsProvider];
+
+    if (isKrsRecovery && _.isUndefined(krsProvider)) {
+      throw new Error('unknown key recovery service provider');
+    }
+
+    if (isKrsRecovery && !krsProvider.supportedCoins.includes(this.getFamily())) {
+      throw new Error('specified key recovery service does not support recoveries for this coin');
+    }
+
+    const keys = await this.initiateRecovery(params);
+
+    const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
+
+    const queries = [];
+
+    _.forEach(AbstractUtxoCoin.AddressTypes, function(addressType) {
+      // If we aren't ignoring the address type, we derive the public key and construct the query for the main and change indices
+      if (!_.includes(params.ignoreAddressTypes, addressType)) {
+        const mainIndex = AbstractUtxoCoin.AddressTypeChains[addressType].main;
+        const changeIndex = AbstractUtxoCoin.AddressTypeChains[addressType].change;
+        const mainKey = deriveKeys(baseKeyPath, mainIndex);
+        const changeKey = deriveKeys(baseKeyPath, changeIndex);
+        queries.push(queryBlockchainUnspentsPath(mainKey, '/0/0/' + mainIndex));
+        queries.push(queryBlockchainUnspentsPath(changeKey, '/0/0/' + changeIndex));
+      }
+    });
+
+    // Execute the queries and gather the unspents
+    const addressesById = {};
+    const queryResponses = await bb.all(queries);
+    const unspents = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
+    const totalInputAmount = _.sumBy(unspents, 'amount');
+    if (totalInputAmount <= 0) {
+      throw new Error('No input to recover - aborting!');
+    }
+
+    // Build the transaction
+    const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
+    this.prepareTransactionBuilder(transactionBuilder);
+    const txInfo: any = {};
+
+    const feePerByte = await this.getRecoveryFeePerBytes();
+
+    // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees
+    const outputSize = isKrsRecovery ? 2 * config.tx.OUTPUT_SIZE : config.tx.OUTPUT_SIZE;
+    const approximateSize = config.tx.TX_OVERHEAD_SIZE + outputSize + config.tx.P2SH_INPUT_SIZE * unspents.length;
+    const approximateFee = approximateSize * feePerByte;
+
+    // Construct a transaction
+    txInfo.inputs = unspents.map(function addInputForUnspent(unspent: any) {
+      const address = addressesById[unspent.address];
+      const outputScript = address.hash;
+
+      transactionBuilder.addInput(unspent.txid, unspent.n, 0xffffffff, outputScript);
+      return {
+        chainPath: address.chainPath,
+        redeemScript: address.redeemScript.toString('hex'),
+        witnessScript: address.witnessScript && address.witnessScript.toString('hex'),
+        value: unspent.amount
+      };
+    });
+
+    let recoveryAmount = totalInputAmount - approximateFee;
+    let krsFee;
+    if (isKrsRecovery) {
+      krsFee = await this.calculateFeeAmount({ provider: params.krsProvider, amount: recoveryAmount });
+      recoveryAmount -= krsFee;
+    }
+
+    if (recoveryAmount < 0) {
+      throw new Error("this wallet's balance is too low to pay the fees specified by the KRS provider");
+    }
+
+    transactionBuilder.addOutput(params.recoveryDestination, recoveryAmount);
+
+    if (isKrsRecovery && krsFee > 0) {
+      const krsFeeAddress = krsProvider.feeAddresses[this.getChain()];
+
+      if (!krsFeeAddress) {
+        throw new Error(
+          'this KRS provider has not configured their fee structure yet - recovery cannot be completed'
+        );
+      }
+
+      transactionBuilder.addOutput(krsFeeAddress, krsFee);
+    }
+
+    if (isUnsignedSweep) {
+      const txHex = transactionBuilder
+        .buildIncomplete()
+        .toBuffer()
+        .toString('hex');
+      return this.formatForOfflineVault(txInfo, txHex);
+    } else {
+      const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
+      txInfo.transactionHex = signedTx
+        .build()
+        .toBuffer()
+        .toString('hex');
+
+      try {
+        txInfo.tx = await this.verifyRecoveryTransaction(txInfo);
+      } catch (e) {
+        if (!(e instanceof errors.MethodNotImplementedError)) {
+          // some coins don't have a reliable third party verification endpoint, so we continue without verification for those coins
+          throw e;
+        }
+      }
+    }
+
+    if (isKrsRecovery) {
+      txInfo.coin = this.getChain();
+      txInfo.backupKey = params.backupKey;
+      txInfo.recoveryAmount = recoveryAmount;
+    }
+
+    return txInfo;
   }
 
   /**
@@ -1318,7 +1346,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const currentSignatureIssue = {
         inputIndex: i,
         unspent: unspent,
-        error: undefined
+        error: undefined,
       };
 
       if (cosign) {
@@ -1343,6 +1371,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
       error.code = 'input_signature_failure';
       error.signingErrors = signatureIssues;
+      console.dir(signatureIssues);
       throw error;
     }
 
@@ -1357,24 +1386,22 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  calculateFeeAmount(params, callback) {
-    return co(function *calculateFeeAmount() {
-      const krsProvider = config.krsProviders[params.provider];
+  async calculateFeeAmount(params) {
+    const krsProvider = config.krsProviders[params.provider];
 
-      if (krsProvider === undefined) {
-        throw new Error(`no fee structure specified for provider ${params.provider}`);
-      }
+    if (krsProvider === undefined) {
+      throw new Error(`no fee structure specified for provider ${params.provider}`);
+    }
 
-      if (krsProvider.feeType === 'flatUsd') {
-        const feeAmountUsd = krsProvider.feeAmount;
-        const currentPrice = yield this.getRecoveryMarketPrice();
+    if (krsProvider.feeType === 'flatUsd') {
+      const feeAmountUsd = krsProvider.feeAmount;
+      const currentPrice = await this.getRecoveryMarketPrice();
 
-        return Math.round(feeAmountUsd / currentPrice * this.getBaseFactor());
-      } else {
-        // we can add more fee structures here as needed for different providers, such as percentage of recovery amount
-        throw new Error('Fee structure not implemented');
-      }
-    }).call(this).asCallback(callback);
+      return Math.round((feeAmountUsd / currentPrice) * this.getBaseFactor());
+    } else {
+      // we can add more fee structures here as needed for different providers, such as percentage of recovery amount
+      throw new Error('Fee structure not implemented');
+    }
   }
 
   /**
@@ -1387,52 +1414,45 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param params.signed {Boolean} return a half-signed transaction (default=true)
    * @param params.walletPassphrase {String} the wallet passphrase
    * @param params.xprv {String} the unencrypted xprv (used instead of wallet passphrase)
-   * @param callback
    * @returns {*}
    */
-  recoverFromWrongChain(params, callback) {
-    return co(function *recoverFromWrongChain() {
-      const {
-        txid,
-        recoveryAddress,
-        wallet,
-        walletPassphrase,
-        xprv
-      } = params;
+  async recoverFromWrongChain(params) {
+    const { txid, recoveryAddress, wallet, walletPassphrase, xprv } = params;
 
-      // params.recoveryCoin used to be params.coin, backwards compatibility
-      const recoveryCoin = params.coin || params.recoveryCoin;
-      // signed should default to true, and only be disabled if explicitly set to false (not undefined)
-      const signed = params.signed !== false;
+    // params.recoveryCoin used to be params.coin, backwards compatibility
+    const recoveryCoin = params.coin || params.recoveryCoin;
+    // signed should default to true, and only be disabled if explicitly set to false (not undefined)
+    const signed = params.signed !== false;
 
-      const sourceCoinFamily = this.getFamily();
-      const recoveryCoinFamily = recoveryCoin.getFamily();
-      const supportedRecoveryCoins = config.supportedCrossChainRecoveries[sourceCoinFamily];
+    const sourceCoinFamily = this.getFamily();
+    const recoveryCoinFamily = recoveryCoin.getFamily();
+    const supportedRecoveryCoins = config.supportedCrossChainRecoveries[sourceCoinFamily];
 
-      if (_.isUndefined(supportedRecoveryCoins) || !supportedRecoveryCoins.includes(recoveryCoinFamily)) {
-        throw new Error(`Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`);
-      }
+    if (_.isUndefined(supportedRecoveryCoins) || !supportedRecoveryCoins.includes(recoveryCoinFamily)) {
+      throw new Error(
+        `Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`
+      );
+    }
 
-      const recoveryTool = new RecoveryTool({
-        bitgo: this.bitgo,
-        sourceCoin: this,
-        recoveryCoin: recoveryCoin,
-        logging: false
-      });
+    const recoveryTool = new RecoveryTool({
+      bitgo: this.bitgo,
+      sourceCoin: this,
+      recoveryCoin: recoveryCoin,
+      logging: false,
+    });
 
-      yield recoveryTool.buildTransaction({
-        wallet: wallet,
-        faultyTxId: txid,
-        recoveryAddress: recoveryAddress
-      });
+    await recoveryTool.buildTransaction({
+      wallet: wallet,
+      faultyTxId: txid,
+      recoveryAddress: recoveryAddress,
+    });
 
-      if (signed) {
-        yield recoveryTool.signTransaction({ passphrase: walletPassphrase, prv: xprv });
-        return recoveryTool.export();
-      } else {
-        return yield recoveryTool.buildUnsigned();
-      }
-    }).call(this).asCallback(callback);
+    if (signed) {
+      await recoveryTool.signTransaction({ passphrase: walletPassphrase, prv: xprv });
+      return recoveryTool.export();
+    } else {
+      return await recoveryTool.buildUnsigned();
+    }
   }
 
   /**
@@ -1452,10 +1472,9 @@ class AbstractUtxoCoin extends BaseCoin {
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
-      prv: extendedKey.toBase58()
+      prv: extendedKey.toBase58(),
     };
   }
-
 }
 
 module.exports = AbstractUtxoCoin;

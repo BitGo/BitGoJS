@@ -1,8 +1,6 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const bitcoin = require('bitgo-utxo-lib');
 const request = require('superagent');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
 import common = require('../../common');
 const cashaddress = require('cashaddress');
 import * as _ from 'lodash';
@@ -17,7 +15,6 @@ const containsMixedCaseCharacters = (str) => {
 };
 
 class Bch extends AbstractUtxoCoin {
-
   constructor(network) {
     super(network || bitcoin.networks.bitcoincash);
   }
@@ -99,12 +96,12 @@ class Bch extends AbstractUtxoCoin {
     // mapping to cashaddress's script versions
     const versionMap = {
       [this.network.pubKeyHash]: 'pubkeyhash',
-      [this.network.scriptHash]: 'scripthash'
+      [this.network.scriptHash]: 'scripthash',
     };
     // another mapping to cashaddress's script versions
     const scriptVersionMap = {
       pubkeyhash: 'pubKeyHash',
-      scripthash: 'scriptHash'
+      scripthash: 'scriptHash',
     };
 
     // convert from base58
@@ -149,7 +146,7 @@ class Bch extends AbstractUtxoCoin {
    * @param txBuilder
    * @returns {*}
    */
-  static prepareTransactionBuilder(txBuilder) {
+  prepareTransactionBuilder(txBuilder) {
     txBuilder.setVersion(2);
     return txBuilder;
   }
@@ -172,7 +169,7 @@ class Bch extends AbstractUtxoCoin {
    *
    * @returns {number}
    */
-  static get defaultSigHashType() {
+  public get defaultSigHashType() {
     return bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
   }
 
@@ -180,28 +177,24 @@ class Bch extends AbstractUtxoCoin {
     return common.Environments[this.bitgo.env].bchExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58) {
-    return co(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
+  async getAddressInfoFromExplorer(addressBase58) {
+    const addrInfo = await request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
-      addrInfo.txCount = addrInfo.txApperances;
-      addrInfo.totalBalance = addrInfo.balanceSat;
+    addrInfo.txCount = addrInfo.txApperances;
+    addrInfo.totalBalance = addrInfo.balanceSat;
 
-      return addrInfo;
-    }).call(this);
+    return addrInfo;
   }
 
-  getUnspentInfoFromExplorer(addressBase58) {
-    return co(function *getUnspentInfoFromExplorer() {
-      const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
+  async getUnspentInfoFromExplorer(addressBase58) {
+    const unspents = await request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
-      unspents.forEach(function processUnspent(unspent) {
-        unspent.amount = unspent.satoshis;
-        unspent.n = unspent.vout;
-      });
+    unspents.forEach(function processUnspent(unspent) {
+      unspent.amount = unspent.satoshis;
+      unspent.n = unspent.vout;
+    });
 
-      return unspents;
-    }).call(this);
+    return unspents;
   }
 }
 

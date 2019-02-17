@@ -356,7 +356,9 @@ abstract class BaseCoin {
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
-  public abstract async postProcessPrebuild(prebuildResponse);
+  public async postProcessPrebuild(prebuildResponse) {
+    return prebuildResponse;
+  };
 
   public newWalletObject(walletParams) {
     if (!Wallet) {

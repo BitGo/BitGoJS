@@ -1,7 +1,5 @@
 const AbstractUtxoCoin = require('./abstractUtxoCoin');
 const bitGoUtxoLib = require('bitgo-utxo-lib');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
 import common = require('../../common');
 const request = require('superagent');
 
@@ -35,7 +33,7 @@ class Zec extends AbstractUtxoCoin {
    * @param txBuilder
    * @returns {*}
    */
-  static prepareTransactionBuilder(txBuilder) {
+  prepareTransactionBuilder(txBuilder) {
     txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
     txBuilder.setVersionGroupId(0x892f2085);
     return txBuilder;
@@ -59,28 +57,24 @@ class Zec extends AbstractUtxoCoin {
     return common.Environments[this.bitgo.env].zecExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58) {
-    return co(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
+  async getAddressInfoFromExplorer(addressBase58) {
+    const addrInfo = await request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
-      addrInfo.txCount = addrInfo.txApperances;
-      addrInfo.totalBalance = addrInfo.balanceSat;
+    addrInfo.txCount = addrInfo.txApperances;
+    addrInfo.totalBalance = addrInfo.balanceSat;
 
-      return addrInfo;
-    }).call(this);
+    return addrInfo;
   }
 
-  getUnspentInfoFromExplorer(addressBase58) {
-    return co(function *getUnspentInfoFromExplorer() {
-      const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
+  async getUnspentInfoFromExplorer(addressBase58) {
+    const unspents = await request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
-      unspents.forEach(function processUnspent(unspent) {
-        unspent.amount = unspent.satoshis;
-        unspent.n = unspent.vout;
-      });
+    unspents.forEach(function processUnspent(unspent) {
+      unspent.amount = unspent.satoshis;
+      unspent.n = unspent.vout;
+    });
 
-      return unspents;
-    }).call(this);
+    return unspents;
   }
 }
 

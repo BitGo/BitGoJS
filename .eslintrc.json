@@ -22,7 +22,7 @@
     "project": "./tsconfig.json"
   },
   "rules": {
-    "indent": ["error", 2, {"SwitchCase": 1, "MemberExpression": 0}],
+    "indent": ["error", 2, {"SwitchCase": 1, "MemberExpression": 1}],
     "linebreak-style": ["error", "unix"],
     "semi": ["error", "always"],
     "eqeqeq": ["warn", "always"],
