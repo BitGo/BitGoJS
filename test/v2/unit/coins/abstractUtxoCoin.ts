@@ -2,11 +2,11 @@ import should = require('should');
 const co = require('bluebird').coroutine;
 const sinon = require('sinon');
 const recoveryNocks = require('../../lib/recovery-nocks');
-const fixtures = require('../../fixtures/abstractUtxoCoin.js');
+const fixtures = require('../../fixtures/abstractUtxoCoin.ts');
 const TestBitGo = require('../../../lib/test_bitgo');
 const nock = require('nock');
 const utxoLib = require('bitgo-utxo-lib');
-const errors = require('../../../../src/errors');
+import errors = require('../../../../src/errors');
 
 describe('Abstract UTXO Coin:', () => {
 
@@ -97,14 +97,15 @@ describe('Abstract UTXO Coin:', () => {
       const outputAmount = 10000;
       const recipients = [];
 
-      sinon.stub(coin, 'explainTransaction')
-        .returns({
-          outputs: [],
-          changeOutputs: [{
+      sinon.stub(coin, 'explainTransaction').returns({
+        outputs: [],
+        changeOutputs: [
+          {
             address: changeAddress,
-            amount: outputAmount
-          }]
-        });
+            amount: outputAmount,
+          },
+        ],
+      });
 
       const parsedTransaction = yield coin.parseTransaction({ txParams: { changeAddress, recipients }, txPrebuild: {}, wallet, verification });
 

@@ -33,13 +33,17 @@ class OFCToken extends Ofc {
 
   static generateToken(config): typeof OFCToken {
     // dynamically generate a new class
-    class CurrentToken extends OFCToken {
+    class CurrentOfcToken extends OFCToken {
       static get tokenConfig() {
         return config;
       }
+
+      constructor() {
+        super();
+      }
     }
 
-    return CurrentToken;
+    return CurrentOfcToken;
   }
 
   /**

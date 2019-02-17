@@ -113,8 +113,8 @@ describe('V2 Wallet:', function() {
         addresses.should.have.property('count');
         addresses.should.have.property('addresses');
         addresses.addresses.length.should.be.greaterThan(2);
-        walletAddress = _.head(addresses.addresses).address;
-        walletAddressId = _.head(addresses.addresses).id;
+        walletAddress = (_.head(addresses.addresses) as any).address;
+        walletAddressId = (_.head(addresses.addresses) as any).id;
       });
     });
 

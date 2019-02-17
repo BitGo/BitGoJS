@@ -203,7 +203,9 @@ Wallets.prototype.generateWallet = function(params, callback) {
       n: 3
     };
 
-    if ((!!params.backupXpub + !!params.backupXpubProvider) > 1) {
+    const hasBackupXpub = !!params.backupXpub;
+    const hasBackupXpubProvider = !!params.backupXpubProvider;
+    if ((hasBackupXpub || hasBackupXpubProvider) && hasBackupXpub === hasBackupXpubProvider) {
       throw new Error('Cannot provide more than one backupXpub or backupXpubProvider flag');
     }
 

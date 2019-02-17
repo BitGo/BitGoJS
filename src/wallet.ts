@@ -9,7 +9,7 @@ const TransactionBuilder = require('./transactionBuilder');
 import bitcoin = require('./bitcoin');
 // TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
 import prova = require('prova-lib');
-import PendingApproval = require('./pendingapproval');
+const PendingApproval = require('./pendingapproval');
 
 import { strict as assert } from 'assert';
 import common = require('./common');
@@ -800,7 +800,7 @@ Wallet.prototype.pollForTransaction = function(params, callback) {
       return res;
     })
     .catch(function(err) {
-      if (err.status !== 404 || (new Date() - start) > params.timeout) {
+      if (err.status !== 404 || new Date().valueOf() - start.valueOf() > params.timeout) {
         throw err;
       }
       return Promise.delay(params.delay)
@@ -2321,8 +2321,10 @@ Wallet.prototype.simulateWebhook = function(params, callback) {
   params = params || {};
   common.validateParams(params, ['webhookId'], ['txHash', 'pendingApprovalId'], callback);
 
-  assert(!!params.txHash || !!params.pendingApprovalId, 'must supply either txHash or pendingApprovalId');
-  assert(!!params.txHash ^ !!params.pendingApprovalId, 'must supply either txHash or pendingApprovalId, but not both');
+  const hasTxHash = !!params.txHash;
+  const hasPendingApprovalId = !!params.pendingApprovalId;
+  assert(hasTxHash || hasPendingApprovalId, 'must supply either txHash or pendingApprovalId');
+  assert(hasTxHash !== hasPendingApprovalId, 'must supply either txHash or pendingApprovalId, but not both');
 
   // depending on the coin type of the wallet, the txHash has to adhere to its respective format
   // but the server takes care of that

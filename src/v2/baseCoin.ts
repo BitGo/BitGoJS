@@ -151,7 +151,7 @@ abstract class BaseCoin {
    * user didn't specify anything or in node environments
    * @returns {}
    */
-  private static getCoinsToInitialize(bitgo) {
+  static getCoinsToInitialize(bitgo) {
     const coins: any = {};
 
     if (process.env.BITGO_EXCLUDE_BTC !== 'exclude') {
@@ -326,19 +326,25 @@ abstract class BaseCoin {
   /**
    * Verify that a transaction prebuild complies with the original intention
    */
-  public abstract verifyTransaction();
+  public async verifyTransaction() {
+    return true;
+  }
 
   /**
    * Verify that an address belongs to a wallet
    * @returns {boolean}
    */
-  public abstract verifyAddress();
+  public verifyAddress() {
+    return true;
+  }
 
   /**
    * Check whether a coin supports blockTarget for transactions to be included in
    * @returns {boolean}
    */
-  public abstract supportsBlockTarget();
+  public supportsBlockTarget() {
+    return false;
+  }
 
   /**
    * If a coin needs to add additional parameters to the wallet generation, it does it in this method
@@ -402,7 +408,7 @@ abstract class BaseCoin {
    * is a no-op, but coin-specific controller may do something
    * @param params
    */
-  public abstract preCreateBitGo(params);
+  public preCreateBitGo() {}
 
   public async initiateRecovery(params) {
     const self = this;
@@ -465,7 +471,9 @@ abstract class BaseCoin {
   }
 
   // Some coins can have their tx info verified, if a public tx decoder is available
-  public abstract async verifyRecoveryTransaction(txInfo);
+  public async verifyRecoveryTransaction(txInfo) {
+    throw new errors.MethodNotImplementedError();
+  };
 
   public abstract parseTransaction();
 

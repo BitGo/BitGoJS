@@ -4,10 +4,9 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const BitGo = require('../../src/bitgo.js');
+const BitGo = require('../../src/bitgo.ts');
 const Wallet = require('../../src/v2/wallet');
 const BigNumber = require('bignumber.js');
-const request = require('supertest-as-promised');
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 require('should');

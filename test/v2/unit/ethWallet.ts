@@ -5,7 +5,7 @@ require('should');
 const TestV2BitGo = require('../../lib/test_bitgo');
 const sinon = require('sinon');
 const Util = require('../../../src/util');
-const fixtures = require('../fixtures/eth.js');
+const fixtures = require('../fixtures/eth.ts');
 const EthTx = require('ethereumjs-tx');
 
 describe('Sign ETH Transaction', co(function *() {

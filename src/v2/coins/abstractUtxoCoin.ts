@@ -9,17 +9,17 @@ const crypto = require('crypto');
 const request = require('superagent');
 import * as _ from 'lodash';
 const RecoveryTool = require('../recovery');
-const errors = require('../../errors');
+import errors = require('../../errors');
 const debug = require('debug')('bitgo:v2:utxo');
 
 class AbstractUtxoCoin extends BaseCoin {
-  static AddressTypes = Object.freeze({
+  public static readonly AddressTypes = Object.freeze({
     P2SH: 'p2sh',
     P2SH_P2WSH: 'p2sh-p2wsh',
     P2WSH: 'p2wsh'
   });
 
-  static AddressTypeChains = Object.freeze({
+  public static readonly AddressTypeChains = Object.freeze({
     p2sh: {
       main: 0,
       change: 1
@@ -769,7 +769,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param txBuilder
    * @returns {*}
    */
-  static prepareTransactionBuilder(txBuilder) {
+  prepareTransactionBuilder(txBuilder) {
     return txBuilder;
   }
 
@@ -1221,7 +1221,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
       // Build the transaction
       const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
-      this.constructor.prepareTransactionBuilder(transactionBuilder);
+      this.prepareTransactionBuilder(transactionBuilder);
       const txInfo: any = {};
 
       const feePerByte = yield this.getRecoveryFeePerBytes();
@@ -1281,7 +1281,8 @@ class AbstractUtxoCoin extends BaseCoin {
 
           if (!(e instanceof errors.MethodNotImplementedError)) {
             // some coins don't have a reliable third party verification endpoint, so we continue without verification for those coins
-            throw new Error('could not verify recovery transaction');
+            throw e;
+            // throw new Error('could not verify recovery transaction');
           }
         }
       }

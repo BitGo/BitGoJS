@@ -701,7 +701,7 @@ describe('Wallet Prototype Methods', function() {
      * @param hash a bitcoinjs-lib transaction object's input hash
      */
     function inputParentTxId({ hash }) {
-      return Buffer.from(hash).reverse().toString('hex');
+      return (Buffer.from(hash).reverse() as Buffer).toString('hex');
     }
 
     before(function accelerateTxMockedBefore() {

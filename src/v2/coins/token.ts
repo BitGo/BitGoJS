@@ -17,19 +17,25 @@ try {
   // ethereum currently not supported
 }
 
+interface TokenConfig {
+  name: string,
+  type: string,
+  coin: string,
+  network: string,
+  tokenContractAddress: string,
+  decimalPlaces: number
+}
+
 class Token extends Eth {
+  public readonly tokenConfig: TokenConfig;
 
-  static get tokenConfig() {
-    return {};
-  }
-
-  constructor() {
+  constructor(tokenConfig) {
     super();
-    Object.assign(this, this.tokenConfig);
+    this.tokenConfig = tokenConfig;
   }
 
   getChain() {
-    return this.type;
+    return this.tokenConfig.type;
   }
 
   getFullName() {
@@ -37,7 +43,7 @@ class Token extends Eth {
   }
 
   getBaseFactor() {
-    return String(Math.pow(10, this.decimalPlaces));
+    return String(Math.pow(10, this.tokenConfig.decimalPlaces));
   }
 
   /**
@@ -148,7 +154,7 @@ class Token extends Eth {
       const backupKeyTxList = result.result;
       if (backupKeyTxList.length > 0) {
         // Calculate last nonce used
-        const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === backupKeyAddress);
+        const outgoingTxs = backupKeyTxList.filter(tx => tx.from === backupKeyAddress);
         backupKeyNonce = outgoingTxs.length;
       }
 
@@ -156,7 +162,9 @@ class Token extends Eth {
       const backupKeyBalance = yield this.queryAddressBalance(backupKeyAddress);
 
       if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
-        throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries`);
+        throw new Error(
+          `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries`
+        );
       }
 
       // get token balance of wallet
@@ -275,17 +283,9 @@ class Token extends Eth {
     ];
   }
 
-  static generateToken(config) {
-    // dynamically generate a new class
-    class CurrentToken extends Token {
-      static get tokenConfig() {
-        return config;
-      }
-    }
-
-    return CurrentToken;
+  static generateToken(config): typeof Token {
+    return Token.bind(null, config);
   }
-
 }
 
 module.exports = Token;

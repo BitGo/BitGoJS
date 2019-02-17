@@ -2,7 +2,7 @@
 // Tests for Wallets
 //
 
-require('should');
+import 'should';
 import nock = require('nock');
 
 const TestV2BitGo = require('../../lib/test_bitgo');

@@ -1,4 +1,4 @@
-const should = require('should');
+import * as should from 'should';
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const prova = require('prova-lib');

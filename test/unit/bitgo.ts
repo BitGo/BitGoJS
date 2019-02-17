@@ -2,7 +2,7 @@
 // Tests for BitGo Object
 //
 
-const should = require('should');
+import * as should from 'should';
 const nock = require('nock');
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;

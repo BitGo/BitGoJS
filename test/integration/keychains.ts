@@ -5,9 +5,8 @@
 //
 
 import { strict as assert } from 'assert';
-require('should');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import 'should';
+import { coroutine as co } from 'bluebird';
 import * as _ from 'lodash';
 
 const TestBitGo = require('../lib/test_bitgo');

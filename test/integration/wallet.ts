@@ -1821,7 +1821,10 @@ describe('Wallet API', function() {
             const output = inputTx.outputs[singleKeyInput.index];
 
             const feeAddressInputValue = output.value;
-            const feeAddressChangeAmount = _.find(result.changeAddresses, { address: 'mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7' }).amount;
+            const feeAddressChangeAddress = _.find(result.changeAddresses, {
+              address: 'mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7',
+            });
+            const feeAddressChangeAmount = (feeAddressChangeAddress as any).amount;
 
             // calculate the implied fee by using the input amount minus the output and ensure this amount was the final fee for the tx
             const impliedFeeFromTx = feeAddressInputValue - feeAddressChangeAmount;

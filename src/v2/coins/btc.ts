@@ -3,8 +3,7 @@ import common = require('../../common');
 const bitcoin = require('bitgo-utxo-lib');
 const request = require('superagent');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import { coroutine as co } from 'bluebird';
 
 class Btc extends AbstractUtxoCoin {
   constructor(network) {
@@ -80,23 +79,21 @@ class Btc extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  verifyRecoveryTransaction(txInfo) {
-    return co(function *verifyRecoveryTransaction() {
-      const decodedTx = yield request.post(this.recoveryBlockchainExplorerUrl(`/decodetx`))
-      .send({ hex: txInfo.transactionHex })
-      .result();
+  public async verifyRecoveryTransaction(txInfo) {
+    const decodedTx = await request.post(this.recoveryBlockchainExplorerUrl(`/decodetx`))
+    .send({ hex: txInfo.transactionHex })
+    .result();
 
-      const transactionDetails = decodedTx.transaction;
+    const transactionDetails = decodedTx.transaction;
 
-      const tx = bitcoin.Transaction.fromHex(txInfo.transactionHex, this.network);
-      if (transactionDetails.TxId !== tx.getId()) {
-        console.log(transactionDetails.txId);
-        console.log(tx.getId());
-        throw new Error('inconsistent recovery transaction id');
-      }
+    const tx = bitcoin.Transaction.fromHex(txInfo.transactionHex, this.network);
+    if (transactionDetails.TxId !== tx.getId()) {
+      console.log(transactionDetails.txId);
+      console.log(tx.getId());
+      throw new Error('inconsistent recovery transaction id');
+    }
 
-      return transactionDetails;
-    }).call(this);
+    return transactionDetails;
   }
 }
 

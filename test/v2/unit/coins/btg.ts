@@ -1,4 +1,4 @@
-require('should');
+import 'should';
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const AbstractUtxoCoin = require('../../../../src/v2/coins/abstractUtxoCoin');
