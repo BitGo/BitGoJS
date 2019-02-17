@@ -1,14 +1,41 @@
 const Ofc = require('./ofc');
 
-class OFCToken extends Ofc {
+interface OfcTokenConfig {
+  type: string,
+  coin: string,
+  decimalPlaces: number,
+  name: string,
+  backingCoin: string,
+  isFiat: boolean,
+}
 
-  static get tokenConfig() {
-    return {};
+class OFCToken extends Ofc {
+  public readonly tokenConfig: OfcTokenConfig;
+
+  constructor(tokenConfig) {
+    super();
+    this.tokenConfig = tokenConfig;
+    this.type = tokenConfig.type;
   }
 
-  constructor() {
-    super();
-    Object.assign(this, this.tokenConfig);
+  get coin() {
+    return this.tokenConfig.coin;
+  }
+
+  get decimalPlaces() {
+    return this.tokenConfig.decimalPlaces;
+  }
+
+  get name() {
+    return this.tokenConfig.name;
+  }
+
+  get backingCoin() {
+    return this.tokenConfig.backingCoin;
+  }
+
+  get isFiat() {
+    return this.tokenConfig.isFiat;
   }
 
   getChain() {
@@ -32,18 +59,7 @@ class OFCToken extends Ofc {
   }
 
   static generateToken(config): typeof OFCToken {
-    // dynamically generate a new class
-    class CurrentOfcToken extends OFCToken {
-      static get tokenConfig() {
-        return config;
-      }
-
-      constructor() {
-        super();
-      }
-    }
-
-    return CurrentOfcToken;
+    return OFCToken.bind(null, config);
   }
 
   /**
@@ -60,7 +76,6 @@ class OFCToken extends Ofc {
     const signature = signatureBuffer.toString('hex');
     return { halfSigned: { payload, signature } };
   }
-
 }
 
 module.exports = OFCToken;
