@@ -34,6 +34,30 @@ class Token extends Eth {
     this.tokenConfig = tokenConfig;
   }
 
+  get type() {
+    return this.tokenConfig.type;
+  }
+
+  get name() {
+    return this.tokenConfig.name;
+  }
+
+  get coin() {
+    return this.tokenConfig.coin;
+  }
+
+  get network() {
+    return this.tokenConfig.network;
+  }
+
+  get tokenContractAddress() {
+    return this.tokenConfig.tokenContractAddress;
+  }
+
+  get decimalPlaces() {
+    return this.tokenConfig.decimalPlaces;
+  }
+
   getChain() {
     return this.tokenConfig.type;
   }

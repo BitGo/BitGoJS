@@ -67,16 +67,16 @@ describe('Abstract UTXO Coin:', () => {
     it('should classify outputs which spend to addresses not on the wallet as external', co(function *() {
       const externalAddress = 'external_address';
       sinon.stub(coin, 'explainTransaction')
-      .returns({
-        outputs: [{
-          address: externalAddress,
-          amount: outputAmount
-        }],
-        changeOutputs: []
-      });
+        .returns({
+          outputs: [{
+            address: externalAddress,
+            amount: outputAmount
+          }],
+          changeOutputs: []
+        });
 
       sinon.stub(coin, 'verifyAddress')
-      .throws(new errors.UnexpectedAddressError('test error'));
+        .throws(new errors.UnexpectedAddressError('test error'));
 
       const parsedTransaction = yield coin.parseTransaction({ txParams: {}, txPrebuild: {}, wallet, verification });
 
@@ -118,8 +118,6 @@ describe('Abstract UTXO Coin:', () => {
 
       coin.explainTransaction.restore();
     }));
-
-
   });
 
   describe('Recover Wallet:', () => {

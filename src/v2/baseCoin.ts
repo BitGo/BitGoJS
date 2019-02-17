@@ -351,7 +351,9 @@ abstract class BaseCoin {
    * @param walletParams
    * @return {*}
    */
-  public abstract async supplementGenerateWallet(walletParams);
+  public async supplementGenerateWallet(walletParams) {
+    return walletParams;
+  };
 
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime

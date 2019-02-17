@@ -31,7 +31,7 @@ class Btg extends Btc {
    * @param txBuilder
    * @returns {*}
    */
-  static prepareTransactionBuilder(txBuilder) {
+  prepareTransactionBuilder(txBuilder) {
     txBuilder.setVersion(2);
     return txBuilder;
   }
@@ -40,7 +40,7 @@ class Btg extends Btc {
    *
    * @returns {number}
    */
-  static get defaultSigHashType() {
+  get defaultSigHashType() {
     return bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
   }
 

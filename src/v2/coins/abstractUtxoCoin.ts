@@ -46,7 +46,7 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
   static get validAddressTypes() {
-    return _.values(this.AddressTypes);
+    return _.values(AbstractUtxoCoin.AddressTypes);
   }
 
   /**
@@ -143,11 +143,11 @@ class AbstractUtxoCoin extends BaseCoin {
         _.isString(addressDetails.coinSpecific.redeemScript) &&
         _.isString(addressDetails.coinSpecific.witnessScript)
       ) {
-        return this.AddressTypes.P2SH_P2WSH;
+        return AbstractUtxoCoin.AddressTypes.P2SH_P2WSH;
       } else if (_.isString(addressDetails.coinSpecific.redeemScript)) {
-        return this.AddressTypes.P2SH;
+        return AbstractUtxoCoin.AddressTypes.P2SH;
       } else if (_.isString(addressDetails.coinSpecific.witnessScript)) {
-        return this.AddressTypes.P2WSH;
+        return AbstractUtxoCoin.AddressTypes.P2WSH;
       }
     }
     return null;
@@ -194,7 +194,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
     // verify that each recipient from txParams has their own output
     const expectedOutputs = _.get(txParams, 'recipients', []);
-    const missingOutputs = this.findMissingOutputs(expectedOutputs, allOutputs);
+    const missingOutputs = AbstractUtxoCoin.findMissingOutputs(expectedOutputs, allOutputs);
 
     /**
      * Loop through all the outputs and classify each of them as either internal spends
@@ -226,7 +226,7 @@ class AbstractUtxoCoin extends BaseCoin {
           }
           // verify that the address is on the wallet. verifyAddress throws if
           // it fails to correctly rederive the address, meaning it's external
-          const addressType = this.inferAddressType(addressDetails);
+          const addressType = AbstractUtxoCoin.inferAddressType(addressDetails);
           this.verifyAddress(
             _.extend({ addressType }, addressDetails, {
               keychains: keychainArray,
@@ -303,12 +303,12 @@ class AbstractUtxoCoin extends BaseCoin {
     const changeOutputs = _.filter(allOutputDetails, out => !out.external);
 
     // these are all the outputs that were not originally explicitly specified in recipients
-    const implicitOutputs = this.findMissingOutputs(allOutputDetails, expectedOutputs);
+    const implicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, expectedOutputs);
 
-    const explicitOutputs = this.findMissingOutputs(allOutputDetails, implicitOutputs);
+    const explicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, implicitOutputs);
 
     // these are all the non-wallet outputs that had been originally explicitly specified in recipients
-    const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
+    const explicitExternalOutputs = _.filter(explicitOutputs, out => out.external);
 
     // this is the sum of all the originally explicitly specified non-wallet output values
     const explicitExternalSpendAmount = _.sumBy(explicitExternalOutputs, 'amount');
@@ -324,7 +324,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
     // make sure that all the extra addresses are change addresses
     // get all the additional external outputs the server added and calculate their values
-    const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
+    const implicitExternalOutputs = _.filter(implicitOutputs, out => out.external);
     const implicitExternalSpendAmount = _.sumBy(implicitExternalOutputs, 'amount');
 
     return {
@@ -567,19 +567,19 @@ class AbstractUtxoCoin extends BaseCoin {
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
    */
   generateAddress({ addressType, keychains, threshold, chain, index, segwit, bech32 }: { addressType: any, keychains: any, threshold: number, chain: number, index: number, segwit: boolean, bech32: boolean }) {
-    if (addressType === this.AddressTypes.P2WSH && !this.supportsP2wsh()) {
+    if (addressType === AbstractUtxoCoin.AddressTypes.P2WSH && !this.supportsP2wsh()) {
       throw new errors.P2wshUnsupportedError();
     }
 
-    if (!_.isUndefined(addressType) && !this.validAddressTypes.includes(addressType)) {
+    if (!_.isUndefined(addressType) && !AbstractUtxoCoin.validAddressTypes.includes(addressType)) {
       throw new errors.UnsupportedAddressTypeError();
     } else if (_.isUndefined(addressType)) {
-      addressType = this.AddressTypes.P2SH;
+      addressType = AbstractUtxoCoin.AddressTypes.P2SH;
       if (_.isBoolean(segwit) && segwit) {
-        addressType = this.AddressTypes.P2SH_P2WSH;
+        addressType = AbstractUtxoCoin.AddressTypes.P2SH_P2WSH;
       }
       if (_.isBoolean(bech32) && bech32) {
-        addressType = this.AddressTypes.P2WSH;
+        addressType = AbstractUtxoCoin.AddressTypes.P2WSH;
       }
     }
 

@@ -1,5 +1,5 @@
 import * as Promise from 'bluebird';
-const should = require('should');
+import * as should from 'should';
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 
