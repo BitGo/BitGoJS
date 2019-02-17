@@ -1,5 +1,16 @@
 # BitGoJS Release Notes
 
+## 4.46.0
+### New Features
+- Add support for new ERC 20 Tokens (AMON, CRPT, AXPR, GOT, EURS)
+
+### Bug Fixes
+- Use normalized amount field for recovery amounts for UTXO coins
+
+## 4.45.1
+### Bug Fixes
+- Do not sign replay protection inputs for TBSV
+
 ## 4.45.0
 ### New Features
 - Add support for recovering BTC segwit unspents
