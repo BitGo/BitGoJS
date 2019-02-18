@@ -98,13 +98,13 @@ describe('Abstract UTXO Coin:', () => {
       const recipients = [];
 
       sinon.stub(coin, 'explainTransaction')
-        .returns({
-          outputs: [],
-          changeOutputs: [{
-            address: changeAddress,
-            amount: outputAmount
-          }]
-        });
+      .returns({
+        outputs: [],
+        changeOutputs: [{
+          address: changeAddress,
+          amount: outputAmount
+        }]
+      });
 
       const parsedTransaction = yield coin.parseTransaction({ txParams: { changeAddress, recipients }, txPrebuild: {}, wallet, verification });
 

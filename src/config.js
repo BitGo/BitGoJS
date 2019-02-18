@@ -232,7 +232,7 @@ exports.tokens = {
     },
     ofc: {
       tokens: [
-        { type: 'otestusd', coin: 'ofc', decimalPlaces:2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat:true }
+        { type: 'otestusd', coin: 'ofc', decimalPlaces: 2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat: true }
       ]
     }
   }

@@ -25,7 +25,7 @@ const optionalDeps = {
 
   get EthTx() {
     return require('ethereumjs-tx');
-  },
+  }
 };
 
 class Eth extends BaseCoin {

@@ -84,15 +84,15 @@ describe('BitGo Prototype Methods', function() {
       password: 'password',
       otp: '000000',
       extensible: false,
-      extensionAddress: "address",
+      extensionAddress: 'address',
       forceSMS: false
-    }
+    };
 
     it('goes to microservices', () => {
-      bitgo = new TestBitGo({env: 'custom', microservicesUri });
+      bitgo = new TestBitGo({ env: 'custom', microservicesUri });
       const scope = nock(microservicesUri)
-        .post('/api/v1/auth/session')
-        .reply(200, {user: 'test@bitgo.com', access_token: 'token12356'});
+      .post('/api/v1/auth/session')
+      .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
       const response = bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();
@@ -101,8 +101,8 @@ describe('BitGo Prototype Methods', function() {
     it('goes to normal uri', () => {
       bitgo = new TestBitGo();
       const scope = nock(uri)
-        .post('/api/v1/user/login')
-        .reply(200, {user: 'test@bitgo.com', access_token: 'token12356'});
+      .post('/api/v1/user/login')
+      .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
       const response = bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();

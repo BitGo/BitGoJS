@@ -28,7 +28,7 @@ describe('OFC:', function() {
     const expectedResult = {
       halfSigned: {
         payload: '{\"token\":\"otestusd\"}',
-        signature: '2049b94a22c69650ad9529767da993a23c078347fdf7d887409793dce8d07190e108a846869edf387d294cd75c6c770a12847615b2553b22a61de29be5d91770dd',
+        signature: '2049b94a22c69650ad9529767da993a23c078347fdf7d887409793dce8d07190e108a846869edf387d294cd75c6c770a12847615b2553b22a61de29be5d91770dd'
       }
     };
 
