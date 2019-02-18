@@ -12,22 +12,21 @@ const prova = require('prova-lib');
 const utxoLib = require('bitgo-utxo-lib');
 const co = Promise.coroutine;
 
-let ethAbi = function() {
-};
+// The following dependencies are optional. If they are missing we still want to be
+// able to require `eth.js` without error.
+const optionalDeps = {
+  get ethAbi() {
+    return require('ethereumjs-abi');
+  },
 
-let ethUtil = function() {
-};
+  get ethUtil() {
+    return require('ethereumjs-util');
+  },
 
-let EthTx = function() {
+  get EthTx() {
+    return require('ethereumjs-tx');
+  },
 };
-
-try {
-  ethAbi = require('ethereumjs-abi');
-  ethUtil = require('ethereumjs-util');
-  EthTx = require('ethereumjs-tx');
-} catch (e) {
-  // ethereum currently not supported
-}
 
 class Eth extends BaseCoin {
 
@@ -73,7 +72,7 @@ class Eth extends BaseCoin {
    * @param address
    */
   isValidAddress(address) {
-    return ethUtil.isValidAddress(ethUtil.addHexPrefix(address));
+    return optionalDeps.ethUtil.isValidAddress(optionalDeps.ethUtil.addHexPrefix(address));
   }
 
   /**
@@ -96,7 +95,7 @@ class Eth extends BaseCoin {
    * @returns {BigNumber}
    */
   getRecoveryGasPrice() {
-    return new ethUtil.BN('20000000000');
+    return new optionalDeps.ethUtil.BN('20000000000');
   }
 
   /**
@@ -104,7 +103,7 @@ class Eth extends BaseCoin {
    * @returns {BigNumber}
    */
   getRecoveryGasLimit() {
-    return new ethUtil.BN('500000');
+    return new optionalDeps.ethUtil.BN('500000');
   }
 
   /**
@@ -128,7 +127,7 @@ class Eth extends BaseCoin {
         action: 'balance',
         address: address
       });
-      return new ethUtil.BN(result.result, 10);
+      return new optionalDeps.ethUtil.BN(result.result, 10);
     }).call(this).asCallback(callback);
   }
 
@@ -141,10 +140,10 @@ class Eth extends BaseCoin {
    */
   queryAddressTokenBalance(tokenContractAddress, walletContractAddress, callback) {
     return co(function *() {
-      if (!ethUtil.isValidAddress(tokenContractAddress)) {
+      if (!optionalDeps.ethUtil.isValidAddress(tokenContractAddress)) {
         throw new Error('cannot get balance for invalid token address');
       }
-      if (!ethUtil.isValidAddress(walletContractAddress)) {
+      if (!optionalDeps.ethUtil.isValidAddress(walletContractAddress)) {
         throw new Error('cannot get token balance for invalid wallet address');
       }
 
@@ -156,7 +155,7 @@ class Eth extends BaseCoin {
         tag: 'latest'
       });
 
-      return new ethUtil.BN(result.result, 10);
+      return new optionalDeps.ethUtil.BN(result.result, 10);
     }).call(this).asCallback(callback);
   }
 
@@ -172,9 +171,9 @@ class Eth extends BaseCoin {
       ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
       [
         'ETHER',
-        new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        new Buffer(ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
+        new Buffer(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
         expireTime,
         contractSequenceId
       ]
@@ -201,7 +200,7 @@ class Eth extends BaseCoin {
 
     // Check inputs
     recipients.forEach(function(recipient) {
-      if (!_.isString(recipient.address) || !ethUtil.isValidAddress(ethUtil.addHexPrefix(recipient.address))) {
+      if (!_.isString(recipient.address) || !optionalDeps.ethUtil.isValidAddress(optionalDeps.ethUtil.addHexPrefix(recipient.address))) {
         throw new Error('Invalid address: ' + recipient.address);
       }
 
@@ -220,7 +219,7 @@ class Eth extends BaseCoin {
     });
 
     const recipient = recipients[0];
-    return ethUtil.bufferToHex(ethAbi.soliditySHA3(...this.getOperation(recipient, expireTime, contractSequenceId)));
+    return optionalDeps.ethUtil.bufferToHex(optionalDeps.ethAbi.soliditySHA3(...this.getOperation(recipient, expireTime, contractSequenceId)));
   }
 
   /**
@@ -232,8 +231,8 @@ class Eth extends BaseCoin {
   querySequenceId(address, callback) {
     return co(function *() {
       // Get sequence ID using contract call
-      const sequenceIdMethodSignature = ethAbi.methodID('getNextSequenceId', []);
-      const sequenceIdArgs = ethAbi.rawEncode([], []);
+      const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
+      const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
       const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
       const result = yield this.recoveryBlockchainExplorerQuery({
         module: 'proxy',
@@ -243,7 +242,7 @@ class Eth extends BaseCoin {
         tag: 'latest'
       });
       const sequenceIdHex = result.result;
-      return new ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
+      return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
     }).call(this).asCallback(callback);
   }
 
@@ -274,24 +273,24 @@ class Eth extends BaseCoin {
       expireTime: txPrebuild.halfSigned.expireTime,
       contractSequenceId: txPrebuild.halfSigned.contractSequenceId,
       signature: txPrebuild.halfSigned.signature
-    }
+    };
 
     const sendMethodArgs = this.getSendMethodArgs(txInfo);
-    const methodSignature = ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
-    const encodedArgs = ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+    const methodSignature = optionalDeps.ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
+    const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
     const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
     const ethTxParams = {
       to: params.walletContractAddress,
       nonce: params.signingKeyNonce,
       value: 0,
-      gasPrice: new ethUtil.BN(txPrebuild.gasPrice),
-      gasLimit: new ethUtil.BN(txPrebuild.gasLimit),
+      gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
+      gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
       data: sendData,
       spendAmount: params.recipients[0].amount
-    }
+    };
 
-    const ethTx = new EthTx(ethTxParams);
+    const ethTx = new optionalDeps.EthTx(ethTxParams);
     ethTx.sign(signingKey);
     return { txHex: ethTx.serialize().toString('hex') };
   }
@@ -429,17 +428,17 @@ class Eth extends BaseCoin {
         userKey,
         backupKey,
         coin: this.getChain(),
-        gasPrice: ethUtil.bufferToInt(gasPrice).toFixed(),
+        gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
         gasLimit,
         recipients: [
           txInfo.recipient
         ],
         walletContractAddress: '0x' + ethTx.to.toString('hex'),
         amount: txInfo.recipient.amount,
-        backupKeyNonce: yield this.getAddressNonce(`0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`)
+        backupKeyNonce: yield this.getAddressNonce(`0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`)
       };
       _.extend(response, txInfo);
-      response.nextContractSequenceId = response.contractSequenceId
+      response.nextContractSequenceId = response.contractSequenceId;
       return response;
     }).call(this).asCallback(callback);
   }
@@ -509,7 +508,7 @@ class Eth extends BaseCoin {
       if (isKrsRecovery || isUnsignedSweep) {
         const backupHDNode = prova.HDNode.fromBase58(backupKey);
         backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
-        backupKeyAddress = `0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
+        backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
       } else {
         // Decrypt backup private key and get address
         let backupPrv;
@@ -525,7 +524,7 @@ class Eth extends BaseCoin {
 
         const backupHDNode = prova.HDNode.fromBase58(backupPrv);
         backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
-        backupKeyAddress = `0x${ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
+        backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
       }
 
       const backupKeyNonce = yield this.getAddressNonce(backupKeyAddress);
@@ -573,12 +572,12 @@ class Eth extends BaseCoin {
 
       // calculate send data
       const sendMethodArgs = this.getSendMethodArgs(txInfo);
-      const methodSignature = ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
-      const encodedArgs = ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+      const methodSignature = optionalDeps.ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
+      const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
       const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
       // Build contract call and sign it
-      const tx = new EthTx({
+      const tx = new optionalDeps.EthTx({
         to: params.walletContractAddress,
         nonce: backupKeyNonce,
         value: 0,
@@ -597,7 +596,7 @@ class Eth extends BaseCoin {
       }
 
       const signedTx = {
-        id: ethUtil.bufferToHex(tx.hash(true)),
+        id: optionalDeps.ethUtil.bufferToHex(tx.hash(true)),
         tx: tx.serialize().toString('hex')
       };
 
@@ -646,7 +645,7 @@ class Eth extends BaseCoin {
         throw new Error('recipient not a valid address');
       }
 
-      if (!ethUtil.bufferToHex || !ethAbi.soliditySHA3) {
+      if (!optionalDeps.ethUtil.bufferToHex || !optionalDeps.ethAbi.soliditySHA3) {
         throw new Error('ethereum not fully supported in this environment');
       }
 
@@ -682,14 +681,14 @@ class Eth extends BaseCoin {
       const operationArgs = [
         // "ERC20" has been added here so that ether operation hashes, signatures cannot be re-used for tokenSending
         'ERC20',
-        new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        new ethUtil.BN(ethUtil.stripHexPrefix(params.tokenContractAddress), 16),
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(params.tokenContractAddress), 16),
         expireTime,
         safeSequenceId
       ];
 
-      const operationHash = ethUtil.bufferToHex(ethAbi.soliditySHA3(operationTypes, operationArgs));
+      const operationHash = optionalDeps.ethUtil.bufferToHex(optionalDeps.ethAbi.soliditySHA3(operationTypes, operationArgs));
 
       const userPrv = yield params.wallet.getPrv({
         prv: params.prv,
@@ -731,7 +730,7 @@ class Eth extends BaseCoin {
       {
         name: 'data',
         type: 'bytes',
-        value: ethUtil.toBuffer(txInfo.recipient.data || '')
+        value: optionalDeps.ethUtil.toBuffer(txInfo.recipient.data || '')
       },
       {
         name: 'expireTime',
@@ -746,7 +745,7 @@ class Eth extends BaseCoin {
       {
         name: 'signature',
         type: 'bytes',
-        value: ethUtil.toBuffer(txInfo.signature)
+        value: optionalDeps.ethUtil.toBuffer(txInfo.signature)
       }
     ];
   }
