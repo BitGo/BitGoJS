@@ -3,7 +3,7 @@
  */
 
 const TestUtil = module.exports;
-const should = require('should');
+import * as should from 'should';;
 import * as _ from 'lodash';
 const Q = require('q');
 

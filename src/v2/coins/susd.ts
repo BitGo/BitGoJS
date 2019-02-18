@@ -30,4 +30,4 @@ class Susd extends BaseCoin {
   }
 }
 
-module.exports = Susd;
+export = Susd;

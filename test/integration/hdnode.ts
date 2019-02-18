@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-require('should');
+import 'should';;
 const bitcoin = require('../../src/bitcoin');
 const HDNode = bitcoin.HDNode;
 

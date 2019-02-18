@@ -1,7 +1,7 @@
 
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
-require('should');
+import 'should';;
 const TestV2BitGo = require('../../lib/test_bitgo');
 const sinon = require('sinon');
 const Util = require('../../../src/util');

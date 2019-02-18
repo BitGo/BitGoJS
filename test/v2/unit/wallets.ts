@@ -2,7 +2,7 @@
 // Tests for Wallets
 //
 
-require('should');
+import 'should';;
 import bluebird = require('bluebird');
 const co = bluebird.coroutine;
 const nock = require('nock');

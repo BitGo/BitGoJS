@@ -11,7 +11,7 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const common = require('../../src/common');
 const bitcoin = require('../../src/bitcoin');
-const should = require('should');
+import * as should from 'should';;
 const nock = require('nock');
 
 nock.disableNetConnect();

@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-require('should');
+import 'should';;
 
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;

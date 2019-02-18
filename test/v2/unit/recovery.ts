@@ -2,9 +2,8 @@
 // Tests for Wallets
 //
 
-import should = require('should');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as should from 'should';
+import { coroutine as co } from 'bluebird';
 const nock = require('nock');
 
 const TestV2BitGo = require('../../lib/test_bitgo');

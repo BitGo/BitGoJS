@@ -6,7 +6,7 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 
-require('should');
+import 'should';;
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 const bitgo = new TestV2BitGo({ env: 'test' });

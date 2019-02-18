@@ -1,4 +1,4 @@
-const should = require('should');
+import * as should from 'should';;
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 

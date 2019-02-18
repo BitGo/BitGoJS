@@ -1,5 +1,5 @@
-import should = require('should');
-const co = require('bluebird').coroutine;
+import * as should from 'should';
+import  { coroutine as co } from 'bluebird';
 const sinon = require('sinon');
 const recoveryNocks = require('../../lib/recovery-nocks');
 const fixtures = require('../../fixtures/abstractUtxoCoin.ts');

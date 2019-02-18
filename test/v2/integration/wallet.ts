@@ -2,7 +2,7 @@
 // Tests for Wallets
 //
 
-const should = require('should');
+import * as should from 'should';;
 import * as _ from 'lodash';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;

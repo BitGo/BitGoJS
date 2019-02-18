@@ -1,4 +1,4 @@
-require('should');
+import 'should';;
 
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;

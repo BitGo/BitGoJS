@@ -5,7 +5,7 @@
 //
 
 import { strict as assert } from 'assert';
-require('should');
+import 'should';;
 import * as _ from 'lodash';
 
 const BitGoJS = require('../../src/index');

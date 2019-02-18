@@ -5,7 +5,7 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const Wallet = require('../../../../src/v2/wallet');
 
-require('should');
+import 'should';;
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 

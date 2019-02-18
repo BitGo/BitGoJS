@@ -1,4 +1,4 @@
-require('should');
+import 'should';
 
 const { randomBytes } = require('crypto');
 const { bytesToWord } = require('../../../src/v2/internal');
