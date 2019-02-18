@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -euo pipefail
+IFS=$'\n\t '
+
+
+check_commit_signatures() {
+  # find out the merge base
+  local merge_base=$(git merge-base HEAD origin/master)
+  # find commits to check
+  declare -a pr_commits
+  pr_commits=($(git rev-list ...${merge_base}))
+
+  >&2 echo "checking signatures for ${#pr_commits[@]} commits..."
+  for commit in ${pr_commits[@]};
+  do
+    # git log -1 --format='%h %s' -- ${commit}
+    if ! git verify-commit ${commit} 2>/dev/null
+    then
+      >&2 echo "error: 'git verify-commit ${commit}' failed. Aborting push."
+      >&2 echo "hint: to sign all unsigned commits use:"
+      >&2 echo "    git rebase \$(git merge-base HEAD origin/master) \\"
+      >&2 echo "        --exec 'git verify-commit HEAD || git commit --am --no-edit --gpg-sign'"
+      exit 1
+    fi
+  done
+}
+
+if [ ${GIT_HOOK_SKIP_CHECK_COMMIT_SIGNATURES:=0} = 1 ];
+then
+  # because this is a crappy bash script, this will have false positives
+  >&2 echo "skip signature check"
+else
+  check_commit_signatures
+  >&2 echo "all commits are signed"
+fi

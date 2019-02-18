@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# To use this hook, you can configure this directory as the git `hooksPath`:
+#
+#   git config core.hooksPath git_hooks
+#
+
+
+set -euo pipefail
+IFS=$'\n\t'
+
+# based on https://github.com/BitGo/bitgo-microservices/blob/master/git_hooks/pre-commit
+
+lint_failed=false
+
+run_eslint() {
+  # Only lint files that were added, copied, modified, or renamed
+  for file in $(git diff --diff-filter=ACMR --cached --name-only . | grep -E '\.js$'); do
+    local ret=0
+    git show ":$file" \
+      | ./node_modules/.bin/eslint "$file" --config .eslintrc.json || ret=$?
+
+    if [ $ret -ne 0 ]; then
+      echo "eslint failed on staged file '$file'"
+      lint_failed=true
+    fi
+  done
+}
+
+run_eslint
+
+if [ "$lint_failed" = "true" ]; then
+  exit 1
+fi
