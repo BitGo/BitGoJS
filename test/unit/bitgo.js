@@ -94,7 +94,7 @@ describe('BitGo Prototype Methods', function() {
       .post('/api/v1/auth/session')
       .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
-      const response = bitgo.authenticate(authenticateRequest);
+      bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();
     });
 
@@ -104,7 +104,7 @@ describe('BitGo Prototype Methods', function() {
       .post('/api/v1/user/login')
       .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
-      const response = bitgo.authenticate(authenticateRequest);
+      bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();
     });
   });
