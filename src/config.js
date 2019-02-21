@@ -141,7 +141,7 @@ exports.tokens = {
         { type: 'upp', coin: 'eth', network: 'Mainnet', name: 'Sentinel Protocol', tokenContractAddress: '0xc86d054809623432210c107af2e3f619dcfbf652', decimalPlaces: 18 },
         { type: 'bbx', coin: 'eth', network: 'Mainnet', name: 'BBX', tokenContractAddress: '0x71529cea068e3785efd4f18aaf59a6cb82b7e5cb', decimalPlaces: 18 },
         { type: 'ana', coin: 'eth', network: 'Mainnet', name: 'ANA', tokenContractAddress: '0xfafd51641ab09dff163cd04d2eb6b7865eb83f53', decimalPlaces: 18 },
-        { type: 'bid', coin: 'eth', network: 'Mainnet', name: 'Blockbid', tokenContractAddress: '0xf1f64f6b8e17dd68c1db10b0eed3d2541a6c09ab', decimalPlaces: 8 },
+        { type: 'bid', coin: 'eth', network: 'Mainnet', name: 'Blockbid', tokenContractAddress: '0xdd5151da2ab25566e1d2a3c9a3e77396303f8a93', decimalPlaces: 8 },
         { type: 'trst', coin: 'eth', network: 'Mainnet', name: 'WeTrust', tokenContractAddress: '0xcb94be6f13a1182e4a4b6140cb7bf2025d28e41b', decimalPlaces: 6 },
         { type: 'bnty', coin: 'eth', network: 'Mainnet', name: 'Bounty0x', tokenContractAddress: '0xd2d6158683aee4cc838067727209a0aaf4359de3', decimalPlaces: 18 },
         { type: 'ind', coin: 'eth', network: 'Mainnet', name: 'Indorse', tokenContractAddress: '0xf8e386eda857484f5a12e4b5daa9984e06e73705', decimalPlaces: 18 },
@@ -216,7 +216,8 @@ exports.tokens = {
         { type: 'crpt', coin: 'eth', network: 'Mainnet', name: 'Crypterium', tokenContractAddress: '0x80a7e048f37a50500351c204cb407766fa3bae7f', decimalPlaces: 18 },
         { type: 'axpr', coin: 'eth', network: 'Mainnet', name: 'aXpire', tokenContractAddress: '0xc39e626a04c5971d770e319760d7926502975e47', decimalPlaces: 18 },
         { type: 'got', coin: 'eth', network: 'Mainnet', name: 'GOExchange', tokenContractAddress: '0xf11f2550769dac4226731b7732dd4e17e72b1b01', decimalPlaces: 18 },
-        { type: 'eurs', coin: 'eth', network: 'Mainnet', name: 'Stasis EURS', tokenContractAddress: '0xdb25f211ab05b1c97d595516f45794528a807ad8', decimalPlaces: 2 }
+        { type: 'eurs', coin: 'eth', network: 'Mainnet', name: 'Stasis EURS', tokenContractAddress: '0xdb25f211ab05b1c97d595516f45794528a807ad8', decimalPlaces: 2 },
+        { type: 'bax', coin: 'eth', network: 'Mainnet', name: 'BABB', tokenContractAddress: '0x9a0242b7a33dacbe40edb927834f96eb39f8fbcb', decimalPlaces: 18 }
       ]
     }
   },
