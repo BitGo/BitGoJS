@@ -1023,7 +1023,7 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
       'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
       'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
       'ledgerSequenceDelta', 'gasPrice', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
-      'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId'
+      'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy'
     ]);
     debug('prebuilding transaction: %O', whitelistedParams);
 
