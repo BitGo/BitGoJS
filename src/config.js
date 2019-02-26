@@ -295,9 +295,10 @@ const defaults = {
 // Supported cross-chain recovery routes. The coin to be recovered is the index, the valid coins for recipient wallets
 // are listed in the array.
 exports.supportedCrossChainRecoveries = {
-  btc: ['bch', 'ltc'],
-  bch: ['btc', 'ltc'],
-  ltc: ['btc', 'bch']
+  btc: ['bch', 'ltc', 'bsv'],
+  bch: ['btc', 'ltc', 'bsv'],
+  ltc: ['btc', 'bch', 'bsv'],
+  bsv: ['btc', 'ltc', 'bch']
 };
 
 // KRS providers and their fee structures
