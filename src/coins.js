@@ -27,6 +27,10 @@ coins.isBitcoinGold = function (network) {
   return typeforce.value(coins.BTG)(network.coin)
 }
 
+coins.isDash = function (network) {
+  return typeforce.value(coins.DASH)(network.coin)
+}
+
 coins.isLitecoin = function (network) {
   return typeforce.value(coins.LTC)(network.coin)
 }

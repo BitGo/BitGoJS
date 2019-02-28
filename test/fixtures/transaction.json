@@ -1148,6 +1148,64 @@
         "confirmations": 28048,
         "time": 1530821961,
         "blocktime": 1530821961
+      },
+      {
+        "description": "Coinbase Special transaction",
+        "url_comment": "https://testnet-insight.dashevo.org/insight-api/tx/7dc0635c2aee2eb002854ea0b3333b7272db73685d87fc322aa1d8694ba8b05d",
+        "hex": "03000500010000000000000000000000000000000000000000000000000000000000000000ffffffff270350c3001a4d696e656420627920416e74506f6f6c20ae001500208a4c32f70000000052010000ffffffff02408e5338000000001976a914bb5ad5fce0d6fd6c682a76ba5a150bf8a799725888ac408e5338000000001976a914884b39e7de5d989a2a7699bf50113107ddc72fed88ac0000000026010050c30000b4f3b6d1f4e2a398a7f9bea310d5f65f54862ec3b74cd4bc1543ebb0dd9c19d2",
+        "txid": "7dc0635c2aee2eb002854ea0b3333b7272db73685d87fc322aa1d8694ba8b05d",
+        "version": 3,
+        "type": 5,
+        "locktime": 0,
+        "extraPayloadSize": 38,
+        "extraPayload": "010050c30000b4f3b6d1f4e2a398a7f9bea310d5f65f54862ec3b74cd4bc1543ebb0dd9c19d2",
+        "vin": [
+          {
+            "coinbase": "0350c3001a4d696e656420627920416e74506f6f6c20ae001500208a4c32f70000000052010000",
+            "sequence": 4294967295,
+            "n": 0
+          }
+        ],
+        "vout": [
+          {
+            "value": 9.45000000,
+            "n": 0,
+            "scriptPubKey": {
+              "hex": "76a914bb5ad5fce0d6fd6c682a76ba5a150bf8a799725888ac",
+              "asm": "OP_DUP OP_HASH160 bb5ad5fce0d6fd6c682a76ba5a150bf8a7997258 OP_EQUALVERIFY OP_CHECKSIG",
+              "addresses": [
+                "ydQ62TqsGEAFPAreA1EvovrfNmLmXdnfZt"
+              ],
+              "type": "pubkeyhash"
+            }
+          },
+          {
+            "value": 9.45000000,
+            "n": 1,
+            "scriptPubKey": {
+              "hex": "76a914884b39e7de5d989a2a7699bf50113107ddc72fed88ac",
+              "asm": "OP_DUP OP_HASH160 884b39e7de5d989a2a7699bf50113107ddc72fed OP_EQUALVERIFY OP_CHECKSIG",
+              "addresses": [
+                "yYk6s6jKgXCQ3Mue3Xw5nHir7D8fmnCEh2"
+              ],
+              "type": "pubkeyhash"
+            }
+          }
+        ],
+        "blockhash": "0000000000d737f4b6f0fcd10ecd2f59e5e4f9409b1afae5fb50604510a2551f",
+        "blockheight": 50000,
+        "confirmations": 2360,
+        "time": 1550935893,
+        "blocktime": 1550935893,
+        "isCoinBase": true,
+        "valueOut": 18.9,
+        "size": 197,
+        "txlock": false,
+        "cbTx": {
+          "version": 1,
+          "height": 50000,
+          "merkleRootMNList": "d2199cddb0eb4315bcd44cb7c32e86545ff6d510a3bef9a798a3e2f4d1b6f3b4"
+        }
       }
     ]
   }
