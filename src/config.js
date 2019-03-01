@@ -217,7 +217,25 @@ exports.tokens = {
         { type: 'axpr', coin: 'eth', network: 'Mainnet', name: 'aXpire', tokenContractAddress: '0xc39e626a04c5971d770e319760d7926502975e47', decimalPlaces: 18 },
         { type: 'got', coin: 'eth', network: 'Mainnet', name: 'GOExchange', tokenContractAddress: '0xf11f2550769dac4226731b7732dd4e17e72b1b01', decimalPlaces: 18 },
         { type: 'eurs', coin: 'eth', network: 'Mainnet', name: 'Stasis EURS', tokenContractAddress: '0xdb25f211ab05b1c97d595516f45794528a807ad8', decimalPlaces: 2 },
-        { type: 'bax', coin: 'eth', network: 'Mainnet', name: 'BABB', tokenContractAddress: '0x9a0242b7a33dacbe40edb927834f96eb39f8fbcb', decimalPlaces: 18 }
+        { type: 'bax', coin: 'eth', network: 'Mainnet', name: 'BABB', tokenContractAddress: '0x9a0242b7a33dacbe40edb927834f96eb39f8fbcb', decimalPlaces: 18 },
+        { type: 'hxro', coin: 'eth', network: 'Mainnet', name: 'Hxro', tokenContractAddress: '0x4bd70556ae3f8a6ec6c4080a0c327b24325438f3', decimalPlaces: 18 },
+        { type: 'rfr', coin: 'eth', network: 'Mainnet', name: 'Refereum', tokenContractAddress: '0xd0929d411954c47438dc1d871dd6081f5c5e149c', decimalPlaces: 4 },
+        { type: 'cplt', coin: 'eth', network: 'Mainnet', name: 'Coineru Platinum', tokenContractAddress: '0xa3f7871a4b86bcc3b6e97c8fd0745e71c55e1f82', decimalPlaces: 8 },
+        { type: 'cslv', coin: 'eth', network: 'Mainnet', name: 'Coineru Silver', tokenContractAddress: '0x6dc05497f0b087c7692816e6acaa8bdda73907fc', decimalPlaces: 8 },
+        { type: 'cgld', coin: 'eth', network: 'Mainnet', name: 'Coineru Gold', tokenContractAddress: '0x3f50e6cc943351f00971a9d01ac32739895df826', decimalPlaces: 8 },
+        { type: 'nzdx', coin: 'eth', network: 'Mainnet', name: 'eToro New Zealand Dollar', tokenContractAddress: '0x6871799a4866bb9068b36b7a9bb93475ac77ac5d', decimalPlaces: 18 },
+        { type: 'jpyx', coin: 'eth', network: 'Mainnet', name: 'eToro Japanese Yen', tokenContractAddress: '0x743c79f88dcadc6e7cfd7fa2bd8e2bfc68dae053', decimalPlaces: 18 },
+        { type: 'rubx', coin: 'eth', network: 'Mainnet', name: 'eToro Russian Ruble', tokenContractAddress: '0xd6d69a3d5e51dbc2636dc332338765fcca71d5d5', decimalPlaces: 18 },
+        { type: 'cnyx', coin: 'eth', network: 'Mainnet', name: 'eToro Chinese Yuan', tokenContractAddress: '0x319ad3ff82bedddb3bc85fd7943002d25cdb3cb9', decimalPlaces: 18 },
+        { type: 'chfx', coin: 'eth', network: 'Mainnet', name: 'eToro Swiss Frank', tokenContractAddress: '0xe435502c85a4e7e79cfab4167af566c27a7a0784', decimalPlaces: 18 },
+        { type: 'usdx', coin: 'eth', network: 'Mainnet', name: 'eToro United States Dollar', tokenContractAddress: '0x4e3856c37b2fe7ff2fe34510cda82a1dffd63cd0', decimalPlaces: 18 },
+        { type: 'eurx', coin: 'eth', network: 'Mainnet', name: 'eToro Euro', tokenContractAddress: '0x05ac103f68e05da35e78f6165b9082432fe64b58', decimalPlaces: 18 },
+        { type: 'gbpx', coin: 'eth', network: 'Mainnet', name: 'eToro Pound Sterling', tokenContractAddress: '0xf85ef57fcdb36d628d063fa663e61e44d35ae661', decimalPlaces: 18 },
+        { type: 'audx', coin: 'eth', network: 'Mainnet', name: 'eToro Australian Dollar', tokenContractAddress: '0xdf1e9e1a218cff9888faef311d6fbb472e4175ce', decimalPlaces: 18 },
+        { type: 'cadx', coin: 'eth', network: 'Mainnet', name: 'eToro Canadian Dollar', tokenContractAddress: '0x8ed876e408959643479534a21970ec023d0fb51e', decimalPlaces: 18 },
+        { type: 'gldx', coin: 'eth', network: 'Mainnet', name: 'eToro Gold', tokenContractAddress: '0x7d2bebd6e41b05384f0a8eb8ff228daac6f39c96', decimalPlaces: 18 },
+        { type: 'slvx', coin: 'eth', network: 'Mainnet', name: 'eToro Silver', tokenContractAddress: '0x8e4d222dbd4f8f9e7c175e77d6e71715c3da78e0', decimalPlaces: 18 },
+        { type: 'slot', coin: 'eth', network: 'Mainnet', name: 'AlphaSlot', tokenContractAddress: '0xaee7474c3713ece228aa5ec43c89c708f2ec7ed2', decimalPlaces: 18 }
       ]
     }
   },
@@ -228,12 +246,13 @@ exports.tokens = {
         { type: 'terc', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x945ac907cf021a6bcd07852bb3b8c087051706a9', decimalPlaces: 0, name: 'ERC Test Token' },
         { type: 'tbst', coin: 'teth', network: 'Kovan', tokenContractAddress: '0xe5cdf77835ca2095881dd0803a77e844c87483cd', decimalPlaces: 0, name: 'Test BitGo Shield Token' },
         { type: 'schz', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x050e25a2630b2aee94546589fd39785254de112c', decimalPlaces: 18, name: 'SchnauzerCoin' },
-        { type: 'tcat', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x63137319f3a14a985eb31547370e0e3bd39b03b8', decimalPlaces: 18, name: 'Test CAT-20 Token' }
+        { type: 'tcat', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x63137319f3a14a985eb31547370e0e3bd39b03b8', decimalPlaces: 18, name: 'Test CAT-20 Token' },
+        { type: 'tfmf', coin: 'teth', network: 'Kovan', tokenContractAddress: '0xd8463d2f8c5b3be9de95c63b73a0ae4c79423452', decimalPlaces: 18, name: 'Test Formosa Financial Token' }
       ]
     },
     ofc: {
       tokens: [
-        { type: 'otestusd', coin: 'ofc', decimalPlaces:2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat:true }
+        { type: 'otestusd', coin: 'ofc', decimalPlaces: 2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat: true }
       ]
     }
   }
