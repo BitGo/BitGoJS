@@ -53,6 +53,15 @@ describe('V2 Wallet:', function() {
       });
     });
 
+    it('should create a new address from a listed wallet', co(function *() {
+      const { wallets: walletsListing } = yield wallets.list();
+
+      // there is one known bad wallet with missing keychains. This will break this test, so filter it out
+      const wallet = _(walletsListing).filter(w => w.id() !== '585cc6eb16efb0a50675fe4e3054662b').sample();
+      const { address } = yield wallet.createAddress('listed wallet address');
+      basecoin.isValidAddress(address).should.be.True();
+    }));
+
     it('should create new addresses in bulk', co(function *() {
       const result = yield wallet.createAddress({ count: 3 });
       result.should.have.property('addresses');

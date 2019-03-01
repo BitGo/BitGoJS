@@ -682,6 +682,7 @@ Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label, b
 
     // get keychains for address verification
     const keychains = yield Promise.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k, reqId }));
+    const rootAddress = _.get(this._wallet, 'receiveAddress.address');
 
     const newAddresses = _.times(count, co(function *createAndVerifyAddress() {
       this.bitgo._reqId = reqId;
@@ -695,7 +696,7 @@ Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label, b
       }
 
       newAddress.keychains = keychains;
-      const verificationData = _.merge({}, newAddress, { rootAddress: this._wallet.receiveAddress.address });
+      const verificationData = _.merge({}, newAddress, { rootAddress });
       this.baseCoin.verifyAddress(verificationData);
 
       return newAddress;
