@@ -6,7 +6,8 @@ const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
 const path = require('path');
 const _ = require('lodash');
-const debug = require('debug');
+const debugLib = require('debug');
+const debug = debugLib('bitgo:express');
 const https = require('https');
 const http = require('http');
 const co = Promise.coroutine;
@@ -18,6 +19,7 @@ const pjson = require('../package.json');
 const { TlsConfigurationError, NodeEnvironmentError } = require('./errors');
 
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
+const DEFAULT_TIMEOUT = 305 * 1000;
 
 /**
  * Do some additional argument validation which can't easily be done in argparse
@@ -95,15 +97,20 @@ function configureEnvironment(args) {
 /**
  * Create and configure the proxy middleware and add it to the app middleware stack
  *
- * @param app
- * @param env
+ * @param app bitgo-express Express app
+ * @param env BitGo environment name
+ * @param timeout Request timeout delay in milliseconds
  */
-function configureProxy(app, { env }) {
+function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
   // Mount the proxy middleware
-  let options = {};
+  const options = {
+    timeout: timeout,
+    proxyTimeout: timeout
+  };
+
   if (common.Environments[env].network === 'testnet') {
     // Need to do this to make supertest agent pass (set rejectUnauthorized to false)
-    options = { secure: false };
+    options.secure = false;
   }
 
   const proxy = httpProxy.createProxyServer(options);
@@ -114,6 +121,20 @@ function configureProxy(app, { env }) {
 
     const userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
     proxyReq.setHeader('User-Agent', userAgent);
+  });
+
+  proxy.on('error', (err, _, res) => {
+    debug('Proxy server error: ', err);
+    res.status(500).send({
+      error: 'BitGo Express encountered an error while attempting to proxy your request to BitGo. Please try again.'
+    });
+  });
+
+  proxy.on('econnreset', (err, _, res) => {
+    debug('Proxy server connection reset error: ', err);
+    res.status(500).send({
+      error: 'BitGo Express encountered a connection reset error while attempting to proxy your request to BitGo. Please try again.'
+    });
   });
 
   app.use(function(req, res) {
@@ -234,6 +255,11 @@ module.exports.parseArgs = function() {
     help: 'disable checking for proper NODE_ENV when running in prod environment'
   });
 
+  parser.addArgument(['-t', '--timeout'], {
+    defaultValue: process.env.BITGO_TIMEOUT * 1000 || DEFAULT_TIMEOUT,
+    help: 'Proxy server timeout in milliseconds'
+  });
+
   return parser.parseArgs();
 };
 
@@ -284,6 +310,8 @@ module.exports.createBaseUri = function({ bind, port }, tls) {
 };
 
 module.exports.app = function(args) {
+  debug('app is initializing');
+
   validateArgs(args);
 
   // Create express app
@@ -299,7 +327,7 @@ module.exports.app = function(args) {
 
   // enable specified debug namespaces
   if (_.isArray(args.debugnamespace)) {
-    _.forEach(args.debugnamespace, (ns) => debug.enable(ns));
+    _.forEach(args.debugnamespace, (ns) => debugLib.enable(ns));
   }
 
   // Decorate the client routes
