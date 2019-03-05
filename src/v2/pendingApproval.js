@@ -165,7 +165,8 @@ PendingApproval.prototype.approve = function(params, callback) {
     statement below.
    */
   const isColdWallet = !!_.get(this.wallet, '_wallet.isCold');
-  if (!params.xprv && !(params.walletPassphrase && !isColdWallet)) {
+  const isOFCWallet = this.baseCoin.getFamily() === 'ofc'; // Off-chain transactions don't need to be rebuilt
+  if (!params.xprv && !(params.walletPassphrase && !isColdWallet && !isOFCWallet)) {
     canRecreateTransaction = false;
   }
 
