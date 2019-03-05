@@ -1132,11 +1132,10 @@ Wallet.prototype.sendMany = function(params, callback) {
     throw new Error('invalid argument for instant - boolean expected');
   }
 
-  let fee;
-  let feeRate;
   let bitgoFee;
   let travelInfos;
   let finalResult;
+  let unspentsUsed;
 
   const acceptedBuildParams = [
     'numBlocks', 'feeRate', 'minConfirms', 'enforceMinConfirmsForChange',
@@ -1149,10 +1148,9 @@ Wallet.prototype.sendMany = function(params, callback) {
   return this.createAndSignTransaction(params)
   .then(function(transaction) {
     // Send the transaction
-    fee = transaction.fee;
-    feeRate = transaction.feeRate;
     bitgoFee = transaction.bitgoFee;
     travelInfos = transaction.travelInfos;
+    unspentsUsed = transaction.unspents;
     return self.sendTransaction({
       tx: transaction.tx,
       message: params.message,
@@ -1161,14 +1159,19 @@ Wallet.prototype.sendMany = function(params, callback) {
       otp: params.otp,
       // The below params are for logging only, and do not impact the API call
       estimatedSize: transaction.estimatedSize,
-      feeRate: feeRate,
-      fee: fee,
       buildParams: preservedBuildParams
     });
   })
   .then(function(result) {
-    result.fee = fee;
-    result.feeRate = feeRate;
+    const tx = bitcoin.Transaction.fromHex(result.tx);
+    const inputsSum = _.sumBy(unspentsUsed, 'value');
+    const outputsSum = _.sumBy(tx.outs, 'value');
+    const feeUsed = inputsSum - outputsSum;
+    if (isNaN(feeUsed)) {
+      throw new Error('invalid feeUsed');
+    }
+    result.fee = feeUsed,
+    result.feeRate = feeUsed * 1000 / tx.virtualSize();
     result.travelInfos = travelInfos;
     if (bitgoFee) {
       result.bitgoFee = bitgoFee;
@@ -1637,6 +1640,7 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     const estimatedSize = transaction.estimatedSize;
     const bitgoFee = transaction.bitgoFee;
     const travelInfos = transaction.travelInfos;
+    const unspents = transaction.unspents;
 
     // Sign the transaction
     try {
@@ -1659,12 +1663,13 @@ Wallet.prototype.createAndSignTransaction = function(params, callback) {
     transaction.feeSingleKeyWIF = params.feeSingleKeyWIF;
     const result = yield this.signTransaction(transaction);
     return _.extend(result, {
-      fee: fee,
-      feeRate: feeRate,
+      fee,
+      feeRate,
       instant: params.instant,
-      bitgoFee: bitgoFee,
-      travelInfos: travelInfos,
-      estimatedSize: estimatedSize
+      bitgoFee,
+      travelInfos,
+      estimatedSize,
+      unspents
     });
   }).call(this).asCallback(callback);
 };
