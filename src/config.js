@@ -141,7 +141,7 @@ exports.tokens = {
         { type: 'upp', coin: 'eth', network: 'Mainnet', name: 'Sentinel Protocol', tokenContractAddress: '0xc86d054809623432210c107af2e3f619dcfbf652', decimalPlaces: 18 },
         { type: 'bbx', coin: 'eth', network: 'Mainnet', name: 'BBX', tokenContractAddress: '0x71529cea068e3785efd4f18aaf59a6cb82b7e5cb', decimalPlaces: 18 },
         { type: 'ana', coin: 'eth', network: 'Mainnet', name: 'ANA', tokenContractAddress: '0xfafd51641ab09dff163cd04d2eb6b7865eb83f53', decimalPlaces: 18 },
-        { type: 'bid', coin: 'eth', network: 'Mainnet', name: 'Blockbid', tokenContractAddress: '0xdd5151da2ab25566e1d2a3c9a3e77396303f8a93', decimalPlaces: 8 },
+        { type: 'bid', coin: 'eth', network: 'Mainnet', name: 'Blockbid', tokenContractAddress: '0xdd5151da2ab25566e1d2a3c9a3e77396303f8a93', decimalPlaces: 2 },
         { type: 'trst', coin: 'eth', network: 'Mainnet', name: 'WeTrust', tokenContractAddress: '0xcb94be6f13a1182e4a4b6140cb7bf2025d28e41b', decimalPlaces: 6 },
         { type: 'bnty', coin: 'eth', network: 'Mainnet', name: 'Bounty0x', tokenContractAddress: '0xd2d6158683aee4cc838067727209a0aaf4359de3', decimalPlaces: 18 },
         { type: 'ind', coin: 'eth', network: 'Mainnet', name: 'Indorse', tokenContractAddress: '0xf8e386eda857484f5a12e4b5daa9984e06e73705', decimalPlaces: 18 },
