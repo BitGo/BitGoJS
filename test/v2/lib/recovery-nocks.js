@@ -1310,7 +1310,7 @@ module.exports.nockWrongChainRecoveries = function() {
     pendingApprovals: []
   })
   .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf')
-  .times(2)
+  .times(3)
   .reply(200, {
     id: '5abace103cddfbb607d8239d806671bf',
     users: [
@@ -1418,67 +1418,10 @@ module.exports.nockWrongChainRecoveries = function() {
     }
   })
   .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2N9jq7k8cvFhuucVhhbb8BdWTeEjYxKmSfy')
+  .times(7)
   .reply(404)
   .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
-  .reply(200, {
-    id: '5abace113cddfbb607d823a192372c88',
-    address: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
-    chain: 0,
-    index: 0,
-    coin: 'tbtc',
-    wallet: '5abace103cddfbb607d8239d806671bf',
-    coinSpecific: {
-      redeemScript: '5221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153ae'
-    },
-    balance: {
-      updated: '2018-03-27T23:29:42.799Z',
-      numTx: 2,
-      numUnspents: 0,
-      totalReceived: 65000000,
-      totalSent: 65000000
-    }
-  })
-  .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
-  .reply(200, {
-    id: '5abace113cddfbb607d823a192372c88',
-    address: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
-    chain: 0,
-    index: 0,
-    coin: 'tbtc',
-    wallet: '5abace103cddfbb607d8239d806671bf',
-    coinSpecific: {
-      redeemScript: '5221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153ae'
-    },
-    balance: {
-      updated: '2018-03-27T23:29:42.799Z',
-      numTx: 2,
-      numUnspents: 0,
-      totalReceived: 65000000,
-      totalSent: 65000000
-    }
-  })
-  .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
-  .reply(200, {
-    id: '5abace113cddfbb607d823a192372c88',
-    address: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
-    chain: 0,
-    index: 0,
-    coin: 'tbtc',
-    wallet: '5abace103cddfbb607d8239d806671bf',
-    coinSpecific: {
-      redeemScript: '5221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153ae'
-    },
-    balance: {
-      updated: '2018-03-27T23:29:42.799Z',
-      numTx: 2,
-      numUnspents: 0,
-      totalReceived: 65000000,
-      totalSent: 65000000
-    }
-  })
-  .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2Mzoz5myftFMQLRGpTdfVv7LXuMpehEXXhF')
-  .reply(404)
-  .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
+  .times(7)
   .reply(200, {
     id: '5abace113cddfbb607d823a192372c88',
     address: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
@@ -1508,7 +1451,7 @@ module.exports.nockWrongChainRecoveries = function() {
     encryptedPrv: '{"iv":"JmWw8SBtiQ80KNGvjHvknA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"+V24Zb2ZpiE=","ct":"JUDBx3xDRuWnlV7LH7Wbt+eUixifofSYjA3kVNUZwRXh+7JIrBfQeCWCvvWopTJi7YgWaM+aLjbXB8mZrrE+14xmFw4evg34De4Omd7vnnbbk2uxe/r+bL7hL3tCz+b6uv9wd/tMQmLyu5PJuIrj5n8gv8SmNn4="}'
   })
   .get('/tbtc/key/5abacdffae0ec7c107c7d9cf6d60a886')
-  .times(2)
+  .times(4)
   .reply(200, {
     id: '5abacdffae0ec7c107c7d9cf6d60a886',
     users: [
@@ -1734,7 +1677,81 @@ module.exports.nockWrongChainRecoveries = function() {
       }
     ]
   })
+  .get('/tbsv/public/tx/94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26')
+  .reply(200, {
+    id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
+    normalizedTxHash: '6346359162b9c42018b8e852e9e5a52ced224bf0c1d55393554472645e2c2dbe',
+    date: '2018-03-27T23:34:33.819Z',
+    blockHash: '0000000012798d16cefaa7f19b105afe2ea1d4007dd28ca233d65d913a15751c',
+    blockHeight: 1222314,
+    blockPosition: 4,
+    confirmations: 15,
+    fee: 5610,
+    feeString: '5610',
+    size: 370,
+    inputIds: [
+      '8f6ab338178e97d3e9a65cd12f4919e8354086cee3d0305ca97d9c96f60043de:0'
+    ],
+    inputs: [
+      {
+        id: '8f6ab338178e97d3e9a65cd12f4919e8354086cee3d0305ca97d9c96f60043de:0',
+        address: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
+        value: 1300000000,
+        valueString: '1300000000',
+        redeemScript: '52210388d574f35d3454b9ed0af9862bc83f9abb2c2c5bec298248f8da9b50fb0fe1d72103fbe5cf926752281de99adc5a42257ad9081178ab46b42a85b7ae76f15f75cf17210346f91ff493951e85008ae28665a1c272ef9e84bfeddca2014bc1cc821c39a87e53ae',
+        isSegwit: false
+      }
+    ],
+    outputs: [
+      {
+        id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26:0',
+        address: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
+        value: 60000000,
+        valueString: '60000000'
+      },
+      {
+        id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26:1',
+        address: '2Mzoz5myftFMQLRGpTdfVv7LXuMpehEXXhF',
+        value: 1239994390,
+        valueString: '1239994390'
+      }
+    ],
+    entries: [
+      {
+        address: '2Mzoz5myftFMQLRGpTdfVv7LXuMpehEXXhF',
+        inputs: 0,
+        outputs: 1,
+        value: 1239994390,
+        valueString: '1239994390'
+      },
+      {
+        address: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
+        inputs: 1,
+        outputs: 0,
+        value: -1300000000,
+        valueString: '-1300000000'
+      },
+      {
+        address: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
+        inputs: 0,
+        outputs: 1,
+        value: 60000000,
+        valueString: '60000000'
+      }
+    ]
+  })
   .get('/tbch/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
+  .reply(200, [
+    {
+      id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26:0',
+      address: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
+      value: 60000000,
+      valueString: '60000000',
+      blockHeight: 1222314,
+      date: '2018-03-27T23:34:33.819Z'
+    }
+  ])
+  .get('/tbsv/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
   .reply(200, [
     {
       id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26:0',
