@@ -1,5 +1,16 @@
 # BitGoJS Release Notes
 
+## 4.47.0
+### New Features
+- Add support for new ERC 20 Token (BAX)
+- Allow passing custom unspent fetch parameters to `createTransaction`
+- Handle missing optional Ethereum dependencies more gracefully
+- Allow fetching of SegWit unspents for Ledger-backed wallets
+
+### Bug Fixes
+- Specify exact versions of dependencies
+- Update token contract hash for ERC20 Token (BID)
+
 ## 4.46.0
 ### New Features
 - Add support for new ERC 20 Tokens (AMON, CRPT, AXPR, GOT, EURS)
