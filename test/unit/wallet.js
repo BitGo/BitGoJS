@@ -13,6 +13,7 @@ const common = require('../../src/common');
 const bitcoin = require('../../src/bitcoin');
 const should = require('should');
 const nock = require('nock');
+const sinon = require('sinon');
 
 nock.disableNetConnect();
 
@@ -672,6 +673,46 @@ describe('Wallet Prototype Methods', function() {
 
   });
 
+  describe('Send Many', function() {
+    it('responds with proper fee and fee rate', co(function *() {
+      const params = {
+        recipients: [{
+          address: '2MutpXVYs8Lyk74pVDn3eAG7xnK4Wc2kjTQ',
+          amount: 300000
+        }]
+      };
+      const unspents = [{
+        value: 8170
+      }, {
+        value: 800000
+      }];
+      const createAndSignResponse = {
+        bitgoFee: 0,
+        travelInfos: [],
+        unspents,
+        tx: 'halfsignedhex'
+      };
+      sinon.stub(fakeWallet, 'createAndSignTransaction').returns(Promise.resolve(createAndSignResponse));
+      const getSendTxResponse = () => ({
+        status: 'accepted',
+        tx: '0100000000010228b5c3e2789d4770fc397ec79fa7255f86235297c5a04def678b481b8b09e81b0100000023220020b3bbe067960be39501f365b8999d53f2a8285d8d9836f61fad020e6a4a9e26fdffffffff1510e90411a86c49f2a52546a32a03febde2bc604741f0e85dc47adec33f515900000000fdfd0000483045022100a44bbf97b155c57703862be69d2b20c4b2ab9e94f402595880bf74402ccc87e202200a4aaf98f939b65c98ca08eb96074c222ecb1fc37e359b1d67a05f1c56dedfc001473044022003f3989a14284f132bbb550118c20256d4ea737704123a29955acc1d03ea6eb7022017223da7edcf73076d89875aa33360aa6a12141807f683c6c1b9a5a0d3ff6019014c695221025789857cc8be110ff4cbf354b52dd0e7e9326c6bfe0aee6c30c1ee69660c3dc02102f58f1b1516d05814ae688ca701856695e27050e3e16d3a2351284d7af84498882102385c7bcec3f38c13e87b558aebf2f20a8928e7ecbe11e7c3a47792bc8e33fe8853aeffffffff02e09304000000000017a9141d0c791cec3af1f37808d42f04593095d6fdea268705bc07000000000017a914d8c720f646c7c56c5467248e47c72dc0b2d30bbc87040047304402201eaa1359fffd3bdec5b48268bd2f15193a299c22b1970356f390883473324651022074186232f02245af9c0977031448c2c99e7b7e2b05b2ba4b32c3227d8ca1494e01483045022100bd61b37051c28533ea0b00dda75b1c4f1dee1b683bb7351b2d8dd720f6dfbe1102203acc4cf9d2dd44b294aa25812e99e7d8eb3730e4ff6f889d3cdcd525195750b8016952210219d093c18c27cb547737b4a49dddac9c3412b10e9f880eb30053c3eba81928542103747118892cac1b4da11526fc4ebeebe168dae0907cefb1a1812541cd46b07602210339f73b6750f8f91efd484b5aa2974321a6cc2776d5bd78b9cfb5fe18e3b2d66253ae005a9e1600',
+        hash: 'f8df43c2c650b3bb11277aee4531db99a715fa3b9dfd3d45a8d171342c1bf780',
+        instant: false
+      });
+      const expectedResult = Object.assign(
+        {
+          fee: 1285,
+          feeRate: 2519.607843137255
+        },
+        getSendTxResponse()
+      );
+      sinon.stub(fakeWallet, 'sendTransaction').resolves(getSendTxResponse());
+      const result = yield fakeWallet.sendMany(params);
+      result.tx.should.equal(expectedResult.tx);
+      result.fee.should.equal(expectedResult.fee);
+      result.feeRate.should.equal(expectedResult.feeRate);
+    }));
+  });
 
   describe('Accelerate Transaction (server mocked)', function accelerateTxMockedDescribe() {
 

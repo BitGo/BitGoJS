@@ -24,7 +24,7 @@ class CrossChainRecoveryTool {
     }
 
     // List of coins we support. Add modifiers (e.g. segwit) after the dash
-    this.supportedCoins = ['btc', 'bch', 'ltc', 'btc-segwit'];
+    this.supportedCoins = ['btc', 'bch', 'ltc', 'btc-segwit', 'bsv'];
 
     if (!opts.sourceCoin || !this.supportedCoins.includes(opts.sourceCoin.getFamily())) {
       throw new Error('Please set a valid source coin');
@@ -39,6 +39,8 @@ class CrossChainRecoveryTool {
     this.feeRates = {
       bch: 20,
       tbch: 20,
+      bsv: 20,
+      tbsv: 20,
       btc: 80,
       tbtc: 80,
       ltc: 100,

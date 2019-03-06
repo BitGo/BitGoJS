@@ -490,7 +490,7 @@ describe('BitGo Prototype Methods', function() {
 
       // currently four tokens are defined for non-production environments
       should.exist(tokens);
-      tokens.length.should.equal(4);
+      tokens.length.should.equal(5);
     }));
 
     after(function tokenDefinitionsAfter() {
