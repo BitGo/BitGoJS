@@ -621,6 +621,27 @@ describe('Recovery:', function() {
       recovery.txInfo.should.have.property('inputs');
     }));
 
+    it('should recover BSV sent to the wrong chain', co(function *() {
+      const recovery = yield bitgo.coin('tbsv').recoverFromWrongChain({
+        coin: bitgo.coin('tbtc'),
+        txid: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
+        recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
+        wallet: '5abace103cddfbb607d8239d806671bf',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE
+      });
+
+      should.exist(recovery);
+      recovery.recoveryAddress.should.equal('2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2');
+      recovery.recoveryAmount.should.equal(59993200);
+      recovery.recoveryCoin.should.equal('tbtc');
+      recovery.sourceCoin.should.equal('tbsv');
+      recovery.txHex.should.equal('020000000126eaa1da6e2d641f6a39812a0a78a4ef0a44087845435121ea94d14b673c149400000000b7004830450221009784391e9fab5bd8e3c3902477521ed1e8e8c1f6d584c3ca918cf40053450cdc022016597cf28a6b38fbe0f1eef5608af049912cadc6390b49277602d842c89704a24100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff01706c93030000000017a914ffc45981f784d9bd9feb2d305061404f50bc1e058700000000');
+      recovery.walletId.should.equal('5abace103cddfbb607d8239d806671bf');
+      recovery.should.have.property('txInfo');
+      recovery.txInfo.should.have.property('unspents');
+      recovery.txInfo.should.have.property('inputs');
+    }));
+
     it('should generate an unsigned recovery transaction', co(function *() {
       const recovery = yield bitgo.coin('tbtc').recoverFromWrongChain({
         coin: bitgo.coin('tltc'),
