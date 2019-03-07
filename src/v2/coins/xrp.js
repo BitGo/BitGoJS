@@ -383,7 +383,8 @@ class Xrp extends BaseCoin {
   recover(params, callback) {
     const rippledUrl = this.getRippledUrl();
     const self = this;
-    const isKrsRecovery = params.backupKey.startsWith('xpub');
+    const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
+    const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
     return this.initiateRecovery(params)
     .then(function(keys) {
@@ -493,8 +494,11 @@ class Xrp extends BaseCoin {
       };
       const txJSON = JSON.stringify(transaction);
 
-      const userKey = keys[0].getKey().getPrivateKeyBuffer().toString('hex');
+      if (isUnsignedSweep) {
+        return txJSON;
+      }
       const rippleLib = ripple();
+      const userKey = keys[0].getKey().getPrivateKeyBuffer().toString('hex');
       const userSignature = rippleLib.signWithPrivateKey(txJSON, userKey, { signAs: userAddress });
 
       let signedTransaction;
@@ -507,6 +511,7 @@ class Xrp extends BaseCoin {
         signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
       }
 
+
       const transactionExplanation = self.explainTransaction({ txHex: signedTransaction.signedTransaction });
       transactionExplanation.txHex = signedTransaction.signedTransaction;
 
@@ -514,7 +519,6 @@ class Xrp extends BaseCoin {
         transactionExplanation.backupKey = params.backupKey;
         transactionExplanation.coin = self.getChain();
       }
-
       return transactionExplanation;
     })
     .nodeify(callback);
@@ -529,7 +533,8 @@ class Xrp extends BaseCoin {
       const destinationAddress = params.recoveryDestination;
       const passphrase = params.walletPassphrase;
 
-      const isKrsRecovery = backupKey.startsWith('xpub');
+      const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
+      const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 
       if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new Error('unknown key recovery service provider');
@@ -537,7 +542,7 @@ class Xrp extends BaseCoin {
 
       const validatePassphraseKey = function(userKey, passphrase) {
         try {
-          if (!userKey.startsWith('xprv')) {
+          if (!userKey.startsWith('xprv') && !isUnsignedSweep) {
             userKey = sjcl.decrypt(passphrase, userKey);
           }
           const userHDNode = prova.HDNode.fromBase58(userKey);
@@ -553,7 +558,7 @@ class Xrp extends BaseCoin {
 
       // Validate the backup key
       try {
-        if (!backupKey.startsWith('xprv') && !isKrsRecovery) {
+        if (!backupKey.startsWith('xprv') && !isKrsRecovery && !isUnsignedSweep) {
           backupKey = sjcl.decrypt(passphrase, backupKey);
         }
         const backupHDNode = prova.HDNode.fromBase58(backupKey);
