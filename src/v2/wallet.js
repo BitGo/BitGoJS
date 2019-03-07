@@ -632,7 +632,7 @@ Wallet.prototype.getAddress = function(params, callback) {
  * @param {Boolean} [lowPriority] Ethereum-specific param to create address using low priority fee address
  * @param callback
  */
-Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label, bech32, lowPriority } = {}, callback) {
+Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label, lowPriority } = {}, callback) {
   return co(function *createAddress() {
     const addressParams = {};
     const reqId = util.createRequestId();
@@ -660,13 +660,6 @@ Wallet.prototype.createAddress = function({ chain, gasPrice, count = 1, label, b
 
     if (!_.isInteger(count) || count <= 0 || count > 250) {
       throw new Error('count has to be a number between 1 and 250');
-    }
-
-    if (!_.isUndefined(bech32)) {
-      if (!_.isBoolean(bech32)) {
-        throw new Error('bech32 has to be a boolean');
-      }
-      addressParams.bech32 = bech32;
     }
 
     if (!_.isUndefined(lowPriority)) {
