@@ -996,7 +996,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const sigScript = this.parseSignatureScript(transaction, idx);
 
       if (hasWitnessScript) {
-        if (!txInfo.unspents) {
+        if (!txInfo || !txInfo.unspents) {
           // segwit txs require input values, cannot validate signatures
           debug('unable to retrieve input amounts from unspents - cannot validate segwit input signatures');
           return 0;
