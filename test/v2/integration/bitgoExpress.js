@@ -5,8 +5,14 @@ const request = require('supertest-as-promised');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const expressApp = require('../../../src/expressApp').app;
+const nock = require('nock');
+const common = require('../../../src/common');
 
 describe('Bitgo Express', function() {
+  if (process.browser) {
+    // Bitgo Express tests not supported in browser
+    this.skip();
+  }
 
   let agent;
   before(() => {
@@ -207,4 +213,58 @@ describe('Bitgo Express', function() {
     res.body.marketData.should.have.length(1);
     res.body.marketData[0].should.have.property('coin', 'tbtc');
   }));
+
+  describe('proxy error handling', () => {
+    let agent;
+    before(() => {
+      const args = {
+        debug: true,
+        env: 'test',
+        timeout: 500
+      };
+
+      const app = expressApp(args);
+      agent = request.agent(app);
+
+      if (!nock.isActive()) {
+        nock.activate();
+      }
+      nock.disableNetConnect();
+      nock.enableNetConnect('127.0.0.1');
+    });
+
+    after(() => {
+      if (nock.isActive()) {
+        nock.restore();
+      }
+    });
+
+    it('should handle ECONNRESET errors from the proxy server', co(function *() {
+      const path = '/api/v2/fakeroute';
+
+      // client constants are retrieved upon BitGo
+      // object creation so they need to be nocked
+      nock(common.Environments.test.uri)
+      .get('/api/v1/client/constants')
+      .reply(200, {});
+
+      // first request to ping endpoint should time out
+      nock(common.Environments.test.uri)
+      .get(path)
+      .socketDelay(1000)
+      .reply(200);
+
+      // we should return 500 in the case of a timeout
+      let pingRes = yield agent.get(path).send({});
+      pingRes.should.have.status(500);
+
+      nock(common.Environments.test.uri)
+      .get(path)
+      .reply(200);
+
+      pingRes = yield agent.get(path).send({});
+      pingRes.should.have.status(200);
+    }));
+  });
 });
+

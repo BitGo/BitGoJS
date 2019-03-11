@@ -290,6 +290,32 @@ describe('Recovery:', function() {
         recovery.fee.fee.should.equal('30');
       });
     });
+
+    it('should generate an XRP unsigned sweep', function() {
+      recoveryNocks.nockXrpRecovery();
+
+      const basecoin = bitgo.coin('txrp');
+      return basecoin.recover({
+        userKey: 'xpub661MyMwAqRbcF9Ya4zDHGzDtJz3NaaeEGbQ6rnqnNxL9RXDJNHcfzAyPUBXuKXjytvJNzQxqbjBwmPveiYX323Zp8Zx2RYQN9gGM7ntiXxr',
+        backupKey: 'xpub661MyMwAqRbcFtWdmWHKZEh9pYiJrAGTu1NNSwxY2S63tU9nGcfCAbNUKQuFqXRTRk8KkuBabxo6YjeBri8Q7dkMsmths6MVxSd6MTaeCmd',
+        rootAddress: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
+        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        krsProvider: 'keyternal',
+        recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345'
+      })
+      .then(function(recovery) {
+        const json = JSON.parse(recovery);
+        json.TransactionType.should.equal('Payment');
+        json.Account.should.equal('raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA');
+        json.Destination.should.equal('rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2');
+        json.DestinationTag.should.equal(12345);
+        json.Amount.should.equal('9899000000');
+        json.Flags.should.equal(2147483648);
+        json.LastLedgerSequence.should.equal(1397137);
+        json.Fee.should.equal('30');
+        json.Sequence.should.equal(4);
+      });
+    });
   });
 
   describe('Recover Litecoin', function() {
@@ -515,6 +541,25 @@ describe('Recovery:', function() {
       recovery.should.have.property('recoveryAmount');
       recovery.recoveryAmount.should.equal(74999500);
     }));
+
+    it('should generate an XLM unsigned sweep', co(function *() {
+      recoveryNocks.nockXlmRecovery();
+
+      const basecoin = bitgo.coin('txlm');
+      const recovery = yield basecoin.recover({
+        userKey: 'GBNK4FJO6FDQNBVLUP7MICEJUVINPNJZCDDTTYS3LVFC6J7LKEXLOBKM',
+        backupKey: 'GCBABJPE3UTZ3JPUEIZEXAQQ5CMNX5UPYKOB7HHXSHBCIGD7VV64H6KU',
+        rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
+        krsProvider: 'keyternal'
+      });
+
+      recovery.should.have.property('tx');
+      recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAR4ZswAAAAAAAAAAA==');
+      recovery.should.have.property('recoveryAmount');
+      recovery.recoveryAmount.should.equal(74999500);
+    }));
   });
 
   describe('Recover ERC20', function() {
@@ -614,6 +659,27 @@ describe('Recovery:', function() {
       recovery.recoveryAmount.should.equal(59993200);
       recovery.recoveryCoin.should.equal('tbtc');
       recovery.sourceCoin.should.equal('tbch');
+      recovery.txHex.should.equal('020000000126eaa1da6e2d641f6a39812a0a78a4ef0a44087845435121ea94d14b673c149400000000b7004830450221009784391e9fab5bd8e3c3902477521ed1e8e8c1f6d584c3ca918cf40053450cdc022016597cf28a6b38fbe0f1eef5608af049912cadc6390b49277602d842c89704a24100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff01706c93030000000017a914ffc45981f784d9bd9feb2d305061404f50bc1e058700000000');
+      recovery.walletId.should.equal('5abace103cddfbb607d8239d806671bf');
+      recovery.should.have.property('txInfo');
+      recovery.txInfo.should.have.property('unspents');
+      recovery.txInfo.should.have.property('inputs');
+    }));
+
+    it('should recover BSV sent to the wrong chain', co(function *() {
+      const recovery = yield bitgo.coin('tbsv').recoverFromWrongChain({
+        coin: bitgo.coin('tbtc'),
+        txid: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
+        recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
+        wallet: '5abace103cddfbb607d8239d806671bf',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE
+      });
+
+      should.exist(recovery);
+      recovery.recoveryAddress.should.equal('2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2');
+      recovery.recoveryAmount.should.equal(59993200);
+      recovery.recoveryCoin.should.equal('tbtc');
+      recovery.sourceCoin.should.equal('tbsv');
       recovery.txHex.should.equal('020000000126eaa1da6e2d641f6a39812a0a78a4ef0a44087845435121ea94d14b673c149400000000b7004830450221009784391e9fab5bd8e3c3902477521ed1e8e8c1f6d584c3ca918cf40053450cdc022016597cf28a6b38fbe0f1eef5608af049912cadc6390b49277602d842c89704a24100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff01706c93030000000017a914ffc45981f784d9bd9feb2d305061404f50bc1e058700000000');
       recovery.walletId.should.equal('5abace103cddfbb607d8239d806671bf');
       recovery.should.have.property('txInfo');

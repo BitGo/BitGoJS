@@ -369,7 +369,9 @@ class Xlm extends BaseCoin {
     let backupKey = params.backupKey;
 
     // Stellar's Ed25519 public keys start with a G, while private keys start with an S
-    const isKrsRecovery = backupKey.startsWith('G');
+    const isKrsRecovery = backupKey.startsWith('G') && !userKey.startsWith('G');
+    const isUnsignedSweep = backupKey.startsWith('G') && userKey.startsWith('G');
+
 
     if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
       throw new Error(`Unknown key recovery service provider - ${params.krsProvider}`);
@@ -384,27 +386,28 @@ class Xlm extends BaseCoin {
     }
 
     try {
-      if (!userKey.startsWith('S')) {
+      if (!userKey.startsWith('S') && !userKey.startsWith('G')) {
         userKey = this.bitgo.decrypt({
           input: userKey,
           password: params.walletPassphrase
         });
       }
 
-      keys.push(stellar.Keypair.fromSecret(userKey));
+      const userKeyPair = isUnsignedSweep ? stellar.Keypair.fromPublicKey(userKey) : stellar.Keypair.fromSecret(userKey);
+      keys.push(userKeyPair);
     } catch (e) {
       throw new Error('Failed to decrypt user key with passcode - try again!');
     }
 
     try {
-      if (!backupKey.startsWith('S') && !isKrsRecovery) {
+      if (!backupKey.startsWith('S') && !isKrsRecovery && !isUnsignedSweep) {
         backupKey = this.bitgo.decrypt({
           input: backupKey,
           password: params.walletPassphrase
         });
       }
 
-      if (isKrsRecovery) {
+      if (isKrsRecovery || isUnsignedSweep) {
         keys.push(stellar.Keypair.fromPublicKey(backupKey));
       } else {
         keys.push(stellar.Keypair.fromSecret(backupKey));
@@ -431,7 +434,8 @@ class Xlm extends BaseCoin {
   recover(params, callback) {
     return co(function *() {
       const [userKey, backupKey] = this.initiateRecovery(params);
-      const isKrsRecovery = params.backupKey.startsWith('G');
+      const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
+      const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
 
       if (!stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
         throw new Error(`Invalid wallet address: ${ params.rootAddress }`);
@@ -492,9 +496,12 @@ class Xlm extends BaseCoin {
         });
       }
       txBuilder = txBuilder.addOperation(operation).build();
-      txBuilder.sign(userKey);
 
-      if (!isKrsRecovery) {
+      if (!isUnsignedSweep) {
+        txBuilder.sign(userKey);
+      }
+
+      if (!isKrsRecovery && !isUnsignedSweep) {
         txBuilder.sign(backupKey);
       }
 

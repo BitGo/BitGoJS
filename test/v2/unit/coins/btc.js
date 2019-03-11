@@ -430,6 +430,19 @@ describe('BTC:', function() {
       });
 
       describe('success', () => {
+        it('should handle undefined tx info for segwit transactions', () => {
+          const { signatures, inputSignatures } = coin.explainTransaction({
+            txHex: txs['p2sh-p2wsh'].halfSigned
+          });
+
+          should.exist(signatures);
+          signatures.should.equal(0);
+
+          should.exist(inputSignatures);
+          inputSignatures.should.have.length(2);
+          inputSignatures.should.deepEqual([0, 0]);
+        });
+
         it('should count zero signatures on an unsigned transaction', () => {
           const { signatures, inputSignatures } = coin.explainTransaction({
             txHex: unsignedTx
