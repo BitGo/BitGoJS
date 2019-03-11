@@ -177,6 +177,11 @@ describe('Bitgo Express', function() {
     res.should.have.status(404);
   }));
 
+  it('should proxy the oauth/token route', co(function *() {
+    const res = yield agent.post('/oauth/token').send();
+    res.should.not.have.status(404);
+  }));
+
   it('should handle coinless routes', co(function *() {
     const routes = [
       agent.get('/api/v2/reports/'),
