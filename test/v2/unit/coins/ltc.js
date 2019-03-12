@@ -100,7 +100,7 @@ describe('LTC:', function() {
       testCoin.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
     });
 
-    it('should generate custom chain bech32 p2wsh address', () => {
+    it('should generate custom chain p2wsh bech32 address', () => {
       const generatedAddress = coin.generateAddress({ keychains, chain: 21, index: 113, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
       const generatedTestAddress = testCoin.generateAddress({ keychains, chain: 21, index: 113, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
 

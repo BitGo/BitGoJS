@@ -21,28 +21,28 @@ describe('BCH:', function() {
 
     // we use mainnet bch so we can reuse the mainnet address examples
     it('should correctly convert addresses', function() {
-      // P2PKH bech32 -> bech32
-      bch.canonicalAddress('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'bech32').should.equal('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a');
+      // P2PKH cashaddr -> cashaddr
+      bch.canonicalAddress('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'cashaddr').should.equal('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a');
 
-      // P2PKH base58 -> bech32
-      bch.canonicalAddress('1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu', 'bech32').should.equal('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a');
+      // P2PKH base58 -> cashaddr
+      bch.canonicalAddress('1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu', 'cashaddr').should.equal('bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a');
 
-      // P2SH bech32 -> bech32
-      bch.canonicalAddress('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq', 'bech32').should.equal('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq');
+      // P2SH cashaddr -> cashaddr
+      bch.canonicalAddress('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq', 'cashaddr').should.equal('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq');
 
-      // P2SH base58 -> bech32
-      bch.canonicalAddress('3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC', 'bech32').should.equal('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq');
+      // P2SH base58 -> cashaddr
+      bch.canonicalAddress('3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC', 'cashaddr').should.equal('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq');
 
       // no 'bitcoincash:' prefix
-      bch.canonicalAddress('ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq', 'bech32').should.equal('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq');
+      bch.canonicalAddress('ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq', 'cashaddr').should.equal('bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq');
 
-      // P2PKH bech32 -> base58
+      // P2PKH cashaddr -> base58
       bch.canonicalAddress('bitcoincash:qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r', 'base58').should.equal('16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb');
 
-      // P2PKH bech32 -> base58
+      // P2PKH cashaddr -> base58
       bch.canonicalAddress('16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb', 'base58').should.equal('16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb');
 
-      // P2SH bech32 -> base58
+      // P2SH cashaddr -> base58
       bch.canonicalAddress('bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e', 'base58').should.equal('3LDsS579y7sruadqu11beEJoTjdFiFCdX4');
 
       // P2SH base58 -> base58
@@ -55,12 +55,12 @@ describe('BCH:', function() {
       bch.canonicalAddress('bitcoincash:QQQ3728YW0Y47SQN6L2NA30MCW6ZM78DZQRE909M2R', 'base58').should.equal('16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb');
 
       // testnet addresses
-      tbch.canonicalAddress('2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X', 'bech32').should.equal('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f');
-      tbch.canonicalAddress('n3jYBjCzgGNydQwf83Hz6GBzGBhMkKfgL1', 'bech32').should.equal('bchtest:qremgr9dr9x5swv82k69qdjzrvdxgkaaesftdp5xla');
-      tbch.canonicalAddress('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'bech32').should.equal('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f');
+      tbch.canonicalAddress('2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X', 'cashaddr').should.equal('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f');
+      tbch.canonicalAddress('n3jYBjCzgGNydQwf83Hz6GBzGBhMkKfgL1', 'cashaddr').should.equal('bchtest:qremgr9dr9x5swv82k69qdjzrvdxgkaaesftdp5xla');
+      tbch.canonicalAddress('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'cashaddr').should.equal('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f');
       tbch.canonicalAddress('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'base58').should.equal('2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X');
       tbch.canonicalAddress('prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'base58').should.equal('2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X');
-      tbch.canonicalAddress('prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'bech32').should.equal('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f');
+      tbch.canonicalAddress('prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f', 'cashaddr').should.equal('bchtest:prgrnjengs555k3cff2s3gqxg3xyyr9uzyh9js5m8f');
     });
 
     it('should reject invalid addresses', function() {
@@ -69,7 +69,7 @@ describe('BCH:', function() {
         bch.canonicalAddress('bitcoincash:sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e', 'base58');
       });
 
-      // mismatched data segment (bech32)
+      // mismatched data segment (cashaddr)
       assert.throws(function() {
         bch.canonicalAddress('bitcoincash:yr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e', 'base58');
       });
@@ -94,7 +94,7 @@ describe('BCH:', function() {
 
       // mismatched capitalization
       assert.throws(function() {
-        bch.canonicalAddress('bitcoincash:QPM2Qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'bech32');
+        bch.canonicalAddress('bitcoincash:QPM2Qsznhks23z7629mms6s4cwef74vcwvy22gdx6a', 'cashaddr');
       });
 
       // improper version

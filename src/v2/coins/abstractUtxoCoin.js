@@ -644,7 +644,7 @@ class AbstractUtxoCoin extends BaseCoin {
     this.constructor.prepareTransactionBuilder(txb);
 
     const signatureIssues = [];
-    const bech32Indices = [];
+    const nativeSegwitIndices = [];
 
     for (let index = 0; index < transaction.ins.length; ++index) {
       debug('Signing input %d of %d', index + 1, transaction.ins.length);
@@ -665,19 +665,20 @@ class AbstractUtxoCoin extends BaseCoin {
       debug('Input details: %O', currentSignatureIssue);
 
 
-      const isBech32 = !currentUnspent.redeemScript;
-      const isSegwit = !!currentUnspent.witnessScript;
+      const isNativeSegwit = !currentUnspent.redeemScript;
       const sigHashType = this.constructor.defaultSigHashType;
       try {
-        if (isBech32) {
+        if (isNativeSegwit) {
+          debug('Signing native segwit input');
           const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
           const witnessScriptHash = bitcoin.crypto.sha256(witnessScript);
           const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
           txb.sign(index, privKey, prevOutScript, sigHashType, currentUnspent.value, witnessScript);
         } else {
           const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
-          if (isSegwit) {
-            debug('Signing segwit input');
+          const isWrappedSegwit = !!currentUnspent.witnessScript;
+          if (isWrappedSegwit) {
+            debug('Signing wrapped segwit input');
             const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
             txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value, witnessScript);
           } else {
@@ -699,10 +700,10 @@ class AbstractUtxoCoin extends BaseCoin {
         transaction = txb.buildIncomplete();
       }
 
-      // after signature validation, prepare bech32 setup
-      if (isBech32) {
+      // after signature validation, prepare native segwit setup
+      if (isNativeSegwit) {
         transaction.setInputScript(index, Buffer.alloc(0));
-        bech32Indices.push(index);
+        nativeSegwitIndices.push(index);
       }
 
       const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
@@ -721,8 +722,8 @@ class AbstractUtxoCoin extends BaseCoin {
       throw error;
     }
 
-    for (const bech32Index of bech32Indices) {
-      transaction.setInputScript(bech32Index, Buffer.alloc(0));
+    for (const nativeSegwitIndex of nativeSegwitIndices) {
+      transaction.setInputScript(nativeSegwitIndex, Buffer.alloc(0));
     }
 
     return {
@@ -768,11 +769,11 @@ class AbstractUtxoCoin extends BaseCoin {
     let decompiledSigScript = bitcoin.script.decompile(signatureScript);
 
     const isSegwitInput = currentInput.witness.length > 0;
-    const isBech32Input = isSegwitInput && (signatureScript.length === 0);
     if (isSegwitInput) {
+      const isNativeSegwit = signatureScript.length === 0;
       decompiledSigScript = currentInput.witness;
       signatureScript = bitcoin.script.compile(decompiledSigScript);
-      if (isBech32Input) {
+      if (isNativeSegwit) {
         const lastWitness = _.last(transaction.ins[inputIndex].witness);
         // const inputScriptHash = bitcoin.crypto.hash160(lastWitness);
         const witnessScriptHash = bitcoin.crypto.sha256(lastWitness);

@@ -101,7 +101,7 @@ describe('BTC:', function() {
       testCoin.isValidAddress(generatedAddress.address).should.equal(false);
     });
 
-    it('should generate native bech32 address', function() {
+    it('should generate native segwit bech32 address', function() {
       const generatedAddress = coin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
       const generatedTestAddress = testCoin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
 
@@ -170,7 +170,7 @@ describe('BTC:', function() {
       testCoin.isValidAddress(generatedAddress.address).should.equal(false);
     });
 
-    it('should generate 3/3 custom chain native bech32 address', function() {
+    it('should generate 3/3 custom chain native segwit bech32 address', function() {
       const generatedAddress = coin.generateAddress({
         keychains,
         threshold: 3,
@@ -209,7 +209,7 @@ describe('BTC:', function() {
     });
   });
 
-  describe('Bech32 transaction signing:', function() {
+  describe('Native segwit transaction signing:', function() {
 
     let basecoin;
     let wallet;

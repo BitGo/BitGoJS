@@ -9,7 +9,8 @@ const _ = require('lodash');
 
 const VALID_ADDRESS_VERSIONS = {
   base58: 'base58',
-  bech32: 'bech32'
+  bech32: 'bech32',
+  cashaddr: 'cashaddr'
 };
 
 const containsMixedCaseCharacters = (str) => {
@@ -45,33 +46,34 @@ class Bch extends AbstractUtxoCoin {
   /**
    * Canonicalize a Bitcoin Cash address for a specific version
    *
-   * Starting on January 14th, 2018 Bitcoin Cash's bitcoin-abc node switched over to using bech32
+   * Starting on January 14th, 2018 Bitcoin Cash's bitcoin-abc node switched over to using cashaddr
    * encoding for all of their addresses in order to distinguish them from Bitcoin Core's
    * https://www.bitcoinabc.org/cashaddr. We're sticking with the old base58 format because
    * migrating over to the new format will be laborious, and we want to see how the space evolves
    *
    * @param address
-   * @param version the version of the desired address, 'base58' or 'bech32' defaulting to 'base58'
+   * @param version the version of the desired address, 'base58' or 'cashaddr', defaulting to 'base58', 'bech32' is also
+   *                supported for backwards compatibility but is deprecated and will be removed
    * @returns {*} address string
    */
   canonicalAddress(address, version = 'base58') {
     if (!_.includes(_.keys(VALID_ADDRESS_VERSIONS), version)) {
-      throw new Error('version needs to be either bech32 or base58');
+      throw new Error('version must be base58 or cashaddr');
     }
 
     const originalAddress = address; // used for error message
 
     let isValidBase58Address;
-    let isValidBech32Address;
+    let isValidCashAddr;
     try {
       isValidBase58Address = this.isValidAddress(address, true);
     } catch (e) {
       // ignore
     }
     try {
-      isValidBech32Address = !!cashaddress.decode(address);
+      isValidCashAddr = !!cashaddress.decode(address);
     } catch (e) {
-      // try to coerce the address into a valid BCH bech32 address if we know it's not a base58 address
+      // try to coerce the address into a valid BCH cashaddr address if we know it's not a base58 address
       // We do this to remain compliant with the spec at https://github.com/Bitcoin-UAHF/spec/blob/master/cashaddr.md,
       // which says addresses do not need the prefix, and can be all lowercase XOR all uppercase
       if (!isValidBase58Address) {
@@ -84,7 +86,7 @@ class Bch extends AbstractUtxoCoin {
           address = _.toLower(address);
 
           try {
-            isValidBech32Address = !!cashaddress.decode(address);
+            isValidCashAddr = !!cashaddress.decode(address);
           } catch (e) {
             // ignore
           }
@@ -92,7 +94,7 @@ class Bch extends AbstractUtxoCoin {
       }
     }
 
-    if (!isValidBase58Address && !isValidBech32Address) {
+    if (!isValidBase58Address && !isValidCashAddr) {
       throw new Error('invalid address: ' + originalAddress);
     }
 
@@ -125,9 +127,8 @@ class Bch extends AbstractUtxoCoin {
       return cashaddress.encode(this.getAddressPrefix(), versionMap[addressVersionString], addressDetails.hash);
     }
 
-    // convert from bech32
-    if (version === VALID_ADDRESS_VERSIONS.bech32) {
-      // no conversion needed
+    // convert from cashaddr
+    if (version === VALID_ADDRESS_VERSIONS.cashaddr || version === VALID_ADDRESS_VERSIONS.bech32) {
       return address;
     }
 
