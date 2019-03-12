@@ -644,7 +644,7 @@ class AbstractUtxoCoin extends BaseCoin {
     this.constructor.prepareTransactionBuilder(txb);
 
     const signatureIssues = [];
-    const nativeSegwitIndices = [];
+    const p2wshIndices = [];
 
     for (let index = 0; index < transaction.ins.length; ++index) {
       debug('Signing input %d of %d', index + 1, transaction.ins.length);
@@ -665,20 +665,20 @@ class AbstractUtxoCoin extends BaseCoin {
       debug('Input details: %O', currentSignatureIssue);
 
 
-      const isNativeSegwit = !currentUnspent.redeemScript;
+      const isP2wsh = !currentUnspent.redeemScript;
       const sigHashType = this.constructor.defaultSigHashType;
       try {
-        if (isNativeSegwit) {
-          debug('Signing native segwit input');
+        if (isP2wsh) {
+          debug('Signing p2wsh input');
           const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
           const witnessScriptHash = bitcoin.crypto.sha256(witnessScript);
           const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
           txb.sign(index, privKey, prevOutScript, sigHashType, currentUnspent.value, witnessScript);
         } else {
           const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
-          const isWrappedSegwit = !!currentUnspent.witnessScript;
-          if (isWrappedSegwit) {
-            debug('Signing wrapped segwit input');
+          const isp2shP2wsh = !!currentUnspent.witnessScript;
+          if (isp2shP2wsh) {
+            debug('Signing p2shP2wsh input');
             const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
             txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value, witnessScript);
           } else {
@@ -701,9 +701,9 @@ class AbstractUtxoCoin extends BaseCoin {
       }
 
       // after signature validation, prepare native segwit setup
-      if (isNativeSegwit) {
+      if (isP2wsh) {
         transaction.setInputScript(index, Buffer.alloc(0));
-        nativeSegwitIndices.push(index);
+        p2wshIndices.push(index);
       }
 
       const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
@@ -722,8 +722,8 @@ class AbstractUtxoCoin extends BaseCoin {
       throw error;
     }
 
-    for (const nativeSegwitIndex of nativeSegwitIndices) {
-      transaction.setInputScript(nativeSegwitIndex, Buffer.alloc(0));
+    for (const p2wshIndex of p2wshIndices) {
+      transaction.setInputScript(p2wshIndex, Buffer.alloc(0));
     }
 
     return {
