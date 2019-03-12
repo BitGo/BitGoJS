@@ -676,8 +676,8 @@ class AbstractUtxoCoin extends BaseCoin {
           txb.sign(index, privKey, prevOutScript, sigHashType, currentUnspent.value, witnessScript);
         } else {
           const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
-          const isp2shP2wsh = !!currentUnspent.witnessScript;
-          if (isp2shP2wsh) {
+          const isP2shP2wsh = !!currentUnspent.witnessScript;
+          if (isP2shP2wsh) {
             debug('Signing p2shP2wsh input');
             const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
             txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value, witnessScript);
@@ -700,7 +700,7 @@ class AbstractUtxoCoin extends BaseCoin {
         transaction = txb.buildIncomplete();
       }
 
-      // after signature validation, prepare native segwit setup
+      // after signature validation, prepare p2wsh setup
       if (isP2wsh) {
         transaction.setInputScript(index, Buffer.alloc(0));
         p2wshIndices.push(index);

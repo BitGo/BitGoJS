@@ -9,6 +9,7 @@ const _ = require('lodash');
 
 const VALID_ADDRESS_VERSIONS = {
   base58: 'base58',
+  // TODO(BG-11325): remove bech32 in future major version release
   bech32: 'bech32',
   cashaddr: 'cashaddr'
 };
@@ -47,7 +48,7 @@ class Bch extends AbstractUtxoCoin {
    * Canonicalize a Bitcoin Cash address for a specific version
    *
    * Starting on January 14th, 2018 Bitcoin Cash's bitcoin-abc node switched over to using cashaddr
-   * encoding for all of their addresses in order to distinguish them from Bitcoin Core's
+   * encoding for all of their addresses in order to distinguish them from Bitcoin Core's.
    * https://www.bitcoinabc.org/cashaddr. We're sticking with the old base58 format because
    * migrating over to the new format will be laborious, and we want to see how the space evolves
    *
