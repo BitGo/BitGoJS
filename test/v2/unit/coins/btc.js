@@ -1,10 +1,10 @@
 const should = require('should');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
+const { Codes } = require('@bitgo/unspents');
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const Wallet = require('../../../../src/v2/wallet');
-const AbstractUtxoCoin = require('../../../../src/v2/coins/abstractUtxoCoin');
 
 describe('BTC:', function() {
   let bitgo;
@@ -81,19 +81,21 @@ describe('BTC:', function() {
     });
 
     it('should generate p2sh-wrapped segwit address', function() {
-      const generatedAddress = coin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH });
+      const addressType = Codes.UnspentTypeTcomb('p2shP2wsh');
+      const chain = Codes.forType(addressType)[Codes.PurposeTcomb('external')];
+      const generatedAddress = coin.generateAddress({ keychains, addressType, chain });
+      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType, chain });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
-        currentAddress.chain.should.equal(0);
+        currentAddress.chain.should.equal(chain);
         currentAddress.index.should.equal(0);
-        currentAddress.coinSpecific.outputScript.should.equal('a91426e34781478f08fff903cb70ae67311c3f9bc6a987');
-        currentAddress.coinSpecific.redeemScript.should.equal('00209a10eb58331e95333f4a6eafd5f03e442e17e0986c824e392642e872f431b7ef');
-        currentAddress.coinSpecific.witnessScript.should.equal('5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae');
+        currentAddress.coinSpecific.outputScript.should.equal('a9147ff13f3faeba4d439ef40604f7c127951e77eb6a87');
+        currentAddress.coinSpecific.redeemScript.should.equal('00207aad7d57b238a09b5daa10ff47c54483b7f2ad47f3f0c0aa230958b9df334260');
+        currentAddress.coinSpecific.witnessScript.should.equal('52210304fcea3fb05f6e8a8fe91db2087bdd13b18102a0b10a77c1fdbb326b0ce7cec421028242a3ea9e20d4e6b78e3f0dde21aff86a623d48322681b203b6827e22d04a9d2102ceec88b222a55ec67d1414b523bcfc0f53eb6ac012ba91744a4ed8eb448d55f753ae');
       });
 
-      generatedAddress.address.should.equal('35EdsUd5eRsbcGySufrWQ8PXxFq668U5vA');
-      generatedTestAddress.address.should.equal('2MvnqwDZ7FtNwp4bzaoUP25NoAc3FmvGE1H');
+      generatedAddress.address.should.equal('3DMWk3dd5aJmwA2UVxjKcu9KdgA7k8Homg');
+      generatedTestAddress.address.should.equal('2N4uionZeh2p88wf2B6MCEr8ar2NHWEnQeQ');
 
       coin.isValidAddress(generatedAddress.address).should.equal(true);
       testCoin.isValidAddress(generatedTestAddress.address).should.equal(true);
@@ -102,19 +104,20 @@ describe('BTC:', function() {
     });
 
     it('should generate p2wsh bech32 address', function() {
-      const generatedAddress = coin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
-
+      const addressType = Codes.UnspentTypeTcomb('p2wsh');
+      const chain = Codes.forType(addressType)[Codes.PurposeTcomb('external')];
+      const generatedAddress = coin.generateAddress({ keychains, addressType, chain });
+      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType, chain });
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
-        currentAddress.chain.should.equal(0);
+        currentAddress.chain.should.equal(chain);
         currentAddress.index.should.equal(0);
-        currentAddress.coinSpecific.outputScript.should.equal('00209a10eb58331e95333f4a6eafd5f03e442e17e0986c824e392642e872f431b7ef');
+        currentAddress.coinSpecific.outputScript.should.equal('002090448b5ba5fde14fc4b0bfc756c4b55fe4e3854c8d21f39ee75364c0063bc73e');
         currentAddress.coinSpecific.should.not.have.property('redeemScript');
-        currentAddress.coinSpecific.witnessScript.should.equal('5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae');
+        currentAddress.coinSpecific.witnessScript.should.equal('522103cf858f42c759d590d80f3715ce59be999089e6b1f381d0f4338276546fd3a04e2102dca1ab8670d45f5213c7c9d66b2f89b50a4cbd33fd72db89ba18d3e82d3dd5ee210294b6dab0dc112831a0dc1e219769bd81d13eb38a8bdb938103f919d8dd7e004353ae');
       });
 
-      generatedAddress.address.should.equal('bc1qnggwkkpnr62nx062d6hatup7gshp0cycdjpyuwfxgt589ap3klhslqfmuc');
-      generatedTestAddress.address.should.equal('tb1qnggwkkpnr62nx062d6hatup7gshp0cycdjpyuwfxgt589ap3klhsggl5xh');
+      generatedAddress.address.should.equal('bc1qjpzgkka9lhs5l39shlr4d394tljw8p2v35sl88h82djvqp3mculqa08n0a');
+      generatedTestAddress.address.should.equal('tb1qjpzgkka9lhs5l39shlr4d394tljw8p2v35sl88h82djvqp3mculq283u4j');
 
       coin.isValidAddress(generatedAddress.address).should.equal(true);
       testCoin.isValidAddress(generatedTestAddress.address).should.equal(true);
@@ -143,26 +146,28 @@ describe('BTC:', function() {
       testCoin.isValidAddress(generatedAddress.address).should.equal(false);
     });
 
-    it('should generate 3/3 custom chain p2shP2sh address', function() {
-      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH, chain: 20, index: 756 });
+    it('should generate 3/3 custom chain p2shP2wsh address', function() {
+      const addressType = Codes.UnspentTypeTcomb('p2shP2wsh');
+      const chain = Codes.forType(addressType)[Codes.PurposeTcomb('external')];
+      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, addressType, chain, index: 756 });
       const generatedTestAddress = testCoin.generateAddress({
         keychains,
         threshold: 3,
-        addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH,
-        chain: 20,
+        addressType: Codes.UnspentTypeTcomb('p2shP2wsh'),
+        chain,
         index: 756
       });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
-        currentAddress.chain.should.equal(20);
+        currentAddress.chain.should.equal(chain);
         currentAddress.index.should.equal(756);
-        currentAddress.coinSpecific.outputScript.should.equal('a91424ba55e2753970236fae8593ca2b49654bf9f4c487');
-        currentAddress.coinSpecific.redeemScript.should.equal('0020c8fc4f071770e15f21a13ba48c6f32421daed431a74e00e13d0187990964bbce');
-        currentAddress.coinSpecific.witnessScript.should.equal('532103db7ec7ef3c549705582d6bb5ee258b3bc14d147ec3b069dfd4fd80adb4e9373e210387b1f7cacb6e0c78b79062e94ed0aee691bdfa34a0d1b522103c434205587ad52102044a9f965fd9b54d82e5afe9d4338d0f59027a4e11cff3a39b90fbf5978ae7e753ae');
+        currentAddress.coinSpecific.outputScript.should.equal('a914ad395d176042ce737e4f5b65c0eb5de703a4e80087');
+        currentAddress.coinSpecific.redeemScript.should.equal('0020d15d8d124adb4c213905ebb2cec8517faf38ae0ec4f7b4f1cfa358e6cc06a93d');
+        currentAddress.coinSpecific.witnessScript.should.equal('532102bb8096d5c12e8b0ee50dd2b14f63dd09c8494b5a0a730794a0e392a6f2a3b2a8210366dbf2135105dc65eed5173c1acf1a902fc2e9dd366b9a6fa0e682c0fb4c21a32102bf998121d4d09d4305b025b5d2de8a7e954fe96179a1dfc076ad11ad4751c99e53ae');
       });
 
-      generatedAddress.address.should.equal('353DUGPtAEGj551Vf3esXMdaaY96ytsub2');
-      generatedTestAddress.address.should.equal('2MvbRY1Kumgn5Gre3LBGk9JcqntMGk22Y72');
+      generatedAddress.address.should.equal('3HUwYRepxeeHMedeU9tTkMRF3Udi6ZibEj');
+      generatedTestAddress.address.should.equal('2N939cAara79dZSGC9HWLNJQWFpqsutd5dW');
 
       coin.isValidAddress(generatedAddress.address).should.equal(true);
       testCoin.isValidAddress(generatedTestAddress.address).should.equal(true);
@@ -174,14 +179,14 @@ describe('BTC:', function() {
       const generatedAddress = coin.generateAddress({
         keychains,
         threshold: 3,
-        addressType: AbstractUtxoCoin.AddressTypes.P2WSH,
+        addressType: Codes.UnspentTypeTcomb('p2wsh'),
         chain: 20,
         index: 756
       });
       const generatedTestAddress = testCoin.generateAddress({
         keychains,
         threshold: 3,
-        addressType: AbstractUtxoCoin.AddressTypes.P2WSH,
+        addressType: Codes.UnspentTypeTcomb('p2wsh'),
         chain: 20,
         index: 756
       });
@@ -287,7 +292,7 @@ describe('BTC:', function() {
           coinSpecific: {
             witnessScript: '522103d4788cda52f91c1f6c82eb91491ca76108c9c5f0839bc4f02eccc55fedb3311c210391bcef9dcc89570a79ba3c7514e65cd48e766a8868eca2769fa9242fdcc796662102ef3c5ebac4b54df70dea1bb2655126368be10ca0462382fcb730e55cddd2dd6a53ae'
           },
-          addressType: AbstractUtxoCoin.AddressTypes.P2WSH
+          addressType: Codes.UnspentTypeTcomb('p2wsh')
         },
         pendingApprovals: []
       };
@@ -309,7 +314,7 @@ describe('BTC:', function() {
               witnessScript: '522103d4788cda52f91c1f6c82eb91491ca76108c9c5f0839bc4f02eccc55fedb3311c210391bcef9dcc89570a79ba3c7514e65cd48e766a8868eca2769fa9242fdcc796662102ef3c5ebac4b54df70dea1bb2655126368be10ca0462382fcb730e55cddd2dd6a53ae',
               id: '0296ef0ac1c035e52e6e3f415ab20649730646dfda5a67122087dd96d9828fd5:0',
               address: 'tb1qtxxqmkkdx4n4lcp0nt2cct89uh3h3dlcu940kw9fcqyyq36peh0st94hfp',
-              addressType: AbstractUtxoCoin.AddressTypes.P2WSH,
+              addressType: Codes.UnspentTypeTcomb('p2wsh'),
               value: 10000000
             }
           ],
@@ -360,7 +365,7 @@ describe('BTC:', function() {
   describe('Explain transaction:', () => {
 
     describe('Signature count:', () => {
-      // p2sh, p2wsh, p2sh-p2wsh does not matter for unsigned inputs, so we will only test one
+      // p2sh, p2wsh, p2shP2wsh does not matter for unsigned inputs, so we will only test one
       const unsignedTx = '0100000002ece0eb669e085aeb13527e3f20873caa2845a9196c5dc23bd3d366da46996c9e0100000000ffffffff471f27cdf9f75a0e610281cb8d7b5caa44cd3a5d7048fabf9acbededdb709a590100000000ffffffff0240420f000000000017a914a364c319fddbc93dafdaa9d006d728961958a03f87eee80a000000000017a914e006ca6b2a68ce7ee9d9e3cbf62af153b8ae3420876e011600';
 
       const p2shP2wshUnspents = [
@@ -379,7 +384,7 @@ describe('BTC:', function() {
           halfSigned: '0100000001accf0cd2599ea4d6d8b032405f9396fe218c247b661e58cf3e9e4bb3c095426828000000b700483045022100cd5a6a660f56da89f7b27e566406e90282f4120bffef1918518f744a6bb3209f022055774755ee323dae0b555a2f5b8f548c20b905b6a7fe954d1d93e415c71e77060100004c6952210272ed48816a9600b7262388e3ae9d9faf1a14ff773350835c784dde916ce7bfff2103c388215ac5a6400db9ec2a3d69e965f3c30ad6935d729c9cef083124646ae5482102bc24b831b847b501dbcbb383fbc64138043573ad766968e0ee66744e00bf08a353aeffffffff01ce15fa020000000017a9147676db43fea61814cf0e2317b5e9b336054f8a2e87ad600800',
           fullySigned: '0100000001accf0cd2599ea4d6d8b032405f9396fe218c247b661e58cf3e9e4bb3c095426828000000fdfd0000483045022100cd5a6a660f56da89f7b27e566406e90282f4120bffef1918518f744a6bb3209f022055774755ee323dae0b555a2f5b8f548c20b905b6a7fe954d1d93e415c71e77060147304402200476814f5ec0b4ded9b57414395ac7deda570339fb5d71377b9fc896c1d6e78b0220249237943e11062592c32f4f68d8ef03372bf16a83e8846d6effdba0a6ada020014c6952210272ed48816a9600b7262388e3ae9d9faf1a14ff773350835c784dde916ce7bfff2103c388215ac5a6400db9ec2a3d69e965f3c30ad6935d729c9cef083124646ae5482102bc24b831b847b501dbcbb383fbc64138043573ad766968e0ee66744e00bf08a353aeffffffff01ce15fa020000000017a9147676db43fea61814cf0e2317b5e9b336054f8a2e87ad600800'
         },
-        ['p2sh-p2wsh']: {
+        p2shP2wsh: {
           halfSigned: '0100000000010283c93cf99e7b8dc0de81dedd9f0903e8dfae93509c9c1e63459a24ceeb5a67c10100000023220020dced90433eee50a13a9a5e3a01d4f011eda3832cfe7078202f435125908a8023ffffffffd7228a6a98b73a02bec7f3a8709966a19e6985efd7cd26eb396eacb105b6d61c0000000023220020d3943e78dc44bbaddb8c5ff3f24956efb3175a019d01b5690841910c219b5f01ffffffff02c9370f000000000017a9142f2ddab3f793ceab164ed186afa4dfec9eb9c9e58740420f000000000017a9145bac3641fa38b9dad47a2a027d3a39e38b476124870500483045022100ec86cfba7d76fa7b9fb39ff56a3b708eee06d1cfefe9266455f16db5b37654c80220219158789c81dac85d04bbb584255c4cd0fdc2dbc3690cc18b29f04a2ffa193201000069522102d31024f6184956b730294a1275383c6d57c8fcfdfebb4870fd91882b1c08a8a821028f4b8d4508169c746a2381155bf7cbfa56eeff237937040597e7be632ff74719210315f8700de6902daa99e4c511b008e5018d8f3b586143183f80ab97db8fde770a53ae0500483045022100e37c1cf55b9f23b4ef0bfb018fb54eaae8a5541635269f06176b4f715151a9d102202b057455a3353ba1e2e32526d55e267e957ba00fe416ac59458bf9c1b5044e690100006952210311322726192eb6cbbec6445514d148722a936d5805360be2faf2f8adc8b5aec42102d2e6cf4c6dcdc8e3e1633e7e64b2e41f5be4a583934adbf1f2372240f41b59ae21023799f2560c321587ae734da2d1faafa7c4931145b4b785a3263fa5aa193a208753ae7f011600',
           fullySigned: '0100000000010283c93cf99e7b8dc0de81dedd9f0903e8dfae93509c9c1e63459a24ceeb5a67c10100000023220020dced90433eee50a13a9a5e3a01d4f011eda3832cfe7078202f435125908a8023ffffffffd7228a6a98b73a02bec7f3a8709966a19e6985efd7cd26eb396eacb105b6d61c0000000023220020d3943e78dc44bbaddb8c5ff3f24956efb3175a019d01b5690841910c219b5f01ffffffff02c9370f000000000017a9142f2ddab3f793ceab164ed186afa4dfec9eb9c9e58740420f000000000017a9145bac3641fa38b9dad47a2a027d3a39e38b476124870400483045022100ec86cfba7d76fa7b9fb39ff56a3b708eee06d1cfefe9266455f16db5b37654c80220219158789c81dac85d04bbb584255c4cd0fdc2dbc3690cc18b29f04a2ffa19320147304402206c6c7760d7acbd595e8649e80e64a67aee8a7b1d16ca9e6b090d31235252fb2902200e2655df8a4f3c230df6e4a1ca881a7b4781963b786479f4ebc02aaa9b6031e90169522102d31024f6184956b730294a1275383c6d57c8fcfdfebb4870fd91882b1c08a8a821028f4b8d4508169c746a2381155bf7cbfa56eeff237937040597e7be632ff74719210315f8700de6902daa99e4c511b008e5018d8f3b586143183f80ab97db8fde770a53ae0400483045022100e37c1cf55b9f23b4ef0bfb018fb54eaae8a5541635269f06176b4f715151a9d102202b057455a3353ba1e2e32526d55e267e957ba00fe416ac59458bf9c1b5044e690148304502210097cab2c37d2335328f169fb0c8420e9abd4dd81dff988ea657707a43512b5df1022075aeeb099e75565e205743419b3b756e34a6f0d68a4e7d0e6f2a482ab70e276e016952210311322726192eb6cbbec6445514d148722a936d5805360be2faf2f8adc8b5aec42102d2e6cf4c6dcdc8e3e1633e7e64b2e41f5be4a583934adbf1f2372240f41b59ae21023799f2560c321587ae734da2d1faafa7c4931145b4b785a3263fa5aa193a208753ae7f011600',
           txInfo: {
@@ -432,7 +437,7 @@ describe('BTC:', function() {
       describe('success', () => {
         it('should handle undefined tx info for segwit transactions', () => {
           const { signatures, inputSignatures } = coin.explainTransaction({
-            txHex: txs['p2sh-p2wsh'].halfSigned
+            txHex: txs.p2shP2wsh.halfSigned
           });
 
           should.exist(signatures);
@@ -482,10 +487,10 @@ describe('BTC:', function() {
           inputSignatures.should.deepEqual([2]);
         });
 
-        it('should count one signature on a half-signed p2sh-p2wsh transaction', () => {
+        it('should count one signature on a half-signed p2shP2wsh transaction', () => {
           const { signatures, inputSignatures } = coin.explainTransaction({
-            txHex: txs['p2sh-p2wsh'].halfSigned,
-            txInfo: txs['p2sh-p2wsh'].txInfo
+            txHex: txs.p2shP2wsh.halfSigned,
+            txInfo: txs.p2shP2wsh.txInfo
           });
 
           should.exist(signatures);
@@ -496,10 +501,10 @@ describe('BTC:', function() {
           inputSignatures.should.deepEqual([1, 1]);
         });
 
-        it('should count two signatures on a fully-signed p2sh-p2wsh transaction', () => {
+        it('should count two signatures on a fully-signed p2shP2wsh transaction', () => {
           const { signatures, inputSignatures } = coin.explainTransaction({
-            txHex: txs['p2sh-p2wsh'].fullySigned,
-            txInfo: txs['p2sh-p2wsh'].txInfo
+            txHex: txs.p2shP2wsh.fullySigned,
+            txInfo: txs.p2shP2wsh.txInfo
           });
 
           should.exist(signatures);

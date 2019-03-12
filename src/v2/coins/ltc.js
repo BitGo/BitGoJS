@@ -45,6 +45,10 @@ class Ltc extends AbstractUtxoCoin {
     return false;
   }
 
+  supportsP2shP2wsh() {
+    return true;
+  }
+
   supportsP2wsh() {
     return true;
   }
