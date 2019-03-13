@@ -1029,11 +1029,19 @@ class AbstractUtxoCoin extends BaseCoin {
             const inputId = `${parentTxId}:${input.index}`;
             const amount = unspentValues[inputId];
 
-            return this.verifySignature(transaction, idx, amount, verificationParams);
+            try {
+              return this.verifySignature(transaction, idx, amount, verificationParams);
+            } catch (e) {
+              return false;
+            }
           }
 
           // p2sh
-          return this.verifySignature(transaction, idx, undefined, verificationParams);
+          try {
+            return this.verifySignature(transaction, idx, undefined, verificationParams);
+          } catch (e) {
+            return false;
+          }
         });
 
         return validSignatures.reduce((validCount, isValid) => isValid ? validCount + 1 : validCount, 0);
