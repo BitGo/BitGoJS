@@ -1024,21 +1024,20 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
     if (params.reqId) {
       this.bitgo._reqId = params.reqId;
     }
-    let response = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/build'))
+    const buildQuery = this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/build'))
     .send(whitelistedParams)
     .result();
-
-    debug('postprocessing transaction prebuild: %O', response);
-
-    // postProcess prebuild may make more requests
-    if (params.reqId) {
-      response._reqId = params.reqId;
+    const blockHeightQuery = this.baseCoin.getLatestBlockHeight ? this.baseCoin.getLatestBlockHeight(params.reqId) : Promise.resolve(undefined);
+    const queries = [buildQuery, blockHeightQuery];
+    const [buildResponse, blockHeight] = yield Promise.all(queries);
+    debug('postprocessing transaction prebuild: %O', buildResponse);
+    if (!_.isUndefined(blockHeight)) {
+      buildResponse.blockHeight = blockHeight;
     }
-    response = yield this.baseCoin.postProcessPrebuild(response);
-    response = _.extend({}, response, { walletId: this.id() });
-
-    debug('final transaction prebuild: %O', response);
-    return response;
+    let prebuild = yield this.baseCoin.postProcessPrebuild(buildResponse);
+    prebuild = _.extend({}, prebuild, { walletId: this.id() });
+    debug('final transaction prebuild: %O', prebuild);
+    return prebuild;
   }).call(this).asCallback(callback);
 };
 
@@ -1110,9 +1109,11 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
       throw error;
     }
 
+    // call prebuildTransaction and keychains-get in parallel
     // the prebuild can be overridden by providing an explicit tx
-    const txPrebuild = params.prebuildTx || (yield this.prebuildTransaction(params));
-    const userKeychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0], reqId: params.reqId });
+    const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
+    const userKeychainQuery = this.baseCoin.keychains().get({ id: this._wallet.keys[0], reqId: params.reqId });
+    const [txPrebuild, userKeychain] = yield Promise.all([txPrebuildQuery, userKeychainQuery]);
 
     try {
       const verificationParams = _.pick(params.verification || {}, ['disableNetworking', 'keychains', 'addresses']);
