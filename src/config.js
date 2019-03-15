@@ -235,7 +235,10 @@ exports.tokens = {
         { type: 'cadx', coin: 'eth', network: 'Mainnet', name: 'eToro Canadian Dollar', tokenContractAddress: '0x8ed876e408959643479534a21970ec023d0fb51e', decimalPlaces: 18 },
         { type: 'gldx', coin: 'eth', network: 'Mainnet', name: 'eToro Gold', tokenContractAddress: '0x7d2bebd6e41b05384f0a8eb8ff228daac6f39c96', decimalPlaces: 18 },
         { type: 'slvx', coin: 'eth', network: 'Mainnet', name: 'eToro Silver', tokenContractAddress: '0x8e4d222dbd4f8f9e7c175e77d6e71715c3da78e0', decimalPlaces: 18 },
-        { type: 'slot', coin: 'eth', network: 'Mainnet', name: 'AlphaSlot', tokenContractAddress: '0xaee7474c3713ece228aa5ec43c89c708f2ec7ed2', decimalPlaces: 18 }
+        { type: 'slot', coin: 'eth', network: 'Mainnet', name: 'AlphaSlot', tokenContractAddress: '0xaee7474c3713ece228aa5ec43c89c708f2ec7ed2', decimalPlaces: 18 },
+        { type: 'ethos', coin: 'eth', network: 'Mainnet', name: 'Ethos', tokenContractAddress: '0x5af2be193a6abca9c8817001f45744777db30756', decimalPlaces: 8 },
+        { type: 'lba', coin: 'eth', network: 'Mainnet', name: 'Cred', tokenContractAddress: '0xfe5f141bf94fe84bc28ded0ab966c16b17490657', decimalPlaces: 18 },
+        { type: 'cdag', coin: 'eth', network: 'Mainnet', name: 'CannDollar', tokenContractAddress: '0xf43401ea8ac4b86155b929e1a5a5e46626c23842', decimalPlaces: 18 }
       ]
     }
   },
