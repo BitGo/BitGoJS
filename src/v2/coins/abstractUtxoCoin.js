@@ -652,7 +652,7 @@ class AbstractUtxoCoin extends BaseCoin {
     this.constructor.prepareTransactionBuilder(txb);
 
     const signatureIssues = [];
-    const bech32Indices = [];
+    const p2wshIndices = [];
 
     for (let index = 0; index < transaction.ins.length; ++index) {
       debug('Signing input %d of %d', index + 1, transaction.ins.length);
@@ -673,19 +673,20 @@ class AbstractUtxoCoin extends BaseCoin {
       debug('Input details: %O', currentSignatureIssue);
 
 
-      const isBech32 = !currentUnspent.redeemScript;
-      const isSegwit = !!currentUnspent.witnessScript;
+      const isP2wsh = !currentUnspent.redeemScript;
       const sigHashType = this.constructor.defaultSigHashType;
       try {
-        if (isBech32) {
+        if (isP2wsh) {
+          debug('Signing p2wsh input');
           const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
           const witnessScriptHash = bitcoin.crypto.sha256(witnessScript);
           const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
           txb.sign(index, privKey, prevOutScript, sigHashType, currentUnspent.value, witnessScript);
         } else {
           const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
-          if (isSegwit) {
-            debug('Signing segwit input');
+          const isP2shP2wsh = !!currentUnspent.witnessScript;
+          if (isP2shP2wsh) {
+            debug('Signing p2shP2wsh input');
             const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
             txb.sign(index, privKey, subscript, sigHashType, currentUnspent.value, witnessScript);
           } else {
@@ -707,10 +708,10 @@ class AbstractUtxoCoin extends BaseCoin {
         transaction = txb.buildIncomplete();
       }
 
-      // after signature validation, prepare bech32 setup
-      if (isBech32) {
+      // after signature validation, prepare p2wsh setup
+      if (isP2wsh) {
         transaction.setInputScript(index, Buffer.alloc(0));
-        bech32Indices.push(index);
+        p2wshIndices.push(index);
       }
 
       const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
@@ -729,8 +730,8 @@ class AbstractUtxoCoin extends BaseCoin {
       throw error;
     }
 
-    for (const bech32Index of bech32Indices) {
-      transaction.setInputScript(bech32Index, Buffer.alloc(0));
+    for (const p2wshIndex of p2wshIndices) {
+      transaction.setInputScript(p2wshIndex, Buffer.alloc(0));
     }
 
     return {
@@ -776,11 +777,11 @@ class AbstractUtxoCoin extends BaseCoin {
     let decompiledSigScript = bitcoin.script.decompile(signatureScript);
 
     const isSegwitInput = currentInput.witness.length > 0;
-    const isBech32Input = isSegwitInput && (signatureScript.length === 0);
     if (isSegwitInput) {
+      const isNativeSegwit = signatureScript.length === 0;
       decompiledSigScript = currentInput.witness;
       signatureScript = bitcoin.script.compile(decompiledSigScript);
-      if (isBech32Input) {
+      if (isNativeSegwit) {
         const lastWitness = _.last(transaction.ins[inputIndex].witness);
         // const inputScriptHash = bitcoin.crypto.hash160(lastWitness);
         const witnessScriptHash = bitcoin.crypto.sha256(lastWitness);
@@ -1036,11 +1037,19 @@ class AbstractUtxoCoin extends BaseCoin {
             const inputId = `${parentTxId}:${input.index}`;
             const amount = unspentValues[inputId];
 
-            return this.verifySignature(transaction, idx, amount, verificationParams);
+            try {
+              return this.verifySignature(transaction, idx, amount, verificationParams);
+            } catch (e) {
+              return false;
+            }
           }
 
           // p2sh
-          return this.verifySignature(transaction, idx, undefined, verificationParams);
+          try {
+            return this.verifySignature(transaction, idx, undefined, verificationParams);
+          } catch (e) {
+            return false;
+          }
         });
 
         return validSignatures.reduce((validCount, isValid) => isValid ? validCount + 1 : validCount, 0);
