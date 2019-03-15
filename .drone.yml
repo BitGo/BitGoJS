@@ -1,0 +1,42 @@
+pipeline:
+   node 9:
+      image: bitgosdk/ubuntu_nvm:18.10
+      secrets: 
+         - password
+      commands: 
+         - export NVM_DIR="/root/.nvm/versions/node/v9.11.2/bin" 
+         - export PATH=$NVM_DIR:$PATH
+         - export BITGOJS_TEST_PASSWORD=$PASSWORD
+         - node --version
+         - npm --version
+         - npm install -g codecov
+         - npm install
+         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh 
+   node 10:
+      image: bitgosdk/ubuntu_nvm:18.10
+      secrets:
+         - password
+      commands: 
+         - export NVM_DIR="/root/.nvm/versions/node/v10.15.3/bin" 
+         - export PATH=$NVM_DIR:$PATH
+         - export BITGOJS_TEST_PASSWORD=$PASSWORD
+         - node --version
+         - npm --version
+         - npm install ethereumjs-util
+         - npm install -g codecov
+         - npm install
+         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh 
+   node 11:
+      image: bitgosdk/ubuntu_nvm:18.10
+      secrets:
+         - password
+      commands: 
+         - export NVM_DIR="/root/.nvm/versions/node/v11.11.0/bin" 
+         - export PATH=$NVM_DIR:$PATH
+         - export BITGOJS_TEST_PASSWORD=$PASSWORD
+         - node --version
+         - npm --version
+         - npm install ethereumjs-util
+         - npm install -g codecov
+         - npm install
+         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh 
