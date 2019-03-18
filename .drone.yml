@@ -1,19 +1,18 @@
 pipeline:
    node 9:
-      image: node:9.10.1
+      image: node:9
       secrets:
          - password
       commands:
          - export BITGOJS_TEST_PASSWORD=$PASSWORD
          - node --version
          - npm --version
-         - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
-         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh
+         - bash ./test/scripts/ci.sh
 
    node 8:
-      image: node:8.15.1
+      image: node:8
       secrets:
          - password
       commands:
@@ -23,7 +22,7 @@ pipeline:
          - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
-         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh
+         - bash ./test/scripts/ci.sh
    node 10:
       image: node:10.15.3
       secrets:
@@ -35,9 +34,9 @@ pipeline:
          - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
-         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh
+         - bash ./test/scripts/ci.sh
    node 11:
-      image: node:11.11.0
+      image: node:11
       secrets:
          - password
       commands:
@@ -47,5 +46,5 @@ pipeline:
          - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
-         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh
+         - bash ./test/scripts/ci.sh
 
