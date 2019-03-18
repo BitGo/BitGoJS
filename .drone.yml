@@ -1,36 +1,51 @@
 pipeline:
    node 9:
-      image: bitgosdk/ubuntu_nvm:18.10
-      secrets: 
+      image: node:9.10.1
+      secrets:
          - password
-      commands: 
-         - export NVM_DIR="/root/.nvm/versions/node/v9.11.2/bin" 
-         - export PATH=$NVM_DIR:$PATH
+      commands:
          - export BITGOJS_TEST_PASSWORD=$PASSWORD
+         - node --version
+         - npm --version
+         - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
-         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh 
+         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh
+
+   node 8:
+      image: node:8.15.1
+      secrets:
+         - password
+      commands:
+         - export BITGOJS_TEST_PASSWORD=$PASSWORD
+         - node --version
+         - npm --version
+         - npm install ethereumjs-util
+         - npm install -g codecov
+         - npm install
+         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh
    node 10:
-      image: bitgosdk/ubuntu_nvm:18.10
+      image: node:10.15.3
       secrets:
          - password
-      commands: 
-         - export NVM_DIR="/root/.nvm/versions/node/v10.15.3/bin" 
-         - export PATH=$NVM_DIR:$PATH
+      commands:
          - export BITGOJS_TEST_PASSWORD=$PASSWORD
+         - node --version
+         - npm --version
          - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
-         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh 
+         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh
    node 11:
-      image: bitgosdk/ubuntu_nvm:18.10
+      image: node:11.11.0
       secrets:
          - password
-      commands: 
-         - export NVM_DIR="/root/.nvm/versions/node/v11.11.0/bin" 
-         - export PATH=$NVM_DIR:$PATH
+      commands:
          - export BITGOJS_TEST_PASSWORD=$PASSWORD
+         - node --version
+         - npm --version
          - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
-         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh 
+         - export WORKSPACE=/drone/src && cd $WORKSPACE && bash ./test/scripts/ci.sh
+
