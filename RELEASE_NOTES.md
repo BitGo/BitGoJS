@@ -1,5 +1,31 @@
 # BitGoJS Release Notes
 
+## 4.48.1
+### Bug Fixes
+- Treat errors thrown from `verifySignature` as an invalid signature
+
+## 4.48.0
+### New Features
+- Add ability to count signatures on a utxo transaction to `explainTransaction()`
+- Add support for generating unsigned sweep transactions for Stellar Lumens (XLM) and Ripple XRP (XRP)
+- Add support for recovering Bitcoin Satoshi Vision (BSV) inadvertently sent to a Bitcoin (BTC) address
+- Add support for new ERC 20 Tokens (BAX, HXRO, RFR, CPLT, CSLV, CGLD, NZDX, JPYX, RUBX, CNYX, CHFX, USDX, EURX, GBPX, AUDX, CADX, GLDX, SLVX, SLOT, TCAT, TFMF)
+
+### Bug Fixes
+- Improve handling proxy request timeouts from bitgo-express
+- Prevent rebuilding OFC transactions upon transaction approval
+- Allow creation of new addresses on wallets returned from `wallets().list()`
+- Return actual fee used from `wallet.sendMany()` instead of fee estimate
+- Fix date and name on LICENSE
+- Update dev-dependency karma to 4.0.1 to fix minor upstream vulnerability
+- Allow accessing `oauth/token` route from bitgo-express
+- Add `.nvmrc` with version set to `lts/carbon`
+- Fix ERC 20 Token BID decimal places
+
+### API changes
+- Remove `bech32` parameter option from `createAddress`
+- Add `strategy` parameter option to `prebuildTransaction` for setting the preferred unspent selection strategy
+
 ## 4.47.0
 ### New Features
 - Add support for new ERC 20 Token (BAX)
