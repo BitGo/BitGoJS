@@ -23,7 +23,7 @@ pipeline:
          - npm install
          - bash ./test/scripts/ci.sh
    node 10:
-      image: node:10.15.3
+      image: node:10
       secrets:
          - password
       commands:
