@@ -1,7 +1,10 @@
 pipeline:
    node 9:
       image: node:9
+      secrets:
+         - password
       commands:
+         - export BITGOJS_TEST_PASSWORD=$PASSWORD
          - node --version
          - npm --version
          - npm install -g codecov
@@ -16,7 +19,6 @@ pipeline:
          - export BITGOJS_TEST_PASSWORD=$PASSWORD
          - node --version
          - npm --version
-         - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
          - bash ./test/scripts/ci.sh
