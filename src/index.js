@@ -6,6 +6,7 @@
 const common = require('./common');
 const bitgo = module.exports;
 bitgo.BitGo = require('./bitgo.js');
+bitgo.Environments = common.Environments;
 
 // Expose bitcoin and sjcl
 bitgo.bitcoin = require('./bitcoin');

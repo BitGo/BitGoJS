@@ -151,7 +151,7 @@ const createResponseErrorString = function(res) {
 let testNetWarningMessage = false;
 const BitGo = function(params) {
   params = params || {};
-  if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork']) ||
+  if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork', 'serverXpub']) ||
     (params.useProduction && !_.isBoolean(params.useProduction))) {
     throw new Error('invalid argument');
   }
@@ -172,6 +172,7 @@ const BitGo = function(params) {
   } else if (params.customRootURI ||
     params.customBitcoinNetwork ||
     params.customSigningAddress ||
+    params.serverXpub ||
     process.env.BITGO_CUSTOM_ROOT_URI ||
     process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
     env = 'custom';
@@ -183,6 +184,9 @@ const BitGo = function(params) {
     }
     if (params.customSigningAddress) {
       common.Environments['custom'].customSigningAddress = params.customSigningAddress;
+    }
+    if (params.serverXpub) {
+      common.Environments['custom'].serverXpub = params.serverXpub;
     }
   } else {
     env = params.env || process.env.BITGO_ENV;
