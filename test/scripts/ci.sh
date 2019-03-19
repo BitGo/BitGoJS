@@ -16,7 +16,7 @@ ESLINT="$ROOT/node_modules/.bin/eslint"
 echo "Using $ROOT as root directory"
 
 # run linter in all envs
-"$ESLINT" ${ROOT}/src/**/*.js
+"$ESLINT" "${ROOT}/src/**/*.js"
 
 # only run audit, integration tests, and code coverage reports on node 10, since these should not be dependent on node versions
 if [[ "$(node --version | cut -d. -f1)" == "v10" ]]; then
