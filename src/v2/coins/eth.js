@@ -611,13 +611,15 @@ class Eth extends BaseCoin {
 
   /**
    * Recover an unsupported token from a BitGo multisig wallet
-   * This builds a half-signed transaction, for which there will be an admin route to co-sign and broadcast
+   * This builds a half-signed transaction, for which there will be an admin route to co-sign and broadcast. Optionally
+   * the user can set params.broadcast = true and the half-signed tx will be sent to BitGo for cosigning and broadcasting
    * @param params
    * @param params.wallet the wallet to recover the token from
    * @param params.tokenContractAddress the contract address of the unsupported token
    * @param params.recipient the destination address recovered tokens should be sent to
    * @param params.walletPassphrase the wallet passphrase
    * @param params.prv the xprv
+   * @param params.broadcast if true, we will automatically submit the half-signed tx to BitGo for cosigning and broadcasting
    */
   recoverToken(params, callback) {
     return co(function *() {
@@ -652,6 +654,41 @@ class Eth extends BaseCoin {
       // Get token balance from external API
       const walletContractAddress = params.wallet._wallet.coinSpecific.baseAddress;
       const recoveryAmount = yield this.queryAddressTokenBalance(params.tokenContractAddress, walletContractAddress);
+
+      if (params.broadcast) {
+        // We're going to create a normal ETH transaction that sends an amount of 0 ETH to the
+        // tokenContractAddress and encode the unsupported-token-send data in the data field
+        // #tricksy
+        const sendMethodArgs = [
+          {
+            name: '_to',
+            type: 'address',
+            value: params.recipient
+          },
+          {
+            name: '_value',
+            type: 'uint256',
+            value: recoveryAmount.toString(10)
+          }
+        ];
+        const methodSignature = optionalDeps.ethAbi.methodID('transfer', _.map(sendMethodArgs, 'type'));
+        const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+        const sendData = Buffer.concat([methodSignature, encodedArgs]);
+
+        const broadcastParams = {
+          address: params.tokenContractAddress,
+          amount: '0',
+          data: sendData.toString('hex')
+        }
+
+        if (params.walletPassphrase) {
+          broadcastParams.walletPassphrase = params.walletPassphrase;
+        } else if (params.prv) {
+          broadcastParams.prv = params.prv;
+        }
+
+        return yield params.wallet.send(broadcastParams);
+      }
 
       const recipient = {
         address: params.recipient,
