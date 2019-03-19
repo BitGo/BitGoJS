@@ -25,7 +25,7 @@ const optionalDeps = {
 
   get EthTx() {
     return require('ethereumjs-tx');
-  },
+  }
 };
 
 class Eth extends BaseCoin {
@@ -679,7 +679,7 @@ class Eth extends BaseCoin {
           address: params.tokenContractAddress,
           amount: '0',
           data: sendData.toString('hex')
-        }
+        };
 
         if (params.walletPassphrase) {
           broadcastParams.walletPassphrase = params.walletPassphrase;

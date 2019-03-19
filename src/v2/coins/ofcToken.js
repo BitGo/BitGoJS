@@ -1,7 +1,4 @@
 const Ofc = require('./ofc');
-const _ = require('lodash');
-const Promise = require('bluebird');
-const co = Promise.coroutine;
 
 class OFCToken extends Ofc {
 
@@ -54,7 +51,6 @@ class OFCToken extends Ofc {
    */
   signTransaction(params) {
     const txPrebuild = params.txPrebuild;
-    const userPrv = params.prv;
 
     const payload = txPrebuild.payload;
     const signatureBuffer = this.signMessage(params, payload);
