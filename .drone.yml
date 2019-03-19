@@ -30,7 +30,6 @@ pipeline:
          - export BITGOJS_TEST_PASSWORD=$PASSWORD
          - node --version
          - npm --version
-         - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
          - bash ./test/scripts/ci.sh
@@ -42,7 +41,6 @@ pipeline:
          - export BITGOJS_TEST_PASSWORD=$PASSWORD
          - node --version
          - npm --version
-         - npm install ethereumjs-util
          - npm install -g codecov
          - npm install
          - bash ./test/scripts/ci.sh
