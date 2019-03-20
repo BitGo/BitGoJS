@@ -13,6 +13,10 @@ bitgo.sjcl = require('./sjcl.min');
 bitgo.bs58 = require('bs58');
 bitgo.Buffer = Buffer;
 
+// Expose environments
+const _ = require('lodash');
+bitgo.Environments = _.cloneDeep(common.Environments);
+
 /**
  * Set the network, i.e. either "bitcoin" for production with real bitcoin, or
  * "testnet" for development with testnet bitcoin.
