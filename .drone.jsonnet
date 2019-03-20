@@ -1,0 +1,118 @@
+local branches() = {
+  branch: [
+    "master",
+    "rel/*",
+    "prod/production"
+  ],
+};
+
+local BuildInfo(version, limit_branches=false) = {
+  name: "build information",
+  image: "node:" + version,
+  commands: [
+    "node --version",
+    "npm --version",
+  ],
+  [if limit_branches then "when"]: branches(),
+};
+
+local Install(version, limit_branches=false) = {
+  name: "install",
+  image: "node:" + version,
+  commands: [
+    "npm install",
+  ],
+  [if limit_branches then "when"]: branches(),
+};
+
+local UploadCoverage(version, tag="untagged", limit_branches=true) = {
+  name: "upload coverage",
+  image: "node:"  + version,
+  environment: {
+    CODECOV_TOKEN: { from_secret: "codecov" },
+  },
+  commands: [
+    "npx nyc report --reporter=text-lcov > coverage.lcov",
+    "npx codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F " + tag,
+  ],
+  [if limit_branches then "when"]: branches(),
+};
+
+local UnitTest(version) = {
+  kind: "pipeline",
+  name: "unit tests (node:" + version + ")",
+  steps: [
+    BuildInfo(version),
+    Install(version),
+    {
+      name: "unit tests",
+      image: "node:" + version,
+      environment: {
+        BITGOJS_TEST_PASSWORD: { from_secret: "password" },
+      },
+      commands: [
+        "npm run test-node",
+      ],
+    },
+    UploadCoverage(version, "unit"),
+  ],
+};
+
+local IntegrationTest(version, limit_branches=true) = {
+  kind: "pipeline",
+  name: "integration tests (node:" + version + ")",
+  steps: [
+    BuildInfo(version, limit_branches),
+    Install(version, limit_branches),
+    {
+      name: "integration tests",
+      image: "node:" + version,
+      environment: {
+        BITGOJS_TEST_PASSWORD: { from_secret: "password" },
+      },
+      commands: [
+        "npx nyc -- node_modules/.bin/mocha --timeout 20000 --reporter list --exit --recursive test/v2/integration",
+      ],
+      [if limit_branches then "when"]: branches(),
+    },
+    UploadCoverage(version, "integration", limit_branches),
+  ],
+};
+
+[
+  {
+    kind: "pipeline",
+    name: "audit",
+    steps: [
+      BuildInfo("lts"),
+      Install("lts"),
+      {
+        name: "audit",
+        image: "node:lts",
+        commands: [
+          "npm audit",
+        ],
+      },
+    ],
+  },
+  {
+    kind: "pipeline",
+    name: "lint",
+    steps: [
+      BuildInfo("lts"),
+      {
+        name: "lint",
+        image: "node:lts",
+        commands: [
+          "npx eslint 'src/**/*.js'",
+        ],
+      },
+    ],
+  },
+  UnitTest("8"),
+  UnitTest("9"),
+  UnitTest("10"),
+  UnitTest("11"),
+  IntegrationTest("10"),
+]
+
