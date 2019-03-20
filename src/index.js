@@ -6,13 +6,16 @@
 const common = require('./common');
 const bitgo = module.exports;
 bitgo.BitGo = require('./bitgo.js');
-bitgo.Environments = common.Environments;
 
 // Expose bitcoin and sjcl
 bitgo.bitcoin = require('./bitcoin');
 bitgo.sjcl = require('./sjcl.min');
 bitgo.bs58 = require('bs58');
 bitgo.Buffer = Buffer;
+
+// Expose environments
+const _ = require('lodash');
+bitgo.Environments = _.cloneDeep(common.Environments);
 
 /**
  * Set the network, i.e. either "bitcoin" for production with real bitcoin, or
