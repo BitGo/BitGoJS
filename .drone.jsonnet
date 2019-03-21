@@ -2,7 +2,7 @@ local branches() = {
   branch: [
     "master",
     "rel/*",
-    "prod/production"
+    "prod/production",
   ],
 };
 
@@ -32,8 +32,9 @@ local UploadCoverage(version, tag="untagged", limit_branches=true) = {
     CODECOV_TOKEN: { from_secret: "codecov" },
   },
   commands: [
-    "npx nyc report --reporter=text-lcov > coverage.lcov",
-    "npx codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F " + tag,
+    "npm install -g codecov",
+    "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov",
+    "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F " + tag,
   ],
   [if limit_branches then "when"]: branches(),
 };
@@ -71,7 +72,7 @@ local IntegrationTest(version, limit_branches=true) = {
         BITGOJS_TEST_PASSWORD: { from_secret: "password" },
       },
       commands: [
-        "npx nyc -- node_modules/.bin/mocha --timeout 20000 --reporter list --exit --recursive test/v2/integration",
+        "npx nyc -- node_modules/.bin/mocha -r ts-node/register --timeout 20000 --reporter list --exit 'test/v2/integration/**/*.ts'",
       ],
       [if limit_branches then "when"]: branches(),
     },
@@ -100,15 +101,18 @@ local IntegrationTest(version, limit_branches=true) = {
     name: "lint",
     steps: [
       BuildInfo("lts"),
+      Install("lts"),
       {
         name: "lint",
         image: "node:lts",
         commands: [
-          "npx eslint 'src/**/*.js'",
+          "npx eslint 'src/**/*.ts'",
+          "npx eslint 'test/**/*.ts' || true"
         ],
       },
     ],
   },
+  UnitTest("6"),
   UnitTest("8"),
   UnitTest("9"),
   UnitTest("10"),

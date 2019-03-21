@@ -38,10 +38,59 @@ steps:
   - node --version
   - npm --version
 
+- name: install
+  image: node:lts
+  commands:
+  - npm install
+
 - name: lint
   image: node:lts
   commands:
-  - "npx eslint 'src/**/*.js'"
+  - "npx eslint 'src/**/*.ts'"
+  - "npx eslint 'test/**/*.ts' || true"
+
+---
+kind: pipeline
+name: unit tests (node:6)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:6
+  commands:
+  - node --version
+  - npm --version
+
+- name: install
+  image: node:6
+  commands:
+  - npm install
+
+- name: unit tests
+  image: node:6
+  commands:
+  - npm run test-node
+  environment:
+    BITGOJS_TEST_PASSWORD:
+      from_secret: password
+
+- name: upload coverage
+  image: node:6
+  commands:
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov
+  when:
+    branch:
+    - master
+    - "rel/*"
+    - prod/production
 
 ---
 kind: pipeline
@@ -74,8 +123,9 @@ steps:
 - name: upload coverage
   image: node:8
   commands:
-  - "npx nyc report --reporter=text-lcov > coverage.lcov"
-  - "npx codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -116,8 +166,9 @@ steps:
 - name: upload coverage
   image: node:9
   commands:
-  - "npx nyc report --reporter=text-lcov > coverage.lcov"
-  - "npx codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -158,8 +209,9 @@ steps:
 - name: upload coverage
   image: node:10
   commands:
-  - "npx nyc report --reporter=text-lcov > coverage.lcov"
-  - "npx codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -200,8 +252,9 @@ steps:
 - name: upload coverage
   image: node:11
   commands:
-  - "npx nyc report --reporter=text-lcov > coverage.lcov"
-  - "npx codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -244,7 +297,7 @@ steps:
 - name: integration tests
   image: node:10
   commands:
-  - npx nyc -- node_modules/.bin/mocha --timeout 20000 --reporter list --exit --recursive test/v2/integration
+  - "npx nyc -- node_modules/.bin/mocha -r ts-node/register --timeout 20000 --reporter list --exit 'test/v2/integration/**/*.ts'"
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -257,8 +310,9 @@ steps:
 - name: upload coverage
   image: node:10
   commands:
-  - "npx nyc report --reporter=text-lcov > coverage.lcov"
-  - "npx codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F integration"
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F integration"
   environment:
     CODECOV_TOKEN:
       from_secret: codecov

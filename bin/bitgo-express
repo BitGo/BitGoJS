@@ -2,7 +2,7 @@
 
 const Promise = require('bluebird');
 
-const { app, parseArgs, createBaseUri, createServer, startup } = require('../src/expressApp');
+const { app, parseArgs, createBaseUri, createServer, startup } = require('../dist/src/expressApp');
 
 if (require.main === module) {
   (Promise.coroutine(function *main() {

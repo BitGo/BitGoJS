@@ -13,7 +13,7 @@ Please join us on our [Slack channel](https://bitgodevs.slack.com) if you have q
 
 # Installation
 
-Please make sure you are running at least Node version 6 (`6.12.3` recommended) and NPM version 3 (`3.10.10` recommended).
+Please make sure you are running at least Node version 8 (the latest LTS release is recommended) and NPM version 6.
 We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node version.
 
 `git clone https://github.com/BitGo/BitGoJS`

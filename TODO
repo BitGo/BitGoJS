@@ -1,4 +1,0 @@
-[ ] Add Keychains.chain (locally chain a keychain) to BitGo utility
-[ ] Method to create a "standard" key?
-[ ] Documentation: Keychain.get is POST not GET
-[ ] Add key hardening to keychains (local)
