@@ -27,6 +27,10 @@ class Btc extends AbstractUtxoCoin {
     return true;
   }
 
+  supportsP2shP2wsh() {
+    return true;
+  }
+
   supportsP2wsh() {
     return true;
   }

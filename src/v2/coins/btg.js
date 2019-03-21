@@ -26,6 +26,14 @@ class Btg extends Btc {
     return false;
   }
 
+  supportsP2shP2wsh() {
+    return true;
+  }
+
+  supportsP2wsh() {
+    return true;
+  }
+
   /**
    *
    * @param txBuilder

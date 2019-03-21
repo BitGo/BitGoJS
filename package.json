@@ -35,6 +35,7 @@
     "generate_drone": "drone jsonnet --stream"
   },
   "dependencies": {
+    "@bitgo/unspents": "0.5.0",
     "argparse": "1.0.10",
     "assert": "0.4.9",
     "big.js": "3.1.3",

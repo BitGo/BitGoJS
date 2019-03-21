@@ -27,6 +27,18 @@ class UnsupportedCoinError extends BitGoJsError {
   }
 }
 
+class AddressTypeChainMismatchError extends BitGoJsError {
+  constructor(addressType, chain) {
+    super(`address type ${addressType} does not correspond to chain ${chain}`);
+  }
+}
+
+class P2shP2wshUnsupportedError extends BitGoJsError {
+  constructor(message) {
+    super(message || 'p2shP2wsh not supported by this coin');
+  }
+}
+
 class P2wshUnsupportedError extends BitGoJsError {
   constructor(message) {
     super(message || 'p2wsh not supported by this coin');
@@ -81,6 +93,8 @@ module.exports = {
   TlsConfigurationError,
   NodeEnvironmentError,
   WalletRecoveryUnsupported,
+  AddressTypeChainMismatchError,
+  P2shP2wshUnsupportedError,
   P2wshUnsupportedError,
   UnsupportedAddressTypeError,
   InvalidAddressError,

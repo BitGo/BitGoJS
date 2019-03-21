@@ -5,9 +5,9 @@ const co = Promise.coroutine;
 const _ = require('lodash');
 const bitcoin = require('bitgo-utxo-lib');
 const prova = require('prova-lib');
+const { Codes } = require('@bitgo/unspents');
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const Wallet = require('../../../../src/v2/wallet');
-const AbstractUtxoCoin = require('../../../../src/v2/coins/abstractUtxoCoin');
 
 describe('LTC:', function() {
   let bitgo;
@@ -101,9 +101,8 @@ describe('LTC:', function() {
     });
 
     it('should generate custom chain p2wsh bech32 address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, chain: 21, index: 113, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, chain: 21, index: 113, addressType: AbstractUtxoCoin.AddressTypes.P2WSH });
-
+      const generatedAddress = coin.generateAddress({ keychains, chain: 21, index: 113, addressType: Codes.UnspentTypeTcomb('p2wsh') });
+      const generatedTestAddress = testCoin.generateAddress({ keychains, chain: 21, index: 113, addressType: Codes.UnspentTypeTcomb('p2wsh') });
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
         currentAddress.chain.should.equal(21);
         currentAddress.index.should.equal(113);
@@ -120,19 +119,21 @@ describe('LTC:', function() {
     });
 
     it('should generate p2sh-wrapped segwit address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH });
+      const addressType = Codes.UnspentTypeTcomb('p2shP2wsh');
+      const chain = Codes.forType(addressType)[Codes.PurposeTcomb('external')];
+      const generatedAddress = coin.generateAddress({ keychains, addressType, chain });
+      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType, chain });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
-        currentAddress.chain.should.equal(0);
+        currentAddress.chain.should.equal(chain);
         currentAddress.index.should.equal(0);
-        currentAddress.coinSpecific.outputScript.should.equal('a91426e34781478f08fff903cb70ae67311c3f9bc6a987');
-        currentAddress.coinSpecific.redeemScript.should.equal('00209a10eb58331e95333f4a6eafd5f03e442e17e0986c824e392642e872f431b7ef');
-        currentAddress.coinSpecific.witnessScript.should.equal('5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae');
+        currentAddress.coinSpecific.outputScript.should.equal('a9147ff13f3faeba4d439ef40604f7c127951e77eb6a87');
+        currentAddress.coinSpecific.redeemScript.should.equal('00207aad7d57b238a09b5daa10ff47c54483b7f2ad47f3f0c0aa230958b9df334260');
+        currentAddress.coinSpecific.witnessScript.should.equal('52210304fcea3fb05f6e8a8fe91db2087bdd13b18102a0b10a77c1fdbb326b0ce7cec421028242a3ea9e20d4e6b78e3f0dde21aff86a623d48322681b203b6827e22d04a9d2102ceec88b222a55ec67d1414b523bcfc0f53eb6ac012ba91744a4ed8eb448d55f753ae');
       });
 
-      generatedAddress.address.should.equal('MBSnBN33bYj2QnFM1YqrDmdwGxRY5Q5acM');
-      generatedTestAddress.address.should.equal('QQ9c4ERMGzS2xFN3CuWQ6mpEJzV5iE7iao');
+      generatedAddress.address.should.equal('MKZf3w3b2hACjfJNbqifSYPixNkZjxBTg9');
+      generatedTestAddress.address.should.equal('QYGUvoRti8sDH8R4oCPDKYa1zQp7UWCfAA');
 
       coin.verifyAddress(_.extend({}, generatedAddress, { keychains }));
       testCoin.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
@@ -154,25 +155,27 @@ describe('LTC:', function() {
     });
 
     it('should generate 3/3 custom chain p2sh-wrapped segwit address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH, chain: 20, index: 756 });
+      const addressType = Codes.UnspentTypeTcomb('p2shP2wsh');
+      const chain = Codes.forType(addressType)[Codes.PurposeTcomb('external')];
+      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, addressType, chain, index: 756 });
       const generatedTestAddress = testCoin.generateAddress({
         keychains,
         threshold: 3,
-        addressType: AbstractUtxoCoin.AddressTypes.P2SH_P2WSH,
-        chain: 20,
+        addressType,
+        chain,
         index: 756
       });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
-        currentAddress.chain.should.equal(20);
+        currentAddress.chain.should.equal(chain);
         currentAddress.index.should.equal(756);
-        currentAddress.coinSpecific.outputScript.should.equal('a91424ba55e2753970236fae8593ca2b49654bf9f4c487');
-        currentAddress.coinSpecific.redeemScript.should.equal('0020c8fc4f071770e15f21a13ba48c6f32421daed431a74e00e13d0187990964bbce');
-        currentAddress.coinSpecific.witnessScript.should.equal('532103db7ec7ef3c549705582d6bb5ee258b3bc14d147ec3b069dfd4fd80adb4e9373e210387b1f7cacb6e0c78b79062e94ed0aee691bdfa34a0d1b522103c434205587ad52102044a9f965fd9b54d82e5afe9d4338d0f59027a4e11cff3a39b90fbf5978ae7e753ae');
+        currentAddress.coinSpecific.outputScript.should.equal('a914ad395d176042ce737e4f5b65c0eb5de703a4e80087');
+        currentAddress.coinSpecific.redeemScript.should.equal('0020d15d8d124adb4c213905ebb2cec8517faf38ae0ec4f7b4f1cfa358e6cc06a93d');
+        currentAddress.coinSpecific.witnessScript.should.equal('532102bb8096d5c12e8b0ee50dd2b14f63dd09c8494b5a0a730794a0e392a6f2a3b2a8210366dbf2135105dc65eed5173c1acf1a902fc2e9dd366b9a6fa0e682c0fb4c21a32102bf998121d4d09d4305b025b5d2de8a7e954fe96179a1dfc076ad11ad4751c99e53ae');
       });
 
-      generatedAddress.address.should.equal('MBFMn9or7M89saHPkveDLzsyuEjZ22ftmo');
-      generatedTestAddress.address.should.equal('QPxBf2C9nnqAR3Q5xHJmE14GwGo6fwNtii');
+      generatedAddress.address.should.equal('MPh5rK4numViA9uYa2soZzfeNBEA6rFUPj');
+      generatedTestAddress.address.should.equal('QcPujBT6bDCihd2EmPYMSzqwQDHhpjb96x');
     });
 
     it('should validate pub key', () => {
