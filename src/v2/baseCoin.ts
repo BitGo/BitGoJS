@@ -315,7 +315,7 @@ class BaseCoin {
    */
   signMessage(key, message) {
     const privateKey = bitcoin.HDNode.fromBase58(key.prv).getKey();
-    const privateKeyBuffer = privateKey.d.toBuffer();
+    const privateKeyBuffer = privateKey.d.toBuffer(32);
     const isCompressed = privateKey.compressed;
     const prefix = bitcoin.networks.bitcoin.messagePrefix;
     return bitcoinMessage.sign(message, privateKeyBuffer, isCompressed, prefix);
