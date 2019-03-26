@@ -1,19 +1,31 @@
+/**
+ * Testnet XRP
+ *
+ * @format
+ */
 const Xrp = require('./xrp');
 
 class Txrp extends Xrp {
-
-  getChain() {
+  /**
+   * Identifier for the blockchain which supports this coin
+   */
+  public getChain(): string {
     return 'txrp';
   }
 
-  getRippledUrl() {
+  /**
+   * URL of a well-known, public facing (non-bitgo) rippled instance which can be used for recovery
+   */
+  public getRippledUrl(): string {
     return 'https://s.altnet.rippletest.net:51234';
   }
 
-  getFullName() {
+  /**
+   * Complete human-readable name of this coin
+   */
+  public getFullName(): string {
     return 'Testnet Ripple';
   }
-
 }
 
-module.exports = Txrp;
+export = Txrp;

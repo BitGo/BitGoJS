@@ -36,12 +36,14 @@ export class UnsupportedCoinError extends BitGoJsError {
 export class AddressTypeChainMismatchError extends BitGoJsError {
   constructor(addressType, chain) {
     super(`address type ${addressType} does not correspond to chain ${chain}`);
+    Object.setPrototypeOf(this, AddressTypeChainMismatchError.prototype);
   }
 }
 
 export class P2shP2wshUnsupportedError extends BitGoJsError {
   constructor(message) {
     super(message || 'p2shP2wsh not supported by this coin');
+    Object.setPrototypeOf(this, P2shP2wshUnsupportedError.prototype);
   }
 }
 
