@@ -1,5 +1,33 @@
 # BitGoJS Release Notes
 
+## 4.49.0
+### New Features
+- Complete support for native segwit address generation and verification
+- Ensure match between addressType and chain parameters when calling `generateAddress()`
+- Use `@bitgo/unspents` for address chain information
+- Add support for overriding the server extended public key used by BitGoJS
+- Add support for new ERC 20 tokens (SLOT, ETHOS, LBA, CDAG)
+
+### Bug Fixes
+- Get latest block height and transaction prebuild in parallel
+
+### Deprecation Notices
+The following parameters to the `generateAddress()` function on `Wallet` objects have been deprecated, and will be removed in a future version of BitGoJS:
+- `addressType`
+- `segwit`
+- `bech32`
+
+Instead, the address type will be determined by the `chain` parameter, with the following behavior:
+
+| chain | type | format | usage    |
+| ----- | ---- | ------ | -------- |
+| 0     | pay to script hash | base58 | External |
+| 1     | pay to script hash | base58 | Internal (change) |
+| 10    | wrapped segwit | base58 | External |
+| 11    | wrapped segwit | base58 | Internal (change) |
+| 20    | native segwit | bech32 | External |
+| 21    | native segwit | bech32 | Internal (change) |
+
 ## 4.48.1
 ### Bug Fixes
 - Treat errors thrown from `verifySignature` as an invalid signature
