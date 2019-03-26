@@ -78,8 +78,8 @@ if (isEthAvailable) {
   // Convert a BTC xpriv to an Ethereum private key (without 0x prefix)
   Util.xprvToEthPrivateKey = function(xprv) {
     const hdNode = bitcoin.HDNode.fromBase58(xprv);
-    const ethPrivateKey = hdNode.keyPair.d.toBuffer();
-    return ethUtil.setLengthLeft(ethPrivateKey, 32).toString('hex');
+    const ethPrivateKey = hdNode.keyPair.d.toBuffer(32);
+    return ethPrivateKey.toString('hex');
   };
 
   // Sign a message using Ethereum's ECsign method and return the signature string
