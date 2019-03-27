@@ -16,11 +16,7 @@ Please join us on our [Slack channel](https://bitgodevs.slack.com) if you have q
 Please make sure you are running at least Node version 8 (the latest LTS release is recommended) and NPM version 6.
 We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node version.
 
-`git clone https://github.com/BitGo/BitGoJS`
-
-`cd BitGoJS`
-
-`npm install`
+`npm install bitgo`
 
 # Full Documentation
 
@@ -42,12 +38,12 @@ bitgo.session({}, function(err,res) {
 ## Create Wallet
 ```js
 let wallet;
-const params = { 
-  "passphrase": "replaceme", 
+const params = {
+  "passphrase": "replaceme",
   "label": "firstwallet"
 };
 bitgo.wallets().createWalletWithKeychains(params, function(err, result) {
-  wallet = result.wallet; 
+  wallet = result.wallet;
   console.dir(wallet.wallet);
   console.log("Locally created keychain: " + result.userKeychain.encryptedXprv);
 });
@@ -69,10 +65,10 @@ wallet.transactions({}, function callback(err, transactions) {
 
 ## Send coins
 ```js
-wallet.sendCoins({ 
-  address: "2NEe9QhKPB2gnQLB3hffMuDcoFKZFjHYJYx", 
-  amount: 0.01 * 1e8, 
-  walletPassphrase:  "replaceme" 
+wallet.sendCoins({
+  address: "2NEe9QhKPB2gnQLB3hffMuDcoFKZFjHYJYx",
+  amount: 0.01 * 1e8,
+  walletPassphrase:  "replaceme"
 }, function(err, result) {
     console.dir(result);
 });
