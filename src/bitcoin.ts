@@ -14,7 +14,7 @@ try {
   console.log('running without secp256k1 acceleration');
 }
 
-bitcoin.getNetwork = function(network) {
+bitcoin.getNetwork = function(network?: any) {
   network = network || common.getNetwork();
   return bitcoin.networks[network];
 };
@@ -23,7 +23,7 @@ bitcoin.makeRandomKey = function() {
   return bitcoin.ECPair.makeRandom({ network: bitcoin.getNetwork() });
 };
 
-HDNode.prototype.getKey = function(network) {
+HDNode.prototype.getKey = function(network?: any) {
   network = network || bitcoin.getNetwork();
   const k = this.keyPair;
   const result = new bitcoin.ECPair(k.d, k.d ? null : k.Q, { network: network, compressed: k.compressed });
