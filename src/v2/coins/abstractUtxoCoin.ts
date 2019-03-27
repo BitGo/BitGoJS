@@ -1305,6 +1305,8 @@ class AbstractUtxoCoin extends BaseCoin {
 
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+      const isBackupKeyRecovery = !params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+
       const krsProvider = config.krsProviders[params.krsProvider];
 
       if (isKrsRecovery && _.isUndefined(krsProvider)) {
@@ -1404,8 +1406,12 @@ class AbstractUtxoCoin extends BaseCoin {
         const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
         return this.formatForOfflineVault(txInfo, txHex);
       } else {
-        const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
-        txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
+        const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery, isBackupKeyRecovery);
+        if (!isBackupKeyRecovery) {
+          txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
+        } else {
+          txInfo.transactionHex = signedTx.buildIncomplete().toBuffer().toString('hex');
+        }
         try {
           txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
         } catch (e) {
@@ -1434,7 +1440,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param addresses {Array} the address and redeem script info for the unspents
    * @param cosign {Boolean} whether to cosign this transaction with the user's backup key (false if KRS recovery)
    */
-  signRecoveryTransaction(txb, unspents, addresses, cosign) {
+  signRecoveryTransaction(txb, unspents, addresses, cosign, isBackupKeyRecovery = false) {
     // sign the inputs
     const signatureIssues = [];
     unspents.forEach((unspent, i) => {
@@ -1459,12 +1465,15 @@ class AbstractUtxoCoin extends BaseCoin {
         }
       }
 
-      try {
-        txb.sign(i, userPrivateKey, address.redeemScript, this.defaultSigHashType, unspent.amount, address.witnessScript);
-      } catch (e) {
-        currentSignatureIssue.error = e;
-        signatureIssues.push(currentSignatureIssue);
+      if (!isBackupKeyRecovery) {
+        try {
+          txb.sign(i, userPrivateKey, address.redeemScript, this.defaultSigHashType, unspent.amount, address.witnessScript);
+        } catch (e) {
+          currentSignatureIssue.error = e;
+          signatureIssues.push(currentSignatureIssue);
+        }
       }
+
     });
 
     if (signatureIssues.length > 0) {
