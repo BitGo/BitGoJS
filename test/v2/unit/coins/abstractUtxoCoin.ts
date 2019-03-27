@@ -138,7 +138,7 @@ describe('Abstract UTXO Coin:', () => {
       const transaction = utxoLib.Transaction.fromHex(tx.transactionHex);
       transaction.ins.length.should.equal(2);
       transaction.outs.length.should.equal(1);
-      transaction.outs[0].value.should.equal(57184);
+      transaction.outs[0].value.should.equal(57112);
       tx.transactionHex.should.equal(expectedTxHex);
     }));
 
