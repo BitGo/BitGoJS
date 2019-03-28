@@ -1311,6 +1311,16 @@ class AbstractUtxoCoin extends BaseCoin {
         // If we aren't ignoring the address type, we derive the public key and construct the query for the external and
         // internal indices
         if (!_.includes(params.ignoreAddressTypes, addressType)) {
+          if (addressType === Codes.UnspentTypeTcomb('p2shP2wsh') && !self.supportsP2shP2wsh()) {
+            // P2shP2wsh is not supported. Skip.
+            return;
+          }
+
+          if (addressType === Codes.UnspentTypeTcomb('p2wsh') && !self.supportsP2wsh()) {
+            // P2wsh is not supported. Skip.
+            return;
+          }
+
           let codes;
           try {
             codes = Codes.forType(Codes.UnspentTypeTcomb(addressType));
@@ -1346,7 +1356,7 @@ class AbstractUtxoCoin extends BaseCoin {
       // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees. Use p2wsh outputs because
       // they are the largest outputs and thus the most conservative estimate to use in calculating fees. Also use
       // segwit overhead size and p2sh inputs for the same reason.
-      const outputSize = isKrsRecovery ? 2 * VirtualSizes.txP2wshOutputSize : VirtualSizes.txP2wshOutputSize;
+      const outputSize = (isKrsRecovery ? 2 : 1) * VirtualSizes.txP2wshOutputSize;
       const approximateSize =
         VirtualSizes.txSegOverheadVSize + outputSize + (VirtualSizes.txP2shInputSize * unspents.length);
       const approximateFee = approximateSize * feePerByte;
