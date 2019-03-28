@@ -1364,7 +1364,9 @@ BitGo.prototype.addAccessToken = function(params, callback) {
 
   const bitgo = this;
 
-  const request = this.post(this.url('/user/accesstoken'));
+  const authUrl = this._microservicesUrl ? this.microservicesUrl('/api/v1/auth/accesstoken') : this.url('/user/accesstoken');
+  const request = this.post(authUrl);
+  
   if (!bitgo._ecdhXprv) {
     // without a private key, the user cannot decrypt the new access token the server will send
     request.forceV1Auth = true;
