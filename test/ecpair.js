@@ -6,6 +6,7 @@ var ecdsa = require('../src/ecdsa')
 var ecurve = require('ecurve')
 var proxyquire = require('proxyquire')
 var sinon = require('sinon')
+var randombytes = require('randombytes')
 
 var BigInteger = require('bigi')
 var ECPair = require('../src/ecpair')
@@ -297,6 +298,38 @@ describe('ECPair', function () {
 
         keyPair.verify(hash, signature)
       }))
+    })
+  })
+
+  describe('fromPrivateKeyBuffer', function () {
+    it('constructs an ECPair from a random private key buffer', function () {
+      var prvKeyBuffer = randombytes(32)
+      var ecPair = ECPair.fromPrivateKeyBuffer(prvKeyBuffer)
+      var ecPairPrvBuffer = ecPair.getPrivateKeyBuffer()
+      assert.strictEqual(Buffer.compare(ecPairPrvBuffer, prvKeyBuffer), 0)
+    })
+
+    it('throws if the private key is out of range', function () {
+      var prvKeyBuffer = Buffer.alloc(32, 0xff)
+      assert.throws(function () {
+        ECPair.fromPrivateKeyBuffer(prvKeyBuffer)
+      }, new RegExp('private key out of range'))
+    })
+
+    it('throws if the private key buffer is not a buffer', function () {
+      assert.throws(function () {
+        ECPair.fromPrivateKeyBuffer('not a buffer')
+      }, new RegExp('invalid private key buffer'))
+    })
+
+    it('throws if the private key buffer is not 32 bytes', function () {
+      assert.throws(function () {
+        ECPair.fromPrivateKeyBuffer(Buffer.alloc(31, 0x00))
+      }, new RegExp('invalid private key buffer'))
+
+      assert.throws(function () {
+        ECPair.fromPrivateKeyBuffer(Buffer.alloc(33, 0x00))
+      }, new RegExp('invalid private key buffer'))
     })
   })
 })
