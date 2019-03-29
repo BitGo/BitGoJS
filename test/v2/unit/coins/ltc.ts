@@ -1,4 +1,5 @@
-import 'should';
+import * as should from 'should';
+// const should = require('should');
 
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
@@ -107,7 +108,7 @@ describe('LTC:', function() {
         currentAddress.chain.should.equal(21);
         currentAddress.index.should.equal(113);
         currentAddress.coinSpecific.outputScript.should.equal('0020079225c736a65198b0aa75de0d385890e250820ef8731d6f8a3a744e27a3b45d');
-        currentAddress.coinSpecific.should.not.have.property('redeemScript');
+        should.not.exist(currentAddress.coinSpecific.redeemScript);
         currentAddress.coinSpecific.witnessScript.should.equal('5221027ec22f583acba5af0a6c5ed43cffb204811cb62cc7cad0e37673ce2ae7693b492103b5324d802f60116366261abb759758629d3d7bd7f2a2d8ff0ee78bfb9e2b387121039e17f3ca6f256ae24cfa9664cf08add84a3cc39ae96c56cacf6b0f846a6d07d853ae');
       });
 

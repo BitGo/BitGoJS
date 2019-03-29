@@ -93,7 +93,7 @@ class Btc extends AbstractUtxoCoin {
 
       const tx = bitcoin.Transaction.fromHex(txInfo.transactionHex, this.network);
       if (transactionDetails.TxId !== tx.getId()) {
-        console.log(transactionDetails.txId);
+        console.log(transactionDetails.TxId);
         console.log(tx.getId());
         throw new Error('inconsistent recovery transaction id');
       }
