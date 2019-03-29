@@ -59,7 +59,6 @@ export const tokens = {
         { type: 'veri', coin: 'eth', network: 'Mainnet', name: 'Veritaseum', tokenContractAddress: '0x8f3470a7388c05ee4e7af3d01d8c722b0ff52374', decimalPlaces: 18 },
         { type: 'quash', coin: 'eth', network: 'Mainnet', name: 'Qash', tokenContractAddress: '0x618e75ac90b12c6049ba3b27f5d5f8651b0037f6', decimalPlaces: 6 },
         { type: 'drgn', coin: 'eth', network: 'Mainnet', name: 'Dragonchain', tokenContractAddress: '0x419c4db4b9e25d6db2ad9691ccb832c8d9fda05e', decimalPlaces: 18 },
-        { type: 'nas', coin: 'eth', network: 'Mainnet', name: 'Nebulas', tokenContractAddress: '0x5d65d971895edc438f465c17db6992698a52318d', decimalPlaces: 18 },
         { type: 'sub', coin: 'eth', network: 'Mainnet', name: 'Substratum', tokenContractAddress: '0x12480e24eb5bec1a9d4369cab6a80cad3c0a377a', decimalPlaces: 2 },
         { type: 'r', coin: 'eth', network: 'Mainnet', name: 'Revain', tokenContractAddress: '0x48f775efbe4f5ece6e0df2f7b5932df56823b990', decimalPlaces: 0 },
         { type: 'salt', coin: 'eth', network: 'Mainnet', name: 'Salt', tokenContractAddress: '0x4156d3342d5c385a87d264f90653733592000581', decimalPlaces: 8 },
@@ -238,7 +237,11 @@ export const tokens = {
         { type: 'slot', coin: 'eth', network: 'Mainnet', name: 'AlphaSlot', tokenContractAddress: '0xaee7474c3713ece228aa5ec43c89c708f2ec7ed2', decimalPlaces: 18 },
         { type: 'ethos', coin: 'eth', network: 'Mainnet', name: 'Ethos', tokenContractAddress: '0x5af2be193a6abca9c8817001f45744777db30756', decimalPlaces: 8 },
         { type: 'lba', coin: 'eth', network: 'Mainnet', name: 'Cred', tokenContractAddress: '0xfe5f141bf94fe84bc28ded0ab966c16b17490657', decimalPlaces: 18 },
-        { type: 'cdag', coin: 'eth', network: 'Mainnet', name: 'CannDollar', tokenContractAddress: '0xf43401ea8ac4b86155b929e1a5a5e46626c23842', decimalPlaces: 18 }
+        { type: 'cdag', coin: 'eth', network: 'Mainnet', name: 'CannDollar', tokenContractAddress: '0xf43401ea8ac4b86155b929e1a5a5e46626c23842', decimalPlaces: 18 },
+        { type: 'upt', coin: 'eth', network: 'Mainnet', name: 'Universal Protocol Token', tokenContractAddress: '0x6ca88cc8d9288f5cad825053b6a1b179b05c76fc', decimalPlaces: 18 },
+        { type: 'upusd', coin: 'eth', network: 'Mainnet', name: 'Universal US Dollar', tokenContractAddress: '0x86367c0e517622dacdab379f2de389c3c9524345', decimalPlaces: 2 },
+        { type: 'upbtc', coin: 'eth', network: 'Mainnet', name: 'Universal Bitcoin', tokenContractAddress: '0xc7461b398005e50bcc43c8e636378c6722e76c01', decimalPlaces: 8 },
+        { type: 'fet', coin: 'eth', network: 'Mainnet', name: 'Fetch', tokenContractAddress: '0x1d287cc25dad7ccaf76a26bc660c5f7c8e2a05bd', decimalPlaces: 18 },
       ]
     }
   },
