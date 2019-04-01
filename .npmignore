@@ -59,7 +59,6 @@ typings/
 # dotenv environment variables file
 .env
 
-
 # BitGo Repository Files
 lab
 example
@@ -76,8 +75,20 @@ browser
 .karma.conf.js
 .travis.yml
 Dockerfile
-Dockerrun.aws.json
-TODO
+.drone.jsonnet
+.drone.yml
+.nvmrc
+.prettierignore
+.prettierrc.yml
+CODEOWNERS
+bin/bitgo-express-init.sh.example
+.codecov.yml
+BitGoJS.iml
+.DS_Store
 
-## exclude test directory
-test
+# exclude test directory
+test/
+
+# tests output by tsc
+dist/test/
+
