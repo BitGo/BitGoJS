@@ -7,8 +7,8 @@
 
 import Promise = require('bluebird');
 import bitcoin = require('./bitcoin');
-import config = require('./config');
 import * as _ from 'lodash';
+import { VirtualSizes } from '@bitgo/unspents';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 
@@ -391,7 +391,7 @@ exports.createTransaction = function(params) {
       const originalUnspentCount = unspents.length;
       unspents = _.filter(unspents, function(unspent) {
         const isSegwitInput = !!unspent.witnessScript;
-        const currentInputSize = isSegwitInput ? config.tx.P2SH_P2WSH_INPUT_SIZE : config.tx.P2SH_INPUT_SIZE;
+        const currentInputSize = isSegwitInput ? VirtualSizes.txP2shP2wshInputSize : VirtualSizes.txP2shInputSize;
         const feeBasedMinInputValue = (feeRate * currentInputSize) / 1000;
         const currentMinInputValue = Math.max(minInputValue, feeBasedMinInputValue);
         if (currentMinInputValue > unspent.value) {
@@ -755,12 +755,12 @@ const estimateTransactionSize = function(params) {
   }
 
 
-  const estimatedSize = config.tx.P2SH_INPUT_SIZE * params.nP2shInputs +
-  config.tx.P2SH_P2WSH_INPUT_SIZE * (params.nP2shP2wshInputs || 0) +
-  config.tx.P2PKH_INPUT_SIZE * (params.nP2pkhInputs || 0) +
-  config.tx.OUTPUT_SIZE * params.nOutputs +
+  const estimatedSize = VirtualSizes.txP2shInputSize * params.nP2shInputs +
+  VirtualSizes.txP2shP2wshInputSize * (params.nP2shP2wshInputs || 0) +
+  VirtualSizes.txP2pkhInputSizeUncompressedKey * (params.nP2pkhInputs || 0) +
+  VirtualSizes.txP2pkhOutputSize * params.nOutputs +
   // if the tx contains at least one segwit input, the tx overhead is increased by 1
-  config.tx.TX_OVERHEAD_SIZE + (params.nP2shP2wshInputs > 0 ? 1 : 0);
+  VirtualSizes.txOverheadSize + (params.nP2shP2wshInputs > 0 ? 1 : 0);
 
   return estimatedSize;
 };

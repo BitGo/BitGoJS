@@ -1,9 +1,10 @@
+import { VirtualSizes } from '@bitgo/unspents';
+
 const request = require('superagent');
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 const bitcoin = require('bitgo-utxo-lib');
-const config = require('../config');
 
 /**
  * An instance of the recovery tool, which encapsulates the recovery functions
@@ -332,13 +333,11 @@ class CrossChainRecoveryTool {
     recoveryTx = recoveryTx || this.recoveryTx;
 
     // Determine fee with default fee rate
-    const P2SH_INPUT_SIZE = config.tx.P2SH_INPUT_SIZE;
-    const OUTPUT_SIZE = config.tx.OUTPUT_SIZE;
-    const TX_OVERHEAD_SIZE = config.tx.TX_OVERHEAD_SIZE;
     const feeRate = this.feeRates[this.sourceCoin.type];
 
     // Note that we assume one output here (all funds should be recovered to a single address)
-    const txSize = P2SH_INPUT_SIZE * recoveryTx.tx.ins.length + OUTPUT_SIZE + TX_OVERHEAD_SIZE;
+    const txSize = VirtualSizes.txP2shInputSize * recoveryTx.tx.ins.length + VirtualSizes.txP2pkhOutputSize +
+        VirtualSizes.txOverheadSize;
     const recoveryFee = feeRate * txSize;
     this.txInfo.minerFee = recoveryFee;
 
@@ -495,10 +494,8 @@ class CrossChainRecoveryTool {
 
       const feeInfo: any = {};
 
-      const INPUT_SIZE = config.tx.P2SH_INPUT_SIZE;
-      const OUTPUT_SIZE = config.tx.OUTPUT_SIZE;
-      const OVERHEAD_SIZE = config.tx.TX_OVERHEAD_SIZE;
-      feeInfo.size = OVERHEAD_SIZE + (INPUT_SIZE * this.txInfo.inputs.length) + OUTPUT_SIZE;
+      feeInfo.size = VirtualSizes.txOverheadSize + (VirtualSizes.txP2shInputSize * this.txInfo.inputs.length) +
+          VirtualSizes.txP2pkhOutputSize;
 
       feeInfo.feeRate = this.feeRates[this.sourceCoin.type];
       feeInfo.fee = Math.round(feeInfo.size / 1000 * feeInfo.feeRate);
