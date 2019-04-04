@@ -1,23 +1,6 @@
 import common = require('./common');
 import * as _ from 'lodash';
 
-// Estimate for virtual sizes of various tx inputs
-export const tx = {
-  P2SH_INPUT_SIZE: 296,
-  P2SH_P2WSH_INPUT_SIZE: 139,
-  P2PKH_INPUT_SIZE: 160, // Uncompressed
-  OUTPUT_SIZE: 34,
-  TX_OVERHEAD_SIZE: 10
-};
-
-// The derivation paths of the different address chains
-export const chains = {
-  CHAIN_P2SH: 0,
-  CHANGE_CHAIN_P2SH: 1,
-  CHAIN_SEGWIT: 10,
-  CHANGE_CHAIN_SEGWIT: 11
-};
-
 export const tokens = {
   // network name for production environments (prod tokens must be added here)
   bitcoin: {

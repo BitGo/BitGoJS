@@ -5,6 +5,8 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
+import { Codes, VirtualSizes } from '@bitgo/unspents';
+
 const TransactionBuilder = require('./transactionBuilder');
 import bitcoin = require('./bitcoin');
 // TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
@@ -12,7 +14,6 @@ import prova = require('prova-lib');
 const PendingApproval = require('./pendingapproval');
 
 import common = require('./common');
-const config = require('./config');
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
@@ -209,7 +210,7 @@ Wallet.prototype.getChangeChain = function(params) {
     // if segwit is disabled through the constants, segwit change should still not be created
     useSegwitChange = this.bitgo.getConstants().enableSegwit && params.segwitChange;
   }
-  return useSegwitChange ? config.chains.CHANGE_CHAIN_SEGWIT : config.chains.CHANGE_CHAIN_P2SH;
+  return useSegwitChange ? Codes.internal.p2shP2wsh : Codes.internal.p2sh;
 };
 
 //
@@ -233,7 +234,7 @@ Wallet.prototype.createAddress = function(params, callback) {
   }
 
   const isSegwit = this.bitgo.getConstants().enableSegwit;
-  const defaultChain = isSegwit ? config.chains.CHAIN_SEGWIT : config.chains.CHAIN_P2SH;
+  const defaultChain = isSegwit ? Codes.external.p2shP2wsh : Codes.external.p2sh;
 
   let chain = params.chain;
   if (chain === null || chain === undefined) {
@@ -1315,7 +1316,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
         _.forEach(unspents, (unspent) => {
           // update the child tx inputs
           const unspentChain = getChain(unspent);
-          if (unspentChain === config.chains.CHAIN_SEGWIT || unspentChain === config.chains.CHANGE_CHAIN_SEGWIT) {
+          if (unspentChain === Codes.p2shP2wsh.external || unspentChain === Codes.p2shP2wsh.internal) {
             inputs.segwit++;
           } else {
             inputs.P2SH++;
@@ -1401,12 +1402,12 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
    */
   const effectiveValue = (outputOrUnspent) => {
     const chain = getChain(outputOrUnspent);
-    if (chain === config.chains.CHAIN_SEGWIT || chain === config.chains.CHANGE_CHAIN_SEGWIT) {
-      // P2SH_P2WSH_INPUT_SIZE is in bytes, so we need to convert to kB
-      return outputOrUnspent.value - (config.tx.P2SH_P2WSH_INPUT_SIZE * params.feeRate / 1000);
+    if (chain === Codes.p2shP2wsh.external || chain === Codes.p2shP2wsh.internal) {
+      // VirtualSizes.txP2shP2wshInputSize is in bytes, so we need to convert to kB
+      return outputOrUnspent.value - (VirtualSizes.txP2shP2wshInputSize * params.feeRate / 1000);
     }
-    // P2SH_INPUT_SIZE is in bytes, so we need to convert to kB
-    return outputOrUnspent.value - (config.tx.P2SH_INPUT_SIZE * params.feeRate / 1000);
+    // VirtualSizes.txP2shInputSize is in bytes, so we need to convert to kB
+    return outputOrUnspent.value - (VirtualSizes.txP2shInputSize * params.feeRate / 1000);
   };
 
   /**
@@ -1511,8 +1512,8 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
 
     // determine if parent output can cover child fee
     const isParentOutputSegwit =
-      outputToUse.chain === config.chains.CHAIN_SEGWIT ||
-      outputToUse.chain === config.chains.CHANGE_CHAIN_SEGWIT;
+      outputToUse.chain === Codes.p2shP2wsh.external ||
+      outputToUse.chain === Codes.p2shP2wsh.internal;
 
     let childInputs = {
       segwit: isParentOutputSegwit ? 1 : 0,
@@ -1987,7 +1988,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
   let minSize = params.minSize || 0;
   if (params.feeRate) {
     // fee rate is in satoshis per kB, input size in bytes
-    const feeBasedMinSize = Math.ceil(config.tx.P2SH_INPUT_SIZE * params.feeRate / 1000 );
+    const feeBasedMinSize = Math.ceil(VirtualSizes.txP2shInputSize * params.feeRate / 1000);
     if (params.minSize && minSize < feeBasedMinSize) {
       throw new Error('provided minSize too low due to too high fee rate');
     }

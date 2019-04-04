@@ -612,10 +612,10 @@ describe('Recovery:', function() {
 
       should.exist(recovery);
       recovery.recoveryAddress.should.equal('2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm');
-      recovery.recoveryAmount.should.equal(20972800);
+      recovery.recoveryAmount.should.equal(20972720);
       recovery.recoveryCoin.should.equal('tltc');
       recovery.sourceCoin.should.equal('tbtc');
-      recovery.txHex.should.equal('0100000001c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f54100000000b600473044022072218955d9c218200b0ae502a94128118c5d30d20d5d5ec0b5fad8bc44543e8c02201352b553ca6163f1e99087bebe54425b15371d8f281da769bf5a0c7a2531aaf10100004c69522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953aeffffffff01000540010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
+      recovery.txHex.should.equal('0100000001c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f54100000000b60047304402207215a1337d7d873ce6eed9bc7984fe69ca7c995a21745dc0a70e2c8afa6740a702204c3a164f817019f90c710fc25f351b3b0847ed155d031c5aeaa3c54b7a73cde10100004c69522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953aeffffffff01b00440010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
       recovery.walletId.should.equal('5abacebe28d72fbd07e0b8cbba0ff39e');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
@@ -633,10 +633,10 @@ describe('Recovery:', function() {
 
       should.exist(recovery);
       recovery.recoveryAddress.should.equal('Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V');
-      recovery.recoveryAmount.should.equal(39966000);
+      recovery.recoveryAmount.should.equal(39965900);
       recovery.recoveryCoin.should.equal('tbtc');
       recovery.sourceCoin.should.equal('tltc');
-      recovery.txHex.should.equal('010000000139db811c27a5ed5e34a2e435c53c90b2492fe0bcbf71b3c41ee994783ee422fe01000000b700483045022100a26301277e837c9558dc7d7bdeb20531b86aded988e32ef44fdcd1eca8ff1d0002200bfe14f01cb9267e91c4116e2466669175b516d7187f476672c8a66fdb665a580100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff0130d561020000000017a9149e71e9125ef730c576b027d2c10cbdbe1ee1a5528700000000');
+      recovery.txHex.should.equal('010000000139db811c27a5ed5e34a2e435c53c90b2492fe0bcbf71b3c41ee994783ee422fe01000000b700483045022100d55ff6eb899c81d2787a0d85084dcba192b65f88c7725dd8d1b3e5cb58efd88b022046dd4bd19ff0b06ed4f4adcc85ff5df09eda9156af7a3f2718cba2e09343ea760100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff01ccd461020000000017a9149e71e9125ef730c576b027d2c10cbdbe1ee1a5528700000000');
       recovery.walletId.should.equal('5abace103cddfbb607d8239d806671bf');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
@@ -654,10 +654,10 @@ describe('Recovery:', function() {
 
       should.exist(recovery);
       recovery.recoveryAddress.should.equal('2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2');
-      recovery.recoveryAmount.should.equal(59993200);
+      recovery.recoveryAmount.should.equal(59993180);
       recovery.recoveryCoin.should.equal('tbtc');
       recovery.sourceCoin.should.equal('tbch');
-      recovery.txHex.should.equal('020000000126eaa1da6e2d641f6a39812a0a78a4ef0a44087845435121ea94d14b673c149400000000b7004830450221009784391e9fab5bd8e3c3902477521ed1e8e8c1f6d584c3ca918cf40053450cdc022016597cf28a6b38fbe0f1eef5608af049912cadc6390b49277602d842c89704a24100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff01706c93030000000017a914ffc45981f784d9bd9feb2d305061404f50bc1e058700000000');
+      recovery.txHex.should.equal('020000000126eaa1da6e2d641f6a39812a0a78a4ef0a44087845435121ea94d14b673c149400000000b60047304402203ba7a2f0d046ef69daadc6e86d0685e5fea8db5e86b69921febda81b7dde4a0c022016209ec9b6d0e4c6ffeff0bfed7bddec9c2de63122a94f83f0741e1cdf15853f4100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff015c6c93030000000017a914ffc45981f784d9bd9feb2d305061404f50bc1e058700000000');
       recovery.walletId.should.equal('5abace103cddfbb607d8239d806671bf');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
@@ -675,10 +675,10 @@ describe('Recovery:', function() {
 
       should.exist(recovery);
       recovery.recoveryAddress.should.equal('2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2');
-      recovery.recoveryAmount.should.equal(59993200);
+      recovery.recoveryAmount.should.equal(59993180);
       recovery.recoveryCoin.should.equal('tbtc');
       recovery.sourceCoin.should.equal('tbsv');
-      recovery.txHex.should.equal('020000000126eaa1da6e2d641f6a39812a0a78a4ef0a44087845435121ea94d14b673c149400000000b7004830450221009784391e9fab5bd8e3c3902477521ed1e8e8c1f6d584c3ca918cf40053450cdc022016597cf28a6b38fbe0f1eef5608af049912cadc6390b49277602d842c89704a24100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff01706c93030000000017a914ffc45981f784d9bd9feb2d305061404f50bc1e058700000000');
+      recovery.txHex.should.equal('020000000126eaa1da6e2d641f6a39812a0a78a4ef0a44087845435121ea94d14b673c149400000000b60047304402203ba7a2f0d046ef69daadc6e86d0685e5fea8db5e86b69921febda81b7dde4a0c022016209ec9b6d0e4c6ffeff0bfed7bddec9c2de63122a94f83f0741e1cdf15853f4100004c695221032afb7613787f1ab168ae5aea260891a93740a7bd41e66381d73aa07c02e053d321022d342407c7cbe25718d1983db4df95b0000762d9203a35877412d589beebae422103b366f06f3b9f25440d281c78e61aab3375ee8ea4ae72750ac7522c1bdc4e95b153aeffffffff015c6c93030000000017a914ffc45981f784d9bd9feb2d305061404f50bc1e058700000000');
       recovery.walletId.should.equal('5abace103cddfbb607d8239d806671bf');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
@@ -695,10 +695,10 @@ describe('Recovery:', function() {
       });
 
       should.exist(recovery);
-      recovery.txHex.should.equal('0100000001c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410000000000ffffffff01000540010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
+      recovery.txHex.should.equal('0100000001c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410000000000ffffffff01b00440010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
       recovery.walletId.should.equal('5abacebe28d72fbd07e0b8cbba0ff39e');
       recovery.address.should.equal('2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm');
-      recovery.amount.should.equal(20972800);
+      recovery.amount.should.equal(20972720);
       recovery.coin.should.equal('tbtc');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');

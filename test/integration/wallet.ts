@@ -5,6 +5,7 @@
 //
 
 import { strict as assert } from 'assert';
+import { VirtualSizes } from '@bitgo/unpents';
 import * as should from 'should';
 const Q = require('q');
 
@@ -1355,7 +1356,7 @@ describe('Wallet API', function() {
 
           for (let i = 0; i < unspents.count; i++) {
             // count the number of inputs that are below 1 sat/Byte
-            if (unspents.unspents[i].value <= 1000 * config.tx.P2SH_INPUT_SIZE / 1000) {
+            if (unspents.unspents[i].value <= 1000 * VirtualSizes.txP2shInputSize / 1000) {
               countLowInputs++;
             }
           }
@@ -1402,7 +1403,7 @@ describe('Wallet API', function() {
 
 
           for (let i = 0; i < unspents.count; i++) {
-            if (unspents.unspents[i].value <= 1000 * config.tx.P2SH_INPUT_SIZE / 1000) {
+            if (unspents.unspents[i].value <= 1000 * VirtualSizes.txP2shInputSize / 1000) {
               countLowInputs++;
             }
           }
