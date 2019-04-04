@@ -2134,7 +2134,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       // therefore, we proceed by consolidating yet another batch
       // before we do that, we wait 1 second so that the newly created unspent will be fetched in the next batch
       yield Promise.delay(1000);
-      yield runNextConsolidation();
+      consolidationTransactions.push(...yield runNextConsolidation());
     }
     // this is the final consolidation transaction. We return all the ones we've had so far
     return consolidationTransactions;
