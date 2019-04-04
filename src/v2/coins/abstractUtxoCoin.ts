@@ -686,8 +686,6 @@ class AbstractUtxoCoin extends BaseCoin {
     this.prepareTransactionBuilder(txb);
 
     const signatureIssues = [];
-    const p2wshIndices = [];
-
     for (let index = 0; index < transaction.ins.length; ++index) {
       debug('Signing input %d of %d', index + 1, transaction.ins.length);
       const currentUnspent = txPrebuild.txInfo.unspents[index];
@@ -745,7 +743,6 @@ class AbstractUtxoCoin extends BaseCoin {
       // after signature validation, prepare p2wsh setup
       if (isP2wsh) {
         transaction.setInputScript(index, Buffer.alloc(0));
-        p2wshIndices.push(index);
       }
 
       const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
@@ -762,10 +759,6 @@ class AbstractUtxoCoin extends BaseCoin {
       error.code = 'input_signature_failure';
       error.signingErrors = signatureIssues;
       throw error;
-    }
-
-    for (const p2wshIndex of p2wshIndices) {
-      transaction.setInputScript(p2wshIndex, Buffer.alloc(0));
     }
 
     return {
@@ -803,50 +796,83 @@ class AbstractUtxoCoin extends BaseCoin {
    * Parse a transaction's signature script to obtain public keys, signatures, the sig script, and other properties
    * @param transaction
    * @param inputIndex
-   * @returns {boolean}
+   * @returns { isSegwitInput: boolean, inputClassification: string, signatures: [Buffer], publicKeys: [Buffer], pubScript: Buffer }
    */
   parseSignatureScript(transaction, inputIndex) {
     const currentInput = transaction.ins[inputIndex];
-    let signatureScript = currentInput.script;
-    let decompiledSigScript = bitcoin.script.decompile(signatureScript);
-
     const isSegwitInput = currentInput.witness.length > 0;
+    const isNativeSegwitInput = currentInput.script.length === 0;
+    let decompiledSigScript, inputClassification;
     if (isSegwitInput) {
-      const isNativeSegwit = signatureScript.length === 0;
+      // The decompiledSigScript is the script containing the signatures, public keys, and the script that was committed
+      // to (pubScript). If this is a segwit input the decompiledSigScript is in the witness, regardless of whether it
+      // is native or not. The inputClassification is determined based on whether or not the input is native to give an
+      // accurate classification. Note that p2shP2wsh inputs will be classified as p2sh and not p2wsh.
       decompiledSigScript = currentInput.witness;
-      signatureScript = bitcoin.script.compile(decompiledSigScript);
-      if (isNativeSegwit) {
-        const lastWitness = _.last(transaction.ins[inputIndex].witness);
-        // const inputScriptHash = bitcoin.crypto.hash160(lastWitness);
-        const witnessScriptHash = bitcoin.crypto.sha256(lastWitness);
-        const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
-        // we are faking a signature script for the verification
-        signatureScript = bitcoin.script.compile([prevOutScript]);
+      if (isNativeSegwitInput) {
+        inputClassification = bitcoin.script.classifyWitness(bitcoin.script.compile(decompiledSigScript), true);
+      } else {
+        inputClassification = bitcoin.script.classifyInput(currentInput.script, true);
       }
+    } else {
+      inputClassification = bitcoin.script.classifyInput(currentInput.script, true);
+      decompiledSigScript = bitcoin.script.decompile(currentInput.script);
+
     }
 
-    const inputClassification = bitcoin.script.classifyInput(signatureScript, true);
-    if (inputClassification !== bitcoin.script.types.P2SH) {
-      if (inputClassification === bitcoin.script.types.P2PKH) {
-        const [signature, publicKey] = decompiledSigScript;
-        const publicKeys = [publicKey];
-        const signatures = [signature];
+    if (inputClassification === bitcoin.script.types.P2PKH) {
+      const [signature, publicKey] = decompiledSigScript;
+      const publicKeys = [publicKey];
+      const signatures = [signature];
+      const pubScript = bitcoin.script.pubKeyHash.output.encode(bitcoin.crypto.hash160(publicKey));
 
-        const pubScript = bitcoin.script.pubKeyHash.output.encode(bitcoin.crypto.hash160(publicKey));
-        return { signatures, publicKeys, isSegwitInput, inputClassification, pubScript: pubScript };
+      return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
+    } else if (inputClassification === bitcoin.script.types.P2SH
+        || inputClassification === bitcoin.script.types.P2WSH) {
+      // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
+      // BitGo platform only supports multisig within these types of inputs). Signatures are all but the last entry in
+      // the decompiledSigScript. The redeemScript/witnessScript (depending on which type of input this is) is the last
+      // entry in the decompiledSigScript (denoted here as the pubScript). The public keys are the second through
+      // antepenultimate entries in the decompiledPubScript. See below for a visual representation of the typical 2-of-3
+      // multisig setup:
+      //
+      // decompiledSigScript = 0 <sig1> <sig2> <pubScript>
+      // decompiledPubScript = 2 <pub1> <pub2> <pub3> 3 OP_CHECKMULTISIG
+      const signatures = decompiledSigScript.slice(0, -1);
+      const pubScript = _.last(decompiledSigScript);
+      const decompiledPubScript = bitcoin.script.decompile(pubScript);
+      const publicKeys = decompiledPubScript.slice(1, -2);
+
+      // Op codes 81 through 96 represent numbers 1 through 16 (see https://en.bitcoin.it/wiki/Script#Opcodes), which is
+      // why we subtract by 80 to get the number of signatures (n) and the number of public keys (m) in an n-of-m setup.
+      const len = decompiledPubScript.length;
+      const nSignatures = decompiledPubScript[0] - 80;
+      const nPubKeys = decompiledPubScript[len - 2] - 80;
+
+      // Due to a bug in the implementation of multisignature in the bitcoin protocol, a 0 is added to the signature
+      // script, so we add 1 when asserting the number of signatures matches the number of signatures expected by the
+      // pub script. Also, note that we consider a signature script with the the same number of signatures as public
+      // keys (+1 as noted above) valid because we use placeholder signatures when parsing a half-signed signature
+      // script.
+      if (signatures.length !== nSignatures + 1 && signatures.length !== nPubKeys + 1) {
+        throw new Error(`expected ${nSignatures} or ${nPubKeys} signatures, got ${signatures.length - 1}`);
       }
+
+      if (publicKeys.length !== nPubKeys) {
+        throw new Error(`expected ${nPubKeys} public keys, got ${publicKeys.length}`);
+      }
+
+      const lastOpCode = decompiledPubScript[len - 1];
+      if (lastOpCode !== bitcoin.opcodes.OP_CHECKMULTISIG) {
+        throw new Error(`expected opcode #${bitcoin.opcodes.OP_CHECKMULTISIG}, got opcode #${lastOpCode}`);
+      }
+
+      return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
+    } else {
       return { isSegwitInput, inputClassification };
     }
 
-    // all but the last entry
-    const signatures = decompiledSigScript.slice(0, -1);
-    // the last entry
-    const pubScript = _.last(decompiledSigScript);
-    const decompiledPubScript = bitcoin.script.decompile(pubScript);
-    // the second through antepenultimate entries
-    const publicKeys = decompiledPubScript.slice(1, -2);
 
-    return { signatures, publicKeys, isSegwitInput, inputClassification, pubScript };
   }
 
   /**
@@ -879,9 +905,11 @@ class AbstractUtxoCoin extends BaseCoin {
    */
   verifySignature(transaction, inputIndex, amount, verificationSettings = {} as any) {
 
-    const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(transaction, inputIndex);
+    const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } =
+        this.parseSignatureScript(transaction, inputIndex);
 
-    if (![bitcoin.script.types.P2SH, bitcoin.script.types.P2PKH].includes(inputClassification)) {
+    if (![bitcoin.script.types.P2WSH, bitcoin.script.types.P2SH, bitcoin.script.types.P2PKH]
+        .includes(inputClassification)) {
       return false;
     }
 
