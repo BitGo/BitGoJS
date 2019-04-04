@@ -47,7 +47,7 @@ describe('BTC:', function() {
         currentAddress.index.should.equal(0);
         currentAddress.coinSpecific.outputScript.should.equal('a9141e57a925dd863a86af341037e700862bf66bf7b687');
         currentAddress.coinSpecific.redeemScript.should.equal('5221037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae');
-        currentAddress.coinSpecific.should.not.have.property('witnessScript');
+        should.not.exist(currentAddress.coinSpecific.witnessScript);
       });
 
       generatedAddress.address.should.equal('34TTD5CefzLXWjuiSPDjvpJJRZe3Tqu2Mj');
@@ -68,7 +68,7 @@ describe('BTC:', function() {
         currentAddress.index.should.equal(113);
         currentAddress.coinSpecific.outputScript.should.equal('a91443457880e5e29555d6ad16bc82ef53891d6512b087');
         currentAddress.coinSpecific.redeemScript.should.equal('522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae');
-        currentAddress.coinSpecific.should.not.have.property('witnessScript');
+        should.not.exist(currentAddress.coinSpecific.witnessScript);
       });
 
       generatedAddress.address.should.equal('37piRJj3anw2FBmcASzdgpbwCGbRjot78A');
@@ -112,7 +112,7 @@ describe('BTC:', function() {
         currentAddress.chain.should.equal(chain);
         currentAddress.index.should.equal(0);
         currentAddress.coinSpecific.outputScript.should.equal('002090448b5ba5fde14fc4b0bfc756c4b55fe4e3854c8d21f39ee75364c0063bc73e');
-        currentAddress.coinSpecific.should.not.have.property('redeemScript');
+        should.not.exist(currentAddress.coinSpecific.redeemScript);
         currentAddress.coinSpecific.witnessScript.should.equal('522103cf858f42c759d590d80f3715ce59be999089e6b1f381d0f4338276546fd3a04e2102dca1ab8670d45f5213c7c9d66b2f89b50a4cbd33fd72db89ba18d3e82d3dd5ee210294b6dab0dc112831a0dc1e219769bd81d13eb38a8bdb938103f919d8dd7e004353ae');
       });
 
@@ -134,7 +134,7 @@ describe('BTC:', function() {
         currentAddress.index.should.equal(0);
         currentAddress.coinSpecific.outputScript.should.equal('a91476dce7beb23d0e0d53edf5895716d4c80dce609387');
         currentAddress.coinSpecific.redeemScript.should.equal('5321037acffd52bb7c39a4ac3d4c01af33ce0367afec45347e332edca63a38d1fb2e472102658831a87322b3583515ca8725841335505755ada53ee133c70a6b4b8d3978702102641ee6557561c9038242cafa7f538070d7646a969bcf6169f9950abfcfefd6b853ae');
-        currentAddress.coinSpecific.should.not.have.property('witnessScript');
+        should.not.exist(currentAddress.coinSpecific.witnessScript);
       });
 
       generatedAddress.address.should.equal('3CXWHwp4gZCMcKn9pf8XskykoYsfB3agwu');
@@ -195,7 +195,7 @@ describe('BTC:', function() {
         currentAddress.chain.should.equal(20);
         currentAddress.index.should.equal(756);
         currentAddress.coinSpecific.outputScript.should.equal('0020c8fc4f071770e15f21a13ba48c6f32421daed431a74e00e13d0187990964bbce');
-        currentAddress.coinSpecific.should.not.have.property('redeemScript');
+        should.not.exist(currentAddress.coinSpecific.redeemScript);
         currentAddress.coinSpecific.witnessScript.should.equal('532103db7ec7ef3c549705582d6bb5ee258b3bc14d147ec3b069dfd4fd80adb4e9373e210387b1f7cacb6e0c78b79062e94ed0aee691bdfa34a0d1b522103c434205587ad52102044a9f965fd9b54d82e5afe9d4338d0f59027a4e11cff3a39b90fbf5978ae7e753ae');
       });
 

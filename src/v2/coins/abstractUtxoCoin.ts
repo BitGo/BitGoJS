@@ -11,7 +11,7 @@ const _ = require('lodash');
 const RecoveryTool = require('../recovery');
 const errors = require('../../errors');
 const debug = require('debug')('bitgo:v2:utxo');
-const { Codes } = require('@bitgo/unspents');
+const { Codes, VirtualSizes } = require('@bitgo/unspents');
 
 class AbstractUtxoCoin extends BaseCoin {
 
@@ -625,9 +625,6 @@ class AbstractUtxoCoin extends BaseCoin {
     const hdNodes = keychains.map(({ pub }) => prova.HDNode.fromBase58(pub));
     const derivedKeys = hdNodes.map(hdNode => hdNode.hdPath().deriveKey(path).getPublicKeyBuffer());
 
-    const inputScript = bitcoin.script.multisig.output.encode(signatureThreshold, derivedKeys);
-    const inputScriptHash = bitcoin.crypto.hash160(inputScript);
-
     const addressDetails: any = {
       chain: derivationChain,
       index: derivationIndex,
@@ -636,35 +633,12 @@ class AbstractUtxoCoin extends BaseCoin {
       addressType
     };
 
-    function createWitnessProgram(inputScript) {
-      const witnessScriptHash = bitcoin.crypto.sha256(inputScript);
-      return bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
-    }
-
-    let outputScript;
-    switch (addressType) {
-      case Codes.UnspentTypeTcomb('p2sh'):
-        outputScript = bitcoin.script.scriptHash.output.encode(inputScriptHash);
-        addressDetails.coinSpecific.redeemScript = inputScript.toString('hex');
-        break;
-      case Codes.UnspentTypeTcomb('p2shP2wsh'):
-        const redeemScript = createWitnessProgram(inputScript);
-        const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
-        outputScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
-        addressDetails.coinSpecific.redeemScript = redeemScript.toString('hex');
-        addressDetails.coinSpecific.witnessScript = inputScript.toString('hex');
-        break;
-      case Codes.UnspentTypeTcomb('p2wsh'):
-        outputScript = createWitnessProgram(inputScript);
-        addressDetails.coinSpecific.witnessScript = inputScript.toString('hex');
-        break;
-      default:
-        throw new Error(`unexpected addressType ${addressType}`);
-    }
-
+    const { outputScript, redeemScript, witnessScript, address } =
+      this.createMultiSigAddress(addressType, signatureThreshold, derivedKeys);
     addressDetails.coinSpecific.outputScript = outputScript.toString('hex');
-    addressDetails.address =
-      this.getCoinLibrary().address.fromOutputScript(outputScript, this.network);
+    addressDetails.coinSpecific.redeemScript = redeemScript && redeemScript.toString('hex');
+    addressDetails.coinSpecific.witnessScript = witnessScript && witnessScript.toString('hex');
+    addressDetails.address = address;
 
     return addressDetails;
   }
@@ -712,8 +686,6 @@ class AbstractUtxoCoin extends BaseCoin {
     this.prepareTransactionBuilder(txb);
 
     const signatureIssues = [];
-    const p2wshIndices = [];
-
     for (let index = 0; index < transaction.ins.length; ++index) {
       debug('Signing input %d of %d', index + 1, transaction.ins.length);
       const currentUnspent = txPrebuild.txInfo.unspents[index];
@@ -771,7 +743,6 @@ class AbstractUtxoCoin extends BaseCoin {
       // after signature validation, prepare p2wsh setup
       if (isP2wsh) {
         transaction.setInputScript(index, Buffer.alloc(0));
-        p2wshIndices.push(index);
       }
 
       const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
@@ -788,10 +759,6 @@ class AbstractUtxoCoin extends BaseCoin {
       error.code = 'input_signature_failure';
       error.signingErrors = signatureIssues;
       throw error;
-    }
-
-    for (const p2wshIndex of p2wshIndices) {
-      transaction.setInputScript(p2wshIndex, Buffer.alloc(0));
     }
 
     return {
@@ -829,50 +796,83 @@ class AbstractUtxoCoin extends BaseCoin {
    * Parse a transaction's signature script to obtain public keys, signatures, the sig script, and other properties
    * @param transaction
    * @param inputIndex
-   * @returns {boolean}
+   * @returns { isSegwitInput: boolean, inputClassification: string, signatures: [Buffer], publicKeys: [Buffer], pubScript: Buffer }
    */
   parseSignatureScript(transaction, inputIndex) {
     const currentInput = transaction.ins[inputIndex];
-    let signatureScript = currentInput.script;
-    let decompiledSigScript = bitcoin.script.decompile(signatureScript);
-
     const isSegwitInput = currentInput.witness.length > 0;
+    const isNativeSegwitInput = currentInput.script.length === 0;
+    let decompiledSigScript, inputClassification;
     if (isSegwitInput) {
-      const isNativeSegwit = signatureScript.length === 0;
+      // The decompiledSigScript is the script containing the signatures, public keys, and the script that was committed
+      // to (pubScript). If this is a segwit input the decompiledSigScript is in the witness, regardless of whether it
+      // is native or not. The inputClassification is determined based on whether or not the input is native to give an
+      // accurate classification. Note that p2shP2wsh inputs will be classified as p2sh and not p2wsh.
       decompiledSigScript = currentInput.witness;
-      signatureScript = bitcoin.script.compile(decompiledSigScript);
-      if (isNativeSegwit) {
-        const lastWitness = _.last(transaction.ins[inputIndex].witness);
-        // const inputScriptHash = bitcoin.crypto.hash160(lastWitness);
-        const witnessScriptHash = bitcoin.crypto.sha256(lastWitness);
-        const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
-        // we are faking a signature script for the verification
-        signatureScript = bitcoin.script.compile([prevOutScript]);
+      if (isNativeSegwitInput) {
+        inputClassification = bitcoin.script.classifyWitness(bitcoin.script.compile(decompiledSigScript), true);
+      } else {
+        inputClassification = bitcoin.script.classifyInput(currentInput.script, true);
       }
+    } else {
+      inputClassification = bitcoin.script.classifyInput(currentInput.script, true);
+      decompiledSigScript = bitcoin.script.decompile(currentInput.script);
+
     }
 
-    const inputClassification = bitcoin.script.classifyInput(signatureScript, true);
-    if (inputClassification !== bitcoin.script.types.P2SH) {
-      if (inputClassification === bitcoin.script.types.P2PKH) {
-        const [signature, publicKey] = decompiledSigScript;
-        const publicKeys = [publicKey];
-        const signatures = [signature];
+    if (inputClassification === bitcoin.script.types.P2PKH) {
+      const [signature, publicKey] = decompiledSigScript;
+      const publicKeys = [publicKey];
+      const signatures = [signature];
+      const pubScript = bitcoin.script.pubKeyHash.output.encode(bitcoin.crypto.hash160(publicKey));
 
-        const pubScript = bitcoin.script.pubKeyHash.output.encode(bitcoin.crypto.hash160(publicKey));
-        return { signatures, publicKeys, isSegwitInput, inputClassification, pubScript: pubScript };
+      return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
+    } else if (inputClassification === bitcoin.script.types.P2SH
+        || inputClassification === bitcoin.script.types.P2WSH) {
+      // Note the assumption here that if we have a p2sh or p2wsh input it will be multisig (appropriate because the
+      // BitGo platform only supports multisig within these types of inputs). Signatures are all but the last entry in
+      // the decompiledSigScript. The redeemScript/witnessScript (depending on which type of input this is) is the last
+      // entry in the decompiledSigScript (denoted here as the pubScript). The public keys are the second through
+      // antepenultimate entries in the decompiledPubScript. See below for a visual representation of the typical 2-of-3
+      // multisig setup:
+      //
+      // decompiledSigScript = 0 <sig1> <sig2> <pubScript>
+      // decompiledPubScript = 2 <pub1> <pub2> <pub3> 3 OP_CHECKMULTISIG
+      const signatures = decompiledSigScript.slice(0, -1);
+      const pubScript = _.last(decompiledSigScript);
+      const decompiledPubScript = bitcoin.script.decompile(pubScript);
+      const publicKeys = decompiledPubScript.slice(1, -2);
+
+      // Op codes 81 through 96 represent numbers 1 through 16 (see https://en.bitcoin.it/wiki/Script#Opcodes), which is
+      // why we subtract by 80 to get the number of signatures (n) and the number of public keys (m) in an n-of-m setup.
+      const len = decompiledPubScript.length;
+      const nSignatures = decompiledPubScript[0] - 80;
+      const nPubKeys = decompiledPubScript[len - 2] - 80;
+
+      // Due to a bug in the implementation of multisignature in the bitcoin protocol, a 0 is added to the signature
+      // script, so we add 1 when asserting the number of signatures matches the number of signatures expected by the
+      // pub script. Also, note that we consider a signature script with the the same number of signatures as public
+      // keys (+1 as noted above) valid because we use placeholder signatures when parsing a half-signed signature
+      // script.
+      if (signatures.length !== nSignatures + 1 && signatures.length !== nPubKeys + 1) {
+        throw new Error(`expected ${nSignatures} or ${nPubKeys} signatures, got ${signatures.length - 1}`);
       }
+
+      if (publicKeys.length !== nPubKeys) {
+        throw new Error(`expected ${nPubKeys} public keys, got ${publicKeys.length}`);
+      }
+
+      const lastOpCode = decompiledPubScript[len - 1];
+      if (lastOpCode !== bitcoin.opcodes.OP_CHECKMULTISIG) {
+        throw new Error(`expected opcode #${bitcoin.opcodes.OP_CHECKMULTISIG}, got opcode #${lastOpCode}`);
+      }
+
+      return { isSegwitInput, inputClassification, signatures, publicKeys, pubScript };
+    } else {
       return { isSegwitInput, inputClassification };
     }
 
-    // all but the last entry
-    const signatures = decompiledSigScript.slice(0, -1);
-    // the last entry
-    const pubScript = _.last(decompiledSigScript);
-    const decompiledPubScript = bitcoin.script.decompile(pubScript);
-    // the second through antepenultimate entries
-    const publicKeys = decompiledPubScript.slice(1, -2);
 
-    return { signatures, publicKeys, isSegwitInput, inputClassification, pubScript };
   }
 
   /**
@@ -905,9 +905,11 @@ class AbstractUtxoCoin extends BaseCoin {
    */
   verifySignature(transaction, inputIndex, amount, verificationSettings = {} as any) {
 
-    const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } = this.parseSignatureScript(transaction, inputIndex);
+    const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } =
+        this.parseSignatureScript(transaction, inputIndex);
 
-    if (![bitcoin.script.types.P2SH, bitcoin.script.types.P2PKH].includes(inputClassification)) {
+    if (![bitcoin.script.types.P2WSH, bitcoin.script.types.P2SH, bitcoin.script.types.P2PKH]
+        .includes(inputClassification)) {
       return false;
     }
 
@@ -1128,6 +1130,44 @@ class AbstractUtxoCoin extends BaseCoin {
     return explanation;
   }
 
+  createMultiSigAddress(addressType, signatureThreshold, keys) {
+    function createWitnessProgram(inputScript) {
+      const witnessScriptHash = bitcoin.crypto.sha256(inputScript);
+      return bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
+    }
+
+    const multiSigScript = bitcoin.script.multisig.output.encode(signatureThreshold, keys);
+    let outputScript, redeemScript, witnessScript;
+    switch (addressType) {
+      case Codes.UnspentTypeTcomb('p2sh'):
+        const multisigScriptHash = bitcoin.crypto.hash160(multiSigScript);
+        outputScript = bitcoin.script.scriptHash.output.encode(multisigScriptHash);
+        redeemScript = multiSigScript;
+        break;
+      case Codes.UnspentTypeTcomb('p2shP2wsh'):
+        const witnessProgram = createWitnessProgram(multiSigScript);
+        const witnessProgramHash = bitcoin.crypto.hash160(witnessProgram);
+        outputScript = bitcoin.script.scriptHash.output.encode(witnessProgramHash);
+        redeemScript = witnessProgram;
+        witnessScript = multiSigScript;
+        break;
+      case Codes.UnspentTypeTcomb('p2wsh'):
+        outputScript = createWitnessProgram(multiSigScript);
+        witnessScript = multiSigScript;
+        break;
+      default:
+        throw new Error(`unexpected addressType ${addressType}`);
+    }
+
+    return {
+      outputScript,
+      redeemScript,
+      witnessScript,
+      address: bitcoin.address.fromOutputScript(outputScript, this.network)
+    };
+  }
+
+  // TODO(BG-11638): remove in next SDK major version release
   calculateRecoveryAddress(scriptHashScript) {
     return this.getCoinLibrary().address.fromOutputScript(scriptHashScript, this.network);
   }
@@ -1189,7 +1229,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * - krsProvider: necessary if backup key is held by KRS
    * - recoveryDestination: target address to send recovered funds to
    * - scan: the amount of consecutive addresses without unspents to scan through before stopping
-   * - ignoreAddressTypes: (optional) array of AddressTypes to ignore. these are strings defined in Codes.UnspentTypeTcomb
+   * - ignoreAddressTypes: (optional) array of AddressTypes to ignore, these are strings defined in Codes.UnspentTypeTcomb
    *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
    * @param callback
    */
@@ -1202,18 +1242,19 @@ class AbstractUtxoCoin extends BaseCoin {
         return keyArray.map((k) => k.derive(index));
       }
 
-      const queryBlockchainUnspentsPath = co(function *queryBlockchainUnspentsPath(keyArray, basePath) {
+      const queryBlockchainUnspentsPath = co(function *queryBlockchainUnspentsPath(keyArray, basePath, addressesById) {
         const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
         let numSequentialAddressesWithoutTxs = 0;
 
         // get unspents for these addresses
         const gatherUnspents = co(function *coGatherUnspents(addrIndex) {
           const derivedKeys = deriveKeys(keyArray, addrIndex);
-          const chain = basePath.split('/').pop(); // extracts the chain from the basePath
-          const address: any = createMultiSigAddress(derivedKeys, chain);
-          const addressBase58 = address.address;
 
-          const addrInfo = yield self.getAddressInfoFromExplorer(addressBase58);
+          const chain = Number(basePath.split('/').pop()); // extracts the chain from the basePath
+          const keys = derivedKeys.map(k => k.getPublicKeyBuffer());
+          const address: any = self.createMultiSigAddress(Codes.typeForCode(chain), 2, keys);
+
+          const addrInfo = yield self.getAddressInfoFromExplorer(address.address);
 
           if (addrInfo.txCount === 0) {
             numSequentialAddressesWithoutTxs++;
@@ -1221,14 +1262,14 @@ class AbstractUtxoCoin extends BaseCoin {
             numSequentialAddressesWithoutTxs = 0;
 
             if (addrInfo.totalBalance > 0) {
-              // this wallet has a balance
+              // This address has a balance.
               address.chainPath = basePath + '/' + addrIndex;
               address.userKey = derivedKeys[0];
               address.backupKey = derivedKeys[1];
-              addressesById[addressBase58] = address;
+              addressesById[address.address] = address;
 
-              // try to find unspents on the address
-              const addressUnspents = yield self.getUnspentInfoFromExplorer(addressBase58);
+              // Try to find unspents on it.
+              const addressUnspents = yield self.getUnspentInfoFromExplorer(address.address);
 
               addressUnspents.forEach(function addAddressToUnspent(unspent) {
                 unspent.address = address.address;
@@ -1258,29 +1299,6 @@ class AbstractUtxoCoin extends BaseCoin {
         return walletUnspents;
       });
 
-      function createMultiSigAddress(keyArray, chain) {
-        const publicKeys = keyArray.map((k) => k.getPublicKeyBuffer());
-        const isSegwit = (chain === '10' || chain === '11');
-        const multisigProgram = bitcoin.script.multisig.output.encode(2, publicKeys);
-        let redeemScript, witnessScript;
-        if (isSegwit) {
-          witnessScript = multisigProgram;
-          redeemScript = bitcoin.script.witnessScriptHash.output.encode(bitcoin.crypto.sha256(witnessScript));
-        } else {
-          redeemScript = multisigProgram;
-        }
-        const redeemScriptHash = bitcoin.crypto.hash160(redeemScript);
-        const scriptHashScript = bitcoin.script.scriptHash.output.encode(redeemScriptHash);
-        const address = self.calculateRecoveryAddress(scriptHashScript);
-
-        return {
-          hash: scriptHashScript,
-          witnessScript: witnessScript,
-          redeemScript: redeemScript,
-          address: address
-        };
-      }
-
       // ============================LOGIC============================
       if (_.isUndefined(params.userKey)) {
         throw new Error('missing userKey');
@@ -1296,11 +1314,6 @@ class AbstractUtxoCoin extends BaseCoin {
 
       if (!_.isUndefined(params.scan) && (!_.isInteger(params.scan) || params.scan < 0)) {
         throw new Error('scan must be a positive integer');
-      }
-
-      // TODO(BG-11419): Remove this when we enable native segwit
-      if (_.isUndefined(params.ignoreAddressTypes)) {
-        params.ignoreAddressTypes = [Codes.UnspentTypeTcomb('p2wsh')];
       }
 
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
@@ -1320,10 +1333,22 @@ class AbstractUtxoCoin extends BaseCoin {
       const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
 
       const queries = [];
+      const addressesById = {};
 
       _.forEach(Object.keys(Codes.UnspentTypeTcomb.meta.map), function(addressType) {
-        // If we aren't ignoring the address type, we derive the public key and construct the query for the external and internal indices
+        // If we aren't ignoring the address type, we derive the public key and construct the query for the external and
+        // internal indices
         if (!_.includes(params.ignoreAddressTypes, addressType)) {
+          if (addressType === Codes.UnspentTypeTcomb('p2shP2wsh') && !self.supportsP2shP2wsh()) {
+            // P2shP2wsh is not supported. Skip.
+            return;
+          }
+
+          if (addressType === Codes.UnspentTypeTcomb('p2wsh') && !self.supportsP2wsh()) {
+            // P2wsh is not supported. Skip.
+            return;
+          }
+
           let codes;
           try {
             codes = Codes.forType(Codes.UnspentTypeTcomb(addressType));
@@ -1332,17 +1357,16 @@ class AbstractUtxoCoin extends BaseCoin {
             // and continue.
             return;
           }
-          const externalChainCode = codes[Codes.PurposeTcomb('external')];
-          const internalChainCode = codes[Codes.PurposeTcomb('internal')];
+          const externalChainCode = codes.external;
+          const internalChainCode = codes.internal;
           const externalKey = deriveKeys(baseKeyPath, externalChainCode);
           const internalKey = deriveKeys(baseKeyPath, internalChainCode);
-          queries.push(queryBlockchainUnspentsPath(externalKey, '/0/0/' + externalChainCode));
-          queries.push(queryBlockchainUnspentsPath(internalKey, '/0/0/' + internalChainCode));
+          queries.push(queryBlockchainUnspentsPath(externalKey, '/0/0/' + externalChainCode, addressesById));
+          queries.push(queryBlockchainUnspentsPath(internalKey, '/0/0/' + internalChainCode, addressesById));
         }
       });
 
       // Execute the queries and gather the unspents
-      const addressesById = {};
       const queryResponses = yield Promise.all(queries);
       const unspents = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
       const totalInputAmount = _.sumBy(unspents, 'amount');
@@ -1357,21 +1381,23 @@ class AbstractUtxoCoin extends BaseCoin {
 
       const feePerByte = yield this.getRecoveryFeePerBytes();
 
-      // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees
-      const outputSize = isKrsRecovery ? 2 * config.tx.OUTPUT_SIZE : config.tx.OUTPUT_SIZE;
-      const approximateSize = config.tx.TX_OVERHEAD_SIZE + outputSize + (config.tx.P2SH_INPUT_SIZE * unspents.length);
+      // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees. Use p2wsh outputs because
+      // they are the largest outputs and thus the most conservative estimate to use in calculating fees. Also use
+      // segwit overhead size and p2sh inputs for the same reason.
+      const outputSize = (isKrsRecovery ? 2 : 1) * VirtualSizes.txP2wshOutputSize;
+      const approximateSize =
+        VirtualSizes.txSegOverheadVSize + outputSize + (VirtualSizes.txP2shInputSize * unspents.length);
       const approximateFee = approximateSize * feePerByte;
 
       // Construct a transaction
       txInfo.inputs = unspents.map(function addInputForUnspent(unspent) {
         const address = addressesById[unspent.address];
-        const outputScript = address.hash;
 
-        transactionBuilder.addInput(unspent.txid, unspent.n, 0xffffffff, outputScript);
+        transactionBuilder.addInput(unspent.txid, unspent.n, 0xffffffff, address.outputScript);
 
         return {
           chainPath: address.chainPath,
-          redeemScript: address.redeemScript.toString('hex'),
+          redeemScript: address.redeemScript && address.redeemScript.toString('hex'),
           witnessScript: address.witnessScript && address.witnessScript.toString('hex'),
           value: unspent.amount
         };
