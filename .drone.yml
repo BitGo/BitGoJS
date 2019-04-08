@@ -16,7 +16,7 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - npm install
+  - npm install --unsafe-perm
 
 - name: audit
   image: node:lts
@@ -41,7 +41,7 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - npm install
+  - npm install --unsafe-perm
 
 - name: lint
   image: node:lts
@@ -67,7 +67,7 @@ steps:
 - name: install
   image: node:6
   commands:
-  - npm install
+  - npm install --unsafe-perm
 
 - name: unit tests
   image: node:6
@@ -110,7 +110,7 @@ steps:
 - name: install
   image: node:8
   commands:
-  - npm install
+  - npm install --unsafe-perm
 
 - name: unit tests
   image: node:8
@@ -153,7 +153,7 @@ steps:
 - name: install
   image: node:9
   commands:
-  - npm install
+  - npm install --unsafe-perm
 
 - name: unit tests
   image: node:9
@@ -196,7 +196,7 @@ steps:
 - name: install
   image: node:10
   commands:
-  - npm install
+  - npm install --unsafe-perm
 
 - name: unit tests
   image: node:10
@@ -239,7 +239,7 @@ steps:
 - name: install
   image: node:11
   commands:
-  - npm install
+  - npm install --unsafe-perm
 
 - name: unit tests
   image: node:11
@@ -287,7 +287,7 @@ steps:
 - name: install
   image: node:10
   commands:
-  - npm install
+  - npm install --unsafe-perm
   when:
     branch:
     - master
