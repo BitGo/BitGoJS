@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import superagent = require('superagent');
+const superagent = require('superagent');
 import bitcoin = require('./bitcoin');
 import bitcoinMessage = require('bitcoinjs-message');
 import sanitizeHtml = require('sanitize-html');
