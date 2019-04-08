@@ -20,7 +20,7 @@ local Install(version, limit_branches=false) = {
   name: "install",
   image: "node:" + version,
   commands: [
-    "npm install",
+    "npm install --unsafe-perm",
   ],
   [if limit_branches then "when"]: branches(),
 };
