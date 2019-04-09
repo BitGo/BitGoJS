@@ -379,6 +379,13 @@ describe('BTC:', function() {
         }
       ];
 
+      const p2wshUnspents = [
+        {
+          id: '52fcd5cceef2350b7f380a232a41dafc496afd7f186b203c04ad1201549c98b6:0',
+          value: 10000000
+        },
+      ];
+
       const txs = {
         p2sh: {
           halfSigned: '0100000001accf0cd2599ea4d6d8b032405f9396fe218c247b661e58cf3e9e4bb3c095426828000000b700483045022100cd5a6a660f56da89f7b27e566406e90282f4120bffef1918518f744a6bb3209f022055774755ee323dae0b555a2f5b8f548c20b905b6a7fe954d1d93e415c71e77060100004c6952210272ed48816a9600b7262388e3ae9d9faf1a14ff773350835c784dde916ce7bfff2103c388215ac5a6400db9ec2a3d69e965f3c30ad6935d729c9cef083124646ae5482102bc24b831b847b501dbcbb383fbc64138043573ad766968e0ee66744e00bf08a353aeffffffff01ce15fa020000000017a9147676db43fea61814cf0e2317b5e9b336054f8a2e87ad600800',
@@ -391,12 +398,11 @@ describe('BTC:', function() {
             unspents: p2shP2wshUnspents
           }
         },
-        // BG-8702: disabled until native segwit is fully operational
         p2wsh: {
-          halfSigned: '',
-          fullySigned: '',
+          halfSigned: '01000000000101b6989c540112ad043c206b187ffd6a49fcda412a230a387f0b35f2eeccd5fc520000000000ffffffff0222073d000000000017a914d795501e88704dd652de6b9a5cf30ca980ed07d687808d5b0000000000220020a5400adb4650be7a0f333dfd030496bb01ba44754e475532f5596a275dc973b6050047304402201715b6e3acb548ed90bd72b670e311434292666e01c5aa74a9a1b341dc6015780220376fa2d22465d7d2919d0ce2e96065559e4fadd90edea79543ee5f03d0c4828801000069522103f539e7cd897e676f07c55e5d672ae9686db91e626827f083139ca855e80e11832102ef4cbc39ee4abe37198ae095f3d4fef2716af7951f9bb9265aa9b9181e408342210345fb5ab601bad203c6ca6eb5ac5a5b4bf46986834419e6e87684e1e63c6a799e53ae99ac1600',
+          fullySigned: '01000000000101b6989c540112ad043c206b187ffd6a49fcda412a230a387f0b35f2eeccd5fc520000000000ffffffff0222073d000000000017a914d795501e88704dd652de6b9a5cf30ca980ed07d687808d5b0000000000220020a5400adb4650be7a0f333dfd030496bb01ba44754e475532f5596a275dc973b6040047304402201715b6e3acb548ed90bd72b670e311434292666e01c5aa74a9a1b341dc6015780220376fa2d22465d7d2919d0ce2e96065559e4fadd90edea79543ee5f03d0c4828801483045022100bee8fa7548d99245b83599b657c310b4f4cc9c463002d4f843d8f8ed663f4df602204955fcd17ef02228e8e49c0d122fd0a77da76700376735625c90385d5ff43c3e0169522103f539e7cd897e676f07c55e5d672ae9686db91e626827f083139ca855e80e11832102ef4cbc39ee4abe37198ae095f3d4fef2716af7951f9bb9265aa9b9181e408342210345fb5ab601bad203c6ca6eb5ac5a5b4bf46986834419e6e87684e1e63c6a799e53ae99ac1600',
           txInfo: {
-            unspents: []
+            unspents: p2wshUnspents
           }
         }
       };
@@ -515,10 +521,9 @@ describe('BTC:', function() {
           inputSignatures.should.deepEqual([2, 2]);
         });
 
-        // BG-8702: disabled until native segwit is fully operational
-        xit('should count one signature on a half-signed p2wsh transaction', () => {
+        it('should count one signature on a half-signed p2wsh transaction', () => {
           const { signatures, inputSignatures } = coin.explainTransaction({
-            txHex: txs.p2wsh.fullySigned,
+            txHex: txs.p2wsh.halfSigned,
             txInfo: txs.p2wsh.txInfo
           });
 
@@ -528,8 +533,7 @@ describe('BTC:', function() {
           should.exist(inputSignatures);
         });
 
-        // BG-8702: disabled until native segwit is fully operational
-        xit('should count two signatures on a fully-signed p2wsh transaction', () => {
+        it('should count two signatures on a fully-signed p2wsh transaction', () => {
           const { signatures, inputSignatures } = coin.explainTransaction({
             txHex: txs.p2wsh.fullySigned,
             txInfo: txs.p2wsh.txInfo
