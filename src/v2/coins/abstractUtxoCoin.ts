@@ -1060,11 +1060,11 @@ class AbstractUtxoCoin extends BaseCoin {
 
       if (!hasSigScript && !hasWitnessScript) {
         // no sig script or witness data for this input
-        debug('no script sig or witness script data for input %s', idx);
+        debug('no signature script or witness script data for input %s', idx);
         return 0;
       }
 
-      const sigScript = this.parseSignatureScript(transaction, idx);
+      const parsedSigScript = this.parseSignatureScript(transaction, idx);
 
       if (hasWitnessScript) {
         if (!txInfo || !txInfo.unspents) {
@@ -1081,48 +1081,24 @@ class AbstractUtxoCoin extends BaseCoin {
         }
       }
 
-      if (hasSigScript) {
-        // p2sh or p2shP2wsh
-        const nonEmptySignatures = sigScript.signatures.filter((sig) => !_.isEmpty(sig));
-        const validSignatures = nonEmptySignatures.map((sig, sigIndex) => {
-          if (_.isEmpty(sig)) {
-            return false;
-          }
+      const nonEmptySignatures = parsedSigScript.signatures.filter((sig) => !_.isEmpty(sig));
+      const validSignatures = nonEmptySignatures.map((sig, sigIndex) => {
+        if (_.isEmpty(sig)) {
+          return false;
+        }
 
-          const verificationParams = {
-            signatureIndex: sigIndex
-          };
+        const parentTxId = Buffer.from(input.hash).reverse().toString('hex');
+        const inputId = `${parentTxId}:${input.index}`;
+        const amount = unspentValues[inputId];
 
-          if (hasWitnessScript) {
-            // p2shP2wsh
-            const parentTxId = Buffer.from(input.hash).reverse().toString('hex');
-            const inputId = `${parentTxId}:${input.index}`;
-            const amount = unspentValues[inputId];
+        try {
+          return this.verifySignature(transaction, idx, amount, { signatureIndex: sigIndex });
+        } catch (e) {
+          return false;
+        }
+      });
 
-            try {
-              return this.verifySignature(transaction, idx, amount, verificationParams);
-            } catch (e) {
-              return false;
-            }
-          }
-
-          // p2sh
-          try {
-            return this.verifySignature(transaction, idx, undefined, verificationParams);
-          } catch (e) {
-            return false;
-          }
-        });
-
-        return validSignatures.reduce((validCount, isValid) => isValid ? validCount + 1 : validCount, 0);
-      }
-
-      if (!hasSigScript && hasWitnessScript) {
-        // p2wsh
-        debug('signature count for native segwit not yet supported');
-      }
-
-      return 0;
+      return validSignatures.reduce((validCount, isValid) => isValid ? validCount + 1 : validCount, 0);
     });
 
     explanation.inputSignatures = inputSignatures;
