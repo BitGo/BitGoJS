@@ -225,6 +225,7 @@ export const tokens = {
         { type: 'upusd', coin: 'eth', network: 'Mainnet', name: 'Universal US Dollar', tokenContractAddress: '0x86367c0e517622dacdab379f2de389c3c9524345', decimalPlaces: 2 },
         { type: 'upbtc', coin: 'eth', network: 'Mainnet', name: 'Universal Bitcoin', tokenContractAddress: '0xc7461b398005e50bcc43c8e636378c6722e76c01', decimalPlaces: 8 },
         { type: 'fet', coin: 'eth', network: 'Mainnet', name: 'Fetch', tokenContractAddress: '0x1d287cc25dad7ccaf76a26bc660c5f7c8e2a05bd', decimalPlaces: 18 },
+        { type: 'nas', coin: 'eth', network: 'Mainnet', name: 'Nebulas', tokenContractAddress: '0x5d65d971895edc438f465c17db6992698a52318d', decimalPlaces: 18 },
       ]
     }
   },
