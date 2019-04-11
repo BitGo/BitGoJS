@@ -80,6 +80,22 @@ local IntegrationTest(version, limit_branches=true) = {
   ],
 };
 
+local MeasureSizeAndTiming(version, limit_branches=false) = {
+  kind: "pipeline",
+  name: "size and timing (node:" + version + ")",
+  steps: [
+    {
+      name: "slow-deps",
+      image: "node:" + version,
+      commands: [
+        "npm install -g slow-deps",
+        "slow-deps"
+      ],
+      [if limit_branches then "when"]: branches(),
+    },
+  ],
+};
+
 [
   {
     kind: "pipeline",
@@ -118,5 +134,6 @@ local IntegrationTest(version, limit_branches=true) = {
   UnitTest("10"),
   UnitTest("11"),
   IntegrationTest("10"),
+  MeasureSizeAndTiming("lts"),
 ]
 

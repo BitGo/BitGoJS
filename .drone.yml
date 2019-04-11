@@ -322,4 +322,19 @@ steps:
     - "rel/*"
     - prod/production
 
+---
+kind: pipeline
+name: size and timing (node:lts)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: slow-deps
+  image: node:lts
+  commands:
+  - npm install -g slow-deps
+  - slow-deps
+
 ...
