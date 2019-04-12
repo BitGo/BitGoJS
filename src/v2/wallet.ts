@@ -285,6 +285,7 @@ Wallet.prototype.transferBySequenceId = function(params, callback) {
  * @param {Boolean} params.enforceMinConfirmsForChange - Enforces minConfirms on change inputs
  * @param {Number} params.feeRate - fee rate to use in calculation of maximum spendable in satoshis/kB
  * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
+ * @param {String} params.recipientAddress - recipient addresses for a more accurate calculation of the maximum available to send
  * @param callback
  * @returns {{maximumSpendable: Number, coin: String}}
  * NOTE : feeTxConfirmTarget omitted on purpose because gauging the maximum spendable amount with dynamic fees does not make sense
@@ -294,8 +295,8 @@ Wallet.prototype.maximumSpendable = function maximumSpendable(params, callback) 
     params = params || {};
 
     const filteredParams = _.pick(params, [
-      'minValue', 'maxValue', 'minHeight', 'target', 'plainTarget',
-      'limit', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate'
+      'minValue', 'maxValue', 'minHeight', 'target', 'plainTarget', 'limit', 'minConfirms',
+      'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'recipientAddress'
     ]);
 
     return this.bitgo.get(this.url('/maximumSpendable'))
