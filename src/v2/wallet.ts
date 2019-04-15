@@ -668,11 +668,7 @@ Wallet.prototype.createAddress = function({ chain = undefined, gasPrice = undefi
       }
       addressParams.lowPriority = lowPriority;
     }
-
-    if (!_.isInteger(count) || count <= 0) {
-      throw new Error('count has to be a positive integer');
-    }
-
+    
     // get keychains for address verification
     const keychains = yield Promise.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k, reqId }));
     const rootAddress = _.get(this._wallet, 'receiveAddress.address');
