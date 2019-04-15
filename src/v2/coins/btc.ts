@@ -51,7 +51,7 @@ class Btc extends AbstractUtxoCoin {
   }
 
   getRecoveryFeeRecommendationApiBaseUrl() {
-    return 'https://bitcoinfees.21.co/api/v1/fees/recommended';
+    return 'https://bitcoinfees.earn.com/api/v1/fees/recommended';
   }
 
   recoveryBlockchainExplorerUrl(url) {
