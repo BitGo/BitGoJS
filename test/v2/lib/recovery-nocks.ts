@@ -2,7 +2,7 @@ import * as nock from 'nock';
 nock.enableNetConnect();
 
 module.exports.nockBtcRecovery = function nockBtcRecovery(isKrsRecovery) {
-  nock('https://bitcoinfees.21.co')
+  nock('https://bitcoinfees.earn.com')
   .get('/api/v1/fees/recommended')
   .reply(200, {
     fastestFee: 600,
@@ -2533,7 +2533,7 @@ module.exports.nockBtcSegwitRecovery = function() {
   nock('https://testnet-api.smartbit.fakeurl')
   .get('/v1/blockchain/address/2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp/unspent')
   .reply(200, JSON.parse('{"success":true,"paging":{"valid_sort":["id"],"limit":10,"sort":"id","dir":"desc","prev":null,"next":null,"prev_link":null,"next_link":null},"unspent":[{"addresses":["2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp"],"value":"0.00041000","value_int":41000,"txid":"8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387","n":1,"script_pub_key":{"asm":"OP_HASH160 334ea8adc3423478229444603ab27f02de2550ef OP_EQUAL","hex":"a914334ea8adc3423478229444603ab27f02de2550ef87"},"req_sigs":1,"type":"scripthash","confirmations":10,"id":129988450}]}'));
-  nock('https://bitcoinfees.21.co')
+  nock('https://bitcoinfees.earn.com')
   .get('/api/v1/fees/recommended')
   .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
 };
@@ -3198,7 +3198,7 @@ module.exports.nockBtcUnsignedRecovery = function() {
 
 
 
-  nock('https://bitcoinfees.21.co')
+  nock('https://bitcoinfees.earn.com')
     .get('/api/v1/fees/recommended')
     .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
 };
