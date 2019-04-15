@@ -106,6 +106,7 @@ local MeasureSizeAndTiming(version, limit_branches=false) = {
       {
         name: "audit",
         image: "node:lts",
+        failure: "ignore",
         commands: [
           "npm audit",
         ],
