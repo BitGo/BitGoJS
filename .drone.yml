@@ -22,7 +22,6 @@ steps:
   image: node:lts
   commands:
   - npm audit
-  failure: ignore
 
 ---
 kind: pipeline
