@@ -1064,9 +1064,9 @@ class AbstractUtxoCoin extends BaseCoin {
         return 0;
       }
 
-      let parsedSigScript;
+      let sigScript;
       try {
-        parsedSigScript = this.parseSignatureScript(transaction, idx);
+        sigScript = this.parseSignatureScript(transaction, idx);
       } catch (e) {
         return false;
       }
