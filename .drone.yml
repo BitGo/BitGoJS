@@ -299,6 +299,7 @@ steps:
   image: node:10
   commands:
   - "npx nyc -- node_modules/.bin/mocha -r ts-node/register --timeout 20000 --reporter list --exit 'test/v2/integration/**/*.ts'"
+  failure: ignore
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
