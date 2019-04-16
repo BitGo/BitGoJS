@@ -698,4 +698,43 @@ describe('V2 Wallet:', function() {
     }));
   });
 
+  describe('Maximum Spendable', function maximumSpendable() {
+    let bgUrl;
+
+    before(co(function *() {
+      nock.activeMocks().should.be.empty();
+      bgUrl = common.Environments[bitgo.getEnv()].uri;
+    }));
+
+    it('arguments', co(function *() {
+      const optionalParams = {
+        limit: '25',
+        minValue: '0',
+        maxValue: '9999999999999',
+        minHeight: '0',
+        minConfirms: '2',
+        enforceMinConfirmsForChange: 'false',
+        feeRate: '10000',
+        maxFeeRate: '100000',
+        recipientAddress: '2NCUFDLiUz9CVnmdVqQe9acVonoM89e76df'
+      };
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/maximumSpendable`;
+      const response = nock(bgUrl)
+        .get(path)
+        .query(_.matches(optionalParams)) // use _.matches to do a partial match on request body object instead of strict matching
+        .reply(200, {
+          coin: 'tbch',
+          maximumSpendable: 65000
+        });
+
+      try {
+        yield wallet.maximumSpendable(optionalParams);
+      } catch (e) {
+        // test is successful if nock is consumed
+      }
+
+      response.isDone().should.be.true();
+    }));
+  });
 });
