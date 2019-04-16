@@ -326,7 +326,6 @@ describe('V2 Wallets:', function() {
           m: 2,
           n: 3,
           keys: [userKeychainId, backupKeychainId, bitgoKeychainId],
-          enterprise: '',
           isCold: true
         };
         return wallets.add(params);
