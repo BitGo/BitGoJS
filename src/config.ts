@@ -181,7 +181,7 @@ export const tokens = {
         { type: 'buy', coin: 'eth', network: 'Mainnet', name: 'buying.com', tokenContractAddress: '0x0d7f0fa3a79bfedbab291da357958596c74e27d7', decimalPlaces: 18 },
         { type: 'onl', coin: 'eth', network: 'Mainnet', name: 'On.Live', tokenContractAddress: '0x6863be0e7cf7ce860a574760e9020d519a8bdc47', decimalPlaces: 18 },
         { type: 'wpx', coin: 'eth', network: 'Mainnet', name: 'WalletPlusX', tokenContractAddress: '0x4bb0a085db8cedf43344bd2fbec83c2c79c4e76b', decimalPlaces: 18 },
-        { type: 'isr', coin: 'eth', network: 'Mainnet', name: 'Insureum', tokenContractAddress: '0xb16d3ed603d62b125c6bd45519eda40829549489', decimalPlaces: 18 },
+        { type: 'isr', coin: 'eth', network: 'Mainnet', name: 'Insureum', tokenContractAddress: '0xd4a293ae8bb9e0be12e99eb19d48239e8c83a136', decimalPlaces: 18 },
         { type: 'key', coin: 'eth', network: 'Mainnet', name: 'SelfKey', tokenContractAddress: '0x4cc19356f2d37338b9802aa8e8fc58b0373296e7', decimalPlaces: 18 },
         { type: 'bird', coin: 'eth', network: 'Mainnet', name: 'BirdCoin', tokenContractAddress: '0x026e62dded1a6ad07d93d39f96b9eabd59665e0d', decimalPlaces: 18 },
         { type: 'zoom', coin: 'eth', network: 'Mainnet', name: 'CoinZoom', tokenContractAddress: '0x69cf3091c91eb72db05e45c76e58225177dea742', decimalPlaces: 18 },
@@ -189,7 +189,7 @@ export const tokens = {
         { type: 'jbc', coin: 'eth', network: 'Mainnet', name: 'Japan Brand Coin', tokenContractAddress: '0x3635e381c67252405c1c0e550973155832d5e490', decimalPlaces: 18 },
         { type: 'mcx', coin: 'eth', network: 'Mainnet', name: 'MachiX Token', tokenContractAddress: '0xd15ecdcf5ea68e3995b2d0527a0ae0a3258302f8', decimalPlaces: 18 },
         { type: 'ysey', coin: 'eth', network: 'Mainnet', name: 'YSEY Utility Token', tokenContractAddress: '0x1358efe5d9bfc2005918c0b2f220a4345c9ee7a3', decimalPlaces: 3 },
-        { type: 'hedg', coin: 'eth', network: 'Mainnet', name: 'HedgeTrade', tokenContractAddress: '0x3363d570f6df3c74d486bb8785d3ebfb9e2347d3', decimalPlaces: 18 },
+        { type: 'hedg', coin: 'eth', network: 'Mainnet', name: 'HedgeTrade', tokenContractAddress: '0xf1290473e210b2108a85237fbcd7b6eb42cc654f', decimalPlaces: 18 },
         { type: 'hqt', coin: 'eth', network: 'Mainnet', name: 'HyperQuant', tokenContractAddress: '0x3e1d5a855ad9d948373ae68e4fe1f094612b1322', decimalPlaces: 18 },
         { type: 'hlc', coin: 'eth', network: 'Mainnet', name: 'HalalChain', tokenContractAddress: '0x58c69ed6cd6887c0225d1fccecc055127843c69b', decimalPlaces: 9 },
         { type: 'wbtc', coin: 'eth', network: 'Mainnet', name: 'Wrapped Bitcoin', tokenContractAddress: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', decimalPlaces: 8 },
@@ -226,6 +226,10 @@ export const tokens = {
         { type: 'upbtc', coin: 'eth', network: 'Mainnet', name: 'Universal Bitcoin', tokenContractAddress: '0xc7461b398005e50bcc43c8e636378c6722e76c01', decimalPlaces: 8 },
         { type: 'fet', coin: 'eth', network: 'Mainnet', name: 'Fetch', tokenContractAddress: '0x1d287cc25dad7ccaf76a26bc660c5f7c8e2a05bd', decimalPlaces: 18 },
         { type: 'nas', coin: 'eth', network: 'Mainnet', name: 'Nebulas', tokenContractAddress: '0x5d65d971895edc438f465c17db6992698a52318d', decimalPlaces: 18 },
+        { type: 'ht', coin: 'eth', network: 'Mainnet', name: 'Huobi Token', tokenContractAddress: '0x6f259637dcd74c767781e37bc6133cd6a68aa161', decimalPlaces: 18 },
+        { type: 'lgo', coin: 'eth', network: 'Mainnet', name: 'LGO Exchange', tokenContractAddress: '0x123ab195dd38b1b40510d467a6a359b201af056f', decimalPlaces: 8 },
+        { type: 'hydro', coin: 'eth', network: 'Mainnet', name: 'Hydro', tokenContractAddress: '0xebbdf302c940c6bfd49c6b165f457fdb324649bc', decimalPlaces: 18 },
+
       ]
     }
   },
@@ -234,6 +238,7 @@ export const tokens = {
     eth: {
       tokens: [
         { type: 'terc', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x945ac907cf021a6bcd07852bb3b8c087051706a9', decimalPlaces: 0, name: 'ERC Test Token' },
+        { type: 'test', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x1fb879581f31687b905653d4bbcbe3af507bed37', decimalPlaces: 18, name: 'Test Mintable ERC20 Token' },
         { type: 'tbst', coin: 'teth', network: 'Kovan', tokenContractAddress: '0xe5cdf77835ca2095881dd0803a77e844c87483cd', decimalPlaces: 0, name: 'Test BitGo Shield Token' },
         { type: 'schz', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x050e25a2630b2aee94546589fd39785254de112c', decimalPlaces: 18, name: 'SchnauzerCoin' },
         { type: 'tcat', coin: 'teth', network: 'Kovan', tokenContractAddress: '0x63137319f3a14a985eb31547370e0e3bd39b03b8', decimalPlaces: 18, name: 'Test CAT-20 Token' },
