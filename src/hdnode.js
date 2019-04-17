@@ -56,6 +56,7 @@ HDNode.fromSeedHex = function (hex, network) {
 }
 
 HDNode.fromBase58 = function (string, networks) {
+  // FixMe: Issue #38, this method just pops the latest network object from the list instead of being more discerning.
   var buffer = base58check.decode(string)
   if (buffer.length !== 78) throw new Error('Invalid buffer length')
 
