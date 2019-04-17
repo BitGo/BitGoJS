@@ -22,6 +22,10 @@ We recommend using `nvm`, the [Node Version Manager](https://github.com/creation
 
 View our [Javascript SDK Documentation](https://www.bitgo.com/api/v2).
 
+# Release Notes
+
+You can find the complete release notes (since version 4.44.0) [here](https://github.com/BitGo/BitGoJS/blob/master/RELEASE_NOTES.md).
+
 # Example Usage
 
 ## Initialize SDK

@@ -1,5 +1,40 @@
 # BitGoJS Release Notes
 
+## 5.0.4
+
+### Bug Fixes
+* Fix `npm audit` failures caused by newly disclosed vulnerabilities in development dependencies `eslint`, `husky`, `lint-staged`, and `nyc`. This fix has been backported to the `bitgo@4` series as release `4.49.2`.
+
+## 5.0.3
+
+### Bug Fixes
+* Fix unhanded error in `explainTransaction()` causing approval failures for transactions which require replay protection.
+
+### Notes
+* This version was not published to npm due to `npm audit` failures which would be present upon install. These issues were fixed in version 5.0.4, which was released on npm.
+
+## 5.0.2
+
+### Bug Fixes
+* Readd ERC 20 token `NAS`
+
+## 5.0.1
+
+### Bug Fixes
+* Fix incorrect import in test file that was causing errors on install and when running tests (#297)
+
+## 4.49.2
+This is a maintenance update to the `bitgo@4` major version.
+
+### Bug Fixes
+* Backport updates to dev dependencies `nyc` and `fsevents` to fix `npm audit` failures.
+
+## 4.49.1
+This is a maintenance update to the `bitgo@4` major version.
+
+### Bug Fixes
+* Update `@bitgo/unspents` to 0.5.1 for a fix for an incompatibility issue in `tsc@3.4`
+
 ## 5.0.0
 * BitGoJS is now a typescript project!
   * `tsc` now runs as a prepublish step.
