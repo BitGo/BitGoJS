@@ -29,6 +29,27 @@
       "script": "OP_DUP OP_HASH160 6ac624143d19a3c91d2ac5605f0aebdfeac5b826 OP_EQUALVERIFY OP_CHECKSIG"
     },
     {
+      "network": "litecoin",
+      "version": 0,
+      "bech32": "ltc1qr8da6nrrpgfxtw9afyz4ct3npugtyeqrn0zg99",
+      "data": "19dbdd4c630a1265b8bd49055c2e330f10b26403",
+      "script": "OP_0 19dbdd4c630a1265b8bd49055c2e330f10b26403"
+    },
+    {
+      "network": "litecoin",
+      "version": 0,
+      "bech32": "ltc1qd5wm03t5kcdupjuyq5jffpuacnaqahvfsdu8smf8z0u0pqdqpatqsdrn8h",
+      "data": "6d1db7c574b61bc0cb84052494879dc4fa0edd898378786d2713f8f081a00f56",
+      "script": "OP_0 6d1db7c574b61bc0cb84052494879dc4fa0edd898378786d2713f8f081a00f56"
+    },
+    {
+      "network": "litecoinTest",
+      "version": 0,
+      "bech32": "tltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3ws2x86ht",
+      "data": "079225c736a65198b0aa75de0d385890e250820ef8731d6f8a3a744e27a3b45d",
+      "script": "OP_0 079225c736a65198b0aa75de0d385890e250820ef8731d6f8a3a744e27a3b45d"
+    },
+    {
       "network": "testnet",
       "version": 111,
       "hash": "751e76e8199196d454941c45d1b3a323f1433bd6",
