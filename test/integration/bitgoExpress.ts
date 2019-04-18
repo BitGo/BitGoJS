@@ -120,14 +120,6 @@ describe('Bitgo Express', function() {
       });
     });
 
-    it('error - not authed (eth)', function() {
-      return agent.post('/api/v1/eth/wallet/generate')
-      .send({ passphrase: 'abc', label: 'helloworld' })
-      .then(function(res) {
-        res.should.have.status(401);
-      });
-    });
-
     it('new keychain', function() {
       return agent.post('/api/v1/keychain/local')
       .send()
@@ -194,56 +186,6 @@ describe('Bitgo Express', function() {
         res.body.should.have.property('backupKeychain');
         res.body.backupKeychain.should.have.property('xpub');
         res.body.backupKeychain.xpub.should.equal(backupXpub);
-      });
-    });
-
-    it('create eth wallet', function() {
-      const backupXpub = 'xpub6AHA9hZDN11k2ijHMeS5QqHx2KP9aMBRhTDqANMnwVtdyw2TDYRmF8PjpvwUFcL1Et8Hj59S3gTSMcUQ5gAqTz3Wd8EsMTmF3DChhqPQBnU';
-      return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
-      .then(function() {
-        return agent.post('/api/v1/eth/wallet/generate')
-        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({ passphrase: 'chamchatka', label: 'kokoko', backupXpub: backupXpub });
-      })
-      .then(function(res) {
-        res.should.have.status(200);
-        res.body.should.have.property('wallet');
-        res.body.should.have.property('backupKeychain');
-        res.body.backupKeychain.should.have.property('xpub');
-        res.body.backupKeychain.should.have.property('ethAddress');
-        res.body.backupKeychain.xpub.should.equal(backupXpub);
-        res.body.backupKeychain.ethAddress.should.eql('0x467fecd39726a0245b6a72dcd0ad234849410cf1');
-        res.body.wallet.private.should.have.property('addresses');
-        res.body.wallet.private.addresses[1].address.should.eql('0x467fecd39726a0245b6a72dcd0ad234849410cf1');
-        res.body.wallet.private.deployTxHash.should.startWith('0x');
-      });
-    });
-
-    it('send eth transaction', function() {
-      const amount = '36000';
-      const destination = TestBitGo.TEST_ETH_WALLET2_ADDRESS;
-      return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
-      .then(function() {
-        return agent.post('/api/v1/eth/wallet/' + TestBitGo.TEST_ETH_WALLET1_ADDRESS + '/sendtransaction')
-        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send({ recipients: [{ toAddress: destination, value: amount }], walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE });
-      })
-      .then(function(res) {
-        res.should.have.status(200);
-        res.body.should.have.property('tx');
-        res.body.should.have.property('hash');
-        return agent.get('/api/v1/eth/wallet/' + TestBitGo.TEST_ETH_WALLET1_ADDRESS + '/transfer/' + res.body.hash)
-        .set('Authorization', 'Bearer ' + TestBitGo.TEST_ACCESSTOKEN)
-        .send();
-      })
-      .then(function(res) {
-        res.should.have.status(200);
-        const transfer = res.body.transfer;
-        transfer.from.should.eql(TestBitGo.TEST_ETH_WALLET1_ADDRESS);
-        transfer.outputs.length.should.eql(1);
-        transfer.outputs[0].to.should.eql(destination);
-        transfer.outputs[0].value.should.eql(amount);
-        transfer.creator.should.eql(TestBitGo.TEST_USERID);
       });
     });
 
