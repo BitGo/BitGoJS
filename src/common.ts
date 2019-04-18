@@ -299,7 +299,6 @@ export const Environments = {
 };
 
 let bitcoinNetwork: string;
-let ethereumNetwork: string;
 let rmgNetwork: string;
 
 export function setNetwork(network) {
@@ -321,14 +320,6 @@ export function getRmgNetwork(): string {
 
 export function setRmgNetwork(network): void {
   rmgNetwork = network;
-}
-
-export function setEthNetwork(network): void {
-  ethereumNetwork = 'ethereum';
-}
-
-export function getEthNetwork(): string {
-  return ethereumNetwork;
 }
 
 /**

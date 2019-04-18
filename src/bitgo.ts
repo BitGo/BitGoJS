@@ -11,13 +11,10 @@ import sanitizeHtml = require('sanitize-html');
 import eol = require('eol');
 const BaseCoin = require('./v2/baseCoin');
 const Blockchain = require('./blockchain');
-const EthBlockchain = require('./eth/ethBlockchain');
 const Keychains = require('./keychains');
 const TravelRule = require('./travelRule');
 import Wallet = require('./wallet');
-import EthWallet = require('./eth/ethWallet');
 const Wallets = require('./wallets');
-const EthWallets = require('./eth/ethWallets');
 const Markets = require('./markets');
 const PendingApprovals = require('./pendingapprovals');
 import shamir = require('secrets.js-grempe');
@@ -217,7 +214,6 @@ const BitGo = function(params) {
   this.env = env;
 
   common.setNetwork(common.Environments[env].network);
-  common.setEthNetwork(undefined);
   common.setRmgNetwork(common.Environments[env].rmgNetwork);
 
   if (!this._baseUrl) {
@@ -472,52 +468,6 @@ BitGo.prototype.token = function(tokenName, callback) {
     yield this.fetchConstants();
     return this.coin(tokenName);
   }).call(this).asCallback(callback);
-};
-
-// Accessor object for Ethereum methods
-BitGo.prototype.eth = function() {
-  const self = this;
-
-  const ethBlockchain = function() {
-    if (!self._ethBlockchain) {
-      self._ethBlockchain = new EthBlockchain(self);
-    }
-    return self._ethBlockchain;
-  };
-
-  const ethWallets = function() {
-    if (!self._ethWallets) {
-      self._ethWallets = new EthWallets(self);
-    }
-    return self._ethWallets;
-  };
-
-  const newEthWalletObject = function(walletParams) {
-    return new EthWallet(self, walletParams);
-  };
-
-  const verifyEthAddress = function(params) {
-    params = params || {};
-    common.validateParams(params, ['address'], []);
-
-    const address = params.address;
-    return address.indexOf('0x') === 0 && address.length === 42;
-  };
-
-  const retrieveGasBalance = function(params, callback) {
-    return self.get(self.url('/eth/user/gas'))
-    .result()
-    .nodeify(callback);
-  };
-
-  return {
-    blockchain: ethBlockchain,
-    wallets: ethWallets,
-    newWalletObject: newEthWalletObject,
-    verifyAddress: verifyEthAddress,
-    weiToEtherString: Util.weiToEtherString,
-    gasBalance: retrieveGasBalance
-  };
 };
 
 BitGo.prototype.getValidate = function() {
@@ -1366,7 +1316,7 @@ BitGo.prototype.addAccessToken = function(params, callback) {
 
   const authUrl = this._microservicesUrl ? this.microservicesUrl('/api/v1/auth/accesstoken') : this.url('/user/accesstoken');
   const request = this.post(authUrl);
-  
+
   if (!bitgo._ecdhXprv) {
     // without a private key, the user cannot decrypt the new access token the server will send
     request.forceV1Auth = true;
