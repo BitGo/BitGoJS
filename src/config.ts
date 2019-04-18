@@ -231,6 +231,13 @@ export const tokens = {
         { type: 'hydro', coin: 'eth', network: 'Mainnet', name: 'Hydro', tokenContractAddress: '0xebbdf302c940c6bfd49c6b165f457fdb324649bc', decimalPlaces: 18 },
 
       ]
+    },
+    ofc: {
+      tokens: [
+        { type: 'ofcusd', coin: 'ofc', decimalPlaces: 2, name: 'Offchain USD', backingCoin: 'susd', isFiat: true },
+        { type: 'ofcbtc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Bitcoin Mainnet', backingCoin: 'btc' },
+        { type: 'ofceth', coin: 'ofc', decimalPlaces: 18, name: 'Offchain Ether Mainnet', backingCoin: 'eth' }
+      ]
     }
   },
   // network name for test environments (testnet tokens must be added here)
@@ -247,7 +254,9 @@ export const tokens = {
     },
     ofc: {
       tokens: [
-        { type: 'otestusd', coin: 'ofc', decimalPlaces: 2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat: true }
+        { type: 'ofctusd', coin: 'ofc', decimalPlaces: 2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat: true },
+        { type: 'ofctbtc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Bitcoin Test', backingCoin: 'tbtc' },
+        { type: 'ofcteth', coin: 'ofc', decimalPlaces: 18, name: 'Offchain Ether Testnet', backingCoin: 'teth' }
       ]
     }
   }
