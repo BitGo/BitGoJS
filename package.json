@@ -37,7 +37,7 @@
     "prepublish": "./node_modules/.bin/tsc && node scripts/copySjcl.js"
   },
   "dependencies": {
-    "@bitgo/unspents": "^0.5.1",
+    "@bitgo/unspents": "^0.6.0",
     "@types/bluebird": "3.5.25",
     "@types/lodash": "4.14.121",
     "@types/mocha": "5.2.6",
