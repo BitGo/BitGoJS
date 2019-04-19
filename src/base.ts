@@ -34,28 +34,15 @@ export const enum CoinFeature {
 export const enum CoinAsset {
   BTC = 'btc',
   USD = 'usd',
-}
-
-// there is a method to this madness.
-// The idea here is we want a distinct type, but which
-// has complete overlap with the String prototype.
-// the phantom properties will never be present at
-// runtime, and serve only to differentiate the
-// different string types to the type system.
-export interface ShortName extends String {
-  __shortname_phantom__: never;
-}
-
-export interface LongName extends String {
-  __longname_phantom__: never;
+  SELF = 'self', // sentinel value which means that this coin represents itself, and has no other underlying asset
 }
 
 export interface IBaseCoin {
   /*
     Display properties
    */
-  longName: LongName;
-  shortName: ShortName;
+  longName: string;
+  shortName: string;
   /*
     Classification properties
    */
@@ -75,6 +62,6 @@ export interface IBaseCoin {
    */
   prefix?: string;
   suffix?: string;
-  // asset which this coin represents; if not itself (in which case, this will be null)
-  asset?: CoinAsset;
+  // asset which this coin represents. If it represents itself, this should be set to CoinAsset.SELF.
+  asset: CoinAsset;
 }

@@ -17,3 +17,10 @@
 * Entirely WIP
 * __Everything__ is subject to change
 * This library should not be depended on in it's current form.
+
+## Project Structure
+* `src/base.ts`: Interfaces and enums used by coin definitions
+* `src/coins.ts`: Coin definitions
+* `src/networks.ts`: Network definitions
+* `src/stringTypes.ts`: Tagged string literal functions and other string-based types
+* `src/utxo.ts`: Unspent Transaction Output (UTXO) based coin classes and factory method

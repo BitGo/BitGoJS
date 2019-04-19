@@ -1,8 +1,10 @@
 import { IBaseCoin } from './base';
-import { longName, shortName, network } from './stringTypes';
 import { utxo } from './utxo';
+import { Networks } from './networks';
 
 export const coins: IBaseCoin[] = [
-  utxo(longName`Bitcoin`, shortName`BTC`, network`bitcoin`),
-  utxo(longName`Testnet Bitcoin`, shortName`TBTC`, network`bitcoinTestnet`),
+  utxo('Bitcoin', 'BTC', Networks.main.bitcoin),
+  utxo('Testnet Bitcoin', 'TBTC', Networks.test.bitcoin),
+  utxo('Litecoin', 'LTC', Networks.main.litecoin),
+  utxo('Testnet Litecoin', 'TLTC', Networks.test.litecoin),
 ];

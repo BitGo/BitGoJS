@@ -27,7 +27,7 @@ class Testnet {
   type = NetworkType.TESTNET;
 }
 
-export class Bitcoin extends Mainnet implements UtxoNetwork {
+class Bitcoin extends Mainnet implements UtxoNetwork {
   messagePrefix = '\x18Bitcoin Signed Message:\n';
   bech32 = 'bc';
   bip32 = {
@@ -55,9 +55,42 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
   family = Bitcoin.prototype.family;
 }
 
-export const Network: {
-  [index: string]: UtxoNetwork;
-} = {
-  bitcoin: new Bitcoin(),
-  bitcoinTestnet: new BitcoinTestnet(),
+class Litecoin extends Mainnet implements UtxoNetwork {
+  messagePrefix = '\x19Litecoin Signed Message:\n';
+  bech32 = 'ltc';
+  bip32 = {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  };
+  pubKeyHash = 0x30;
+  scriptHash = 0x32;
+  wif = 0xb0;
+  family = CoinFamily.LTC;
+}
+
+class LitecoinTestnet extends Mainnet implements UtxoNetwork {
+  bech32 = 'tltc';
+  // clarify these constants - they are different between BitGoJS and bitgo-utxo-lib
+  bip32 = {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  };
+  pubKeyHash = 0x6f;
+  scriptHash = 0x3a;
+  wif = 0xb0;
+
+  // fields "inherited" from the Litecoin mainnet
+  messagePrefix = Litecoin.prototype.messagePrefix;
+  family = Litecoin.prototype.family;
+}
+
+export const Networks = {
+  main: {
+    bitcoin: new Bitcoin(),
+    litecoin: new Litecoin(),
+  },
+  test: {
+    bitcoin: new BitcoinTestnet(),
+    litecoin: new LitecoinTestnet(),
+  },
 };
