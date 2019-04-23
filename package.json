@@ -34,7 +34,8 @@
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "generate_drone": "drone jsonnet --stream",
     "clean": "rm -r dist/*",
-    "prepublish": "./node_modules/.bin/tsc && node scripts/copySjcl.js"
+    "prepublish": "npm run build",
+    "build": "tsc && node scripts/copySjcl.js"
   },
   "dependencies": {
     "@bitgo/unspents": "^0.6.0",
