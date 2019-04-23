@@ -143,10 +143,15 @@ describe('Transaction', function () {
       it('imports ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.dashTest)
         assert.equal(tx.version, testData.version)
-        assert.equal(tx.versionGroupId, testData.versionGroupId)
+        if (tx.version === 3) {
+          assert.equal(tx.type, testData.type)
+        }
         assert.equal(tx.locktime, testData.locktime)
         assert.equal(tx.ins.length, testData.vin.length)
         assert.equal(tx.outs.length, testData.vout.length)
+        if (tx.isDashSpecialTransaction()) {
+          assert.equal(tx.extra_payload.toString('hex'), testData.extraPayload)
+        }
       })
     })
 
