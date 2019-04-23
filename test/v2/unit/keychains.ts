@@ -8,7 +8,6 @@ const co = Promise.coroutine;
 const nock = require('nock');
 const common = require('../../../src/common');
 import * as _ from 'lodash';
-const sinon = require('sinon');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 
@@ -47,80 +46,42 @@ describe('V2 Keychains', function v2keychains() {
     const newPassword = 'newPassword';
     const otherPassword = 'otherPassword';
 
-    describe('should fail', function describeSuccess() {
-      let sandbox;
-      beforeEach(function () {
-        sandbox = sinon.createSandbox();
-      });
+    it('should fail to update the password', co(function *coItFail() {
+      yield keychains.updatePassword({ newPassword: '5678' })
+      .should.be.rejectedWith('Missing parameter: oldPassword');
 
-      afterEach(function () {
-        sandbox.restore();
-      });
+      yield keychains.updatePassword({ oldPassword: 1234, newPassword: '5678' })
+      .should.be.rejectedWith('Expecting parameter string: oldPassword but found number');
 
-      it('to update the password', co(function* coItFail() {
-        yield keychains.updatePassword({newPassword: '5678'})
-        .should.be.rejectedWith('Missing parameter: oldPassword');
+      yield keychains.updatePassword({ oldPassword: '1234' })
+      .should.be.rejectedWith('Missing parameter: newPassword');
 
-        yield keychains.updatePassword({oldPassword: 1234, newPassword: '5678'})
-        .should.be.rejectedWith('Expecting parameter string: oldPassword but found number');
+      yield keychains.updatePassword({ oldPassword: '1234', newPassword: 5678 })
+      .should.be.rejectedWith('Expecting parameter string: newPassword but found number');
+    }));
 
-        yield keychains.updatePassword({oldPassword: '1234'})
-        .should.be.rejectedWith('Missing parameter: newPassword');
+    it('should fail to update the password for a single keychain', co(function *coItFail() {
+      (() => keychains.updateSingleKeychainPassword({ newPassword: '5678' }))
+      .should.throw('expected old password to be a string');
 
-        yield keychains.updatePassword({oldPassword: '1234', newPassword: 5678})
-        .should.be.rejectedWith('Expecting parameter string: newPassword but found number');
-      }));
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: 1234, newPassword: '5678' }))
+      .should.throw('expected old password to be a string');
 
-      it('to update the password for a single keychain', co(function* coItFail() {
-        (() => keychains.updateSingleKeychainPassword({newPassword: '5678'}))
-        .should.throw('expected old password to be a string');
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234' }))
+      .should.throw('expected new password to be a string');
 
-        (() => keychains.updateSingleKeychainPassword({oldPassword: 1234, newPassword: '5678'}))
-        .should.throw('expected old password to be a string');
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: 5678 }))
+      .should.throw('expected new password to be a string');
 
-        (() => keychains.updateSingleKeychainPassword({oldPassword: '1234'}))
-        .should.throw('expected new password to be a string');
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: '5678' }))
+      .should.throw('expected keychain to be an object with an encryptedPrv property');
 
-        (() => keychains.updateSingleKeychainPassword({oldPassword: '1234', newPassword: 5678}))
-        .should.throw('expected new password to be a string');
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: '5678', keychain: {} }))
+      .should.throw('expected keychain to be an object with an encryptedPrv property');
 
-        (() => keychains.updateSingleKeychainPassword({oldPassword: '1234', newPassword: '5678'}))
-        .should.throw('expected keychain to be an object with an encryptedPrv property');
-
-        (() => keychains.updateSingleKeychainPassword({oldPassword: '1234', newPassword: '5678', keychain: {}}))
-        .should.throw('expected keychain to be an object with an encryptedPrv property');
-
-        (() => keychains.updateSingleKeychainPassword({
-          oldPassword: '1234',
-          newPassword: '5678',
-          keychain: {encryptedPrv: 123}
-        }))
-        .should.throw('expected keychain to be an object with an encryptedPrv property');
-
-        const keychain = {encryptedPrv: bitgo.encrypt({input: 'xprv1', password: otherPassword})};
-        (() => keychains.updateSingleKeychainPassword({oldPassword, newPassword, keychain}))
-        .should.throw('password used to decrypt keychain private key is incorrect');
-      }));
-
-      it('on any other error', co(function* coItFail() {
-        nock(bgUrl)
-          .get('/api/v2/tltc/key')
-          .query(true)
-          .reply(200, {
-            keys: [
-              {
-                pub: 'xpub1',
-                encryptedPrv: bitgo.encrypt({input: 'xprv1', password: oldPassword})
-              }
-            ]
-          });
-
-        sandbox.stub(keychains, 'updateSingleKeychainPassword').throws('error', 'some random error');
-
-        yield keychains.updatePassword({oldPassword, newPassword})
-        .should.be.rejectedWith('some random error');
-      }));
-    });
+      (() => keychains.updateSingleKeychainPassword({ oldPassword: '1234', newPassword: '5678', keychain: { encryptedPrv: 123 } }))
+      .should.throw('expected keychain to be an object with an encryptedPrv property');
+    }));
 
     describe('successful password update', function describeSuccess() {
       const validateKeys = function(keys, newPassword) {

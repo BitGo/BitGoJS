@@ -9,14 +9,26 @@ describe('OFC:', function() {
   before(function() {
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
-    otestusdCoin = bitgo.coin('otestusd');
+    otestusdCoin = bitgo.coin('ofctusd');
   });
 
   it('functions that return constants', function() {
-    otestusdCoin.getChain().should.equal('otestusd');
+    otestusdCoin.getChain().should.equal('ofctusd');
     otestusdCoin.getFullName().should.equal('Offchain Test USD');
     otestusdCoin.getBaseFactor().should.equal('100');
   });
+
+  it('test crypto coins', function() {
+    const tbtc = bitgo.coin('ofctbtc');
+    tbtc.getChain().should.equal('ofctbtc');
+    tbtc.getFullName().should.equal('Offchain Bitcoin Test');
+    tbtc.getBaseFactor().should.equal('100000000');
+
+    const teth = bitgo.coin('ofcteth');
+    teth.getChain().should.equal('ofcteth');
+    teth.getFullName().should.equal('Offchain Ether Testnet');
+    teth.getBaseFactor().should.equal('1000000000000000000');
+  })
 
   it('can sign payloads', function() {
     const inputParams = {

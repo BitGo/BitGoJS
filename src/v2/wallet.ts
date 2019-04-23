@@ -1188,6 +1188,14 @@ Wallet.prototype.accelerateTransaction = function(params, callback) {
       }
     }
 
+    if (params.recipients !== undefined) {
+      if (!Array.isArray(params.recipients) || params.recipients.length !== 0) {
+        throw new Error(`invalid value for 'recipients': must be empty array when set`);
+      }
+    }
+
+    params.recipients = [];
+
     // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
     const submitParams = Object.assign(params, yield this.prebuildAndSignTransaction(params));
     return yield this.submitTransaction(submitParams);

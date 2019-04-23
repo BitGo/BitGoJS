@@ -84,22 +84,6 @@ BitGo.prototype.initializeTestVars = function() {
     // webhooks
     BitGo.TEST_WEBHOOK_TRANSACTION_SIMULATION_ID = '57f3ee68a2cece1770402dbe7d84c368';
 
-    // wallet addresses
-    BitGo.TEST_ETH_WALLET1_ADDRESS = '0x2a45d946acb0534ed9a06723f505c0fc09a87fd8';
-    BitGo.TEST_ETH_WALLET2_ADDRESS = '0xdbdc12ca37f3e65c420cfa172885c2ecc6c8bc6b';
-
-    // labeled addresses (not directly used)
-    BitGo.TEST_ETH_WALLET1_ADDRESS2 = '0xeab1cac0d744e99289c1798c280961172e63b508';
-    BitGo.TEST_ETH_WALLET3_ADDRESS = '0xe59dfe5c67114b39a5662cc856be536c614124c0';
-
-    // wallet xpubs
-    BitGo.TEST_ETH_WALLET1_XPUB = 'xpub661MyMwAqRbcEx4BzQcLh7JREVXCxNMXkaMJthGGA1UpjR2jxf4Z183SCnuYnujTPYTTgbdDYhDSWem23os8tdoYXwMGK4vSDYL1Aj9Z9pD';
-
-    // transactions
-    BitGo.TEST_ETH_TRANSACTION = '0x29fa68687d2263be6bcd637fb758aba59801eacfc78ac9ceef444b194214ba5a';
-    BitGo.TEST_ETH_BLOCK = '0xdd6425966c69a1f4a2630ec5cbd4e9ce26fb026f0d285df1ec64e011ea0fed4f';
-    BitGo.TEST_ETH_PARENT_BLOCK = '0x7d9045cbe4342add4036de0731cdcc786d4d19c0ddf800b9eb58135e2b373c72';
-
     // wallet for testing unspents regrouping (fanout & consolidate/coalesce)
     BitGo.TEST_WALLET_REGROUP_ADDRESS = '2MuVshMLfZaXfF6q7af47ZFUtZGGpnyZuLu';
 
@@ -143,22 +127,6 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.TEST_SHARED_WALLET_CHANGE_ADDRESS = '2MsUevsM5ncvgrrqUoJ7qYd7Ks9VCN3uhHM';
     BitGo.TEST_WALLET_PENDING_APPROVAL_ID = '56eaf3bdcc4635bb0529843a0dcf860b';
     BitGo.TEST_ENTERPRISE_PENDING_APPROVAL_ID = '5824d5b5acf14ea106e4f2efd588c053';
-
-    // wallet addresses
-    BitGo.TEST_ETH_WALLET1_ADDRESS = '0x9c532f9a429661e9199d447d63e4f182c16fb593';
-    BitGo.TEST_ETH_WALLET2_ADDRESS = '0x12e1f5777cf43a996c5f8477dd880506076007d8';
-
-    // labeled addresses (not directly used)
-    BitGo.TEST_ETH_WALLET1_ADDRESS2 = '0xeab1cac0d744e99289c1798c280961172e63b508';
-    BitGo.TEST_ETH_WALLET3_ADDRESS = '0xe59dfe5c67114b39a5662cc856be536c614124c0';
-
-    // wallet xpubs
-    BitGo.TEST_ETH_WALLET1_XPUB = 'xpub661MyMwAqRbcGsUE69PAHyGNMxCd9waDWJTrHDmFyafc2J4NyzcAegAhrvscfTXfiXCYKGxnAPVaeb4afug5ery7DLDed77TPoBwxUZ1dH1';
-
-    // transactions
-    BitGo.TEST_ETH_TRANSACTION = '0x29fa68687d2263be6bcd637fb758aba59801eacfc78ac9ceef444b194214ba5a';
-    BitGo.TEST_ETH_BLOCK = '0xdd6425966c69a1f4a2630ec5cbd4e9ce26fb026f0d285df1ec64e011ea0fed4f';
-    BitGo.TEST_ETH_PARENT_BLOCK = '0x7d9045cbe4342add4036de0731cdcc786d4d19c0ddf800b9eb58135e2b373c72';
 
     // wallet for testing unspents regrouping (fanout & consolidate/coalesce)
     BitGo.TEST_WALLET_REGROUP_ADDRESS = '2MuVshMLfZaXfF6q7af47ZFUtZGGpnyZuLu';

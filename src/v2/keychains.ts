@@ -88,17 +88,14 @@ Keychains.prototype.updatePassword = function(params, callback) {
           continue;
         }
         try {
-          const updatedKeychain = this.updateSingleKeychainPassword({
+          const updatedKeychain = this.changeSingleKeychainPassword({
             keychain: key,
             oldPassword: params.oldPassword,
             newPassword: params.newPassword
           });
           changedKeys[updatedKeychain.pub] = updatedKeychain.encryptedPrv;
         } catch (e) {
-          // if the password was incorrect, silence the error, throw otherwise
-          if (!e.message.includes('private key is incorrect')) {
-            throw e;
-          }
+          // catching an error here means that the password was incorrect and hence there is nothing to change
         }
       }
       if (result.nextBatchPrevId) {
@@ -138,7 +135,7 @@ Keychains.prototype.updateSingleKeychainPassword = function({ keychain, oldPassw
     const newEncryptedPrv = this.bitgo.encrypt({ input: decryptedPrv, password: newPassword });
     return _.assign({}, keychain, { encryptedPrv: newEncryptedPrv });
   } catch (e) {
-    // catching an error here means that the password was incorrect or, less likely, the input to decrypt is corrupted
+    // catching an error here means that the password was incorrect and hence there is nothing to change
     throw new Error('password used to decrypt keychain private key is incorrect');
   }
 };
