@@ -2,12 +2,12 @@
 
 BitGo JavaScript SDK
 
-The BitGo Platform and SDK makes it easy to build multi-signature Bitcoin applications today.
+The BitGo Platform and SDK makes it easy to build multi-signature crypto-currency applications today with support for Bitcoin, Ethereum and many other coins.
 The SDK is fully integrated with the BitGo co-signing service for managing all of your BitGo wallets.
 
 Included in the SDK are examples for how to use the API to manage your multi-signature wallets.
 
-Please join us on our [Slack channel](https://bitgodevs.slack.com) if you have questions or comments about this API.
+Please email us at support@bitgo.com if you have questions or comments about this API.
 
 [![Known Vulnerabilities](https://snyk.io/test/npm/bitgo/badge.svg)](https://snyk.io/test/npm/bitgo) [![Build Status](https://cloud.drone.io/api/badges/BitGo/BitGoJS/status.svg)](https://cloud.drone.io/BitGo/BitGoJS)
 
@@ -20,7 +20,7 @@ We recommend using `nvm`, the [Node Version Manager](https://github.com/creation
 
 # Full Documentation
 
-View our [Javascript SDK Documentation](https://www.bitgo.com/api/v2).
+View our [API Documentation](https://www.bitgo.com/api/v2).
 
 # Release Notes
 
@@ -46,24 +46,23 @@ const params = {
   "passphrase": "replaceme",
   "label": "firstwallet"
 };
-bitgo.wallets().createWalletWithKeychains(params, function(err, result) {
+bitgo.coin('tbtc').wallets().generateWallet(params, function(err, result) {
   wallet = result.wallet;
-  console.dir(wallet.wallet);
-  console.log("Locally created keychain: " + result.userKeychain.encryptedXprv);
+  console.dir(wallet._wallet);
 });
 ```
 
 ## Create new address
 ```js
-wallet.createAddress({ "chain": 0 }, function callback(err, address) {
+wallet.createAddress({ "chain": 10 }, function callback(err, address) {
     console.dir(address);
 });
 ```
 
-## View transactions
+## View wallet transfers
 ```js
-wallet.transactions({}, function callback(err, transactions) {
-    console.dir(transactions);
+wallet.transfers({}, function callback(err, transfers) {
+    console.dir(transfers);
 });
 ```
 
