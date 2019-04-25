@@ -8,6 +8,6 @@
     "modules/*"
   ],
   "scripts": {
-    "generate_drone": "drone jsonnet --stream"
+    "generate-drone": "drone jsonnet --stream"
   }
 }

@@ -20,7 +20,7 @@ local Install(version, limit_branches=false) = {
   name: "install",
   image: "node:" + version,
   commands: [
-    "npm install --unsafe-perm",
+    "lerna bootstrap",
   ],
   [if limit_branches then "when"]: branches(),
 };
@@ -33,8 +33,8 @@ local UploadCoverage(version, tag="untagged", limit_branches=true) = {
   },
   commands: [
     "npm install -g codecov",
-    "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov",
-    "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F " + tag,
+    "lerna run gen-coverage",
+    "lerna run upload-coverage -- -F " + tag,
   ],
   [if limit_branches then "when"]: branches(),
 };
@@ -52,7 +52,7 @@ local UnitTest(version) = {
         BITGOJS_TEST_PASSWORD: { from_secret: "password" },
       },
       commands: [
-        "npm run test-node",
+        "lerna run unit-test",
       ],
     },
     UploadCoverage(version, "unit"),
@@ -72,7 +72,7 @@ local IntegrationTest(version, limit_branches=true) = {
         BITGOJS_TEST_PASSWORD: { from_secret: "password" },
       },
       commands: [
-        "npx nyc -- node_modules/.bin/mocha -r ts-node/register --timeout 20000 --reporter list --exit 'test/v2/integration/**/*.ts'",
+        "lerna run integration-test",
       ],
       [if limit_branches then "when"]: branches(),
     },
@@ -107,7 +107,7 @@ local MeasureSizeAndTiming(version, limit_branches=false) = {
         name: "audit",
         image: "node:lts",
         commands: [
-          "npm audit",
+          "lerna run audit",
         ],
       },
     ],
@@ -122,8 +122,7 @@ local MeasureSizeAndTiming(version, limit_branches=false) = {
         name: "lint",
         image: "node:lts",
         commands: [
-          "npx eslint 'src/**/*.ts'",
-          "npx eslint 'test/**/*.ts' || true"
+          "lerna run lint",
         ],
       },
     ],

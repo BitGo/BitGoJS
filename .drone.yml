@@ -16,12 +16,12 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - npm install --unsafe-perm
+  - lerna bootstrap
 
 - name: audit
   image: node:lts
   commands:
-  - npm audit
+  - lerna run audit
 
 ---
 kind: pipeline
@@ -41,13 +41,12 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - npm install --unsafe-perm
+  - lerna bootstrap
 
 - name: lint
   image: node:lts
   commands:
-  - "npx eslint 'src/**/*.ts'"
-  - "npx eslint 'test/**/*.ts' || true"
+  - lerna run lint
 
 ---
 kind: pipeline
@@ -67,12 +66,12 @@ steps:
 - name: install
   image: node:6
   commands:
-  - npm install --unsafe-perm
+  - lerna bootstrap
 
 - name: unit tests
   image: node:6
   commands:
-  - npm run test-node
+  - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -81,8 +80,8 @@ steps:
   image: node:6
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - lerna run gen-coverage
+  - lerna run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -110,12 +109,12 @@ steps:
 - name: install
   image: node:8
   commands:
-  - npm install --unsafe-perm
+  - lerna bootstrap
 
 - name: unit tests
   image: node:8
   commands:
-  - npm run test-node
+  - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -124,8 +123,8 @@ steps:
   image: node:8
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - lerna run gen-coverage
+  - lerna run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -153,12 +152,12 @@ steps:
 - name: install
   image: node:9
   commands:
-  - npm install --unsafe-perm
+  - lerna bootstrap
 
 - name: unit tests
   image: node:9
   commands:
-  - npm run test-node
+  - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -167,8 +166,8 @@ steps:
   image: node:9
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - lerna run gen-coverage
+  - lerna run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -196,12 +195,12 @@ steps:
 - name: install
   image: node:10
   commands:
-  - npm install --unsafe-perm
+  - lerna bootstrap
 
 - name: unit tests
   image: node:10
   commands:
-  - npm run test-node
+  - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -210,8 +209,8 @@ steps:
   image: node:10
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - lerna run gen-coverage
+  - lerna run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -239,12 +238,12 @@ steps:
 - name: install
   image: node:11
   commands:
-  - npm install --unsafe-perm
+  - lerna bootstrap
 
 - name: unit tests
   image: node:11
   commands:
-  - npm run test-node
+  - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -253,8 +252,8 @@ steps:
   image: node:11
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - lerna run gen-coverage
+  - lerna run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -287,7 +286,7 @@ steps:
 - name: install
   image: node:10
   commands:
-  - npm install --unsafe-perm
+  - lerna bootstrap
   when:
     branch:
     - master
@@ -297,7 +296,7 @@ steps:
 - name: integration tests
   image: node:10
   commands:
-  - "npx nyc -- node_modules/.bin/mocha -r ts-node/register --timeout 20000 --reporter list --exit 'test/v2/integration/**/*.ts'"
+  - lerna run integration-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -311,8 +310,8 @@ steps:
   image: node:10
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F integration"
+  - lerna run gen-coverage
+  - lerna run upload-coverage -- -F integration
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
