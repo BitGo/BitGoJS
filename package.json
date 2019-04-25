@@ -2,9 +2,11 @@
   "name": "root",
   "private": true,
   "devDependencies": {
-    "lerna": "^3.13.3"
+    "lerna": "^3.13.4"
   },
-  "workspaces": ["modules/*"],
+  "workspaces": [
+    "modules/*"
+  ],
   "scripts": {
     "generate_drone": "drone jsonnet --stream"
   }
