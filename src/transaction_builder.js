@@ -587,17 +587,30 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
   txb.setLockTime(transaction.locktime)
 
   if (coins.isZcash(txbNetwork)) {
-    // Copy Zcash overwinter fields. If the transaction builder is not for Zcash, they will be omitted
+    // Copy Zcash overwinter fields. Omitted if the transaction builder is not for Zcash.
     if (txb.tx.isOverwinterCompatible()) {
       txb.setVersionGroupId(transaction.versionGroupId)
       txb.setExpiryHeight(transaction.expiryHeight)
     }
+
     // We don't support protected transactions but we copy the joinsplits for consistency. However, the transaction
     // builder will fail when we try to sign one of these transactions
     if (txb.tx.supportsJoinSplits()) {
       txb.setJoinSplits(transaction)
     }
   }
+
+  // Copy Dash special transaction fields. Omitted if the transaction builder is not for Dash.
+  if (coins.isDash(txbNetwork)) {
+    typeforce(types.UInt16, transaction.type)
+    txb.tx.type = transaction.type
+
+    if (txb.tx.versionSupportsDashSpecialTransactions()) {
+      typeforce(types.Buffer, transaction.extraPayload)
+      txb.tx.extraPayload = transaction.extraPayload
+    }
+  }
+
   // Copy outputs (done first to avoid signature invalidation)
   transaction.outs.forEach(function (txOut) {
     txb.addOutput(txOut.script, txOut.value)
