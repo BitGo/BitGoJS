@@ -49,6 +49,9 @@ BitGo.TEST_KNOWN_BALANCE = 9999586400;
 BitGo.TEST_ENTERPRISE_CREATION_USER = 'enterprisecreator@bitgo.com';
 BitGo.TEST_ENTERPRISE_CREATION_PASSWORD = BitGo.TEST_PASSWORD;
 
+BitGo.OFC_TEST_USER = 'tester+employee@bitgo.com';
+BitGo.OFC_TEST_PASSWORD = BitGo.TEST_PASSWORD;
+
 BitGo.TEST_CLIENTID = 'test';
 BitGo.TEST_CLIENTSECRET = 'testclientsecret';
 
@@ -93,6 +96,7 @@ BitGo.prototype.initializeTestVars = function() {
     BitGo.V2.TEST_WALLET1_PASSCODE = 'iVWeATjqLS1jJShrPpETti0b';
     BitGo.V2.TEST_WALLET1_XPUB = 'xpub661MyMwAqRbcGicVM5K5UnocWoFt3Yh1RZKzSEHPPARhyMf9w7DVqM3PgBgiVW5NHRp8UteqhMoQb17rCQsLbmGXuPx43MKskyB31R97p3G';
     BitGo.V2.TEST_WALLET1_ID = '585cc5335573b0a8416aadb1fce63ce3';
+    BitGo.V2.OFC_TEST_WALLET_ID = '5cbe3223311315fc7c96ce087f32dbdd';
 
   } else {
     BitGo.TEST_USERID = '543c11ed356d00cb7600000b98794503';
@@ -173,6 +177,8 @@ BitGo.prototype.initializeTestVars = function() {
 
     // webhooks
     BitGo.V2.TEST_WEBHOOK_TRANSFER_SIMULATION_ID = '59b7041619dd52cd0737a4cbf39dbd44';
+
+    BitGo.V2.OFC_TEST_WALLET_ID = '5cbe3563afc275b40369e096073b8a16';
   }
 
   BitGo.TEST_FEE_SINGLE_KEY_WIF = 'cRVQ6cbUyGHVvByPKF9GnEhaB4HUBFgLQ2jVX1kbQARHaTaD7WJ2';
@@ -249,6 +255,14 @@ BitGo.prototype.authenticateChangePWTestUser = function(otp, callback) {
     response.should.have.property('user');
 
     return { password: params.password, alternatePassword };
+  }).call(this).asCallback(callback);
+};
+
+BitGo.prototype.authenticateOfcTestUser = function(otp, callback) {
+  return co(function *() {
+    const response = yield this.authenticate({ username: BitGo.OFC_TEST_USER, password: BitGo.OFC_TEST_PASSWORD, otp: otp });
+    response.should.have.property('access_token');
+    response.should.have.property('user');
   }).call(this).asCallback(callback);
 };
 
