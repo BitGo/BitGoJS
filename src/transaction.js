@@ -50,7 +50,7 @@ function Transaction (network = networks.bitcoin) {
   if (coins.isDash(network)) {
     // Dash version = 3
     this.type = 0
-    this.extra_payload = 0
+    this.extraPayload = Buffer.alloc(0)
   }
 }
 
@@ -360,7 +360,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
   }
 
   if (tx.isDashSpecialTransaction()) {
-    tx.extra_payload = readVarSlice()
+    tx.extraPayload = readVarSlice()
   }
 
   tx.network = network
@@ -395,8 +395,12 @@ Transaction.prototype.supportsJoinSplits = function () {
   return coins.isZcash(this.network) && this.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION
 }
 
+Transaction.prototype.versionSupportsDashSpecialTransactions = function () {
+  return coins.isDash(this.network) && this.version >= 3
+}
+
 Transaction.prototype.isDashSpecialTransaction = function () {
-  return coins.isDash(this.network) && this.version === 3 && this.type !== Transaction.DASH_NORMAL
+  return this.versionSupportsDashSpecialTransactions() && this.type !== Transaction.DASH_NORMAL
 }
 
 Transaction.prototype.isCoinbase = function () {
@@ -545,7 +549,7 @@ Transaction.prototype.__byteLength = function (__allowWitness) {
     varuint.encodingLength(this.outs.length) +
     this.ins.reduce(function (sum, input) { return sum + 40 + varSliceSize(input.script) }, 0) +
     this.outs.reduce(function (sum, output) { return sum + 8 + varSliceSize(output.script) }, 0) +
-    (this.isDashSpecialTransaction() ? varSliceSize(this.extra_payload) : 0) +
+    (this.isDashSpecialTransaction() ? varSliceSize(this.extraPayload) : 0) +
     (hasWitnesses ? this.ins.reduce(function (sum, input) { return sum + vectorSize(input.witness) }, 0) : 0)
   )
 }
@@ -558,7 +562,7 @@ Transaction.prototype.clone = function () {
 
   if (coins.isDash(this.network)) {
     newTx.type = this.type
-    newTx.extra_payload = this.extra_payload
+    newTx.extraPayload = this.extraPayload
   }
 
   if (this.isOverwinterCompatible()) {
@@ -997,8 +1001,8 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
   var offset = initialOffset || 0
   function writeSlice (slice) { offset += slice.copy(buffer, offset) }
   function writeUInt8 (i) { offset = buffer.writeUInt8(i, offset) }
+  function writeUInt16 (i) { offset = buffer.writeUInt16LE(i, offset) }
   function writeUInt32 (i) { offset = buffer.writeUInt32LE(i, offset) }
-  function writeInt16 (i) { offset = buffer.writeInt16LE(i, offset) }
   function writeInt32 (i) { offset = buffer.writeInt32LE(i, offset) }
   function writeUInt64 (i) { offset = bufferutils.writeUInt64LE(buffer, i, offset) }
   function writeVarInt (i) {
@@ -1023,8 +1027,8 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
     writeInt32(this.version | (mask << 31))  // Set overwinter bit
     writeUInt32(this.versionGroupId)
   } else if (this.isDashSpecialTransaction()) {
-    writeInt16(this.version)
-    writeInt16(this.type)
+    writeUInt16(this.version)
+    writeUInt16(this.type)
   } else {
     writeInt32(this.version)
   }
@@ -1141,7 +1145,7 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
   }
 
   if (this.isDashSpecialTransaction()) {
-    writeVarSlice(this.extra_payload)
+    writeVarSlice(this.extraPayload)
   }
 
   // avoid slicing unless necessary
