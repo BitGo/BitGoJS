@@ -229,7 +229,10 @@ export const tokens = {
         { type: 'ht', coin: 'eth', network: 'Mainnet', name: 'Huobi Token', tokenContractAddress: '0x6f259637dcd74c767781e37bc6133cd6a68aa161', decimalPlaces: 18 },
         { type: 'lgo', coin: 'eth', network: 'Mainnet', name: 'LGO Exchange', tokenContractAddress: '0x123ab195dd38b1b40510d467a6a359b201af056f', decimalPlaces: 8 },
         { type: 'hydro', coin: 'eth', network: 'Mainnet', name: 'Hydro', tokenContractAddress: '0xebbdf302c940c6bfd49c6b165f457fdb324649bc', decimalPlaces: 18 },
-
+        { type: 'wht', coin: 'eth', network: 'Mainnet', name: 'Whatshalal', tokenContractAddress: '0xae8d4da01658dd0ac118dde60f5b78042d0da7f2', decimalPlaces: 18 },
+        { type: 'amn', coin: 'eth', network: 'Mainnet', name: 'Amon', tokenContractAddress: '0x737f98ac8ca59f2c68ad658e3c3d8c8963e40a4c', decimalPlaces: 18 },
+        { type: 'btu', coin: 'eth', network: 'Mainnet', name: 'BTU Protocol', tokenContractAddress: '0xb683d83a532e2cb7dfa5275eed3698436371cc9f', decimalPlaces: 18 },
+        { type: 'taud', coin: 'eth', network: 'Mainnet', name: 'TrueAUD', tokenContractAddress: '0x00006100f7090010005f1bd7ae6122c3c2cf0090', decimalPlaces: 18 },
       ]
     },
     ofc: {
