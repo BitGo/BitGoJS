@@ -249,6 +249,35 @@ Wallet.prototype.transfers = function(params, callback) {
     query.valueLt = params.valueLt;
   }
 
+  if (!_.isNil(params.includeHex)) {
+    if (!_.isBoolean(params.includeHex)) {
+      throw new Error('invalid includeHex argument, expecting boolean');
+    }
+    query.includeHex = params.includeHex;
+  }
+
+  if (!_.isNil(params.state)) {
+    if (!Array.isArray(params.state) && !_.isString(params.state)) {
+      throw new Error('invalid state argument, expecting string or array');
+    }
+
+    if (Array.isArray(params.state)) {
+      params.state.forEach(state => {
+        if (!_.isString(state)) {
+          throw new Error('invalid state argument, expecting array of state strings');
+        }
+      });
+    }
+    query.state = params.state;
+  }
+
+  if (!_.isNil(params.type)) {
+    if (!_.isString(params.type)) {
+      throw new Error('invalid type argument, expecting string');
+    }
+    query.type = params.type;
+  }
+
   return this.bitgo.get(this.url('/transfer'))
   .query(query)
   .result()
@@ -670,7 +699,7 @@ Wallet.prototype.createAddress = function({ chain = undefined, gasPrice = undefi
       }
       addressParams.lowPriority = lowPriority;
     }
-    
+
     // get keychains for address verification
     const keychains = yield Promise.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k, reqId }));
     const rootAddress = _.get(this._wallet, 'receiveAddress.address');
