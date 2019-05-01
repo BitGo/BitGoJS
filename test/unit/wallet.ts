@@ -1208,7 +1208,7 @@ describe('Wallet Prototype Methods', function() {
         })
         .reply(200, function(_, body) {
           return {
-            transaction: JSON.parse(body).tx
+            transaction: body.tx
           };
         });
 
@@ -1315,7 +1315,7 @@ describe('Wallet Prototype Methods', function() {
         })
         .reply(200, function(_, body) {
           return {
-            transaction: JSON.parse(body).tx
+            transaction: body.tx
           };
         });
 
@@ -1441,7 +1441,7 @@ describe('Wallet Prototype Methods', function() {
         })
         .reply(200, function(_, body) {
           return {
-            transaction: JSON.parse(body).tx
+            transaction: body.tx
           };
         });
 
@@ -1574,7 +1574,7 @@ describe('Wallet Prototype Methods', function() {
         })
         .reply(200, function(_, body) {
           return {
-            transaction: JSON.parse(body).tx
+            transaction: body.tx
           };
         });
 
