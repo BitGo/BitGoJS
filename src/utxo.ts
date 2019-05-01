@@ -1,28 +1,16 @@
-import { IBaseCoin, CoinFeature, CoinType, CoinAsset, CoinFamily } from './base';
+import { BaseCoin, CoinFeature, CoinKind, UnderlyingAsset } from './base';
 import { UtxoNetwork } from './networks';
 
 export interface UtxoConstructorOptions {
-  longName: string;
-  shortName: string;
+  fullName: string;
+  name: string;
   network: UtxoNetwork;
   features: CoinFeature[];
   prefix?: string;
   suffix?: string;
 }
 
-export class UtxoCoin implements IBaseCoin {
-  public readonly network: UtxoNetwork;
-  public readonly decimalPlaces: number;
-  public readonly family: CoinFamily;
-  public readonly features: CoinFeature[];
-  public readonly isToken: boolean;
-  public readonly longName: string;
-  public readonly shortName: string;
-  public readonly prefix: string;
-  public readonly suffix: string;
-  public readonly type: CoinType;
-  public readonly asset: CoinAsset;
-
+export class UtxoCoin extends BaseCoin {
   public static readonly DEFAULT_FEATURES = [
     CoinFeature.UNSPENT_MODEL,
     CoinFeature.CHILD_PAYS_FOR_PARENT,
@@ -30,38 +18,47 @@ export class UtxoCoin implements IBaseCoin {
     CoinFeature.NATIVE_SEGWIT,
   ];
 
-  constructor(params: UtxoConstructorOptions) {
-    // fixed properties - these are defaults for all utxo
-    // coins and must be specifically overridden after
-    // calling super() in inheritors
-    this.network = params.network;
-    this.decimalPlaces = 8;
-    this.family = params.network.family;
-    this.features = params.features;
-    this.isToken = false;
-    this.longName = params.longName;
-    this.shortName = params.shortName;
-    this.prefix = params.prefix || '';
-    this.suffix = params.suffix || params.shortName;
-    this.type = CoinType.CRYPTO;
-    this.asset = CoinAsset.SELF;
+  /**
+   * Additional fields for utxo coins
+   */
+  public readonly network: UtxoNetwork;
+
+  constructor(options: UtxoConstructorOptions) {
+    super({
+      kind: CoinKind.CRYPTO,
+      family: options.network.family,
+      isToken: false,
+      decimalPlaces: 8,
+      asset: UnderlyingAsset.SELF,
+      prefix: '',
+      suffix: options.name,
+      ...options,
+    });
+
+    this.network = options.network;
   }
 }
 
 /**
  * Factory function for utxo coin instances.
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the coin
+ * @param network Network object for this coin
+ * @param prefix? Optional coin prefix. Defaults to empty string
+ * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in UtxoCoin
  */
 export function utxo(
-  longName: string,
-  shortName: string,
+  name: string,
+  fullName: string,
   network: UtxoNetwork,
   prefix?: string,
   suffix?: string,
   features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES
 ) {
   return new UtxoCoin({
-    longName,
-    shortName,
+    name,
+    fullName,
     network,
     prefix,
     suffix,

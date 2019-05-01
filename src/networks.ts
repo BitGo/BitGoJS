@@ -58,6 +58,7 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
 class Litecoin extends Mainnet implements UtxoNetwork {
   messagePrefix = '\x19Litecoin Signed Message:\n';
   bech32 = 'ltc';
+  // clarify these constants - they are different between BitGoJS and bitgo-utxo-lib
   bip32 = {
     public: 0x0488b21e,
     private: 0x0488ade4,
