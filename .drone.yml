@@ -7,18 +7,16 @@ platform:
   arch: amd64
 
 steps:
-- name: build information
+- name: install node:lts
   image: node:lts
   commands:
   - node --version
   - npm --version
   - yarn --version
-
-- name: install
-  image: node:lts
-  commands:
   - yarn install
   - yarn run bootstrap
+  depends_on:
+  - clone
 
 - name: audit all
   image: node:lts
@@ -34,18 +32,16 @@ platform:
   arch: amd64
 
 steps:
-- name: build information
+- name: install node:lts
   image: node:lts
   commands:
   - node --version
   - npm --version
   - yarn --version
-
-- name: install
-  image: node:lts
-  commands:
   - yarn install
   - yarn run bootstrap
+  depends_on:
+  - clone
 
 - name: lint all
   image: node:lts
@@ -54,7 +50,7 @@ steps:
 
 ---
 kind: pipeline
-name: core size and timing (node:lts)
+name: size and timing
 
 platform:
   os: linux
@@ -64,292 +60,181 @@ steps:
 - name: slow-deps
   image: node:lts
   commands:
-  - yarn install -g slow-deps
+  - yarn global add slow-deps
   - slow-deps
 
 ---
 kind: pipeline
-name: core unit tests (node:6)
+name: SDK Core
 
 platform:
   os: linux
   arch: amd64
 
 steps:
-- name: build information
+- name: install node:6
   image: node:6
   commands:
   - node --version
   - npm --version
   - yarn --version
-
-- name: install
-  image: node:6
-  commands:
   - yarn install
   - yarn run bootstrap
+  depends_on:
+  - clone
 
-- name: unit tests
+- name: unit tests node:6
   image: node:6
   commands:
   - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
+  depends_on:
+  - install node:6
 
-- name: upload coverage
+- name: upload coverage node:6
   image: node:6
   commands:
   - npm install -g codecov
-  - lerna run gen-coverage
-  - lerna run upload-coverage -- -F unit
+  - yarn run gen-coverage
+  - yarn run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
+  depends_on:
+  - unit tests node:6
 
----
-kind: pipeline
-name: core unit tests (node:8)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
+- name: install node:8
   image: node:8
   commands:
   - node --version
   - npm --version
   - yarn --version
-
-- name: install
-  image: node:8
-  commands:
   - yarn install
   - yarn run bootstrap
+  depends_on:
+  - clone
 
-- name: unit tests
+- name: unit tests node:8
   image: node:8
   commands:
   - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
+  depends_on:
+  - install node:8
 
-- name: upload coverage
+- name: upload coverage node:8
   image: node:8
   commands:
   - npm install -g codecov
-  - lerna run gen-coverage
-  - lerna run upload-coverage -- -F unit
+  - yarn run gen-coverage
+  - yarn run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
+  depends_on:
+  - unit tests node:8
 
----
-kind: pipeline
-name: core unit tests (node:9)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
+- name: install node:9
   image: node:9
   commands:
   - node --version
   - npm --version
   - yarn --version
-
-- name: install
-  image: node:9
-  commands:
   - yarn install
   - yarn run bootstrap
+  depends_on:
+  - clone
 
-- name: unit tests
+- name: unit tests node:9
   image: node:9
   commands:
   - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
+  depends_on:
+  - install node:9
 
-- name: upload coverage
+- name: upload coverage node:9
   image: node:9
   commands:
   - npm install -g codecov
-  - lerna run gen-coverage
-  - lerna run upload-coverage -- -F unit
+  - yarn run gen-coverage
+  - yarn run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
+  depends_on:
+  - unit tests node:9
 
----
-kind: pipeline
-name: core unit tests (node:10)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
+- name: install node:10
   image: node:10
   commands:
   - node --version
   - npm --version
   - yarn --version
-
-- name: install
-  image: node:10
-  commands:
   - yarn install
   - yarn run bootstrap
+  depends_on:
+  - clone
 
-- name: unit tests
+- name: unit tests node:10
   image: node:10
   commands:
   - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
+  depends_on:
+  - install node:10
 
-- name: upload coverage
+- name: upload coverage node:10
   image: node:10
   commands:
   - npm install -g codecov
-  - lerna run gen-coverage
-  - lerna run upload-coverage -- -F unit
+  - yarn run gen-coverage
+  - yarn run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
+  depends_on:
+  - unit tests node:10
 
----
-kind: pipeline
-name: core unit tests (node:11)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
+- name: install node:11
   image: node:11
   commands:
   - node --version
   - npm --version
   - yarn --version
-
-- name: install
-  image: node:11
-  commands:
   - yarn install
   - yarn run bootstrap
+  depends_on:
+  - clone
 
-- name: unit tests
+- name: unit tests node:11
   image: node:11
   commands:
   - lerna run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
+  depends_on:
+  - install node:11
 
-- name: upload coverage
+- name: upload coverage node:11
   image: node:11
   commands:
   - npm install -g codecov
-  - lerna run gen-coverage
-  - lerna run upload-coverage -- -F unit
+  - yarn run gen-coverage
+  - yarn run upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
-
----
-kind: pipeline
-name: core integration tests (node:lts)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
-  image: node:lts
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
-
-- name: install
-  image: node:lts
-  commands:
-  - yarn install
-  - yarn run bootstrap
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
-
-- name: integration tests
-  image: node:lts
-  commands:
-  - lerna run integration-test
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
-
-- name: upload coverage
-  image: node:lts
-  commands:
-  - npm install -g codecov
-  - lerna run gen-coverage
-  - lerna run upload-coverage -- -F integration
-  environment:
-    CODECOV_TOKEN:
-      from_secret: codecov
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
+  depends_on:
+  - unit tests node:11
 
 ...
