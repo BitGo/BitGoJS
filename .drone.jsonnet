@@ -6,7 +6,7 @@ local branches() = {
   ],
 };
 
-local UnitVersions() = ["6", "8", "9", "10", "11"];
+local UnitVersions() = ["6", "8", "10", "11", "12"];
 local IntegrationVersions() = ["lts"];
 
 local Install(version, limit_branches=false) = {

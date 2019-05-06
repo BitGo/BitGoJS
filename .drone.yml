@@ -138,39 +138,6 @@ steps:
   depends_on:
   - unit tests node:8
 
-- name: install node:9
-  image: node:9
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - yarn install
-  - yarn run bootstrap
-  depends_on:
-  - clone
-
-- name: unit tests node:9
-  image: node:9
-  commands:
-  - lerna run unit-test
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
-  depends_on:
-  - install node:9
-
-- name: upload coverage node:9
-  image: node:9
-  commands:
-  - npm install -g codecov
-  - yarn run gen-coverage
-  - yarn run upload-coverage -- -F unit
-  environment:
-    CODECOV_TOKEN:
-      from_secret: codecov
-  depends_on:
-  - unit tests node:9
-
 - name: install node:10
   image: node:10
   commands:
@@ -236,5 +203,38 @@ steps:
       from_secret: codecov
   depends_on:
   - unit tests node:11
+
+- name: install node:12
+  image: node:12
+  commands:
+  - node --version
+  - npm --version
+  - yarn --version
+  - yarn install
+  - yarn run bootstrap
+  depends_on:
+  - clone
+
+- name: unit tests node:12
+  image: node:12
+  commands:
+  - lerna run unit-test
+  environment:
+    BITGOJS_TEST_PASSWORD:
+      from_secret: password
+  depends_on:
+  - install node:12
+
+- name: upload coverage node:12
+  image: node:12
+  commands:
+  - npm install -g codecov
+  - yarn run gen-coverage
+  - yarn run upload-coverage -- -F unit
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov
+  depends_on:
+  - unit tests node:12
 
 ...
