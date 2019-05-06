@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: audit
+name: audit all modules
 
 platform:
   os: linux
@@ -16,9 +16,10 @@ steps:
 - name: install
   image: node:lts
   commands:
+  - npm install
   - lerna bootstrap
 
-- name: audit
+- name: audit all
   image: node:lts
   commands:
   - lerna run audit
@@ -41,16 +42,32 @@ steps:
 - name: install
   image: node:lts
   commands:
+  - npm install
   - lerna bootstrap
 
-- name: lint
+- name: lint all
   image: node:lts
   commands:
   - lerna run lint
 
 ---
 kind: pipeline
-name: unit tests (node:6)
+name: core size and timing (node:lts)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: slow-deps
+  image: node:lts
+  commands:
+  - npm install -g slow-deps
+  - slow-deps
+
+---
+kind: pipeline
+name: core unit tests (node:6)
 
 platform:
   os: linux
@@ -66,6 +83,7 @@ steps:
 - name: install
   image: node:6
   commands:
+  - npm install
   - lerna bootstrap
 
 - name: unit tests
@@ -93,7 +111,7 @@ steps:
 
 ---
 kind: pipeline
-name: unit tests (node:8)
+name: core unit tests (node:8)
 
 platform:
   os: linux
@@ -109,6 +127,7 @@ steps:
 - name: install
   image: node:8
   commands:
+  - npm install
   - lerna bootstrap
 
 - name: unit tests
@@ -136,7 +155,7 @@ steps:
 
 ---
 kind: pipeline
-name: unit tests (node:9)
+name: core unit tests (node:9)
 
 platform:
   os: linux
@@ -152,6 +171,7 @@ steps:
 - name: install
   image: node:9
   commands:
+  - npm install
   - lerna bootstrap
 
 - name: unit tests
@@ -179,7 +199,7 @@ steps:
 
 ---
 kind: pipeline
-name: unit tests (node:10)
+name: core unit tests (node:10)
 
 platform:
   os: linux
@@ -195,6 +215,7 @@ steps:
 - name: install
   image: node:10
   commands:
+  - npm install
   - lerna bootstrap
 
 - name: unit tests
@@ -222,7 +243,7 @@ steps:
 
 ---
 kind: pipeline
-name: unit tests (node:11)
+name: core unit tests (node:11)
 
 platform:
   os: linux
@@ -238,6 +259,7 @@ steps:
 - name: install
   image: node:11
   commands:
+  - npm install
   - lerna bootstrap
 
 - name: unit tests
@@ -265,7 +287,7 @@ steps:
 
 ---
 kind: pipeline
-name: integration tests (node:10)
+name: core integration tests (node:lts)
 
 platform:
   os: linux
@@ -273,7 +295,7 @@ platform:
 
 steps:
 - name: build information
-  image: node:10
+  image: node:lts
   commands:
   - node --version
   - npm --version
@@ -284,8 +306,9 @@ steps:
     - prod/production
 
 - name: install
-  image: node:10
+  image: node:lts
   commands:
+  - npm install
   - lerna bootstrap
   when:
     branch:
@@ -294,7 +317,7 @@ steps:
     - prod/production
 
 - name: integration tests
-  image: node:10
+  image: node:lts
   commands:
   - lerna run integration-test
   environment:
@@ -307,7 +330,7 @@ steps:
     - prod/production
 
 - name: upload coverage
-  image: node:10
+  image: node:lts
   commands:
   - npm install -g codecov
   - lerna run gen-coverage
@@ -320,20 +343,5 @@ steps:
     - master
     - "rel/*"
     - prod/production
-
----
-kind: pipeline
-name: size and timing (node:lts)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: slow-deps
-  image: node:lts
-  commands:
-  - npm install -g slow-deps
-  - slow-deps
 
 ...

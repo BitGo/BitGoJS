@@ -6,6 +6,9 @@ local branches() = {
   ],
 };
 
+local UnitVersions() = ["6", "8", "9", "10", "11"];
+local IntegrationVersions() = ["lts"];
+
 local BuildInfo(version, limit_branches=false) = {
   name: "build information",
   image: "node:" + version,
@@ -20,6 +23,7 @@ local Install(version, limit_branches=false) = {
   name: "install",
   image: "node:" + version,
   commands: [
+    "npm install",
     "lerna bootstrap",
   ],
   [if limit_branches then "when"]: branches(),
@@ -39,9 +43,9 @@ local UploadCoverage(version, tag="untagged", limit_branches=true) = {
   [if limit_branches then "when"]: branches(),
 };
 
-local UnitTest(version) = {
+local CoreUnit(version) = {
   kind: "pipeline",
-  name: "unit tests (node:" + version + ")",
+  name: "core unit tests (node:" + version + ")",
   steps: [
     BuildInfo(version),
     Install(version),
@@ -59,9 +63,9 @@ local UnitTest(version) = {
   ],
 };
 
-local IntegrationTest(version, limit_branches=true) = {
+local CoreIntegration(version, limit_branches=true) = {
   kind: "pipeline",
-  name: "integration tests (node:" + version + ")",
+  name: "core integration tests (node:" + version + ")",
   steps: [
     BuildInfo(version, limit_branches),
     Install(version, limit_branches),
@@ -80,38 +84,24 @@ local IntegrationTest(version, limit_branches=true) = {
   ],
 };
 
-local MeasureSizeAndTiming(version, limit_branches=false) = {
-  kind: "pipeline",
-  name: "size and timing (node:" + version + ")",
-  steps: [
-    {
-      name: "slow-deps",
-      image: "node:" + version,
-      commands: [
-        "npm install -g slow-deps",
-        "slow-deps"
-      ],
-      [if limit_branches then "when"]: branches(),
-    },
-  ],
-};
-
-[
+local MeasureSizeAndTiming() = [
   {
     kind: "pipeline",
-    name: "audit",
+    name: "core size and timing (node:lts)",
     steps: [
-      BuildInfo("lts"),
-      Install("lts"),
       {
-        name: "audit",
+        name: "slow-deps",
         image: "node:lts",
         commands: [
-          "lerna run audit",
+          "npm install -g slow-deps",
+          "slow-deps"
         ],
       },
     ],
   },
+];
+
+local LintAll() = [
   {
     kind: "pipeline",
     name: "lint",
@@ -119,20 +109,48 @@ local MeasureSizeAndTiming(version, limit_branches=false) = {
       BuildInfo("lts"),
       Install("lts"),
       {
-        name: "lint",
+        name: "lint all",
         image: "node:lts",
         commands: [
-          "lerna run lint",
+          "lerna run lint"
         ],
       },
     ],
   },
-  UnitTest("6"),
-  UnitTest("8"),
-  UnitTest("9"),
-  UnitTest("10"),
-  UnitTest("11"),
-  IntegrationTest("10"),
-  MeasureSizeAndTiming("lts"),
-]
+];
+
+local AuditAll() = [
+  {
+    kind: "pipeline",
+    name: "audit all modules",
+    image: "node:lts",
+    steps: [
+      BuildInfo("lts"),
+      Install("lts"),
+      {
+        name: "audit all",
+        image: "node:lts",
+        commands: [
+          "lerna run audit"
+        ],
+      },
+    ],
+  },
+];
+
+// all tests which should be run for the main bitgo module
+local CoreTests() = [
+  CoreUnit(version)
+  for version in UnitVersions()
+] + [
+  CoreIntegration(version)
+  for version in IntegrationVersions()
+];
+
+// common pipelines which run against all modules
+AuditAll() +
+LintAll() +
+MeasureSizeAndTiming() +
+// pipelines for core
+CoreTests()
 
