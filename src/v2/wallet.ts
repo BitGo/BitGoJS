@@ -979,6 +979,11 @@ Wallet.prototype.shareWallet = function(params, callback) {
             path: sharing.path
           };
         }
+      }).catch(function(e) {
+        if (e.message === 'No encrypted keychains on this wallet.') {
+          return; // ignore this error because this looks like a cold wallet
+        }
+        throw e;
       });
     }
   })
