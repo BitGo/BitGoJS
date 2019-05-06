@@ -17,7 +17,7 @@ steps:
   image: node:lts
   commands:
   - npm install
-  - lerna bootstrap
+  - npm run bootstrap
 
 - name: audit all
   image: node:lts
@@ -43,7 +43,7 @@ steps:
   image: node:lts
   commands:
   - npm install
-  - lerna bootstrap
+  - npm run bootstrap
 
 - name: lint all
   image: node:lts
@@ -84,7 +84,7 @@ steps:
   image: node:6
   commands:
   - npm install
-  - lerna bootstrap
+  - npm run bootstrap
 
 - name: unit tests
   image: node:6
@@ -128,7 +128,7 @@ steps:
   image: node:8
   commands:
   - npm install
-  - lerna bootstrap
+  - npm run bootstrap
 
 - name: unit tests
   image: node:8
@@ -172,7 +172,7 @@ steps:
   image: node:9
   commands:
   - npm install
-  - lerna bootstrap
+  - npm run bootstrap
 
 - name: unit tests
   image: node:9
@@ -216,7 +216,7 @@ steps:
   image: node:10
   commands:
   - npm install
-  - lerna bootstrap
+  - npm run bootstrap
 
 - name: unit tests
   image: node:10
@@ -260,7 +260,7 @@ steps:
   image: node:11
   commands:
   - npm install
-  - lerna bootstrap
+  - npm run bootstrap
 
 - name: unit tests
   image: node:11
@@ -309,7 +309,7 @@ steps:
   image: node:lts
   commands:
   - npm install
-  - lerna bootstrap
+  - npm run bootstrap
   when:
     branch:
     - master

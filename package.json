@@ -8,6 +8,7 @@
     "modules/*"
   ],
   "scripts": {
-    "generate-drone": "drone jsonnet --stream"
+    "generate-drone": "drone jsonnet --stream",
+    "bootstrap": "lerna bootstrap"
   }
 }

@@ -24,7 +24,7 @@ local Install(version, limit_branches=false) = {
   image: "node:" + version,
   commands: [
     "npm install",
-    "lerna bootstrap",
+    "npm run bootstrap",
   ],
   [if limit_branches then "when"]: branches(),
 };
