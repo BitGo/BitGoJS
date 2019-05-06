@@ -96,6 +96,7 @@ local LintAll() = {
       commands: [
         "yarn run lint"
       ],
+      depends_on: [ "install node:lts" ],
     },
   ],
 };
@@ -111,6 +112,7 @@ local AuditAll() = {
       commands: [
         "yarn run audit"
       ],
+      depends_on: [ "install node:lts" ],
     },
   ],
 };
