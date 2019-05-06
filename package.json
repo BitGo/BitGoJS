@@ -9,6 +9,8 @@
   ],
   "scripts": {
     "generate-drone": "drone jsonnet --stream",
-    "bootstrap": "lerna bootstrap"
+    "bootstrap": "lerna bootstrap",
+    "audit": "lerna run audit",
+    "lint": "lerna run lint"
   }
 }

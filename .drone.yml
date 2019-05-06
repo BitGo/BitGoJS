@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: audit all modules
+name: audit modules
 
 platform:
   os: linux
@@ -12,21 +12,22 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
 
 - name: install
   image: node:lts
   commands:
-  - npm install
-  - npm run bootstrap
+  - yarn install
+  - yarn run bootstrap
 
 - name: audit all
   image: node:lts
   commands:
-  - lerna run audit
+  - yarn run audit
 
 ---
 kind: pipeline
-name: lint
+name: lint modules
 
 platform:
   os: linux
@@ -38,17 +39,18 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
 
 - name: install
   image: node:lts
   commands:
-  - npm install
-  - npm run bootstrap
+  - yarn install
+  - yarn run bootstrap
 
 - name: lint all
   image: node:lts
   commands:
-  - lerna run lint
+  - yarn run lint
 
 ---
 kind: pipeline
@@ -62,7 +64,7 @@ steps:
 - name: slow-deps
   image: node:lts
   commands:
-  - npm install -g slow-deps
+  - yarn install -g slow-deps
   - slow-deps
 
 ---
@@ -79,12 +81,13 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
 
 - name: install
   image: node:6
   commands:
-  - npm install
-  - npm run bootstrap
+  - yarn install
+  - yarn run bootstrap
 
 - name: unit tests
   image: node:6
@@ -123,12 +126,13 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
 
 - name: install
   image: node:8
   commands:
-  - npm install
-  - npm run bootstrap
+  - yarn install
+  - yarn run bootstrap
 
 - name: unit tests
   image: node:8
@@ -167,12 +171,13 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
 
 - name: install
   image: node:9
   commands:
-  - npm install
-  - npm run bootstrap
+  - yarn install
+  - yarn run bootstrap
 
 - name: unit tests
   image: node:9
@@ -211,12 +216,13 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
 
 - name: install
   image: node:10
   commands:
-  - npm install
-  - npm run bootstrap
+  - yarn install
+  - yarn run bootstrap
 
 - name: unit tests
   image: node:10
@@ -255,12 +261,13 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
 
 - name: install
   image: node:11
   commands:
-  - npm install
-  - npm run bootstrap
+  - yarn install
+  - yarn run bootstrap
 
 - name: unit tests
   image: node:11
@@ -299,6 +306,7 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
   when:
     branch:
     - master
@@ -308,8 +316,8 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - npm install
-  - npm run bootstrap
+  - yarn install
+  - yarn run bootstrap
   when:
     branch:
     - master

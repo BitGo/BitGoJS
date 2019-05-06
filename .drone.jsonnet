@@ -15,6 +15,7 @@ local BuildInfo(version, limit_branches=false) = {
   commands: [
     "node --version",
     "npm --version",
+    "yarn --version",
   ],
   [if limit_branches then "when"]: branches(),
 };
@@ -23,8 +24,8 @@ local Install(version, limit_branches=false) = {
   name: "install",
   image: "node:" + version,
   commands: [
-    "npm install",
-    "npm run bootstrap",
+    "yarn install",
+    "yarn run bootstrap",
   ],
   [if limit_branches then "when"]: branches(),
 };
@@ -93,7 +94,7 @@ local MeasureSizeAndTiming() = [
         name: "slow-deps",
         image: "node:lts",
         commands: [
-          "npm install -g slow-deps",
+          "yarn install -g slow-deps",
           "slow-deps"
         ],
       },
@@ -104,7 +105,7 @@ local MeasureSizeAndTiming() = [
 local LintAll() = [
   {
     kind: "pipeline",
-    name: "lint",
+    name: "lint modules",
     steps: [
       BuildInfo("lts"),
       Install("lts"),
@@ -112,7 +113,7 @@ local LintAll() = [
         name: "lint all",
         image: "node:lts",
         commands: [
-          "lerna run lint"
+          "yarn run lint"
         ],
       },
     ],
@@ -122,7 +123,7 @@ local LintAll() = [
 local AuditAll() = [
   {
     kind: "pipeline",
-    name: "audit all modules",
+    name: "audit modules",
     image: "node:lts",
     steps: [
       BuildInfo("lts"),
@@ -131,7 +132,7 @@ local AuditAll() = [
         name: "audit all",
         image: "node:lts",
         commands: [
-          "lerna run audit"
+          "yarn run audit"
         ],
       },
     ],
