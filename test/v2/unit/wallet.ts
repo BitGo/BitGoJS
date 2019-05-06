@@ -758,4 +758,30 @@ describe('V2 Wallet:', function() {
       response.isDone().should.be.true();
     }));
   });
+
+  describe('Wallet Sharing', function () {
+    it('should share to cold wallet without passing skipKeychain', co(function *() {
+      const userId = '123';
+      const email = 'shareto@sdktest.com';
+      const permissions = 'view,spend';
+
+      const getSharingKeyNock = nock(bgUrl)
+      .post('/api/v1/user/sharingkey', { email })
+      .reply(200, { userId });
+
+      const getKeyNock = nock(bgUrl)
+      .get(`/api/v2/tbtc/key/${wallet._wallet.keys[0]}`)
+      .reply(200, {});
+
+      const createShareNock = nock(bgUrl)
+      .post(`/api/v2/tbtc/wallet/${wallet._wallet.id}/share`, { user: userId, permissions })
+      .reply(200, {});
+
+      yield wallet.shareWallet({ email, permissions });
+
+      getSharingKeyNock.isDone().should.be.True();
+      getKeyNock.isDone().should.be.True();
+      createShareNock.isDone().should.be.True();
+    }));
+  });
 });
