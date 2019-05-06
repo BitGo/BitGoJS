@@ -15,15 +15,11 @@ steps:
   - yarn --version
   - yarn install
   - yarn run bootstrap
-  depends_on:
-  - clone
 
 - name: audit all
   image: node:lts
   commands:
   - yarn run audit
-  depends_on:
-  - install node:lts
 
 ---
 kind: pipeline
@@ -42,15 +38,11 @@ steps:
   - yarn --version
   - yarn install
   - yarn run bootstrap
-  depends_on:
-  - clone
 
 - name: lint all
   image: node:lts
   commands:
   - yarn run lint
-  depends_on:
-  - install node:lts
 
 ---
 kind: pipeline
@@ -69,7 +61,7 @@ steps:
 
 ---
 kind: pipeline
-name: SDK Core
+name: "@bitgo/core node:6"
 
 platform:
   os: linux
@@ -84,18 +76,14 @@ steps:
   - yarn --version
   - yarn install
   - yarn run bootstrap
-  depends_on:
-  - clone
 
 - name: unit tests node:6
   image: node:6
   commands:
-  - lerna run unit-test
+  - lerna run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
-  depends_on:
-  - install node:6
 
 - name: upload coverage node:6
   image: node:6
@@ -106,9 +94,16 @@ steps:
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  depends_on:
-  - unit tests node:6
 
+---
+kind: pipeline
+name: "@bitgo/core node:8"
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
 - name: install node:8
   image: node:8
   commands:
@@ -117,18 +112,14 @@ steps:
   - yarn --version
   - yarn install
   - yarn run bootstrap
-  depends_on:
-  - clone
 
 - name: unit tests node:8
   image: node:8
   commands:
-  - lerna run unit-test
+  - lerna run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
-  depends_on:
-  - install node:8
 
 - name: upload coverage node:8
   image: node:8
@@ -139,9 +130,16 @@ steps:
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  depends_on:
-  - unit tests node:8
 
+---
+kind: pipeline
+name: "@bitgo/core node:10"
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
 - name: install node:10
   image: node:10
   commands:
@@ -150,18 +148,14 @@ steps:
   - yarn --version
   - yarn install
   - yarn run bootstrap
-  depends_on:
-  - clone
 
 - name: unit tests node:10
   image: node:10
   commands:
-  - lerna run unit-test
+  - lerna run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
-  depends_on:
-  - install node:10
 
 - name: upload coverage node:10
   image: node:10
@@ -172,9 +166,16 @@ steps:
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  depends_on:
-  - unit tests node:10
 
+---
+kind: pipeline
+name: "@bitgo/core node:11"
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
 - name: install node:11
   image: node:11
   commands:
@@ -183,18 +184,14 @@ steps:
   - yarn --version
   - yarn install
   - yarn run bootstrap
-  depends_on:
-  - clone
 
 - name: unit tests node:11
   image: node:11
   commands:
-  - lerna run unit-test
+  - lerna run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
-  depends_on:
-  - install node:11
 
 - name: upload coverage node:11
   image: node:11
@@ -205,9 +202,16 @@ steps:
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  depends_on:
-  - unit tests node:11
 
+---
+kind: pipeline
+name: "@bitgo/core node:12"
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
 - name: install node:12
   image: node:12
   commands:
@@ -216,18 +220,14 @@ steps:
   - yarn --version
   - yarn install
   - yarn run bootstrap
-  depends_on:
-  - clone
 
 - name: unit tests node:12
   image: node:12
   commands:
-  - lerna run unit-test
+  - lerna run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
-  depends_on:
-  - install node:12
 
 - name: upload coverage node:12
   image: node:12
@@ -238,7 +238,51 @@ steps:
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  depends_on:
-  - unit tests node:12
+
+---
+kind: pipeline
+name: "@bitgo/core node:lts"
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: install node:lts
+  image: node:lts
+  commands:
+  - node --version
+  - npm --version
+  - yarn --version
+  - yarn install
+  - yarn run bootstrap
+
+- name: integration tests node:lts
+  image: node:lts
+  commands:
+  - lerna run --scope bitgo integration-test
+  environment:
+    BITGOJS_TEST_PASSWORD:
+      from_secret: password
+  when:
+    branch:
+    - master
+    - "rel/*"
+    - prod/production
+
+- name: upload coverage node:lts
+  image: node:lts
+  commands:
+  - npm install -g codecov
+  - yarn run gen-coverage
+  - yarn run upload-coverage -- -F integration
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov
+  when:
+    branch:
+    - master
+    - "rel/*"
+    - prod/production
 
 ...

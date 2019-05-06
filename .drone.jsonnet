@@ -6,8 +6,7 @@ local branches() = {
   ],
 };
 
-local UnitVersions() = ["6", "8", "10", "11", "12"];
-local IntegrationVersions() = ["lts"];
+local NodeVersions() = ["6", "8", "10", "11", "12", "lts"];
 
 local Install(version, limit_branches=false) = {
   name: "install node:" + version,
@@ -20,7 +19,6 @@ local Install(version, limit_branches=false) = {
     "yarn run bootstrap",
   ],
   [if limit_branches then "when"]: branches(),
-  depends_on: [ "clone" ],
 };
 
 local UploadCoverage(version, depend, tag="untagged", limit_branches=true) = {
@@ -35,11 +33,9 @@ local UploadCoverage(version, depend, tag="untagged", limit_branches=true) = {
     "yarn run upload-coverage -- -F " + tag,
   ],
   [if limit_branches then "when"]: branches(),
-  depends_on: [ depend + " node:" + version ]
 };
 
 local CoreUnit(version) = [
-  Install(version),
   {
     name: "unit tests node:" + version,
     image: "node:" + version,
@@ -47,15 +43,13 @@ local CoreUnit(version) = [
       BITGOJS_TEST_PASSWORD: { from_secret: "password" },
     },
     commands: [
-      "lerna run unit-test",
+      "lerna run --scope bitgo unit-test",
     ],
-    depends_on: [ "install node:" + version ]
   },
   UploadCoverage(version, "unit tests", "unit", false),
 ];
 
 local CoreIntegration(version, limit_branches=true) = [
-  Install(version, limit_branches),
   {
     name: "integration tests node:" + version,
     image: "node:" + version,
@@ -63,7 +57,7 @@ local CoreIntegration(version, limit_branches=true) = [
       BITGOJS_TEST_PASSWORD: { from_secret: "password" },
     },
     commands: [
-      "lerna run integration-test",
+      "lerna run --scope bitgo integration-test",
     ],
     [if limit_branches then "when"]: branches(),
   },
@@ -96,7 +90,6 @@ local LintAll() = {
       commands: [
         "yarn run lint"
       ],
-      depends_on: [ "install node:lts" ],
     },
   ],
 };
@@ -112,31 +105,30 @@ local AuditAll() = {
       commands: [
         "yarn run audit"
       ],
-      depends_on: [ "install node:lts" ],
     },
   ],
 };
 
-// all tests which should be run for the main bitgo module
-local Core() = {
+local Core(version) = {
   kind: "pipeline",
-  name: "SDK Core",
-  steps: std.flattenArrays([
-    CoreUnit(version)
-    for version in UnitVersions()
-  ]),
-    //CoreIntegration(version)
-    //for version in IntegrationVersions()
+  name: "@bitgo/core node:" + version,
+  steps: [
+    Install(version),
+  ] +
+  if version == "lts" then
+    CoreIntegration("lts")
+  else
+    CoreUnit(version),
+  [if version == "lts" then "when"]: branches(),
 };
 
 // common pipelines which run against all modules
 [
-  // common pipelines for all modules
   AuditAll(),
   LintAll(),
   MeasureSizeAndTiming(),
-
-  // module specific pipelines (one per module)
-  Core()
+] + [
+  Core(version)
+  for version in NodeVersions()
 ]
 
