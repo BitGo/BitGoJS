@@ -22,7 +22,7 @@ local Install(version, limit_branches=false) = {
   name: "install",
   image: "node:" + version,
   commands: [
-    "git fetch origin 'refs/tags/*:refs/tags/*'",
+    "git fetch origin --tags",
     "yarn install",
   ],
   [if limit_branches then "when"]: branches(),

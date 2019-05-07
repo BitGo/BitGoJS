@@ -18,7 +18,7 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - "git fetch origin 'refs/tags/*:refs/tags/*'"
+  - git fetch origin --tags
   - yarn install
 
 - name: audit
@@ -46,7 +46,7 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - "git fetch origin 'refs/tags/*:refs/tags/*'"
+  - git fetch origin --tags
   - yarn install
 
 - name: lint
@@ -89,7 +89,7 @@ steps:
 - name: install
   image: node:6
   commands:
-  - "git fetch origin 'refs/tags/*:refs/tags/*'"
+  - git fetch origin --tags
   - yarn install
 
 - name: unit-test
@@ -135,7 +135,7 @@ steps:
 - name: install
   image: node:8
   commands:
-  - "git fetch origin 'refs/tags/*:refs/tags/*'"
+  - git fetch origin --tags
   - yarn install
 
 - name: unit-test
@@ -181,7 +181,7 @@ steps:
 - name: install
   image: node:10
   commands:
-  - "git fetch origin 'refs/tags/*:refs/tags/*'"
+  - git fetch origin --tags
   - yarn install
 
 - name: unit-test
@@ -227,7 +227,7 @@ steps:
 - name: install
   image: node:11
   commands:
-  - "git fetch origin 'refs/tags/*:refs/tags/*'"
+  - git fetch origin --tags
   - yarn install
 
 - name: unit-test
@@ -273,7 +273,7 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - "git fetch origin 'refs/tags/*:refs/tags/*'"
+  - git fetch origin --tags
   - yarn install
 
 - name: integration-test
