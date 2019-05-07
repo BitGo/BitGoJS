@@ -19,7 +19,7 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
 - name: audit
@@ -48,7 +48,7 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
 - name: lint
@@ -92,7 +92,7 @@ steps:
 - name: install
   image: node:6
   commands:
-  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
 - name: unit-test
@@ -139,7 +139,7 @@ steps:
 - name: install
   image: node:8
   commands:
-  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
 - name: unit-test
@@ -186,7 +186,7 @@ steps:
 - name: install
   image: node:10
   commands:
-  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
 - name: unit-test
@@ -233,7 +233,7 @@ steps:
 - name: install
   image: node:11
   commands:
-  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
 - name: unit-test
@@ -280,7 +280,7 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
 - name: integration-test
