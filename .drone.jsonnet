@@ -27,14 +27,19 @@ local Install(version, limit_branches=false) = {
   [if limit_branches then "when"]: branches(),
 };
 
-local Command(command, version="lts", limit_branches=false) = {
+local Command(command, version="lts", limit_branches=false, fetch_master=true) = {
   name: command,
   image: "node:" + version,
-  commands: [ "yarn run " + command ],
+  commands: (
+    if fetch_master then [ "git fetch origin +refs/heads/master:" ] else []
+  ) + [
+    "yarn run " + command,
+  ],
   [if limit_branches then "when"]: branches(),
 };
 
-local WithSecrets(step) = step + {
+local CommandWithSecrets(command, version) =
+  Command(command, version) + {
   environment: {
     BITGOJS_TEST_PASSWORD: { from_secret: "password" },
   },
@@ -48,7 +53,7 @@ local LernaCommand(command, version="lts", with_secrets=false) = {
     Install(version),
   ] + (
     if with_secrets then [
-      WithSecrets(Command(command, version))
+      CommandWithSecrets(command, version)
     ] else [
       Command(command, version)
     ]
@@ -75,7 +80,7 @@ local UnitTest(version) = {
   steps: [
     BuildInfo(version),
     Install(version),
-    WithSecrets(Command("unit-test", version)),
+    CommandWithSecrets("unit-test", version),
     UploadCoverage(version, "unit"),
   ],
 };
@@ -86,7 +91,7 @@ local IntegrationTest(version) = {
   steps: [
     BuildInfo(version),
     Install(version),
-    WithSecrets(Command("integration-test", version)),
+    CommandWithSecrets("integration-test", version),
     UploadCoverage(version, "unit"),
   ],
   limit_branches: branches(),
