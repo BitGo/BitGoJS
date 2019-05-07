@@ -10,11 +10,11 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "generate-drone": "drone jsonnet --stream",
-    "audit": "lerna run audit --since --stream",
-    "lint": "lerna run lint --since --stream",
-    "unit-test": "lerna run unit-test --since --stream",
-    "integration-test": "lerna run integration-test --since --stream",
-    "gen-coverage": "lerna run gen-coverage --since --stream",
-    "coverage": "lerna run upload-coverage --since --stream --"
+    "audit": "lerna run audit --since ${DRONE_TARGET_BRANCH:-master}^..${DRONE_SOURCE_BRANCH:-HEAD} --stream",
+    "lint": "lerna run lint --since ${DRONE_TARGET_BRANCH:-master}^..${DRONE_SOURCE_BRANCH:-HEAD} --stream",
+    "unit-test": "lerna run unit-test --since ${DRONE_TARGET_BRANCH:-master}^..${DRONE_SOURCE_BRANCH:-HEAD} --stream",
+    "integration-test": "lerna run integration-test --since ${DRONE_TARGET_BRANCH:-master}^..${DRONE_SOURCE_BRANCH:-HEAD} --stream",
+    "gen-coverage": "lerna run gen-coverage --since ${DRONE_TARGET_BRANCH:-master}^..${DRONE_SOURCE_BRANCH:-HEAD} --stream",
+    "coverage": "lerna run upload-coverage --since ${DRONE_TARGET_BRANCH:-master}^..${DRONE_SOURCE_BRANCH:-HEAD} --stream --"
   }
 }
