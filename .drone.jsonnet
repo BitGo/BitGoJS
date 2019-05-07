@@ -21,16 +21,16 @@ local Install(version, limit_branches=false) = {
   [if limit_branches then "when"]: branches(),
 };
 
-local UploadCoverage(version, depend, tag="untagged", limit_branches=true) = {
+local UploadCoverage(version, tag="untagged", limit_branches=true) = {
   name: "upload coverage node:" + version,
   image: "node:"  + version,
   environment: {
     CODECOV_TOKEN: { from_secret: "codecov" },
   },
   commands: [
-    "npm install -g codecov",
-    "yarn run gen-coverage",
-    "yarn run upload-coverage -- -F " + tag,
+    "yarn global add codecov",
+    "yarn run lerna-run --scope bitgo gen-coverage",
+    "yarn run lerna-run --scope bitgo upload-coverage -- -F " + tag,
   ],
   [if limit_branches then "when"]: branches(),
 };
@@ -46,7 +46,7 @@ local CoreUnit(version) = [
       "yarn run lerna-run --scope bitgo --stream unit-test",
     ],
   },
-  UploadCoverage(version, "unit tests", "unit", false),
+  UploadCoverage(version, "unit", false),
 ];
 
 local CoreIntegration(version, limit_branches=true) = [
@@ -61,7 +61,7 @@ local CoreIntegration(version, limit_branches=true) = [
     ],
     [if limit_branches then "when"]: branches(),
   },
-  UploadCoverage(version, "integration tests", "integration", limit_branches),
+  UploadCoverage(version, "integration", limit_branches),
 ];
 
 local MeasureSizeAndTiming() = {

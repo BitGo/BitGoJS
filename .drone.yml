@@ -80,7 +80,7 @@ steps:
 - name: unit tests node:6
   image: node:6
   commands:
-  - yarn run lerna-run --scope bitgo unit-test
+  - yarn run lerna-run --scope bitgo --stream unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -88,9 +88,9 @@ steps:
 - name: upload coverage node:6
   image: node:6
   commands:
-  - npm install -g codecov
-  - yarn run gen-coverage
-  - yarn run upload-coverage -- -F unit
+  - yarn global add codecov
+  - yarn run lerna-run --scope bitgo gen-coverage
+  - yarn run lerna-run --scope bitgo upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -116,7 +116,7 @@ steps:
 - name: unit tests node:8
   image: node:8
   commands:
-  - yarn run lerna-run --scope bitgo unit-test
+  - yarn run lerna-run --scope bitgo --stream unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -124,9 +124,9 @@ steps:
 - name: upload coverage node:8
   image: node:8
   commands:
-  - npm install -g codecov
-  - yarn run gen-coverage
-  - yarn run upload-coverage -- -F unit
+  - yarn global add codecov
+  - yarn run lerna-run --scope bitgo gen-coverage
+  - yarn run lerna-run --scope bitgo upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -152,7 +152,7 @@ steps:
 - name: unit tests node:10
   image: node:10
   commands:
-  - yarn run lerna-run --scope bitgo unit-test
+  - yarn run lerna-run --scope bitgo --stream unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -160,9 +160,9 @@ steps:
 - name: upload coverage node:10
   image: node:10
   commands:
-  - npm install -g codecov
-  - yarn run gen-coverage
-  - yarn run upload-coverage -- -F unit
+  - yarn global add codecov
+  - yarn run lerna-run --scope bitgo gen-coverage
+  - yarn run lerna-run --scope bitgo upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -188,7 +188,7 @@ steps:
 - name: unit tests node:11
   image: node:11
   commands:
-  - yarn run lerna-run --scope bitgo unit-test
+  - yarn run lerna-run --scope bitgo --stream unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -196,45 +196,9 @@ steps:
 - name: upload coverage node:11
   image: node:11
   commands:
-  - npm install -g codecov
-  - yarn run gen-coverage
-  - yarn run upload-coverage -- -F unit
-  environment:
-    CODECOV_TOKEN:
-      from_secret: codecov
-
----
-kind: pipeline
-name: "@bitgo/core node:12"
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: install node:12
-  image: node:12
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - yarn install
-  - yarn run bootstrap
-
-- name: unit tests node:12
-  image: node:12
-  commands:
-  - yarn run lerna-run --scope bitgo unit-test
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
-
-- name: upload coverage node:12
-  image: node:12
-  commands:
-  - npm install -g codecov
-  - yarn run gen-coverage
-  - yarn run upload-coverage -- -F unit
+  - yarn global add codecov
+  - yarn run lerna-run --scope bitgo gen-coverage
+  - yarn run lerna-run --scope bitgo upload-coverage -- -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -260,7 +224,7 @@ steps:
 - name: integration tests node:lts
   image: node:lts
   commands:
-  - yarn run lerna-run --scope bitgo integration-test
+  - yarn run lerna-run --scope bitgo --stream integration-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -273,9 +237,9 @@ steps:
 - name: upload coverage node:lts
   image: node:lts
   commands:
-  - npm install -g codecov
-  - yarn run gen-coverage
-  - yarn run upload-coverage -- -F integration
+  - yarn global add codecov
+  - yarn run lerna-run --scope bitgo gen-coverage
+  - yarn run lerna-run --scope bitgo upload-coverage -- -F integration
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
