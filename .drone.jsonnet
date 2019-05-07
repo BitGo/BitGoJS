@@ -21,18 +21,17 @@ local Install(version, limit_branches=false) = {
   name: "install",
   image: "node:" + version,
   commands: [
+    "git fetch origin master",
     "yarn install",
     "yarn run bootstrap"
   ],
   [if limit_branches then "when"]: branches(),
 };
 
-local Command(command, version="lts", limit_branches=false, fetch_master=true) = {
+local Command(command, version="lts", limit_branches=false) = {
   name: command,
   image: "node:" + version,
-  commands: (
-    if fetch_master then [ "git fetch origin master" ] else []
-  ) + [
+  commands: [
     "yarn run " + command,
   ],
   [if limit_branches then "when"]: branches(),
