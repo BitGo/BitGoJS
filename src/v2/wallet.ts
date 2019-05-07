@@ -981,6 +981,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
         }
       }).catch(function(e) {
         if (e.message === 'No encrypted keychains on this wallet.') {
+          sharedKeychain = {};
           return; // ignore this error because this looks like a cold wallet
         }
         throw e;
