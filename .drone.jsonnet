@@ -43,7 +43,7 @@ local CoreUnit(version) = [
       BITGOJS_TEST_PASSWORD: { from_secret: "password" },
     },
     commands: [
-      "lerna run --scope bitgo unit-test",
+      "yarn run lerna-run --scope bitgo unit-test",
     ],
   },
   UploadCoverage(version, "unit tests", "unit", false),
@@ -57,7 +57,7 @@ local CoreIntegration(version, limit_branches=true) = [
       BITGOJS_TEST_PASSWORD: { from_secret: "password" },
     },
     commands: [
-      "lerna run --scope bitgo integration-test",
+      "yarn run lerna-run --scope bitgo integration-test",
     ],
     [if limit_branches then "when"]: branches(),
   },
@@ -122,13 +122,12 @@ local Core(version) = {
   [if version == "lts" then "when"]: branches(),
 };
 
-// common pipelines which run against all modules
 [
   AuditAll(),
   LintAll(),
   MeasureSizeAndTiming(),
-] + [
-  Core(version)
-  for version in NodeVersions()
-]
+] + std.flattenArrays([[
+    Core(version)
+  ] for version in NodeVersions()]
+)
 

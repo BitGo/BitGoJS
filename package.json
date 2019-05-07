@@ -13,6 +13,7 @@
     "audit": "lerna run audit",
     "lint": "lerna run lint",
     "unit-test": "lerna run unit-test",
-    "integration-test": "lerna run integration-test"
+    "integration-test": "lerna run integration-test",
+    "lerna-run": "lerna run"
   }
 }

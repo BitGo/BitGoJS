@@ -80,7 +80,7 @@ steps:
 - name: unit tests node:6
   image: node:6
   commands:
-  - lerna run --scope bitgo unit-test
+  - yarn run lerna-run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -116,7 +116,7 @@ steps:
 - name: unit tests node:8
   image: node:8
   commands:
-  - lerna run --scope bitgo unit-test
+  - yarn run lerna-run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -152,7 +152,7 @@ steps:
 - name: unit tests node:10
   image: node:10
   commands:
-  - lerna run --scope bitgo unit-test
+  - yarn run lerna-run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -188,7 +188,7 @@ steps:
 - name: unit tests node:11
   image: node:11
   commands:
-  - lerna run --scope bitgo unit-test
+  - yarn run lerna-run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -224,7 +224,7 @@ steps:
 - name: unit tests node:12
   image: node:12
   commands:
-  - lerna run --scope bitgo unit-test
+  - yarn run lerna-run --scope bitgo unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -260,7 +260,7 @@ steps:
 - name: integration tests node:lts
   image: node:lts
   commands:
-  - lerna run --scope bitgo integration-test
+  - yarn run lerna-run --scope bitgo integration-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
