@@ -22,7 +22,7 @@ local Install(version, limit_branches=false) = {
   image: "node:" + version,
   commands: [
     "yarn install",
-    "lerna bootstrap"
+    "yarn run bootstrap"
   ],
   [if limit_branches then "when"]: branches(),
 };
@@ -82,7 +82,7 @@ local UnitTest(version) = {
 
 local IntegrationTest(version) = {
   kind: "pipeline",
-  name: "unit tests (node:" + version + ")",
+  name: "integration tests (node:" + version + ")",
   steps: [
     BuildInfo(version),
     Install(version),

@@ -18,7 +18,7 @@ steps:
   image: node:lts
   commands:
   - yarn install
-  - lerna bootstrap
+  - yarn run bootstrap
 
 - name: audit
   image: node:lts
@@ -45,7 +45,7 @@ steps:
   image: node:lts
   commands:
   - yarn install
-  - lerna bootstrap
+  - yarn run bootstrap
 
 - name: lint
   image: node:lts
@@ -87,7 +87,7 @@ steps:
   image: node:6
   commands:
   - yarn install
-  - lerna bootstrap
+  - yarn run bootstrap
 
 - name: unit-test
   image: node:6
@@ -132,7 +132,7 @@ steps:
   image: node:8
   commands:
   - yarn install
-  - lerna bootstrap
+  - yarn run bootstrap
 
 - name: unit-test
   image: node:8
@@ -177,7 +177,7 @@ steps:
   image: node:10
   commands:
   - yarn install
-  - lerna bootstrap
+  - yarn run bootstrap
 
 - name: unit-test
   image: node:10
@@ -222,7 +222,7 @@ steps:
   image: node:11
   commands:
   - yarn install
-  - lerna bootstrap
+  - yarn run bootstrap
 
 - name: unit-test
   image: node:11
@@ -249,7 +249,7 @@ steps:
 
 ---
 kind: pipeline
-name: unit tests (node:lts)
+name: integration tests (node:lts)
 
 platform:
   os: linux
@@ -267,7 +267,7 @@ steps:
   image: node:lts
   commands:
   - yarn install
-  - lerna bootstrap
+  - yarn run bootstrap
 
 - name: integration-test
   image: node:lts
