@@ -6,128 +6,120 @@ local branches() = {
   ],
 };
 
-local NodeVersions() = ["6", "8", "10", "11", "lts"];
-
-local Install(version, limit_branches=false) = {
-  name: "install node:" + version,
+local BuildInfo(version, limit_branches=false) = {
+  name: "build information",
   image: "node:" + version,
   commands: [
     "node --version",
     "npm --version",
-    "yarn --version",
-    "yarn install",
-    "yarn run bootstrap",
+    "yarn --version"
   ],
   [if limit_branches then "when"]: branches(),
 };
 
+local Install(version, limit_branches=false) = {
+  name: "install",
+  image: "node:" + version,
+  commands: [
+    "yarn install",
+    "lerna bootstrap"
+  ],
+  [if limit_branches then "when"]: branches(),
+};
+
+local Command(command, version="lts", limit_branches=false) = {
+  name: command,
+  image: "node:" + version,
+  commands: [ "yarn run " + command ],
+  [if limit_branches then "when"]: branches(),
+};
+
+local WithSecrets(step) = step + {
+  environment: {
+    BITGOJS_TEST_PASSWORD: { from_secret: "password" },
+  },
+};
+
+local LernaCommand(command, version="lts", with_secrets=false) = {
+  kind: "pipeline",
+  name: command,
+  steps: [
+    BuildInfo(version),
+    Install(version),
+  ] + (
+    if with_secrets then [
+      WithSecrets(Command(command, version))
+    ] else [
+      Command(command, version)
+    ]
+  )
+};
+
 local UploadCoverage(version, tag="untagged", limit_branches=true) = {
-  name: "upload coverage node:" + version,
+  name: "upload coverage",
   image: "node:"  + version,
   environment: {
     CODECOV_TOKEN: { from_secret: "codecov" },
   },
   commands: [
-    "yarn global add codecov",
-    "yarn run lerna-run --scope bitgo gen-coverage",
-    "yarn run lerna-run --scope bitgo upload-coverage -- -F " + tag,
+    "npm install -g codecov",
+    "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov",
+    "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F " + tag,
   ],
   [if limit_branches then "when"]: branches(),
 };
 
-local CoreUnit(version) = [
-  {
-    name: "unit tests node:" + version,
-    image: "node:" + version,
-    environment: {
-      BITGOJS_TEST_PASSWORD: { from_secret: "password" },
-    },
-    commands: [
-      "yarn run lerna-run --scope bitgo --stream unit-test",
-    ],
-  },
-  UploadCoverage(version, "unit", false),
-];
-
-local CoreIntegration(version, limit_branches=true) = [
-  {
-    name: "integration tests node:" + version,
-    image: "node:" + version,
-    environment: {
-      BITGOJS_TEST_PASSWORD: { from_secret: "password" },
-    },
-    commands: [
-      "yarn run lerna-run --scope bitgo --stream integration-test",
-    ],
-    [if limit_branches then "when"]: branches(),
-  },
-  UploadCoverage(version, "integration", limit_branches),
-];
-
-local MeasureSizeAndTiming() = {
+local UnitTest(version) = {
   kind: "pipeline",
-  name: "size and timing",
+  name: "unit tests (node:" + version + ")",
+  steps: [
+    BuildInfo(version),
+    Install(version),
+    WithSecrets(Command("unit-test", version)),
+    UploadCoverage(version, "unit"),
+  ],
+};
+
+local IntegrationTest(version) = {
+  kind: "pipeline",
+  name: "unit tests (node:" + version + ")",
+  steps: [
+    BuildInfo(version),
+    Install(version),
+    WithSecrets(Command("integration-test", version)),
+    UploadCoverage(version, "unit"),
+  ],
+  limit_branches: branches(),
+};
+
+local MeasureSizeAndTiming(version, limit_branches=false) = {
+  kind: "pipeline",
+  name: "size and timing (node:" + version + ")",
   steps: [
     {
       name: "slow-deps",
-      image: "node:lts",
+      image: "node:" + version,
       commands: [
-        "yarn global add slow-deps",
+        "npm install -g slow-deps",
         "slow-deps"
       ],
+      [if limit_branches then "when"]: branches(),
     },
   ],
 };
 
-local LintAll() = {
-  kind: "pipeline",
-  name: "lint modules",
-  steps: [
-    Install("lts"),
-    {
-      name: "lint all",
-      image: "node:lts",
-      commands: [
-        "yarn run lint"
-      ],
-    },
-  ],
-};
-
-local AuditAll() = {
-  kind: "pipeline",
-  name: "audit modules",
-  steps: [
-    Install("lts"),
-    {
-      name: "audit all",
-      image: "node:lts",
-      commands: [
-        "yarn run audit"
-      ],
-    },
-  ],
-};
-
-local Core(version) = {
-  kind: "pipeline",
-  name: "@bitgo/core node:" + version,
-  steps: [
-    Install(version),
-  ] +
-  if version == "lts" then
-    CoreIntegration("lts")
-  else
-    CoreUnit(version),
-  [if version == "lts" then "when"]: branches(),
-};
+local UnitVersions = ["6", "8", "10", "11"];
+local IntegrationVersions = ["lts"];
 
 [
-  AuditAll(),
-  LintAll(),
-  MeasureSizeAndTiming(),
-] + std.flattenArrays([[
-    Core(version)
-  ] for version in NodeVersions()]
-)
+  LernaCommand("audit"),
+  LernaCommand("lint"),
+  MeasureSizeAndTiming("lts"),
+] + [
+  UnitTest(version)
+  for version in UnitVersions
+] + [
+  IntegrationTest(version)
+  for version in IntegrationVersions
+]
 

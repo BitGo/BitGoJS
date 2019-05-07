@@ -10,10 +10,9 @@
   "scripts": {
     "generate-drone": "drone jsonnet --stream",
     "bootstrap": "lerna bootstrap",
-    "audit": "lerna run audit",
-    "lint": "lerna run lint",
-    "unit-test": "lerna run unit-test",
-    "integration-test": "lerna run integration-test",
-    "lerna-run": "lerna run"
+    "audit": "lerna run --since master audit",
+    "lint": "lerna run --since master lint",
+    "unit-test": "lerna run --since master unit-test",
+    "integration-test": "lerna run --since master integration-test"
   }
 }

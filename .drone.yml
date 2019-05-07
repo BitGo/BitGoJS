@@ -1,52 +1,60 @@
 ---
 kind: pipeline
-name: audit modules
+name: audit
 
 platform:
   os: linux
   arch: amd64
 
 steps:
-- name: install node:lts
+- name: build information
   image: node:lts
   commands:
   - node --version
   - npm --version
   - yarn --version
-  - yarn install
-  - yarn run bootstrap
 
-- name: audit all
+- name: install
+  image: node:lts
+  commands:
+  - yarn install
+  - lerna bootstrap
+
+- name: audit
   image: node:lts
   commands:
   - yarn run audit
 
 ---
 kind: pipeline
-name: lint modules
+name: lint
 
 platform:
   os: linux
   arch: amd64
 
 steps:
-- name: install node:lts
+- name: build information
   image: node:lts
   commands:
   - node --version
   - npm --version
   - yarn --version
-  - yarn install
-  - yarn run bootstrap
 
-- name: lint all
+- name: install
+  image: node:lts
+  commands:
+  - yarn install
+  - lerna bootstrap
+
+- name: lint
   image: node:lts
   commands:
   - yarn run lint
 
 ---
 kind: pipeline
-name: size and timing
+name: size and timing (node:lts)
 
 platform:
   os: linux
@@ -56,190 +64,225 @@ steps:
 - name: slow-deps
   image: node:lts
   commands:
-  - yarn global add slow-deps
+  - npm install -g slow-deps
   - slow-deps
 
 ---
 kind: pipeline
-name: "@bitgo/core node:6"
+name: unit tests (node:6)
 
 platform:
   os: linux
   arch: amd64
 
 steps:
-- name: install node:6
+- name: build information
   image: node:6
   commands:
   - node --version
   - npm --version
   - yarn --version
-  - yarn install
-  - yarn run bootstrap
 
-- name: unit tests node:6
+- name: install
   image: node:6
   commands:
-  - yarn run lerna-run --scope bitgo --stream unit-test
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
+  - yarn install
+  - lerna bootstrap
 
-- name: upload coverage node:6
+- name: unit-test
   image: node:6
   commands:
-  - yarn global add codecov
-  - yarn run lerna-run --scope bitgo gen-coverage
-  - yarn run lerna-run --scope bitgo upload-coverage -- -F unit
-  environment:
-    CODECOV_TOKEN:
-      from_secret: codecov
-
----
-kind: pipeline
-name: "@bitgo/core node:8"
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: install node:8
-  image: node:8
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - yarn install
-  - yarn run bootstrap
-
-- name: unit tests node:8
-  image: node:8
-  commands:
-  - yarn run lerna-run --scope bitgo --stream unit-test
+  - yarn run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload coverage node:8
-  image: node:8
+- name: upload coverage
+  image: node:6
   commands:
-  - yarn global add codecov
-  - yarn run lerna-run --scope bitgo gen-coverage
-  - yarn run lerna-run --scope bitgo upload-coverage -- -F unit
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-
----
-kind: pipeline
-name: "@bitgo/core node:10"
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: install node:10
-  image: node:10
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - yarn install
-  - yarn run bootstrap
-
-- name: unit tests node:10
-  image: node:10
-  commands:
-  - yarn run lerna-run --scope bitgo --stream unit-test
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
-
-- name: upload coverage node:10
-  image: node:10
-  commands:
-  - yarn global add codecov
-  - yarn run lerna-run --scope bitgo gen-coverage
-  - yarn run lerna-run --scope bitgo upload-coverage -- -F unit
-  environment:
-    CODECOV_TOKEN:
-      from_secret: codecov
-
----
-kind: pipeline
-name: "@bitgo/core node:11"
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: install node:11
-  image: node:11
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - yarn install
-  - yarn run bootstrap
-
-- name: unit tests node:11
-  image: node:11
-  commands:
-  - yarn run lerna-run --scope bitgo --stream unit-test
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
-
-- name: upload coverage node:11
-  image: node:11
-  commands:
-  - yarn global add codecov
-  - yarn run lerna-run --scope bitgo gen-coverage
-  - yarn run lerna-run --scope bitgo upload-coverage -- -F unit
-  environment:
-    CODECOV_TOKEN:
-      from_secret: codecov
-
----
-kind: pipeline
-name: "@bitgo/core node:lts"
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: install node:lts
-  image: node:lts
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - yarn install
-  - yarn run bootstrap
-
-- name: integration tests node:lts
-  image: node:lts
-  commands:
-  - yarn run lerna-run --scope bitgo --stream integration-test
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
   when:
     branch:
     - master
     - "rel/*"
     - prod/production
 
-- name: upload coverage node:lts
+---
+kind: pipeline
+name: unit tests (node:8)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:8
+  commands:
+  - node --version
+  - npm --version
+  - yarn --version
+
+- name: install
+  image: node:8
+  commands:
+  - yarn install
+  - lerna bootstrap
+
+- name: unit-test
+  image: node:8
+  commands:
+  - yarn run unit-test
+  environment:
+    BITGOJS_TEST_PASSWORD:
+      from_secret: password
+
+- name: upload coverage
+  image: node:8
+  commands:
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov
+  when:
+    branch:
+    - master
+    - "rel/*"
+    - prod/production
+
+---
+kind: pipeline
+name: unit tests (node:10)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:10
+  commands:
+  - node --version
+  - npm --version
+  - yarn --version
+
+- name: install
+  image: node:10
+  commands:
+  - yarn install
+  - lerna bootstrap
+
+- name: unit-test
+  image: node:10
+  commands:
+  - yarn run unit-test
+  environment:
+    BITGOJS_TEST_PASSWORD:
+      from_secret: password
+
+- name: upload coverage
+  image: node:10
+  commands:
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov
+  when:
+    branch:
+    - master
+    - "rel/*"
+    - prod/production
+
+---
+kind: pipeline
+name: unit tests (node:11)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:11
+  commands:
+  - node --version
+  - npm --version
+  - yarn --version
+
+- name: install
+  image: node:11
+  commands:
+  - yarn install
+  - lerna bootstrap
+
+- name: unit-test
+  image: node:11
+  commands:
+  - yarn run unit-test
+  environment:
+    BITGOJS_TEST_PASSWORD:
+      from_secret: password
+
+- name: upload coverage
+  image: node:11
+  commands:
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov
+  when:
+    branch:
+    - master
+    - "rel/*"
+    - prod/production
+
+---
+kind: pipeline
+name: unit tests (node:lts)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
   image: node:lts
   commands:
-  - yarn global add codecov
-  - yarn run lerna-run --scope bitgo gen-coverage
-  - yarn run lerna-run --scope bitgo upload-coverage -- -F integration
+  - node --version
+  - npm --version
+  - yarn --version
+
+- name: install
+  image: node:lts
+  commands:
+  - yarn install
+  - lerna bootstrap
+
+- name: integration-test
+  image: node:lts
+  commands:
+  - yarn run integration-test
+  environment:
+    BITGOJS_TEST_PASSWORD:
+      from_secret: password
+
+- name: upload coverage
+  image: node:lts
+  commands:
+  - npm install -g codecov
+  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
+  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
