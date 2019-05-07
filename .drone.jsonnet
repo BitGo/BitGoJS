@@ -6,7 +6,7 @@ local branches() = {
   ],
 };
 
-local NodeVersions() = ["6", "8", "10", "11", "12", "lts"];
+local NodeVersions() = ["6", "8", "10", "11", "lts"];
 
 local Install(version, limit_branches=false) = {
   name: "install node:" + version,
@@ -43,7 +43,7 @@ local CoreUnit(version) = [
       BITGOJS_TEST_PASSWORD: { from_secret: "password" },
     },
     commands: [
-      "yarn run lerna-run --scope bitgo unit-test",
+      "yarn run lerna-run --scope bitgo --stream unit-test",
     ],
   },
   UploadCoverage(version, "unit tests", "unit", false),
@@ -57,7 +57,7 @@ local CoreIntegration(version, limit_branches=true) = [
       BITGOJS_TEST_PASSWORD: { from_secret: "password" },
     },
     commands: [
-      "yarn run lerna-run --scope bitgo integration-test",
+      "yarn run lerna-run --scope bitgo --stream integration-test",
     ],
     [if limit_branches then "when"]: branches(),
   },
