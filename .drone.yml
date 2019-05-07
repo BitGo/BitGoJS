@@ -17,9 +17,8 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - git fetch origin master
+  - git fetch --tags
   - yarn install
-  - yarn run bootstrap
 
 - name: audit
   image: node:lts
@@ -45,9 +44,8 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - git fetch origin master
+  - git fetch --tags
   - yarn install
-  - yarn run bootstrap
 
 - name: lint
   image: node:lts
@@ -88,9 +86,8 @@ steps:
 - name: install
   image: node:6
   commands:
-  - git fetch origin master
+  - git fetch --tags
   - yarn install
-  - yarn run bootstrap
 
 - name: unit-test
   image: node:6
@@ -134,9 +131,8 @@ steps:
 - name: install
   image: node:8
   commands:
-  - git fetch origin master
+  - git fetch --tags
   - yarn install
-  - yarn run bootstrap
 
 - name: unit-test
   image: node:8
@@ -180,9 +176,8 @@ steps:
 - name: install
   image: node:10
   commands:
-  - git fetch origin master
+  - git fetch --tags
   - yarn install
-  - yarn run bootstrap
 
 - name: unit-test
   image: node:10
@@ -226,9 +221,8 @@ steps:
 - name: install
   image: node:11
   commands:
-  - git fetch origin master
+  - git fetch --tags
   - yarn install
-  - yarn run bootstrap
 
 - name: unit-test
   image: node:11
@@ -272,9 +266,8 @@ steps:
 - name: install
   image: node:lts
   commands:
-  - git fetch origin master
+  - git fetch --tags
   - yarn install
-  - yarn run bootstrap
 
 - name: integration-test
   image: node:lts
