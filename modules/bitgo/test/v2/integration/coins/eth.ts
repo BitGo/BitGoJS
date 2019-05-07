@@ -271,7 +271,7 @@ describe('ETH:', function() {
       let res = yield agent
       .get(`/api/v2/teth/wallet/${testWalletId}/addresses`)
       .set(authHeader);
-      res.statusCode.should.equal(200);
+      res.should.have.status(200);
       const { addresses } = res.body;
       const destAddress1 = addresses[1].address;
       const destAddress2 = addresses[2].address;
@@ -288,7 +288,7 @@ describe('ETH:', function() {
       });
 
       // Ethereum does not support "sendmany" with multiple recipients, see JIRA BG-994
-      res.statusCode.should.equal(400);
+      res.should.have.status(400);
 
       // Sendmany with single recipient is fine
       res = yield agent
@@ -300,7 +300,7 @@ describe('ETH:', function() {
           { address: destAddress1, amount: '10000' }
         ]
       });
-      res.statusCode.should.equal(200);
+      res.should.have.status(200);
     }));
   });
 });
