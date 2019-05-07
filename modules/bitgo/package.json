@@ -28,7 +28,7 @@
     "compile-test": "webpack --progress --colors --env.test",
     "test": "npm run unit-test",
     "unit-test": "./node_modules/.bin/nyc -- ./node_modules/.bin/_mocha -r ts-node/register --timeout 20000 --reporter list --exit \"test/unit/*.ts\" \"test/unit/**/*.ts\" \"test/v2/unit/*.ts\" \"test/v2/unit/**/*.ts\"",
-    "integration-test": "./node_modules/.bin/nyc -- ./node_modules/.bin/_mocha -r ts-node/register --timeout 20000 --reporter list --exit \"test/integration/*.ts\" \"test/integration/**/*.ts\" \"test/v2/integration/*.ts\" \"test/v2/integration/**/*.ts\"",
+    "integration-test": "./node_modules/.bin/nyc -- ./node_modules/.bin/_mocha -r ts-node/register --timeout 20000 --reporter list --exit \"test/v2/integration/**/*.ts\"",
     "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' || true",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "clean": "rm -r dist/*",
