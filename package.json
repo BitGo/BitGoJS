@@ -14,7 +14,7 @@
     "lint": "lerna run lint --since --stream",
     "unit-test": "lerna run unit-test --since --stream",
     "integration-test": "lerna run integration-test --since --stream",
-    "report": "lerna exec gen-coverage --since --stream",
-    "coverage": "lerna exec upload-coverage --since --stream"
+    "gen-coverage": "lerna run gen-coverage --since --stream",
+    "coverage": "lerna run upload-coverage --since --stream --"
   }
 }

@@ -21,7 +21,7 @@ local Install(version, limit_branches=false) = {
   name: "install",
   image: "node:" + version,
   commands: [
-    "git fetch --tags",
+    "git fetch origin 'refs/tags/*:refs/tags/*'",
     "yarn install",
   ],
   [if limit_branches then "when"]: branches(),
@@ -67,7 +67,7 @@ local UploadCoverage(version, tag="untagged", limit_branches=true) = {
   commands: [
     "npm install -g codecov",
     "yarn run gen-coverage",
-    "yarn run upload-coverage -F " + tag,
+    "yarn run coverage -F " + tag,
   ],
   [if limit_branches then "when"]: branches(),
 };
