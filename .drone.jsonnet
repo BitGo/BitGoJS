@@ -10,10 +10,11 @@ local BuildInfo(version, limit_branches=false) = {
   name: "build information",
   image: "node:" + version,
   commands: [
-    "env",
     "node --version",
     "npm --version",
     "yarn --version",
+    "git --version",
+    "env",
   ],
   [if limit_branches then "when"]: branches(),
 };
@@ -22,7 +23,6 @@ local Install(version, limit_branches=false) = {
   name: "install",
   image: "node:" + version,
   commands: [
-    "git fetch origin --tags \"$DRONE_TARGET_BRANCH\" \"$DRONE_COMMIT_REF\"",
     "yarn install",
   ],
   [if limit_branches then "when"]: branches(),

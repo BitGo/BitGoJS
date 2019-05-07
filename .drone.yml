@@ -10,15 +10,15 @@ steps:
 - name: build information
   image: node:lts
   commands:
-  - env
   - node --version
   - npm --version
   - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:lts
   commands:
-  - "git fetch origin --tags \"$DRONE_TARGET_BRANCH\" \"$DRONE_COMMIT_REF\""
   - yarn install
 
 - name: audit
@@ -38,15 +38,15 @@ steps:
 - name: build information
   image: node:lts
   commands:
-  - env
   - node --version
   - npm --version
   - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:lts
   commands:
-  - "git fetch origin --tags \"$DRONE_TARGET_BRANCH\" \"$DRONE_COMMIT_REF\""
   - yarn install
 
 - name: lint
@@ -81,15 +81,15 @@ steps:
 - name: build information
   image: node:6
   commands:
-  - env
   - node --version
   - npm --version
   - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:6
   commands:
-  - "git fetch origin --tags \"$DRONE_TARGET_BRANCH\" \"$DRONE_COMMIT_REF\""
   - yarn install
 
 - name: unit-test
@@ -127,15 +127,15 @@ steps:
 - name: build information
   image: node:8
   commands:
-  - env
   - node --version
   - npm --version
   - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:8
   commands:
-  - "git fetch origin --tags \"$DRONE_TARGET_BRANCH\" \"$DRONE_COMMIT_REF\""
   - yarn install
 
 - name: unit-test
@@ -173,15 +173,15 @@ steps:
 - name: build information
   image: node:10
   commands:
-  - env
   - node --version
   - npm --version
   - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:10
   commands:
-  - "git fetch origin --tags \"$DRONE_TARGET_BRANCH\" \"$DRONE_COMMIT_REF\""
   - yarn install
 
 - name: unit-test
@@ -219,15 +219,15 @@ steps:
 - name: build information
   image: node:11
   commands:
-  - env
   - node --version
   - npm --version
   - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:11
   commands:
-  - "git fetch origin --tags \"$DRONE_TARGET_BRANCH\" \"$DRONE_COMMIT_REF\""
   - yarn install
 
 - name: unit-test
@@ -265,15 +265,15 @@ steps:
 - name: build information
   image: node:lts
   commands:
-  - env
   - node --version
   - npm --version
   - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:lts
   commands:
-  - "git fetch origin --tags \"$DRONE_TARGET_BRANCH\" \"$DRONE_COMMIT_REF\""
   - yarn install
 
 - name: integration-test
