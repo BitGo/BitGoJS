@@ -10,9 +10,10 @@ local BuildInfo(version, limit_branches=false) = {
   name: "build information",
   image: "node:" + version,
   commands: [
+    "env",
     "node --version",
     "npm --version",
-    "yarn --version"
+    "yarn --version",
   ],
   [if limit_branches then "when"]: branches(),
 };

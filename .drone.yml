@@ -10,6 +10,7 @@ steps:
 - name: build information
   image: node:lts
   commands:
+  - env
   - node --version
   - npm --version
   - yarn --version
@@ -37,6 +38,7 @@ steps:
 - name: build information
   image: node:lts
   commands:
+  - env
   - node --version
   - npm --version
   - yarn --version
@@ -79,6 +81,7 @@ steps:
 - name: build information
   image: node:6
   commands:
+  - env
   - node --version
   - npm --version
   - yarn --version
@@ -124,6 +127,7 @@ steps:
 - name: build information
   image: node:8
   commands:
+  - env
   - node --version
   - npm --version
   - yarn --version
@@ -169,6 +173,7 @@ steps:
 - name: build information
   image: node:10
   commands:
+  - env
   - node --version
   - npm --version
   - yarn --version
@@ -214,6 +219,7 @@ steps:
 - name: build information
   image: node:11
   commands:
+  - env
   - node --version
   - npm --version
   - yarn --version
@@ -259,6 +265,7 @@ steps:
 - name: build information
   image: node:lts
   commands:
+  - env
   - node --version
   - npm --version
   - yarn --version

@@ -10,11 +10,11 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "generate-drone": "drone jsonnet --stream",
-    "audit": "lerna run audit --since --canary --stream",
-    "lint": "lerna run lint --since --canary --stream",
-    "unit-test": "lerna run unit-test --since --canary --stream",
-    "integration-test": "lerna run integration-test --since --canary --stream",
-    "gen-coverage": "lerna run gen-coverage --since --canary --stream",
-    "coverage": "lerna run upload-coverage --since --canary --stream --"
+    "audit": "lerna run audit --since --stream",
+    "lint": "lerna run lint --since --stream",
+    "unit-test": "lerna run unit-test --since --stream",
+    "integration-test": "lerna run integration-test --since --stream",
+    "gen-coverage": "lerna run gen-coverage --since --stream",
+    "coverage": "lerna run upload-coverage --since --stream --"
   }
 }
