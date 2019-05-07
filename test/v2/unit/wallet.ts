@@ -774,7 +774,7 @@ describe('V2 Wallet:', function() {
       .reply(200, {});
 
       const createShareNock = nock(bgUrl)
-      .post(`/api/v2/tbtc/wallet/${wallet._wallet.id}/share`, { user: userId, permissions })
+      .post(`/api/v2/tbtc/wallet/${wallet._wallet.id}/share`, { user: userId, permissions, keychain: {} })
       .reply(200, {});
 
       yield wallet.shareWallet({ email, permissions });
