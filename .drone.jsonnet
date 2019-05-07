@@ -67,8 +67,8 @@ local UploadCoverage(version, tag="untagged", limit_branches=true) = {
   },
   commands: [
     "npm install -g codecov",
-    "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov",
-    "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F " + tag,
+    "yarn run gen-coverage",
+    "yarn run upload-coverage -F " + tag,
   ],
   [if limit_branches then "when"]: branches(),
 };

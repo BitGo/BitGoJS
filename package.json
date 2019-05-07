@@ -13,6 +13,8 @@
     "audit": "lerna run audit --since",
     "lint": "lerna run lint --since",
     "unit-test": "lerna run unit-test --since",
-    "integration-test": "lerna run integration-test --since"
+    "integration-test": "lerna run integration-test --since",
+    "report": "lerna exec gen-coverage --since",
+    "coverage": "lerna exec upload-coverage --since"
   }
 }

@@ -104,8 +104,8 @@ steps:
   image: node:6
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - yarn run gen-coverage
+  - yarn run upload-coverage -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -150,8 +150,8 @@ steps:
   image: node:8
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - yarn run gen-coverage
+  - yarn run upload-coverage -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -196,8 +196,8 @@ steps:
   image: node:10
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - yarn run gen-coverage
+  - yarn run upload-coverage -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -242,8 +242,8 @@ steps:
   image: node:11
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - yarn run gen-coverage
+  - yarn run upload-coverage -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -288,8 +288,8 @@ steps:
   image: node:lts
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - yarn run gen-coverage
+  - yarn run upload-coverage -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
