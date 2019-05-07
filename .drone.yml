@@ -23,7 +23,7 @@ steps:
 - name: audit
   image: node:lts
   commands:
-  - git fetch origin +refs/heads/master:
+  - git fetch origin master
   - yarn run audit
 
 ---
@@ -51,7 +51,7 @@ steps:
 - name: lint
   image: node:lts
   commands:
-  - git fetch origin +refs/heads/master:
+  - git fetch origin master
   - yarn run lint
 
 ---
@@ -94,7 +94,7 @@ steps:
 - name: unit-test
   image: node:6
   commands:
-  - git fetch origin +refs/heads/master:
+  - git fetch origin master
   - yarn run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
@@ -140,7 +140,7 @@ steps:
 - name: unit-test
   image: node:8
   commands:
-  - git fetch origin +refs/heads/master:
+  - git fetch origin master
   - yarn run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
@@ -186,7 +186,7 @@ steps:
 - name: unit-test
   image: node:10
   commands:
-  - git fetch origin +refs/heads/master:
+  - git fetch origin master
   - yarn run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
@@ -232,7 +232,7 @@ steps:
 - name: unit-test
   image: node:11
   commands:
-  - git fetch origin +refs/heads/master:
+  - git fetch origin master
   - yarn run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
@@ -278,7 +278,7 @@ steps:
 - name: integration-test
   image: node:lts
   commands:
-  - git fetch origin +refs/heads/master:
+  - git fetch origin master
   - yarn run integration-test
   environment:
     BITGOJS_TEST_PASSWORD:

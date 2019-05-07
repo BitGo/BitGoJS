@@ -31,7 +31,7 @@ local Command(command, version="lts", limit_branches=false, fetch_master=true) =
   name: command,
   image: "node:" + version,
   commands: (
-    if fetch_master then [ "git fetch origin +refs/heads/master:" ] else []
+    if fetch_master then [ "git fetch origin master" ] else []
   ) + [
     "yarn run " + command,
   ],
