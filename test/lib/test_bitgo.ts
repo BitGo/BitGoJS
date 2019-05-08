@@ -286,8 +286,19 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
   yield this.authenticateTestUser(this.testUserOTP());
   const testWalletId = BitGo.V2.TEST_ETH_WALLET_ID;
 
-  const testWallet = yield this.coin('teth').wallets().get({ id: testWalletId });
-  const spendableBalance = testWallet.spendableBalanceString;
+  const {
+    tethWallet,
+    tbtcWallet,
+    unspentWallet,
+    sweep1Wallet
+  } = yield Promise.props({
+    tethWallet: this.coin('teth').wallets().get({ id: testWalletId }),
+    tbtcWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID }),
+    unspentWallet:  this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID }),
+    sweep1Wallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_SWEEP1_ID }),
+  });
+
+  const spendableBalance = tethWallet.spendableBalanceString;
 
   let balance = new BigNumber(spendableBalance);
 
@@ -296,20 +307,15 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
     throw new Error(`The TETH wallet ${testWalletId} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
   }
 
-  // Test we have enough BTC
-  const wallet = yield this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID });
-
   // Check we have enough in the wallet to run test suite
-  wallet.should.have.property('spendableBalanceString');
-  balance = new BigNumber(wallet.spendableBalanceString());
+  tbtcWallet.should.have.property('spendableBalanceString');
+  balance = new BigNumber(tbtcWallet.spendableBalanceString());
 
   // Check our balance is over 0.05 tBTC (we spend 0.04, add some cushion)
   let minimumBalance = 0.05 * 1e8;
   if (balance.lt(minimumBalance)) {
-    throw new Error(`The TBTC wallet ${wallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
+    throw new Error(`The TBTC wallet ${tbtcWallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
   }
-
-  const unspentWallet = yield this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID });
 
   // Check we have enough in the wallet to run test suite
   unspentWallet.should.have.property('spendableBalanceString');
@@ -320,8 +326,6 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
   if (balance.lt(minimumBalance)) {
     throw new Error(`The TBTC wallet ${unspentWallet.id()} does not have enough funds to run the test suite. The current balance is ${balance}. Please fund this wallet!`);
   }
-
-  const sweep1Wallet = yield this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_SWEEP1_ID });
 
   // Check we have enough in the wallet to run test suite
   sweep1Wallet.should.have.property('spendableBalanceString');
