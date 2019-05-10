@@ -24,7 +24,7 @@ const {
   startup,
   createServer,
   createBaseUri
-} = require('../../../src/expressApp');
+} = require('../../../../express/src/expressApp');
 
 describe('Bitgo Express', function() {
 

@@ -1,38 +1,5 @@
 # BitGoJS Release Notes
 
-## 5.2.0
-
-### New Features
-* Add support for new ERC 20 tokens (WHT, AMN, BTU, TAUD)
-* Add support for trade payload signing
-
-## Bug Fixes
-* Allow sharing "pseudo-cold" wallets where the encrypted user key is not held by BitGo.
-* Correctly update matching wallet passphrases when the user login password is updated.
-* Add missing filter parameters in `wallet.transfers`.
-
-## Other Changes
-* Update README to clarify package description and improve example snippets
-
-## 5.1.1
-
-## Bug Fixes
-* Separate input signing and signature verification steps in `AbstractUtxoCoin.signTransaction`. This fixes an issue where Native Segwit inputs which were not the last input in the transaction were not being properly constructed.
-
-## 5.1.0
-
-### New Features
-* Add support for counting the number of valid signatures on Native Segwit transaction inputs in `explainTransaction`.
-
-### Bug Fixes
-* Update `bitgo-express` startup command in README. Running directly from the cloned git repository is no longer recommended.
-* Add install size and timing metrics to CI system.
-
-### Other Changes
-* Remove version 1 support for Ethereum wallets and associated tests. This functionality has been broken for some time due to the required server side routes being removed. 
-
-**V2 Ethereum wallets are unaffected**. If your Ethereum wallet was working before this change, it will continue functioning normally.
-
 ## 5.0.4
 
 ### Bug Fixes
