@@ -1,41 +1,5 @@
 ---
 kind: pipeline
-name: audit-changed (node:lts)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
-  image: node:lts
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - git --version
-  - env
-
-- name: install
-  image: node:lts
-  commands:
-  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
-  - yarn install
-
-- name: audit-changed
-  image: node:lts
-  commands:
-  - yarn run audit-changed
-
-trigger:
-  branch:
-    exclude:
-    - master
-    - "rel/*"
-    - prod/production
-
----
-kind: pipeline
 name: lint-changed (node:lts)
 
 platform:

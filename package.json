@@ -10,9 +10,8 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "generate-drone": "drone jsonnet --stream",
-    "audit": "lerna run audit --stream",
+    "audit": "yarn audit",
     "lint": "lerna run lint --stream",
-    "audit-changed": "lerna run audit --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
     "lint-changed": "lerna run lint --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
     "unit-test": "lerna run unit-test --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
     "integration-test": "lerna run integration-test --stream",

@@ -130,7 +130,6 @@ local UnitVersions = ["6", "8", "10", "11"];
 local IntegrationVersions = ["lts"];
 
 [
-  ExcludeBranches(LernaCommand("audit-changed")),
   ExcludeBranches(LernaCommand("lint-changed")),
   IncludeBranches(LernaCommand("audit")),
   IncludeBranches(LernaCommand("lint")),
