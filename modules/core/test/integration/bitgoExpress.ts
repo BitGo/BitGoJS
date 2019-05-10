@@ -3,7 +3,7 @@ require('should-http');
 const request = require('supertest-as-promised');
 const _ = require('lodash');
 
-const expressApp = require('../../src/expressApp');
+const expressApp = require('../../../express/src/expressApp');
 const TestBitGo = require('../lib/test_bitgo');
 const testUtil = require('./testutil');
 
