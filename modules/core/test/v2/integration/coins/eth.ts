@@ -6,7 +6,7 @@ const co = Promise.coroutine;
 import request = require('supertest-as-promised');
 const BN = require('ethereumjs-util').BN;
 
-const expressApp = require('../../../../src/expressApp');
+const expressApp = require('../../../../../express/src/expressApp');
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const testUtil = require('../../../integration/testutil');
 

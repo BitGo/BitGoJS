@@ -1,16 +1,16 @@
 import bodyParser = require('body-parser');
 
-const BitGoJS = require('./index');
-const TransactionBuilder = require('./transactionBuilder');
-const common = require('./common');
+const BitGoJS = require('../../core/src');
+const TransactionBuilder = require('../../core/src/transactionBuilder');
+const common = require('../../core/src/common');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const url = require('url');
 const _ = require('lodash');
-const pjson = require('../package.json');
+const pjson = require('../../core/package.json');
 const debug = require('debug')('bitgo:express');
-const util = require('./util');
-const errors = require('./errors');
+const util = require('../../core/src/util');
+const errors = require('../../core/src/errors');
 
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
 

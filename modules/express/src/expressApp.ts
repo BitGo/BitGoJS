@@ -14,9 +14,9 @@ const co = Promise.coroutine;
 const { ArgumentParser } = require('argparse');
 const { SSL_OP_NO_TLSv1 } = require('constants');
 
-const common = require('./common');
+const { Environments } = require('bitgo');
 const pjson = require('../package.json');
-const { TlsConfigurationError, NodeEnvironmentError } = require('./errors');
+const { TlsConfigurationError, NodeEnvironmentError } = require('../../core/src/errors');
 
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
 const DEFAULT_TIMEOUT = 305 * 1000;
@@ -86,11 +86,11 @@ function configureEnvironment(args) {
   }
 
   if (customrooturi) {
-    common.Environments['custom'].uri = customrooturi;
+    Environments['custom'].uri = customrooturi;
   }
 
   if (custombitcoinnetwork) {
-    common.Environments['custom'].network = custombitcoinnetwork;
+    Environments['custom'].network = custombitcoinnetwork;
   }
 }
 
@@ -109,7 +109,7 @@ function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
     secure: null
   };
 
-  if (common.Environments[env].network === 'testnet') {
+  if (Environments[env].network === 'testnet') {
     // Need to do this to make supertest agent pass (set rejectUnauthorized to false)
     options.secure = false;
   }
@@ -118,7 +118,7 @@ function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
 
   proxy.on('proxyReq', function(proxyReq, req) {
     // Need to rewrite the host, otherwise cross-site protection kicks in
-    proxyReq.setHeader('host', url.parse(common.Environments[env].uri).hostname);
+    proxyReq.setHeader('host', url.parse(Environments[env].uri).hostname);
 
     const userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
     proxyReq.setHeader('User-Agent', userAgent);
@@ -141,7 +141,7 @@ function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
   app.use(function(req, res) {
     if (req.url && (/^\/api\/v[12]\/.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
       req.isProxy = true;
-      proxy.web(req, res, { target: common.Environments[env].uri, changeOrigin: true });
+      proxy.web(req, res, { target: Environments[env].uri, changeOrigin: true });
       return;
     }
 
