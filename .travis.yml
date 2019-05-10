@@ -1,5 +1,0 @@
-language: node_js
-node_js:
-  - '10'
-script:
-  - "echo 'BitGoJS tests are now run on drone: https://cloud.drone.io/BitGo/BitGoJS'"

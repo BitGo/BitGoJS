@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: audit
+name: audit-changed (node:lts)
 
 platform:
   os: linux
@@ -12,20 +12,102 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:lts
   commands:
-  - npm install --unsafe-perm
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - yarn install
+
+- name: audit-changed
+  image: node:lts
+  commands:
+  - yarn run audit-changed
+
+trigger:
+  branch:
+    exclude:
+    - master
+    - "rel/*"
+    - prod/production
+
+---
+kind: pipeline
+name: lint-changed (node:lts)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:lts
+  commands:
+  - node --version
+  - npm --version
+  - yarn --version
+  - git --version
+  - env
+
+- name: install
+  image: node:lts
+  commands:
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - yarn install
+
+- name: lint-changed
+  image: node:lts
+  commands:
+  - yarn run lint-changed
+
+trigger:
+  branch:
+    exclude:
+    - master
+    - "rel/*"
+    - prod/production
+
+---
+kind: pipeline
+name: audit (node:lts)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:lts
+  commands:
+  - node --version
+  - npm --version
+  - yarn --version
+  - git --version
+  - env
+
+- name: install
+  image: node:lts
+  commands:
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - yarn install
 
 - name: audit
   image: node:lts
   commands:
-  - npm audit
+  - yarn run audit
+
+trigger:
+  branch:
+  - master
+  - "rel/*"
+  - prod/production
 
 ---
 kind: pipeline
-name: lint
+name: lint (node:lts)
 
 platform:
   os: linux
@@ -37,17 +119,47 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:lts
   commands:
-  - npm install --unsafe-perm
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - yarn install
 
 - name: lint
   image: node:lts
   commands:
-  - "npx eslint 'src/**/*.ts'"
-  - "npx eslint 'test/**/*.ts' || true"
+  - yarn run lint
+
+trigger:
+  branch:
+  - master
+  - "rel/*"
+  - prod/production
+
+---
+kind: pipeline
+name: size and timing (node:lts)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: slow-deps
+  image: node:lts
+  commands:
+  - npm install -g slow-deps
+  - slow-deps
+
+trigger:
+  branch:
+  - master
+  - "rel/*"
+  - prod/production
 
 ---
 kind: pipeline
@@ -63,16 +175,20 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:6
   commands:
-  - npm install --unsafe-perm
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - yarn install
 
-- name: unit tests
+- name: unit-test
   image: node:6
   commands:
-  - npm run test-node
+  - yarn run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -81,13 +197,15 @@ steps:
   image: node:6
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - yarn run gen-coverage
+  - yarn run coverage -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
+
+trigger:
+  branch:
+    exclude:
     - master
     - "rel/*"
     - prod/production
@@ -106,16 +224,20 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:8
   commands:
-  - npm install --unsafe-perm
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - yarn install
 
-- name: unit tests
+- name: unit-test
   image: node:8
   commands:
-  - npm run test-node
+  - yarn run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -124,56 +246,15 @@ steps:
   image: node:8
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - yarn run gen-coverage
+  - yarn run coverage -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
 
----
-kind: pipeline
-name: unit tests (node:9)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
-  image: node:9
-  commands:
-  - node --version
-  - npm --version
-
-- name: install
-  image: node:9
-  commands:
-  - npm install --unsafe-perm
-
-- name: unit tests
-  image: node:9
-  commands:
-  - npm run test-node
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
-
-- name: upload coverage
-  image: node:9
-  commands:
-  - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
-  environment:
-    CODECOV_TOKEN:
-      from_secret: codecov
-  when:
-    branch:
+trigger:
+  branch:
+    exclude:
     - master
     - "rel/*"
     - prod/production
@@ -192,16 +273,20 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:10
   commands:
-  - npm install --unsafe-perm
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - yarn install
 
-- name: unit tests
+- name: unit-test
   image: node:10
   commands:
-  - npm run test-node
+  - yarn run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -210,13 +295,15 @@ steps:
   image: node:10
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - yarn run gen-coverage
+  - yarn run coverage -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
+
+trigger:
+  branch:
+    exclude:
     - master
     - "rel/*"
     - prod/production
@@ -235,16 +322,20 @@ steps:
   commands:
   - node --version
   - npm --version
+  - yarn --version
+  - git --version
+  - env
 
 - name: install
   image: node:11
   commands:
-  - npm install --unsafe-perm
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - yarn install
 
-- name: unit tests
+- name: unit-test
   image: node:11
   commands:
-  - npm run test-node
+  - yarn run unit-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -253,20 +344,22 @@ steps:
   image: node:11
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F unit"
+  - yarn run gen-coverage
+  - yarn run coverage -F unit
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
+
+trigger:
+  branch:
+    exclude:
     - master
     - "rel/*"
     - prod/production
 
 ---
 kind: pipeline
-name: integration tests (node:10)
+name: integration tests (node:lts)
 
 platform:
   os: linux
@@ -274,67 +367,42 @@ platform:
 
 steps:
 - name: build information
-  image: node:10
+  image: node:lts
   commands:
   - node --version
   - npm --version
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
+  - yarn --version
+  - git --version
+  - env
 
 - name: install
-  image: node:10
+  image: node:lts
   commands:
-  - npm install --unsafe-perm
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - yarn install
 
-- name: integration tests
-  image: node:10
+- name: integration-test
+  image: node:lts
   commands:
-  - "npx nyc -- node_modules/.bin/mocha -r ts-node/register --timeout 20000 --reporter list --exit 'test/v2/integration/**/*.ts'"
+  - yarn run integration-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
 
 - name: upload coverage
-  image: node:10
+  image: node:lts
   commands:
   - npm install -g codecov
-  - "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov"
-  - "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F integration"
+  - yarn run gen-coverage
+  - yarn run coverage -F integration
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
-  when:
-    branch:
-    - master
-    - "rel/*"
-    - prod/production
 
----
-kind: pipeline
-name: size and timing (node:lts)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: slow-deps
-  image: node:lts
-  commands:
-  - npm install -g slow-deps
-  - slow-deps
+trigger:
+  branch:
+  - master
+  - "rel/*"
+  - prod/production
 
 ...

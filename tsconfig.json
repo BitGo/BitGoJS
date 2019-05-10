@@ -7,15 +7,11 @@
       "es2016"
     ],
     "sourceMap": true,
-    "outDir": "./dist",
-    "rootDir": ".",
     "declaration": true,
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*",
-    "test/**/*",
-    "package.json"
+  "exclude": [
+    "node_modules"
   ]
 }

@@ -1,31 +1,77 @@
-local branches() = {
-  branch: [
-    "master",
-    "rel/*",
-    "prod/production",
-  ],
-};
+local branches() = [
+  "master",
+  "rel/*",
+  "prod/production",
+];
 
-local BuildInfo(version, limit_branches=false) = {
+local BuildInfo(version) = {
   name: "build information",
   image: "node:" + version,
   commands: [
     "node --version",
     "npm --version",
+    "yarn --version",
+    "git --version",
+    "env",
   ],
-  [if limit_branches then "when"]: branches(),
 };
 
-local Install(version, limit_branches=false) = {
+local Install(version) = {
   name: "install",
   image: "node:" + version,
   commands: [
-    "npm install --unsafe-perm",
+    "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true",
+    "yarn install",
   ],
-  [if limit_branches then "when"]: branches(),
 };
 
-local UploadCoverage(version, tag="untagged", limit_branches=true) = {
+local Command(command, version="lts") = {
+  name: command,
+  image: "node:" + version,
+  commands: [
+    "yarn run " + command,
+  ],
+};
+
+local CommandWithSecrets(command, version) =
+  Command(command, version) + {
+  environment: {
+    BITGOJS_TEST_PASSWORD: { from_secret: "password" },
+  },
+};
+
+local LernaCommand(command, version="lts", with_secrets=false) = {
+  kind: "pipeline",
+  name: command + " (node:" + version + ")",
+  steps: [
+    BuildInfo(version),
+    Install(version),
+  ] + (
+    if with_secrets then [
+      CommandWithSecrets(command, version)
+    ] else [
+      Command(command, version)
+    ]
+  ),
+};
+
+local IncludeBranches(pipeline, included_branches=branches()) = pipeline + {
+  trigger: {
+    branch: {
+      include: included_branches,
+    },
+  },
+};
+
+local ExcludeBranches(pipeline, excluded_branches=branches()) = pipeline + {
+  trigger: {
+    branch: {
+      exclude: excluded_branches
+    },
+  },
+};
+
+local UploadCoverage(version, tag="untagged") = {
   name: "upload coverage",
   image: "node:"  + version,
   environment: {
@@ -33,10 +79,9 @@ local UploadCoverage(version, tag="untagged", limit_branches=true) = {
   },
   commands: [
     "npm install -g codecov",
-    "node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov",
-    "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F " + tag,
+    "yarn run gen-coverage",
+    "yarn run coverage -F " + tag,
   ],
-  [if limit_branches then "when"]: branches(),
 };
 
 local UnitTest(version) = {
@@ -45,42 +90,28 @@ local UnitTest(version) = {
   steps: [
     BuildInfo(version),
     Install(version),
-    {
-      name: "unit tests",
-      image: "node:" + version,
-      environment: {
-        BITGOJS_TEST_PASSWORD: { from_secret: "password" },
-      },
-      commands: [
-        "npm run test-node",
-      ],
-    },
+    CommandWithSecrets("unit-test", version),
     UploadCoverage(version, "unit"),
   ],
+  trigger: {
+    branch: {
+      exclude: branches(),
+    },
+  },
 };
 
-local IntegrationTest(version, limit_branches=true) = {
+local IntegrationTest(version) = {
   kind: "pipeline",
   name: "integration tests (node:" + version + ")",
   steps: [
-    BuildInfo(version, limit_branches),
-    Install(version, limit_branches),
-    {
-      name: "integration tests",
-      image: "node:" + version,
-      environment: {
-        BITGOJS_TEST_PASSWORD: { from_secret: "password" },
-      },
-      commands: [
-        "npx nyc -- node_modules/.bin/mocha -r ts-node/register --timeout 20000 --reporter list --exit 'test/v2/integration/**/*.ts'",
-      ],
-      [if limit_branches then "when"]: branches(),
-    },
-    UploadCoverage(version, "integration", limit_branches),
+    BuildInfo(version),
+    Install(version),
+    CommandWithSecrets("integration-test", version),
+    UploadCoverage(version, "integration"),
   ],
 };
 
-local MeasureSizeAndTiming(version, limit_branches=false) = {
+local MeasureSizeAndTiming(version) = {
   kind: "pipeline",
   name: "size and timing (node:" + version + ")",
   steps: [
@@ -91,49 +122,23 @@ local MeasureSizeAndTiming(version, limit_branches=false) = {
         "npm install -g slow-deps",
         "slow-deps"
       ],
-      [if limit_branches then "when"]: branches(),
     },
   ],
 };
 
-[
-  {
-    kind: "pipeline",
-    name: "audit",
-    steps: [
-      BuildInfo("lts"),
-      Install("lts"),
-      {
-        name: "audit",
-        image: "node:lts",
-        commands: [
-          "npm audit",
-        ],
-      },
-    ],
-  },
-  {
-    kind: "pipeline",
-    name: "lint",
-    steps: [
-      BuildInfo("lts"),
-      Install("lts"),
-      {
-        name: "lint",
-        image: "node:lts",
-        commands: [
-          "npx eslint 'src/**/*.ts'",
-          "npx eslint 'test/**/*.ts' || true"
-        ],
-      },
-    ],
-  },
-  UnitTest("6"),
-  UnitTest("8"),
-  UnitTest("9"),
-  UnitTest("10"),
-  UnitTest("11"),
-  IntegrationTest("10"),
-  MeasureSizeAndTiming("lts"),
-]
+local UnitVersions = ["6", "8", "10", "11"];
+local IntegrationVersions = ["lts"];
 
+[
+  ExcludeBranches(LernaCommand("audit-changed")),
+  ExcludeBranches(LernaCommand("lint-changed")),
+  IncludeBranches(LernaCommand("audit")),
+  IncludeBranches(LernaCommand("lint")),
+  IncludeBranches(MeasureSizeAndTiming("lts")),
+] + [
+  ExcludeBranches(UnitTest(version))
+  for version in UnitVersions
+] + [
+  IncludeBranches(IntegrationTest(version))
+  for version in IntegrationVersions
+]
