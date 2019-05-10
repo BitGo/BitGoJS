@@ -1,0 +1,61 @@
+{
+  "name": "@bitgo/express",
+  "version": "6.0.0",
+  "description": "Local signing server and proxy for the BitGo platform",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "bin": {
+    "bitgo-express": "./bin/bitgo-express"
+  },
+  "keywords": [
+    "bitgo"
+  ],
+  "author": "Tyler Levine <tyler@bitgo.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/BitGoJS.git"
+  },
+  "scripts": {
+    "test": "npm run unit-test",
+    "unit-test": "nyc -- mocha -r ts-node/register --timeout 20000 --reporter list --exit \"test/unit/**/*.ts\"",
+    "integration-test": "nyc -- mocha -r ts-node/register --timeout 20000 --reporter list --exit \"test/integration/**/*.ts\"",
+    "clean": "rm -rf dist/*",
+    "prepublish": "tsc && node scripts/copySjcl.js",
+    "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
+    "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'"
+  },
+  "dependencies": {
+    "bitgo": "^5.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-prettier": "^4.2.0",
+    "husky": "^2.2.0",
+    "lint-staged": "^8.1.6",
+    "mocha": "^6.1.4",
+    "mocha-junit-reporter": "^1.22.0",
+    "mocha-lcov-reporter": "^1.3.0",
+    "nock": "^10.0.6",
+    "nyc": "^14.1.1",
+    "prettier": "^1.17.0",
+    "ts-node": "^8.1.0",
+    "typescript": "^3.4.5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.{ts,js,json}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  }
+}
