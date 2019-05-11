@@ -1,7 +1,7 @@
-require('should');
-require('should-http');
-require('should-sinon');
-require('../lib/asserts');
+import 'should';
+import 'should-http';
+import 'should-sinon';
+import '../lib/asserts';
 
 const nock = require('nock');
 const sinon = require('sinon');
@@ -12,10 +12,12 @@ const https = require('https');
 const debug = require('debug');
 const path = require('path');
 const httpProxy = require('http-proxy');
-const { Environments } = require('../../../src/common');
+const { Environments } = require('bitgo');
 const co = require('bluebird').coroutine;
-const { SSL_OP_NO_TLSv1 } = require('constants');
-const { TlsConfigurationError, NodeEnvironmentError } = require('../../../src/errors');
+
+// eslint-disable-next-line @typescript-eslint/camelcase
+import { SSL_OP_NO_TLSv1 } from 'constants';
+import { TlsConfigurationError, NodeEnvironmentError } from '../../src/errors';
 
 nock.disableNetConnect();
 
@@ -24,7 +26,7 @@ const {
   startup,
   createServer,
   createBaseUri
-} = require('../../../../express/src/expressApp');
+} = require('../../src/expressApp');
 
 describe('Bitgo Express', function() {
 

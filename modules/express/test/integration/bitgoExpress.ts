@@ -4,9 +4,9 @@ require('should-http');
 const request = require('supertest-as-promised');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
-const expressApp = require('../../../../express/src/expressApp').app;
+const expressApp = require('../../src/expressApp').app;
 const nock = require('nock');
-const common = require('../../../src/common');
+const common = require('bitgo/src/common');
 
 describe('Bitgo Express', function() {
   let agent;
