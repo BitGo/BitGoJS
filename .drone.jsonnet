@@ -21,7 +21,7 @@ local Install(version) = {
   image: "node:" + version,
   commands: [
     "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true",
-    "yarn install",
+    "yarn install" + (if version == "6" then " --ignore-engines" else ""),
   ],
 };
 

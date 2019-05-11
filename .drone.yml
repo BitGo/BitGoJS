@@ -147,7 +147,7 @@ steps:
   image: node:6
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
-  - yarn install
+  - yarn install --ignore-engines
 
 - name: unit-test-changed
   image: node:6
