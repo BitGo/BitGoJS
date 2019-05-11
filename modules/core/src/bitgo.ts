@@ -33,6 +33,7 @@ import config = require('./config');
 import crypto = require('crypto');
 import debugLib = require('debug');
 const internal = require('./v2/internal');
+const TransactionBuilder = require('./transactionBuilder');
 
 const debug = debugLib('bitgo:index');
 const { bytesToWord } = internal;
@@ -1940,6 +1941,23 @@ BitGo.prototype.getConstants = function(params) {
 
   // use defaultConstants as the backup for keys that are not set in this._constants
   return _.merge({}, config.defaultConstants(this.env), BitGo.prototype._constants[this.env]);
+};
+
+/**
+ * V1 method for calculating miner fee amounts, given the number and
+ * type of transaction inputs, along with a fee rate in satoshis per vkB.
+ *
+ * This method should not be used for new code.
+ *
+ * @deprecated
+ * @param params
+ * @param callback
+ * @return {any}
+ */
+BitGo.prototype.calculateMinerFeeInfo = function(params, callback) {
+  return co(function *() {
+    return TransactionBuilder.calculateMinerFeeInfo(params);
+  }).call(this).asCallback(callback);
 };
 
 module.exports = BitGo;

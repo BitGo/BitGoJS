@@ -1,21 +1,19 @@
 import 'should';
+import * as nock from 'nock';
 require('should-http');
 const request = require('supertest-as-promised');
 const _ = require('lodash');
 
-const expressApp = require('../../../express/src/expressApp');
-const TestBitGo = require('../lib/test_bitgo');
-const testUtil = require('./testutil');
+const expressApp = require('../../src/expressApp');
+const TestBitGo = require('bitgo/test/lib/test_bitgo');
+const testUtil = require('bitgo/test/integration/testutil');
 
-describe('Bitgo Express', function() {
+describe('Bitgo Express V1', function() {
   let agent;
   let bitgo;
 
   before(function() {
-    if ((process as any).browser) {
-      // Bitgo Express tests not supported in browser
-      this.skip();
-    }
+    nock.restore();
 
     const args = {
       debug: false,
@@ -39,7 +37,7 @@ describe('Bitgo Express', function() {
     });
 
     it('error - proxied calls disabled', function() {
-      const app = expressApp(_.extend(
+      const app = expressApp.app(_.extend(
         {},
         {
           debug: false,
@@ -49,7 +47,7 @@ describe('Bitgo Express', function() {
         { disableproxy: true })
       );
       const disabledProxyAgent = request.agent(app);
-      return disabledProxyAgent.get('/api/v1/market/latest')
+      return disabledProxyAgent.get('/')
       .send()
       .then(function(res) {
         res.should.have.status(404);
@@ -231,12 +229,12 @@ describe('Bitgo Express', function() {
       .then(function(res) {
         res.status.should.eql(400);
         res.body.should.have.property('message');
-        res.body.result.should.have.property('fee');
-        res.body.result.should.have.property('available');
+        res.body.should.have.property('fee');
+        res.body.should.have.property('available');
         res.body.message.should.equal('Insufficient funds');
-        res.body.result.fee.should.be.greaterThan(546);
-        res.body.result.available.should.be.greaterThan(546);
-        const txInfo = res.body.result.txInfo;
+        res.body.fee.should.be.greaterThan(546);
+        res.body.available.should.be.greaterThan(546);
+        const txInfo = res.body.txInfo;
         txInfo.nP2shInputs.should.be.greaterThan(0);
         txInfo.nP2pkhInputs.should.eql(0);
         txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
@@ -252,13 +250,12 @@ describe('Bitgo Express', function() {
       })
       .then(function(res) {
         res.status.should.equal(400);
-        res.body.result.should.have.property('fee');
-        res.body.result.should.have.property('available');
+        res.body.should.have.property('fee');
+        res.body.should.have.property('available');
         res.body.message.should.equal('Insufficient funds');
-        const result = res.body.result;
-        result.should.have.property('fee');
-        result.fee.should.equal(0.0003 * 1e8);
-        const txInfo = res.body.result.txInfo;
+        res.body.should.have.property('fee');
+        res.body.fee.should.equal(0.0003 * 1e8);
+        const txInfo = res.body.txInfo;
         txInfo.nP2shInputs.should.be.greaterThan(0);
         txInfo.nP2pkhInputs.should.eql(0);
         txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
@@ -277,11 +274,11 @@ describe('Bitgo Express', function() {
         res.body.should.have.property('tx');
         res.body.should.have.property('hash');
         res.body.should.have.property('fee');
-        res.body.fee.should.equal(0.0003 * 1e8);
+        res.body.fee.should.equal(Math.round(0.0003 * 1e8));
       });
     });
 
-    it('create and reject a pending approval', function() {
+    xit('create and reject a pending approval', function() {
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function() {
         return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15);
@@ -297,7 +294,7 @@ describe('Bitgo Express', function() {
         });
       })
       .then(function(res) {
-        res.status.should.equal(202);
+        res.should.have.status(202);
         res.body.should.have.property('pendingApproval');
         res.body.status.should.eql('pendingApproval');
         const pendingApprovalId = res.body.pendingApproval;
@@ -310,7 +307,7 @@ describe('Bitgo Express', function() {
       });
     });
 
-    it('create a transaction and then reconstruct a tx to approve (with original fee)', function() {
+    xit('create a transaction and then reconstruct a tx to approve (with original fee)', function() {
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15)
       .then(function() {
         return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15);
@@ -326,7 +323,7 @@ describe('Bitgo Express', function() {
         });
       })
       .then(function(res) {
-        res.status.should.equal(202);
+        res.should.have.status(202);
         res.body.should.have.property('pendingApproval');
         res.body.status.should.eql('pendingApproval');
         const pendingApprovalId = res.body.pendingApproval;
@@ -352,12 +349,12 @@ describe('Bitgo Express', function() {
       })
       .then(function(res) {
         res.should.have.status(200);
-        res.body.size.should.eql(886);
-        res.body.fee.should.eql(17720);
+        res.body.size.should.eql(920);
+        res.body.fee.should.eql(18400);
       });
     });
 
-    it('create and accept a pending approval', function() {
+    xit('create and accept a pending approval', function() {
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function() {
         return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15);
@@ -368,7 +365,7 @@ describe('Bitgo Express', function() {
         .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
       })
       .then(function(res) {
-        res.status.should.equal(202);
+        res.should.have.status(202);
         res.body.should.have.property('pendingApproval');
         res.body.status.should.eql('pendingApproval');
         const pendingApprovalId = res.body.pendingApproval;
@@ -381,7 +378,7 @@ describe('Bitgo Express', function() {
       });
     });
 
-    it('create and accept a pending approval using the xprv', function() {
+    xit('create and accept a pending approval using the xprv', function() {
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function(res) {
         return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN_SHAREDUSER, 15);
@@ -392,7 +389,7 @@ describe('Bitgo Express', function() {
         .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, otp: bitgo.testUserOTP() });
       })
       .then(function(res) {
-        res.status.should.equal(202);
+        res.should.have.status(202);
         res.body.should.have.property('pendingApproval');
         res.body.status.should.eql('pendingApproval');
         const pendingApprovalId = res.body.pendingApproval;
@@ -408,7 +405,7 @@ describe('Bitgo Express', function() {
       });
     });
 
-    it('create and accept a pending approval (2 step accept by constructing tx with original user)', function() {
+    xit('create and accept a pending approval (2 step accept by constructing tx with original user)', function() {
       let pendingApprovalId;
       return testUtil.unlockToken(agent, TestBitGo.TEST_ACCESSTOKEN, 15)
       .then(function(res) {
@@ -420,7 +417,7 @@ describe('Bitgo Express', function() {
         .send({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8, walletPassphrase: TestBitGo.TEST_PASSWORD, fee: 12345, otp: bitgo.testUserOTP() });
       })
       .then(function(res) {
-        res.status.should.equal(202);
+        res.should.have.status(202);
         res.body.should.have.property('pendingApproval');
         res.body.status.should.eql('pendingApproval');
         pendingApprovalId = res.body.pendingApproval;

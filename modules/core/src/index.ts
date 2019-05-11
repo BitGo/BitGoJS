@@ -16,6 +16,7 @@ bitgo.Buffer = Buffer;
 // Expose environments
 const _ = require('lodash');
 bitgo.Environments = _.cloneDeep(common.Environments);
+bitgo.Errors = require('./errors');
 
 /**
  * Set the network, i.e. either "bitcoin" for production with real bitcoin, or

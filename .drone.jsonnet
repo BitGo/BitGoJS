@@ -12,7 +12,6 @@ local BuildInfo(version) = {
     "npm --version",
     "yarn --version",
     "git --version",
-    "env",
   ],
 };
 
@@ -21,7 +20,7 @@ local Install(version) = {
   image: "node:" + version,
   commands: [
     "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true",
-    "yarn install",
+    "yarn install" + (if version == "6" then " --ignore-engines" else ""),
   ],
 };
 
@@ -90,7 +89,7 @@ local UnitTest(version) = {
   steps: [
     BuildInfo(version),
     Install(version),
-    CommandWithSecrets("unit-test", version),
+    CommandWithSecrets("unit-test-changed", version),
     UploadCoverage(version, "unit"),
   ],
   trigger: {

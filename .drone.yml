@@ -14,7 +14,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:lts
@@ -50,7 +49,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:lts
@@ -85,7 +83,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:lts
@@ -141,18 +138,17 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:6
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
-  - yarn install
+  - yarn install --ignore-engines
 
-- name: unit-test
+- name: unit-test-changed
   image: node:6
   commands:
-  - yarn run unit-test
+  - yarn run unit-test-changed
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -190,7 +186,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:8
@@ -198,10 +193,10 @@ steps:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
-- name: unit-test
+- name: unit-test-changed
   image: node:8
   commands:
-  - yarn run unit-test
+  - yarn run unit-test-changed
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -239,7 +234,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:10
@@ -247,10 +241,10 @@ steps:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
-- name: unit-test
+- name: unit-test-changed
   image: node:10
   commands:
-  - yarn run unit-test
+  - yarn run unit-test-changed
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -288,7 +282,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:11
@@ -296,10 +289,10 @@ steps:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
-- name: unit-test
+- name: unit-test-changed
   image: node:11
   commands:
-  - yarn run unit-test
+  - yarn run unit-test-changed
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -337,7 +330,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:lts
