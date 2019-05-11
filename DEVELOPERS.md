@@ -1,6 +1,14 @@
-# Setting up your development environment
+# Installing
 
-`yarn config set workspaces-experimental true`
+```bash
+$ yarn install
+```
+
+# Running tests
+
+```
+
+```
 
 # Working with modules
 

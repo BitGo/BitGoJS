@@ -90,7 +90,7 @@ local UnitTest(version) = {
   steps: [
     BuildInfo(version),
     Install(version),
-    CommandWithSecrets("unit-test", version),
+    CommandWithSecrets("unit-test-changed", version),
     UploadCoverage(version, "unit"),
   ],
   trigger: {

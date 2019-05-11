@@ -13,9 +13,12 @@
     "audit": "yarn audit",
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
-    "unit-test": "lerna run unit-test --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
+    "unit-test-changed": "lerna run unit-test --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
+    "gen-coverage-changed": "lerna run gen-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
+    "coverage-changed": "lerna run upload-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --",
+    "unit-test": "lerna run unit-test --stream",
     "integration-test": "lerna run integration-test --stream",
-    "gen-coverage": "lerna run gen-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
-    "coverage": "lerna run upload-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --"
+    "gen-coverage": "lerna run gen-coverage",
+    "coverage": "lerna run upload-coverage --"
   }
 }
