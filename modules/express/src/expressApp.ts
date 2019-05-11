@@ -1,4 +1,4 @@
-import express = require('express');
+import * as express from 'express';
 import httpProxy = require('http-proxy');
 import url = require('url');
 const morgan = require('morgan');
@@ -11,12 +11,15 @@ const debug = debugLib('bitgo:express');
 const https = require('https');
 const http = require('http');
 const co = Promise.coroutine;
-const { ArgumentParser } = require('argparse');
-const { SSL_OP_NO_TLSv1 } = require('constants');
+import { ArgumentParser } from 'argparse';
+import { ServerResponse } from 'http';
+
+// eslint-disable-next-line @typescript-eslint/camelcase
+import { SSL_OP_NO_TLSv1 } from 'constants';
 
 const { Environments } = require('bitgo');
 const pjson = require('../package.json');
-const { TlsConfigurationError, NodeEnvironmentError } = require('../../core/src/errors');
+import { TlsConfigurationError, NodeEnvironmentError } from './errors';
 
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
 const DEFAULT_TIMEOUT = 305 * 1000;
@@ -116,6 +119,14 @@ function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
 
   const proxy = httpProxy.createProxyServer(options);
 
+  const sendError = (res: ServerResponse, status: number, json: object) => {
+    res.writeHead(status, {
+      'Content-Type': 'application/json'
+    });
+
+    res.end(JSON.stringify(json));
+  };
+
   proxy.on('proxyReq', function(proxyReq, req) {
     // Need to rewrite the host, otherwise cross-site protection kicks in
     proxyReq.setHeader('host', url.parse(Environments[env].uri).hostname);
@@ -126,14 +137,14 @@ function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
 
   proxy.on('error', (err, _, res) => {
     debug('Proxy server error: ', err);
-    res.status(500).send({
+    sendError(res, 500, {
       error: 'BitGo Express encountered an error while attempting to proxy your request to BitGo. Please try again.'
     });
   });
 
   proxy.on('econnreset', (err, _, res) => {
     debug('Proxy server connection reset error: ', err);
-    res.status(500).send({
+    sendError(res, 500, {
       error: 'BitGo Express encountered a connection reset error while attempting to proxy your request to BitGo. Please try again.'
     });
   });
@@ -165,6 +176,7 @@ function createHttpsServer({ keypath, crtpath }, app) {
 
     const [key, cert] = yield Promise.all([privateKeyPromise, certificatePromise]);
 
+    // eslint-disable-next-line @typescript-eslint/camelcase
     return https.createServer({ secureOptions: SSL_OP_NO_TLSv1, key, cert }, app);
   }).call(this);
 }
