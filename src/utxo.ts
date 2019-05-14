@@ -41,12 +41,13 @@ export class UtxoCoin extends BaseCoin {
 
 /**
  * Factory function for utxo coin instances.
+ *
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in UtxoCoin
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `UtxoCoin`
  */
 export function utxo(
   name: string,

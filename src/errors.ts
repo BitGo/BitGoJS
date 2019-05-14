@@ -2,6 +2,7 @@
  * Each subclass needs the explicit Object.setPrototypeOf() so that instanceof will work correctly.
  * See https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
  */
+import { ContractAddress } from './account';
 import { CoinFeature } from './base';
 
 class BitGoStaticsError extends Error {
@@ -39,5 +40,12 @@ export class ConflictingCoinFeatureError extends BitGoStaticsError {
       `coin feature '${feature}' conflicts with another coin feature '${conflictingFeature}'. These features are mutually exclusive.`
     );
     Object.setPrototypeOf(this, ConflictingCoinFeatureError.prototype);
+  }
+}
+
+export class InvalidContractAddress extends BitGoStaticsError {
+  public constructor(coinName: string, contractAddress: string) {
+    super(`invalid contract address '${contractAddress}' for coin '${coinName}'`);
+    Object.setPrototypeOf(this, InvalidContractAddress.prototype);
   }
 }
