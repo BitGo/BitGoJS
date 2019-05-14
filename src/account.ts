@@ -13,6 +13,13 @@ export interface AccountConstructorOptions {
   suffix?: string;
 }
 
+/**
+ * Account based coins, such as Ethereum, Stellar, or XRP.
+ *
+ * These types of coins maintain an "account balance" for each address on the network,
+ * as opposed to the unspent transaction output model which maintains a record of all
+ * "pieces" of coin which belong to an address.
+ */
 export class AccountCoin extends BaseCoin {
   public static readonly DEFAULT_FEATURES = [
     CoinFeature.ACCOUNT_MODEL,
@@ -46,7 +53,7 @@ export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
 
-export class Erc20 extends AccountCoin {
+export class Erc20Coin extends AccountCoin {
   public contractAddress: ContractAddress;
 
   constructor(options: Erc20ConstructorOptions) {
@@ -120,10 +127,10 @@ export function erc20(
   network: AccountNetwork = Networks.main.ethereum,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
 ) {
-  return new Erc20({
+  return new Erc20Coin({
     name,
     fullName,
-    network: Networks.main.ethereum,
+    network,
     contractAddress,
     prefix,
     suffix,

@@ -1,20 +1,20 @@
 import { account, erc20, terc20 } from './account';
 import { BaseCoin } from './base';
-import { CoinNotDefinedError, DuplicateCoinDefinitionError, ModificationError } from './errors';
-import { utxo } from './utxo';
+import { CoinNotDefinedError, DuplicateCoinDefinitionError } from './errors';
+import { utxo, UtxoCoin } from './utxo';
 import { Networks } from './networks';
 
 export class CoinMap {
-  private readonly map = new Map<string, BaseCoin>();
+  private readonly _map = new Map<string, BaseCoin>();
 
   private constructor() {}
 
   static fromCoins(...coins: BaseCoin[]): CoinMap {
     return coins.reduce((coinMap, coin) => {
-      if (coinMap.map.has(coin.name)) {
+      if (coinMap._map.has(coin.name)) {
         throw new DuplicateCoinDefinitionError(coin.name);
       }
-      coinMap.map.set(coin.name, coin);
+      coinMap._map.set(coin.name, coin);
       return coinMap;
     }, new CoinMap());
   }
@@ -25,13 +25,49 @@ export class CoinMap {
    * @return {BaseCoin}
    */
   public get(key: string): Readonly<BaseCoin> {
-    if (this.map.has(key)) {
-      return this.map.get(key)!;
+    if (this._map.has(key)) {
+      return this._map.get(key)!;
     }
 
     throw new CoinNotDefinedError(key);
   }
+
+  public map<T>(mapper: (coin: BaseCoin, coinName: string) => T): T[] {
+    const mapResult: T[] = [];
+    this._map.forEach((value, key) => {
+      mapResult.push(mapper(value, key));
+    });
+    return mapResult;
+  }
+
+  public reduce<T>(reducer: (acc: T, coin: BaseCoin, coinName: string) => T, initialValue: T): T {
+    let acc = initialValue;
+    this._map.forEach((value, key) => {
+      acc = reducer(acc, value, key);
+    });
+    return acc;
+  }
+
+  public filter(predicate: (coin: BaseCoin, coinName: string) => boolean): CoinMap {
+    const filterResult: BaseCoin[] = [];
+    this._map.forEach((value, key) => {
+      if (predicate(value, key)) {
+        filterResult.push(value);
+      }
+    });
+    return CoinMap.fromCoins(...filterResult);
+  }
+
+  public forEach(callback: (coin: BaseCoin, coinName: string) => void): void {
+    this._map.forEach(callback);
+  }
 }
+
+export { UtxoCoin } from './utxo';
+export { AccountCoin, Erc20Coin } from './account';
+export { CoinFeature } from './base';
+export * from './errors';
+export { Networks } from './networks';
 
 export const coins = CoinMap.fromCoins(
   utxo('btc', 'Bitcoin', Networks.main.bitcoin),

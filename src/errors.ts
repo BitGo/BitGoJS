@@ -2,7 +2,6 @@
  * Each subclass needs the explicit Object.setPrototypeOf() so that instanceof will work correctly.
  * See https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
  */
-import { ContractAddress } from './account';
 import { CoinFeature } from './base';
 
 class BitGoStaticsError extends Error {
@@ -24,13 +23,6 @@ export class DuplicateCoinDefinitionError extends BitGoStaticsError {
   public constructor(coinName: string) {
     super(`coin '${coinName}' is already defined`);
     Object.setPrototypeOf(this, DuplicateCoinDefinitionError.prototype);
-  }
-}
-
-export class ModificationError extends BitGoStaticsError {
-  public constructor(objectName: string) {
-    super(`${objectName} cannot be modified`);
-    Object.setPrototypeOf(this, ModificationError.prototype);
   }
 }
 
