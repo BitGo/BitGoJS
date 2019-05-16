@@ -233,6 +233,11 @@ export const tokens = {
         { type: 'amn', coin: 'eth', network: 'Mainnet', name: 'Amon', tokenContractAddress: '0x737f98ac8ca59f2c68ad658e3c3d8c8963e40a4c', decimalPlaces: 18 },
         { type: 'btu', coin: 'eth', network: 'Mainnet', name: 'BTU Protocol', tokenContractAddress: '0xb683d83a532e2cb7dfa5275eed3698436371cc9f', decimalPlaces: 18 },
         { type: 'taud', coin: 'eth', network: 'Mainnet', name: 'TrueAUD', tokenContractAddress: '0x00006100f7090010005f1bd7ae6122c3c2cf0090', decimalPlaces: 18 },
+        { type: 'usx', coin: 'eth', network: 'Mainnet', name: 'USD Stable Token', tokenContractAddress: '0xe72f4c4ff9d294fc34829947e4371da306f90465', decimalPlaces: 18 },
+        { type: 'eux', coin: 'eth', network: 'Mainnet', name: 'EUR Stable Token', tokenContractAddress: '0x1b9064207e8046ec1d8e83de79380ed31283914f', decimalPlaces: 18 },
+        { type: 'plx', coin: 'eth', network: 'Mainnet', name: 'PLN Stable Token', tokenContractAddress: '0x8d682bc7ad206e54055c609ea1d4717caab665d0', decimalPlaces: 18 },
+        { type: 'cqx', coin: 'eth', network: 'Mainnet', name: 'Coinquista Coin', tokenContractAddress: '0x618c29dd2d16475b2ae6244f9e8aaead68f0ca44', decimalPlaces: 18 },
+        { type: 'kze', coin: 'eth', network: 'Mainnet', name: 'Almeela', tokenContractAddress: '0x8de67d55c58540807601dbf1259537bc2dffc84d', decimalPlaces: 18 },
       ]
     },
     ofc: {
