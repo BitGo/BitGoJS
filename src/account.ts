@@ -47,6 +47,7 @@ export class AccountCoin extends BaseCoin {
 
 export interface Erc20ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
+  isToken: true;
 }
 
 export interface ContractAddress extends String {
@@ -58,7 +59,6 @@ export class Erc20Coin extends AccountCoin {
 
   constructor(options: Erc20ConstructorOptions) {
     super({
-      isToken: true,
       ...options,
     });
 
