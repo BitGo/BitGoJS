@@ -12,7 +12,6 @@ local BuildInfo(version) = {
     "npm --version",
     "yarn --version",
     "git --version",
-    "env",
   ],
 };
 

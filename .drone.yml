@@ -14,7 +14,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:lts
@@ -50,7 +49,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:lts
@@ -85,7 +83,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:lts
@@ -141,7 +138,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:6
@@ -190,7 +186,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:8
@@ -239,7 +234,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:10
@@ -288,7 +282,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:11
@@ -337,7 +330,6 @@ steps:
   - npm --version
   - yarn --version
   - git --version
-  - env
 
 - name: install
   image: node:lts
