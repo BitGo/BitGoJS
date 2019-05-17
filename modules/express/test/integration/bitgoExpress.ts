@@ -6,7 +6,7 @@ const Promise = require('bluebird');
 const co = Promise.coroutine;
 const expressApp = require('../../src/expressApp').app;
 const nock = require('nock');
-const common = require('bitgo/src/common');
+const { Environments } = require('bitgo');
 
 describe('Bitgo Express', function() {
   let agent;
@@ -239,12 +239,12 @@ describe('Bitgo Express', function() {
 
       // client constants are retrieved upon BitGo
       // object creation so they need to be nocked
-      nock(common.Environments.test.uri)
+      nock(Environments.test.uri)
       .get('/api/v1/client/constants')
       .reply(200, {});
 
       // first request to ping endpoint should time out
-      nock(common.Environments.test.uri)
+      nock(Environments.test.uri)
       .get(path)
       .socketDelay(1000)
       .reply(200);
@@ -253,7 +253,7 @@ describe('Bitgo Express', function() {
       let pingRes = yield agent.get(path).send({});
       pingRes.should.have.status(500);
 
-      nock(common.Environments.test.uri)
+      nock(Environments.test.uri)
       .get(path)
       .reply(200);
 

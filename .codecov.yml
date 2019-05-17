@@ -2,8 +2,3 @@ coverage:
   status:
     project: off
     patch: off
-
-flags:
-  bitgo:
-    paths:
-      - modules/bitgo

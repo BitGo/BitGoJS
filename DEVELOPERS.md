@@ -6,9 +6,27 @@ $ yarn install
 
 # Running tests
 
+Modules typically provide both unit and integration tests.
+
+The rule of thumb for whether a test is a unit test or an integration test is whether or not the test makes a real network request to another system. If it does, it's probably an integration test, otherwise it's a unit test.
+
+You can run unit tests for each individual module:
+```bash
+$ yarn run unit-test --scope bitgo
 ```
 
+You can also run unit tests for all modules in parallel:
+```bash
+$ yarn run unit-test
 ```
+
+Or just the modules which have changed since master:
+```bash
+$ yarn run unit-test-changed
+```
+
+**Note:** Each module's output will be prefixed with it's name, but it may be difficult to unmangle the test output.
+
 
 # Working with modules
 
@@ -46,6 +64,8 @@ For a coin library module which supports a coin with ticker "BAZ", this should b
 | `build` | Compile typescript sources | Yes |
 | `clean` | Clean up generated build files | No |
 | `audit` | Run a vulnerability against the module dependencies | Yes | 
+| `gen-coverage` | Generate a code coverage report | No |
+| `upload-coverage` | Upload a code coverage report | No |
 
 Additional scripts should be placed in `scripts/` and should be plain javascript.
 
