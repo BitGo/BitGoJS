@@ -24,7 +24,7 @@
     "prepublish": "npm run build",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
-    "build": "echo hello"
+    "build": "tsc"
   },
   "dependencies": {
     "argparse": "^1.0.10",
