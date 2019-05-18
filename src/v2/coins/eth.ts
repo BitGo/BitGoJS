@@ -3,12 +3,13 @@ const Wallet = require('../wallet');
 import common = require('../../common');
 const config = require('../../config');
 const BigNumber = require('bignumber.js');
+const keccak = require('keccak');
 const Util = require('../../util');
 import * as _ from 'lodash';
 import * as Promise from 'bluebird';
 const request = require('superagent');
 const crypto = require('crypto');
-const prova = require('prova-lib');
+const secp256k1 = require('secp256k1');
 const utxoLib = require('bitgo-utxo-lib');
 const co = Promise.coroutine;
 
@@ -51,6 +52,8 @@ class Eth extends BaseCoin {
     return 'Ethereum';
   }
 
+  static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
+
   /**
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
@@ -83,7 +86,7 @@ class Eth extends BaseCoin {
    */
   isValidPub(pub) {
     try {
-      prova.HDNode.fromBase58(pub);
+      utxoLib.HDNode.fromBase58(pub);
       return true;
     } catch (e) {
       return false;
@@ -321,7 +324,7 @@ class Eth extends BaseCoin {
       throw new Error('missing prv parameter to sign transaction');
     }
 
-    params.recipients = params.recipients || txPrebuild.recipients;
+    params.recipients = txPrebuild.recipients || params.recipients;
 
     // if no recipients in either params or txPrebuild, then throw an error
     if (!params.recipients || !Array.isArray(params.recipients)) {
@@ -348,7 +351,8 @@ class Eth extends BaseCoin {
       operationHash: operationHash,
       signature: signature,
       gasLimit: params.gasLimit,
-      gasPrice: params.gasPrice
+      gasPrice: params.gasPrice,
+      hopTransaction: txPrebuild.hopTransaction,
     };
     return { halfSigned: txParams };
   }
@@ -506,7 +510,7 @@ class Eth extends BaseCoin {
       let backupSigningKey;
 
       if (isKrsRecovery || isUnsignedSweep) {
-        const backupHDNode = prova.HDNode.fromBase58(backupKey);
+        const backupHDNode = utxoLib.HDNode.fromBase58(backupKey);
         backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
         backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
       } else {
@@ -522,7 +526,7 @@ class Eth extends BaseCoin {
           throw new Error(`Error decrypting backup keychain: ${e.message}`);
         }
 
-        const backupHDNode = prova.HDNode.fromBase58(backupPrv);
+        const backupHDNode = utxoLib.HDNode.fromBase58(backupPrv);
         backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
         backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
       }
@@ -805,6 +809,198 @@ class Eth extends BaseCoin {
       return response.body;
     }).call(this).asCallback(callback);
   }
+
+
+  /**
+   * Creates the extra parameters needed to build a hop transaction
+   * @param buildParams The original build parameters
+   * @param callback
+   * @returns extra parameters object to merge with the original build parameters object and send to the platform
+   */
+  createHopTransactionParams(buildParams, callback): { hopParams: HopParams, gasLimit: number } {
+    return co(function *() {
+      const wallet = buildParams.wallet;
+      const recipients = buildParams.recipients;
+      const walletPassphrase = buildParams.walletPassphrase;
+
+      const userKeychain = yield this.keychains().get({ id: wallet.keyIds()[0] });
+      const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
+      const userPrvBuffer = utxoLib.HDNode.fromBase58(userPrv).getKey().getPrivateKeyBuffer();
+      if (!recipients || !Array.isArray(recipients)) {
+        throw new Error('expecting array of recipients');
+      }
+
+      // Right now we only support 1 recipient
+      if (recipients.length !== 1) {
+        throw new Error('must send to exactly 1 recipient');
+      }
+      const recipientAddress = recipients[0].address;
+      const recipientAmount = recipients[0].amount;
+      const feeEstimateParams = {
+        recipient: recipientAddress,
+        hop: true,
+      };
+      const feeEstimate = yield this.feeEstimate(feeEstimateParams);
+      const gasLimit = feeEstimate.gasLimitEstimate;
+      const gasPrice = Math.round((feeEstimate.feeEstimate) / gasLimit);
+      const gasPriceMax = gasPrice * 5;
+      // Payment id a random number so its different for every tx
+      const paymentId = Math.floor(Math.random() * 10000000000);
+      const hopDigest: Buffer = Eth.getHopDigest([recipientAddress, recipientAmount, gasPriceMax, gasLimit, paymentId]);
+
+      const userReqSig = optionalDeps.ethUtil.addHexPrefix(secp256k1.sign(hopDigest, userPrvBuffer).signature.toString('hex'));
+
+      return {
+        hopParams: {
+          gasPriceMax,
+          userReqSig,
+          paymentId,
+        },
+        gasLimit,
+      };
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Validates that the hop prebuild from the HSM is valid and correct
+   * @param wallet The wallet that the prebuild is for
+   * @param hopPrebuild The prebuild to validate
+   * @param originalParams The original parameters passed to prebuildTransaction
+   * @param callback
+   * @returns void
+   * @throws Error if The prebuild is invalid
+   */
+  validateHopPrebuild(wallet: any, hopPrebuild: HopPrebuild, originalParams: any, callback: any): void {
+    return co(function *() {
+      const {
+        tx,
+        id,
+        signature,
+      } = hopPrebuild;
+
+
+      // first, validate the HSM signature
+      const bitgoKeychain: { pub: string } = yield this.keychains().get({ id: wallet.keyIds()[2] });
+      const bitgoPubkeyBuffer: Buffer = utxoLib.HDNode.fromBase58(bitgoKeychain.pub).getPublicKeyBuffer();
+      const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
+      const messageBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
+
+      const isValidSignature: boolean = secp256k1.verify(messageBuffer, signatureBuffer.slice(1), bitgoPubkeyBuffer);
+      if (!isValidSignature) {
+        throw new Error(`Hop txid signature invalid`);
+      }
+
+      const builtHopTx = new optionalDeps.EthTx(tx);
+      // If original params are given, we can check them against the transaction prebuild params
+      if (!_.isNil(originalParams)) {
+        const {
+          recipients,
+        } = originalParams;
+
+        // Then validate that the tx params actually equal the requested params
+        const originalAmount = BigNumber(recipients[0].amount);
+        const originalDestination: string = recipients[0].address;
+
+        const hopAmount = BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value));
+        const hopDestination: string = optionalDeps.ethUtil.bufferToHex(builtHopTx.to);
+        if (!hopAmount.eq(originalAmount)) {
+          throw new Error(`Hop amount: ${hopAmount} does not equal original amount: ${originalAmount}`);
+        }
+        if (hopDestination !== originalDestination) {
+          throw new Error(`Hop destination: ${hopDestination} does not equal original recipient: ${hopDestination}`);
+        }
+      }
+
+      if (!builtHopTx.verifySignature()) {
+        // We dont want to continue at all in this case, at risk of ETH being stuck on the hop address
+        throw new Error(`Invalid hop transaction signature, txid: ${id}`);
+      }
+      if (optionalDeps.ethUtil.addHexPrefix(builtHopTx.hash().toString('hex')) !== id) {
+        throw new Error(`Signed hop txid does not equal actual txid`);
+      }
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Gets the hop digest for the user to sign. This is validated in the HSM to prove that the user requested this tx
+   * @param paramsArr The parameters to hash together for the digest
+   */
+  static getHopDigest(paramsArr): Buffer {
+    const hash = new keccak('keccak256');
+    hash.update([Eth.hopTransactionSalt, ...paramsArr].join('$'));
+    return hash.digest();
+  }
+
+  /**
+   * Modify prebuild before sending it to the server. Add things like hop transaction params
+   * @param buildParams The whitelisted parameters for this prebuild
+   * @param buildParams.hop True if this should prebuild a hop tx, else false
+   * @param buildParams.recipients The recipients array of this transaction
+   * @param buildParams.wallet The wallet sending this tx
+   * @param buildParams.walletPassphrase the passphrase for this wallet
+   * @param callback
+   */
+  getExtraPrebuildParams(buildParams, callback) {
+    return co(function *() {
+      let extraParams = { };
+      if (!_.isUndefined(buildParams.hop) && buildParams.hop && !_.isUndefined(buildParams.wallet) &&
+        !_.isUndefined(buildParams.recipients) && !_.isUndefined(buildParams.walletPassphrase)) {
+        extraParams = Object.assign(extraParams, yield this.createHopTransactionParams(buildParams));
+      }
+      return extraParams;
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Modify prebuild after receiving it from the server. Add things like nlocktime
+   */
+  postProcessPrebuild(params, callback) {
+    return co(function *() {
+      if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
+        yield this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
+      }
+      return params;
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Coin-specific things done before signing a transaction, i.e. verification
+   */
+  presignTransaction(params, callback) {
+    return co(function *() {
+      if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
+        yield this.validateHopPrebuild(params.wallet, params.hopTransaction);
+      }
+      return params;
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Fetch fee estimate information from the server
+   * @param {Object} params The params passed into the function
+   * @param {Boolean} [params.hop] True if we should estimate fee for a hop transaction
+   * @param {String} [params.recipient] The recipient of the transaction to estimate a send to
+   * @param {String} [params.data] The ETH tx data to estimate a send for
+   * @param callback
+   * @returns {Object} The fee info returned from the server
+   */
+  feeEstimate(params, callback) {
+    return co(function *coFeeEstimate() {
+      const query : any = {};
+      if (params && params.hop) {
+        query.hop = params.hop;
+      }
+      if (params && params.recipient) {
+        query.recipient = params.recipient;
+      }
+      if (params && params.data) {
+        query.data = params.data;
+      }
+
+      return this.bitgo.get(this.url('/tx/fee')).query(query).result();
+    }).call(this).asCallback(callback);
+  }
+
 }
 
 /**
@@ -820,12 +1016,30 @@ Eth.prototype.generateKeyPair = function(seed) {
     // maximum entropy and gives us maximum security against cracking.
     seed = crypto.randomBytes(512 / 8);
   }
-  const extendedKey = prova.HDNode.fromSeedBuffer(seed);
+  const extendedKey = utxoLib.HDNode.fromSeedBuffer(seed);
   const xpub = extendedKey.neutered().toBase58();
   return {
     pub: xpub,
     prv: extendedKey.toBase58()
   };
 };
+
+/**
+ * The extra parameters to send to platform build route for hop transactions
+ */
+interface HopParams {
+  gasPriceMax: number,
+  userReqSig: string,
+  paymentId: string,
+}
+
+/**
+ * The prebuilt hop transaction returned from the HSM
+ */
+interface HopPrebuild {
+  tx: string,
+  id: string,
+  signature: string,
+}
 
 module.exports = Eth;

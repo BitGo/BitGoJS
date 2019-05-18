@@ -62,6 +62,7 @@
     "eol": "0.5.0",
     "express": "4.16.4",
     "http-proxy": "1.11.1",
+    "keccak": "1.4.0",
     "lodash": "4.17.11",
     "minimist": "0.2.0",
     "moment": "2.20.1",

@@ -354,11 +354,29 @@ class BaseCoin {
   }
 
   /**
+   * Get extra parameters for prebuilding a tx. Add things like hop transaction params
+   */
+  getExtraPrebuildParams(buildParams, callback) {
+    return Promise.method(function() {
+      return { };
+    }).call(this).asCallback(callback);
+  }
+
+  /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
   postProcessPrebuild(prebuildResponse, callback) {
     return Promise.method(function() {
       return prebuildResponse;
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Coin-specific things done before signing a transaction, i.e. verification
+   */
+  presignTransaction(params, callback) {
+    return Promise.method(function() {
+      return params;
     }).call(this).asCallback(callback);
   }
 
