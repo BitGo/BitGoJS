@@ -9,7 +9,7 @@ const testUtil = require('bitgo/test/integration/testutil');
 import * as bluebird from 'bluebird';
 const co = bluebird.coroutine;
 
-describe('Express', () => {
+describe('Express ETH', () => {
   let agent;
   let testWalletId;
   let testWalletPassphrase;

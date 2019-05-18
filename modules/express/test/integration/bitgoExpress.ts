@@ -5,16 +5,13 @@ const request = require('supertest-as-promised');
 const Promise = require('bluebird');
 const co = Promise.coroutine;
 const expressApp = require('../../src/expressApp').app;
-const nock = require('nock');
+import * as nock from 'nock';
 const { Environments } = require('bitgo');
 
 describe('Bitgo Express', function() {
   let agent;
   before(function() {
-    if ((process as any).browser) {
-      // Bitgo Express tests not supported in browser
-      this.skip();
-    }
+    nock.restore();
 
     const args = {
       debug: false,

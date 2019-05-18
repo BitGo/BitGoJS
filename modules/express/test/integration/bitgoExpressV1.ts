@@ -8,16 +8,11 @@ const expressApp = require('../../src/expressApp');
 const TestBitGo = require('bitgo/test/lib/test_bitgo');
 const testUtil = require('bitgo/test/integration/testutil');
 
-describe('Bitgo Express', function() {
+describe('Bitgo Express V1', function() {
   let agent;
   let bitgo;
 
   before(function() {
-    if ((process as any).browser) {
-      // Bitgo Express tests not supported in browser
-      this.skip();
-    }
-
     nock.restore();
 
     const args = {
