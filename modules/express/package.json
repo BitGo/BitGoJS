@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/express",
-  "version": "6.0.0",
+  "version": "5.3.0",
   "description": "Local signing server and proxy for the BitGo platform",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -21,14 +21,14 @@
     "unit-test": "nyc -- mocha -r ts-node/register --timeout 20000 --reporter list --exit \"test/unit/**/*.ts\"",
     "integration-test": "nyc -- mocha -r ts-node/register --timeout 20000 --reporter list --exit \"test/integration/**/*.ts\"",
     "clean": "rm -rf dist/*",
-    "prepublishOnly": "npm run build",
+    "prepare": "npm run build",
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
     "build": "tsc"
   },
   "dependencies": {
     "argparse": "^1.0.10",
-    "bitgo": "^5.2.0",
+    "bitgo": "^5.0.0",
     "body-parser": "^1.19.0",
     "express": "^4.16.4",
     "http-proxy": "^1.17.0",
@@ -60,6 +60,7 @@
     "should-http": "^0.1.1",
     "should-sinon": "^0.0.6",
     "sinon": "^6.3.5",
+    "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz",
     "ts-node": "^8.1.0",
     "typescript": "^3.4.5"
   },
