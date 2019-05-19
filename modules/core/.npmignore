@@ -60,9 +60,7 @@ typings/
 .env
 
 # BitGo Repository Files
-lab
 example
-docs
 .idea
 .arcanist-extensions
 .arcconfig
@@ -91,4 +89,6 @@ test/
 
 # tests output by tsc
 dist/test/
+
+!dist/browser/
 

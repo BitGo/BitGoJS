@@ -1,5 +1,11 @@
 {
   "version": "independent",
   "npmClient": "yarn",
-  "useWorkspaces": true
+  "useWorkspaces": true,
+  "command": {
+    "version": {
+      "allowBranch": "rel/*",
+      "message": "chore(release): publish %v"
+    }
+  }
 }
