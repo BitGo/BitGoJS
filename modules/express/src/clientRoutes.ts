@@ -1,20 +1,30 @@
-import bodyParser = require('body-parser');
+import * as bodyParser from 'body-parser';
+import * as bluebird from 'bluebird';
+import * as url from 'url';
+import * as debugLib from 'debug';
 
 const BitGoJS = require('bitgo');
-const TransactionBuilder = require('../../core/src/transactionBuilder');
-const common = require('../../core/src/common');
-const Promise = require('bluebird');
-const co = Promise.coroutine;
-const url = require('url');
-const _ = require('lodash');
 const pjson = require('../package.json');
-const debug = require('debug')('bitgo:express');
-const util = require('../../core/src/util');
-const errors = require('../../core/src/errors');
+const debug = debugLib('bitgo:express');
 
+import { randomBytes } from 'crypto';
+import * as _ from 'lodash';
+
+const co = bluebird.coroutine;
 const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
 
-const handlePing = function(req) {
+const createRequestId = function() {
+  return {
+    _seed: randomBytes(10),
+    _seq: 0,
+    inc: function() { this._seq++; },
+    toString: function() {
+      return `${this._seed.toString('hex')}-${_.padStart(this._seq.toString(16), 4, '0')}`;
+    }
+  };
+};
+
+const handlePing = function(req, res, next) {
   return req.bitgo.ping();
 };
 
@@ -160,7 +170,7 @@ const handleFanOutUnspents = function(req) {
 };
 
 const handleCalculateMinerFeeInfo = function(req) {
-  return TransactionBuilder.calculateMinerFeeInfo({
+  return req.bitgo.calculateMinerFeeInfo({
     bitgo: req.bitgo,
     feeRate: req.body.feeRate,
     nP2shInputs: req.body.nP2shInputs,
@@ -206,7 +216,9 @@ const handleV2UserREST = function(req, res, next) {
 
 // handle v2 address validation
 const handleV2VerifyAddress = function(req) {
-  common.validateParams(req.body, ['address'], []);
+  if (!_.isString(req.body.address)) {
+    throw new Error('Expected address to be a string');
+  }
 
   if (req.body.supportOldScriptHashVersion !== undefined &&
     !_.isBoolean(req.body.supportOldScriptHashVersion)) {
@@ -341,7 +353,7 @@ const handleV2AccelerateTransaction = co(function *handleV2AccelerateTransaction
 const handleV2SendOne = function(req) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  const reqId = util.createRequestId();
+  const reqId = createRequestId();
   return coin.wallets().get({ id: req.params.id, reqId })
   .then(function(wallet) {
     req.body.reqId = reqId;
@@ -363,7 +375,7 @@ const handleV2SendOne = function(req) {
 const handleV2SendMany = function(req) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  const reqId = util.createRequestId();
+  const reqId = createRequestId();
   return coin.wallets().get({ id: req.params.id, reqId })
   .then(function(wallet) {
     req.body.reqId = reqId;
@@ -391,7 +403,7 @@ const handleV2CoinSpecificREST = function(req, res, next) {
     const coinURL = coin.url(createAPIPath(req));
     return redirectRequest(bitgo, method, coinURL, req, next);
   } catch (e) {
-    if (e instanceof errors.UnsupportedCoinError) {
+    if (e instanceof BitGoJS.Errors.UnsupportedCoinError) {
       const queryParams = _.transform(req.query, (acc, value, key) => {
         for (const val of _.castArray(value)) {
           acc.push(`${key}=${val}`);
@@ -476,8 +488,8 @@ const prepareBitGo = function(args) {
 const promiseWrapper = function(promiseRequestHandler, args) {
   return function(req, res, next) {
     debug(`handle: ${req.method} ${req.originalUrl}`);
-    Promise.try(promiseRequestHandler, req, res, next)
-    .then(function(result) {
+    bluebird.try(promiseRequestHandler.bind(null, req, res, next))
+    .then(function(result: any) {
       let status = 200;
       if (result.__redirect) {
         res.redirect(result.url);

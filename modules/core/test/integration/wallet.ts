@@ -11,7 +11,6 @@ const Q = require('q');
 
 const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');
-const config = require('../../src/config');
 const TransactionBuilder = require('../../src/transactionBuilder');
 const crypto = require('crypto');
 import * as _ from 'lodash';
