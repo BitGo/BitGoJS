@@ -100,13 +100,13 @@ class LitecoinTestnet extends Mainnet implements UtxoNetwork {
 
 export const Networks = {
   main: {
-    bitcoin: new Bitcoin() as Readonly<Bitcoin>,
-    litecoin: new Litecoin() as Readonly<Litecoin>,
-    ethereum: new Ethereum() as Readonly<Ethereum>,
+    bitcoin: Object.freeze(new Bitcoin()),
+    litecoin: Object.freeze(new Litecoin()),
+    ethereum: Object.freeze(new Ethereum()),
   },
   test: {
-    bitcoin: new BitcoinTestnet() as Readonly<BitcoinTestnet>,
-    litecoin: new LitecoinTestnet() as Readonly<LitecoinTestnet>,
-    kovan: new Kovan() as Readonly<Kovan>,
+    bitcoin: Object.freeze(new BitcoinTestnet()),
+    litecoin: Object.freeze(new LitecoinTestnet()),
+    kovan: Object.freeze(new Kovan()),
   },
 };

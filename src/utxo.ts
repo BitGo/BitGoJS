@@ -37,6 +37,14 @@ export class UtxoCoin extends BaseCoin {
 
     this.network = options.network;
   }
+
+  protected disallowedFeatures(): Set<CoinFeature> {
+    return new Set([CoinFeature.ACCOUNT_MODEL]);
+  }
+
+  protected requiredFeatures(): Set<CoinFeature> {
+    return new Set([CoinFeature.UNSPENT_MODEL]);
+  }
 }
 
 /**
@@ -57,12 +65,14 @@ export function utxo(
   suffix?: string,
   features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES
 ) {
-  return new UtxoCoin({
-    name,
-    fullName,
-    network,
-    prefix,
-    suffix,
-    features,
-  });
+  return Object.freeze(
+    new UtxoCoin({
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+    })
+  );
 }

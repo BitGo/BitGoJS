@@ -43,6 +43,14 @@ export class AccountCoin extends BaseCoin {
 
     this.network = options.network;
   }
+
+  protected requiredFeatures(): Set<CoinFeature> {
+    return new Set<CoinFeature>([CoinFeature.ACCOUNT_MODEL]);
+  }
+
+  protected disallowedFeatures(): Set<CoinFeature> {
+    return new Set<CoinFeature>([CoinFeature.UNSPENT_MODEL]);
+  }
 }
 
 export interface Erc20ConstructorOptions extends AccountConstructorOptions {
@@ -54,6 +62,10 @@ export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
 
+/**
+ * ERC 20 is a token standard for the Ethereum blockchain. They are similar to other account coins, but have a
+ * contract address property which identifies the smart contract which defines the token.
+ */
 export class Erc20Coin extends AccountCoin {
   public contractAddress: ContractAddress;
 
@@ -93,16 +105,18 @@ export function account(
   isToken: boolean = false,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
 ) {
-  return new AccountCoin({
-    name,
-    fullName,
-    network,
-    prefix,
-    suffix,
-    features,
-    decimalPlaces,
-    isToken,
-  });
+  return Object.freeze(
+    new AccountCoin({
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken,
+    })
+  );
 }
 
 /**
@@ -127,17 +141,19 @@ export function erc20(
   network: AccountNetwork = Networks.main.ethereum,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
 ) {
-  return new Erc20Coin({
-    name,
-    fullName,
-    network,
-    contractAddress,
-    prefix,
-    suffix,
-    features,
-    decimalPlaces,
-    isToken: true,
-  });
+  return Object.freeze(
+    new Erc20Coin({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      isToken: true,
+    })
+  );
 }
 
 /**

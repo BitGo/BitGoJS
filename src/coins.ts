@@ -5,11 +5,11 @@ import { utxo, UtxoCoin } from './utxo';
 import { Networks } from './networks';
 
 export class CoinMap {
-  private readonly _map = new Map<string, BaseCoin>();
+  private readonly _map = new Map<string, Readonly<BaseCoin>>();
 
   private constructor() {}
 
-  static fromCoins(coins: BaseCoin[]): CoinMap {
+  static fromCoins(coins: Readonly<BaseCoin>[]): CoinMap {
     return coins.reduce((coinMap, coin) => {
       if (coinMap._map.has(coin.name)) {
         throw new DuplicateCoinDefinitionError(coin.name);
@@ -32,7 +32,7 @@ export class CoinMap {
     throw new CoinNotDefinedError(key);
   }
 
-  public map<T>(mapper: (coin: BaseCoin, coinName: string) => T): T[] {
+  public map<T>(mapper: (coin: Readonly<BaseCoin>, coinName: string) => T): T[] {
     const mapResult: T[] = [];
     this._map.forEach((value, key) => {
       mapResult.push(mapper(value, key));
@@ -40,7 +40,7 @@ export class CoinMap {
     return mapResult;
   }
 
-  public reduce<T>(reducer: (acc: T, coin: BaseCoin, coinName: string) => T, initialValue: T): T {
+  public reduce<T>(reducer: (acc: T, coin: Readonly<BaseCoin>, coinName: string) => T, initialValue: T): T {
     let acc = initialValue;
     this._map.forEach((value, key) => {
       acc = reducer(acc, value, key);
@@ -48,8 +48,8 @@ export class CoinMap {
     return acc;
   }
 
-  public filter(predicate: (coin: BaseCoin, coinName: string) => boolean): CoinMap {
-    const filterResult: BaseCoin[] = [];
+  public filter(predicate: (coin: Readonly<BaseCoin>, coinName: string) => boolean): CoinMap {
+    const filterResult: Readonly<BaseCoin>[] = [];
     this._map.forEach((value, key) => {
       if (predicate(value, key)) {
         filterResult.push(value);
@@ -58,7 +58,7 @@ export class CoinMap {
     return CoinMap.fromCoins(filterResult);
   }
 
-  public forEach(callback: (coin: BaseCoin, coinName: string) => void): void {
+  public forEach(callback: (coin: Readonly<BaseCoin>, coinName: string) => void): void {
     this._map.forEach(callback);
   }
 }
