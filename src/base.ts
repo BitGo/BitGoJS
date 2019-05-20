@@ -65,7 +65,11 @@ export const enum CoinFeature {
 export const enum UnderlyingAsset {
   BTC = 'btc',
   USD = 'usd',
-  SELF = 'self',
+  ETH = 'eth',
+  LTC = 'ltc',
+  OMG = 'omg',
+  ERC = 'erc',
+  TEST = 'test',
 }
 
 export interface BaseCoinConstructorOptions {

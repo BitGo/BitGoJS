@@ -6,6 +6,7 @@ export interface AccountConstructorOptions {
   fullName: string;
   name: string;
   network: AccountNetwork;
+  asset: UnderlyingAsset;
   features: CoinFeature[];
   decimalPlaces: number;
   isToken: boolean;
@@ -35,7 +36,7 @@ export class AccountCoin extends BaseCoin {
       kind: CoinKind.CRYPTO,
       family: options.network.family,
       decimalPlaces: options.decimalPlaces,
-      asset: UnderlyingAsset.SELF,
+      asset: options.asset,
       prefix: '',
       suffix: options.name,
       ...options,
@@ -90,6 +91,7 @@ export class Erc20Coin extends AccountCoin {
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
  * @param decimalPlaces Number of decimal places this coin supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
@@ -100,6 +102,7 @@ export function account(
   fullName: string,
   network: AccountNetwork,
   decimalPlaces: number,
+  asset: UnderlyingAsset,
   prefix?: string,
   suffix?: string,
   isToken: boolean = false,
@@ -115,6 +118,7 @@ export function account(
       features,
       decimalPlaces,
       isToken,
+      asset,
     })
   );
 }
@@ -126,6 +130,7 @@ export function account(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Ethereum main network.
@@ -136,6 +141,7 @@ export function erc20(
   fullName: string,
   decimalPlaces: number,
   contractAddress: string,
+  asset: UnderlyingAsset,
   prefix?: string,
   suffix?: string,
   network: AccountNetwork = Networks.main.ethereum,
@@ -152,6 +158,7 @@ export function erc20(
       features,
       decimalPlaces,
       isToken: true,
+      asset,
     })
   );
 }
@@ -163,6 +170,7 @@ export function erc20(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to the Kovan test network.
@@ -173,10 +181,11 @@ export function terc20(
   fullName: string,
   decimalPlaces: number,
   contractAddress: string,
+  asset: UnderlyingAsset,
   prefix?: string,
   suffix?: string,
   network: AccountNetwork = Networks.test.kovan,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
 ) {
-  return erc20(name, fullName, decimalPlaces, contractAddress, prefix, suffix, network, features);
+  return erc20(name, fullName, decimalPlaces, contractAddress, asset, prefix, suffix, network, features);
 }

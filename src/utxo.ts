@@ -6,6 +6,7 @@ export interface UtxoConstructorOptions {
   name: string;
   network: UtxoNetwork;
   features: CoinFeature[];
+  asset: UnderlyingAsset;
   prefix?: string;
   suffix?: string;
 }
@@ -29,7 +30,7 @@ export class UtxoCoin extends BaseCoin {
       family: options.network.family,
       isToken: false,
       decimalPlaces: 8,
-      asset: UnderlyingAsset.SELF,
+      asset: options.asset,
       prefix: '',
       suffix: options.name,
       ...options,
@@ -53,17 +54,19 @@ export class UtxoCoin extends BaseCoin {
  * @param name unique identifier of the coin
  * @param fullName Complete human-readable name of the coin
  * @param network Network object for this coin
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `UtxoCoin`
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `UtxoCoin`
  */
 export function utxo(
   name: string,
   fullName: string,
   network: UtxoNetwork,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES,
   prefix?: string,
-  suffix?: string,
-  features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES
+  suffix?: string
 ) {
   return Object.freeze(
     new UtxoCoin({
@@ -73,6 +76,7 @@ export function utxo(
       prefix,
       suffix,
       features,
+      asset,
     })
   );
 }
