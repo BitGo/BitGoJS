@@ -82,7 +82,7 @@ class Litecoin extends Mainnet implements UtxoNetwork {
   family = CoinFamily.LTC;
 }
 
-class LitecoinTestnet extends Mainnet implements UtxoNetwork {
+class LitecoinTestnet extends Testnet implements UtxoNetwork {
   bech32 = 'tltc';
   // clarify these constants - they are different between BitGoJS and bitgo-utxo-lib
   bip32 = {
