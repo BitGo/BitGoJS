@@ -81,20 +81,6 @@ class BitcoinGold extends Mainnet implements UtxoNetwork {
   family = CoinFamily.BTG;
 }
 
-class BitcoinGoldTestnet extends Testnet implements UtxoNetwork {
-  bech32 = 'tb';
-  bip32 = {
-    public: 0x043587cf,
-    private: 0x04358394,
-  };
-  pubKeyHash = 0x6f;
-  scriptHash = 0xc4;
-  wif = 0xef;
-
-  messagePrefix = BitcoinGold.prototype.messagePrefix;
-  family = BitcoinGold.prototype.family;
-}
-
 class Litecoin extends Mainnet implements UtxoNetwork {
   messagePrefix = '\x19Litecoin Signed Message:\n';
   bech32 = 'ltc';
@@ -152,7 +138,6 @@ export const Networks = {
   },
   test: {
     bitcoin: Object.freeze(new BitcoinTestnet()),
-    bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     kovan: Object.freeze(new Kovan()),
     ripple: Object.freeze(new RippleTestnet()),
