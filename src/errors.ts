@@ -26,18 +26,32 @@ export class DuplicateCoinDefinitionError extends BitGoStaticsError {
   }
 }
 
-export class ModificationError extends BitGoStaticsError {
-  public constructor(objectName: string) {
-    super(`${objectName} cannot be modified`);
-    Object.setPrototypeOf(this, ModificationError.prototype);
+export class DisallowedCoinFeatureError extends BitGoStaticsError {
+  public constructor(coinName: string, feature: CoinFeature) {
+    super(`coin feature '${feature}' is disallowed for coin ${coinName}.`);
+    Object.setPrototypeOf(this, DisallowedCoinFeatureError.prototype);
   }
 }
 
-export class ConflictingCoinFeatureError extends BitGoStaticsError {
-  public constructor(feature: CoinFeature, conflictingFeature: CoinFeature) {
+export class MissingRequiredCoinFeatureError extends BitGoStaticsError {
+  public constructor(coinName: string, missingFeatures: CoinFeature[]) {
+    super(`Required coin feature(s) '${missingFeatures.join(', ')}' were not found for coin ${coinName}.`);
+    Object.setPrototypeOf(this, MissingRequiredCoinFeatureError.prototype);
+  }
+}
+
+export class InvalidContractAddress extends BitGoStaticsError {
+  public constructor(coinName: string, contractAddress: string) {
+    super(`invalid contract address '${contractAddress}' for coin '${coinName}'`);
+    Object.setPrototypeOf(this, InvalidContractAddress.prototype);
+  }
+}
+
+export class ConflictingCoinFeaturesError extends BitGoStaticsError {
+  public constructor(coinName: string, conflictingFeatures: CoinFeature[]) {
     super(
-      `coin feature '${feature}' conflicts with another coin feature '${conflictingFeature}'. These features are mutually exclusive.`
+      `coin feature(s) for coin '${coinName}' cannot be both required and disallowed: ${conflictingFeatures.join(', ')}`
     );
-    Object.setPrototypeOf(this, ConflictingCoinFeatureError.prototype);
+    Object.setPrototypeOf(this, InvalidContractAddress.prototype);
   }
 }

@@ -1,4 +1,4 @@
-import { ConflictingCoinFeatureError } from './errors';
+import { ConflictingCoinFeaturesError, DisallowedCoinFeatureError, MissingRequiredCoinFeatureError } from './errors';
 
 export const enum CoinKind {
   CRYPTO = 'crypto',
@@ -48,6 +48,7 @@ export const enum CoinFeature {
   CHILD_PAYS_FOR_PARENT = 'cpfp',
   WRAPPED_SEGWIT = 'wrapped-segwit',
   NATIVE_SEGWIT = 'native-segwit',
+  SUPPORTS_TOKENS = 'supports-tokens',
 }
 
 /**
@@ -64,7 +65,11 @@ export const enum CoinFeature {
 export const enum UnderlyingAsset {
   BTC = 'btc',
   USD = 'usd',
-  SELF = 'self',
+  ETH = 'eth',
+  LTC = 'ltc',
+  OMG = 'omg',
+  ERC = 'erc',
+  TEST = 'test',
 }
 
 export interface BaseCoinConstructorOptions {
@@ -104,33 +109,56 @@ export abstract class BaseCoin {
   public readonly decimalPlaces: number;
   public readonly asset: UnderlyingAsset;
 
-  protected static CONFLICTING_FEATURES: {
-    [index: string]: CoinFeature[];
-  } = {
-    [CoinFeature.ACCOUNT_MODEL]: [CoinFeature.UNSPENT_MODEL],
-  };
+  /**
+   * Set of features which are required by a coin subclass
+   * @return {Set<CoinFeature>}
+   */
+  protected abstract requiredFeatures(): Set<CoinFeature>;
+
+  /**
+   * Set of features which are not valid and are disallowed by a coin subclass
+   * @return {Set<CoinFeature>}
+   */
+  protected abstract disallowedFeatures(): Set<CoinFeature>;
 
   /**
    * Ensures that the base coin constructor was passed a valid set of options.
    *
    * This includes checking that:
-   * - the coin features do not conflict
+   * - All coin features of the new instance are allowed by the coin class
+   * - No features required by the coin class are missing from the new instance
    * @param {BaseCoinConstructorOptions} options
-   * @throws {ConflictingCoinFeatureError} if any of the coin features are in conflict with one another
+   * @throws {DisallowedCoinFeatureError} if any of the coin features are not allowed for the coin class
+   * @throws {MissingRequiredCoinFeatureError} if any features required by the coin class are missing
    */
-  private static validateOptions(options: BaseCoinConstructorOptions) {
+  private validateOptions(options: BaseCoinConstructorOptions) {
+    const requiredFeatures = this.requiredFeatures();
+    const disallowedFeatures = this.disallowedFeatures();
+
+    const intersectionFeatures = Array.from(requiredFeatures).filter(feat => disallowedFeatures.has(feat));
+
+    if (intersectionFeatures.length > 0) {
+      throw new ConflictingCoinFeaturesError(options.name, intersectionFeatures);
+    }
+
     for (const feature of options.features) {
-      const conflictingFeatures = BaseCoin.CONFLICTING_FEATURES[feature] || [];
-      for (const conflictingFeature of conflictingFeatures) {
-        if (options.features.includes(conflictingFeature)) {
-          throw new ConflictingCoinFeatureError(feature, conflictingFeature);
-        }
+      if (disallowedFeatures.has(feature)) {
+        throw new DisallowedCoinFeatureError(options.name, feature);
       }
+
+      if (requiredFeatures.has(feature)) {
+        requiredFeatures.delete(feature);
+      }
+    }
+
+    if (requiredFeatures.size > 0) {
+      // some required features were missing
+      throw new MissingRequiredCoinFeatureError(options.name, Array.from(requiredFeatures));
     }
   }
 
   protected constructor(options: BaseCoinConstructorOptions) {
-    BaseCoin.validateOptions(options);
+    this.validateOptions(options);
 
     this.fullName = options.fullName;
     this.name = options.name;

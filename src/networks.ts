@@ -19,12 +19,25 @@ export interface UtxoNetwork {
   type: NetworkType;
 }
 
-class Mainnet {
+export interface AccountNetwork {
+  family: CoinFamily;
+  type: NetworkType;
+}
+
+export class Mainnet {
   type = NetworkType.MAINNET;
 }
 
-class Testnet {
+export class Testnet {
   type = NetworkType.TESTNET;
+}
+
+class Ethereum extends Mainnet implements AccountNetwork {
+  family = CoinFamily.ETH;
+}
+
+class Kovan extends Testnet implements AccountNetwork {
+  family = Ethereum.prototype.family;
 }
 
 class Bitcoin extends Mainnet implements UtxoNetwork {
@@ -87,11 +100,13 @@ class LitecoinTestnet extends Mainnet implements UtxoNetwork {
 
 export const Networks = {
   main: {
-    bitcoin: new Bitcoin(),
-    litecoin: new Litecoin(),
+    bitcoin: Object.freeze(new Bitcoin()),
+    litecoin: Object.freeze(new Litecoin()),
+    ethereum: Object.freeze(new Ethereum()),
   },
   test: {
-    bitcoin: new BitcoinTestnet(),
-    litecoin: new LitecoinTestnet(),
+    bitcoin: Object.freeze(new BitcoinTestnet()),
+    litecoin: Object.freeze(new LitecoinTestnet()),
+    kovan: Object.freeze(new Kovan()),
   },
 };
