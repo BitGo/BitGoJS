@@ -33,7 +33,7 @@
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "clean": "rm -r dist/*",
     "build": "./node_modules/.bin/tsc && node scripts/copySjcl.js",
-    "prepublish": "npm run build"
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@bitgo/unspents": "^0.6.0",
