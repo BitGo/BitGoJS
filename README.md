@@ -73,7 +73,7 @@ coins.forEach((coin) => {
 });
 ```
 
-## Status
+## Repo Status
 * UTXO and account base types are defined
 * Documentation is mostly source code comments and README examples
 * This library can be depended on, but expect some changes going forward
@@ -85,3 +85,24 @@ coins.forEach((coin) => {
 * `src/utxo.ts`: Unspent Transaction Output (UTXO) based coin classes and factory function.
 * `src/account.ts`: Account-based coin classes and factory methods. Includes ERC20 factory functions.
 * `src/errors.ts`: Custom Error classes
+
+## Installation + Building
+To install the project locally, run the following steps:
+
+```
+$ # clone the project locally
+$ git clone git@github.com:BitGo/statics.git
+
+$ # npm install dependencies (optionally use node >8.6.0)
+$ # (optionally) nvm install 8.6.0 -- required to run the linter which is executed pre-commit
+$ # (optionally) nvm use 8.6.0
+$ npm install
+```
+
+To build the project (from TypeScript to Javascript):
+
+```
+$ npm run build
+```
+
+This builds the Javascript and adds it to `dist/src/`. There aren't any tests, but you will receive compilation errors if you have invalid syntax.
