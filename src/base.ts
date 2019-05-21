@@ -70,6 +70,8 @@ export const enum UnderlyingAsset {
   OMG = 'omg',
   ERC = 'erc',
   TEST = 'test',
+  XRP = 'xrp',
+  XLM = 'xlm',
 }
 
 export interface BaseCoinConstructorOptions {

@@ -98,15 +98,35 @@ class LitecoinTestnet extends Mainnet implements UtxoNetwork {
   family = Litecoin.prototype.family;
 }
 
+class Ripple extends Mainnet implements AccountNetwork {
+  family = CoinFamily.XRP;
+}
+
+class RippleTestnet extends Testnet implements AccountNetwork {
+  family = Ripple.prototype.family;
+}
+
+class Stellar extends Mainnet implements AccountNetwork {
+  family = CoinFamily.XLM;
+}
+
+class StellarTestnet extends Testnet implements AccountNetwork {
+  family = Stellar.prototype.family;
+}
+
 export const Networks = {
   main: {
     bitcoin: Object.freeze(new Bitcoin()),
     litecoin: Object.freeze(new Litecoin()),
     ethereum: Object.freeze(new Ethereum()),
+    ripple: Object.freeze(new Ripple()),
+    stellar: Object.freeze(new Stellar()),
   },
   test: {
     bitcoin: Object.freeze(new BitcoinTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     kovan: Object.freeze(new Kovan()),
+    ripple: Object.freeze(new RippleTestnet()),
+    stellar: Object.freeze(new StellarTestnet()),
   },
 };
