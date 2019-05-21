@@ -84,7 +84,7 @@ coins.forEach((coin) => {
 * `src/networks.ts`: Network interfaces and implementation classes.
 * `src/utxo.ts`: Unspent Transaction Output (UTXO) based coin classes and factory function.
 * `src/account.ts`: Account-based coin classes and factory methods. Includes ERC20 factory functions.
-* `src/errors.ts`: Custom Error classes
+* `src/errors.ts`: Custom Error classes.
 
 ## Installation + Building
 To install the project locally, run the following steps:
