@@ -8,6 +8,7 @@
     "modules/*"
   ],
   "scripts": {
+    "postinstall": "lerna bootstrap",
     "generate-drone": "drone jsonnet --stream",
     "audit": "yarn audit",
     "lint": "lerna run lint --stream",
