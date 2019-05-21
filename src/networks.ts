@@ -69,7 +69,7 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
 }
 
 class BitcoinGold extends Mainnet implements UtxoNetwork {
-  messagePrefix = '\x18BitcoinGold Signed Message:\n';
+  messagePrefix = '\x18Bitcoin Gold Signed Message:\n';
   bech32 = 'btg';
   bip32 = {
     public: 0x0488b21e,
