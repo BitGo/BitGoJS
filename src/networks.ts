@@ -79,7 +79,6 @@ class BitcoinGold extends Mainnet implements UtxoNetwork {
   scriptHash = 0x17;
   wif = 0x80;
   family = CoinFamily.BTG;
-  forkId = 0x4f; // 79
 }
 
 class BitcoinGoldTestnet extends Testnet implements UtxoNetwork {
