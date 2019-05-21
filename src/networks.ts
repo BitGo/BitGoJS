@@ -68,9 +68,7 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
   family = Bitcoin.prototype.family;
 }
 
-/* BCH and its testnet class, both inherit a fair bit of config
- * from Bitcoin.
- */
+// BCH inherits a fair bit of config from Bitcoin
 class BitcoinCash extends Mainnet implements UtxoNetwork {
   messagePrefix = Bitcoin.prototype.messagePrefix;
   bech32 = Bitcoin.prototype.bech32;
@@ -84,6 +82,7 @@ class BitcoinCash extends Mainnet implements UtxoNetwork {
   family = CoinFamily.BCH;
 }
 
+// TBCH inherits a fair bit of config from BitcoinTestnet
 class BitcoinCashTestnet extends Testnet implements UtxoNetwork {
   messagePrefix = Bitcoin.prototype.messagePrefix;
   bech32 = BitcoinTestnet.prototype.bech32;
