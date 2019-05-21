@@ -68,6 +68,35 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
   family = Bitcoin.prototype.family;
 }
 
+class BitcoinGold extends Mainnet implements UtxoNetwork {
+  messagePrefix = '\x18BitcoinGold Signed Message:\n';
+  bech32 = 'btg';
+  bip32 = {
+    public: 0x0488b21e,
+    private: 0x0488ade4,
+  };
+  pubKeyHash = 0x26;
+  scriptHash = 0x17;
+  wif = 0x80;
+  family = CoinFamily.BTG;
+  forkId = 0x4f; // 79
+}
+
+class BitcoinGoldTestnet extends Testnet implements UtxoNetwork {
+  bech32 = 'tb';
+  bip32 = {
+    public: 0x043587cf,
+    private: 0x04358394,
+  };
+  pubKeyHash = 0x6f;
+  scriptHash = 0xc4;
+  wif = 0xef;
+
+  // fields "inherited" from the Bitcoin mainnet
+  messagePrefix = Bitcoin.prototype.messagePrefix;
+  family = Bitcoin.prototype.family;
+}
+
 class Litecoin extends Mainnet implements UtxoNetwork {
   messagePrefix = '\x19Litecoin Signed Message:\n';
   bech32 = 'ltc';
@@ -117,6 +146,7 @@ class StellarTestnet extends Testnet implements AccountNetwork {
 export const Networks = {
   main: {
     bitcoin: Object.freeze(new Bitcoin()),
+    bitcoinGold: Object.freeze(new BitcoinGold()),
     litecoin: Object.freeze(new Litecoin()),
     ethereum: Object.freeze(new Ethereum()),
     ripple: Object.freeze(new Ripple()),
@@ -124,6 +154,7 @@ export const Networks = {
   },
   test: {
     bitcoin: Object.freeze(new BitcoinTestnet()),
+    bitcoinGold: Object.freeze(new BitcoinGoldTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     kovan: Object.freeze(new Kovan()),
     ripple: Object.freeze(new RippleTestnet()),

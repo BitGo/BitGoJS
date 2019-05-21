@@ -64,6 +64,7 @@ export const enum CoinFeature {
  */
 export const enum UnderlyingAsset {
   BTC = 'btc',
+  BTG = 'btg',
   USD = 'usd',
   ETH = 'eth',
   LTC = 'ltc',
