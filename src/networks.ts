@@ -91,9 +91,8 @@ class BitcoinGoldTestnet extends Testnet implements UtxoNetwork {
   scriptHash = 0xc4;
   wif = 0xef;
 
-  // fields "inherited" from the Bitcoin mainnet
-  messagePrefix = Bitcoin.prototype.messagePrefix;
-  family = Bitcoin.prototype.family;
+  messagePrefix = BitcoinGold.prototype.messagePrefix;
+  family = BitcoinGold.prototype.family;
 }
 
 class Litecoin extends Mainnet implements UtxoNetwork {
