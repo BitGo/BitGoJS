@@ -20,7 +20,6 @@ steps:
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
-  - yarn run bootstrap
 
 - name: lint-changed
   image: node:lts
@@ -56,7 +55,6 @@ steps:
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
-  - yarn run bootstrap
 
 - name: audit
   image: node:lts
@@ -91,7 +89,6 @@ steps:
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
-  - yarn run bootstrap
 
 - name: lint
   image: node:lts
@@ -147,7 +144,6 @@ steps:
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install --ignore-engines
-  - yarn run bootstrap
 
 - name: unit-test-changed
   image: node:6
@@ -196,7 +192,6 @@ steps:
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
-  - yarn run bootstrap
 
 - name: unit-test-changed
   image: node:8
@@ -245,7 +240,6 @@ steps:
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
-  - yarn run bootstrap
 
 - name: unit-test-changed
   image: node:10
@@ -294,7 +288,6 @@ steps:
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
-  - yarn run bootstrap
 
 - name: unit-test-changed
   image: node:11
@@ -343,7 +336,6 @@ steps:
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
-  - yarn run bootstrap
 
 - name: integration-test
   image: node:lts
