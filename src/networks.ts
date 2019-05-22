@@ -5,7 +5,12 @@ export const enum NetworkType {
   TESTNET = 'testnet',
 }
 
-export interface UtxoNetwork {
+export abstract class BaseNetwork {
+  public abstract readonly type: NetworkType;
+  public abstract readonly family: CoinFamily;
+}
+
+export interface UtxoNetwork extends BaseNetwork {
   messagePrefix: string;
   bech32: string;
   bip32: {
@@ -15,20 +20,15 @@ export interface UtxoNetwork {
   pubKeyHash: number;
   scriptHash: number;
   wif: number;
-  family: CoinFamily;
-  type: NetworkType;
 }
 
-export interface AccountNetwork {
-  family: CoinFamily;
-  type: NetworkType;
-}
+export interface AccountNetwork extends BaseNetwork {}
 
-export class Mainnet {
+export abstract class Mainnet extends BaseNetwork {
   type = NetworkType.MAINNET;
 }
 
-export class Testnet {
+export abstract class Testnet extends BaseNetwork {
   type = NetworkType.TESTNET;
 }
 

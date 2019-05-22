@@ -1,4 +1,5 @@
 import { ConflictingCoinFeaturesError, DisallowedCoinFeatureError, MissingRequiredCoinFeatureError } from './errors';
+import { BaseNetwork } from './networks';
 
 export const enum CoinKind {
   CRYPTO = 'crypto',
@@ -86,6 +87,7 @@ export interface BaseCoinConstructorOptions {
   features: CoinFeature[];
   decimalPlaces: number;
   asset: UnderlyingAsset;
+  network: BaseNetwork;
 }
 
 export abstract class BaseCoin {
@@ -106,6 +108,10 @@ export abstract class BaseCoin {
     Coin Features. These are yes or no questions about what the coin supports and does not support.
    */
   public readonly features: CoinFeature[];
+  /*
+    Coin Network. This is a list of properties which are relevant to the underlying network on which this coin exists.
+   */
+  public readonly network: BaseNetwork;
   /*
     Conversion properties
    */
@@ -173,5 +179,6 @@ export abstract class BaseCoin {
     this.features = options.features;
     this.decimalPlaces = options.decimalPlaces;
     this.asset = options.asset;
+    this.network = options.network;
   }
 }
