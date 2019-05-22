@@ -60,7 +60,7 @@ export class OfcCoin extends BaseCoin {
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
  */
 export function ofc(
   name: string,
@@ -102,7 +102,7 @@ export function ofc(
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
- * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
  */
 export function tofc(
   name: string,

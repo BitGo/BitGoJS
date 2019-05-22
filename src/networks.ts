@@ -33,6 +33,16 @@ export abstract class Testnet extends BaseNetwork {
   type = NetworkType.TESTNET;
 }
 
+/**
+ * Mainnet abstract class for Bitcoin forks. These are the constants from the Bitcoin main network,
+ * which are overridden to various degrees by each Bitcoin fork.
+ *
+ * This allows us to not redefine these properties for forks which haven't changed them from Bitcoin.
+ *
+ * However, if a coin network has changed one of these properties, and you accidentally forget to override,
+ * you'll inherit the incorrect values from the Bitcoin network. Be wary, and double check your network constant
+ * overrides to ensure you're not missing any changes.
+ */
 abstract class BitcoinLikeMainnet extends Mainnet implements UtxoNetwork {
   messagePrefix = '\x18Bitcoin Signed Message:\n';
   bip32 = {
@@ -45,7 +55,12 @@ abstract class BitcoinLikeMainnet extends Mainnet implements UtxoNetwork {
   type = NetworkType.MAINNET;
 }
 
-abstract class BitcoinLikeTestnet extends BitcoinLikeMainnet {
+/**
+ * Testnet abstract class for Bitcoin forks. Works exactly the same as `BitcoinLikeMainnet`,
+ * except the constants are taken from the Bitcoin test network.
+ */
+abstract class BitcoinLikeTestnet extends Testnet implements UtxoNetwork {
+  messagePrefix = '\x18Bitcoin Signed Message:\n';
   bip32 = {
     public: 0x043587cf,
     private: 0x04358394,
