@@ -85,6 +85,8 @@ export const coins = CoinMap.fromCoins([
   account('txrp', 'Testnet Ripple', Networks.test.ripple, 6, UnderlyingAsset.XRP),
   account('xlm', 'Stellar', Networks.main.stellar, 7, UnderlyingAsset.XLM),
   account('txlm', 'Testnet Stellar', Networks.test.stellar, 7, UnderlyingAsset.XLM),
+  utxo('zec', 'ZCash', Networks.main.zCash, UnderlyingAsset.ZEC),
+  utxo('tzec', 'Testnet ZCash', Networks.test.zCash, UnderlyingAsset.ZEC),
   erc20('erc', 'ERC Token', 0, '0x8e35d374594fa07d0de5c5e6563766cd24336251', UnderlyingAsset.ERC),
   erc20('omg', 'OmiseGo Token', 18, '0xd26114cd6ee289accf82350c8d8487fedb8a0c07', UnderlyingAsset.OMG),
   terc20('terc', 'ERC Test Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.ERC),
