@@ -102,7 +102,7 @@ class BitcoinSV extends Mainnet implements UtxoNetwork {
   pubKeyHash = Bitcoin.prototype.pubKeyHash;
   scriptHash = Bitcoin.prototype.scriptHash;
   wif = Bitcoin.prototype.wif;
-  family = CoinFamily.BCH;
+  family = CoinFamily.BSV;
 }
 
 // TBSV inherits a fair bit of config from BitcoinTestnet
