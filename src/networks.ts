@@ -7,7 +7,7 @@ export const enum NetworkType {
 
 export interface UtxoNetwork {
   messagePrefix: string;
-  bech32: string;
+  bech32?: string;
   bip32: {
     public: number;
     private: number;
@@ -71,7 +71,6 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
 // BCH inherits a fair bit of config from Bitcoin
 class BitcoinCash extends Mainnet implements UtxoNetwork {
   messagePrefix = Bitcoin.prototype.messagePrefix;
-  bech32 = Bitcoin.prototype.bech32;
   bip32 = {
     public: Bitcoin.prototype.bip32.public,
     private: Bitcoin.prototype.bip32.private,
@@ -85,7 +84,6 @@ class BitcoinCash extends Mainnet implements UtxoNetwork {
 // TBCH inherits a fair bit of config from BitcoinTestnet
 class BitcoinCashTestnet extends Testnet implements UtxoNetwork {
   messagePrefix = Bitcoin.prototype.messagePrefix;
-  bech32 = BitcoinTestnet.prototype.bech32;
   bip32 = {
     public: BitcoinTestnet.prototype.bip32.public,
     private: BitcoinTestnet.prototype.bip32.private,
