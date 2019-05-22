@@ -75,6 +75,7 @@ export const enum UnderlyingAsset {
   TEST = 'test',
   XRP = 'xrp',
   XLM = 'xlm',
+  ZEC = 'zec',
 }
 
 export interface BaseCoinConstructorOptions {

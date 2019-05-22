@@ -165,6 +165,34 @@ class LitecoinTestnet extends Testnet implements UtxoNetwork {
   family = Litecoin.prototype.family;
 }
 
+// zCash inherits a fair bit of config from Bitcoin
+class zCash extends Mainnet implements UtxoNetwork {
+  messagePrefix = '\x18ZCash Signed Message:\n';
+  bech32 = Bitcoin.prototype.bech32;
+  bip32 = {
+    public: Bitcoin.prototype.bip32.public,
+    private: Bitcoin.prototype.bip32.private,
+  };
+  pubKeyHash = 0x1cb8;
+  scriptHash = 0x1cbd;
+  wif = Bitcoin.prototype.wif;
+  family = CoinFamily.ZEC;
+}
+
+// TZEC inherits a fair bit of config from BitcoinTestnet
+class zCashTestnet extends Testnet implements UtxoNetwork {
+  messagePrefix = zCash.prototype.messagePrefix;
+  bech32 = BitcoinTestnet.prototype.bech32;
+  bip32 = {
+    public: BitcoinTestnet.prototype.bip32.public,
+    private: BitcoinTestnet.prototype.bip32.private,
+  };
+  pubKeyHash = 0x1d25;
+  scriptHash = 0x1cba;
+  wif = BitcoinTestnet.prototype.wif;
+  family = zCash.prototype.family;
+}
+
 class Ripple extends Mainnet implements AccountNetwork {
   family = CoinFamily.XRP;
 }
@@ -191,6 +219,7 @@ export const Networks = {
     ethereum: Object.freeze(new Ethereum()),
     ripple: Object.freeze(new Ripple()),
     stellar: Object.freeze(new Stellar()),
+    zCash: Object.freeze(new zCash()),
   },
   test: {
     bitcoin: Object.freeze(new BitcoinTestnet()),
@@ -200,5 +229,6 @@ export const Networks = {
     kovan: Object.freeze(new Kovan()),
     ripple: Object.freeze(new RippleTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
+    zCash: Object.freeze(new zCashTestnet()),
   },
 };
