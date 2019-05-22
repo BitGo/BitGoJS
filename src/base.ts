@@ -71,22 +71,35 @@ export const enum CoinFeature {
   PAYGO = 'paygo',
   /*
    * Does this coin align with the unspent model?
+   *
+   * These are typically Bitcoin and forks of it, such as Litecoin and Bitcoin Cash.
    */
   UNSPENT_MODEL = 'unspent-model',
   /*
    * Does this coin align with the account model?
+   *
+   * Examples of this coin type are Ethereum, XRP, and Stellar
    */
   ACCOUNT_MODEL = 'account-model',
   /*
    * Does this coin support child-pays-for-parent transactions?
+   *
+   * These are special types of transactions which can accelerate the confirmation time
+   * of another transaction which is stuck in the mempool due to low fees.
+   *
+   * This is only possible for coins which follow the unspent model (UTXO coins).
    */
   CHILD_PAYS_FOR_PARENT = 'cpfp',
   /*
    * Does this coin support pay-to-script-hash wrapped segregated witness transactions.
+   *
+   * These are upgraded transaction types which can only apply to UTXO coins such as Bitcoin.
    */
   WRAPPED_SEGWIT = 'wrapped-segwit',
   /*
    * Does this coin support segregated witness transactions natively? (eg, not wrapped in a P2SH indirection layer)
+   *
+   * These are upgraded transaction types which can only apply to UTXO coins such as Bitcoin.
    */
   NATIVE_SEGWIT = 'native-segwit',
   /*
