@@ -5,8 +5,6 @@
   Static config for the BitGo platform
 </h3>
 
-<h3 align="center"><a href="https://docs.google.com/document/d/1NW9D652X_HvR8g6M8gB9vUsRiSwx_s43sLAL-3YzTno/edit#">TDD</a></h3>
-
 ## Goals
 * Provide an "encyclopedia" of all relevant constants which are sprinkled throughout the BitGo stack.
 * Separate *static* config data from *dynamic* config data

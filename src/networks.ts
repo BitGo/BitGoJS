@@ -5,9 +5,14 @@ export const enum NetworkType {
   TESTNET = 'testnet',
 }
 
-export interface UtxoNetwork {
+export abstract class BaseNetwork {
+  public abstract readonly type: NetworkType;
+  public abstract readonly family: CoinFamily;
+}
+
+export interface UtxoNetwork extends BaseNetwork {
   messagePrefix: string;
-  bech32: string;
+  bech32?: string;
   bip32: {
     public: number;
     private: number;
@@ -15,20 +20,15 @@ export interface UtxoNetwork {
   pubKeyHash: number;
   scriptHash: number;
   wif: number;
-  family: CoinFamily;
-  type: NetworkType;
 }
 
-export interface AccountNetwork {
-  family: CoinFamily;
-  type: NetworkType;
-}
+export interface AccountNetwork extends BaseNetwork {}
 
-export class Mainnet {
+export abstract class Mainnet extends BaseNetwork {
   type = NetworkType.MAINNET;
 }
 
-export class Testnet {
+export abstract class Testnet extends BaseNetwork {
   type = NetworkType.TESTNET;
 }
 
@@ -69,11 +69,7 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
 // BCH inherits a fair bit of config from Bitcoin
 class BitcoinCash extends Mainnet implements UtxoNetwork {
   messagePrefix = Bitcoin.prototype.messagePrefix;
-  bech32 = Bitcoin.prototype.bech32;
-  bip32 = {
-    public: Bitcoin.prototype.bip32.public,
-    private: Bitcoin.prototype.bip32.private,
-  };
+  bip32 = Bitcoin.prototype.bip32;
   pubKeyHash = Bitcoin.prototype.pubKeyHash;
   scriptHash = Bitcoin.prototype.scriptHash;
   wif = Bitcoin.prototype.wif;
@@ -83,11 +79,7 @@ class BitcoinCash extends Mainnet implements UtxoNetwork {
 // TBCH inherits a fair bit of config from BitcoinTestnet
 class BitcoinCashTestnet extends Testnet implements UtxoNetwork {
   messagePrefix = Bitcoin.prototype.messagePrefix;
-  bech32 = BitcoinTestnet.prototype.bech32;
-  bip32 = {
-    public: BitcoinTestnet.prototype.bip32.public,
-    private: BitcoinTestnet.prototype.bip32.private,
-  };
+  bip32 = BitcoinTestnet.prototype.bip32;
   pubKeyHash = BitcoinTestnet.prototype.pubKeyHash;
   scriptHash = BitcoinTestnet.prototype.scriptHash;
   wif = BitcoinTestnet.prototype.wif;
@@ -95,31 +87,23 @@ class BitcoinCashTestnet extends Testnet implements UtxoNetwork {
 }
 
 // BSV inherits a fair bit of config from Bitcoin
-class BitcoinCashSatoshisVision extends Mainnet implements UtxoNetwork {
+class BitcoinSV extends Mainnet implements UtxoNetwork {
   messagePrefix = Bitcoin.prototype.messagePrefix;
-  bech32 = Bitcoin.prototype.bech32;
-  bip32 = {
-    public: Bitcoin.prototype.bip32.public,
-    private: Bitcoin.prototype.bip32.private,
-  };
+  bip32 = Bitcoin.prototype.bip32;
   pubKeyHash = Bitcoin.prototype.pubKeyHash;
   scriptHash = Bitcoin.prototype.scriptHash;
   wif = Bitcoin.prototype.wif;
-  family = CoinFamily.BCH;
+  family = CoinFamily.BSV;
 }
 
 // TBSV inherits a fair bit of config from BitcoinTestnet
-class BitcoinCashSatoshisVisionTestnet extends Testnet implements UtxoNetwork {
+class BitcoinSVTestnet extends Testnet implements UtxoNetwork {
   messagePrefix = Bitcoin.prototype.messagePrefix;
-  bech32 = BitcoinTestnet.prototype.bech32;
-  bip32 = {
-    public: BitcoinTestnet.prototype.bip32.public,
-    private: BitcoinTestnet.prototype.bip32.private,
-  };
+  bip32 = BitcoinTestnet.prototype.bip32;
   pubKeyHash = BitcoinTestnet.prototype.pubKeyHash;
   scriptHash = BitcoinTestnet.prototype.scriptHash;
   wif = BitcoinTestnet.prototype.wif;
-  family = BitcoinCashSatoshisVision.prototype.family;
+  family = BitcoinSV.prototype.family;
 }
 
 class BitcoinGold extends Mainnet implements UtxoNetwork {
@@ -213,7 +197,7 @@ export const Networks = {
   main: {
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
-    bitcoinCashSV: Object.freeze(new BitcoinCashSatoshisVision()),
+    bitcoinSV: Object.freeze(new BitcoinSV()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     litecoin: Object.freeze(new Litecoin()),
     ethereum: Object.freeze(new Ethereum()),
@@ -224,7 +208,7 @@ export const Networks = {
   test: {
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
-    bitcoinCashSV: Object.freeze(new BitcoinCashSatoshisVisionTestnet()),
+    bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     kovan: Object.freeze(new Kovan()),
     ripple: Object.freeze(new RippleTestnet()),
