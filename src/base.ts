@@ -64,6 +64,7 @@ export const enum CoinFeature {
  * represent some amount of another asset class.
  */
 export const enum UnderlyingAsset {
+  BCH = 'bch',
   BTC = 'btc',
   BTG = 'btg',
   USD = 'usd',

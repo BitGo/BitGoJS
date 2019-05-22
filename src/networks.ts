@@ -12,7 +12,7 @@ export abstract class BaseNetwork {
 
 export interface UtxoNetwork extends BaseNetwork {
   messagePrefix: string;
-  bech32: string;
+  bech32?: string;
   bip32: {
     public: number;
     private: number;
@@ -66,6 +66,32 @@ class BitcoinTestnet extends Testnet implements UtxoNetwork {
   // fields "inherited" from the Bitcoin mainnet
   messagePrefix = Bitcoin.prototype.messagePrefix;
   family = Bitcoin.prototype.family;
+}
+
+// BCH inherits a fair bit of config from Bitcoin
+class BitcoinCash extends Mainnet implements UtxoNetwork {
+  messagePrefix = Bitcoin.prototype.messagePrefix;
+  bip32 = {
+    public: Bitcoin.prototype.bip32.public,
+    private: Bitcoin.prototype.bip32.private,
+  };
+  pubKeyHash = Bitcoin.prototype.pubKeyHash;
+  scriptHash = Bitcoin.prototype.scriptHash;
+  wif = Bitcoin.prototype.wif;
+  family = CoinFamily.BCH;
+}
+
+// TBCH inherits a fair bit of config from BitcoinTestnet
+class BitcoinCashTestnet extends Testnet implements UtxoNetwork {
+  messagePrefix = Bitcoin.prototype.messagePrefix;
+  bip32 = {
+    public: BitcoinTestnet.prototype.bip32.public,
+    private: BitcoinTestnet.prototype.bip32.private,
+  };
+  pubKeyHash = BitcoinTestnet.prototype.pubKeyHash;
+  scriptHash = BitcoinTestnet.prototype.scriptHash;
+  wif = BitcoinTestnet.prototype.wif;
+  family = BitcoinCash.prototype.family;
 }
 
 class BitcoinGold extends Mainnet implements UtxoNetwork {
@@ -130,6 +156,7 @@ class StellarTestnet extends Testnet implements AccountNetwork {
 export const Networks = {
   main: {
     bitcoin: Object.freeze(new Bitcoin()),
+    bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     litecoin: Object.freeze(new Litecoin()),
     ethereum: Object.freeze(new Ethereum()),
@@ -138,6 +165,7 @@ export const Networks = {
   },
   test: {
     bitcoin: Object.freeze(new BitcoinTestnet()),
+    bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     kovan: Object.freeze(new Kovan()),
     ripple: Object.freeze(new RippleTestnet()),

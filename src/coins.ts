@@ -70,6 +70,8 @@ export * from './errors';
 export { Networks } from './networks';
 
 export const coins = CoinMap.fromCoins([
+  utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
+  utxo('tbch', 'Testnet Bitcoin Cash', Networks.test.bitcoinCash, UnderlyingAsset.BCH),
   utxo('btc', 'Bitcoin', Networks.main.bitcoin, UnderlyingAsset.BTC),
   utxo('tbtc', 'Testnet Bitcoin', Networks.test.bitcoin, UnderlyingAsset.BTC),
   utxo('btg', 'Bitcoin Gold', Networks.main.bitcoinGold, UnderlyingAsset.BTG),
