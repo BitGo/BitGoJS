@@ -169,7 +169,7 @@ export const Networks = {
   main: {
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
-    bitcoinCashSV: Object.freeze(new BitcoinSV()),
+    bitcoinSV: Object.freeze(new BitcoinSV()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     litecoin: Object.freeze(new Litecoin()),
     ethereum: Object.freeze(new Ethereum()),
@@ -179,7 +179,7 @@ export const Networks = {
   test: {
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
-    bitcoinCashSV: Object.freeze(new BitcoinSVTestnet()),
+    bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     kovan: Object.freeze(new Kovan()),
     ripple: Object.freeze(new RippleTestnet()),
