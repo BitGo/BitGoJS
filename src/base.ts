@@ -39,16 +39,61 @@ export const enum CoinFamily {
  * coin supports the coin-specific feature that the logic implements.
  */
 export const enum CoinFeature {
+  /*
+   * The valueless transfer feature indicates that it is valid to send a transaction which moves zero units of the coin.
+   *
+   * An example is Ethereum, which uses zero value transactions to trigger contract calls.
+   */
   VALUELESS_TRANSFER = 'valueless-transfer',
+  /*
+   * Transaction data means there can be arbitrary data encoded in a transaction.
+   *
+   * Ethereum contract call data is an example.
+   */
   TRANSACTION_DATA = 'transaction-data',
+  /*
+   * Some coins have a higher precision range than IEEE 754 doubles, which are used to represent numbers in javascript.
+   *
+   * For these coins, we must use an arbitrary precision arithmetic library, and this feature indicates this requirement.
+   */
   REQUIRES_BIG_NUMBER = 'requires-big-number',
+  /*
+   * RMG requires all wallets to have a backup key held by a BitGo approved Key Recovery Service (KRS)
+   */
   REQUIRES_KRS_BACKUP_KEY = 'requires-krs-backup-key',
+  /*
+   * For customers which are not on a postpaid contract, we add an extra output to transactions which pays BitGo a fee.
+   *
+   * This fee is known as the "pay-as-you-go fee", or just "paygo" for short.
+   *
+   * Some coins are unable to create transactions with more than one output, so paygo outputs are not possible for these coins.
+   */
   PAYGO = 'paygo',
+  /*
+   * Does this coin align with the unspent model?
+   */
   UNSPENT_MODEL = 'unspent-model',
+  /*
+   * Does this coin align with the account model?
+   */
   ACCOUNT_MODEL = 'account-model',
+  /*
+   * Does this coin support child-pays-for-parent transactions?
+   */
   CHILD_PAYS_FOR_PARENT = 'cpfp',
+  /*
+   * Does this coin support pay-to-script-hash wrapped segregated witness transactions.
+   */
   WRAPPED_SEGWIT = 'wrapped-segwit',
+  /*
+   * Does this coin support segregated witness transactions natively? (eg, not wrapped in a P2SH indirection layer)
+   */
   NATIVE_SEGWIT = 'native-segwit',
+  /*
+   * Does this coin support tokens? These are distinct assets from the underlying coin, but run on the same network.
+   *
+   * For example, Ethereum's ERC 20 token standard means that it supports tokens, so it shall have this feature.
+   */
   SUPPORTS_TOKENS = 'supports-tokens',
 }
 
