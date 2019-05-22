@@ -18,11 +18,7 @@ export interface OfcConstructorOptions {
  * OFC (off chain) coins. These are virtual coins used to represent off chain assets on the BitGo platform.
  */
 export class OfcCoin extends BaseCoin {
-  public static readonly DEFAULT_FEATURES = [
-    CoinFeature.ACCOUNT_MODEL,
-    CoinFeature.REQUIRES_BIG_NUMBER,
-    CoinFeature.SUPPORTS_TOKENS,
-  ];
+  public static readonly DEFAULT_FEATURES = [CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER];
 
   constructor(options: OfcConstructorOptions) {
     super({
@@ -37,7 +33,7 @@ export class OfcCoin extends BaseCoin {
   }
 
   protected requiredFeatures(): Set<CoinFeature> {
-    return new Set<CoinFeature>([]);
+    return new Set<CoinFeature>([CoinFeature.ACCOUNT_MODEL, CoinFeature.REQUIRES_BIG_NUMBER]);
   }
 
   protected disallowedFeatures(): Set<CoinFeature> {
@@ -47,6 +43,7 @@ export class OfcCoin extends BaseCoin {
       CoinFeature.NATIVE_SEGWIT,
       CoinFeature.PAYGO,
       CoinFeature.WRAPPED_SEGWIT,
+      CoinFeature.SUPPORTS_TOKENS,
     ]);
   }
 }
