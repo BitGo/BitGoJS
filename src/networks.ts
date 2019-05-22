@@ -152,10 +152,7 @@ class LitecoinTestnet extends Testnet implements UtxoNetwork {
 // zCash inherits a fair bit of config from Bitcoin
 class ZCash extends Mainnet implements UtxoNetwork {
   messagePrefix = '\x18ZCash Signed Message:\n';
-  bip32 = {
-    public: Bitcoin.prototype.bip32.public,
-    private: Bitcoin.prototype.bip32.private,
-  };
+  bip32 = Bitcoin.prototype.bip32;
   pubKeyHash = 0x1cb8;
   scriptHash = 0x1cbd;
   wif = Bitcoin.prototype.wif;
@@ -165,10 +162,7 @@ class ZCash extends Mainnet implements UtxoNetwork {
 // TZEC inherits a fair bit of config from BitcoinTestnet
 class ZCashTestnet extends Testnet implements UtxoNetwork {
   messagePrefix = ZCash.prototype.messagePrefix;
-  bip32 = {
-    public: BitcoinTestnet.prototype.bip32.public,
-    private: BitcoinTestnet.prototype.bip32.private,
-  };
+  bip32 = BitcoinTestnet.prototype.bip32;
   pubKeyHash = 0x1d25;
   scriptHash = 0x1cba;
   wif = BitcoinTestnet.prototype.wif;
