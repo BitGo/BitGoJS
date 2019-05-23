@@ -143,7 +143,6 @@ export interface BaseCoinConstructorOptions {
   prefix?: string;
   suffix?: string;
   kind: CoinKind;
-  family: CoinFamily;
   isToken: boolean;
   features: CoinFeature[];
   decimalPlaces: number;
@@ -235,7 +234,7 @@ export abstract class BaseCoin {
     this.prefix = options.prefix;
     this.suffix = options.suffix;
     this.kind = options.kind;
-    this.family = options.family;
+    this.family = options.network.family;
     this.isToken = options.isToken;
     this.features = options.features;
     this.decimalPlaces = options.decimalPlaces;

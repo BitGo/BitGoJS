@@ -25,11 +25,11 @@ export interface UtxoNetwork extends BaseNetwork {
 export interface AccountNetwork extends BaseNetwork {}
 export interface OfcNetwork extends BaseNetwork {}
 
-export abstract class Mainnet extends BaseNetwork {
+abstract class Mainnet extends BaseNetwork {
   type = NetworkType.MAINNET;
 }
 
-export abstract class Testnet extends BaseNetwork {
+abstract class Testnet extends BaseNetwork {
   type = NetworkType.TESTNET;
 }
 

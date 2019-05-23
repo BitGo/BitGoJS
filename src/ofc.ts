@@ -22,12 +22,6 @@ export class OfcCoin extends BaseCoin {
 
   constructor(options: OfcConstructorOptions) {
     super({
-      kind: options.kind,
-      family: options.network.family,
-      decimalPlaces: options.decimalPlaces,
-      asset: options.asset,
-      prefix: '',
-      suffix: options.name,
       ...options,
     });
   }
@@ -68,8 +62,8 @@ export function ofc(
   decimalPlaces: number,
   asset: UnderlyingAsset,
   kind: CoinKind,
-  prefix?: string,
-  suffix?: string,
+  prefix: string = '',
+  suffix: string = name,
   network: OfcNetwork = Networks.main.ofc,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   isToken: boolean = true
@@ -110,8 +104,8 @@ export function tofc(
   decimalPlaces: number,
   asset: UnderlyingAsset,
   kind: CoinKind,
-  prefix?: string,
-  suffix?: string,
+  prefix: string = '',
+  suffix: string = name,
   network: OfcNetwork = Networks.test.ofc,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   isToken: boolean = true
