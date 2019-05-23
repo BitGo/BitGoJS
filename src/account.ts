@@ -33,13 +33,9 @@ export class AccountCoin extends BaseCoin {
 
   constructor(options: AccountConstructorOptions) {
     super({
-      kind: CoinKind.CRYPTO,
-      family: options.network.family,
-      decimalPlaces: options.decimalPlaces,
-      asset: options.asset,
-      prefix: '',
-      suffix: options.name,
+      isToken: false,
       ...options,
+      kind: CoinKind.CRYPTO,
     });
 
     this.network = options.network;
@@ -56,7 +52,6 @@ export class AccountCoin extends BaseCoin {
 
 export interface Erc20ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
-  isToken: true;
 }
 
 export interface ContractAddress extends String {
@@ -73,6 +68,7 @@ export class Erc20Coin extends AccountCoin {
   constructor(options: Erc20ConstructorOptions) {
     super({
       ...options,
+      isToken: true,
     });
 
     // valid ERC 20 contract addresses are "0x" followed by 40 lowercase hex characters
@@ -103,8 +99,8 @@ export function account(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
-  prefix?: string,
-  suffix?: string,
+  prefix: string = '',
+  suffix: string = name,
   isToken: boolean = false,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
 ) {
@@ -142,8 +138,8 @@ export function erc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
-  prefix?: string,
-  suffix?: string,
+  prefix: string = '',
+  suffix: string = name,
   network: AccountNetwork = Networks.main.ethereum,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
 ) {
@@ -157,8 +153,8 @@ export function erc20(
       suffix,
       features,
       decimalPlaces,
-      isToken: true,
       asset,
+      isToken: true,
     })
   );
 }
@@ -182,8 +178,8 @@ export function terc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
-  prefix?: string,
-  suffix?: string,
+  prefix: string = '',
+  suffix: string = name,
   network: AccountNetwork = Networks.test.kovan,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
 ) {

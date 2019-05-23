@@ -1,7 +1,7 @@
-<h1 align="center">
+<h1 style="text-align: center;">
   <pre>@bitgo/statics</pre>
 </h1>
-<h3 align="center">
+<h3 style="text-align: center;">
   Static config for the BitGo platform
 </h3>
 

@@ -39,16 +39,74 @@ export const enum CoinFamily {
  * coin supports the coin-specific feature that the logic implements.
  */
 export const enum CoinFeature {
+  /*
+   * The valueless transfer feature indicates that it is valid to send a transaction which moves zero units of the coin.
+   *
+   * An example is Ethereum, which uses zero value transactions to trigger contract calls.
+   */
   VALUELESS_TRANSFER = 'valueless-transfer',
+  /*
+   * Transaction data means there can be arbitrary data encoded in a transaction.
+   *
+   * Ethereum contract call data is an example.
+   */
   TRANSACTION_DATA = 'transaction-data',
+  /*
+   * Some coins have a higher precision range than IEEE 754 doubles, which are used to represent numbers in javascript.
+   *
+   * For these coins, we must use an arbitrary precision arithmetic library, and this feature indicates this requirement.
+   */
   REQUIRES_BIG_NUMBER = 'requires-big-number',
+  /*
+   * RMG requires all wallets to have a backup key held by a BitGo approved Key Recovery Service (KRS)
+   */
   REQUIRES_KRS_BACKUP_KEY = 'requires-krs-backup-key',
+  /*
+   * For customers which are not on a postpaid contract, we add an extra output to transactions which pays BitGo a fee.
+   *
+   * This fee is known as the "pay-as-you-go fee", or just "paygo" for short.
+   *
+   * Some coins are unable to create transactions with more than one output, so paygo outputs are not possible for these coins.
+   */
   PAYGO = 'paygo',
+  /*
+   * Does this coin align with the unspent model?
+   *
+   * These are typically Bitcoin and forks of it, such as Litecoin and Bitcoin Cash.
+   */
   UNSPENT_MODEL = 'unspent-model',
+  /*
+   * Does this coin align with the account model?
+   *
+   * Examples of this coin type are Ethereum, XRP, and Stellar
+   */
   ACCOUNT_MODEL = 'account-model',
+  /*
+   * Does this coin support child-pays-for-parent transactions?
+   *
+   * These are special types of transactions which can accelerate the confirmation time
+   * of another transaction which is stuck in the mempool due to low fees.
+   *
+   * This is only possible for coins which follow the unspent model (UTXO coins).
+   */
   CHILD_PAYS_FOR_PARENT = 'cpfp',
+  /*
+   * Does this coin support pay-to-script-hash wrapped segregated witness transactions.
+   *
+   * These are upgraded transaction types which can only apply to UTXO coins such as Bitcoin.
+   */
   WRAPPED_SEGWIT = 'wrapped-segwit',
+  /*
+   * Does this coin support segregated witness transactions natively? (eg, not wrapped in a P2SH indirection layer)
+   *
+   * These are upgraded transaction types which can only apply to UTXO coins such as Bitcoin.
+   */
   NATIVE_SEGWIT = 'native-segwit',
+  /*
+   * Does this coin support tokens? These are distinct assets from the underlying coin, but run on the same network.
+   *
+   * For example, Ethereum's ERC 20 token standard means that it supports tokens, so it shall have this feature.
+   */
   SUPPORTS_TOKENS = 'supports-tokens',
 }
 
@@ -85,7 +143,6 @@ export interface BaseCoinConstructorOptions {
   prefix?: string;
   suffix?: string;
   kind: CoinKind;
-  family: CoinFamily;
   isToken: boolean;
   features: CoinFeature[];
   decimalPlaces: number;
@@ -177,7 +234,7 @@ export abstract class BaseCoin {
     this.prefix = options.prefix;
     this.suffix = options.suffix;
     this.kind = options.kind;
-    this.family = options.family;
+    this.family = options.network.family;
     this.isToken = options.isToken;
     this.features = options.features;
     this.decimalPlaces = options.decimalPlaces;

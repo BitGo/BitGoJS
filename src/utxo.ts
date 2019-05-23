@@ -26,14 +26,10 @@ export class UtxoCoin extends BaseCoin {
 
   constructor(options: UtxoConstructorOptions) {
     super({
+      ...options,
       kind: CoinKind.CRYPTO,
-      family: options.network.family,
       isToken: false,
       decimalPlaces: 8,
-      asset: options.asset,
-      prefix: '',
-      suffix: options.name,
-      ...options,
     });
 
     this.network = options.network;
@@ -65,8 +61,8 @@ export function utxo(
   network: UtxoNetwork,
   asset: UnderlyingAsset,
   features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES,
-  prefix?: string,
-  suffix?: string
+  prefix: string = '',
+  suffix: string = name
 ) {
   return Object.freeze(
     new UtxoCoin({
