@@ -99,10 +99,10 @@ export function account(
   network: AccountNetwork,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name,
-  isToken: boolean = false,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
+  isToken: boolean = false
 ) {
   return Object.freeze(
     new AccountCoin({
@@ -138,10 +138,10 @@ export function erc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name,
-  network: AccountNetwork = Networks.main.ethereum,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
+  network: AccountNetwork = Networks.main.ethereum
 ) {
   return Object.freeze(
     new Erc20Coin({
@@ -178,10 +178,10 @@ export function terc20(
   decimalPlaces: number,
   contractAddress: string,
   asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name,
-  network: AccountNetwork = Networks.test.kovan,
-  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES
+  network: AccountNetwork = Networks.test.kovan
 ) {
-  return erc20(name, fullName, decimalPlaces, contractAddress, asset, prefix, suffix, network, features);
+  return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }

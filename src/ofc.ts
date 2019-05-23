@@ -62,10 +62,10 @@ export function ofc(
   decimalPlaces: number,
   asset: UnderlyingAsset,
   kind: CoinKind,
+  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name,
   network: OfcNetwork = Networks.main.ofc,
-  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   isToken: boolean = true
 ) {
   return Object.freeze(
@@ -104,10 +104,10 @@ export function tofc(
   decimalPlaces: number,
   asset: UnderlyingAsset,
   kind: CoinKind,
+  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name,
   network: OfcNetwork = Networks.test.ofc,
-  features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   isToken: boolean = true
 ) {
   return Object.freeze(
