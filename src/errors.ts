@@ -7,7 +7,7 @@ import { CoinFeature } from './base';
 class BitGoStaticsError extends Error {
   public constructor(message: string) {
     super(message);
-    this.stack = new Error().stack;
+    this.stack = new Error(message).stack;
     Object.setPrototypeOf(this, BitGoStaticsError.prototype);
   }
 }
