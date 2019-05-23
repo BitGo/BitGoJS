@@ -173,6 +173,14 @@ class OfcTestnet extends Testnet implements OfcNetwork {
   family = CoinFamily.OFC;
 }
 
+class SUSD extends Mainnet implements AccountNetwork {
+  family = CoinFamily.SUSD;
+}
+
+class SUSDTestnet extends Testnet implements AccountNetwork {
+  family = SUSD.prototype.family;
+}
+
 export const Networks = {
   main: {
     bitcoin: Object.freeze(new Bitcoin()),
@@ -185,6 +193,7 @@ export const Networks = {
     stellar: Object.freeze(new Stellar()),
     zCash: Object.freeze(new ZCash()),
     ofc: Object.freeze(new Ofc()),
+    susd: Object.freeze(new SUSD()),
   },
   test: {
     bitcoin: Object.freeze(new BitcoinTestnet()),
@@ -196,5 +205,6 @@ export const Networks = {
     stellar: Object.freeze(new StellarTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
+    susd: Object.freeze(new SUSDTestnet()),
   },
 };
