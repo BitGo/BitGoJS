@@ -114,7 +114,7 @@ class BitcoinGold extends BitcoinLikeMainnet {
 }
 
 class Dash extends BitcoinLikeMainnet {
-  messagePrefix = '\x19Dash Signed Message:\n';
+  messagePrefix = '\x19DarkCoin Signed Message:\n';
   pubKeyHash = 0x4c;
   scriptHash = 0x10;
   wif = 0xcc;
@@ -122,10 +122,10 @@ class Dash extends BitcoinLikeMainnet {
 }
 
 class DashTestnet extends BitcoinLikeTestnet {
-  messagePrefix = '\x19Dash Signed Message:\n';
-  pubKeyHash = 0x4c;
-  scriptHash = 0x10;
-  wif = 0xcc;
+  messagePrefix = '\x19DarkCoin Signed Message:\n';
+  pubKeyHash = 0x8c;
+  scriptHash = 0x13;
+  wif = 0xef;
   family = CoinFamily.DASH;
 }
 
