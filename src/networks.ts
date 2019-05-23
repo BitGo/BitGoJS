@@ -178,7 +178,7 @@ class SUSD extends Mainnet implements AccountNetwork {
 }
 
 class SUSDTestnet extends Testnet implements AccountNetwork {
-  family = SUSD.prototype.family;
+  family = CoinFamily.SUSD;
 }
 
 export const Networks = {
