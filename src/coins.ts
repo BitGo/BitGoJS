@@ -1,9 +1,11 @@
-import { account, erc20, terc20 } from './account';
-import { CoinKind, UnderlyingAsset } from './base';
+import { account, AccountCoin, erc20, terc20 } from './account';
+import { CoinFeature, CoinKind, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
 import { Networks } from './networks';
 import { ofc, tofc } from './ofc';
 import { utxo } from './utxo';
+
+const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -15,8 +17,8 @@ export const coins = CoinMap.fromCoins([
   utxo('btg', 'Bitcoin Gold', Networks.main.bitcoinGold, UnderlyingAsset.BTG),
   utxo('ltc', 'Litecoin', Networks.main.litecoin, UnderlyingAsset.LTC),
   utxo('tltc', 'Testnet Litecoin', Networks.test.litecoin, UnderlyingAsset.LTC),
-  account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH),
-  account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH),
+  account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
+  account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('xrp', 'Ripple', Networks.main.xrp, 6, UnderlyingAsset.XRP),
   account('txrp', 'Testnet Ripple', Networks.test.xrp, 6, UnderlyingAsset.XRP),
   account('xlm', 'Stellar', Networks.main.stellar, 7, UnderlyingAsset.XLM),
