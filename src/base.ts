@@ -126,6 +126,7 @@ export const enum UnderlyingAsset {
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
+  DASH = 'dash',
   USD = 'usd',
   ETH = 'eth',
   LTC = 'ltc',

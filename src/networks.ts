@@ -113,6 +113,26 @@ class BitcoinGold extends BitcoinLikeMainnet {
   family = CoinFamily.BTG;
 }
 
+class Dash extends BitcoinLikeMainnet {
+  messagePrefix = '\x19DarkCoin Signed Message:\n';
+  pubKeyHash = 0x4c;
+  scriptHash = 0x10;
+  wif = 0xcc;
+  family = CoinFamily.DASH;
+}
+
+class DashTestnet extends BitcoinLikeTestnet {
+  messagePrefix = '\x19DarkCoin Signed Message:\n';
+  bip32 = {
+    public: 0x043587cf,
+    private: 0x04358394,
+  };
+  pubKeyHash = 0x8c;
+  scriptHash = 0x13;
+  wif = 0xef;
+  family = CoinFamily.DASH;
+}
+
 class Litecoin extends BitcoinLikeMainnet {
   messagePrefix = '\x19Litecoin Signed Message:\n';
   bech32 = 'ltc';
@@ -187,6 +207,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
+    dash: Object.freeze(new Dash()),
     litecoin: Object.freeze(new Litecoin()),
     ethereum: Object.freeze(new Ethereum()),
     xrp: Object.freeze(new Xrp()),
@@ -199,6 +220,7 @@ export const Networks = {
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
+    dash: Object.freeze(new DashTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     kovan: Object.freeze(new Kovan()),
     xrp: Object.freeze(new XrpTestnet()),
