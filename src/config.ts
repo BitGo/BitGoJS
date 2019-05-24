@@ -35,7 +35,6 @@ export const tokens = {
         { type: 'zil', coin: 'eth', network: 'Mainnet', name: 'Zilliqa', tokenContractAddress: '0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27', decimalPlaces: 12 },
         { type: 'iost', coin: 'eth', network: 'Mainnet', name: 'IOSToken', tokenContractAddress: '0xfa1a856cfa3409cfa145fa4e20eb270df3eb21ab', decimalPlaces: 18 },
         { type: 'lrc', coin: 'eth', network: 'Mainnet', name: 'loopring', tokenContractAddress: '0xef68e7c694f40c8202821edf525de3782458639f', decimalPlaces: 18 },
-        { type: 'AION', coin: 'eth', network: 'Mainnet', name: 'Aion', tokenContractAddress: '0x4ceda7906a5ed2179785cd3a40a69ee8bc99c466', decimalPlaces: 8 },
         { type: 'kcs', coin: 'eth', network: 'Mainnet', name: 'Kucoin Shares', tokenContractAddress: '0x039b5649a59967e3e936d7471f9c3700100ee1ab', decimalPlaces: 6 },
         { type: 'wtc', coin: 'eth', network: 'Mainnet', name: 'Walton Token', tokenContractAddress: '0xb7cb1c96db6b22b0d3d9536e0108d062bd488f74', decimalPlaces: 18 },
         { type: 'cennz', coin: 'eth', network: 'Mainnet', name: 'Centrality', tokenContractAddress: '0x1122b6a0e00dce0563082b6e2953f3a943855c1f', decimalPlaces: 18 },
@@ -238,6 +237,8 @@ export const tokens = {
         { type: 'plx', coin: 'eth', network: 'Mainnet', name: 'PLN Stable Token', tokenContractAddress: '0x8d682bc7ad206e54055c609ea1d4717caab665d0', decimalPlaces: 18 },
         { type: 'cqx', coin: 'eth', network: 'Mainnet', name: 'Coinquista Coin', tokenContractAddress: '0x618c29dd2d16475b2ae6244f9e8aaead68f0ca44', decimalPlaces: 18 },
         { type: 'kze', coin: 'eth', network: 'Mainnet', name: 'Almeela', tokenContractAddress: '0x8de67d55c58540807601dbf1259537bc2dffc84d', decimalPlaces: 18 },
+        { type: 'tiox', coin: 'eth', network: 'Mainnet', name: 'Trade Token X', tokenContractAddress: '0xd947b0ceab2a8885866b9a04a06ae99de852a3d4', decimalPlaces: 18 },
+        { type: 'spo', coin: 'eth', network: 'Mainnet', name: 'Sparrow Options', tokenContractAddress: '0x89eafa06d99f0a4d816918245266800c9a0941e0', decimalPlaces: 18 },
       ]
     },
     ofc: {
