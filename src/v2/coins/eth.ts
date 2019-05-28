@@ -845,7 +845,7 @@ class Eth extends BaseCoin {
       const gasPrice = Math.round((feeEstimate.feeEstimate) / gasLimit);
       const gasPriceMax = gasPrice * 5;
       // Payment id a random number so its different for every tx
-      const paymentId = Math.floor(Math.random() * 10000000000);
+      const paymentId = Math.floor(Math.random() * 10000000000).toString();
       const hopDigest: Buffer = Eth.getHopDigest([recipientAddress, recipientAmount, gasPriceMax, gasLimit, paymentId]);
 
       const userReqSig = optionalDeps.ethUtil.addHexPrefix(secp256k1.sign(hopDigest, userPrvBuffer).signature.toString('hex'));
