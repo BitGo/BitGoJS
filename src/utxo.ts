@@ -62,7 +62,7 @@ export function utxo(
   asset: UnderlyingAsset,
   features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES,
   prefix: string = '',
-  suffix: string = name
+  suffix: string = name.toUpperCase()
 ) {
   return Object.freeze(
     new UtxoCoin({

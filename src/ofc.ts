@@ -64,7 +64,7 @@ export function ofc(
   kind: CoinKind,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix: string = '',
-  suffix: string = name,
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.main.ofc,
   isToken: boolean = true
 ) {
@@ -106,7 +106,7 @@ export function tofc(
   kind: CoinKind,
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix: string = '',
-  suffix: string = name,
+  suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.test.ofc,
   isToken: boolean = true
 ) {
