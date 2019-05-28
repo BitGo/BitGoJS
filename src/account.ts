@@ -101,7 +101,7 @@ export function account(
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
-  suffix: string = name,
+  suffix: string = name.toUpperCase(),
   isToken: boolean = false
 ) {
   return Object.freeze(
@@ -140,7 +140,7 @@ export function erc20(
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
-  suffix: string = name,
+  suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.main.ethereum
 ) {
   return Object.freeze(
@@ -180,7 +180,7 @@ export function terc20(
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
-  suffix: string = name,
+  suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.kovan
 ) {
   return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
