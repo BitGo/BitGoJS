@@ -134,15 +134,15 @@ module.exports = function setupWebpack(env) {
   // Compile source code
   return {
     resolve: {
-      extensions: ['.ts', '.js']
+      extensions: ['.js']
     },
     // Main project entry point
-    entry: path.join(__dirname, 'src', 'index.ts'),
+    entry: path.join(__dirname, 'dist', 'src', 'index.js'),
 
     // Output directory and filename
     // Library acts like 'standalone' for browserify, defines it globally if module system not found
     output: {
-      path: path.join(__dirname, 'browser'),
+      path: path.join(__dirname, 'dist', 'browser'),
       filename: env.prod ? 'BitGoJS.min.js' : 'BitGoJS.js',
       library: 'BitGoJS',
       libraryTarget: 'umd'
