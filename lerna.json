@@ -4,7 +4,8 @@
   "useWorkspaces": true,
   "command": {
     "version": {
-      "allowBranch": "rel/*"
+      "allowBranch": "rel/*",
+      "message": "chore(release): publish %v"
     }
   }
 }
