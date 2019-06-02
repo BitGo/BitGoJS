@@ -5,7 +5,7 @@
   "command": {
     "version": {
       "allowBranch": "rel/*",
-      "message": "chore(release): publish %v"
+      "message": "chore(release): publish modules"
     }
   }
 }
