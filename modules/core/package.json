@@ -34,7 +34,7 @@
     "clean": "rm -r dist/*",
     "build": "./node_modules/.bin/tsc && node scripts/copySjcl.js",
     "prepare": "npm run build",
-    "prepublishOnly":  "npm run compile"
+    "prepublishOnly": "npm run compile"
   },
   "dependencies": {
     "@bitgo/unspents": "^0.6.0",
