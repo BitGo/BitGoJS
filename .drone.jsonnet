@@ -70,16 +70,17 @@ local ExcludeBranches(pipeline, excluded_branches=branches()) = pipeline + {
   },
 };
 
-local UploadCoverage(version, tag="untagged") = {
+local UploadArtifacts(version, tag="untagged") = {
   name: "upload coverage",
   image: "node:"  + version,
   environment: {
     CODECOV_TOKEN: { from_secret: "codecov" },
   },
   commands: [
-    "npm install -g codecov",
+    "npm install codecov aws-sdk",
     "yarn run gen-coverage",
     "yarn run coverage -F " + tag,
+    "yarn run artifacts",
   ],
 };
 
@@ -90,7 +91,7 @@ local UnitTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("unit-test-changed", version),
-    UploadCoverage(version, "unit"),
+    UploadArtifacts(version, "unit"),
   ],
   trigger: {
     branch: {
@@ -106,7 +107,7 @@ local IntegrationTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("integration-test", version),
-    UploadCoverage(version, "integration"),
+    UploadArtifacts(version, "integration"),
   ],
 };
 

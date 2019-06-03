@@ -19,6 +19,7 @@
     "unit-test": "lerna run unit-test --stream",
     "integration-test": "lerna run integration-test --stream",
     "gen-coverage": "lerna run gen-coverage",
-    "coverage": "lerna run upload-coverage --"
+    "coverage": "lerna run upload-coverage --",
+    "artifacts": "lerna run upload-artifacts"
   }
 }

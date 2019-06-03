@@ -156,9 +156,10 @@ steps:
 - name: upload coverage
   image: node:6
   commands:
-  - npm install -g codecov
+  - npm install codecov aws-sdk
   - yarn run gen-coverage
   - yarn run coverage -F unit
+  - yarn run artifacts
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -204,9 +205,10 @@ steps:
 - name: upload coverage
   image: node:8
   commands:
-  - npm install -g codecov
+  - npm install codecov aws-sdk
   - yarn run gen-coverage
   - yarn run coverage -F unit
+  - yarn run artifacts
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -252,9 +254,10 @@ steps:
 - name: upload coverage
   image: node:10
   commands:
-  - npm install -g codecov
+  - npm install codecov aws-sdk
   - yarn run gen-coverage
   - yarn run coverage -F unit
+  - yarn run artifacts
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -300,9 +303,10 @@ steps:
 - name: upload coverage
   image: node:11
   commands:
-  - npm install -g codecov
+  - npm install codecov aws-sdk
   - yarn run gen-coverage
   - yarn run coverage -F unit
+  - yarn run artifacts
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
@@ -348,9 +352,10 @@ steps:
 - name: upload coverage
   image: node:lts
   commands:
-  - npm install -g codecov
+  - npm install codecov aws-sdk
   - yarn run gen-coverage
   - yarn run coverage -F integration
+  - yarn run artifacts
   environment:
     CODECOV_TOKEN:
       from_secret: codecov
