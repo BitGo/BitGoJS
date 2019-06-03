@@ -200,6 +200,11 @@ class BaseCoin {
       coins.tzec = require('./coins/tzec');
     }
 
+    if (process.env.BITGO_EXCLUDE_ALGO !== 'exclude') {
+      coins.algo = require('./coins/algo');
+      coins.talgo = require('./coins/talgo');
+    }
+
     if (process.env.BITGO_EXCLUDE_OFC !== 'exclude') {
       coins.ofc = require('./coins/ofc');
 
@@ -242,21 +247,21 @@ class BaseCoin {
   /**
    * Name of the chain which supports this coin (eg, 'btc', 'eth')
    */
-  getChain() {
+  getChain(): string {
     throw new Error('Basecoin method not implemented');
   }
 
   /**
    * Name of the coin family (eg. for tbtc, this would be btc)
    */
-  getFamily() {
+  getFamily(): string {
     throw new Error('Basecoin method not implemented');
   }
 
   /**
    * Human readable full name for the coin
    */
-  getFullName() {
+  getFullName(): string {
     throw new Error('Basecoin method not implemented');
   }
 
@@ -264,7 +269,7 @@ class BaseCoin {
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
-  valuelessTransferAllowed() {
+  valuelessTransferAllowed(): boolean {
     return false;
   }
 
@@ -272,11 +277,15 @@ class BaseCoin {
    * Flag for sending data along with transactions
    * @returns {boolean} True if okay to send tx data (ETH), false otherwise
    */
-  transactionDataAllowed() {
+  transactionDataAllowed(): boolean {
     return false;
   }
 
-  getBaseFactor() {
+  /**
+   * Returns the factor between the base unit and its smallest subdivison
+   * @return {number}
+   */
+  getBaseFactor(): number {
     throw new Error('Basecoin method not implemented');
   }
 
