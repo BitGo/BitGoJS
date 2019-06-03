@@ -8,17 +8,18 @@
     "modules/*"
   ],
   "scripts": {
-    "postinstall": "lerna run build --stream",
+    "postinstall": "lerna run build --stream --parallel",
     "generate-drone": "drone jsonnet --stream",
     "audit": "yarn audit",
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
-    "unit-test-changed": "lerna run unit-test --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
-    "gen-coverage-changed": "lerna run gen-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
-    "coverage-changed": "lerna run upload-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --",
-    "unit-test": "lerna run unit-test --stream",
-    "integration-test": "lerna run integration-test --stream",
-    "gen-coverage": "lerna run gen-coverage",
-    "coverage": "lerna run upload-coverage --"
+    "unit-test-changed": "lerna run unit-test --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --parallel",
+    "gen-coverage-changed": "lerna run gen-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --parallel",
+    "coverage-changed": "lerna run upload-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --parallel --",
+    "unit-test": "lerna run unit-test --stream --parallel",
+    "integration-test": "lerna run integration-test --stream --parallel",
+    "gen-coverage": "lerna run gen-coverage --stream --parallel",
+    "coverage": "lerna run upload-coverage --stream --parallel --",
+    "artifacts": "lerna run upload-artifacts --stream --parallel"
   }
 }

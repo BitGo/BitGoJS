@@ -70,14 +70,17 @@ local ExcludeBranches(pipeline, excluded_branches=branches()) = pipeline + {
   },
 };
 
-local UploadCoverage(version, tag="untagged") = {
-  name: "upload coverage",
+local UploadReports(version, tag="untagged") = {
+  name: "upload reports",
   image: "node:"  + version,
   environment: {
     CODECOV_TOKEN: { from_secret: "codecov" },
+    reports_s3_akid: { from_secret: "reports_s3_akid" },
+    reports_s3_sak: { from_secret: "reports_s3_sak" },
   },
   commands: [
-    "npm install -g codecov",
+    "yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk",
+    "yarn run artifacts",
     "yarn run gen-coverage",
     "yarn run coverage -F " + tag,
   ],
@@ -90,7 +93,7 @@ local UnitTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("unit-test-changed", version),
-    UploadCoverage(version, "unit"),
+    UploadReports(version, "unit"),
   ],
   trigger: {
     branch: {
@@ -106,7 +109,7 @@ local IntegrationTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("integration-test", version),
-    UploadCoverage(version, "integration"),
+    UploadReports(version, "integration"),
   ],
 };
 

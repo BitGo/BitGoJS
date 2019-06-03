@@ -6,7 +6,6 @@
   },
   "include": [
     "src/**/*",
-    "test/**/*",
     "package.json"
   ]
 }
