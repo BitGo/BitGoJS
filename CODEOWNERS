@@ -1,0 +1,24 @@
+# BitGoJS code owners and first officers will automatically be requested for review whenever a pull request touches the files they own.
+# Each line is a file pattern followed by one or more owners.
+
+# These owners and first officers will be the default owners for everything in the repo.
+*   tyler@bitgo.com danny@bitgo.com
+
+# Order is important. The last matching pattern has the most precedence.
+modules/core/src/v2/recovery.js danny@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*btc.js mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*bch.js mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*btg.js mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*bsv.js mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*ltc.js mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*dash.js dawid@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*xlm.js luis@bitgo.com jorge@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*xrp.js luis@bitgo.com jorge@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*eth.js mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/token.js mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*zec.js jorge@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/trading/*.js davidcruz@bitgo.com tyler@bitgo.com
+modules/*/package*.json james@bitgo.com perry@bitgo.com tyler@bitgo.com danny@bitgo.com
+yarn.lock james@bitgo.com perry@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/express/package-lock.json james@bitgo.com perry@bitgo.com tyler@bitgo.com danny@bitgo.com
+
