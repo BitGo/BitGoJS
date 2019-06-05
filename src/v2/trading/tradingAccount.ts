@@ -10,17 +10,35 @@ export class TradingAccount {
     this.wallet = wallet;
   }
 
+  /**
+   * Builds a payload authorizing a trade from this trading account. The currency and amount must be specified, as well as a list
+   * of trade counterparties.
+   * @param params
+   * @param params.currency the currency this account will be sending as part of the trade
+   * @param params.amount the amount of currency (in base units, such as cents, satoshis, or wei)
+   * @param params.otherParties array of trading account IDs authorized to receive funds as part of this trade
+   * @param callback
+   * @returns unsigned trade payload for the given parameters. This object should be stringified with JSON.stringify() before being submitted
+   */
   buildPayload(params: BuildPayloadParameters): Payload {
     return {
       walletId: this.wallet.id(),
       currency: params.currency,
-      amount: params.amount.toString(),
+      amount: params.amount,
       nonceHold: crypto.randomBytes(16).toString('base64'),
       nonceSettle: crypto.randomBytes(16).toString('base64'),
       otherParties: params.otherParties
     };
   }
 
+  /**
+   * Signs a pre-built trade payload with the user key on this trading account
+   * @param params
+   * @param params.payload trade payload object from TradingAccount::buildPayload()
+   * @param params.walletPassphrase passphrase on this trading account, used to unlock the account user key
+   * @param callback
+   * @returns hex-encoded signature of the payload
+   */
   signPayload(params: SignPayloadParameters, callback?): Bluebird<string> {
     return co(function *signPayload() {
       const key = yield this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[0] });
@@ -31,6 +49,18 @@ export class TradingAccount {
     }).call(this).asCallback(callback);
   }
 
+  /**
+   * Builds and signs a payload authorizing a trade from this trading account. The currency and amount must be specified, as well
+   * as a list of trade counterparties. Requires the wallet keychain to unlock the trading account's user key. Both the payload
+   * and signature are returned.
+   * @param params
+   * @param params.currency the currency this wallet will be sending as part of the trade
+   * @param params.amount the amount of currency (in base units, such as cents, satoshis, or wei) authorized to be spent as part of the trade
+   * @param params.otherParties array of trading account IDs authorized to receive funds as part of the trade
+   * @param params.walletPassphrase the wallet password, for decrypting the private key for signing
+   * @param callback
+   * @returns the trade payload and hex-encoded signature of the payload
+   */
   buildAndSignPayload(params: BuildAndSignPayloadParameters, callback?): Bluebird<SignedPayload> {
     return co(function *buildAndSignPayload() {
       const buildParams = Object.assign({}, params);
@@ -58,7 +88,7 @@ interface Payload {
 
 interface BuildPayloadParameters {
   currency: string;
-  amount: bigint | string;
+  amount: string;
   otherParties: string[];
 }
 
