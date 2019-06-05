@@ -17,6 +17,7 @@ src/v2/coins/*xrp.js luis@bitgo.com jorge@bitgo.com tyler@bitgo.com danny@bitgo.
 src/v2/coins/*eth.js mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com danny@bitgo.com
 src/v2/coins/token.js mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com danny@bitgo.com
 src/v2/coins/*zec.js jorge@bitgo.com tyler@bitgo.com danny@bitgo.com
+src/v2/trading/*.js davidcruz@bitgo.com tyler@bitgo.com
 src/eth/*.js mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com danny@bitgo.com
 package*.json james@bitgo.com perry@bitgo.com tyler@bitgo.com danny@bitgo.com
 
