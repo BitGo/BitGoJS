@@ -1,0 +1,5 @@
+--require ts-node/register
+--timeout 20000
+--reporter mochawesome
+--reporter-option cdn=true,json=false,consoleReporter=spec
+--exit
