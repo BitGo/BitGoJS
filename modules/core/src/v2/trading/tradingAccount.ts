@@ -1,5 +1,6 @@
 import * as Bluebird from 'bluebird';
 import * as crypto from 'crypto';
+import { Payload } from './payload';
 
 const co = Bluebird.coroutine;
 
@@ -8,6 +9,10 @@ export class TradingAccount {
 
   constructor(wallet) {
     this.wallet = wallet;
+  }
+
+  get id() {
+    return this.wallet.id();
   }
 
   /**
@@ -75,15 +80,6 @@ export class TradingAccount {
       return { payload, signature };
     }).call(this).asCallback(callback);
   }
-}
-
-interface Payload {
-  walletId: string;
-  currency: string;
-  amount: string;
-  nonceHold: string;
-  nonceSettle: string;
-  otherParties: string[];
 }
 
 interface BuildPayloadParameters {
