@@ -5,7 +5,7 @@ const PendingApproval = require('./pendingApproval');
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
-import { Trading } from './trading';
+import { TradingAccount } from './trading/tradingAccount';
 const debug = require('debug')('bitgo:v2:wallet');
 const internal = require('./internal');
 const util = require('../util');
@@ -1566,8 +1566,12 @@ Wallet.prototype.remove = function(params, callback) {
   }).call(this).asCallback(callback);
 };
 
-Wallet.prototype.trading = function() {
-  return new Trading(this.bitgo, this.baseCoin, this);
+Wallet.prototype.toTradingAccount = function() {
+  if (this.baseCoin.getFamily() !== 'ofc') {
+    throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
+  }
+
+  return new TradingAccount(this);
 };
 
 /**

@@ -9,29 +9,27 @@ const TestV2BitGo = require('../../lib/test_bitgo');
 const common = require('../../../src/common');
 
 describe('V2 Trading', function() {
-  const microservicesUri = 'https://bitgo-microservices.example';
   let bitgo;
   let basecoin;
-  let wallet;
-  let trading;
+  let tradingAccount;
   let bgUrl;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'mock', microservicesUri });
+    bitgo = new TestV2BitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
 
     const walletData = {
       id: 'walletId',
-      coin: 'tbtc',
+      coin: 'tofc',
       keys: [
         'keyid'
       ]
     };
 
-    wallet = new Wallet(bitgo, basecoin, walletData);
-    trading = wallet.trading();
+    const wallet = new Wallet(bitgo, basecoin, walletData);
+    tradingAccount = wallet.toTradingAccount();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 
@@ -39,17 +37,6 @@ describe('V2 Trading', function() {
     const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
     const xpub = 'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
 
-    const msScope = nock(microservicesUri)
-    .post('/api/trade/v1/payload')
-    .reply(200, {
-      payload: JSON.stringify({
-        walletId: 'walletId',
-        currency: 'tbtc',
-        amount: '100000000',
-        otherParties: ['test_counter_party_1'],
-        nonce: Date.now()
-      })
-    });
     const platformScope = nock(bgUrl)
     .get('/api/v2/ofc/key/keyid')
     .reply(200, {
@@ -57,17 +44,21 @@ describe('V2 Trading', function() {
       encryptedPrv: bitgo.encrypt({ input: xprv, password: TestV2BitGo.OFC_TEST_PASSWORD })
     });
 
-    const { payload, signature } = yield trading.signTradePayload({
-      currency: 'tbtc',
+    const { payload, signature } = yield tradingAccount.buildAndSignPayload({
+      currency: 'ofctbtc',
       amount: '100000000',
       otherParties: ['test_counterparty_1'],
       walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD
     });
 
     should.exist(payload);
-    // The payload should be a valid JSON object
-    // NOTE: we shouldn't do any more validation than this, as the schema is subject to change often
-    (() => { JSON.parse(payload); }).should.not.throw();
+    payload.should.have.property('walletId', 'walletId');
+    payload.should.have.property('currency', 'ofctbtc');
+    payload.should.have.property('amount', '100000000');
+    payload.should.have.property('nonceHold');
+    payload.should.have.property('nonceSettle');
+    payload.should.have.property('otherParties').with.length(1);
+    payload.otherParties[0].should.eql('test_counterparty_1');
 
     should.exist(signature);
     // signature should be a hex string
@@ -75,9 +66,8 @@ describe('V2 Trading', function() {
 
     const address = HDNode.fromBase58(xpub).getAddress();
 
-    bitcoinMessage.verify(payload, address, Buffer.from(signature, 'hex')).should.be.True();
+    bitcoinMessage.verify(JSON.stringify(payload), address, Buffer.from(signature, 'hex')).should.be.True();
 
-    msScope.isDone().should.be.True();
     platformScope.isDone().should.be.True();
   }));
 });
