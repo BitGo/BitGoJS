@@ -450,7 +450,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, this.network);
       const transactionCache = {};
       const inputs = yield Promise.map(transaction.ins, co(function *(currentInput) {
-        const transactionId = Buffer.from(currentInput.hash).reverse().toString('hex');
+        const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
         const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
         if (txHex) {
           const localTx = bitcoin.Transaction.fromHex(txHex, this.network);
@@ -1112,7 +1112,7 @@ class AbstractUtxoCoin extends BaseCoin {
           return false;
         }
 
-        const parentTxId = Buffer.from(input.hash).reverse().toString('hex');
+        const parentTxId = (Buffer.from(input.hash).reverse() as Buffer).toString('hex');
         const inputId = `${parentTxId}:${input.index}`;
         const amount = unspentValues[inputId];
 
