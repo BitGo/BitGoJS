@@ -4,11 +4,11 @@ import * as nock from 'nock';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { HDNode } from 'bitgo-utxo-lib';
 
-const Wallet = require('../../../src/v2/wallet');
-const TestV2BitGo = require('../../lib/test_bitgo');
-const common = require('../../../src/common');
+const Wallet = require('../../../../src/v2/wallet');
+const TestV2BitGo = require('../../../lib/test_bitgo');
+const common = require('../../../../src/common');
 
-describe('V2 Trading', function() {
+describe('Trade Payloads', function() {
   let bitgo;
   let basecoin;
   let tradingAccount;

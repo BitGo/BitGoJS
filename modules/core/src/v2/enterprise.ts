@@ -4,6 +4,8 @@ import * as _ from 'lodash';
 const CoinWallet = require('./wallet');
 const internal = require('./internal');
 import common = require('../common');
+import { Settlements } from './trading/settlements';
+import { Affirmations } from './trading/affirmations';
 
 class Enterprise {
 
@@ -89,6 +91,19 @@ class Enterprise {
     }).call(this).asCallback(callback);
   }
 
+  /**
+   * Manage settlements for an enterprise
+   */
+  settlements(): Settlements {
+    return new Settlements(this.bitgo, this);
+  }
+
+  /**
+   * Manage affirmations for an enterprise
+   */
+  affirmations(): Affirmations {
+    return new Affirmations(this.bitgo, this);
+  }
 }
 
 module.exports = Enterprise;
