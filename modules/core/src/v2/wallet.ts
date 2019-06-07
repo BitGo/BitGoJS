@@ -1571,7 +1571,7 @@ Wallet.prototype.toTradingAccount = function() {
     throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
   }
 
-  return new TradingAccount(this);
+  return new TradingAccount(this, this.bitgo);
 };
 
 /**
