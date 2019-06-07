@@ -1,17 +1,17 @@
 import Algo from './algo';
 
 class Talgo extends Algo {
-    constructor() {
-      super();
-    }
+  constructor() {
+    super();
+  }
 
-    getChain() {
-      return 'talgo';
-    }
+  getChain(): string {
+    return 'talgo';
+  }
 
-    getFullName() {
-      return 'Testnet Algorand';
-    }
+  getFullName(): string {
+    return 'Testnet Algorand';
+  }
 }
 
 module.exports = Talgo;
