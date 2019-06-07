@@ -3,15 +3,20 @@
  */
 import * as Bluebird from 'bluebird';
 import * as crypto from 'crypto';
+
 import { Payload } from './payload';
+import { TradingPartners } from './tradingPartners';
 
 const co = Bluebird.coroutine;
 
 export class TradingAccount {
+  private bitgo: any;
+
   public wallet;
 
-  constructor(wallet) {
+  constructor(wallet, bitgo) {
     this.wallet = wallet;
+    this.bitgo = bitgo;
   }
 
   get id() {
@@ -25,7 +30,6 @@ export class TradingAccount {
    * @param params.currency the currency this account will be sending as part of the trade
    * @param params.amount the amount of currency (in base units, such as cents, satoshis, or wei)
    * @param params.otherParties array of trading account IDs authorized to receive funds as part of this trade
-   * @param callback
    * @returns unsigned trade payload for the given parameters. This object should be stringified with JSON.stringify() before being submitted
    */
   buildPayload(params: BuildPayloadParameters): Payload {
@@ -82,6 +86,10 @@ export class TradingAccount {
 
       return { payload, signature };
     }).call(this).asCallback(callback);
+  }
+
+  partners(): TradingPartners {
+    return new TradingPartners(this, this.bitgo);
   }
 }
 
