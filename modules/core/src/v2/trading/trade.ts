@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 export interface Trade {
   id?: string;
   externalId: string;
@@ -14,5 +17,8 @@ export interface Trade {
 }
 
 export enum TradeStatus {
-  CANCELED = 'canceled', EXECUTED = 'executed', PENDING = 'pending', FAILED = 'failed'
+  CANCELED = 'canceled',
+  EXECUTED = 'executed',
+  PENDING = 'pending',
+  FAILED = 'failed'
 }

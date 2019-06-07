@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import { Trade } from './trade';
 import { Affirmation } from './affirmation';
 
@@ -28,5 +31,9 @@ export class Settlement {
 }
 
 export enum SettlementStatus {
-  CANCELED = 'canceled', PENDING = 'pending', REJECTED = 'rejected', SETTLED = 'settled', FAILED = 'failed'
+  CANCELED = 'canceled',
+  PENDING = 'pending',
+  REJECTED = 'rejected',
+  SETTLED = 'settled',
+  FAILED = 'failed'
 }

@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 export interface Payload {
   walletId: string;
   currency: string;

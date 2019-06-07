@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import * as Bluebird from 'bluebird';
 
 import { Affirmation, AffirmationStatus } from './affirmation';

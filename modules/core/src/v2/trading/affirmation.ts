@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import * as Bluebird from 'bluebird';
 
 import { Lock } from './lock';
@@ -76,5 +79,10 @@ export class Affirmation {
 }
 
 export enum AffirmationStatus {
-  PENDING = 'pending', OVERDUE = 'overdue', REJECTED = 'rejected', AFFIRMED = 'affirmed', FAILED = 'failed', CANCELED = 'canceled'
+  PENDING = 'pending',
+  OVERDUE = 'overdue',
+  REJECTED = 'rejected',
+  AFFIRMED = 'affirmed',
+  FAILED = 'failed',
+  CANCELED = 'canceled'
 }

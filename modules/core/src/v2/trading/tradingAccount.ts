@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import * as Bluebird from 'bluebird';
 import * as crypto from 'crypto';
 import { Payload } from './payload';

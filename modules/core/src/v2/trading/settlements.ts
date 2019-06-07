@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import { Settlement } from './settlement';
 import * as Bluebird from 'bluebird';
 import { Payload } from './payload';
@@ -55,8 +58,6 @@ export class Settlements {
       const body = Object.assign({}, params as any);
       body.payload = JSON.stringify(body.payload);
 
-      console.log(body.payload);
-      console.log(typeof body.payload);
       const url = this.bitgo.microservicesUrl(`/api/trade/v1/settlement`);
       const response = yield this.bitgo.post(url).send(body).result();
 

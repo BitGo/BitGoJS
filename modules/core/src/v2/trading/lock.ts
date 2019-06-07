@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 export interface Lock {
   id: string;
   accountId: string;
@@ -8,5 +11,9 @@ export interface Lock {
 }
 
 export enum LockStatus {
-  ACTIVE, SETTLED, FAILED, REQUESTED, RELEASED
+  ACTIVE = 'active',
+  SETTLED = 'settled',
+  FAILED = 'failed',
+  REQUESTED = 'requested',
+  RELEASED = 'released'
 }
