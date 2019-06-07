@@ -25,7 +25,7 @@ export class Affirmations {
     return co(function *list() {
       let url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterprise.id}/affirmations`);
       if (status) {
-        url += `?status=${status}`;
+        url = `${url}?status=${status}`;
       }
 
       const response = yield this.bitgo.get(url).result();
