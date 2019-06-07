@@ -1044,6 +1044,8 @@ Wallet.prototype.removeUser = function(params, callback) {
  * @param {Boolean} params.noSplitChange - Set to true to disable automatic change splitting for purposes of unspent management
  * @param {Array} params.unspents - The unspents to use in the transaction. Each unspent should be in the form prevTxId:nOutput
  * @param {String} params.changeAddress - Specifies the destination of the change output
+ * @param {Number} params.validFromBlock - (Algorand) The minimum round this will run on
+ * @param {Number} params.validToBlock - (Algorand) The maximum round this will run on
  * @param {Boolean} params.instant - Build this transaction to conform with instant sending coin-specific method (if available)
  * @param {{value: String, type: String}} params.memo - Memo to use in transaction (supported by Stellar)
  * @param {String} params.addressType - The type of address to create for change. One of `p2sh`, `p2shP2wsh`, and `p2wsh`. Case-sensitive.
@@ -1059,10 +1061,11 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
       'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
       'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
       'ledgerSequenceDelta', 'gasPrice', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
-      'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy', 'hop'
+      'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy',
+      'validFromBlock', 'validToBlock',
     ]);
     debug('prebuilding transaction: %O', whitelistedParams);
-
+    
     if (params.reqId) {
       this.bitgo._reqId = params.reqId;
     }
@@ -1168,8 +1171,13 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
     // call prebuildTransaction and keychains-get in parallel
     // the prebuild can be overridden by providing an explicit tx
     const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
-    const userKeychainQuery = this.baseCoin.keychains().get({ id: this._wallet.keys[0], reqId: params.reqId });
-    const [txPrebuild, userKeychain] = yield Promise.all([txPrebuildQuery, userKeychainQuery]);
+
+    // retrieve our keychains needed to run the prebuild - some coins use all pubs
+    const ids = this.baseCoin.keyIdsForSigning();
+    const keychainQueriesPromises = ids.map(keyId => this.baseCoin.keychains().get({ id: this._wallet.keys[keyId], reqId: params.reqId }));
+    const keychains = yield Promise.all(keychainQueriesPromises);
+
+    const txPrebuild = yield txPrebuildQuery;
 
     try {
       const verificationParams = _.pick(params.verification || {}, ['disableNetworking', 'keychains', 'addresses']);
@@ -1180,7 +1188,17 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
       throw e;
     }
 
-    const signingParams = _.extend({}, params, { txPrebuild: txPrebuild, keychain: userKeychain });
+    // pass our three keys
+    const signingParams = _.extend({}, params, { 
+      txPrebuild: txPrebuild, 
+      wallet: { 
+        // this is the version of the multisig address at wallet creation time
+        addressVersion: this._wallet.coinSpecific.addressVersion
+      },
+      keychain: keychains[0],
+      backupKeychain: (keychains.length > 1) ? keychains[1] : null,
+      bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
+    });
 
     try {
       return yield this.signTransaction(signingParams);

@@ -440,6 +440,14 @@ class BaseCoin {
   }
 
   /**
+   * Specifies what key we will need for signing - right now we just need the 
+   * user key.
+   */
+  keyIdsForSigning() {
+    return [ 0 ]; 
+  }
+
+  /**
    * Perform additional checks before adding a bitgo key. Base controller
    * is a no-op, but coin-specific controller may do something
    * @param params
