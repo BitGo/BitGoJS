@@ -1,16 +1,27 @@
+import * as Promise from 'bluebird';
 import * as crypto from 'crypto';
 import * as algosdk from 'algosdk';
+import 'should';
 
+const algoFixtures = require('../../fixtures/algo');
+const co = Promise.coroutine;
+const Wallet = require('../../../../src/v2/wallet');
 const TestV2BitGo = require('../../../lib/test_bitgo');
+const nock = require('nock');
 
 describe('ALGO:', function() {
   let bitgo;
   let basecoin;
+  let fixtures;
 
   before(function() {
     bitgo = new TestV2BitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('talgo');
+  });
+
+  after(function() {
+    nock.cleanAll();
   });
 
   it('should generate a keypair from random seed', function() {
@@ -63,5 +74,31 @@ describe('ALGO:', function() {
     const signature = basecoin.signMessage(keyPair, message);
     const pub = algosdk.Address.decode(keyPair.pub).publicKey;
     algosdk.NaclWrapper.verify(message, signature, pub).should.equal(true);
+  });
+  
+  describe('Transaction Verification', function() {
+    let basecoin;
+    let wallet;
+    let halfSignedTransaction;
+
+    before(co(function *() {
+      basecoin = bitgo.coin('talgo');
+      fixtures = algoFixtures.prebuild();
+      wallet = new Wallet(bitgo, basecoin, fixtures.walletData);
+    }));
+
+    it('should sign a prebuild', co(function *() {
+      // sign transaction
+      halfSignedTransaction = yield wallet.signTransaction({
+        txPrebuild: { txData: fixtures.txData },
+        prv: fixtures.userKeychain.prv,
+        keychain: fixtures.userKeychain,
+        backupKeychain: fixtures.backupKeychain,
+        bitgoKeychain: fixtures.bitgoKeychain,
+        wallet: { addressVersion: fixtures.walletData.coinSpecific.addressVersion }
+      });
+
+      Buffer.compare(Buffer.from(halfSignedTransaction.halfSigned), fixtures.signedTxBase64).should.equal(0);
+    }));
   });
 });
