@@ -289,6 +289,7 @@ export const enum UnderlyingAsset {
   PAX = 'pax',
   PAY = 'pay',
   PAYX = 'payx',
+  PDATA = 'pdata',
   PLC = 'plc',
   PLR = 'plr',
   PLX = 'plx',
