@@ -189,6 +189,7 @@ export const coins = CoinMap.fromCoins([
   erc20('pax', 'Paxos', 18, '0x8e870d67f660d95d5be530380d0ec0bd388289e1', UnderlyingAsset.PAX),
   erc20('pay', 'TenX', 18, '0xb97048628db6b661d4c2aa833e95dbe1a905b280', UnderlyingAsset.PAY),
   erc20('payx', 'Paypex', 2, '0x62a56a4a2ef4d355d34d10fbf837e747504d38d4', UnderlyingAsset.PAYX),
+  erc20('pdata', 'Opiria Token', 18, '0x0db03b6cde0b2d427c64a04feafd825938368f1f', UnderlyingAsset.PDATA),
   erc20('plc', 'PlusCoin', 18, '0xdf99c7f9e0eadd71057a801055da810985df38bd', UnderlyingAsset.PLC),
   erc20('plr', 'Pillar', 18, '0xe3818504c1b32bf1557b16c238b2e01fd3149c17', UnderlyingAsset.PLR),
   erc20('plx', 'PLN Stable Token', 18, '0x8d682bc7ad206e54055c609ea1d4717caab665d0', UnderlyingAsset.PLX),
