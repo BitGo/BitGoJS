@@ -14,17 +14,17 @@ try {
   console.log('running without secp256k1 acceleration');
 }
 
-bitcoin.getNetwork = function(network?: any) {
+export function getNetwork(network?: any) {
   network = network || common.getNetwork();
   return bitcoin.networks[network];
-};
+}
 
-bitcoin.makeRandomKey = function() {
-  return bitcoin.ECPair.makeRandom({ network: bitcoin.getNetwork() });
-};
+export function makeRandomKey() {
+  return bitcoin.ECPair.makeRandom({ network: getNetwork() });
+}
 
 HDNode.prototype.getKey = function(network?: any) {
-  network = network || bitcoin.getNetwork();
+  network = network || getNetwork();
   const k = this.keyPair;
   const result = new bitcoin.ECPair(k.d, k.d ? null : k.Q, { network: network, compressed: k.compressed });
   // Creating Q from d takes ~25ms, so if it's not created, use native bindings to pre-compute
@@ -42,7 +42,7 @@ HDNode.prototype.getKey = function(network?: any) {
  * @param   {Number} index   child index
  * @returns {HDNode}         derived HDNode
  */
-const deriveFast = function(hdnode, index) {
+function deriveFast(hdnode, index) {
   // no fast path for private key derivations -- delegate to standard method
   if (!secp256k1 || hdnode.keyPair.d) {
     return hdnode.derive(index);
@@ -103,7 +103,7 @@ const deriveFast = function(hdnode, index) {
  * @param path the path, e.g. 'm/0/0/0/1'
  * @returns {*} the derived hd key
  */
-bitcoin.hdPath = function(rootKey) {
+export function hdPath(rootKey) {
   const cache = {};
   const derive = function(path) {
     const components = path.split('/').filter(function(c) {
@@ -146,6 +146,4 @@ bitcoin.hdPath = function(rootKey) {
     derive: derive,
     deriveKey: deriveKey
   };
-};
-
-export = bitcoin;
+}

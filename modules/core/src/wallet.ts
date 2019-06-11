@@ -8,15 +8,16 @@
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 const TransactionBuilder = require('./transactionBuilder');
-import bitcoin = require('./bitcoin');
+import * as bitcoin from 'bitgo-utxo-lib';
 // TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
 import prova = require('prova-lib');
 const PendingApproval = require('./pendingapproval');
 
-import common = require('./common');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as common from './common';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 import * as _ from 'lodash';
+import { makeRandomKey, getNetwork } from './bitcoin';
 const request = require('superagent');
 
 //
@@ -150,7 +151,7 @@ Wallet.prototype.approvalsRequired = function() {
 // get
 // Refetches this wallet and returns it
 //
-Wallet.prototype.get = function(params, callback) {
+Wallet.prototype.get = function(params, callback): Bluebird<any> {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
@@ -171,7 +172,7 @@ Wallet.prototype.get = function(params, callback) {
 // The approvals required is by default 1, but this function allows you to update the
 // number such that 1 <= approvalsRequired <= walletAdmins.length - 1
 //
-Wallet.prototype.updateApprovalsRequired = function(params, callback) {
+Wallet.prototype.updateApprovalsRequired = function(params, callback): Bluebird<any> {
   params = params || {};
   common.validateParams(params, [], [], callback);
   if (params.approvalsRequired === undefined ||
@@ -185,7 +186,7 @@ Wallet.prototype.updateApprovalsRequired = function(params, callback) {
   const currentApprovalsRequired = this.approvalsRequired();
   if (currentApprovalsRequired === params.approvalsRequired) {
     // no-op, just return the current wallet
-    return Promise.try(function() {
+    return Bluebird.try(function() {
       return self.wallet;
     })
     .nodeify(callback);
@@ -323,7 +324,7 @@ Wallet.prototype.generateAddress = function({ segwit, path, keychains, threshold
   }
 
   addressDetails.outputScript = outputScript.toString('hex');
-  addressDetails.address = bitcoin.address.fromOutputScript(outputScript, bitcoin.getNetwork());
+  addressDetails.address = bitcoin.address.fromOutputScript(outputScript, getNetwork());
 
   return addressDetails;
 };
@@ -803,7 +804,7 @@ Wallet.prototype.pollForTransaction = function(params, callback) {
       if (err.status !== 404 || new Date().valueOf() - start.valueOf() > params.timeout) {
         throw err;
       }
-      return Promise.delay(params.delay)
+      return Bluebird.delay(params.delay)
       .then(function() {
         return doNextPoll();
       });
@@ -929,6 +930,7 @@ Wallet.prototype.signTransaction = function(params, callback) {
   }
 
   params.validate = params.validate !== undefined ? params.validate : this.bitgo.getValidate();
+  params.bitgo = this.bitgo;
   return TransactionBuilder.signTransaction(params)
   .then(function(result) {
     return {
@@ -1145,7 +1147,7 @@ Wallet.prototype.sendMany = function(params, callback) {
   const preservedBuildParams = _.pick(params, acceptedBuildParams);
 
   // Get the user keychain
-  return this.createAndSignTransaction(params)
+  const retPromise = this.createAndSignTransaction(params)
   .then(function(transaction) {
     // Send the transaction
     bitgoFee = transaction.bitgoFee;
@@ -1201,8 +1203,8 @@ Wallet.prototype.sendMany = function(params, callback) {
   })
   .then(function() {
     return finalResult;
-  })
-  .nodeify(callback);
+  });
+  return Bluebird.resolve(retPromise).nodeify(callback);
 };
 
 /**
@@ -1694,7 +1696,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
 
   // If keychain with xprv is already provided, use it
   if (_.isObject(params.keychain) && params.keychain.xprv) {
-    return Promise.resolve(params.keychain);
+    return Bluebird.resolve(params.keychain);
   }
 
   common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
@@ -1756,7 +1758,7 @@ Wallet.prototype.getAndPrepareSigningKeychain = function(params, callback) {
  */
 Wallet.prototype.fanOutUnspents = function(params, callback) {
   const self = this;
-  return Promise.coroutine(function *() {
+  return Bluebird.coroutine(function *() {
     // maximum number of inputs for fanout transaction
     // (when fanning out, we take all the unspents and make a bigger number of outputs)
     const MAX_FANOUT_INPUT_COUNT = 80;
@@ -1837,7 +1839,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
     // create target amount of new addresses for this wallet
     const newAddressPromises = _.range(target)
     .map(() => self.createAddress({ chain: self.getChangeChain(params), validate: validate }));
-    const newAddresses = yield Promise.all(newAddressPromises);
+    const newAddresses = yield Bluebird.all(newAddressPromises);
     // let's find a nice, equal distribution of our Satoshis among the new addresses
     const splitAmounts = splitNumberIntoCloseNaturalNumbers(grossAmount, target);
     // map the newly created addresses to the almost components amounts we just calculated
@@ -1888,7 +1890,7 @@ Wallet.prototype.fanOutUnspents = function(params, callback) {
       throw e;
     }
 
-    return Promise.resolve(fanoutTx).asCallback(callback);
+    return Bluebird.resolve(fanoutTx).asCallback(callback);
   })().asCallback(callback);
 };
 
@@ -2134,7 +2136,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
       // this last consolidation has not yet brought the unspents count down to the target unspent count
       // therefore, we proceed by consolidating yet another batch
       // before we do that, we wait 1 second so that the newly created unspent will be fetched in the next batch
-      yield Promise.delay(1000);
+      yield Bluebird.delay(1000);
       consolidationTransactions.push(...yield runNextConsolidation());
     }
     // this is the final consolidation transaction. We return all the ones we've had so far
@@ -2189,7 +2191,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
             throw new Error('Unable to decrypt user keychain');
           }
 
-          const eckey = bitcoin.makeRandomKey();
+          const eckey = makeRandomKey();
           const secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
           const newEncryptedXprv = self.bitgo.encrypt({ password: secret, input: keychain.xprv });
 

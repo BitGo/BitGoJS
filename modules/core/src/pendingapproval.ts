@@ -4,11 +4,10 @@
 //
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
-import common = require('./common');
+import * as common from './common';
+import * as bitcoin from 'bitgo-utxo-lib';
 
-import bitcoin = require('./bitcoin');
-
-import Promise = require('bluebird');
+import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 
 //
@@ -176,7 +175,7 @@ PendingApproval.prototype.recreateAndSignTransaction = function(params, callback
 
   const self = this;
 
-  return Promise.try(function() {
+  return Bluebird.try(function() {
     if (self.info().transactionRequest.recipients) {
       // recipients object found on the pending approvals - use it
       params.recipients = self.info().transactionRequest.recipients;
@@ -234,7 +233,7 @@ PendingApproval.prototype.constructApprovalTx = function(params, callback) {
   }
 
   const self = this;
-  return Promise.try(function() {
+  return Bluebird.try(function() {
     if (self.type() === 'transactionRequest') {
       const extendParams: any = { txHex: self.info().transactionRequest.transaction };
       if (params.useOriginalFee) {
@@ -275,7 +274,7 @@ PendingApproval.prototype.approve = function(params, callback) {
   }
 
   const self = this;
-  return Promise.try(function() {
+  return Bluebird.try(function() {
     if (self.type() === 'transactionRequest') {
       if (params.tx) {
         // the approval tx was reconstructed and explicitly specified - pass it through

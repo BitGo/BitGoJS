@@ -8,10 +8,9 @@ import { strict as assert } from 'assert';
 import 'should';
 const Q = require('q');
 
-const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');
-
-const bitcoin = BitGoJS.bitcoin;
+import * as bitcoin from 'bitgo-utxo-lib';
+import * as common from '../../src/common';
 
 const TEST_WALLET_LABEL = 'wallet management test';
 
@@ -348,7 +347,7 @@ describe('Wallets', function() {
   });
 
   describe('Setup forward wallet', function() {
-    const key = bitcoin.ECPair.makeRandom({ network: bitcoin.getNetwork() });
+    const key = bitcoin.ECPair.makeRandom({ network: bitcoin.networks[common.getNetwork()] });
     const sourceAddress = key.getAddress();
 
     it('arguments', function() {

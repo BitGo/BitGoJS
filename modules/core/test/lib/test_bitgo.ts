@@ -7,15 +7,15 @@
 const BitGo = require('../../src/bitgo.ts');
 const Wallet = require('../../src/v2/wallet');
 const BigNumber = require('bignumber.js');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 import 'should';
 
 const nock = require('nock');
 nock.enableNetConnect();
 
 try {
-  Promise.config({
+  Bluebird.config({
     longStackTraces: true
   });
 } catch (e) {
@@ -291,7 +291,7 @@ BitGo.prototype.checkFunded = co(function *checkFunded() {
     tbtcWallet,
     unspentWallet,
     sweep1Wallet
-  } = yield Promise.props({
+  } = yield Bluebird.props({
     tethWallet: this.coin('teth').wallets().get({ id: testWalletId }),
     tbtcWallet: this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET1_ID }),
     unspentWallet:  this.coin('tbtc').wallets().getWallet({ id: BitGo.V2.TEST_WALLET2_UNSPENTS_ID }),

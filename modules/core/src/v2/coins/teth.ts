@@ -1,6 +1,11 @@
-const Eth = require('./eth');
+import { BaseCoin } from '../baseCoin';
+import { Eth } from './eth';
 
-class Teth extends Eth {
+export class Teth extends Eth {
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Teth(bitgo);
+  }
 
   getChain() {
     return 'teth';
@@ -9,7 +14,4 @@ class Teth extends Eth {
   getFullName() {
     return 'Testnet Ethereum';
   }
-
 }
-
-module.exports = Teth;

@@ -1,13 +1,17 @@
-const Btc = require('./btc');
-const bitcoin = require('bitgo-utxo-lib');
-import * as Promise from 'bluebird';
-const request = require('superagent');
-const co = Promise.coroutine;
-import common = require('../../common');
+import { BaseCoin } from '../baseCoin';
+import { Btc } from './btc';
+import * as bitcoin from 'bitgo-utxo-lib';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
+import * as common from '../../common';
 
-class Btg extends Btc {
-  constructor(network) {
-    super(network || bitcoin.networks.bitcoingold);
+export class Btg extends Btc {
+  constructor(bitgo: any, network?) {
+    super(bitgo, network || bitcoin.networks.bitcoingold);
+  }
+
+  static createInstance(bitgo): BaseCoin {
+    return new Btg(bitgo);
   }
 
   getChain() {
@@ -78,7 +82,7 @@ class Btg extends Btc {
 
   getAddressInfoFromExplorer(addressBase58) {
     return co(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
+      const addrInfo = yield this.bitgo.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
       addrInfo.txCount = addrInfo.txApperances;
       addrInfo.totalBalance = addrInfo.balanceSat;
@@ -89,7 +93,7 @@ class Btg extends Btc {
 
   getUnspentInfoFromExplorer(addressBase58) {
     return co(function *getUnspentInfoFromExplorer() {
-      const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
+      const unspents = yield this.bitgo.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
       unspents.forEach(function processUnspent(unspent) {
         unspent.amount = unspent.satoshis;
@@ -101,5 +105,3 @@ class Btg extends Btc {
   }
 
 }
-
-module.exports = Btg;

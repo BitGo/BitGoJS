@@ -1,4 +1,5 @@
-const Ofc = require('./ofc');
+import { CoinConstructor } from '../coinFactory';
+import { Ofc } from './ofc';
 
 interface OfcTokenConfig {
   type: string,
@@ -9,13 +10,12 @@ interface OfcTokenConfig {
   isFiat: boolean,
 }
 
-class OFCToken extends Ofc {
+export class OfcToken extends Ofc {
   public readonly tokenConfig: OfcTokenConfig;
 
-  constructor(tokenConfig) {
-    super();
+  constructor(bitgo, tokenConfig) {
+    super(bitgo);
     this.tokenConfig = tokenConfig;
-    this.type = tokenConfig.type;
   }
 
   get coin() {
@@ -50,6 +50,10 @@ class OFCToken extends Ofc {
     return String(Math.pow(10, this.decimalPlaces));
   }
 
+  public get type() {
+    return this.tokenConfig.type;
+  }
+
   /**
    * Flag for sending value of 0
    * @returns {boolean} True if okay to send 0 value, false otherwise
@@ -58,8 +62,8 @@ class OFCToken extends Ofc {
     return false;
   }
 
-  static generateToken(config): typeof OFCToken {
-    return OFCToken.bind(null, config);
+  static createTokenConstructor(config): CoinConstructor {
+    return (bitgo: any) => new OfcToken(bitgo, config);
   }
 
   /**
@@ -77,5 +81,3 @@ class OFCToken extends Ofc {
     return { halfSigned: { payload, signature } };
   }
 }
-
-module.exports = OFCToken;

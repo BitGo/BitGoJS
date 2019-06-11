@@ -1,42 +1,50 @@
+/**
+ * @prettier
+ */
 //
 // index.js - Module definition for BitGoJS
 //
-// Copyright 2014, BitGo, Inc.  All Rights Reserved.
+// Copyright 2019, BitGo, Inc.  All Rights Reserved.
 //
-import common = require('./common');
-const bitgo: any = {};
-bitgo.BitGo = require('./bitgo');
+import * as common from './common';
+
+export const BitGo = require('./bitgo');
 
 // Expose bitcoin and sjcl
-bitgo.bitcoin = require('./bitcoin');
-bitgo.sjcl = require('./vendor/sjcl.min.js');
-bitgo.bs58 = require('bs58');
-bitgo.Buffer = Buffer;
+export const bitcoin = require('./bitcoin');
+export const sjcl = require('./vendor/sjcl.min.js');
+export const bs58 = require('bs58');
+export const Buffer = global.Buffer;
 
 // Expose environments
-const _ = require('lodash');
-bitgo.Environments = _.cloneDeep(common.Environments);
-bitgo.Errors = require('./errors');
+import * as _ from 'lodash';
+export const Environments = _.cloneDeep(common.Environments);
+export const Errors = require('./errors');
 
 /**
  * Set the network, i.e. either "bitcoin" for production with real bitcoin, or
  * "testnet" for development with testnet bitcoin.
+ *
+ * @deprecated
  */
-bitgo.setNetwork = function(network) {
+export function setNetwork(network) {
   common.setNetwork(network);
-};
+}
 
-/*
+/**
  * Get the network. Returns either "bitcoin" or "testnet".
+ *
+ * @deprecated
  */
-bitgo.getNetwork = function() {
+export function getNetwork() {
   return common.getNetwork();
-};
+}
 
-bitgo.getNetworkObj = function() {
-  return bitgo.bitcoin.getNetwork();
-};
+/**
+ * @deprecated
+ */
+export function getNetworkObj() {
+  return bitcoin.networks[common.getNetwork()];
+}
 
-bitgo.setNetwork('testnet');
-
-export = bitgo;
+setNetwork('testnet');

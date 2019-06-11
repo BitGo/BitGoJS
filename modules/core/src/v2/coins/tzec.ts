@@ -1,9 +1,14 @@
-const Zec = require('./zec');
-import bitGoUtxoLib = require('bitgo-utxo-lib');
+import { BaseCoin } from '../baseCoin';
+import { Zec } from './zec';
+import * as bitGoUtxoLib from 'bitgo-utxo-lib';
 
-class Tzec extends Zec {
-  constructor() {
-    super(bitGoUtxoLib.networks.zcashTest);
+export class Tzec extends Zec {
+  constructor(bitgo) {
+    super(bitgo, bitGoUtxoLib.networks.zcashTest);
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Tzec(bitgo);
   }
 
   getChain() {
@@ -25,5 +30,3 @@ class Tzec extends Zec {
     return txBuilder;
   }
 }
-
-module.exports = Tzec;

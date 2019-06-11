@@ -3,15 +3,16 @@
 //
 
 import * as should from 'should';
-const nock = require('nock');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as nock from 'nock';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
-const BitGoJS = require('../../src/index');
+import * as BitGoJS from '../../src/index';
 const TestBitGo = require('../lib/test_bitgo');
-const common = require('../../src/common');
+import * as common from '../../src/common';
 const rp = require('request-promise');
 import * as _ from 'lodash';
+import * as bitcoin from 'bitgo-utxo-lib';
 
 nock.disableNetConnect();
 
@@ -84,29 +85,29 @@ describe('BitGo Prototype Methods', function() {
       password: 'password',
       otp: '000000',
       extensible: false,
-      extensionAddress: "address",
+      extensionAddress: 'address',
       forceSMS: false
-    }
+    };
 
-    it('goes to microservices', () => {
-      bitgo = new TestBitGo({env: 'custom', microservicesUri });
+    it('goes to microservices', co(function *() {
+      bitgo = new TestBitGo({ env: 'custom', microservicesUri });
       const scope = nock(microservicesUri)
         .post('/api/v1/auth/session')
-        .reply(200, {user: 'test@bitgo.com', access_token: 'token12356'});
+        .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
-      const response = bitgo.authenticate(authenticateRequest);
+      yield bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();
-    });
+    }));
 
-    it('goes to normal uri', () => {
+    it('goes to normal uri', co(function *() {
       bitgo = new TestBitGo();
       const scope = nock(uri)
         .post('/api/v1/user/login')
-        .reply(200, {user: 'test@bitgo.com', access_token: 'token12356'});
+        .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
-      const response = bitgo.authenticate(authenticateRequest);
+      yield bitgo.authenticate(authenticateRequest);
       scope.isDone().should.be.true();
-    });
+    }));
   });
 
   describe('Verify Address', () => {
@@ -249,8 +250,8 @@ describe('BitGo Prototype Methods', function() {
   describe('ECDH sharing secret', () => {
     it('should calculate a new ECDH sharing secret correctly', () => {
       const bitgo = new TestBitGo();
-      const eckey1 = BitGoJS.bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
-      const eckey2 = BitGoJS.bitcoin.ECPair.makeRandom({ network: BitGoJS.getNetworkObj() });
+      const eckey1 = bitcoin.ECPair.makeRandom({ network: bitcoin.networks[common.getNetwork()] });
+      const eckey2 = bitcoin.ECPair.makeRandom({ network: bitcoin.networks[common.getNetwork()] });
       const sharingKey1 = bitgo.getECDHSecret({ eckey: eckey1, otherPubKeyHex: eckey2.getPublicKeyBuffer().toString('hex') });
       const sharingKey2 = bitgo.getECDHSecret({ eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex') });
       sharingKey1.should.equal(sharingKey2);
@@ -368,7 +369,7 @@ describe('BitGo Prototype Methods', function() {
     }));
 
     afterEach(function afterChangePassword() {
-      nock.activeMocks().should.be.empty();
+      nock.pendingMocks().should.be.empty();
     });
   });
 
@@ -494,7 +495,7 @@ describe('BitGo Prototype Methods', function() {
     }));
 
     after(function tokenDefinitionsAfter() {
-      nock.activeMocks().should.be.empty();
+      nock.pendingMocks().should.be.empty();
     });
   });
 
@@ -520,7 +521,7 @@ describe('BitGo Prototype Methods', function() {
     }));
 
     after(function() {
-      nock.activeMocks().should.be.empty();
+      nock.pendingMocks().should.be.empty();
     });
   });
 });

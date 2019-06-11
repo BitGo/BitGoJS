@@ -4,7 +4,7 @@ const Wallet = require('./wallet');
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
-const RmgCoin = require('./coins/rmg');
+import { hdPath } from '../bitcoin';
 const util = require('../util');
 
 const Wallets = function(bitgo, baseCoin) {
@@ -280,7 +280,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
     })();
 
     const backupKeychainPromise = Promise.try(function() {
-      if (params.backupXpubProvider || self.baseCoin instanceof RmgCoin) {
+      if (params.backupXpubProvider || self.baseCoin.getFamily() === 'rmg') {
         // If requested, use a KRS or backup key provider
         return self.baseCoin.keychains().createBackup({
           provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
@@ -475,7 +475,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
       const rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.prv);
 
       // Derive key by path (which is used between these 2 users only)
-      const privKey = bitcoin.hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
+      const privKey = hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
       const secret = self.bitgo.getECDHSecret({ eckey: privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
 
       // Yes! We got the secret successfully here, now decrypt the shared wallet prv

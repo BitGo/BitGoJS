@@ -7,7 +7,7 @@
 // import { strict as assert } from 'assert';
 import { strict as assert } from 'assert';
 import 'should';
-const BitGoJS = require('../../src/index');
+const BitGoJS = require('../../src');
 const TestBitGo = require('../lib/test_bitgo');
 
 describe('Constructor', function() {

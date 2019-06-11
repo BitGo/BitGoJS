@@ -7,12 +7,12 @@
 const Wallet = require('../../src/wallet');
 const TestBitGo = require('../lib/test_bitgo');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 const common = require('../../src/common');
 const bitcoin = require('../../src/bitcoin');
 import * as should from 'should';
-const nock = require('nock');
+import * as nock from 'nock';
 const sinon = require('sinon');
 
 nock.disableNetConnect();
@@ -67,7 +67,7 @@ describe('Wallet Prototype Methods', function() {
 
   describe('Generate Address', function() {
 
-    before(() => nock.activeMocks().should.be.empty());
+    before(() => nock.pendingMocks().should.be.empty());
 
     it('generate first address', function() {
       const idAddress = fakeWallet.generateAddress({ path: '/0/0', segwit: false });
@@ -200,7 +200,7 @@ describe('Wallet Prototype Methods', function() {
     let bgUrl;
 
     before(co(function *() {
-      nock.activeMocks().should.be.empty();
+      nock.pendingMocks().should.be.empty();
       bgUrl = common.Environments[bitgo.getEnv()].uri;
     }));
 
@@ -236,6 +236,7 @@ describe('Wallet Prototype Methods', function() {
     }));
 
     it('default p2sh', co(function *() {
+      console.log(common.getNetwork());
       const p2shAddress = fakeWallet.generateAddress({ path: '/0/13', segwit: false });
       const unspent: any = {
         addresses: [
@@ -758,7 +759,7 @@ describe('Wallet Prototype Methods', function() {
     }
 
     before(function accelerateTxMockedBefore() {
-      nock.activeMocks().should.be.empty();
+      nock.pendingMocks().should.be.empty();
 
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
@@ -775,7 +776,7 @@ describe('Wallet Prototype Methods', function() {
 
     after(function accelerateTxMockedAfter() {
       // make sure all nocks are cleared or consumed after the tests are complete
-      nock.activeMocks().should.be.empty();
+      nock.pendingMocks().should.be.empty();
     });
 
     it('arguments', co(function *coArgumentsIt() {
@@ -815,7 +816,7 @@ describe('Wallet Prototype Methods', function() {
     describe('bad input', function badInputDescribe() {
       after(function accelerateTxMockedAfter() {
         // make sure all nocks are cleared or consumed after the tests are complete
-        nock.activeMocks().should.be.empty();
+        nock.pendingMocks().should.be.empty();
       });
 
 
@@ -1149,7 +1150,7 @@ describe('Wallet Prototype Methods', function() {
         .post(`/api/v1/keychain/${userKeypair.xpub}`, {})
         .reply(200, {
           encryptedXprv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
-          path: userKeypair.path + userKeypair.walletSubPath
+          path: ''
         });
       });
 
@@ -1695,7 +1696,7 @@ describe('Wallet Prototype Methods', function() {
           feeRate,
           walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE
         });
-        nock.activeMocks().should.be.empty();
+        nock.pendingMocks().should.be.empty();
 
         bitgo.__proto__.getConstants = oldGetConstants;
       }));

@@ -1,11 +1,16 @@
-const Xlm = require('./xlm');
+import { BaseCoin } from '../baseCoin';
+import { Xlm } from './xlm';
 const stellar = require('stellar-sdk');
 
-class Txlm extends Xlm {
+export class Txlm extends Xlm {
 
-  constructor() {
-    super();
+  constructor(bitgo: any) {
+    super(bitgo);
     stellar.Network.use(new stellar.Network(stellar.Networks.TESTNET));
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Txlm(bitgo);
   }
 
   getChain() {
@@ -20,5 +25,3 @@ class Txlm extends Xlm {
     return 'https://horizon-testnet.stellar.org';
   }
 }
-
-module.exports = Txlm;

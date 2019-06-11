@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import BaseCoin = require('../baseCoin');
+import { BaseCoin } from '../baseCoin';
 import * as _ from 'lodash';
 
 const {
@@ -22,9 +22,14 @@ interface KeyPair {
 
 const MAX_ALGORAND_NOTE_LENGTH = 1024;
 
-class Algo extends BaseCoin {
-  constructor() {
-    super();
+export class Algo extends BaseCoin {
+
+  constructor(bitgo) {
+    super(bitgo);
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Algo(bitgo);
   }
 
   getChain(): string {
@@ -39,7 +44,7 @@ class Algo extends BaseCoin {
     return 'Algorand';
   }
 
-  getBaseFactor(): number {
+  getBaseFactor(): any {
     return 1e6;
   }
 
@@ -205,5 +210,3 @@ class Algo extends BaseCoin {
     };
   }
 }
-
-export default Algo;

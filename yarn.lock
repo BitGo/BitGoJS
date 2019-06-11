@@ -97,6 +97,11 @@
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
 
+"@bitgo/statics@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-1.2.0.tgz#75cb057988fb25941bebb8032d0ffdff1345925e"
+  integrity sha512-3smJqneW4oog5jB3Q2HdfcXkYGWNfEXEALr3NFaMl1wksnhBBvcg3CSlkThlDKHG+XqFK9h99FeI2Sm88MtzNQ==
+
 "@bitgo/unspents@^0.6.0":
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.0.tgz#2ebd1b690056e8a21204da8e357659f6d1b58fce"

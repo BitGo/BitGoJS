@@ -5,14 +5,14 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import crypto = require('crypto');
+import * as crypto from 'crypto';
 const common = require('./common');
 const Util = require('./util');
 const bitcoin = require('./bitcoin');
 const _ = require('lodash');
 let ethereumUtil;
-const Promise = require('bluebird');
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
 try {
   ethereumUtil = require('ethereumjs-util');
