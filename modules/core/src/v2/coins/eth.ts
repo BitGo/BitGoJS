@@ -1,17 +1,17 @@
-const BaseCoin = require('../baseCoin');
+import { BaseCoin } from '../baseCoin';
 const Wallet = require('../wallet');
-import common = require('../../common');
-const config = require('../../config');
+import * as common from '../../common';
+import * as config from '../../config';
 const BigNumber = require('bignumber.js');
 const keccak = require('keccak');
 const Util = require('../../util');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird';
+import * as Bluebird from 'bluebird';
+import * as crypto from 'crypto';
+import * as secp256k1 from 'secp256k1';
+import * as utxoLib from 'bitgo-utxo-lib';
+const co = Bluebird.coroutine;
 const request = require('superagent');
-const crypto = require('crypto');
-const secp256k1 = require('secp256k1');
-const utxoLib = require('bitgo-utxo-lib');
-const co = Promise.coroutine;
 
 // The following dependencies are optional. If they are missing we still want to be
 // able to require `eth.js` without error.
@@ -29,7 +29,29 @@ const optionalDeps = {
   }
 };
 
-class Eth extends BaseCoin {
+/**
+ * The extra parameters to send to platform build route for hop transactions
+ */
+interface HopParams {
+  gasPriceMax: number,
+  userReqSig: string,
+  paymentId: string,
+}
+
+/**
+ * The prebuilt hop transaction returned from the HSM
+ */
+interface HopPrebuild {
+  tx: string,
+  id: string,
+  signature: string,
+}
+
+export class Eth extends BaseCoin {
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Eth(bitgo);
+  }
 
   /**
    * Returns the factor between the base unit and its smallest subdivison
@@ -986,7 +1008,7 @@ class Eth extends BaseCoin {
    */
   feeEstimate(params, callback) {
     return co(function *coFeeEstimate() {
-      const query : any = {};
+      const query: any = {};
       if (params && params.hop) {
         query.hop = params.hop;
       }
@@ -1001,45 +1023,26 @@ class Eth extends BaseCoin {
     }).call(this).asCallback(callback);
   }
 
-}
-
-/**
- * Generate secp256k1 key pair
- *
- * @param seed
- * @returns {Object} object with generated pub and prv
- */
-Eth.prototype.generateKeyPair = function(seed) {
-  if (!seed) {
-    // An extended private key has both a normal 256 bit private key and a 256
-    // bit chain code, both of which must be random. 512 bits is therefore the
-    // maximum entropy and gives us maximum security against cracking.
-    seed = crypto.randomBytes(512 / 8);
+  /**
+   * Generate secp256k1 key pair
+   *
+   * @param seed
+   * @returns {Object} object with generated pub and prv
+   */
+  generateKeyPair(seed) {
+    if (!seed) {
+      // An extended private key has both a normal 256 bit private key and a 256
+      // bit chain code, both of which must be random. 512 bits is therefore the
+      // maximum entropy and gives us maximum security against cracking.
+      seed = crypto.randomBytes(512 / 8);
+    }
+    const extendedKey = utxoLib.HDNode.fromSeedBuffer(seed);
+    const xpub = extendedKey.neutered().toBase58();
+    return {
+      pub: xpub,
+      prv: extendedKey.toBase58()
+    };
   }
-  const extendedKey = utxoLib.HDNode.fromSeedBuffer(seed);
-  const xpub = extendedKey.neutered().toBase58();
-  return {
-    pub: xpub,
-    prv: extendedKey.toBase58()
-  };
-};
 
-/**
- * The extra parameters to send to platform build route for hop transactions
- */
-interface HopParams {
-  gasPriceMax: number,
-  userReqSig: string,
-  paymentId: string,
 }
 
-/**
- * The prebuilt hop transaction returned from the HSM
- */
-interface HopPrebuild {
-  tx: string,
-  id: string,
-  signature: string,
-}
-
-module.exports = Eth;

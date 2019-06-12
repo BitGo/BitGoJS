@@ -1,9 +1,10 @@
-const Susd = require('./susd');
+import { BaseCoin } from '../baseCoin';
+import { Susd } from './susd';
 
-class Tsusd extends Susd {
+export class Tsusd extends Susd {
 
-  constructor() {
-    super();
+  static createInstance(bitgo: any): BaseCoin {
+    return new Tsusd(bitgo);
   }
 
   getChain() {
@@ -14,5 +15,3 @@ class Tsusd extends Susd {
     return 'Test Silvergate USD';
   }
 }
-
-module.exports = Tsusd;

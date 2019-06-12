@@ -1,10 +1,10 @@
-const bitcoin = require('../bitcoin');
-import common = require('../common');
+import * as bitcoin from 'bitgo-utxo-lib';
+import * as common from '../common';
 const Wallet = require('./wallet');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 import * as _ from 'lodash';
-const RmgCoin = require('./coins/rmg');
+import { hdPath } from '../bitcoin';
 const util = require('../util');
 
 const Wallets = function(bitgo, baseCoin) {
@@ -279,8 +279,8 @@ Wallets.prototype.generateWallet = function(params, callback) {
       return _.extend({}, newUserKeychain, userKeychain);
     })();
 
-    const backupKeychainPromise = Promise.try(function() {
-      if (params.backupXpubProvider || self.baseCoin instanceof RmgCoin) {
+    const backupKeychainPromise = Bluebird.try(function() {
+      if (params.backupXpubProvider || self.baseCoin.getFamily() === 'rmg') {
         // If requested, use a KRS or backup key provider
         return self.baseCoin.keychains().createBackup({
           provider: params.backupXpubProvider || 'defaultRMGBackupProvider',
@@ -304,7 +304,7 @@ Wallets.prototype.generateWallet = function(params, callback) {
       }
     });
 
-    const { userKeychain, backupKeychain, bitgoKeychain } = yield Promise.props({
+    const { userKeychain, backupKeychain, bitgoKeychain } = yield Bluebird.props({
       userKeychain: userKeychainPromise,
       backupKeychain: backupKeychainPromise,
       bitgoKeychain: self.baseCoin.keychains().createBitGo({ enterprise: params.enterprise, reqId })
@@ -475,7 +475,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
       const rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.prv);
 
       // Derive key by path (which is used between these 2 users only)
-      const privKey = bitcoin.hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
+      const privKey = hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
       const secret = self.bitgo.getECDHSecret({ eckey: privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
 
       // Yes! We got the secret successfully here, now decrypt the shared wallet prv

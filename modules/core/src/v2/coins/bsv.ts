@@ -1,15 +1,23 @@
-const Bch = require('./bch');
-const bitcoin = require('bitgo-utxo-lib');
+/**
+ * @prettier
+ */
+import { Bch } from './bch';
+import * as bitcoin from 'bitgo-utxo-lib';
 const request = require('superagent');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
-import common = require('../../common');
-const errors = require('../../errors');
+import * as Bluebird from 'bluebird';
+import { BaseCoin } from '../baseCoin';
+const co = Bluebird.coroutine;
+import * as common from '../../common';
+import * as errors from '../../errors';
 
-class Bsv extends Bch {
+export class Bsv extends Bch {
 
-  constructor(network) {
-    super(network || bitcoin.networks.bitcoinsv);
+  constructor(bitgo, network?) {
+    super(bitgo, network || bitcoin.networks.bitcoinsv);
+  }
+
+  static createInstance(bitgo): BaseCoin {
+    return new Bsv(bitgo);
   }
 
   getChain() {
@@ -62,5 +70,3 @@ class Bsv extends Bch {
     }).call(this);
   }
 }
-
-module.exports = Bsv;

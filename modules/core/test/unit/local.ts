@@ -4,20 +4,30 @@
 // Copyright 2018, BitGo, Inc.  All Rights Reserved.
 //
 
-// import { strict as assert } from 'assert';
-import { strict as assert } from 'assert';
 import 'should';
-const BitGoJS = require('../../src/index');
+const BitGoJS = require('../../src');
 const TestBitGo = require('../lib/test_bitgo');
 
 describe('Constructor', function() {
   it('arguments', function() {
-    assert.throws(function() { new BitGoJS.BitGo('invalid'); }, /Must pass in parameters dictionary/);
-    assert.throws(function() { new BitGoJS.BitGo({ useProduction: 'invalid' }); }, /invalid argument/);
-    assert.throws(function() { new BitGoJS.BitGo({ clientId: 'invalid' }); }, /invalid argument/);
-    assert.throws(function() { new BitGoJS.BitGo({ clientSecret: 'invalid' }); }, /invalid argument/);
-    assert.throws(function() { new BitGoJS.BitGo({ env: 'invalid' }); }, /invalid environment/);
-    assert.throws(function() { new BitGoJS.BitGo({ env: 'testnet', useProduction: true }); }, /cannot use useProduction/);
+    (() => {
+      new BitGoJS.BitGo('invalid');
+    }).should.throw(/Must pass in parameters dictionary/);
+    (() => {
+      new BitGoJS.BitGo({ useProduction: 'invalid' });
+    }).should.throw(/invalid argument/);
+    (() => {
+      new BitGoJS.BitGo({ clientId: 'invalid' });
+    }).should.throw(/invalid argument/);
+    (() => {
+      new BitGoJS.BitGo({ clientSecret: 'invalid' });
+    }).should.throw(/invalid argument/);
+    (() => {
+      new BitGoJS.BitGo({ env: 'invalid' });
+    }).should.throw(/invalid environment/);
+    (() => {
+      new BitGoJS.BitGo({ env: 'testnet', useProduction: true });
+    }).should.throw(/cannot use useProduction/);
   });
 
   it('methods', function() {

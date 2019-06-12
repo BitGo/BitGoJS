@@ -1,5 +1,7 @@
 // File for internal functions
 
+import * as Bluebird from 'bluebird';
+
 /**
  * Internal function to centralize this route for wallet-scoped and enterprise-scoped queries
  * Params must contain either walletId or enterpriseId
@@ -8,7 +10,7 @@
  * @param bitgo The BitGo object
  * @returns result of the query
  */
-exports.getFirstPendingTransaction = function(params, baseCoin, bitgo) {
+export function getFirstPendingTransaction(params, baseCoin, bitgo): Bluebird<any> {
   // These errors should never happen when this is called from wallet.js or enterprise.js
   if (!baseCoin) {
     throw new Error('Must provide baseCoin');
@@ -22,14 +24,13 @@ exports.getFirstPendingTransaction = function(params, baseCoin, bitgo) {
   return bitgo.get(baseCoin.url('/tx/pending/first'))
   .query(params)
   .result();
-};
+}
 
 // convert a 4 element Uint8Array to a 4 byte Number
-exports.bytesToWord = (bytes) => {
+export function bytesToWord(bytes) {
   if (!(bytes instanceof Uint8Array) || bytes.length !== 4) {
     throw new Error('bytes must be a Uint8Array with length 4');
   }
 
   return bytes.reduce((num, byte) => num * 0x100 + byte, 0);
-};
-
+}

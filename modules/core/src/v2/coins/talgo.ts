@@ -1,8 +1,16 @@
-import Algo from './algo';
+/**
+ * @prettier
+ */
+import { BaseCoin } from '../baseCoin';
+import { Algo } from './algo';
 
-class Talgo extends Algo {
-  constructor() {
-    super();
+export class Talgo extends Algo {
+  constructor(bitgo) {
+    super(bitgo);
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Talgo(bitgo);
   }
 
   getChain(): string {
@@ -13,5 +21,3 @@ class Talgo extends Algo {
     return 'Testnet Algorand';
   }
 }
-
-module.exports = Talgo;

@@ -1,5 +1,5 @@
-import bitcoin = require('bitgo-utxo-lib');
-const _ = require('lodash');
+import * as bitcoin from 'bitgo-utxo-lib';
+import * as _ from 'lodash';
 
 export const Environments = {
   prod: {

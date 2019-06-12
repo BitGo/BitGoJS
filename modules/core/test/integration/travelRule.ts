@@ -7,6 +7,7 @@
 import { strict as assert } from 'assert';
 import 'should';
 import * as _ from 'lodash';
+import { hdPath } from '../../src/bitcoin';
 
 const BitGoJS = require('../../src/index');
 const bitcoin = BitGoJS.bitcoin;
@@ -103,7 +104,7 @@ describe('Travel Rule API', function() {
       const toPrivate = bitcoin.HDNode.fromSeedHex('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
       const fromPrivate = bitcoin.makeRandomKey();
       const path = '/99/99';
-      const toPubKey = bitcoin.hdPath(toPrivate).deriveKey(path).getPublicKeyBuffer().toString('hex');
+      const toPubKey = hdPath(toPrivate).deriveKey(path).getPublicKeyBuffer().toString('hex');
       const secret = bitgo.getECDHSecret({
         eckey: fromPrivate,
         otherPubKeyHex: toPubKey

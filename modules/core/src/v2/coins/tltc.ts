@@ -1,10 +1,14 @@
-const Ltc = require('./ltc');
-import bitcoin = require('bitgo-utxo-lib');
+/**
+ * @prettier
+ */
+import { BaseCoin } from '../baseCoin';
+import { Ltc } from './ltc';
+import * as bitcoin from 'bitgo-utxo-lib';
 
-class Tltc extends Ltc {
-  constructor() {
+export class Tltc extends Ltc {
+  constructor(bitgo) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
-    super({
+    super(bitgo, {
       magic: 0xd9b4bef9,
       messagePrefix: '\x19Litecoin Signed Message:\n',
       bip32: {
@@ -25,6 +29,10 @@ class Tltc extends Ltc {
     this.supportAltScriptDestination = false;
   }
 
+  static createInstance(bitgo: any): BaseCoin {
+    return new Tltc(bitgo);
+  }
+
   getChain() {
     return 'tltc';
   }
@@ -32,7 +40,4 @@ class Tltc extends Ltc {
   getFullName() {
     return 'Testnet Litecoin';
   }
-
 }
-
-module.exports = Tltc;
