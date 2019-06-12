@@ -4,6 +4,7 @@ import * as bitcoin from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as common from '../../common';
+const request = require('superagent');
 
 export class Ltc extends AbstractUtxoCoin {
   constructor(bitgo, network?) {
@@ -100,7 +101,7 @@ export class Ltc extends AbstractUtxoCoin {
     return co(function *getAddressInfoFromExplorer() {
       const address = this.canonicalAddress(addressBase58, 2);
 
-      const addrInfo = yield this.bitgo.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}`)).result();
+      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}`)).result();
 
       addrInfo.txCount = addrInfo.txApperances;
       addrInfo.totalBalance = addrInfo.balanceSat;
@@ -113,7 +114,7 @@ export class Ltc extends AbstractUtxoCoin {
     return co(function *getUnspentInfoFromExplorer() {
       const address = this.canonicalAddress(addressBase58, 2);
 
-      const unspents = yield this.bitgo.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}/utxo`)).result();
+      const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${address}/utxo`)).result();
 
       unspents.forEach(function processUnspent(unspent) {
         unspent.amount = unspent.satoshis;

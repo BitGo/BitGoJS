@@ -1,6 +1,7 @@
 import * as Bluebird from 'bluebird';
 import { BaseCoin } from '../baseCoin';
 const co = Bluebird.coroutine;
+const request = require('superagent');
 
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import * as common from '../../common';
@@ -51,7 +52,7 @@ export class Dash extends AbstractUtxoCoin {
 
   getAddressInfoFromExplorer(addressBase58) {
     return co(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield this.bitgo.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
+      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
       addrInfo.txCount = addrInfo.txApperances;
       addrInfo.totalBalance = addrInfo.balanceSat;
@@ -62,7 +63,7 @@ export class Dash extends AbstractUtxoCoin {
 
   getUnspentInfoFromExplorer(addressBase58) {
     return co(function *getUnspentInfoFromExplorer() {
-      const unspents = yield this.bitgo.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
+      const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
       unspents.forEach(function processUnspent(unspent) {
         unspent.amount = unspent.satoshis;

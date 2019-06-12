@@ -44,7 +44,7 @@ export class Btc extends AbstractUtxoCoin {
     return co(function *getRecoveryFeePerBytes() {
       const recoveryFeeUrl = yield this.getRecoveryFeeRecommendationApiBaseUrl();
 
-      const publicFeeDataReq = this.bitgo.get(recoveryFeeUrl);
+      const publicFeeDataReq = request.get(recoveryFeeUrl);
       publicFeeDataReq.forceV1Auth = true;
       const publicFeeData = yield publicFeeDataReq.result();
 

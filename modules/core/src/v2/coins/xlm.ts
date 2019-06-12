@@ -4,6 +4,7 @@ import * as querystring from 'querystring';
 import * as url from 'url';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
+const request = require('superagent');
 
 import { BaseCoin } from '../baseCoin';
 import * as config from '../../config';
@@ -451,7 +452,7 @@ export class Xlm extends BaseCoin {
 
       let accountData;
       try {
-        accountData = yield this.bitgo.get(accountDataUrl).result();
+        accountData = yield request.get(accountDataUrl).result();
       } catch (e) {
         throw new Error('Unable to reach the Stellar network via Horizon.');
       }
@@ -459,7 +460,7 @@ export class Xlm extends BaseCoin {
       // Now check if the destination account is empty or not
       let unfundedDestination = false;
       try {
-        yield this.bitgo.get(destinationUrl);
+        yield request.get(destinationUrl);
       } catch (e) {
         if (e.status === 404) {
           // If the destination account does not yet exist, horizon responds with 404

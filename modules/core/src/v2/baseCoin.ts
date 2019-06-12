@@ -337,7 +337,9 @@ export abstract class BaseCoin {
         }
       } catch (e) {
         // if isValidAddress is not implemented, assume the destination
-        // address is valid and let the tx go through
+        // address is valid and let the tx go through. If the destination
+        // is actually invalid (`isValidAddress` returns false and does
+        // not throw), this method will still throw
         if (!(e instanceof errors.MethodNotImplementedError)) {
           throw e;
         }
