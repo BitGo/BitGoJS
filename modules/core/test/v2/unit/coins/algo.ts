@@ -24,16 +24,9 @@ describe('ALGO:', function() {
     nock.cleanAll();
   });
 
-  it('should generate a keypair from random seed', function() {
-    const keyPair = basecoin.generateKeyPair();
-    keyPair.should.have.property('pub');
-    keyPair.should.have.property('prv');
-
-    const address = keyPair.pub;
-    basecoin.isValidAddress(address).should.equal(true);
-
-    basecoin.isValidPub(keyPair.pub).should.equal(true);
-    basecoin.isValidPrv(keyPair.prv).should.equal(true);
+  it('should have three key ids before signing', function() {
+    const keyIds = basecoin.keyIdsForSigning();
+    keyIds.length.should.equal(3);
   });
 
   it('should generate a keypair from seed', function() {
@@ -98,7 +91,7 @@ describe('ALGO:', function() {
         wallet: { addressVersion: fixtures.walletData.coinSpecific.addressVersion }
       });
 
-      Buffer.compare(Buffer.from(halfSignedTransaction.halfSigned), fixtures.signedTxBase64).should.equal(0);
+      halfSignedTransaction.txHex.should.equal(fixtures.signedTxBase64);
     }));
   });
 });
