@@ -128,6 +128,13 @@ class Algo extends BaseCoin {
   }
 
   /**
+   * Specifies what key we will need for signing - Algorand needs the backup, bitgo pubs.
+   */
+  keyIdsForSigning() {
+    return [ 0, 1, 2 ]; 
+  }
+
+  /**
    * Assemble keychain and half-sign prebuilt transaction
    *
    * @param params
@@ -200,9 +207,9 @@ class Algo extends BaseCoin {
       sk
     );
 
-    return {
-      halfSigned: halfSigned,
-    };
+    const txHex = Buffer.from(halfSigned).toString('base64');
+
+    return { txHex };
   }
 }
 
