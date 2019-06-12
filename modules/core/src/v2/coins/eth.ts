@@ -906,7 +906,7 @@ class Eth extends BaseCoin {
         if (!hopAmount.eq(originalAmount)) {
           throw new Error(`Hop amount: ${hopAmount} does not equal original amount: ${originalAmount}`);
         }
-        if (hopDestination !== originalDestination) {
+        if (hopDestination.toLowerCase() !== originalDestination.toLowerCase()) {
           throw new Error(`Hop destination: ${hopDestination} does not equal original recipient: ${hopDestination}`);
         }
       }
