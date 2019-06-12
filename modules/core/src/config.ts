@@ -239,6 +239,7 @@ export const tokens = {
         { type: 'kze', coin: 'eth', network: 'Mainnet', name: 'Almeela', tokenContractAddress: '0x8de67d55c58540807601dbf1259537bc2dffc84d', decimalPlaces: 18 },
         { type: 'tiox', coin: 'eth', network: 'Mainnet', name: 'Trade Token X', tokenContractAddress: '0xd947b0ceab2a8885866b9a04a06ae99de852a3d4', decimalPlaces: 18 },
         { type: 'spo', coin: 'eth', network: 'Mainnet', name: 'Sparrow Options', tokenContractAddress: '0x89eafa06d99f0a4d816918245266800c9a0941e0', decimalPlaces: 18 },
+        { type: 'pdata', coin: 'eth', network: 'Mainnet', name: 'Opiria Token', tokenContractAddress: '0x0db03b6cde0b2d427c64a04feafd825938368f1f', decimalPlaces: 18 },
       ]
     },
     ofc: {
