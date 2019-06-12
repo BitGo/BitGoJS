@@ -8,10 +8,11 @@ import { strict as assert } from 'assert';
 import 'should';
 const Q = require('q');
 
-const BitGoJS = require('../../src/index');
 const TestBitGo = require('../lib/test_bitgo');
-
-const bitcoin = BitGoJS.bitcoin;
+import * as bitcoin from 'bitgo-utxo-lib';
+import { getNetwork } from '../../src/bitcoin';
+import * as common from '../../src/common';
+import * as nock from 'nock';
 
 const TEST_WALLET_LABEL = 'wallet management test';
 
@@ -22,6 +23,7 @@ describe('Wallets', function() {
   const keychains = [];  // Test will create these keychains
 
   before(function(done) {
+    nock.restore();
     bitgo = new TestBitGo();
     bitgo.initializeTestVars();
     wallets = bitgo.wallets();
@@ -348,8 +350,13 @@ describe('Wallets', function() {
   });
 
   describe('Setup forward wallet', function() {
-    const key = bitcoin.ECPair.makeRandom({ network: bitcoin.getNetwork() });
-    const sourceAddress = key.getAddress();
+
+    let key;
+    let sourceAddress;
+    before(() => {
+      key = bitcoin.ECPair.makeRandom({ network: getNetwork(common.Environments[bitgo.getEnv()].network) });
+      sourceAddress = key.getAddress();
+    })
 
     it('arguments', function() {
       assert.throws(function() { wallets.createForwardWallet('invalid'); });

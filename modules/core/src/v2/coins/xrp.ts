@@ -1,21 +1,20 @@
-const BaseCoin = require('../baseCoin');
+import { BaseCoin } from '../baseCoin';
 const BigNumber = require('bignumber.js');
-const crypto = require('crypto');
+import * as crypto from 'crypto';
 const ripple = require('../../ripple');
 const rippleAddressCodec = require('ripple-address-codec');
 const rippleBinaryCodec = require('ripple-binary-codec');
 const rippleHashes = require('ripple-hashes');
 const rippleKeypairs = require('ripple-keypairs');
 import * as _ from 'lodash';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 const sjcl = require('../../vendor/sjcl.min.js');
-const config = require('../../config');
+import * as config from '../../config';
 import * as url from 'url';
 import * as querystring from 'querystring';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
-const prova = require('../../prova');
 
 interface AddressDetails {
   address: string;
@@ -100,7 +99,15 @@ interface HalfSignedTransaction {
   }
 }
 
-class Xrp extends BaseCoin {
+export class Xrp extends BaseCoin {
+
+  protected constructor(bitgo: any) {
+    super(bitgo);
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Xrp(bitgo);
+  }
 
   /**
    * Factor between the coin's base unit and its smallest subdivison
@@ -262,7 +269,7 @@ class Xrp extends BaseCoin {
    * @param keychains
    * @return {*|Request|Promise.<TResult>|{anyOf}}
    */
-  supplementGenerateWallet(walletParams, keychains): Promise<any> {
+  supplementGenerateWallet(walletParams, keychains): Bluebird<any> {
     return co(function *() {
       const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
 
@@ -282,7 +289,7 @@ class Xrp extends BaseCoin {
         if (typeof rootPrivateKey !== 'string' || rootPrivateKey.length !== 64) {
           throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
         }
-        keyPair = prova.ECPair.fromPrivateKeyBuffer(Buffer.from(walletParams.rootPrivateKey, 'hex'));
+        keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(walletParams.rootPrivateKey, 'hex'));
       }
       const privateKey: Buffer = keyPair.getPrivateKeyBuffer();
       const publicKey: Buffer = keyPair.getPublicKeyBuffer();
@@ -413,7 +420,7 @@ class Xrp extends BaseCoin {
    * @param callback
    * @returns {boolean}
    */
-  public verifyTransaction({ txParams, txPrebuild }: VerifyTransactionOptions, callback): Promise<boolean> {
+  public verifyTransaction({ txParams, txPrebuild }: VerifyTransactionOptions, callback): Bluebird<boolean> {
     return co(function *() {
       const explanation = this.explainTransaction({
         txHex: txPrebuild.txHex
@@ -477,7 +484,7 @@ class Xrp extends BaseCoin {
    * - recoveryDestination: target address to send recovered funds to
    * @param callback
    */
-  public recover(params: RecoveryOptions, callback): Promise<RecoveryInfo | string> {
+  public recover(params: RecoveryOptions, callback): Bluebird<RecoveryInfo | string> {
     const rippledUrl = this.getRippledUrl();
     const self = this;
     const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
@@ -629,7 +636,7 @@ class Xrp extends BaseCoin {
   /**
    * Prepare and validate all keychains from the keycard for recovery
    */
-  private initiateRecovery(params: RecoveryOptions): Promise<HDNode[]> {
+  initiateRecovery(params: RecoveryOptions): Bluebird<HDNode[]> {
     return co(function *initiateRecovery() {
       const keys = [];
       const userKey = params.userKey; // Box A
@@ -707,7 +714,4 @@ class Xrp extends BaseCoin {
       prv: extendedKey.toBase58()
     };
   }
-
 }
-
-export = Xrp;

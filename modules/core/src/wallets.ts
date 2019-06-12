@@ -5,11 +5,13 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import bitcoin = require('./bitcoin');
+import * as bitcoin from 'bitgo-utxo-lib';
+import { makeRandomKey, hdPath, getNetwork } from './bitcoin';
+import * as common from './common';
+import * as _ from 'lodash';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 const Wallet = require('./wallet');
-const common = require('./common');
-const _ = require('lodash');
-const co = require('bluebird').coroutine;
 
 //
 // Constructor
@@ -232,7 +234,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
       const rootExtKey = bitcoin.HDNode.fromBase58(sharingKeychain.xprv);
 
       // Derive key by path (which is used between these 2 users only)
-      const privKey = bitcoin.hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
+      const privKey = hdPath(rootExtKey).deriveKey(walletShare.keychain.path);
       const secret = self.bitgo.getECDHSecret({ eckey: privKey, otherPubKeyHex: walletShare.keychain.fromPubKey });
 
       // Yes! We got the secret successfully here, now decrypt the shared wallet xprv
@@ -269,10 +271,7 @@ Wallets.prototype.acceptShare = function(params, callback) {
 //   key: <key, in WIF format>
 // }
 Wallets.prototype.createKey = function(params) {
-  params = params || {};
-  common.validateParams(params);
-
-  const key = bitcoin.makeRandomKey();
+  const key = makeRandomKey();
   return {
     address: key.getAddress(),
     key: key.toWIF()
@@ -433,7 +432,7 @@ Wallets.prototype.createForwardWallet = function(params, callback) {
   let addressFromPrivKey;
 
   try {
-    const key = bitcoin.ECPair.fromWIF(params.privKey, bitcoin.getNetwork());
+    const key = bitcoin.ECPair.fromWIF(params.privKey, getNetwork());
     addressFromPrivKey = key.getAddress();
   } catch (e) {
     throw new Error('expecting a valid privKey');

@@ -1,26 +1,26 @@
-import BaseCoin = require('../baseCoin');
+import { hdPath } from '../../bitcoin';
+import { BaseCoin } from '../baseCoin';
 const config = require('../../config');
 const bitcoin = require('bitgo-utxo-lib');
 const bitcoinMessage = require('bitcoinjs-message');
-const Promise = require('bluebird');
-const co = Promise.coroutine;
-const prova = require('prova-lib');
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 const crypto = require('crypto');
 const request = require('superagent');
 const _ = require('lodash');
 const RecoveryTool = require('../recovery');
 const errors = require('../../errors');
 const debug = require('debug')('bitgo:v2:utxo');
-const { Codes, VirtualSizes } = require('@bitgo/unspents');
+import { Codes, VirtualSizes } from '@bitgo/unspents';
 
-class AbstractUtxoCoin extends BaseCoin {
+export class AbstractUtxoCoin extends BaseCoin {
 
-  public readonly altScriptHash;
-  public readonly supportAltScriptDestination;
+  public altScriptHash;
+  public supportAltScriptDestination;
   private readonly _network;
 
-  constructor(network) {
-    super();
+  constructor(bitgo: any, network) {
+    super(bitgo);
     if (!_.isObject(network)) {
       throw new Error('network must be an object');
     }
@@ -101,7 +101,7 @@ class AbstractUtxoCoin extends BaseCoin {
     }
   }
 
-  getLatestBlockHeight(reqId, callback) {
+  getLatestBlockHeight(reqId, callback): Bluebird<any> {
     return co(function *() {
       if (reqId) {
         this.bitgo._reqId = reqId;
@@ -111,7 +111,7 @@ class AbstractUtxoCoin extends BaseCoin {
     }).call(this).asCallback(callback);
   }
 
-  postProcessPrebuild(prebuild, callback) {
+  postProcessPrebuild(prebuild, callback): Bluebird<any> {
     return co(function *() {
       if (_.isUndefined(prebuild.blockHeight)) {
         prebuild.blockHeight = yield this.getLatestBlockHeight();
@@ -168,8 +168,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  parseTransaction({ txParams, txPrebuild, wallet, verification = {} as any, reqId }, callback) {
-
+  parseTransaction({ txParams, txPrebuild, wallet, verification = {} as any, reqId }, callback): Bluebird<any> {
     return co(function *() {
       if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
         throw new Error('verification.disableNetworking must be a boolean');
@@ -181,7 +180,7 @@ class AbstractUtxoCoin extends BaseCoin {
       if (!keychains && disableNetworking) {
         throw new Error('cannot fetch keychains without networking');
       } else if (!keychains) {
-        keychains = yield Promise.props({
+        keychains = yield Bluebird.props({
           user: this.keychains().get({ id: wallet._wallet.keys[0], reqId }),
           backup: this.keychains().get({ id: wallet._wallet.keys[1], reqId }),
           bitgo: this.keychains().get({ id: wallet._wallet.keys[2], reqId })
@@ -208,7 +207,7 @@ class AbstractUtxoCoin extends BaseCoin {
        * Loop through all the outputs and classify each of them as either internal spends
        * or external spends by setting the "external" property to true or false on the output object.
        */
-      const allOutputDetails = yield Promise.map(allOutputs, co(function *(currentOutput) {
+      const allOutputDetails = yield Bluebird.map(allOutputs, co(function *(currentOutput) {
         const currentAddress = currentOutput.address;
 
         // attempt to grab the address details from either the prebuilt tx, or the verification params.
@@ -356,7 +355,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {boolean}
    */
-  verifyTransaction({ txParams, txPrebuild, wallet, verification = {} as any, reqId }, callback) {
+  verifyTransaction({ txParams, txPrebuild, wallet, verification = {} as any, reqId }, callback): Bluebird<any> {
     return co(function *() {
       const disableNetworking = !!verification.disableNetworking;
       const parsedTransaction = yield this.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
@@ -449,7 +448,7 @@ class AbstractUtxoCoin extends BaseCoin {
       const allOutputs = parsedTransaction.outputs;
       const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, this.network);
       const transactionCache = {};
-      const inputs = yield Promise.map(transaction.ins, co(function *(currentInput) {
+      const inputs = yield Bluebird.map(transaction.ins, co(function *(currentInput) {
         const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
         const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
         if (txHex) {
@@ -622,8 +621,8 @@ class AbstractUtxoCoin extends BaseCoin {
     }
 
     const path = 'm/0/0/' + derivationChain + '/' + derivationIndex;
-    const hdNodes = keychains.map(({ pub }) => prova.HDNode.fromBase58(pub));
-    const derivedKeys = hdNodes.map(hdNode => hdNode.hdPath().deriveKey(path).getPublicKeyBuffer());
+    const hdNodes = keychains.map(({ pub }) => bitcoin.HDNode.fromBase58(pub));
+    const derivedKeys = hdNodes.map(hdNode => hdPath(hdNode).deriveKey(path).getPublicKeyBuffer());
 
     const addressDetails: any = {
       chain: derivationChain,
@@ -681,7 +680,7 @@ class AbstractUtxoCoin extends BaseCoin {
     }
 
     const keychain = bitcoin.HDNode.fromBase58(userPrv);
-    const hdPath = bitcoin.hdPath(keychain);
+    const keychainHdPath = hdPath(keychain);
     const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, this.network);
     this.prepareTransactionBuilder(txb);
 
@@ -709,7 +708,7 @@ class AbstractUtxoCoin extends BaseCoin {
         );
         continue;
       }
-      const privKey = hdPath.deriveKey(signatureContext.path);
+      const privKey = keychainHdPath.deriveKey(signatureContext.path);
       privKey.network = this.network;
 
       debug('Input details: %O', signatureContext);
@@ -924,12 +923,10 @@ class AbstractUtxoCoin extends BaseCoin {
    * @returns {boolean}
    */
   verifySignature(transaction, inputIndex, amount, verificationSettings = {} as any) {
-
     const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } =
         this.parseSignatureScript(transaction, inputIndex);
 
-    if (![bitcoin.script.types.P2WSH, bitcoin.script.types.P2SH, bitcoin.script.types.P2PKH]
-        .includes(inputClassification)) {
+    if (![bitcoin.script.types.P2WSH, bitcoin.script.types.P2SH, bitcoin.script.types.P2PKH].includes(inputClassification)) {
       return false;
     }
 
@@ -1173,15 +1170,15 @@ class AbstractUtxoCoin extends BaseCoin {
     return this.getCoinLibrary().address.fromOutputScript(scriptHashScript, this.network);
   }
 
-  getRecoveryFeePerBytes() {
-    return Promise.resolve(100);
+  getRecoveryFeePerBytes(): Bluebird<number> {
+    return Bluebird.resolve(100);
   }
 
-  getRecoveryFeeRecommendationApiBaseUrl() {
-    return Promise.reject(new Error('AbtractUtxoCoin method not implemented'));
+  getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<any> {
+    return Bluebird.reject(new Error('AbtractUtxoCoin method not implemented'));
   }
 
-  getRecoveryMarketPrice() {
+  getRecoveryMarketPrice(): Bluebird<any> {
     return co(function *getRecoveryMarketPrice() {
       const bitcoinAverageUrl = config.bitcoinAverageBaseUrl + this.getFamily().toUpperCase() + 'USD';
       const response = yield request.get(bitcoinAverageUrl).retry(2).result();
@@ -1234,7 +1231,7 @@ class AbstractUtxoCoin extends BaseCoin {
    *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
    * @param callback
    */
-  recover(params, callback) {
+  recover(params, callback): Bluebird<any> {
     return co(function *recover() {
       const self = this;
 
@@ -1352,7 +1349,7 @@ class AbstractUtxoCoin extends BaseCoin {
 
           let codes;
           try {
-            codes = Codes.forType(Codes.UnspentTypeTcomb(addressType));
+            codes = Codes.forType(Codes.UnspentTypeTcomb(addressType) as any);
           } catch (e) {
             // The unspent type is not supported by bitgo so attempting to get its chain codes throws. Catch that error
             // and continue.
@@ -1513,7 +1510,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  calculateFeeAmount(params, callback) {
+  calculateFeeAmount(params, callback): Bluebird<any> {
     return co(function *calculateFeeAmount() {
       const krsProvider = config.krsProviders[params.provider];
 
@@ -1546,7 +1543,7 @@ class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  recoverFromWrongChain(params, callback) {
+  recoverFromWrongChain(params, callback): Bluebird<any> {
     return co(function *recoverFromWrongChain() {
       const {
         txid,
@@ -1604,7 +1601,7 @@ class AbstractUtxoCoin extends BaseCoin {
       // maximum entropy and gives us maximum security against cracking.
       seed = crypto.randomBytes(512 / 8);
     }
-    const extendedKey = prova.HDNode.fromSeedBuffer(seed);
+    const extendedKey = bitcoin.HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
@@ -1613,6 +1610,4 @@ class AbstractUtxoCoin extends BaseCoin {
   }
 
 }
-
-export = AbstractUtxoCoin;
 

@@ -1,9 +1,17 @@
-const Bch = require('./bch');
-import bitcoin = require('bitgo-utxo-lib');
+/**
+ * @prettier
+ */
+import { BaseCoin } from '../baseCoin';
+import { Bch } from './bch';
+import * as bitcoin from 'bitgo-utxo-lib';
 
-class Tbch extends Bch {
-  constructor() {
-    super(bitcoin.networks.bitcoincashTestnet);
+export class Tbch extends Bch {
+  constructor(bitgo) {
+    super(bitgo, bitcoin.networks.bitcoincashTestnet);
+  }
+
+  static createInstance(bitgo): BaseCoin {
+    return new Tbch(bitgo);
   }
 
   getChain() {
@@ -27,5 +35,3 @@ class Tbch extends Bch {
     return unspent.address === '2MuMnPoSDgWEpNWH28X2nLtYMXQJCyT61eY';
   }
 }
-
-module.exports = Tbch;
