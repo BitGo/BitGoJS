@@ -1,10 +1,17 @@
-const Btc = require('./btc');
-import bitcoin = require('bitgo-utxo-lib');
+/**
+ * @prettier
+ */
+import { BaseCoin } from '../baseCoin';
+import { Btc } from './btc';
+import * as bitcoin from 'bitgo-utxo-lib';
 
-class Tbtc extends Btc {
+export class Tbtc extends Btc {
+  constructor(bitgo) {
+    super(bitgo, bitcoin.networks.testnet);
+  }
 
-  constructor() {
-    super(bitcoin.networks.testnet);
+  static createInstance(bitgo: any): BaseCoin {
+    return new Tbtc(bitgo);
   }
 
   getChain() {
@@ -14,7 +21,4 @@ class Tbtc extends Btc {
   getFullName() {
     return 'Testnet Bitcoin';
   }
-
 }
-
-module.exports = Tbtc;

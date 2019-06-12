@@ -1,13 +1,19 @@
-const AbstractUtxoCoin = require('./abstractUtxoCoin');
-import common = require('../../common');
-const bitcoin = require('bitgo-utxo-lib');
+import { BaseCoin } from '../baseCoin';
+import { AbstractUtxoCoin } from './abstractUtxoCoin';
+import * as common from '../../common';
+import * as bitcoin from 'bitgo-utxo-lib';
 const request = require('superagent');
 import * as _ from 'lodash';
-import { coroutine as co } from 'bluebird';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
-class Btc extends AbstractUtxoCoin {
-  constructor(network) {
-    super(network || bitcoin.networks.bitcoin);
+export class Btc extends AbstractUtxoCoin {
+  constructor(bitgo: any, network?) {
+    super(bitgo, network || bitcoin.networks.bitcoin);
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Btc(bitgo);
   }
 
   getChain() {
@@ -34,9 +40,9 @@ class Btc extends AbstractUtxoCoin {
     return true;
   }
 
-  getRecoveryFeePerBytes() {
+  getRecoveryFeePerBytes(): Bluebird<number> {
     return co(function *getRecoveryFeePerBytes() {
-      const recoveryFeeUrl = this.getRecoveryFeeRecommendationApiBaseUrl();
+      const recoveryFeeUrl = yield this.getRecoveryFeeRecommendationApiBaseUrl();
 
       const publicFeeDataReq = this.bitgo.get(recoveryFeeUrl);
       publicFeeDataReq.forceV1Auth = true;
@@ -51,7 +57,7 @@ class Btc extends AbstractUtxoCoin {
   }
 
   getRecoveryFeeRecommendationApiBaseUrl() {
-    return 'https://bitcoinfees.earn.com/api/v1/fees/recommended';
+    return Bluebird.resolve('https://bitcoinfees.earn.com/api/v1/fees/recommended');
   }
 
   recoveryBlockchainExplorerUrl(url) {
@@ -102,5 +108,3 @@ class Btc extends AbstractUtxoCoin {
     }).call(this);
   }
 }
-
-module.exports = Btc;

@@ -5,38 +5,40 @@
 //
 
 const superagent = require('superagent');
-import bitcoin = require('./bitcoin');
+import * as bitcoin from 'bitgo-utxo-lib';
+import { makeRandomKey, hdPath } from './bitcoin';
 import bitcoinMessage = require('bitcoinjs-message');
 import sanitizeHtml = require('sanitize-html');
 import eol = require('eol');
-const BaseCoin = require('./v2/baseCoin');
+import { BaseCoin } from './v2/baseCoin';
+const PendingApprovals = require('./pendingapprovals');
+import shamir = require('secrets.js-grempe');
+import sjcl = require('./vendor/sjcl.min.js');
+import bs58 = require('bs58');
+import * as common from './common';
+import Util = require('./util');
+import * as Bluebird from 'bluebird';
+import co = Bluebird.coroutine;
+import pjson = require('../package.json');
+import moment = require('moment');
+import * as _ from 'lodash';
+import * as url from 'url';
+import * as querystring from 'querystring';
+import * as config from './config';
+import * as crypto from 'crypto';
+import debugLib = require('debug');
+import { bytesToWord } from './v2/internal';
+
+const TransactionBuilder = require('./transactionBuilder');
 const Blockchain = require('./blockchain');
 const Keychains = require('./keychains');
 const TravelRule = require('./travelRule');
 import Wallet = require('./wallet');
 const Wallets = require('./wallets');
 const Markets = require('./markets');
-const PendingApprovals = require('./pendingapprovals');
-import shamir = require('secrets.js-grempe');
-import sjcl = require('./vendor/sjcl.min.js');
-import bs58 = require('bs58');
-import common = require('./common');
-import Util = require('./util');
-import Promise = require('bluebird');
-import co = Promise.coroutine;
-import pjson = require('../package.json');
-import moment = require('moment');
-import * as _ from 'lodash';
-import url = require('url');
-import querystring = require('querystring');
-import config = require('./config');
-import crypto = require('crypto');
-import debugLib = require('debug');
-const internal = require('./v2/internal');
-const TransactionBuilder = require('./transactionBuilder');
+import { GlobalCoinFactory } from './v2/coinFactory';
 
 const debug = debugLib('bitgo:index');
-const { bytesToWord } = internal;
 
 if (!(process as any).browser) {
   require('superagent-proxy')(superagent);
@@ -50,7 +52,7 @@ superagent.Request.prototype.end = function(cb) {
     return _end.call(self, cb);
   }
 
-  return new Promise.Promise(function(resolve, reject) {
+  return new Bluebird.Promise(function(resolve, reject) {
     let error;
     try {
       return _end.call(self, function(error, response) {
@@ -232,7 +234,7 @@ const BitGo = function(params) {
   this._token = params.accessToken || null;
   this._refreshToken = params.refreshToken || null;
   this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
-  this._promise = Promise;
+  this._promise = Bluebird;
 
   // whether to perform extra client-side validation for some things, such as
   // address validation or signature validation. defaults to true, but can be
@@ -456,8 +458,8 @@ BitGo.prototype.calculateHMAC = function(key, message) {
  * Create a basecoin object
  * @param coinName
  */
-BitGo.prototype.coin = function(coinName) {
-  return BaseCoin.getInstance(this, coinName);
+BitGo.prototype.coin = function(coinName): BaseCoin {
+  return GlobalCoinFactory.getInstance(this, coinName);
 };
 
 /**
@@ -497,7 +499,7 @@ BitGo.prototype.clear = function() {
 
 // Helper function to return a rejected promise or call callback with error
 BitGo.prototype.reject = function(msg, callback) {
-  return Promise.reject(new Error(msg)).nodeify(callback);
+  return Bluebird.reject(new Error(msg)).nodeify(callback);
 };
 
 //
@@ -520,7 +522,7 @@ BitGo.prototype.fromJSON = function(json) {
   this._user = json.user;
   this._token = json.token;
   if (json.extensionKey) {
-    this._extensionKey = bitcoin.ECPair.fromWIF(json.extensionKey, bitcoin.getNetwork());
+    this._extensionKey = bitcoin.ECPair.fromWIF(json.extensionKey, bitcoin.networks[common.Environments[this.getEnv()].network]);
   }
 };
 
@@ -540,7 +542,7 @@ BitGo.prototype.verifyAddress = function(params) {
     return false;
   }
 
-  const network = bitcoin.getNetwork();
+  const network = bitcoin.networks[common.Environments[this.getEnv()].network];
   return address.version === network.pubKeyHash || address.version === network.scriptHash;
 };
 
@@ -879,8 +881,8 @@ BitGo.prototype.handleTokenIssuance = function(responseBody, password) {
 
   // BIP32 derivation path is applied to both client and server master keys
   const derivationPath = responseBody.derivationPath;
-  const clientDerivedNode = bitcoin.hdPath(clientHDNode).derive(derivationPath);
-  const serverDerivedNode = bitcoin.hdPath(serverHDNode).derive(derivationPath);
+  const clientDerivedNode = hdPath(clientHDNode).derive(derivationPath);
+  const serverDerivedNode = hdPath(serverHDNode).derive(derivationPath);
 
   // calculating one-time ECDH key
   const secretPoint = serverDerivedNode.keyPair.__Q.multiply(clientDerivedNode.keyPair.d);
@@ -1009,7 +1011,7 @@ BitGo.prototype.preprocessAuthenticationParams = function(params) {
   }
 
   if (params.extensible) {
-    this._extensionKey = bitcoin.makeRandomKey();
+    this._extensionKey = makeRandomKey();
     authParams.extensible = true;
     authParams.extensionAddress = this._extensionKey.getAddress();
   }
@@ -1376,7 +1378,7 @@ BitGo.prototype.removeAccessToken = function(params, callback) {
 
   const self = this;
 
-  return Promise.try(function() {
+  return Bluebird.try(function() {
     if (params.id) {
       return params.id;
     }
@@ -1752,7 +1754,7 @@ BitGo.prototype.instantGuarantee = function(params, callback) {
     }
     const signingAddress = common.Environments[self.env].signingAddress;
     const signatureBuffer = new Buffer(body.signature, 'hex');
-    const prefix = bitcoin.getNetwork().messagePrefix;
+    const prefix = bitcoin.networks[common.Environments[self.getEnv()].network].messagePrefix;
     const isValidSignature = bitcoinMessage.verify(body.guarantee, signingAddress, signatureBuffer, prefix);
     if (!isValidSignature) {
       throw new Error('incorrect signature');

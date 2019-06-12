@@ -1,9 +1,10 @@
-const Btg = require('./btg');
+import { BaseCoin } from '../baseCoin';
+import { Btg } from './btg';
 
-class Tbtg extends Btg {
-  constructor() {
+export class Tbtg extends Btg {
+  constructor(bitgo) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
-    super({
+    super(bitgo, {
       messagePrefix: '\x18Bitcoin Signed Message:\n',
       bech32: 'tb',
       bip32: {
@@ -17,6 +18,10 @@ class Tbtg extends Btg {
     });
   }
 
+  static createInstance(bitgo: any): BaseCoin {
+    return new Tbtg(bitgo);
+  }
+
   getChain() {
     return 'tbtg';
   }
@@ -24,7 +29,4 @@ class Tbtg extends Btg {
   getFullName() {
     return 'Testnet Bitcoin Gold';
   }
-
 }
-
-module.exports = Tbtg;

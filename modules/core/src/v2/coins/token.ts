@@ -1,10 +1,12 @@
-const Eth = require('./eth');
+import { Eth } from './eth';
 import * as _ from 'lodash';
 import * as Promise from 'bluebird';
+import { CoinConstructor } from '../coinFactory';
 const co = Promise.coroutine;
-const prova = require('prova-lib');
 const Util = require('../../util');
 const config = require('../../config');
+import { HDNode } from 'bitgo-utxo-lib';
+
 let ethUtil: any = function() {};
 let ethAbi: any = function() {};
 let EthTx: any = function() {};
@@ -26,12 +28,16 @@ interface TokenConfig {
   decimalPlaces: number
 }
 
-class Token extends Eth {
+export class Token extends Eth {
   public readonly tokenConfig: TokenConfig;
 
-  constructor(tokenConfig) {
-    super();
+  constructor(bitgo: any, tokenConfig) {
+    super(bitgo);
     this.tokenConfig = tokenConfig;
+  }
+
+  static createTokenConstructor(config): CoinConstructor {
+    return (bitgo: any) => new Token(bitgo, config);
   }
 
   get type() {
@@ -147,7 +153,7 @@ class Token extends Eth {
       let backupSigningKey;
 
       if (isKrsRecovery) {
-        const backupHDNode = prova.HDNode.fromBase58(backupKey);
+        const backupHDNode = HDNode.fromBase58(backupKey);
         backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
         backupKeyAddress = `0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
       } else {
@@ -162,7 +168,7 @@ class Token extends Eth {
           throw new Error(`Error decrypting backup keychain: ${e.message}`);
         }
 
-        const backupHDNode = prova.HDNode.fromBase58(backupPrv);
+        const backupHDNode = HDNode.fromBase58(backupPrv);
         backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
         backupKeyAddress = `0x${ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
       }
@@ -304,10 +310,4 @@ class Token extends Eth {
       }
     ];
   }
-
-  static generateToken(config): typeof Token {
-    return Token.bind(null, config);
-  }
 }
-
-module.exports = Token;

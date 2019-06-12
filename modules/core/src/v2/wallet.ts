@@ -1,13 +1,13 @@
-import common = require('../common');
+import * as common from '../common';
 const BigNumber = require('bignumber.js');
-const bitcoin = require('../bitcoin');
+import { makeRandomKey } from '../bitcoin';
 const PendingApproval = require('./pendingApproval');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 import * as _ from 'lodash';
 import { TradingAccount } from './trading/tradingAccount';
 const debug = require('debug')('bitgo:v2:wallet');
-const internal = require('./internal');
+import * as internal from './internal';
 const util = require('../util');
 
 const Wallet = function(bitgo, baseCoin, walletData) {
@@ -701,7 +701,7 @@ Wallet.prototype.createAddress = function({ chain = undefined, gasPrice = undefi
     }
 
     // get keychains for address verification
-    const keychains = yield Promise.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k, reqId }));
+    const keychains = yield Bluebird.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k, reqId }));
     const rootAddress = _.get(this._wallet, 'receiveAddress.address');
 
     const newAddresses = _.times(count, co(function *createAndVerifyAddress() {
@@ -967,7 +967,7 @@ Wallet.prototype.shareWallet = function(params, callback) {
             throw new Error('Unable to decrypt user keychain');
           }
 
-          const eckey = bitcoin.makeRandomKey();
+          const eckey = makeRandomKey();
           const secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
           const newEncryptedPrv = self.bitgo.encrypt({ password: secret, input: keychain.prv });
 
@@ -1065,7 +1065,7 @@ Wallet.prototype.prebuildTransaction = function(params, callback) {
       'validFromBlock', 'validToBlock',
     ]);
     debug('prebuilding transaction: %O', whitelistedParams);
-    
+
     if (params.reqId) {
       this.bitgo._reqId = params.reqId;
     }
@@ -1105,7 +1105,7 @@ Wallet.prototype.signTransaction = function(params, callback) {
     throw new Error('txPrebuild must be an object');
   }
   const self = this;
-  return Promise.try(function() {
+  return Bluebird.try(function() {
     return self.baseCoin.presignTransaction(params);
   }).then(function(params) {
     const userPrv = self.getUserPrv(params);
@@ -1189,9 +1189,9 @@ Wallet.prototype.prebuildAndSignTransaction = function(params, callback) {
     }
 
     // pass our three keys
-    const signingParams = _.extend({}, params, { 
-      txPrebuild: txPrebuild, 
-      wallet: { 
+    const signingParams = _.extend({}, params, {
+      txPrebuild: txPrebuild,
+      wallet: {
         // this is the version of the multisig address at wallet creation time
         addressVersion: this._wallet.coinSpecific.addressVersion
       },

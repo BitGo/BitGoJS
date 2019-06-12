@@ -1,8 +1,13 @@
-const BaseCoin = require('../baseCoin');
-import crypto = require('crypto');
-const bitGoUtxoLib = require('bitgo-utxo-lib');
+import { BaseCoin } from '../baseCoin';
+import * as crypto from 'crypto';
+import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as errors from '../../errors';
 
-class Ofc extends BaseCoin {
+export class Ofc extends BaseCoin {
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Ofc(bitgo);
+  }
 
   getChain() {
     return 'ofc';
@@ -58,6 +63,8 @@ class Ofc extends BaseCoin {
       return false;
     }
   }
-}
 
-module.exports = Ofc;
+  isValidAddress(address: string): boolean {
+    throw new errors.MethodNotImplementedError();
+  }
+}

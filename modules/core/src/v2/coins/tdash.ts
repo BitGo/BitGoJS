@@ -1,9 +1,13 @@
-const Dash = require('./dash');
+/**
+ * @prettier
+ */
+import { BaseCoin } from '../baseCoin';
+import { Dash } from './dash';
 
-class Tdash extends Dash {
-  constructor() {
+export class Tdash extends Dash {
+  constructor(bitgo) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
-    super({
+    super(bitgo, {
       messagePrefix: '\x19Dash Signed Message:\n',
       bip32: {
         public: 0x0488b21e,
@@ -19,6 +23,10 @@ class Tdash extends Dash {
     });
   }
 
+  static createInstance(bitgo: any): BaseCoin {
+    return new Tdash(bitgo);
+  }
+
   getChain() {
     return 'tdash';
   }
@@ -26,7 +34,4 @@ class Tdash extends Dash {
   getFullName() {
     return 'Testnet Dash';
   }
-
 }
-
-module.exports = Tdash;

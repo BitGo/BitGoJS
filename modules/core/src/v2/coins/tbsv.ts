@@ -1,9 +1,17 @@
-const Bsv = require('./bsv');
-import bitcoin = require('bitgo-utxo-lib');
+/**
+ * @prettier
+ */
+import { BaseCoin } from '../baseCoin';
+import { Bsv } from './bsv';
+import * as bitcoin from 'bitgo-utxo-lib';
 
-class Tbsv extends Bsv {
-  constructor() {
-    super(bitcoin.networks.bitcoinsvTestnet);
+export class Tbsv extends Bsv {
+  constructor(bitgo) {
+    super(bitgo, bitcoin.networks.bitcoinsvTestnet);
+  }
+
+  static createInstance(bitgo): BaseCoin {
+    return new Tbsv(bitgo);
   }
 
   getChain() {
@@ -27,5 +35,3 @@ class Tbsv extends Bsv {
     return unspent.address === '2MuMnPoSDgWEpNWH28X2nLtYMXQJCyT61eY';
   }
 }
-
-module.exports = Tbsv;

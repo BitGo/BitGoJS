@@ -1,12 +1,18 @@
-const AbstractUtxoCoin = require('./abstractUtxoCoin');
+import { hdPath } from '../../bitcoin';
+import { BaseCoin } from '../baseCoin';
+import { AbstractUtxoCoin } from './abstractUtxoCoin';
 const prova = require('../../prova');
 import * as _ from 'lodash';
 
-class Rmg extends AbstractUtxoCoin {
-  constructor(network) {
+export class Rmg extends AbstractUtxoCoin {
+  constructor(bitgo, network?) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
     prova.networks.rmg.coin = 'rmg';
-    super(network || prova.networks.rmg);
+    super(bitgo, network || prova.networks.rmg);
+  }
+
+  static createInstance(bitgo): BaseCoin {
+    return new Rmg(bitgo);
   }
 
   /**
@@ -29,7 +35,7 @@ class Rmg extends AbstractUtxoCoin {
     return 'Royal Mint Gold';
   }
 
-  isValidAddress(address) {
+  isValidAddress(address): boolean {
     return prova.Address.validateBase58(address, this.network);
   }
 
@@ -92,7 +98,8 @@ class Rmg extends AbstractUtxoCoin {
     const keychainCopy = _.cloneDeep(keychains);
     const userKey = keychainCopy.shift();
     const aspKeyIds = keychainCopy.map((key) => key.aspKeyId);
-    const derivedUserKey = prova.HDNode.fromBase58(userKey.pub).hdPath().deriveKey(path).getPublicKeyBuffer();
+    const userKeyNode = prova.HDNode.fromBase58(userKey.pub);
+    const derivedUserKey = hdPath(userKeyNode).deriveKey(path).getPublicKeyBuffer();
 
     const provaAddress = new prova.Address(derivedUserKey, aspKeyIds, this.network);
     provaAddress.signatureCount = signatureThreshold;
@@ -148,14 +155,13 @@ class Rmg extends AbstractUtxoCoin {
     }
 
     const keychain = prova.HDNode.fromBase58(userPrv, this.network);
-    const hdPath = keychain.hdPath();
 
     const signatureIssues = [];
 
     for (let index = 0; index < transaction.ins.length; ++index) {
       const currentUnspent = txPrebuild.txInfo.unspents[index];
       const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
-      const privKey = hdPath.deriveKey(path);
+      const privKey = hdPath(keychain).deriveKey(path);
 
       const currentSignatureIssue: any = {
         inputIndex: index,
@@ -311,5 +317,3 @@ class Rmg extends AbstractUtxoCoin {
   }
 
 }
-
-module.exports = Rmg;

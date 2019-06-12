@@ -1,15 +1,14 @@
-import { strict as assert } from 'assert';
-const crypto = require('crypto');
-const stellar = require('stellar-sdk');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as crypto from 'crypto';
+import stellar = require('stellar-sdk');
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 const Wallet = require('../../../../src/v2/wallet');
 
 import 'should';
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 
-const nock = require('nock');
+import * as nock from 'nock';
 nock.enableNetConnect();
 
 describe('XLM:', function() {

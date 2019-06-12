@@ -5,14 +5,15 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import crypto = require('crypto');
+import * as crypto from 'crypto';
 const common = require('./common');
 const Util = require('./util');
-const bitcoin = require('./bitcoin');
+import * as bitcoin from 'bitgo-utxo-lib';
+import { hdPath } from './bitcoin';
 const _ = require('lodash');
 let ethereumUtil;
-const Promise = require('bluebird');
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
 try {
   ethereumUtil = require('ethereumjs-util');
@@ -51,7 +52,7 @@ Keychains.prototype.isValid = function(params) {
       bitcoin.HDNode.fromBase58(params.key);
     } else {
       const hdnode = bitcoin.HDNode.fromBase58(params.key.xpub);
-      bitcoin.hdPath(hdnode).derive(params.key.path);
+      hdPath(hdnode).derive(params.key.path);
     }
     return true;
   } catch (e) {
@@ -129,7 +130,7 @@ Keychains.prototype.deriveLocal = function(params) {
 
   let derivedNode;
   try {
-    derivedNode = bitcoin.hdPath(hdNode).derive(params.path);
+    derivedNode = hdPath(hdNode).derive(params.path);
   } catch (e) {
     throw apiResponse(400, {}, 'Unable to derive HD key from path');
   }

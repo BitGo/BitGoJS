@@ -3,9 +3,17 @@
  *
  * @format
  */
-const Xrp = require('./xrp');
+import { BaseCoin } from '../baseCoin';
+import { Xrp } from './xrp';
 
-class Txrp extends Xrp {
+export class Txrp extends Xrp {
+  protected constructor(bitgo: any) {
+    super(bitgo);
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Txrp(bitgo);
+  }
   /**
    * Identifier for the blockchain which supports this coin
    */
@@ -27,5 +35,3 @@ class Txrp extends Xrp {
     return 'Testnet Ripple';
   }
 }
-
-export = Txrp;

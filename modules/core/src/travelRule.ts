@@ -5,9 +5,10 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import bitcoin = require('./bitcoin');
-import common = require('./common');
+import * as bitcoin from 'bitgo-utxo-lib';
+import * as common from './common';
 import * as _ from 'lodash';
+import { getNetwork, makeRandomKey, hdPath } from './bitcoin';
 
 //
 // Constructor
@@ -110,9 +111,9 @@ TravelRule.prototype.decryptReceivedTravelInfo = function(params) {
   }
 
   const self = this;
-  const hdPath = bitcoin.hdPath(hdNode);
+  const hdPathNode = hdPath(hdNode);
   tx.receivedTravelInfo.forEach(function(info) {
-    const key = hdPath.deriveKey(info.toPubKeyPath);
+    const key = hdPathNode.deriveKey(info.toPubKeyPath);
     const secret = self.bitgo.getECDHSecret({
       eckey: key,
       otherPubKeyHex: info.fromPubKey
@@ -154,9 +155,9 @@ TravelRule.prototype.prepareParams = function(params) {
   }
 
   // If a key was not provided, create a new random key
-  let fromKey = params.fromKey && bitcoin.ECPair.fromWIF(params.fromKey, bitcoin.getNetwork());
+  let fromKey = params.fromKey && bitcoin.ECPair.fromWIF(params.fromKey, getNetwork());
   if (!fromKey) {
-    fromKey = bitcoin.makeRandomKey();
+    fromKey = makeRandomKey();
   }
 
   // Compute the shared key for encryption
@@ -250,7 +251,7 @@ TravelRule.prototype.sendMany = function(params, callback) {
     // Build up data to post
     const sendParamsList = [];
     // don't regenerate a new random key for each recipient
-    const fromKey = params.fromKey || bitcoin.makeRandomKey().toWIF();
+    const fromKey = params.fromKey || makeRandomKey().toWIF();
 
     recipients.forEach(function(recipient) {
       const outputIndex = recipient.outputIndex;
