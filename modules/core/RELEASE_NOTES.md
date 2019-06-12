@@ -1,22 +1,93 @@
 # BitGoJS Release Notes
 
+## 6.0.0
+The BitGoJS SDK is being modularized! The code base has been split into two modules: `core` and `express`.
+
+`core` contains the Javascript library that you get when you `require('bitgo')`.
+
+`express` contains the source for the BitGo Express local signing server, and it uses the `core` module to provide access to BitGoJS functionality over a REST interface.
+
+The long term plan is to modularize based on each underlying coin library, so users of `bitgo` won't need to bring in many large dependencies for coins they aren't using. This may require additional major versions if breaking changes are required, but we will do as much as possible to maintain the current API of the BitGoJS SDK.
+
+### Breaking Changes
+* `bitgo-express` is no longer bundled with the `bitgo` npm package. The recommended install instructions are now to install via the official Docker image `bitgo/express:latest`. If you aren't able to run bitgo-express via Docker, you can also install and run `bitgo-express` from the source code. See the [`bitgo-express` README](https://github.com/BitGo/BitGoJS/tree/master/modules/express#running-bitgo-express) for more information on how to install and run BitGo Express.
+* For version 1 wallets, the bitcoin network by the BitGo object is no longer global, and is now determined by the bitgo object's environment when it was initialized. 
+
+As an example, before the behavior was as follows:
+```typescript
+const BitGoJS = require('bitgo');
+// create a new bitgo object using the default (test) environment
+const bitgo = new BitGoJS.BitGo();
+
+// BAD: Global network is checked by all bitgo objects, but this
+// leads to race conditions when multiple bitgo objects are setting the
+// global bitcoin network unpredictably
+BitGoJS.setNetwork('bitcoin');
+// verify a main net address using bitgo object using test environment
+bitgo.verifyAddress({ address: '1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd' }).should.be.true();
+```
+
+After version 6, the behavior will change to this:
+```typescript
+const BitGoJS = require('bitgo');
+
+// create a new bitgo object using the default (test) environment
+const bitgo = new BitGoJS.BitGo();
+
+// BREAKING CHANGE: returns false since this bitgo object is using 
+// the test environment and cannot verify a main net address
+bitgo.verifyAddress({ address: '1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd' }).should.be.true();
+
+// create a new bitgo object using the production environment
+const prodBitgo = new BitGoJS.BitGo({ env: 'prod' });
+
+// OK: Able to verify main net address with bitgo using production environment
+prodBitgo.verifyAddress({ address: '1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd' }).should.be.true();
+```
+
+To switch to another bitcoin network, a new bitgo object should be constructed in the correct environment.
+
+### Other Changes
+* Overhaul how coins are loaded, in anticipation of a pluggable coin system in a future version of `bitgo`.
+* Rework CI system to reduce test runtimes by running tests for each module in parallel
+* Create and upload mochawesome report after each test run. [Here's an example](https://bitgo-sdk-test-reports.s3.amazonaws.com/1166/core/integration%20tests%20\(node:lts\).html).
+* Remove coin instantiation logic from BaseCoin and move methods to prototype instead of attaching to coin object instances.
+
+## 5.4.0
+
+### New Features
+* Add support for verifying and signing Ethereum hop transactions
+* Add support for new ERC 20 tokens (TIOX, SPO)
+
+### Bug Fixes 
+* Remove duplicate ERC 20 token definition (AION)
+
+## 5.3.0
+
+### New Features
+* Add support for new ERC 20 tokens (USX, EUX, PLX, CQX, KZE)
+
+### Other Changes
+* Improve test performance by making more requests in parallel when checking wallet funding
+* Fix bitgo-express startup command on Windows where the shebang line is ignored 
+
 ## 5.2.0
 
 ### New Features
 * Add support for new ERC 20 tokens (WHT, AMN, BTU, TAUD)
 * Add support for trade payload signing
 
-## Bug Fixes
+### Bug Fixes
 * Allow sharing "pseudo-cold" wallets where the encrypted user key is not held by BitGo.
 * Correctly update matching wallet passphrases when the user login password is updated.
 * Add missing filter parameters in `wallet.transfers`.
 
-## Other Changes
+### Other Changes
 * Update README to clarify package description and improve example snippets
 
 ## 5.1.1
 
-## Bug Fixes
+### Bug Fixes
 * Separate input signing and signature verification steps in `AbstractUtxoCoin.signTransaction`. This fixes an issue where Native Segwit inputs which were not the last input in the transaction were not being properly constructed.
 
 ## 5.1.0

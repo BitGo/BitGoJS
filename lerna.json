@@ -4,7 +4,6 @@
   "useWorkspaces": true,
   "command": {
     "version": {
-      "allowBranch": "rel/*",
       "message": "chore(release): publish modules"
     }
   }

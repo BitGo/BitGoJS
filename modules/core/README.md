@@ -1,6 +1,4 @@
-# BitGoJS
-
-BitGo JavaScript SDK
+# BitGo Javascript SDK 
 
 The BitGo Platform and SDK makes it easy to build multi-signature crypto-currency applications today with support for Bitcoin, Ethereum and many other coins.
 The SDK is fully integrated with the BitGo co-signing service for managing all of your BitGo wallets.
@@ -16,7 +14,7 @@ Please email us at support@bitgo.com if you have questions or comments about thi
 Please make sure you are running at least Node version 8 (the latest LTS release is recommended) and NPM version 6.
 We recommend using `nvm`, the [Node Version Manager](https://github.com/creationix/nvm/blob/master/README.markdown#installation), for setting your Node version.
 
-`npm install bitgo`
+`npm install --save bitgo`
 
 # Full Documentation
 
@@ -24,7 +22,7 @@ View our [API Documentation](https://www.bitgo.com/api/v2).
 
 # Release Notes
 
-You can find the complete release notes (since version 4.44.0) [here](https://github.com/BitGo/BitGoJS/blob/master/RELEASE_NOTES.md).
+You can find the complete release notes (since version 4.44.0) [here](https://github.com/BitGo/BitGoJS/blob/master/modules/core/RELEASE_NOTES.md).
 
 # Example Usage
 
@@ -78,29 +76,16 @@ wallet.sendCoins({
 ```
 
 ## More examples
-Further demos and examples can be found in the [example](example/) directory and [documented here](https://www.bitgo.com/api/v2/?javascript#examples).
-
-# BitGo Express Local Signing Server (REST API)
-
-Suitable for developers working in a language without an official BitGo SDK.
-
-BitGo Express runs as a service in your own datacenter, and handles the client-side operations involving your own keys, such as partially signing transactions before submitting to BitGo.
-This ensures your keys never leave your network, and are not seen by BitGo. BitGo Express can also proxy the standard BitGo REST APIs, providing a unified interface to BitGo through a single REST API.
-
-`npm explore bitgo -- node bin/bitgo-express [-h] [-v] [-p PORT] [-b BIND] [-e ENV] [-d] [-l LOGFILEPATH] [-k KEYPATH] [-c CRTPATH]`
-
-**Note:** When running against the BitGo production environment, you must run node in a production configuration as well. You can do that by running `export NODE_ENV=production` prior to starting bitgo-express.
-
-For a full tutorial of how to install, authenticate, and use Bitgo Express, see the [Bitgo Express Quickstart](https://platform.bitgo.com/bitgo-express/)
+Further demos and examples can be found in the [example](example/v2) directory and [documented here](https://www.bitgo.com/api/v2/?javascript#examples).
 
 # Usage in Browser
 
-For use inside a browser, BitGoJS can be bundled with any module bundler. There is a Webpack configuration file already included, which can be triggered with package scripts.
+Since version 6, `bitgo` includes a minified, browser-compatible bundle by default at `dist/browser/BitGoJS.min.js`. It can be copied from there directly into your project.
+
+BitGoJS can also be bundled with any module bundler. There is a Webpack configuration file already included, which can be triggered with package scripts.
 
 For a production build: `npm run-script compile`
 
 For a development (non-minified) build: `npm run-script compile-dbg`
 
 To build the test suite into a single test file: `npm run-script compile-test`
-
-To build for specific coins: `npm run compile -- --env.coins="eth, btc, ..."`
