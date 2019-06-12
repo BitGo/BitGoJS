@@ -266,10 +266,11 @@ export const tokens = {
       tokens: [
         { type: 'ofctusd', coin: 'ofc', decimalPlaces: 2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat: true },
         { type: 'ofctbtc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Bitcoin Test', backingCoin: 'tbtc' },
-        { type: 'ofcteth', coin: 'ofc', decimalPlaces: 18, name: 'Offchain Ether Testnet', backingCoin: 'teth' }
+        { type: 'ofcteth', coin: 'ofc', decimalPlaces: 18, name: 'Offchain Ether Testnet', backingCoin: 'teth' },
+        { type: 'ofctltc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Litecoin Testnet', backingCoin: 'tltc' },
       ]
     }
-  }
+  },
 };
 
 export const mainnetTokens = {};
