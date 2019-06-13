@@ -1,14 +1,15 @@
-const AbstractUtxoCoin = require('./abstractUtxoCoin');
-const bitcoin = require('bitgo-utxo-lib');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
-import common = require('../../common');
+import { AbstractUtxoCoin } from './abstractUtxoCoin';
+import { BaseCoin } from '../baseCoin';
+import * as bitcoin from 'bitgo-utxo-lib';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
+import * as common from '../../common';
 const request = require('superagent');
 
-class Ltc extends AbstractUtxoCoin {
-  constructor(network) {
+export class Ltc extends AbstractUtxoCoin {
+  constructor(bitgo, network?) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
-    super(network || {
+    super(bitgo, network || {
       messagePrefix: '\x19Litecoin Signed Message:\n',
       bip32: {
         public: 0x0488b21e,
@@ -27,6 +28,10 @@ class Ltc extends AbstractUtxoCoin {
     this.altScriptHash = bitcoin.networks.bitcoin.scriptHash;
     // do not support alt destinations in prod
     this.supportAltScriptDestination = false;
+  }
+
+  static createInstance(bitgo): BaseCoin {
+    return new Ltc(bitgo);
   }
 
   getChain() {
@@ -52,7 +57,6 @@ class Ltc extends AbstractUtxoCoin {
   supportsP2wsh() {
     return true;
   }
-
 
   /**
    * Canonicalize a Litecoin address for a specific scriptHash version
@@ -121,5 +125,3 @@ class Ltc extends AbstractUtxoCoin {
     }).call(this);
   }
 }
-
-module.exports = Ltc;

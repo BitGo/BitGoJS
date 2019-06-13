@@ -5,12 +5,14 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import Promise = require('bluebird');
-import bitcoin = require('./bitcoin');
+import * as Bluebird from 'bluebird';
+import * as bitcoin from 'bitgo-utxo-lib';
 import * as _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
+import { getNetwork, hdPath } from './bitcoin';
 import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
+import * as common from './common';
 
 //
 // TransactionBuilder
@@ -65,6 +67,7 @@ exports.createTransaction = function(params) {
 
   const bitgo = params.wallet.bitgo;
   const constants = bitgo.getConstants();
+  const network = getNetwork(common.Environments[bitgo.getEnv()].network);
 
   // The user can specify a seperate, single-key wallet for the purposes of paying miner's fees
   // When creating a transaction this can be specified as an input address or the private key in WIF
@@ -80,7 +83,7 @@ exports.createTransaction = function(params) {
   }
 
   if (params.feeSingleKeyWIF) {
-    const feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, bitcoin.getNetwork());
+    const feeSingleKey = bitcoin.ECPair.fromWIF(params.feeSingleKeyWIF, network);
     feeSingleKeySourceAddress = feeSingleKey.getAddress();
     // If the user specifies both, check to make sure the feeSingleKeySourceAddress corresponds to the address of feeSingleKeyWIF
     if (params.feeSingleKeySourceAddress &&
@@ -159,8 +162,7 @@ exports.createTransaction = function(params) {
       }
       if (!!recipient.script) {
         // A script was provided as well - validate that the address corresponds to that
-        if (bitcoin.address.toOutputScript(recipient.address, bitcoin.getNetwork())
-        .toString('hex') !== recipient.script) {
+        if (bitcoin.address.toOutputScript(recipient.address, network).toString('hex') !== recipient.script) {
           throw new Error('both script and address provided but they did not match: ' + recipient.address + ' ' + recipient.script);
         }
       }
@@ -202,10 +204,10 @@ exports.createTransaction = function(params) {
   let changeOutputs = [];
 
   // The transaction.
-  let transaction = new bitcoin.TransactionBuilder(bitcoin.getNetwork());
+  let transaction = new bitcoin.TransactionBuilder(network);
 
   const getBitGoFee = function() {
-    return Promise.try(function() {
+    return Bluebird.try(function() {
       if (bitgoFeeInfo) {
         return;
       }
@@ -226,7 +228,7 @@ exports.createTransaction = function(params) {
   };
 
   const getBitGoFeeAddress = function() {
-    return Promise.try(function() {
+    return Bluebird.try(function() {
       // If we don't have bitgoFeeInfo, or address is already set, don't get a new one
       if (!bitgoFeeInfo || bitgoFeeInfo.address) {
         return;
@@ -268,12 +270,12 @@ exports.createTransaction = function(params) {
       .catch(function(e) {
         // sanity check failed on tx size
         if (_.includes(e.message, 'invalid txSize')) {
-          return Promise.reject(e);
+          return Bluebird.reject(e);
         } else {
           // couldn't estimate the fee, proceed using the default
           feeRate = constants.fallbackFeeRate;
           console.log('Error estimating fee for send from ' + params.wallet.id() + ': ' + e.message);
-          return Promise.resolve();
+          return Bluebird.resolve();
         }
       });
     }
@@ -367,7 +369,7 @@ exports.createTransaction = function(params) {
     inputAmount = 0;
 
     // Calculate the cost of spending a single input, i.e. the smallest economical unspent value
-    return Promise.try(function() {
+    return Bluebird.try(function() {
 
       if (_.isNumber(params.feeRate) || _.isNumber(params.originalFeeRate)) {
         return (!_.isUndefined(params.feeRate) ? params.feeRate : params.originalFeeRate);
@@ -485,7 +487,7 @@ exports.createTransaction = function(params) {
         if (shouldRecurse) {
           // if fee changed, re-collect inputs
           inputAmount = 0;
-          transaction = new bitcoin.TransactionBuilder(bitcoin.getNetwork());
+          transaction = new bitcoin.TransactionBuilder(network);
           return collectInputs();
         }
       }
@@ -504,7 +506,7 @@ exports.createTransaction = function(params) {
             bitgoFee: bitgoFeeInfo,
             txInfo: txInfo
           };
-          return Promise.reject(err);
+          return Bluebird.reject(err);
         }
       }
 
@@ -532,7 +534,7 @@ exports.createTransaction = function(params) {
           bitgoFee: bitgoFeeInfo,
           txInfo: txInfo
         };
-        return Promise.reject(err);
+        return Bluebird.reject(err);
       }
     });
   };
@@ -548,7 +550,7 @@ exports.createTransaction = function(params) {
     recipients.forEach(function(recipient) {
       let script;
       if (_.isString(recipient.address)) {
-        script = bitcoin.address.toOutputScript(recipient.address, bitcoin.getNetwork());
+        script = bitcoin.address.toOutputScript(recipient.address, network);
       } else if (_.isObject(recipient.script)) {
         script = recipient.script;
       } else {
@@ -620,7 +622,7 @@ exports.createTransaction = function(params) {
         if (!thisAmount) {
           return result;
         }
-        return Promise.try(function() {
+        return Bluebird.try(function() {
           if (params.changeAddress) {
             // If user passed a change address, use it for all outputs
             return params.changeAddress;
@@ -644,7 +646,7 @@ exports.createTransaction = function(params) {
     };
 
     // Add change output(s) and instant fee output if applicable
-    return Promise.try(function() {
+    return Bluebird.try(function() {
       return getChangeOutputs(inputAmount - totalAmount);
     })
     .then(function(result) {
@@ -654,7 +656,7 @@ exports.createTransaction = function(params) {
         extraOutputs.push(bitgoFeeInfo);
       }
       extraOutputs.forEach(function(output) {
-        output.script = bitcoin.address.toOutputScript(output.address, bitcoin.getNetwork());
+        output.script = bitcoin.address.toOutputScript(output.address, network);
 
         // decide where to put the outputs - default is to randomize unless forced to end
         const outputIndex = params.forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
@@ -714,11 +716,11 @@ exports.createTransaction = function(params) {
     return result;
   };
 
-  return Promise.try(function() {
+  return Bluebird.try(function() {
     return getBitGoFee();
   })
   .then(function() {
-    return Promise.all([getBitGoFeeAddress(), getUnspents(), getUnspentsForSingleKey()]);
+    return Bluebird.all([getBitGoFeeAddress(), getUnspents(), getUnspentsForSingleKey()]);
   })
   .then(collectInputs)
   .then(collectOutputs)
@@ -823,7 +825,7 @@ exports.signTransaction = function(params) {
   if (!_.isBoolean(validate)) {
     throw new Error('expecting validate to be a boolean');
   }
-  let network = bitcoin.getNetwork();
+  let network = getNetwork();
   const enableBCH = (_.isBoolean(params.forceBCH) && params.forceBCH === true);
 
   if (!_.isObject(keychain) || !_.isString(keychain.xprv)) {
@@ -862,11 +864,11 @@ exports.signTransaction = function(params) {
     transaction.ins.map((currentItem, index) => _.extend(currentItem, inputValues[index]));
   }
 
-  let hdPath;
+  let rootExtKeyPath;
   let rootExtKey;
   if (keychain) {
     rootExtKey = bitcoin.HDNode.fromBase58(keychain.xprv);
-    hdPath = bitcoin.hdPath(rootExtKey);
+    rootExtKeyPath = hdPath(rootExtKey);
   }
 
   const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, network);
@@ -888,10 +890,10 @@ exports.signTransaction = function(params) {
     }
 
     const chainPath = currentUnspent.chainPath;
-    if (hdPath) {
+    if (rootExtKeyPath) {
       const subPath = keychain.walletSubPath || '/0/0';
       const path = keychain.path + subPath + chainPath;
-      privKey = hdPath.deriveKey(path);
+      privKey = rootExtKeyPath.deriveKey(path);
     }
 
     privKey.network = network;
@@ -954,7 +956,7 @@ exports.signTransaction = function(params) {
       };
       e.message = `Failed to sign input #${index} - ${e.message} - ${JSON.stringify(e.result, null, 4)} - \n${e.stack}`;
       debug('input sign failed: %s', e.message);
-      return Promise.reject(e);
+      return Bluebird.reject(e);
     }
 
   }
@@ -994,7 +996,7 @@ exports.signTransaction = function(params) {
     }
   }
 
-  return Promise.resolve({
+  return Bluebird.resolve({
     transactionHex: transaction.toHex()
   });
 };

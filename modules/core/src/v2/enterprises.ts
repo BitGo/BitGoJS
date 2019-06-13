@@ -3,7 +3,7 @@ const co = Promise.coroutine;
 import * as _ from 'lodash';
 const Enterprise = require('./enterprise');
 
-class Enterprises {
+export class Enterprises {
   bitgo: any;
   baseCoin: any;
 
@@ -53,5 +53,3 @@ class Enterprises {
   }
 
 }
-
-module.exports = Enterprises;

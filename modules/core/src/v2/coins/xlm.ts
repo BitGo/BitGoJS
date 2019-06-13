@@ -1,24 +1,30 @@
 import * as _ from 'lodash';
 const BigNumber = require('bignumber.js');
-const querystring = require('querystring');
-const url = require('url');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as querystring from 'querystring';
+import * as url from 'url';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 const request = require('superagent');
 
-const BaseCoin = require('../baseCoin');
-const config = require('../../config');
-import common = require('../../common');
+import { BaseCoin } from '../baseCoin';
+import * as config from '../../config';
+import * as common from '../../common';
 const stellar = require('stellar-sdk');
 
 const maxMemoId = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
 
-class Xlm extends BaseCoin {
+export class Xlm extends BaseCoin {
 
-  constructor() {
-    super();
+  public readonly homeDomain: string;
+
+  constructor(bitgo: any) {
+    super(bitgo);
     this.homeDomain = 'bitgo.com'; // used for reverse federation lookup
     stellar.Network.use(new stellar.Network(stellar.Networks.PUBLIC));
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Xlm(bitgo);
   }
   /**
    * Returns the factor between the base unit and its smallest subdivison
@@ -363,7 +369,7 @@ class Xlm extends BaseCoin {
    *  - backupKey: backup keypair public key (plaintext) or private key (encrypted or plaintext)
    * @returns {stellar.Keypair[]} array of user and backup keypairs
    */
-  initiateRecovery(params) {
+  initiateRecovery(params): Bluebird<any> {
     const keys = [];
     let userKey = params.userKey;
     let backupKey = params.backupKey;
@@ -416,7 +422,7 @@ class Xlm extends BaseCoin {
       throw new Error('Failed to decrypt backup key with passcode - try again!');
     }
 
-    return keys;
+    return Bluebird.resolve(keys);
   }
 
   /**
@@ -433,7 +439,7 @@ class Xlm extends BaseCoin {
    */
   recover(params, callback) {
     return co(function *() {
-      const [userKey, backupKey] = this.initiateRecovery(params);
+      const [userKey, backupKey] = yield this.initiateRecovery(params);
       const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
       const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
 
@@ -735,7 +741,7 @@ class Xlm extends BaseCoin {
         if (!keychains && disableNetworking) {
           throw new Error('cannot fetch keychains without networking');
         } else if (!keychains) {
-          keychains = yield Promise.props({
+          keychains = yield Bluebird.props({
             user: this.keychains().get({ id: wallet._wallet.keys[0] }),
             backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
             bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
@@ -754,5 +760,3 @@ class Xlm extends BaseCoin {
     }).call(this).asCallback(callback);
   }
 }
-
-export = Xlm;

@@ -1,13 +1,18 @@
-const Btc = require('./btc');
-const bitcoin = require('bitgo-utxo-lib');
-import * as Promise from 'bluebird';
+import { BaseCoin } from '../baseCoin';
+import { Btc } from './btc';
+import * as bitcoin from 'bitgo-utxo-lib';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
+import * as common from '../../common';
 const request = require('superagent');
-const co = Promise.coroutine;
-import common = require('../../common');
 
-class Btg extends Btc {
-  constructor(network) {
-    super(network || bitcoin.networks.bitcoingold);
+export class Btg extends Btc {
+  constructor(bitgo: any, network?) {
+    super(bitgo, network || bitcoin.networks.bitcoingold);
+  }
+
+  static createInstance(bitgo): BaseCoin {
+    return new Btg(bitgo);
   }
 
   getChain() {
@@ -101,5 +106,3 @@ class Btg extends Btc {
   }
 
 }
-
-module.exports = Btg;

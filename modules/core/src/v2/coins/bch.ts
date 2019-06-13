@@ -1,11 +1,12 @@
-import AbstractUtxoCoin = require('./abstractUtxoCoin');
-const bitcoin = require('bitgo-utxo-lib');
+import { BaseCoin } from '../baseCoin';
+import { AbstractUtxoCoin } from './abstractUtxoCoin';
+import * as bitcoin from 'bitgo-utxo-lib';
 const request = require('superagent');
-const Promise = require('bluebird');
-const co = Promise.coroutine;
-const common = require('../../common');
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
+import * as common from '../../common';
 const cashaddress = require('cashaddress');
-const _ = require('lodash');
+import * as _ from 'lodash';
 
 const VALID_ADDRESS_VERSIONS = {
   base58: 'base58',
@@ -18,10 +19,14 @@ const containsMixedCaseCharacters = (str) => {
   return str !== _.toLower(str) && str !== _.toUpper(str);
 };
 
-class Bch extends AbstractUtxoCoin {
+export class Bch extends AbstractUtxoCoin {
 
-  constructor(network) {
-    super(network || bitcoin.networks.bitcoincash);
+  protected constructor(bitgo, network?) {
+    super(bitgo, network || bitcoin.networks.bitcoincash);
+  }
+
+  static createInstance(bitgo): BaseCoin {
+    return new Bch(bitgo);
   }
 
   getChain() {
@@ -206,5 +211,3 @@ class Bch extends AbstractUtxoCoin {
     }).call(this);
   }
 }
-
-export = Bch;

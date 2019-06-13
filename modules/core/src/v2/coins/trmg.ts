@@ -1,11 +1,19 @@
-const Rmg = require('./rmg');
+/**
+ * @prettier
+ */
+import { BaseCoin } from '../baseCoin';
+import { Rmg } from './rmg';
 import prova = require('../../prova');
 
-class Trmg extends Rmg {
-  constructor() {
+export class Trmg extends Rmg {
+  constructor(bitgo) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
     (prova as any).networks.rmgTest.coin = 'rmg';
-    super((prova as any).networks.rmgTest);
+    super(bitgo, (prova as any).networks.rmgTest);
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Trmg(bitgo);
   }
 
   getChain() {
@@ -15,7 +23,4 @@ class Trmg extends Rmg {
   getFullName() {
     return 'Testnet Royal Mint Gold';
   }
-
 }
-
-module.exports = Trmg;

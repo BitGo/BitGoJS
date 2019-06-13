@@ -1,7 +1,7 @@
 import * as should from 'should';
 import 'should-http';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 

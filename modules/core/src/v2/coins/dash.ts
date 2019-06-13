@@ -1,15 +1,16 @@
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+import { BaseCoin } from '../baseCoin';
+const co = Bluebird.coroutine;
 const request = require('superagent');
 
-const AbstractUtxoCoin = require('./abstractUtxoCoin');
-import common = require('../../common');
+import { AbstractUtxoCoin } from './abstractUtxoCoin';
+import * as common from '../../common';
 
-class Dash extends AbstractUtxoCoin {
-  constructor(network) {
+export class Dash extends AbstractUtxoCoin {
+  constructor(bitgo, network?) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
     // https://github.com/dashpay/dash/blob/master/src/chainparams.cpp#L152
-    super(network || {
+    super(bitgo, network || {
       messagePrefix: '\x19Dash Signed Message:\n',
       bip32: {
         public: 0x0488b21e,
@@ -23,6 +24,10 @@ class Dash extends AbstractUtxoCoin {
       feePerKb: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56,
       coin: 'dash'
     });
+  }
+
+  static createInstance(bitgo): BaseCoin {
+    return new Dash(bitgo);
   }
 
   getChain() {
@@ -69,5 +74,3 @@ class Dash extends AbstractUtxoCoin {
     }).call(this);
   }
 }
-
-module.exports = Dash;

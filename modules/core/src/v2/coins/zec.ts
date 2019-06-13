@@ -1,13 +1,18 @@
-const AbstractUtxoCoin = require('./abstractUtxoCoin');
-import bitGoUtxoLib = require('bitgo-utxo-lib');
-const Promise = require('bluebird');
-const co = Promise.coroutine;
-const common = require('../../common');
+import { BaseCoin } from '../baseCoin';
+import { AbstractUtxoCoin } from './abstractUtxoCoin';
+import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
+import * as common from '../../common';
 const request = require('superagent');
 
-class Zec extends AbstractUtxoCoin {
-  constructor(network) {
-    super(network || bitGoUtxoLib.networks.zcash);
+export class Zec extends AbstractUtxoCoin {
+  constructor(bitgo, network?) {
+    super(bitgo, network || bitGoUtxoLib.networks.zcash);
+  }
+
+  static createInstance(bitgo: any): BaseCoin {
+    return new Zec(bitgo);
   }
 
   getChain() {
@@ -83,5 +88,3 @@ class Zec extends AbstractUtxoCoin {
     }).call(this);
   }
 }
-
-export = Zec;

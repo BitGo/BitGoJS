@@ -4,8 +4,9 @@
 
 import * as should from 'should';
 import * as _ from 'lodash';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as nock from 'nock';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
 const TestV2BitGo = require('../../lib/test_bitgo');
 
@@ -25,6 +26,7 @@ describe('V2 Wallet:', function() {
   // to make sure the tests will pass.
 
   before(co(function *() {
+    nock.restore();
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc');
@@ -349,7 +351,7 @@ describe('V2 Wallet:', function() {
 
     it('should send transaction with sequence Id', co(function *() {
       // Wait five seconds to send a new tx
-      yield Promise.delay(5000);
+      yield Bluebird.delay(5000);
 
       sequenceId = Math.random().toString(36).slice(-10);
       const recipientAddress = yield wallet.createAddress();
@@ -367,7 +369,7 @@ describe('V2 Wallet:', function() {
 
     it('should fetch a transfer by its sequence Id', co(function *() {
       // Wait for worker to do its work
-      yield Promise.delay(10000);
+      yield Bluebird.delay(10000);
 
       const transfer = yield wallet.transferBySequenceId({ sequenceId: sequenceId });
       transfer.should.have.property('sequenceId');
@@ -696,7 +698,7 @@ describe('V2 Wallet:', function() {
     xit('should consolidate the number of unspents to 2, and fanout the number of unspents to 200', co(function *() {
       const unspentWallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_ID });
       yield bitgo.unlock({ otp: bitgo.testUserOTP() });
-      yield Promise.delay(3000);
+      yield Bluebird.delay(3000);
 
       const params1 = {
         limit: 250,
@@ -710,13 +712,13 @@ describe('V2 Wallet:', function() {
       transaction1.should.have.property('txid');
       transaction1.status.should.equal('signed');
 
-      yield Promise.delay(8000);
+      yield Bluebird.delay(8000);
 
       const unspentsResult1 = yield unspentWallet.unspents({ limit: 1000 });
       const numUnspents1 = unspentsResult1.unspents.length;
       numUnspents1.should.equal(2);
 
-      yield Promise.delay(6000);
+      yield Bluebird.delay(6000);
 
       const params2 = {
         minHeight: 1,
@@ -731,7 +733,7 @@ describe('V2 Wallet:', function() {
       transaction2.should.have.property('txid');
       transaction2.status.should.equal('signed');
 
-      yield Promise.delay(8000);
+      yield Bluebird.delay(8000);
 
       const unspentsResult2 = yield unspentWallet.unspents({ limit: 1000 });
       const numUnspents2 = unspentsResult2.unspents.length;
@@ -744,7 +746,7 @@ describe('V2 Wallet:', function() {
       const sweep1Wallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_SWEEP1_ID });
       const sweep2Wallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_SWEEP2_ID });
       yield bitgo.unlock({ otp: bitgo.testUserOTP() });
-      yield Promise.delay(3000);
+      yield Bluebird.delay(3000);
 
       const params1 = {
         address: TestV2BitGo.V2.TEST_SWEEP2_ADDRESS,
@@ -755,7 +757,7 @@ describe('V2 Wallet:', function() {
       transaction1.should.have.property('txid');
       transaction1.status.should.equal('signed');
 
-      yield Promise.delay(8000);
+      yield Bluebird.delay(8000);
 
       const unspentsResult1 = yield sweep1Wallet.unspents();
       const numUnspents1 = unspentsResult1.unspents.length;
@@ -776,7 +778,7 @@ describe('V2 Wallet:', function() {
       transaction2.should.have.property('txid');
       transaction2.status.should.equal('signed');
 
-      yield Promise.delay(8000);
+      yield Bluebird.delay(8000);
 
       const unspentsResult3 = yield sweep2Wallet.unspents();
       const numUnspents3 = unspentsResult3.unspents.length;

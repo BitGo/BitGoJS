@@ -3,10 +3,10 @@
 //
 
 import 'should';
-import nock = require('nock');
+import * as nock from 'nock';
 
 const TestV2BitGo = require('../../lib/test_bitgo');
-const Token = require('../../../src/v2/coins/token');
+import { Token } from '../../../src/v2/coins/token';
 
 nock.disableNetConnect();
 
@@ -27,7 +27,7 @@ describe('V2 Base Coin:', function() {
     basecoinTokenWithContractHash = bitgo.coin('0x945ac907cf021a6bcd07852bb3b8c087051706a9');
   });
 
-  describe('Currenncy conversion', function() {
+  describe('Currency conversion', function() {
     it('should convert wei amounts to ETH', function() {
       // 1 wei
       basecoinEth.baseUnitsToBigUnits(1).should.equal('0.000000000000000001');
