@@ -157,11 +157,12 @@ export class Rmg extends AbstractUtxoCoin {
     const keychain = prova.HDNode.fromBase58(userPrv, this.network);
 
     const signatureIssues = [];
+    const keychainHdPath = hdPath(keychain);
 
     for (let index = 0; index < transaction.ins.length; ++index) {
       const currentUnspent = txPrebuild.txInfo.unspents[index];
       const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
-      const privKey = hdPath(keychain).deriveKey(path);
+      const privKey = keychainHdPath.deriveKey(path);
 
       const currentSignatureIssue: any = {
         inputIndex: index,
