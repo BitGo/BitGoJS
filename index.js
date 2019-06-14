@@ -22,10 +22,19 @@ function Blake2b (digestLength, key, salt, personal, noAssert) {
   if (noAssert !== true) {
     assert(digestLength >= BYTES_MIN, 'digestLength must be at least ' + BYTES_MIN + ', was given ' + digestLength)
     assert(digestLength <= BYTES_MAX, 'digestLength must be at most ' + BYTES_MAX + ', was given ' + digestLength)
-    if (key != null) assert(key.length >= KEYBYTES_MIN, 'key must be at least ' + KEYBYTES_MIN + ', was given ' + key.length)
-    if (key != null) assert(key.length <= KEYBYTES_MAX, 'key must be at least ' + KEYBYTES_MAX + ', was given ' + key.length)
-    if (salt != null) assert(salt.length === SALTBYTES, 'salt must be exactly ' + SALTBYTES + ', was given ' + salt.length)
-    if (personal != null) assert(personal.length === PERSONALBYTES, 'personal must be exactly ' + PERSONALBYTES + ', was given ' + personal.length)
+    if (key != null) {
+      assert(key instanceof Uint8Array, 'key must be Uint8Array or Buffer')
+      assert(key.length >= KEYBYTES_MIN, 'key must be at least ' + KEYBYTES_MIN + ', was given ' + key.length)
+      assert(key.length <= KEYBYTES_MAX, 'key must be at least ' + KEYBYTES_MAX + ', was given ' + key.length)
+    }
+    if (salt != null) {
+      assert(salt instanceof Uint8Array, 'salt must be Uint8Array or Buffer')
+      assert(salt.length === SALTBYTES, 'salt must be exactly ' + SALTBYTES + ', was given ' + salt.length)
+    }
+    if (personal != null) {
+      assert(personal instanceof Uint8Array, 'personal must be Uint8Array or Buffer')
+      assert(personal.length === PERSONALBYTES, 'personal must be exactly ' + PERSONALBYTES + ', was given ' + personal.length)
+    }
   }
 
   if (!freeList.length) {
@@ -59,7 +68,7 @@ function Blake2b (digestLength, key, salt, personal, noAssert) {
 
 Blake2b.prototype.update = function (input) {
   assert(this.finalized === false, 'Hash instance finalized')
-  assert(input, 'input must be TypedArray or Buffer')
+  assert(input instanceof Uint8Array, 'input must be Uint8Array or Buffer')
 
   if (head + input.length > wasm.memory.length) wasm.realloc(head + input.length)
   wasm.memory.set(input, head)
@@ -82,7 +91,7 @@ Blake2b.prototype.digest = function (enc) {
     return hexSlice(wasm.memory, this.pointer + 128, this.digestLength)
   }
 
-  assert(enc.length >= this.digestLength, 'input must be TypedArray or Buffer')
+  assert(enc instanceof Uint8Array && enc.length >= this.digestLength, 'input must be Uint8Array or Buffer')
   for (var i = 0; i < this.digestLength; i++) {
     enc[i] = wasm.memory[this.pointer + 128 + i]
   }
