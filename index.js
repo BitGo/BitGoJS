@@ -211,7 +211,7 @@ function Blake2b (outlen, key, salt, personal) {
 }
 
 Blake2b.prototype.update = function (input) {
-  assert(input != null, 'input must be Uint8Array or Buffer')
+  assert(input instanceof Uint8Array, 'input must be TypedArray or Buffer')
   blake2bUpdate(this, input)
   return this
 }
