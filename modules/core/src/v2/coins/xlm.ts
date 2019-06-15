@@ -1,15 +1,17 @@
 import * as _ from 'lodash';
-const BigNumber = require('bignumber.js');
+import { BigNumber } from 'bignumber.js';
 import * as querystring from 'querystring';
 import * as url from 'url';
 import * as Bluebird from 'bluebird';
+import * as bitcoin from 'bitgo-utxo-lib';
 const co = Bluebird.coroutine;
-const request = require('superagent');
+import * as request from 'superagent';
+import * as stellar from 'stellar-sdk';
 
 import { BaseCoin } from '../baseCoin';
 import * as config from '../../config';
 import * as common from '../../common';
-const stellar = require('stellar-sdk');
+import * as createHmac from 'create-hmac';
 
 const maxMemoId = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
 
@@ -114,15 +116,16 @@ export class Xlm extends BaseCoin {
    * @param memoId {String} memo id
    * @returns {boolean} true if memo id is valid
    */
-  isValidMemoId(memoId) {
+  isValidMemoId(memoId: string): boolean {
+    let memoIdNumber;
     try {
       stellar.Memo.id(memoId); // throws if the value is not valid memo id
-      memoId = new BigNumber(memoId);
+      memoIdNumber = new BigNumber(memoId);
     } catch (e) {
       return false;
     }
 
-    return (memoId.gte(0) && memoId.lt(maxMemoId));
+    return (memoIdNumber.gte(0) && memoIdNumber.lt(maxMemoId));
   }
 
   /**
@@ -220,13 +223,20 @@ export class Xlm extends BaseCoin {
       throw new Error(`invalid address: ${address}`);
     }
 
+    if (Array.isArray(queryDetails.memoId) && queryDetails.memoId.length > 1) {
+      // valid addresses can only contain one memo id
+      throw new Error(`invalid address '${address}', can only contain one memoId`);
+    }
+
+    const memoId = queryDetails.memoId as string;
+
     try {
-      new BigNumber(queryDetails.memoId);
+      new BigNumber(memoId);
     } catch (e) {
       throw new Error(`invalid address: ${address}`);
     }
 
-    if (!this.isValidMemoId(queryDetails.memoId)) {
+    if (!this.isValidMemoId(memoId)) {
       throw new Error(`invalid address: ${address}`);
     }
 
@@ -758,5 +768,126 @@ export class Xlm extends BaseCoin {
 
       return true;
     }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Derive a hardened child public key from a master key seed using an additional seed for randomness.
+   *
+   * Due to technical differences between keypairs on the ed25519 curve and the secp256k1 curve,
+   * only hardened private key derivation is supported.
+   *
+   * @param key seed for the master key. Note: Not the public key or encoded private key. This is the raw seed.
+   * @param entropySeed random seed which is hashed to generate the derivation path
+   */
+  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: any } {
+    const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
+    const derivationPathParts = [
+      999999,
+      parseInt(derivationPathInput.slice(0, 7), 16),
+      parseInt(derivationPathInput.slice(7, 14), 16),
+    ];
+    const derivationPath = 'm/' + derivationPathParts
+      .map((part) => `${part}'`)
+      .join('/');
+    const derivedKey = XlmKeyDeriver.derivePath(derivationPath, key).key;
+    const keypair = stellar.Keypair.fromRawEd25519Seed(derivedKey);
+    return {
+      key: keypair.publicKey(),
+      derivationPath,
+    };
+  }
+}
+
+export interface XlmKeypair { key: Buffer, chainCode: Buffer }
+
+export class XlmKeyDeriver {
+  /**
+   * This key derivation code was copied and adapted from:
+   * https://github.com/chatch/stellar-hd-wallet/blob/612c12325ca9047dce460016fb7d148f55f575ca/src/hd-key.js
+   *
+   * There have been some slight modifications to improve typescript support.
+   *
+   * The original ed25519-hd-key module is licensed under "GPL-3".
+   */
+
+  private static readonly ED25519_CURVE = 'ed25519 seed';
+  private static readonly HARDENED_OFFSET = 0x80000000;
+  private static readonly PATH_REGEX = new RegExp("^m(\\/[0-9]+')+$");
+
+
+  /**
+   * Derive a SLIP-0010 key given a path and master key seed.
+   *
+   * https://github.com/satoshilabs/slips/blob/master/slip-0010.md
+   * https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+   * https://github.com/stellar/stellar-protocol/blob/master/ecosystem/sep-0005.md
+   *
+   * @param path derivation path
+   * @param seed key seed
+   */
+  public static derivePath(path: string, seed: string): XlmKeypair {
+    if (!this.isValidPath(path)) {
+      throw new Error('Invalid derivation path');
+    }
+    const { key, chainCode } = this.getMasterKeyFromSeed(seed);
+    const segments = path
+      .split('/')
+      .slice(1)
+      .map(this.replaceDerive);
+    return segments.reduce(
+      (parentKeys, segment) =>
+        this.CKDPriv(parentKeys, segment + XlmKeyDeriver.HARDENED_OFFSET),
+      { key, chainCode }
+    );
+  }
+
+  /**
+   * Generate a SLIP-0010 master key from the entropy seed
+   *
+   * @param seed master key seed used to recreate master key
+   */
+  private static getMasterKeyFromSeed(seed: string) {
+    const hmac = createHmac('sha512', XlmKeyDeriver.ED25519_CURVE);
+    const I = hmac.update(Buffer.from(seed, 'hex')).digest();
+    const IL = I.slice(0, 32);
+    const IR = I.slice(32);
+    return {
+      key: IL,
+      chainCode: IR,
+    };
+  }
+
+  /**
+   * Calculate a child private key given the parent key, the chain code, and the child index.
+   *
+   * @param key parent key
+   * @param chainCode chain code for parent key
+   * @param index index of child to derive
+   */
+  private static CKDPriv({ key, chainCode }: XlmKeypair, index: number): XlmKeypair {
+    const indexBuffer = Buffer.allocUnsafe(4);
+    indexBuffer.writeUInt32BE(index, 0);
+    const data = Buffer.concat([Buffer.alloc(1, 0), key, indexBuffer]);
+    const I = createHmac('sha512', chainCode)
+      .update(data)
+      .digest();
+    const IL = I.slice(0, 32);
+    const IR = I.slice(32);
+    return {
+      key: IL,
+      chainCode: IR,
+    };
+  }
+
+  private static replaceDerive = (val: string): number => parseInt(val.replace("'", ''), 10);
+  private static isValidPath(path: string) {
+    if (!XlmKeyDeriver.PATH_REGEX.test(path)) {
+      return false;
+    }
+    return !path
+      .split('/')
+      .slice(1)
+      .map(this.replaceDerive)
+      .some(isNaN);
   }
 }

@@ -1,11 +1,13 @@
+import 'should';
 import * as crypto from 'crypto';
-import stellar = require('stellar-sdk');
+import * as stellar from 'stellar-sdk';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
+
+import { XlmKeyDeriver } from '../../../../src/v2/coins/xlm';
+import { keys } from '../../fixtures/xlm';
+
 const Wallet = require('../../../../src/v2/wallet');
-
-import 'should';
-
 const TestV2BitGo = require('../../../lib/test_bitgo');
 
 import * as nock from 'nock';
@@ -23,34 +25,6 @@ describe('XLM:', function() {
 
   after(function() {
     nock.cleanAll();
-  });
-
-  it('should generate a keypair from random seed', function() {
-    const keyPair = basecoin.generateKeyPair();
-    keyPair.should.have.property('pub');
-    keyPair.should.have.property('prv');
-
-    const address = keyPair.pub;
-    basecoin.isValidAddress(address).should.equal(true);
-
-    basecoin.isValidPub(keyPair.pub).should.equal(true);
-    basecoin.isValidPrv(keyPair.prv).should.equal(true);
-  });
-
-  it('should generate a keypair from seed', function() {
-    const seed = crypto.randomBytes(32);
-    const keyPair = basecoin.generateKeyPair(seed);
-    keyPair.should.have.property('pub');
-    keyPair.should.have.property('prv');
-
-    const address = keyPair.pub;
-    basecoin.isValidAddress(address).should.equal(true);
-
-    basecoin.isValidPub(keyPair.pub).should.equal(true);
-    basecoin.isValidPrv(keyPair.prv).should.equal(true);
-
-    const secret = keyPair.prv;
-    stellar.StrKey.encodeEd25519SecretSeed(seed).should.equal(secret);
   });
 
   it('should validate address', function() {
@@ -567,5 +541,67 @@ describe('XLM:', function() {
       });
     });
   });
-});
 
+  describe('Keypairs:', () => {
+    it('should generate a keypair from random seed', function() {
+      const keyPair = basecoin.generateKeyPair();
+      keyPair.should.have.property('pub');
+      keyPair.should.have.property('prv');
+
+      const address = keyPair.pub;
+      basecoin.isValidAddress(address).should.equal(true);
+
+      basecoin.isValidPub(keyPair.pub).should.equal(true);
+      basecoin.isValidPrv(keyPair.prv).should.equal(true);
+    });
+
+    it('should generate a keypair from seed', function() {
+      const seed = crypto.randomBytes(32);
+      const keyPair = basecoin.generateKeyPair(seed);
+      keyPair.should.have.property('pub');
+      keyPair.should.have.property('prv');
+
+      const address = keyPair.pub;
+      basecoin.isValidAddress(address).should.equal(true);
+
+      basecoin.isValidPub(keyPair.pub).should.equal(true);
+      basecoin.isValidPrv(keyPair.prv).should.equal(true);
+
+      const secret = keyPair.prv;
+      stellar.StrKey.encodeEd25519SecretSeed(seed).should.equal(secret);
+    });
+
+    it('should deterministically derive a child key from master seed and entropy seed', () => {
+      const seed = Buffer.alloc(32).fill(0).toString('hex');
+      const masterSeed = '0x01020304050607080910111213141516171819202122232425262728293031';
+
+      const derivedKey = basecoin.deriveKeyWithSeed({ key: masterSeed, seed, });
+
+      derivedKey.should.have.properties({
+        key: 'GCJR3ORBWOKGFA3FTGYDDQVFEEMCYXFHY6KAUOTU4MQMFHK4LLSWWGLW',
+        derivationPath: 'm/999999\'/230673453\'/206129755\'',
+      });
+    });
+  });
+
+  describe('Key Derivation:', () => {
+
+    const verifyTestVector = ({ path, seed, prv, chainCode }) => {
+      const derivedKey = XlmKeyDeriver.derivePath(path, seed);
+      derivedKey.should.have.properties({
+        key: Buffer.from(prv, 'hex'),
+        chainCode: Buffer.from(chainCode, 'hex'),
+      });
+    };
+
+    // https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-1-for-ed25519
+    it('should derive SLIP-0010 ed25519 test vector 1', () => {
+      verifyTestVector(keys.testVec1);
+    });
+
+    // https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-2-for-ed25519
+    it('should derive SLIP-0010 ed25519 test vector 2', () => {
+      verifyTestVector(keys.testVec2);
+    });
+  });
+});
