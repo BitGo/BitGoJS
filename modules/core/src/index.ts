@@ -20,7 +20,8 @@ utxoLib.makeRandomKey = makeRandomKey;
 export const bitcoin = utxoLib;
 export const sjcl = require('./vendor/sjcl.min.js');
 export const bs58 = require('bs58');
-export const Buffer = global.Buffer;
+
+export { Buffer } from 'buffer';
 
 import * as _ from 'lodash';
 import * as errors from './errors';
