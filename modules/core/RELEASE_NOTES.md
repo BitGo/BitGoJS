@@ -48,6 +48,11 @@ prodBitgo.verifyAddress({ address: '1Bu3bhwRmevHLAy1JrRB6AfcxfgDG2vXRd' }).shoul
 
 To switch to another bitcoin network, a new bitgo object should be constructed in the correct environment.
 
+### New Features
+* Preliminary support for BitGo Trading Account and Settlement APIs. Please note that this API is not finalized, and is subject to API breaking changes in minor and/or patch version releases without warning.
+* Preliminary support for Algorand. Please note that this API is not finalized, and is subject to API breaking changes in minor and/or patch version releases without warning.
+* Add support for new ERC 20 Token (PDATA)
+
 ### Other Changes
 * Overhaul how coins are loaded, in anticipation of a pluggable coin system in a future version of `bitgo`.
 * Rework CI system to reduce test runtimes by running tests for each module in parallel
