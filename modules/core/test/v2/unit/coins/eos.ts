@@ -1,5 +1,9 @@
 import * as should from 'should';
 import * as crypto from 'crypto';
+import * as Promise from 'bluebird';
+const co = Promise.coroutine;
+import * as ecc from 'eosjs-ecc';
+import * as bitcoin from 'bitgo-utxo-lib';
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
 
@@ -94,5 +98,38 @@ describe('EOS:', function() {
       keyPair.prv.should.equal('xprv9s21ZrQH143K2YN1jSpiUpZYPYf2hQZDSXYHikLLjfd2C9LBaxoV1SUtNnZGnXeyJ6uFWMbQTfjXqVfgNqRBw5yyaCtBK1AM8PF3XZtKjQp');
     });
   });
+
+  describe('Transactions:', co(function *() {
+    let eosWallet;
+
+    before(function() {
+      eosWallet = basecoin.newWalletObject(bitgo, basecoin, {});
+    });
+
+    it('should generate a valid transaction signature', function () {
+      const signatureData = 'abcd';
+      const tx = {
+        rawTx: signatureData,
+        headers: {
+          ref_block_num: 1,
+          ref_block_prefix: 'asd',
+        },
+        tx: {
+          signatures: [],
+          packed_trx: signatureData,
+          compression: 'none',
+        }
+      };
+
+      const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
+      const keyPair = basecoin.generateKeyPair(seed);
+
+      const { halfSigned } = basecoin.signTransaction({ txPrebuild: tx, prv: keyPair.prv });
+      const signature = halfSigned.transaction.signatures[0];
+      const hdNode = bitcoin.HDNode.fromBase58(keyPair.pub);
+      const eosPubkey = ecc.PublicKey.fromBuffer(hdNode.getPublicKeyBuffer()).toString();
+      ecc.verify(signature, Buffer.from(signatureData, 'hex'), eosPubkey).should.eql(true);
+    });
+  }));
 });
 
