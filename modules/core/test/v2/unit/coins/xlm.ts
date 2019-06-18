@@ -4,9 +4,6 @@ import * as stellar from 'stellar-sdk';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
-import { XlmKeyDeriver } from '../../../../src/v2/coins/xlm';
-import { keys } from '../../fixtures/xlm';
-
 const Wallet = require('../../../../src/v2/wallet');
 const TestV2BitGo = require('../../../lib/test_bitgo');
 
@@ -581,27 +578,6 @@ describe('XLM:', function() {
         key: 'GCJR3ORBWOKGFA3FTGYDDQVFEEMCYXFHY6KAUOTU4MQMFHK4LLSWWGLW',
         derivationPath: 'm/999999\'/230673453\'/206129755\'',
       });
-    });
-  });
-
-  describe('Key Derivation:', () => {
-
-    const verifyTestVector = ({ path, seed, prv, chainCode }) => {
-      const derivedKey = XlmKeyDeriver.derivePath(path, seed);
-      derivedKey.should.have.properties({
-        key: Buffer.from(prv, 'hex'),
-        chainCode: Buffer.from(chainCode, 'hex'),
-      });
-    };
-
-    // https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-1-for-ed25519
-    it('should derive SLIP-0010 ed25519 test vector 1', () => {
-      verifyTestVector(keys.testVec1);
-    });
-
-    // https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-2-for-ed25519
-    it('should derive SLIP-0010 ed25519 test vector 2', () => {
-      verifyTestVector(keys.testVec2);
     });
   });
 });
