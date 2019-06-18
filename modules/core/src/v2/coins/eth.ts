@@ -902,12 +902,12 @@ export class Eth extends BaseCoin {
 
 
       // first, validate the HSM signature
-      const bitgoKeychain: { pub: string } = yield this.keychains().get({ id: wallet.keyIds()[2] });
-      const bitgoPubkeyBuffer: Buffer = utxoLib.HDNode.fromBase58(bitgoKeychain.pub).getPublicKeyBuffer();
+      const serverXpub = common.Environments[this.bitgo.env].hsmXpub;
+      const serverPubkeyBuffer: Buffer = utxoLib.HDNode.fromBase58(serverXpub).getPublicKeyBuffer();
       const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
       const messageBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
 
-      const isValidSignature: boolean = secp256k1.verify(messageBuffer, signatureBuffer.slice(1), bitgoPubkeyBuffer);
+      const isValidSignature: boolean = secp256k1.verify(messageBuffer, signatureBuffer.slice(1), serverPubkeyBuffer);
       if (!isValidSignature) {
         throw new Error(`Hop txid signature invalid`);
       }

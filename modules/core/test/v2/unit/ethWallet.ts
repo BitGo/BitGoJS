@@ -59,6 +59,7 @@ describe('Ethereum Hop Transactions', co(function *() {
   let bitgoSignature;
   let bitgoKeyXprv;
   let bgUrl;
+  let env;
 
   const userKeypair = {
     xprv: 'xprv9s21ZrQH143K2fJ91S4BRsupcYrE6mmY96fcX5HkhoTrrwmwjd16Cn87cWinJjByrfpojjx7ezsJLx7TAKLT8m8hM5Kax9YcoxnBeJZ3t2k',
@@ -78,21 +79,19 @@ describe('Ethereum Hop Transactions', co(function *() {
     tx = '0xf86c82015285012a05f200825208945208d8e80c6d1aef9be37b4bd19a9cf75ed93dc886b5e620f480008026a00e13f9e0e11337b2b0227e3412211d3625e43f1083fda399cc361dd4bf89083ba06c801a761e0aa3bc8db0ac2568d575b0fb306a1f04f4d5ba82ba3cc0ea0a83bd';
     txid = '0x0ac669c5fef8294443c75a31e32c44b97bbc9e43a18ea8beabcc2a3b45eb6ffa';
     bitgoKeyXprv = 'xprv9s21ZrQH143K3tpWBHWe31sLoXNRQ9AvRYJgitkKxQ4ATFQMwvr7hHNqYRUnS7PsjzB7aK1VxqHLuNQjj1sckJ2Jwo2qxmsvejwECSpFMfC';
-    const bitgoPrvBuffer = bitGoUtxoLib.HDNode.fromBase58(bitgoKeyXprv).getKey().getPrivateKeyBuffer();
+    const bitgoKey = bitGoUtxoLib.HDNode.fromBase58(bitgoKeyXprv);
+    const bitgoPrvBuffer = bitgoKey.getKey().getPrivateKeyBuffer();
+    const bitgoXpub = bitgoKey.neutered().toBase58();
     bitgoSignature = '0xaa' + secp256k1.sign(Buffer.from(txid.slice(2), 'hex'), bitgoPrvBuffer).signature.toString('hex');
 
-    bitgo = new TestV2BitGo({ env: 'test' });
+    env = 'test';
+    bitgo = new TestV2BitGo({ env });
+    common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject({ keys: ['user', 'backup', 'bitgo'] });
   }));
-
-  const nockBitGoKey = function(key = bitgoKey) {
-    nock(bgUrl)
-      .get('/api/v2/teth/key/bitgo')
-      .reply(200, key);
-  };
 
   describe('Verify HSM Hop prebuild', co(function *() {
     let prebuild;
@@ -118,7 +117,6 @@ describe('Ethereum Hop Transactions', co(function *() {
 
     it('should accept a valid hop prebuild', co(function *() {
       let error = undefined;
-      nockBitGoKey();
       try {
         yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, buildParams);
       } catch (e) {
@@ -132,7 +130,6 @@ describe('Ethereum Hop Transactions', co(function *() {
       const badBuildParams = JSON.parse(JSON.stringify(buildParams));
       badBuildParams.recipients[0].address = '0x54bf1609aeed804aa231f08c53dbb18f7d374615';
 
-      nockBitGoKey();
       try {
         yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, badBuildParams);
       } catch (e) {
@@ -147,7 +144,6 @@ describe('Ethereum Hop Transactions', co(function *() {
       const badBuildParams = JSON.parse(JSON.stringify(buildParams));
       badBuildParams.recipients[0].amount = '50000000';
 
-      nockBitGoKey();
       try {
         yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, badBuildParams);
       } catch (e) {
@@ -159,11 +155,10 @@ describe('Ethereum Hop Transactions', co(function *() {
 
     it('should fail if the HSM signature is invalid', co(function *() {
       let error = undefined;
-      const differentBitGoKey = JSON.parse(JSON.stringify(bitgoKey));
       // Mocking a different BitGo key means the signing key should be wrong (it maps to a different address than this xpub)
-      differentBitGoKey.pub = 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL';
+      const goodXpub = common.Environments[env].hsmXpub;
+      common.Environments[env].hsmXpub = 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL';
 
-      nockBitGoKey(differentBitGoKey);
       try {
         yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, prebuild, buildParams);
       } catch (e) {
@@ -171,6 +166,7 @@ describe('Ethereum Hop Transactions', co(function *() {
       }
       should.exist(error);
       error.should.containEql("Hop txid signature invalid");
+      common.Environments[env].hsmXpub = goodXpub;
     }));
 
     it('should fail if the HSM signature signed the wrong HSM commitment digest', co(function *() {
@@ -183,7 +179,6 @@ describe('Ethereum Hop Transactions', co(function *() {
       const badPrebuild = JSON.parse(JSON.stringify(prebuild));
       badPrebuild.signature = badSignature;
 
-      nockBitGoKey();
       try {
         yield ethWallet.baseCoin.validateHopPrebuild(ethWallet, badPrebuild, buildParams);
       } catch (e) {
@@ -250,7 +245,6 @@ describe('Ethereum Hop Transactions', co(function *() {
      let error = undefined;
 
      nockUserKey();
-     nockBitGoKey();
      nockFees();
      nockBuild(ethWallet.id());
      try {
