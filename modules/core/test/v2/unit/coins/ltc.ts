@@ -8,7 +8,7 @@ const bitcoin = require('bitgo-utxo-lib');
 const prova = require('prova-lib');
 const { Codes } = require('@bitgo/unspents');
 const TestV2BitGo = require('../../../lib/test_bitgo');
-const Wallet = require('../../../../src/v2/wallet');
+import { Wallet } from '../../../../src/v2/wallet';
 
 describe('LTC:', function() {
   let bitgo;

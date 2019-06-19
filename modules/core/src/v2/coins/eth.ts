@@ -1,5 +1,5 @@
 import { BaseCoin } from '../baseCoin';
-const Wallet = require('../wallet');
+import { Wallet } from '../wallet';
 import * as common from '../../common';
 import * as config from '../../config';
 const BigNumber = require('bignumber.js');

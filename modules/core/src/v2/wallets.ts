@@ -1,6 +1,6 @@
 import * as bitcoin from 'bitgo-utxo-lib';
 import * as common from '../common';
-const Wallet = require('./wallet');
+import { Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';

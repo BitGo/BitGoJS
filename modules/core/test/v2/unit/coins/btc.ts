@@ -4,7 +4,7 @@ const co = Promise.coroutine;
 const { Codes } = require('@bitgo/unspents');
 
 const TestV2BitGo = require('../../../lib/test_bitgo');
-const Wallet = require('../../../../src/v2/wallet');
+import { Wallet } from '../../../../src/v2/wallet';
 
 describe('BTC:', function() {
   let bitgo;

@@ -6,7 +6,7 @@ import * as Bluebird from 'bluebird';
 import * as errors from '../errors';
 const co = Bluebird.coroutine;
 
-const Wallet = require('./wallet');
+import { Wallet } from './wallet';
 const Wallets = require('./wallets');
 const Keychains = require('./keychains');
 const Webhooks = require('./webhooks');
@@ -157,7 +157,7 @@ export abstract class BaseCoin {
   /**
    * Verify that a transaction prebuild complies with the original intention
    */
-  verifyTransaction(params, callback) {
+  verifyTransaction(params, callback?) {
     return Bluebird.resolve(true).asCallback(callback);
   }
 
@@ -189,7 +189,7 @@ export abstract class BaseCoin {
   /**
    * Get extra parameters for prebuilding a tx. Add things like hop transaction params
    */
-  getExtraPrebuildParams(buildParams, callback): Bluebird<any> {
+  getExtraPrebuildParams(buildParams, callback?): Bluebird<any> {
     return Bluebird.method(function() {
       return {};
     }).call(this).asCallback(callback);
@@ -198,7 +198,7 @@ export abstract class BaseCoin {
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
-  postProcessPrebuild(prebuildResponse, callback): Bluebird<any> {
+  postProcessPrebuild(prebuildResponse, callback?): Bluebird<any> {
     return Bluebird.method(function() {
       return prebuildResponse;
     }).call(this).asCallback(callback);
@@ -207,7 +207,7 @@ export abstract class BaseCoin {
   /**
    * Coin-specific things done before signing a transaction, i.e. verification
    */
-  presignTransaction(params, callback): Bluebird<any> {
+  presignTransaction(params, callback?): Bluebird<any> {
     return Bluebird.method(function() {
       return params;
     }).call(this).asCallback(callback);
@@ -355,7 +355,7 @@ export abstract class BaseCoin {
     return Bluebird.reject(new errors.MethodNotImplementedError());
   }
 
-  parseTransaction(params, callback): Bluebird<any> {
+  parseTransaction(params, callback?): Bluebird<any> {
     return Bluebird.resolve({});
   }
 

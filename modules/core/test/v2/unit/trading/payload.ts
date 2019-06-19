@@ -4,7 +4,7 @@ import * as nock from 'nock';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { HDNode } from 'bitgo-utxo-lib';
 
-const Wallet = require('../../../../src/v2/wallet');
+import { Wallet } from '../../../../src/v2/wallet';
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const common = require('../../../../src/common');
 

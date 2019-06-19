@@ -11,7 +11,7 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 const bitcoin = require('bitgo-utxo-lib');
-const Wallet = require('../../../src/v2/wallet');
+import { Wallet } from '../../../src/v2/wallet';
 const common = require('../../../src/common');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
@@ -766,7 +766,7 @@ describe('V2 Wallet:', function() {
     }));
   });
 
-  describe('Wallet Sharing', function () {
+  describe('Wallet Sharing', function() {
     it('should share to cold wallet without passing skipKeychain', co(function *() {
       const userId = '123';
       const email = 'shareto@sdktest.com';

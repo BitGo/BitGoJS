@@ -4,7 +4,8 @@ import * as stellar from 'stellar-sdk';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
-const Wallet = require('../../../../src/v2/wallet');
+import { Wallet } from '../../../../src/v2/wallet';
+
 const TestV2BitGo = require('../../../lib/test_bitgo');
 
 import * as nock from 'nock';
