@@ -10,7 +10,8 @@ import * as nock from 'nock';
 describe('XLM:', function() {
   let bitgo;
   let basecoin;
-  const someWalletId = ''; // todo set to one of the XLM wallets on this account
+  const uninitializedWallet = '5d00475a913edd7d0340fb45728c43e2'; // wallet which has not been initialized on-chain
+  const initializedWallet = '5d0d1fbe957f229b03de7998c2495070'; // wallet which has been correctly initialized on chain
 
   before(function() {
     nock.restore();
@@ -75,9 +76,13 @@ describe('XLM:', function() {
     res.bitgoKeychain.should.not.have.property('encryptedPrv');
   }));
 
-  // todo enable when platform changes are available in test
-  xit('should create an XLM address', co(function *() {
-    const wallet = yield basecoin.wallets().get({ id: someWalletId });
+  it('should fail to create an XLM address for a wallet pending on-chain init', co(function *() {
+    const wallet = yield basecoin.wallets().get({ id: uninitializedWallet });
+    yield wallet.createAddress().should.be.rejectedWith('wallet pending on-chain initialization');
+  }));
+
+  it('should create an XLM address for an initialized wallet', co(function *() {
+    const wallet = yield basecoin.wallets().get({ id: initializedWallet });
     const addrObj = yield wallet.createAddress();
     addrObj.should.have.property('address');
     addrObj.should.have.property('wallet');

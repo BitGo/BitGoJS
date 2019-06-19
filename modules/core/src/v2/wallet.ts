@@ -5,6 +5,7 @@ import * as debugLib from 'debug';
 
 import { makeRandomKey } from '../bitcoin';
 import * as common from '../common';
+import { AddressGenerationError } from '../errors';
 import { BaseCoin } from './baseCoin';
 import * as internal from './internal';
 import { drawKeycard } from './keycard';
@@ -773,6 +774,11 @@ export class Wallet {
 
         newAddress.keychains = keychains;
         const verificationData = _.merge({}, newAddress, { rootAddress });
+
+        if (verificationData.error) {
+          throw new AddressGenerationError(verificationData.error);
+        }
+
         this.baseCoin.verifyAddress(verificationData);
 
         return newAddress;
