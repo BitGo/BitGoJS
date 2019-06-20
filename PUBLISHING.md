@@ -29,7 +29,7 @@ The recommended way to install and run `bitgo-express` is via a docker container
 ## Building and tagging the BitGo Express docker container image
 
 ```bash
-$ docker build -t bitgo/express:latest -t bitgo/express:$(jq -r '.version' < modules/express/package.json) .
+$ docker build -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r '.version' < modules/express/package.json) .
 ```
 
 ## Pushing the newly built container image
