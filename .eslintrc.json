@@ -22,7 +22,7 @@
     "project": "./tsconfig.json"
   },
   "rules": {
-    "indent": ["warn", 2, {"SwitchCase": 1, "MemberExpression": 0}],
+    "indent": ["warn", 2, {"SwitchCase": 1, "MemberExpression": 1}],
     "linebreak-style": ["error", "unix"],
     "semi": ["error", "always"],
     "eqeqeq": ["warn", "always"],
@@ -63,7 +63,7 @@
     "no-extra-semi": "error",
     "radix": "error",
     "comma-spacing": ["error", { "before": false, "after": true }],
-    "comma-dangle": ["warn", "never"],
+    "comma-dangle": ["warn", "always-multiline"],
     "no-multi-spaces": ["error", {"ignoreEOLComments": true}],
     "keyword-spacing": ["error"],
     "space-before-blocks": ["error"],

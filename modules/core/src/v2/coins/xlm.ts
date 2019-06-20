@@ -1,15 +1,17 @@
 import * as _ from 'lodash';
-const BigNumber = require('bignumber.js');
+import { BigNumber } from 'bignumber.js';
 import * as querystring from 'querystring';
 import * as url from 'url';
 import * as Bluebird from 'bluebird';
+import * as bitcoin from 'bitgo-utxo-lib';
 const co = Bluebird.coroutine;
-const request = require('superagent');
+import * as request from 'superagent';
+import * as stellar from 'stellar-sdk';
 
 import { BaseCoin } from '../baseCoin';
+import { Ed25519KeyDeriver } from '../keyDeriver';
 import * as config from '../../config';
 import * as common from '../../common';
-const stellar = require('stellar-sdk');
 
 const maxMemoId = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
 
@@ -114,15 +116,16 @@ export class Xlm extends BaseCoin {
    * @param memoId {String} memo id
    * @returns {boolean} true if memo id is valid
    */
-  isValidMemoId(memoId) {
+  isValidMemoId(memoId: string): boolean {
+    let memoIdNumber;
     try {
       stellar.Memo.id(memoId); // throws if the value is not valid memo id
-      memoId = new BigNumber(memoId);
+      memoIdNumber = new BigNumber(memoId);
     } catch (e) {
       return false;
     }
 
-    return (memoId.gte(0) && memoId.lt(maxMemoId));
+    return (memoIdNumber.gte(0) && memoIdNumber.lt(maxMemoId));
   }
 
   /**
@@ -220,19 +223,19 @@ export class Xlm extends BaseCoin {
       throw new Error(`invalid address: ${address}`);
     }
 
-    try {
-      new BigNumber(queryDetails.memoId);
-    } catch (e) {
-      throw new Error(`invalid address: ${address}`);
+    if (Array.isArray(queryDetails.memoId) && queryDetails.memoId.length !== 1) {
+      // valid addresses can only contain one memo id
+      throw new Error(`invalid address '${address}', must contain exactly one memoId`);
     }
 
-    if (!this.isValidMemoId(queryDetails.memoId)) {
-      throw new Error(`invalid address: ${address}`);
+    const [memoId] = _.castArray(queryDetails.memoId);
+    if (!this.isValidMemoId(memoId)) {
+      throw new Error(`invalid address: '${address}', memoId is not valid`);
     }
 
     return {
       address: destinationAddress,
-      memoId: queryDetails.memoId
+      memoId,
     };
   }
 
@@ -758,5 +761,32 @@ export class Xlm extends BaseCoin {
 
       return true;
     }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Derive a hardened child public key from a master key seed using an additional seed for randomness.
+   *
+   * Due to technical differences between keypairs on the ed25519 curve and the secp256k1 curve,
+   * only hardened private key derivation is supported.
+   *
+   * @param key seed for the master key. Note: Not the public key or encoded private key. This is the raw seed.
+   * @param entropySeed random seed which is hashed to generate the derivation path
+   */
+  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: any } {
+    const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
+    const derivationPathParts = [
+      999999,
+      parseInt(derivationPathInput.slice(0, 7), 16),
+      parseInt(derivationPathInput.slice(7, 14), 16),
+    ];
+    const derivationPath = 'm/' + derivationPathParts
+      .map((part) => `${part}'`)
+      .join('/');
+    const derivedKey = Ed25519KeyDeriver.derivePath(derivationPath, key).key;
+    const keypair = stellar.Keypair.fromRawEd25519Seed(derivedKey);
+    return {
+      key: keypair.publicKey(),
+      derivationPath,
+    };
   }
 }

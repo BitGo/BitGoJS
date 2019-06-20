@@ -243,9 +243,9 @@ export abstract class BaseCoin {
    * The cold wallet tool uses this function to derive an extended key that is based on the passed key and seed
    * @param key
    * @param seed
-   * @returns {{key: *, derivationPath: string}}
+   * @returns {{key: string, derivationPath: string}}
    */
-  deriveKeyWithSeed({ key, seed }) {
+  deriveKeyWithSeed({ key, seed }: { key: string, seed: string }): { key: string, derivationPath: string } {
     const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
     const derivationPathParts = [
       parseInt(derivationPathInput.slice(0, 7), 16),
