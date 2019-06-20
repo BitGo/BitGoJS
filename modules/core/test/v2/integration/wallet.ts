@@ -526,7 +526,6 @@ describe('V2 Wallet:', function() {
 
     it('should have sharing user self-remove from accepted wallet and reject it', function() {
       const receivedWalletId = wallet.id();
-      console.log('This is received wallet ID', receivedWalletId);
       return sharingUserBasecoin.wallets().list()
       .then(function(sharedWallets) {
         const receivedWallet = _.find(sharedWallets.wallets, function(w) { return w.id() === receivedWalletId; });

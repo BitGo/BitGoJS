@@ -1,6 +1,8 @@
 import { BigNumber } from 'bignumber.js';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+import * as debugLib from 'debug';
+
 import { makeRandomKey } from '../bitcoin';
 import * as common from '../common';
 import { BaseCoin } from './baseCoin';
@@ -9,11 +11,11 @@ import { drawKeycard } from './keycard';
 import { TradingAccount } from './trading/tradingAccount';
 import { NodeCallback } from './types';
 
-const debug = require('debug')('bitgo:v2:wallet');
-const co = Bluebird.coroutine;
-
 const PendingApproval = require('./pendingApproval');
 const util = require('../util');
+
+const debug = debugLib('bitgo:v2:wallet');
+const co = Bluebird.coroutine;
 
 export class Wallet {
 
@@ -34,72 +36,84 @@ export class Wallet {
   }
 
   /**
-   *
-   * @param extra
+   * Build a URL using this wallet's id which can be used for BitGo API operations
+   * @param extra API specific string to append to the wallet id
    */
   url(extra: string = '') {
     return this.baseCoin.url('/wallet/' + this.id() + extra);
   }
 
   /**
-   *
+   * Get this wallet's id
    */
   id() {
     return this._wallet.id;
   }
 
   /**
-   *
+   * Get the number of approvals required for spending funds from this wallet
    */
   approvalsRequired() {
     return this._wallet.approvalsRequired;
   }
 
   /**
-   *
+   * Get the current balance of this wallet
    */
   balance() {
     return this._wallet.balance;
   }
 
   /**
-   *
+   * Get the confirmed balance of this wallet
    */
   confirmedBalance() {
     return this._wallet.confirmedBalance;
   }
 
   /**
-   *
+   * Get the spendable balance of this wallet
    */
   spendableBalance() {
     return this._wallet.spendableBalance;
   }
 
   /**
+   * Get a string representation of the balance of this wallet
    *
+   * This is useful when balances have the potential to overflow standard javascript numbers
    */
   balanceString() {
     return this._wallet.balanceString;
   }
 
   /**
+   * Get a string representation of the confirmed balance of this wallet
    *
+   * This is useful when balances have the potential to overflow standard javascript numbers
    */
   confirmedBalanceString() {
     return this._wallet.confirmedBalanceString;
   }
 
+  /**
+   * Get a string representation of the spendable balance of this wallet
+   *
+   * This is useful when balances have the potential to overflow standard javascript numbers
+   */
   spendableBalanceString() {
     return this._wallet.spendableBalanceString;
   }
 
+  /**
+   * Get the coin identifier for the type of coin this wallet holds
+   */
   coin() {
     return this._wallet.coin;
   }
 
   /**
-   * Get the label for this wallet
+   * Get the label (name) for this wallet
    */
   public label(): string {
     return this._wallet.label;
@@ -135,7 +149,7 @@ export class Wallet {
    */
   pendingApprovals(): any[] { // TODO:  return  PendingApproval[] once we have a type for that
     return this._wallet.pendingApprovals.map((currentApproval) => {
-      return new PendingApproval(this.bitgo, this.baseCoin, currentApproval, self);
+      return new PendingApproval(this.bitgo, this.baseCoin, currentApproval, this);
     });
   }
 
