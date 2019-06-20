@@ -14,7 +14,7 @@ For most users, we recommend running BitGo Express as a docker container.
 
 To try it out, run this command:
 ```bash
-$ docker run -it --rm -p 3080:3080 bitgo/express:latest
+$ docker run -it --rm -p 3080:3080 bitgosdk/express:latest
 ```
 
 You should see this output from the container:
