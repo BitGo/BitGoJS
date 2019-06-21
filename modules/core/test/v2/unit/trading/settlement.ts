@@ -7,7 +7,7 @@ import { TradeStatus } from '../../../../src/v2/trading/trade';
 import { AffirmationStatus } from '../../../../src/v2/trading/affirmation';
 import { SettlementStatus } from '../../../../src/v2/trading/settlement';
 
-const Wallet = require('../../../../src/v2/wallet');
+import { Wallet } from '../../../../src/v2/wallet';
 const Enterprise = require('../../../../src/v2/enterprise');
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const common = require('../../../../src/common');

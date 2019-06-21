@@ -4,7 +4,7 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 const TestV2BitGo = require('../../../lib/test_bitgo');
-const Wallet = require('../../../../src/v2/wallet');
+import { Wallet } from '../../../../src/v2/wallet';
 
 describe('DASH:', function() {
   let bitgo;

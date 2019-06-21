@@ -5,7 +5,7 @@
 //
 
 const BitGo = require('../../src/bitgo.ts');
-const Wallet = require('../../src/v2/wallet');
+import { Wallet } from '../../src/v2/wallet';
 const BigNumber = require('bignumber.js');
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;

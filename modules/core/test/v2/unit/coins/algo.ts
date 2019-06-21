@@ -5,9 +5,9 @@ import 'should';
 
 const algoFixtures = require('../../fixtures/algo');
 const co = Promise.coroutine;
-const Wallet = require('../../../../src/v2/wallet');
+import { Wallet } from '../../../../src/v2/wallet';
 const TestV2BitGo = require('../../../lib/test_bitgo');
-const nock = require('nock');
+import * as nock from 'nock';
 
 describe('ALGO:', function() {
   let bitgo;
@@ -68,7 +68,7 @@ describe('ALGO:', function() {
     const pub = algosdk.Address.decode(keyPair.pub).publicKey;
     algosdk.NaclWrapper.verify(message, signature, pub).should.equal(true);
   });
-  
+
   describe('Transaction Verification', function() {
     let basecoin;
     let wallet;

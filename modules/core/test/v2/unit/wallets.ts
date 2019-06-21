@@ -35,23 +35,15 @@ describe('V2 Wallets:', function() {
   });
 
   describe('Add Wallet:', function() {
-    it('throws on invalid arguments', function() {
-      try {
-        // isCustodial flag is not a boolean
-        wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: 1 });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('invalid argument for isCustodial - boolean expected');
-      }
+    it('throws on invalid arguments', co(function *() {
+      // isCustodial flag is not a boolean
+      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: 1 })
+      .should.be.rejectedWith('invalid argument for isCustodial - boolean expected');
 
-      try {
-        // isCustodial flag is not a boolean
-        wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, type: 1 });
-        throw new Error();
-      } catch (e) {
-        e.message.should.equal('Expecting parameter string: type but found number');
-      }
-    });
+      // isCustodial flag is not a boolean
+      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, type: 1 })
+      .should.be.rejectedWith('Expecting parameter string: type but found number');
+    }));
 
     it('creates a paired custodial wallet', co(function *createPairedCustodialWallet() {
       nock(bgUrl)

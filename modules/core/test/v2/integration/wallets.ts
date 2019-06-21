@@ -2,7 +2,6 @@
 // Tests for Wallets
 //
 
-import { strict as assert } from 'assert';
 import * as should from 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
@@ -64,28 +63,6 @@ describe('V2 Wallets:', function() {
         });
       });
     }
-  });
-
-  describe('List', function() {
-    it('arguments', function() {
-      assert.throws(function() { wallets.list({}, 'invalid'); });
-      assert.throws(function() { wallets.list('invalid'); });
-    });
-
-    it('skip', function(done) {
-      // TODO server currently doesn't use this param
-      done();
-    });
-
-    it('getbalances', function(done) {
-      // TODO server currently doesn't use this param
-      done();
-    });
-
-    it('prevId', function(done) {
-      // TODO server currently doesn't use this param
-      done();
-    });
   });
 
   describe('Generate Wallet', function() {
@@ -254,45 +231,37 @@ describe('V2 Wallets:', function() {
     let backupKeychainId;
     let bitgoKeychainId;
 
-    it('arguments', function() {
-      assert.throws(function() {wallets.add();});
-      assert.throws(function() {wallets.add('invalid');});
-      assert.throws(function() {wallets.add({}, 0);});
-      assert.throws(function() {
-        wallets.add({
-          keys: [],
-          m: 'bad',
-          n: 3
-        }, 0);
-      });
+    it('arguments', co(function *() {
+      yield wallets.add().should.be.rejected();
+      yield wallets.add('invalid').should.be.rejected();
+      yield wallets.add({}, 0).should.be.rejected();
+      yield wallets.add({
+        keys: [],
+        m: 'bad',
+        n: 3
+      }, 0).should.be.rejected();
 
-      assert.throws(function() {
-        wallets.add({
-          keys: [],
-          m: 1,
-          n: 3
-        }, 0);
-      });
+      yield wallets.add({
+        keys: [],
+        m: 1,
+        n: 3
+      }, 0).should.be.rejected();
 
-      assert.throws(function() {
-        wallets.add({
-          keys: [],
-          m: 2,
-          n: 3,
-          tags: 'bad arg'
-        }, 0);
-      });
+      yield wallets.add({
+        keys: [],
+        m: 2,
+        n: 3,
+        tags: 'bad arg'
+      }, 0).should.be.rejected();
 
-      assert.throws(function() {
-        wallets.add({
-          keys: [],
-          m: 2,
-          n: 3,
-          tags: [],
-          clientFlags: 'bad arg'
-        }, 0);
-      });
-    });
+      yield wallets.add({
+        keys: [],
+        m: 2,
+        n: 3,
+        tags: [],
+        clientFlags: 'bad arg'
+      }, 0).should.be.rejected();
+    }));
 
     it('should add a wallet with pre generated keys', function() {
 

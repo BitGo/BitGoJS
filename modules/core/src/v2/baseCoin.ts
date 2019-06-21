@@ -4,10 +4,11 @@ import { hdPath } from '../bitcoin';
 const bitcoinMessage = require('bitcoinjs-message');
 import * as Bluebird from 'bluebird';
 import * as errors from '../errors';
+import { NodeCallback } from './types';
 const co = Bluebird.coroutine;
 
-const Wallet = require('./wallet');
-const Wallets = require('./wallets');
+import { Wallet } from './wallet';
+import { Wallets } from './wallets';
 const Keychains = require('./keychains');
 const Webhooks = require('./webhooks');
 const PendingApprovals = require('./pendingApprovals');
@@ -157,7 +158,7 @@ export abstract class BaseCoin {
   /**
    * Verify that a transaction prebuild complies with the original intention
    */
-  verifyTransaction(params, callback) {
+  verifyTransaction(params, callback?: NodeCallback<any>) {
     return Bluebird.resolve(true).asCallback(callback);
   }
 
@@ -189,7 +190,7 @@ export abstract class BaseCoin {
   /**
    * Get extra parameters for prebuilding a tx. Add things like hop transaction params
    */
-  getExtraPrebuildParams(buildParams, callback): Bluebird<any> {
+  getExtraPrebuildParams(buildParams, callback?: NodeCallback<any>): Bluebird<any> {
     return Bluebird.method(function() {
       return {};
     }).call(this).asCallback(callback);
@@ -198,7 +199,7 @@ export abstract class BaseCoin {
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
-  postProcessPrebuild(prebuildResponse, callback): Bluebird<any> {
+  postProcessPrebuild(prebuildResponse, callback?: NodeCallback<any>): Bluebird<any> {
     return Bluebird.method(function() {
       return prebuildResponse;
     }).call(this).asCallback(callback);
@@ -207,7 +208,7 @@ export abstract class BaseCoin {
   /**
    * Coin-specific things done before signing a transaction, i.e. verification
    */
-  presignTransaction(params, callback): Bluebird<any> {
+  presignTransaction(params, callback?: NodeCallback<any>): Bluebird<any> {
     return Bluebird.method(function() {
       return params;
     }).call(this).asCallback(callback);
@@ -228,7 +229,7 @@ export abstract class BaseCoin {
    * @param callback
    * @returns {Object} The info returned from the merchant server
    */
-  feeEstimate(params, callback): Bluebird<any> {
+  feeEstimate(params, callback?: NodeCallback<any>): Bluebird<any> {
     return co(function *coFeeEstimate() {
       const query: any = {};
       if (params && params.numBlocks) {
@@ -355,7 +356,7 @@ export abstract class BaseCoin {
     return Bluebird.reject(new errors.MethodNotImplementedError());
   }
 
-  parseTransaction(params, callback): Bluebird<any> {
+  parseTransaction(params, callback?: NodeCallback<any>): Bluebird<any> {
     return Bluebird.resolve({});
   }
 

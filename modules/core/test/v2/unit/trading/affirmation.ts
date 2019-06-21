@@ -5,7 +5,7 @@ import * as nock from 'nock';
 import fixtures from '../../fixtures/trading/affirmation';
 import { AffirmationStatus } from '../../../../src/v2/trading/affirmation';
 
-const Wallet = require('../../../../src/v2/wallet');
+import { Wallet } from '../../../../src/v2/wallet';
 const Enterprise = require('../../../../src/v2/enterprise');
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const common = require('../../../../src/common');

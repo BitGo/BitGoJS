@@ -5,7 +5,7 @@ import * as should from 'should';
 import fixtures from '../../fixtures/trading/tradingPartner';
 import { TradingPartnerStatus } from '../../../../src/v2/trading/tradingPartner';
 
-const Wallet = require('../../../../src/v2/wallet');
+import { Wallet } from '../../../../src/v2/wallet';
 const TestV2BitGo = require('../../../lib/test_bitgo');
 
 describe('Trading Partners', function() {
