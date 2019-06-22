@@ -84,6 +84,9 @@ local UploadReports(version, tag="untagged") = {
     "yarn run gen-coverage",
     "yarn run coverage -F " + tag,
   ],
+  when: {
+    status: ["success", "failure"]
+  }
 };
 
 local UnitTest(version) = {
