@@ -4,6 +4,7 @@ import * as url from 'url';
 import * as debugLib from 'debug';
 
 const BitGoJS = require('bitgo');
+const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
 const debug = debugLib('bitgo:express');
 
@@ -11,7 +12,7 @@ import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
 
 const co = bluebird.coroutine;
-const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
+const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
 
 const createRequestId = function() {
   return {
