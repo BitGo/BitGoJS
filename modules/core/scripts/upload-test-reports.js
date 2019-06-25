@@ -27,21 +27,24 @@ const MODULE = path.basename(ROOTDIR);
 const OBJECT_NAME = `${DRONE_BUILD_NUMBER}/${MODULE}/${DRONE_STAGE_NAME}.html`;
 const REPORT_FILE = `${ROOTDIR}/mochawesome-report/mochawesome.html`;
 
-const uploadParams = {
-  Body: fs.readFileSync(REPORT_FILE),
-  Bucket: 'bitgo-sdk-test-reports',
-  Key: OBJECT_NAME,
-  ACL: 'public-read',
-  ContentType: 'text/html',
-};
+if (!fs.existsSync(REPORT_FILE)) {
+  console.warn(`Report file '${REPORT_FILE}' not found. Skipping test report upload...`);
+} else {
+  const uploadParams = {
+    Body: fs.readFileSync(REPORT_FILE),
+    Bucket: 'bitgo-sdk-test-reports',
+    Key: OBJECT_NAME,
+    ACL: 'public-read',
+    ContentType: 'text/html',
+  };
 
-s3.putObject(uploadParams, (err, data) => {
-  if (err) {
-    console.error(`S3 error: ${err}\n${err.stack}`);
-  } else {
-    console.log(`=== TEST REPORT UPLOADED SUCCESSFULLY ===`);
-    console.log(`https://bitgo-sdk-test-reports.s3.amazonaws.com/${OBJECT_NAME}`);
-    console.log();
-  }
-});
-
+  s3.putObject(uploadParams, (err, data) => {
+    if (err) {
+      console.error(`S3 error: ${err}\n${err.stack}`);
+    } else {
+      console.log(`=== TEST REPORT UPLOADED SUCCESSFULLY ===`);
+      console.log(`https://bitgo-sdk-test-reports.s3.amazonaws.com/${OBJECT_NAME}`);
+      console.log();
+    }
+  });
+}
