@@ -860,6 +860,7 @@ export class Eth extends BaseCoin {
       const recipientAmount = recipients[0].amount;
       const feeEstimateParams = {
         recipient: recipientAddress,
+        amount: recipientAmount,
         hop: true,
       };
       const feeEstimate = yield this.feeEstimate(feeEstimateParams);
