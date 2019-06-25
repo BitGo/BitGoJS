@@ -238,6 +238,14 @@ export const tokens = {
         { type: 'tiox', coin: 'eth', network: 'Mainnet', name: 'Trade Token X', tokenContractAddress: '0xd947b0ceab2a8885866b9a04a06ae99de852a3d4', decimalPlaces: 18 },
         { type: 'spo', coin: 'eth', network: 'Mainnet', name: 'Sparrow Options', tokenContractAddress: '0x89eafa06d99f0a4d816918245266800c9a0941e0', decimalPlaces: 18 },
         { type: 'pdata', coin: 'eth', network: 'Mainnet', name: 'Opiria Token', tokenContractAddress: '0x0db03b6cde0b2d427c64a04feafd825938368f1f', decimalPlaces: 18 },
+        { type: 'cro', coin: 'eth', network: 'Mainnet', name: 'Crypto.com Chain', tokenContractAddress: '0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b', decimalPlaces: 8 },
+        { type: 'drpu', coin: 'eth', network: 'Mainnet', name: 'DRP Utility', tokenContractAddress: '0xe30e02f049957e2a5907589e06ba646fb2c321ba', decimalPlaces: 8 },
+        { type: 'prdx', coin: 'eth', network: 'Mainnet', name: 'PRDX Token', tokenContractAddress: '0xe17900f23b7ebb2791f25f1eaa63d8f5e603e9a5', decimalPlaces: 9 },
+        { type: 'tenx', coin: 'eth', network: 'Mainnet', name: 'TenX Token', tokenContractAddress: '0x515ba0a2e286af10115284f151cf398688a69170', decimalPlaces: 18 },
+        { type: 'roobee', coin: 'eth', network: 'Mainnet', name: 'ROOBEE', tokenContractAddress: '0xa31b1767e09f842ecfd4bc471fe44f830e3891aa', decimalPlaces: 18 },
+        { type: 'orbs', coin: 'eth', network: 'Mainnet', name: 'Orbs Token', tokenContractAddress: '0xff56cc6b1e6ded347aa0b7676c85ab0b3d08b0fa', decimalPlaces: 18 },
+        { type: 'vdx', coin: 'eth', network: 'Mainnet', name: 'Vodi X', tokenContractAddress: '0x91e64f39c1fe14492e8fdf5a8b0f305bd218c8a1', decimalPlaces: 18 },
+        { type: 'shr', coin: 'eth', network: 'Mainnet', name: 'ShareToken', tokenContractAddress: '0xee5fe244406f35d9b4ddb488a64d51456630befc', decimalPlaces: 2 },
       ]
     },
     ofc: {
