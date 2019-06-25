@@ -65,7 +65,6 @@ export const tokens = {
         { type: 'auto', coin: 'eth', network: 'Mainnet', name: 'Cube', tokenContractAddress: '0x622dffcc4e83c64ba959530a5a5580687a57581b', decimalPlaces: 18 },
         { type: 'tms', coin: 'eth', network: 'Mainnet', name: 'Time New Bank', tokenContractAddress: '0xf7920b0768ecb20a123fac32311d07d193381d6f', decimalPlaces: 18 },
         { type: 'rlc', coin: 'eth', network: 'Mainnet', name: 'Iexec Rlc', tokenContractAddress: '0x607f4c5bb672230e8672085532f7e901544a7375', decimalPlaces: 9 },
-        { type: 'mco', coin: 'eth', network: 'Mainnet', name: 'Monaco', tokenContractAddress: '0xb63b606ac810a52cca15e44bb630fd42d8d1d83d', decimalPlaces: 8 },
         { type: 'rdn', coin: 'eth', network: 'Mainnet', name: 'Raiden Network', tokenContractAddress: '0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6', decimalPlaces: 18 },
         { type: 'abt', coin: 'eth', network: 'Mainnet', name: 'Arcblock', tokenContractAddress: '0xb98d4c97425d9908e66e53a6fdf673acca0be986', decimalPlaces: 18 },
         { type: 'san', coin: 'eth', network: 'Mainnet', name: 'Santiment Network', tokenContractAddress: '0x7c5a0ce9267ed19b22f8cae653f198e3e8daf098', decimalPlaces: 18 },
@@ -246,6 +245,7 @@ export const tokens = {
         { type: 'orbs', coin: 'eth', network: 'Mainnet', name: 'Orbs Token', tokenContractAddress: '0xff56cc6b1e6ded347aa0b7676c85ab0b3d08b0fa', decimalPlaces: 18 },
         { type: 'vdx', coin: 'eth', network: 'Mainnet', name: 'Vodi X', tokenContractAddress: '0x91e64f39c1fe14492e8fdf5a8b0f305bd218c8a1', decimalPlaces: 18 },
         { type: 'shr', coin: 'eth', network: 'Mainnet', name: 'ShareToken', tokenContractAddress: '0xee5fe244406f35d9b4ddb488a64d51456630befc', decimalPlaces: 2 },
+        { type: 'mco', coin: 'eth', network: 'Mainnet', name: 'Crypto.com', tokenContractAddress: '0xb63b606ac810a52cca15e44bb630fd42d8d1d83d', decimalPlaces: 8 },
       ]
     },
     ofc: {
