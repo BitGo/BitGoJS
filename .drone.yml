@@ -167,6 +167,10 @@ steps:
       from_secret: reports_s3_akid
     reports_s3_sak:
       from_secret: reports_s3_sak
+  when:
+    status:
+    - success
+    - failure
 
 trigger:
   branch:
@@ -220,6 +224,10 @@ steps:
       from_secret: reports_s3_akid
     reports_s3_sak:
       from_secret: reports_s3_sak
+  when:
+    status:
+    - success
+    - failure
 
 trigger:
   branch:
@@ -273,6 +281,10 @@ steps:
       from_secret: reports_s3_akid
     reports_s3_sak:
       from_secret: reports_s3_sak
+  when:
+    status:
+    - success
+    - failure
 
 trigger:
   branch:
@@ -326,6 +338,10 @@ steps:
       from_secret: reports_s3_akid
     reports_s3_sak:
       from_secret: reports_s3_sak
+  when:
+    status:
+    - success
+    - failure
 
 trigger:
   branch:
@@ -379,6 +395,10 @@ steps:
       from_secret: reports_s3_akid
     reports_s3_sak:
       from_secret: reports_s3_sak
+  when:
+    status:
+    - success
+    - failure
 
 trigger:
   branch:
