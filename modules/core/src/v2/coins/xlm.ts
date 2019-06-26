@@ -164,21 +164,21 @@ export class Xlm extends BaseCoin {
   /**
    * Identifier for the blockchain which supports this coin
    */
-  getChain() {
+  getChain(): string {
     return 'xlm';
   }
 
   /**
    * Identifier for the coin family
    */
-  getFamily() {
+  getFamily(): string {
     return 'xlm';
   }
 
   /**
    * Complete human-readable name of this coin
    */
-  getFullName() {
+  getFullName(): string {
     return 'Stellar';
   }
 
@@ -192,7 +192,7 @@ export class Xlm extends BaseCoin {
   /**
    * Url at which horizon can be reached
    */
-  getHorizonUrl() {
+  getHorizonUrl(): string {
     return 'https://horizon.stellar.org';
   }
 
@@ -205,7 +205,7 @@ export class Xlm extends BaseCoin {
     const pair = seed ? stellar.Keypair.fromRawEd25519Seed(seed) : stellar.Keypair.random();
     return {
       pub: pair.publicKey(),
-      prv: pair.secret()
+      prv: pair.secret(),
     };
   }
 
@@ -225,7 +225,7 @@ export class Xlm extends BaseCoin {
    * @param prv Raw private key
    * @returns Encoded private key
    */
-  getPrvFromRaw(prv: string) {
+  getPrvFromRaw(prv: string): string {
     return stellar.StrKey.encodeEd25519SecretSeed(Buffer.from(prv, 'hex'));
   }
 
@@ -235,7 +235,7 @@ export class Xlm extends BaseCoin {
    * @param pub the pub to be checked
    * @returns is it valid?
    */
-  isValidPub(pub: string) {
+  isValidPub(pub: string): boolean {
     return stellar.StrKey.isValidEd25519PublicKey(pub);
   }
 
@@ -245,7 +245,7 @@ export class Xlm extends BaseCoin {
    * @param prv the prv to be checked
    * @returns is it valid?
    */
-  isValidPrv(prv: string) {
+  isValidPrv(prv: string): boolean {
     return stellar.StrKey.isValidEd25519SecretSeed(prv);
   }
 
@@ -274,7 +274,7 @@ export class Xlm extends BaseCoin {
    * @param type type of the memo
    * @returns true if value and type are a valid
    */
-  isValidMemo({ value, type }: Memo) {
+  isValidMemo({ value, type }: Memo): boolean {
     if (!value || !type) {
       return false;
     }
@@ -353,7 +353,7 @@ export class Xlm extends BaseCoin {
     if (destinationDetails.pathname === address) {
       return {
         address: address,
-        memoId: null
+        memoId: null,
       };
     }
 
@@ -391,7 +391,7 @@ export class Xlm extends BaseCoin {
    * @param memoId memo id
    * @returns address with memo id
    */
-  normalizeAddress({ address, memoId }: AddressDetails) {
+  normalizeAddress({ address, memoId }: AddressDetails): string {
     if (!stellar.StrKey.isValidEd25519PublicKey(address)) {
       throw new Error(`invalid address details: ${address}`);
     }
@@ -407,7 +407,7 @@ export class Xlm extends BaseCoin {
    * @param address the pub to be checked
    * @returns is it valid?
    */
-  isValidAddress(address: string) {
+  isValidAddress(address: string): boolean {
     try {
       const addressDetails = this.getAddressDetails(address);
       return address === this.normalizeAddress(addressDetails);
@@ -425,7 +425,7 @@ export class Xlm extends BaseCoin {
    * @param username - stellar username
    * @return true if stellar username is valid
    */
-  isValidStellarUsername(username: string) {
+  isValidStellarUsername(username: string): boolean {
     return /^[a-z0-9\-\_\.\+\@]+$/.test(username);
   }
 
@@ -495,7 +495,7 @@ export class Xlm extends BaseCoin {
    * @param address {String} the address to verify
    * @param rootAddress {String} the wallet's root address
    */
-  verifyAddress({ address, rootAddress }: VerifyAddressOptions) {
+  verifyAddress({ address, rootAddress }: VerifyAddressOptions): void {
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
@@ -639,13 +639,13 @@ export class Xlm extends BaseCoin {
         // In this case, we need to create the account
         stellar.Operation.createAccount({
           destination: params.recoveryDestination,
-          startingBalance: formattedRecoveryAmount
+          startingBalance: formattedRecoveryAmount,
         }) :
         // Otherwise if the account already exists, we do a normal send
         stellar.Operation.payment({
           destination: params.recoveryDestination,
           asset: stellar.Asset.native(),
-          amount: formattedRecoveryAmount
+          amount: formattedRecoveryAmount,
         });
       const tx = txBuilder.addOperation(operation).build();
 
@@ -659,7 +659,7 @@ export class Xlm extends BaseCoin {
 
       const transaction: RecoveryTransaction = {
         tx: Xlm.txToString(tx),
-        recoveryAmount
+        recoveryAmount,
       };
 
       if (isKrsRecovery) {
@@ -702,7 +702,7 @@ export class Xlm extends BaseCoin {
     return {
       halfSigned: {
         txBase64: Xlm.txToString(tx),
-      }
+      },
     };
   }
 
@@ -788,7 +788,7 @@ export class Xlm extends BaseCoin {
     const memo: TransactionMemo = _.result(tx, '_memo.value') && _.result(tx, '_memo.arm') ?
       {
         value: _.result(tx, '_memo.value').toString(),
-        type: _.result(tx, '_memo.arm')
+        type: _.result(tx, '_memo.arm'),
       } : {};
 
     let spendAmount = new BigNumber(0);
@@ -802,7 +802,7 @@ export class Xlm extends BaseCoin {
       const memoId = (_.get(memo, 'type') === 'id' && ! _.get(memo, 'value') ? `?memoId=${memo.value}` : '');
       const output: TransactionOutput = {
         amount: this.bigUnitsToBaseUnits(operation.startingBalance || operation.amount),
-        address: operation.destination + memoId
+        address: operation.destination + memoId,
       };
       spendAmount = spendAmount.plus(output.amount);
       return output;
@@ -813,7 +813,7 @@ export class Xlm extends BaseCoin {
     const fee = {
       fee: tx.fee.toFixed(0),
       feeRate: null,
-      size: null
+      size: null,
     };
 
     return {
@@ -893,10 +893,8 @@ export class Xlm extends BaseCoin {
           throw new Error('cannot fetch keychains without networking');
         } else if (!keychains) {
           keychains = yield Bluebird.props({
-            user: this.keychains().get({ id: wallet._wallet.keys[0] }),
-            backup: this.keychains().get({ id: wallet._wallet.keys[1] }),
-            // TODO: why are we getting the bitgo key?
-            bitgo: this.keychains().get({ id: wallet._wallet.keys[2] })
+            user: this.keychains().get({ id: wallet.keyIds()[0] }),
+            backup: this.keychains().get({ id: wallet.keyIds()[1] }),
           });
         }
 
@@ -921,7 +919,7 @@ export class Xlm extends BaseCoin {
    * @param key seed for the master key. Note: Not the public key or encoded private key. This is the raw seed.
    * @param entropySeed random seed which is hashed to generate the derivation path
    */
-  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: any } {
+  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
     const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
     const derivationPathParts = [
       999999,
