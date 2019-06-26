@@ -196,10 +196,15 @@ describe('Bitgo Express V1', function() {
       })
       .then(function(res) {
         res.status.should.eql(200);
-        const txInfo = res.body.txInfo;
-        txInfo.nP2shInputs.should.be.greaterThan(0);
-        txInfo.nP2pkhInputs.should.eql(0);
-        txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
+        const {
+          nP2shInputs = 0,
+          nP2shP2wshInputs = 0,
+          nP2pkhInputs,
+          nOutputs
+        } = res.body.txInfo;
+        (nP2shInputs + nP2shP2wshInputs).should.be.greaterThan(0);
+        nP2pkhInputs.should.eql(0);
+        nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
       });
     });
 
