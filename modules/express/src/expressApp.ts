@@ -18,10 +18,11 @@ import { ServerResponse } from 'http';
 import { SSL_OP_NO_TLSv1 } from 'constants';
 
 const { Environments } = require('bitgo');
+const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
 import { TlsConfigurationError, NodeEnvironmentError } from './errors';
 
-const BITGOEXPRESS_USER_AGENT = 'BitGoExpress/' + pjson.version;
+const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
 const DEFAULT_TIMEOUT = 305 * 1000;
 
 /**
