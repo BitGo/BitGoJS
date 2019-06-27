@@ -19,6 +19,8 @@ export const coins = CoinMap.fromCoins([
   utxo('tltc', 'Testnet Litecoin', Networks.test.litecoin, UnderlyingAsset.LTC),
   utxo('dash', 'Dash', Networks.main.dash, UnderlyingAsset.DASH),
   utxo('tdash', 'Testnet Dash', Networks.test.dash, UnderlyingAsset.DASH),
+  account('algo', 'Algorand', Networks.main.algorand, 7, UnderlyingAsset.ALGO),
+  account('talgo', 'Testnet Algorand', Networks.test.algorand, 7, UnderlyingAsset.ALGO),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('xrp', 'Ripple', Networks.main.xrp, 6, UnderlyingAsset.XRP),
