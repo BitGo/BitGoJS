@@ -1026,6 +1026,21 @@
   resolved "https://registry.yarnpkg.com/@types/sinon/-/sinon-7.0.11.tgz#6f28f005a36e779b7db0f1359b9fb9eef72aae88"
   integrity sha512-6ee09Ugx6GyEr0opUIakmxIWFNmqYPjkqa3/BuxCBokA0klsOLPgMD5K4q40lH7/yZVuJVzOfQpd7pipwjngkQ==
 
+"@types/stellar-base@*":
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/@types/stellar-base/-/stellar-base-0.10.2.tgz#8a6bbaabde140971ccab4cf202151de84740fa29"
+  integrity sha512-MOilZXnnLqxCa3f2Xr7phqI8mbfz5j1BhWs6XrGwHfNTL9XQPOyLBN9tBWIsDIRZ1VyUZQ2YQLTjSppsB8/iUQ==
+  dependencies:
+    "@types/node" "*"
+
+"@types/stellar-sdk@^0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@types/stellar-sdk/-/stellar-sdk-0.11.1.tgz#3487ac99cbc457146ca2bc4c7c707f0c0213a09c"
+  integrity sha512-VHTTf2rs6ZpbWJmTCSLkw+CF7RwlN5DO+/kN3Ieze6RPWe3SA82O2DdsWXw5sM2hFbJ7pcjSyoR76ufNp0Bcvg==
+  dependencies:
+    "@types/node" "*"
+    "@types/stellar-base" "*"
+
 "@types/ws@^3.2.0":
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/@types/ws/-/ws-3.2.1.tgz#b0c1579e58e686f83ce0a97bb9463d29705827fb"

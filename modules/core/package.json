@@ -75,6 +75,7 @@
     "@types/nock": "^9.3.1",
     "@types/node": "^11.11.4",
     "@types/sinon": "^7.0.6",
+    "@types/stellar-sdk": "^0.11.1",
     "@typescript-eslint/eslint-plugin": "^1.4.2",
     "@typescript-eslint/parser": "^1.4.2",
     "awesome-typescript-loader": "^5.2.1",
