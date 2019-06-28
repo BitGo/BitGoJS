@@ -864,6 +864,7 @@ export class Eth extends BaseCoin {
         hop: true,
       };
       const feeEstimate = yield this.feeEstimate(feeEstimateParams);
+
       const gasLimit = feeEstimate.gasLimitEstimate;
       const gasPrice = Math.round((feeEstimate.feeEstimate) / gasLimit);
       const gasPriceMax = gasPrice * 5;
@@ -1018,6 +1019,9 @@ export class Eth extends BaseCoin {
       }
       if (params && params.data) {
         query.data = params.data;
+      }
+      if (params && params.amount) {
+        query.amount = params.amount;
       }
 
       return this.bitgo.get(this.url('/tx/fee')).query(query).result();
