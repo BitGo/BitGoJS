@@ -15,6 +15,7 @@ export const enum CoinKind {
  * For example, the coins `btc` and `tbtc` both belong to the same family, `btc`.
  */
 export const enum CoinFamily {
+  ALGO = 'algo',
   BCH = 'bch',
   BSV = 'bsv',
   BTC = 'btc',
@@ -122,6 +123,7 @@ export const enum CoinFeature {
  * represent some amount of another asset class.
  */
 export const enum UnderlyingAsset {
+  ALGO = 'algo',
   BCH = 'bch',
   BSV = 'bsv',
   BTC = 'btc',

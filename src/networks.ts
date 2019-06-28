@@ -169,6 +169,14 @@ class ZCashTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.ZEC;
 }
 
+class Algorand extends Mainnet implements AccountNetwork {
+    family = CoinFamily.ALGO;
+}
+
+class AlgorandTestnet extends Testnet implements AccountNetwork {
+    family = CoinFamily.ALGO;
+}
+
 class Xrp extends Mainnet implements AccountNetwork {
   family = CoinFamily.XRP;
 }
@@ -203,6 +211,7 @@ class SUSDTestnet extends Testnet implements AccountNetwork {
 
 export const Networks = {
   main: {
+    algorand: Object.freeze(new Algorand()),
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
@@ -217,6 +226,7 @@ export const Networks = {
     susd: Object.freeze(new SUSD()),
   },
   test: {
+    algorand: Object.freeze(new AlgorandTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
