@@ -18,7 +18,7 @@ export const Environments = {
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
     etherscanBaseUrl: 'https://api.etherscan.io',
     ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
-    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api',
+    zecExplorerBaseUrl: 'https://zcashnetwork.info/api',
     dashExplorerBaseUrl: 'https://insight.dash.org/insight-api',
     stellarFederationServerUrl: 'https://www.bitgo.com/api/v2/xlm/federation'
   },
@@ -38,7 +38,7 @@ export const Environments = {
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
     etherscanBaseUrl: 'https://api.etherscan.io',
     ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
-    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api',
+    zecExplorerBaseUrl: 'https://zcashnetwork.info/api',
     dashExplorerBaseUrl: 'https://insight.dash.org/insight-api',
     stellarFederationServerUrl: 'https://rmg.bitgo.com/api/v2/xlm/federation'
   },
@@ -58,7 +58,7 @@ export const Environments = {
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
     etherscanBaseUrl: 'https://api.etherscan.io',
     ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
-    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api',
+    zecExplorerBaseUrl: 'https://zcashnetwork.info/api',
     dashExplorerBaseUrl: 'https://insight.dash.org/insight-api',
     stellarFederationServerUrl: 'https://staging.bitgo.com/api/v2/xlm/federation'
   },
@@ -78,7 +78,7 @@ export const Environments = {
     btgExplorerBaseUrl: 'https://btgexplorer.com/api',
     etherscanBaseUrl: 'https://api.etherscan.io',
     ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
-    zecExplorerBaseUrl: 'https://zcash.blockexplorer.com/api',
+    zecExplorerBaseUrl: 'https://zcashnetwork.info/api',
     dashExplorerBaseUrl: 'https://insight.dash.org/insight-api',
     stellarFederationServerUrl: 'https://rmgstaging.bitgo.com/api/v2/xlm/federation'
   },
@@ -306,7 +306,7 @@ export const Environments = {
     btgExplorerBaseUrl: process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin' ? null : 'https://btgexplorer.com/api',
     ltcExplorerBaseUrl: process.env.BITGO_CUSTOM_LITECOIN_NETWORK !== 'litecoin' ? 'http://explorer.litecointools.com/api' : 'https://insight.litecore.io/api',
     etherscanBaseUrl: process.env.BITGO_CUSTOM_ETHEREUM_NETWORK !== 'ethereum' ? 'https://kovan.etherscan.io' : 'https://api.etherscan.io',
-    zecExplorerBaseUrl: process.env.BITGO_CUSTOM_ZCASH_NETWORK !== 'zcash' ? 'https://explorer.testnet.z.cash/api' : 'https://zcash.blockexplorer.com/api',
+    zecExplorerBaseUrl: process.env.BITGO_CUSTOM_ZCASH_NETWORK !== 'zcash' ? 'https://explorer.testnet.z.cash/api' : 'https://zcashnetwork.info/api',
     dashExplorerBaseUrl: process.env.BITGO_CUSTOM_DASH_NETWORK !== 'dash' ? 'https://testnet-insight.dashevo.org/insight-api' : 'https://insight.dash.org/insight-api',
     stellarFederationServerUrl: process.env.BITGO_CUSTOM_STELLAR_NETWORK !== 'stellar' ?
       `https://${process.env.BITGO_CUSTOM_ROOT_URI}/api/v2/txlm/federation` :
