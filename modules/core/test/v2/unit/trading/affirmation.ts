@@ -20,7 +20,7 @@ describe('Affirmations', function() {
 
   let affirmation;
 
-  before(co(function* () {
+  before(co(function *() {
     bitgo = new TestV2BitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
@@ -82,8 +82,11 @@ describe('Affirmations', function() {
 
   it('should affirm an affirmation', co(function *() {
     const scope = nock(microservicesUri)
+      .post('/api/trade/v1/payload', fixtures.affirmAffirmationPayloadRequest)
+      .reply(200, fixtures.affirmAffirmationPayloadResponse)
       .put(`/api/trade/v1/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.AFFIRMED)
       .reply(200, fixtures.updateAffirmation('affirmed'));
+
     const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
     const xpub = 'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
     const platformScope = nock(bgUrl)
@@ -93,12 +96,14 @@ describe('Affirmations', function() {
         encryptedPrv: bitgo.encrypt({ input: xprv, password: TestV2BitGo.OFC_TEST_PASSWORD })
       });
 
-    const { payload, signature } = yield tradingAccount.buildAndSignPayload({
+    const payload = yield tradingAccount.buildPayload({
       currency: 'ofctusd',
       amount: '555',
-      otherParties: '5cf940a49449412d00f53b8f7392f7c0',
-      walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD
+      otherParties: [{ accountId: '5cf940a49449412d00f53b8f7392f7c0', amount: '500', currency: 'ofctbtc' }]
     });
+
+    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD });
+
     yield affirmation.affirm(payload, signature);
 
     scope.isDone().should.be.true();

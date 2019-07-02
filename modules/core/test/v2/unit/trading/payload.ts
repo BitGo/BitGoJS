@@ -4,18 +4,21 @@ import * as nock from 'nock';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { HDNode } from 'bitgo-utxo-lib';
 
+import fixtures from '../../fixtures/trading/payload';
+
 import { Wallet } from '../../../../src/v2/wallet';
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const common = require('../../../../src/common');
 
 describe('Trade Payloads', function() {
+  const microservicesUri = 'https://bitgo-microservices.example';
   let bitgo;
   let basecoin;
   let tradingAccount;
   let bgUrl;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'mock' });
+    bitgo = new TestV2BitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
@@ -44,23 +47,43 @@ describe('Trade Payloads', function() {
       encryptedPrv: bitgo.encrypt({ input: xprv, password: TestV2BitGo.OFC_TEST_PASSWORD })
     });
 
-    const { payload, signature } = yield tradingAccount.buildAndSignPayload({
+    const msScope = nock(microservicesUri)
+      .post('/api/trade/v1/payload')
+      .reply(200, fixtures.validPayload);
+
+    const payload = yield tradingAccount.buildPayload({
       currency: 'ofctbtc',
       amount: '100000000',
-      otherParties: ['test_counterparty_1'],
-      walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD
+      otherParties: [
+        {
+          accountId: 'test_counterparty_1',
+          currency: 'ofctusd',
+          amount: '10000'
+        },
+        {
+          accountId: 'test_counterparty_2',
+          currency: 'ofctusd',
+          amount: '90000'
+        }
+      ],
     });
 
     should.exist(payload);
-    payload.should.have.property('walletId', 'walletId');
+    payload.should.have.property('version', '1.1.1');
+    payload.should.have.property('accountId', 'walletId');
     payload.should.have.property('currency', 'ofctbtc');
     payload.should.have.property('amount', '100000000');
     payload.should.have.property('nonceHold');
     payload.should.have.property('nonceSettle');
-    payload.should.have.property('otherParties').with.length(1);
-    payload.otherParties[0].should.eql('test_counterparty_1');
+    payload.should.have.property('otherParties').with.length(2);
+    for (const party of payload.otherParties) {
+      party.should.have.property('accountId');
+      party.should.have.property('currency');
+      party.should.have.property('amount');
+    }
 
-    should.exist(signature);
+    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD });
+
     // signature should be a hex string
     signature.should.match(/^[0-9a-f]+$/);
 
@@ -69,5 +92,31 @@ describe('Trade Payloads', function() {
     bitcoinMessage.verify(JSON.stringify(payload), address, Buffer.from(signature, 'hex')).should.be.True();
 
     platformScope.isDone().should.be.True();
+    msScope.isDone().should.be.True();
+  }));
+
+  it('should throw if the payload does not match the build parameters', co(function *() {
+    const msScope = nock(microservicesUri)
+      .post('/api/trade/v1/payload')
+      .reply(200, fixtures.invalidPayload);
+
+    yield tradingAccount.buildPayload({
+      currency: 'ofctbtc',
+      amount: '100000000',
+      otherParties: [
+        {
+          accountId: 'test_counterparty_1',
+          currency: 'ofctusd',
+          amount: '10000'
+        },
+        {
+          accountId: 'test_counterparty_2',
+          currency: 'ofctusd',
+          amount: '90000'
+        }
+      ],
+    }).should.be.rejected();
+
+    msScope.isDone().should.be.True();
   }));
 });

@@ -1,11 +1,15 @@
 /**
  * @prettier
  */
+
+type CURRENT_PAYLOAD_VERSION = '1.1.1';
+
 export interface Payload {
-  walletId: string;
+  version: CURRENT_PAYLOAD_VERSION;
+  accountId: string;
   currency: string;
   amount: string;
   nonceHold: string;
   nonceSettle: string;
-  otherParties: string[];
+  otherParties: { accountId: string; currency: string; amount: string }[];
 }
