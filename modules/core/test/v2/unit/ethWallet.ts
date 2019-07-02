@@ -206,13 +206,14 @@ describe('Ethereum Hop Transactions', co(function *() {
         });
     };
     const nockFees = function() {
-      nock(bgUrl)
+      const scope = nock(bgUrl)
         .get('/api/v2/teth/tx/fee')
         .query(true)
         .reply(200, {
           gasLimitEstimate: gasLimitEstimate,
           feeEstimate: gasLimitEstimate * gasPrice,
         });
+      return scope;
     };
 
     const nockBuild = function(walletId) {
@@ -245,7 +246,7 @@ describe('Ethereum Hop Transactions', co(function *() {
      let error = undefined;
 
      nockUserKey();
-     nockFees();
+     const feeScope = nockFees();
      nockBuild(ethWallet.id());
      try {
        const res = yield ethWallet.prebuildTransaction(buildParams);
@@ -260,6 +261,11 @@ describe('Ethereum Hop Transactions', co(function *() {
        error = e.message;
      }
      should.not.exist(error);
+     feeScope.isDone().should.equal(true);
+     const feeReq = feeScope.interceptors[0].req;
+     feeReq.path.should.containEql('hop=true');
+     feeReq.path.should.containEql('recipient=' + finalRecipient);
+     feeReq.path.should.containEql('amount=' + sendAmount);
    }));
   }));
 }));
