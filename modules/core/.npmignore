@@ -89,6 +89,7 @@ test/
 
 # tests output by tsc
 dist/test/
+dist/browserify/
 
-!dist/browser/
+!dist/browser/BitGoJS.min.js
 

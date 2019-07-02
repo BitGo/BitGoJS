@@ -137,7 +137,7 @@ module.exports = function setupWebpack(env) {
       extensions: ['.js']
     },
     // Main project entry point
-    entry: path.join(__dirname, 'dist', 'src', 'index.js'),
+    entry: path.join(__dirname, 'dist', 'browserify', 'BitGoJS.browserify.js'),
 
     // Output directory and filename
     // Library acts like 'standalone' for browserify, defines it globally if module system not found

@@ -85,7 +85,9 @@ describe('Settlements', function() {
 
   it('should create a new settlement', co(function *() {
     const msScope = nock(microservicesUri)
-      .post(`/api/trade/v1/settlement`, fixtures.createSettlementRequest)
+      .post('/api/trade/v1/payload', fixtures.createSettlementPayloadRequest)
+      .reply(200, fixtures.createSettlementPayloadResponse)
+      .post('/api/trade/v1/settlement', fixtures.createSettlementRequest)
       .reply(200, fixtures.createSettlementResponse);
 
     const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
@@ -97,12 +99,13 @@ describe('Settlements', function() {
         encryptedPrv: bitgo.encrypt({ input: xprv, password: TestV2BitGo.OFC_TEST_PASSWORD })
       });
 
-    const { payload, signature } = yield tradingAccount.buildAndSignPayload({
+    const payload = yield tradingAccount.buildPayload({
       currency: 'ofctusd',
       amount: '555',
-      otherParties: '5cf940a49449412d00f53b8f7392f7c0',
-      walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD
+      otherParties: [{ accountId: '5cf940a49449412d00f53b8f7392f7c0', amount: '500', currency: 'ofctbtc' }]
     });
+
+    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD });
 
     const settlement = yield enterprise.settlements().create({
       requesterAccountId: tradingAccount.id,

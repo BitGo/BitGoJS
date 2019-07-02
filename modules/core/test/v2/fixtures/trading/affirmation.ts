@@ -97,6 +97,22 @@ export default {
     createdAt: '2019-06-06T22:45:10.114Z',
     expireAt: '2019-06-07T22:45:10.105Z'
   },
+  affirmAffirmationPayloadRequest: {
+    version: '1.1.1',
+    accountId: '5cf940969449412d00f53b4c55fc2139',
+    currency: 'ofctusd',
+    amount: '555',
+    otherParties: [
+      {
+        accountId: '5cf940a49449412d00f53b8f7392f7c0',
+        amount: '500',
+        currency: 'ofctbtc'
+      }
+    ]
+  },
+  affirmAffirmationPayloadResponse: {
+    payload: '{"version":"1.1.1","accountId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctusd","amount":"555","nonceHold":"djTPc0eRtQixTviodw1iJQ==","nonceSettle":"Wemw9X+iFcwsRFV3nJebxA==","otherParties":[{"accountId":"5cf940a49449412d00f53b8f7392f7c0","currency":"ofctbtc","amount":"500"}]}'
+  },
   updateAffirmation: function(status) {
     const affirmation = { status, ...this.singleAffirmation };
     if (status !== AffirmationStatus.AFFIRMED) {
