@@ -196,4 +196,20 @@ describe('V2 Wallets:', function() {
       yield wallets.generateWallet(params);
     }));
   });
+
+  describe('Sharing', () => {
+    it('should share a wallet to viewer', co(function *() {
+      const shareId = '123';
+
+      nock(bgUrl)
+        .get(`/api/v2/tbtc/walletshare/${shareId}`)
+        .reply(200, {});
+      const acceptShareNock = nock(bgUrl)
+        .post(`/api/v2/tbtc/walletshare/${shareId}`, { walletShareId: shareId, state: 'accepted' })
+        .reply(200, {});
+
+      yield wallets.acceptShare({ walletShareId: shareId });
+      acceptShareNock.isDone().should.be.True();
+    }));
+  });
 });

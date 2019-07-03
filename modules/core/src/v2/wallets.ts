@@ -442,7 +442,10 @@ export class Wallets {
 
       // Return right away if there is no keychain to decrypt, or if explicit encryptedPrv was provided
       if (!walletShare.keychain || !walletShare.keychain.encryptedPrv || encryptedPrv) {
-        return walletShare;
+        return this.updateShare({
+          walletShareId: params.walletShareId,
+          state: 'accepted',
+        });
       }
 
       // More than viewing was requested, so we need to process the wallet keys using the shared ecdh scheme
