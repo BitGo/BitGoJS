@@ -1,7 +1,12 @@
+/**
+ *
+ * @prettier
+ */
+/* eslint-disable @typescript-eslint/camelcase */
 import * as nock from 'nock';
-nock.enableNetConnect();
+import { Environment, Environments } from '../../../src/v2/environments';
 
-module.exports.nockBtcRecovery = function nockBtcRecovery(isKrsRecovery) {
+export function nockBtcRecovery(bitgo, isKrsRecovery) {
   nock('https://bitcoinfees.earn.com')
   .get('/api/v1/fees/recommended')
   .reply(200, {
@@ -98,7 +103,9 @@ module.exports.nockBtcRecovery = function nockBtcRecovery(isKrsRecovery) {
     }
   };
 
-  nock('https://testnet-api.smartbit.com.au/v1/blockchain')
+  const env = Environments[bitgo.getEnv()] as Environment;
+  const smartbitBaseUrl = `${env.smartBitApiBaseUrl}/blockchain`;
+  nock(smartbitBaseUrl)
   .get('/address/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg')
   .reply(200, {
     success: true,
@@ -887,8 +894,9 @@ module.exports.nockBtcRecovery = function nockBtcRecovery(isKrsRecovery) {
   }
 };
 
-module.exports.nockBchRecovery = function nockBchRecovery(isKrsRecovery) {
-  nock('https://test-bch-insight.bitpay.com/api')
+module.exports.nockBchRecovery = function nockBchRecovery(bitgo, isKrsRecovery) {
+  const env = Environments[bitgo.getEnv()] as Environment;
+  nock(env.bchExplorerBaseUrl)
   .get('/addr/2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN')
   .reply(200, {
     addrStr: 'pr5ktpkt6verkhadrkw2sddk9lkqmcj4eyqp4uacsj',
@@ -1243,9 +1251,9 @@ module.exports.nockXrpRecovery = function nockXrpRecovery() {
   });
 };
 
-module.exports.nockWrongChainRecoveries = function() {
-  // Nock wallets
-  nock('https://test.bitgo.com/api/v2')
+module.exports.nockWrongChainRecoveries = function(bitgo) {
+  const env = Environments[bitgo.getEnv()] as Environment;
+  nock(`${env.uri}/api/v2`)
   .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e')
   .times(2)
   .reply(200, {
@@ -2064,8 +2072,9 @@ module.exports.nockLtcRecovery = function(isKrsRecovery) {
   }
 };
 
-module.exports.nockZecRecovery = function(isKrsRecovery) {
-  nock('https://explorer.testnet.z.cash/api')
+module.exports.nockZecRecovery = function(bitgo, isKrsRecovery) {
+  const env = Environments[bitgo.getEnv()] as Environment;
+  nock(env.zecExplorerBaseUrl)
   .get('/addr/t2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS')
   .reply(200, {
     addrStr: 't2PDm4QH9x8gxGvfKHnHCksZMs5ee94M3BS',
@@ -2257,8 +2266,9 @@ module.exports.nockZecRecovery = function(isKrsRecovery) {
   }
 };
 
-module.exports.nockDashRecovery = function(isKrsRecovery) {
-  nock('https://testnet-insight.dashevo.org/insight-api')
+module.exports.nockDashRecovery = function(bitgo, isKrsRecovery) {
+  const env = Environments[bitgo.getEnv()] as Environment;
+  nock(env.dashExplorerBaseUrl)
   .get('/addr/8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW')
   .reply(200, {
     addrStr: '8sAnaiWbJnznfRwrtJt2UqwShN6WtCc4wW',
@@ -2512,42 +2522,41 @@ module.exports.nockXlmRecovery = function() {
   });
 };
 
-module.exports.nockBtcSegwitRecovery = function() {
+module.exports.nockBtcSegwitRecovery = function(bitgo) {
+  const env = Environments[bitgo.getEnv()] as Environment;
   // Nock all the external api calls that gather info about the wallet
   // We have lots of empty addresses, because the code queries for possible addresses in the wallet one by one
   const emptyAddrs = ['2N42muVaEhvcyMRr7pmFPnrmprdmWCUvhy7', '2N2b2yNryWVbMjvXFq7RbaQ2xbGhmAuBQM7', '2NBs5i2APw3XSvfch7rHirYC6AxehYizCU9', '2NEFHeSYnHVt4t2KqwKz1AZqhpcx2yGoe38', '2N4iR1AweHV8wmc7VPBb3tRnweQs1fSW3dB', '2N1ir7htudeFEWGhyfXGL7LNKzoFrDS62bQ', '2NBpZak1Tz1cpLhg6ZapeTSHkhq91GwMYFo', '2N93AW6R6eLan8rfB715oCse9P6pexfK3Tn', '2NEZiLrBnTSrwNuVuKCXcAi9AL6YSr1FYqY'];
   emptyAddrs.forEach(function(addr) {
-    nock('https://testnet-api.smartbit.fakeurl/v1')
+    nock(env.smartBitApiBaseUrl)
     .get('/blockchain/address/' + addr)
     .reply(200, JSON.parse('{"success":true, "address":{"address":"' + addr + '", "total":{"received":"0", "received_int":0, "spent":"0", "spent_int":0, "balance":"0", "balance_int":0, "input_count":0, "output_count":0, "transaction_count":0}, "confirmed":{"received":"0", "received_int":0, "spent":"0", "spent_int":0, "balance":"0", "balance_int":0, "input_count":0, "output_count":0, "transaction_count":0}, "unconfirmed":{"received":"0", "received_int":0, "spent":"0", "spent_int":0, "balance":"0", "balance_int":0, "input_count":0, "output_count":0, "transaction_count":0}, "multisig":{"confirmed":{"balance":"0", "balance_int":0},"unconfirmed":{"balance":"0","balance_int":0}}}}'));
   });
-  nock('https://testnet-api.smartbit.fakeurl/v1')
+  nock(env.smartBitApiBaseUrl)
   .get('/blockchain/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws')
-  .reply(200, JSON.parse('{"success":true,"address":{"address":"2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws","total":{"received":"0.00020000","received_int":20000,"spent":"0.00000000","spent_int":0,"balance":"0.00020000","balance_int":20000,"input_count":1,"output_count":0,"transaction_count":1},"confirmed":{"received":"0.00020000","received_int":20000,"spent":"0.00000000","spent_int":0,"balance":"0.00020000","balance_int":20000,"input_count":1,"output_count":0,"transaction_count":1},"unconfirmed":{"received":"0.00000000","received_int":0,"spent":"0.00000000","spent_int":0,"balance":"0.00000000","balance_int":0,"input_count":0,"output_count":0,"transaction_count":0},"multisig":{"confirmed":{"balance":"0.00000000","balance_int":0},"unconfirmed":{"balance":"0.00000000","balance_int":0}},"transaction_paging":{"valid_sort":["txindex"],"limit":10,"sort":"txindex","dir":"desc","prev":null,"next":null,"prev_link":null,"next_link":null},"transactions":[{"txid":"9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0","hash":"4458cd6cf3a0f48ced99eee4cd6130090380b12747a5196c12355c289d2e00da","block":1452730,"confirmations":7,"version":"1","locktime":1452730,"time":1547682765,"first_seen":1547682684,"propagation":null,"double_spend":false,"size":406,"vsize":214,"input_amount":"0.00099455","input_amount_int":99455,"output_amount":"0.00098910","output_amount_int":98910,"fee":"0.00000545","fee_int":545,"fee_size":"2.54672897","coinbase":false,"input_count":1,"inputs":[{"addresses":["2NCWbbQ5tpKQR2PBVHFst66JcuyWGMPjUKR"],"value":"0.00099455","value_int":99455,"txid":"0b45811cc201ddadee6e5c25a7e25776685b08d9252876c36f2148fc3b997b64","vout":1,"script_sig":{"asm":"00203b311a23f682e93b3a93bba8155aa9d15876cfec1aa9056400307799bad3c11e","hex":"2200203b311a23f682e93b3a93bba8155aa9d15876cfec1aa9056400307799bad3c11e"},"type":"scripthash","witness":["","304502210095abe38994c3fa7639fba8a3e780b8ca8ed17ac105cd4cd2af7e53b1783a03fa0220708288caad950e2da3b3f00d3f4dbc91433a8a79e6c4539ffd7e7fb5dad75b2b01","3045022100ebf6aa59e21b5707da9e8432dfc0ba53e4bc4130cb974ee6e64e43faf939002802200273e05dcad74caf0ae565be49bb2bc92056782f6031f160c8a58de2e943133e01","52210237ecd62674a320eceee0b8e0497d89c079291ec1622ba1af20b3f93e66a912b421037850684fef0ecc45be7f5113252638c08a5f3d82041e91c40ea3aa6fdd6a0a682103897f5410bf67c77cb5cb89249c5a7393086e98bb09ffd9477bfaea09750c14bd53ae"],"sequence":4294967295}],"output_count":2,"outputs":[{"addresses":["2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws"],"value":"0.00020000","value_int":20000,"n":0,"script_pub_key":{"asm":"OP_HASH160 9f13f940a9461ac6e5393859faca8c513f93cd6e OP_EQUAL","hex":"a9149f13f940a9461ac6e5393859faca8c513f93cd6e87"},"req_sigs":1,"type":"scripthash","spend_txid":null},{"addresses":["2MskQ8f8D4fD6Ujg14iKnzHx5yBwe2V7PrU"],"value":"0.00078910","value_int":78910,"n":1,"script_pub_key":{"asm":"OP_HASH160 058487ef5864d069fc62502c1c4417bed48a8aa7 OP_EQUAL","hex":"a914058487ef5864d069fc62502c1c4417bed48a8aa787"},"req_sigs":1,"type":"scripthash","spend_txid":"8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387"}],"tx_index":48676632,"block_index":30}]}}'));
-  nock('https://testnet-api.smartbit.fakeurl/v1')
+  .reply(200, JSON.parse('{"success":true,"address":{"address":"2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws","total":{"received":"0.00020000","received_int":20000,"spent":"0.00000000","spent_int":0,"balance":"0.00020000","balance_int":20000,"input_count":1,"output_count":0,"transaction_count":1},"confirmed":{"received":"0.00020000","received_int":20000,"spent":"0.00000000","spent_int":0,"balance":"0.00020000","balance_int":20000,"input_count":1,"output_count":0,"transaction_count":1},"unconfirmed":{"received":"0.00000000","received_int":0,"spent":"0.00000000","spent_int":0,"balance":"0.00000000","balance_int":0,"input_count":0,"output_count":0,"transaction_count":0},"multisig":{"confirmed":{"balance":"0.00000000","balance_int":0},"unconfirmed":{"balance":"0.00000000","balance_int":0}},"transaction_paging":{"valid_sort":["txindex"],"limit":10,"sort":"txindex","dir":"desc","prev":null,"next":null,"prev_link":null,"next_link":null},"transactions":[{"txid":"9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0","hash":"4458cd6cf3a0f48ced99eee4cd6130090380b12747a5196c12355c289d2e00da","block":1452730,"confirmations":7,"version":"1","locktime":1452730,"time":1547682765,"first_seen":1547682684,"propagation":null,"double_spend":false,"size":406,"vsize":214,"input_amount":"0.00099455","input_amount_int":99455,"output_amount":"0.00098910","output_amount_int":98910,"fee":"0.00000545","fee_int":545,"fee_size":"2.54672897","coinbase":false,"input_count":1,"inputs":[{"addresses":["2NCWbbQ5tpKQR2PBVHFst66JcuyWGMPjUKR"],"value":"0.00099455","value_int":99455,"txid":"0b45811cc201ddadee6e5c25a7e25776685b08d9252876c36f2148fc3b997b64","vout":1,"script_sig":{"asm":"00203b311a23f682e93b3a93bba8155aa9d15876cfec1aa9056400307799bad3c11e","hex":"2200203b311a23f682e93b3a93bba8155aa9d15876cfec1aa9056400307799bad3c11e"},"type":"scripthash","witness":["","304502210095abe38994c3fa7639fba8a3e780b8ca8ed17ac105cd4cd2af7e53b1783a03fa0220708288caad950e2da3b3f00d3f4dbc91433a8a79e6c4539ffd7e7fb5dad75b2b01","3045022100ebf6aa59e21b5707da9e8432dfc0ba53e4bc4130cb974ee6e64e43faf939002802200273e05dcad74caf0ae565be49bb2bc92056782f6031f160c8a58de2e943133e01","52210237ecd62674a320eceee0b8e0497d89c079291ec1622ba1af20b3f93e66a912b421037850684fef0ecc45be7f5113252638c08a5f3d82041e91c40ea3aa6fdd6a0a682103897f5410bf67c77cb5cb89249c5a7393086e98bb09ffd9477bfaea09750c14bd53ae"],"sequence":4294967295}],"output_count":2,"outputs":[{"addresses":["2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws"],"value":"0.00020000","value_int":20000,"n":0,"script_pub_key":{"asm":"OP_HASH160 9f13f940a9461ac6e5393859faca8c513f93cd6e OP_EQUAL","hex":"a9149f13f940a9461ac6e5393859faca8c513f93cd6e87"},"req_sigs":1,"type":"scripthash","spend_txid":null},{"addresses":["2MskQ8f8D4fD6Ujg14iKnzHx5yBwe2V7PrU"],"value":"0.00078910","value_int":78910,"n":1,"script_pub_key":{"asm":"OP_HASH160 058487ef5864d069fc62502c1c4417bed48a8aa7 OP_EQUAL","hex":"a914058487ef5864d069fc62502c1c4417bed48a8aa787"},"req_sigs":1,"type":"scripthash","spend_txid":"8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387"}],"tx_index":48676632,"block_index":30}]}}'))
   .get('/blockchain/address/2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp')
-  .reply(200, JSON.parse('{"success":true,"address":{"address":"2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp","total":{"received":"0.00020000","received_int":20000,"spent":"0.00000000","spent_int":0,"balance":"0.00020000","balance_int":20000,"input_count":1,"output_count":0,"transaction_count":1},"confirmed":{"received":"0.00020000","received_int":20000,"spent":"0.00000000","spent_int":0,"balance":"0.00020000","balance_int":20000,"input_count":1,"output_count":0,"transaction_count":1},"unconfirmed":{"received":"0.00000000","received_int":0,"spent":"0.00000000","spent_int":0,"balance":"0.00000000","balance_int":0,"input_count":0,"output_count":0,"transaction_count":0},"multisig":{"confirmed":{"balance":"0.00000000","balance_int":0},"unconfirmed":{"balance":"0.00000000","balance_int":0}},"transaction_paging":{"valid_sort":["txindex"],"limit":10,"sort":"txindex","dir":"desc","prev":null,"next":null,"prev_link":null,"next_link":null},"transactions":[{"txid":"9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0","hash":"4458cd6cf3a0f48ced99eee4cd6130090380b12747a5196c12355c289d2e00da","block":1452730,"confirmations":7,"version":"1","locktime":1452730,"time":1547682765,"first_seen":1547682684,"propagation":null,"double_spend":false,"size":406,"vsize":214,"input_amount":"0.00099455","input_amount_int":99455,"output_amount":"0.00098910","output_amount_int":98910,"fee":"0.00000545","fee_int":545,"fee_size":"2.54672897","coinbase":false,"input_count":1,"inputs":[{"addresses":["2NCWbbQ5tpKQR2PBVHFst66JcuyWGMPjUKR"],"value":"0.00099455","value_int":99455,"txid":"0b45811cc201ddadee6e5c25a7e25776685b08d9252876c36f2148fc3b997b64","vout":1,"script_sig":{"asm":"00203b311a23f682e93b3a93bba8155aa9d15876cfec1aa9056400307799bad3c11e","hex":"2200203b311a23f682e93b3a93bba8155aa9d15876cfec1aa9056400307799bad3c11e"},"type":"scripthash","witness":["","304502210095abe38994c3fa7639fba8a3e780b8ca8ed17ac105cd4cd2af7e53b1783a03fa0220708288caad950e2da3b3f00d3f4dbc91433a8a79e6c4539ffd7e7fb5dad75b2b01","3045022100ebf6aa59e21b5707da9e8432dfc0ba53e4bc4130cb974ee6e64e43faf939002802200273e05dcad74caf0ae565be49bb2bc92056782f6031f160c8a58de2e943133e01","52210237ecd62674a320eceee0b8e0497d89c079291ec1622ba1af20b3f93e66a912b421037850684fef0ecc45be7f5113252638c08a5f3d82041e91c40ea3aa6fdd6a0a682103897f5410bf67c77cb5cb89249c5a7393086e98bb09ffd9477bfaea09750c14bd53ae"],"sequence":4294967295}],"output_count":2,"outputs":[{"addresses":["2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws"],"value":"0.00020000","value_int":20000,"n":0,"script_pub_key":{"asm":"OP_HASH160 9f13f940a9461ac6e5393859faca8c513f93cd6e OP_EQUAL","hex":"a9149f13f940a9461ac6e5393859faca8c513f93cd6e87"},"req_sigs":1,"type":"scripthash","spend_txid":null},{"addresses":["2MskQ8f8D4fD6Ujg14iKnzHx5yBwe2V7PrU"],"value":"0.00078910","value_int":78910,"n":1,"script_pub_key":{"asm":"OP_HASH160 058487ef5864d069fc62502c1c4417bed48a8aa7 OP_EQUAL","hex":"a914058487ef5864d069fc62502c1c4417bed48a8aa787"},"req_sigs":1,"type":"scripthash","spend_txid":"8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387"}],"tx_index":48676632,"block_index":30}]}}'));
-  nock('https://testnet-api.smartbit.fakeurl')
-  .get('/v1/blockchain/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws/unspent')
-  .reply(200, JSON.parse('{"success":true,"paging":{"valid_sort":["id"],"limit":10,"sort":"id","dir":"desc","prev":null,"next":null,"prev_link":null,"next_link":null},"unspent":[{"addresses":["2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws"],"value":"0.00020000","value_int":20000,"txid":"9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0","n":0,"script_pub_key":{"asm":"OP_HASH160 9f13f940a9461ac6e5393859faca8c513f93cd6e OP_EQUAL","hex":"a9149f13f940a9461ac6e5393859faca8c513f93cd6e87"},"req_sigs":1,"type":"scripthash","confirmations":10,"id":129988439}]}'));
-  nock('https://testnet-api.smartbit.fakeurl')
-  .get('/v1/blockchain/address/2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp/unspent')
+  .reply(200, JSON.parse('{"success":true,"address":{"address":"2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp","total":{"received":"0.00020000","received_int":20000,"spent":"0.00000000","spent_int":0,"balance":"0.00020000","balance_int":20000,"input_count":1,"output_count":0,"transaction_count":1},"confirmed":{"received":"0.00020000","received_int":20000,"spent":"0.00000000","spent_int":0,"balance":"0.00020000","balance_int":20000,"input_count":1,"output_count":0,"transaction_count":1},"unconfirmed":{"received":"0.00000000","received_int":0,"spent":"0.00000000","spent_int":0,"balance":"0.00000000","balance_int":0,"input_count":0,"output_count":0,"transaction_count":0},"multisig":{"confirmed":{"balance":"0.00000000","balance_int":0},"unconfirmed":{"balance":"0.00000000","balance_int":0}},"transaction_paging":{"valid_sort":["txindex"],"limit":10,"sort":"txindex","dir":"desc","prev":null,"next":null,"prev_link":null,"next_link":null},"transactions":[{"txid":"9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0","hash":"4458cd6cf3a0f48ced99eee4cd6130090380b12747a5196c12355c289d2e00da","block":1452730,"confirmations":7,"version":"1","locktime":1452730,"time":1547682765,"first_seen":1547682684,"propagation":null,"double_spend":false,"size":406,"vsize":214,"input_amount":"0.00099455","input_amount_int":99455,"output_amount":"0.00098910","output_amount_int":98910,"fee":"0.00000545","fee_int":545,"fee_size":"2.54672897","coinbase":false,"input_count":1,"inputs":[{"addresses":["2NCWbbQ5tpKQR2PBVHFst66JcuyWGMPjUKR"],"value":"0.00099455","value_int":99455,"txid":"0b45811cc201ddadee6e5c25a7e25776685b08d9252876c36f2148fc3b997b64","vout":1,"script_sig":{"asm":"00203b311a23f682e93b3a93bba8155aa9d15876cfec1aa9056400307799bad3c11e","hex":"2200203b311a23f682e93b3a93bba8155aa9d15876cfec1aa9056400307799bad3c11e"},"type":"scripthash","witness":["","304502210095abe38994c3fa7639fba8a3e780b8ca8ed17ac105cd4cd2af7e53b1783a03fa0220708288caad950e2da3b3f00d3f4dbc91433a8a79e6c4539ffd7e7fb5dad75b2b01","3045022100ebf6aa59e21b5707da9e8432dfc0ba53e4bc4130cb974ee6e64e43faf939002802200273e05dcad74caf0ae565be49bb2bc92056782f6031f160c8a58de2e943133e01","52210237ecd62674a320eceee0b8e0497d89c079291ec1622ba1af20b3f93e66a912b421037850684fef0ecc45be7f5113252638c08a5f3d82041e91c40ea3aa6fdd6a0a682103897f5410bf67c77cb5cb89249c5a7393086e98bb09ffd9477bfaea09750c14bd53ae"],"sequence":4294967295}],"output_count":2,"outputs":[{"addresses":["2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws"],"value":"0.00020000","value_int":20000,"n":0,"script_pub_key":{"asm":"OP_HASH160 9f13f940a9461ac6e5393859faca8c513f93cd6e OP_EQUAL","hex":"a9149f13f940a9461ac6e5393859faca8c513f93cd6e87"},"req_sigs":1,"type":"scripthash","spend_txid":null},{"addresses":["2MskQ8f8D4fD6Ujg14iKnzHx5yBwe2V7PrU"],"value":"0.00078910","value_int":78910,"n":1,"script_pub_key":{"asm":"OP_HASH160 058487ef5864d069fc62502c1c4417bed48a8aa7 OP_EQUAL","hex":"a914058487ef5864d069fc62502c1c4417bed48a8aa787"},"req_sigs":1,"type":"scripthash","spend_txid":"8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387"}],"tx_index":48676632,"block_index":30}]}}'))
+  .get('/blockchain/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws/unspent')
+  .reply(200, JSON.parse('{"success":true,"paging":{"valid_sort":["id"],"limit":10,"sort":"id","dir":"desc","prev":null,"next":null,"prev_link":null,"next_link":null},"unspent":[{"addresses":["2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws"],"value":"0.00020000","value_int":20000,"txid":"9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0","n":0,"script_pub_key":{"asm":"OP_HASH160 9f13f940a9461ac6e5393859faca8c513f93cd6e OP_EQUAL","hex":"a9149f13f940a9461ac6e5393859faca8c513f93cd6e87"},"req_sigs":1,"type":"scripthash","confirmations":10,"id":129988439}]}'))
+  .get('/blockchain/address/2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp/unspent')
   .reply(200, JSON.parse('{"success":true,"paging":{"valid_sort":["id"],"limit":10,"sort":"id","dir":"desc","prev":null,"next":null,"prev_link":null,"next_link":null},"unspent":[{"addresses":["2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp"],"value":"0.00041000","value_int":41000,"txid":"8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387","n":1,"script_pub_key":{"asm":"OP_HASH160 334ea8adc3423478229444603ab27f02de2550ef OP_EQUAL","hex":"a914334ea8adc3423478229444603ab27f02de2550ef87"},"req_sigs":1,"type":"scripthash","confirmations":10,"id":129988450}]}'));
   nock('https://bitcoinfees.earn.com')
   .get('/api/v1/fees/recommended')
   .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
 };
 
-module.exports.nockBtcUnsignedRecovery = function() {
+module.exports.nockBtcUnsignedRecovery = function(bitgo) {
+  const env = Environments[bitgo.getEnv()] as Environment;
   // Nock all the external api calls that gather info about the wallet
   // We have lots of empty addresses, because the code queries for possible addresses in the wallet one by one
   const emptyAddrs = ['2NAmqGejm1YYiE8rUVanU8SsUkUxqJmKhT3', '2MyVwQPE9sM16SCCRa2crUfC1t1bmk92aub', '2N6iwcgjTmBZF9MXv32Fw2pkASmBxxPr4qB', '2N2h5xreaUWTwqTZeeQ5wbWNhKTopRqKkSe', '2NBRHTmnc1RCCnYeo6iS4SnBTVKnnf86vAV', '2N6xcb27jLdCZSNegtZzUVKHHJynKiEfhQo', '2N1jYERmv9Bpx9z123n3YF8Darepv8PU9tY', '2N29zwEk5AbcCW2wUWZoxsqh8Tb39ymHGvu', '2N2PppF9zw1jxM26VG89NjUA8bFWUPr8vjF'];
   emptyAddrs.forEach(function(addr) {
-    nock('https://testnet-api.smartbit.fakeurl/v1')
+    nock(env.smartBitApiBaseUrl)
       .get('/blockchain/address/' + addr)
       .reply(200, JSON.parse('{"success":true, "address":{"address":"' + addr + '", "total":{"received":"0", "received_int":0, "spent":"0", "spent_int":0, "balance":"0", "balance_int":0, "input_count":0, "output_count":0, "transaction_count":0}, "confirmed":{"received":"0", "received_int":0, "spent":"0", "spent_int":0, "balance":"0", "balance_int":0, "input_count":0, "output_count":0, "transaction_count":0}, "unconfirmed":{"received":"0", "received_int":0, "spent":"0", "spent_int":0, "balance":"0", "balance_int":0, "input_count":0, "output_count":0, "transaction_count":0}, "multisig":{"confirmed":{"balance":"0", "balance_int":0},"unconfirmed":{"balance":"0","balance_int":0}}}}'));
   });
-  nock('https://testnet-api.smartbit.fakeurl/v1')
+  nock(env.smartBitApiBaseUrl)
     .get('/blockchain/address/2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx')
     .reply(200, { success: true,
       address:
@@ -2729,7 +2738,6 @@ module.exports.nockBtcUnsignedRecovery = function() {
                       spend_txid: 'ec4d4ea133a5c741fadc229a9df3734a2026ca40760e3d0af686ffdc647487e5' } ],
                 tx_index: 48742070,
                 block_index: 29 } ] } })
-  nock('https://testnet-api.smartbit.fakeurl/v1')
     .get('/blockchain/address/2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49')
     .reply(200, { success: true,
       address:
@@ -2840,8 +2848,7 @@ module.exports.nockBtcUnsignedRecovery = function() {
               block_index: 27 } ] } })
 
 
-  nock('https://testnet-api.smartbit.fakeurl')
-    .get('/v1/blockchain/address/2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR')
+    .get('/blockchain/address/2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR')
     .reply(200, { success: true,
       address:
         { address: '2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR',
@@ -3033,9 +3040,7 @@ module.exports.nockBtcUnsignedRecovery = function() {
                       spend_txid: 'c4b15cf8d09a37d2361184cfa10678ea79a83f5455c78d69267238c8b351959e' } ],
                 tx_index: 48742072,
                 block_index: 30 } ] } })
-
-  nock('https://testnet-api.smartbit.fakeurl')
-    .get('/v1/blockchain/address/2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49/unspent')
+    .get('/blockchain/address/2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49/unspent')
     .reply(200, { success: true,
       paging:
         { valid_sort: [ 'id' ],
@@ -3059,9 +3064,7 @@ module.exports.nockBtcUnsignedRecovery = function() {
           type: 'scripthash',
           confirmations: 2,
           id: 130154859 } ] })
-
-  nock('https://testnet-api.smartbit.fakeurl')
-    .get('/v1/blockchain/address/2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z')
+    .get('/blockchain/address/2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z')
     .reply(200, { success: true,
       address:
         { address: '2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z',
@@ -3169,9 +3172,7 @@ module.exports.nockBtcUnsignedRecovery = function() {
                     spend_txid: null } ],
               tx_index: 48742484,
               block_index: 28 } ] } })
-
-  nock('https://testnet-api.smartbit.fakeurl')
-    .get('/v1/blockchain/address/2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z/unspent')
+    .get('/blockchain/address/2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z/unspent')
     .reply(200, { success: true,
       paging:
         { valid_sort: [ 'id' ],
@@ -3194,9 +3195,7 @@ module.exports.nockBtcUnsignedRecovery = function() {
           req_sigs: 1,
           type: 'scripthash',
           confirmations: 2,
-          id: 130154864 } ] })
-
-
+          id: 130154864 } ] });
 
   nock('https://bitcoinfees.earn.com')
     .get('/api/v1/fees/recommended')
