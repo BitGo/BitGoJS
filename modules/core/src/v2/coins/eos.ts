@@ -8,6 +8,7 @@ import * as utxoLib from 'bitgo-utxo-lib';
 import * as url from 'url';
 import * as querystring from 'querystring';
 import * as _ from 'lodash';
+import * as ecc from 'eosjs-ecc'
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 
 const EOS_ADDRESS_LENGTH = 12;
@@ -20,6 +21,45 @@ interface KeyPair {
 interface AddressDetails {
   address: string;
   memoId: string;
+}
+
+export interface EosTx {
+  signatures: string[];
+  packed_trx: string;
+  compression: string;
+}
+
+export interface Recipient {
+  address: string;
+  amount: string;
+}
+
+interface EosTransactionHeaders {
+  ref_block_prefix: string;
+  ref_block_num: number;
+}
+
+interface EosTransactionPrebuild {
+  rawTx: string;
+  tx: EosTx;
+  headers: EosTransactionHeaders;
+}
+
+export interface EosSignTransactionParams {
+  prv: string;
+  txPrebuild: EosTransactionPrebuild;
+  recipients: Recipient[];
+}
+
+export interface EosHalfSigned {
+  transaction: EosTx;
+  txHex: string;
+  recipients: Recipient[];
+  headers: EosTransactionHeaders;
+}
+
+export interface EosSignedTransaction {
+  halfSigned: EosHalfSigned
 }
 
 export class Eos extends BaseCoin {
@@ -216,5 +256,32 @@ export class Eos extends BaseCoin {
     if (addressDetails.address !== rootAddressDetails.address) {
       throw new Error(`address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`);
     }
+  }
+
+  /**
+   * Assemble keychain and half-sign prebuilt transaction
+   *
+   * @param params
+   * @param params.txPrebuild {Object} prebuild object returned by platform
+   * @param params.prv {String} user prv
+   */
+  signTransaction(params: EosSignTransactionParams): EosSignedTransaction {
+    const prv: string = params.prv;
+    const txData: string = params.txPrebuild.rawTx;
+    const tx: EosTx = params.txPrebuild.tx;
+
+    const signBuffer: Buffer = Buffer.from(txData, 'hex');
+    const privateKeyBuffer: Buffer = utxoLib.HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
+    const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
+
+    tx.signatures.push(signature);
+
+    const txParams = {
+      transaction: tx,
+      txHex: txData,
+      recipients: params.recipients,
+      headers: params.txPrebuild.headers,
+    };
+    return { halfSigned: txParams };
   }
 }
