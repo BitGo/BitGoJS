@@ -142,10 +142,10 @@ export class Eos extends BaseCoin {
   /**
    * Evaluates whether a memo is valid
    *
-   * @param memo - the memo to be checked
+   * @param value - the memo to be checked
    */
-  isValidMemo(memo: string): boolean {
-    return memo && memo.length <= 256;
+  isValidMemo({ value }: { value: string } ): boolean {
+    return value && value.length <= 256;
   }
 
   /**
@@ -154,7 +154,7 @@ export class Eos extends BaseCoin {
    * @param memoId - the memo id to be checked
    */
   isValidMemoId(memoId: string): boolean {
-    if (!this.isValidMemo(memoId)) {
+    if (!this.isValidMemo({ value: memoId })) {
       return false;
     }
 
