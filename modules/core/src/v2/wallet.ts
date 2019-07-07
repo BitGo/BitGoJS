@@ -14,6 +14,7 @@ import { NodeCallback } from './types';
 
 const PendingApproval = require('./pendingApproval');
 const util = require('../util');
+const Keychains = require('./keychains');
 
 const debug = debugLib('bitgo:v2:wallet');
 const co = Bluebird.coroutine;
@@ -1237,11 +1238,7 @@ export class Wallet {
       const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
 
       // retrieve our keychains needed to run the prebuild - some coins use all pubs
-      const ids = this.baseCoin.keyIdsForSigning();
-      const keychainQueriesPromises = ids.map(
-        keyId => this.baseCoin.keychains().get({ id: this._wallet.keys[keyId], reqId: params.reqId })
-      );
-      const keychains = yield Promise.all(keychainQueriesPromises);
+      const keychains = yield Keychains.keysForSigning({ reqId: params.reqId, wallet: this });
 
       const txPrebuild = yield txPrebuildQuery;
 

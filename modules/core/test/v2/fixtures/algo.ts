@@ -44,13 +44,15 @@ module.exports.prebuild = function() {
     txData: {
       from: 'AWSC7RL3RM72HSUW5QU4XTX3AOHY7QD3WLUZC2CAHWP6BTI5Q7IABVUXTA',
       to: 'XMHLMNAVJIMAW2RHJXLXKKK4G3J3U6VONNO3BTAQYVDC3MHTGDP3J5OCRU',
-      amount: '1000',
+      amount: 1000,
       fee: 1000,
       firstRound: 1000,
       lastRound: 1999,
       genesisID: 'testnet-v38.0',
       genesisHash: '4HkOQEL2o2bVh2P1wSpky3s6cwcEg/AAd5qlery942g=',
+      note: new Uint8Array()
     },
+    buildTxBase64: 'iaNhbXTNA+ijZmVlzgADsVCiZnbNA+ijZ2VurXRlc3RuZXQtdjM4LjCiZ2jEIOB5DkBC9qNm1Ydj9cEqZMt7OnMHBIPwAHeapXq8veNoomx2zQfPo3JjdsQguw62NBVKGAtqJ03XdSlcNtO6eq5rXbDMEMVGLbDzMN+jc25kxCAFpC/Fe4s/o8qW7CnLzvsDj4/Ae7LpkWhAPZ/gzR2H0KR0eXBlo3BheQ==', 
     userKeychain: {
       pub: 'UMYEHZ2NNBYX43CU37LMINSHR362FT4GFVWL6V5IHPRCJVPZ46H6CBYLYE',
       prv: 'HEHPVOKEINTQMW4K536BZWUZWQNKBXKIAUSEWCVX3LCXDHI2LVPMV6T5L4'

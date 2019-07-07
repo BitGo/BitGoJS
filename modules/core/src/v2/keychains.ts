@@ -1,6 +1,7 @@
 import common = require('../common');
 import * as _ from 'lodash';
 import * as Promise from 'bluebird';
+const util = require('../util');
 const co = Promise.coroutine;
 
 const Keychains = function(bitgo, baseCoin) {
@@ -207,5 +208,22 @@ Keychains.prototype.createBackup = function(params, callback) {
   }).call(this).asCallback(callback);
 };
 
+/**
+ * Gets keys for signing from a wallet
+ * @param reqId
+ * @param callback
+ * @returns {Promise[]}
+ */
+Keychains.keysForSigning = function(params, callback) {
+  return co(function *() {
+    const reqId = params.reqId || util.createRequestId();
+    const wallet = params.wallet;
+    const ids = wallet.baseCoin.keyIdsForSigning();
+    const keychainQueriesPromises = ids.map(
+      keyId => wallet.baseCoin.keychains().get({ id: wallet.keys[keyId], reqId: reqId })
+    );
+    return yield Promise.all(keychainQueriesPromises);
+  }).call(this).asCallback(callback);
+}
 
 module.exports = Keychains;

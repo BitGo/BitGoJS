@@ -83,7 +83,7 @@ describe('ALGO:', function() {
     it('should sign a prebuild', co(function *() {
       // sign transaction
       halfSignedTransaction = yield wallet.signTransaction({
-        txPrebuild: { txData: fixtures.txData },
+        txPrebuild: { txBase64: fixtures.buildTxBase64 },
         prv: fixtures.userKeychain.prv,
         keychain: fixtures.userKeychain,
         backupKeychain: fixtures.backupKeychain,
@@ -91,7 +91,7 @@ describe('ALGO:', function() {
         wallet: { addressVersion: fixtures.walletData.coinSpecific.addressVersion }
       });
 
-      halfSignedTransaction.txHex.should.equal(fixtures.signedTxBase64);
+      halfSignedTransaction.halfSigned.txBase64.should.equal(fixtures.signedTxBase64);
     }));
   });
 });
