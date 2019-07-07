@@ -168,6 +168,23 @@ export class Wallet {
   }
 
   /**
+   * Gets keys for signing
+   * @param params
+   * @param callback
+   * @returns {Wallet}
+   */
+  keysForSigning(reqId?: string, callback?: NodeCallback<Wallet>):Bluebird<any> {
+    return co(function *() {
+      reqId = reqId || util.createRequestId();
+      const ids = this.baseCoin.keyIdsForSigning();
+      const keychainQueriesPromises = ids.map(
+        keyId => this.baseCoin.keychains().get({ id: this._wallet.keys[keyId], reqId: reqId })
+      );
+      return yield Promise.all(keychainQueriesPromises);
+    }).call(this).asCallback(callback);
+  }
+
+  /**
    * List the transactions for a given wallet
    * @param params
    * @param callback
@@ -1237,11 +1254,7 @@ export class Wallet {
       const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
 
       // retrieve our keychains needed to run the prebuild - some coins use all pubs
-      const ids = this.baseCoin.keyIdsForSigning();
-      const keychainQueriesPromises = ids.map(
-        keyId => this.baseCoin.keychains().get({ id: this._wallet.keys[keyId], reqId: params.reqId })
-      );
-      const keychains = yield Promise.all(keychainQueriesPromises);
+      const keychains = yield this.keysForSigning(params.reqId);
 
       const txPrebuild = yield txPrebuildQuery;
 

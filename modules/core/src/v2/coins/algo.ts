@@ -13,7 +13,70 @@ const {
   generateAccount,
   isValidAddress,
   isValidSeed,
+  Encoding,
 } = require('algosdk');
+
+export interface TransactionExplanation {
+  displayOrder: string[];
+  id: string;
+  outputs: Output[],
+  changeOutputs: Output[],
+  outputAmount: string;
+  changeAmount: number;
+  fee: TransactionFee;
+  memo: string;
+}
+
+interface SignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string;
+  wallet: {
+    addressVersion: string;
+  }
+  keychain: KeyPair;
+  backupKeychain: KeyPair;
+  bitgoKeychain: KeyPair;
+}
+
+interface TransactionPrebuild {
+  txBase64: string;
+  txInfo: {
+    from: string;
+    to: string;
+    amount: string;
+    fee: number;
+    firstRound: number;
+    lastRound: number;
+    genesisID: string;
+    genesisHash: string;
+    note?: string;
+  }
+}
+
+export interface HalfSignedTransaction {
+  halfSigned: {
+    txBase64: string,
+    txHex: string,
+  }
+}
+
+export interface Output {
+  address: string;
+  amount: string;
+}
+
+export interface TransactionFee {
+  fee: number;
+  feeRate?: number;
+  size: number
+}
+
+export interface ExplainTransactionOptions {
+  txBase64: string;
+  wallet: {
+    addressVersion: string;
+  }
+}
 
 interface KeyPair {
   pub: string;
@@ -89,7 +152,7 @@ export class Algo extends BaseCoin {
    * @param {String} prv the prv to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidPrv(prv): boolean {
+  isValidPrv(prv: string): boolean {
     return isValidSeed(prv);
   }
 
@@ -99,7 +162,7 @@ export class Algo extends BaseCoin {
    * @param {String} address the pub to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidAddress(address): boolean {
+  isValidAddress(address: string): boolean {
     return isValidAddress(address);
   }
 
@@ -109,7 +172,7 @@ export class Algo extends BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key, message): Buffer {
+  signMessage(key: KeyPair, message: string | Buffer): Buffer {
     // key.prv actually holds the encoded seed, but we use the prv name to avoid breaking the keypair schema.
     // See jsdoc comment in isValidPrv
     let seed = key.prv;
@@ -135,8 +198,55 @@ export class Algo extends BaseCoin {
   /**
    * Specifies what key we will need for signing - Algorand needs the backup, bitgo pubs.
    */
-  keyIdsForSigning() {
+  keyIdsForSigning(): number[] {
     return [ 0, 1, 2 ]; 
+  }
+
+  /**
+   * Explain/parse transaction
+   * @param params
+   * - txBase64: transaction encoded as base64 string
+   * @returns {{displayOrder: [string,string,string,string,string], id: *, outputs: Array, changeOutputs: Array}}
+   */
+  explainTransaction(params: ExplainTransactionOptions): TransactionExplanation {
+    const { txBase64 } = params;
+
+    let tx;
+    try {
+      const txToHex = Buffer.from(txBase64, 'base64');
+      const decodedTx = Encoding.decode(txToHex);
+      tx = Multisig.MultiSigTransaction.from_obj_for_encoding(decodedTx);
+    } catch (ex) {
+      throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
+    }
+
+    const id = tx.txID();
+    const fee = {
+      fee: tx.fee,
+      feeRate: null,
+      size: null,
+    };
+
+    const outputs = [{
+      amount: tx.amount,
+      address: Address.encode(new Uint8Array(tx.to.publicKey)),
+    }];
+
+    const outputAmount = tx.amount;
+
+    // TODO: maybe fix this up
+    const memo = tx.note;
+
+    return {
+      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+      id,
+      outputs,
+      outputAmount,
+      changeAmount: 0,
+      fee,
+      changeOutputs: [],
+      memo
+    };
   }
 
   /**
@@ -145,18 +255,19 @@ export class Algo extends BaseCoin {
    * @param params
    * @param params.txPrebuild {Object} prebuild object returned by platform
    * @param params.prv {String} user prv
+   * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
    */
-  signTransaction(params) {
+  signTransaction(params: SignTransactionOptions): HalfSignedTransaction {
     const prv = params.prv;
-    const txData = params.txPrebuild.txData;
+    const txBase64 = params.txPrebuild.txBase64;
     const addressVersion = params.wallet.addressVersion;
 
-    if (_.isUndefined(txData)) {
+    if (_.isUndefined(txBase64)) {
       throw new Error('missing txPrebuild parameter');
     }
 
-    if (!_.isObject(txData)) {
-      throw new Error(`txPrebuild must be an object, got type ${typeof txData}`);
+    if (!_.isString(txBase64)) {
+      throw new Error(`txPrebuild must be an object, got type ${typeof txBase64}`);
     }
 
     if (_.isUndefined(prv)) {
@@ -175,24 +286,6 @@ export class Algo extends BaseCoin {
       throw new Error('missing addressVersion parameter to sign transaction');
     }
 
-    const refinedTxData = txData;
-    refinedTxData.amount = parseInt(txData.amount, 10);
-
-    // if note is truly null, we need to pass an array
-    if (!_.has(txData, 'note')) {
-      refinedTxData.note = new Uint8Array(0);
-    } else {
-      // if note was passed as null, assume its an empty string
-      if (txData.note === null) {
-        txData.note = '';
-      }
-
-      // note has a maximum length
-      if (txData.note.length > MAX_ALGORAND_NOTE_LENGTH) {
-        throw new Error('note size exceeded specification');
-      }
-    }
-
     // we need to re-encode our public keys using algosdk's format
     const encodedPublicKeys = [
       Address.decode(params.keychain.pub).publicKey,
@@ -205,15 +298,29 @@ export class Algo extends BaseCoin {
     const pair = generateAccountFromSeed(seed);
     const sk = pair.sk;
 
+    // decode our tx
+    let transaction;
+    try {
+      const txToHex = Buffer.from(txBase64, 'base64');
+      const decodedTx = Encoding.decode(txToHex);
+      transaction = Multisig.MultiSigTransaction.from_obj_for_encoding(decodedTx);
+    } catch (e) {
+      throw new Error('transaction needs to be a valid tx encoded as base64 string');
+    }
+    
     // sign
-    const transaction = new Multisig.MultiSigTransaction(refinedTxData);
     const halfSigned = transaction.partialSignTxn(
       { version: addressVersion, threshold: 2, pks: encodedPublicKeys },
       sk
     );
 
-    const txHex = Buffer.from(halfSigned).toString('base64');
+    const signedBase64 = Buffer.from(halfSigned).toString('base64');
 
-    return { txHex };
+    return { 
+      halfSigned: { 
+        txHex: signedBase64,  
+        txBase64: signedBase64,
+      } 
+    };
   }
 }
