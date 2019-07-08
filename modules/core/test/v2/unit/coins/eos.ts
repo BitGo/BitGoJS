@@ -105,7 +105,7 @@ describe('EOS:', function() {
       eosWallet = basecoin.newWalletObject(bitgo, basecoin, {});
     });
 
-    it('should generate a valid transaction signature', function () {
+    it('should generate a valid transaction signature', function() {
       const signatureData = 'abcd';
       const tx = {
         rawTx: signatureData,
@@ -117,7 +117,7 @@ describe('EOS:', function() {
           signatures: [],
           packed_trx: signatureData,
           compression: 'none',
-        }
+        },
       };
 
       const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
@@ -129,5 +129,25 @@ describe('EOS:', function() {
       const eosPubkey = ecc.PublicKey.fromBuffer(hdNode.getPublicKeyBuffer()).toString();
       ecc.verify(signature, Buffer.from(signatureData, 'hex'), eosPubkey).should.eql(true);
     });
+
+    it('should be explain an EOS transaction', co(function *() {
+      const explainTransactionParams = {
+        headers: {
+          ref_block_prefix: 147898787,
+          ref_block_num: 41763,
+          expiration: '2019-07-10T00:34:48.500Z',
+        },
+        tx: {
+          packed_trx: 'a832255d23a3a3c1d008000000000100a6823403ea3055000000572d3ccdcd01607bc2e8f219c9a500000000a8ed323221607bc2e8f219c9a56032c1a4af42d2f6102700000000000004454f53000000000000',
+        },
+      };
+
+      const signedExplanation = yield basecoin.explainTransaction(explainTransactionParams);
+      signedExplanation.outputAmount.should.equal('10000');
+      signedExplanation.outputs.length.should.equal(1);
+      signedExplanation.outputs[0].amount.should.equal('10000');
+      signedExplanation.outputs[0].address.should.equal('yvd45fx4s4ta');
+      signedExplanation.id.should.equal('c00826caa09f7b340af773e7b9f68f5d7b16518658289461e9ddd35c9f04a99e');
+    }));
   }));
 });

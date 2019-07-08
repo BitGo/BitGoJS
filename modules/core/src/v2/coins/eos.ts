@@ -5,11 +5,14 @@ import { BaseCoin } from '../baseCoin';
 import { BigNumber } from 'bignumber.js';
 import * as crypto from 'crypto';
 import * as utxoLib from 'bitgo-utxo-lib';
+import * as EosJs from 'eosjs';
+import * as ecc from 'eosjs-ecc';
 import * as url from 'url';
 import * as querystring from 'querystring';
 import * as _ from 'lodash';
-import * as ecc from 'eosjs-ecc'
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
 const EOS_ADDRESS_LENGTH = 12;
 
@@ -35,8 +38,15 @@ export interface Recipient {
 }
 
 interface EosTransactionHeaders {
-  ref_block_prefix: string;
+  ref_block_prefix: number;
   ref_block_num: number;
+  expiration?: string;
+}
+
+interface EosTransactionAction {
+  account: string;
+  name: string;
+  authorization: [{ actor: string; permission: string }];
 }
 
 interface EosTransactionPrebuild {
@@ -59,12 +69,43 @@ export interface EosHalfSigned {
 }
 
 export interface EosSignedTransaction {
-  halfSigned: EosHalfSigned
+  halfSigned: EosHalfSigned;
+}
+
+interface DeserializedEosTransaction extends EosTransactionHeaders {
+  max_net_usage_words: number;
+  max_cpu_usage_ms: number;
+  delay_sec: number;
+  context_free_actions: EosTransactionAction[];
+  actions: EosTransactionAction[];
+  transaction_extensions: object[];
+  address: string;
+  amount: string;
+  transaction_id: string;
+}
+
+interface TransactionExplanation {
+  displayOrder: string[];
+  id: string;
+  outputs: Recipient[];
+  changeOutputs: Recipient[];
+  outputAmount: string;
+  changeAmount: number;
+  fee: {};
+}
+
+interface ExplainTransactionOptions {
+  tx: { packed_trx: string };
+  headers: EosTransactionHeaders;
 }
 
 export class Eos extends BaseCoin {
   static createInstance(bitgo: any): BaseCoin {
     return new Eos(bitgo);
+  }
+
+  getChainId() {
+    return 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'; // mainnet chain id
   }
 
   getChain(): string {
@@ -144,7 +185,7 @@ export class Eos extends BaseCoin {
    *
    * @param value - the memo to be checked
    */
-  isValidMemo({ value }: { value: string } ): boolean {
+  isValidMemo({ value }: { value: string }): boolean {
     return value && value.length <= 256;
   }
 
@@ -254,7 +295,9 @@ export class Eos extends BaseCoin {
     const rootAddressDetails = this.getAddressDetails(rootAddress);
 
     if (addressDetails.address !== rootAddressDetails.address) {
-      throw new Error(`address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`);
+      throw new UnexpectedAddressError(
+        `address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`
+      );
     }
   }
 
@@ -271,7 +314,9 @@ export class Eos extends BaseCoin {
     const tx: EosTx = params.txPrebuild.tx;
 
     const signBuffer: Buffer = Buffer.from(txData, 'hex');
-    const privateKeyBuffer: Buffer = utxoLib.HDNode.fromBase58(prv).getKey().getPrivateKeyBuffer();
+    const privateKeyBuffer: Buffer = utxoLib.HDNode.fromBase58(prv)
+      .getKey()
+      .getPrivateKeyBuffer();
     const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
 
     tx.signatures.push(signature);
@@ -283,5 +328,84 @@ export class Eos extends BaseCoin {
       headers: params.txPrebuild.headers,
     };
     return { halfSigned: txParams };
+  }
+
+  /**
+   * Deserialize a transaction
+   * @param tx
+   * @param headers
+   */
+  private deserializeTransaction({ tx, headers }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
+    return co(function*() {
+      const eosClientConfig = {
+        chainId: this.getChainId(),
+        transactionHeaders: headers,
+      };
+      const eosClient = new EosJs(eosClientConfig);
+
+      // Get tx base values
+      const eosTxStruct = eosClient.fc.structs.transaction;
+      const serializedTxBuffer = Buffer.from(tx.packed_trx, 'hex');
+      const transaction = EosJs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedTxBuffer);
+
+      // Get transfer action values
+      // Only support transactions with one action: transfer
+      if (transaction.actions.length !== 1) {
+        throw new Error(`invalid number of actions: ${transaction.actions.length}`);
+      }
+      const txAction = transaction.actions[0];
+      if (!txAction) {
+        throw new Error('missing transaction action');
+      }
+      if (txAction.name !== 'transfer') {
+        throw new Error(`invalid action: ${txAction.name}`);
+      }
+      const transferStruct = eosClient.fc.abiCache.abi('eosio.token').structs.transfer;
+      const serializedTransferDataBuffer = Buffer.from(txAction.data, 'hex');
+      const transferActionData = EosJs.modules.Fcbuffer.fromBuffer(transferStruct, serializedTransferDataBuffer);
+      transaction.address = transferActionData.to;
+      transaction.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
+
+      // Get the tx id if tx headers were provided
+      if (headers) {
+        const rebuiltTransaction = yield eosClient.transaction(
+          { actions: transaction.actions },
+          { sign: false, broadcast: false }
+        );
+        transaction.transaction_id = rebuiltTransaction.transaction_id;
+      }
+
+      return transaction;
+    }).call(this);
+  }
+
+  /**
+   * Explain/parse transaction
+   * @param params - ExplainTransactionOptions
+   * @returns Object containing transaction explanation
+   */
+  explainTransaction(params: ExplainTransactionOptions): Bluebird<TransactionExplanation> {
+    return co(function*() {
+      let transaction;
+      try {
+        transaction = yield this.deserializeTransaction(params);
+      } catch (e) {
+        throw new Error('invalid EOS transaction or headers');
+      }
+      return {
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
+        id: transaction.transaction_id,
+        changeOutputs: [],
+        outputAmount: transaction.amount,
+        changeAmount: 0,
+        outputs: [
+          {
+            address: transaction.address,
+            amount: transaction.amount,
+          },
+        ],
+        fee: {},
+      };
+    }).call(this);
   }
 }
