@@ -1,5 +1,5 @@
-import common = require('./common');
 import * as _ from 'lodash';
+import { Environments, EnvironmentName } from './v2/environments';
 
 export const tokens = {
   // network name for production environments (prod tokens must be added here)
@@ -347,12 +347,18 @@ export const krsProviders = {
 export const bitcoinAverageBaseUrl = 'https://apiv2.bitcoinaverage.com/indices/local/ticker/';
 
 // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
-export const defaultConstants = (env) => {
-
-  if (common.Environments[env] === undefined) {
+/**
+ * Get the default (hardcoded) constants for a particular network.
+ *
+ * Note that this may not be the complete set of constants, and additional constants may get fetched
+ * from BitGo during the lifespan of a BitGo object.
+ * @param env
+ */
+export const defaultConstants = (env: EnvironmentName) => {
+  if (Environments[env] === undefined) {
     throw Error(`invalid environment ${env}`);
   }
 
-  const network = common.Environments[env].network;
+  const network = Environments[env].network;
   return _.merge({}, defaults, tokens[network]);
 };

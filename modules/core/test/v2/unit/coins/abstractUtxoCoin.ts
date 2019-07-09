@@ -133,7 +133,7 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should construct a recovery transaction with segwit unspents', co(function *() {
       const { params, expectedTxHex } = fixtures.recoverBtcSegwitFixtures();
-      recoveryNocks.nockBtcSegwitRecovery();
+      recoveryNocks.nockBtcSegwitRecovery(bitgo);
       const tx = yield coin.recover(params);
       const transaction = utxoLib.Transaction.fromHex(tx.transactionHex);
       transaction.ins.length.should.equal(2);
@@ -144,7 +144,7 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should construct an unsigned recovery transaction for the offline vault', co(function *() {
       const { params, expectedTxHex } = fixtures.recoverBtcUnsignedFixtures();
-      recoveryNocks.nockBtcUnsignedRecovery();
+      recoveryNocks.nockBtcUnsignedRecovery(bitgo);
       const txPrebuild = yield coin.recover(params);
       txPrebuild.txHex.should.equal(expectedTxHex);
       txPrebuild.should.have.property('feeInfo');

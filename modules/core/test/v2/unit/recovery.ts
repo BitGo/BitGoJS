@@ -35,7 +35,7 @@ describe('Recovery:', function() {
   });
   describe('Recover Bitcoin', function() {
     it('should generate BTC recovery tx', co(function *() {
-      recoveryNocks.nockBtcRecovery(false);
+      recoveryNocks.nockBtcRecovery(bitgo, false);
 
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
@@ -67,7 +67,7 @@ describe('Recovery:', function() {
     }));
 
     it('should generate BTC recovery tx with unencrypted keys', co(function *() {
-      recoveryNocks.nockBtcRecovery(false);
+      recoveryNocks.nockBtcRecovery(bitgo, false);
 
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
@@ -98,7 +98,7 @@ describe('Recovery:', function() {
     }));
 
     it('should generate BTC recovery tx with KRS', co(function *() {
-      recoveryNocks.nockBtcRecovery(true);
+      recoveryNocks.nockBtcRecovery(bitgo, true);
 
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
@@ -139,13 +139,13 @@ describe('Recovery:', function() {
     }));
 
     it('should fail to generate a recovery tx if the KRS provider does not support the coin', co(function *() {
-      recoveryNocks.nockBtcRecovery(true);
+      recoveryNocks.nockBtcRecovery(bitgo, true);
 
       const oldSupportedCoins = config.krsProviders.keyternal.supportedCoins;
       config.krsProviders.keyternal.supportedCoins = [];
 
       const basecoin = bitgo.coin('tbtc');
-      const error = yield bitgo.getAsyncError(basecoin.recover({
+      yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
@@ -154,22 +154,19 @@ describe('Recovery:', function() {
         krsProvider: 'keyternal',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
-      }));
-
-      should.exist(error);
-      error.message.should.equal('specified key recovery service does not support recoveries for this coin');
+      }).should.be.rejectedWith('specified key recovery service does not support recoveries for this coin');
 
       config.krsProviders.keyternal.supportedCoins = oldSupportedCoins;
     }));
 
     it('should fail to generate a recovery tx if the fee address is not specified', co(function *() {
-      recoveryNocks.nockBtcRecovery(true);
+      recoveryNocks.nockBtcRecovery(bitgo, true);
 
       const oldAddress = config.krsProviders.keyternal.feeAddresses.tbtc;
       delete config.krsProviders.keyternal.feeAddresses.tbtc;
 
       const basecoin = bitgo.coin('tbtc');
-      const error = yield bitgo.getAsyncError(basecoin.recover({
+      yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
@@ -178,10 +175,7 @@ describe('Recovery:', function() {
         krsProvider: 'keyternal',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
-      }));
-
-      should.exist(error);
-      error.message.should.equal('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
+      }).should.be.rejectedWith('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
 
       config.krsProviders.keyternal.feeAddresses.tbtc = oldAddress;
     }));
@@ -190,7 +184,7 @@ describe('Recovery:', function() {
   describe('Recover Bitcoin Cash', function() {
     // Todo (kevin): fix test for other recovery source
     it('should generate BCH recovery tx', co(function *() {
-      recoveryNocks.nockBchRecovery(false);
+      recoveryNocks.nockBchRecovery(bitgo, false);
 
       const basecoin = bitgo.coin('tbch');
       const recovery = yield basecoin.recover({
@@ -217,7 +211,7 @@ describe('Recovery:', function() {
     }));
 
     it('should generate BCH recovery tx with KRS', co(function *() {
-      recoveryNocks.nockBchRecovery(true);
+      recoveryNocks.nockBchRecovery(bitgo, true);
 
       const basecoin = bitgo.coin('tbch');
       const recovery = yield basecoin.recover({
@@ -368,7 +362,7 @@ describe('Recovery:', function() {
 
   describe('Recover ZCash', function() {
     it('should generate ZEC recovery tx', co(function *() {
-      recoveryNocks.nockZecRecovery();
+      recoveryNocks.nockZecRecovery(bitgo);
 
       const basecoin = bitgo.coin('tzec');
       const recovery = yield basecoin.recover({
@@ -391,7 +385,7 @@ describe('Recovery:', function() {
     }));
 
     it('should generate ZEC recovery tx with KRS', co(function *() {
-      recoveryNocks.nockZecRecovery(true);
+      recoveryNocks.nockZecRecovery(bitgo, true);
 
       const basecoin = bitgo.coin('tzec');
       const recovery = yield basecoin.recover({
@@ -417,7 +411,7 @@ describe('Recovery:', function() {
 
   describe('Recover Dash', function() {
     it('should generate DASH recovery tx', co(function *() {
-      recoveryNocks.nockDashRecovery(false);
+      recoveryNocks.nockDashRecovery(bitgo, false);
 
       const basecoin = bitgo.coin('tdash');
       const recovery = yield basecoin.recover({
@@ -440,7 +434,7 @@ describe('Recovery:', function() {
     }));
 
     it('should generate DASH recovery tx with KRS', co(function *() {
-      recoveryNocks.nockDashRecovery(true);
+      recoveryNocks.nockDashRecovery(bitgo, true);
 
       const basecoin = bitgo.coin('tdash');
       const recovery = yield basecoin.recover({
@@ -598,7 +592,7 @@ describe('Recovery:', function() {
 
   describe('Wrong Chain Recoveries', function() {
     before(function() {
-      recoveryNocks.nockWrongChainRecoveries();
+      recoveryNocks.nockWrongChainRecoveries(bitgo);
     });
 
     it('should recover BTC sent to the wrong chain', co(function *() {
