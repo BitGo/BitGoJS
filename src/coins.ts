@@ -23,6 +23,8 @@ export const coins = CoinMap.fromCoins([
   account('talgo', 'Testnet Algorand', Networks.test.algorand, 7, UnderlyingAsset.ALGO),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
+  account('eos', 'Eos', Networks.main.eos, 4, UnderlyingAsset.EOS),
+  account('teos', 'Testnet Eos', Networks.test.eos, 4, UnderlyingAsset.EOS),
   account('xrp', 'Ripple', Networks.main.xrp, 6, UnderlyingAsset.XRP),
   account('txrp', 'Testnet Ripple', Networks.test.xrp, 6, UnderlyingAsset.XRP),
   account('xlm', 'Stellar', Networks.main.stellar, 7, UnderlyingAsset.XLM),
