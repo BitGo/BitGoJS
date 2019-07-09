@@ -152,7 +152,7 @@ const createResponseErrorString = function(res) {
 let testNetWarningMessage = false;
 const BitGo = function(params) {
   params = params || {};
-  if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork', 'serverXpub']) ||
+  if (!common.validateParams(params, [], ['clientId', 'clientSecret', 'refreshToken', 'accessToken', 'userAgent', 'customRootURI', 'customBitcoinNetwork', 'serverXpub', 'stellarFederationServerUrl']) ||
     (params.useProduction && !_.isBoolean(params.useProduction))) {
     throw new Error('invalid argument');
   }
@@ -188,6 +188,9 @@ const BitGo = function(params) {
     }
     if (params.serverXpub) {
       common.Environments['custom'].serverXpub = params.serverXpub;
+    }
+    if (params.stellarFederationServerUrl) {
+      common.Environments['custom'].stellarFederationServerUrl = params.stellarFederationServerUrl;
     }
   } else {
     env = params.env || process.env.BITGO_ENV;
