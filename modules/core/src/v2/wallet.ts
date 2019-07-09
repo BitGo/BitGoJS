@@ -1238,8 +1238,8 @@ export class Wallet {
       const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
 
       // retrieve our keychains needed to run the prebuild - some coins use all pubs
-      const keychains = yield Keychains.keysForSigning({ reqId: params.reqId, wallet: this });
-
+      const keychains = yield this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
+      
       const txPrebuild = yield txPrebuildQuery;
 
       try {

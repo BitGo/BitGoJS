@@ -214,16 +214,15 @@ Keychains.prototype.createBackup = function(params, callback) {
  * @param callback
  * @returns {Promise[]}
  */
-Keychains.keysForSigning = function(params, callback) {
+Keychains.prototype.getKeysForSigning = function(params, callback) {
   return co(function *() {
     const reqId = params.reqId || util.createRequestId();
-    const wallet = params.wallet;
-    const ids = wallet.baseCoin.keyIdsForSigning();
+    const ids = params.wallet.baseCoin.keyIdsForSigning();
     const keychainQueriesPromises = ids.map(
-      keyId => wallet.baseCoin.keychains().get({ id: wallet.keys[keyId], reqId: reqId })
+      id => this.get({ id: params.wallet.keyIds()[id], reqId })
     );
-    return yield Promise.all(keychainQueriesPromises);
+    return Promise.all(keychainQueriesPromises);
   }).call(this).asCallback(callback);
-}
+};
 
 module.exports = Keychains;
