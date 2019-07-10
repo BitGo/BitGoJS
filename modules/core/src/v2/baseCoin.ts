@@ -1,4 +1,4 @@
-const BigNumber = require('bignumber.js');
+import { BigNumber } from 'bignumber.js';
 import * as bitcoin from 'bitgo-utxo-lib';
 import { hdPath } from '../bitcoin';
 const bitcoinMessage = require('bitcoinjs-message');
@@ -9,8 +9,8 @@ const co = Bluebird.coroutine;
 
 import { Wallet } from './wallet';
 import { Wallets } from './wallets';
+import { Webhooks } from './webhooks';
 const Keychains = require('./keychains');
-const Webhooks = require('./webhooks');
 const PendingApprovals = require('./pendingApprovals');
 const Markets = require('./markets');
 import { Enterprises } from './enterprises';
@@ -18,11 +18,11 @@ import { Enterprises } from './enterprises';
 export abstract class BaseCoin {
 
   protected readonly bitgo;
-  protected readonly _url;
+  protected readonly _url: string;
   protected readonly _wallets;
-  protected readonly _enterprises;
+  protected readonly _enterprises: Enterprises;
   protected readonly _keychains;
-  protected readonly _webhooks;
+  protected readonly _webhooks: Webhooks;
   protected readonly _pendingApprovals;
   protected readonly _markets;
 
@@ -53,7 +53,7 @@ export abstract class BaseCoin {
     return this._keychains;
   }
 
-  public webhooks(): any {
+  public webhooks(): Webhooks {
     return this._webhooks;
   }
 
