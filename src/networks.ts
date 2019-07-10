@@ -177,6 +177,14 @@ class AlgorandTestnet extends Testnet implements AccountNetwork {
     family = CoinFamily.ALGO;
 }
 
+class Eos extends Mainnet implements AccountNetwork {
+  family = CoinFamily.EOS;
+}
+
+class EosTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.EOS;
+}
+
 class Xrp extends Mainnet implements AccountNetwork {
   family = CoinFamily.XRP;
 }
@@ -219,6 +227,7 @@ export const Networks = {
     dash: Object.freeze(new Dash()),
     litecoin: Object.freeze(new Litecoin()),
     ethereum: Object.freeze(new Ethereum()),
+    eos: Object.freeze(new Eos()),
     xrp: Object.freeze(new Xrp()),
     stellar: Object.freeze(new Stellar()),
     zCash: Object.freeze(new ZCash()),
@@ -233,6 +242,7 @@ export const Networks = {
     dash: Object.freeze(new DashTestnet()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     kovan: Object.freeze(new Kovan()),
+    eos: Object.freeze(new EosTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
