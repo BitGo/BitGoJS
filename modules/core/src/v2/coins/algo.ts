@@ -38,7 +38,7 @@ export interface SignTransactionOptions {
 }
 
 export interface TransactionPrebuild {
-  txBase64: string;
+  txHex: string;
   txInfo: {
     from: string;
     to: string;
@@ -54,7 +54,7 @@ export interface TransactionPrebuild {
 
 export interface HalfSignedTransaction {
   halfSigned: {
-    txBase64: string,
+    txHex: string,
   }
 }
 
@@ -70,7 +70,7 @@ export interface TransactionFee {
 }
 
 export interface ExplainTransactionOptions {
-  txBase64: string;
+  txHex: string;
   wallet: {
     addressVersion: string;
   }
@@ -203,14 +203,14 @@ export class Algo extends BaseCoin {
   /**
    * Explain/parse transaction
    * @param params
-   * - txBase64: transaction encoded as base64 string   
+   * - txHex: transaction encoded as base64 string   
    */
   explainTransaction(params: ExplainTransactionOptions): TransactionExplanation {
-    const { txBase64 } = params;
+    const { txHex } = params;
 
     let tx;
     try {
-      const txToHex = Buffer.from(txBase64, 'base64');
+      const txToHex = Buffer.from(txHex, 'base64');
       const decodedTx = Encoding.decode(txToHex);
 
       // if we are a signed msig tx, the structure actually has the { msig, txn } as the root object
@@ -220,7 +220,7 @@ export class Algo extends BaseCoin {
 
       tx = Multisig.MultiSigTransaction.from_obj_for_encoding(txnForDecoding);
     } catch (ex) {
-      throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
+      throw new Error('txHex needs to be a valid tx encoded as base64 string');
     }
 
     const id = tx.txID();
@@ -258,15 +258,15 @@ export class Algo extends BaseCoin {
    */
   signTransaction(params: SignTransactionOptions): HalfSignedTransaction {
     const prv = params.prv;
-    const txBase64 = params.txPrebuild.txBase64;
+    const txHex = params.txPrebuild.txHex;
     const addressVersion = params.wallet.addressVersion;
 
-    if (_.isUndefined(txBase64)) {
+    if (_.isUndefined(txHex)) {
       throw new Error('missing txPrebuild parameter');
     }
 
-    if (!_.isString(txBase64)) {
-      throw new Error(`txPrebuild must be an object, got type ${typeof txBase64}`);
+    if (!_.isString(txHex)) {
+      throw new Error(`txPrebuild must be an object, got type ${typeof txHex}`);
     }
 
     if (_.isUndefined(prv)) {
@@ -300,7 +300,7 @@ export class Algo extends BaseCoin {
     // decode our tx
     let transaction;
     try {
-      const txToHex = Buffer.from(txBase64, 'base64');
+      const txToHex = Buffer.from(txHex, 'base64');
       const decodedTx = Encoding.decode(txToHex);
       transaction = Multisig.MultiSigTransaction.from_obj_for_encoding(decodedTx);
     } catch (e) {
@@ -317,7 +317,7 @@ export class Algo extends BaseCoin {
 
     return { 
       halfSigned: { 
-        txBase64: signedBase64,
+        txHex: signedBase64,
       } 
     };
   }
