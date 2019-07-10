@@ -246,6 +246,14 @@ export const tokens = {
         { type: 'vdx', coin: 'eth', network: 'Mainnet', name: 'Vodi X', tokenContractAddress: '0x91e64f39c1fe14492e8fdf5a8b0f305bd218c8a1', decimalPlaces: 18 },
         { type: 'shr', coin: 'eth', network: 'Mainnet', name: 'ShareToken', tokenContractAddress: '0xee5fe244406f35d9b4ddb488a64d51456630befc', decimalPlaces: 2 },
         { type: 'mco', coin: 'eth', network: 'Mainnet', name: 'Crypto.com', tokenContractAddress: '0xb63b606ac810a52cca15e44bb630fd42d8d1d83d', decimalPlaces: 8 },
+        { type: 'leo', coin: 'eth', network: 'Mainnet', name: 'Bitfinex LEO', tokenContractAddress: '0x2af5d2ad76741191d15dfe7bf6ac92d4bd912ca3', decimalPlaces: 18 },
+        { type: 'crep', coin: 'eth', network: 'Mainnet', name: 'Compound Augur', tokenContractAddress: '0x158079ee67fce2f58472a96584a73c7ab9ac95c1', decimalPlaces: 8 },
+        { type: 'cbat', coin: 'eth', network: 'Mainnet', name: 'Compound BAT', tokenContractAddress: '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e', decimalPlaces: 8 },
+        { type: 'czrx', coin: 'eth', network: 'Mainnet', name: 'Compound ZRX', tokenContractAddress: '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407', decimalPlaces: 8 },
+        { type: 'cusdc', coin: 'eth', network: 'Mainnet', name: 'Compound USDC', tokenContractAddress: '0x39aa39c021dfbae8fac545936693ac917d5e7563', decimalPlaces: 8 },
+        { type: 'cdai', coin: 'eth', network: 'Mainnet', name: 'Compound DAI', tokenContractAddress: '0xf5dce57282a584d2746faf1593d3121fcac444dc', decimalPlaces: 8 },
+        { type: 'ceth', coin: 'eth', network: 'Mainnet', name: 'Compound Ether', tokenContractAddress: '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5', decimalPlaces: 8 },
+        { type: 'valor', coin: 'eth', network: 'Mainnet', name: 'ValorToken', tokenContractAddress: '0x297e4e5e59ad72b1b0a2fd446929e76117be0e0a', decimalPlaces: 18 },
       ]
     },
     ofc: {
