@@ -14,6 +14,7 @@ import {
   isValidSeed,
   Encoding,
 } from 'algosdk';
+import * as stellar from 'stellar-sdk';
 
 export interface TransactionExplanation {
   displayOrder: string[];
@@ -29,12 +30,6 @@ export interface TransactionExplanation {
 export interface SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
-  wallet: {
-    addressVersion: string;
-  }
-  keychain: KeyPair;
-  backupKeychain: KeyPair;
-  bitgoKeychain: KeyPair;
 }
 
 export interface TransactionPrebuild {
@@ -50,6 +45,8 @@ export interface TransactionPrebuild {
     genesisHash: string;
     note?: string;
   }
+  keys: string[],
+  addressVersion: number
 }
 
 export interface HalfSignedTransaction {
@@ -71,9 +68,6 @@ export interface TransactionFee {
 
 export interface ExplainTransactionOptions {
   txHex: string;
-  wallet: {
-    addressVersion: string;
-  }
 }
 
 interface KeyPair {
@@ -248,6 +242,18 @@ export class Algo extends BaseCoin {
     };
   }
 
+  isStellarSeed(seed: string): boolean {
+    return stellar.StrKey.isValidEd25519SecretSeed(seed);
+  }
+
+  convertFromStellarSeed(seed: string): string {
+    // assume this is a trust custodial seed if its a valid ed25519 prv
+    if (!this.isStellarSeed(seed)) {
+      return null;
+    }
+    return Seed.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
+  }
+
   /**
    * Assemble keychain and half-sign prebuilt transaction
    *
@@ -259,7 +265,7 @@ export class Algo extends BaseCoin {
   signTransaction(params: SignTransactionOptions): HalfSignedTransaction {
     const prv = params.prv;
     const txHex = params.txPrebuild.txHex;
-    const addressVersion = params.wallet.addressVersion;
+    const addressVersion = params.txPrebuild.addressVersion;
 
     if (_.isUndefined(txHex)) {
       throw new Error('missing txPrebuild parameter');
@@ -277,7 +283,7 @@ export class Algo extends BaseCoin {
       throw new Error(`prv must be a string, got type ${typeof prv}`);
     }
 
-    if (!_.has(params, 'keychain') || !_.has(params, 'backupKeychain') || !_.has(params, 'bitgoKeychain')) {
+    if (!_.has(params.txPrebuild, 'keys[0]') || !_.has(params.txPrebuild, 'keys[1]') || !_.has(params.txPrebuild, 'keys[2]')) {
       throw new Error('missing public keys parameter to sign transaction');
     }
 
@@ -287,9 +293,9 @@ export class Algo extends BaseCoin {
 
     // we need to re-encode our public keys using algosdk's format
     const encodedPublicKeys = [
-      Address.decode(params.keychain.pub).publicKey,
-      Address.decode(params.backupKeychain.pub).publicKey,
-      Address.decode(params.bitgoKeychain.pub).publicKey,
+      Address.decode(params.txPrebuild.keys[0]).publicKey,
+      Address.decode(params.txPrebuild.keys[1]).publicKey,
+      Address.decode(params.txPrebuild.keys[2]).publicKey,
     ];
 
     // re-encode sk from our prv (this acts as a seed out of the keychain)

@@ -69,6 +69,15 @@ describe('ALGO:', function() {
     algosdk.NaclWrapper.verify(message, signature, pub).should.equal(true);
   });
 
+  it('should validate a stellar seed', function() {
+    basecoin.isStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX').should.ok();
+  });
+
+  it('should convert a stellar seed to an algo seed', function() {
+    const seed = basecoin.convertFromStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX');
+    seed.should.equal('LFS3NP7IL2GVIPBWX4NTTAANMM4URP67OQQWBVJC6I4RYV5QWBKUJUZOCE');
+  });
+
   describe('Transaction Verification', function() {
     let basecoin;
     let wallet;
@@ -83,12 +92,12 @@ describe('ALGO:', function() {
     it('should sign a prebuild', co(function *() {
       // sign transaction
       halfSignedTransaction = yield wallet.signTransaction({
-        txPrebuild: { txHex: fixtures.buildTxBase64 },
+        txPrebuild: { 
+          txHex: fixtures.buildTxBase64,
+          keys: [ fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub ],
+          addressVersion: 1,
+        },
         prv: fixtures.userKeychain.prv,
-        keychain: fixtures.userKeychain,
-        backupKeychain: fixtures.backupKeychain,
-        bitgoKeychain: fixtures.bitgoKeychain,
-        wallet: { addressVersion: fixtures.walletData.coinSpecific.addressVersion }
       });
 
       halfSignedTransaction.halfSigned.txHex.should.equal(fixtures.signedTxBase64);
