@@ -9,22 +9,22 @@ const co = Bluebird.coroutine;
 
 import { Wallet } from './wallet';
 import { Wallets } from './wallets';
+import { Markets } from './markets';
 import { Webhooks } from './webhooks';
 const Keychains = require('./keychains');
 const PendingApprovals = require('./pendingApprovals');
-const Markets = require('./markets');
 import { Enterprises } from './enterprises';
 
 export abstract class BaseCoin {
 
   protected readonly bitgo;
   protected readonly _url: string;
-  protected readonly _wallets;
   protected readonly _enterprises: Enterprises;
+  protected readonly _wallets: Wallets;
   protected readonly _keychains;
   protected readonly _webhooks: Webhooks;
   protected readonly _pendingApprovals;
-  protected readonly _markets;
+  protected readonly _markets: Markets;
 
   protected constructor(bitgo) {
     this.bitgo = bitgo;
@@ -41,7 +41,7 @@ export abstract class BaseCoin {
     return this._url + this.getChain() + suffix;
   }
 
-  public wallets(): any {
+  public wallets(): Wallets {
     return this._wallets;
   }
 
@@ -61,7 +61,7 @@ export abstract class BaseCoin {
     return this._pendingApprovals;
   }
 
-  public markets(): any {
+  public markets(): Markets {
     return this._markets;
   }
 
