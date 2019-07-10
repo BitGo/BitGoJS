@@ -39,7 +39,8 @@
     "build": "./node_modules/.bin/tsc && node scripts/copySjcl.js",
     "prepare": "npm run build",
     "prepublishOnly": "npm run compile",
-    "upload-artifacts": "node scripts/upload-test-reports.js"
+    "upload-artifacts": "node scripts/upload-test-reports.js",
+    "check-fmt": "prettier --check 'src/**/*.ts'"
   },
   "dependencies": {
     "@bitgo/statics": "^1.2.0",
