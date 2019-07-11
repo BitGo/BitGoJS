@@ -19,8 +19,8 @@ import * as stellar from 'stellar-sdk';
 export interface TransactionExplanation {
   displayOrder: string[];
   id: string;
-  outputs: Output[],
-  changeOutputs: Output[],
+  outputs: Output[];
+  changeOutputs: Output[];
   outputAmount: string;
   changeAmount: number;
   fee: TransactionFee;
@@ -44,15 +44,15 @@ export interface TransactionPrebuild {
     genesisID: string;
     genesisHash: string;
     note?: string;
-  }
-  keys: string[],
-  addressVersion: number
+  };
+  keys: string[];
+  addressVersion: number;
 }
 
 export interface HalfSignedTransaction {
   halfSigned: {
-    txHex: string,
-  }
+    txHex: string;
+  };
 }
 
 export interface Output {
@@ -63,7 +63,7 @@ export interface Output {
 export interface TransactionFee {
   fee: number;
   feeRate?: number;
-  size?: number
+  size?: number;
 }
 
 export interface ExplainTransactionOptions {
@@ -78,7 +78,6 @@ interface KeyPair {
 const MAX_ALGORAND_NOTE_LENGTH = 1024;
 
 export class Algo extends BaseCoin {
-
   constructor(bitgo) {
     super(bitgo);
   }
@@ -191,13 +190,13 @@ export class Algo extends BaseCoin {
    * Specifies what key we will need for signing` - Algorand needs the backup, bitgo pubs.
    */
   keyIdsForSigning(): number[] {
-    return [ 0, 1, 2 ]; 
+    return [0, 1, 2];
   }
 
   /**
    * Explain/parse transaction
    * @param params
-   * - txHex: transaction encoded as base64 string   
+   * - txHex: transaction encoded as base64 string
    */
   explainTransaction(params: ExplainTransactionOptions): TransactionExplanation {
     const { txHex } = params;
@@ -218,12 +217,14 @@ export class Algo extends BaseCoin {
     }
 
     const id = tx.txID();
-    const fee = { fee: tx.fee};
+    const fee = { fee: tx.fee };
 
-    const outputs = [{
-      amount: tx.amount,
-      address: Address.encode(new Uint8Array(tx.to.publicKey)),
-    }];
+    const outputs = [
+      {
+        amount: tx.amount,
+        address: Address.encode(new Uint8Array(tx.to.publicKey)),
+      },
+    ];
 
     const outputAmount = tx.amount;
 
@@ -238,7 +239,7 @@ export class Algo extends BaseCoin {
       changeAmount: 0,
       fee,
       changeOutputs: [],
-      memo
+      memo,
     };
   }
 
@@ -283,7 +284,11 @@ export class Algo extends BaseCoin {
       throw new Error(`prv must be a string, got type ${typeof prv}`);
     }
 
-    if (!_.has(params.txPrebuild, 'keys[0]') || !_.has(params.txPrebuild, 'keys[1]') || !_.has(params.txPrebuild, 'keys[2]')) {
+    if (
+      !_.has(params.txPrebuild, 'keys[0]') ||
+      !_.has(params.txPrebuild, 'keys[1]') ||
+      !_.has(params.txPrebuild, 'keys[2]')
+    ) {
       throw new Error('missing public keys parameter to sign transaction');
     }
 
@@ -312,7 +317,7 @@ export class Algo extends BaseCoin {
     } catch (e) {
       throw new Error('transaction needs to be a valid tx encoded as base64 string');
     }
-    
+
     // sign
     const halfSigned = transaction.partialSignTxn(
       { version: addressVersion, threshold: 2, pks: encodedPublicKeys },
@@ -321,10 +326,10 @@ export class Algo extends BaseCoin {
 
     const signedBase64 = Buffer.from(halfSigned).toString('base64');
 
-    return { 
-      halfSigned: { 
+    return {
+      halfSigned: {
         txHex: signedBase64,
-      } 
+      },
     };
   }
 }
