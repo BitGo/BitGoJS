@@ -158,7 +158,7 @@ steps:
   commands:
   - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
-  - yarn run gen-coverage
+  - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
     CODECOV_TOKEN:
@@ -215,7 +215,7 @@ steps:
   commands:
   - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
-  - yarn run gen-coverage
+  - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
     CODECOV_TOKEN:
@@ -272,7 +272,7 @@ steps:
   commands:
   - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
-  - yarn run gen-coverage
+  - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
     CODECOV_TOKEN:
@@ -329,7 +329,7 @@ steps:
   commands:
   - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
-  - yarn run gen-coverage
+  - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
     CODECOV_TOKEN:
