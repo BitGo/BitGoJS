@@ -70,7 +70,7 @@ local ExcludeBranches(pipeline, excluded_branches=branches()) = pipeline + {
   },
 };
 
-local UploadReports(version, tag="untagged") = {
+local UploadReports(version, tag="untagged", only_changed=false) = {
   name: "upload reports",
   image: "node:"  + version,
   environment: {
@@ -81,7 +81,7 @@ local UploadReports(version, tag="untagged") = {
   commands: [
     "yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk",
     "yarn run artifacts",
-    "yarn run gen-coverage",
+    "yarn run gen-coverage" + (if only_changed then "-changed" else ""),
     "yarn run coverage -F " + tag,
   ],
   when: {
@@ -96,7 +96,7 @@ local UnitTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("unit-test-changed", version),
-    UploadReports(version, "unit"),
+    UploadReports(version, "unit", true),
   ],
   trigger: {
     branch: {
