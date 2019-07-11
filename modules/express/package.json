@@ -26,7 +26,6 @@
     "audit": "if [ \"$(npm --version | cut -d. -f1)\" -ge \"6\" ]; then npm audit; else echo \"npm >= 6 required to perform audit. skipping...\"; fi",
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
     "build": "tsc",
-    "version": "npm install --package-lock-only bitgo@$(jq -r .dependencies.bitgo < package.json) && npm run unit-test && npm run integration-test && git add package-lock.json",
     "upload-artifacts": "node scripts/upload-test-reports.js",
     "start": "node bin/bitgo-express"
   },
