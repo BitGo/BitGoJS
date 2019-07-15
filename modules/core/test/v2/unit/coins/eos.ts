@@ -133,21 +133,22 @@ describe('EOS:', function() {
     it('should be explain an EOS transaction', co(function *() {
       const explainTransactionParams = {
         headers: {
-          ref_block_prefix: 147898787,
-          ref_block_num: 41763,
-          expiration: '2019-07-10T00:34:48.500Z',
+          ref_block_prefix: 100,
+          ref_block_num: 995,
+          expiration: '2018-04-27T18:40:34.000Z',
         },
         tx: {
-          packed_trx: 'a832255d23a3a3c1d008000000000100a6823403ea3055000000572d3ccdcd01607bc2e8f219c9a500000000a8ed323221607bc2e8f219c9a56032c1a4af42d2f6102700000000000004454f53000000000000',
+          packed_trx: 'a26ee35ae30364000000000000000100a6823403ea3055000000572d3ccdcd019013e48c8ce5eed400000000a8ed3232229013e48c8ce5eed4b012362b61b31236640000000000000004454f5300000000013100',
         },
       };
 
-      const signedExplanation = yield basecoin.explainTransaction(explainTransactionParams);
-      signedExplanation.outputAmount.should.equal('10000');
-      signedExplanation.outputs.length.should.equal(1);
-      signedExplanation.outputs[0].amount.should.equal('10000');
-      signedExplanation.outputs[0].address.should.equal('yvd45fx4s4ta');
-      signedExplanation.id.should.equal('c00826caa09f7b340af773e7b9f68f5d7b16518658289461e9ddd35c9f04a99e');
+      const explainedTx = yield basecoin.explainTransaction(explainTransactionParams);
+      explainedTx.outputAmount.should.equal('100');
+      explainedTx.outputs.length.should.equal(1);
+      explainedTx.outputs[0].amount.should.equal('100');
+      explainedTx.outputs[0].address.should.equal('asdfasdfasdf');
+      explainedTx.id.should.equal('6132f3bf4a746e6ecad8a31df67d71b4741fc5b7c868ae36dde18309a91df8a6');
+      explainedTx.memo.should.equal('1');
     }));
   }));
 });

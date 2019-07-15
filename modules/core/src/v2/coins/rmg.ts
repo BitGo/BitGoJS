@@ -1,8 +1,15 @@
 import { hdPath } from '../../bitcoin';
 import { BaseCoin } from '../baseCoin';
-import { AbstractUtxoCoin } from './abstractUtxoCoin';
-const prova = require('../../prova');
+import {
+  AbstractUtxoCoin,
+  AbstractUtxoCoinExplainTransactionOptions,
+  AbstractUtxoCoinTransactionExplanation,
+} from './abstractUtxoCoin';
+import { NodeCallback } from '../types';
 import * as _ from 'lodash';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
+const prova = require('../../prova');
 
 export class Rmg extends AbstractUtxoCoin {
   constructor(bitgo, network?) {
@@ -270,51 +277,57 @@ export class Rmg extends AbstractUtxoCoin {
     return areAllSignaturesValid;
   }
 
-  explainTransaction(params) {
-    const self = this;
-    const transaction = prova.Transaction.fromHex(params.txHex);
-    const id = transaction.getId();
-    let changeAddresses = [];
-    let spendAmount = 0;
-    let changeAmount = 0;
-    if (params.txInfo && params.txInfo.changeAddresses) {
-      changeAddresses = params.txInfo.changeAddresses;
-    }
-    const explanation: any = {
-      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
-      id: id,
-      outputs: [],
-      changeOutputs: []
-    };
-    transaction.outs.forEach(function(currentOutput) {
-      const currentAddress = prova.Address.fromScript(currentOutput.script, self.network).toString();
-      const currentAmount = currentOutput.value;
+  /**
+   * Explain/parse transaction
+   * @param params
+   * @param callback
+   */
+  explainTransaction(params: AbstractUtxoCoinExplainTransactionOptions, callback?: NodeCallback<AbstractUtxoCoinTransactionExplanation>): Bluebird<AbstractUtxoCoinTransactionExplanation> {
+    return co(function *() {
+      const self = this;
+      const transaction = prova.Transaction.fromHex(params.txHex);
+      const id = transaction.getId();
+      let changeAddresses = [];
+      let spendAmount = 0;
+      let changeAmount = 0;
+      if (params.txInfo && params.txInfo.changeAddresses) {
+        changeAddresses = params.txInfo.changeAddresses;
+      }
+      const explanation: any = {
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
+        id: id,
+        outputs: [],
+        changeOutputs: []
+      };
+      transaction.outs.forEach(function(currentOutput) {
+        const currentAddress = prova.Address.fromScript(currentOutput.script, self.network).toString();
+        const currentAmount = currentOutput.value;
 
-      if (changeAddresses.indexOf(currentAddress) !== -1) {
-        // this is change
-        changeAmount += currentAmount;
-        explanation.changeOutputs.push({
+        if (changeAddresses.indexOf(currentAddress) !== -1) {
+          // this is change
+          changeAmount += currentAmount;
+          explanation.changeOutputs.push({
+            address: currentAddress,
+            amount: currentAmount
+          });
+          return;
+        }
+
+        spendAmount += currentAmount;
+        explanation.outputs.push({
           address: currentAddress,
           amount: currentAmount
         });
-        return;
-      }
-
-      spendAmount += currentAmount;
-      explanation.outputs.push({
-        address: currentAddress,
-        amount: currentAmount
       });
-    });
-    explanation.outputAmount = spendAmount;
-    explanation.changeAmount = changeAmount;
+      explanation.outputAmount = spendAmount;
+      explanation.changeAmount = changeAmount;
 
-    // add fee info if available
-    if (params.feeInfo) {
-      explanation.displayOrder.push('fee');
-      explanation.fee = params.feeInfo;
-    }
-    return explanation;
+      // add fee info if available
+      if (params.feeInfo) {
+        explanation.displayOrder.push('fee');
+        explanation.fee = params.feeInfo;
+      }
+      return explanation;
+    }).call(this).asCallback(callback);
   }
-
 }

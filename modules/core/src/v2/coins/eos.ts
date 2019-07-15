@@ -1,7 +1,8 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '../baseCoin';
+import { BaseCoin, BaseCoinTransactionExplanation } from '../baseCoin';
+import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
 import * as crypto from 'crypto';
 import * as utxoLib from 'bitgo-utxo-lib';
@@ -82,16 +83,7 @@ interface DeserializedEosTransaction extends EosTransactionHeaders {
   address: string;
   amount: string;
   transaction_id: string;
-}
-
-interface TransactionExplanation {
-  displayOrder: string[];
-  id: string;
-  outputs: Recipient[];
-  changeOutputs: Recipient[];
-  outputAmount: string;
-  changeAmount: number;
-  fee: {};
+  memo?: string;
 }
 
 interface ExplainTransactionOptions {
@@ -365,6 +357,7 @@ export class Eos extends BaseCoin {
       const transferActionData = EosJs.modules.Fcbuffer.fromBuffer(transferStruct, serializedTransferDataBuffer);
       transaction.address = transferActionData.to;
       transaction.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
+      transaction.memo = transferActionData.memo;
 
       // Get the tx id if tx headers were provided
       if (headers) {
@@ -382,9 +375,13 @@ export class Eos extends BaseCoin {
   /**
    * Explain/parse transaction
    * @param params - ExplainTransactionOptions
+   * @param callback
    * @returns Object containing transaction explanation
    */
-  explainTransaction(params: ExplainTransactionOptions): Bluebird<TransactionExplanation> {
+  explainTransaction(
+    params: ExplainTransactionOptions,
+    callback?: NodeCallback<BaseCoinTransactionExplanation>
+  ): Bluebird<BaseCoinTransactionExplanation> {
     return co(function*() {
       let transaction;
       try {
@@ -393,7 +390,7 @@ export class Eos extends BaseCoin {
         throw new Error('invalid EOS transaction or headers');
       }
       return {
-        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
         id: transaction.transaction_id,
         changeOutputs: [],
         outputAmount: transaction.amount,
@@ -405,7 +402,10 @@ export class Eos extends BaseCoin {
           },
         ],
         fee: {},
+        memo: transaction.memo,
       };
-    }).call(this);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 }

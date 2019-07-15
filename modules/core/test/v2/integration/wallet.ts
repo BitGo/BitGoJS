@@ -423,7 +423,7 @@ describe('V2 Wallet:', function() {
 
       };
       const prebuild = yield wallet.prebuildTransaction(params);
-      const explanation = basecoin.explainTransaction(prebuild);
+      const explanation = yield basecoin.explainTransaction(prebuild);
       explanation.displayOrder.length.should.equal(7);
       explanation.outputs.length.should.equal(1);
       // sometimes the change output is below the dust threshold and gets dumped to fees, so it may be missing
