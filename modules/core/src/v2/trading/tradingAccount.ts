@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BigNumber } from 'bignumber.js';
 import * as Bluebird from 'bluebird';
 
 import { Payload } from './payload';
@@ -89,10 +90,18 @@ export class TradingAccount {
       paramsCopy.otherParties.splice(matchingExpectedParty, 1);
     }
 
+    // the amount field will change if fees are present, but subtotal should always equal the requested send amount
+    let expectedAmount: string = params.amount;
+    if (payloadObj.fees) {
+      const totalFees = payloadObj.fees.reduce((fees: BigNumber, feeObj) => fees.plus(feeObj.feeAmount), new BigNumber(0));
+      expectedAmount = new BigNumber(payloadObj.subtotal).plus(totalFees).toString();
+    }
+
     return (
       payloadObj.accountId === this.id &&
       payloadObj.currency === params.currency &&
-      payloadObj.amount === params.amount &&
+      payloadObj.subtotal === params.amount &&
+      payloadObj.amount === expectedAmount &&
       payloadObj.otherParties.length === params.otherParties.length &&
       partiesMatch
     );
