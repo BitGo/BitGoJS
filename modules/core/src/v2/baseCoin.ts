@@ -14,9 +14,10 @@ import { Wallet } from './wallet';
 import { Wallets } from './wallets';
 import { Markets } from './markets';
 import { Webhooks } from './webhooks';
-const Keychains = require('./keychains');
 import { PendingApprovals } from './pendingApprovals';
+import { Keychains } from './keychains';
 import { Enterprises } from './enterprises';
+import { KeyPair } from './keychains';
 
 export interface BaseCoinTransactionOutput {
   address: string;
@@ -44,7 +45,7 @@ export abstract class BaseCoin {
   protected readonly _url: string;
   protected readonly _enterprises: Enterprises;
   protected readonly _wallets: Wallets;
-  protected readonly _keychains;
+  protected readonly _keychains: Keychains;
   protected readonly _webhooks: Webhooks;
   protected readonly _pendingApprovals;
   protected readonly _markets: Markets;
@@ -399,7 +400,7 @@ export abstract class BaseCoin {
    *
    * @param seed
    */
-  generateKeyPair(seed) {
+  generateKeyPair(seed): KeyPair {
     throw new Error('abstract method');
   }
 

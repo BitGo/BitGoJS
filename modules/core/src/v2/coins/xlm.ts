@@ -23,13 +23,9 @@ import {
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
+import { KeyPair } from '../keychains'
 
 const co = Bluebird.coroutine;
-
-interface KeyPair {
-  pub?: string;
-  prv: string;
-}
 
 interface AddressDetails {
   address: string;

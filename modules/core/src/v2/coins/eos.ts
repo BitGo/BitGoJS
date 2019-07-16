@@ -14,13 +14,9 @@ import * as _ from 'lodash';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
+import { KeyPair } from '../keychains';
 
 const EOS_ADDRESS_LENGTH = 12;
-
-interface KeyPair {
-  pub: string;
-  prv: string;
-}
 
 interface AddressDetails {
   address: string;
