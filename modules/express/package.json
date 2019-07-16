@@ -32,9 +32,9 @@
     "build-docker": "docker build -f ../../Dockerfile -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < package.json) ../..",
     "push-docker": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < package.json)",
     "precommit": "lint-staged",
-    "check-fmt": "prettier --check '**/*.ts'",
+    "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
-    "fmt": "prettier --write 'src/**/*.ts' 'test/**/*.ts'"
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
     "argparse": "^1.0.10",

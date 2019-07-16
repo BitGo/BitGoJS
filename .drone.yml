@@ -1,41 +1,6 @@
 ---
 kind: pipeline
-name: lint-changed (node:lts)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
-  image: node:lts
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - git --version
-
-- name: install
-  image: node:lts
-  commands:
-  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
-  - yarn install
-
-- name: lint-changed
-  image: node:lts
-  commands:
-  - yarn run lint-changed
-
-trigger:
-  branch:
-    exclude:
-    - master
-    - "rel/*"
-    - prod/production
-
----
-kind: pipeline
-name: audit (node:lts)
+name: check preconditions (node:lts)
 
 platform:
   os: linux
@@ -61,45 +26,15 @@ steps:
   commands:
   - yarn run audit
 
-trigger:
-  branch:
-  - master
-  - "rel/*"
-  - prod/production
-
----
-kind: pipeline
-name: lint (node:lts)
-
-platform:
-  os: linux
-  arch: amd64
-
-steps:
-- name: build information
-  image: node:lts
-  commands:
-  - node --version
-  - npm --version
-  - yarn --version
-  - git --version
-
-- name: install
-  image: node:lts
-  commands:
-  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
-  - yarn install
-
 - name: lint
   image: node:lts
   commands:
   - yarn run lint
 
-trigger:
-  branch:
-  - master
-  - "rel/*"
-  - prod/production
+- name: check-fmt
+  image: node:lts
+  commands:
+  - yarn run check-fmt
 
 ---
 kind: pipeline
