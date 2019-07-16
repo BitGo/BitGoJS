@@ -74,7 +74,10 @@ export class Enterprise {
    * @param callback
    */
   users(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo.get(this.url('/user')).result().asCallback(callback);
+    return this.bitgo
+      .get(this.url('/user'))
+      .result()
+      .asCallback(callback);
   }
 
   /**
@@ -83,7 +86,10 @@ export class Enterprise {
    * @param callback
    */
   getFeeAddressBalance(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    return this.bitgo.get(this.coinUrl('/feeAddressBalance')).result().asCallback(callback);
+    return this.bitgo
+      .get(this.coinUrl('/feeAddressBalance'))
+      .result()
+      .asCallback(callback);
   }
 
   /**
