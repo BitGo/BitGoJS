@@ -1,94 +1,124 @@
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+/**
+ * @prettier
+ */
+import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
-const CoinWallet = require('./wallet');
-const internal = require('./internal');
-import common = require('../common');
+import { BaseCoin } from './baseCoin';
+import { NodeCallback } from './types';
+import { Wallet } from './wallet';
+import { getFirstPendingTransaction } from './internal';
+
 import { Settlements } from './trading/settlements';
 import { Affirmations } from './trading/affirmations';
 
-class Enterprise {
+const co = Bluebird.coroutine;
 
-  bitgo: any;
-  baseCoin: any;
-  private _enterprise: any;
+export class Enterprise {
+  private readonly bitgo: any;
+  private readonly baseCoin: BaseCoin;
+  readonly id: string;
+  readonly name: string;
 
-  constructor(bitgo, baseCoin, enterpriseData) {
+  constructor(bitgo: any, baseCoin: BaseCoin, enterpriseData: { id: string; name: string }) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     if (!_.isObject(enterpriseData)) {
       throw new Error('enterpriseData has to be an object');
     }
-    this._enterprise = enterpriseData;
-  }
-
-  get name() {
-    return this._enterprise.name;
-  }
-
-  get id() {
-    return this._enterprise.id;
+    if (!_.isString(enterpriseData.id)) {
+      throw new Error('enterprise id has to be a string');
+    }
+    if (!_.isString(enterpriseData.name)) {
+      throw new Error('enterprise name has to be a string');
+    }
+    this.id = enterpriseData.id;
+    this.name = enterpriseData.name;
   }
 
   /**
    * Enterprise URL for v1 methods, such as getting users
    * @param query
    */
-  url(query) {
-    const extra = query || '';
-    return this.bitgo.url('/enterprise/' + this.id + extra);
+  url(query: string = ''): string {
+    return this.bitgo.url(`/enterprise/${this.id}${query}`);
   }
 
   /**
    * Enterprise URL for v2 methods, such as getting fee address balances
    * @param query
    */
-  coinUrl(query) {
-    const extra = query || '';
-    return this.baseCoin.url('/enterprise/' + this.id + extra);
+  coinUrl(query: string = ''): string {
+    return this.baseCoin.url(`/enterprise/${this.id}${query}`);
   }
 
-  coinWallets(params, callback) {
-    return co(function *coCoinWallets() {
+  /**
+   * Get the wallets associated with this Enterprise
+   * @param params
+   * @param callback
+   */
+  coinWallets(params: {} = {}, callback?: NodeCallback<Wallet[]>): Bluebird<Wallet[]> {
+    return co(function* coCoinWallets() {
       const walletData = yield this.bitgo.get(this.baseCoin.url('/wallet/enterprise/' + this.id)).result();
-      walletData.wallets = walletData.wallets.map((w) => {
-        return new CoinWallet(this.bitgo, this.baseCoin, w);
+      walletData.wallets = walletData.wallets.map(w => {
+        return new Wallet(this.bitgo, this.baseCoin, w);
       });
       return walletData;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
-  users(params, callback) {
-    return co(function *() {
-      return this.bitgo.get(this.url('/user')).result();
-    }).call(this).asCallback(callback);
+  /**
+   * Get the users associated with this Enterprise
+   * @param params
+   * @param callback
+   */
+  users(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return this.bitgo.get(this.url('/user')).result().asCallback(callback);
   }
 
-  getFeeAddressBalance(params, callback) {
-    return co(function *() {
-      return this.bitgo.get(this.coinUrl('/feeAddressBalance')).result();
-    }).call(this).asCallback(callback);
+  /**
+   * Get the fee address balance for this Enterprise
+   * @param params
+   * @param callback
+   */
+  getFeeAddressBalance(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return this.bitgo.get(this.coinUrl('/feeAddressBalance')).result().asCallback(callback);
   }
 
-  addUser(params, callback) {
-    return co(function *() {
-      return this.bitgo.post(this.url('/user')).send(params).result();
-    }).call(this).asCallback(callback);
+  /**
+   * Add a user to this Enterprise
+   * @param params
+   * @param callback
+   */
+  addUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return this.bitgo
+      .post(this.url('/user'))
+      .send(params)
+      .result()
+      .asCallback(callback);
   }
 
-  removeUser(params, callback) {
-    return co(function *() {
-      return this.bitgo.del(this.url('/user')).send(params).result();
-    }).call(this).asCallback(callback);
+  /**
+   * Remove a user from this Enterprise
+   * @param params
+   * @param callback
+   */
+  removeUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return this.bitgo
+      .del(this.url('/user'))
+      .send(params)
+      .result()
+      .asCallback(callback);
   }
 
-  getFirstPendingTransaction(params, callback) {
-    return co(function *() {
-      params = params || {};
-      common.validateParams(params, [], [], callback);
-      const query = { enterpriseId: this.id };
-      return internal.getFirstPendingTransaction(query, this.baseCoin, this.bitgo);
-    }).call(this).asCallback(callback);
+  /**
+   * Get the first pending transaction for this Enterprise
+   * @param params
+   * @param callback
+   */
+  getFirstPendingTransaction(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return getFirstPendingTransaction({ enterpriseId: this.id }, this.baseCoin, this.bitgo).asCallback(callback);
   }
 
   /**
@@ -105,5 +135,3 @@ class Enterprise {
     return new Affirmations(this.bitgo, this);
   }
 }
-
-module.exports = Enterprise;
