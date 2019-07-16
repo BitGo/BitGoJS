@@ -219,14 +219,14 @@ export class Algo extends BaseCoin {
     const id = tx.txID();
     const fee = { fee: tx.fee };
 
-    const outputs = [
-      {
-        amount: tx.amount,
+    const outputAmount = tx.amount || 0;
+    var outputs = [];
+    if (tx.to) {
+      outputs.push({
+        amount: outputAmount,
         address: Address.encode(new Uint8Array(tx.to.publicKey)),
-      },
-    ];
-
-    const outputAmount = tx.amount;
+      });
+    }
 
     // TODO(CT-480): add recieving address display here
     const memo = tx.note;
