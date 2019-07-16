@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/express",
-  "version": "6.2.0-rc.1",
+  "version": "6.2.0-rc.2",
   "private": true,
   "description": "Local signing server and proxy for the BitGo platform",
   "main": "./dist/src/index.js",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "argparse": "^1.0.10",
-    "bitgo": "^6.2.0-rc.1",
+    "bitgo": "^6.2.0-rc.2",
     "body-parser": "^1.19.0",
     "express": "^4.16.4",
     "http-proxy": "^1.17.0",
