@@ -31,26 +31,24 @@ export interface Environment extends EnvironmentTemplate {
 }
 
 export type EnvironmentName =
-  'prod' |
-  'rmgProd' |
-  'staging' |
-  'rmgStaging' |
-  'test' |
-  'rmgTest' |
-  'dev' |
-  'latest' |
-  'rmgLatest' |
-  'rmgDev' |
-  'local' |
-  'localNonSecure' |
-  'mock' |
-  'rmgLocal' |
-  'rmglocalNonSecure' |
-  'custom';
+  | 'prod'
+  | 'rmgProd'
+  | 'staging'
+  | 'rmgStaging'
+  | 'test'
+  | 'rmgTest'
+  | 'dev'
+  | 'latest'
+  | 'rmgLatest'
+  | 'rmgDev'
+  | 'local'
+  | 'localNonSecure'
+  | 'mock'
+  | 'rmgLocal'
+  | 'rmglocalNonSecure'
+  | 'custom';
 
-export type Environments = {
-  [k in EnvironmentName]: Environment;
-}
+export type Environments = { [k in EnvironmentName]: Environment };
 
 const mainnetBase: EnvironmentTemplate = {
   networks: {

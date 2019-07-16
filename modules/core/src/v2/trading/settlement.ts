@@ -35,5 +35,5 @@ export enum SettlementStatus {
   PENDING = 'pending',
   REJECTED = 'rejected',
   SETTLED = 'settled',
-  FAILED = 'failed'
+  FAILED = 'failed',
 }

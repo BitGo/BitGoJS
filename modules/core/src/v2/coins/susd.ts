@@ -5,7 +5,6 @@ import { BaseCoin } from '../baseCoin';
 import { MethodNotImplementedError } from '../../errors';
 
 export class Susd extends BaseCoin {
-
   static createInstance(bitgo: any): BaseCoin {
     return new Susd(bitgo);
   }

@@ -24,5 +24,5 @@ export enum TradeStatus {
   CANCELED = 'canceled',
   EXECUTED = 'executed',
   PENDING = 'pending',
-  FAILED = 'failed'
+  FAILED = 'failed',
 }

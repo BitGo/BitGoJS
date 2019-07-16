@@ -2,6 +2,7 @@
   "name": "root",
   "private": true,
   "devDependencies": {
+    "husky": "^3.0.0",
     "lerna": "^3.13.4"
   },
   "workspaces": [
@@ -20,6 +21,13 @@
     "integration-test": "lerna run integration-test --stream --parallel",
     "gen-coverage": "lerna run gen-coverage --stream --parallel",
     "coverage": "lerna run upload-coverage --stream --parallel --",
-    "artifacts": "lerna run upload-artifacts --stream --parallel"
+    "artifacts": "lerna run upload-artifacts --stream --parallel",
+    "check-fmt-changed": "lerna run check-fmt --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --parallel",
+    "check-fmt": "lerna run check-fmt --stream --parallel"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lerna run --concurrency 1 --stream precommit"
+    }
   }
 }

@@ -131,13 +131,23 @@ local MeasureSizeAndTiming(version) = {
   ],
 };
 
+local CheckPreconditions(version) = {
+  kind: "pipeline",
+  name: "check preconditions (node:" + version + ")",
+  steps: [
+    BuildInfo(version),
+    Install(version),
+    Command("audit", version),
+    Command("lint", version),
+    Command("check-fmt", version),
+  ]
+};
+
 local UnitVersions = ["6", "8", "10", "11"];
 local IntegrationVersions = ["lts"];
 
 [
-  ExcludeBranches(LernaCommand("lint-changed")),
-  IncludeBranches(LernaCommand("audit")),
-  IncludeBranches(LernaCommand("lint")),
+  CheckPreconditions("lts"),
   IncludeBranches(MeasureSizeAndTiming("lts")),
 ] + [
   ExcludeBranches(UnitTest(version))

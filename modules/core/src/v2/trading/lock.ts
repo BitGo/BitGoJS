@@ -15,5 +15,5 @@ export enum LockStatus {
   SETTLED = 'settled',
   FAILED = 'failed',
   REQUESTED = 'requested',
-  RELEASED = 'released'
+  RELEASED = 'released',
 }

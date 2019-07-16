@@ -40,7 +40,10 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm run compile",
     "upload-artifacts": "node scripts/upload-test-reports.js",
-    "check-fmt": "prettier --check 'src/**/*.ts'"
+    "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
+    "precommit": "lint-staged",
+    "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
     "@bitgo/statics": "^1.2.0",
@@ -121,17 +124,6 @@
     "ethereumjs-tx": "^1.3.7",
     "ethereumjs-util": "^4.4.1",
     "secp256k1": "^3.6.1"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "**/*.{ts,js,json}": [
-      "prettier --write",
-      "git add"
-    ]
   },
   "nyc": {
     "extension": [

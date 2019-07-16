@@ -21,12 +21,14 @@ export class Settlements {
    * @param callback
    */
   list(callback?): Bluebird<Settlement[]> {
-    return co(function *list() {
+    return co(function* list() {
       const url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterprise.id}/settlements`);
       const response = yield this.bitgo.get(url).result();
 
       return response.settlements.map(settlement => new Settlement(settlement, this.bitgo));
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -35,12 +37,14 @@ export class Settlements {
    * @param callback
    */
   get({ id }, callback?): Bluebird<Settlement> {
-    return co(function *get() {
+    return co(function* get() {
       const url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterprise.id}/settlements/${id}`);
       const response = yield this.bitgo.get(url).result();
 
       return new Settlement(response, this.bitgo);
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -53,16 +57,21 @@ export class Settlements {
    * @param callback
    */
   create(params: CreateSettlementParams, callback?): Bluebird<Settlement> {
-    return co(function *create() {
+    return co(function* create() {
       // payload must be stringified before being passed to API
       const body = Object.assign({}, params as any);
       body.payload = JSON.stringify(body.payload);
 
       const url = this.bitgo.microservicesUrl(`/api/trade/v1/settlement`);
-      const response = yield this.bitgo.post(url).send(body).result();
+      const response = yield this.bitgo
+        .post(url)
+        .send(body)
+        .result();
 
       return new Settlement(response, this.bitgo);
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 }
 

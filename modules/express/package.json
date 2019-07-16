@@ -30,7 +30,11 @@
     "start": "node bin/bitgo-express",
     "update-bitgo": "bash ./scripts/update-bitgo.sh",
     "build-docker": "docker build -f ../../Dockerfile -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < package.json) ../..",
-    "push-docker": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < package.json)"
+    "push-docker": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < package.json)",
+    "precommit": "lint-staged",
+    "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
+    "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
     "argparse": "^1.0.10",
@@ -54,8 +58,7 @@
     "@types/sinon": "^7.0.6",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.2.0",
-    "husky": "^2.2.0",
-    "lint-staged": "^8.1.6",
+    "lint-staged": "^9.2.0",
     "mocha": "^6.1.4",
     "mocha-junit-reporter": "^1.22.0",
     "mocha-lcov-reporter": "^1.3.0",
@@ -71,17 +74,6 @@
     "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz",
     "ts-node": "^8.1.0",
     "typescript": "~3.3.4000"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "**/*.{ts,js,json}": [
-      "prettier --write",
-      "git add"
-    ]
   },
   "nyc": {
     "extension": [
