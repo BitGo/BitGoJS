@@ -1,5 +1,38 @@
 # BitGoJS Release Notes
 
+## 6.2.0
+
+### New Features
+* Allow creating BitGo objects which use a custom Stellar Federation server URL.
+* Add support for new ERC20 tokens (LEO, CREP, CBAT, CZRX, CUSDC, CDAI, CETH, VALOR).
+* Update trade payload version to `1.1.1`.
+
+### Bug Fixes
+* Update to lodash@^4.17.4 for a vulnerability fix for CVE-2019-10744.
+* Ensure amount is correctly passed through to server for Ethereum fee estimation
+* Update ZEC block explorer used in recovery flows
+
+### Other Changes
+* Improve Typescript support in `webhooks.ts`, `internal.ts`, `common.ts`, and `environments.ts`
+
+## 6.1.1
+
+### Bug Fixes
+* Fix issue where accepting a wallet share as a viewer would fail to correctly update the server.
+
+## 6.1.0
+
+### New Features
+* Add support for deriving ed25519 hardened child public keys, used by XLM and other ed25519-based coins.
+* Update documentation to point to new docker image for BitGo Express (`bitgosdk/express`). The `bitgo/express` image is now deprecated.
+* Add support for new ERC20 tokens (DRPU, PRDX, TENX, ROOBEE, ORBS, VDX, SHR)
+
+### Other Changes
+* Preliminary support for EOS. Please note that this API is not finalized, and is subject to API breaking changes in minor and/or patch version releases without warning.
+* Validate Ethereum hop transaction signatures against static Platform HSM key instead of wallet BitGo key
+* Improve Typescript support for `Wallet` and `Wallets` objects, as well as the XLM coin implementation
+* Extract example keycard rendering logic out of `Wallet`
+
 ## 6.0.0
 The BitGoJS SDK is being modularized! The code base has been split into two modules: `core` and `express`.
 
