@@ -40,8 +40,10 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm run compile",
     "upload-artifacts": "node scripts/upload-test-reports.js",
-    "check-fmt": "prettier --check 'src/**/*.ts'",
-    "precommit": "lint-staged"
+    "check-fmt": "prettier --check 'src/**/*.ts' 'test/**/*.ts'",
+    "precommit": "lint-staged",
+    "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
+    "fmt": "prettier --write 'src/**/*.ts' 'test/**/*.ts'"
   },
   "dependencies": {
     "@bitgo/statics": "^1.2.0",
