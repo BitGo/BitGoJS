@@ -9,7 +9,9 @@ import { Wallet } from '../../src/v2/wallet';
 const BigNumber = require('bignumber.js');
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
+
 import 'should';
+import 'should-http';
 
 const nock = require('nock');
 nock.enableNetConnect();

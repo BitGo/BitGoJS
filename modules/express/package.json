@@ -27,7 +27,10 @@
     "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
     "build": "tsc",
     "upload-artifacts": "node scripts/upload-test-reports.js",
-    "start": "node bin/bitgo-express"
+    "start": "node bin/bitgo-express",
+    "update-bitgo": "bash ./scripts/update-bitgo.sh",
+    "build-docker": "docker build -f ../../Dockerfile -t bitgosdk/express:latest -t bitgosdk/express:$(jq -r .version < package.json) ../..",
+    "push-docker": "docker push bitgosdk/express:latest bitgosdk/express:$(jq -r .version < package.json)"
   },
   "dependencies": {
     "argparse": "^1.0.10",
@@ -64,9 +67,10 @@
     "should-http": "^0.1.1",
     "should-sinon": "^0.0.6",
     "sinon": "^6.3.5",
+    "supertest": "^4.0.2",
     "supertest-as-promised": "https://github.com/BitGo/supertest-as-promised/archive/a7f4b612b9fa090ae33a9616c41862aec2b25c7e.tar.gz",
     "ts-node": "^8.1.0",
-    "typescript": "^3.4.5"
+    "typescript": "~3.3.4000"
   },
   "husky": {
     "hooks": {
