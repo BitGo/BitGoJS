@@ -29,13 +29,15 @@ export class Enterprises {
    * @param callback
    */
   public list(params: {} = {}, callback?: NodeCallback<Enterprise[]>): Bluebird<Enterprise[]> {
-    return co(function *() {
+    return co(function*() {
       const response = yield this.bitgo.get(this.bitgo.url('/enterprise')).result();
-      return response.enterprises.map((e) => {
+      return response.enterprises.map(e => {
         // instantiate a new object for each enterprise
         return new Enterprise(this.bitgo, this.baseCoin, e);
       });
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -44,7 +46,7 @@ export class Enterprises {
    * @param callback
    */
   public get(params: GetEnterpriseOptions = {}, callback?: NodeCallback<Enterprise>): Bluebird<Enterprise> {
-    return co(function *() {
+    return co(function*() {
       const enterpriseId = params.id;
       if (_.isUndefined(enterpriseId)) {
         throw new Error('id must not be empty');
@@ -55,7 +57,9 @@ export class Enterprises {
 
       const enterpriseData = yield this.bitgo.get(this.bitgo.url(`/enterprise/${enterpriseId}`)).result();
       return new Enterprise(this.bitgo, this.baseCoin, enterpriseData);
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -65,11 +69,14 @@ export class Enterprises {
    */
   // TODO: (CT-686) Flesh out params object with valid enterprise creation parameters
   public create(params: any = {}, callback?: NodeCallback<Enterprise>): Bluebird<Enterprise> {
-    return co(function *() {
-      const enterpriseData = yield this.bitgo.post(this.bitgo.url(`/enterprise`))
-      .send(params)
-      .result();
+    return co(function*() {
+      const enterpriseData = yield this.bitgo
+        .post(this.bitgo.url(`/enterprise`))
+        .send(params)
+        .result();
       return new Enterprise(this.bitgo, this.baseCoin, enterpriseData);
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 }
