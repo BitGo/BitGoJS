@@ -7,6 +7,10 @@ export class Teos extends Eos {
     return new Teos(bitgo);
   }
 
+  getChainId() {
+    return 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473'; // testnet chain id
+  }
+
   getChain() {
     return 'teos';
   }
