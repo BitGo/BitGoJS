@@ -35,7 +35,7 @@ export class Affirmation {
   affirm(payload: Payload, signature: string, callback?): Bluebird<void> {
     const body = {
       payload: JSON.stringify(payload),
-      signature: signature
+      signature: signature,
     };
 
     return this.updateStatus(AffirmationStatus.AFFIRMED, body, callback);
@@ -58,12 +58,17 @@ export class Affirmation {
   }
 
   private updateStatus(status: AffirmationStatus, body?, callback?): Bluebird<void> {
-    return co(function *updateStatus() {
+    return co(function* updateStatus() {
       const bodyWithStatus = { status, ...body };
       const url = this.bitgo.microservicesUrl(`/api/trade/v1/affirmations/${this.id}`);
-      const response = yield this.bitgo.put(url).send(bodyWithStatus).result();
+      const response = yield this.bitgo
+        .put(url)
+        .send(bodyWithStatus)
+        .result();
       this.updateAffirmationData(response);
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   private updateAffirmationData(affirmationData) {
@@ -84,5 +89,5 @@ export enum AffirmationStatus {
   REJECTED = 'rejected',
   AFFIRMED = 'affirmed',
   FAILED = 'failed',
-  CANCELED = 'canceled'
+  CANCELED = 'canceled',
 }

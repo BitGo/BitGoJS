@@ -41,7 +41,6 @@ import * as errors from '../errors';
 export type CoinConstructor = (bitgo: any, staticsCoin: Readonly<StaticsBaseCoin>) => BaseCoin;
 
 export class CoinFactory {
-
   private coinConstructors = new Map<string, CoinConstructor>();
 
   /**
@@ -76,7 +75,7 @@ export class CoinFactory {
           network: 'Mainnet',
           name: 'Unknown',
           tokenContractAddress: name,
-          decimalPlaces: 0
+          decimalPlaces: 0,
         });
         return unknownTokenConstructor(bitgo, null);
       }
@@ -91,7 +90,6 @@ export class CoinFactory {
     }
     this.coinConstructors.set(name, constructor);
   }
-
 }
 
 export const GlobalCoinFactory: CoinFactory = new CoinFactory();

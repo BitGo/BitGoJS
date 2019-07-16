@@ -22,7 +22,7 @@ export class Affirmations {
    * @param callback
    */
   list(status?: AffirmationStatus, callback?): Bluebird<Affirmation[]> {
-    return co(function *list() {
+    return co(function* list() {
       let url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterprise.id}/affirmations`);
       if (status) {
         url = `${url}?status=${status}`;
@@ -31,7 +31,9 @@ export class Affirmations {
       const response = yield this.bitgo.get(url).result();
 
       return response.affirmations.map(affirmation => new Affirmation(affirmation, this.bitgo));
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -40,11 +42,13 @@ export class Affirmations {
    * @param callback
    */
   get({ id }, callback): Bluebird<Affirmation> {
-    return co(function *get() {
+    return co(function* get() {
       const url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterprise.id}/affirmations/${id}`);
       const response = yield this.bitgo.get(url).result();
 
       return new Affirmation(response, this.bitgo);
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 }

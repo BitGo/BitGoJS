@@ -11,7 +11,7 @@ export class Tdash extends Dash {
       messagePrefix: '\x19Dash Signed Message:\n',
       bip32: {
         public: 0x0488b21e,
-        private: 0x0488ade4
+        private: 0x0488ade4,
       },
       pubKeyHash: 0x8c,
       scriptHash: 0x13,
@@ -19,7 +19,7 @@ export class Tdash extends Dash {
       dustThreshold: 0, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L360-L365
       dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
       feePerKb: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
-      coin: 'dash'
+      coin: 'dash',
     });
   }
 

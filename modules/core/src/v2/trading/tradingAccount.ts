@@ -34,7 +34,7 @@ export class TradingAccount {
    * @returns unsigned trade payload for the given parameters. This object should be stringified with JSON.stringify() before being submitted
    */
   buildPayload(params: BuildPayloadParameters, callback?): Bluebird<Payload> {
-    return co(function *buildTradePayload() {
+    return co(function* buildTradePayload() {
       const url = this.bitgo.microservicesUrl('/api/trade/v1/payload');
 
       const body = {
@@ -57,7 +57,9 @@ export class TradingAccount {
       }
 
       return JSON.parse(response.payload) as Payload;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -74,10 +76,11 @@ export class TradingAccount {
     // Verifies that for each party in the payload, we requested a matching party, only checking sensitive fields
     let partiesMatch = true;
     for (const party of payloadObj.otherParties) {
-      const matchingExpectedParty = paramsCopy.otherParties.findIndex(expectedParty =>
-        party.accountId === expectedParty.accountId &&
-        party.currency === expectedParty.currency &&
-        party.amount === expectedParty.amount
+      const matchingExpectedParty = paramsCopy.otherParties.findIndex(
+        expectedParty =>
+          party.accountId === expectedParty.accountId &&
+          party.currency === expectedParty.currency &&
+          party.amount === expectedParty.amount
       );
 
       if (matchingExpectedParty === -1) {
@@ -107,13 +110,15 @@ export class TradingAccount {
    * @returns hex-encoded signature of the payload
    */
   signPayload(params: SignPayloadParameters, callback?): Bluebird<string> {
-    return co(function *signPayload() {
+    return co(function* signPayload() {
       const key = yield this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[0] });
       const prv = this.wallet.bitgo.decrypt({ input: key.encryptedPrv, password: params.walletPassphrase });
       const payload = JSON.stringify(params.payload);
 
       return this.wallet.baseCoin.signMessage({ prv }, payload).toString('hex');
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   partners(): TradingPartners {

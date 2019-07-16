@@ -29,9 +29,12 @@ export class TradingPartner {
    * @param callback
    */
   checkBalance(currency: string, amount: string, callback?): Bluebird<boolean> {
-    const url = this.bitgo.microservicesUrl(`/api/trade/v1/account/${this.currentAccount.id}/tradingPartners/${this.accountId}/balance`);
+    const url = this.bitgo.microservicesUrl(
+      `/api/trade/v1/account/${this.currentAccount.id}/tradingPartners/${this.accountId}/balance`
+    );
 
-    return this.bitgo.get(url)
+    return this.bitgo
+      .get(url)
       .query({ currency, amount })
       .result()
       .nodeify(callback);
@@ -39,5 +42,5 @@ export class TradingPartner {
 }
 
 export enum TradingPartnerStatus {
-  ACCEPTED = 'accepted'
+  ACCEPTED = 'accepted',
 }
