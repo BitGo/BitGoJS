@@ -5,7 +5,7 @@
 const nock = require('nock');
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
-const Enterprise = require('../../../src/v2/enterprise');
+import { Enterprise } from '../../../src/v2/enterprise';
 const common = require('../../../src/common');
 
 const TestV2BitGo = require('../../lib/test_bitgo');
@@ -20,7 +20,7 @@ describe('Enterprise:', function() {
     bitgo = new TestV2BitGo({ env: 'test' });
     bitgo.initializeTestVars();
     baseCoin = bitgo.coin('tbtc');
-    enterprise = new Enterprise(bitgo, baseCoin, { id: '593f1ece99d37c23080a557283edcc89' });
+    enterprise = new Enterprise(bitgo, baseCoin, { id: '593f1ece99d37c23080a557283edcc89', name: 'Test Enterprise' });
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   }));
 

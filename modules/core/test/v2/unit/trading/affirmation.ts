@@ -6,7 +6,7 @@ import fixtures from '../../fixtures/trading/affirmation';
 import { AffirmationStatus } from '../../../../src/v2/trading/affirmation';
 
 import { Wallet } from '../../../../src/v2/wallet';
-const Enterprise = require('../../../../src/v2/enterprise');
+import { Enterprise } from '../../../../src/v2/enterprise';
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const common = require('../../../../src/common');
 
@@ -26,7 +26,7 @@ describe('Affirmations', function() {
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
 
-    enterprise = new Enterprise(bitgo, basecoin, { id: '5cf940949449412d00f53b3d92dbcaa3' });
+    enterprise = new Enterprise(bitgo, basecoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'Test Enterprise' });
 
     const walletData = {
       id: '5cf940969449412d00f53b4c55fc2139',
