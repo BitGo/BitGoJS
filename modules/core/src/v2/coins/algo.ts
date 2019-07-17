@@ -13,8 +13,13 @@ import {
   isValidAddress,
   isValidSeed,
   Encoding,
+  mergeMultisigTransactions,
 } from 'algosdk';
 import * as stellar from 'stellar-sdk';
+import * as Bluebird from 'bluebird';
+import { NodeCallback } from '../types';
+
+const co = Bluebird.coroutine;
 
 export interface TransactionExplanation {
   displayOrder: string[];
@@ -34,6 +39,9 @@ export interface SignTransactionOptions {
 
 export interface TransactionPrebuild {
   txHex: string;
+  halfSigned?: {
+    txHex: string;
+  };
   txInfo: {
     from: string;
     to: string;
@@ -47,6 +55,10 @@ export interface TransactionPrebuild {
   };
   keys: string[];
   addressVersion: number;
+}
+
+export interface FullySignedTransaction {
+  txHex: string;
 }
 
 export interface HalfSignedTransaction {
@@ -68,6 +80,33 @@ export interface TransactionFee {
 
 export interface ExplainTransactionOptions {
   txHex: string;
+}
+
+export interface InitiateRecoveryOptions {
+  userKey: string;
+  backupKey: string;
+  recoveryDestination: string;
+  krsProvider?: string;
+  walletPassphrase?: string;
+}
+
+export interface RecoveryOptions extends InitiateRecoveryOptions {
+  rootAddress: string;
+}
+
+export interface RecoveryTransaction {
+  tx: string;
+  recoveryAmount: number;
+  backupKey?: string;
+  coin?: string;
+}
+
+export interface VerifiedTransactionParameters {
+  txHex: string;
+  addressVersion: number;
+  keys: string[];
+  sk: string;
+  isHalfSigned: boolean;
 }
 
 interface KeyPair {
@@ -194,6 +233,57 @@ export class Algo extends BaseCoin {
   }
 
   /**
+   * Builds a funds recovery transaction without BitGo
+   * @param params
+   * - userKey: [encrypted] Algo private key
+   * - backupKey: [encrypted] Algo private key, or public key if the private key is held by a KRS provider
+   * - walletPassphrase: necessary if one of the private keys is encrypted
+   * - bitgoKey : bitgo xpub of the wallet to recover funds from
+   * - krsProvider: necessary if backup key is held by KRS
+   * - recoveryDestination: target address to send recovered funds to
+   * @param callback
+   */
+  recover(params: RecoveryOptions, callback: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
+    return co(function*() {
+      // const userPrv = this.bitgo.decrypt({ input: params.userKey, passphrase: params.walletPassphrase });
+      // const backupPrv = this.bitgo.decrypt({ input: params.backupKey, passphrase: params.walletPassphrase });
+      // const bitgoPub = params.bitgoKey;
+
+      // const walletAddress = ''; // GET WALLET ADDRESS FROM  userPrv, backupPrv, and bitgoPub
+
+      // const walletInfoUrl = `algoexplorerhere.io/address/${walletAddress}`; // create the url for getting a wallet's info from a public block explorer
+
+      // // get wallet info from algorand public block explorer
+      // let walletInfo;
+      // try {
+      //   walletInfo = yield request.get(walletInfoUrl).result();
+      // } catch (e) {
+      //   throw new Error('Unable to reach the Stellar network via Horizon.');
+      // }
+
+      // const balance = 100; // get balance from walletInfo
+      // const txfee = 1; // set transaction fee here
+
+      // const algoTx = {}; // construct an algo tx that spends balance to params.recoveryDestination
+
+      // algoTx.sign(userPrv);
+
+      // algoTx.sign(backupPrv);
+
+      // // build algoTx (merge signatures or whatever)
+
+      return {
+        // tx: algoTx.serialized() // serialize it (this is a hex string for other coins)
+      };
+
+      // todo: once this flow is completed, we can add the KRS recovery case (where backup key is a pub instead of encrypted prv)
+      // todo: handle unencrypted private keys for userKey and backupKey (handle after we get the main case working)
+    })
+      .call(this)
+      .asCallback(callback);
+  }
+
+  /**
    * Explain/parse transaction
    * @param params
    * - txHex: transaction encoded as base64 string
@@ -255,18 +345,18 @@ export class Algo extends BaseCoin {
     return Seed.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
   }
 
-  /**
-   * Assemble keychain and half-sign prebuilt transaction
-   *
-   * @param params
-   * @param params.txPrebuild {Object} prebuild object returned by platform
-   * @param params.prv {String} user prv
-   * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
-   */
-  signTransaction(params: SignTransactionOptions): HalfSignedTransaction {
+  verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
     const prv = params.prv;
-    const txHex = params.txPrebuild.txHex;
     const addressVersion = params.txPrebuild.addressVersion;
+    let isHalfSigned = false;
+
+    // it's possible this tx was already signed - take the halfSigned
+    // txHex if it is
+    let txHex = params.txPrebuild.txHex;
+    if (params.txPrebuild.halfSigned) {
+      isHalfSigned = true;
+      txHex = params.txPrebuild.halfSigned.txHex;
+    }
 
     if (_.isUndefined(txHex)) {
       throw new Error('missing txPrebuild parameter');
@@ -297,39 +387,57 @@ export class Algo extends BaseCoin {
     }
 
     // we need to re-encode our public keys using algosdk's format
-    const encodedPublicKeys = [
-      Address.decode(params.txPrebuild.keys[0]).publicKey,
-      Address.decode(params.txPrebuild.keys[1]).publicKey,
-      Address.decode(params.txPrebuild.keys[2]).publicKey,
-    ];
+    const keys = [params.txPrebuild.keys[0], params.txPrebuild.keys[1], params.txPrebuild.keys[2]];
 
     // re-encode sk from our prv (this acts as a seed out of the keychain)
     const seed = Seed.decode(prv).seed;
     const pair = generateAccountFromSeed(seed);
     const sk = pair.sk;
 
-    // decode our tx
+    return { txHex, addressVersion, keys, sk, isHalfSigned };
+  }
+
+  /**
+   * Assemble keychain and half-sign prebuilt transaction
+   *
+   * @param params
+   * @param params.txPrebuild {Object} prebuild object returned by platform
+   * @param params.prv {String} user prv
+   * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
+   */
+  signTransaction(params: SignTransactionOptions): HalfSignedTransaction | FullySignedTransaction {
+    const { txHex, addressVersion, keys, sk, isHalfSigned } = this.verifySignTransactionParams(params);
+    const encodedPublicKeys = _.map(keys, k => Address.decode(k).publicKey);
+
+    // decode our unsigned/half-signed tx
     let transaction;
+    let txToHex;
     try {
-      const txToHex = Buffer.from(txHex, 'base64');
-      const decodedTx = Encoding.decode(txToHex);
+      txToHex = Buffer.from(txHex, 'base64');
+      const initialDecodedTx = Encoding.decode(txToHex);
+
+      // we need to scrub the txn of sigs for half-signed
+      const decodedTx = isHalfSigned ? initialDecodedTx.txn : initialDecodedTx;
+
       transaction = Multisig.MultiSigTransaction.from_obj_for_encoding(decodedTx);
     } catch (e) {
       throw new Error('transaction needs to be a valid tx encoded as base64 string');
     }
 
-    // sign
-    const halfSigned = transaction.partialSignTxn(
-      { version: addressVersion, threshold: 2, pks: encodedPublicKeys },
-      sk
-    );
+    // sign our tx
+    let signed = transaction.partialSignTxn({ version: addressVersion, threshold: 2, pks: encodedPublicKeys }, sk);
 
-    const signedBase64 = Buffer.from(halfSigned).toString('base64');
+    // if we have already signed it, we'll have to merge that with our previous tx
+    if (isHalfSigned) {
+      signed = mergeMultisigTransactions([Buffer.from(signed), txToHex]);
+    }
 
-    return {
-      halfSigned: {
-        txHex: signedBase64,
-      },
-    };
+    const signedBase64 = Buffer.from(signed).toString('base64');
+
+    if (isHalfSigned) {
+      return { txHex: signedBase64 };
+    } else {
+      return { halfSigned: { txHex: signedBase64 } };
+    }
   }
 }

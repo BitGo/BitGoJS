@@ -81,7 +81,6 @@ describe('ALGO:', function() {
   describe('Transaction Verification', function() {
     let basecoin;
     let wallet;
-    let halfSignedTransaction;
 
     before(co(function *() {
       basecoin = bitgo.coin('talgo');
@@ -91,7 +90,7 @@ describe('ALGO:', function() {
 
     it('should sign a prebuild', co(function *() {
       // sign transaction
-      halfSignedTransaction = yield wallet.signTransaction({
+      const halfSignedTransaction = yield wallet.signTransaction({
         txPrebuild: { 
           txHex: fixtures.buildTxBase64,
           keys: [ fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub ],
@@ -101,6 +100,20 @@ describe('ALGO:', function() {
       });
 
       halfSignedTransaction.halfSigned.txHex.should.equal(fixtures.signedTxBase64);
+    }));
+
+    it('should sign an already signed transaction', co(function *() {
+      const fullySignedTx = yield wallet.signTransaction({
+        txPrebuild: { 
+          halfSigned: {
+            txHex: fixtures.signedTxBase64,
+          },
+          keys: [ fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub ],
+          addressVersion: 1,
+        },
+        prv: fixtures.backupKeychain.prv,
+      });
+      fullySignedTx.txHex.should.equal(fixtures.fullySignBase64);
     }));
   });
 });
