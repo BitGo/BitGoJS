@@ -223,7 +223,7 @@ export const tokens = {
         { type: 'fet', coin: 'eth', network: 'Mainnet', name: 'Fetch', tokenContractAddress: '0x1d287cc25dad7ccaf76a26bc660c5f7c8e2a05bd', decimalPlaces: 18 },
         { type: 'nas', coin: 'eth', network: 'Mainnet', name: 'Nebulas', tokenContractAddress: '0x5d65d971895edc438f465c17db6992698a52318d', decimalPlaces: 18 },
         { type: 'ht', coin: 'eth', network: 'Mainnet', name: 'Huobi Token', tokenContractAddress: '0x6f259637dcd74c767781e37bc6133cd6a68aa161', decimalPlaces: 18 },
-        { type: 'lgo', coin: 'eth', network: 'Mainnet', name: 'LGO Exchange', tokenContractAddress: '0x123ab195dd38b1b40510d467a6a359b201af056f', decimalPlaces: 8 },
+        { type: 'lgo', coin: 'eth', network: 'Mainnet', name: 'LGO Exchange', tokenContractAddress: '0x0a50c93c762fdd6e56d86215c24aaad43ab629aa', decimalPlaces: 8 },
         { type: 'hydro', coin: 'eth', network: 'Mainnet', name: 'Hydro', tokenContractAddress: '0xebbdf302c940c6bfd49c6b165f457fdb324649bc', decimalPlaces: 18 },
         { type: 'wht', coin: 'eth', network: 'Mainnet', name: 'Whatshalal', tokenContractAddress: '0xae8d4da01658dd0ac118dde60f5b78042d0da7f2', decimalPlaces: 18 },
         { type: 'amn', coin: 'eth', network: 'Mainnet', name: 'Amon', tokenContractAddress: '0x737f98ac8ca59f2c68ad658e3c3d8c8963e40a4c', decimalPlaces: 18 },
@@ -254,6 +254,10 @@ export const tokens = {
         { type: 'cdai', coin: 'eth', network: 'Mainnet', name: 'Compound DAI', tokenContractAddress: '0xf5dce57282a584d2746faf1593d3121fcac444dc', decimalPlaces: 8 },
         { type: 'ceth', coin: 'eth', network: 'Mainnet', name: 'Compound Ether', tokenContractAddress: '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5', decimalPlaces: 8 },
         { type: 'valor', coin: 'eth', network: 'Mainnet', name: 'ValorToken', tokenContractAddress: '0x297e4e5e59ad72b1b0a2fd446929e76117be0e0a', decimalPlaces: 18 },
+        { type: 'thkd', coin: 'eth', network: 'Mainnet', name: 'TrueHKD', tokenContractAddress: '0x0000852600ceb001e08e00bc008be620d60031f2', decimalPlaces: 18 },
+        { type: 'tcad', coin: 'eth', network: 'Mainnet', name: 'TrueCAD', tokenContractAddress: '0x00000100f2a2bd000715001920eb70d229700085', decimalPlaces: 18 },
+        { type: 'edn', coin: 'eth', network: 'Mainnet', name: 'Eden', tokenContractAddress: '0x05860d453c7974cbf46508c06cba14e211c629ce', decimalPlaces: 18 },
+        { type: 'emx', coin: 'eth', network: 'Mainnet', name: 'EMX', tokenContractAddress: '0x75a29c405bd5ab2f3b35144af937ee98d390b5ee', decimalPlaces: 18 },
       ]
     },
     ofc: {
