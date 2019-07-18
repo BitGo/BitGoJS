@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import * as Bluebird from 'bluebird';
 import { BaseCoin } from './baseCoin';
 
@@ -11,8 +14,12 @@ const co = Bluebird.coroutine;
  * @param bitgo The BitGo object
  * @returns result of the query
  */
-export function getFirstPendingTransaction(params: { walletId?: string, enterpriseId?: string }, baseCoin: BaseCoin, bitgo: any): Bluebird<any> {
-  return co(function *() {
+export function getFirstPendingTransaction(
+  params: { walletId?: string; enterpriseId?: string },
+  baseCoin: BaseCoin,
+  bitgo: any
+): Bluebird<any> {
+  return co(function*() {
     // These errors should never happen when this is called from wallet.js or enterprise.js
     if (!baseCoin) {
       throw new Error('Must provide baseCoin');
@@ -23,7 +30,8 @@ export function getFirstPendingTransaction(params: { walletId?: string, enterpri
     if (!params.walletId && !params.enterpriseId) {
       throw new Error('Must provide either walletId or enterpriseId');
     }
-    return bitgo.get(baseCoin.url('/tx/pending/first'))
+    return bitgo
+      .get(baseCoin.url('/tx/pending/first'))
       .query(params)
       .result();
   }).call(this);

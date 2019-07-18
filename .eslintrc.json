@@ -41,7 +41,6 @@
     "no-inner-declarations": "off",
     "no-useless-escape": "off",
     "func-names": "off",
-    "generator-star-spacing": ["error", {"before": true, "after": false}],
     "yield-star-spacing": ["error", {"before": true, "after": false}],
     "no-duplicate-imports": "error",  // whilst imports are not being used, if we start to use them, we do not want duplicates
     "no-unreachable": "error",

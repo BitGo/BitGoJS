@@ -1,6 +1,12 @@
+/**
+ * @prettier
+ */
 import * as createHmac from 'create-hmac';
 
-export interface HdKeypair { key: Buffer, chainCode: Buffer }
+export interface HdKeypair {
+  key: Buffer;
+  chainCode: Buffer;
+}
 
 /**
  * Heirarchical determinisitic key derivation for the ed25519 elliptic curve,
@@ -39,8 +45,7 @@ export class Ed25519KeyDeriver {
       .slice(1)
       .map(this.replaceDerive);
     return segments.reduce(
-      (parentKeys, segment) =>
-        this.CKDPriv(parentKeys, segment + Ed25519KeyDeriver.HARDENED_OFFSET),
+      (parentKeys, segment) => this.CKDPriv(parentKeys, segment + Ed25519KeyDeriver.HARDENED_OFFSET),
       { key, chainCode }
     );
   }
