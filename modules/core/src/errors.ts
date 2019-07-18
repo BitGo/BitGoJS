@@ -68,6 +68,13 @@ export class InvalidAddressError extends BitGoJsError {
   }
 }
 
+export class InvalidAmountError extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'invalid amount');
+    Object.setPrototypeOf(this, InvalidAmountError.prototype);
+  }
+}
+
 export class InvalidAddressVerificationObjectPropertyError extends BitGoJsError {
   public constructor(message?: string) {
     super(message || 'address validation failure');
@@ -128,5 +135,19 @@ export class EthereumLibraryUnavailableError extends BitGoJsError {
   public constructor(message?: string) {
     super(message || 'Ethereum library required for operation is not available');
     Object.setPrototypeOf(this, EthereumLibraryUnavailableError.prototype);
+  }
+}
+
+export class InvalidEthereumRecipients extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'The specified Ethereum recipients array is invalid');
+    Object.setPrototypeOf(this, InvalidEthereumRecipients.prototype);
+  }
+}
+
+export class InvalidEthereumBatchData extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'This Ethereum batch transaction data is invalid');
+    Object.setPrototypeOf(this, InvalidEthereumBatchData.prototype);
   }
 }

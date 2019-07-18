@@ -12,6 +12,7 @@ import * as url from 'url';
 import * as querystring from 'querystring';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
+import { Recipient } from '../types';
 const co = Bluebird.coroutine;
 import { KeyPair } from '../keychains';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
@@ -29,11 +30,6 @@ export interface EosTx {
   signatures: string[];
   packed_trx: string;
   compression: string;
-}
-
-export interface Recipient {
-  address: string;
-  amount: string;
 }
 
 interface EosTransactionHeaders {

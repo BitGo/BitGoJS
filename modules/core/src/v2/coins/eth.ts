@@ -1,5 +1,5 @@
 import { BaseCoin } from '../baseCoin';
-import { NodeCallback } from '../types';
+import { NodeCallback, Recipient } from '../types';
 import { Wallet } from '../wallet';
 import * as common from '../../common';
 import * as config from '../../config';
@@ -12,6 +12,7 @@ import * as crypto from 'crypto';
 import * as secp256k1 from 'secp256k1';
 import * as utxoLib from 'bitgo-utxo-lib';
 import * as request from 'superagent';
+import { InvalidAddressError, InvalidAmountError, InvalidEthereumBatchData, InvalidEthereumRecipients } from '../../errors';
 
 const co = Bluebird.coroutine;
 
@@ -30,6 +31,10 @@ const optionalDeps = {
     return require('ethereumjs-tx');
   }
 };
+
+interface EthRecipient extends Recipient {
+  data?: string;
+}
 
 /**
  * The extra parameters to send to platform build route for hop transactions
@@ -50,7 +55,9 @@ interface HopPrebuild {
 }
 
 export class Eth extends BaseCoin {
-  static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
+  static readonly hopTransactionSalt = 'bitgoHopAddressRequestSalt';
+  static readonly batcherFunctionSignature = 'cf4c58e2';
+  static readonly batchMethodTypes = ['address[]', 'uint256[]'];
 
   static createInstance(bitgo: any): BaseCoin {
     return new Eth(bitgo);
@@ -208,12 +215,13 @@ export class Eth extends BaseCoin {
 
   getOperationSha3ForExecuteAndConfirm(recipients, expireTime, contractSequenceId) {
     if (!recipients || !Array.isArray(recipients)) {
-      throw new Error('expecting array of recipients');
+      throw new InvalidEthereumRecipients('expecting array of recipients');
     }
 
-    // Right now we only support 1 recipient
+    // Even in batch transactions, the recipients array will be of size 1
+    // because rest of recipients will be in data
     if (recipients.length !== 1) {
-      throw new Error('must send to exactly 1 recipient');
+      throw new InvalidEthereumRecipients(`during sending, the recipient array should always be of length 1, length was ${recipients.length} here`);
     }
 
     if (!_.isNumber(expireTime)) {
@@ -376,6 +384,7 @@ export class Eth extends BaseCoin {
       gasLimit: params.gasLimit,
       gasPrice: params.gasPrice,
       hopTransaction: txPrebuild.hopTransaction,
+      isBatch: txPrebuild.isBatch,
     };
     return { halfSigned: txParams };
   }
@@ -833,7 +842,6 @@ export class Eth extends BaseCoin {
     }).call(this).asCallback(callback);
   }
 
-
   /**
    * Creates the extra parameters needed to build a hop transaction
    * @param buildParams The original build parameters
@@ -883,6 +891,102 @@ export class Eth extends BaseCoin {
         },
         gasLimit,
       };
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Verifies that the provided batch data is valid
+   * @param prebuildRecipients the recipients in the prebuild object
+   * @param originalRecipients the original recipients array passed in
+   */
+  protected validateBatchData(prebuildRecipients: EthRecipient[], originalRecipients: EthRecipient[]): void {
+    const [{ address: sendAddress, amount: sendAmount, data: batchData }] = prebuildRecipients;
+
+    if (!batchData || typeof(batchData) !== 'string' || batchData.length % 2 !== 0 ||
+        !batchData.match(/^(0x)?[0-9a-fA-F]*$/)) {
+      throw new InvalidEthereumBatchData('batch data must be a hex string');
+    }
+    prebuildRecipients[0].data = optionalDeps.ethUtil.addHexPrefix(batchData).toLowerCase();
+
+    if (typeof(sendAmount) !== 'string' || !sendAmount.match(/^[0-9]+$/)) {
+      throw new InvalidAmountError('total amount to send not in valid string form');
+    }
+
+    if (sendAddress !== common.Environments[this.bitgo.env].batcherContractAddress) {
+      throw new InvalidEthereumBatchData('batch transactions must be addressed to the Batcher');
+    }
+
+    const functionSignatureHash = batchData.slice(2, 10);
+    if (functionSignatureHash !== Eth.batcherFunctionSignature) {
+      throw new InvalidEthereumBatchData('batch data function signature hash does not match expected');
+    }
+
+    const [addresses, amounts] = optionalDeps.ethAbi.rawDecode(Eth.batchMethodTypes, Buffer.from(batchData.slice(10), 'hex'));
+    if (addresses.length !== amounts.length) {
+      throw new InvalidEthereumBatchData('recipients and amounts arrays must be the same size');
+    }
+
+    const batchRecipients = [];
+    let totalAmount = new BigNumber(0);
+    for (let i = 0; i < addresses.length; i++) {
+      const address = addresses[i].toString('hex');
+      if (!this.isValidAddress(address)) {
+        throw new InvalidAddressError('invalid address: ' + address);
+      }
+
+      const amount = amounts[i].toString();
+      if (typeof(amount) !== 'string' || !amount.match(/^[0-9]+$/)) {
+        throw new InvalidAmountError('invalid amount: ' + amounts[i].toString());
+      }
+      totalAmount = totalAmount.plus(amount);
+
+      batchRecipients.push({
+        address,
+        amount,
+      });
+    }
+
+    const sortedBatchRecipients = _(batchRecipients).sortBy(['address', 'amount'])
+    .map(({ address, amount }) => ({
+      address: optionalDeps.ethUtil.addHexPrefix(address),
+      amount: new BigNumber(amount).toFixed(),
+    }))
+    .value();
+
+    const sortedOriginalRecipients = _(originalRecipients).sortBy(['address', 'amount'])
+    .map(({ address, amount }) => ({
+      address: optionalDeps.ethUtil.addHexPrefix(address),
+      amount: new BigNumber(amount).toFixed(),
+    }))
+    .value();
+
+    if (!_.isEqual(sortedBatchRecipients, sortedOriginalRecipients)) {
+      throw new InvalidEthereumBatchData('batch recipients in data does not match original recipients')
+    }
+
+    if (!totalAmount.eq(sendAmount)) {
+      throw new InvalidEthereumBatchData(`Batcher send amount ${sendAmount} is not equal to sum of individual transfers ${totalAmount.toFixed()}`);
+    }
+  }
+
+  /**
+   * Validates that the prebuild data returned by platform is valid
+   * @param params
+   * @param callback
+   * @throws Error if the prebuild is invalid
+   */
+  verifyTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
+    return co(function *() {
+      const { txParams, txPrebuild } = params;
+      if (txPrebuild.recipients.length !== 1) {
+        throw new InvalidEthereumRecipients(`prebuild recipients array should always be of length 1, was of length ${txPrebuild.recipients.length} here`);
+      }
+      if (txParams.recipients.length === 1 && !_.isEqual(txPrebuild.recipients, txParams.recipients)) {
+        throw new InvalidEthereumRecipients('recipients returned by BitGo are not equal to recipients in original tx request');
+      }
+      if (txParams.recipients.length > 1) {
+        this.validateBatchData(txPrebuild.recipients, txParams.recipients);
+      }
     }).call(this).asCallback(callback);
   }
 
