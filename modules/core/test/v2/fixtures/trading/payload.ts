@@ -4,7 +4,14 @@ export default {
       version: '1.1.1',
       accountId: 'walletId',
       currency: 'ofctbtc',
-      amount: '100000000',
+      subtotal: '100000000',
+      fees: [
+        {
+          feeType: 'BITGO_SETTLEMENT_FEE',
+          feeAmount: '1000'
+        }
+      ],
+      amount: '100001000',
       nonceHold: 'bfrE8itPwYZB+ofDhblE6g==',
       nonceSettle: 'EymF2LXnRzn8acbcCFwgUA==',
       otherParties: [
@@ -26,7 +33,14 @@ export default {
       version: '1.1.1',
       accountId: 'walletId',
       currency: 'ofctbtc',
-      amount: '10000000000',
+      subtotal: '10000000000',
+      fees: [
+        {
+          feeType: 'BITGO_SETTLEMENT_FEE',
+          feeAmount: '1000'
+        }
+      ],
+      amount: '10000001000',
       nonceHold: 'bfrE8itPwYZB+ofDhblE6g==',
       nonceSettle: 'EymF2LXnRzn8acbcCFwgUA==',
       otherParties: [

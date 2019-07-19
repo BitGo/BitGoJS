@@ -72,7 +72,7 @@ describe('Trade Payloads', function() {
     payload.should.have.property('version', '1.1.1');
     payload.should.have.property('accountId', 'walletId');
     payload.should.have.property('currency', 'ofctbtc');
-    payload.should.have.property('amount', '100000000');
+    payload.should.have.property('subtotal', '100000000');
     payload.should.have.property('nonceHold');
     payload.should.have.property('nonceSettle');
     payload.should.have.property('otherParties').with.length(2);
