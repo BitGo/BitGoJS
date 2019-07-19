@@ -1,17 +1,19 @@
 import { BaseCoin } from '../baseCoin';
+import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import * as common from '../../common';
 import * as config from '../../config';
-const BigNumber = require('bignumber.js');
-const keccak = require('keccak');
-const Util = require('../../util');
+import { BigNumber } from 'bignumber.js';
+import * as keccak from 'keccak';
+import { Util } from '../util';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import * as crypto from 'crypto';
 import * as secp256k1 from 'secp256k1';
 import * as utxoLib from 'bitgo-utxo-lib';
+import * as request from 'superagent';
+
 const co = Bluebird.coroutine;
-const request = require('superagent');
 
 // The following dependencies are optional. If they are missing we still want to be
 // able to require `eth.js` without error.
@@ -48,6 +50,7 @@ interface HopPrebuild {
 }
 
 export class Eth extends BaseCoin {
+  static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
 
   static createInstance(bitgo: any): BaseCoin {
     return new Eth(bitgo);
@@ -57,24 +60,22 @@ export class Eth extends BaseCoin {
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor() {
+  getBaseFactor(): string {
     // 10^18
     return '1000000000000000000';
   }
 
-  getChain() {
+  getChain(): string {
     return 'eth';
   }
 
-  getFamily() {
+  getFamily(): string {
     return 'eth';
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Ethereum';
   }
-
-  static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
 
   /**
    * Flag for sending value of 0
@@ -96,7 +97,7 @@ export class Eth extends BaseCoin {
    * Evaluates whether an address string is valid for this coin
    * @param address
    */
-  isValidAddress(address) {
+  isValidAddress(address: string): boolean {
     return optionalDeps.ethUtil.isValidAddress(optionalDeps.ethUtil.addHexPrefix(address));
   }
 
@@ -106,7 +107,7 @@ export class Eth extends BaseCoin {
    * @param {String} pub the pub to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidPub(pub) {
+  isValidPub(pub: string): boolean {
     try {
       utxoLib.HDNode.fromBase58(pub);
       return true;
@@ -119,7 +120,7 @@ export class Eth extends BaseCoin {
    * Default gas price from platform
    * @returns {BigNumber}
    */
-  getRecoveryGasPrice() {
+  getRecoveryGasPrice(): any {
     return new optionalDeps.ethUtil.BN('20000000000');
   }
 
@@ -127,7 +128,7 @@ export class Eth extends BaseCoin {
    * Default gas limit from platform
    * @returns {BigNumber}
    */
-  getRecoveryGasLimit() {
+  getRecoveryGasLimit(): any {
     return new optionalDeps.ethUtil.BN('500000');
   }
 
@@ -145,7 +146,7 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns {BigNumber} address balance
    */
-  queryAddressBalance(address, callback) {
+  queryAddressBalance(address: string, callback?: NodeCallback<any>): Bluebird<any> {
     return co(function *() {
       const result = yield this.recoveryBlockchainExplorerQuery({
         module: 'account',
@@ -163,7 +164,7 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns {BigNumber} token balaance in base units
    */
-  queryAddressTokenBalance(tokenContractAddress, walletContractAddress, callback) {
+  queryAddressTokenBalance(tokenContractAddress: string, walletContractAddress: string, callback?: NodeCallback<any>): Bluebird<any> {
     return co(function *() {
       if (!optionalDeps.ethUtil.isValidAddress(tokenContractAddress)) {
         throw new Error('cannot get balance for invalid token address');
@@ -922,10 +923,10 @@ export class Eth extends BaseCoin {
         } = originalParams;
 
         // Then validate that the tx params actually equal the requested params
-        const originalAmount = BigNumber(recipients[0].amount);
+        const originalAmount = new BigNumber(recipients[0].amount);
         const originalDestination: string = recipients[0].address;
 
-        const hopAmount = BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value));
+        const hopAmount = new BigNumber(optionalDeps.ethUtil.bufferToHex(builtHopTx.value));
         const hopDestination: string = optionalDeps.ethUtil.bufferToHex(builtHopTx.to);
         if (!hopAmount.eq(originalAmount)) {
           throw new Error(`Hop amount: ${hopAmount} does not equal original amount: ${originalAmount}`);

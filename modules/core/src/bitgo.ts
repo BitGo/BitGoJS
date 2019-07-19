@@ -16,7 +16,7 @@ import shamir = require('secrets.js-grempe');
 import sjcl = require('./vendor/sjcl.min.js');
 import bs58 = require('bs58');
 import * as common from './common';
-import Util = require('./util');
+import { Util } from './v2/util';
 import * as Bluebird from 'bluebird';
 import co = Bluebird.coroutine;
 import pjson = require('../package.json');

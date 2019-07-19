@@ -9,7 +9,8 @@ import { Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { hdPath } from '../bitcoin';
-const util = require('../util');
+import { RequestTracer } from './util';
+
 const co = Bluebird.coroutine;
 
 export class Wallets {
@@ -256,7 +257,7 @@ export class Wallets {
       const passphrase = params.passphrase;
       const canEncrypt = !!passphrase && typeof passphrase === 'string';
       const isCold = !canEncrypt || !!params.userKey;
-      const reqId = util.createRequestId();
+      const reqId = new RequestTracer();
 
       // Add the user keychain
       const userKeychainPromise = co(function*() {
@@ -547,7 +548,7 @@ export class Wallets {
         query.allTokens = params.allTokens;
       }
 
-      this.bitgo._reqId = params.reqId || util.createRequestId();
+      this.bitgo._reqId = params.reqId || new RequestTracer();
 
       const wallet = yield this.bitgo
         .get(this.baseCoin.url('/wallet/' + params.id))
@@ -570,7 +571,7 @@ export class Wallets {
     return co(function*() {
       common.validateParams(params, ['address'], [], callback);
 
-      this.bitgo._reqId = params.reqId || util.createRequestId();
+      this.bitgo._reqId = params.reqId || new RequestTracer();
 
       const wallet = yield this.bitgo.get(this.baseCoin.url('/wallet/address/' + params.address)).result();
       return new Wallet(this.bitgo, this.baseCoin, wallet);

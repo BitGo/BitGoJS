@@ -123,3 +123,10 @@ export class AddressGenerationError extends BitGoJsError {
     Object.setPrototypeOf(this, KeyRecoveryServiceError.prototype);
   }
 }
+
+export class EthereumLibraryUnavailableError extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'Ethereum library required for operation is not available');
+    Object.setPrototypeOf(this, EthereumLibraryUnavailableError.prototype);
+  }
+}

@@ -6,8 +6,8 @@
 //
 
 import * as crypto from 'crypto';
-const common = require('./common');
-const Util = require('./util');
+import * as common from './common';
+import { Util } from './v2/util';
 import * as bitcoin from 'bitgo-utxo-lib';
 import { hdPath } from './bitcoin';
 const _ = require('lodash');

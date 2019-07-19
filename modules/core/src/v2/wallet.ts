@@ -12,8 +12,7 @@ import { drawKeycard } from './keycard';
 import { TradingAccount } from './trading/tradingAccount';
 import { NodeCallback } from './types';
 import { PendingApproval } from './pendingApproval';
-
-const util = require('../util');
+import { RequestTracer } from './util';
 
 const debug = debugLib('bitgo:v2:wallet');
 const co = Bluebird.coroutine;
@@ -432,7 +431,7 @@ export class Wallet {
     return co(function *() {
       common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
-      const reqId = util.createRequestId();
+      const reqId = new RequestTracer();
       const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0], reqId });
       const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'numUnspentsToMake', 'feeTxConfirmTarget', 'limit', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'maxFeePercentage']);
       this.bitgo._reqId = reqId;
@@ -476,7 +475,7 @@ export class Wallet {
       common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
       const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'maxFeePercentage', 'feeTxConfirmTarget']);
-      const reqId = util.createRequestId();
+      const reqId = new RequestTracer();
       this.bitgo._reqId = reqId;
       const response = yield this.bitgo.post(this.url('/fanoutUnspents'))
         .send(filteredParams)
@@ -550,7 +549,7 @@ export class Wallet {
       }
       // the following flow works for all UTXO coins
 
-      const reqId = util.createRequestId();
+      const reqId = new RequestTracer();
       const filteredParams = _.pick(params, ['address', 'feeRate', 'maxFeeRate', 'feeTxConfirmTarget']);
       this.bitgo._reqId = reqId;
       const response = yield this.bitgo.post(this.url('/sweepWallet'))
@@ -720,7 +719,7 @@ export class Wallet {
   } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return co(function *() {
       const addressParams: any = {};
-      const reqId = util.createRequestId();
+      const reqId = new RequestTracer();
 
       if (!_.isUndefined(chain)) {
         if (!_.isInteger(chain)) {
@@ -1437,7 +1436,7 @@ export class Wallet {
     return co(function *() {
       common.validateParams(params, [], ['comment', 'otp'], callback);
       debug('sendMany called');
-      const reqId = params.reqId || util.createRequestId();
+      const reqId = params.reqId || new RequestTracer();
       params.reqId = reqId;
       const coin = this.baseCoin;
       if (_.isObject(params.recipients)) {
