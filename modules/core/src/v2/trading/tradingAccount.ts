@@ -96,7 +96,10 @@ export class TradingAccount {
     // the amount field will change if fees are present, but subtotal should always equal the requested send amount
     let expectedAmount: string = params.amount;
     if (payloadObj.fees) {
-      const totalFees = payloadObj.fees.reduce((fees: BigNumber, feeObj) => fees.plus(feeObj.feeAmount), new BigNumber(0));
+      const totalFees = payloadObj.fees.reduce(
+        (fees: BigNumber, feeObj) => fees.plus(feeObj.feeAmount),
+        new BigNumber(0)
+      );
       expectedAmount = new BigNumber(payloadObj.subtotal).plus(totalFees).toString();
     }
 
