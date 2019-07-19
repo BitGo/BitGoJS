@@ -15,6 +15,27 @@ const Keychains = require('./keychains');
 const PendingApprovals = require('./pendingApprovals');
 import { Enterprises } from './enterprises';
 
+export interface BaseCoinTransactionOutput {
+  address: string;
+  amount: string;
+}
+
+export interface BaseCoinTransactionFee {
+  fee: string;
+  feeRate?: number;
+  size?: number;
+}
+
+export interface BaseCoinTransactionExplanation {
+  displayOrder: string[];
+  id: string;
+  outputs: BaseCoinTransactionOutput[];
+  outputAmount: string;
+  changeOutputs: BaseCoinTransactionOutput[];
+  changeAmount: string;
+  fee: BaseCoinTransactionFee;
+}
+
 export abstract class BaseCoin {
 
   protected readonly bitgo;

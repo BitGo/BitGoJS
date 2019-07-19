@@ -38,8 +38,7 @@ describe('Abstract UTXO Coin:', () => {
     });
 
     it('should classify outputs which spend change back to a v1 wallet base address as internal', co(function *() {
-      sinon.stub(coin, 'explainTransaction')
-      .returns({
+      sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [],
         changeOutputs: [{
           address: wallet._wallet.migratedFrom,
@@ -47,8 +46,7 @@ describe('Abstract UTXO Coin:', () => {
         }]
       });
 
-      sinon.stub(coin, 'verifyAddress')
-      .throws(new errors.UnexpectedAddressError('test error'));
+      sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
 
 
       const parsedTransaction = yield coin.parseTransaction({ txParams: {}, txPrebuild: {}, wallet, verification });
@@ -66,8 +64,7 @@ describe('Abstract UTXO Coin:', () => {
 
     it('should classify outputs which spend to addresses not on the wallet as external', co(function *() {
       const externalAddress = 'external_address';
-      sinon.stub(coin, 'explainTransaction')
-      .returns({
+      sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [{
           address: externalAddress,
           amount: outputAmount
@@ -75,8 +72,7 @@ describe('Abstract UTXO Coin:', () => {
         changeOutputs: []
       });
 
-      sinon.stub(coin, 'verifyAddress')
-      .throws(new errors.UnexpectedAddressError('test error'));
+      sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
 
       const parsedTransaction = yield coin.parseTransaction({ txParams: {}, txPrebuild: {}, wallet, verification });
 
@@ -97,8 +93,7 @@ describe('Abstract UTXO Coin:', () => {
       const outputAmount = 10000;
       const recipients = [];
 
-      sinon.stub(coin, 'explainTransaction')
-      .returns({
+      sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [],
         changeOutputs: [
           {

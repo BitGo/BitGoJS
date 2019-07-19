@@ -80,22 +80,22 @@ describe('XLM:', function() {
     }).should.throw();
   });
 
-  it('Should be able to explain an XLM transaction', function() {
-    const signedExplanation = basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAB9AAEvJEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAB1RFU1RJTkcAAAAAAQAAAAAAAAABAAAAALgEl4p84728zfXtl/JdOsx3QbI97mcybqcXdfgdv54zAAAAAAAAAAEqBfIAAAAAAAAAAAFWi1PfAAAAQDoqo7juOBZawMlk8znIbYqSKemjgmINosp/P4+0SFGo/xJy1YgD6YEc65aWuyBxucFFBXCSlAxP2Z7nPMyjewM=' });
+  it('Should be able to explain an XLM transaction', co(function *() {
+    const signedExplanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAB9AAEvJEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAB1RFU1RJTkcAAAAAAQAAAAAAAAABAAAAALgEl4p84728zfXtl/JdOsx3QbI97mcybqcXdfgdv54zAAAAAAAAAAEqBfIAAAAAAAAAAAFWi1PfAAAAQDoqo7juOBZawMlk8znIbYqSKemjgmINosp/P4+0SFGo/xJy1YgD6YEc65aWuyBxucFFBXCSlAxP2Z7nPMyjewM=' });
     signedExplanation.outputAmount.should.equal('5000000000');
     signedExplanation.fee.fee.should.equal('500');
     signedExplanation.memo.value.should.equal('TESTING');
     signedExplanation.memo.type.should.equal('text');
     signedExplanation.changeOutputs.length.should.equal(0);
     signedExplanation.changeAmount.should.equal('0');
-    const unsignedExplanation = basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAAZAAEvJEAAAACAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAEAAAABAAAAAAAAAAEAAAAAuASXinzjvbzN9e2X8l06zHdBsj3uZzJupxd1+B2/njMAAAAAAAAAAlQL5AAAAAAAAAAAAA==' });
+    const unsignedExplanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAAZAAEvJEAAAACAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAEAAAABAAAAAAAAAAEAAAAAuASXinzjvbzN9e2X8l06zHdBsj3uZzJupxd1+B2/njMAAAAAAAAAAlQL5AAAAAAAAAAAAA==' });
     unsignedExplanation.outputAmount.should.equal('10000000000');
     unsignedExplanation.fee.fee.should.equal('100');
     unsignedExplanation.memo.value.should.equal('1');
     unsignedExplanation.memo.type.should.equal('id');
     unsignedExplanation.changeOutputs.length.should.equal(0);
     unsignedExplanation.changeAmount.should.equal('0');
-  });
+  }));
 
   it('isValidMemoId should work', function() {
     basecoin.isValidMemo({ value: '1', type: 'id' }).should.equal(true);

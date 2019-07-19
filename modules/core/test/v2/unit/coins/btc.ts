@@ -413,36 +413,24 @@ describe('BTC:', function() {
       });
 
       describe('failure', () => {
-        it('should fail for invalid transaction hexes', () => {
-          (() => coin.explainTransaction())
-          .should.throw('invalid transaction hex, must be a valid hex string');
+        it('should fail for invalid transaction hexes', co(function *() {
+          yield coin.explainTransaction().should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
-          (() => coin.explainTransaction({
-            txHex: ''
-          })).should.throw('invalid transaction hex, must be a valid hex string');
+          yield coin.explainTransaction({ txHex: '' }).should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
-          (() => coin.explainTransaction({
-            txHex: 'nonsense'
-          })).should.throw('invalid transaction hex, must be a valid hex string');
+          yield coin.explainTransaction({ txHex: 'nonsense' }).should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
-          (() => coin.explainTransaction({
-            txHex: 1234
-          })).should.throw('invalid transaction hex, must be a valid hex string');
+          yield coin.explainTransaction({ txHex: 1234 }).should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
-          (() => coin.explainTransaction({
-            txHex: '1234a'
-          })).should.throw('invalid transaction hex, must be a valid hex string');
+          yield coin.explainTransaction({ txHex: '1234a' }).should.be.rejectedWith('invalid transaction hex, must be a valid hex string');
 
-          (() => coin.explainTransaction({
-            txHex: '1234ab'
-          })).should.throw('failed to parse transaction hex');
-        });
-
+          yield coin.explainTransaction({ txHex: '1234ab' }).should.be.rejectedWith('failed to parse transaction hex');
+        }));
       });
 
       describe('success', () => {
-        it('should handle undefined tx info for segwit transactions', () => {
-          const { signatures, inputSignatures } = coin.explainTransaction({
+        it('should handle undefined tx info for segwit transactions', co(function *() {
+          const { signatures, inputSignatures } = yield coin.explainTransaction({
             txHex: txs.p2shP2wsh.halfSigned
           });
 
@@ -452,10 +440,10 @@ describe('BTC:', function() {
           should.exist(inputSignatures);
           inputSignatures.should.have.length(2);
           inputSignatures.should.deepEqual([0, 0]);
-        });
+        }));
 
-        it('should count zero signatures on an unsigned transaction', () => {
-          const { signatures, inputSignatures } = coin.explainTransaction({
+        it('should count zero signatures on an unsigned transaction', co(function *() {
+          const { signatures, inputSignatures } = yield coin.explainTransaction({
             txHex: unsignedTx
           });
 
@@ -465,10 +453,10 @@ describe('BTC:', function() {
           should.exist(inputSignatures);
           inputSignatures.should.have.length(2);
           inputSignatures.should.deepEqual([0, 0]);
-        });
+        }));
 
-        it('should count one signature on a half-signed p2sh transaction', () => {
-          const { signatures, inputSignatures } = coin.explainTransaction({
+        it('should count one signature on a half-signed p2sh transaction', co(function *() {
+          const { signatures, inputSignatures } = yield coin.explainTransaction({
             txHex: txs.p2sh.halfSigned
           });
 
@@ -478,10 +466,10 @@ describe('BTC:', function() {
           should.exist(inputSignatures);
           inputSignatures.should.have.length(1);
           inputSignatures.should.deepEqual([1]);
-        });
+        }));
 
-        it('should count two signatures on a fully-signed p2sh transaction', () => {
-          const { signatures, inputSignatures } = coin.explainTransaction({
+        it('should count two signatures on a fully-signed p2sh transaction', co(function *() {
+          const { signatures, inputSignatures } = yield coin.explainTransaction({
             txHex: txs.p2sh.fullySigned
           });
 
@@ -491,10 +479,10 @@ describe('BTC:', function() {
           should.exist(inputSignatures);
           inputSignatures.should.have.length(1);
           inputSignatures.should.deepEqual([2]);
-        });
+        }));
 
-        it('should count one signature on a half-signed p2shP2wsh transaction', () => {
-          const { signatures, inputSignatures } = coin.explainTransaction({
+        it('should count one signature on a half-signed p2shP2wsh transaction', co(function *() {
+          const { signatures, inputSignatures } = yield coin.explainTransaction({
             txHex: txs.p2shP2wsh.halfSigned,
             txInfo: txs.p2shP2wsh.txInfo
           });
@@ -505,10 +493,10 @@ describe('BTC:', function() {
           should.exist(inputSignatures);
           inputSignatures.should.have.length(2);
           inputSignatures.should.deepEqual([1, 1]);
-        });
+        }));
 
-        it('should count two signatures on a fully-signed p2shP2wsh transaction', () => {
-          const { signatures, inputSignatures } = coin.explainTransaction({
+        it('should count two signatures on a fully-signed p2shP2wsh transaction', co(function *() {
+          const { signatures, inputSignatures } = yield coin.explainTransaction({
             txHex: txs.p2shP2wsh.fullySigned,
             txInfo: txs.p2shP2wsh.txInfo
           });
@@ -519,10 +507,10 @@ describe('BTC:', function() {
           should.exist(inputSignatures);
           inputSignatures.should.have.length(2);
           inputSignatures.should.deepEqual([2, 2]);
-        });
+        }));
 
-        it('should count one signature on a half-signed p2wsh transaction', () => {
-          const { signatures, inputSignatures } = coin.explainTransaction({
+        it('should count one signature on a half-signed p2wsh transaction', co(function *() {
+          const { signatures, inputSignatures } = yield coin.explainTransaction({
             txHex: txs.p2wsh.halfSigned,
             txInfo: txs.p2wsh.txInfo
           });
@@ -531,10 +519,10 @@ describe('BTC:', function() {
           signatures.should.equal(1);
 
           should.exist(inputSignatures);
-        });
+        }));
 
-        it('should count two signatures on a fully-signed p2wsh transaction', () => {
-          const { signatures, inputSignatures } = coin.explainTransaction({
+        it('should count two signatures on a fully-signed p2wsh transaction', co(function *() {
+          const { signatures, inputSignatures } = yield coin.explainTransaction({
             txHex: txs.p2wsh.fullySigned,
             txInfo: txs.p2wsh.txInfo
           });
@@ -543,7 +531,7 @@ describe('BTC:', function() {
           signatures.should.equal(2);
 
           should.exist(inputSignatures);
-        });
+        }));
       });
     });
   });

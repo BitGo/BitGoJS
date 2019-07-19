@@ -31,7 +31,7 @@ Promise.coroutine(function *() {
     ],
     walletPassphrase: walletPassphrase
   });
-  const explanation = basecoin.explainTransaction({ txHex: transaction.tx });
+  const explanation = yield basecoin.explainTransaction({ txHex: transaction.tx });
 
   console.log('Wallet ID:', walletInstance.id());
   console.log('Current Receive Address:', walletInstance.receiveAddress());

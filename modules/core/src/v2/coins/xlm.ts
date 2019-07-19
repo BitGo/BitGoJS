@@ -16,7 +16,11 @@ import {
   KeyRecoveryServiceError,
   UnexpectedAddressError
 } from '../../errors';
-import { BaseCoin } from '../baseCoin';
+import {
+  BaseCoin,
+  BaseCoinTransactionOutput,
+  BaseCoinTransactionExplanation,
+} from '../baseCoin';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 
@@ -54,10 +58,6 @@ interface RecoveryOptions extends InitiateRecoveryOptions {
   rootAddress: string;
 }
 
-interface ExplainTransactionOptions {
-  txBase64: string;
-}
-
 interface RecoveryTransaction {
   tx: string;
   recoveryAmount: number;
@@ -84,9 +84,8 @@ interface SupplementGenerateWalletOptions {
   rootPrivateKey?: string;
 }
 
-interface TransactionOutput {
-  amount: string;
-  address: string;
+interface ExplainTransactionOptions {
+  txBase64: string;
 }
 
 interface TransactionMemo {
@@ -94,30 +93,12 @@ interface TransactionMemo {
   type?: string;
 }
 
-interface TransactionFee {
-  fee: string;
-  feeRate: number;
-  size: number;
-}
-
-interface TransactionExplanation {
-  displayOrder: string[];
-  id: string;
-  outputs: TransactionOutput[];
-  outputAmount: string;
-  changeOutputs: [];
-  changeAmount: '0';
+interface TransactionExplanation extends BaseCoinTransactionExplanation {
   memo: TransactionMemo;
-  fee: TransactionFee;
-}
-
-interface TransactionRecipient {
-  address: string;
-  amount: string;
 }
 
 interface TransactionParams {
-  recipients: TransactionRecipient[];
+  recipients: BaseCoinTransactionOutput[];
 }
 
 interface VerificationOptions {
@@ -769,63 +750,64 @@ export class Xlm extends BaseCoin {
   /**
    * Explain/parse transaction
    * @param params
-   * - txBase64: transaction encoded as base64 string
-   * @returns {{displayOrder: [string,string,string,string,string], id: *, outputs: Array, changeOutputs: Array}}
+   * @param callback
    */
-  explainTransaction(params: ExplainTransactionOptions): TransactionExplanation {
-    const { txBase64 } = params;
-    let tx;
+  explainTransaction(params: ExplainTransactionOptions, callback?: NodeCallback<TransactionExplanation>): Bluebird<TransactionExplanation> {
+    return co(function *() {
+      const { txBase64 } = params;
+      let tx;
 
-    try {
-      tx = new stellar.Transaction(txBase64);
-    } catch (e) {
-      throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
-    }
-    const id = tx.hash().toString('hex');
+      try {
+        tx = new stellar.Transaction(txBase64);
+      } catch (e) {
+        throw new Error('txBase64 needs to be a valid tx encoded as base64 string');
+      }
+      const id = tx.hash().toString('hex');
 
-    // In a Stellar tx, the _memo property is an object with the methods:
-    // value() and arm() that provide memo value and type, respectively.
-    const memo: TransactionMemo = _.result(tx, '_memo.value') && _.result(tx, '_memo.arm') ?
-      {
-        value: _.result(tx, '_memo.value').toString(),
-        type: _.result(tx, '_memo.arm'),
-      } : {};
+      // In a Stellar tx, the _memo property is an object with the methods:
+      // value() and arm() that provide memo value and type, respectively.
+      const memo: TransactionMemo = _.result(tx, '_memo.value') && _.result(tx, '_memo.arm') ?
+        {
+          value: _.result(tx, '_memo.value').toString(),
+          type: _.result(tx, '_memo.arm'),
+        } : {};
 
-    let spendAmount = new BigNumber(0);
-    // Process only operations of the native asset (XLM)
-    const operations = _.filter(tx.operations, operation => !operation.asset || operation.asset.getCode() === 'XLM');
-    if (_.isEmpty(operations)) {
-      throw new Error('missing operations');
-    }
-    const outputs = _.map(operations, operation => {
-      // Get memo to attach to address, if type is 'id'
-      const memoId = (_.get(memo, 'type') === 'id' && ! _.get(memo, 'value') ? `?memoId=${memo.value}` : '');
-      const output: TransactionOutput = {
-        amount: this.bigUnitsToBaseUnits(operation.startingBalance || operation.amount),
-        address: operation.destination + memoId,
+      let spendAmount = new BigNumber(0);
+      // Process only operations of the native asset (XLM)
+      const operations = _.filter(tx.operations, operation => !operation.asset || operation.asset.getCode() === 'XLM');
+      if (_.isEmpty(operations)) {
+        throw new Error('missing operations');
+      }
+      const outputs = _.map(operations, operation => {
+        // Get memo to attach to address, if type is 'id'
+        const memoId = (_.get(memo, 'type') === 'id' && ! _.get(memo, 'value') ? `?memoId=${memo.value}` : '');
+        const output: BaseCoinTransactionOutput = {
+          amount: this.bigUnitsToBaseUnits(operation.startingBalance || operation.amount),
+          address: operation.destination + memoId,
+        };
+        spendAmount = spendAmount.plus(output.amount);
+        return output;
+      });
+
+      const outputAmount = spendAmount.toFixed(0);
+
+      const fee = {
+        fee: tx.fee.toFixed(0),
+        feeRate: null,
+        size: null,
       };
-      spendAmount = spendAmount.plus(output.amount);
-      return output;
-    });
 
-    const outputAmount = spendAmount.toFixed(0);
-
-    const fee = {
-      fee: tx.fee.toFixed(0),
-      feeRate: null,
-      size: null,
-    };
-
-    return {
-      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
-      id,
-      outputs,
-      outputAmount,
-      changeOutputs: [],
-      changeAmount: '0',
-      memo,
-      fee,
-    };
+      return {
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+        id,
+        outputs,
+        outputAmount,
+        changeOutputs: [],
+        changeAmount: '0',
+        memo,
+        fee,
+      };
+    }).call(this).asCallback(callback);
   }
 
   /**

@@ -1,7 +1,8 @@
 /**
  * @prettier
  */
-import { BaseCoin } from '../baseCoin';
+import { BaseCoin, BaseCoinTransactionExplanation } from '../baseCoin';
+import { NodeCallback } from '../types';
 import * as _ from 'lodash';
 import {
   NaclWrapper,
@@ -15,17 +16,8 @@ import {
   Encoding,
 } from 'algosdk';
 import * as stellar from 'stellar-sdk';
-
-export interface TransactionExplanation {
-  displayOrder: string[];
-  id: string;
-  outputs: Output[];
-  changeOutputs: Output[];
-  outputAmount: string;
-  changeAmount: number;
-  fee: TransactionFee;
-  memo: string;
-}
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
 export interface SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -49,33 +41,24 @@ export interface TransactionPrebuild {
   addressVersion: number;
 }
 
-export interface HalfSignedTransaction {
+interface HalfSignedTransaction {
   halfSigned: {
     txHex: string;
   };
 }
 
-export interface Output {
-  address: string;
-  amount: string;
-}
-
-export interface TransactionFee {
-  fee: number;
-  feeRate?: number;
-  size?: number;
-}
-
-export interface ExplainTransactionOptions {
+interface ExplainTransactionOptions {
   txHex: string;
+}
+
+interface TransactionExplanation extends BaseCoinTransactionExplanation {
+  memo: string;
 }
 
 interface KeyPair {
   pub: string;
   prv: string;
 }
-
-const MAX_ALGORAND_NOTE_LENGTH = 1024;
 
 export class Algo extends BaseCoin {
   constructor(bitgo) {
@@ -196,51 +179,58 @@ export class Algo extends BaseCoin {
   /**
    * Explain/parse transaction
    * @param params
-   * - txHex: transaction encoded as base64 string
+   * @param callback
    */
-  explainTransaction(params: ExplainTransactionOptions): TransactionExplanation {
-    const { txHex } = params;
+  explainTransaction(
+    params: ExplainTransactionOptions,
+    callback?: NodeCallback<TransactionExplanation>
+  ): Bluebird<TransactionExplanation> {
+    return co(function*() {
+      const { txHex } = params;
 
-    let tx;
-    try {
-      const txToHex = Buffer.from(txHex, 'base64');
-      const decodedTx = Encoding.decode(txToHex);
+      let tx;
+      try {
+        const txToHex = Buffer.from(txHex, 'base64');
+        const decodedTx = Encoding.decode(txToHex);
 
-      // if we are a signed msig tx, the structure actually has the { msig, txn } as the root object
-      // if we are not signed, the decoded tx is the txn - refer to partialSignTxn and MultiSig constructor
-      //   in algosdk for more information
-      const txnForDecoding = decodedTx.txn || decodedTx;
+        // if we are a signed msig tx, the structure actually has the { msig, txn } as the root object
+        // if we are not signed, the decoded tx is the txn - refer to partialSignTxn and MultiSig constructor
+        //   in algosdk for more information
+        const txnForDecoding = decodedTx.txn || decodedTx;
 
-      tx = Multisig.MultiSigTransaction.from_obj_for_encoding(txnForDecoding);
-    } catch (ex) {
-      throw new Error('txHex needs to be a valid tx encoded as base64 string');
-    }
+        tx = Multisig.MultiSigTransaction.from_obj_for_encoding(txnForDecoding);
+      } catch (ex) {
+        throw new Error('txHex needs to be a valid tx encoded as base64 string');
+      }
 
-    const id = tx.txID();
-    const fee = { fee: tx.fee };
+      const id = tx.txID();
+      const fee = { fee: tx.fee };
 
-    const outputAmount = tx.amount || 0;
-    var outputs = [];
-    if (tx.to) {
-      outputs.push({
-        amount: outputAmount,
-        address: Address.encode(new Uint8Array(tx.to.publicKey)),
-      });
-    }
+      const outputAmount = tx.amount || 0;
+      const outputs = [];
+      if (tx.to) {
+        outputs.push({
+          amount: outputAmount,
+          address: Address.encode(new Uint8Array(tx.to.publicKey)),
+        });
+      }
 
-    // TODO(CT-480): add recieving address display here
-    const memo = tx.note;
+      // TODO(CT-480): add recieving address display here
+      const memo = tx.note;
 
-    return {
-      displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
-      id,
-      outputs,
-      outputAmount,
-      changeAmount: 0,
-      fee,
-      changeOutputs: [],
-      memo,
-    };
+      return {
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+        id,
+        outputs,
+        outputAmount,
+        changeAmount: 0,
+        fee,
+        changeOutputs: [],
+        memo,
+      };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   isStellarSeed(seed: string): boolean {
