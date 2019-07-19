@@ -16,14 +16,10 @@ import {
   KeyRecoveryServiceError,
   UnexpectedAddressError
 } from '../../errors';
-import {
-  BaseCoin,
-  BaseCoinTransactionOutput,
-  BaseCoinTransactionExplanation,
-} from '../baseCoin';
+import { BaseCoin, BaseCoinTransactionOutput, BaseCoinTransactionExplanation } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
-import { KeyPair } from '../keychains'
+import { KeyPair } from '../keychains';
 
 const co = Bluebird.coroutine;
 
@@ -488,11 +484,8 @@ export class Xlm extends BaseCoin {
   /**
    * Generates Stellar keypairs from the user key and backup key
    * @param params
-   *  - userKey: user keypair private key (encrypted or plaintext)
-   *  - backupKey: backup keypair public key (plaintext) or private key (encrypted or plaintext)
-   * @returns array of user and backup keypairs
    */
-  initiateRecovery(params: InitiateRecoveryOptions): Bluebird<stellar.Keypair[]> {
+  initiateRecovery(params: RecoveryOptions): Bluebird<stellar.Keypair[]> {
     return co(function *() {
       const keys = [];
       let userKey = params.userKey;

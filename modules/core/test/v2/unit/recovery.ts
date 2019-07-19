@@ -554,6 +554,64 @@ describe('Recovery:', function() {
     }));
   });
 
+  describe('Recover EOS', function() {
+    let baseCoin;
+    before(function() {
+      baseCoin = bitgo.coin('teos');
+    });
+    beforeEach(function() {
+      recoveryNocks.nockEosRecovery();
+    });
+
+    it('should generate EOS recovery tx', co(function *() {
+      const recoveryTx = yield baseCoin.recover({
+        userKey: '{\"iv\":\"jRBZi43c7t4tvx7SgP8h0g==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"TgZqHtZrmLU=\",\"ct\":\"hRntzrbcH81dOzlyr49nbAIJdHWqEKKVJx0s55kNV+fqUjKKoEuWqVGF1dPfQkkTkcIjFTNvuHsiGicVGSRf5RI3Q0ZD6YtCqO2bWX6t7HgBio5yYMaPy+cNJHmp6jHBQFZ9cCjqwAam/V+1mRvpJpn2dSWPotw=\"}',
+        backupKey: '{\"iv\":\"qE+D+C6KXaZKFXXTM/AF5w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"a/YD7/8gJFw=\",\"ct\":\"tc2c1PfSjDS9TshXEIKKlToDcdCeL45fpGUWEPIM2+6CrvIuaXZC6/Hx9bza7VIoEPhJWHmgvoeAouto4PUpnyKJUuz+T46RY09XJs2rcDvbfMKblRsh6lzUc8O7ubTzJRNgFOUqkZM6qGB22A0FtL8yNlFqc3c=\"}',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        rootAddress: 'kiyjcn1ixftp',
+        recoveryDestination: 'jzjkpn1bjnti',
+      });
+
+      recoveryTx.should.have.property('tx');
+      recoveryTx.tx.compression.should.equal('none');
+      recoveryTx.tx.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f640000000000000000454f53000000000000');
+      recoveryTx.tx.signatures.length.should.equal(2);
+      recoveryTx.txid.should.equal('48185c63f724831382ab860171d5bdf4b433471707b8c59fa2f4ea8e151ab093');
+    }));
+
+    it('should generate EOS recovery tx with unencrypted keys', co(function *() {
+      const recoveryTx = yield baseCoin.recover({
+        userKey: 'xprv9s21ZrQH143K4NDgnKH8zTTLpJuCmv6dtykRJwapBH73bvcvTvCQAMmQLxRGqg5YbvXBN5VGD3y2cPGUGyrVcjWDJM573RVseHg4oL64AXx',
+        backupKey: 'xprv9s21ZrQH143K4Gh3snX8z5d24djEVwCwVwdHGEssUpKwHqKDtAz8gRPw7Fi12NC3ur94CsJ2KormunQQm3gNkXQiTy534NdfuQ4C2EpdmRp',
+        rootAddress: 'kiyjcn1ixftp',
+        recoveryDestination: 'jzjkpn1bjnti',
+      });
+
+      recoveryTx.should.have.property('tx');
+      recoveryTx.tx.compression.should.equal('none');
+      recoveryTx.tx.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f640000000000000000454f53000000000000');
+      recoveryTx.tx.signatures.length.should.equal(2);
+      console.log('WITH unencrypted keys');
+      recoveryTx.txid.should.equal('48185c63f724831382ab860171d5bdf4b433471707b8c59fa2f4ea8e151ab093');
+    }));
+
+    it('should generate an EOS unsigned sweep', co(function *() {
+      const recoveryTx = yield baseCoin.recover({
+        userKey: 'xpub661MyMwAqRbcGrJ9tLp9MbQ5NLjhBNpVGCg27KzRjce2Uix51TWeiA5tCDyBFHENmKSf6BiWg3tAjYgrhTz9bZGdXj7pfksXaEpVLQqzYEE',
+        backupKey: 'xpub661MyMwAqRbcGkmWyp49MDZkcfZiuPvnsAYt4dHV39rvAdeNRiJPEDiQxYTNrbFEHJVBJWBdxW7DgCqRUyVpYAbT3D6LGsZpynYpMFAgAZr',
+        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        rootAddress: 'kiyjcn1ixftp',
+        recoveryDestination: 'jzjkpn1bjnti',
+      });
+
+      recoveryTx.should.have.property('tx');
+      recoveryTx.tx.compression.should.equal('none');
+      recoveryTx.tx.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f640000000000000000454f53000000000000');
+      recoveryTx.tx.signatures.length.should.equal(0);
+      recoveryTx.txid.should.equal('48185c63f724831382ab860171d5bdf4b433471707b8c59fa2f4ea8e151ab093');
+    }));
+  });
+
   describe('Recover ERC20', function() {
     it('should successfully construct a recovery transaction for tokens stuck in a wallet', co(function *() {
       const wallet = bitgo.nockEthWallet();

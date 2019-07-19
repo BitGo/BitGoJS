@@ -23,6 +23,7 @@ interface EnvironmentTemplate {
   zecExplorerBaseUrl: string;
   dashExplorerBaseUrl: string;
   stellarFederationServerUrl?: string;
+  eosNodeUrls: string[];
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -68,6 +69,7 @@ const mainnetBase: EnvironmentTemplate = {
   ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
   zecExplorerBaseUrl: 'https://zcashnetwork.info/api',
   dashExplorerBaseUrl: 'https://insight.dash.org/insight-api',
+  eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -87,6 +89,11 @@ const testnetBase: EnvironmentTemplate = {
   ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
   zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
   dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api',
+  eosNodeUrls: [
+    'https://jungle2.cryptolions.io',
+    'https://eos-jungle.eosblocksmith.io',
+    'https://api.jungle.alohaeos.com',
+  ],
 };
 
 const devBase: EnvironmentTemplate = Object.assign(
