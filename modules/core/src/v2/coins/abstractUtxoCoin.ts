@@ -1,22 +1,27 @@
+import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoinMessage from 'bitcoinjs-message';
+import * as Bluebird from 'bluebird';
+import * as crypto from 'crypto';
+import * as request from 'superagent';
+import * as _ from 'lodash';
+import * as debugLib from 'debug';
+import { Codes, VirtualSizes } from '@bitgo/unspents';
+
 import { hdPath } from '../../bitcoin';
 import { BaseCoin } from '../baseCoin';
 import { NodeCallback } from '../types';
-const config = require('../../config');
-const bitcoin = require('bitgo-utxo-lib');
-const bitcoinMessage = require('bitcoinjs-message');
-import * as Bluebird from 'bluebird';
+import * as config from '../../config';
+import { CrossChainRecoveryTool } from '../recovery';
+import * as errors from '../../errors';
+import { Wallet } from '../wallet';
+
+const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
-const crypto = require('crypto');
-const request = require('superagent');
-const _ = require('lodash');
-const RecoveryTool = require('../recovery');
-const errors = require('../../errors');
-const debug = require('debug')('bitgo:v2:utxo');
-import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 export interface Output {
   address: string;
   amount: string;
+  external?: boolean;
 }
 
 export interface TransactionFee {
@@ -25,7 +30,7 @@ export interface TransactionFee {
   size: number
 }
 
-export interface AbstractUtxoCoinTransactionExplanation {
+export interface TransactionExplanation {
   displayOrder: string[];
   id: string;
   outputs: Output[],
@@ -40,19 +45,192 @@ export interface Unspent {
   value: string,
 }
 
-export interface AbstractUtxoCoinExplainTransactionOptions {
+export interface ExplainTransactionOptions {
   txHex: string;
   txInfo: { changeAddresses: string[], unspents: Unspent[] };
   feeInfo?: string;
 }
 
-export class AbstractUtxoCoin extends BaseCoin {
+export interface UtxoNetwork {
+  pubKeyHash: number;
+  scriptHash: number;
+  altScriptHash?: number;
+  bech32: string;
+}
 
-  public altScriptHash;
-  public supportAltScriptDestination;
-  private readonly _network;
+export interface ParsedSignatureScript {
+  isSegwitInput: boolean;
+  inputClassification: string;
+  signatures?: Buffer[];
+  publicKeys?: Buffer[];
+  pubScript?: Buffer;
+}
 
-  constructor(bitgo: any, network) {
+export interface TxPrebuild {
+  txHex: string;
+  txInfo: any;
+  blockHeight?: number;
+}
+
+export interface TxParams {
+  walletPassphrase?: string;
+  changeAddress?: string;
+}
+
+export interface TxVerificationOptions {
+  keychains?: {
+    user?: any;
+    backup?: any;
+    bitgo?: any;
+  };
+  disableNetworking?: boolean;
+}
+
+export interface ParseTransactionOptions {
+  txParams: TxParams;
+  txPrebuild: TxPrebuild;
+  wallet: Wallet;
+  verification?: TxVerificationOptions;
+  reqId: any;
+}
+
+export interface ParsedTransaction {
+  keychains: {
+    user?: any,
+    backup?: any,
+    bitgo?: any,
+  };
+  keySignatures: any[];
+  outputs: Output[];
+  missingOutputs: Output[];
+  explicitExternalOutputs: Output[];
+  implicitExternalOutputs: Output[];
+  changeOutputs: Output[];
+  explicitExternalSpendAmount: number;
+  implicitExternalSpendAmount: number;
+}
+
+export interface VerifyAddressOptions {
+  address: string;
+  addressType: string;
+  chain: number;
+  index; number;
+  keychains: {
+    pub: string;
+  }[];
+  coinSpecific: CoinSpecific;
+}
+
+export interface GenerateAddressOptions {
+  addressType: string;
+  keychains: {
+    pub: string;
+  }[];
+  threshold: number;
+  chain: number;
+  index: number;
+  segwit?: boolean;
+  bech32?: boolean;
+}
+
+export interface AddressDetails {
+  address: string;
+  chain: number;
+  index: number;
+  coin: string;
+  coinSpecific: CoinSpecific;
+  addressType: string;
+}
+
+export interface SignTransactionOptions {
+  txPrebuild: {
+    txHex: string;
+    txInfo: {
+      unspents: {
+
+      }[];
+    }
+  };
+  prv: string;
+  isLastSignature: boolean;
+}
+
+export interface MultiSigAddress {
+  outputScript: Buffer;
+  redeemScript: Buffer;
+  witnessScript: Buffer;
+  address: string;
+}
+
+export interface OfflineVaultTxInfo {
+  inputs: {
+    chainPath: string;
+  }[];
+}
+
+export interface RecoverFromWrongChainOptions {
+  txid: string;
+  recoveryAddress: string;
+  wallet: Wallet;
+  walletPassphrase: string;
+  xprv: string;
+  coin?: BaseCoin;
+  recoveryCoin?: BaseCoin;
+  signed?: boolean;
+}
+
+export interface FormattedOfflineVaultTxInfo {
+  txInfo: {
+    unspents: {
+      chainPath: string;
+      index?: string;
+      chain?: string;
+    }[];
+  };
+  txHex: string;
+  feeInfo: {};
+  coin: string;
+}
+
+export interface VerifyTransactionOptions {
+  txParams: TxParams;
+  txPrebuild: TxPrebuild;
+  wallet: Wallet;
+  verification?: TxVerificationOptions,
+  reqId: any
+}
+
+export interface CoinSpecific {
+  outputScript: string;
+  redeemScript?: string;
+  witnessScript?: string;
+}
+
+export interface AddressInfo {
+  txCount: number;
+  totalBalance: number;
+}
+
+export interface UnspentInfo {
+  address: string;
+}
+
+export interface RecoverParams {
+  scan?: number;
+  userKey: string;
+  backupKey: string;
+  recoveryDestination: string;
+  krsProvider: string;
+  ignoreAddressTypes: string[];
+}
+
+export abstract class AbstractUtxoCoin extends BaseCoin {
+
+  public altScriptHash: number;
+  public supportAltScriptDestination: boolean;
+  private readonly _network: UtxoNetwork;
+
+  protected constructor(bitgo: any, network: UtxoNetwork) {
     super(bitgo);
     if (!_.isObject(network)) {
       throw new Error('network must be an object');
@@ -66,15 +244,16 @@ export class AbstractUtxoCoin extends BaseCoin {
 
   static get validAddressTypes() {
     const validAddressTypes = [];
-    _.forEach(Object.keys(Codes.UnspentTypeTcomb.meta.map), function(addressType) {
+    // TODO: CT-717: export UnspentType type correctly from @bitgo/unspents (loop over enum values)
+    for (const addressType in Codes.UnspentTypeTcomb.meta.map) {
       try {
-        Codes.forType(addressType);
+        Codes.forType(addressType as any); // TODO: CT-717: export UnspentType type correctly from @bitgo/unspents (remove cast to any)
         validAddressTypes.push(addressType);
       } catch (e) {
         // Do nothing. Codes.forType will throw if the address type has no chain codes, meaning it is invalid on the
         // BitGo platform and should not be added to the validAddressTypes array.
       }
-    });
+    }
     return validAddressTypes;
   }
 
@@ -86,37 +265,70 @@ export class AbstractUtxoCoin extends BaseCoin {
     return 1e8;
   }
 
+  /**
+   * Get an instance of the library which can be used to perform low-level operations for this coin
+   */
   getCoinLibrary() {
     return bitcoin;
   }
 
-  isValidAddress(address, forceAltScriptSupport = false) {
+  /**
+   * Helper to get the version number for an address
+   */
+  protected getAddressVersion(address: string): number | undefined {
+    // try decoding as base58 first
+    try {
+      const { version } = this.getCoinLibrary().address.fromBase58Check(address);
+      return version;
+    } catch (e) {
+      // if that fails, and we aren't supporting p2wsh, then we are done and did not find a version
+      if (!this.supportsP2wsh()) {
+        return;
+      }
+    }
+
+    // otherwise, try decoding as bech32
+    try {
+      const { version, prefix } = this.getCoinLibrary().address.fromBech32(address);
+      if (prefix === this.network.bech32) {
+        return version;
+      }
+    } catch (e) {
+      // ignore errors, just fall through and return undefined
+    }
+  }
+
+  /**
+   * Helper to get the bech32 prefix for an address
+   */
+  protected getAddressPrefix(address: string): string | undefined {
+    // otherwise, try decoding as bech32
+    try {
+      const { prefix } = this.getCoinLibrary().address.fromBech32(address);
+      return prefix;
+    } catch (e) {
+      // ignore errors, just fall through and return undefined
+    }
+  }
+
+  /**
+   * Check if an address is valid
+   * @param address
+   * @param forceAltScriptSupport
+   */
+  isValidAddress(address: string, forceAltScriptSupport = false): boolean {
     const validVersions = [
       this.network.pubKeyHash,
-      this.network.scriptHash
+      this.network.scriptHash,
     ];
     if (this.altScriptHash && (forceAltScriptSupport || this.supportAltScriptDestination)) {
       validVersions.push(this.altScriptHash);
     }
 
-    let addressDetails;
-    try {
-      addressDetails = this.getCoinLibrary().address.fromBase58Check(address);
-    } catch (e) {
-      if (!this.supportsP2wsh()) {
-        return false;
-      }
-
-      try {
-        addressDetails = bitcoin.address.fromBech32(address);
-        return addressDetails.prefix === this.network.bech32;
-      } catch (e) {
-        return false;
-      }
-    }
+    const addressVersion = this.getAddressVersion(address);
 
     // the address version needs to be among the valid ones
-    return validVersions.includes(addressDetails.version);
+    return validVersions.includes(addressVersion) || this.network.bech32 === this.getAddressPrefix(address);
   }
 
   /**
@@ -125,7 +337,7 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param {String} pub the pub to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidPub(pub) {
+  isValidPub(pub: string) {
     try {
       bitcoin.HDNode.fromBase58(pub);
       return true;
@@ -134,22 +346,34 @@ export class AbstractUtxoCoin extends BaseCoin {
     }
   }
 
-  getLatestBlockHeight(reqId, callback): Bluebird<any> {
+  /**
+   * Get the latest block height
+   * @param reqId
+   * @param callback
+   */
+  getLatestBlockHeight(reqId?: any, callback?: NodeCallback<number>): Bluebird<number> {
+    const self = this;
     return co(function *() {
       if (reqId) {
         this.bitgo._reqId = reqId;
       }
-      const chainhead = yield this.bitgo.get(this.url('/public/block/latest')).result();
+      const chainhead = yield self.bitgo.get(self.url('/public/block/latest')).result();
       return chainhead.height;
     }).call(this).asCallback(callback);
   }
 
-  postProcessPrebuild(prebuild, callback): Bluebird<any> {
+  /**
+   * Run custom coin logic after a transaction prebuild has been received from BitGo
+   * @param prebuild
+   * @param callback
+   */
+  postProcessPrebuild(prebuild: TxPrebuild, callback?: NodeCallback<TxPrebuild>): Bluebird<TxPrebuild> {
+    const self = this;
     return co(function *() {
       if (_.isUndefined(prebuild.blockHeight)) {
-        prebuild.blockHeight = yield this.getLatestBlockHeight();
+        prebuild.blockHeight = yield self.getLatestBlockHeight();
       }
-      const transaction = bitcoin.Transaction.fromHex(prebuild.txHex, this.network);
+      const transaction = bitcoin.Transaction.fromHex(prebuild.txHex, self.network);
       transaction.locktime = prebuild.blockHeight + 1;
       return _.extend({}, prebuild, { txHex: transaction.toHex() });
     }).call(this).asCallback(callback);
@@ -161,8 +385,8 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param actualOutputs
    * @returns {Array}
    */
-  static findMissingOutputs(expectedOutputs, actualOutputs) {
-    const keyFunc = ({ address, amount }) => `${address}:${Number(amount)}`;
+  protected static findMissingOutputs(expectedOutputs: Output[], actualOutputs: Output[]): Output[] {
+    const keyFunc = ({ address, amount }: Output): string => `${address}:${Number(amount)}`;
     const groupedOutputs = _.groupBy(expectedOutputs, keyFunc);
 
     actualOutputs.forEach((output) => {
@@ -179,7 +403,7 @@ export class AbstractUtxoCoin extends BaseCoin {
    * Determine an address' type based on its witness and redeem script presence
    * @param addressDetails
    */
-  static inferAddressType(addressDetails) {
+  static inferAddressType(addressDetails: { coinSpecific: CoinSpecific }): string | null {
     if (_.isObject(addressDetails.coinSpecific)) {
       if (_.isString(addressDetails.coinSpecific.redeemScript) && _.isString(addressDetails.coinSpecific.witnessScript)) {
         return Codes.UnspentTypeTcomb('p2shP2wsh');
@@ -194,19 +418,25 @@ export class AbstractUtxoCoin extends BaseCoin {
 
   /**
    * Extract and fill transaction details such as internal/change spend, external spend (explicit vs. implicit), etc.
-   * @param txParams
-   * @param txPrebuild
-   * @param wallet
-   * @param verification
+   * @param params
    * @param callback
    * @returns {*}
    */
-  parseTransaction({ txParams, txPrebuild, wallet, verification = {} as any, reqId }, callback): Bluebird<any> {
+  parseTransaction(params: ParseTransactionOptions, callback?: NodeCallback<ParsedTransaction>): Bluebird<ParsedTransaction> {
+    const self = this;
     return co(function *() {
+      const {
+        txParams,
+        txPrebuild,
+        wallet,
+        verification = {},
+        reqId,
+      } = params;
+
       if (!_.isUndefined(verification.disableNetworking) && !_.isBoolean(verification.disableNetworking)) {
         throw new Error('verification.disableNetworking must be a boolean');
       }
-      const disableNetworking = !!verification.disableNetworking;
+      const disableNetworking = verification.disableNetworking;
 
       // obtain the keychains and key signatures
       let keychains = verification.keychains;
@@ -214,9 +444,9 @@ export class AbstractUtxoCoin extends BaseCoin {
         throw new Error('cannot fetch keychains without networking');
       } else if (!keychains) {
         keychains = yield Bluebird.props({
-          user: this.keychains().get({ id: wallet._wallet.keys[0], reqId }),
-          backup: this.keychains().get({ id: wallet._wallet.keys[1], reqId }),
-          bitgo: this.keychains().get({ id: wallet._wallet.keys[2], reqId })
+          user: self.keychains().get({ id: wallet._wallet.keys[0], reqId }),
+          backup: self.keychains().get({ id: wallet._wallet.keys[1], reqId }),
+          bitgo: self.keychains().get({ id: wallet._wallet.keys[2], reqId }),
         });
       }
       const keychainArray = [keychains.user, keychains.backup, keychains.bitgo];
@@ -224,23 +454,22 @@ export class AbstractUtxoCoin extends BaseCoin {
       const keySignatures = _.get(wallet, '_wallet.keySignatures');
 
       // obtain all outputs
-      const explanation = yield this.explainTransaction({
+      const explanation: TransactionExplanation = yield self.explainTransaction({
         txHex: txPrebuild.txHex,
         txInfo: txPrebuild.txInfo,
-        keychains: keychains
       });
 
       const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
 
       // verify that each recipient from txParams has their own output
       const expectedOutputs = _.get(txParams, 'recipients', []);
-      const missingOutputs = this.constructor.findMissingOutputs(expectedOutputs, allOutputs);
+      const missingOutputs = AbstractUtxoCoin.findMissingOutputs(expectedOutputs, allOutputs);
 
       /**
        * Loop through all the outputs and classify each of them as either internal spends
        * or external spends by setting the "external" property to true or false on the output object.
        */
-      const allOutputDetails = yield Bluebird.map(allOutputs, co(function *(currentOutput) {
+      const allOutputDetails: Output[] = yield Bluebird.map(allOutputs, co(function *(currentOutput) {
         const currentAddress = currentOutput.address;
 
         // attempt to grab the address details from either the prebuilt tx, or the verification params.
@@ -264,10 +493,10 @@ export class AbstractUtxoCoin extends BaseCoin {
           }
           // verify that the address is on the wallet. verifyAddress throws if
           // it fails to correctly rederive the address, meaning it's external
-          const addressType = this.constructor.inferAddressType(addressDetails);
-          this.verifyAddress(_.extend({ addressType }, addressDetails, {
+          const addressType = AbstractUtxoCoin.inferAddressType(addressDetails);
+          self.verifyAddress(_.extend({ addressType }, addressDetails, {
             keychains: keychainArray,
-            address: currentAddress
+            address: currentAddress,
           }));
           debug('Address %s verification passed', currentAddress);
 
@@ -336,9 +565,9 @@ export class AbstractUtxoCoin extends BaseCoin {
       const changeOutputs = _.filter(allOutputDetails, { external: false });
 
       // these are all the outputs that were not originally explicitly specified in recipients
-      const implicitOutputs = this.constructor.findMissingOutputs(allOutputDetails, expectedOutputs);
+      const implicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, expectedOutputs);
 
-      const explicitOutputs = this.constructor.findMissingOutputs(allOutputDetails, implicitOutputs);
+      const explicitOutputs = AbstractUtxoCoin.findMissingOutputs(allOutputDetails, implicitOutputs);
 
       // these are all the non-wallet outputs that had been originally explicitly specified in recipients
       const explicitExternalOutputs = _.filter(explicitOutputs, { external: true });
@@ -360,7 +589,7 @@ export class AbstractUtxoCoin extends BaseCoin {
       const implicitExternalOutputs = _.filter(implicitOutputs, { external: true });
       const implicitExternalSpendAmount = _.sumBy(implicitExternalOutputs, 'amount');
 
-      return {
+      const result: ParsedTransaction = {
         keychains,
         keySignatures,
         outputs: allOutputDetails,
@@ -369,29 +598,33 @@ export class AbstractUtxoCoin extends BaseCoin {
         implicitExternalOutputs,
         changeOutputs,
         explicitExternalSpendAmount,
-        implicitExternalSpendAmount
+        implicitExternalSpendAmount,
       };
-
+      return result;
     }).call(this).asCallback(callback);
   }
 
   /**
    * Verify that a transaction prebuild complies with the original intention
-   * @param txParams params object passed to send
-   * @param txPrebuild prebuild object returned by server
-   * @param txPrebuild.txHex prebuilt transaction's txHex form
-   * @param wallet Wallet object to obtain keys to verify against
-   * @param verification Object specifying some verification parameters
-   * @param verification.disableNetworking Disallow fetching any data from the internet for verification purposes
-   * @param verification.keychains Pass keychains manually rather than fetching them by id
-   * @param verification.addresses Address details to pass in for out-of-band verification
+   *
+   * @param params
+   * @param params.txParams params object passed to send
+   * @param params.txPrebuild prebuild object returned by server
+   * @param params.txPrebuild.txHex prebuilt transaction's txHex form
+   * @param params.wallet Wallet object to obtain keys to verify against
+   * @param params.verification Object specifying some verification parameters
+   * @param params.verification.disableNetworking Disallow fetching any data from the internet for verification purposes
+   * @param params.verification.keychains Pass keychains manually rather than fetching them by id
+   * @param params.verification.addresses Address details to pass in for out-of-band verification
    * @param callback
    * @returns {boolean}
    */
-  verifyTransaction({ txParams, txPrebuild, wallet, verification = {} as any, reqId }, callback): Bluebird<any> {
+  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+    const self = this;
     return co(function *() {
+      const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
       const disableNetworking = !!verification.disableNetworking;
-      const parsedTransaction = yield this.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
+      const parsedTransaction = yield self.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
 
       const keychains = parsedTransaction.keychains;
 
@@ -406,9 +639,9 @@ export class AbstractUtxoCoin extends BaseCoin {
           const encryptedPrv = keychains.user.encryptedPrv;
           if (!_.isEmpty(encryptedPrv)) {
             // if the decryption fails, it will throw an error
-            userPrv = this.bitgo.decrypt({
+            userPrv = self.bitgo.decrypt({
               input: encryptedPrv,
-              password: txParams.walletPassphrase
+              password: txParams.walletPassphrase,
             });
           }
         }
@@ -479,30 +712,30 @@ export class AbstractUtxoCoin extends BaseCoin {
       }
 
       const allOutputs = parsedTransaction.outputs;
-      const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, this.network);
+      const transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, self.network);
       const transactionCache = {};
       const inputs = yield Bluebird.map(transaction.ins, co(function *(currentInput) {
         const transactionId = (Buffer.from(currentInput.hash).reverse() as Buffer).toString('hex');
         const txHex = _.get(txPrebuild, `txInfo.txHexes.${transactionId}`);
         if (txHex) {
-          const localTx = bitcoin.Transaction.fromHex(txHex, this.network);
+          const localTx = bitcoin.Transaction.fromHex(txHex, self.network);
           if (localTx.getId() !== transactionId) {
             throw new Error('input transaction hex does not match id');
           }
           const currentOutput = localTx.outs[currentInput.index];
-          const address = bitcoin.address.fromOutputScript(currentOutput.script, this.network);
+          const address = bitcoin.address.fromOutputScript(currentOutput.script, self.network);
           return {
             address,
-            value: currentOutput.value
+            value: currentOutput.value,
           };
         } else if (!transactionCache[transactionId]) {
           if (disableNetworking) {
             throw new Error('attempting to retrieve transaction details externally with networking disabled');
           }
           if (reqId) {
-            this.bitgo._reqId = reqId;
+            self.bitgo._reqId = reqId;
           }
-          transactionCache[transactionId] = yield this.bitgo.get(this.url(`/public/tx/${transactionId}`)).result();
+          transactionCache[transactionId] = yield self.bitgo.get(self.url(`/public/tx/${transactionId}`)).result();
         }
         const transactionDetails = transactionCache[transactionId];
         return transactionDetails.outputs[currentInput.index];
@@ -522,14 +755,19 @@ export class AbstractUtxoCoin extends BaseCoin {
 
   /**
    * Make sure an address is valid and throw an error if it's not.
-   * @param address The address string on the network
-   * @param addressType
-   * @param keychains Keychain objects with xpubs
-   * @param coinSpecific Coin-specific details for the address such as a witness script
-   * @param chain Derivation chain
-   * @param index Derivation index
+   * @param params.address The address string on the network
+   * @param params.addressType
+   * @param params.keychains Keychain objects with xpubs
+   * @param params.coinSpecific Coin-specific details for the address such as a witness script
+   * @param params.chain Derivation chain
+   * @param params.index Derivation index
+   * @throws {InvalidAddressError}
+   * @throws {InvalidAddressDerivationPropertyError}
+   * @throws {UnexpectedAddressError}
    */
-  verifyAddress({ address, addressType, keychains, coinSpecific, chain, index }) {
+  verifyAddress(params: VerifyAddressOptions) {
+    const { address, addressType, keychains, coinSpecific, chain, index } = params;
+
     if (!this.isValidAddress(address)) {
       throw new errors.InvalidAddressError(`invalid address: ${address}`);
     }
@@ -543,12 +781,12 @@ export class AbstractUtxoCoin extends BaseCoin {
     }
 
 
-    const expectedAddress: any = this.generateAddress({
+    const expectedAddress = this.generateAddress({
       addressType,
       keychains,
       threshold: 2,
       chain: chain,
-      index: index
+      index: index,
     });
 
     if (expectedAddress.address !== address) {
@@ -583,17 +821,19 @@ export class AbstractUtxoCoin extends BaseCoin {
   /**
    * TODO(BG-11487): Remove addressType, segwit, and bech32 params in SDKv6
    * Generate an address for a wallet based on a set of configurations
-   * @param addressType {string}   Deprecated
-   * @param keychains   {[object]} Array of objects with xpubs
-   * @param threshold   {number}   Minimum number of signatures
-   * @param chain       {number}   Derivation chain (see https://github.com/BitGo/unspents/blob/master/src/codes.ts for
+   * @param params.addressType {string}   Deprecated
+   * @param params.keychains   {[object]} Array of objects with xpubs
+   * @param params.threshold   {number}   Minimum number of signatures
+   * @param params.chain       {number}   Derivation chain (see https://github.com/BitGo/unspents/blob/master/src/codes.ts for
    *                                                 the corresponding address type of a given chain code)
-   * @param index       {number}   Derivation index
-   * @param segwit      {boolean}  Deprecated
-   * @param bech32      {boolean}  Deprecated
+   * @param params.index       {number}   Derivation index
+   * @param params.segwit      {boolean}  Deprecated
+   * @param params.bech32      {boolean}  Deprecated
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
    */
-  generateAddress({ addressType, keychains, threshold, chain, index, segwit = false, bech32 = false }) {
+  generateAddress(params: GenerateAddressOptions): AddressDetails {
+    let { addressType } = params;
+    const { keychains, threshold, chain, index, segwit = false, bech32 = false } = params;
     let derivationChain = 0;
     if (_.isInteger(chain) && chain > 0) {
       derivationChain = chain;
@@ -657,33 +897,31 @@ export class AbstractUtxoCoin extends BaseCoin {
     const hdNodes = keychains.map(({ pub }) => bitcoin.HDNode.fromBase58(pub));
     const derivedKeys = hdNodes.map(hdNode => hdPath(hdNode).deriveKey(path).getPublicKeyBuffer());
 
-    const addressDetails: any = {
+    const { outputScript, redeemScript, witnessScript, address } =
+      this.createMultiSigAddress(addressType, signatureThreshold, derivedKeys);
+
+    return {
+      address,
       chain: derivationChain,
       index: derivationIndex,
       coin: this.getChain(),
-      coinSpecific: {},
-      addressType
+      coinSpecific: {
+        outputScript: outputScript.toString('hex'),
+        redeemScript: redeemScript && redeemScript.toString('hex'),
+        witnessScript: witnessScript && witnessScript.toString('hex'),
+      },
+      addressType,
     };
-
-    const { outputScript, redeemScript, witnessScript, address } =
-      this.createMultiSigAddress(addressType, signatureThreshold, derivedKeys);
-    addressDetails.coinSpecific.outputScript = outputScript.toString('hex');
-    addressDetails.coinSpecific.redeemScript = redeemScript && redeemScript.toString('hex');
-    addressDetails.coinSpecific.witnessScript = witnessScript && witnessScript.toString('hex');
-    addressDetails.address = address;
-
-    return addressDetails;
   }
 
   /**
    * Assemble keychain and half-sign prebuilt transaction
-   * @param params
-   * - txPrebuild
-   * - prv
-   * @param params.isLastSignature Ture if txb.build() should be called and not buildIncomplete()
+   * @param params.txPrebuild transaction prebuild from bitgo server
+   * @param params.prv private key to be used for signing
+   * @param params.isLastSignature True if `TransactionBuilder.build()` should be called and not `TransactionBuilder.buildIncomplete()`
    * @returns {{txHex}}
    */
-  signTransaction(params) {
+  signTransaction(params: SignTransactionOptions): { txHex: string } {
     const txPrebuild = params.txPrebuild;
     const userPrv = params.prv;
 
@@ -706,7 +944,7 @@ export class AbstractUtxoCoin extends BaseCoin {
     }
 
     if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-      if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
+      if (!_.isUndefined(userPrv)) {
         throw new Error(`prv must be a string, got type ${typeof userPrv}`);
       }
       throw new Error('missing prv parameter to sign transaction');
@@ -725,7 +963,7 @@ export class AbstractUtxoCoin extends BaseCoin {
         path: 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index,
         isP2wsh: !currentUnspent.redeemScript,
         isBitGoTaintedUnspent: this.isBitGoTaintedUnspent(currentUnspent),
-        error: undefined
+        error: undefined,
       };
     };
 
@@ -773,6 +1011,7 @@ export class AbstractUtxoCoin extends BaseCoin {
         signatureIssues.push(signatureContext);
         continue;
       }
+      debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
     }
 
     if (isLastSignature) {
@@ -814,7 +1053,7 @@ export class AbstractUtxoCoin extends BaseCoin {
     }
 
     return {
-      txHex: transaction.toBuffer().toString('hex')
+      txHex: transaction.toBuffer().toString('hex'),
     };
   }
 
@@ -823,7 +1062,7 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param unspent
    * @returns {boolean}
    */
-  isBitGoTaintedUnspent(unspent) {
+  isBitGoTaintedUnspent(unspent: Unspent) {
     return false;
   }
 
@@ -832,15 +1071,15 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param txBuilder
    * @returns {*}
    */
-  prepareTransactionBuilder(txBuilder) {
+  prepareTransactionBuilder(txBuilder: any): any {
     return txBuilder;
   }
 
   /**
-   *
+   * Get the default sighash type to be used when signing transactions
    * @returns {number}
    */
-  get defaultSigHashType() {
+  get defaultSigHashType(): number {
     return bitcoin.Transaction.SIGHASH_ALL;
   }
 
@@ -850,7 +1089,7 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param inputIndex
    * @returns { isSegwitInput: boolean, inputClassification: string, signatures: [Buffer], publicKeys: [Buffer], pubScript: Buffer }
    */
-  parseSignatureScript(transaction, inputIndex) {
+  parseSignatureScript(transaction: any, inputIndex: number): ParsedSignatureScript {
     const currentInput = transaction.ins[inputIndex];
     const isSegwitInput = currentInput.witness.length > 0;
     const isNativeSegwitInput = currentInput.script.length === 0;
@@ -869,7 +1108,6 @@ export class AbstractUtxoCoin extends BaseCoin {
     } else {
       inputClassification = bitcoin.script.classifyInput(currentInput.script, true);
       decompiledSigScript = bitcoin.script.decompile(currentInput.script);
-
     }
 
     if (inputClassification === bitcoin.script.types.P2PKH) {
@@ -891,7 +1129,7 @@ export class AbstractUtxoCoin extends BaseCoin {
       // decompiledSigScript = 0 <sig1> <sig2> <pubScript>
       // decompiledPubScript = 2 <pub1> <pub2> <pub3> 3 OP_CHECKMULTISIG
       const signatures = decompiledSigScript.slice(0, -1);
-      const pubScript = _.last(decompiledSigScript);
+      const pubScript = _.last<Buffer>(decompiledSigScript);
       const decompiledPubScript = bitcoin.script.decompile(pubScript);
       const publicKeys = decompiledPubScript.slice(1, -2);
 
@@ -923,8 +1161,6 @@ export class AbstractUtxoCoin extends BaseCoin {
     } else {
       return { isSegwitInput, inputClassification };
     }
-
-
   }
 
   /**
@@ -937,7 +1173,7 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param isSegwitInput
    * @returns {*}
    */
-  calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
+  calculateSignatureHash(transaction: any, inputIndex: number, pubScript: Buffer, amount: number, hashType: number, isSegwitInput: boolean): Buffer {
     if (isSegwitInput) {
       return transaction.hashForWitnessV0(inputIndex, pubScript, amount, hashType);
     } else {
@@ -955,7 +1191,10 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param verificationSettings.publicKey The hex of the public key to verify (will verify all signatures)
    * @returns {boolean}
    */
-  verifySignature(transaction, inputIndex, amount, verificationSettings = {} as any) {
+  verifySignature(transaction: any, inputIndex: number, amount: number, verificationSettings: {
+    signatureIndex?: number;
+    publicKey?: string;
+  } = {}): boolean {
     const { signatures, publicKeys, isSegwitInput, inputClassification, pubScript } =
         this.parseSignatureScript(transaction, inputIndex);
 
@@ -1039,7 +1278,14 @@ export class AbstractUtxoCoin extends BaseCoin {
     return areAllSignaturesValid;
   }
 
-  explainTransaction(params: AbstractUtxoCoinExplainTransactionOptions, callback?: NodeCallback<AbstractUtxoCoinTransactionExplanation>): Bluebird<AbstractUtxoCoinTransactionExplanation> {
+  /**
+   * Decompose a raw transaction into useful information, such as the total amounts,
+   * change amounts, and transaction outputs.
+   * @param params
+   * @param callback
+   */
+  explainTransaction(params: ExplainTransactionOptions, callback?: NodeCallback<TransactionExplanation>): Bluebird<TransactionExplanation> {
+    const self = this;
     return co(function *() {
       const txHex = _.get(params, 'txHex');
       if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
@@ -1048,7 +1294,7 @@ export class AbstractUtxoCoin extends BaseCoin {
 
       let transaction;
       try {
-        transaction = bitcoin.Transaction.fromHex(txHex, this.network);
+        transaction = bitcoin.Transaction.fromHex(txHex, self.network);
       } catch (e) {
         throw new Error('failed to parse transaction hex');
       }
@@ -1065,11 +1311,11 @@ export class AbstractUtxoCoin extends BaseCoin {
         displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs'],
         id: id,
         outputs: [],
-        changeOutputs: []
+        changeOutputs: [],
       };
 
       transaction.outs.forEach((currentOutput) => {
-        const currentAddress = this.getCoinLibrary().address.fromOutputScript(currentOutput.script, this.network);
+        const currentAddress = self.getCoinLibrary().address.fromOutputScript(currentOutput.script, self.network);
         const currentAmount = currentOutput.value;
 
         if (changeAddresses.indexOf(currentAddress) !== -1) {
@@ -1077,7 +1323,7 @@ export class AbstractUtxoCoin extends BaseCoin {
           changeAmount += currentAmount;
           explanation.changeOutputs.push({
             address: currentAddress,
-            amount: currentAmount
+            amount: currentAmount,
           });
           return;
         }
@@ -1085,7 +1331,7 @@ export class AbstractUtxoCoin extends BaseCoin {
         spendAmount += currentAmount;
         explanation.outputs.push({
           address: currentAddress,
-          amount: currentAmount
+          amount: currentAmount,
         });
       });
       explanation.outputAmount = spendAmount;
@@ -1117,7 +1363,7 @@ export class AbstractUtxoCoin extends BaseCoin {
 
         let parsedSigScript;
         try {
-          parsedSigScript = this.parseSignatureScript(transaction, idx);
+          parsedSigScript = self.parseSignatureScript(transaction, idx);
         } catch (e) {
           return false;
         }
@@ -1148,7 +1394,7 @@ export class AbstractUtxoCoin extends BaseCoin {
           const amount = unspentValues[inputId];
 
           try {
-            return this.verifySignature(transaction, idx, amount, { signatureIndex: sigIndex });
+            return self.verifySignature(transaction, idx, amount, { signatureIndex: sigIndex });
           } catch (e) {
             return false;
           }
@@ -1163,7 +1409,13 @@ export class AbstractUtxoCoin extends BaseCoin {
     }).call(this).asCallback(callback);
   }
 
-  createMultiSigAddress(addressType, signatureThreshold, keys) {
+  /**
+   * Create a multisig address of a given type from a list of keychains and a signing threshold
+   * @param addressType
+   * @param signatureThreshold
+   * @param keys
+   */
+  createMultiSigAddress(addressType: string, signatureThreshold: number, keys: Buffer[]): MultiSigAddress {
     function createWitnessProgram(inputScript) {
       const witnessScriptHash = bitcoin.crypto.sha256(inputScript);
       return bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
@@ -1196,26 +1448,41 @@ export class AbstractUtxoCoin extends BaseCoin {
       outputScript,
       redeemScript,
       witnessScript,
-      address: bitcoin.address.fromOutputScript(outputScript, this.network)
+      address: bitcoin.address.fromOutputScript(outputScript, this.network),
     };
   }
 
+  /**
+   * @param scriptHashScript
+   * @deprecated
+   */
   // TODO(BG-11638): remove in next SDK major version release
-  calculateRecoveryAddress(scriptHashScript) {
+  calculateRecoveryAddress(scriptHashScript: Buffer) {
     return this.getCoinLibrary().address.fromOutputScript(scriptHashScript, this.network);
   }
 
+  /**
+   * Get a static fee rate which is used in recovery situations
+   * @deprecated
+   */
   getRecoveryFeePerBytes(): Bluebird<number> {
     return Bluebird.resolve(100);
   }
 
-  getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<any> {
+  /**
+   * Get a url which can be used for determining recovery fee rates
+   */
+  getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<string> {
     return Bluebird.reject(new Error('AbtractUtxoCoin method not implemented'));
   }
 
-  getRecoveryMarketPrice(): Bluebird<any> {
+  /**
+   * Get the current market price from a third party to be used for recovery
+   */
+  getRecoveryMarketPrice(): Bluebird<string> {
+    const self = this;
     return co(function *getRecoveryMarketPrice() {
-      const bitcoinAverageUrl = config.bitcoinAverageBaseUrl + this.getFamily().toUpperCase() + 'USD';
+      const bitcoinAverageUrl = config.bitcoinAverageBaseUrl + self.getFamily().toUpperCase() + 'USD';
       const response = yield request.get(bitcoinAverageUrl).retry(2).result();
 
       if (response === null || typeof response.last !== 'number') {
@@ -1226,7 +1493,6 @@ export class AbstractUtxoCoin extends BaseCoin {
     }).call(this);
   }
 
-
   /**
    * Helper function for recover()
    * This transforms the txInfo from recover into the format that offline-signing-tool expects
@@ -1234,14 +1500,14 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param txHex
    * @returns {{txHex: *, txInfo: {unspents: *}, feeInfo: {}, coin: void}}
    */
-  formatForOfflineVault(txInfo, txHex) {
-    const response = {
+  formatForOfflineVault(txInfo: OfflineVaultTxInfo, txHex: string): FormattedOfflineVaultTxInfo {
+    const response: FormattedOfflineVaultTxInfo = {
       txHex,
       txInfo: {
-        unspents: txInfo.inputs
+        unspents: txInfo.inputs,
       },
       feeInfo: {},
-      coin: this.getChain()
+      coin: this.getChain(),
     };
     _.map(response.txInfo.unspents, function(unspent) {
       const pathArray = unspent.chainPath.split('/');
@@ -1251,6 +1517,9 @@ export class AbstractUtxoCoin extends BaseCoin {
     });
     return response;
   }
+
+  protected abstract getAddressInfoFromExplorer(address: string): Bluebird<AddressInfo>;
+  protected abstract getUnspentInfoFromExplorer(address: string): Bluebird<UnspentInfo[]>;
 
   /**
    * Builds a funds recovery transaction without BitGo
@@ -1266,10 +1535,9 @@ export class AbstractUtxoCoin extends BaseCoin {
    *        for example: ['p2shP2wsh', 'p2wsh'] will prevent code from checking for wrapped-segwit and native-segwit chains on the public block explorers
    * @param callback
    */
-  recover(params, callback): Bluebird<any> {
+  recover(params: RecoverParams, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *recover() {
-      const self = this;
-
       // ============================HELPER FUNCTIONS============================
       function deriveKeys(keyArray, index) {
         return keyArray.map((k) => k.derive(index));
@@ -1287,7 +1555,7 @@ export class AbstractUtxoCoin extends BaseCoin {
           const keys = derivedKeys.map(k => k.getPublicKeyBuffer());
           const address: any = self.createMultiSigAddress(Codes.typeForCode(chain), 2, keys);
 
-          const addrInfo = yield self.getAddressInfoFromExplorer(address.address);
+          const addrInfo: AddressInfo = yield self.getAddressInfoFromExplorer(address.address);
 
           if (addrInfo.txCount === 0) {
             numSequentialAddressesWithoutTxs++;
@@ -1302,7 +1570,7 @@ export class AbstractUtxoCoin extends BaseCoin {
               addressesById[address.address] = address;
 
               // Try to find unspents on it.
-              const addressUnspents = yield self.getUnspentInfoFromExplorer(address.address);
+              const addressUnspents: UnspentInfo[] = yield self.getUnspentInfoFromExplorer(address.address);
 
               addressUnspents.forEach(function addAddressToUnspent(unspent) {
                 unspent.address = address.address;
@@ -1341,7 +1609,7 @@ export class AbstractUtxoCoin extends BaseCoin {
         throw new Error('missing backupKey');
       }
 
-      if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      if (_.isUndefined(params.recoveryDestination) || !self.isValidAddress(params.recoveryDestination)) {
         throw new Error('invalid recoveryDestination');
       }
 
@@ -1357,11 +1625,11 @@ export class AbstractUtxoCoin extends BaseCoin {
         throw new Error('unknown key recovery service provider');
       }
 
-      if (isKrsRecovery && !(krsProvider.supportedCoins.includes(this.getFamily()))) {
+      if (isKrsRecovery && !(krsProvider.supportedCoins.includes(self.getFamily()))) {
         throw new Error('specified key recovery service does not support recoveries for this coin');
       }
 
-      const keys = yield this.initiateRecovery(params);
+      const keys = yield self.initiateRecovery(params);
 
       const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
 
@@ -1401,18 +1669,18 @@ export class AbstractUtxoCoin extends BaseCoin {
 
       // Execute the queries and gather the unspents
       const queryResponses = yield Promise.all(queries);
-      const unspents = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
+      const unspents: any[] = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
       const totalInputAmount = _.sumBy(unspents, 'amount');
       if (totalInputAmount <= 0) {
         throw new Error('No input to recover - aborting!');
       }
 
       // Build the transaction
-      const transactionBuilder = new bitcoin.TransactionBuilder(this.network);
-      this.prepareTransactionBuilder(transactionBuilder);
+      const transactionBuilder = new bitcoin.TransactionBuilder(self.network);
+      self.prepareTransactionBuilder(transactionBuilder);
       const txInfo: any = {};
 
-      const feePerByte = yield this.getRecoveryFeePerBytes();
+      const feePerByte = yield self.getRecoveryFeePerBytes();
 
       // KRS recovery transactions have a 2nd output to pay the recovery fee, like paygo fees. Use p2wsh outputs because
       // they are the largest outputs and thus the most conservative estimate to use in calculating fees. Also use
@@ -1432,14 +1700,14 @@ export class AbstractUtxoCoin extends BaseCoin {
           chainPath: address.chainPath,
           redeemScript: address.redeemScript && address.redeemScript.toString('hex'),
           witnessScript: address.witnessScript && address.witnessScript.toString('hex'),
-          value: unspent.amount
+          value: unspent.amount,
         };
       });
 
       let recoveryAmount = totalInputAmount - approximateFee;
       let krsFee;
       if (isKrsRecovery) {
-        krsFee = yield this.calculateFeeAmount({ provider: params.krsProvider, amount: recoveryAmount });
+        krsFee = yield self.calculateFeeAmount({ provider: params.krsProvider, amount: recoveryAmount });
         recoveryAmount -= krsFee;
       }
 
@@ -1450,7 +1718,7 @@ export class AbstractUtxoCoin extends BaseCoin {
       transactionBuilder.addOutput(params.recoveryDestination, recoveryAmount);
 
       if (isKrsRecovery && krsFee > 0) {
-        const krsFeeAddress = krsProvider.feeAddresses[this.getChain()];
+        const krsFeeAddress = krsProvider.feeAddresses[self.getChain()];
 
         if (!krsFeeAddress) {
           throw new Error('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
@@ -1461,12 +1729,12 @@ export class AbstractUtxoCoin extends BaseCoin {
 
       if (isUnsignedSweep) {
         const txHex = transactionBuilder.buildIncomplete().toBuffer().toString('hex');
-        return this.formatForOfflineVault(txInfo, txHex);
+        return self.formatForOfflineVault(txInfo, txHex);
       } else {
-        const signedTx = this.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
+        const signedTx = self.signRecoveryTransaction(transactionBuilder, unspents, addressesById, !isKrsRecovery);
         txInfo.transactionHex = signedTx.build().toBuffer().toString('hex');
         try {
-          txInfo.tx = yield this.verifyRecoveryTransaction(txInfo);
+          txInfo.tx = yield self.verifyRecoveryTransaction(txInfo);
         } catch (e) {
 
           if (!(e instanceof errors.MethodNotImplementedError)) {
@@ -1477,7 +1745,7 @@ export class AbstractUtxoCoin extends BaseCoin {
       }
 
       if (isKrsRecovery) {
-        txInfo.coin = this.getChain();
+        txInfo.coin = self.getChain();
         txInfo.backupKey = params.backupKey;
         txInfo.recoveryAmount = recoveryAmount;
       }
@@ -1492,8 +1760,9 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param unspents {Array} the unspents to use in the transaction
    * @param addresses {Array} the address and redeem script info for the unspents
    * @param cosign {Boolean} whether to cosign this transaction with the user's backup key (false if KRS recovery)
+   * @returns the transaction builder originally passed in as the first argument
    */
-  signRecoveryTransaction(txb, unspents, addresses, cosign) {
+  signRecoveryTransaction(txb: any, unspents: Output[], addresses: any, cosign: boolean): any {
     // sign the inputs
     const signatureIssues = [];
     unspents.forEach((unspent, i) => {
@@ -1504,9 +1773,10 @@ export class AbstractUtxoCoin extends BaseCoin {
       backupPrivateKey.network = this.network;
       userPrivateKey.network = this.network;
 
-      const currentSignatureIssue: any = {
+      const currentSignatureIssue = {
         inputIndex: i,
-        unspent: unspent
+        unspent: unspent,
+        error: null,
       };
 
       if (cosign) {
@@ -1545,7 +1815,8 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  calculateFeeAmount(params, callback): Bluebird<any> {
+  calculateFeeAmount(params: { provider: string, amount?: number }, callback?: NodeCallback<number>): Bluebird<number> {
+    const self = this;
     return co(function *calculateFeeAmount() {
       const krsProvider = config.krsProviders[params.provider];
 
@@ -1555,9 +1826,9 @@ export class AbstractUtxoCoin extends BaseCoin {
 
       if (krsProvider.feeType === 'flatUsd') {
         const feeAmountUsd = krsProvider.feeAmount;
-        const currentPrice = yield this.getRecoveryMarketPrice();
+        const currentPrice = yield self.getRecoveryMarketPrice();
 
-        return Math.round(feeAmountUsd / currentPrice * this.getBaseFactor());
+        return Math.round(feeAmountUsd / currentPrice * self.getBaseFactor());
       } else {
         // we can add more fee structures here as needed for different providers, such as percentage of recovery amount
         throw new Error('Fee structure not implemented');
@@ -1568,24 +1839,24 @@ export class AbstractUtxoCoin extends BaseCoin {
   /**
    * Recover BTC that was sent to the wrong chain
    * @param params
-   * @param params.txid {String} The txid of the faulty transaction
-   * @param params.recoveryAddress {String} address to send recovered funds to
-   * @param params.wallet {Wallet} the wallet that received the funds
-   * @param params.recoveryCoin {Coin} the coin type of the wallet that received the funds
-   * @param params.signed {Boolean} return a half-signed transaction (default=true)
-   * @param params.walletPassphrase {String} the wallet passphrase
-   * @param params.xprv {String} the unencrypted xprv (used instead of wallet passphrase)
+   * @param params.txid The txid of the faulty transaction
+   * @param params.recoveryAddress address to send recovered funds to
+   * @param params.wallet the wallet that received the funds
+   * @param params.recoveryCoin the coin type of the wallet that received the funds
+   * @param params.signed return a half-signed transaction (default=true)
+   * @param params.walletPassphrase the wallet passphrase
+   * @param params.xprv the unencrypted xprv (used instead of wallet passphrase)
    * @param callback
    * @returns {*}
    */
-  recoverFromWrongChain(params, callback): Bluebird<any> {
+  recoverFromWrongChain(params: RecoverFromWrongChainOptions, callback?: NodeCallback<any>): Bluebird<any> {
     return co(function *recoverFromWrongChain() {
       const {
         txid,
         recoveryAddress,
         wallet,
         walletPassphrase,
-        xprv
+        xprv,
       } = params;
 
       // params.recoveryCoin used to be params.coin, backwards compatibility
@@ -1601,17 +1872,17 @@ export class AbstractUtxoCoin extends BaseCoin {
         throw new Error(`Recovery of ${sourceCoinFamily} balances from ${recoveryCoinFamily} wallets is not supported.`);
       }
 
-      const recoveryTool = new RecoveryTool({
+      const recoveryTool = new CrossChainRecoveryTool({
         bitgo: this.bitgo,
         sourceCoin: this,
         recoveryCoin: recoveryCoin,
-        logging: false
+        logging: false,
       });
 
       yield recoveryTool.buildTransaction({
         wallet: wallet,
         faultyTxId: txid,
-        recoveryAddress: recoveryAddress
+        recoveryAddress: recoveryAddress,
       });
 
       if (signed) {
@@ -1629,7 +1900,7 @@ export class AbstractUtxoCoin extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed) {
+  generateKeyPair(seed: Buffer): { pub: string, prv: string } {
     if (!seed) {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the
@@ -1640,9 +1911,8 @@ export class AbstractUtxoCoin extends BaseCoin {
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
-      prv: extendedKey.toBase58()
+      prv: extendedKey.toBase58(),
     };
   }
 
 }
-

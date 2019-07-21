@@ -58,7 +58,7 @@ export abstract class BaseCoin {
     this._markets = new Markets(this.bitgo, this);
   }
 
-  public url(suffix): string {
+  public url(suffix: string): string {
     return this._url + this.getChain() + suffix;
   }
 
