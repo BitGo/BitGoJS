@@ -18,6 +18,7 @@ import {
 import * as stellar from 'stellar-sdk';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
+import { KeyPair } from '../keychains';
 
 export interface SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -53,11 +54,6 @@ interface ExplainTransactionOptions {
 
 interface TransactionExplanation extends BaseCoinTransactionExplanation {
   memo: string;
-}
-
-interface KeyPair {
-  pub: string;
-  prv: string;
 }
 
 export class Algo extends BaseCoin {

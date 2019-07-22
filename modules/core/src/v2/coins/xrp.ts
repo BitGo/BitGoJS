@@ -19,6 +19,7 @@ import * as url from 'url';
 import * as querystring from 'querystring';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
+import { KeyPair } from '../keychains'
 
 interface AddressDetails {
   address: string;
@@ -69,11 +70,6 @@ interface RecoveryOptions {
   bitgoKey: string;
   walletPassphrase: string;
   krsProvider: string;
-}
-
-interface KeyPair {
-  pub: string;
-  prv: string;
 }
 
 interface HalfSignedTransaction {
