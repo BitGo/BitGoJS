@@ -1,9 +1,10 @@
 import { hdPath } from '../../bitcoin';
+import { MethodNotImplementedError } from '../../errors';
 import { BaseCoin } from '../baseCoin';
 import {
-  AbstractUtxoCoin,
-  AbstractUtxoCoinExplainTransactionOptions,
-  AbstractUtxoCoinTransactionExplanation,
+  AbstractUtxoCoin, AddressInfo,
+  ExplainTransactionOptions,
+  TransactionExplanation, UnspentInfo,
 } from './abstractUtxoCoin';
 import { NodeCallback } from '../types';
 import * as _ from 'lodash';
@@ -282,7 +283,7 @@ export class Rmg extends AbstractUtxoCoin {
    * @param params
    * @param callback
    */
-  explainTransaction(params: AbstractUtxoCoinExplainTransactionOptions, callback?: NodeCallback<AbstractUtxoCoinTransactionExplanation>): Bluebird<AbstractUtxoCoinTransactionExplanation> {
+  explainTransaction(params: ExplainTransactionOptions, callback?: NodeCallback<TransactionExplanation>): Bluebird<TransactionExplanation> {
     return co(function *() {
       const self = this;
       const transaction = prova.Transaction.fromHex(params.txHex);
@@ -329,5 +330,13 @@ export class Rmg extends AbstractUtxoCoin {
       }
       return explanation;
     }).call(this).asCallback(callback);
+  }
+
+  protected getAddressInfoFromExplorer(address: string): Bluebird<AddressInfo> {
+    throw new MethodNotImplementedError();
+  }
+
+  protected getUnspentInfoFromExplorer(address: string): Bluebird<UnspentInfo[]> {
+    throw new MethodNotImplementedError();
   }
 }

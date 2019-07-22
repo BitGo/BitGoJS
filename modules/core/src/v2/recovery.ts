@@ -13,7 +13,7 @@ const bitcoin = require('bitgo-utxo-lib');
  *   - sourceCoin: the coin that needs to be recovered
  *   - recoveryCoin: the type of address the faulty transaction was sent to
  */
-class CrossChainRecoveryTool {
+export class CrossChainRecoveryTool {
   bitgo: any;
   sourceCoin: any;
   recoveryCoin: any;
@@ -83,7 +83,7 @@ class CrossChainRecoveryTool {
    * @param walletId {String} wallet ID
    * @param callback
    */
-  setWallet(walletId, callback) {
+  setWallet(walletId, callback?) {
     return co(function *setWallet() {
       const coinType = this.recoveryCoin.getChain();
 
@@ -138,7 +138,7 @@ class CrossChainRecoveryTool {
    * @param faultyTxId {String} the txid of the faulty transaction
    * @param callback
    */
-  findUnspents(faultyTxId, callback) {
+  findUnspents(faultyTxId, callback?) {
     return co(function *findUnspents() {
       if (!faultyTxId) {
         throw new Error('Please provide a faultyTxId');
@@ -214,7 +214,7 @@ class CrossChainRecoveryTool {
    * @param callback
    * @returns {Object} partial txInfo object with transaction inputs
    */
-  buildInputs(unspents, callback) {
+  buildInputs(unspents, callback?) {
     return co(function *buildInputs() {
       this._log('Building inputs for recovery transaction...');
 
@@ -386,11 +386,10 @@ class CrossChainRecoveryTool {
    * Half-signs the built transaction with the user's private key or keychain
    * @param prv {String} private key
    * @param passphrase {String} wallet passphrase
-   * @param keychain {Object} wallet keychain
    * @param callback
    * @returns {Object} half-signed transaction
    */
-  signTransaction({ prv, passphrase, keychain }, callback) {
+  signTransaction({ prv, passphrase }, callback?) {
     return co(function *signTransaction() {
       if (!this.txInfo) {
         throw new Error('Could not find txInfo. Please build a transaction');
@@ -417,7 +416,7 @@ class CrossChainRecoveryTool {
    * @param callback
    * @returns {String} decrypted wallet private key
    */
-  getKeys(passphrase, callback) {
+  getKeys(passphrase, callback?) {
     return co(function *getKeys() {
       let prv;
 
@@ -454,7 +453,7 @@ class CrossChainRecoveryTool {
     }).call(this).asCallback(callback);
   }
 
-  buildTransaction({ wallet, faultyTxId, recoveryAddress }, callback) {
+  buildTransaction({ wallet, faultyTxId, recoveryAddress }, callback?) {
     return co(function *buildTransaction() {
       yield this.setWallet(wallet);
 
@@ -467,7 +466,7 @@ class CrossChainRecoveryTool {
     }).call(this).asCallback(callback);
   }
 
-  buildUnsigned(callback) {
+  buildUnsigned(callback?) {
     return co(function *() {
       if (!this.txInfo) {
         throw new Error('Could not find txInfo. Please build a transaction');
@@ -527,5 +526,3 @@ class CrossChainRecoveryTool {
     };
   }
 }
-
-module.exports = CrossChainRecoveryTool;
