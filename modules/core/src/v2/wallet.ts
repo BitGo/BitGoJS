@@ -11,10 +11,9 @@ import * as internal from './internal';
 import { drawKeycard } from './keycard';
 import { TradingAccount } from './trading/tradingAccount';
 import { NodeCallback } from './types';
+import { PendingApproval } from './pendingApproval';
 
-const PendingApproval = require('./pendingApproval');
 const util = require('../util');
-const Keychains = require('./keychains');
 
 const debug = debugLib('bitgo:v2:wallet');
 const co = Bluebird.coroutine;
@@ -41,42 +40,42 @@ export class Wallet {
    * Build a URL using this wallet's id which can be used for BitGo API operations
    * @param extra API specific string to append to the wallet id
    */
-  url(extra: string = '') {
+  url(extra: string = ''): string {
     return this.baseCoin.url('/wallet/' + this.id() + extra);
   }
 
   /**
    * Get this wallet's id
    */
-  id() {
+  id(): string {
     return this._wallet.id;
   }
 
   /**
    * Get the number of approvals required for spending funds from this wallet
    */
-  approvalsRequired() {
+  approvalsRequired(): number {
     return this._wallet.approvalsRequired;
   }
 
   /**
    * Get the current balance of this wallet
    */
-  balance() {
+  balance(): number {
     return this._wallet.balance;
   }
 
   /**
    * Get the confirmed balance of this wallet
    */
-  confirmedBalance() {
+  confirmedBalance(): number {
     return this._wallet.confirmedBalance;
   }
 
   /**
    * Get the spendable balance of this wallet
    */
-  spendableBalance() {
+  spendableBalance(): number {
     return this._wallet.spendableBalance;
   }
 
@@ -85,7 +84,7 @@ export class Wallet {
    *
    * This is useful when balances have the potential to overflow standard javascript numbers
    */
-  balanceString() {
+  balanceString(): string {
     return this._wallet.balanceString;
   }
 
@@ -94,7 +93,7 @@ export class Wallet {
    *
    * This is useful when balances have the potential to overflow standard javascript numbers
    */
-  confirmedBalanceString() {
+  confirmedBalanceString(): string {
     return this._wallet.confirmedBalanceString;
   }
 
@@ -103,14 +102,14 @@ export class Wallet {
    *
    * This is useful when balances have the potential to overflow standard javascript numbers
    */
-  spendableBalanceString() {
+  spendableBalanceString(): string {
     return this._wallet.spendableBalanceString;
   }
 
   /**
    * Get the coin identifier for the type of coin this wallet holds
    */
-  coin() {
+  coin(): string {
     return this._wallet.coin;
   }
 
@@ -149,7 +148,7 @@ export class Wallet {
   /**
    * Get all pending approvals on this wallet
    */
-  pendingApprovals(): any[] { // TODO:  return  PendingApproval[] once we have a type for that
+  pendingApprovals(): PendingApproval[] {
     return this._wallet.pendingApprovals.map((currentApproval) => {
       return new PendingApproval(this.bitgo, this.baseCoin, currentApproval, this);
     });
@@ -161,7 +160,7 @@ export class Wallet {
    * @param callback
    * @returns {Wallet}
    */
-  refresh(params: any = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
+  refresh(params: {} = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     return co(function *() {
       this._wallet = yield this.bitgo.get(this.url()).result();
       return this;
@@ -174,10 +173,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  transactions(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    params = params || {};
-    common.validateParams(params, [], [], callback);
-
+  transactions(params: { prevId?: string, limit?: number } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const query: any = {};
     if (params.prevId) {
       if (!_.isString(params.prevId)) {
@@ -206,7 +202,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  getTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getTransaction(params: { prevId?: string, limit?: number, txHash?: string } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['txHash'], [], callback);
 
     const query: any = {};
@@ -1239,7 +1235,7 @@ export class Wallet {
 
       // retrieve our keychains needed to run the prebuild - some coins use all pubs
       const keychains = yield this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
-      
+
       const txPrebuild = yield txPrebuildQuery;
 
       try {

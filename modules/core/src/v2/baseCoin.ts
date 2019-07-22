@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import { BigNumber } from 'bignumber.js';
 import * as bitcoin from 'bitgo-utxo-lib';
 import { hdPath } from '../bitcoin';
@@ -12,7 +15,7 @@ import { Wallets } from './wallets';
 import { Markets } from './markets';
 import { Webhooks } from './webhooks';
 const Keychains = require('./keychains');
-const PendingApprovals = require('./pendingApprovals');
+import { PendingApprovals } from './pendingApprovals';
 import { Enterprises } from './enterprises';
 
 export interface BaseCoinTransactionOutput {
@@ -37,7 +40,6 @@ export interface BaseCoinTransactionExplanation {
 }
 
 export abstract class BaseCoin {
-
   protected readonly bitgo;
   protected readonly _url: string;
   protected readonly _enterprises: Enterprises;
@@ -214,7 +216,9 @@ export abstract class BaseCoin {
   getExtraPrebuildParams(buildParams, callback?: NodeCallback<any>): Bluebird<any> {
     return Bluebird.method(function() {
       return {};
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -223,7 +227,9 @@ export abstract class BaseCoin {
   postProcessPrebuild(prebuildResponse, callback?: NodeCallback<any>): Bluebird<any> {
     return Bluebird.method(function() {
       return prebuildResponse;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -232,7 +238,9 @@ export abstract class BaseCoin {
   presignTransaction(params, callback?: NodeCallback<any>): Bluebird<any> {
     return Bluebird.method(function() {
       return params;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   newWalletObject(walletParams) {
@@ -251,14 +259,19 @@ export abstract class BaseCoin {
    * @returns {Object} The info returned from the merchant server
    */
   feeEstimate(params, callback?: NodeCallback<any>): Bluebird<any> {
-    return co(function *coFeeEstimate() {
+    return co(function* coFeeEstimate() {
       const query: any = {};
       if (params && params.numBlocks) {
         query.numBlocks = params.numBlocks;
       }
 
-      return this.bitgo.get(this.url('/tx/fee')).query(query).result();
-    }).call(this).asCallback(callback);
+      return this.bitgo
+        .get(this.url('/tx/fee'))
+        .query(query)
+        .result();
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -267,18 +280,18 @@ export abstract class BaseCoin {
    * @param seed
    * @returns {{key: string, derivationPath: string}}
    */
-  deriveKeyWithSeed({ key, seed }: { key: string, seed: string }): { key: string, derivationPath: string } {
+  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { key: string; derivationPath: string } {
     const derivationPathInput = bitcoin.crypto.hash256(`${seed}`).toString('hex');
     const derivationPathParts = [
       parseInt(derivationPathInput.slice(0, 7), 16),
-      parseInt(derivationPathInput.slice(7, 14), 16)
+      parseInt(derivationPathInput.slice(7, 14), 16),
     ];
     const derivationPath = 'm/999999/' + derivationPathParts.join('/');
     const keyNode = bitcoin.HDNode.fromBase58(key);
     const derivedKeyNode = hdPath(keyNode).derive(derivationPath);
     return {
       key: derivedKeyNode.toBase58(),
-      derivationPath: derivationPath
+      derivationPath: derivationPath,
     };
   }
 
@@ -300,7 +313,7 @@ export abstract class BaseCoin {
   }
 
   initiateRecovery(params): Bluebird<any> {
-    return co(function *initiateRecovery() {
+    return co(function* initiateRecovery() {
       const self = this;
       const keys = [];
       const userKey = params.userKey; // Box A
@@ -316,7 +329,7 @@ export abstract class BaseCoin {
           if (!userKey.startsWith('xprv') && !userKey.startsWith('xpub')) {
             userKey = self.bitgo.decrypt({
               input: userKey,
-              password: passphrase
+              password: passphrase,
             });
           }
           const userHDNode = bitcoin.HDNode.fromBase58(userKey);
@@ -335,7 +348,7 @@ export abstract class BaseCoin {
         if (!backupKey.startsWith('xprv') && !isKrsRecovery && !backupKey.startsWith('xpub')) {
           backupKey = self.bitgo.decrypt({
             input: backupKey,
-            password: passphrase
+            password: passphrase,
           });
         }
         const backupHDNode = bitcoin.HDNode.fromBase58(backupKey);

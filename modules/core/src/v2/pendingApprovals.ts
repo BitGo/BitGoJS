@@ -1,70 +1,101 @@
-import common = require('../common');
-const PendingApproval = require('./pendingApproval');
+/**
+ * @prettier
+ */
 import * as _ from 'lodash';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+import * as debugLib from 'debug';
 
-const PendingApprovals = function(bitgo, baseCoin) {
-  this.bitgo = bitgo;
-  this.baseCoin = baseCoin;
-  this.coinPendingApproval = PendingApproval;
-};
+import { validateParams } from '../common';
+import { PendingApproval } from './pendingApproval';
+import { BaseCoin } from './baseCoin';
+import { NodeCallback } from './types';
 
-//
-// list
-// List the pending approvals available to the user
-//
-PendingApprovals.prototype.list = function(params, callback) {
-  params = params || {};
-  common.validateParams(params, [], ['walletId', 'enterpriseId'], callback);
+const co = Bluebird.coroutine;
+const debug = debugLib('bitgo:v2:pendingApprovals');
 
-  const queryParams: any = {};
-  if (_.isString(params.walletId)) {
-    queryParams.walletId = params.walletId;
+export interface ListPendingApprovalsOptions {
+  walletId?: string;
+  enterpriseId?: string;
+}
+
+export interface GetPendingApprovalOptions {
+  id?: string;
+}
+
+export interface ListPendingApprovalsResult {
+  pendingApprovals: PendingApproval[];
+}
+
+export class PendingApprovals {
+  private readonly bitgo: any;
+  private readonly baseCoin: BaseCoin;
+
+  constructor(bitgo: any, baseCoin: BaseCoin) {
+    this.bitgo = bitgo;
+    this.baseCoin = baseCoin;
   }
-  if (_.isString(params.enterpriseId)) {
-    queryParams.enterprise = params.enterpriseId;
-  }
 
-  if (Object.keys(queryParams).length !== 1) {
-    throw new Error('must provide exactly 1 of walletId or enterpriseId to get pending approvals on');
-  }
+  /**
+   * List the pending approvals available to the user
+   * @param params
+   * @param callback
+   */
+  list(
+    params: ListPendingApprovalsOptions = {},
+    callback?: NodeCallback<ListPendingApprovalsResult>
+  ): Bluebird<ListPendingApprovalsResult> {
+    const self = this;
+    return co(function*() {
+      validateParams(params, [], ['walletId', 'enterpriseId'], callback);
 
-  const self = this;
-  return this.bitgo.get(this.baseCoin.url('/pendingapprovals'))
-  .query(queryParams)
-  .result()
-  .then(function(body) {
-    body.pendingApprovals = body.pendingApprovals.map(function(currentApproval) {
-      return new self.coinPendingApproval(self.bitgo, self.baseCoin, currentApproval);
-    });
-    return body;
-  })
-  .nodeify(callback);
-};
-
-//
-// get
-// Fetch an existing pending approval
-// Parameters include:
-//   id:  the pending approval id
-//
-PendingApprovals.prototype.get = function(params, callback) {
-  return co(function *() {
-    params = params || {};
-    common.validateParams(params, ['id'], [], callback);
-
-    const approvalData = yield this.bitgo.get(this.baseCoin.url('/pendingapprovals/' + params.id)).result();
-    const pendingApproval = new this.coinPendingApproval(this.bitgo, this.baseCoin, approvalData);
-    if (approvalData.wallet) {
-      try {
-        pendingApproval.wallet = yield this.baseCoin.wallets().get({ id: approvalData.wallet });
-      } catch (e) {
-        // nothing to be done here, although it's probably noteworthy that a non-existent wallet is referenced
+      const queryParams: any = {};
+      if (_.isString(params.walletId)) {
+        queryParams.walletId = params.walletId;
       }
-    }
-    return pendingApproval;
-  }).call(this).asCallback(callback);
-};
+      if (_.isString(params.enterpriseId)) {
+        queryParams.enterprise = params.enterpriseId;
+      }
 
-module.exports = PendingApprovals;
+      if (Object.keys(queryParams).length !== 1) {
+        throw new Error('must provide exactly 1 of walletId or enterpriseId to get pending approvals on');
+      }
+
+      const body = self.bitgo
+        .get(self.baseCoin.url('/pendingapprovals'))
+        .query(queryParams)
+        .result();
+      body.pendingApprovals = body.pendingApprovals.map(
+        currentApproval => new PendingApproval(self.bitgo, self.baseCoin, currentApproval)
+      );
+      return body;
+    })
+      .call(this)
+      .asCallback(callback);
+  }
+
+  /**
+   * Fetch an existing pending approval
+   * @param params
+   * @param callback
+   */
+  get(params: GetPendingApprovalOptions = {}, callback?: NodeCallback<PendingApproval>): Bluebird<PendingApproval> {
+    const self = this;
+    return co(function*() {
+      validateParams(params, ['id'], [], callback);
+
+      const approvalData = yield self.bitgo.get(self.baseCoin.url('/pendingapprovals/' + params.id)).result();
+      let approvalWallet;
+      if (approvalData.wallet) {
+        try {
+          approvalWallet = yield self.baseCoin.wallets().get({ id: approvalData.wallet });
+        } catch (e) {
+          // nothing to be done here, although it's probably noteworthy that a non-existent wallet is referenced
+          debug('failed to get wallet %s, referenced by pending approval %s', approvalData.wallet, params.id);
+        }
+      }
+      return new PendingApproval(self.bitgo, self.baseCoin, approvalData, approvalWallet);
+    })
+      .call(this)
+      .asCallback(callback);
+  }
+}
