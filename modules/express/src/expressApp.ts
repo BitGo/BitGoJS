@@ -1,71 +1,43 @@
 import * as express from 'express';
-import httpProxy = require('http-proxy');
-import url = require('url');
+import * as httpProxy from 'http-proxy';
+import * as url from 'url';
+import * as Promise from 'bluebird';
+import * as path from 'path';
+import * as _ from 'lodash';
+import * as debugLib from 'debug';
+import * as https from 'https';
+import * as http from 'http';
+
 const morgan = require('morgan');
-const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs'));
-const path = require('path');
-const _ = require('lodash');
-const debugLib = require('debug');
-const debug = debugLib('bitgo:express');
-const https = require('https');
-const http = require('http');
+
+import { Config, config } from './config';
+
 const co = Promise.coroutine;
-import { ArgumentParser } from 'argparse';
-import { ServerResponse } from 'http';
+const debug = debugLib('bitgo:express');
 
 // eslint-disable-next-line @typescript-eslint/camelcase
 import { SSL_OP_NO_TLSv1 } from 'constants';
+import { NodeEnvironmentError, TlsConfigurationError } from './errors';
 
 const { Environments } = require('bitgo');
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
-import { TlsConfigurationError, NodeEnvironmentError } from './errors';
 
 const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
-const DEFAULT_TIMEOUT = 305 * 1000;
-
-/**
- * Do some additional argument validation which can't easily be done in argparse
- *
- * @param args
- * @return {*}
- */
-function validateArgs(args) {
-  const { env, bind, disablessl, crtpath, keypath, disableenvcheck } = args;
-  const needsTLS = env === 'prod' && bind !== 'localhost' && !disablessl;
-
-  if (needsTLS && !(keypath && crtpath)) {
-    throw new TlsConfigurationError('Must enable TLS when running against prod and listening on external interfaces!');
-  }
-
-  if (Boolean(keypath) !== Boolean(crtpath)) {
-    throw new TlsConfigurationError('Must provide both keypath and crtpath when running in TLS mode!');
-  }
-
-  if (env === 'prod' && process.env.NODE_ENV !== 'production') {
-    if (!disableenvcheck) {
-      throw new NodeEnvironmentError('NODE_ENV should be set to production when running against prod environment. Use --disableenvcheck if you really want to run in a non-production node configuration.');
-    } else {
-      console.warn(`warning: unsafe NODE_ENV '${process.env.NODE_ENV}'. NODE_ENV must be set to 'production' when running against BitGo production environment.`);
-    }
-  }
-
-  return args;
-}
 
 /**
  * Set up the logging middleware provided by morgan
  *
- * @param logfile
  * @param app
+ * @param config
  */
-function setupLogging({ logfile }, app) {
+function setupLogging(app, config: Config) {
   // Set up morgan for logging, with optional logging into a file
   let middleware;
-  if (logfile) {
+  if (config.logFile) {
     // create a write stream (in append mode)
-    const accessLogPath = path.resolve(logfile);
+    const accessLogPath = path.resolve(config.logFile);
     const accessLogStream = fs.createWriteStream(accessLogPath, { flags: 'a' });
     console.log('Log location: ' + accessLogPath);
     // setup the logger
@@ -81,20 +53,16 @@ function setupLogging({ logfile }, app) {
 /**
  * If we're running in a custom env, set the appropriate environment URI and network properties
  *
- * @param args
+ * @param config
  */
-function configureEnvironment(args) {
-  const { customrooturi, custombitcoinnetwork } = args;
-  if (customrooturi || custombitcoinnetwork) {
-    args.env = 'custom';
+function configureEnvironment(config: Config) {
+  const { customRootUri, customBitcoinNetwork } = config;
+  if (customRootUri) {
+    Environments['custom'].uri = customRootUri;
   }
 
-  if (customrooturi) {
-    Environments['custom'].uri = customrooturi;
-  }
-
-  if (custombitcoinnetwork) {
-    Environments['custom'].network = custombitcoinnetwork;
+  if (customBitcoinNetwork) {
+    Environments['custom'].network = customBitcoinNetwork;
   }
 }
 
@@ -102,15 +70,16 @@ function configureEnvironment(args) {
  * Create and configure the proxy middleware and add it to the app middleware stack
  *
  * @param app bitgo-express Express app
- * @param env BitGo environment name
- * @param timeout Request timeout delay in milliseconds
+ * @param config
  */
-function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
+function configureProxy(app, config: Config) {
+  const { env, timeout } = config;
+
   // Mount the proxy middleware
   const options = {
     timeout: timeout,
     proxyTimeout: timeout,
-    secure: null
+    secure: null,
   };
 
   if (Environments[env].network === 'testnet') {
@@ -120,9 +89,9 @@ function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
 
   const proxy = httpProxy.createProxyServer(options);
 
-  const sendError = (res: ServerResponse, status: number, json: object) => {
+  const sendError = (res: http.ServerResponse, status: number, json: object) => {
     res.writeHead(status, {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     });
 
     res.end(JSON.stringify(json));
@@ -139,14 +108,14 @@ function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
   proxy.on('error', (err, _, res) => {
     debug('Proxy server error: ', err);
     sendError(res, 500, {
-      error: 'BitGo Express encountered an error while attempting to proxy your request to BitGo. Please try again.'
+      error: 'BitGo Express encountered an error while attempting to proxy your request to BitGo. Please try again.',
     });
   });
 
   proxy.on('econnreset', (err, _, res) => {
     debug('Proxy server connection reset error: ', err);
     sendError(res, 500, {
-      error: 'BitGo Express encountered a connection reset error while attempting to proxy your request to BitGo. Please try again.'
+      error: 'BitGo Express encountered a connection reset error while attempting to proxy your request to BitGo. Please try again.',
     });
   });
 
@@ -165,15 +134,15 @@ function configureProxy(app, { env, timeout = DEFAULT_TIMEOUT }) {
 /**
  * Create an HTTP server configured for accepting HTTPS connections
  *
- * @param keypath
- * @param crtpath
+ * @param config application configuration
  * @param app
  * @return {Server}
  */
-function createHttpsServer({ keypath, crtpath }, app) {
+function createHttpsServer(app, config: Config) {
   return co(function *createHttpsServer() {
-    const privateKeyPromise = fs.readFileAsync(keypath, 'utf8');
-    const certificatePromise = fs.readFileAsync(crtpath, 'utf8');
+    const { keyPath, crtPath } = config;
+    const privateKeyPromise = fs.readFileAsync(keyPath, 'utf8');
+    const certificatePromise = fs.readFileAsync(crtPath, 'utf8');
 
     const [key, cert] = yield Promise.all([privateKeyPromise, certificatePromise]);
 
@@ -193,112 +162,34 @@ function createHttpServer(app) {
 }
 
 /**
- * Configure argparse with all possible command line arguments
- * @return {*}
- */
-module.exports.parseArgs = function() {
-  const parser = new ArgumentParser({
-    version: pjson.version,
-    addHelp: true,
-    description: 'BitGo-Express'
-  });
-
-  parser.addArgument(['-p', '--port'], {
-    defaultValue: 3080,
-    type: 'int',
-    help: 'Port to listen on'
-  });
-
-  parser.addArgument(['-b', '--bind'], {
-    defaultValue: 'localhost',
-    help: 'Bind to given address to listen for connections (default: localhost)'
-  });
-
-  parser.addArgument(['-e', '--env'], {
-    defaultValue: 'test',
-    help: 'BitGo environment to proxy against (prod, test)'
-  });
-
-  parser.addArgument(['-d', '--debug'], {
-    action: 'appendConst',
-    dest: 'debugnamespace',
-    constant: 'bitgo:express',
-    help: 'Enable basic debug logging for incoming requests'
-  });
-
-  parser.addArgument(['-D', '--debugnamespace'], {
-    action: 'append',
-    help: 'Enable a specific debugging namespace for more fine-grained debug output. May be given more than once.'
-  });
-
-  parser.addArgument(['-k', '--keypath'], {
-    help: 'Path to the SSL Key file (required if running production)'
-  });
-
-  parser.addArgument(['-c', '--crtpath'], {
-    help: 'Path to the SSL Crt file (required if running production)'
-  });
-
-  parser.addArgument( ['-u', '--customrooturi'], {
-    defaultValue: process.env.BITGO_CUSTOM_ROOT_URI,
-    help: 'Force custom root BitGo URI (e.g. https://test.bitgo.com)'
-  });
-
-  parser.addArgument(['-n', '--custombitcoinnetwork'], {
-    defaultValue: process.env.BITGO_CUSTOM_BITCOIN_NETWORK,
-    help: 'Force custom bitcoin network (e.g. testnet)'
-  });
-
-  parser.addArgument(['-l', '--logfile'], {
-    help: 'Filepath to write the access log'
-  });
-
-  parser.addArgument(['--disablessl'], {
-    action: 'storeTrue',
-    help: 'Allow running against production in non-SSL mode (at your own risk!)'
-  });
-
-  parser.addArgument(['--disableproxy'], {
-    action: 'storeTrue',
-    help: 'disable the proxy, not routing any non-express routes'
-  });
-
-  parser.addArgument(['--disableenvcheck'], {
-    action: 'storeTrue',
-    defaultValue: true, // BG-9584: temporarily disable env check while we give users time to react to change in runtime behavior
-    help: 'disable checking for proper NODE_ENV when running in prod environment'
-  });
-
-  parser.addArgument(['-t', '--timeout'], {
-    defaultValue: (process.env.BITGO_TIMEOUT as any) * 1000 || DEFAULT_TIMEOUT,
-    help: 'Proxy server timeout in milliseconds'
-  });
-
-  return parser.parseArgs();
-};
-
-/**
  * Create a startup function which will be run upon server initialization
  *
- * @param env
- * @param customrooturi
- * @param custombitcoinnetwork
+ * @param config
  * @param baseUri
  * @return {Function}
  */
-module.exports.startup = function({ env, customrooturi, custombitcoinnetwork } = {} as any, baseUri) {
+module.exports.startup = function(config: Config, baseUri: string) {
   return function() {
+    const { env, customRootUri, customBitcoinNetwork } = config;
     console.log('BitGo-Express running');
     console.log(`Environment: ${env}`);
     console.log(`Base URI: ${baseUri}`);
-    if (customrooturi) {
-      console.log(`Custom root URI: ${customrooturi}`);
+    if (customRootUri) {
+      console.log(`Custom root URI: ${customRootUri}`);
     }
-    if (custombitcoinnetwork) {
-      console.log(`Custom bitcoin network: ${custombitcoinnetwork}`);
+    if (customBitcoinNetwork) {
+      console.log(`Custom bitcoin network: ${customBitcoinNetwork}`);
     }
   };
 };
+
+/**
+ * helper function to determine whether we should run the server over TLS or not
+ */
+function isTLS(config: Config) {
+  const { keyPath, crtPath } = config;
+  return Boolean(keyPath && crtPath);
+}
 
 /**
  * Create either a HTTP or HTTPS server
@@ -307,31 +198,69 @@ module.exports.startup = function({ env, customrooturi, custombitcoinnetwork } =
  * @param app
  * @return {Server}
  */
-module.exports.createServer = co(function *(args = {} as any, tls = false, app) {
-  return tls ? yield createHttpsServer(args, app) : createHttpServer(app);
+module.exports.createServer = co(function *(config: Config, app) {
+  return isTLS(config) ? yield createHttpsServer(app, config) : createHttpServer(app);
 });
 
 /**
  * Create the base URI where the BitGoExpress server will be available once started
- * @param bind
- * @param port
- * @param tls
  * @return {string}
  */
-module.exports.createBaseUri = function({ bind, port }, tls) {
+module.exports.createBaseUri = function(config: Config) {
+  const { bind, port } = config;
+  const tls = isTLS(config);
   const isStandardPort = (port === 80 && !tls) || (port === 443 && tls);
   return `http${tls ? 's' : ''}://${bind}${!isStandardPort ? ':' + port : ''}`;
 };
 
-module.exports.app = function(args) {
+/**
+ * Check environment and other preconditions to ensure bitgo-express can start safely
+ * @param config
+ */
+function checkPreconditions(config: Config) {
+  const { env, disableEnvCheck, bind, disableSSL, keyPath, crtPath, customRootUri, customBitcoinNetwork } = config;
+
+  // warn or throw if the NODE_ENV is not production when BITGO_ENV is production - this can leak system info from express
+  if (env === 'prod' && process.env.NODE_ENV !== 'production') {
+    if (!disableEnvCheck) {
+      throw new NodeEnvironmentError('NODE_ENV should be set to production when running against prod environment. Use --disableenvcheck if you really want to run in a non-production node configuration.');
+    } else {
+      console.warn(`warning: unsafe NODE_ENV '${process.env.NODE_ENV}'. NODE_ENV must be set to 'production' when running against BitGo production environment.`);
+    }
+  }
+
+  const needsTLS = env === 'prod' && bind !== 'localhost' && !disableSSL;
+
+  // make sure keyPath and crtPath are set when running over TLS
+  if (needsTLS && !(keyPath && crtPath)) {
+    throw new TlsConfigurationError('Must enable TLS when running against prod and listening on external interfaces!');
+  }
+
+  if (Boolean(keyPath) !== Boolean(crtPath)) {
+    throw new TlsConfigurationError('Must provide both keypath and crtpath when running in TLS mode!');
+  }
+
+  if ((customRootUri || customBitcoinNetwork) && env !== 'custom') {
+    console.warn(`customRootUri or customBitcoinNetwork is set, but env is '${env}'. Setting env to 'custom'.`);
+    config.env = 'custom';
+  }
+}
+
+module.exports.app = function(cfg: Config) {
   debug('app is initializing');
 
-  validateArgs(args);
-
-  // Create express app
   const app = express();
 
-  setupLogging(args, app);
+  setupLogging(app, cfg);
+
+  const { debugNamespace, disableProxy } = cfg;
+
+  // enable specified debug namespaces
+  if (_.isArray(debugNamespace)) {
+    _.forEach(debugNamespace, (ns) => debugLib.enable(ns));
+  }
+
+  checkPreconditions(cfg);
 
   // Be more robust about accepting URLs with double slashes
   app.use(function(req, res, next) {
@@ -339,19 +268,27 @@ module.exports.app = function(args) {
     next();
   });
 
-  // enable specified debug namespaces
-  if (_.isArray(args.debugnamespace)) {
-    _.forEach(args.debugnamespace, (ns) => debugLib.enable(ns));
-  }
-
   // Decorate the client routes
-  require('./clientRoutes')(app, args);
+  require('./clientRoutes')(app, cfg);
 
-  configureEnvironment(args);
+  configureEnvironment(cfg);
 
-  if (!args.disableproxy) {
-    configureProxy(app, args);
+  if (!disableProxy) {
+    configureProxy(app, cfg);
   }
 
   return app;
 };
+
+module.exports.init = co(function *() {
+  const cfg = config();
+  const app = module.exports.app(cfg);
+
+  const server = yield module.exports.createServer(cfg, app);
+
+  const { port, bind } = cfg;
+  const baseUri = module.exports.createBaseUri(cfg);
+
+  server.listen(port, bind, module.exports.startup(cfg, baseUri));
+  server.timeout = 300 * 1000; // 5 minutes
+});

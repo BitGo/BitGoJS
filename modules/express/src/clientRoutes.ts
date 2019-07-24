@@ -3,6 +3,8 @@ import * as bluebird from 'bluebird';
 import * as url from 'url';
 import * as debugLib from 'debug';
 
+import { Config } from './config';
+
 const BitGoJS = require('bitgo');
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
@@ -455,14 +457,15 @@ const parseBody = function(req, res, next) {
 };
 
 // Create the bitgo object in the request
-const prepareBitGo = function(args) {
-  const params: any = { env: args.env };
-  if (args.customrooturi) {
-    params.customRootURI = args.customrooturi;
-  }
-  if (args.custombitcoinnetwork) {
-    params.customBitcoinNetwork = args.custombitcoinnetwork;
-  }
+const prepareBitGo = function(config: Config) {
+  const { env, customRootUri, customBitcoinNetwork } = config;
+  const bitgoConstructorParams = {
+    env,
+    customRootURI: customRootUri,
+    customBitcoinNetwork,
+    accessToken: undefined as string,
+    userAgent: undefined as string,
+  };
 
   return function(req, res, next) {
     // Get access token
@@ -475,10 +478,10 @@ const prepareBitGo = function(args) {
     }
 
     const userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
-    params.accessToken = accessToken;
-    params.userAgent = userAgent;
+    bitgoConstructorParams.accessToken = accessToken;
+    bitgoConstructorParams.userAgent = userAgent;
 
-    req.bitgo = new BitGoJS.BitGo(params);
+    req.bitgo = new BitGoJS.BitGo(bitgoConstructorParams);
     req.bitgo._promise.longStackSupport = true;
 
     next();
@@ -486,7 +489,7 @@ const prepareBitGo = function(args) {
 };
 
 // Promise handler wrapper to handle sending responses and error cases
-const promiseWrapper = function(promiseRequestHandler, args) {
+const promiseWrapper = function(promiseRequestHandler) {
   return function(req, res, next) {
     debug(`handle: ${req.method} ${req.originalUrl}`);
     bluebird.try(promiseRequestHandler.bind(null, req, res, next))
@@ -529,7 +532,7 @@ const promiseWrapper = function(promiseRequestHandler, args) {
   };
 };
 
-exports = module.exports = function(app, args) {
+exports = module.exports = function(app, config: Config) {
   // When adding new routes to BitGo Express make sure that you also add the exact same routes to the server. Since
   // some customers were confused when calling a BitGo Express route on the BitGo server, we now handle all BitGo
   // Express routes on the BitGo server and return an error message that says that one should call BitGo Express
@@ -540,75 +543,75 @@ exports = module.exports = function(app, args) {
   // ping
   // /api/v[12]/pingexpress is the only exception to the rule above, as it explicitly checks the health of the
   // express server without running into rate limiting with the BitGo server.
-  app.get('/api/v[12]/ping', prepareBitGo(args), promiseWrapper(handlePing, args));
-  app.get('/api/v[12]/pingexpress', promiseWrapper(handlePingExpress, args));
+  app.get('/api/v[12]/ping', prepareBitGo(config), promiseWrapper(handlePing));
+  app.get('/api/v[12]/pingexpress', promiseWrapper(handlePingExpress));
 
   // auth
-  app.post('/api/v[12]/user/login', parseBody, prepareBitGo(args), promiseWrapper(handleLogin, args));
+  app.post('/api/v[12]/user/login', parseBody, prepareBitGo(config), promiseWrapper(handleLogin));
 
-  app.post('/api/v[12]/decrypt', parseBody, prepareBitGo(args), promiseWrapper(handleDecrypt, args));
-  app.post('/api/v[12]/encrypt', parseBody, prepareBitGo(args), promiseWrapper(handleEncrypt, args));
-  app.post('/api/v[12]/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleVerifyAddress, args));
-  app.post('/api/v[12]/calculateminerfeeinfo', parseBody, prepareBitGo(args), promiseWrapper(handleCalculateMinerFeeInfo, args));
+  app.post('/api/v[12]/decrypt', parseBody, prepareBitGo(config), promiseWrapper(handleDecrypt));
+  app.post('/api/v[12]/encrypt', parseBody, prepareBitGo(config), promiseWrapper(handleEncrypt));
+  app.post('/api/v[12]/verifyaddress', parseBody, prepareBitGo(config), promiseWrapper(handleVerifyAddress));
+  app.post('/api/v[12]/calculateminerfeeinfo', parseBody, prepareBitGo(config), promiseWrapper(handleCalculateMinerFeeInfo));
 
-  app.post('/api/v1/keychain/local', parseBody, prepareBitGo(args), promiseWrapper(handleCreateLocalKeyChain, args));
-  app.post('/api/v1/keychain/derive', parseBody, prepareBitGo(args), promiseWrapper(handleDeriveLocalKeyChain, args));
-  app.post('/api/v1/wallets/simplecreate', parseBody, prepareBitGo(args), promiseWrapper(handleCreateWalletWithKeychains, args));
+  app.post('/api/v1/keychain/local', parseBody, prepareBitGo(config), promiseWrapper(handleCreateLocalKeyChain));
+  app.post('/api/v1/keychain/derive', parseBody, prepareBitGo(config), promiseWrapper(handleDeriveLocalKeyChain));
+  app.post('/api/v1/wallets/simplecreate', parseBody, prepareBitGo(config), promiseWrapper(handleCreateWalletWithKeychains));
 
-  app.post('/api/v1/wallet/:id/sendcoins', parseBody, prepareBitGo(args), promiseWrapper(handleSendCoins, args));
-  app.post('/api/v1/wallet/:id/sendmany', parseBody, prepareBitGo(args), promiseWrapper(handleSendMany, args));
-  app.post('/api/v1/wallet/:id/createtransaction', parseBody, prepareBitGo(args), promiseWrapper(handleCreateTransaction, args));
-  app.post('/api/v1/wallet/:id/signtransaction', parseBody, prepareBitGo(args), promiseWrapper(handleSignTransaction, args));
+  app.post('/api/v1/wallet/:id/sendcoins', parseBody, prepareBitGo(config), promiseWrapper(handleSendCoins));
+  app.post('/api/v1/wallet/:id/sendmany', parseBody, prepareBitGo(config), promiseWrapper(handleSendMany));
+  app.post('/api/v1/wallet/:id/createtransaction', parseBody, prepareBitGo(config), promiseWrapper(handleCreateTransaction));
+  app.post('/api/v1/wallet/:id/signtransaction', parseBody, prepareBitGo(config), promiseWrapper(handleSignTransaction));
 
-  app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(args), promiseWrapper(handleShareWallet, args));
-  app.post('/api/v1/walletshare/:shareId/acceptShare', parseBody, prepareBitGo(args), promiseWrapper(handleAcceptShare, args));
+  app.post('/api/v1/wallet/:id/simpleshare', parseBody, prepareBitGo(config), promiseWrapper(handleShareWallet));
+  app.post('/api/v1/walletshare/:shareId/acceptShare', parseBody, prepareBitGo(config), promiseWrapper(handleAcceptShare));
 
-  app.put('/api/v1/pendingapprovals/:id/express', parseBody, prepareBitGo(args), promiseWrapper(handleApproveTransaction, args));
-  app.put('/api/v1/pendingapprovals/:id/constructTx', parseBody, prepareBitGo(args), promiseWrapper(handleConstructApprovalTx, args));
+  app.put('/api/v1/pendingapprovals/:id/express', parseBody, prepareBitGo(config), promiseWrapper(handleApproveTransaction));
+  app.put('/api/v1/pendingapprovals/:id/constructTx', parseBody, prepareBitGo(config), promiseWrapper(handleConstructApprovalTx));
 
-  app.put('/api/v1/wallet/:id/consolidateunspents', parseBody, prepareBitGo(args), promiseWrapper(handleConsolidateUnspents, args));
-  app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(args), promiseWrapper(handleFanOutUnspents, args));
+  app.put('/api/v1/wallet/:id/consolidateunspents', parseBody, prepareBitGo(config), promiseWrapper(handleConsolidateUnspents));
+  app.put('/api/v1/wallet/:id/fanoutunspents', parseBody, prepareBitGo(config), promiseWrapper(handleFanOutUnspents));
 
   // any other API call
-  app.use('/api/v[1]/*', parseBody, prepareBitGo(args), promiseWrapper(handleREST, args));
+  app.use('/api/v[1]/*', parseBody, prepareBitGo(config), promiseWrapper(handleREST));
 
   // API v2
 
   // create keychain
-  app.post('/api/v2/:coin/keychain/local', parseBody, prepareBitGo(args), promiseWrapper(handleV2CreateLocalKeyChain, args));
+  app.post('/api/v2/:coin/keychain/local', parseBody, prepareBitGo(config), promiseWrapper(handleV2CreateLocalKeyChain));
 
   // generate wallet
-  app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(args), promiseWrapper(handleV2GenerateWallet, args));
+  app.post('/api/v2/:coin/wallet/generate', parseBody, prepareBitGo(config), promiseWrapper(handleV2GenerateWallet));
 
   // share wallet
-  app.post('/api/v2/:coin/wallet/:id/share', parseBody, prepareBitGo(args), promiseWrapper(handleV2ShareWallet, args));
-  app.post('/api/v2/:coin/walletshare/:id/acceptshare', parseBody, prepareBitGo(args), promiseWrapper(handleV2AcceptWalletShare, args));
+  app.post('/api/v2/:coin/wallet/:id/share', parseBody, prepareBitGo(config), promiseWrapper(handleV2ShareWallet));
+  app.post('/api/v2/:coin/walletshare/:id/acceptshare', parseBody, prepareBitGo(config), promiseWrapper(handleV2AcceptWalletShare));
   // sign transaction
-  app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(args), promiseWrapper(handleV2SignTx, args));
-  app.post('/api/v2/:coin/wallet/:id/signtx', parseBody, prepareBitGo(args), promiseWrapper(handleV2SignTxWallet, args));
-  app.post('/api/v2/:coin/wallet/:id/recovertoken', parseBody, prepareBitGo(args), promiseWrapper(handleV2RecoverToken, args));
+  app.post('/api/v2/:coin/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTx));
+  app.post('/api/v2/:coin/wallet/:id/signtx', parseBody, prepareBitGo(config), promiseWrapper(handleV2SignTxWallet));
+  app.post('/api/v2/:coin/wallet/:id/recovertoken', parseBody, prepareBitGo(config), promiseWrapper(handleV2RecoverToken));
 
   // send transaction
-  app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(args), promiseWrapper(handleV2SendOne, args));
-  app.post('/api/v2/:coin/wallet/:id/sendmany', parseBody, prepareBitGo(args), promiseWrapper(handleV2SendMany, args));
+  app.post('/api/v2/:coin/wallet/:id/sendcoins', parseBody, prepareBitGo(config), promiseWrapper(handleV2SendOne));
+  app.post('/api/v2/:coin/wallet/:id/sendmany', parseBody, prepareBitGo(config), promiseWrapper(handleV2SendMany));
 
   // unspent changes
-  app.post('/api/v2/:coin/wallet/:id/consolidateunspents', parseBody, prepareBitGo(args), promiseWrapper(handleV2ConsolidateUnspents, args));
-  app.post('/api/v2/:coin/wallet/:id/fanoutunspents', parseBody, prepareBitGo(args), promiseWrapper(handleV2FanOutUnspents, args));
+  app.post('/api/v2/:coin/wallet/:id/consolidateunspents', parseBody, prepareBitGo(config), promiseWrapper(handleV2ConsolidateUnspents));
+  app.post('/api/v2/:coin/wallet/:id/fanoutunspents', parseBody, prepareBitGo(config), promiseWrapper(handleV2FanOutUnspents));
 
-  app.post('/api/v2/:coin/wallet/:id/sweep', parseBody, prepareBitGo(args), promiseWrapper(handleV2Sweep, args));
+  app.post('/api/v2/:coin/wallet/:id/sweep', parseBody, prepareBitGo(config), promiseWrapper(handleV2Sweep));
 
   // CPFP
-  app.post('/api/v2/:coin/wallet/:id/acceleratetx', parseBody, prepareBitGo(args), promiseWrapper(handleV2AccelerateTransaction, args));
+  app.post('/api/v2/:coin/wallet/:id/acceleratetx', parseBody, prepareBitGo(config), promiseWrapper(handleV2AccelerateTransaction));
 
   // Miscellaneous
-  app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(args), promiseWrapper(handleCanonicalAddress, args));
-  app.post('/api/v2/:coin/verifyaddress', parseBody, prepareBitGo(args), promiseWrapper(handleV2VerifyAddress, args));
-  app.put('/api/v2/:coin/pendingapprovals/:id', parseBody, prepareBitGo(args), promiseWrapper(handleV2PendingApproval, args));
+  app.post('/api/v2/:coin/canonicaladdress', parseBody, prepareBitGo(config), promiseWrapper(handleCanonicalAddress));
+  app.post('/api/v2/:coin/verifyaddress', parseBody, prepareBitGo(config), promiseWrapper(handleV2VerifyAddress));
+  app.put('/api/v2/:coin/pendingapprovals/:id', parseBody, prepareBitGo(config), promiseWrapper(handleV2PendingApproval));
 
 
   // any other API v2 call
-  app.use('/api/v2/user/*', parseBody, prepareBitGo(args), promiseWrapper(handleV2UserREST, args));
-  app.use('/api/v2/:coin/*', parseBody, prepareBitGo(args), promiseWrapper(handleV2CoinSpecificREST, args));
+  app.use('/api/v2/user/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2UserREST));
+  app.use('/api/v2/:coin/*', parseBody, prepareBitGo(config), promiseWrapper(handleV2CoinSpecificREST));
 
 };

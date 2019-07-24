@@ -17,6 +17,7 @@ const co = require('bluebird').coroutine;
 
 // eslint-disable-next-line @typescript-eslint/camelcase
 import { SSL_OP_NO_TLSv1 } from 'constants';
+import { DefaultConfig } from '../../src/config';
 import { TlsConfigurationError, NodeEnvironmentError } from '../../src/errors';
 
 nock.disableNetConnect();
@@ -58,7 +59,7 @@ describe('Bitgo Express', function() {
         (() => expressApp({
           env: 'prod',
           bind: 'localhost',
-          disableenvcheck: true
+          disableEnvCheck: true,
         })).should.not.throw();
       } finally {
         envStub.restore();
@@ -69,10 +70,10 @@ describe('Bitgo Express', function() {
       const args = {
         env: 'prod',
         bind: '1',
-        disableenvcheck: true,
-        disablessl: false,
-        crtpath: null,
-        keypath: null,
+        disableEnvCheck: true,
+        disableSSL: false,
+        crtPath: null,
+        keyPath: null,
       };
 
       (() => expressApp(args)).should.throw(TlsConfigurationError);
@@ -84,32 +85,31 @@ describe('Bitgo Express', function() {
       args.env = 'test';
       (() => expressApp(args)).should.not.throw();
 
-      args.disablessl = true;
+      args.disableSSL = true;
       args.env = 'prod';
       (() => expressApp(args)).should.not.throw();
 
-      delete args.disablessl;
-      args.crtpath = '/tmp/cert.pem';
+      delete args.disableSSL;
+      args.crtPath = '/tmp/cert.pem';
       (() => expressApp(args)).should.throw(TlsConfigurationError);
 
-      delete args.crtpath;
-      args.keypath = '/tmp/key.pem';
+      delete args.crtPath;
+      args.keyPath = '/tmp/key.pem';
       (() => expressApp(args)).should.throw(TlsConfigurationError);
-
     });
 
     it('should require both keypath and crtpath when using TLS, but TLS is not required', function() {
       const args = {
         env: 'test',
         bind: '1',
-        keypath: '/tmp/key.pem',
-        crtpath: null,
+        keyPath: '/tmp/key.pem',
+        crtPath: null,
       };
 
       (() => expressApp(args)).should.throw(TlsConfigurationError);
 
-      delete args.keypath;
-      args.crtpath = '/tmp/cert.pem';
+      delete args.keyPath;
+      args.crtPath = '/tmp/cert.pem';
 
       (() => expressApp(args)).should.throw(TlsConfigurationError);
     });
@@ -137,8 +137,8 @@ describe('Bitgo Express', function() {
       const args = {
         env: 'prod',
         bind: '1.2.3.4',
-        crtpath: '/tmp/crt.pem',
-        keypath: '/tmp/key.pem'
+        crtPath: '/tmp/crt.pem',
+        keyPath: '/tmp/key.pem'
       };
 
       yield createServer(args, true);
@@ -172,7 +172,7 @@ describe('Bitgo Express', function() {
 
       const args = {
         env: 'test',
-        customrooturi: 'customuri'
+        customRootUri: 'customuri'
       };
 
       startup(args, 'base')();
@@ -181,7 +181,7 @@ describe('Bitgo Express', function() {
       (console.log.should.have.been as any).calledWith('BitGo-Express running');
       (console.log.should.have.been as any).calledWith(`Environment: ${args.env}`);
       (console.log.should.have.been as any).calledWith('Base URI: base');
-      (console.log.should.have.been as any).calledWith(`Custom root URI: ${args.customrooturi}`);
+      (console.log.should.have.been as any).calledWith(`Custom root URI: ${args.customRootUri}`);
 
       (console.log as any).restore();
     });
@@ -191,7 +191,7 @@ describe('Bitgo Express', function() {
 
       const args = {
         env: 'test',
-        custombitcoinnetwork: 'customnetwork'
+        customBitcoinNetwork: 'customnetwork'
       };
 
       startup(args, 'base')();
@@ -200,27 +200,41 @@ describe('Bitgo Express', function() {
       (console.log.should.have.been as any).calledWith('BitGo-Express running');
       (console.log.should.have.been as any).calledWith(`Environment: ${args.env}`);
       (console.log.should.have.been as any).calledWith('Base URI: base');
-      (console.log.should.have.been as any).calledWith(`Custom bitcoin network: ${args.custombitcoinnetwork}`);
+      (console.log.should.have.been as any).calledWith(`Custom bitcoin network: ${args.customBitcoinNetwork}`);
 
       (console.log as any).restore();
     });
 
-    it('should create base URIs', () => {
+    it('should create http base URIs', () => {
       const args = {
         bind: '1',
-        port: 2
+        port: 2,
       };
 
-      createBaseUri(args, false).should.equal(`http://${args.bind}:${args.port}`);
-      createBaseUri(args, true).should.equal(`https://${args.bind}:${args.port}`);
+      createBaseUri(args).should.equal(`http://${args.bind}:${args.port}`);
 
       args.port = 80;
-      createBaseUri(args, false).should.equal(`http://${args.bind}`);
-      createBaseUri(args, true).should.equal(`https://${args.bind}:80`);
+      createBaseUri(args).should.equal(`http://${args.bind}`);
 
       args.port = 443;
-      createBaseUri(args, false).should.equal(`http://${args.bind}:443`);
-      createBaseUri(args, true).should.equal(`https://${args.bind}`);
+      createBaseUri(args).should.equal(`http://${args.bind}:443`);
+    });
+
+    it('should create https base URIs', () => {
+      const args = {
+        bind: '6',
+        port: 8,
+        keyPath: '3',
+        crtPath: '4',
+      };
+
+      createBaseUri(args).should.equal(`https://${args.bind}:${args.port}`);
+
+      args.port = 80;
+      createBaseUri(args).should.equal(`https://${args.bind}:80`);
+
+      args.port = 443;
+      createBaseUri(args).should.equal(`https://${args.bind}`);
     });
 
     it('should set up logging with a logfile', () => {
@@ -229,15 +243,15 @@ describe('Bitgo Express', function() {
       sinon.stub(console, 'log');
 
       const args = {
-        logfile: '/dev/null',
-        disableproxy: true
+        logFile: '/dev/null',
+        disableProxy: true
       };
 
       expressApp(args);
 
-      path.resolve.should.have.been.calledWith(args.logfile);
-      fs.createWriteStream.should.have.been.calledOnceWith(args.logfile, { flags: 'a' });
-      (console.log.should.have.been as any).calledOnceWith(`Log location: ${args.logfile}`);
+      path.resolve.should.have.been.calledWith(args.logFile);
+      fs.createWriteStream.should.have.been.calledOnceWith(args.logFile, { flags: 'a' });
+      (console.log.should.have.been as any).calledOnceWith(`Log location: ${args.logFile}`);
 
       path.resolve.restore();
       fs.createWriteStream.restore();
@@ -248,41 +262,41 @@ describe('Bitgo Express', function() {
       sinon.stub(debug, 'enable');
 
       const args = {
-        debugnamespace: ['a', 'b'],
-        disableproxy: true
+        debugNamespace: ['a', 'b'],
+        disableProxy: true
       };
 
       expressApp(args);
 
       debug.enable.should.have.been.calledTwice();
-      debug.enable.should.have.been.calledWith(args.debugnamespace[0]);
-      debug.enable.should.have.been.calledWith(args.debugnamespace[1]);
+      debug.enable.should.have.been.calledWith(args.debugNamespace[0]);
+      debug.enable.should.have.been.calledWith(args.debugNamespace[1]);
 
       debug.enable.restore();
     });
 
     it('should configure a custom root URI', () => {
       const args = {
-        customrooturi: 'customroot',
+        customRootUri: 'customroot',
         env: null,
       };
 
       expressApp(args);
 
       args.env.should.equal('custom');
-      Environments.custom.uri.should.equal(args.customrooturi);
+      Environments.custom.uri.should.equal(args.customRootUri);
     });
 
     it('should configure a custom bitcoin network', () => {
       const args = {
-        custombitcoinnetwork: 'custombitcoinnetwork',
+        customBitcoinNetwork: 'custombitcoinnetwork',
         env: null,
       };
 
       expressApp(args);
 
       args.env.should.equal('custom');
-      Environments.custom.network.should.equal(args.custombitcoinnetwork);
+      Environments.custom.network.should.equal(args.customBitcoinNetwork);
     });
 
     it('should configure the request proxy for testnet', () => {
@@ -290,7 +304,8 @@ describe('Bitgo Express', function() {
       sinon.stub(httpProxy, 'createProxyServer').returns({ on: onStub });
 
       const args = {
-        env: 'test'
+        env: 'test',
+        timeout: DefaultConfig.timeout,
       };
 
       expressApp(args);
@@ -320,8 +335,9 @@ describe('Bitgo Express', function() {
 
       const args = {
         env: 'prod',
-        disablessl: true,
-        disableenvcheck: true
+        disableSSL: true,
+        disableEnvCheck: true,
+        timeout: DefaultConfig.timeout,
       };
 
       expressApp(args);
@@ -351,7 +367,7 @@ describe('Bitgo Express', function() {
 
       const args = {
         env: 'test',
-        timeout: 1000
+        timeout: 1000,
       };
 
       expressApp(args);
