@@ -601,14 +601,14 @@ export class Xrp extends BaseCoin {
         signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
       }
 
-      const transactionExplanation = yield this.explainTransaction({ txHex: signedTransaction.signedTransaction }) as RecoveryInfo;
-      transactionExplanation.txHex = signedTransaction.signedTransaction;
+      const explanation = yield this.explainTransaction({ txHex: signedTransaction.signedTransaction }) as RecoveryInfo;
+      explanation.txHex = signedTransaction.signedTransaction;
 
       if (isKrsRecovery) {
-        transactionExplanation.backupKey = params.backupKey;
-        transactionExplanation.coin = this.getChain();
+        explanation.backupKey = params.backupKey;
+        explanation.coin = this.getChain();
       }
-      return transactionExplanation;
+      return Bluebird.resolve(explanation);
     }).call(this).asCallback(callback);
   }
 

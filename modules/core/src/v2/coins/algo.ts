@@ -214,7 +214,7 @@ export class Algo extends BaseCoin {
       // TODO(CT-480): add recieving address display here
       const memo = tx.note;
 
-      return {
+      const explanation = {
         displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
         id,
         outputs,
@@ -224,6 +224,7 @@ export class Algo extends BaseCoin {
         changeOutputs: [],
         memo,
       };
+      return Bluebird.resolve(explanation);
     })
       .call(this)
       .asCallback(callback);

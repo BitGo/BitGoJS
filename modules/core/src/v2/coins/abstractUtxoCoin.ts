@@ -1405,7 +1405,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
       explanation.inputSignatures = inputSignatures;
       explanation.signatures = _.max(inputSignatures);
-      return explanation;
+      return Bluebird.resolve(explanation);
     }).call(this).asCallback(callback);
   }
 

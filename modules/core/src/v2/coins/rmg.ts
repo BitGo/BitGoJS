@@ -328,7 +328,7 @@ export class Rmg extends AbstractUtxoCoin {
         explanation.displayOrder.push('fee');
         explanation.fee = params.feeInfo;
       }
-      return explanation;
+      return Bluebird.resolve(explanation);
     }).call(this).asCallback(callback);
   }
 

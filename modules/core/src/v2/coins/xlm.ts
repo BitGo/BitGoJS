@@ -793,7 +793,7 @@ export class Xlm extends BaseCoin {
         size: null,
       };
 
-      return {
+      const explanation = {
         displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
         id,
         outputs,
@@ -803,6 +803,7 @@ export class Xlm extends BaseCoin {
         memo,
         fee,
       };
+      return Bluebird.resolve(explanation);
     }).call(this).asCallback(callback);
   }
 
