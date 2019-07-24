@@ -30,6 +30,11 @@ $ curl localhost:3080/api/v2/ping
 {"status":"service is ok!","environment":"BitGo Testnet","configEnv":"testnet","configVersion":79}
 ```
 
+You can also give command line arguments to BitGo Express at the end of the docker run command:
+```bash
+$ docker run -it --rm -p 3080:3080 bitgosdk/express:latest --env prod
+```
+
 ## From source
 
 For users who are unable to run BitGo Express as a docker container, we recommend building and running from the source code.
@@ -41,10 +46,24 @@ We recommend using `nvm`, the [Node Version Manager](https://github.com/creation
 
 ### Cloning the repository and installing dependencies
 
+First, clone the latest release branch **rel/latest**, then run `npm ci` in the `modules/express` directory.
+
 ```bash
-$ git clone https://github.com/bitgo/bitgojs
+$ git clone -b rel/latest https://github.com/bitgo/bitgojs
 $ cd bitgojs/modules/express
 $ npm ci
+```
+
+**Note:** We do not recommend installing BitGo Express as `root`, but if you need to do so, you must run `npm ci --unsafe-perm` for the last step instead of `npm ci`.
+
+### Building the docker container
+
+If you'd like to build the BitGo Express docker container yourself from the source code, first check out the latest release branch **rel/latest**, then run `docker build` from the project root. Here's the commands:
+```bash
+$ git clone -b rel/latest https://github.com/bitgo/bitgojs
+$ docker build -t bitgo-express:latest .
+$ docker run -it bitgo-express:latest .
+
 ```
 
 ### Running BitGo Express
@@ -55,23 +74,29 @@ From the express module folder (`modules/express`), run this command:
 
 **Note:** When running against the BitGo production environment, you must run node in a production configuration as well. You can do that by running `export NODE_ENV=production` prior to starting bitgo-express.
 
-## Command line flags
+### Running in production
 
-| Flag Short Name | Flag Long Name | Default Value | Description |
-| --- | --- | --- | --- |
-| -p | --port | 3080 | Port which bitgo express should listen on. |
-| -b | --bind | localhost | Interface which bitgo express should listen on. To listen on all interfaces, this should be set to `0.0.0.0`. |
-| -e | --env | test | BitGo environment to interact with. |
-| -d | --debug | N/A | Enable debug output for bitgo-express. This is equivalent to passing `--debugnamespace bitgo:express`. |
-| -D | --debugnamespace | N/A | Enable debug output for a particular debug namespace. |
-| -k | --keypath | N/A | Path to SSL .key file (required if running against production environment). |
-| -c | --crtpath | N/A | Path to SSL .crt file (required if running against production environment). |
-| -u | --customrooturi | N/A | Force a custom BitGo URI. |
-| -n | --custombitcoinnetwork | N/A | Force a custom BitGo network |
-| -l | --logfile | N/A | Filepath to write access logs. |
-| N/A | --disablessl | N/A | Disable requiring SSL when accessing bitgo production environment. **USE AT YOUR OWN RISK, NOT RECOMMENDED**. |
-| N/A | --disableproxy | N/A | Disable proxying of routes not explicitly handled by bitgo-express |
-| N/A | --disableenvcheck | N/A | Disable checking for correct `NODE_ENV` environment variable when running against BitGo production environment. |
+When running BitGo Express against the BitGo production environment using real funds, you should make sure the `NODE_ENV` environment variable is set to `production`. This will turn off some debugging information which could leak information about the system which is running BitGo Express. If an unsafe configuration is detected, BitGo Express will emit a warning upon startup. In a future version of BitGo Express, this will turn into a hard error and BitGo Express will fail to start up.
+
+## Configuration Values
+
+BitGo Express is able to take configuration options from either command line arguments, or via environment variables.
+
+| Flag Short Name | Flag Long Name | Environment Variable | Default Value | Description |
+| --- | --- | --- | --- | --- |
+| -p | --port | `BITGO_PORT` | 3080 | Port which bitgo express should listen on. |
+| -b | --bind | `BITGO_BIND` | localhost | Interface which bitgo express should listen on. To listen on all interfaces, this should be set to `0.0.0.0`. |
+| -e | --env | `BITGO_ENV` | test | BitGo environment to interact with. |
+| -d | --debug | N/A, use `BITGO_DEBUG_NAMESPACE` instead | N/A | Enable debug output for bitgo-express. This is equivalent to passing `--debugnamespace bitgo:express`. |
+| -D | --debugnamespace | `BITGO_DEBUG_NAMESPACE` | N/A | Enable debug output for a particular debug namespace. Multiple debug namespaces can be given as a comma separated list. |
+| -k | --keypath | `BITGO_KEYPATH` | N/A | Path to SSL .key file (required if running against production environment). |
+| -c | --crtpath | `BITGO_CRTPATH` | N/A | Path to SSL .crt file (required if running against production environment). |
+| -u | --customrooturi | `BITGO_CUSTOM_ROOT_URI` | N/A | Force a custom BitGo URI. |
+| -n | --custombitcoinnetwork | `BITGO_CUSTOM_BITCOIN_NETWORK` | N/A | Force a custom BitGo network |
+| -l | --logfile | `BITGO_LOGFILE` | N/A | Filepath to write access logs. |
+| N/A | --disablessl | `BITGO_DISABLESSL` | N/A | Disable requiring SSL when accessing bitgo production environment. **USE AT YOUR OWN RISK, NOT RECOMMENDED**. |
+| N/A | --disableproxy | `BITGO_DISABLE_PROXY` | N/A | Disable proxying of routes not explicitly handled by bitgo-express |
+| N/A | --disableenvcheck | `BITGO_DISABLE_ENV_CHECK` | N/A | Disable checking for correct `NODE_ENV` environment variable when running against BitGo production environment. |
 
 # Release Notes
 
