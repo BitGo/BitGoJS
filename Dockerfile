@@ -7,7 +7,7 @@ RUN npm ci && npm prune --production
 FROM node:lts-alpine
 RUN apk add --no-cache tini
 COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express
-ENTRYPOINT ["/sbin/tini", "--"]
 ENV NODE_ENV production
+ENV BITGO_BIND 0.0.0.0
 EXPOSE 3080
-CMD [ "/usr/local/bin/node", "/var/bitgo-express/bin/bitgo-express", "-b", "0.0.0.0" ]
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/node", "/var/bitgo-express/bin/bitgo-express"]
