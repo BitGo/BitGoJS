@@ -1,10 +1,12 @@
-import { validateParams } from '../common';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
+
 import { BaseCoin } from './baseCoin';
 import { NodeCallback } from './types';
-import { Wallet } from './wallet'
-const util = require('../util');
+import { Wallet } from './wallet';
+import { RequestTracer } from './util';
+import { validateParams } from '../common';
+
 const co = Bluebird.coroutine;
 
 export interface KeyPair {
@@ -290,16 +292,16 @@ export class Keychains {
 
   /**
    * Gets keys for signing from a wallet
-   * @param reqId
+   * @param params
    * @param callback
    * @returns {Bluebird[]}
    */
   getKeysForSigning(params: GetKeysForSigningOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return co(function *() {
-      const reqId = params.reqId || util.createRequestId();
+      const reqId = params.reqId || new RequestTracer();
       const ids = params.wallet.baseCoin.keyIdsForSigning();
       const keychainQueriesBluebirds = ids.map(
-          id => this.get({ id: params.wallet.keyIds()[id], reqId })
+        id => this.get({ id: params.wallet.keyIds()[id], reqId })
       );
       return Bluebird.all(keychainQueriesBluebirds);
     }).call(this).asCallback(callback);

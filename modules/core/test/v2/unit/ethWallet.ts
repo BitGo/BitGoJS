@@ -1,17 +1,17 @@
+import * as Bluebird from 'bluebird';
+import * as should from 'should';
+import * as secp256k1 from 'secp256k1';
+import * as nock from 'nock';
+import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as sinon from 'sinon';
+import { Util } from '../../../src/v2/util';
+import * as common from '../../../src/common';
 
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
-const should = require('should');
-const secp256k1 = require('secp256k1');
-const nock = require('nock');
-const bitGoUtxoLib = require('bitgo-utxo-lib');
-import 'should';
 const TestV2BitGo = require('../../lib/test_bitgo');
-const sinon = require('sinon');
-const Util = require('../../../src/util');
-const common = require('../../../src/common');
 const fixtures = require('../fixtures/eth.ts');
 const EthTx = require('ethereumjs-tx');
+
+const co = Bluebird.coroutine;
 
 describe('Sign ETH Transaction', co(function *() {
 
@@ -66,11 +66,6 @@ describe('Ethereum Hop Transactions', co(function *() {
     xpub: 'xpub661MyMwAqRbcF9Nc7TbBo1rZAagiWEVPWKbDKThNG8zqjk76HAKLkaSbTn6dK2dQPfuD7xjicxCZVWvj67fP5nQ9W7QURmoMVAX8m6jZsGp',
     rawPub: '02c103ac74481874b5ef0f385d12725e4f14aedc9e00bc814ce96f47f62ce7adf2',
     rawPrv: '936c5af3f8af81f75cdad1b08f29e7d9c01e598e2db2d7be18b9e5a8646e87c6',
-    path: 'm',
-    walletSubPath: '/0/0'
-  };
-  const bitgoKey = {
-    pub: 'xpub661MyMwAqRbcGNtyHK3eQ9p5MZCuobtmnmEHXH9wWjb9L3jWVUANF5hKPhdPFPmfXqep5X7vd9roR2gvkC5RxwAzBBVsRWcuZaSuSuweMv8',
     path: 'm',
     walletSubPath: '/0/0'
   };
@@ -136,7 +131,7 @@ describe('Ethereum Hop Transactions', co(function *() {
         error = e.message;
       }
       should.exist(error);
-      error.should.containEql("does not equal original recipient");
+      error.should.containEql('does not equal original recipient');
     }));
 
     it('should fail if the HSM prebuild tx amount is wrong', co(function *() {
@@ -150,7 +145,7 @@ describe('Ethereum Hop Transactions', co(function *() {
         error = e.message;
       }
       should.exist(error);
-      error.should.containEql("does not equal original amount");
+      error.should.containEql('does not equal original amount');
     }));
 
     it('should fail if the HSM signature is invalid', co(function *() {
@@ -165,7 +160,7 @@ describe('Ethereum Hop Transactions', co(function *() {
         error = e.message;
       }
       should.exist(error);
-      error.should.containEql("Hop txid signature invalid");
+      error.should.containEql('Hop txid signature invalid');
       common.Environments[env].hsmXpub = goodXpub;
     }));
 
@@ -185,7 +180,7 @@ describe('Ethereum Hop Transactions', co(function *() {
         error = e.message;
       }
       should.exist(error);
-      error.should.containEql("Hop txid signature invalid");
+      error.should.containEql('Hop txid signature invalid');
     }));
   }));
 
@@ -219,10 +214,10 @@ describe('Ethereum Hop Transactions', co(function *() {
     const nockBuild = function(walletId) {
       nock(bgUrl)
         .post('/api/v2/teth/wallet/' + walletId + '/tx/build')
-        .reply(200, { hopTransaction: prebuild, buildParams});
+        .reply(200, { hopTransaction: prebuild, buildParams });
     };
 
-    before(co(function* () {
+    before(co(function *() {
       gasLimitEstimate = 100000;
       gasPrice = 50000000;
       finalRecipient = '0x5208d8e80c6d1aef9be37b4bd19a9cf75ed93dc8';
@@ -262,7 +257,7 @@ describe('Ethereum Hop Transactions', co(function *() {
      }
      should.not.exist(error);
      feeScope.isDone().should.equal(true);
-     const feeReq = feeScope.interceptors[0].req;
+     const feeReq = (feeScope as any).interceptors[0].req;
      feeReq.path.should.containEql('hop=true');
      feeReq.path.should.containEql('recipient=' + finalRecipient);
      feeReq.path.should.containEql('amount=' + sendAmount);

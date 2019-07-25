@@ -1,11 +1,12 @@
 import { Eth } from './eth';
 import * as _ from 'lodash';
-import * as Promise from 'bluebird';
+import * as Bluebird from 'bluebird';
 import { CoinConstructor } from '../coinFactory';
-const co = Promise.coroutine;
-const Util = require('../../util');
-const config = require('../../config');
+import { Util } from '../util';
+import * as config from '../../config';
 import { HDNode } from 'bitgo-utxo-lib';
+
+const co = Bluebird.coroutine;
 
 let ethUtil: any = function() {};
 let ethAbi: any = function() {};
