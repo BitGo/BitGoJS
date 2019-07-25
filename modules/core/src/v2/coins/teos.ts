@@ -1,5 +1,6 @@
 import { BaseCoin } from '../baseCoin';
 import { Eos } from './eos';
+import * as common from '../../common';
 
 export class Teos extends Eos {
 
@@ -17,5 +18,9 @@ export class Teos extends Eos {
 
   getFullName() {
     return 'Testnet EOS';
+  }
+
+  getPublicNodeUrls(): string[] {
+    return common.Environments[this.bitgo.env].eosNodeUrls;
   }
 }

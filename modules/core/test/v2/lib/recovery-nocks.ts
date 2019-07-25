@@ -2496,6 +2496,212 @@ module.exports.nockXlmRecovery = function() {
     });
 };
 
+module.exports.nockEosRecovery = function() {
+  nock('https://jungle2.cryptolions.io')
+    .post('*')
+    .reply(502);
+  nock('https://eos-jungle.eosblocksmith.io')
+    .post('/v1/chain/get_info')
+    .reply(200, {
+      server_version: '14185431',
+      chain_id: 'e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473',
+      head_block_num: 39752030,
+      last_irreversible_block_num: 39751705,
+      last_irreversible_block_id: '025e90194fbe7ba5773af4b3ed099aaed0fb26b8f7750e414ea0ee975a04cdc1',
+      head_block_id: '025e915eff653f4ad408e1b36e40f6b4d842afde81672446f91ca1e615ebf03c',
+      head_block_time: '2019-07-18T17:52:49.000',
+      head_block_producer: 'eosnationftw',
+      virtual_block_cpu_limit: 200000000,
+      virtual_block_net_limit: 524288000,
+      block_cpu_limit: 199900,
+      block_net_limit: 524288,
+      server_version_string: 'v1.8.1',
+      fork_db_head_block_num: 39752030,
+      fork_db_head_block_id: '025e915eff653f4ad408e1b36e40f6b4d842afde81672446f91ca1e615ebf03c',
+    })
+    .post('/v1/chain/get_block', { block_num_or_id: 39752030 })
+    .reply(200, {
+      timestamp: '2019-07-18T17:52:49.000',
+      producer: 'eosnationftw',
+      confirmed: 0,
+      previous: '025e915dcf7ce855a5818f17c78f3bedc16bfa505aa8d27b26860fe875112e5e',
+      transaction_mroot: '0000000000000000000000000000000000000000000000000000000000000000',
+      action_mroot: 'd71fc942fb9fcd337692f037d3fb967d76ddd2b30bae40450d1feef50f56ceec',
+      schedule_version: 245,
+      new_producers: null,
+      header_extensions: [],
+      producer_signature:
+        'SIG_K1_JwDWGq1SxPHw5xTwUzZ1Hf4YCdvzsYvAoh9nNvGXjyXjk57pLb5fc8in3vop9h1mMdZtsRhEYa4bV9P4fMvHXcqiFjw83y',
+      transactions: [],
+      block_extensions: [],
+      id: '025e915eff653f4ad408e1b36e40f6b4d842afde81672446f91ca1e615ebf03c',
+      block_num: 39752030,
+      ref_block_prefix: 3017869524,
+    })
+    .post('/v1/chain/get_account', { account_name: 'jzjkpn1bjnti' })
+    .reply(200, {
+      account_name: 'jzjkpn1bjnti',
+      head_block_num: 39739576,
+      head_block_time: '2019-07-18T16:08:34.500',
+      privileged: false,
+      last_code_update: '1970-01-01T00:00:00.000',
+      created: '2019-07-18T12:52:10.000',
+      core_liquid_balance: '99.0000 EOS',
+      ram_quota: 9586,
+      net_weight: 0,
+      cpu_weight: 0,
+      net_limit: {
+        used: 161,
+        available: 0,
+        max: 0,
+      },
+      cpu_limit: {
+        used: 419,
+        available: 0,
+        max: 0,
+      },
+      ram_usage: 3324,
+      permissions: [
+        {
+          perm_name: 'active',
+          parent: 'owner',
+          required_auth: {
+            threshold: 2,
+            keys: [
+              {
+                key: 'EOS5ecwm5UH1b2ggGJTq5r1aqd1cgKsi3NUYPJbLakana57E1anP2',
+                weight: 1,
+              },
+              {
+                key: 'EOS5oyoziJUH2u3KJu9fUFmahrkMC1x86hdBs5768tA9N3R7zENHx',
+                weight: 1,
+              },
+              {
+                key: 'EOS6dZzCHfSVGGjJ9VegMpu9utsNERqrmnwoEntQcgfCUyyuciQm9',
+                weight: 1,
+              },
+            ],
+            accounts: [],
+            waits: [],
+          },
+        },
+        {
+          perm_name: 'owner',
+          parent: '',
+          required_auth: {
+            threshold: 2,
+            keys: [
+              {
+                key: 'EOS5ecwm5UH1b2ggGJTq5r1aqd1cgKsi3NUYPJbLakana57E1anP2',
+                weight: 1,
+              },
+              {
+                key: 'EOS5oyoziJUH2u3KJu9fUFmahrkMC1x86hdBs5768tA9N3R7zENHx',
+                weight: 1,
+              },
+              {
+                key: 'EOS6dZzCHfSVGGjJ9VegMpu9utsNERqrmnwoEntQcgfCUyyuciQm9',
+                weight: 1,
+              },
+            ],
+            accounts: [],
+            waits: [],
+          },
+        },
+      ],
+      total_resources: {
+        owner: 'jzjkpn1bjnti',
+        net_weight: '0.0000 EOS',
+        cpu_weight: '0.0000 EOS',
+        ram_bytes: 8186,
+      },
+      self_delegated_bandwidth: null,
+      refund_request: null,
+      voter_info: null,
+    })
+    .post('/v1/chain/get_account', { account_name: 'kiyjcn1ixftp' })
+    .reply(200, {
+      account_name: 'kiyjcn1ixftp',
+      head_block_num: 39739505,
+      head_block_time: '2019-07-18T16:07:59.000',
+      privileged: false,
+      last_code_update: '1970-01-01T00:00:00.000',
+      created: '2019-07-18T15:57:05.500',
+      core_liquid_balance: '100.0000 EOS',
+      ram_quota: 9587,
+      net_weight: 0,
+      cpu_weight: 0,
+      net_limit: {
+        used: 0,
+        available: 0,
+        max: 0,
+      },
+      cpu_limit: {
+        used: 0,
+        available: 0,
+        max: 0,
+      },
+      ram_usage: 3196,
+      permissions: [
+        {
+          perm_name: 'active',
+          parent: 'owner',
+          required_auth: {
+            threshold: 2,
+            keys: [
+              {
+                key: 'EOS5sxRZCyaKAowNZBVrAvUHYQioMXf8Qru7XADoJwr53iFDJPsGC',
+                weight: 1,
+              },
+              {
+                key: 'EOS64hsH9DiP1eSQuYKEaFD5SQp4cLRPvTYaCUvV2AfcWBVy7CjjN',
+                weight: 1,
+              },
+              {
+                key: 'EOS741DEx6Gstbi2cdmQyjGrBi8rndGeSBw7hM5uYiKft2ptmKRgd',
+                weight: 1,
+              },
+            ],
+            accounts: [],
+            waits: [],
+          },
+        },
+        {
+          perm_name: 'owner',
+          parent: '',
+          required_auth: {
+            threshold: 2,
+            keys: [
+              {
+                key: 'EOS5sxRZCyaKAowNZBVrAvUHYQioMXf8Qru7XADoJwr53iFDJPsGC',
+                weight: 1,
+              },
+              {
+                key: 'EOS64hsH9DiP1eSQuYKEaFD5SQp4cLRPvTYaCUvV2AfcWBVy7CjjN',
+                weight: 1,
+              },
+              {
+                key: 'EOS741DEx6Gstbi2cdmQyjGrBi8rndGeSBw7hM5uYiKft2ptmKRgd',
+                weight: 1,
+              },
+            ],
+            accounts: [],
+            waits: [],
+          },
+        },
+      ],
+      total_resources: {
+        owner: 'kiyjcn1ixftp',
+        net_weight: '0.0000 EOS',
+        cpu_weight: '0.0000 EOS',
+        ram_bytes: 8187,
+      },
+      self_delegated_bandwidth: null,
+      refund_request: null,
+      voter_info: null,
+    });
+};
+
 module.exports.nockBtcSegwitRecovery = function(bitgo) {
   const env = Environments[bitgo.getEnv()] as Environment;
   // Nock all the external api calls that gather info about the wallet
