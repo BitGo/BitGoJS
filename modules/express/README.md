@@ -10,11 +10,11 @@ This ensures your keys never leave your network, and are not seen by BitGo. BitG
 
 ## Docker
 
-For most users, we recommend running BitGo Express as a docker container.
+For most users, we recommend running BitGo Express as a docker container, since this is the most secure way to run BitGo Express.
 
 To try it out, run this command:
 ```bash
-$ docker run -it --rm -p 3080:3080 bitgosdk/express:latest
+$ docker run -it -p 3080:3080 bitgosdk/express:latest
 ```
 
 You should see this output from the container:
@@ -32,7 +32,14 @@ $ curl localhost:3080/api/v2/ping
 
 You can also give command line arguments to BitGo Express at the end of the docker run command:
 ```bash
-$ docker run -it --rm -p 3080:3080 bitgosdk/express:latest --env prod
+$ docker run -it -p 4000:4000 bitgosdk/express:latest --port 4000 
+```
+
+BitGo Express will start up on the specified port, 4000:
+```
+BitGo-Express running
+Environment: test
+Base URI: http://0.0.0.0:4000
 ```
 
 ## From source
@@ -63,7 +70,6 @@ If you'd like to build the BitGo Express docker container yourself from the sour
 $ git clone -b rel/latest https://github.com/bitgo/bitgojs
 $ docker build -t bitgo-express:latest .
 $ docker run -it bitgo-express:latest .
-
 ```
 
 ### Running BitGo Express
@@ -77,6 +83,15 @@ From the express module folder (`modules/express`), run this command:
 ### Running in production
 
 When running BitGo Express against the BitGo production environment using real funds, you should make sure the `NODE_ENV` environment variable is set to `production`. This will turn off some debugging information which could leak information about the system which is running BitGo Express. If an unsafe configuration is detected, BitGo Express will emit a warning upon startup. In a future version of BitGo Express, this will turn into a hard error and BitGo Express will fail to start up.
+
+Additionally, when running against the production env and listening on external interfaces, BitGo Express must be run with TLS enabled by setting the `keyPath` and `crtPath` configuration options, otherwise BitGo Express will error upon startup with the following message: 
+
+```
+Fatal error: Must enable TLS when running against prod and listening on external interfaces!
+Error: Must enable TLS when running against prod and listening on external interfaces!
+```
+
+We strongly recommend always enabling TLS when running against the BitGo production environment. However, if you must opt out of this requirement, you may do so by setting the `disableSSL` configuration option. **Use at your own risk, as this may allow a man-in-the-middle to access sensitive information as it is sent over the wire in cleartext.**
 
 ## Configuration Values
 
