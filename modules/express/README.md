@@ -6,6 +6,10 @@ Suitable for developers working in a language without an official BitGo SDK.
 BitGo Express runs as a service in your own datacenter, and handles the client-side operations involving your own keys, such as partially signing transactions before submitting to BitGo.
 This ensures your keys never leave your network, and are not seen by BitGo. BitGo Express can also proxy the standard BitGo REST APIs, providing a unified interface to BitGo through a single REST API.
 
+# Documentation
+
+Comprehensive documentation on the APIs provided by BitGo Express can be found at our [Platform API Reference](https://www.bitgo.com/api/v2/#tag/Express).
+
 # Running BitGo Express
 
 ## Docker
@@ -42,6 +46,16 @@ Environment: test
 Base URI: http://0.0.0.0:4000
 ```
 
+### Building the docker container
+
+If you'd like to build the BitGo Express docker container yourself from the source code, first check out the latest release branch **rel/latest**, then run `docker build` from the project root. Here's the commands:
+```bash
+$ git clone -b rel/latest https://github.com/bitgo/bitgojs
+$ cd bitgojs
+$ docker build -t bitgo-express:latest .
+$ docker run -it bitgo-express:latest
+```
+
 ## From source
 
 For users who are unable to run BitGo Express as a docker container, we recommend building and running from the source code.
@@ -54,7 +68,6 @@ We recommend using `nvm`, the [Node Version Manager](https://github.com/creation
 ### Cloning the repository and installing dependencies
 
 First, clone the latest release branch **rel/latest**, then run `npm ci` in the `modules/express` directory.
-
 ```bash
 $ git clone -b rel/latest https://github.com/bitgo/bitgojs
 $ cd bitgojs/modules/express
@@ -63,22 +76,32 @@ $ npm ci
 
 **Note:** We do not recommend installing BitGo Express as `root`, but if you need to do so, you must run `npm ci --unsafe-perm` for the last step instead of `npm ci`.
 
-### Building the docker container
-
-If you'd like to build the BitGo Express docker container yourself from the source code, first check out the latest release branch **rel/latest**, then run `docker build` from the project root. Here's the commands:
-```bash
-$ git clone -b rel/latest https://github.com/bitgo/bitgojs
-$ docker build -t bitgo-express:latest .
-$ docker run -it bitgo-express:latest .
-```
-
 ### Running BitGo Express
 
 From the express module folder (`modules/express`), run this command:
 
-`npm run start [-h] [-v] [-p PORT] [-b BIND] [-e ENV] [-d] [-l LOGFILEPATH] [-k KEYPATH] [-c CRTPATH]`
+```bash
+$ npm run start
+```
 
-**Note:** When running against the BitGo production environment, you must run node in a production configuration as well. You can do that by running `export NODE_ENV=production` prior to starting bitgo-express.
+You should see BitGo Express start up in the default test environment:
+```
+BitGo-Express running
+Environment: test
+Base URI: http://localhost:3080
+```
+
+You can also pass startup arguments to BitGo Express, but you must remember to put an extra `--` to separate the arguments:
+```
+$ npm run start -- --port 4000
+```
+
+BitGo Express will start up on the custom port:
+```
+BitGo-Express running
+Environment: test
+Base URI: http://localhost:4000
+```
 
 ### Running in production
 
