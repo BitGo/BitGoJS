@@ -1,3 +1,6 @@
+// eslint-disable-next-line
+/// <reference types="mocha" />
+
 import 'should';
 import * as nock from 'nock';
 require('should-http');
@@ -5,8 +8,8 @@ const request = require('supertest-as-promised');
 const _ = require('lodash');
 
 const expressApp = require('../../src/expressApp');
-const TestBitGo = require('bitgo/test/lib/test_bitgo');
-const testUtil = require('bitgo/test/integration/testutil');
+const TestBitGo = require('../lib/test_bitgo');
+const testUtil = require('../lib/testutil');
 
 describe('Bitgo Express V1', function() {
   let agent;

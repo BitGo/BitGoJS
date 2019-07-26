@@ -83,6 +83,7 @@ bin/bitgo-express-init.sh.example
 .codecov.yml
 BitGoJS.iml
 .DS_Store
+.lintstagedrc.yml
 
 # exclude test directory
 test/
@@ -93,3 +94,4 @@ dist/browserify/
 
 !dist/browser/BitGoJS.min.js
 
+mochawesome-report/

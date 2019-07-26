@@ -1,3 +1,5 @@
+// eslint-disable-next-line
+/// <reference types="mocha" />
 import * as should from 'should';
 require('should-http');
 

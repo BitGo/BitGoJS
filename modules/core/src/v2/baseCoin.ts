@@ -15,9 +15,8 @@ import { Wallets } from './wallets';
 import { Markets } from './markets';
 import { Webhooks } from './webhooks';
 import { PendingApprovals } from './pendingApprovals';
-import { Keychains } from './keychains';
+import { Keychains, KeyPair } from './keychains';
 import { Enterprises } from './enterprises';
-import { KeyPair } from './keychains';
 
 export interface BaseCoinTransactionOutput {
   address: string;
@@ -47,7 +46,7 @@ export abstract class BaseCoin {
   protected readonly _wallets: Wallets;
   protected readonly _keychains: Keychains;
   protected readonly _webhooks: Webhooks;
-  protected readonly _pendingApprovals;
+  protected readonly _pendingApprovals: PendingApprovals;
   protected readonly _markets: Markets;
 
   protected constructor(bitgo) {
@@ -73,7 +72,7 @@ export abstract class BaseCoin {
     return this._enterprises;
   }
 
-  public keychains(): any {
+  public keychains(): Keychains {
     return this._keychains;
   }
 
@@ -81,7 +80,7 @@ export abstract class BaseCoin {
     return this._webhooks;
   }
 
-  public pendingApprovals(): any {
+  public pendingApprovals(): PendingApprovals {
     return this._pendingApprovals;
   }
 

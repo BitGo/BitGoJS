@@ -1,3 +1,5 @@
+// eslint-disable-next-line
+/// <reference types="node" />
 // Additional convenience assertions for should
 
 const { Assertion } = require('should');
