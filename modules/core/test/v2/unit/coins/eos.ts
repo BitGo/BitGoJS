@@ -108,16 +108,17 @@ describe('EOS:', function() {
     it('should generate a valid transaction signature', function() {
       const signatureData = 'abcd';
       const tx = {
-        rawTx: signatureData,
+        txHex: signatureData,
         headers: {
           ref_block_num: 1,
           ref_block_prefix: 'asd',
         },
-        tx: {
+        transaction: {
           signatures: [],
           packed_trx: signatureData,
           compression: 'none',
         },
+        recipients: [{ }]
       };
 
       const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
