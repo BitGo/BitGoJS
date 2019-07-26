@@ -50,9 +50,11 @@ interface EosTransactionAction {
 }
 
 interface EosTransactionPrebuild {
-  rawTx: string;
-  tx: EosTx;
+  recipients: Recipient[];
   headers: EosTransactionHeaders;
+  txHex: string; // The signable tx hex string
+  transaction: EosTx;
+  txid: string;
 }
 
 export interface EosSignTransactionParams {
@@ -62,10 +64,11 @@ export interface EosSignTransactionParams {
 }
 
 export interface EosHalfSigned {
-  transaction: EosTx;
-  txHex: string;
   recipients: Recipient[];
   headers: EosTransactionHeaders;
+  txHex: string; // The signable tx hex string
+  transaction: EosTx;
+  txid: string;
 }
 
 export interface EosSignedTransaction {
@@ -337,22 +340,23 @@ export class Eos extends BaseCoin {
    */
   signTransaction(params: EosSignTransactionParams): EosSignedTransaction {
     const prv: string = params.prv;
-    const txData: string = params.txPrebuild.rawTx;
-    const tx: EosTx = params.txPrebuild.tx;
+    const txHex: string = params.txPrebuild.txHex;
+    const transaction: EosTx = params.txPrebuild.transaction;
 
-    const signBuffer: Buffer = Buffer.from(txData, 'hex');
+    const signBuffer: Buffer = Buffer.from(txHex, 'hex');
     const privateKeyBuffer: Buffer = HDNode.fromBase58(prv)
       .getKey()
       .getPrivateKeyBuffer();
     const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
 
-    tx.signatures.push(signature);
+    transaction.signatures.push(signature);
 
     const txParams = {
-      transaction: tx,
-      txHex: txData,
-      recipients: params.recipients,
+      transaction,
+      txHex,
+      recipients: params.txPrebuild.recipients,
       headers: params.txPrebuild.headers,
+      txid: params.txPrebuild.txid,
     };
     return { halfSigned: txParams };
   }
