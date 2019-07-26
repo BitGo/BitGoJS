@@ -1,3 +1,7 @@
+// eslint-disable-next-line
+/// <reference types="mocha" />
+// eslint-disable-next-line
+/// <reference types="node" />
 import 'should';
 import * as sinon from 'sinon';
 

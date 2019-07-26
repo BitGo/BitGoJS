@@ -1,10 +1,15 @@
+// eslint-disable-next-line
+/// <reference types="mocha" />
+// eslint-disable-next-line
+/// <reference types="node" />
+
 import 'should';
 require('should-http');
 const request = require('supertest-as-promised');
 
 const expressApp = require('../../src/expressApp');
-const TestV2BitGo = require('bitgo/test/lib/test_bitgo');
-const testUtil = require('bitgo/test/integration/testutil');
+const TestV2BitGo = require('../lib/test_bitgo');
+const testUtil = require('../lib/testutil');
 
 import * as bluebird from 'bluebird';
 const co = bluebird.coroutine;

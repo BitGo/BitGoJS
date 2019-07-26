@@ -39,9 +39,12 @@
   "dependencies": {
     "argparse": "^1.0.10",
     "bitgo": "^7.0.0-rc.0",
+    "bluebird": "^3.5.3",
     "body-parser": "^1.19.0",
+    "debug": "^3.1.0",
     "express": "^4.16.4",
     "http-proxy": "^1.17.0",
+    "lodash": "^4.17.14",
     "morgan": "^1.9.1"
   },
   "devDependencies": {
@@ -56,6 +59,9 @@
     "@types/nock": "^9.3.1",
     "@types/node": "^11.11.4",
     "@types/sinon": "^7.0.6",
+    "@typescript-eslint/eslint-plugin": "^1.4.2",
+    "@typescript-eslint/parser": "^1.4.2",
+    "bignumber.js": "^8.0.1",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.2.0",
     "lint-staged": "^9.2.0",
