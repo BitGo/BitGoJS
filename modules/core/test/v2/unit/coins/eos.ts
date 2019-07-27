@@ -131,14 +131,14 @@ describe('EOS:', function() {
       ecc.verify(signature, Buffer.from(signatureData, 'hex'), eosPubkey).should.eql(true);
     });
 
-    it('should be explain an EOS transaction', co(function *() {
+    it('should explain an EOS transaction', co(function *() {
       const explainTransactionParams = {
         headers: {
           ref_block_prefix: 100,
           ref_block_num: 995,
           expiration: '2018-04-27T18:40:34.000Z',
         },
-        tx: {
+        transaction: {
           packed_trx: 'a26ee35ae30364000000000000000100a6823403ea3055000000572d3ccdcd019013e48c8ce5eed400000000a8ed3232229013e48c8ce5eed4b012362b61b31236640000000000000004454f5300000000013100',
         },
       };

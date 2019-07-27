@@ -89,18 +89,12 @@ interface DeserializedEosTransaction extends EosTransactionHeaders {
 }
 
 interface ExplainTransactionOptions {
-  tx: { packed_trx: string };
+  transaction: { packed_trx: string };
   headers: EosTransactionHeaders;
 }
 
-interface SendableTransaction {
-  compression: string;
-  packed_trx: string;
-  signatures: string[];
-}
-
 interface RecoveryTransaction {
-  tx: SendableTransaction;
+  transaction: EosTx;
   txid: string;
   recoveryAmount: number;
 }
@@ -363,10 +357,13 @@ export class Eos extends BaseCoin {
 
   /**
    * Deserialize a transaction
-   * @param tx
+   * @param transaction
    * @param headers
    */
-  private deserializeTransaction({ tx, headers }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
+  private deserializeTransaction({
+    transaction,
+    headers,
+  }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
     return co(function*() {
       const eosClientConfig = {
         chainId: this.getChainId(),
@@ -376,15 +373,15 @@ export class Eos extends BaseCoin {
 
       // Get tx base values
       const eosTxStruct = eosClient.fc.structs.transaction;
-      const serializedTxBuffer = Buffer.from(tx.packed_trx, 'hex');
-      const transaction = EosJs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedTxBuffer);
+      const serializedTxBuffer = Buffer.from(transaction.packed_trx, 'hex');
+      const tx = EosJs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedTxBuffer);
 
       // Get transfer action values
       // Only support transactions with one action: transfer
-      if (transaction.actions.length !== 1) {
-        throw new Error(`invalid number of actions: ${transaction.actions.length}`);
+      if (tx.actions.length !== 1) {
+        throw new Error(`invalid number of actions: ${tx.actions.length}`);
       }
-      const txAction = transaction.actions[0];
+      const txAction = tx.actions[0];
       if (!txAction) {
         throw new Error('missing transaction action');
       }
@@ -394,20 +391,20 @@ export class Eos extends BaseCoin {
       const transferStruct = eosClient.fc.abiCache.abi('eosio.token').structs.transfer;
       const serializedTransferDataBuffer = Buffer.from(txAction.data, 'hex');
       const transferActionData = EosJs.modules.Fcbuffer.fromBuffer(transferStruct, serializedTransferDataBuffer);
-      transaction.address = transferActionData.to;
-      transaction.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
-      transaction.memo = transferActionData.memo;
+      tx.address = transferActionData.to;
+      tx.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
+      tx.memo = transferActionData.memo;
 
       // Get the tx id if tx headers were provided
       if (headers) {
         const rebuiltTransaction = yield eosClient.transaction(
-          { actions: transaction.actions },
+          { actions: tx.actions },
           { sign: false, broadcast: false }
         );
-        transaction.transaction_id = rebuiltTransaction.transaction_id;
+        tx.transaction_id = rebuiltTransaction.transaction_id;
       }
 
-      return transaction;
+      return tx;
     }).call(this);
   }
 
@@ -651,8 +648,8 @@ export class Eos extends BaseCoin {
    */
   serializeTransaction(eosClient: EosJs, transaction: EosJs.transaction): string {
     const eosTxStruct = eosClient.fc.structs.transaction;
-    const rawTx = transaction.transaction.transaction;
-    const txObject = eosTxStruct.fromObject(rawTx);
+    const txHex = transaction.transaction.transaction;
+    const txObject = eosTxStruct.fromObject(txHex);
 
     return EosJs.modules.Fcbuffer.toBuffer(eosTxStruct, txObject).toString('hex');
   }
@@ -723,7 +720,7 @@ export class Eos extends BaseCoin {
 
       const serializedTransaction = this.serializeTransaction(eosClient, transaction);
       const txObject = {
-        tx: {
+        transaction: {
           compression: 'none',
           packed_trx: serializedTransaction,
           signatures: [],
@@ -742,11 +739,11 @@ export class Eos extends BaseCoin {
       }
 
       const userSignature = this.signTx(signableTx, keys[0]);
-      txObject.tx.signatures.push(userSignature);
+      txObject.transaction.signatures.push(userSignature);
 
       if (!isKrsRecovery) {
         const backupSignature = this.signTx(signableTx, keys[1]);
-        txObject.tx.signatures.push(backupSignature);
+        txObject.transaction.signatures.push(backupSignature);
       }
 
       return txObject;
