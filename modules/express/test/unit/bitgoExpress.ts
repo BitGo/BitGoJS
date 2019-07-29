@@ -1,3 +1,5 @@
+// eslint-disable-next-line
+/// <reference types="mocha" />
 import 'should';
 import 'should-http';
 import 'should-sinon';
