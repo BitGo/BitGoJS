@@ -78,20 +78,6 @@ uglifyjs ... --mangle --reserved 'BigInteger,ECPair,Point'
 
 **NOTE**: If you expect this library to run on an iOS 10 device, ensure that you are using [buffer@5.0.5](https://github.com/feross/buffer/pull/155) or greater.
 
-
-### Typescript or VSCode users
-Type declarations for Typescript are available for version `^3.0.0` of the library.
-``` bash
-npm install @types/bitgo-utxo-lib
-```
-
-You can now use `bitgo-utxo-lib` as a typescript compliant library.
-``` javascript
-import { HDNode, Transaction } from 'bitgo-utxo-lib'
-```
-
-For VSCode (and other editors), users are advised to install the type declarations, as Intellisense uses that information to help you code (autocompletion, static analysis).
-
 ## Examples
 The below examples are implemented as integration tests, they should be very easy to understand.
 Otherwise, pull requests are appreciated.
