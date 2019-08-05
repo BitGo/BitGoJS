@@ -7,7 +7,7 @@ import * as common from '../../common';
 const request = require('superagent');
 
 export class Btg extends Btc {
-  constructor(bitgo: any, network?) {
+  constructor(bitgo: any, network?: any) {
     super(bitgo, network || bitcoin.networks.bitcoingold);
   }
 
@@ -15,27 +15,27 @@ export class Btg extends Btc {
     return new Btg(bitgo);
   }
 
-  getChain() {
+  getChain(): string {
     return 'btg';
   }
 
-  getFamily() {
+  getFamily(): string {
     return 'btg';
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Bitcoin Gold';
   }
 
-  supportsBlockTarget() {
+  supportsBlockTarget(): boolean {
     return false;
   }
 
-  supportsP2shP2wsh() {
+  supportsP2shP2wsh(): boolean {
     return true;
   }
 
-  supportsP2wsh() {
+  supportsP2wsh(): boolean {
     return true;
   }
 
@@ -44,7 +44,7 @@ export class Btg extends Btc {
    * @param txBuilder
    * @returns {*}
    */
-  prepareTransactionBuilder(txBuilder) {
+  prepareTransactionBuilder(txBuilder: any): any {
     txBuilder.setVersion(2);
     return txBuilder;
   }
@@ -53,7 +53,7 @@ export class Btg extends Btc {
    *
    * @returns {number}
    */
-  get defaultSigHashType() {
+  get defaultSigHashType(): number {
     return bitcoin.Transaction.SIGHASH_ALL | bitcoin.Transaction.SIGHASH_BITCOINCASHBIP143;
   }
 
@@ -67,11 +67,11 @@ export class Btg extends Btc {
    * @param isSegwitInput
    * @returns {*}
    */
-  calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
+  calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput): Buffer {
     return transaction.hashForGoldSignature(inputIndex, pubScript, amount, hashType, isSegwitInput);
   }
 
-  recoveryBlockchainExplorerUrl(url) {
+  recoveryBlockchainExplorerUrl(url: string): string {
     const baseUrl = common.Environments[this.bitgo.env].btgExplorerBaseUrl;
 
     if (!baseUrl) {
@@ -81,7 +81,7 @@ export class Btg extends Btc {
     return common.Environments[this.bitgo.env].btgExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58) {
+  getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function *getAddressInfoFromExplorer() {
       const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
@@ -92,7 +92,7 @@ export class Btg extends Btc {
     }).call(this);
   }
 
-  getUnspentInfoFromExplorer(addressBase58) {
+  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function *getUnspentInfoFromExplorer() {
       const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
