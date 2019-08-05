@@ -6,12 +6,13 @@ import * as bitcoin from 'bitgo-utxo-lib';
 const request = require('superagent');
 import * as Bluebird from 'bluebird';
 import { BaseCoin } from '../baseCoin';
+import { UtxoNetwork } from './abstractUtxoCoin';
 const co = Bluebird.coroutine;
 import * as common from '../../common';
 import * as errors from '../../errors';
 
 export class Bsv extends Bch {
-  constructor(bitgo, network?) {
+  constructor(bitgo: any, network?: UtxoNetwork) {
     super(bitgo, network || bitcoin.networks.bitcoinsv);
   }
 
@@ -19,19 +20,19 @@ export class Bsv extends Bch {
     return new Bsv(bitgo);
   }
 
-  getChain() {
+  getChain(): string {
     return 'bsv';
   }
 
-  getFamily() {
+  getFamily(): string {
     return 'bsv';
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Bitcoin SV';
   }
 
-  recoveryBlockchainExplorerUrl(url) {
+  recoveryBlockchainExplorerUrl(url: string): string {
     const baseUrl = common.Environments[this.bitgo.env].bsvExplorerBaseUrl;
 
     // TODO BG-9989: There is no explorer api for Bitcoin SV yet. Once we have one, add it to src/common.js and update
@@ -45,7 +46,7 @@ export class Bsv extends Bch {
     return common.Environments[this.bitgo.env].bsvExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58) {
+  getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function* getAddressInfoFromExplorer() {
       // TODO BG-9989: Update this method with the correct API route and parsing once we have one
       const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
@@ -57,7 +58,7 @@ export class Bsv extends Bch {
     }).call(this);
   }
 
-  getUnspentInfoFromExplorer(addressBase58) {
+  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function* getUnspentInfoFromExplorer() {
       // TODO BG-9989: Update this method with the correct API route and parsing once we have one
       const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
