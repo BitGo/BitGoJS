@@ -1,5 +1,5 @@
 import { BaseCoin } from '../baseCoin';
-import { AbstractUtxoCoin } from './abstractUtxoCoin';
+import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import * as common from '../../common';
 import * as bitcoin from 'bitgo-utxo-lib';
 const request = require('superagent');
@@ -7,8 +7,12 @@ import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
+export interface TransactionInfo {
+  transactionHex: string,
+}
+
 export class Btc extends AbstractUtxoCoin {
-  constructor(bitgo: any, network?) {
+  constructor(bitgo: any, network?: UtxoNetwork) {
     super(bitgo, network || bitcoin.networks.bitcoin);
   }
 
@@ -16,27 +20,27 @@ export class Btc extends AbstractUtxoCoin {
     return new Btc(bitgo);
   }
 
-  getChain() {
+  getChain(): string {
     return 'btc';
   }
 
-  getFamily() {
+  getFamily(): string {
     return 'btc';
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Bitcoin';
   }
 
-  supportsBlockTarget() {
+  supportsBlockTarget(): boolean {
     return true;
   }
 
-  supportsP2shP2wsh() {
+  supportsP2shP2wsh(): boolean {
     return true;
   }
 
-  supportsP2wsh() {
+  supportsP2wsh(): boolean {
     return true;
   }
 
@@ -56,15 +60,15 @@ export class Btc extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  getRecoveryFeeRecommendationApiBaseUrl() {
+  getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<any> {
     return Bluebird.resolve('https://bitcoinfees.earn.com/api/v1/fees/recommended');
   }
 
-  recoveryBlockchainExplorerUrl(url) {
+  recoveryBlockchainExplorerUrl(url: string): string {
     return common.Environments[this.bitgo.env].smartBitApiBaseUrl + '/blockchain' + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58) {
+  getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function *getAddressInfoFromExplorer() {
       const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/address/${addressBase58}`)).result();
 
@@ -75,7 +79,7 @@ export class Btc extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  getUnspentInfoFromExplorer(addressBase58) {
+  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function *getUnspentInfoFromExplorer() {
       const unspentInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/address/${addressBase58}/unspent`)).result();
 
@@ -89,7 +93,7 @@ export class Btc extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  public verifyRecoveryTransaction(txInfo) {
+  public verifyRecoveryTransaction(txInfo: TransactionInfo): Bluebird<any> {
     return co(function *verifyRecoveryTransaction() {
       const decodedTx = yield request.post(this.recoveryBlockchainExplorerUrl(`/decodetx`))
       .send({ hex: txInfo.transactionHex })
