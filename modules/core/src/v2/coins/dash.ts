@@ -30,27 +30,27 @@ export class Dash extends AbstractUtxoCoin {
     return new Dash(bitgo);
   }
 
-  getChain() {
+  getChain(): string {
     return 'dash';
   }
 
-  getFamily() {
+  getFamily(): string {
     return 'dash';
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Dash';
   }
 
-  supportsBlockTarget() {
+  supportsBlockTarget(): boolean {
     return false;
   }
 
-  recoveryBlockchainExplorerUrl(url) {
+  recoveryBlockchainExplorerUrl(url: string): string {
     return common.Environments[this.bitgo.env].dashExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58) {
+  getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function *getAddressInfoFromExplorer() {
       const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
@@ -61,7 +61,7 @@ export class Dash extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  getUnspentInfoFromExplorer(addressBase58) {
+  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function *getUnspentInfoFromExplorer() {
       const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
