@@ -23,11 +23,20 @@ describe('OFC:', function() {
     tbtc.getChain().should.equal('ofctbtc');
     tbtc.getFullName().should.equal('Offchain Bitcoin Test');
     tbtc.getBaseFactor().should.equal('100000000');
+    tbtc.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.true;
+    tbtc.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
+    tbtc.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
+    tbtc.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
 
     const teth = bitgo.coin('ofcteth');
     teth.getChain().should.equal('ofcteth');
     teth.getFullName().should.equal('Offchain Ether Testnet');
     teth.getBaseFactor().should.equal('1000000000000000000');
+    teth.isValidAddress('0x801b2954117cf3439479df391bed2f472e4bd4b8').should.be.true;
+    teth.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
+    teth.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
+    teth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64').should.be.true;
+    teth.isValidAddress('bg-5b2b80eafbdf94d5030bb23f9b56ad64nnn').should.be.false;
   })
 
   it('can sign payloads', function() {

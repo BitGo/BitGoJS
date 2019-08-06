@@ -10,6 +10,7 @@ interface OfcTokenConfig {
   isFiat: boolean,
 }
 
+const publicIdRegex = /^[a-f\d]{32}$/i;
 export class OfcToken extends Ofc {
   public readonly tokenConfig: OfcTokenConfig;
 
@@ -79,5 +80,16 @@ export class OfcToken extends Ofc {
     const signatureBuffer = this.signMessage(params, payload);
     const signature = signatureBuffer.toString('hex');
     return { halfSigned: { payload, signature } };
+  }
+
+  isValidAddress(address) {
+    if (typeof address === 'string' && address.startsWith('bg-')) {
+      const parts = address.split('-');
+      const accountId = parts[1];
+      return parts.length === 2 && publicIdRegex.test(accountId);
+    } else {
+      const backingCoin = this.bitgo.coin(this.backingCoin);
+      return backingCoin.isValidAddress(address);
+    }
   }
 }
