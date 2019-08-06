@@ -118,10 +118,6 @@ export const enum CoinFeature {
  *
  * For these coins, the `UnderlyingAsset` provides a link to the actual
  * asset for which the coin is a unit of account.
- *
- * For all other coins, the `UnderlyingAsset` should be set to `SELF`, which
- * indicates that the coin is a unit of account only for itself, and does not
- * represent some amount of another asset class.
  */
 export const enum UnderlyingAsset {
   ALGO = 'algo',

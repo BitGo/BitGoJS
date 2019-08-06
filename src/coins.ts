@@ -2,7 +2,7 @@ import { account, AccountCoin, erc20, terc20 } from './account';
 import { CoinFeature, CoinKind, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
 import { Networks } from './networks';
-import { ofc, tofc } from './ofc';
+import { ofc, tofc, ofcerc20, tofcerc20 } from './ofc';
 import { utxo } from './utxo';
 
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
@@ -311,4 +311,6 @@ export const coins = CoinMap.fromCoins([
   terc20('schz', 'SchnauzerCoin', 18, '0x050e25a2630b2aee94546589fd39785254de112c', UnderlyingAsset.SCHZ),
   terc20('tcat', 'Test CAT-20 Token', 18, '0x63137319f3a14a985eb31547370e0e3bd39b03b8', UnderlyingAsset.TCAT),
   terc20('tfmf', 'Test Formosa Financial Token', 18, '0xd8463d2f8c5b3be9de95c63b73a0ae4c79423452', UnderlyingAsset.FMF),
+  tofcerc20('ofcterc', 'ERC Test Token', 0, UnderlyingAsset.ERC),
+  ofcerc20('ofcerc', 'ERC Token', 0, UnderlyingAsset.ERC),
 ]);
