@@ -258,6 +258,8 @@ export const tokens = {
         { type: 'tcad', coin: 'eth', network: 'Mainnet', name: 'TrueCAD', tokenContractAddress: '0x00000100f2a2bd000715001920eb70d229700085', decimalPlaces: 18 },
         { type: 'edn', coin: 'eth', network: 'Mainnet', name: 'Eden', tokenContractAddress: '0x05860d453c7974cbf46508c06cba14e211c629ce', decimalPlaces: 18 },
         { type: 'emx', coin: 'eth', network: 'Mainnet', name: 'EMX', tokenContractAddress: '0x75a29c405bd5ab2f3b35144af937ee98d390b5ee', decimalPlaces: 18 },
+        { type: 'dgd', coin: 'eth', network: 'Mainnet', name: 'DigixDAO', tokenContractAddress: '0xe0b7927c4af23765cb51314a0e0521a9645f0e2a', decimalPlaces: 9 },
+        { type: 'dgd', coin: 'eth', network: 'Mainnet', name: 'DigixDAO', tokenContractAddress: '0xe0b7927c4af23765cb51314a0e0521a9645f0e2a', decimalPlaces: 9 },
       ]
     },
     ofc: {
