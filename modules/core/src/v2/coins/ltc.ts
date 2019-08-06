@@ -34,27 +34,27 @@ export class Ltc extends AbstractUtxoCoin {
     return new Ltc(bitgo);
   }
 
-  getChain() {
+  getChain(): string {
     return 'ltc';
   }
 
-  getFamily() {
+  getFamily(): string {
     return 'ltc';
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Litecoin';
   }
 
-  supportsBlockTarget() {
+  supportsBlockTarget(): boolean {
     return false;
   }
 
-  supportsP2shP2wsh() {
+  supportsP2shP2wsh(): boolean {
     return true;
   }
 
-  supportsP2wsh() {
+  supportsP2wsh(): boolean {
     return true;
   }
 
@@ -64,7 +64,7 @@ export class Ltc extends AbstractUtxoCoin {
    * @param scriptHashVersion 1 or 2, where 1 is the old version and 2 is the new version
    * @returns {*} address string
    */
-  canonicalAddress(address, scriptHashVersion = 2) {
+  canonicalAddress(address: string, scriptHashVersion: number = 2): string {
     if (!this.isValidAddress(address, true)) {
       throw new Error('invalid address');
     }
@@ -87,17 +87,17 @@ export class Ltc extends AbstractUtxoCoin {
     return bitcoin.address.toBase58Check(addressDetails.hash, newScriptHash);
   }
 
-  calculateRecoveryAddress(scriptHashScript) {
+  calculateRecoveryAddress(scriptHashScript: Buffer): string {
     const bitgoAddress = bitcoin.address.fromOutputScript(scriptHashScript, this.network);
     const blockrAddress = this.canonicalAddress(bitgoAddress, 1);
     return blockrAddress;
   }
 
-  recoveryBlockchainExplorerUrl(url) {
+  recoveryBlockchainExplorerUrl(url: string): string {
     return common.Environments[this.bitgo.env].ltcExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58) {
+  getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function *getAddressInfoFromExplorer() {
       const address = this.canonicalAddress(addressBase58, 2);
 
@@ -110,7 +110,7 @@ export class Ltc extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  getUnspentInfoFromExplorer(addressBase58) {
+  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
     return co(function *getUnspentInfoFromExplorer() {
       const address = this.canonicalAddress(addressBase58, 2);
 
