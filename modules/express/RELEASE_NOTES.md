@@ -1,5 +1,32 @@
 # BitGo Express Release Notes
 
+## 7.0.0
+
+### Breaking Changes
+* The way to provide command line options to BitGo Express in docker has been simplified, but users who give options this way will need to make a modification to how they start BitGo Express.
+
+As an example, we'll set the `--debug` command line option. Before version 7 you would need to start it like this:
+```bash
+$ docker run -it bitgosdk/express:6.0.0 /var/bitgo-express/bin/bitgo-express --debug
+```
+
+In version 7 and later, that should be changed to
+```
+$ docker run -it bitgosdk/express:7.0.0 --debug
+```
+
+### New Features
+* Allow all configuration options to be given by either environment variable or command line flag. Command line flags have the highest priority, followed by environment variables. If neither of these are set for a given option, an appropriate default will be used instead. Please see the [Configuration Values](https://github.com/BitGo/BitGoJS/tree/master/modules/express#configuration-values) section in the README for more information.
+
+### Bug Fixes
+* Add missing dependencies to package.json.
+
+### Other Changes
+* Improve documentation for running BitGo Express in Docker
+* Simplify BitGo Express initialization script
+* Update package-lock.json
+* Update to BitGoJS@7.0.0
+
 ## 6.2.0
 
 ### Other Changes
