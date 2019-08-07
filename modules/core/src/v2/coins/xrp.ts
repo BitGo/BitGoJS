@@ -1,25 +1,29 @@
-import {
-  BaseCoin,
-  BaseCoinTransactionExplanation,
-} from '../baseCoin';
-import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
+import { HDNode, ECPair } from 'bitgo-utxo-lib';
+import * as Bluebird from 'bluebird';
 import * as crypto from 'crypto';
-const ripple = require('../../ripple');
+import * as _ from 'lodash';
+import * as url from 'url';
+import * as querystring from 'querystring';
+
 const rippleAddressCodec = require('ripple-address-codec');
 const rippleBinaryCodec = require('ripple-binary-codec');
 const rippleHashes = require('ripple-hashes');
 const rippleKeypairs = require('ripple-keypairs');
-import * as _ from 'lodash';
-import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
-const sjcl = require('../../vendor/sjcl.min.js');
+
+import {
+  BaseCoin,
+  BaseCoinTransactionExplanation,
+  KeyPair,
+} from '../baseCoin';
 import * as config from '../../config';
-import * as url from 'url';
-import * as querystring from 'querystring';
+import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
-import { HDNode, ECPair } from 'bitgo-utxo-lib';
-import { KeyPair } from '../keychains';
+
+const ripple = require('../../ripple');
+const sjcl = require('../../vendor/sjcl.min.js');
+
+const co = Bluebird.coroutine;
 
 interface AddressDetails {
   address: string;

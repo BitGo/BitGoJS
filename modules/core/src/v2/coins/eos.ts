@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { BaseCoin, BaseCoinTransactionExplanation } from '../baseCoin';
+import { BaseCoin, BaseCoinTransactionExplanation, KeyPair } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
 import * as crypto from 'crypto';
@@ -13,7 +13,6 @@ import * as querystring from 'querystring';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
-import { KeyPair } from '../keychains';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';

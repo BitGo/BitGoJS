@@ -16,10 +16,9 @@ import {
   KeyRecoveryServiceError,
   UnexpectedAddressError
 } from '../../errors';
-import { BaseCoin, BaseCoinTransactionOutput, BaseCoinTransactionExplanation } from '../baseCoin';
+import { BaseCoin, BaseCoinTransactionOutput, BaseCoinTransactionExplanation, KeyPair } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
-import { KeyPair } from '../keychains';
 
 const co = Bluebird.coroutine;
 
