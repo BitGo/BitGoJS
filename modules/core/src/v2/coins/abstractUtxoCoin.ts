@@ -13,6 +13,7 @@ import { NodeCallback } from '../types';
 import * as config from '../../config';
 import { CrossChainRecoveryTool } from '../recovery';
 import * as errors from '../../errors';
+import { RequestTracer } from '../util';
 import { Wallet } from '../wallet';
 
 const debug = debugLib('bitgo:v2:utxo');
@@ -91,7 +92,7 @@ export interface ParseTransactionOptions {
   txPrebuild: TxPrebuild;
   wallet: Wallet;
   verification?: TxVerificationOptions;
-  reqId: any;
+  reqId?: RequestTracer;
 }
 
 export interface ParsedTransaction {
@@ -197,7 +198,7 @@ export interface VerifyTransactionOptions {
   txPrebuild: TxPrebuild;
   wallet: Wallet;
   verification?: TxVerificationOptions,
-  reqId: any
+  reqId?: RequestTracer,
 }
 
 export interface CoinSpecific {
