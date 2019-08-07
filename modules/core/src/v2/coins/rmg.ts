@@ -5,6 +5,8 @@ import {
   AbstractUtxoCoin, AddressInfo,
   ExplainTransactionOptions,
   TransactionExplanation, UnspentInfo,
+  GenerateAddressOptions, AddressDetails,
+  VerifyAddressOptions, SignTransactionOptions,
 } from './abstractUtxoCoin';
 import { NodeCallback } from '../types';
 import * as _ from 'lodash';
@@ -27,23 +29,23 @@ export class Rmg extends AbstractUtxoCoin {
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor() {
+  getBaseFactor(): number {
     return 1e6;
   }
 
-  getChain() {
+  getChain(): string {
     return 'rmg';
   }
 
-  getFamily() {
+  getFamily(): string {
     return 'rmg';
   }
 
-  getFullName() {
+  getFullName(): string {
     return 'Royal Mint Gold';
   }
 
-  isValidAddress(address): boolean {
+  isValidAddress(address: string): boolean {
     return prova.Address.validateBase58(address, this.network);
   }
 
@@ -54,20 +56,20 @@ export class Rmg extends AbstractUtxoCoin {
    * @param chain Derivation chain
    * @param index Derivation index
    */
-  verifyAddress({ address, keychains, chain, index }) {
-    if (!this.isValidAddress(address)) {
-      throw new Error(`invalid address: ${address}`);
+  verifyAddress(params: VerifyAddressOptions) {
+    if (!this.isValidAddress(params.address)) {
+      throw new Error(`invalid address: ${params.address}`);
     }
 
     const expectedAddress: any = this.generateAddress({
-      keychains,
+      keychains: params.keychains,
       threshold: 2,
-      chain: chain,
-      index: index
+      chain: params.chain,
+      index: params.index
     });
 
-    if (expectedAddress.address !== address) {
-      throw new Error(`address validation failure: expected ${expectedAddress.address} but got ${address}`);
+    if (expectedAddress.address !== params.address) {
+      throw new Error(`address validation failure: expected ${expectedAddress.address} but got ${params.address}`);
     }
   }
 
@@ -79,31 +81,31 @@ export class Rmg extends AbstractUtxoCoin {
    * @param index Derivation index
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript}}}
    */
-  generateAddress({ keychains, threshold, chain, index }) {
+  generateAddress(params: GenerateAddressOptions): AddressDetails {
     let signatureThreshold = 2;
-    if (_.isInteger(threshold)) {
-      signatureThreshold = threshold;
+    if (_.isInteger(params.threshold)) {
+      signatureThreshold = params.threshold;
       if (signatureThreshold <= 0) {
         throw new Error('threshold has to be positive');
       }
-      if (signatureThreshold > keychains.length) {
+      if (signatureThreshold > params.keychains.length) {
         throw new Error('threshold cannot exceed number of keys');
       }
     }
 
     let derivationChain = 0;
-    if (_.isInteger(chain) && chain > 0) {
-      derivationChain = chain;
+    if (_.isInteger(params.chain) && params.chain > 0) {
+      derivationChain = params.chain;
     }
 
     let derivationIndex = 0;
-    if (_.isInteger(index) && index > 0) {
-      derivationIndex = index;
+    if (_.isInteger(params.index) && params.index > 0) {
+      derivationIndex = params.index;
     }
 
     const path = 'm/0/0/' + derivationChain + '/' + derivationIndex;
     // do not modify the original argument
-    const keychainCopy = _.cloneDeep(keychains);
+    const keychainCopy = _.cloneDeep(params.keychains);
     const userKey = keychainCopy.shift();
     const aspKeyIds = keychainCopy.map((key) => key.aspKeyId);
     const userKeyNode = prova.HDNode.fromBase58(userKey.pub);
@@ -138,7 +140,7 @@ export class Rmg extends AbstractUtxoCoin {
    * - prv
    * @returns {{txHex}}
    */
-  signTransaction(params) {
+  signTransaction(params: SignTransactionOptions): { txHex: string } {
     const txPrebuild = params.txPrebuild;
     const userPrv = params.prv;
 
@@ -220,7 +222,7 @@ export class Rmg extends AbstractUtxoCoin {
    * @param verificationSettings.publicKey The hex of the public key to verify (will verify all signatures)
    * @returns {boolean}
    */
-  verifySignature(transaction, inputIndex, amount, verificationSettings: any = {}) {
+  verifySignature(transaction: any, inputIndex: number, amount: number, verificationSettings: { signatureIndex?: number; publicKey?: string; } = {}): boolean {
     if (!(transaction instanceof prova.Transaction)) {
       throw new Error('transaction has to be an instance of prova.Transaction');
     }
