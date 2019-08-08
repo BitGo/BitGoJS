@@ -115,5 +115,25 @@ describe('ALGO:', function() {
       });
       fullySignedTx.txHex.should.equal(fixtures.fullySignBase64);
     }));
+
+    it('should explain an half-signed transaction', co(function *() {
+      const explainParams = { halfSigned: { txHex: fixtures.signedTxBase64 } };
+  
+      const explanation = yield basecoin.explainTransaction(explainParams);
+  
+      explanation.outputs[0].amount.should.equal(1000);
+      explanation.outputs[0].address.should.equal(fixtures.txData.to);
+      explanation.id.should.equal(fixtures.signedTxId);
+    }));
+
+    it('should explain an fully signed transaction', co(function *() {
+      const explainParams = { txHex: fixtures.fullySignBase64 };
+  
+      const explanation = yield basecoin.explainTransaction(explainParams);
+  
+      explanation.outputs[0].amount.should.equal(1000);
+      explanation.outputs[0].address.should.equal(fixtures.txData.to);
+      explanation.id.should.equal(fixtures.signedTxId);
+    }));
   });
 });

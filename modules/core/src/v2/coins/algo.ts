@@ -61,8 +61,11 @@ export interface HalfSignedTransaction {
   };
 }
 
-interface ExplainTransactionOptions {
-  txHex: string;
+export interface ExplainTransactionOptions {
+  txHex?: string;
+  halfSigned?: {
+    txHex: string;
+  };
 }
 
 export interface VerifiedTransactionParameters {
@@ -199,9 +202,10 @@ export class Algo extends BaseCoin {
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
     return co(function*() {
-      const { txHex } = params;
-
+      // take txHex first always, but as it might already be signed, take halfSigned second
+      let txHex = params.txHex ? params.txHex : params.halfSigned.txHex;
       let tx;
+
       try {
         const txToHex = Buffer.from(txHex, 'base64');
         const decodedTx = Encoding.decode(txToHex);
