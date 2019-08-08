@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "6.2.0",
+  "version": "7.1.0-rc.0",
   "description": "BitGo Javascript SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -63,8 +63,8 @@
     "debug": "^3.1.0",
     "ecurve": "^1.0.6",
     "eol": "^0.5.0",
-    "eosjs-ecc": "4.0.4",
     "eosjs": "^16.0.8",
+    "eosjs-ecc": "4.0.4",
     "lodash": "^4.17.14",
     "moment": "^2.20.1",
     "prova-lib": "^0.2.10",
