@@ -1,5 +1,41 @@
 # BitGoJS Release Notes
 
+## 7.0.0
+
+### Breaking Changes
+The `explainTransaction` method on in BaseCoin is now asynchronous. Callers of this method will need to resolve the returned promise in order to make use of the return value.
+
+As an example, before the behavior of `explainTransaction` was as follows (parameters omitted for brevity):
+```typescript
+const explanation = bitgo.coin('tbtc').explainTransaction(...);
+console.dir(explanation);
+```
+
+In version 7 and later, the behavior is now:
+```typescript
+const explanation = await bitgo.coin('tbtc').explainTransaction(...);
+console.dir(explanation);
+```
+
+or, if you can't use async/await:
+```typescript
+bitgo.coin('tbtc').explainTransaction(...)
+.then(explanation => {
+  console.dir(explanation);
+});
+```
+
+This breaking change was required since some of the coins we are considering adding in the future are unable to implement `explainTransaction` in a synchronous way.
+
+### New Features
+* Update contract address for ERC20 token LGO
+* Add support for new ERC20 tokens (THKD, TCAD, EDN, EMX)
+
+### Other Changes
+* Add node version support policy to README
+* Improve typescript support in many files, including `BaseCoin`, `Utils`, `AbstractUtxoCoin`, and several others
+* Autoformat code upon commit and check code format during CI
+
 ## 6.2.0
 
 ### New Features
