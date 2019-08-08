@@ -32,7 +32,7 @@ export class Susd extends BaseCoin {
   /**
    * Return whether the given m of n wallet signers/ key amounts are valid for the coin
    */
-  isValidMofNSetup({ m, n }) {
+  isValidMofNSetup({ m, n }: { m: number; n: number }) {
     return m === 0 && n === 0;
   }
 

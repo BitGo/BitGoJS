@@ -1,10 +1,11 @@
-import { Eth } from './eth';
-import * as _ from 'lodash';
+import { HDNode } from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
+import * as _ from 'lodash';
+
+import { Eth } from './eth';
 import { CoinConstructor } from '../coinFactory';
 import { Util } from '../util';
 import * as config from '../../config';
-import { HDNode } from 'bitgo-utxo-lib';
 
 const co = Bluebird.coroutine;
 
@@ -20,7 +21,7 @@ try {
   // ethereum currently not supported
 }
 
-interface TokenConfig {
+export interface TokenConfig {
   name: string,
   type: string,
   coin: string,
@@ -32,12 +33,12 @@ interface TokenConfig {
 export class Token extends Eth {
   public readonly tokenConfig: TokenConfig;
 
-  constructor(bitgo: any, tokenConfig) {
+  constructor(bitgo: any, tokenConfig: TokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
-  static createTokenConstructor(config): CoinConstructor {
+  static createTokenConstructor(config: TokenConfig): CoinConstructor {
     return (bitgo: any) => new Token(bitgo, config);
   }
 

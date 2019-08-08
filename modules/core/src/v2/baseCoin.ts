@@ -15,7 +15,7 @@ import { Wallets } from './wallets';
 import { Markets } from './markets';
 import { Webhooks } from './webhooks';
 import { PendingApprovals } from './pendingApprovals';
-import { Keychains, KeyPair } from './keychains';
+import { Keychains } from './keychains';
 import { Enterprises } from './enterprises';
 
 export interface BaseCoinTransactionOutput {
@@ -37,6 +37,11 @@ export interface BaseCoinTransactionExplanation {
   changeOutputs: BaseCoinTransactionOutput[];
   changeAmount: string;
   fee: BaseCoinTransactionFee;
+}
+
+export interface KeyPair {
+  pub?: string;
+  prv: string;
 }
 
 export abstract class BaseCoin {

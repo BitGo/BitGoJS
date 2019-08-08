@@ -1,7 +1,28 @@
 import * as _ from 'lodash';
 import { Environments, EnvironmentName } from './v2/environments';
+import { OfcTokenConfig } from './v2/coins/ofcToken';
+import { TokenConfig } from './v2/coins/token';
 
-export const tokens = {
+export interface Tokens {
+  bitcoin: {
+    eth: {
+      tokens: TokenConfig[];
+    };
+    ofc: {
+      tokens: OfcTokenConfig[];
+    };
+  };
+  testnet: {
+    eth: {
+      tokens: TokenConfig[];
+    };
+    ofc: {
+      tokens: OfcTokenConfig[];
+    };
+  };
+}
+
+export const tokens: Tokens = {
   // network name for production environments (prod tokens must be added here)
   bitcoin: {
     eth: {
@@ -263,8 +284,8 @@ export const tokens = {
     ofc: {
       tokens: [
         { type: 'ofcusd', coin: 'ofc', decimalPlaces: 2, name: 'Offchain USD', backingCoin: 'susd', isFiat: true },
-        { type: 'ofcbtc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Bitcoin Mainnet', backingCoin: 'btc' },
-        { type: 'ofceth', coin: 'ofc', decimalPlaces: 18, name: 'Offchain Ether Mainnet', backingCoin: 'eth' }
+        { type: 'ofcbtc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Bitcoin Mainnet', backingCoin: 'btc', isFiat: false },
+        { type: 'ofceth', coin: 'ofc', decimalPlaces: 18, name: 'Offchain Ether Mainnet', backingCoin: 'eth', isFiat: false }
       ]
     }
   },
@@ -283,9 +304,9 @@ export const tokens = {
     ofc: {
       tokens: [
         { type: 'ofctusd', coin: 'ofc', decimalPlaces: 2, name: 'Offchain Test USD', backingCoin: 'tsusd', isFiat: true },
-        { type: 'ofctbtc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Bitcoin Test', backingCoin: 'tbtc' },
-        { type: 'ofcteth', coin: 'ofc', decimalPlaces: 18, name: 'Offchain Ether Testnet', backingCoin: 'teth' },
-        { type: 'ofctltc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Litecoin Testnet', backingCoin: 'tltc' },
+        { type: 'ofctbtc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Bitcoin Test', backingCoin: 'tbtc', isFiat: false },
+        { type: 'ofcteth', coin: 'ofc', decimalPlaces: 18, name: 'Offchain Ether Testnet', backingCoin: 'teth', isFiat: false },
+        { type: 'ofctltc', coin: 'ofc', decimalPlaces: 8, name: 'Offchain Litecoin Testnet', backingCoin: 'tltc', isFiat: false },
       ]
     }
   },

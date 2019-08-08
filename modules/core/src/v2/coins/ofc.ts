@@ -1,10 +1,12 @@
-import { BaseCoin } from '../baseCoin';
+/**
+ * @prettier
+ */
+import { BaseCoin, KeyPair } from '../baseCoin';
 import * as crypto from 'crypto';
 import * as bitGoUtxoLib from 'bitgo-utxo-lib';
 import * as errors from '../../errors';
 
 export class Ofc extends BaseCoin {
-
   static createInstance(bitgo: any): BaseCoin {
     return new Ofc(bitgo);
   }
@@ -19,7 +21,7 @@ export class Ofc extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed) {
+  generateKeyPair(seed?: Buffer): KeyPair {
     if (!seed) {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the
@@ -30,7 +32,7 @@ export class Ofc extends BaseCoin {
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
-      prv: extendedKey.toBase58()
+      prv: extendedKey.toBase58(),
     };
   }
 
@@ -45,7 +47,7 @@ export class Ofc extends BaseCoin {
   /**
    * Return whether the given m of n wallet signers/ key amounts are valid for the coin
    */
-  isValidMofNSetup({ m, n }) {
+  isValidMofNSetup({ m, n }: { m: number; n: number }) {
     return m === 1 && n === 1;
   }
 
@@ -55,7 +57,7 @@ export class Ofc extends BaseCoin {
    * @param {String} pub the pub to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidPub(pub) {
+  isValidPub(pub: string): boolean {
     try {
       bitGoUtxoLib.HDNode.fromBase58(pub);
       return true;

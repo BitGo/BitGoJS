@@ -1,18 +1,13 @@
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 
-import { BaseCoin } from './baseCoin';
+import { BaseCoin, KeyPair } from './baseCoin';
 import { NodeCallback } from './types';
 import { Wallet } from './wallet';
 import { RequestTracer } from './util';
 import { validateParams } from '../common';
 
 const co = Bluebird.coroutine;
-
-export interface KeyPair {
-  pub?: string;
-  prv: string;
-}
 
 export interface GetKeychainOptions {
   id: string;

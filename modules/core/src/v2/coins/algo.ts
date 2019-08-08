@@ -1,9 +1,9 @@
 /**
  * @prettier
  */
-import { BaseCoin, BaseCoinTransactionExplanation } from '../baseCoin';
-import { NodeCallback } from '../types';
+import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+import * as stellar from 'stellar-sdk';
 import {
   NaclWrapper,
   Multisig,
@@ -16,10 +16,11 @@ import {
   Encoding,
   mergeMultisigTransactions,
 } from 'algosdk';
-import * as stellar from 'stellar-sdk';
-import * as Bluebird from 'bluebird';
+
+import { BaseCoin, BaseCoinTransactionExplanation, KeyPair } from '../baseCoin';
+import { NodeCallback } from '../types';
+
 const co = Bluebird.coroutine;
-import { KeyPair } from '../keychains';
 
 export interface TransactionExplanation extends BaseCoinTransactionExplanation {
   memo: string;
