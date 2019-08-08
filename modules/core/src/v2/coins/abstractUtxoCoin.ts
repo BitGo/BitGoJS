@@ -122,9 +122,10 @@ export interface VerifyAddressOptions {
 }
 
 export interface GenerateAddressOptions {
-  addressType: string;
+  addressType?: string;
   keychains: {
     pub: string;
+    aspKeyId?: string;
   }[];
   threshold: number;
   chain: number;
@@ -147,7 +148,10 @@ export interface SignTransactionOptions {
     txHex: string;
     txInfo: {
       unspents: {
-
+        chain?: number;
+        index?: number;
+        value?: number;
+        address?: string;
       }[];
     }
   };
