@@ -1,13 +1,19 @@
-import { BaseCoin } from '../baseCoin';
-import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import * as bitGoUtxoLib from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
+import * as request from 'superagent';
+import { BaseCoin } from '../baseCoin';
+import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import * as common from '../../common';
-const request = require('superagent');
+
+const co = Bluebird.coroutine;
+
+export interface ZecTransactionBuilder {
+  setVersion: (number) => void;
+  setVersionGroupId: (number) => void;
+}
 
 export class Zec extends AbstractUtxoCoin {
-  constructor(bitgo, network?) {
+  constructor(bitgo: any, network?) {
     super(bitgo, network || bitGoUtxoLib.networks.zcash);
   }
 
@@ -40,7 +46,7 @@ export class Zec extends AbstractUtxoCoin {
    * @param txBuilder
    * @returns {*}
    */
-  prepareTransactionBuilder(txBuilder) {
+  prepareTransactionBuilder(txBuilder: ZecTransactionBuilder): any {
     txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
     txBuilder.setVersionGroupId(0x892f2085);
     return txBuilder;
@@ -53,18 +59,17 @@ export class Zec extends AbstractUtxoCoin {
    * @param pubScript
    * @param amount The previous output's amount
    * @param hashType
-   * @param isSegwitInput
    * @returns {*}
    */
-  calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput) {
+  calculateSignatureHash(transaction: any, inputIndex: number, pubScript: Buffer, amount: number, hashType: number): Buffer {
     return transaction.hashForZcashSignature(inputIndex, pubScript, amount, hashType);
   }
 
-  recoveryBlockchainExplorerUrl(url) {
-    return common.Environments[this.bitgo.env].zecExplorerBaseUrl + url;
+  recoveryBlockchainExplorerUrl(url: string) {
+    return common.Environments[this.bitgo.getEnv()].zecExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58) {
+  getAddressInfoFromExplorer(addressBase58: string): Bluebird<{ txCount: number; totalBalance: number; }> {
     return co(function *getAddressInfoFromExplorer() {
       const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
@@ -75,7 +80,7 @@ export class Zec extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  getUnspentInfoFromExplorer(addressBase58) {
+  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<{ address: string; amount: number; n: number; }[]> {
     return co(function *getUnspentInfoFromExplorer() {
       const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 

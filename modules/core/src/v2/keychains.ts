@@ -13,7 +13,7 @@ export interface GetKeychainOptions {
   id: string;
   xpub?: string;
   ethAddress?: string;
-  reqId?: string;
+  reqId?: RequestTracer;
 }
 
 export interface ListKeychainOptions {
@@ -42,7 +42,7 @@ interface AddKeychainOptions {
   derivedFromParentWithSeed?: any;
   disableKRSEmail?: boolean;
   provider?: string;
-  reqId?: string;
+  reqId?: RequestTracer;
   krsSpecific?: any
 }
 
@@ -52,7 +52,7 @@ export interface CreateBackupOptions {
 }
 
 interface GetKeysForSigningOptions {
-  reqId?: string;
+  reqId?: RequestTracer;
   wallet?: Wallet;
 }
 
