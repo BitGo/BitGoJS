@@ -1678,7 +1678,6 @@ export class Wallet {
     const {
       jsPDF,
       QRCode,
-      wallet,
       userKeychain,
       backupKeychain,
       bitgoKeychain,
@@ -1725,14 +1724,16 @@ export class Wallet {
 
     const coinShortName = this.baseCoin.type;
     const coinName = this.baseCoin.getFullName();
+    const walletLabel = this._wallet.label;
 
     const doc = drawKeycard({
       jsPDF,
       QRCode,
+      encrypt: this.bitgo.encrypt,
       coinShortName,
       coinName,
       activationCode,
-      walletLabel: this.label(),
+      walletLabel,
       passphrase,
       passcodeEncryptionCode,
       userKeychain,
@@ -1743,6 +1744,6 @@ export class Wallet {
     });
 
     // Save the PDF on the user's browser
-    doc.save(`BitGo Keycard for ${wallet.label()}.pdf`);
+    doc.save(`BitGo Keycard for ${walletLabel}.pdf`);
   }
 }
