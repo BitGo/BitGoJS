@@ -8,7 +8,7 @@ const generateQuestions = (coin: string) => {
       q: 'What is the KeyCard?',
       a:
         [
-          'The KeyCard contains important information which can be used to recover the ' + coin + ' ',
+          `The KeyCard contains important information which can be used to recover the ${coin} `,
           'from your wallet in several situations. Each BitGo wallet' +
           ' has its own, unique KeyCard. ',
           'If you have created multiple wallets, you should retain the KeyCard for each of them.'
@@ -31,7 +31,7 @@ const generateQuestions = (coin: string) => {
       q: 'What should I do if I lose it?',
       a:
         [
-          'If you have lost or damaged all copies of your KeyCard, your ' + coin + ' is still safe, but this ',
+          `If you have lost or damaged all copies of your KeyCard, your ${coin} is still safe, but this `,
           'wallet should be considered at risk for loss. As soon as is convenient, you should use BitGo ',
           'to empty the wallet into a new wallet',
           ', and discontinue use of the old wallet.'
@@ -61,7 +61,7 @@ const generateQuestions = (coin: string) => {
       a:
         [
           'Your KeyCard and wallet passcode can be used together with BitGo’s published open ',
-          'source tools at https://github.com/bitgo to recover your ' + coin + '. Note: You should never enter ',
+          `source tools at https://github.com/bitgo to recover your ${coin}. Note: You should never enter `,
           'information from your KeyCard into tools other than the tools BitGo has published, or your ',
           'funds may be at risk for theft.'
         ]
@@ -72,7 +72,7 @@ const generateQuestions = (coin: string) => {
         [
           'No! BitGo’s multi-signature approach to security depends on there not being a single point ',
           'of attack. But if your wallet password is on your KeyCard, then anyone who gains access to ',
-          'your KeyCard will be able to steal your ' + coin + '.' + ' We recommend keeping your wallet password ',
+          `your KeyCard will be able to steal your ${coin}. We recommend keeping your wallet password `,
           'safe in a secure password manager such as LastPass, 1Password or KeePass.'
         ]
     }
@@ -80,6 +80,7 @@ const generateQuestions = (coin: string) => {
 };
 
 interface GetKeyDataOptions {
+  encrypt: (params: {input: string, password: string}) => string,
   userKeychain: any;
   bitgoKeychain: any;
   backupKeychain: any;
@@ -96,6 +97,7 @@ interface GetKeyDataOptions {
  */
 function getKeyData(options: GetKeyDataOptions): any {
   const {
+    encrypt,
     userKeychain,
     bitgoKeychain,
     backupKeychain,
@@ -109,7 +111,7 @@ function getKeyData(options: GetKeyDataOptions): any {
   // When using just 'generateWallet', we get back an unencrypted prv for the backup keychain
   // If the user passes in their passphrase, we can encrypt it
   if (backupKeychain.prv && passphrase) {
-    backupKeychain.encryptedPrv = this.bitgo.encrypt({
+    backupKeychain.encryptedPrv = encrypt({
       input: backupKeychain.prv,
       password: passphrase
     });
@@ -118,7 +120,7 @@ function getKeyData(options: GetKeyDataOptions): any {
   // If we have the passcode encryption code, create a box D with the encryptedWalletPasscode
   let encryptedWalletPasscode;
   if (passphrase && passcodeEncryptionCode) {
-    encryptedWalletPasscode = this.bitgo.encrypt({
+    encryptedWalletPasscode = encrypt({
       input: passphrase,
       password: passcodeEncryptionCode
     });
@@ -176,8 +178,8 @@ function getKeyData(options: GetKeyDataOptions): any {
     qrData.backup = {
       title: 'B: Backup Key',
       desc:
-        'This is the public key held at ' + backupKeyProviderName +
-        ', an ' + coinShortName + ' recovery service. If you lose\r\nyour key, ' + backupKeyProviderName +
+        `This is the public key held at ${backupKeyProviderName}` + 
+        `, an ${coinShortName} recovery service. If you lose\r\nyour key, ${backupKeyProviderName}` +
         ' will be able to sign transactions to recover funds.',
       data: backupKeychain.pub
     };
@@ -281,6 +283,7 @@ export function drawKeycard(options: DrawKeycardOptions): any {
   doc.text('Print this document, or keep it securely offline. See second page for FAQ.', left(75), y);
 
   const {
+    encrypt,
     passphrase,
     passcodeEncryptionCode,
     walletKeyID,
@@ -292,6 +295,7 @@ export function drawKeycard(options: DrawKeycardOptions): any {
 
   // Get the data for the first page (qr codes)
   const keyData = getKeyData({
+    encrypt,
     coinShortName,
     passphrase,
     passcodeEncryptionCode,
