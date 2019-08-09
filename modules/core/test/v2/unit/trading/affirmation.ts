@@ -31,7 +31,7 @@ describe('Affirmations', function() {
     const walletData = {
       id: '5cf940969449412d00f53b4c55fc2139',
       coin: 'tofc',
-      enterprise: enterprise,
+      enterprise: enterprise.id,
       keys: [
         'keyid'
       ]
@@ -71,10 +71,10 @@ describe('Affirmations', function() {
 
   it('should get a single affirmation', co(function *() {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/affirmations/8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9`)
+      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9`)
       .reply(200, fixtures.singleAffirmation);
 
-    affirmation = yield enterprise.affirmations().get({ id: '8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9' });
+    affirmation = yield tradingAccount.affirmations().get({ id: '8c25d5e9-ec3e-41d4-9c5e-b517f9e6c2a9' });
     should.exist(affirmation);
 
     scope.isDone().should.be.true();
@@ -82,9 +82,9 @@ describe('Affirmations', function() {
 
   it('should affirm an affirmation', co(function *() {
     const scope = nock(microservicesUri)
-      .post('/api/trade/v1/payload', fixtures.affirmAffirmationPayloadRequest)
+      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.affirmAffirmationPayloadRequest)
       .reply(200, fixtures.affirmAffirmationPayloadResponse)
-      .put(`/api/trade/v1/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.AFFIRMED)
+      .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.AFFIRMED)
       .reply(200, fixtures.updateAffirmation('affirmed'));
 
     const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
@@ -112,7 +112,7 @@ describe('Affirmations', function() {
 
   it('should reject an affirmation', co(function *() {
     const scope = nock(microservicesUri)
-      .put(`/api/trade/v1/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.REJECTED)
+      .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.REJECTED)
       .reply(200, fixtures.updateAffirmation('rejected'));
 
     yield affirmation.reject();
@@ -122,7 +122,7 @@ describe('Affirmations', function() {
 
   it('should cancel an affirmation', co(function *() {
     const scope = nock(microservicesUri)
-      .put(`/api/trade/v1/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.CANCELED)
+      .put(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/affirmations/${affirmation.id}`, (body) => body.status === AffirmationStatus.CANCELED)
       .reply(200, fixtures.updateAffirmation('canceled'));
 
     yield affirmation.cancel();

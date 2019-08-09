@@ -1648,7 +1648,7 @@ export class Wallet {
       throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
     }
 
-    return new TradingAccount(this, this.bitgo);
+    return new TradingAccount(this._wallet.enterprise, this, this.bitgo);
   }
 
   /**

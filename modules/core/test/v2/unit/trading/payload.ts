@@ -6,6 +6,7 @@ import { HDNode } from 'bitgo-utxo-lib';
 
 import fixtures from '../../fixtures/trading/payload';
 
+import { Enterprise } from '../../../../src/v2/enterprise';
 import { Wallet } from '../../../../src/v2/wallet';
 const TestV2BitGo = require('../../../lib/test_bitgo');
 const common = require('../../../../src/common');
@@ -14,6 +15,7 @@ describe('Trade Payloads', function() {
   const microservicesUri = 'https://bitgo-microservices.example';
   let bitgo;
   let basecoin;
+  let enterprise;
   let tradingAccount;
   let bgUrl;
 
@@ -23,9 +25,12 @@ describe('Trade Payloads', function() {
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
 
+    enterprise = new Enterprise(bitgo, basecoin, { id: '5cf940949449412d00f53b3d92dbcaa3', name: 'Test Enterprise' });
+
     const walletData = {
       id: 'walletId',
       coin: 'tofc',
+      enterprise: enterprise.id,
       keys: [
         'keyid'
       ]
@@ -41,14 +46,14 @@ describe('Trade Payloads', function() {
     const xpub = 'xpub661MyMwAqRbcEqZTDvvUYdwNKx8tdZPEbd8MDSBbNj8YZX4YPD5Wpv9Da2YzLC8ZNRhundXP7mVhhu9WdJChzZJFGLQD7tyY1KGfmjuBvcX';
 
     const platformScope = nock(bgUrl)
-    .get('/api/v2/ofc/key/keyid')
-    .reply(200, {
-      pub: xpub,
-      encryptedPrv: bitgo.encrypt({ input: xprv, password: TestV2BitGo.OFC_TEST_PASSWORD })
-    });
+      .get('/api/v2/ofc/key/keyid')
+      .reply(200, {
+        pub: xpub,
+        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestV2BitGo.OFC_TEST_PASSWORD })
+      });
 
     const msScope = nock(microservicesUri)
-      .post('/api/trade/v1/payload')
+      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`)
       .reply(200, fixtures.validPayload);
 
     const payload = yield tradingAccount.buildPayload({
@@ -97,7 +102,7 @@ describe('Trade Payloads', function() {
 
   it('should throw if the payload does not match the build parameters', co(function *() {
     const msScope = nock(microservicesUri)
-      .post('/api/trade/v1/payload')
+      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`)
       .reply(200, fixtures.invalidPayload);
 
     yield tradingAccount.buildPayload({

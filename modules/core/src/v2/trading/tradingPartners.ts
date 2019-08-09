@@ -1,30 +1,41 @@
 import * as Bluebird from 'bluebird';
 
+import { NodeCallback } from '../types';
 import { TradingAccount } from './tradingAccount';
 import { TradingPartner } from './tradingPartner';
 
 const co = Bluebird.coroutine;
 
-export class TradingPartners {
-  private bitgo: any;
+interface TradingPartnerReferralParameters {
+  institutionName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhoneNumber: string;
+  memo: string;
+}
 
+export class TradingPartners {
+  private bitgo;
+
+  private enterpriseId: string;
   private account: TradingAccount;
 
-  constructor(account: TradingAccount, bitgo: any) {
-    this.account = account;
+  constructor(bitgo, enterpriseId: string, account: TradingAccount) {
     this.bitgo = bitgo;
+    this.enterpriseId = enterpriseId;
+    this.account = account;
   }
 
   /**
    * List all trading partners of your trading account. Your trading partners are the accounts you are allowed to settle with.
    * @param callback
    */
-  list(callback?): Bluebird<TradingPartner[]> {
+  list(callback?: NodeCallback<TradingPartner[]>): Bluebird<TradingPartner[]> {
     return co(function *list() {
-      const url = this.bitgo.microservicesUrl(`/api/trade/v1/account/${this.account.id}/tradingPartners`);
+      const url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/tradingpartners`);
       const response = yield this.bitgo.get(url).result();
 
-      return response.tradingPartners.map(partner => new TradingPartner(partner, this.bitgo, this.account));
+      return response.tradingPartners.map(partner => new TradingPartner(partner, this.bitgo, this.enterpriseId, this.account));
     }).call(this).asCallback(callback);
   }
 
@@ -38,20 +49,12 @@ export class TradingPartners {
    * @param params.memo memo to send to the trading partner when sending the invite
    * @param callback
    */
-  refer(params: TradingPartnerReferralParameters, callback?): Bluebird<{}> {
+  refer(params: TradingPartnerReferralParameters, callback?: NodeCallback<{}>): Bluebird<{}> {
     return co(function *refer() {
-      const url = this.bitgo.microservicesUrl(`/api/trade/v1/account/${this.account.id}/tradingPartners/referrals`);
+      const url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/tradingpartners/referrals`);
       yield this.bitgo.post(url).send(params).result();
 
       return {}; // TODO: return result of referral
     }).call(this).asCallback(callback);
   }
-}
-
-interface TradingPartnerReferralParameters {
-  institutionName: string;
-  contactName: string;
-  contactEmail: string;
-  contactPhoneNumber: string;
-  memo: string;
 }

@@ -131,13 +131,13 @@ export class Enterprise {
    * Manage settlements for an enterprise
    */
   settlements(): Settlements {
-    return new Settlements(this.bitgo, this);
+    return new Settlements(this.bitgo, this.id);
   }
 
   /**
    * Manage affirmations for an enterprise
    */
   affirmations(): Affirmations {
-    return new Affirmations(this.bitgo, this);
+    return new Affirmations(this.bitgo, this.id);
   }
 }

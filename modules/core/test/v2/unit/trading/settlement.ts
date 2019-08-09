@@ -31,7 +31,7 @@ describe('Settlements', function() {
     const walletData = {
       id: '5cf940969449412d00f53b4c55fc2139',
       coin: 'tofc',
-      enterprise: enterprise,
+      enterprise: enterprise.id,
       keys: [
         'keyid'
       ]
@@ -65,10 +65,10 @@ describe('Settlements', function() {
 
   it('should get a single settlement', co(function *() {
     const scope = nock(microservicesUri)
-      .get(`/api/trade/v1/enterprise/${enterprise.id}/settlements/${fixtures.singleSettlementId}`)
+      .get(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements/${fixtures.singleSettlementId}`)
       .reply(200, fixtures.getSingleSettlement);
 
-    const settlement = yield enterprise.settlements().get({ id: fixtures.singleSettlementId });
+    const settlement = yield tradingAccount.settlements().get({ id: fixtures.singleSettlementId });
 
     should.exist(settlement);
     settlement.requesterAccountId.should.eql(tradingAccount.id);
@@ -85,9 +85,9 @@ describe('Settlements', function() {
 
   it('should create a new settlement', co(function *() {
     const msScope = nock(microservicesUri)
-      .post('/api/trade/v1/payload', fixtures.createSettlementPayloadRequest)
+      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/payload`, fixtures.createSettlementPayloadRequest)
       .reply(200, fixtures.createSettlementPayloadResponse)
-      .post('/api/trade/v1/settlement', fixtures.createSettlementRequest)
+      .post(`/api/trade/v1/enterprise/${enterprise.id}/account/${tradingAccount.id}/settlements`, fixtures.createSettlementRequest)
       .reply(200, fixtures.createSettlementResponse);
 
     const xprv = 'xprv9s21ZrQH143K2MUz7uPUBVzdmvJQE6fPEQCkR3mypPbZgijPqfmGH7pjijdjeJx3oCoxPWVbjC4VYHzgN6wqEfYnnbNjK7jm2CkrvWrvkbR';
@@ -107,7 +107,7 @@ describe('Settlements', function() {
 
     const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD });
 
-    const settlement = yield enterprise.settlements().create({
+    const settlement = yield tradingAccount.settlements().create({
       requesterAccountId: tradingAccount.id,
       payload: payload,
       signature: signature,
