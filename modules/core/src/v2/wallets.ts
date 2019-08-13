@@ -347,6 +347,7 @@ export class Wallets {
         bitgoKeychain,
       };
       walletParams = yield this.baseCoin.supplementGenerateWallet(walletParams, keychains);
+      this.bitgo._reqId = reqId;
       const newWallet = yield this.bitgo
         .post(this.baseCoin.url('/wallet'))
         .send(walletParams)

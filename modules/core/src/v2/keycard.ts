@@ -80,7 +80,7 @@ const generateQuestions = (coin: string) => {
 };
 
 interface GetKeyDataOptions {
-  encrypt: (params: {input: string, password: string}) => any,
+  encrypt: (params: {input: string, password: string}) => string,
   userKeychain: any;
   bitgoKeychain: any;
   backupKeychain: any;

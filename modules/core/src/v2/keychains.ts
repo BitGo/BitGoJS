@@ -232,6 +232,9 @@ export class Keychains {
       }
     }
 
+    if (params.reqId) {
+      this.bitgo._reqId = params.reqId;	
+    }
     return this.bitgo.post(this.baseCoin.url('/key'))
         .send({
           pub: params.pub,
