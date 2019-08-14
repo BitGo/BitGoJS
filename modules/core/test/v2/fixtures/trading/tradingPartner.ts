@@ -10,7 +10,7 @@ export default {
       status: 'accepted'
     }]
   },
-  balanceCheckTrue: {
+  balanceCheckTrueRequest: {
     amount: '24128',
     currency: 'ofctbtc'
   }

@@ -114,7 +114,6 @@ export default {
   },
   createSettlementPayloadRequest: {
     version: '1.1.1',
-    accountId: '5cf940969449412d00f53b4c55fc2139',
     currency: 'ofctusd',
     amount: '555',
     otherParties: [

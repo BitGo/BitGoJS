@@ -4,19 +4,36 @@
 import { BigNumber } from 'bignumber.js';
 import * as Bluebird from 'bluebird';
 
+import { NodeCallback } from '../types';
+import { Wallet } from '../wallet';
 import { Payload } from './payload';
 import { TradingPartners } from './tradingPartners';
+import { Affirmations } from './affirmations';
+import { Settlements } from './settlements';
 
 const co = Bluebird.coroutine;
 
 const TRADE_PAYLOAD_VERSION = '1.1.1';
 
+interface BuildPayloadParameters {
+  currency: string;
+  amount: string;
+  otherParties: { accountId: string; currency: string; amount: string }[];
+}
+
+interface SignPayloadParameters {
+  payload: Payload;
+  walletPassphrase: string;
+}
+
 export class TradingAccount {
-  private bitgo: any;
+  private bitgo;
+  private enterpriseId: string;
 
-  public wallet;
+  public wallet: Wallet;
 
-  constructor(wallet, bitgo) {
+  constructor(enterpriseId: string, wallet: Wallet, bitgo) {
+    this.enterpriseId = enterpriseId;
     this.wallet = wallet;
     this.bitgo = bitgo;
   }
@@ -32,15 +49,17 @@ export class TradingAccount {
    * @param params.currency the currency this account will be sending as part of the trade
    * @param params.amount the amount of currency (in base units, such as cents, satoshis, or wei)
    * @param params.otherParties array of counterparties and reciprocal funds authorized to receive funds as part of this trade
+   * @param callback
    * @returns unsigned trade payload for the given parameters. This object should be stringified with JSON.stringify() before being submitted
    */
-  buildPayload(params: BuildPayloadParameters, callback?): Bluebird<Payload> {
+  buildPayload(params: BuildPayloadParameters, callback?: NodeCallback<Payload>): Bluebird<Payload> {
     return co(function* buildTradePayload() {
-      const url = this.bitgo.microservicesUrl('/api/trade/v1/payload');
+      const url = this.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/payload`
+      );
 
       const body = {
         version: TRADE_PAYLOAD_VERSION,
-        accountId: this.id,
         currency: params.currency,
         amount: params.amount,
         otherParties: params.otherParties,
@@ -133,18 +152,15 @@ export class TradingAccount {
       .asCallback(callback);
   }
 
-  partners(): TradingPartners {
-    return new TradingPartners(this, this.bitgo);
+  affirmations(): Affirmations {
+    return new Affirmations(this.bitgo, this.enterpriseId, this);
   }
-}
 
-interface BuildPayloadParameters {
-  currency: string;
-  amount: string;
-  otherParties: { accountId: string; currency: string; amount: string }[];
-}
+  settlements(): Settlements {
+    return new Settlements(this.bitgo, this.enterpriseId, this);
+  }
 
-interface SignPayloadParameters {
-  payload: Payload;
-  walletPassphrase: string;
+  partners(): TradingPartners {
+    return new TradingPartners(this.bitgo, this.enterpriseId, this);
+  }
 }
