@@ -26,6 +26,20 @@ interface SignPayloadParameters {
   walletPassphrase: string;
 }
 
+interface SettlementFees {
+  feeRate: string;
+  feeAmount: string;
+  feeCurrency: string;
+}
+
+interface CalculateSettlementFeesParams {
+  counterpartyAccountId: string;
+  sendCurrency: string;
+  sendAmount: string;
+  receiveCurrency: string;
+  receiveAmount: string;
+}
+
 export class TradingAccount {
   private bitgo;
   private enterpriseId: string;
@@ -130,6 +144,32 @@ export class TradingAccount {
       payloadObj.otherParties.length === params.otherParties.length &&
       partiesMatch
     );
+  }
+
+  /**
+   * Calculates the necessary fees to complete a settlement between two parties, based on the amounts and currencies of the settlement.
+   * @param params
+   * @param params.counterpartyAccountId Account ID of the counterparty of the settlement
+   * @param params.sendCurrency Currency to be sent as part of the settlement
+   * @param params.sendAmount Amount of currency (in base units such as cents, satoshis, or wei) to be sent
+   * @param params.receiveCurrency Currency to be received as part of the settlement
+   * @param params.receiveAmount Amount of currency (in base units such as cents, satoshis, or wei) to be received
+   * @param callback
+   * @returns Fee rate, currency, and total amount of the described settlement
+   */
+  calculateSettlementFees(
+    params: CalculateSettlementFeesParams,
+    callback?: NodeCallback<SettlementFees>
+  ): Bluebird<SettlementFees> {
+    const url = this.bitgo.microservicesUrl(
+      `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/calculatefees`
+    );
+
+    return this.bitgo
+      .post(url)
+      .send(params)
+      .result()
+      .asCallback(callback);
   }
 
   /**
