@@ -156,7 +156,7 @@ export function ofcerc20(
   features: CoinFeature[] = OfcCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
-  network: OfcNetwork = Networks.test.ofc,
+  network: OfcNetwork = Networks.main.ofc,
   isToken: boolean = true,
   addressCoin: string = 'eth',
 ) {
