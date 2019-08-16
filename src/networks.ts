@@ -20,9 +20,13 @@ export interface UtxoNetwork extends BaseNetwork {
   pubKeyHash: number;
   scriptHash: number;
   wif: number;
+  explorerUrl?: string;
 }
 
-export interface AccountNetwork extends BaseNetwork {}
+export interface AccountNetwork extends BaseNetwork {
+  explorerUrl?: string;
+}
+
 export interface OfcNetwork extends BaseNetwork {}
 
 abstract class Mainnet extends BaseNetwork {
@@ -243,17 +247,17 @@ export const Networks = {
     algorand: Object.freeze(new Algorand()),
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
-    bitcoinSV: Object.freeze(new BitcoinSV()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
+    bitcoinSV: Object.freeze(new BitcoinSV()),
     dash: Object.freeze(new Dash()),
-    litecoin: Object.freeze(new Litecoin()),
-    ethereum: Object.freeze(new Ethereum()),
     eos: Object.freeze(new Eos()),
-    xrp: Object.freeze(new Xrp()),
-    stellar: Object.freeze(new Stellar()),
-    zCash: Object.freeze(new ZCash()),
+    ethereum: Object.freeze(new Ethereum()),
+    litecoin: Object.freeze(new Litecoin()),
     ofc: Object.freeze(new Ofc()),
+    stellar: Object.freeze(new Stellar()),
     susd: Object.freeze(new SUSD()),
+    xrp: Object.freeze(new Xrp()),
+    zCash: Object.freeze(new ZCash()),
   },
   test: {
     algorand: Object.freeze(new AlgorandTestnet()),
@@ -261,13 +265,13 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
     dash: Object.freeze(new DashTestnet()),
-    litecoin: Object.freeze(new LitecoinTestnet()),
-    kovan: Object.freeze(new Kovan()),
     eos: Object.freeze(new EosTestnet()),
-    xrp: Object.freeze(new XrpTestnet()),
-    stellar: Object.freeze(new StellarTestnet()),
-    zCash: Object.freeze(new ZCashTestnet()),
+    kovan: Object.freeze(new Kovan()),
+    litecoin: Object.freeze(new LitecoinTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
+    stellar: Object.freeze(new StellarTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
+    xrp: Object.freeze(new XrpTestnet()),
+    zCash: Object.freeze(new ZCashTestnet()),
   },
 };
