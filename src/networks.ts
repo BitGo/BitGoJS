@@ -8,6 +8,7 @@ export const enum NetworkType {
 export abstract class BaseNetwork {
   public abstract readonly type: NetworkType;
   public abstract readonly family: CoinFamily;
+  public abstract readonly explorerUrl: string | undefined;
 }
 
 export interface UtxoNetwork extends BaseNetwork {
@@ -20,12 +21,9 @@ export interface UtxoNetwork extends BaseNetwork {
   pubKeyHash: number;
   scriptHash: number;
   wif: number;
-  explorerUrl?: string;
 }
 
-export interface AccountNetwork extends BaseNetwork {
-  explorerUrl?: string;
-}
+export interface AccountNetwork extends BaseNetwork {}
 
 export interface OfcNetwork extends BaseNetwork {}
 
@@ -193,10 +191,12 @@ class LitecoinTestnet extends BitcoinLikeTestnet {
 
 class Ofc extends Mainnet implements OfcNetwork {
   family = CoinFamily.OFC;
+  explorerUrl = undefined;
 }
 
 class OfcTestnet extends Testnet implements OfcNetwork {
   family = CoinFamily.OFC;
+  explorerUrl = undefined;
 }
 
 class Stellar extends Mainnet implements AccountNetwork {
@@ -210,10 +210,12 @@ class StellarTestnet extends Testnet implements AccountNetwork {
 }
 class SUSD extends Mainnet implements AccountNetwork {
   family = CoinFamily.SUSD;
+  explorerUrl = undefined;
 }
 
 class SUSDTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.SUSD;
+  explorerUrl = undefined;
 }
 
 class Xrp extends Mainnet implements AccountNetwork {
