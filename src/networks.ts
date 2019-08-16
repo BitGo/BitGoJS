@@ -8,6 +8,7 @@ export const enum NetworkType {
 export abstract class BaseNetwork {
   public abstract readonly type: NetworkType;
   public abstract readonly family: CoinFamily;
+  public abstract readonly explorerUrl: string | undefined;
 }
 
 export interface UtxoNetwork extends BaseNetwork {
@@ -23,6 +24,7 @@ export interface UtxoNetwork extends BaseNetwork {
 }
 
 export interface AccountNetwork extends BaseNetwork {}
+
 export interface OfcNetwork extends BaseNetwork {}
 
 abstract class Mainnet extends BaseNetwork {
@@ -71,38 +73,45 @@ abstract class BitcoinLikeTestnet extends Testnet implements UtxoNetwork {
   type = NetworkType.TESTNET;
 }
 
-class Ethereum extends Mainnet implements AccountNetwork {
-  family = CoinFamily.ETH;
+class Algorand extends Mainnet implements AccountNetwork {
+  family = CoinFamily.ALGO;
+  explorerUrl = 'https://algoexplorer.io/tx/';
 }
 
-class Kovan extends Testnet implements AccountNetwork {
-  family = CoinFamily.ETH;
+class AlgorandTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.ALGO;
+  explorerUrl = 'https://testnet.algoexplorer.io/tx/';
 }
-
 class Bitcoin extends BitcoinLikeMainnet {
   family = CoinFamily.BTC;
+  explorerUrl = 'https://smartbit.com.au/tx/';
   bech32 = 'bc';
 }
 
 class BitcoinTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.BTC;
+  explorerUrl = 'https://testnet.smartbit.com.au/tx/';
   bech32 = 'tb';
 }
 
 class BitcoinCash extends BitcoinLikeMainnet {
   family = CoinFamily.BCH;
+  explorerUrl = 'http://blockdozer.com/tx/';
 }
 
 class BitcoinCashTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.BCH;
+  explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
 
 class BitcoinSV extends BitcoinLikeMainnet {
   family = CoinFamily.BSV;
+  explorerUrl = 'https://blockchair.com/bitcoin-sv/transaction/';
 }
 
 class BitcoinSVTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.BSV;
+  explorerUrl = 'https://testnet.bitcoincloud.net/tx/';
 }
 
 class BitcoinGold extends BitcoinLikeMainnet {
@@ -111,6 +120,7 @@ class BitcoinGold extends BitcoinLikeMainnet {
   pubKeyHash = 0x26;
   scriptHash = 0x17;
   family = CoinFamily.BTG;
+  explorerUrl = 'https://btgexplorer.com/tx/';
 }
 
 class Dash extends BitcoinLikeMainnet {
@@ -119,6 +129,7 @@ class Dash extends BitcoinLikeMainnet {
   scriptHash = 0x10;
   wif = 0xcc;
   family = CoinFamily.DASH;
+  explorerUrl = 'https://insight.dashevo.org/insight/tx/';
 }
 
 class DashTestnet extends BitcoinLikeTestnet {
@@ -131,6 +142,27 @@ class DashTestnet extends BitcoinLikeTestnet {
   scriptHash = 0x13;
   wif = 0xef;
   family = CoinFamily.DASH;
+  explorerUrl = 'https://tbch.blockdozer.com/tx/';
+}
+
+class Ethereum extends Mainnet implements AccountNetwork {
+  family = CoinFamily.ETH;
+  explorerUrl = 'https://etherscan.io/tx/';
+}
+
+class Kovan extends Testnet implements AccountNetwork {
+  family = CoinFamily.ETH;
+  explorerUrl = 'https://kovan.etherscan.io/tx/';
+}
+
+class Eos extends Mainnet implements AccountNetwork {
+  family = CoinFamily.EOS;
+  explorerUrl = 'https://bloks.io/transaction/';
+}
+
+class EosTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.EOS;
+  explorerUrl = 'https://jungle.bloks.io/transaction/';
 }
 
 class Litecoin extends BitcoinLikeMainnet {
@@ -140,6 +172,7 @@ class Litecoin extends BitcoinLikeMainnet {
   scriptHash = 0x32;
   wif = 0xb0;
   family = CoinFamily.LTC;
+  explorerUrl = 'https://live.blockcypher.com/ltc/tx/';
 }
 
 class LitecoinTestnet extends BitcoinLikeTestnet {
@@ -153,6 +186,46 @@ class LitecoinTestnet extends BitcoinLikeTestnet {
   scriptHash = 0x3a;
   wif = 0xb0;
   family = CoinFamily.LTC;
+  explorerUrl = 'http://explorer.litecointools.com/tx/';
+}
+
+class Ofc extends Mainnet implements OfcNetwork {
+  family = CoinFamily.OFC;
+  explorerUrl = undefined;
+}
+
+class OfcTestnet extends Testnet implements OfcNetwork {
+  family = CoinFamily.OFC;
+  explorerUrl = undefined;
+}
+
+class Stellar extends Mainnet implements AccountNetwork {
+  family = CoinFamily.XLM;
+  explorerUrl = 'https://stellar.expert/explorer/public/tx/';
+}
+
+class StellarTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.XLM;
+  explorerUrl = 'https://stellar.expert/explorer/testnet/tx/';
+}
+class SUSD extends Mainnet implements AccountNetwork {
+  family = CoinFamily.SUSD;
+  explorerUrl = undefined;
+}
+
+class SUSDTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.SUSD;
+  explorerUrl = undefined;
+}
+
+class Xrp extends Mainnet implements AccountNetwork {
+  family = CoinFamily.XRP;
+  explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
+}
+
+class XrpTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.XRP;
+  explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
 }
 
 class ZCash extends BitcoinLikeMainnet {
@@ -160,6 +233,7 @@ class ZCash extends BitcoinLikeMainnet {
   pubKeyHash = 0x1cb8;
   scriptHash = 0x1cbd;
   family = CoinFamily.ZEC;
+  explorerUrl = 'https://zcash.blockexplorer.com/tx/';
 }
 
 class ZCashTestnet extends BitcoinLikeTestnet {
@@ -167,54 +241,7 @@ class ZCashTestnet extends BitcoinLikeTestnet {
   pubKeyHash = 0x1d25;
   scriptHash = 0x1cba;
   family = CoinFamily.ZEC;
-}
-
-class Algorand extends Mainnet implements AccountNetwork {
-    family = CoinFamily.ALGO;
-}
-
-class AlgorandTestnet extends Testnet implements AccountNetwork {
-    family = CoinFamily.ALGO;
-}
-
-class Eos extends Mainnet implements AccountNetwork {
-  family = CoinFamily.EOS;
-}
-
-class EosTestnet extends Testnet implements AccountNetwork {
-  family = CoinFamily.EOS;
-}
-
-class Xrp extends Mainnet implements AccountNetwork {
-  family = CoinFamily.XRP;
-}
-
-class XrpTestnet extends Testnet implements AccountNetwork {
-  family = CoinFamily.XRP;
-}
-
-class Stellar extends Mainnet implements AccountNetwork {
-  family = CoinFamily.XLM;
-}
-
-class StellarTestnet extends Testnet implements AccountNetwork {
-  family = CoinFamily.XLM;
-}
-
-class Ofc extends Mainnet implements OfcNetwork {
-  family = CoinFamily.OFC;
-}
-
-class OfcTestnet extends Testnet implements OfcNetwork {
-  family = CoinFamily.OFC;
-}
-
-class SUSD extends Mainnet implements AccountNetwork {
-  family = CoinFamily.SUSD;
-}
-
-class SUSDTestnet extends Testnet implements AccountNetwork {
-  family = CoinFamily.SUSD;
+  explorerUrl = 'https://explorer.testnet.z.cash/tx/';
 }
 
 export const Networks = {
@@ -222,17 +249,17 @@ export const Networks = {
     algorand: Object.freeze(new Algorand()),
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
-    bitcoinSV: Object.freeze(new BitcoinSV()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
+    bitcoinSV: Object.freeze(new BitcoinSV()),
     dash: Object.freeze(new Dash()),
-    litecoin: Object.freeze(new Litecoin()),
-    ethereum: Object.freeze(new Ethereum()),
     eos: Object.freeze(new Eos()),
-    xrp: Object.freeze(new Xrp()),
-    stellar: Object.freeze(new Stellar()),
-    zCash: Object.freeze(new ZCash()),
+    ethereum: Object.freeze(new Ethereum()),
+    litecoin: Object.freeze(new Litecoin()),
     ofc: Object.freeze(new Ofc()),
+    stellar: Object.freeze(new Stellar()),
     susd: Object.freeze(new SUSD()),
+    xrp: Object.freeze(new Xrp()),
+    zCash: Object.freeze(new ZCash()),
   },
   test: {
     algorand: Object.freeze(new AlgorandTestnet()),
@@ -240,13 +267,13 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
     dash: Object.freeze(new DashTestnet()),
-    litecoin: Object.freeze(new LitecoinTestnet()),
-    kovan: Object.freeze(new Kovan()),
     eos: Object.freeze(new EosTestnet()),
-    xrp: Object.freeze(new XrpTestnet()),
-    stellar: Object.freeze(new StellarTestnet()),
-    zCash: Object.freeze(new ZCashTestnet()),
+    kovan: Object.freeze(new Kovan()),
+    litecoin: Object.freeze(new LitecoinTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
+    stellar: Object.freeze(new StellarTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
+    xrp: Object.freeze(new XrpTestnet()),
+    zCash: Object.freeze(new ZCashTestnet()),
   },
 };
