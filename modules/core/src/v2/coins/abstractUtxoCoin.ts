@@ -177,7 +177,7 @@ export interface OfflineVaultTxInfo {
 export interface RecoverFromWrongChainOptions {
   txid: string;
   recoveryAddress: string;
-  wallet: Wallet;
+  wallet: string;
   walletPassphrase: string;
   xprv: string;
   coin?: AbstractUtxoCoin;

@@ -1,5 +1,9 @@
+/**
+ * @prettier
+ */
 import { VirtualSizes } from '@bitgo/unspents';
 import * as request from 'superagent';
+import { NodeCallback } from './types';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
@@ -15,6 +19,34 @@ interface CrossChainRecoveryToolOptions {
   logging: boolean;
 }
 
+export interface SignRecoveryTransactionOptions {
+  prv?: string;
+  passphrase: string;
+}
+
+export interface BuildRecoveryTransactionOptions {
+  wallet: string;
+  faultyTxId: string;
+  recoveryAddress: string;
+}
+
+export interface RecoveryTxInfo {
+  inputAmount: number;
+  outputAmount: number;
+  spendAmount: number;
+  inputs: any[];
+  outputs: any[];
+  externalOutputs: any[];
+  changeOutputs: any[];
+  minerFee: number;
+  payGoFee: number;
+  unspents: any[];
+}
+
+export interface HalfSignedRecoveryTx {
+  txHex: string;
+  tx?: string;
+}
 /**
  * An instance of the recovery tool, which encapsulates the recovery functions
  * Instantiated with parameters:
@@ -28,15 +60,15 @@ export class CrossChainRecoveryTool {
   recoveryCoin: AbstractUtxoCoin;
   logging: boolean;
   supportedCoins: string[];
-  wallet: any;
-  feeRates: {[key: string]: number};
+  wallet: any; // This can be either a v1 or v2 wallet
+  feeRates: { [key: string]: number };
   recoveryTx: any;
   logger: any;
-  txInfo: any;
-  recoveryAddress: any;
-  recoveryAmount: any;
-  halfSignedRecoveryTx: any;
   private unspents?: any;
+  txInfo: RecoveryTxInfo;
+  recoveryAddress: string;
+  recoveryAmount: number;
+  halfSignedRecoveryTx: HalfSignedRecoveryTx;
 
   constructor(opts: CrossChainRecoveryToolOptions) {
     this.bitgo = opts.bitgo;
@@ -69,7 +101,7 @@ export class CrossChainRecoveryTool {
       btc: 80,
       tbtc: 80,
       ltc: 100,
-      tltc: 100
+      tltc: 100,
     };
 
     this.recoveryTx = new bitcoin.TransactionBuilder(this.sourceCoin.network);
@@ -93,11 +125,10 @@ export class CrossChainRecoveryTool {
    * @param walletId {String} wallet ID
    * @param callback
    */
-  setWallet(walletId, callback?) {
+  protected setWallet(walletId: string, callback?: NodeCallback<any>): Bluebird<void> {
     const self = this;
-    return co(function *setWallet() {
-      const coinType = self.recoveryCoin.getChain();
-
+    return co(function* setWallet() {
+      const coinType = this.recoveryCoin.getChain();
       if (!coinType) {
         throw new Error('Please provide coin type');
       }
@@ -114,7 +145,10 @@ export class CrossChainRecoveryTool {
 
       let wallet;
       try {
-        wallet = yield self.bitgo.coin(coinType).wallets().get({ id: walletId });
+        wallet = yield this.bitgo
+          .coin(coinType)
+          .wallets()
+          .get({ id: walletId });
       } catch (e) {
         if (e.status !== 404 && e.status !== 400) {
           throw e;
@@ -140,7 +174,9 @@ export class CrossChainRecoveryTool {
       }
 
       self.wallet = wallet;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -148,9 +184,9 @@ export class CrossChainRecoveryTool {
    * @param faultyTxId {String} the txid of the faulty transaction
    * @param callback
    */
-  findUnspents(faultyTxId, callback?) {
+  protected findUnspents(faultyTxId: string, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function *findUnspents() {
+    return co(function* findUnspents() {
       if (!faultyTxId) {
         throw new Error('Please provide a faultyTxId');
       }
@@ -165,7 +201,7 @@ export class CrossChainRecoveryTool {
 
       // Get output addresses that do not belong to wallet
       // These are where the 'lost coins' live
-      const txOutputAddresses = faultyTxInfo.outputs.map((input) => input.address);
+      const txOutputAddresses = faultyTxInfo.outputs.map(input => input.address);
 
       let outputAddresses = [];
       for (let address of txOutputAddresses) {
@@ -195,15 +231,17 @@ export class CrossChainRecoveryTool {
       }
 
       if (outputAddresses.length === 0) {
-        throw new Error('Could not find tx outputs belonging to the specified wallet. Please check the given parameters.');
+        throw new Error(
+          'Could not find tx outputs belonging to the specified wallet. Please check the given parameters.'
+        );
       }
 
       if (self.recoveryCoin.getFamily() === 'ltc') {
-        outputAddresses = outputAddresses.map((address) => (self.recoveryCoin as Ltc).canonicalAddress(address, 1));
+        outputAddresses = outputAddresses.map(address => (self.recoveryCoin as Ltc).canonicalAddress(address, 1));
       }
 
       if (self.sourceCoin.getFamily() === 'ltc') {
-        outputAddresses = outputAddresses.map((address) => (self.sourceCoin as Ltc).canonicalAddress(address, 2));
+        outputAddresses = outputAddresses.map(address => (self.sourceCoin as Ltc).canonicalAddress(address, 2));
       }
 
       self._log(`Finding unspents for these output addresses: ${outputAddresses.join(', ')}`);
@@ -215,7 +253,9 @@ export class CrossChainRecoveryTool {
 
       self.unspents = unspents;
       return unspents;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -224,9 +264,9 @@ export class CrossChainRecoveryTool {
    * @param callback
    * @returns {Object} partial txInfo object with transaction inputs
    */
-  buildInputs(unspents?, callback?) {
+  protected buildInputs(unspents?: any, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function *buildInputs() {
+    return co(function* buildInputs() {
       self._log('Building inputs for recovery transaction...');
 
       unspents = unspents || self.unspents;
@@ -241,17 +281,20 @@ export class CrossChainRecoveryTool {
         spendAmount: 0,
         inputs: [],
         outputs: [],
+        unspents: [],
         externalOutputs: [],
         changeOutputs: [],
         minerFee: 0,
-        payGoFee: 0
+        payGoFee: 0,
       };
 
       let totalFound = 0;
       const noSegwit = self.recoveryCoin.getFamily() === 'btc' && self.sourceCoin.getFamily() === 'bch';
       for (const unspent of unspents) {
         if (unspent.witnessScript && noSegwit) {
-          throw new Error('Warning! It appears one of the unspents is on a Segwit address. The tool only recovers BCH from non-Segwit BTC addresses. Aborting.');
+          throw new Error(
+            'Warning! It appears one of the unspents is on a Segwit address. The tool only recovers BCH from non-Segwit BTC addresses. Aborting.'
+          );
         }
 
         let searchAddress = unspent.address;
@@ -305,7 +348,7 @@ export class CrossChainRecoveryTool {
             txHash: txid,
             txOutputN: parseInt(nOut, 10),
             txValue: unspent.value,
-            value: parseInt(unspent.value, 10)
+            value: parseInt(unspent.value, 10),
           };
         } else {
           inputData = {
@@ -314,7 +357,7 @@ export class CrossChainRecoveryTool {
             index: unspentAddress.index,
             chain: unspentAddress.chain,
             wallet: self.wallet.id(),
-            fromWallet: self.wallet.id()
+            fromWallet: self.wallet.id(),
           };
         }
 
@@ -331,7 +374,9 @@ export class CrossChainRecoveryTool {
 
       self.txInfo = txInfo;
       return txInfo;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -340,15 +385,17 @@ export class CrossChainRecoveryTool {
    * @param recoveryTx {Object} recovery transaction containing inputs
    * @returns {Number} recovery fee for the transaction
    */
-  setFees(recoveryTx?) {
+  protected setFees(recoveryTx?: any): number {
     recoveryTx = recoveryTx || this.recoveryTx;
 
     // Determine fee with default fee rate
     const feeRate = this.feeRates[this.sourceCoin.type];
 
     // Note that we assume one output here (all funds should be recovered to a single address)
-    const txSize = VirtualSizes.txP2shInputSize * recoveryTx.tx.ins.length + VirtualSizes.txP2pkhOutputSize +
-        VirtualSizes.txOverheadSize;
+    const txSize =
+      VirtualSizes.txP2shInputSize * recoveryTx.tx.ins.length +
+      VirtualSizes.txP2pkhOutputSize +
+      VirtualSizes.txOverheadSize;
     const recoveryFee = feeRate * txSize;
     this.txInfo.minerFee = recoveryFee;
 
@@ -361,7 +408,7 @@ export class CrossChainRecoveryTool {
    * @param outputAmount {Number} amount to send to the recovery address
    * @param recoveryFee {Number} miner fee for the transaction
    */
-  buildOutputs(recoveryAddress, outputAmount?, recoveryFee?) {
+  protected buildOutputs(recoveryAddress: string, outputAmount?: number, recoveryFee?: number): void {
     if (!outputAmount && !this.txInfo) {
       throw new Error('Could not find transaction info. Please provide an output amount, or call buildInputs.');
     }
@@ -386,7 +433,7 @@ export class CrossChainRecoveryTool {
       value: outputAmount,
       valueString: outputAmount.toString(),
       wallet: this.wallet.id(),
-      change: false
+      change: false,
     };
 
     this.txInfo.outputs.push(outputData);
@@ -400,9 +447,9 @@ export class CrossChainRecoveryTool {
    * @param callback
    * @returns {Object} half-signed transaction
    */
-  signTransaction({ prv, passphrase }, callback?) {
+  signTransaction(params: SignRecoveryTransactionOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function *signTransaction() {
+    return co(function* signTransaction() {
       if (!self.txInfo) {
         throw new Error('Could not find txInfo. Please build a transaction');
       }
@@ -411,15 +458,17 @@ export class CrossChainRecoveryTool {
 
       const transactionHex = self.recoveryTx.buildIncomplete().toHex();
 
-      if (!prv) {
-        prv = yield self.getKeys(passphrase);
+      if (!params.prv) {
+        params.prv = yield self.getKeys(params.passphrase);
       }
 
       const txPrebuild = { txHex: transactionHex, txInfo: self.txInfo };
-      self.halfSignedRecoveryTx = self.sourceCoin.signTransaction({ txPrebuild, prv });
+      self.halfSignedRecoveryTx = self.sourceCoin.signTransaction({ txPrebuild, prv: params.prv });
 
       return self.halfSignedRecoveryTx;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -428,9 +477,9 @@ export class CrossChainRecoveryTool {
    * @param callback
    * @returns {String} decrypted wallet private key
    */
-  getKeys(passphrase, callback?) {
+  getKeys(passphrase: string, callback?: NodeCallback<string>): Bluebird<string> {
     const self = this;
-    return co(function *getKeys() {
+    return co(function* getKeys() {
       let prv;
 
       let keychain;
@@ -445,7 +494,6 @@ export class CrossChainRecoveryTool {
       if (!passphrase) {
         throw new Error('You have an encrypted user keychain - please provide the passphrase to decrypt it');
       }
-
 
       if (self.wallet.isV1) {
         if (!keychain) {
@@ -463,26 +511,30 @@ export class CrossChainRecoveryTool {
       }
 
       return prv;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
-  buildTransaction({ wallet, faultyTxId, recoveryAddress }, callback?) {
+  buildTransaction(params: BuildRecoveryTransactionOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function *buildTransaction() {
-      yield self.setWallet(wallet);
+    return co(function* buildTransaction() {
+      yield self.setWallet(params.wallet);
 
-      yield self.findUnspents(faultyTxId);
+      yield self.findUnspents(params.faultyTxId);
       yield self.buildInputs();
       self.setFees();
-      self.buildOutputs(recoveryAddress);
+      self.buildOutputs(params.recoveryAddress);
 
       return self.recoveryTx;
-    }).call(self).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
-  buildUnsigned(callback?) {
+  buildUnsigned(callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function *() {
+    return co(function*() {
       if (!self.txInfo) {
         throw new Error('Could not find txInfo. Please build a transaction');
       }
@@ -490,7 +542,7 @@ export class CrossChainRecoveryTool {
 
       const txInfo: any = {
         nP2SHInputs: 0,
-        nSegwitInputs: 0
+        nSegwitInputs: 0,
       };
 
       for (const input of self.txInfo.inputs) {
@@ -502,17 +554,22 @@ export class CrossChainRecoveryTool {
       }
 
       txInfo.nOutputs = 1;
-      txInfo.unspents = _.map(self.txInfo.inputs, _.partialRight(_.pick, ['chain', 'index', 'redeemScript', 'id', 'address', 'value']));
+      txInfo.unspents = _.map(
+        self.txInfo.inputs,
+        _.partialRight(_.pick, ['chain', 'index', 'redeemScript', 'id', 'address', 'value'])
+      );
       txInfo.changeAddresses = [];
       txInfo.walletAddressDetails = {};
 
       const feeInfo: any = {};
 
-      feeInfo.size = VirtualSizes.txOverheadSize + (VirtualSizes.txP2shInputSize * self.txInfo.inputs.length) +
-          VirtualSizes.txP2pkhOutputSize;
+      feeInfo.size =
+        VirtualSizes.txOverheadSize +
+        VirtualSizes.txP2shInputSize * self.txInfo.inputs.length +
+        VirtualSizes.txP2pkhOutputSize;
 
       feeInfo.feeRate = self.feeRates[self.sourceCoin.type];
-      feeInfo.fee = Math.round(feeInfo.size / 1000 * feeInfo.feeRate);
+      feeInfo.fee = Math.round((feeInfo.size / 1000) * feeInfo.feeRate);
       feeInfo.payGoFee = 0;
       feeInfo.payGoFeeString = '0';
 
@@ -523,9 +580,11 @@ export class CrossChainRecoveryTool {
         walletId: self.wallet.id(),
         amount: self.recoveryAmount,
         address: self.recoveryAddress,
-        coin: self.sourceCoin.type
+        coin: self.sourceCoin.type,
       };
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   export() {
@@ -537,7 +596,7 @@ export class CrossChainRecoveryTool {
       recoveryAddress: this.recoveryAddress,
       recoveryAmount: this.recoveryAmount,
       txHex: this.halfSignedRecoveryTx.txHex || this.halfSignedRecoveryTx.tx,
-      txInfo: this.txInfo
+      txInfo: this.txInfo,
     };
   }
 }
