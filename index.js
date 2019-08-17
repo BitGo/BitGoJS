@@ -211,7 +211,7 @@ function Blake2b (outlen, key, salt, personal) {
 }
 
 Blake2b.prototype.update = function (input) {
-  assert(input instanceof Uint8Array, 'input must be TypedArray or Buffer')
+  assert(input instanceof Uint8Array, 'input must be Uint8Array or Buffer')
   blake2bUpdate(this, input)
   return this
 }
@@ -221,6 +221,7 @@ Blake2b.prototype.digest = function (out) {
   assert(buf.length >= this.outlen, 'out must have at least outlen bytes of space')
   blake2bFinal(this, buf)
   if (out === 'hex') return hexSlice(buf)
+  assert(buf instanceof Uint8Array, 'input must be Uint8Array or Buffer')
   return buf
 }
 
@@ -278,10 +279,19 @@ module.exports = function createHash (outlen, key, salt, personal, noAssert) {
   if (noAssert !== true) {
     assert(outlen >= BYTES_MIN, 'outlen must be at least ' + BYTES_MIN + ', was given ' + outlen)
     assert(outlen <= BYTES_MAX, 'outlen must be at most ' + BYTES_MAX + ', was given ' + outlen)
-    if (key != null) assert(key.length >= KEYBYTES_MIN, 'key must be at least ' + KEYBYTES_MIN + ', was given ' + key.length)
-    if (key != null) assert(key.length <= KEYBYTES_MAX, 'key must be at most ' + KEYBYTES_MAX + ', was given ' + key.length)
-    if (salt != null) assert(salt.length === SALTBYTES, 'salt must be exactly ' + SALTBYTES + ', was given ' + salt.length)
-    if (personal != null) assert(personal.length === PERSONALBYTES, 'personal must be exactly ' + PERSONALBYTES + ', was given ' + personal.length)
+    if (key != null) {
+      assert(key instanceof Uint8Array, 'key must be Uint8Array or Buffer')
+      assert(key.length >= KEYBYTES_MIN, 'key must be at least ' + KEYBYTES_MIN + ', was given ' + key.length)
+      assert(key.length <= KEYBYTES_MAX, 'key must be at most ' + KEYBYTES_MAX + ', was given ' + key.length)
+    }
+    if (salt != null) {
+      assert(salt instanceof Uint8Array, 'salt must be Uint8Array or Buffer')
+      assert(salt.length === SALTBYTES, 'salt must be exactly ' + SALTBYTES + ', was given ' + salt.length)
+    }
+    if (personal != null) {
+      assert(personal instanceof Uint8Array, 'personal must be Uint8Array or Buffer')
+      assert(personal.length === PERSONALBYTES, 'personal must be exactly ' + PERSONALBYTES + ', was given ' + personal.length)
+    }
   }
 
   return new Proto(outlen, key, salt, personal)
