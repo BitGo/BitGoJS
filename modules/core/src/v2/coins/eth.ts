@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import { BigNumber } from 'bignumber.js';
 import * as utxoLib from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
@@ -21,9 +24,9 @@ const debug = debugLib('bitgo:v2:eth');
 
 // The following dependencies are optional. If they are missing we still want to be
 // able to require `eth.js` without error.
-let ethAbi: typeof import('ethereumjs-abi') = null;
-let ethUtil: import('ethereumjs-util') = null;
-let ethTx: typeof import('ethereumjs-tx') = null;
+let ethAbi: any = null;
+let ethUtil: any = null;
+let ethTx: any = null;
 
 import('ethereumjs-util')
   .then(eth => {
@@ -342,7 +345,7 @@ export class Eth extends BaseCoin {
    * @returns {number} Time in seconds
    */
   getDefaultExpireTime(): number {
-    return Math.floor((new Date().getTime()) / 1000) + (60 * 60 * 24 * 7);
+    return Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 7;
   }
 
   /**
@@ -352,14 +355,16 @@ export class Eth extends BaseCoin {
    * @returns {BigNumber} address balance
    */
   queryAddressBalance(address: string, callback?: NodeCallback<any>): Bluebird<any> {
-    return co(function *() {
+    return co(function*() {
       const result = yield this.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'balance',
-        address: address
+        address: address,
       });
       return new optionalDeps.ethUtil.BN(result.result, 10);
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -369,8 +374,12 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns {BigNumber} token balaance in base units
    */
-  queryAddressTokenBalance(tokenContractAddress: string, walletContractAddress: string, callback?: NodeCallback<any>): Bluebird<any> {
-    return co(function *() {
+  queryAddressTokenBalance(
+    tokenContractAddress: string,
+    walletContractAddress: string,
+    callback?: NodeCallback<any>
+  ): Bluebird<any> {
+    return co(function*() {
       if (!optionalDeps.ethUtil.isValidAddress(tokenContractAddress)) {
         throw new Error('cannot get balance for invalid token address');
       }
@@ -387,7 +396,9 @@ export class Eth extends BaseCoin {
       });
 
       return new optionalDeps.ethUtil.BN(result.result, 10);
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -411,7 +422,11 @@ export class Eth extends BaseCoin {
     ];
   }
 
-  getOperationSha3ForExecuteAndConfirm(recipients: Recipient[], expireTime: number, contractSequenceId: number): string {
+  getOperationSha3ForExecuteAndConfirm(
+    recipients: Recipient[],
+    expireTime: number,
+    contractSequenceId: number
+  ): string {
     if (!recipients || !Array.isArray(recipients)) {
       throw new Error('expecting array of recipients');
     }
@@ -431,7 +446,10 @@ export class Eth extends BaseCoin {
 
     // Check inputs
     recipients.forEach(function(recipient) {
-      if (!_.isString(recipient.address) || !optionalDeps.ethUtil.isValidAddress(optionalDeps.ethUtil.addHexPrefix(recipient.address))) {
+      if (
+        !_.isString(recipient.address) ||
+        !optionalDeps.ethUtil.isValidAddress(optionalDeps.ethUtil.addHexPrefix(recipient.address))
+      ) {
         throw new Error('Invalid address: ' + recipient.address);
       }
 
@@ -450,7 +468,9 @@ export class Eth extends BaseCoin {
     });
 
     const recipient = recipients[0];
-    return optionalDeps.ethUtil.bufferToHex(optionalDeps.ethAbi.soliditySHA3(...this.getOperation(recipient, expireTime, contractSequenceId)));
+    return optionalDeps.ethUtil.bufferToHex(
+      optionalDeps.ethAbi.soliditySHA3(...this.getOperation(recipient, expireTime, contractSequenceId))
+    );
   }
 
   /**
@@ -460,7 +480,7 @@ export class Eth extends BaseCoin {
    * @returns {Number} sequence ID
    */
   querySequenceId(address: string, callback?: NodeCallback<number>): Bluebird<number> {
-    return co(function *() {
+    return co(function*() {
       // Get sequence ID using contract call
       const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
       const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
@@ -474,7 +494,9 @@ export class Eth extends BaseCoin {
       });
       const sequenceIdHex = result.result;
       return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -565,10 +587,14 @@ export class Eth extends BaseCoin {
       return this.signFinal(params);
     }
 
-    const secondsSinceEpoch = Math.floor((new Date().getTime()) / 1000);
+    const secondsSinceEpoch = Math.floor(new Date().getTime() / 1000);
     const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
 
-    const operationHash = this.getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, txPrebuild.nextContractSequenceId);
+    const operationHash = this.getOperationSha3ForExecuteAndConfirm(
+      params.recipients,
+      expireTime,
+      txPrebuild.nextContractSequenceId
+    );
     const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
     const txParams = {
@@ -598,7 +624,9 @@ export class Eth extends BaseCoin {
     }
 
     if (_.isUndefined(params.enterprise) && _.isUndefined(params.newFeeAddress)) {
-      throw new Error('expecting enterprise when adding BitGo key. If you want to create a new ETH bitgo key, set the newFeeAddress parameter to true.');
+      throw new Error(
+        'expecting enterprise when adding BitGo key. If you want to create a new ETH bitgo key, set the newFeeAddress parameter to true.'
+      );
     }
 
     // Check whether key should be an enterprise key or a BitGo key for a new fee address
@@ -611,7 +639,9 @@ export class Eth extends BaseCoin {
     }
 
     if (!_.isUndefined(params.newFeeAddress) && !_.isBoolean(params.newFeeAddress)) {
-      throw new Error(`newFeeAddress should be a boolean - got ${params.newFeeAddress} (type ${typeof params.newFeeAddress})`);
+      throw new Error(
+        `newFeeAddress should be a boolean - got ${params.newFeeAddress} (type ${typeof params.newFeeAddress})`
+      );
     }
   }
 
@@ -622,23 +652,25 @@ export class Eth extends BaseCoin {
    * @returns {*}
    */
   getAddressNonce(address: string, callback?: NodeCallback<number>): Bluebird<number> {
-    return co(function *() {
+    return co(function*() {
       // Get nonce for backup key (should be 0)
       let nonce = 0;
 
       const result = yield this.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'txlist',
-        address
+        address,
       });
       const backupKeyTxList = result.result;
       if (backupKeyTxList.length > 0) {
         // Calculate last nonce used
-        const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === address);
+        const outgoingTxs = backupKeyTxList.filter(tx => tx.from === address);
         nonce = outgoingTxs.length;
       }
       return nonce;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -663,7 +695,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<OfflineVaultTxInfo>
   ): Bluebird<OfflineVaultTxInfo> {
     const self = this;
-    return co(function *() {
+    return co(function*() {
       const backupHDNode = utxoLib.HDNode.fromBase58(backupKey);
       const backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
       const response: OfflineVaultTxInfo = {
@@ -673,17 +705,19 @@ export class Eth extends BaseCoin {
         coin: self.getChain(),
         gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
         gasLimit,
-        recipients: [
-          txInfo.recipient,
-        ],
+        recipients: [txInfo.recipient],
         walletContractAddress: '0x' + ethTx.to.toString('hex'),
         amount: txInfo.recipient.amount,
-        backupKeyNonce: yield self.getAddressNonce(`0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`),
+        backupKeyNonce: yield self.getAddressNonce(
+          `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`
+        ),
       };
       _.extend(response, txInfo);
       response.nextContractSequenceId = response.contractSequenceId;
       return response;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -697,9 +731,12 @@ export class Eth extends BaseCoin {
    * @param params.recoveryDestination {String} target address to send recovered funds to
    * @param callback
    */
-  recover(params: RecoverOptions, callback?: NodeCallback<RecoveryInfo | OfflineVaultTxInfo>): Bluebird<RecoveryInfo | OfflineVaultTxInfo> {
+  recover(
+    params: RecoverOptions,
+    callback?: NodeCallback<RecoveryInfo | OfflineVaultTxInfo>
+  ): Bluebird<RecoveryInfo | OfflineVaultTxInfo> {
     const self = this;
-    return co(function *recover() {
+    return co(function* recover() {
       if (_.isUndefined(params.userKey)) {
         throw new Error('missing userKey');
       }
@@ -778,17 +815,23 @@ export class Eth extends BaseCoin {
       const backupKeyBalance = yield self.queryAddressBalance(backupKeyAddress);
 
       if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
-        throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.`);
+        throw new Error(
+          `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(
+            10
+          )}. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.`
+        );
       }
 
       // get balance of wallet and deduct fees to get transaction amount
       const txAmount = yield self.queryAddressBalance(params.walletContractAddress);
 
       // build recipients object
-      const recipients = [{
-        address: params.recoveryDestination,
-        amount: txAmount.toString(10),
-      }];
+      const recipients = [
+        {
+          address: params.recoveryDestination,
+          amount: txAmount.toString(10),
+        },
+      ];
 
       // Get sequence ID using contract call
       const sequenceId = yield self.querySequenceId(params.walletContractAddress);
@@ -829,7 +872,7 @@ export class Eth extends BaseCoin {
         gasPrice: gasPrice,
         gasLimit: gasLimit,
         data: sendData,
-        spendAmount: txAmount
+        spendAmount: txAmount,
       });
 
       if (isUnsignedSweep) {
@@ -851,7 +894,9 @@ export class Eth extends BaseCoin {
       }
 
       return signedTx;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -867,15 +912,22 @@ export class Eth extends BaseCoin {
    * @param params.broadcast if true, we will automatically submit the half-signed tx to BitGo for cosigning and broadcasting
    * @param callback
    */
-  recoverToken(params: RecoverTokenOptions, callback?: NodeCallback<RecoverTokenTransaction>): Bluebird<RecoverTokenTransaction> {
+  recoverToken(
+    params: RecoverTokenOptions,
+    callback?: NodeCallback<RecoverTokenTransaction>
+  ): Bluebird<RecoverTokenTransaction> {
     const self = this;
-    return co(function *() {
+    return co(function*() {
       if (!_.isObject(params)) {
         throw new Error(`recoverToken must be passed a params object. Got ${params} (type ${typeof params})`);
       }
 
       if (_.isUndefined(params.tokenContractAddress) || !_.isString(params.tokenContractAddress)) {
-        throw new Error(`tokenContractAddress must be a string, got ${params.tokenContractAddress} (type ${typeof params.tokenContractAddress})`);
+        throw new Error(
+          `tokenContractAddress must be a string, got ${
+            params.tokenContractAddress
+          } (type ${typeof params.tokenContractAddress})`
+        );
       }
 
       if (!self.isValidAddress(params.tokenContractAddress)) {
@@ -919,7 +971,10 @@ export class Eth extends BaseCoin {
           },
         ];
         const methodSignature = optionalDeps.ethAbi.methodID('transfer', _.map(sendMethodArgs, 'type'));
-        const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+        const encodedArgs = optionalDeps.ethAbi.rawEncode(
+          _.map(sendMethodArgs, 'type'),
+          _.map(sendMethodArgs, 'value')
+        );
         const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
         const broadcastParams: any = {
@@ -943,7 +998,7 @@ export class Eth extends BaseCoin {
       };
 
       // This signature will be valid for one week
-      const expireTime = Math.floor((new Date().getTime()) / 1000) + (60 * 60 * 24 * 7);
+      const expireTime = Math.floor(new Date().getTime() / 1000) + 60 * 60 * 24 * 7;
 
       // Get sequence ID. We do this by building a 'fake' eth transaction, so the platform will increment and return us the new sequence id
       // This _does_ require the user to have a non-zero wallet balance
@@ -972,7 +1027,9 @@ export class Eth extends BaseCoin {
         safeSequenceId,
       ];
 
-      const operationHash = optionalDeps.ethUtil.bufferToHex(optionalDeps.ethAbi.soliditySHA3(operationTypes, operationArgs));
+      const operationHash = optionalDeps.ethUtil.bufferToHex(
+        optionalDeps.ethAbi.soliditySHA3(operationTypes, operationArgs)
+      );
 
       const userPrv = yield params.wallet.getPrv({
         prv: params.prv,
@@ -996,7 +1053,9 @@ export class Eth extends BaseCoin {
       };
 
       return result;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -1047,18 +1106,18 @@ export class Eth extends BaseCoin {
    * @returns {Object} response from Etherscan
    */
   recoveryBlockchainExplorerQuery(query: any, callback?: NodeCallback<any>): Bluebird<any> {
-    return co(function *() {
-      const response = yield request.get(common.Environments[this.bitgo.env].etherscanBaseUrl + '/api')
-      .query(query);
+    return co(function*() {
+      const response = yield request.get(common.Environments[this.bitgo.env].etherscanBaseUrl + '/api').query(query);
 
       if (!response.ok) {
         throw new Error('could not reach Etherscan');
       }
 
       return response.body;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
-
 
   /**
    * Creates the extra parameters needed to build a hop transaction
@@ -1066,16 +1125,21 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns extra parameters object to merge with the original build parameters object and send to the platform
    */
-  createHopTransactionParams(buildParams: HopTransactionBuildOptions, callback?: NodeCallback<HopParams>): Bluebird<HopParams> {
+  createHopTransactionParams(
+    buildParams: HopTransactionBuildOptions,
+    callback?: NodeCallback<HopParams>
+  ): Bluebird<HopParams> {
     const self = this;
-    return co(function *() {
+    return co(function*() {
       const wallet = buildParams.wallet;
       const recipients = buildParams.recipients;
       const walletPassphrase = buildParams.walletPassphrase;
 
       const userKeychain = yield self.keychains().get({ id: wallet.keyIds()[0] });
       const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
-      const userPrvBuffer = utxoLib.HDNode.fromBase58(userPrv).getKey().getPrivateKeyBuffer();
+      const userPrvBuffer = utxoLib.HDNode.fromBase58(userPrv)
+        .getKey()
+        .getPrivateKeyBuffer();
       if (!recipients || !Array.isArray(recipients)) {
         throw new Error('expecting array of recipients');
       }
@@ -1094,7 +1158,7 @@ export class Eth extends BaseCoin {
       const feeEstimate: FeeEstimate = yield self.feeEstimate(feeEstimateParams);
 
       const gasLimit = feeEstimate.gasLimitEstimate;
-      const gasPrice = Math.round((feeEstimate.feeEstimate) / gasLimit);
+      const gasPrice = Math.round(feeEstimate.feeEstimate / gasLimit);
       const gasPriceMax = gasPrice * 5;
       // Payment id a random number so its different for every tx
       const paymentId = Math.floor(Math.random() * 10000000000).toString();
@@ -1106,7 +1170,9 @@ export class Eth extends BaseCoin {
         paymentId,
       ]);
 
-      const userReqSig = optionalDeps.ethUtil.addHexPrefix(secp256k1.sign(hopDigest, userPrvBuffer).signature.toString('hex'));
+      const userReqSig = optionalDeps.ethUtil.addHexPrefix(
+        secp256k1.sign(hopDigest, userPrvBuffer).signature.toString('hex')
+      );
 
       const result: HopParams = {
         hopParams: {
@@ -1118,7 +1184,9 @@ export class Eth extends BaseCoin {
       };
 
       return result;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -1130,14 +1198,15 @@ export class Eth extends BaseCoin {
    * @returns void
    * @throws Error if The prebuild is invalid
    */
-  validateHopPrebuild(wallet: Wallet, hopPrebuild: HopPrebuild, originalParams?: { recipients: Recipient[]; }, callback?: NodeCallback<void>): Bluebird<void> {
+  validateHopPrebuild(
+    wallet: Wallet,
+    hopPrebuild: HopPrebuild,
+    originalParams?: { recipients: Recipient[] },
+    callback?: NodeCallback<void>
+  ): Bluebird<void> {
     const self = this;
-    return co(function *() {
-      const {
-        tx,
-        id,
-        signature,
-      } = hopPrebuild;
+    return co(function*() {
+      const { tx, id, signature } = hopPrebuild;
 
       // first, validate the HSM signature
       const serverXpub = common.Environments[self.bitgo.getEnv()].hsmXpub;
@@ -1153,9 +1222,7 @@ export class Eth extends BaseCoin {
       const builtHopTx = new optionalDeps.EthTx(tx);
       // If original params are given, we can check them against the transaction prebuild params
       if (!_.isNil(originalParams)) {
-        const {
-          recipients,
-        } = originalParams;
+        const { recipients } = originalParams;
 
         // Then validate that the tx params actually equal the requested params
         const originalAmount = new BigNumber(recipients[0].amount);
@@ -1178,7 +1245,9 @@ export class Eth extends BaseCoin {
       if (optionalDeps.ethUtil.addHexPrefix(builtHopTx.hash().toString('hex')) !== id) {
         throw new Error(`Signed hop txid does not equal actual txid`);
       }
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -1202,9 +1271,14 @@ export class Eth extends BaseCoin {
    */
   getExtraPrebuildParams(buildParams: BuildOptions, callback?: NodeCallback<BuildOptions>): Bluebird<BuildOptions> {
     const self = this;
-    return co(function *() {
-      if (!_.isUndefined(buildParams.hop) && buildParams.hop && !_.isUndefined(buildParams.wallet) &&
-        !_.isUndefined(buildParams.recipients) && !_.isUndefined(buildParams.walletPassphrase)) {
+    return co(function*() {
+      if (
+        !_.isUndefined(buildParams.hop) &&
+        buildParams.hop &&
+        !_.isUndefined(buildParams.wallet) &&
+        !_.isUndefined(buildParams.recipients) &&
+        !_.isUndefined(buildParams.walletPassphrase)
+      ) {
         return yield self.createHopTransactionParams({
           wallet: buildParams.wallet,
           recipients: buildParams.recipients,
@@ -1212,20 +1286,31 @@ export class Eth extends BaseCoin {
         });
       }
       return {};
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
-  postProcessPrebuild(params: TransactionPrebuild, callback?: NodeCallback<TransactionPrebuild>): Bluebird<TransactionPrebuild> {
+  postProcessPrebuild(
+    params: TransactionPrebuild,
+    callback?: NodeCallback<TransactionPrebuild>
+  ): Bluebird<TransactionPrebuild> {
     const self = this;
-    return co(function *() {
-      if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
+    return co(function*() {
+      if (
+        !_.isUndefined(params.hopTransaction) &&
+        !_.isUndefined(params.wallet) &&
+        !_.isUndefined(params.buildParams)
+      ) {
         yield self.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
       }
       return params;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -1233,14 +1318,23 @@ export class Eth extends BaseCoin {
    * @param params
    * @param callback
    */
-  presignTransaction(params: TransactionPrebuild, callback?: NodeCallback<TransactionPrebuild>): Bluebird<TransactionPrebuild> {
+  presignTransaction(
+    params: TransactionPrebuild,
+    callback?: NodeCallback<TransactionPrebuild>
+  ): Bluebird<TransactionPrebuild> {
     const self = this;
-    return co(function *() {
-      if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
+    return co(function*() {
+      if (
+        !_.isUndefined(params.hopTransaction) &&
+        !_.isUndefined(params.wallet) &&
+        !_.isUndefined(params.buildParams)
+      ) {
         yield self.validateHopPrebuild(params.wallet, params.hopTransaction);
       }
       return params;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -1254,7 +1348,7 @@ export class Eth extends BaseCoin {
    */
   feeEstimate(params: FeeEstimateOptions, callback?: NodeCallback<FeeEstimate>): Bluebird<FeeEstimate> {
     const self = this;
-    return co(function *coFeeEstimate() {
+    return co(function* coFeeEstimate() {
       const query: FeeEstimateOptions = {};
       if (params && params.hop) {
         query.hop = params.hop;
@@ -1269,8 +1363,13 @@ export class Eth extends BaseCoin {
         query.amount = params.amount;
       }
 
-      return self.bitgo.get(self.url('/tx/fee')).query(query).result();
-    }).call(this).asCallback(callback);
+      return self.bitgo
+        .get(self.url('/tx/fee'))
+        .query(query)
+        .result();
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import { HDNode } from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
@@ -11,12 +14,12 @@ import * as config from '../../config';
 const co = Bluebird.coroutine;
 
 export interface TokenConfig {
-  name: string,
-  type: string,
-  coin: string,
-  network: string,
-  tokenContractAddress: string,
-  decimalPlaces: number
+  name: string;
+  type: string;
+  coin: string;
+  network: string;
+  tokenContractAddress: string;
+  decimalPlaces: number;
 }
 
 export class Token extends Eth {
@@ -96,7 +99,7 @@ export class Token extends Eth {
    */
   recover(params: RecoverOptions, callback?: NodeCallback<RecoveryInfo>): Bluebird<RecoveryInfo> {
     const self = this;
-    return co(function *recover() {
+    return co(function* recover() {
       if (_.isUndefined(params.userKey)) {
         throw new Error('missing userKey');
       }
@@ -172,12 +175,12 @@ export class Token extends Eth {
       const result = yield self.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'txlist',
-        address: backupKeyAddress
+        address: backupKeyAddress,
       });
       const backupKeyTxList = result.result;
       if (backupKeyTxList.length > 0) {
         // Calculate last nonce used
-        const outgoingTxs = backupKeyTxList.filter((tx) => tx.from === backupKeyAddress);
+        const outgoingTxs = backupKeyTxList.filter(tx => tx.from === backupKeyAddress);
         backupKeyNonce = outgoingTxs.length;
       }
 
@@ -185,23 +188,33 @@ export class Token extends Eth {
       const backupKeyBalance = yield self.queryAddressBalance(backupKeyAddress);
 
       if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
-        throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries`);
+        throw new Error(
+          `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(
+            10
+          )}. This address must have a balance of at least 0.01 ETH to perform recoveries`
+        );
       }
 
       // get token balance of wallet
       const txAmount = yield self.queryAddressTokenBalance(self.tokenContractAddress, params.walletContractAddress);
 
       // build recipients object
-      const recipients = [{
-        address: params.recoveryDestination,
-        amount: txAmount.toString(10),
-      }];
+      const recipients = [
+        {
+          address: params.recoveryDestination,
+          amount: txAmount.toString(10),
+        },
+      ];
 
       // Get sequence ID using contract call
       const sequenceId = yield self.querySequenceId(params.walletContractAddress);
 
       // Get operation hash and sign it
-      const operationHash = self.getOperationSha3ForExecuteAndConfirm(recipients, self.getDefaultExpireTime(), sequenceId);
+      const operationHash = self.getOperationSha3ForExecuteAndConfirm(
+        recipients,
+        self.getDefaultExpireTime(),
+        sequenceId
+      );
       const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
       try {
@@ -232,7 +245,7 @@ export class Token extends Eth {
         gasPrice: gasPrice,
         gasLimit: gasLimit,
         data: sendData,
-        spendAmount: txAmount
+        spendAmount: txAmount,
       });
 
       if (!isKrsRecovery) {
@@ -241,7 +254,7 @@ export class Token extends Eth {
 
       const signedTx: RecoveryInfo = {
         id: optionalDeps.ethUtil.bufferToHex(tx.hash(true)),
-        tx: tx.serialize().toString('hex')
+        tx: tx.serialize().toString('hex'),
       };
 
       if (isKrsRecovery) {
@@ -250,7 +263,9 @@ export class Token extends Eth {
       }
 
       return signedTx;
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   getOperation(recipient, expireTime, contractSequenceId) {
@@ -262,8 +277,8 @@ export class Token extends Eth {
         recipient.amount,
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(this.tokenContractAddress), 16),
         expireTime,
-        contractSequenceId
-      ]
+        contractSequenceId,
+      ],
     ];
   }
 
@@ -274,33 +289,33 @@ export class Token extends Eth {
       {
         name: 'toAddress',
         type: 'address',
-        value: txInfo.recipient.address
+        value: txInfo.recipient.address,
       },
       {
         name: 'value',
         type: 'uint',
-        value: txInfo.recipient.amount
+        value: txInfo.recipient.amount,
       },
       {
         name: 'tokenContractAddress',
         type: 'address',
-        value: this.tokenContractAddress
+        value: this.tokenContractAddress,
       },
       {
         name: 'expireTime',
         type: 'uint',
-        value: txInfo.expireTime
+        value: txInfo.expireTime,
       },
       {
         name: 'sequenceId',
         type: 'uint',
-        value: txInfo.contractSequenceId
+        value: txInfo.contractSequenceId,
       },
       {
         name: 'signature',
         type: 'bytes',
-        value: optionalDeps.ethUtil.toBuffer(txInfo.signature)
-      }
+        value: optionalDeps.ethUtil.toBuffer(txInfo.signature),
+      },
     ];
   }
 }
