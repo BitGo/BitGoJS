@@ -145,7 +145,7 @@ export class Util {
    * @param privKey
    * @deprecated
    */
-  static ethSignMsgHash(msgHash: string, privKey: string) {
+  static ethSignMsgHash(msgHash: string, privKey: string): string {
     if (!isEthAvailable) {
       throw new EthereumLibraryUnavailableError();
     }

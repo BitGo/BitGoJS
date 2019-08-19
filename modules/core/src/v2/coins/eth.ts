@@ -1,52 +1,257 @@
-import { BaseCoin } from '../baseCoin';
+import { BigNumber } from 'bignumber.js';
+import * as utxoLib from 'bitgo-utxo-lib';
+import * as Bluebird from 'bluebird';
+import * as crypto from 'crypto';
+import * as debugLib from 'debug';
+import * as Keccak from 'keccak';
+import * as _ from 'lodash';
+import * as secp256k1 from 'secp256k1';
+import * as request from 'superagent';
+
+import { BaseCoin, KeyPair } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import * as common from '../../common';
 import * as config from '../../config';
-import { BigNumber } from 'bignumber.js';
-import * as keccak from 'keccak';
 import { Util } from '../util';
-import * as _ from 'lodash';
-import * as Bluebird from 'bluebird';
-import * as crypto from 'crypto';
-import * as secp256k1 from 'secp256k1';
-import * as utxoLib from 'bitgo-utxo-lib';
-import * as request from 'superagent';
+import { EthereumLibraryUnavailableError } from '../../errors';
 
 const co = Bluebird.coroutine;
+const debug = debugLib('bitgo:v2:eth');
 
 // The following dependencies are optional. If they are missing we still want to be
 // able to require `eth.js` without error.
-const optionalDeps = {
+let ethAbi: typeof import('ethereumjs-abi') = null;
+let ethUtil: import('ethereumjs-util') = null;
+let ethTx: typeof import('ethereumjs-tx') = null;
+
+import('ethereumjs-util')
+  .then(eth => {
+    ethUtil = eth;
+  })
+  .catch(e => {
+    // ethereum currently not supported
+    debug('unable to load ethereumjs-util:');
+    debug(e.stack);
+  });
+
+import('ethereumjs-abi')
+  .then(eth => {
+    ethAbi = eth;
+  })
+  .catch(e => {
+    // ethereum currently not supported
+    debug('unable to load ethereumjs-abi:');
+    debug(e.stack);
+  });
+
+import('ethereumjs-tx')
+  .then(eth => {
+    ethTx = eth;
+  })
+  .catch(e => {
+    // ethereum currently not supported
+    debug('unable to load ethereumjs-tx:');
+    debug(e.stack);
+  });
+
+export const optionalDeps = {
   get ethAbi() {
-    return require('ethereumjs-abi');
+    if (!ethAbi) {
+      throw new EthereumLibraryUnavailableError();
+    }
+    return ethAbi;
   },
 
   get ethUtil() {
-    return require('ethereumjs-util');
+    if (!ethUtil) {
+      throw new EthereumLibraryUnavailableError();
+    }
+    return ethUtil;
   },
 
   get EthTx() {
-    return require('ethereumjs-tx');
-  }
+    if (!ethTx) {
+      throw new EthereumLibraryUnavailableError();
+    }
+    return ethTx;
+  },
 };
 
 /**
  * The extra parameters to send to platform build route for hop transactions
  */
 interface HopParams {
-  gasPriceMax: number,
-  userReqSig: string,
-  paymentId: string,
+  hopParams: {
+    gasPriceMax: number;
+    userReqSig: string;
+    paymentId: string;
+  };
+  gasLimit: number;
 }
 
 /**
  * The prebuilt hop transaction returned from the HSM
  */
 interface HopPrebuild {
-  tx: string,
-  id: string,
-  signature: string,
+  tx: string;
+  id: string;
+  signature: string;
+}
+
+interface Recipient {
+  address: string;
+  amount: string;
+  data?: string;
+}
+
+interface SignFinalOptions {
+  txPrebuild: {
+    gasPrice: string;
+    gasLimit: string;
+    recipients: Recipient[];
+    halfSigned: {
+      expireTime: number;
+      contractSequenceId: number;
+      signature: string;
+    };
+    nextContractSequenceId?: number;
+    hopTransaction?: string;
+  };
+  signingKeyNonce: number;
+  walletContractAddress: string;
+  prv: string;
+  recipients: Recipient[];
+}
+
+interface SignTransactionOptions extends SignFinalOptions {
+  isLastSignature?: boolean;
+  expireTime: number;
+  sequenceId: number;
+  gasLimit: number;
+  gasPrice: number;
+}
+
+interface HalfSignedTransaction {
+  halfSigned: {
+    recipients: Recipient[];
+    expireTime: number;
+    contractSequenceId: number;
+    sequenceId: number;
+  };
+}
+
+interface FullySignedTransaction {
+  txHex: string;
+}
+
+interface PrecreateBitGoOptions {
+  enterprise?: string;
+  newFeeAddress?: string;
+}
+
+interface OfflineVaultTxInfo {
+  nextContractSequenceId?: string;
+  contractSequenceId?: string;
+  tx: string;
+  userKey: string;
+  backupKey: string;
+  coin: string;
+  gasPrice: number;
+  gasLimit: number;
+  recipients: Recipient[];
+  walletContractAddress: string;
+  amount: string;
+  backupKeyNonce: number;
+}
+
+interface UnformattedTxInfo {
+  recipient: Recipient;
+}
+
+export interface RecoverOptions {
+  userKey: string;
+  backupKey: string;
+  walletPassphrase?: string;
+  walletContractAddress: string;
+  recoveryDestination: string;
+  krsProvider?: string;
+}
+
+export interface RecoveryInfo {
+  id: string;
+  tx: string;
+  backupKey?: string;
+  coin?: string;
+}
+
+interface RecoverTokenOptions {
+  tokenContractAddress: string;
+  wallet: Wallet;
+  recipient: string;
+  broadcast?: boolean;
+  walletPassphrase?: string;
+  prv?: string;
+}
+
+interface GetSendMethodArgsOptions {
+  recipient: Recipient;
+  expireTime: number;
+  contractSequenceId: number;
+  signature: string;
+}
+
+interface SendMethodArgs {
+  name: string;
+  type: string;
+  value: any;
+}
+
+interface HopTransactionBuildOptions {
+  wallet: Wallet;
+  recipients: Recipient[];
+  walletPassphrase: string;
+}
+
+interface FeeEstimateOptions {
+  hop?: boolean;
+  recipient?: string;
+  data?: string;
+  amount?: string;
+}
+
+interface BuildOptions {
+  hop?: boolean;
+  wallet?: Wallet;
+  recipients?: Recipient[];
+  walletPassphrase?: string;
+}
+
+interface FeeEstimate {
+  gasLimitEstimate: number;
+  feeEstimate: number;
+}
+
+interface TransactionPrebuild {
+  hopTransaction?: HopPrebuild;
+  wallet?: Wallet;
+  buildParams: {
+    recipients: Recipient[];
+  };
+}
+
+interface RecoverTokenTransaction {
+  halfSigned: {
+    recipient: Recipient;
+    expireTime: number;
+    contractSequenceId: number;
+    operationHash: string;
+    signature: string;
+    gasLimit: number;
+    gasPrice: number;
+    tokenContractAddress: string;
+    walletId: string;
+  };
 }
 
 export class Eth extends BaseCoin {
@@ -136,7 +341,7 @@ export class Eth extends BaseCoin {
    * Default expire time for a contract call (1 week)
    * @returns {number} Time in seconds
    */
-  getDefaultExpireTime() {
+  getDefaultExpireTime(): number {
     return Math.floor((new Date().getTime()) / 1000) + (60 * 60 * 24 * 7);
   }
 
@@ -178,7 +383,7 @@ export class Eth extends BaseCoin {
         action: 'tokenbalance',
         contractaddress: tokenContractAddress,
         address: walletContractAddress,
-        tag: 'latest'
+        tag: 'latest',
       });
 
       return new optionalDeps.ethUtil.BN(result.result, 10);
@@ -192,7 +397,7 @@ export class Eth extends BaseCoin {
    * @param contractSequenceId sequence id
    * @returns {Array} operation array
    */
-  getOperation(recipient, expireTime, contractSequenceId) {
+  getOperation(recipient: Recipient, expireTime: number, contractSequenceId: number): (string | Buffer)[][] {
     return [
       ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
       [
@@ -201,12 +406,12 @@ export class Eth extends BaseCoin {
         recipient.amount,
         new Buffer(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
         expireTime,
-        contractSequenceId
-      ]
+        contractSequenceId,
+      ],
     ];
   }
 
-  getOperationSha3ForExecuteAndConfirm(recipients, expireTime, contractSequenceId) {
+  getOperationSha3ForExecuteAndConfirm(recipients: Recipient[], expireTime: number, contractSequenceId: number): string {
     if (!recipients || !Array.isArray(recipients)) {
       throw new Error('expecting array of recipients');
     }
@@ -254,7 +459,7 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns {Number} sequence ID
    */
-  querySequenceId(address, callback) {
+  querySequenceId(address: string, callback?: NodeCallback<number>): Bluebird<number> {
     return co(function *() {
       // Get sequence ID using contract call
       const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
@@ -265,7 +470,7 @@ export class Eth extends BaseCoin {
         action: 'eth_call',
         to: address,
         data: sequenceIdData,
-        tag: 'latest'
+        tag: 'latest',
       });
       const sequenceIdHex = result.result;
       return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
@@ -281,7 +486,7 @@ export class Eth extends BaseCoin {
    * @param params.prv
    * @returns {{txHex: *}}
    */
-  signFinal(params) {
+  signFinal(params: SignFinalOptions): FullySignedTransaction {
     const txPrebuild = params.txPrebuild;
 
     if (!_.isNumber(params.signingKeyNonce)) {
@@ -298,7 +503,7 @@ export class Eth extends BaseCoin {
       recipient: txPrebuild.recipients[0],
       expireTime: txPrebuild.halfSigned.expireTime,
       contractSequenceId: txPrebuild.halfSigned.contractSequenceId,
-      signature: txPrebuild.halfSigned.signature
+      signature: txPrebuild.halfSigned.signature,
     };
 
     const sendMethodArgs = this.getSendMethodArgs(txInfo);
@@ -313,7 +518,7 @@ export class Eth extends BaseCoin {
       gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
       gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
       data: sendData,
-      spendAmount: params.recipients[0].amount
+      spendAmount: params.recipients[0].amount,
     };
 
     const ethTx = new optionalDeps.EthTx(ethTxParams);
@@ -328,7 +533,7 @@ export class Eth extends BaseCoin {
    * - prv
    * @returns {{txHex}}
    */
-  signTransaction(params) {
+  signTransaction(params: SignTransactionOptions): HalfSignedTransaction | FullySignedTransaction {
     const txPrebuild = params.txPrebuild;
     const userPrv = params.prv;
     const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
@@ -386,8 +591,7 @@ export class Eth extends BaseCoin {
    * @param params.enterprise {String} the enterprise id to associate with this key
    * @param params.newFeeAddress {Boolean} create a new fee address (enterprise not needed in this case)
    */
-  preCreateBitGo(params) {
-
+  preCreateBitGo(params: PrecreateBitGoOptions): void {
     // We always need params object, since either enterprise or newFeeAddress is required
     if (!_.isObject(params)) {
       throw new Error(`preCreateBitGo must be passed a params object. Got ${params} (type ${typeof params})`);
@@ -417,7 +621,7 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns {*}
    */
-  getAddressNonce(address, callback) {
+  getAddressNonce(address: string, callback?: NodeCallback<number>): Bluebird<number> {
     return co(function *() {
       // Get nonce for backup key (should be 0)
       let nonce = 0;
@@ -444,25 +648,37 @@ export class Eth extends BaseCoin {
    * @param ethTx
    * @param userKey
    * @param backupKey
+   * @param gasPrice
+   * @param gasLimit
+   * @param callback
    * @returns {{tx: *, userKey: *, backupKey: *, coin: string, amount: string, gasPrice: string, gasLimit: string, recipients: ({address, amount}|{address: ({address, amount}|string), amount: string}|string)[]}}
    */
-  formatForOfflineVault(txInfo, ethTx, userKey, backupKey, gasPrice, gasLimit, callback) {
+  formatForOfflineVault(
+    txInfo: UnformattedTxInfo,
+    ethTx: any,
+    userKey: string,
+    backupKey: string,
+    gasPrice: Buffer,
+    gasLimit: number,
+    callback?: NodeCallback<OfflineVaultTxInfo>
+  ): Bluebird<OfflineVaultTxInfo> {
+    const self = this;
     return co(function *() {
       const backupHDNode = utxoLib.HDNode.fromBase58(backupKey);
       const backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
-      const response: any = {
+      const response: OfflineVaultTxInfo = {
         tx: ethTx.serialize().toString('hex'),
         userKey,
         backupKey,
-        coin: this.getChain(),
+        coin: self.getChain(),
         gasPrice: optionalDeps.ethUtil.bufferToInt(gasPrice).toFixed(),
         gasLimit,
         recipients: [
-          txInfo.recipient
+          txInfo.recipient,
         ],
         walletContractAddress: '0x' + ethTx.to.toString('hex'),
         amount: txInfo.recipient.amount,
-        backupKeyNonce: yield this.getAddressNonce(`0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`)
+        backupKeyNonce: yield self.getAddressNonce(`0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`),
       };
       _.extend(response, txInfo);
       response.nextContractSequenceId = response.contractSequenceId;
@@ -472,6 +688,7 @@ export class Eth extends BaseCoin {
 
   /**
    * Builds a funds recovery transaction without BitGo
+   * @param params
    * @param params.userKey {String} [encrypted] xprv
    * @param params.backupKey {String} [encrypted] xprv or xpub if the xprv is held by a KRS provider
    * @param params.walletPassphrase {String} used to decrypt userKey and backupKey
@@ -480,7 +697,8 @@ export class Eth extends BaseCoin {
    * @param params.recoveryDestination {String} target address to send recovered funds to
    * @param callback
    */
-  recover(params, callback) {
+  recover(params: RecoverOptions, callback?: NodeCallback<RecoveryInfo | OfflineVaultTxInfo>): Bluebird<RecoveryInfo | OfflineVaultTxInfo> {
+    const self = this;
     return co(function *recover() {
       if (_.isUndefined(params.userKey)) {
         throw new Error('missing userKey');
@@ -494,11 +712,11 @@ export class Eth extends BaseCoin {
         throw new Error('missing wallet passphrase');
       }
 
-      if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+      if (_.isUndefined(params.walletContractAddress) || !self.isValidAddress(params.walletContractAddress)) {
         throw new Error('invalid walletContractAddress');
       }
 
-      if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      if (_.isUndefined(params.recoveryDestination) || !self.isValidAddress(params.recoveryDestination)) {
         throw new Error('invalid recoveryDestination');
       }
 
@@ -514,15 +732,15 @@ export class Eth extends BaseCoin {
       const backupKey = params.backupKey.replace(/\s/g, '');
 
       // Set new eth tx fees (using default config values from platform)
-      const gasPrice = this.getRecoveryGasPrice();
-      const gasLimit = this.getRecoveryGasLimit();
+      const gasPrice = self.getRecoveryGasPrice();
+      const gasLimit = self.getRecoveryGasLimit();
 
       // Decrypt private keys from KeyCard values if necessary
       if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
         try {
-          userKey = this.bitgo.decrypt({
+          userKey = self.bitgo.decrypt({
             input: userKey,
-            password: params.walletPassphrase
+            password: params.walletPassphrase,
           });
         } catch (e) {
           throw new Error(`Error decrypting user keychain: ${e.message}`);
@@ -541,9 +759,9 @@ export class Eth extends BaseCoin {
         let backupPrv;
 
         try {
-          backupPrv = this.bitgo.decrypt({
+          backupPrv = self.bitgo.decrypt({
             input: backupKey,
-            password: params.walletPassphrase
+            password: params.walletPassphrase,
           });
         } catch (e) {
           throw new Error(`Error decrypting backup keychain: ${e.message}`);
@@ -554,31 +772,31 @@ export class Eth extends BaseCoin {
         backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
       }
 
-      const backupKeyNonce = yield this.getAddressNonce(backupKeyAddress);
+      const backupKeyNonce = yield self.getAddressNonce(backupKeyAddress);
 
       // get balance of backupKey to ensure funds are available to pay fees
-      const backupKeyBalance = yield this.queryAddressBalance(backupKeyAddress);
+      const backupKeyBalance = yield self.queryAddressBalance(backupKeyAddress);
 
       if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
         throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.`);
       }
 
       // get balance of wallet and deduct fees to get transaction amount
-      const txAmount = yield this.queryAddressBalance(params.walletContractAddress);
+      const txAmount = yield self.queryAddressBalance(params.walletContractAddress);
 
       // build recipients object
       const recipients = [{
         address: params.recoveryDestination,
-        amount: txAmount.toString(10)
+        amount: txAmount.toString(10),
       }];
 
       // Get sequence ID using contract call
-      const sequenceId = yield this.querySequenceId(params.walletContractAddress);
+      const sequenceId = yield self.querySequenceId(params.walletContractAddress);
 
       let operationHash, signature;
       // Get operation hash and sign it
       if (!isUnsignedSweep) {
-        operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
+        operationHash = self.getOperationSha3ForExecuteAndConfirm(recipients, self.getDefaultExpireTime(), sequenceId);
         signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userKey));
 
         try {
@@ -590,15 +808,15 @@ export class Eth extends BaseCoin {
 
       const txInfo = {
         recipient: recipients[0],
-        expireTime: this.getDefaultExpireTime(),
+        expireTime: self.getDefaultExpireTime(),
         contractSequenceId: sequenceId,
         operationHash: operationHash,
         signature: signature,
-        gasLimit: gasLimit.toString(10)
+        gasLimit: gasLimit.toString(10),
       };
 
       // calculate send data
-      const sendMethodArgs = this.getSendMethodArgs(txInfo);
+      const sendMethodArgs = self.getSendMethodArgs(txInfo);
       const methodSignature = optionalDeps.ethAbi.methodID('sendMultiSig', _.map(sendMethodArgs, 'type'));
       const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
       const sendData = Buffer.concat([methodSignature, encodedArgs]);
@@ -615,21 +833,21 @@ export class Eth extends BaseCoin {
       });
 
       if (isUnsignedSweep) {
-        return this.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
+        return self.formatForOfflineVault(txInfo, tx, userKey, backupKey, gasPrice, gasLimit);
       }
 
       if (!isKrsRecovery) {
         tx.sign(backupSigningKey);
       }
 
-      const signedTx: any = {
+      const signedTx: RecoveryInfo = {
         id: optionalDeps.ethUtil.bufferToHex(tx.hash(true)),
         tx: tx.serialize().toString('hex'),
       };
 
       if (isKrsRecovery) {
         signedTx.backupKey = backupKey;
-        signedTx.coin = this.getChain();
+        signedTx.coin = self.getChain();
       }
 
       return signedTx;
@@ -647,8 +865,10 @@ export class Eth extends BaseCoin {
    * @param params.walletPassphrase the wallet passphrase
    * @param params.prv the xprv
    * @param params.broadcast if true, we will automatically submit the half-signed tx to BitGo for cosigning and broadcasting
+   * @param callback
    */
-  recoverToken(params, callback) {
+  recoverToken(params: RecoverTokenOptions, callback?: NodeCallback<RecoverTokenTransaction>): Bluebird<RecoverTokenTransaction> {
+    const self = this;
     return co(function *() {
       if (!_.isObject(params)) {
         throw new Error(`recoverToken must be passed a params object. Got ${params} (type ${typeof params})`);
@@ -658,7 +878,7 @@ export class Eth extends BaseCoin {
         throw new Error(`tokenContractAddress must be a string, got ${params.tokenContractAddress} (type ${typeof params.tokenContractAddress})`);
       }
 
-      if (!this.isValidAddress(params.tokenContractAddress)) {
+      if (!self.isValidAddress(params.tokenContractAddress)) {
         throw new Error('tokenContractAddress not a valid address');
       }
 
@@ -670,7 +890,7 @@ export class Eth extends BaseCoin {
         throw new Error(`recipient must be a string, got ${params.recipient} (type ${typeof params.recipient})`);
       }
 
-      if (!this.isValidAddress(params.recipient)) {
+      if (!self.isValidAddress(params.recipient)) {
         throw new Error('recipient not a valid address');
       }
 
@@ -680,7 +900,7 @@ export class Eth extends BaseCoin {
 
       // Get token balance from external API
       const walletContractAddress = params.wallet._wallet.coinSpecific.baseAddress;
-      const recoveryAmount = yield this.queryAddressTokenBalance(params.tokenContractAddress, walletContractAddress);
+      const recoveryAmount = yield self.queryAddressTokenBalance(params.tokenContractAddress, walletContractAddress);
 
       if (params.broadcast) {
         // We're going to create a normal ETH transaction that sends an amount of 0 ETH to the
@@ -690,13 +910,13 @@ export class Eth extends BaseCoin {
           {
             name: '_to',
             type: 'address',
-            value: params.recipient
+            value: params.recipient,
           },
           {
             name: '_value',
             type: 'uint256',
-            value: recoveryAmount.toString(10)
-          }
+            value: recoveryAmount.toString(10),
+          },
         ];
         const methodSignature = optionalDeps.ethAbi.methodID('transfer', _.map(sendMethodArgs, 'type'));
         const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
@@ -705,7 +925,7 @@ export class Eth extends BaseCoin {
         const broadcastParams: any = {
           address: params.tokenContractAddress,
           amount: '0',
-          data: sendData.toString('hex')
+          data: sendData.toString('hex'),
         };
 
         if (params.walletPassphrase) {
@@ -719,7 +939,7 @@ export class Eth extends BaseCoin {
 
       const recipient = {
         address: params.recipient,
-        amount: recoveryAmount.toString(10)
+        amount: recoveryAmount.toString(10),
       };
 
       // This signature will be valid for one week
@@ -731,9 +951,9 @@ export class Eth extends BaseCoin {
         recipients: [
           {
             address: params.recipient,
-            amount: '1'
-          }
-        ]
+            amount: '1',
+          },
+        ],
       });
 
       // these recoveries need to be processed by support, but if the customer sends any transactions before recovery is
@@ -749,68 +969,74 @@ export class Eth extends BaseCoin {
         recipient.amount,
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(params.tokenContractAddress), 16),
         expireTime,
-        safeSequenceId
+        safeSequenceId,
       ];
 
       const operationHash = optionalDeps.ethUtil.bufferToHex(optionalDeps.ethAbi.soliditySHA3(operationTypes, operationArgs));
 
       const userPrv = yield params.wallet.getPrv({
         prv: params.prv,
-        walletPassphrase: params.walletPassphrase
+        walletPassphrase: params.walletPassphrase,
       });
 
       const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
-      const txParams = {
-        recipient: recipient,
-        expireTime: expireTime,
-        contractSequenceId: safeSequenceId,
-        operationHash: operationHash,
-        signature: signature,
-        gasLimit: gasLimit,
-        gasPrice: gasPrice,
-        tokenContractAddress: params.tokenContractAddress,
-        walletId: params.wallet.id()
+      const result: RecoverTokenTransaction = {
+        halfSigned: {
+          recipient: recipient,
+          expireTime: expireTime,
+          contractSequenceId: safeSequenceId,
+          operationHash: operationHash,
+          signature: signature,
+          gasLimit: gasLimit,
+          gasPrice: gasPrice,
+          tokenContractAddress: params.tokenContractAddress,
+          walletId: params.wallet.id(),
+        },
       };
 
-      return { halfSigned: txParams };
+      return result;
     }).call(this).asCallback(callback);
   }
 
-  getSendMethodArgs(txInfo) {
+  /**
+   * Build arguments to call the send method on the wallet contract
+   * @param txInfo
+   */
+  getSendMethodArgs(txInfo: GetSendMethodArgsOptions): SendMethodArgs[] {
     // Method signature is
     // sendMultiSig(address toAddress, uint value, bytes data, uint expireTime, uint sequenceId, bytes signature)
     return [
       {
         name: 'toAddress',
         type: 'address',
-        value: txInfo.recipient.address
+        value: txInfo.recipient.address,
       },
       {
         name: 'value',
         type: 'uint',
-        value: txInfo.recipient.amount
+        value: txInfo.recipient.amount,
       },
       {
         name: 'data',
         type: 'bytes',
-        value: optionalDeps.ethUtil.toBuffer(txInfo.recipient.data || '')
+        value: optionalDeps.ethUtil.toBuffer(txInfo.recipient.data || ''),
       },
       {
         name: 'expireTime',
         type: 'uint',
-        value: txInfo.expireTime
+        value: txInfo.expireTime,
       },
       {
         name: 'sequenceId',
         type: 'uint',
-        value: txInfo.contractSequenceId
+        value: txInfo.contractSequenceId,
       },
       {
         name: 'signature',
         type: 'bytes',
-        value: optionalDeps.ethUtil.toBuffer(txInfo.signature)
-      }
+        value: optionalDeps.ethUtil.toBuffer(txInfo.signature),
+      },
     ];
   }
 
@@ -820,7 +1046,7 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns {Object} response from Etherscan
    */
-  recoveryBlockchainExplorerQuery(query, callback) {
+  recoveryBlockchainExplorerQuery(query: any, callback?: NodeCallback<any>): Bluebird<any> {
     return co(function *() {
       const response = yield request.get(common.Environments[this.bitgo.env].etherscanBaseUrl + '/api')
       .query(query);
@@ -840,13 +1066,14 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns extra parameters object to merge with the original build parameters object and send to the platform
    */
-  createHopTransactionParams(buildParams, callback): { hopParams: HopParams, gasLimit: number } {
+  createHopTransactionParams(buildParams: HopTransactionBuildOptions, callback?: NodeCallback<HopParams>): Bluebird<HopParams> {
+    const self = this;
     return co(function *() {
       const wallet = buildParams.wallet;
       const recipients = buildParams.recipients;
       const walletPassphrase = buildParams.walletPassphrase;
 
-      const userKeychain = yield this.keychains().get({ id: wallet.keyIds()[0] });
+      const userKeychain = yield self.keychains().get({ id: wallet.keyIds()[0] });
       const userPrv = wallet.getUserPrv({ keychain: userKeychain, walletPassphrase });
       const userPrvBuffer = utxoLib.HDNode.fromBase58(userPrv).getKey().getPrivateKeyBuffer();
       if (!recipients || !Array.isArray(recipients)) {
@@ -864,18 +1091,24 @@ export class Eth extends BaseCoin {
         amount: recipientAmount,
         hop: true,
       };
-      const feeEstimate = yield this.feeEstimate(feeEstimateParams);
+      const feeEstimate: FeeEstimate = yield self.feeEstimate(feeEstimateParams);
 
       const gasLimit = feeEstimate.gasLimitEstimate;
       const gasPrice = Math.round((feeEstimate.feeEstimate) / gasLimit);
       const gasPriceMax = gasPrice * 5;
       // Payment id a random number so its different for every tx
       const paymentId = Math.floor(Math.random() * 10000000000).toString();
-      const hopDigest: Buffer = Eth.getHopDigest([recipientAddress, recipientAmount, gasPriceMax, gasLimit, paymentId]);
+      const hopDigest: Buffer = Eth.getHopDigest([
+        recipientAddress,
+        recipientAmount,
+        gasPriceMax.toString(),
+        gasLimit.toString(),
+        paymentId,
+      ]);
 
       const userReqSig = optionalDeps.ethUtil.addHexPrefix(secp256k1.sign(hopDigest, userPrvBuffer).signature.toString('hex'));
 
-      return {
+      const result: HopParams = {
         hopParams: {
           gasPriceMax,
           userReqSig,
@@ -883,6 +1116,8 @@ export class Eth extends BaseCoin {
         },
         gasLimit,
       };
+
+      return result;
     }).call(this).asCallback(callback);
   }
 
@@ -895,7 +1130,8 @@ export class Eth extends BaseCoin {
    * @returns void
    * @throws Error if The prebuild is invalid
    */
-  validateHopPrebuild(wallet: any, hopPrebuild: HopPrebuild, originalParams: any, callback: any): void {
+  validateHopPrebuild(wallet: Wallet, hopPrebuild: HopPrebuild, originalParams?: { recipients: Recipient[]; }, callback?: NodeCallback<void>): Bluebird<void> {
+    const self = this;
     return co(function *() {
       const {
         tx,
@@ -903,9 +1139,8 @@ export class Eth extends BaseCoin {
         signature,
       } = hopPrebuild;
 
-
       // first, validate the HSM signature
-      const serverXpub = common.Environments[this.bitgo.env].hsmXpub;
+      const serverXpub = common.Environments[self.bitgo.getEnv()].hsmXpub;
       const serverPubkeyBuffer: Buffer = utxoLib.HDNode.fromBase58(serverXpub).getPublicKeyBuffer();
       const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
       const messageBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
@@ -950,8 +1185,8 @@ export class Eth extends BaseCoin {
    * Gets the hop digest for the user to sign. This is validated in the HSM to prove that the user requested this tx
    * @param paramsArr The parameters to hash together for the digest
    */
-  static getHopDigest(paramsArr): Buffer {
-    const hash = new keccak('keccak256');
+  private static getHopDigest(paramsArr: string[]): Buffer {
+    const hash = new Keccak('keccak256');
     hash.update([Eth.hopTransactionSalt, ...paramsArr].join('$'));
     return hash.digest();
   }
@@ -965,24 +1200,29 @@ export class Eth extends BaseCoin {
    * @param buildParams.walletPassphrase the passphrase for this wallet
    * @param callback
    */
-  getExtraPrebuildParams(buildParams, callback) {
+  getExtraPrebuildParams(buildParams: BuildOptions, callback?: NodeCallback<BuildOptions>): Bluebird<BuildOptions> {
+    const self = this;
     return co(function *() {
-      let extraParams = { };
       if (!_.isUndefined(buildParams.hop) && buildParams.hop && !_.isUndefined(buildParams.wallet) &&
         !_.isUndefined(buildParams.recipients) && !_.isUndefined(buildParams.walletPassphrase)) {
-        extraParams = Object.assign(extraParams, yield this.createHopTransactionParams(buildParams));
+        return yield self.createHopTransactionParams({
+          wallet: buildParams.wallet,
+          recipients: buildParams.recipients,
+          walletPassphrase: buildParams.walletPassphrase,
+        });
       }
-      return extraParams;
+      return {};
     }).call(this).asCallback(callback);
   }
 
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
-  postProcessPrebuild(params, callback) {
+  postProcessPrebuild(params: TransactionPrebuild, callback?: NodeCallback<TransactionPrebuild>): Bluebird<TransactionPrebuild> {
+    const self = this;
     return co(function *() {
       if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
-        yield this.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
+        yield self.validateHopPrebuild(params.wallet, params.hopTransaction, params.buildParams);
       }
       return params;
     }).call(this).asCallback(callback);
@@ -990,11 +1230,14 @@ export class Eth extends BaseCoin {
 
   /**
    * Coin-specific things done before signing a transaction, i.e. verification
+   * @param params
+   * @param callback
    */
-  presignTransaction(params, callback) {
+  presignTransaction(params: TransactionPrebuild, callback?: NodeCallback<TransactionPrebuild>): Bluebird<TransactionPrebuild> {
+    const self = this;
     return co(function *() {
       if (!_.isUndefined(params.hopTransaction) && !_.isUndefined(params.wallet) && !_.isUndefined(params.buildParams)) {
-        yield this.validateHopPrebuild(params.wallet, params.hopTransaction);
+        yield self.validateHopPrebuild(params.wallet, params.hopTransaction);
       }
       return params;
     }).call(this).asCallback(callback);
@@ -1009,9 +1252,10 @@ export class Eth extends BaseCoin {
    * @param callback
    * @returns {Object} The fee info returned from the server
    */
-  feeEstimate(params, callback) {
+  feeEstimate(params: FeeEstimateOptions, callback?: NodeCallback<FeeEstimate>): Bluebird<FeeEstimate> {
+    const self = this;
     return co(function *coFeeEstimate() {
-      const query: any = {};
+      const query: FeeEstimateOptions = {};
       if (params && params.hop) {
         query.hop = params.hop;
       }
@@ -1025,7 +1269,7 @@ export class Eth extends BaseCoin {
         query.amount = params.amount;
       }
 
-      return this.bitgo.get(this.url('/tx/fee')).query(query).result();
+      return self.bitgo.get(self.url('/tx/fee')).query(query).result();
     }).call(this).asCallback(callback);
   }
 
@@ -1035,7 +1279,7 @@ export class Eth extends BaseCoin {
    * @param seed
    * @returns {Object} object with generated pub and prv
    */
-  generateKeyPair(seed) {
+  generateKeyPair(seed: Buffer): KeyPair {
     if (!seed) {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the
@@ -1046,9 +1290,7 @@ export class Eth extends BaseCoin {
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
-      prv: extendedKey.toBase58()
+      prv: extendedKey.toBase58(),
     };
   }
-
 }
-

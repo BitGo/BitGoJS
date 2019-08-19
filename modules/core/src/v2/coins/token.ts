@@ -1,25 +1,14 @@
 import { HDNode } from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+import { NodeCallback } from '../types';
 
-import { Eth } from './eth';
+import { Eth, RecoverOptions, RecoveryInfo, optionalDeps } from './eth';
 import { CoinConstructor } from '../coinFactory';
 import { Util } from '../util';
 import * as config from '../../config';
 
 const co = Bluebird.coroutine;
-
-let ethUtil: any = function() {};
-let ethAbi: any = function() {};
-let EthTx: any = function() {};
-
-try {
-  ethUtil = require('ethereumjs-util');
-  ethAbi = require('ethereumjs-abi');
-  EthTx = require('ethereumjs-tx');
-} catch (e) {
-  // ethereum currently not supported
-}
 
 export interface TokenConfig {
   name: string,
@@ -96,6 +85,7 @@ export class Token extends Eth {
 
   /**
    * Builds a token recovery transaction without BitGo
+   * @param params
    * @param params.userKey {String} [encrypted] xprv
    * @param params.backupKey {String} [encrypted] xprv or xpub if the xprv is held by a KRS providers
    * @param params.walletPassphrase {String} used to decrypt userKey and backupKey
@@ -104,7 +94,8 @@ export class Token extends Eth {
    * @param params.krsProvider {String} necessary if backup key is held by KRS
    * @param callback
    */
-  recover(params, callback) {
+  recover(params: RecoverOptions, callback?: NodeCallback<RecoveryInfo>): Bluebird<RecoveryInfo> {
+    const self = this;
     return co(function *recover() {
       if (_.isUndefined(params.userKey)) {
         throw new Error('missing userKey');
@@ -118,11 +109,11 @@ export class Token extends Eth {
         throw new Error('missing wallet passphrase');
       }
 
-      if (_.isUndefined(params.walletContractAddress) || !this.isValidAddress(params.walletContractAddress)) {
+      if (_.isUndefined(params.walletContractAddress) || !self.isValidAddress(params.walletContractAddress)) {
         throw new Error('invalid walletContractAddress');
       }
 
-      if (_.isUndefined(params.recoveryDestination) || !this.isValidAddress(params.recoveryDestination)) {
+      if (_.isUndefined(params.recoveryDestination) || !self.isValidAddress(params.recoveryDestination)) {
         throw new Error('invalid recoveryDestination');
       }
 
@@ -137,15 +128,15 @@ export class Token extends Eth {
       const backupKey = params.backupKey.replace(/\s/g, '');
 
       // Set new eth tx fees (using default config values from platform)
-      const gasPrice = this.getRecoveryGasPrice();
-      const gasLimit = this.getRecoveryGasLimit();
+      const gasPrice = self.getRecoveryGasPrice();
+      const gasLimit = self.getRecoveryGasLimit();
 
       // Decrypt private keys from KeyCard values
       let userPrv;
       try {
-        userPrv = this.bitgo.decrypt({
+        userPrv = self.bitgo.decrypt({
           input: userKey,
-          password: params.walletPassphrase
+          password: params.walletPassphrase,
         });
       } catch (e) {
         throw new Error(`Error decrypting user keychain: ${e.message}`);
@@ -157,14 +148,14 @@ export class Token extends Eth {
       if (isKrsRecovery) {
         const backupHDNode = HDNode.fromBase58(backupKey);
         backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
-        backupKeyAddress = `0x${ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
+        backupKeyAddress = `0x${optionalDeps.ethUtil.publicToAddress(backupSigningKey, true).toString('hex')}`;
       } else {
         let backupPrv;
 
         try {
-          backupPrv = this.bitgo.decrypt({
+          backupPrv = self.bitgo.decrypt({
             input: backupKey,
-            password: params.walletPassphrase
+            password: params.walletPassphrase,
           });
         } catch (e) {
           throw new Error(`Error decrypting backup keychain: ${e.message}`);
@@ -172,13 +163,13 @@ export class Token extends Eth {
 
         const backupHDNode = HDNode.fromBase58(backupPrv);
         backupSigningKey = backupHDNode.getKey().getPrivateKeyBuffer();
-        backupKeyAddress = `0x${ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
+        backupKeyAddress = `0x${optionalDeps.ethUtil.privateToAddress(backupSigningKey).toString('hex')}`;
       }
 
       // Get nonce for backup key (should be 0)
       let backupKeyNonce = 0;
 
-      const result = yield this.recoveryBlockchainExplorerQuery({
+      const result = yield self.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'txlist',
         address: backupKeyAddress
@@ -191,26 +182,26 @@ export class Token extends Eth {
       }
 
       // get balance of backup key and make sure we can afford gas
-      const backupKeyBalance = yield this.queryAddressBalance(backupKeyAddress);
+      const backupKeyBalance = yield self.queryAddressBalance(backupKeyAddress);
 
       if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
         throw new Error(`Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(10)}. This address must have a balance of at least 0.01 ETH to perform recoveries`);
       }
 
       // get token balance of wallet
-      const txAmount = yield this.queryAddressTokenBalance(this.tokenContractAddress, params.walletContractAddress);
+      const txAmount = yield self.queryAddressTokenBalance(self.tokenContractAddress, params.walletContractAddress);
 
       // build recipients object
       const recipients = [{
         address: params.recoveryDestination,
-        amount: txAmount.toString(10)
+        amount: txAmount.toString(10),
       }];
 
       // Get sequence ID using contract call
-      const sequenceId = yield this.querySequenceId(params.walletContractAddress);
+      const sequenceId = yield self.querySequenceId(params.walletContractAddress);
 
       // Get operation hash and sign it
-      const operationHash = this.getOperationSha3ForExecuteAndConfirm(recipients, this.getDefaultExpireTime(), sequenceId);
+      const operationHash = self.getOperationSha3ForExecuteAndConfirm(recipients, self.getDefaultExpireTime(), sequenceId);
       const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
       try {
@@ -221,20 +212,20 @@ export class Token extends Eth {
 
       const txInfo = {
         recipient: recipients[0],
-        expireTime: this.getDefaultExpireTime(),
+        expireTime: self.getDefaultExpireTime(),
         contractSequenceId: sequenceId,
         signature: signature,
-        gasLimit: gasLimit.toString(10)
+        gasLimit: gasLimit.toString(10),
       };
 
       // calculate send data
-      const sendMethodArgs = this.getSendMethodArgs(txInfo);
-      const methodSignature = ethAbi.methodID('sendMultiSigToken', _.map(sendMethodArgs, 'type'));
-      const encodedArgs = ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
+      const sendMethodArgs = self.getSendMethodArgs(txInfo);
+      const methodSignature = optionalDeps.ethAbi.methodID('sendMultiSigToken', _.map(sendMethodArgs, 'type'));
+      const encodedArgs = optionalDeps.ethAbi.rawEncode(_.map(sendMethodArgs, 'type'), _.map(sendMethodArgs, 'value'));
       const sendData = Buffer.concat([methodSignature, encodedArgs]);
 
       // Build contract call and sign it
-      const tx = new EthTx({
+      const tx = new optionalDeps.EthTx({
         to: params.walletContractAddress,
         nonce: backupKeyNonce,
         value: 0,
@@ -248,8 +239,8 @@ export class Token extends Eth {
         tx.sign(backupSigningKey);
       }
 
-      const signedTx: any = {
-        id: ethUtil.bufferToHex(tx.hash(true)),
+      const signedTx: RecoveryInfo = {
+        id: optionalDeps.ethUtil.bufferToHex(tx.hash(true)),
         tx: tx.serialize().toString('hex')
       };
 
@@ -267,9 +258,9 @@ export class Token extends Eth {
       ['string', 'address', 'uint', 'address', 'uint', 'uint'],
       [
         'ERC20',
-        new ethUtil.BN(ethUtil.stripHexPrefix(recipient.address), 16),
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        new ethUtil.BN(ethUtil.stripHexPrefix(this.tokenContractAddress), 16),
+        new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(this.tokenContractAddress), 16),
         expireTime,
         contractSequenceId
       ]
@@ -308,7 +299,7 @@ export class Token extends Eth {
       {
         name: 'signature',
         type: 'bytes',
-        value: ethUtil.toBuffer(txInfo.signature)
+        value: optionalDeps.ethUtil.toBuffer(txInfo.signature)
       }
     ];
   }
