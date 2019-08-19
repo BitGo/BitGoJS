@@ -46,7 +46,7 @@
     "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
-    "@bitgo/statics": "^1.2.0",
+    "@bitgo/statics": "^1.6.1-rc.0",
     "@bitgo/unspents": "^0.6.0",
     "algosdk": "git+https://github.com/BitGo/algosdk-bitgo.git",
     "assert": "^0.4.9",
