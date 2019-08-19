@@ -1,3 +1,6 @@
+/**
+ * @prettier
+ */
 import * as express from 'express';
 import * as httpProxy from 'http-proxy';
 import * as url from 'url';
@@ -48,7 +51,9 @@ function setupLogging(app, config: Config): void {
   }
 
   app.use(middleware);
-  morgan.token('remote-user', function(req) { return req.isProxy ? 'proxy' : 'local_express'; });
+  morgan.token('remote-user', function(req) {
+    return req.isProxy ? 'proxy' : 'local_express';
+  });
 }
 
 /**
@@ -102,7 +107,9 @@ function configureProxy(app, config: Config): void {
     // Need to rewrite the host, otherwise cross-site protection kicks in
     proxyReq.setHeader('host', url.parse(Environments[env].uri).hostname);
 
-    const userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
+    const userAgent = req.headers['user-agent']
+      ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent']
+      : BITGOEXPRESS_USER_AGENT;
     proxyReq.setHeader('User-Agent', userAgent);
   });
 
@@ -116,7 +123,8 @@ function configureProxy(app, config: Config): void {
   proxy.on('econnreset', (err, _, res) => {
     debug('Proxy server connection reset error: ', err);
     sendError(res, 500, {
-      error: 'BitGo Express encountered a connection reset error while attempting to proxy your request to BitGo. Please try again.',
+      error:
+        'BitGo Express encountered a connection reset error while attempting to proxy your request to BitGo. Please try again.',
     });
   });
 
@@ -140,7 +148,7 @@ function configureProxy(app, config: Config): void {
  * @return {Server}
  */
 function createHttpsServer(app, config: Config): Bluebird<Server> {
-  return co(function *createHttpsServer() {
+  return co(function* createHttpsServer() {
     const { keyPath, crtPath } = config;
     const privateKeyPromise = fs.readFileAsync(keyPath, 'utf8');
     const certificatePromise = fs.readFileAsync(crtPath, 'utf8');
@@ -182,7 +190,7 @@ export function startup(config: Config, baseUri: string): () => void {
       console.log(`Custom bitcoin network: ${customBitcoinNetwork}`);
     }
   };
-};
+}
 
 /**
  * helper function to determine whether we should run the server over TLS or not
@@ -200,10 +208,10 @@ function isTLS(config: Config): boolean {
  * @return {Server}
  */
 export function createServer(config: Config, app) {
-  return co(function *() {
+  return co(function*() {
     return isTLS(config) ? yield createHttpsServer(app, config) : createHttpServer(app);
   }).call(this);
-};
+}
 
 /**
  * Create the base URI where the BitGoExpress server will be available once started
@@ -214,7 +222,7 @@ export function createBaseUri(config: Config): string {
   const tls = isTLS(config);
   const isStandardPort = (port === 80 && !tls) || (port === 443 && tls);
   return `http${tls ? 's' : ''}://${bind}${!isStandardPort ? ':' + port : ''}`;
-};
+}
 
 /**
  * Check environment and other preconditions to ensure bitgo-express can start safely
@@ -226,9 +234,13 @@ function checkPreconditions(config: Config) {
   // warn or throw if the NODE_ENV is not production when BITGO_ENV is production - this can leak system info from express
   if (env === 'prod' && process.env.NODE_ENV !== 'production') {
     if (!disableEnvCheck) {
-      throw new NodeEnvironmentError('NODE_ENV should be set to production when running against prod environment. Use --disableenvcheck if you really want to run in a non-production node configuration.');
+      throw new NodeEnvironmentError(
+        'NODE_ENV should be set to production when running against prod environment. Use --disableenvcheck if you really want to run in a non-production node configuration.'
+      );
     } else {
-      console.warn(`warning: unsafe NODE_ENV '${process.env.NODE_ENV}'. NODE_ENV must be set to 'production' when running against BitGo production environment.`);
+      console.warn(
+        `warning: unsafe NODE_ENV '${process.env.NODE_ENV}'. NODE_ENV must be set to 'production' when running against BitGo production environment.`
+      );
     }
   }
 
@@ -260,7 +272,7 @@ export function app(cfg: Config): any {
 
   // enable specified debug namespaces
   if (_.isArray(debugNamespace)) {
-    _.forEach(debugNamespace, (ns) => debugLib.enable(ns));
+    _.forEach(debugNamespace, ns => debugLib.enable(ns));
   }
 
   checkPreconditions(cfg);
@@ -281,10 +293,10 @@ export function app(cfg: Config): any {
   }
 
   return app;
-};
+}
 
 export function init(): Bluebird<any> {
-  return co(function *() {
+  return co(function*() {
     const cfg = config();
     const expressApp = app(cfg);
 
@@ -296,4 +308,4 @@ export function init(): Bluebird<any> {
     server.listen(port, bind, startup(cfg, baseUri));
     server.timeout = 300 * 1000; // 5 minutes
   }).call(this);
-};
+}
