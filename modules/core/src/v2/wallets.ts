@@ -125,6 +125,10 @@ export class Wallets {
         throw new Error('invalid argument for isCustodial - boolean expected');
       }
 
+      if (params.address && (!_.isString(params.address) || !this.baseCoin.isValidAddress(params.address))) {
+        throw new Error('invalid argument for address - valid address string expected');
+      }
+
       const walletParams: any = _.pick(params, [
         'label',
         'm',
@@ -136,6 +140,7 @@ export class Wallets {
         'tags',
         'clientFlags',
         'type',
+        'address',
       ]);
 
       // Additional params needed for xrp
