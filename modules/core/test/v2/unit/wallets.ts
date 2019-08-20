@@ -40,9 +40,13 @@ describe('V2 Wallets:', function() {
       yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: 1 })
       .should.be.rejectedWith('invalid argument for isCustodial - boolean expected');
 
-      // isCustodial flag is not a boolean
+      // type is not a string
       yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, type: 1 })
       .should.be.rejectedWith('Expecting parameter string: type but found number');
+
+      // Address is an invalid address
+      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address: '$' })
+        .should.be.rejectedWith('invalid argument for address - valid address string expected');
     }));
 
     it('creates a paired custodial wallet', co(function *createPairedCustodialWallet() {
@@ -56,6 +60,23 @@ describe('V2 Wallets:', function() {
       })
       .reply(200, {});
       yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, isCustodial: true });
+    }));
+
+    it('creates an eos wallet with custom address', co(function *createWalletCustomAddress() {
+      const eosBitGo = new TestV2BitGo({ env: 'mock' });
+      eosBitGo.initializeTestVars();
+      const eosWallets = eosBitGo.coin('teos').wallets();
+      const address = 'testeosaddre';
+      nock(bgUrl)
+        .post('/api/v2/teos/wallet', function(body) {
+          body.should.have.property('keys');
+          body.m.should.equal(2);
+          body.n.should.equal(3);
+          body.address.should.equal(address);
+          return true;
+        })
+        .reply(200, {});
+      yield eosWallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address });
     }));
 
     it('creates a single custodial wallet', co(function *createSingleCustodialWallet() {
