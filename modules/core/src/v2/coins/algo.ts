@@ -130,7 +130,7 @@ export class Algo extends BaseCoin {
    * @param {String} pub the pub to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidPub(pub): boolean {
+  isValidPub(pub: string): boolean {
     return isValidAddress(pub);
   }
 
@@ -203,7 +203,7 @@ export class Algo extends BaseCoin {
   ): Bluebird<TransactionExplanation> {
     return co(function*() {
       // take txHex first always, but as it might already be signed, take halfSigned second
-      let txHex = params.txHex ? params.txHex : params.halfSigned.txHex;
+      const txHex = params.txHex ? params.txHex : params.halfSigned.txHex;
       let tx;
 
       try {
