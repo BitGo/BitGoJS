@@ -4,6 +4,7 @@
 import { HDNode } from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps } from './eth';
@@ -25,13 +26,13 @@ export interface TokenConfig {
 export class Token extends Eth {
   public readonly tokenConfig: TokenConfig;
 
-  constructor(bitgo: any, tokenConfig: TokenConfig) {
+  constructor(bitgo: BitGo, tokenConfig: TokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
   static createTokenConstructor(config: TokenConfig): CoinConstructor {
-    return (bitgo: any) => new Token(bitgo, config);
+    return (bitgo: BitGo) => new Token(bitgo, config);
   }
 
   get type() {

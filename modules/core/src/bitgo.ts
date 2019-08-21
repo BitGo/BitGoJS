@@ -1828,9 +1828,8 @@ export class BitGo {
    * Get a key for sharing a wallet with a user
    * @param email email of user to share wallet with
    * @param callback
-   * @deprecated
    */
-  getSharingKey({ email }: GetSharingKeyOptions, callback) {
+  getSharingKey({ email }: GetSharingKeyOptions, callback?: NodeCallback<any>): Bluebird<any> {
     if (!_.isString(email)) {
       throw new Error('required string email');
     }
@@ -2236,5 +2235,14 @@ export class BitGo {
     return co(function *() {
       return TransactionBuilder.calculateMinerFeeInfo(params);
     }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Set a request tracer to provide request IDs during multi-request workflows
+   */
+  setRequestTracer(reqTracer: RequestTracer) {
+    if (reqTracer) {
+      this._reqId = reqTracer;
+    }
   }
 }

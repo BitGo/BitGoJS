@@ -1,11 +1,12 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Dash } from './dash';
 
 export class Tdash extends Dash {
-  constructor(bitgo) {
+  constructor(bitgo: BitGo) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
     super(bitgo, {
       messagePrefix: '\x19Dash Signed Message:\n',
@@ -23,7 +24,7 @@ export class Tdash extends Dash {
     });
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Tdash(bitgo);
   }
 

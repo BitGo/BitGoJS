@@ -1,12 +1,13 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Ltc } from './ltc';
 import * as bitcoin from 'bitgo-utxo-lib';
 
 export class Tltc extends Ltc {
-  constructor(bitgo) {
+  constructor(bitgo: BitGo) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
     super(bitgo, {
       magic: 0xd9b4bef9,
@@ -29,7 +30,7 @@ export class Tltc extends Ltc {
     this.supportAltScriptDestination = false;
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Tltc(bitgo);
   }
 

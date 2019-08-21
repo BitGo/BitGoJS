@@ -1,3 +1,4 @@
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import * as common from '../../common';
@@ -12,11 +13,11 @@ export interface TransactionInfo {
 }
 
 export class Btc extends AbstractUtxoCoin {
-  constructor(bitgo: any, network?: UtxoNetwork) {
+  constructor(bitgo: BitGo, network?: UtxoNetwork) {
     super(bitgo, network || bitcoin.networks.bitcoin);
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Btc(bitgo);
   }
 
@@ -45,8 +46,9 @@ export class Btc extends AbstractUtxoCoin {
   }
 
   getRecoveryFeePerBytes(): Bluebird<number> {
+    const self = this;
     return co(function *getRecoveryFeePerBytes() {
-      const recoveryFeeUrl = yield this.getRecoveryFeeRecommendationApiBaseUrl();
+      const recoveryFeeUrl = yield self.getRecoveryFeeRecommendationApiBaseUrl();
 
       const publicFeeDataReq = request.get(recoveryFeeUrl);
       publicFeeDataReq.forceV1Auth = true;

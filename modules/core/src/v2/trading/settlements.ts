@@ -2,6 +2,7 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../../bitgo';
 
 import { NodeCallback } from '../types';
 import { Settlement } from './settlement';
@@ -19,11 +20,11 @@ interface CreateSettlementParams {
 }
 
 export class Settlements {
-  private bitgo;
+  private bitgo: BitGo;
   private enterpriseId: string;
   private account?: TradingAccount;
 
-  constructor(bitgo, enterpriseId: string, account?: TradingAccount) {
+  constructor(bitgo: BitGo, enterpriseId: string, account?: TradingAccount) {
     this.bitgo = bitgo;
     this.enterpriseId = enterpriseId;
     this.account = account;
@@ -34,18 +35,19 @@ export class Settlements {
    * @param callback
    */
   list(callback?: NodeCallback<Settlement[]>): Bluebird<Settlement[]> {
+    const self = this;
     return co(function* list() {
       let url;
-      if (this.account) {
-        url = this.bitgo.microservicesUrl(
-          `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/settlements`
+      if (self.account) {
+        url = self.bitgo.microservicesUrl(
+          `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/settlements`
         );
       } else {
-        url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterpriseId}/settlements`);
+        url = self.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${self.enterpriseId}/settlements`);
       }
-      const response = yield this.bitgo.get(url).result();
+      const response = yield self.bitgo.get(url).result();
 
-      return response.settlements.map(settlement => new Settlement(settlement, this.bitgo, this.enterpriseId));
+      return response.settlements.map(settlement => new Settlement(settlement, self.bitgo, self.enterpriseId));
     })
       .call(this)
       .asCallback(callback);
@@ -58,17 +60,18 @@ export class Settlements {
    * @param callback
    */
   get({ id, accountId }, callback?: NodeCallback<Settlement>): Bluebird<Settlement> {
+    const self = this;
     return co(function* get() {
-      if (!accountId && !this.account) {
+      if (!accountId && !self.account) {
         throw new Error('accountId must be provided in parameters for an enterprise context');
       }
 
-      const url = this.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${this.enterpriseId}/account/${accountId || this.account.id}/settlements/${id}`
+      const url = self.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${accountId || self.account.id}/settlements/${id}`
       );
-      const response = yield this.bitgo.get(url).result();
+      const response = yield self.bitgo.get(url).result();
 
-      return new Settlement(response, this.bitgo, this.enterpriseId);
+      return new Settlement(response, self.bitgo, self.enterpriseId);
     })
       .call(this)
       .asCallback(callback);
@@ -85,8 +88,9 @@ export class Settlements {
    * @param callback
    */
   create(params: CreateSettlementParams, callback?: NodeCallback<Settlement>): Bluebird<Settlement> {
+    const self = this;
     return co(function* create() {
-      if (!this.account) {
+      if (!self.account) {
         throw new Error(
           'Must select a trading account before creating a settlement. Try tradingAccount.settlements().create()'
         );
@@ -96,15 +100,15 @@ export class Settlements {
       const body = Object.assign({}, params as any);
       body.payload = JSON.stringify(body.payload);
 
-      const url = this.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/settlements`
+      const url = self.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/settlements`
       );
-      const response = yield this.bitgo
+      const response = yield self.bitgo
         .post(url)
         .send(body)
         .result();
 
-      return new Settlement(response, this.bitgo, this.enterpriseId);
+      return new Settlement(response, self.bitgo, self.enterpriseId);
     })
       .call(this)
       .asCallback(callback);

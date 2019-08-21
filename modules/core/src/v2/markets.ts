@@ -8,6 +8,7 @@
  */
 
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../bitgo';
 
 import { validateParams } from '../common';
 import { BaseCoin } from './baseCoin';
@@ -24,7 +25,7 @@ export interface LastDaysOptions {
 }
 
 export class Markets {
-  public constructor(private bitgo: any, private baseCoin: BaseCoin) {}
+  public constructor(private bitgo: BitGo, private baseCoin: BaseCoin) {}
 
   /**
    * Get the latest price data
@@ -61,6 +62,7 @@ export class Markets {
    * @returns {*} an object containing average prices from a number of previous days
    */
   lastDays(params: LastDaysOptions, callback: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function*() {
       validateParams(params, ['currencyName'], []);
 
@@ -70,7 +72,7 @@ export class Markets {
         throw new Error('must use a non-negative number of days');
       }
 
-      return this.bitgo.get(this.baseCoin.url('/market/last/' + days + '/' + params.currencyName)).result();
+      return self.bitgo.get(self.baseCoin.url('/market/last/' + days + '/' + params.currencyName)).result();
     })
       .call(this)
       .asCallback(callback);

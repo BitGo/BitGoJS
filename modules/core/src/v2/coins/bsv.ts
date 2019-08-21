@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { Bch } from './bch';
 import * as bitcoin from 'bitgo-utxo-lib';
 const request = require('superagent');
@@ -12,11 +13,11 @@ import * as common from '../../common';
 import * as errors from '../../errors';
 
 export class Bsv extends Bch {
-  constructor(bitgo: any, network?: UtxoNetwork) {
+  constructor(bitgo: BitGo, network?: UtxoNetwork) {
     super(bitgo, network || bitcoin.networks.bitcoinsv);
   }
 
-  static createInstance(bitgo): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Bsv(bitgo);
   }
 
@@ -33,7 +34,7 @@ export class Bsv extends Bch {
   }
 
   recoveryBlockchainExplorerUrl(url: string): string {
-    const baseUrl = common.Environments[this.bitgo.env].bsvExplorerBaseUrl;
+    const baseUrl = common.Environments[this.bitgo.getEnv()].bsvExplorerBaseUrl;
 
     // TODO BG-9989: There is no explorer api for Bitcoin SV yet. Once we have one, add it to src/common.js and update
     // this method.
@@ -43,13 +44,14 @@ export class Bsv extends Bch {
       );
     }
 
-    return common.Environments[this.bitgo.env].bsvExplorerBaseUrl + url;
+    return common.Environments[this.bitgo.getEnv()].bsvExplorerBaseUrl + url;
   }
 
   getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
+    const self = this;
     return co(function* getAddressInfoFromExplorer() {
       // TODO BG-9989: Update this method with the correct API route and parsing once we have one
-      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
+      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
       addrInfo.txCount = addrInfo.txApperances;
       addrInfo.totalBalance = addrInfo.balanceSat;
@@ -59,9 +61,10 @@ export class Bsv extends Bch {
   }
 
   getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
+    const self = this;
     return co(function* getUnspentInfoFromExplorer() {
       // TODO BG-9989: Update this method with the correct API route and parsing once we have one
-      const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
+      const unspents = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
       unspents.forEach(function processUnspent(unspent) {
         unspent.amount = unspent.satoshis;

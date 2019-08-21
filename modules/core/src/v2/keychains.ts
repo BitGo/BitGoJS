@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../bitgo';
 
 import { BaseCoin, KeyPair } from './baseCoin';
 import { NodeCallback } from './types';
@@ -49,6 +50,16 @@ interface AddKeychainOptions {
 export interface CreateBackupOptions {
   provider?: string;
   source?: string;
+  disableKRSEmail?: boolean;
+  krsSpecific?: any;
+  type?: string;
+  reqId?: RequestTracer;
+}
+
+interface CreateBitGoOptions {
+  source?: 'bitgo';
+  enterprise?: string;
+  reqId?: RequestTracer;
 }
 
 interface GetKeysForSigningOptions {
@@ -58,16 +69,17 @@ interface GetKeysForSigningOptions {
 
 export class Keychains {
 
-  private readonly bitgo: any;
+  private readonly bitgo: BitGo;
   private readonly baseCoin: BaseCoin;
 
-  constructor(bitgo: any, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }
 
   /**
    * Get a keychain by ID
+   * @param params
    * @param params.id
    * @param params.xpub (optional)
    * @param params.ethAddress (optional)
@@ -75,7 +87,6 @@ export class Keychains {
    * @param callback
    */
   get(params: GetKeychainOptions, callback?: NodeCallback<any>): Bluebird<any> {
-
     validateParams(params, [], ['xpub', 'ethAddress'], callback);
 
     if (!params.id) {
@@ -84,7 +95,7 @@ export class Keychains {
 
     const id = params.id;
     if (params.reqId) {
-      this.bitgo._reqId = params.reqId;
+      this.bitgo.setRequestTracer(params.reqId);
     }
     return this.bitgo.get(this.baseCoin.url('/key/' + encodeURIComponent(id)))
         .result()
@@ -99,8 +110,8 @@ export class Keychains {
    * @returns {*}
    */
   list(params: ListKeychainOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
-
       const queryObject: any = {};
 
       if (!_.isUndefined(params.limit)) {
@@ -116,10 +127,9 @@ export class Keychains {
         queryObject.prevId = params.prevId;
       }
 
-      return this.bitgo.get(this.baseCoin.url('/key')).query(queryObject).result();
+      return self.bitgo.get(self.baseCoin.url('/key')).query(queryObject).result();
     }).call(this).asCallback(callback);
   }
-
 
   /**
    * Change the decryption password for all possible keychains associated with a user.
@@ -140,20 +150,21 @@ export class Keychains {
    *  }
    */
   updatePassword(params: UpdatePasswordOptions, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       validateParams(params, ['oldPassword', 'newPassword'], [], callback);
       const changedKeys = {};
       let prevId;
       let keysLeft = true;
       while (keysLeft) {
-        const result = yield this.list({ limit: 500, prevId });
+        const result = yield self.list({ limit: 500, prevId });
         for (const key of result.keys) {
           const oldEncryptedPrv = key.encryptedPrv;
           if (_.isUndefined(oldEncryptedPrv)) {
             continue;
           }
           try {
-            const updatedKeychain = this.updateSingleKeychainPassword({
+            const updatedKeychain = self.updateSingleKeychainPassword({
               keychain: key,
               oldPassword: params.oldPassword,
               newPassword: params.newPassword
@@ -178,14 +189,13 @@ export class Keychains {
 
   /**
    * Update the password used to decrypt a single keychain
-   * @param keychain - The keychain whose password should be updated
-   * @param oldPassword - The old password used for encrypting the key
-   * @param newPassword - The new password to be used for encrypting the key
-   * @param callback
+   * @param params
+   * @param params.keychain - The keychain whose password should be updated
+   * @param params.oldPassword - The old password used for encrypting the key
+   * @param params.newPassword - The new password to be used for encrypting the key
    * @returns {object}
    */
   updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions = {}): any {
-
     if (!_.isString(params.oldPassword)) {
       throw new Error('expected old password to be a string');
     }
@@ -219,7 +229,7 @@ export class Keychains {
 
   /**
    * Add a keychain to BitGo's records
-   * @param AddKeychainOptions (see above)
+   * @param params
    * @param callback
    */
   add(params: AddKeychainOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
@@ -233,7 +243,7 @@ export class Keychains {
     }
 
     if (params.reqId) {
-      this.bitgo._reqId = params.reqId;
+      this.bitgo.setRequestTracer(params.reqId);
     }
     return this.bitgo.post(this.baseCoin.url('/key'))
         .send({
@@ -257,30 +267,31 @@ export class Keychains {
    * @param params (empty)
    * @param callback
    */
-  createBitGo(params: { source?: 'bitgo'} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  createBitGo(params: CreateBitGoOptions, callback?: NodeCallback<any>): Bluebird<any> {
     params.source = 'bitgo';
 
     this.baseCoin.preCreateBitGo(params);
-
     return this.add(params, callback);
   }
 
   /**
    * Create a backup key
+   * @param params
    * @param params.provider (optional)
    * @param callback
    */
   createBackup(params: CreateBackupOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       params.source = 'backup';
 
       if (!params.provider) {
         // if the provider is undefined, we generate a local key and add the source details
-        const key = this.create();
+        const key = self.create();
         _.extend(params, key);
       }
 
-      const serverResponse = yield this.add(params, callback);
+      const serverResponse = yield self.add(params, callback);
       return _.extend({}, serverResponse, _.pick(params, ['prv', 'encryptedPrv', 'provider', 'source']));
     }).call(this).asCallback(callback);
   }
@@ -292,11 +303,12 @@ export class Keychains {
    * @returns {Bluebird[]}
    */
   getKeysForSigning(params: GetKeysForSigningOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       const reqId = params.reqId || new RequestTracer();
       const ids = params.wallet.baseCoin.keyIdsForSigning();
       const keychainQueriesBluebirds = ids.map(
-        id => this.get({ id: params.wallet.keyIds()[id], reqId })
+        id => self.get({ id: params.wallet.keyIds()[id], reqId })
       );
       return Bluebird.all(keychainQueriesBluebirds);
     }).call(this).asCallback(callback);

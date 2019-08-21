@@ -1,11 +1,12 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { MethodNotImplementedError } from '../../errors';
 
 export class Susd extends BaseCoin {
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Susd(bitgo);
   }
 

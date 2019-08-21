@@ -1,3 +1,4 @@
+import { BitGo } from '../../bitgo';
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import { BaseCoin } from '../baseCoin';
 import * as bitcoin from 'bitgo-utxo-lib';
@@ -7,7 +8,7 @@ import * as common from '../../common';
 const request = require('superagent');
 
 export class Ltc extends AbstractUtxoCoin {
-  constructor(bitgo, network?) {
+  constructor(bitgo: BitGo, network?) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
     super(bitgo, network || {
       messagePrefix: '\x19Litecoin Signed Message:\n',
@@ -30,7 +31,7 @@ export class Ltc extends AbstractUtxoCoin {
     this.supportAltScriptDestination = false;
   }
 
-  static createInstance(bitgo): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Ltc(bitgo);
   }
 

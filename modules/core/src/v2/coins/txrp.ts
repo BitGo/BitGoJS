@@ -3,15 +3,16 @@
  *
  * @format
  */
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Xrp } from './xrp';
 
 export class Txrp extends Xrp {
-  protected constructor(bitgo: any) {
+  protected constructor(bitgo: BitGo) {
     super(bitgo);
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Txrp(bitgo);
   }
   /**

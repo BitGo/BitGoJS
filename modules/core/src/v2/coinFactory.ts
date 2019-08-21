@@ -2,6 +2,7 @@
  * @prettier
  */
 import { coins, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
+import { BitGo } from '../bitgo';
 import { BaseCoin } from './baseCoin';
 import { Algo } from './coins/algo';
 import { Bch } from './coins/bch';
@@ -38,7 +39,7 @@ import { Zec } from './coins/zec';
 
 import * as errors from '../errors';
 
-export type CoinConstructor = (bitgo: any, staticsCoin: Readonly<StaticsBaseCoin>) => BaseCoin;
+export type CoinConstructor = (bitgo: BitGo, staticsCoin: Readonly<StaticsBaseCoin>) => BaseCoin;
 
 export class CoinFactory {
   private coinConstructors = new Map<string, CoinConstructor>();
@@ -50,7 +51,7 @@ export class CoinFactory {
    * @throws CoinNotDefinedError
    * @throws UnsupportedCoinError
    */
-  public getInstance(bitgo: any, name: string): BaseCoin {
+  public getInstance(bitgo: BitGo, name: string): BaseCoin {
     let staticsCoin;
     try {
       staticsCoin = coins.get(name);

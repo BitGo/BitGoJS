@@ -3,6 +3,7 @@
  */
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+import { BitGo } from '../bitgo';
 
 import { BaseCoin } from './baseCoin';
 import { Enterprise } from './enterprise';
@@ -15,10 +16,10 @@ export interface GetEnterpriseOptions {
 }
 
 export class Enterprises {
-  private readonly bitgo: any;
+  private readonly bitgo: BitGo;
   private readonly baseCoin: BaseCoin;
 
-  constructor(bitgo: any, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }
@@ -29,11 +30,12 @@ export class Enterprises {
    * @param callback
    */
   public list(params: {} = {}, callback?: NodeCallback<Enterprise[]>): Bluebird<Enterprise[]> {
+    const self = this;
     return co(function*() {
-      const response = yield this.bitgo.get(this.bitgo.url('/enterprise')).result();
+      const response = yield self.bitgo.get(self.bitgo.url('/enterprise')).result();
       return response.enterprises.map(e => {
         // instantiate a new object for each enterprise
-        return new Enterprise(this.bitgo, this.baseCoin, e);
+        return new Enterprise(self.bitgo, self.baseCoin, e);
       });
     })
       .call(this)
@@ -46,6 +48,7 @@ export class Enterprises {
    * @param callback
    */
   public get(params: GetEnterpriseOptions = {}, callback?: NodeCallback<Enterprise>): Bluebird<Enterprise> {
+    const self = this;
     return co(function*() {
       const enterpriseId = params.id;
       if (_.isUndefined(enterpriseId)) {
@@ -55,8 +58,8 @@ export class Enterprises {
         throw new Error('id must be hexadecimal enterprise ID');
       }
 
-      const enterpriseData = yield this.bitgo.get(this.bitgo.url(`/enterprise/${enterpriseId}`)).result();
-      return new Enterprise(this.bitgo, this.baseCoin, enterpriseData);
+      const enterpriseData = yield self.bitgo.get(self.bitgo.url(`/enterprise/${enterpriseId}`)).result();
+      return new Enterprise(self.bitgo, self.baseCoin, enterpriseData);
     })
       .call(this)
       .asCallback(callback);
@@ -69,12 +72,13 @@ export class Enterprises {
    */
   // TODO: (CT-686) Flesh out params object with valid enterprise creation parameters
   public create(params: any = {}, callback?: NodeCallback<Enterprise>): Bluebird<Enterprise> {
+    const self = this;
     return co(function*() {
-      const enterpriseData = yield this.bitgo
-        .post(this.bitgo.url(`/enterprise`))
+      const enterpriseData = yield self.bitgo
+        .post(self.bitgo.url(`/enterprise`))
         .send(params)
         .result();
-      return new Enterprise(this.bitgo, this.baseCoin, enterpriseData);
+      return new Enterprise(self.bitgo, self.baseCoin, enterpriseData);
     })
       .call(this)
       .asCallback(callback);

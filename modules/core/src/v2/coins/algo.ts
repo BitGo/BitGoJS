@@ -16,6 +16,7 @@ import {
   Encoding,
   mergeMultisigTransactions,
 } from 'algosdk';
+import { BitGo } from '../../bitgo';
 
 import { BaseCoin, BaseCoinTransactionExplanation, KeyPair } from '../baseCoin';
 import { NodeCallback } from '../types';
@@ -77,11 +78,11 @@ export interface VerifiedTransactionParameters {
 }
 
 export class Algo extends BaseCoin {
-  constructor(bitgo) {
+  constructor(bitgo: BitGo) {
     super(bitgo);
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Algo(bitgo);
   }
 

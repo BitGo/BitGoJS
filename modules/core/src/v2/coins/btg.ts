@@ -1,3 +1,4 @@
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Btc } from './btc';
 import * as bitcoin from 'bitgo-utxo-lib';
@@ -7,7 +8,7 @@ import * as common from '../../common';
 const request = require('superagent');
 
 export class Btg extends Btc {
-  constructor(bitgo: any, network?: any) {
+  constructor(bitgo: BitGo, network?: any) {
     super(bitgo, network || bitcoin.networks.bitcoingold);
   }
 
@@ -72,18 +73,19 @@ export class Btg extends Btc {
   }
 
   recoveryBlockchainExplorerUrl(url: string): string {
-    const baseUrl = common.Environments[this.bitgo.env].btgExplorerBaseUrl;
+    const baseUrl = common.Environments[this.bitgo.getEnv()].btgExplorerBaseUrl;
 
     if (!baseUrl) {
       throw new Error(`Recoveries not supported for ${this.getChain()} - no explorer available`);
     }
 
-    return common.Environments[this.bitgo.env].btgExplorerBaseUrl + url;
+    return common.Environments[this.bitgo.getEnv()].btgExplorerBaseUrl + url;
   }
 
   getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
+    const self = this;
     return co(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
+      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
       addrInfo.txCount = addrInfo.txApperances;
       addrInfo.totalBalance = addrInfo.balanceSat;
@@ -93,8 +95,9 @@ export class Btg extends Btc {
   }
 
   getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
+    const self = this;
     return co(function *getUnspentInfoFromExplorer() {
-      const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
+      const unspents = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
       unspents.forEach(function processUnspent(unspent) {
         unspent.amount = unspent.satoshis;
@@ -104,5 +107,4 @@ export class Btg extends Btc {
       return unspents;
     }).call(this);
   }
-
 }

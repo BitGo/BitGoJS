@@ -1,4 +1,8 @@
+/**
+ * @prettier
+ */
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../../bitgo';
 
 import { NodeCallback } from '../types';
 import { TradingAccount } from './tradingAccount';
@@ -15,12 +19,12 @@ interface TradingPartnerReferralParameters {
 }
 
 export class TradingPartners {
-  private bitgo;
+  private bitgo: BitGo;
 
   private enterpriseId: string;
   private account: TradingAccount;
 
-  constructor(bitgo, enterpriseId: string, account: TradingAccount) {
+  constructor(bitgo: BitGo, enterpriseId: string, account: TradingAccount) {
     this.bitgo = bitgo;
     this.enterpriseId = enterpriseId;
     this.account = account;
@@ -31,12 +35,19 @@ export class TradingPartners {
    * @param callback
    */
   list(callback?: NodeCallback<TradingPartner[]>): Bluebird<TradingPartner[]> {
-    return co(function *list() {
-      const url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/tradingpartners`);
-      const response = yield this.bitgo.get(url).result();
+    const self = this;
+    return co(function* list() {
+      const url = self.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners`
+      );
+      const response = yield self.bitgo.get(url).result();
 
-      return response.tradingPartners.map(partner => new TradingPartner(partner, this.bitgo, this.enterpriseId, this.account));
-    }).call(this).asCallback(callback);
+      return response.tradingPartners.map(
+        partner => new TradingPartner(partner, self.bitgo, self.enterpriseId, self.account)
+      );
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -50,11 +61,19 @@ export class TradingPartners {
    * @param callback
    */
   refer(params: TradingPartnerReferralParameters, callback?: NodeCallback<{}>): Bluebird<{}> {
-    return co(function *refer() {
-      const url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/tradingpartners/referrals`);
-      yield this.bitgo.post(url).send(params).result();
+    const self = this;
+    return co(function* refer() {
+      const url = self.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners/referrals`
+      );
+      yield self.bitgo
+        .post(url)
+        .send(params)
+        .result();
 
       return {}; // TODO: return result of referral
-    }).call(this).asCallback(callback);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 }

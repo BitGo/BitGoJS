@@ -2,6 +2,7 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../../bitgo';
 
 import { NodeCallback } from '../types';
 import { TradingAccount } from './tradingAccount';
@@ -13,7 +14,7 @@ export enum TradingPartnerStatus {
 }
 
 export class TradingPartner {
-  private bitgo;
+  private bitgo: BitGo;
   private enterpriseId: string;
   private currentAccount: TradingAccount; // account of the user using the SDK, needed to construct balance check URL
 
@@ -21,7 +22,7 @@ export class TradingPartner {
   public accountId: string;
   public status: TradingPartnerStatus;
 
-  constructor(tradingPartnerData, bitgo, enterpriseId: string, currentAccount: TradingAccount) {
+  constructor(tradingPartnerData, bitgo: BitGo, enterpriseId: string, currentAccount: TradingAccount) {
     this.name = tradingPartnerData.name;
     this.accountId = tradingPartnerData.accountId;
     this.status = tradingPartnerData.status;
@@ -38,12 +39,13 @@ export class TradingPartner {
    * @param callback
    */
   checkBalance(currency: string, amount: string, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+    const self = this;
     return co(function* checkBalance() {
-      const url = this.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.currentAccount.id}/tradingpartners/${this.accountId}/balance`
+      const url = self.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.currentAccount.id}/tradingpartners/${self.accountId}/balance`
       );
 
-      const response = yield this.bitgo
+      const response = yield self.bitgo
         .get(url)
         .query({ currency, amount })
         .result();

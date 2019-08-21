@@ -6,6 +6,7 @@ import * as bitcoin from 'bitgo-utxo-lib';
 import { hdPath } from '../bitcoin';
 const bitcoinMessage = require('bitcoinjs-message');
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../bitgo';
 import * as errors from '../errors';
 import { NodeCallback } from './types';
 const co = Bluebird.coroutine;
@@ -45,7 +46,7 @@ export interface KeyPair {
 }
 
 export abstract class BaseCoin {
-  protected readonly bitgo;
+  protected readonly bitgo: BitGo;
   protected readonly _url: string;
   protected readonly _enterprises: Enterprises;
   protected readonly _wallets: Wallets;
@@ -54,9 +55,9 @@ export abstract class BaseCoin {
   protected readonly _pendingApprovals: PendingApprovals;
   protected readonly _markets: Markets;
 
-  protected constructor(bitgo) {
+  protected constructor(bitgo: BitGo) {
     this.bitgo = bitgo;
-    this._url = this.bitgo._baseUrl + '/api/v2/';
+    this._url = this.bitgo.url('/', 2);
     this._wallets = new Wallets(this.bitgo, this);
     this._keychains = new Keychains(this.bitgo, this);
     this._webhooks = new Webhooks(this.bitgo, this);

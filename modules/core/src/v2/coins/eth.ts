@@ -12,6 +12,7 @@ import * as secp256k1 from 'secp256k1';
 import * as request from 'superagent';
 
 import { BaseCoin, KeyPair } from '../baseCoin';
+import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import * as common from '../../common';
@@ -260,7 +261,7 @@ interface RecoverTokenTransaction {
 export class Eth extends BaseCoin {
   static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Eth(bitgo);
   }
 
@@ -355,8 +356,9 @@ export class Eth extends BaseCoin {
    * @returns {BigNumber} address balance
    */
   queryAddressBalance(address: string, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function*() {
-      const result = yield this.recoveryBlockchainExplorerQuery({
+      const result = yield self.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'balance',
         address: address,
@@ -379,6 +381,7 @@ export class Eth extends BaseCoin {
     walletContractAddress: string,
     callback?: NodeCallback<any>
   ): Bluebird<any> {
+    const self = this;
     return co(function*() {
       if (!optionalDeps.ethUtil.isValidAddress(tokenContractAddress)) {
         throw new Error('cannot get balance for invalid token address');
@@ -387,7 +390,7 @@ export class Eth extends BaseCoin {
         throw new Error('cannot get token balance for invalid wallet address');
       }
 
-      const result = yield this.recoveryBlockchainExplorerQuery({
+      const result = yield self.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'tokenbalance',
         contractaddress: tokenContractAddress,
@@ -480,12 +483,13 @@ export class Eth extends BaseCoin {
    * @returns {Number} sequence ID
    */
   querySequenceId(address: string, callback?: NodeCallback<number>): Bluebird<number> {
+    const self = this;
     return co(function*() {
       // Get sequence ID using contract call
       const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
       const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
       const sequenceIdData = Buffer.concat([sequenceIdMethodSignature, sequenceIdArgs]).toString('hex');
-      const result = yield this.recoveryBlockchainExplorerQuery({
+      const result = yield self.recoveryBlockchainExplorerQuery({
         module: 'proxy',
         action: 'eth_call',
         to: address,
@@ -652,11 +656,12 @@ export class Eth extends BaseCoin {
    * @returns {*}
    */
   getAddressNonce(address: string, callback?: NodeCallback<number>): Bluebird<number> {
+    const self = this;
     return co(function*() {
       // Get nonce for backup key (should be 0)
       let nonce = 0;
 
-      const result = yield this.recoveryBlockchainExplorerQuery({
+      const result = yield self.recoveryBlockchainExplorerQuery({
         module: 'account',
         action: 'txlist',
         address,
@@ -1106,13 +1111,15 @@ export class Eth extends BaseCoin {
    * @returns {Object} response from Etherscan
    */
   recoveryBlockchainExplorerQuery(query: any, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function*() {
-      const response = yield request.get(common.Environments[this.bitgo.env].etherscanBaseUrl + '/api').query(query);
+      const response = yield request
+        .get(common.Environments[self.bitgo.getEnv()].etherscanBaseUrl + '/api')
+        .query(query);
 
       if (!response.ok) {
         throw new Error('could not reach Etherscan');
       }
-
       return response.body;
     })
       .call(this)

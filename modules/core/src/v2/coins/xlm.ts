@@ -6,6 +6,7 @@ import * as Bluebird from 'bluebird';
 import * as request from 'superagent';
 import * as stellar from 'stellar-sdk';
 import { BigNumber } from 'bignumber.js';
+import { BitGo } from '../../bitgo';
 
 import { Ed25519KeyDeriver } from '../keyDeriver';
 import * as config from '../../config';
@@ -116,13 +117,13 @@ export class Xlm extends BaseCoin {
   readonly homeDomain: string;
   static readonly maxMemoId: string = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
 
-  constructor(bitgo: any) {
+  constructor(bitgo: BitGo) {
     super(bitgo);
     this.homeDomain = 'bitgo.com'; // used for reverse federation lookup
     stellar.Network.use(new stellar.Network(stellar.Networks.PUBLIC));
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Xlm(bitgo);
   }
 
@@ -158,7 +159,7 @@ export class Xlm extends BaseCoin {
    * Url at which the stellar federation server can be reached
    */
   getFederationServerUrl(): string {
-    return common.Environments[this.bitgo.env].stellarFederationServerUrl;
+    return common.Environments[this.bitgo.getEnv()].stellarFederationServerUrl;
   }
 
   /**
@@ -266,14 +267,15 @@ export class Xlm extends BaseCoin {
    * @returns minimum balance in stroops
    */
   getMinimumReserve(): Bluebird<number> {
+    const self = this;
     return co(function *() {
-      const server = new stellar.Server(this.getHorizonUrl());
+      const server = new stellar.Server(self.getHorizonUrl());
 
       const horizonLedgerInfo = yield server
-      .ledgers()
-      .order('desc')
-      .limit(1)
-      .call();
+        .ledgers()
+        .order('desc')
+        .limit(1)
+        .call();
 
       if (!horizonLedgerInfo) {
         throw new Error('unable to connect to Horizon for reserve requirement data');
@@ -291,14 +293,15 @@ export class Xlm extends BaseCoin {
    * @returns transaction fee in stroops
    */
   getBaseTransactionFee(): Bluebird<number> {
+    const self = this;
     return co(function *() {
-      const server = new stellar.Server(this.getHorizonUrl());
+      const server = new stellar.Server(self.getHorizonUrl());
 
       const horizonLedgerInfo = yield server
-      .ledgers()
-      .order('desc')
-      .limit(1)
-      .call();
+        .ledgers()
+        .order('desc')
+        .limit(1)
+        .call();
 
       if (!horizonLedgerInfo) {
         throw new Error('unable to connect to Horizon for reserve requirement data');
@@ -398,7 +401,7 @@ export class Xlm extends BaseCoin {
    * @return true if stellar username is valid
    */
   isValidStellarUsername(username: string): boolean {
-    return /^[a-z0-9\-\_\.\+\@]+$/.test(username);
+    return /^[a-z0-9\-_.+@]+$/.test(username);
   }
 
   /**
@@ -421,6 +424,7 @@ export class Xlm extends BaseCoin {
    * @param address - stellar address to look for
    */
   federationLookupByName(address: string): Bluebird<stellar.FederationServer.Record> {
+    const self = this;
     return co(function *() {
       const addressParts = _.split(address, '*');
       if (addressParts.length !== 2) {
@@ -428,8 +432,8 @@ export class Xlm extends BaseCoin {
       }
       const [, homeDomain] = addressParts;
       try {
-        if (homeDomain === this.homeDomain) {
-          const federationServer = this.getBitGoFederationServer();
+        if (homeDomain === self.homeDomain) {
+          const federationServer = self.getBitGoFederationServer();
           return yield federationServer.resolveAddress(address);
         } else {
           return yield stellar.FederationServer.resolve(address);
@@ -451,9 +455,10 @@ export class Xlm extends BaseCoin {
    * @param accountId - stellar account id
    */
   federationLookupByAccountId(accountId: string): Bluebird<stellar.FederationServer.Record> {
+    const self = this;
     return co(function *() {
       try {
-        const federationServer = this.getBitGoFederationServer() as stellar.FederationServer;
+        const federationServer = self.getBitGoFederationServer() as stellar.FederationServer;
         return yield federationServer.resolveAccountId(accountId);
       } catch (e) {
         throw new Error(e.response.data.detail);
@@ -485,6 +490,7 @@ export class Xlm extends BaseCoin {
    * @param params
    */
   initiateRecovery(params: RecoveryOptions): Bluebird<stellar.Keypair[]> {
+    const self = this;
     return co(function *() {
       const keys = [];
       let userKey = params.userKey;
@@ -499,23 +505,25 @@ export class Xlm extends BaseCoin {
         throw new KeyRecoveryServiceError(`Unknown key recovery service provider - ${params.krsProvider}`);
       }
 
-      if (isKrsRecovery && !config.krsProviders[params.krsProvider].supportedCoins.includes(this.getFamily())) {
-        throw new KeyRecoveryServiceError(`Specified key recovery service does not support recoveries for ${this.getChain()}`);
+      if (isKrsRecovery && !config.krsProviders[params.krsProvider].supportedCoins.includes(self.getFamily())) {
+        throw new KeyRecoveryServiceError(`Specified key recovery service does not support recoveries for ${self.getChain()}`);
       }
 
-      if (!this.isValidAddress(params.recoveryDestination)) {
+      if (!self.isValidAddress(params.recoveryDestination)) {
         throw new InvalidAddressError('Invalid destination address!');
       }
 
       try {
         if (!userKey.startsWith('S') && !userKey.startsWith('G')) {
-          userKey = this.bitgo.decrypt({
+          userKey = self.bitgo.decrypt({
             input: userKey,
-            password: params.walletPassphrase
+            password: params.walletPassphrase,
           });
         }
 
-        const userKeyPair = isUnsignedSweep ? stellar.Keypair.fromPublicKey(userKey) : stellar.Keypair.fromSecret(userKey);
+        const userKeyPair = isUnsignedSweep ?
+          stellar.Keypair.fromPublicKey(userKey) :
+          stellar.Keypair.fromSecret(userKey);
         keys.push(userKeyPair);
       } catch (e) {
         throw new Error('Failed to decrypt user key with passcode - try again!');
@@ -525,7 +533,7 @@ export class Xlm extends BaseCoin {
         if (!backupKey.startsWith('S') && !isKrsRecovery && !isUnsignedSweep) {
           backupKey = this.bitgo.decrypt({
             input: backupKey,
-            password: params.walletPassphrase
+            password: params.walletPassphrase,
           });
         }
 
@@ -554,8 +562,9 @@ export class Xlm extends BaseCoin {
    * @param callback
    */
   recover(params: RecoveryOptions, callback: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
+    const self = this;
     return co(function *() {
-      const [userKey, backupKey] = yield this.initiateRecovery(params);
+      const [userKey, backupKey] = yield self.initiateRecovery(params);
       const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
       const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
 
@@ -563,8 +572,8 @@ export class Xlm extends BaseCoin {
         throw new Error(`Invalid wallet address: ${params.rootAddress}`);
       }
 
-      const accountDataUrl = `${this.getHorizonUrl()}/accounts/${params.rootAddress}`;
-      const destinationUrl = `${this.getHorizonUrl()}/accounts/${params.recoveryDestination}`;
+      const accountDataUrl = `${self.getHorizonUrl()}/accounts/${params.rootAddress}`;
+      const destinationUrl = `${self.getHorizonUrl()}/accounts/${params.recoveryDestination}`;
 
       let accountData;
       try {
@@ -597,11 +606,11 @@ export class Xlm extends BaseCoin {
         throw new Error('Provided wallet has a balance of 0 XLM, recovery aborted');
       }
 
-      const walletBalance = this.bigUnitsToBaseUnits(nativeBalanceInfo.balance);
-      const minimumReserve = yield this.getMinimumReserve();
-      const baseTxFee = yield this.getBaseTransactionFee();
+      const walletBalance = Number(self.bigUnitsToBaseUnits(nativeBalanceInfo.balance));
+      const minimumReserve: number = yield self.getMinimumReserve();
+      const baseTxFee: number = yield self.getBaseTransactionFee();
       const recoveryAmount = walletBalance - minimumReserve - baseTxFee;
-      const formattedRecoveryAmount = (this.baseUnitsToBigUnits(recoveryAmount)).toString();
+      const formattedRecoveryAmount = self.baseUnitsToBigUnits(recoveryAmount).toString();
 
       const txBuilder = new stellar.TransactionBuilder(account);
       const operation = unfundedDestination ?
@@ -633,7 +642,7 @@ export class Xlm extends BaseCoin {
 
       if (isKrsRecovery) {
         transaction.backupKey = params.backupKey;
-        transaction.coin = this.getChain();
+        transaction.coin = self.getChain();
       }
 
       return transaction;
@@ -683,16 +692,17 @@ export class Xlm extends BaseCoin {
    * If a root prv is not provided, a random one is generated.
    */
   supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Bluebird<SupplementGenerateWalletOptions> {
+    const self = this;
     return co(function *() {
       let seed;
       const rootPrv = walletParams.rootPrivateKey;
       if (rootPrv) {
-        if (!this.isValidPrv(rootPrv)) {
+        if (!self.isValidPrv(rootPrv)) {
           throw new Error('rootPrivateKey needs to be valid ed25519 secret seed');
         }
         seed = stellar.StrKey.decodeEd25519SecretSeed(rootPrv);
       }
-      const keyPair = this.generateKeyPair(seed);
+      const keyPair = self.generateKeyPair(seed);
       // extend the wallet initialization params
       walletParams.rootPrivateKey = keyPair.prv;
       return walletParams;
@@ -741,9 +751,10 @@ export class Xlm extends BaseCoin {
    * @param callback
    */
   explainTransaction(params: ExplainTransactionOptions, callback?: NodeCallback<TransactionExplanation>): Bluebird<TransactionExplanation> {
+    const self = this;
     return co(function *() {
       const { txBase64 } = params;
-      let tx;
+      let tx: stellar.Transaction;
 
       try {
         tx = new stellar.Transaction(txBase64);
@@ -762,15 +773,21 @@ export class Xlm extends BaseCoin {
 
       let spendAmount = new BigNumber(0);
       // Process only operations of the native asset (XLM)
-      const operations = _.filter(tx.operations, operation => !operation.asset || operation.asset.getCode() === 'XLM');
+      const operations = _.filter(tx.operations,
+        (operation: stellar.Operation.Payment) => !operation.asset || operation.asset.getCode() === 'XLM'
+      );
       if (_.isEmpty(operations)) {
         throw new Error('missing operations');
       }
-      const outputs = _.map(operations, operation => {
+      const outputs = _.map(operations, (operation: stellar.Operation.CreateAccount | stellar.Operation.Payment) => {
         // Get memo to attach to address, if type is 'id'
-        const memoId = (_.get(memo, 'type') === 'id' && ! _.get(memo, 'value') ? `?memoId=${memo.value}` : '');
+        const memoId = _.get(memo, 'type') === 'id' && ! _.get(memo, 'value') ?
+          `?memoId=${memo.value}` :
+          '';
         const output: BaseCoinTransactionOutput = {
-          amount: this.bigUnitsToBaseUnits(operation.startingBalance || operation.amount),
+          amount: self.bigUnitsToBaseUnits(
+            (operation as stellar.Operation.CreateAccount).startingBalance || (operation as stellar.Operation.Payment).amount
+          ),
           address: operation.destination + memoId,
         };
         spendAmount = spendAmount.plus(output.amount);
@@ -812,6 +829,7 @@ export class Xlm extends BaseCoin {
    */
   verifyTransaction(options: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     // TODO BG-5600 Add parseTransaction / improve verification
+    const self = this;
     return co(function *() {
       const {
         txParams,
@@ -837,7 +855,7 @@ export class Xlm extends BaseCoin {
       }
 
       _.forEach(txParams.recipients, (expectedOutput, index) => {
-        const expectedOutputAddress = this.getAddressDetails(expectedOutput.address);
+        const expectedOutputAddress = self.getAddressDetails(expectedOutput.address);
         const output = outputOperations[index] as (stellar.Operation.Payment | stellar.Operation.CreateAccount);
         if (output.destination !== expectedOutputAddress.address) {
           throw new Error('transaction prebuild does not match expected recipient');
@@ -846,7 +864,7 @@ export class Xlm extends BaseCoin {
         const expectedOutputAmount = new BigNumber(expectedOutput.amount);
         // The output amount is expressed as startingBalance in createAccount operations and as amount in payment operations.
         const outputAmountString = (output.type === 'createAccount') ? output.startingBalance : output.amount;
-        const outputAmount = new BigNumber(this.bigUnitsToBaseUnits(outputAmountString));
+        const outputAmount = new BigNumber(self.bigUnitsToBaseUnits(outputAmountString));
 
         if (!outputAmount.eq(expectedOutputAmount)) {
           throw new Error('transaction prebuild does not match expected amount');
@@ -863,15 +881,15 @@ export class Xlm extends BaseCoin {
           throw new Error('cannot fetch keychains without networking');
         } else if (!keychains) {
           keychains = yield Bluebird.props({
-            user: this.keychains().get({ id: wallet.keyIds()[0] }),
-            backup: this.keychains().get({ id: wallet.keyIds()[1] }),
+            user: self.keychains().get({ id: wallet.keyIds()[0] }),
+            backup: self.keychains().get({ id: wallet.keyIds()[1] }),
           });
         }
 
-        if (this.verifySignature(keychains.backup.pub, tx.hash(), userSignature)) {
+        if (self.verifySignature(keychains.backup.pub, tx.hash(), userSignature)) {
           throw new Error('transaction signed with wrong key');
         }
-        if (!this.verifySignature(keychains.user.pub, tx.hash(), userSignature)) {
+        if (!self.verifySignature(keychains.user.pub, tx.hash(), userSignature)) {
           throw new Error('transaction signature invalid');
         }
       }

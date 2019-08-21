@@ -1,6 +1,7 @@
 import * as bitGoUtxoLib from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as request from 'superagent';
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import * as common from '../../common';
@@ -13,11 +14,11 @@ export interface ZecTransactionBuilder {
 }
 
 export class Zec extends AbstractUtxoCoin {
-  constructor(bitgo: any, network?) {
+  constructor(bitgo: BitGo, network?) {
     super(bitgo, network || bitGoUtxoLib.networks.zcash);
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Zec(bitgo);
   }
 
@@ -70,8 +71,9 @@ export class Zec extends AbstractUtxoCoin {
   }
 
   getAddressInfoFromExplorer(addressBase58: string): Bluebird<{ txCount: number; totalBalance: number; }> {
+    const self = this;
     return co(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
+      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
       addrInfo.txCount = addrInfo.txApperances;
       addrInfo.totalBalance = addrInfo.balanceSat;
@@ -81,8 +83,9 @@ export class Zec extends AbstractUtxoCoin {
   }
 
   getUnspentInfoFromExplorer(addressBase58: string): Bluebird<{ address: string; amount: number; n: number; }[]> {
+    const self = this;
     return co(function *getUnspentInfoFromExplorer() {
-      const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
+      const unspents = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
       unspents.forEach(function processUnspent(unspent) {
         unspent.amount = unspent.satoshis;

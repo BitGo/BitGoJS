@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { Trade } from './trade';
 import { Affirmation } from './affirmation';
 
@@ -13,8 +14,8 @@ export enum SettlementStatus {
 }
 
 export class Settlement {
-  private bitgo: any;
-  private enterpriseId: string;
+  private readonly bitgo: BitGo;
+  private readonly enterpriseId: string;
 
   public id: string;
   public requesterAccountId: string;

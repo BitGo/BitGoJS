@@ -3,6 +3,7 @@
  */
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+import { BitGo } from '../bitgo';
 import { BaseCoin } from './baseCoin';
 import { NodeCallback } from './types';
 import { Wallet } from './wallet';
@@ -14,12 +15,12 @@ import { Affirmations } from './trading/affirmations';
 const co = Bluebird.coroutine;
 
 export class Enterprise {
-  private readonly bitgo: any;
+  private readonly bitgo: BitGo;
   private readonly baseCoin: BaseCoin;
   readonly id: string;
   readonly name: string;
 
-  constructor(bitgo: any, baseCoin: BaseCoin, enterpriseData: { id: string; name: string }) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin, enterpriseData: { id: string; name: string }) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     if (!_.isObject(enterpriseData)) {

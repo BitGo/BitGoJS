@@ -2,7 +2,7 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
-
+import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { Affirmation, AffirmationStatus } from './affirmation';
 import { TradingAccount } from './tradingAccount';
@@ -15,11 +15,11 @@ interface GetAffirmationParameters {
 }
 
 export class Affirmations {
-  private bitgo;
+  private bitgo: BitGo;
   private enterpriseId: string;
   private account?: TradingAccount;
 
-  constructor(bitgo, enterpriseId: string, account?: TradingAccount) {
+  constructor(bitgo: BitGo, enterpriseId: string, account?: TradingAccount) {
     this.bitgo = bitgo;
     this.enterpriseId = enterpriseId;
     this.account = account;
@@ -31,22 +31,23 @@ export class Affirmations {
    * @param callback
    */
   list(status?: AffirmationStatus, callback?: NodeCallback<Affirmation[]>): Bluebird<Affirmation[]> {
+    const self = this;
     return co(function* list() {
       let url;
-      if (this.account) {
-        url = this.bitgo.microservicesUrl(
-          `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.account.id}/affirmations`
+      if (self.account) {
+        url = self.bitgo.microservicesUrl(
+          `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/affirmations`
         );
       } else {
-        url = this.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${this.enterpriseId}/affirmations`);
+        url = self.bitgo.microservicesUrl(`/api/trade/v1/enterprise/${self.enterpriseId}/affirmations`);
       }
       if (status) {
         url = `${url}?status=${status}`;
       }
 
-      const response = yield this.bitgo.get(url).result();
+      const response = yield self.bitgo.get(url).result();
 
-      return response.affirmations.map(affirmation => new Affirmation(affirmation, this.bitgo, this.enterpriseId));
+      return response.affirmations.map(affirmation => new Affirmation(affirmation, self.bitgo, self.enterpriseId));
     })
       .call(this)
       .asCallback(callback);
@@ -59,17 +60,18 @@ export class Affirmations {
    * @param callback
    */
   get({ id, accountId }: GetAffirmationParameters, callback?: NodeCallback<Affirmation>): Bluebird<Affirmation> {
+    const self = this;
     return co(function* get() {
-      if (!this.account && !accountId) {
+      if (!self.account && !accountId) {
         throw new Error('accountId must be provided in parameters for an enterprise context');
       }
 
-      const url = this.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${this.enterpriseId}/account/${accountId || this.account.id}/affirmations/${id}`
+      const url = self.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${accountId || self.account.id}/affirmations/${id}`
       );
-      const response = yield this.bitgo.get(url).result();
+      const response = yield self.bitgo.get(url).result();
 
-      return new Affirmation(response, this.bitgo, this.enterpriseId);
+      return new Affirmation(response, self.bitgo, self.enterpriseId);
     })
       .call(this)
       .asCallback(callback);

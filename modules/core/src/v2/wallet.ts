@@ -4,9 +4,12 @@ import * as _ from 'lodash';
 import * as debugLib from 'debug';
 
 import { makeRandomKey } from '../bitcoin';
+import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { AddressGenerationError } from '../errors';
 import { BaseCoin } from './baseCoin';
+import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
+import { Eth } from './coins/eth';
 import * as internal from './internal';
 import { drawKeycard } from './keycard';
 import { TradingAccount } from './trading/tradingAccount';
@@ -19,12 +22,12 @@ const co = Bluebird.coroutine;
 
 export class Wallet {
 
-  public readonly bitgo: any;
+  public readonly bitgo: BitGo;
   public readonly baseCoin: BaseCoin;
-  public readonly _wallet: any;
+  public _wallet: any;
   public readonly _permissions?: any;
 
-  constructor(bitgo: any, baseCoin: BaseCoin, walletData: any) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin, walletData: any) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     this._wallet = walletData;
@@ -382,13 +385,14 @@ export class Wallet {
    * NOTE : feeTxConfirmTarget omitted on purpose because gauging the maximum spendable amount with dynamic fees does not make sense
    */
   maximumSpendable(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       const filteredParams = _.pick(params, [
         'minValue', 'maxValue', 'minHeight', 'target', 'plainTarget', 'limit', 'minConfirms',
         'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'recipientAddress'
       ]);
 
-      return this.bitgo.get(this.url('/maximumSpendable'))
+      return self.bitgo.get(self.url('/maximumSpendable'))
         .query(filteredParams)
         .result();
     }).call(this).asCallback(callback);
@@ -428,24 +432,25 @@ export class Wallet {
    * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
    */
   consolidateUnspents(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
       const reqId = new RequestTracer();
-      const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0], reqId });
+      const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
       const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'numUnspentsToMake', 'feeTxConfirmTarget', 'limit', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'maxFeePercentage']);
-      this.bitgo._reqId = reqId;
-      const response = yield this.bitgo.post(this.url('/consolidateUnspents'))
+      self.bitgo.setRequestTracer(reqId);
+      const response = yield self.bitgo.post(self.url('/consolidateUnspents'))
         .send(filteredParams)
         .result();
 
       const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain });
-      const signedTransaction = yield this.signTransaction(transactionParams);
+      const signedTransaction = yield self.signTransaction(transactionParams);
       const selectParams = _.pick(params, ['comment', 'otp']);
       const finalTxParams = _.extend({}, signedTransaction, selectParams);
 
-      this.bitgo._reqId = reqId;
-      return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
+      self.bitgo.setRequestTracer(reqId);
+      return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
         .send(finalTxParams)
         .result();
     }).call(this).asCallback(callback);
@@ -471,24 +476,25 @@ export class Wallet {
    * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
    */
   fanoutUnspents(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
       const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'maxFeePercentage', 'feeTxConfirmTarget']);
       const reqId = new RequestTracer();
-      this.bitgo._reqId = reqId;
-      const response = yield this.bitgo.post(this.url('/fanoutUnspents'))
+      self.bitgo.setRequestTracer(reqId);
+      const response = yield self.bitgo.post(self.url('/fanoutUnspents'))
         .send(filteredParams)
         .result();
 
-      const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0], reqId });
+      const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
       const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain, prv: params.xprv });
-      const signedTransaction = yield this.signTransaction(transactionParams);
+      const signedTransaction = yield self.signTransaction(transactionParams);
 
       const selectParams = _.pick(params, ['comment', 'otp']);
       const finalTxParams = _.extend({}, signedTransaction, selectParams);
-      this.bitgo._reqId = reqId;
-      return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
+      self.bitgo.setRequestTracer(reqId);
+      return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
         .send(finalTxParams)
         .result();
     }).call(this).asCallback(callback);
@@ -501,12 +507,13 @@ export class Wallet {
    * @param [callback]
    */
   updateTokenFlushThresholds(thresholds: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
-      if (this.baseCoin.getFamily() !== 'eth') {
+      if (self.baseCoin.getFamily() !== 'eth') {
         throw new Error('not supported for this wallet');
       }
 
-      this._wallet = yield this.bitgo.put(this.url()).send({
+      self._wallet = yield self.bitgo.put(self.url()).send({
         tokenFlushThresholds: thresholds
       }).result();
     }).call(this).asCallback(callback);
@@ -527,16 +534,17 @@ export class Wallet {
    * @returns txHex {String} the txHex of the signed transaction
    */
   sweep(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       params = params || {};
       common.validateParams(params, ['address'], ['walletPassphrase', 'xprv', 'otp'], callback);
 
-      if (['eth', 'xrp'].includes(this.baseCoin.getFamily())) {
-        if (this.confirmedBalanceString() !== this.balanceString()) {
+      if (['eth', 'xrp'].includes(self.baseCoin.getFamily())) {
+        if (self.confirmedBalanceString() !== self.balanceString()) {
           throw new Error('cannot sweep when unconfirmed funds exist on the wallet, please wait until all inbound transactions confirm');
         }
 
-        const value = this.spendableBalanceString();
+        const value = self.spendableBalanceString();
         if (!value || value === '0') {
           throw new Error('no funds to sweep');
         }
@@ -545,26 +553,26 @@ export class Wallet {
           amount: value
         }];
 
-        return this.sendMany(params);
+        return self.sendMany(params);
       }
       // the following flow works for all UTXO coins
 
       const reqId = new RequestTracer();
       const filteredParams = _.pick(params, ['address', 'feeRate', 'maxFeeRate', 'feeTxConfirmTarget']);
-      this.bitgo._reqId = reqId;
-      const response = yield this.bitgo.post(this.url('/sweepWallet'))
+      self.bitgo.setRequestTracer(reqId);
+      const response = yield self.bitgo.post(self.url('/sweepWallet'))
         .send(filteredParams)
         .result();
       // TODO: add txHex validation to protect man in the middle attacks replacing the txHex, BG-3588
 
-      const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0], reqId });
+      const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
       const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain, prv: params.xprv });
-      const signedTransaction = yield this.signTransaction(transactionParams);
+      const signedTransaction = yield self.signTransaction(transactionParams);
 
       const selectParams = _.pick(params, ['otp']);
       const finalTxParams = _.extend({}, signedTransaction, selectParams);
-      this.bitgo._reqId = reqId;
-      return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
+      self.bitgo.setRequestTracer(reqId);
+      return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
         .send(finalTxParams)
         .result();
     }).call(this).asCallback(callback);
@@ -688,7 +696,7 @@ export class Wallet {
     }
 
     if (params.reqId) {
-      this.bitgo._reqId = params.reqId;
+      this.bitgo.setRequestTracer(params.reqId);
     }
 
     return this.bitgo.get(this.baseCoin.url(`/wallet/${this._wallet.id}/address/${encodeURIComponent(query)}`))
@@ -717,6 +725,7 @@ export class Wallet {
     label = undefined,
     lowPriority = undefined
   } = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       const addressParams: any = {};
       const reqId = new RequestTracer();
@@ -754,18 +763,20 @@ export class Wallet {
       }
 
       // get keychains for address verification
-      const keychains = yield Bluebird.map(this._wallet.keys, k => this.baseCoin.keychains().get({ id: k, reqId }));
-      const rootAddress = _.get(this._wallet, 'receiveAddress.address');
+      const keychains = yield Bluebird.map(self._wallet.keys as string[],
+          k => self.baseCoin.keychains().get({ id: k, reqId })
+      );
+      const rootAddress = _.get(self._wallet, 'receiveAddress.address');
 
       const newAddresses = _.times(count, co(function *createAndVerifyAddress() {
-        this.bitgo._reqId = reqId;
-        const newAddress = yield this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/address'))
+        self.bitgo.setRequestTracer(reqId);
+        const newAddress = yield self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/address'))
           .send(addressParams)
           .result();
 
         // infer its address type
-        if (_.isObject(newAddress.coinSpecific) && _.isFunction(this.baseCoin.constructor.inferAddressType)) {
-          newAddress.addressType = this.baseCoin.constructor.inferAddressType(newAddress);
+        if (_.isObject(newAddress.coinSpecific)) {
+          newAddress.addressType = AbstractUtxoCoin.inferAddressType(newAddress);
         }
 
         newAddress.keychains = keychains;
@@ -775,7 +786,7 @@ export class Wallet {
           throw new AddressGenerationError(verificationData.error);
         }
 
-        this.baseCoin.verifyAddress(verificationData);
+        self.baseCoin.verifyAddress(verificationData);
 
         return newAddress;
       }).bind(this));
@@ -797,13 +808,14 @@ export class Wallet {
    * @returns {*}
    */
   updateAddress(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       const address = params.address;
 
       const putParams = _.pick(params, ['label']);
-      const url = this.url('/address/' + encodeURIComponent(address));
+      const url = self.url('/address/' + encodeURIComponent(address));
 
-      return this.bitgo.put(url).send(putParams).result();
+      return self.bitgo.put(url).send(putParams).result();
     }).call(this).asCallback(callback);
   }
 
@@ -906,14 +918,15 @@ export class Wallet {
    * @param callback
    */
   getEncryptedUserKeychain(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     const tryKeyChain = co(function *(index: number) {
-      if (!this._wallet.keys || index >= this._wallet.keys.length) {
+      if (!self._wallet.keys || index >= self._wallet.keys.length) {
         throw new Error('No encrypted keychains on this wallet.');
       }
 
-      const params = { id: this._wallet.keys[index] };
+      const params = { id: self._wallet.keys[index] };
 
-      const keychain = yield this.baseCoin.keychains().get(params);
+      const keychain = yield self.baseCoin.keychains().get(params);
       // If we find the prv, then this is probably the user keychain we're looking for
       if (keychain.encryptedPrv) {
         return keychain;
@@ -932,6 +945,7 @@ export class Wallet {
    * @param callback
    */
   getPrv(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       common.validateParams(params, [], ['walletPassphrase', 'prv'], callback);
 
@@ -952,12 +966,12 @@ export class Wallet {
         return params.prv;
       }
 
-      const userKeychain = yield this.getEncryptedUserKeychain();
+      const userKeychain = yield self.getEncryptedUserKeychain();
       const userEncryptedPrv = userKeychain.encryptedPrv;
 
       let userPrv;
       try {
-        userPrv = this.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
+        userPrv = self.bitgo.decrypt({ input: userEncryptedPrv, password: params.walletPassphrase });
       } catch (e) {
         throw new Error('error decrypting wallet passphrase');
       }
@@ -993,6 +1007,7 @@ export class Wallet {
    * @returns {*}
    */
   shareWallet(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
 
@@ -1009,25 +1024,25 @@ export class Wallet {
         throw new Error('Expected disableEmail to be a boolean.');
       }
 
-      const sharing = yield this.bitgo.getSharingKey({ email: params.email.toLowerCase() });
+      const sharing = yield self.bitgo.getSharingKey({ email: params.email.toLowerCase() });
       let sharedKeychain;
       if (needsKeychain) {
         try {
-          const keychain = yield this.getEncryptedUserKeychain({});
+          const keychain = yield self.getEncryptedUserKeychain({});
           // Decrypt the user key with a passphrase
           if (keychain.encryptedPrv) {
             if (!params.walletPassphrase) {
               throw new Error('Missing walletPassphrase argument');
             }
             try {
-              keychain.prv = this.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedPrv });
+              keychain.prv = self.bitgo.decrypt({ password: params.walletPassphrase, input: keychain.encryptedPrv });
             } catch (e) {
               throw new Error('Unable to decrypt user keychain');
             }
 
             const eckey = makeRandomKey();
-            const secret = this.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
-            const newEncryptedPrv = this.bitgo.encrypt({ password: secret, input: keychain.prv });
+            const secret = self.bitgo.getECDHSecret({ eckey: eckey, otherPubKeyHex: sharing.pubkey });
+            const newEncryptedPrv = self.bitgo.encrypt({ password: secret, input: keychain.prv });
 
             sharedKeychain = {
               pub: keychain.pub,
@@ -1061,7 +1076,7 @@ export class Wallet {
         options.keychain = {};
       }
 
-      return this.createShare(options);
+      return self.createShare(options);
     }).call(this).asCallback(callback);
   }
 
@@ -1112,6 +1127,7 @@ export class Wallet {
    * @returns {*}
    */
   prebuildTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       // Whitelist params to build tx
       const whitelistedParams = _.pick(params, [
@@ -1124,15 +1140,16 @@ export class Wallet {
       debug('prebuilding transaction: %O', whitelistedParams);
 
       if (params.reqId) {
-        this.bitgo._reqId = params.reqId;
+        self.bitgo.setRequestTracer(params.reqId);
       }
-      const extraParams = yield this.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: this }));
+      const extraParams = yield self.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: self }));
       Object.assign(whitelistedParams, extraParams);
-      const buildQuery = this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/build'))
+      const buildQuery = self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/tx/build'))
         .send(whitelistedParams)
         .result();
-      const blockHeightQuery = this.baseCoin.getLatestBlockHeight ?
-        this.baseCoin.getLatestBlockHeight(params.reqId) :
+      const utxoCoin = self.baseCoin as AbstractUtxoCoin;
+      const blockHeightQuery = _.isFunction(utxoCoin.getLatestBlockHeight) ?
+        utxoCoin.getLatestBlockHeight(params.reqId) :
         Promise.resolve(undefined);
       const queries = [buildQuery, blockHeightQuery];
       const [buildResponse, blockHeight] = yield Promise.all(queries);
@@ -1140,10 +1157,12 @@ export class Wallet {
       if (!_.isUndefined(blockHeight)) {
         buildResponse.blockHeight = blockHeight;
       }
-      let prebuild = yield this.baseCoin.postProcessPrebuild(Object.assign(buildResponse, { wallet: this, buildParams: whitelistedParams }));
+      let prebuild = yield self.baseCoin.postProcessPrebuild(
+        Object.assign(buildResponse, { wallet: self, buildParams: whitelistedParams })
+      );
       delete prebuild.wallet;
       delete prebuild.buildParams;
-      prebuild = _.extend({}, prebuild, { walletId: this.id() });
+      prebuild = _.extend({}, prebuild, { walletId: self.id() });
       debug('final transaction prebuild: %O', prebuild);
       return prebuild;
     }).call(this).asCallback(callback);
@@ -1159,15 +1178,16 @@ export class Wallet {
    * @return {*}
    */
   signTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       const txPrebuild = params.txPrebuild;
       if (!txPrebuild || typeof txPrebuild !== 'object') {
         throw new Error('txPrebuild must be an object');
       }
-      const presign = yield this.baseCoin.presignTransaction(params);
-      const userPrv = this.getUserPrv(presign);
+      const presign = yield self.baseCoin.presignTransaction(params);
+      const userPrv = self.getUserPrv(presign);
       const signingParams = _.extend({}, presign, { txPrebuild: txPrebuild, prv: userPrv });
-      return this.baseCoin.signTransaction(signingParams);
+      return (self.baseCoin as any).signTransaction(signingParams);
     }).call(this).asCallback(callback);
   }
 
@@ -1209,6 +1229,7 @@ export class Wallet {
    * @param callback
    */
   prebuildAndSignTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       if (params.prebuildTx && params.recipients) {
         const error: any = new Error('Only one of prebuildTx and recipients may be specified');
@@ -1222,7 +1243,7 @@ export class Wallet {
         throw error;
       }
 
-      if (_.isArray(this._permissions) && !this._permissions.includes('spend')) {
+      if (_.isArray(self._permissions) && !self._permissions.includes('spend')) {
         const error: any = new Error('no spend permission on this wallet');
         error.code = 'user_not_allowed_to_spend_from_wallet';
         throw error;
@@ -1230,19 +1251,19 @@ export class Wallet {
 
       // call prebuildTransaction and keychains-get in parallel
       // the prebuild can be overridden by providing an explicit tx
-      const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : this.prebuildTransaction(params);
+      const txPrebuildQuery = params.prebuildTx ? Promise.resolve(params.prebuildTx) : self.prebuildTransaction(params);
 
       // retrieve our keychains needed to run the prebuild - some coins use all pubs
-      const keychains = yield this.baseCoin.keychains().getKeysForSigning({ wallet: this, reqId: params.reqId });
+      const keychains = yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId: params.reqId });
 
       const txPrebuild = yield txPrebuildQuery;
 
       try {
         const verificationParams = _.pick(params.verification || {}, ['disableNetworking', 'keychains', 'addresses']);
-        yield this.baseCoin.verifyTransaction({
+        yield self.baseCoin.verifyTransaction({
           txParams: params,
           txPrebuild,
-          wallet: this,
+          wallet: self,
           verification: verificationParams,
           reqId: params.reqId
         });
@@ -1257,7 +1278,7 @@ export class Wallet {
         txPrebuild: txPrebuild,
         wallet: {
           // this is the version of the multisig address at wallet creation time
-          addressVersion: this._wallet.coinSpecific.addressVersion
+          addressVersion: self._wallet.coinSpecific.addressVersion
         },
         keychain: keychains[0],
         backupKeychain: (keychains.length > 1) ? keychains[1] : null,
@@ -1265,17 +1286,17 @@ export class Wallet {
       });
 
       try {
-        return yield this.signTransaction(signingParams);
+        return yield self.signTransaction(signingParams);
       } catch (error) {
         if (error.message.includes('insufficient funds')) {
           error.code = 'insufficient_funds';
           error.walletBalances = {
-            balanceString: this.balanceString(),
-            confirmedBalanceString: this.confirmedBalanceString(),
-            spendableBalanceString: this.spendableBalanceString(),
-            balance: this.balance(),
-            confirmedBalance: this.confirmedBalance(),
-            spendableBalance: this.spendableBalance()
+            balanceString: self.balanceString(),
+            confirmedBalanceString: self.confirmedBalanceString(),
+            spendableBalanceString: self.spendableBalanceString(),
+            balance: self.balance(),
+            confirmedBalance: self.confirmedBalance(),
+            spendableBalance: self.spendableBalance()
           };
           error.txParams = _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']);
         }
@@ -1290,6 +1311,7 @@ export class Wallet {
    * @param callback
    */
   accelerateTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       // TODO(BG-9349): change the last check to > 0 and the error message once platform allows multiple transactions to
       //                be bumped in the same CPFP transaction
@@ -1336,8 +1358,8 @@ export class Wallet {
       params.recipients = [];
 
       // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
-      const submitParams = Object.assign(params, yield this.prebuildAndSignTransaction(params));
-      return yield this.submitTransaction(submitParams);
+      const submitParams = Object.assign(params, yield self.prebuildAndSignTransaction(params));
+      return yield self.submitTransaction(submitParams);
     }).call(this).asCallback(callback);
   }
 
@@ -1433,12 +1455,13 @@ export class Wallet {
    * @returns {*}
    */
   sendMany(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       common.validateParams(params, [], ['comment', 'otp'], callback);
       debug('sendMany called');
       const reqId = params.reqId || new RequestTracer();
       params.reqId = reqId;
-      const coin = this.baseCoin;
+      const coin = self.baseCoin;
       if (_.isObject(params.recipients)) {
         params.recipients.map(function(recipient) {
           const amount = new BigNumber(recipient.amount);
@@ -1451,7 +1474,7 @@ export class Wallet {
         });
       }
 
-      const halfSignedTransaction = yield this.prebuildAndSignTransaction(params);
+      const halfSignedTransaction = yield self.prebuildAndSignTransaction(params);
       const selectParams = _.pick(params, [
         'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms',
         'enforceMinConfirmsForChange', 'targetWalletUnspents',
@@ -1461,8 +1484,8 @@ export class Wallet {
         'instant', 'memo'
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
-      this.bitgo._reqId = reqId;
-      return this.bitgo.post(this.url('/tx/send'))
+      self.bitgo.setRequestTracer(reqId);
+      return self.bitgo.post(self.url('/tx/send'))
         .send(finalTxParams)
         .result();
     }).call(this).asCallback(callback);
@@ -1479,12 +1502,15 @@ export class Wallet {
    * @param callback
    */
   recoverToken(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
-      if (this.baseCoin.getFamily() !== 'eth') {
+      if (!(self.baseCoin instanceof Eth) || self.baseCoin.getFamily() !== 'eth') {
         throw new Error('token recovery only supported for eth wallets');
       }
 
-      return this.baseCoin.recoverToken(_.merge(params, { wallet: this }));
+      return self.baseCoin.recoverToken(
+        _.merge(params, { wallet: self })
+      );
     }).call(this).asCallback(callback);
   }
 
@@ -1497,9 +1523,10 @@ export class Wallet {
    * @returns {Object} Object with txid, walletId, tx, and fee (if supported for coin)
    */
   getFirstPendingTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
-      const query = { walletId: this.id() };
-      return internal.getFirstPendingTransaction(query, this.baseCoin, this.bitgo);
+      const query = { walletId: self.id() };
+      return internal.getFirstPendingTransaction(query, self.baseCoin, self.bitgo);
     }).call(this).asCallback(callback);
   }
 
@@ -1512,10 +1539,11 @@ export class Wallet {
    * @returns {String} The transaction ID of the new transaction that contains the new fee rate
    */
   changeFee(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
       common.validateParams(params, ['txid', 'fee'], [], callback);
 
-      return this.bitgo.post(this.baseCoin.url('/wallet/' + this.id() + '/tx/changeFee'))
+      return self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/tx/changeFee'))
         .send(params)
         .result();
     }).call(this).asCallback(callback);
@@ -1529,14 +1557,14 @@ export class Wallet {
    * @returns {Object} The info returned from the merchant server
    */
   getPaymentInfo(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *coGetPaymentInfo() {
       params = params || {};
       common.validateParams(params, ['url'], [], callback);
 
-      return this.bitgo.get(this.url('/paymentInfo'))
+      return self.bitgo.get(self.url('/paymentInfo'))
         .query(params)
         .result();
-
     }).call(this).asCallback(callback);
   }
 
@@ -1551,9 +1579,9 @@ export class Wallet {
    * @returns {Object} The info returned from the merchant server Payment Ack
    */
   sendPaymentResponse(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *coSendPaymentResponse() {
-
-      return this.bitgo.post(this.url('/sendPayment'))
+      return self.bitgo.post(self.url('/sendPayment'))
         .send(params)
         .result();
     }).call(this).asCallback(callback);
@@ -1568,8 +1596,8 @@ export class Wallet {
    * @returns {*}
    */
   createPolicyRule(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
-      params = params || {};
       common.validateParams(params, ['id', 'type'], ['message'], callback);
 
       if (!_.isObject(params.condition)) {
@@ -1580,7 +1608,7 @@ export class Wallet {
         throw new Error('missing parameter: action object');
       }
 
-      return this.bitgo.post(this.url('/policy/rule'))
+      return self.bitgo.post(self.url('/policy/rule'))
         .send(params)
         .result();
     }).call(this).asCallback(callback);
@@ -1595,8 +1623,8 @@ export class Wallet {
    * @returns {*}
    */
   setPolicyRule(params: any = {}, callback?: NodeCallback<any>) {
+    const self = this;
     return co(function *() {
-      params = params || {};
       common.validateParams(params, ['id', 'type'], ['message'], callback);
 
       if (!_.isObject(params.condition)) {
@@ -1607,7 +1635,7 @@ export class Wallet {
         throw new Error('missing parameter: action object');
       }
 
-      return this.bitgo.put(this.url('/policy/rule'))
+      return self.bitgo.put(self.url('/policy/rule'))
         .send(params)
         .result();
     }).call(this).asCallback(callback);
@@ -1620,11 +1648,11 @@ export class Wallet {
    * @returns {*}
    */
   removePolicyRule(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *() {
-      params = params || {};
       common.validateParams(params, ['id'], ['message'], callback);
 
-      return this.bitgo.del(this.url('/policy/rule'))
+      return self.bitgo.del(self.url('/policy/rule'))
         .send(params)
         .result();
     }).call(this).asCallback(callback);
@@ -1647,7 +1675,6 @@ export class Wallet {
     if (this.baseCoin.getFamily() !== 'ofc') {
       throw new Error('Can only convert an Offchain (OFC) wallet to a trading account');
     }
-
     return new TradingAccount(this._wallet.enterprise, this, this.bitgo);
   }
 
