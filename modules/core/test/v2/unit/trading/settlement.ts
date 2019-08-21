@@ -9,8 +9,8 @@ import { SettlementStatus } from '../../../../src/v2/trading/settlement';
 
 import { Wallet } from '../../../../src/v2/wallet';
 import { Enterprise } from '../../../../src/v2/enterprise';
-const TestV2BitGo = require('../../../lib/test_bitgo');
-const common = require('../../../../src/common');
+import { TestBitGo } from '../../../lib/test_bitgo';
+import * as common from '../../../../src/common';
 
 describe('Settlements', function() {
   const microservicesUri = 'https://bitgo-microservices.example';
@@ -21,7 +21,7 @@ describe('Settlements', function() {
   let bgUrl;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'mock', microservicesUri });
+    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
@@ -96,7 +96,7 @@ describe('Settlements', function() {
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
         pub: xpub,
-        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestV2BitGo.OFC_TEST_PASSWORD })
+        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
       });
 
     const payload = yield tradingAccount.buildPayload({
@@ -105,7 +105,7 @@ describe('Settlements', function() {
       otherParties: [{ accountId: '5cf940a49449412d00f53b8f7392f7c0', amount: '500', currency: 'ofctbtc' }]
     });
 
-    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD });
+    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
 
     const settlement = yield tradingAccount.settlements().create({
       requesterAccountId: tradingAccount.id,

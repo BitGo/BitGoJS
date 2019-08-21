@@ -5,11 +5,11 @@
 import 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
-const nock = require('nock');
-const common = require('../../src/common');
+import * as nock from 'nock';
+import * as common from '../../src/common';
 import * as _ from 'lodash';
 
-const TestBitGo = require('../lib/test_bitgo');
+import { TestBitGo } from '../lib/test_bitgo';
 
 describe('Keychains', function v2keychains() {
   describe('Update Password', function updatePassword() {
@@ -18,7 +18,7 @@ describe('Keychains', function v2keychains() {
     let bgUrl;
 
     before(function beforeDescribe() {
-      nock.activeMocks().should.be.empty();
+      nock.pendingMocks().should.be.empty();
 
       bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
@@ -90,6 +90,6 @@ describe('Keychains', function v2keychains() {
   });
 
   after(function afterKeychains() {
-    nock.activeMocks().should.be.empty();
+    nock.pendingMocks().should.be.empty();
   });
 });

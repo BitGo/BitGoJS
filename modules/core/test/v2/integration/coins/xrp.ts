@@ -5,7 +5,7 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
 const prova = require('../../../../src/prova');
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 const nock = require('nock');
 nock.enableNetConnect();
@@ -16,7 +16,7 @@ describe('XRP:', function() {
   const someWalletId = '595ecd567615fbc707c601324127abb7'; // one of the many random XRP wallets on this account
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     return bitgo.authenticateTestUser(bitgo.testUserOTP())
     .then(function() {
@@ -31,7 +31,7 @@ describe('XRP:', function() {
   it('Should generate wallet with custom root address', function() {
     const hdNode = prova.HDNode.fromSeedBuffer(crypto.randomBytes(32));
     const params = {
-      passphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+      passphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
       label: 'Ripple Root Address Test',
       disableTransactionNotifications: true,
       rootPrivateKey: hdNode.getKey().getPrivateKeyBuffer().toString('hex')

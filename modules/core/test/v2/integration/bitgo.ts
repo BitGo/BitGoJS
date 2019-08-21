@@ -6,8 +6,8 @@
 
 import { strict as assert } from 'assert';
 
-const BitGoJS = require('../../../src/index');
-const TestBitGo = require('../../lib/test_bitgo');
+import * as BitGoJS from '../../../src/index';
+import { TestBitGo } from '../../lib/test_bitgo';
 
 const TestUtil = require('../../integration/testutil');
 import * as Promise from 'bluebird';
@@ -23,13 +23,13 @@ describe('BitGo', function() {
         bitgo.initializeTestVars();
       });
 
-      it('arguments', function() {
-        assert.throws(function() { bitgo.authenticate(); });
-        assert.throws(function() { bitgo.authenticate(123); });
-        assert.throws(function() { bitgo.authenticate('foo', 123); });
-        assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar', otp: 0.01 }); });
-        assert.throws(function() { bitgo.authenticate({ username: 'foo', password: 'bar', otp: 'baz' }, 123); });
-      });
+      it('arguments', co(function* () {
+        yield bitgo.authenticate().should.be.rejected();
+        yield bitgo.authenticate(123).should.be.rejected();
+        yield bitgo.authenticate('foo', 123).should.be.rejected();
+        yield bitgo.authenticate({ username: 'foo', password: 'bar', otp: 0.01 }).should.be.rejected();
+        yield bitgo.authenticate({ username: 'foo', password: 'bar', otp: 'baz' }, 123).should.be.rejected();
+      }));
 
       it('fails without OTP', function(done) {
         bitgo.authenticateTestUser('0', function(err, response) {
@@ -71,13 +71,6 @@ describe('BitGo', function() {
     });
 
     describe('Logout API', function() {
-      it('arguments', function(done) {
-        const bitgo = new TestBitGo();
-        bitgo.initializeTestVars();
-        assert.throws(function() { bitgo.logout({}, 'bad'); });
-        done();
-      });
-
       it('logout', function(done) {
         const bitgo = new TestBitGo();
         bitgo.initializeTestVars();
@@ -90,12 +83,6 @@ describe('BitGo', function() {
     });
 
     describe('me', function() {
-      it('arguments', function() {
-        const bitgo = new TestBitGo();
-        bitgo.initializeTestVars();
-        assert.throws(function() { bitgo.me({}, 'bad'); });
-      });
-
       it('me', function(done) {
         const bitgo = new TestBitGo();
         bitgo.initializeTestVars();
@@ -108,12 +95,6 @@ describe('BitGo', function() {
     });
 
     describe('session', function() {
-      it('arguments', function() {
-        const bitgo = new TestBitGo();
-        bitgo.initializeTestVars();
-        assert.throws(function() { bitgo.session({}, 'bad'); });
-      });
-
       it('session', function(done) {
         const bitgo = new TestBitGo();
         bitgo.initializeTestVars();
@@ -228,8 +209,8 @@ describe('BitGo', function() {
 
       it('logging in with extensible token', function(done) {
         const authenticationData = {
-          username: BitGoJS.BitGo.TEST_USER,
-          password: BitGoJS.BitGo.TEST_PASSWORD,
+          username: TestBitGo.TEST_USER,
+          password: TestBitGo.TEST_PASSWORD,
           otp: bitgo.testUserOTP(),
           extensible: true
         };
@@ -476,13 +457,13 @@ describe('BitGo', function() {
     });
 
     describe('Authenticate with auth code', function() {
-      it('arguments', function() {
-        assert.throws(function() { bitgo.authenticateWithAuthCode(); });
-        assert.throws(function() { bitgo.authenticateWithAuthCode({ authCode: 123 }); });
-        assert.throws(function() { bitgo.authenticateWithAuthCode({ authCode: 'foo' }, 123); });
+      it('arguments', co(function*() {
+        yield bitgo.authenticateWithAuthCode().should.be.rejected();
+        yield bitgo.authenticateWithAuthCode({ authCode: 123 }).should.be.rejected();
+        bitgo.authenticateWithAuthCode({ authCode: 'foo' }, 123).should.be.rejected();
         const bitgoNoClientId = new BitGoJS.BitGo();
-        assert.throws(function() { bitgoNoClientId.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function() {}); });
-      });
+        bitgoNoClientId.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function() {}).should.be.rejected();
+      }));
 
       it('bad code', function(done) {
         bitgo.authenticateWithAuthCode({ authCode: 'BADCODE' }, function(err, response) {
@@ -516,11 +497,9 @@ describe('BitGo', function() {
     });
 
     describe('Initialize with access token', function() {
-      it('arguments', function() {
-        assert.throws(function() {
-          bitgo.authenticateWithAuthCode({}, 123);
-        });
-      });
+      it('arguments', co(function*() {
+        yield bitgo.authenticateWithAuthCode({}, 123).should.be.rejected();
+      }));
 
       it('use bad access token', function(done) {
         const bitgoAT = new BitGoJS.BitGo({
@@ -554,14 +533,13 @@ describe('BitGo', function() {
     });
 
     describe('Use refresh token', function() {
-      it('arguments', function() {
-        assert.throws(function() { bitgo.refresh_token(); });
-        assert.throws(function() { bitgo.refresh_token(123); });
-        assert.throws(function() { bitgo.refresh_token('foo', 123); });
-        assert.throws(function() { bitgo.refresh_token(TestBitGo.TEST_REFRESHTOKEN, 123); });
+      it('arguments', co(function*() {
+        yield bitgo.refreshToken(123).should.be.rejected();
+        yield bitgo.refreshToken('foo', 123).should.be.rejected();
+        yield bitgo.refreshToken(TestBitGo.TEST_REFRESHTOKEN, 123).should.be.rejected();
         const bitgoNoClientId = new BitGoJS.BitGo();
-        assert.throws(function() { bitgoNoClientId.refresh_token(TestBitGo.TEST_AUTHCODE, function() {}); });
-      });
+        yield bitgoNoClientId.refreshToken(TestBitGo.TEST_AUTHCODE, function() {}).should.be.rejected();
+      }));
 
       it('bad token', function(done) {
         bitgo.refreshToken({ refreshToken: 'BADTOKEN' }, function(err, response) {
@@ -637,7 +615,6 @@ describe('BitGo', function() {
   });
 
   describe('Change user', function() {
-
     let bitgo;
 
     before(co(function *() {

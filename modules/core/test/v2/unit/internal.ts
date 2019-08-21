@@ -1,7 +1,7 @@
 import 'should';
 
-const { randomBytes } = require('crypto');
-const { bytesToWord } = require('../../../src/v2/internal');
+import { randomBytes } from 'crypto';
+import { bytesToWord } from '../../../src/v2/internal';
 
 describe('Internal:', () => {
   describe('bytesToWord', () => {

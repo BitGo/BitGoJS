@@ -3,18 +3,18 @@ import 'should-http';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 describe('ETH:', function() {
   let bitgo;
   let wallet;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
 
     yield bitgo.authenticateTestUser(bitgo.testUserOTP());
-    wallet = yield bitgo.coin('teth').wallets().getWallet({ id: TestV2BitGo.V2.TEST_ETH_WALLET_ID });
+    wallet = yield bitgo.coin('teth').wallets().getWallet({ id: TestBitGo.V2.TEST_ETH_WALLET_ID });
   }));
 
   describe('Keychains', function() {
@@ -42,7 +42,7 @@ describe('ETH:', function() {
         'KDD38TUg3ZUjzW+DraZlkcku2bNp0JS2s1g/iC6YTGUGtPoxDxumDlXwlWQx+5WPjZu79M8DCrI\n' +
         't9aZaOvHkGH9aFtMbavFX419TcrwDmpUeQFN0hRkfrIHXyHNbTpGSVAjHvHMtzDMaw+ACg="}',
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
       });
 
@@ -64,7 +64,7 @@ describe('ETH:', function() {
         '4Dlij4kQ0E6NyUUs6wo6T2HtPDAPO0hyhPPbh1OAYqIS7VlL9xmJRFC2zPxwRJvzf6OWC/m48HX\n' +
         'vgLoXYgahArhalzJVlRxcXUz4HOhozRWfv/eK3t5HJfm+25+WBOiW8YgSE7hVEYTbeBRD4="}',
         walletContractAddress: '0x22ff743216b58aeb3efc46985406b50112e9e176',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
       }));
 
@@ -77,9 +77,9 @@ describe('ETH:', function() {
     it('should successfully construct a recovery transaction for tokens stuck in a wallet', co(function *() {
       // There should be 42 Potatokens stuck in our test wallet
       const tx = yield wallet.recoverToken({
-        tokenContractAddress: TestV2BitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
-        recipient: TestV2BitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
-        walletPassphrase: TestV2BitGo.V2.TEST_ETH_WALLET_PASSPHRASE
+        tokenContractAddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
+        recipient: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
+        walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE
       });
 
       should.exist(tx);
@@ -95,12 +95,12 @@ describe('ETH:', function() {
       txInfo.should.have.property('operationHash');
       txInfo.should.have.property('signature');
       txInfo.should.have.property('tokenContractAddress');
-      txInfo.tokenContractAddress.should.equal(TestV2BitGo.V2.TEST_ERC20_TOKEN_ADDRESS);
+      txInfo.tokenContractAddress.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS);
       txInfo.should.have.property('walletId');
-      txInfo.walletId.should.equal(TestV2BitGo.V2.TEST_ETH_WALLET_ID);
+      txInfo.walletId.should.equal(TestBitGo.V2.TEST_ETH_WALLET_ID);
       txInfo.should.have.property('recipient');
       txInfo.recipient.should.have.property('address');
-      txInfo.recipient.address.should.equal(TestV2BitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
+      txInfo.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
       txInfo.recipient.should.have.property('amount');
       txInfo.recipient.amount.should.equal('4200');
     }));
@@ -113,7 +113,7 @@ describe('ETH:', function() {
         userKey: '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cCE20fGIobs=","ct":"NVIdYIh91J3aRI8GG0JE3DhXW3AUmz2G5RqMejdz1+t4/vovIP7lleegI7VYyWiiLvlM0OCFf3EVvV/RyXr8+2vsnQ0Vn8c2CV5FRZ80OjGYrW3A/6T/zpOz6E8CMvnD++iIpeO4r2eZJavejZxdzlxF0BRz7VI="}',
         backupKey: '{"iv":"asB356ofC7nZtg4NBvQkiQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"1hr2HhBbBIk=","ct":"8CZc6upt+XNOtoKDD38TUg3ZUjzW+DraZlkcku2bNp0JS2s1g/iC6YTGUGtPoxDxumDlXwlWQx+5WPjZu79M8DCrIt9aZaOvHkGH9aFtMbavFX419TcrwDmpUeQFN0hRkfrIHXyHNbTpGSVAjHvHMtzDMaw+ACg="}',
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0x5df5a96b478bb1808140d87072143e60262e8670'
       });
 
@@ -129,7 +129,7 @@ describe('ETH:', function() {
         userKey: '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"cCE20fGIobs=","ct":"NVIdYIh91J3aRI8GG0JE3DhXW3AUmz2G5RqMejdz1+t4/vovIP7lleegI7VYyWiiLvlM0OCFf3EVvV/RyXr8+2vsnQ0Vn8c2CV5FRZ80OjGYrW3A/6T/zpOz6E8CMvnD++iIpeO4r2eZJavejZxdzlxF0BRz7VI="}',
         backupKey: 'xpub661MyMwAqRbcGsCNiG4BzbxLmXnJFo4K5gVSE2b9AxufAtpuTun1SYwg9Uykqqf4DrKrDZ6KqPm9ehthWbCma7pnaMrtXY11nY7MeFbEDPm',
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0x5df5a96b478bb1808140d87072143e60262e8670',
         krsProvider: 'keyternal'
       });

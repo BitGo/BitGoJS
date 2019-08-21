@@ -3,13 +3,12 @@
 //
 
 import 'should';
-import bluebird = require('bluebird');
-const co = bluebird.coroutine;
-const nock = require('nock');
-const common = require('../../../src/common');
+import * as Bluebird from 'bluebird';
+import * as nock from 'nock';
+import * as common from '../../../src/common';
 import * as _ from 'lodash';
-
-const TestV2BitGo = require('../../lib/test_bitgo');
+import { TestBitGo } from '../../lib/test_bitgo';
+const co = Bluebird.coroutine;
 
 describe('V2 Wallets:', function() {
   let wallets;
@@ -21,7 +20,7 @@ describe('V2 Wallets:', function() {
     .get('/api/v1/client/constants')
     .reply(200, { ttl: 3600, constants: {} });
 
-    const bitgo = new TestV2BitGo({ env: 'mock' });
+    const bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
 
     const basecoin = bitgo.coin('tbtc');
@@ -31,7 +30,7 @@ describe('V2 Wallets:', function() {
 
   after(function() {
     nock.cleanAll();
-    nock.activeMocks().length.should.equal(0);
+    nock.pendingMocks().length.should.equal(0);
   });
 
   describe('Add Wallet:', function() {
@@ -63,7 +62,7 @@ describe('V2 Wallets:', function() {
     }));
 
     it('creates an eos wallet with custom address', co(function *createWalletCustomAddress() {
-      const eosBitGo = new TestV2BitGo({ env: 'mock' });
+      const eosBitGo = new TestBitGo({ env: 'mock' });
       eosBitGo.initializeTestVars();
       const eosWallets = eosBitGo.coin('teos').wallets();
       const address = 'testeosaddre';

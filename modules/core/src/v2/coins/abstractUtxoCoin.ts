@@ -739,7 +739,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             throw new Error('attempting to retrieve transaction details externally with networking disabled');
           }
           if (reqId) {
-            self.bitgo._reqId = reqId;
+            self.bitgo.setRequestTracer(reqId);
           }
           transactionCache[transactionId] = yield self.bitgo.get(self.url(`/public/tx/${transactionId}`)).result();
         }

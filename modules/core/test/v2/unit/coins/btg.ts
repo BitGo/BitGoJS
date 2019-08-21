@@ -1,14 +1,13 @@
 import 'should';
 
 const { Codes } = require('@bitgo/unspents');
-
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 describe('BTG:', function() {
   let bitgo;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
   });
 

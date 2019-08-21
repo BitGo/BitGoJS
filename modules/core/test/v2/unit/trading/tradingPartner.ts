@@ -7,7 +7,7 @@ import { TradingPartnerStatus } from '../../../../src/v2/trading/tradingPartner'
 
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { Wallet } from '../../../../src/v2/wallet';
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 describe('Trading Partners', function() {
   const microservicesUri = 'https://bitgo-microservices.example';
@@ -17,7 +17,7 @@ describe('Trading Partners', function() {
   let tradingAccount;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'mock', microservicesUri });
+    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();

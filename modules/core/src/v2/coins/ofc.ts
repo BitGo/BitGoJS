@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { BaseCoin, KeyPair } from '../baseCoin';
 import * as crypto from 'crypto';
 import * as bitGoUtxoLib from 'bitgo-utxo-lib';

@@ -3,7 +3,7 @@ import 'should';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 import * as nock from 'nock';
 
@@ -15,7 +15,7 @@ describe('XLM:', function() {
 
   before(function() {
     nock.restore();
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     return bitgo.authenticateTestUser(bitgo.testUserOTP())
     .then(function() {
@@ -25,7 +25,7 @@ describe('XLM:', function() {
 
   it('Should generate wallet', co(function *() {
     const params = {
-      passphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+      passphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
       label: 'Stellar Wallet Test'
     };
 
@@ -51,7 +51,7 @@ describe('XLM:', function() {
   it('Should generate wallet with custom root address', co(function *() {
     const keyPair = basecoin.generateKeyPair();
     const params = {
-      passphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+      passphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
       label: 'Stellar Wallet Test',
       rootPrivateKey: keyPair.prv
     };

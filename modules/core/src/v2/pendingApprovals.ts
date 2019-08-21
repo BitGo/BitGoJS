@@ -61,7 +61,7 @@ export class PendingApprovals {
         throw new Error('must provide exactly 1 of walletId or enterpriseId to get pending approvals on');
       }
 
-      const body = self.bitgo
+      const body = yield self.bitgo
         .get(self.baseCoin.url('/pendingapprovals'))
         .query(queryParams)
         .result();

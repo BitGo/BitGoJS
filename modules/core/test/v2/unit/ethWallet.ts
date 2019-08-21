@@ -7,7 +7,7 @@ import * as sinon from 'sinon';
 import { Util } from '../../../src/v2/util';
 import * as common from '../../../src/common';
 
-const TestV2BitGo = require('../../lib/test_bitgo');
+import { TestBitGo } from '../../lib/test_bitgo';
 const fixtures = require('../fixtures/eth.ts');
 const EthTx = require('ethereumjs-tx');
 
@@ -21,7 +21,7 @@ describe('Sign ETH Transaction', co(function *() {
   let tx;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     const coin = bitgo.coin('teth');
     ethWallet = coin.newWalletObject(bitgo, coin, {});
@@ -80,7 +80,7 @@ describe('Ethereum Hop Transactions', co(function *() {
     bitgoSignature = '0xaa' + secp256k1.sign(Buffer.from(txid.slice(2), 'hex'), bitgoPrvBuffer).signature.toString('hex');
 
     env = 'test';
-    bitgo = new TestV2BitGo({ env });
+    bitgo = new TestBitGo({ env });
     common.Environments[env].hsmXpub = bitgoXpub;
     bitgo.initializeTestVars();
     bgUrl = common.Environments[bitgo.getEnv()].uri;
@@ -196,7 +196,7 @@ describe('Ethereum Hop Transactions', co(function *() {
       nock(bgUrl)
         .get(`/api/v2/teth/key/user`)
         .reply(200, {
-          encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: TestV2BitGo.TEST_WALLET1_PASSCODE }),
+          encryptedPrv: bitgo.encrypt({ input: userKeypair.xprv, password: TestBitGo.TEST_WALLET1_PASSCODE }),
           path: userKeypair.path + userKeypair.walletSubPath
         });
     };
@@ -233,7 +233,7 @@ describe('Ethereum Hop Transactions', co(function *() {
           amount: sendAmount
         }],
         hop: true,
-        walletPassphrase: TestV2BitGo.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.TEST_WALLET1_PASSCODE,
       };
     }));
 
@@ -272,7 +272,7 @@ describe('Add final signature to ETH tx from offline vault', function() {
     const vals = fixtures.getHalfSignedTethFromVault();
     paramsFromVault = vals.paramsFromVault;
     expectedResult = vals.expectedResult;
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     coin = bitgo.coin('teth');
   });
 

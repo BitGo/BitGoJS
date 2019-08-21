@@ -6,7 +6,7 @@ import 'should';
 const algoFixtures = require('../../fixtures/algo');
 const co = Promise.coroutine;
 import { Wallet } from '../../../../src/v2/wallet';
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
 
 describe('ALGO:', function() {
@@ -15,7 +15,7 @@ describe('ALGO:', function() {
   let fixtures;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'mock' });
+    bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('talgo');
   });
@@ -91,7 +91,7 @@ describe('ALGO:', function() {
     it('should sign a prebuild', co(function *() {
       // sign transaction
       const halfSignedTransaction = yield wallet.signTransaction({
-        txPrebuild: { 
+        txPrebuild: {
           txHex: fixtures.buildTxBase64,
           keys: [ fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub ],
           addressVersion: 1,
@@ -104,7 +104,7 @@ describe('ALGO:', function() {
 
     it('should sign an half-signed signed transaction', co(function *() {
       const fullySignedTx = yield wallet.signTransaction({
-        txPrebuild: { 
+        txPrebuild: {
           halfSigned: {
             txHex: fixtures.signedTxBase64,
           },
@@ -118,9 +118,9 @@ describe('ALGO:', function() {
 
     it('should explain an half-signed transaction', co(function *() {
       const explainParams = { halfSigned: { txHex: fixtures.signedTxBase64 } };
-  
+
       const explanation = yield basecoin.explainTransaction(explainParams);
-  
+
       explanation.outputs[0].amount.should.equal(1000);
       explanation.outputs[0].address.should.equal(fixtures.txData.to);
       explanation.id.should.equal(fixtures.signedTxId);
@@ -128,9 +128,9 @@ describe('ALGO:', function() {
 
     it('should explain an fully signed transaction', co(function *() {
       const explainParams = { txHex: fixtures.fullySignBase64 };
-  
+
       const explanation = yield basecoin.explainTransaction(explainParams);
-  
+
       explanation.outputs[0].amount.should.equal(1000);
       explanation.outputs[0].address.should.equal(fixtures.txData.to);
       explanation.id.should.equal(fixtures.signedTxId);

@@ -8,8 +8,8 @@ import * as _ from 'lodash';
 
 import 'should';
 
-const TestV2BitGo = require('../../lib/test_bitgo');
-const bitgo = new TestV2BitGo({ env: 'test' });
+import { TestBitGo } from '../../lib/test_bitgo';
+const bitgo = new TestBitGo({ env: 'test' });
 bitgo.initializeTestVars();
 
 describe('V2 Base Coin:', function() {

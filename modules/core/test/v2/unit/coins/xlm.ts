@@ -5,8 +5,7 @@ import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
 import { Wallet } from '../../../../src/v2/wallet';
-
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 import * as nock from 'nock';
 nock.enableNetConnect();
@@ -16,7 +15,7 @@ describe('XLM:', function() {
   let basecoin;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txlm');
   });

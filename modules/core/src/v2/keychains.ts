@@ -267,7 +267,7 @@ export class Keychains {
    * @param params (empty)
    * @param callback
    */
-  createBitGo(params: CreateBitGoOptions, callback?: NodeCallback<any>): Bluebird<any> {
+  createBitGo(params: CreateBitGoOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     params.source = 'bitgo';
 
     this.baseCoin.preCreateBitGo(params);

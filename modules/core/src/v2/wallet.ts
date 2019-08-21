@@ -764,7 +764,7 @@ export class Wallet {
 
       // get keychains for address verification
       const keychains = yield Bluebird.map(self._wallet.keys as string[],
-          k => self.baseCoin.keychains().get({ id: k, reqId })
+        k => self.baseCoin.keychains().get({ id: k, reqId })
       );
       const rootAddress = _.get(self._wallet, 'receiveAddress.address');
 
@@ -776,6 +776,8 @@ export class Wallet {
 
         // infer its address type
         if (_.isObject(newAddress.coinSpecific)) {
+          // need dynamic import to break circular dependency, this is ugly
+          const { AbstractUtxoCoin } = require('./coins/abstractUtxoCoin');
           newAddress.addressType = AbstractUtxoCoin.inferAddressType(newAddress);
         }
 
@@ -1504,11 +1506,11 @@ export class Wallet {
   recoverToken(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
-      if (!(self.baseCoin instanceof Eth) || self.baseCoin.getFamily() !== 'eth') {
+      if (self.baseCoin.getFamily() !== 'eth') {
         throw new Error('token recovery only supported for eth wallets');
       }
 
-      return self.baseCoin.recoverToken(
+      return (self.baseCoin as Eth).recoverToken(
         _.merge(params, { wallet: self })
       );
     }).call(this).asCallback(callback);

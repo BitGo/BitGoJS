@@ -46,7 +46,7 @@ if (!(process as any).browser) {
   require('superagent-proxy')(superagent);
 }
 
-declare module "superagent" {
+declare module 'superagent' {
   interface Request {
     result: (optionalField?: string) => Bluebird<any>;
     proxy: (proxyUrl: string) => this;
@@ -57,7 +57,7 @@ declare module "superagent" {
   }
 }
 
-// Patch superagent to return promises
+// Patch superagent to return bluebird promises
 const _end = (superagent as any).Request.prototype.end;
 (superagent as any).Request.prototype.end = function(cb) {
   const self = this;
@@ -93,7 +93,7 @@ function handleResponseResult(optionalField?: string): (res: superagent.Response
       return optionalField ? res.body[optionalField] : res.body;
     }
     throw errFromResponse(res);
-  }
+  };
 }
 
 function errFromResponse(res: superagent.Response): Error {
@@ -1269,7 +1269,7 @@ export class BitGo {
     const authParams: ProcessedAuthenticationOptions = {
       email: lowerName,
       password: hmacPassword,
-      forceSMS: !!forceSMS
+      forceSMS: !!forceSMS,
     };
 
     if (otp) {
@@ -1294,12 +1294,19 @@ export class BitGo {
   authenticate(params: AuthenticateOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
-      const forceV1Auth = !!params.forceV1Auth;
+      if (!_.isObject(params)) {
+        throw new Error('required object params');
+      }
 
       if (callback && !_.isFunction(callback)) {
         throw new Error('callback parameter must be a function');
       }
 
+      if (!_.isString(params.password)) {
+        throw new Error('expected string password');
+      }
+
+      const forceV1Auth = !!params.forceV1Auth;
       const authParams = self.preprocessAuthenticationParams(params);
       const password = params.password;
 
@@ -1419,8 +1426,6 @@ export class BitGo {
         return self.reject('already logged in', callback);
       }
 
-      let token_result;
-
       const request = self.post(self._baseUrl + '/oauth/token');
       request.forceV1Auth = true; // OAuth currently only supports v1 authentication
       const body = yield request
@@ -1428,15 +1433,14 @@ export class BitGo {
           grant_type: 'authorization_code',
           code: authCode,
           client_id: self._clientId,
-          client_secret: self._clientSecret
+          client_secret: self._clientSecret,
         })
         .result();
 
-      token_result = body;
       self._token = body.access_token;
       self._refreshToken = body.refresh_token;
       self._user = yield self.me();
-      return token_result;
+      return body;
     })
       .call(this)
       .nodeify(callback);
@@ -1446,10 +1450,9 @@ export class BitGo {
    * Use refresh token to get new access token.
    * If the refresh token is null/defined, then we use the stored token from auth
    */
-  refreshToken(params: { refreshToken?: string }, callback?: NodeCallback<any>): Bluebird<any> {
+  refreshToken(params: { refreshToken?: string } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
-      params = params || {};
       common.validateParams(params, [], ['refreshToken'], callback);
 
       const refreshToken = params.refreshToken || self._refreshToken;
@@ -1669,7 +1672,7 @@ export class BitGo {
    */
   logout(params?: {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return  co(function *() {
+    return co(function *() {
       const result = yield self.get(self.url('/user/logout')).result();
       self.clear();
       return result;

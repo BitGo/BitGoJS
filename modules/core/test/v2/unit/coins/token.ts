@@ -2,13 +2,13 @@ import * as Bluebird from 'bluebird';
 import * as should from 'should';
 import { BaseCoin } from '../../../../src/v2/baseCoin';
 
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 describe('Virtual Token:', function() {
   let bitgo;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
   });
 

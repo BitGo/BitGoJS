@@ -3,12 +3,12 @@ import 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 const ripple = require('../../../../src/ripple');
 const rippleBinaryCodec = require('ripple-binary-codec');
 
-const nock = require('nock');
+import * as nock from 'nock';
 nock.disableNetConnect();
 
 describe('XRP:', function() {
@@ -16,13 +16,13 @@ describe('XRP:', function() {
   let basecoin;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txrp');
   });
 
   after(function() {
-    nock.activeMocks().should.be.empty();
+    nock.pendingMocks().should.be.empty();
   });
 
   it('isValidAddress should be correct', function() {
@@ -120,7 +120,7 @@ describe('XRP:', function() {
 
 
   describe('Fee Management', () => {
-    const nockBitGo = new TestV2BitGo({ env: 'test' });
+    const nockBitGo = new TestBitGo({ env: 'test' });
     const nockBasecoin = nockBitGo.coin('txrp');
     const keychains = {
       userKeychain: {
