@@ -92,7 +92,7 @@ describe('BitGo Prototype Methods', function() {
     it('goes to microservices', co(function *() {
       bitgo = new TestBitGo({ env: 'custom', microservicesUri });
       const scope = nock(microservicesUri)
-        .post('/api/v1/auth/session')
+        .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
       yield bitgo.authenticate(authenticateRequest);

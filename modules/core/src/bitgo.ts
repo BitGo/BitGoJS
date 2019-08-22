@@ -1323,7 +1323,7 @@ export class BitGo {
       }
 
       const authUrl = self._microservicesUrl ?
-        self.microservicesUrl('/api/v1/auth/session') :
+        self.microservicesUrl('/api/auth/v1/session') :
         self.url('/user/login');
       const request = self.post(authUrl);
 
@@ -1596,7 +1596,7 @@ export class BitGo {
       }
 
       const authUrl = self._microservicesUrl ?
-        self.microservicesUrl('/api/v1/auth/accesstoken') :
+        self.microservicesUrl('/api/auth/v1/accesstoken') :
         self.url('/user/accesstoken');
       const request = self.post(authUrl);
 
