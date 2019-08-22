@@ -366,6 +366,14 @@ interface SimulateWebhookOptions {
   blockId: string;
 }
 
+interface AuthenticateWithAuthCodeOptions {
+  authCode: string;
+}
+
+interface VerifyPushTokenOptions {
+  pushVerificationToken: string;
+}
+
 export interface BitGo {
   get(url: string, callback?: NodeCallback<superagent.Response>): superagent.Request;
   post(url: string, callback?: NodeCallback<superagent.Response>): superagent.Request;
@@ -1390,31 +1398,44 @@ export class BitGo {
    * @param callback
    * @deprecated
    */
-  verifyPushToken(params, callback?: NodeCallback<any>): Bluebird<any> {
-    params = params || {};
-    common.validateParams(params, ['pushVerificationToken'], [], callback);
+  verifyPushToken(params: VerifyPushTokenOptions, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co(function *() {
+      if (!_.isObject(params)) {
+        throw new Error('required object params');
+      }
 
-    if (!this._token) {
-      // this device has to be registered to an extensible session
-      return this.reject('not logged in', callback);
-    }
+      if (!_.isString(params.pushVerificationToken)) {
+        throw new Error('required string pushVerificationToken');
+      }
 
-    const postParams = _.pick(params, 'pushVerificationToken');
+      if (!self._token) {
+        // this device has to be registered to an extensible session
+        throw new Error('not logged in');
+      }
 
-    return this.post(this.url('/devices/verify'))
-      .send(postParams)
-      .result()
+      const postParams = _.pick(params, 'pushVerificationToken');
+
+      return self.post(self.url('/devices/verify'))
+        .send(postParams)
+        .result();
+    }).call(this)
       .nodeify(callback);
   }
 
   /**
    * Login to the bitgo system using an authcode generated via Oauth
    */
-  authenticateWithAuthCode(params, callback) {
+  authenticateWithAuthCode(params: AuthenticateWithAuthCodeOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
-      params = params || {};
-      common.validateParams(params, ['authCode'], [], callback);
+      if (!_.isObject(params)) {
+        throw new Error('required object params');
+      }
+
+      if (!_.isString(params.authCode)) {
+        throw new Error('required string authCode');
+      }
 
       if (!self._clientId || !self._clientSecret) {
         throw new Error('Need client id and secret set first to use this');
