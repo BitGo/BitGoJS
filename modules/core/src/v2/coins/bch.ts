@@ -1,18 +1,19 @@
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import * as bitcoin from 'bitgo-utxo-lib';
-const request = require('superagent');
+import * as request from 'superagent';
 import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 import * as common from '../../common';
-const cashaddress = require('cashaddress');
 import * as _ from 'lodash';
+const cashaddress = require('cashaddress');
+const co = Bluebird.coroutine;
 
 const VALID_ADDRESS_VERSIONS = {
   base58: 'base58',
   // TODO(BG-11325): remove bech32 in future major version release
   bech32: 'bech32',
-  cashaddr: 'cashaddr'
+  cashaddr: 'cashaddr',
 };
 
 const containsMixedCaseCharacters = (str) => {
@@ -21,11 +22,11 @@ const containsMixedCaseCharacters = (str) => {
 
 export class Bch extends AbstractUtxoCoin {
 
-  protected constructor(bitgo, network?) {
+  protected constructor(bitgo: BitGo, network?) {
     super(bitgo, network || bitcoin.networks.bitcoincash);
   }
 
-  static createInstance(bitgo): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Bch(bitgo);
   }
 
@@ -107,12 +108,12 @@ export class Bch extends AbstractUtxoCoin {
     // mapping to cashaddress's script versions
     const versionMap = {
       [this.network.pubKeyHash]: 'pubkeyhash',
-      [this.network.scriptHash]: 'scripthash'
+      [this.network.scriptHash]: 'scripthash',
     };
     // another mapping to cashaddress's script versions
     const scriptVersionMap = {
       pubkeyhash: 'pubKeyHash',
-      scripthash: 'scriptHash'
+      scripthash: 'scriptHash',
     };
 
     // convert from base58

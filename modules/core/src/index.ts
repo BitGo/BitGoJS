@@ -8,7 +8,7 @@
 //
 import * as common from './common';
 
-export const BitGo = require('./bitgo');
+export { BitGo } from './bitgo';
 
 // Expose bitcoin and sjcl
 import * as utxoLib from 'bitgo-utxo-lib';

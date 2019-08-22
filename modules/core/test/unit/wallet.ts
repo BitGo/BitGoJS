@@ -5,15 +5,15 @@
 //
 
 const Wallet = require('../../src/wallet');
-const TestBitGo = require('../lib/test_bitgo');
+import { TestBitGo } from '../lib/test_bitgo';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
-const common = require('../../src/common');
+import * as common from '../../src/common';
 import * as bitcoin from 'bitgo-utxo-lib';
 import * as should from 'should';
 import * as nock from 'nock';
-const sinon = require('sinon');
+import * as sinon from 'sinon';
 
 nock.disableNetConnect();
 

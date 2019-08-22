@@ -8,7 +8,7 @@ import * as nock from 'nock';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
-const TestV2BitGo = require('../../lib/test_bitgo');
+import { TestBitGo } from '../../lib/test_bitgo';
 
 describe('V2 Wallet:', function() {
   let bitgo;
@@ -27,16 +27,16 @@ describe('V2 Wallet:', function() {
 
   before(co(function *() {
     nock.restore();
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc');
     wallets = basecoin.wallets();
     basecoin.keychains();
 
     yield bitgo.authenticateTestUser(bitgo.testUserOTP());
-    wallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID });
+    wallet = yield wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET1_ID });
 
-    const fundingVerificationBitgo = new TestV2BitGo({ env: 'test' });
+    const fundingVerificationBitgo = new TestBitGo({ env: 'test' });
     fundingVerificationBitgo.initializeTestVars();
     yield fundingVerificationBitgo.checkFunded();
   }));
@@ -338,7 +338,7 @@ describe('V2 Wallet:', function() {
         const params = {
           amount: 0.01 * 1e8, // 0.01 tBTC
           address: recipientAddress.address,
-          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+          walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
         };
         return wallet.send(params);
       })
@@ -358,7 +358,7 @@ describe('V2 Wallet:', function() {
       const params = {
         amount: 0.01 * 1e8, // 0.01 tBTC
         address: recipientAddress.address,
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         sequenceId: sequenceId
       };
       const transaction = yield wallet.send(params);
@@ -383,7 +383,7 @@ describe('V2 Wallet:', function() {
           amount: 0.01 * 1e8, // 0.01 tBTC
           address: recipientAddress.address
         },
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       };
 
       const error = yield bitgo.getAsyncError(wallet.sendMany(params));
@@ -400,7 +400,7 @@ describe('V2 Wallet:', function() {
               address: recipientAddress.address
             }
           ],
-          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+          walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
         };
         return wallet.sendMany(params);
       })
@@ -435,7 +435,7 @@ describe('V2 Wallet:', function() {
       explanation.should.have.property('fee');
       const transaction = yield wallet.sendMany({
         prebuildTx: prebuild,
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         comment: 'Hello World!',
         txHex: 'should be overwritten'
       });
@@ -467,7 +467,7 @@ describe('V2 Wallet:', function() {
         return wallet.signTransaction({
           txPrebuild: prebuild,
           key: keychain,
-          walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+          walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
           comment: 'Hello World!',
           txHex: 'should be overwritten'
         });
@@ -487,7 +487,7 @@ describe('V2 Wallet:', function() {
     let sharingUserBitgo;
     let sharingUserBasecoin;
     before(co(function *() {
-      sharingUserBitgo = new TestV2BitGo({ env: 'test' });
+      sharingUserBitgo = new TestBitGo({ env: 'test' });
       sharingUserBitgo.initializeTestVars();
       sharingUserBasecoin = sharingUserBitgo.coin('tbtc');
       yield sharingUserBitgo.authenticateSharingTestUser(sharingUserBitgo.testUserOTP());
@@ -502,9 +502,9 @@ describe('V2 Wallet:', function() {
       // take the main user wallet and invite this user
       let share;
       return wallet.shareWallet({
-        email: TestV2BitGo.TEST_SHARED_KEY_USER,
+        email: TestBitGo.TEST_SHARED_KEY_USER,
         permissions: 'view,spend,admin',
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       })
       .then(function(shareDetails) {
         share = shareDetails;
@@ -513,7 +513,7 @@ describe('V2 Wallet:', function() {
       .then(function() {
         return sharingUserBasecoin.wallets().acceptShare({
           walletShareId: share.id,
-          userPassword: TestV2BitGo.TEST_SHARED_KEY_PASSWORD
+          userPassword: TestBitGo.TEST_SHARED_KEY_PASSWORD
         });
       })
       .then(function(acceptanceDetails) {
@@ -596,9 +596,9 @@ describe('V2 Wallet:', function() {
     it('should share a wallet and then resend the wallet invite', co(function *() {
       // share this wallet
       const share = yield wallet.shareWallet({
-        email: TestV2BitGo.TEST_SHARED_KEY_USER,
+        email: TestBitGo.TEST_SHARED_KEY_USER,
         permissions: 'view',
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       });
 
       // resend the wallet share invitation
@@ -618,7 +618,7 @@ describe('V2 Wallet:', function() {
       // create a throwaway wallet
       const newWallet = yield bitgo.coin('tltc').wallets().generateWallet({
         label: 'Policy Testing Wallet',
-        passphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        passphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       });
       policyWallet = newWallet.wallet;
     }));
@@ -695,7 +695,7 @@ describe('V2 Wallet:', function() {
   describe('Unspent Manipulation', function() {
 
     xit('should consolidate the number of unspents to 2, and fanout the number of unspents to 200', co(function *() {
-      const unspentWallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_ID });
+      const unspentWallet = yield wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET2_UNSPENTS_ID });
       yield bitgo.unlock({ otp: bitgo.testUserOTP() });
       yield Bluebird.delay(3000);
 
@@ -704,7 +704,7 @@ describe('V2 Wallet:', function() {
         numUnspentsToMake: 2,
         minValue: 1000,
         numBlocks: 12,
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_WALLET2_UNSPENTS_PASSCODE
       };
       const transaction1 = yield unspentWallet.consolidateUnspents(params1);
       transaction1.should.have.property('status');
@@ -724,7 +724,7 @@ describe('V2 Wallet:', function() {
         maxNumInputsToUse: 80, // should be 2, but if a test were to fail and need to be rerun we want to use more of them
         numUnspentsToMake: 20,
         numBlocks: 12,
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_WALLET2_UNSPENTS_PASSCODE
       };
       const transaction2 = yield unspentWallet.fanoutUnspents(params2);
 
@@ -741,15 +741,15 @@ describe('V2 Wallet:', function() {
 
     // TODO: change xit to it once the sweepWallet route is running on test, to run this integration test
     xit('should sweep funds between two wallets', co(function *() {
-      const unspentWallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET2_UNSPENTS_ID });
-      const sweep1Wallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_SWEEP1_ID });
-      const sweep2Wallet = yield wallets.getWallet({ id: TestV2BitGo.V2.TEST_SWEEP2_ID });
+      const unspentWallet = yield wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET2_UNSPENTS_ID });
+      const sweep1Wallet = yield wallets.getWallet({ id: TestBitGo.V2.TEST_SWEEP1_ID });
+      const sweep2Wallet = yield wallets.getWallet({ id: TestBitGo.V2.TEST_SWEEP2_ID });
       yield bitgo.unlock({ otp: bitgo.testUserOTP() });
       yield Bluebird.delay(3000);
 
       const params1 = {
-        address: TestV2BitGo.V2.TEST_SWEEP2_ADDRESS,
-        walletPassphrase: TestV2BitGo.V2.TEST_SWEEP1_PASSCODE
+        address: TestBitGo.V2.TEST_SWEEP2_ADDRESS,
+        walletPassphrase: TestBitGo.V2.TEST_SWEEP1_PASSCODE
       };
       const transaction1 = yield sweep1Wallet.sweep(params1);
       transaction1.should.have.property('status');
@@ -768,8 +768,8 @@ describe('V2 Wallet:', function() {
 
       // sweep funds back to starting wallet
       const params2 = {
-        address: TestV2BitGo.V2.TEST_SWEEP1_ADDRESS,
-        walletPassphrase: TestV2BitGo.V2.TEST_SWEEP2_PASSCODE
+        address: TestBitGo.V2.TEST_SWEEP1_ADDRESS,
+        walletPassphrase: TestBitGo.V2.TEST_SWEEP2_PASSCODE
       };
       const transaction2 = yield unspentWallet.sweep(params2);
 

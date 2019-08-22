@@ -5,16 +5,16 @@
 //
 
 import 'should';
-const BitGoJS = require('../../src');
-const TestBitGo = require('../lib/test_bitgo');
+import * as BitGoJS from '../../src';
+import { TestBitGo } from '../lib/test_bitgo';
 
 describe('Constructor', function() {
   it('arguments', function() {
     (() => {
-      new BitGoJS.BitGo('invalid');
+      new BitGoJS.BitGo('invalid' as any);
     }).should.throw(/Must pass in parameters dictionary/);
     (() => {
-      new BitGoJS.BitGo({ useProduction: 'invalid' });
+      new BitGoJS.BitGo({ useProduction: 'invalid' } as any);
     }).should.throw(/invalid argument/);
     (() => {
       new BitGoJS.BitGo({ clientId: 'invalid' });
@@ -23,10 +23,10 @@ describe('Constructor', function() {
       new BitGoJS.BitGo({ clientSecret: 'invalid' });
     }).should.throw(/invalid argument/);
     (() => {
-      new BitGoJS.BitGo({ env: 'invalid' });
+      new BitGoJS.BitGo({ env: 'invalid' } as any);
     }).should.throw(/invalid environment/);
     (() => {
-      new BitGoJS.BitGo({ env: 'testnet', useProduction: true });
+      new BitGoJS.BitGo({ env: 'testnet', useProduction: true } as any);
     }).should.throw(/cannot use useProduction/);
   });
 

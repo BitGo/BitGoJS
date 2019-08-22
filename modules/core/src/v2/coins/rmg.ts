@@ -1,4 +1,5 @@
 import { hdPath } from '../../bitcoin';
+import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
 import { BaseCoin } from '../baseCoin';
 import {
@@ -15,13 +16,13 @@ const co = Bluebird.coroutine;
 const prova = require('../../prova');
 
 export class Rmg extends AbstractUtxoCoin {
-  constructor(bitgo, network?) {
+  constructor(bitgo: BitGo, network?) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
     prova.networks.rmg.coin = 'rmg';
     super(bitgo, network || prova.networks.rmg);
   }
 
-  static createInstance(bitgo): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Rmg(bitgo);
   }
 

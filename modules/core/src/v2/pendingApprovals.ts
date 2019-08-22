@@ -4,6 +4,7 @@
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import * as debugLib from 'debug';
+import { BitGo } from '../bitgo';
 
 import { validateParams } from '../common';
 import { PendingApproval } from './pendingApproval';
@@ -27,10 +28,10 @@ export interface ListPendingApprovalsResult {
 }
 
 export class PendingApprovals {
-  private readonly bitgo: any;
+  private readonly bitgo: BitGo;
   private readonly baseCoin: BaseCoin;
 
-  constructor(bitgo: any, baseCoin: BaseCoin) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
   }
@@ -60,7 +61,7 @@ export class PendingApprovals {
         throw new Error('must provide exactly 1 of walletId or enterpriseId to get pending approvals on');
       }
 
-      const body = self.bitgo
+      const body = yield self.bitgo
         .get(self.baseCoin.url('/pendingapprovals'))
         .query(queryParams)
         .result();

@@ -5,7 +5,7 @@
 import 'should';
 import * as nock from 'nock';
 
-const TestV2BitGo = require('../../lib/test_bitgo');
+import { TestBitGo } from '../../lib/test_bitgo';
 import { Token } from '../../../src/v2/coins/token';
 
 nock.disableNetConnect();
@@ -18,7 +18,7 @@ describe('V2 Base Coin:', function() {
   let basecoinTokenWithContractHash;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoinEth = bitgo.coin('teth');
     basecoinBtc = bitgo.coin('tbtc');

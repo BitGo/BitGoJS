@@ -7,7 +7,7 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 
-const TestV2BitGo = require('../../lib/test_bitgo');
+import { TestBitGo } from '../../lib/test_bitgo';
 
 describe('V2 Keychains', function() {
   describe('Update Password', function() {
@@ -17,7 +17,7 @@ describe('V2 Keychains', function() {
     let correctPassword;
 
     before(co(function *() {
-      bitgo = new TestV2BitGo({ env: 'test' });
+      bitgo = new TestBitGo({ env: 'test' });
       bitgo.initializeTestVars();
       basecoin = bitgo.coin('tltc');
       keychains = basecoin.keychains();

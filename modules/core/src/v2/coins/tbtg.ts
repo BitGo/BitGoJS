@@ -1,8 +1,9 @@
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Btg } from './btg';
 
 export class Tbtg extends Btg {
-  constructor(bitgo) {
+  constructor(bitgo: BitGo) {
     // TODO: move to bitgo-utxo-lib (BG-6821)
     super(bitgo, {
       messagePrefix: '\x18Bitcoin Signed Message:\n',
@@ -18,7 +19,7 @@ export class Tbtg extends Btg {
     });
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Tbtg(bitgo);
   }
 

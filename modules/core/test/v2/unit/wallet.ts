@@ -3,18 +3,18 @@
 //
 
 import * as should from 'should';
-const sinon = require('sinon');
+import * as sinon from 'sinon';
 require('should-sinon');
-require('../lib/asserts');
-const nock = require('nock');
+import '../lib/asserts';
+import * as nock from 'nock';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
 const bitcoin = require('bitgo-utxo-lib');
 import { Wallet } from '../../../src/v2/wallet';
-const common = require('../../../src/common');
+import * as common from '../../../src/common';
 
-const TestV2BitGo = require('../../lib/test_bitgo');
+import { TestBitGo } from '../../lib/test_bitgo';
 
 nock.disableNetConnect();
 
@@ -25,7 +25,7 @@ describe('V2 Wallet:', function() {
   let basecoin;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc');
     const walletData = {
@@ -360,8 +360,8 @@ describe('V2 Wallet:', function() {
     it('should error when amount is zero', co(function *() {
       const params = {
         amount: 0,
-        address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS,
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        address: TestBitGo.V2.TEST_WALLET1_ADDRESS,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       };
       (() => wallet.send(params)).should.throw(Error);
     }));
@@ -369,8 +369,8 @@ describe('V2 Wallet:', function() {
     it('should error when amount is negative', co(function *() {
       const params = {
         amount: -1,
-        address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS,
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        address: TestBitGo.V2.TEST_WALLET1_ADDRESS,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       };
       (() => wallet.send(params)).should.throw(Error);
     }));
@@ -378,13 +378,13 @@ describe('V2 Wallet:', function() {
     it('should error when send many and amount is zero', co(function *() {
       const params = {
         recipients: [{
-          address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS,
+          address: TestBitGo.V2.TEST_WALLET1_ADDRESS,
           amount: 0
         }, {
-          address: TestV2BitGo.V2.TEST_WALLET2_ADDRESS,
+          address: TestBitGo.V2.TEST_WALLET2_ADDRESS,
           amount: 10
         }],
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       };
       const error = yield bitgo.getAsyncError(wallet.sendMany(params));
       should.exist(error);
@@ -393,13 +393,13 @@ describe('V2 Wallet:', function() {
     it('should error when send many and amount is negative', co(function *() {
       const params = {
         recipients: [{
-          address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS,
+          address: TestBitGo.V2.TEST_WALLET1_ADDRESS,
           amount: 10
         }, {
-          address: TestV2BitGo.V2.TEST_WALLET2_ADDRESS,
+          address: TestBitGo.V2.TEST_WALLET2_ADDRESS,
           amount: -1
         }],
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       };
       const error = yield bitgo.getAsyncError(wallet.sendMany(params));
       should.exist(error);
@@ -730,7 +730,7 @@ describe('V2 Wallet:', function() {
     let bgUrl;
 
     before(co(function *() {
-      nock.activeMocks().should.be.empty();
+      nock.pendingMocks().should.be.empty();
       bgUrl = common.Environments[bitgo.getEnv()].uri;
     }));
 

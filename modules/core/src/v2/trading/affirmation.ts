@@ -2,6 +2,7 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../../bitgo';
 
 import { NodeCallback } from '../types';
 import { Lock } from './lock';
@@ -19,7 +20,7 @@ export enum AffirmationStatus {
 }
 
 export class Affirmation {
-  private bitgo;
+  private bitgo: BitGo;
   private enterpriseId: string;
 
   public id: string;
@@ -31,7 +32,7 @@ export class Affirmation {
   public createdAt: Date;
   public expireAt: Date;
 
-  constructor(affirmationData, bitgo, enterpriseId: string) {
+  constructor(affirmationData, bitgo: BitGo, enterpriseId: string) {
     this.bitgo = bitgo;
     this.enterpriseId = enterpriseId;
 
@@ -70,16 +71,17 @@ export class Affirmation {
   }
 
   private updateStatus(status: AffirmationStatus, body?, callback?: NodeCallback<void>): Bluebird<void> {
+    const self = this;
     return co(function* updateStatus() {
       const bodyWithStatus = { status, ...body };
-      const url = this.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.partyAccountId}/affirmations/${this.id}`
+      const url = self.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.partyAccountId}/affirmations/${self.id}`
       );
-      const response = yield this.bitgo
+      const response = yield self.bitgo
         .put(url)
         .send(bodyWithStatus)
         .result();
-      this.updateAffirmationData(response);
+      self.updateAffirmationData(response);
     })
       .call(this)
       .asCallback(callback);

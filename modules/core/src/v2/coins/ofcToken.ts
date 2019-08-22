@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { CoinConstructor } from '../coinFactory';
 import { Ofc } from './ofc';
 
@@ -24,7 +25,7 @@ const publicIdRegex = /^[a-f\d]{32}$/i;
 export class OfcToken extends Ofc {
   public readonly tokenConfig: OfcTokenConfig;
 
-  constructor(bitgo: any, tokenConfig: OfcTokenConfig) {
+  constructor(bitgo: BitGo, tokenConfig: OfcTokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
   }
@@ -74,7 +75,7 @@ export class OfcToken extends Ofc {
   }
 
   static createTokenConstructor(config: OfcTokenConfig): CoinConstructor {
-    return (bitgo: any) => new OfcToken(bitgo, config);
+    return (bitgo: BitGo) => new OfcToken(bitgo, config);
   }
 
   /**

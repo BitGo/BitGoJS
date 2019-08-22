@@ -1,13 +1,13 @@
 import 'should';
 
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 describe('OFC:', function() {
   let bitgo;
   let ofcCoin;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     ofcCoin = bitgo.coin('ofc');
   });

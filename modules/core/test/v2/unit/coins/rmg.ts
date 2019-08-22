@@ -1,7 +1,7 @@
 import * as should from 'should';
 import { coroutine as co } from 'bluebird';
 
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 const prova = require('prova-lib');
 
 describe('RMG:', function() {
@@ -9,7 +9,7 @@ describe('RMG:', function() {
   let basecoin;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('trmg');
   });

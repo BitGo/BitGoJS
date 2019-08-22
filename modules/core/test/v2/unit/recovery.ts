@@ -4,11 +4,11 @@
 
 import * as should from 'should';
 import { coroutine as co } from 'bluebird';
-const nock = require('nock');
+import * as nock from 'nock';
 
-const TestV2BitGo = require('../../lib/test_bitgo');
+import { TestBitGo } from '../../lib/test_bitgo';
 const recoveryNocks = require('../lib/recovery-nocks');
-const config = require('../../../src/config');
+import * as config from '../../../src/config';
 
 nock.disableNetConnect();
 
@@ -16,12 +16,12 @@ describe('Recovery:', function() {
   let bitgo;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
 
     // pretend that Keyternal accepts recoveries for all coins
     config.krsProviders.keyternal.supportedCoins = ['btc', 'eth', 'xrp', 'bch', 'ltc', 'zec', 'dash', 'xlm'];
-    config.krsProviders.keyternal.feeAddresses = {
+    (config.krsProviders.keyternal.feeAddresses as any) = {
       tbtc: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
       tbch: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
       tltc: 'QffXMViM8DYgPRf1Hoczjw7BS5CVdSWaBL',
@@ -42,7 +42,7 @@ describe('Recovery:', function() {
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
@@ -105,7 +105,7 @@ describe('Recovery:', function() {
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         krsProvider: 'keyternal',
         scan: 5,
@@ -149,7 +149,7 @@ describe('Recovery:', function() {
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         krsProvider: 'keyternal',
         scan: 5,
@@ -162,22 +162,22 @@ describe('Recovery:', function() {
     it('should fail to generate a recovery tx if the fee address is not specified', co(function *() {
       recoveryNocks.nockBtcRecovery(bitgo, true);
 
-      const oldAddress = config.krsProviders.keyternal.feeAddresses.tbtc;
-      delete config.krsProviders.keyternal.feeAddresses.tbtc;
+      const oldAddress = (config.krsProviders.keyternal.feeAddresses as any).tbtc;
+      delete (config.krsProviders.keyternal.feeAddresses as any).tbtc;
 
       const basecoin = bitgo.coin('tbtc');
       yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
         backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
         bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
         krsProvider: 'keyternal',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       }).should.be.rejectedWith('this KRS provider has not configured their fee structure yet - recovery cannot be completed');
 
-      config.krsProviders.keyternal.feeAddresses.tbtc = oldAddress;
+      (config.krsProviders.keyternal.feeAddresses as any).tbtc = oldAddress;
     }));
   });
 
@@ -194,7 +194,7 @@ describe('Recovery:', function() {
         '6slxuM6nQsLJCrwgxXB3lzS6GMbAptVtHSDPURUnZnbRYl0CN9LnNGZEqfl7w4GbCbDeCe2IvyZ\n' +
         'dgeFCVPRYiAL/0VZeC97/pAkP4tuybqho0XELLyrYOgwgGAtoqYs5gqmfexu8R/9wEp2iI="}\n',
         bitgoKey: 'xpub661MyMwAqRbcFwmW1HYESGP4x6tKWhYCgSK3J9T3y1eaLXkGszcbBSd4h4tM6Nt17JkcZV768RWHYrqjeEpyYabj2gv9XtdNJyww4LnJZVK',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '2MztSo6jqjLWcvH4g6QoMChbrWkJ3HHzQua',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
@@ -218,7 +218,7 @@ describe('Recovery:', function() {
         userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
         backupKey: 'xpub661MyMwAqRbcGMSGJsrhpqUhvCQqMUvwshCLfPDXrweN15ce8g96WbfdrDbhKKDx9pwKz9yenwexTFx7ofDchmT2zJZW8eshGKWKwrJrkNp',
         bitgoKey: 'xpub661MyMwAqRbcFwmW1HYESGP4x6tKWhYCgSK3J9T3y1eaLXkGszcbBSd4h4tM6Nt17JkcZV768RWHYrqjeEpyYabj2gv9XtdNJyww4LnJZVK',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         krsProvider: 'keyternal',
         recoveryDestination: '2MztSo6jqjLWcvH4g6QoMChbrWkJ3HHzQua',
         scan: 5,
@@ -245,7 +245,7 @@ describe('Recovery:', function() {
         userKey: '{"iv":"rU++mEtIHtbp3d4jg5EulA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"ip1rb59uYnM=","ct":"ssmP9abPoVyXkW4Io0SUy+AAS8lr+wgIerTMw+lDYnkUh0sjlI4A6Fpve0q1riQ3Dy/J0bNu7dgoZkO4xs/X6dzwEwlmPhk3pEQ7Yd4CXa1zA01y0Geu900FLe4LdaS8jt6fixui2tTd4Vi3JYglF1/HmCjG1Ug="}',
         backupKey: '{"iv":"uB/BTcn1rXmgYGfncXOowg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"I3WrumxkuMQ=","ct":"sgyDNAzNsBruTRm0d04oBTBf8lheHNKS+dRgl8FeMEhodKsiyjtRVHG0CHPf5rV3g5ixVnZ+iwsSCv3PKyyeoy7RGnT0AG9YYpi0me+OvP8331iO+n5quzstrGbV1j8uEh5IMW78S+YUZKSx6zbbdZ0xNu8D5WM="}',
         rootAddress: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345'
       })
       .then(function(recovery) {
@@ -268,7 +268,7 @@ describe('Recovery:', function() {
         userKey: '{"iv":"rU++mEtIHtbp3d4jg5EulA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"ip1rb59uYnM=","ct":"ssmP9abPoVyXkW4Io0SUy+AAS8lr+wgIerTMw+lDYnkUh0sjlI4A6Fpve0q1riQ3Dy/J0bNu7dgoZkO4xs/X6dzwEwlmPhk3pEQ7Yd4CXa1zA01y0Geu900FLe4LdaS8jt6fixui2tTd4Vi3JYglF1/HmCjG1Ug="}',
         backupKey: 'xpub661MyMwAqRbcFtWdmWHKZEh9pYiJrAGTu1NNSwxY2S63tU9nGcfCAbNUKQuFqXRTRk8KkuBabxo6YjeBri8Q7dkMsmths6MVxSd6MTaeCmd',
         rootAddress: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         krsProvider: 'keyternal',
         recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345'
       })
@@ -291,7 +291,7 @@ describe('Recovery:', function() {
         userKey: 'xpub661MyMwAqRbcF9Ya4zDHGzDtJz3NaaeEGbQ6rnqnNxL9RXDJNHcfzAyPUBXuKXjytvJNzQxqbjBwmPveiYX323Zp8Zx2RYQN9gGM7ntiXxr',
         backupKey: 'xpub661MyMwAqRbcFtWdmWHKZEh9pYiJrAGTu1NNSwxY2S63tU9nGcfCAbNUKQuFqXRTRk8KkuBabxo6YjeBri8Q7dkMsmths6MVxSd6MTaeCmd',
         rootAddress: 'raGZWRkRBUWdQJsKYEzwXJNbCZMTqX56aA',
-        walletPassphrase: TestV2BitGo.V2.TEST_WALLET1_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
         krsProvider: 'keyternal',
         recoveryDestination: 'rsv2kremJSSFbbaLqrf8fWxxN5QnsynNm2?dt=12345'
       })
@@ -320,7 +320,7 @@ describe('Recovery:', function() {
         userKey: `{"iv":"Vvthj0ZaCPywdNWM+s5GmA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hxZMB31kp34=","ct":"xGpBHnS3k0G6lU/uv9pC1gsdFqksNV6nLBQ18qL9iuWV9sM5JLyZ67wqnMVVoZgNWaI1fq0kSTCPYwGq2FNAS2GmN/JWb/Pl0UPmfVvhraOnzav0vDv0KaJjOT3S1D/omjzx/W3pw5qSwxov+T65Yt6E19YGGjc="}`,
         backupKey: `{"iv":"/GM1AF21E0Ht6ZmgiWpd+g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"rGsRxlm/pGE=","ct":"cUBV7ELfNEIs0UkDrBjHiRpXvRNCRHLE5dx4X7gprHoTSBKJOJ+5McxHnSLeBvM2vIexSQO9RBzjtC2G1m6hozTOEjWkR0BtTBoi0uw3cXDmmL69pjrABZhLjmCF8znmaF/DCQk/lKQcHEwbImcR/egpq8u9W1A="}`,
         bitgoKey: 'xpub661MyMwAqRbcFwmymyqkCoY6uaZ8PxbjXKWK2pLS8NUutytumJabLvJyGpXzDJRqXJAf4LoACStGgf1bYv6dkbT6D1MKEyhjYE7VHiw5bFP',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'Qhe8AWhZr1wBNV3iry2uVxnthbawRLhNcF',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
@@ -343,7 +343,7 @@ describe('Recovery:', function() {
         userKey: `{"iv":"Vvthj0ZaCPywdNWM+s5GmA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hxZMB31kp34=","ct":"xGpBHnS3k0G6lU/uv9pC1gsdFqksNV6nLBQ18qL9iuWV9sM5JLyZ67wqnMVVoZgNWaI1fq0kSTCPYwGq2FNAS2GmN/JWb/Pl0UPmfVvhraOnzav0vDv0KaJjOT3S1D/omjzx/W3pw5qSwxov+T65Yt6E19YGGjc="}`,
         backupKey: `xpub661MyMwAqRbcEht5QfprPgqQTbvUoRtthmoa57N5kPSqremKhdxBF6CJANnLuxm21oc9Dgf9romMra3J34WjWRKmmWewwvrYNYT53BGARKt`,
         bitgoKey: 'xpub661MyMwAqRbcFwmymyqkCoY6uaZ8PxbjXKWK2pLS8NUutytumJabLvJyGpXzDJRqXJAf4LoACStGgf1bYv6dkbT6D1MKEyhjYE7VHiw5bFP',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'Qhe8AWhZr1wBNV3iry2uVxnthbawRLhNcF',
         krsProvider: 'keyternal',
         scan: 5,
@@ -369,7 +369,7 @@ describe('Recovery:', function() {
         userKey: `{"iv":"in/0+5mRgyBD/NQM+rsKOQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"2zBGPsw0Yc4=","ct":"IqS/KsWCc117zVIu4VID6BB1UBBAOW3zeWiMsL4rm+HXMffHetaOCVwFVeoO1JG/dbcV/ApcqvbHXxNMY7L8FXeeBr3SMnZdpqIkGzfrvcADa9EcjTg+iLDGLRT1FwdavQ7X06DXro0Mx3O+CDnCFaf2vkxIfZ0="}`,
         backupKey: `{"iv":"ZGWK9woJAu020cXwvdfmuQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"6iCPz4FhZ6g=","ct":"8IwFVj2l7L6o6emjMF/G7WIDXeOmjGFoyNgofQwrvnk+ZsckQrKUSVxDzDUeZdJZsZE6fj+ZCVNh1Zfgxxg0rk5rh0bYJJ+WVsizK7jUE4DNJnS5RwBZNNFi9qilHI2bPbzXp+VAyOieSF5nJs9AQSc+rTxda30="}`,
         bitgoKey: 'xpub661MyMwAqRbcFN1MHGSUPL5v1xREhgtbvoCY5Qkbt3dLXZTdV8Au2SsoQ4Kv5SCSSb6sN9Y3eZZBgvZjf7qGj9zaXmFtEcedfiFKLiBXUBq',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 't2GnC5sFN5Km2UuYaYjHNBQRJBDAXVQqSfJ',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
@@ -392,7 +392,7 @@ describe('Recovery:', function() {
         userKey: `{"iv":"in/0+5mRgyBD/NQM+rsKOQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"2zBGPsw0Yc4=","ct":"IqS/KsWCc117zVIu4VID6BB1UBBAOW3zeWiMsL4rm+HXMffHetaOCVwFVeoO1JG/dbcV/ApcqvbHXxNMY7L8FXeeBr3SMnZdpqIkGzfrvcADa9EcjTg+iLDGLRT1FwdavQ7X06DXro0Mx3O+CDnCFaf2vkxIfZ0="}`,
         backupKey: `xpub661MyMwAqRbcFLJXSAvqG5gkAftxMvBGYSbYcSPtY9CTVQAUXCfEPoeukWAPKYz24iNmy4iazs73A2PsHLqahK37f5pfdR2b3FBLAz3ATBM`,
         bitgoKey: 'xpub661MyMwAqRbcFN1MHGSUPL5v1xREhgtbvoCY5Qkbt3dLXZTdV8Au2SsoQ4Kv5SCSSb6sN9Y3eZZBgvZjf7qGj9zaXmFtEcedfiFKLiBXUBq',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 't2GnC5sFN5Km2UuYaYjHNBQRJBDAXVQqSfJ',
         krsProvider: 'keyternal',
         scan: 5,
@@ -418,7 +418,7 @@ describe('Recovery:', function() {
         userKey: `{"iv":"tZz3ZGLkffG0/eCX0xAHLg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KU3deEQZIzU=","ct":"AOs7uOnCTDwmQI72zmA0CI8c3VjcBUXheSAPPnxOHbz5QQbh/WDUGdX/IoyXcjO4EUreDERjGWIz21lu41ENk0h6pe7eELu1p777qZ/g4o9EAl0XsmjAH+b3fW3YQhdBmhYFboriv2wHSjwly9I4NGtdbEKabZY="}`,
         backupKey: `{"iv":"/Vz19EjCHc93h+53cPp+yA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"Mm0Y+nv31Jo=","ct":"3AdTtdM92iVgRICDkNSfE45UbF2BjBncmRy6ytnc3TnEDb25ZjeqZ1yP8VxXsHNszj86GccueUe0VbUwLxrGYC+wWoznGJggFBwVJJzeN00njTVKEaYk2KJCzkVaaMwXADktgxiymfjBaYBKVj0qwUZg2996vZI="}`,
         bitgoKey: 'xpub661MyMwAqRbcGb1Jkx9U8iJfengAni3Ks3udjpiURVgxbQBcYGJjqBDVcrPPU7a96RFut6tsX4AKkQa2DJv3Ti3LtukGcjjYbFVTXVDT8QC',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '8hh6nS2vpKCnebjoWcKJF7ebyEt4yNnEzW',
         scan: 3,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
@@ -441,7 +441,7 @@ describe('Recovery:', function() {
         userKey: `{"iv":"tZz3ZGLkffG0/eCX0xAHLg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KU3deEQZIzU=","ct":"AOs7uOnCTDwmQI72zmA0CI8c3VjcBUXheSAPPnxOHbz5QQbh/WDUGdX/IoyXcjO4EUreDERjGWIz21lu41ENk0h6pe7eELu1p777qZ/g4o9EAl0XsmjAH+b3fW3YQhdBmhYFboriv2wHSjwly9I4NGtdbEKabZY="}`,
         backupKey: `xpub661MyMwAqRbcFvZZLVBGTPBZf6CN2imxDEZcQHMSjUPatWi5RhkmGNBiHUrLuLYDnt16aThj9ZQQ9oBTjvAaJB4BSGm9F3rHBaRbWJ75iay`,
         bitgoKey: 'xpub661MyMwAqRbcGb1Jkx9U8iJfengAni3Ks3udjpiURVgxbQBcYGJjqBDVcrPPU7a96RFut6tsX4AKkQa2DJv3Ti3LtukGcjjYbFVTXVDT8QC',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         krsProvider: 'keyternal',
         recoveryDestination: '8hh6nS2vpKCnebjoWcKJF7ebyEt4yNnEzW',
         scan: 3,
@@ -470,7 +470,7 @@ describe('Recovery:', function() {
         userKey: `{"iv":"PiLveA+5AFPURwaU7iijBQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KlJc8NSKHpw=","ct":"YcdNOFpzXgDnRqjlR3W9R+5eztysyhpCTuRBHsnPyPDst9nvL+GeSORbLY9xVThTdyV6llRgfUr5O7y4l9s9Fg=="}`,
         backupKey: `{"iv":"TmiAIHr0vCX6g2BKkc6/7g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"wOkMJEm5B6U=","ct":"HJPS56/FuMieiH6K2s5k5jFp8RPHQqZa9qi8hDkjOqNUFjD4XKq8Sy3BDhpwzozTBW6EmQGSF0kpc7eZ9CucKw=="}`,
         rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ'
       });
 
@@ -488,7 +488,7 @@ describe('Recovery:', function() {
         userKey: `{"iv":"PiLveA+5AFPURwaU7iijBQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KlJc8NSKHpw=","ct":"YcdNOFpzXgDnRqjlR3W9R+5eztysyhpCTuRBHsnPyPDst9nvL+GeSORbLY9xVThTdyV6llRgfUr5O7y4l9s9Fg=="}`,
         backupKey: `{"iv":"TmiAIHr0vCX6g2BKkc6/7g==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"wOkMJEm5B6U=","ct":"HJPS56/FuMieiH6K2s5k5jFp8RPHQqZa9qi8hDkjOqNUFjD4XKq8Sy3BDhpwzozTBW6EmQGSF0kpc7eZ9CucKw=="}`,
         rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'GAGCQLUGMX76XC24JRCRJWOHXK23ONURH4433JOEPU6CH7Z44CCYUCEL'
       });
 
@@ -523,7 +523,7 @@ describe('Recovery:', function() {
         userKey: `{"iv":"PiLveA+5AFPURwaU7iijBQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"KlJc8NSKHpw=","ct":"YcdNOFpzXgDnRqjlR3W9R+5eztysyhpCTuRBHsnPyPDst9nvL+GeSORbLY9xVThTdyV6llRgfUr5O7y4l9s9Fg=="}`,
         backupKey: 'GCBABJPE3UTZ3JPUEIZEXAQQ5CMNX5UPYKOB7HHXSHBCIGD7VV64H6KU',
         rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
         krsProvider: 'keyternal'
       });
@@ -542,7 +542,7 @@ describe('Recovery:', function() {
         userKey: 'GBNK4FJO6FDQNBVLUP7MICEJUVINPNJZCDDTTYS3LVFC6J7LKEXLOBKM',
         backupKey: 'GCBABJPE3UTZ3JPUEIZEXAQQ5CMNX5UPYKOB7HHXSHBCIGD7VV64H6KU',
         rootAddress: 'GAUAGTL3NBZ7NP3UIMZCVJYM6O2NKUP6XRTK4E5VZDVIQX3CBYIVMDIB',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'GASW277S2ZOE7H7A5EQ5H5AKLP6UA6Z5AKOSWV6ARBEGTSIGMZMC7AIZ',
         krsProvider: 'keyternal'
       });
@@ -567,7 +567,7 @@ describe('Recovery:', function() {
       const recoveryTx = yield baseCoin.recover({
         userKey: '{\"iv\":\"jRBZi43c7t4tvx7SgP8h0g==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"TgZqHtZrmLU=\",\"ct\":\"hRntzrbcH81dOzlyr49nbAIJdHWqEKKVJx0s55kNV+fqUjKKoEuWqVGF1dPfQkkTkcIjFTNvuHsiGicVGSRf5RI3Q0ZD6YtCqO2bWX6t7HgBio5yYMaPy+cNJHmp6jHBQFZ9cCjqwAam/V+1mRvpJpn2dSWPotw=\"}',
         backupKey: '{\"iv\":\"qE+D+C6KXaZKFXXTM/AF5w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"a/YD7/8gJFw=\",\"ct\":\"tc2c1PfSjDS9TshXEIKKlToDcdCeL45fpGUWEPIM2+6CrvIuaXZC6/Hx9bza7VIoEPhJWHmgvoeAouto4PUpnyKJUuz+T46RY09XJs2rcDvbfMKblRsh6lzUc8O7ubTzJRNgFOUqkZM6qGB22A0FtL8yNlFqc3c=\"}',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         rootAddress: 'kiyjcn1ixftp',
         recoveryDestination: 'jzjkpn1bjnti',
       });
@@ -599,7 +599,7 @@ describe('Recovery:', function() {
       const recoveryTx = yield baseCoin.recover({
         userKey: 'xpub661MyMwAqRbcGrJ9tLp9MbQ5NLjhBNpVGCg27KzRjce2Uix51TWeiA5tCDyBFHENmKSf6BiWg3tAjYgrhTz9bZGdXj7pfksXaEpVLQqzYEE',
         backupKey: 'xpub661MyMwAqRbcGkmWyp49MDZkcfZiuPvnsAYt4dHV39rvAdeNRiJPEDiQxYTNrbFEHJVBJWBdxW7DgCqRUyVpYAbT3D6LGsZpynYpMFAgAZr',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         rootAddress: 'kiyjcn1ixftp',
         recoveryDestination: 'jzjkpn1bjnti',
       });
@@ -618,9 +618,9 @@ describe('Recovery:', function() {
 
       // There should be 24 Potatokens stuck in our test wallet (based on nock)
       const tx = yield wallet.recoverToken({
-        tokenContractAddress: TestV2BitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
-        recipient: TestV2BitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
-        walletPassphrase: TestV2BitGo.V2.TEST_ETH_WALLET_PASSPHRASE
+        tokenContractAddress: TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
+        recipient: TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT,
+        walletPassphrase: TestBitGo.V2.TEST_ETH_WALLET_PASSPHRASE
       });
 
       should.exist(tx);
@@ -637,12 +637,12 @@ describe('Recovery:', function() {
       txInfo.should.have.property('operationHash');
       txInfo.should.have.property('signature');
       txInfo.should.have.property('tokenContractAddress');
-      txInfo.tokenContractAddress.should.equal(TestV2BitGo.V2.TEST_ERC20_TOKEN_ADDRESS);
+      txInfo.tokenContractAddress.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_ADDRESS);
       txInfo.should.have.property('walletId');
-      txInfo.walletId.should.equal(TestV2BitGo.V2.TEST_ETH_WALLET_ID);
+      txInfo.walletId.should.equal(TestBitGo.V2.TEST_ETH_WALLET_ID);
       txInfo.should.have.property('recipient');
       txInfo.recipient.should.have.property('address');
-      txInfo.recipient.address.should.equal(TestV2BitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
+      txInfo.recipient.address.should.equal(TestBitGo.V2.TEST_ERC20_TOKEN_RECIPIENT);
       txInfo.recipient.should.have.property('amount');
       txInfo.recipient.amount.should.equal('2400');
     }));
@@ -659,7 +659,7 @@ describe('Recovery:', function() {
         txid: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
         recoveryAddress: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
         wallet: '5abacebe28d72fbd07e0b8cbba0ff39e',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE
       });
 
       should.exist(recovery);
@@ -680,7 +680,7 @@ describe('Recovery:', function() {
         txid: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
         recoveryAddress: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
         wallet: '5abace103cddfbb607d8239d806671bf',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE
       });
 
       should.exist(recovery);
@@ -701,7 +701,7 @@ describe('Recovery:', function() {
         txid: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
         recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
         wallet: '5abace103cddfbb607d8239d806671bf',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE
       });
 
       should.exist(recovery);
@@ -722,7 +722,7 @@ describe('Recovery:', function() {
         txid: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
         recoveryAddress: '2NGZbWp6bZto9pFKV1Y5EEGWTNHwgNfpVD2',
         wallet: '5abace103cddfbb607d8239d806671bf',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE
       });
 
       should.exist(recovery);
@@ -772,7 +772,7 @@ describe('Recovery:', function() {
         'KDD38TUg3ZUjzW+DraZlkcku2bNp0JS2s1g/iC6YTGUGtPoxDxumDlXwlWQx+5WPjZu79M8DCrI\n' +
         't9aZaOvHkGH9aFtMbavFX419TcrwDmpUeQFN0hRkfrIHXyHNbTpGSVAjHvHMtzDMaw+ACg="}',
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
       });
 
@@ -793,7 +793,7 @@ describe('Recovery:', function() {
           'Q0Vn8c2CV5FRZ80OjGYrW3A/6T/zpOz6E8CMvnD++iIpeO4r2eZJavejZxdzlxF0BRz7VI="}',
         backupKey: 'xpub661MyMwAqRbcGsCNiG4BzbxLmXnJFo4K5gVSE2b9AxufAtpuTun1SYwg9Uykqqf4DrKrDZ6KqPm9ehthWbCma7pnaMrtXY11nY7MeFbEDPm',
         walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         krsProvider: 'keyternal',
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
       });
@@ -818,7 +818,7 @@ describe('Recovery:', function() {
         '4Dlij4kQ0E6NyUUs6wo6T2HtPDAPO0hyhPPbh1OAYqIS7VlL9xmJRFC2zPxwRJvzf6OWC/m48HX\n' +
         'vgLoXYgahArhalzJVlRxcXUz4HOhozRWfv/eK3t5HJfm+25+WBOiW8YgSE7hVEYTbeBRD4="}',
         walletContractAddress: '0x22ff743216b58aeb3efc46985406b50112e9e176',
-        walletPassphrase: TestV2BitGo.V2.TEST_RECOVERY_PASSCODE,
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
       }));
 

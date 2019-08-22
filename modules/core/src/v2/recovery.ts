@@ -1,10 +1,19 @@
 import { VirtualSizes } from '@bitgo/unspents';
-
-const request = require('superagent');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as request from 'superagent';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 import * as _ from 'lodash';
-const bitcoin = require('bitgo-utxo-lib');
+import { BitGo } from '../bitgo';
+import * as bitcoin from 'bitgo-utxo-lib';
+import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
+import { Ltc } from './coins/ltc';
+
+interface CrossChainRecoveryToolOptions {
+  bitgo: BitGo;
+  sourceCoin: AbstractUtxoCoin;
+  recoveryCoin: AbstractUtxoCoin;
+  logging: boolean;
+}
 
 /**
  * An instance of the recovery tool, which encapsulates the recovery functions
@@ -14,10 +23,10 @@ const bitcoin = require('bitgo-utxo-lib');
  *   - recoveryCoin: the type of address the faulty transaction was sent to
  */
 export class CrossChainRecoveryTool {
-  bitgo: any;
-  sourceCoin: any;
-  recoveryCoin: any;
-  logging: any;
+  bitgo: BitGo;
+  sourceCoin: AbstractUtxoCoin;
+  recoveryCoin: AbstractUtxoCoin;
+  logging: boolean;
   supportedCoins: string[];
   wallet: any;
   feeRates: {[key: string]: number};
@@ -27,8 +36,9 @@ export class CrossChainRecoveryTool {
   recoveryAddress: any;
   recoveryAmount: any;
   halfSignedRecoveryTx: any;
+  private unspents?: any;
 
-  constructor(opts) {
+  constructor(opts: CrossChainRecoveryToolOptions) {
     this.bitgo = opts.bitgo;
     this.sourceCoin = opts.sourceCoin;
     this.recoveryCoin = opts.recoveryCoin;
@@ -84,8 +94,9 @@ export class CrossChainRecoveryTool {
    * @param callback
    */
   setWallet(walletId, callback?) {
+    const self = this;
     return co(function *setWallet() {
-      const coinType = this.recoveryCoin.getChain();
+      const coinType = self.recoveryCoin.getChain();
 
       if (!coinType) {
         throw new Error('Please provide coin type');
@@ -95,15 +106,15 @@ export class CrossChainRecoveryTool {
         throw new Error('Please provide wallet id');
       }
 
-      this._log(`Fetching ${coinType} wallet...`);
+      self._log(`Fetching ${coinType} wallet...`);
 
-      if (this.sourceCoin.type !== coinType && this.recoveryCoin.type !== coinType) {
+      if (self.sourceCoin.type !== coinType && self.recoveryCoin.type !== coinType) {
         throw new Error('Cannot set a wallet for this coin type - this is not a coin involved in the recovery tx.');
       }
 
       let wallet;
       try {
-        wallet = yield this.bitgo.coin(coinType).wallets().get({ id: walletId });
+        wallet = yield self.bitgo.coin(coinType).wallets().get({ id: walletId });
       } catch (e) {
         if (e.status !== 404 && e.status !== 400) {
           throw e;
@@ -114,8 +125,8 @@ export class CrossChainRecoveryTool {
 
       if (!wallet && coinType.endsWith('btc')) {
         try {
-          this._log('Could not find v2 wallet. Falling back to v1...');
-          wallet = yield this.bitgo.wallets().get({ id: walletId });
+          self._log('Could not find v2 wallet. Falling back to v1...');
+          wallet = yield self.bitgo.wallets().get({ id: walletId });
           wallet.isV1 = true;
         } catch (e) {
           if (e.status !== 404) {
@@ -128,8 +139,7 @@ export class CrossChainRecoveryTool {
         throw new Error(`Cannot find ${coinType} wallet.`);
       }
 
-      this.wallet = wallet;
-
+      self.wallet = wallet;
     }).call(this).asCallback(callback);
   }
 
@@ -139,19 +149,19 @@ export class CrossChainRecoveryTool {
    * @param callback
    */
   findUnspents(faultyTxId, callback?) {
+    const self = this;
     return co(function *findUnspents() {
       if (!faultyTxId) {
         throw new Error('Please provide a faultyTxId');
       }
 
-      this._log('Grabbing info for faulty tx...');
+      self._log('Grabbing info for faulty tx...');
 
-      this.faultyTxId = faultyTxId;
-      const TX_INFO_URL = this.sourceCoin.url(`/public/tx/${faultyTxId}`);
+      const TX_INFO_URL = self.sourceCoin.url(`/public/tx/${faultyTxId}`);
       const res = yield request.get(TX_INFO_URL);
       const faultyTxInfo = res.body;
 
-      this._log('Getting unspents on output addresses..');
+      self._log('Getting unspents on output addresses..');
 
       // Get output addresses that do not belong to wallet
       // These are where the 'lost coins' live
@@ -159,28 +169,28 @@ export class CrossChainRecoveryTool {
 
       let outputAddresses = [];
       for (let address of txOutputAddresses) {
-        if (this.sourceCoin.getFamily() === 'ltc') {
+        if (self.sourceCoin.getFamily() === 'ltc') {
           try {
-            address = this.sourceCoin.canonicalAddress(address, 1);
+            address = (self.sourceCoin as Ltc).canonicalAddress(address, 1);
           } catch (e) {
             continue;
           }
         }
 
-        if (this.recoveryCoin.getFamily() === 'ltc') {
+        if (self.recoveryCoin.getFamily() === 'ltc') {
           try {
-            address = this.recoveryCoin.canonicalAddress(address, 2);
+            address = (self.recoveryCoin as Ltc).canonicalAddress(address, 2);
           } catch (e) {
             continue;
           }
         }
 
         try {
-          const methodName = this.wallet.isV1 ? 'address' : 'getAddress';
-          const walletAddress = yield this.wallet[methodName]({ address: address });
+          const methodName = self.wallet.isV1 ? 'address' : 'getAddress';
+          const walletAddress = yield self.wallet[methodName]({ address: address });
           outputAddresses.push(walletAddress.address);
         } catch (e) {
-          this._log(`Address ${address} not found on wallet`);
+          self._log(`Address ${address} not found on wallet`);
         }
       }
 
@@ -188,22 +198,22 @@ export class CrossChainRecoveryTool {
         throw new Error('Could not find tx outputs belonging to the specified wallet. Please check the given parameters.');
       }
 
-      if (this.recoveryCoin.getFamily() === 'ltc') {
-        outputAddresses = outputAddresses.map((address) => this.recoveryCoin.canonicalAddress(address, 1));
+      if (self.recoveryCoin.getFamily() === 'ltc') {
+        outputAddresses = outputAddresses.map((address) => (self.recoveryCoin as Ltc).canonicalAddress(address, 1));
       }
 
-      if (this.sourceCoin.getFamily() === 'ltc') {
-        outputAddresses = outputAddresses.map((address) => this.sourceCoin.canonicalAddress(address, 2));
+      if (self.sourceCoin.getFamily() === 'ltc') {
+        outputAddresses = outputAddresses.map((address) => (self.sourceCoin as Ltc).canonicalAddress(address, 2));
       }
 
-      this._log(`Finding unspents for these output addresses: ${outputAddresses.join(', ')}`);
+      self._log(`Finding unspents for these output addresses: ${outputAddresses.join(', ')}`);
 
       // Get unspents for addresses
-      const ADDRESS_UNSPENTS_URL = this.sourceCoin.url(`/public/addressUnspents/${outputAddresses.join(',')}`);
+      const ADDRESS_UNSPENTS_URL = self.sourceCoin.url(`/public/addressUnspents/${outputAddresses.join(',')}`);
       const addressRes = yield request.get(ADDRESS_UNSPENTS_URL);
       const unspents = addressRes.body;
 
-      this.unspents = unspents;
+      self.unspents = unspents;
       return unspents;
     }).call(this).asCallback(callback);
   }
@@ -214,11 +224,12 @@ export class CrossChainRecoveryTool {
    * @param callback
    * @returns {Object} partial txInfo object with transaction inputs
    */
-  buildInputs(unspents, callback?) {
+  buildInputs(unspents?, callback?) {
+    const self = this;
     return co(function *buildInputs() {
-      this._log('Building inputs for recovery transaction...');
+      self._log('Building inputs for recovery transaction...');
 
-      unspents = unspents || this.unspents;
+      unspents = unspents || self.unspents;
 
       if (!unspents || unspents.length === 0) {
         throw new Error('Could not find unspents. Either supply an argument or call findUnspents');
@@ -237,7 +248,7 @@ export class CrossChainRecoveryTool {
       };
 
       let totalFound = 0;
-      const noSegwit = this.recoveryCoin.getFamily() === 'btc' && this.sourceCoin.getFamily() === 'bch';
+      const noSegwit = self.recoveryCoin.getFamily() === 'btc' && self.sourceCoin.getFamily() === 'bch';
       for (const unspent of unspents) {
         if (unspent.witnessScript && noSegwit) {
           throw new Error('Warning! It appears one of the unspents is on a Segwit address. The tool only recovers BCH from non-Segwit BTC addresses. Aborting.');
@@ -245,24 +256,24 @@ export class CrossChainRecoveryTool {
 
         let searchAddress = unspent.address;
 
-        if (this.sourceCoin.type.endsWith('ltc')) {
-          searchAddress = this.sourceCoin.canonicalAddress(searchAddress, 1);
+        if (self.sourceCoin.type.endsWith('ltc')) {
+          searchAddress = (self.sourceCoin as Ltc).canonicalAddress(searchAddress, 1);
         }
 
-        if (this.recoveryCoin.type.endsWith('ltc')) {
-          searchAddress = this.recoveryCoin.canonicalAddress(searchAddress, 2);
+        if (self.recoveryCoin.type.endsWith('ltc')) {
+          searchAddress = (self.recoveryCoin as Ltc).canonicalAddress(searchAddress, 2);
         }
 
         let unspentAddress;
         try {
-          const methodName = this.wallet.isV1 ? 'address' : 'getAddress';
-          unspentAddress = yield this.wallet[methodName]({ address: searchAddress });
+          const methodName = self.wallet.isV1 ? 'address' : 'getAddress';
+          unspentAddress = yield self.wallet[methodName]({ address: searchAddress });
         } catch (e) {
-          this._log(`Could not find address on wallet for ${searchAddress}`);
+          self._log(`Could not find address on wallet for ${searchAddress}`);
           continue;
         }
 
-        this._log(`Found ${unspent.value * 1e-8} ${this.sourceCoin.type} at address ${unspent.address}`);
+        self._log(`Found ${unspent.value * 1e-8} ${self.sourceCoin.type} at address ${unspent.address}`);
 
         const [txHash, index] = unspent.id.split(':');
         const inputIndex = parseInt(index, 10);
@@ -270,7 +281,7 @@ export class CrossChainRecoveryTool {
         hash = new Buffer(Array.prototype.reverse.call(hash));
 
         try {
-          this.recoveryTx.addInput(hash, inputIndex);
+          self.recoveryTx.addInput(hash, inputIndex);
         } catch (e) {
           throw new Error(`Error adding unspent ${unspent.id}`);
         }
@@ -278,8 +289,8 @@ export class CrossChainRecoveryTool {
         let inputData = {};
 
         // Add v1 specific input fields
-        if (this.wallet.isV1) {
-          const addressInfo = yield this.wallet.address({ address: unspentAddress.address });
+        if (self.wallet.isV1) {
+          const addressInfo = yield self.wallet.address({ address: unspentAddress.address });
 
           unspentAddress.path = unspentAddress.path || `/${unspentAddress.chain}/${unspentAddress.index}`;
           const [txid, nOut] = unspent.id.split(':');
@@ -302,8 +313,8 @@ export class CrossChainRecoveryTool {
             witnessScript: unspentAddress.coinSpecific.witnessScript,
             index: unspentAddress.index,
             chain: unspentAddress.chain,
-            wallet: this.wallet.id(),
-            fromWallet: this.wallet.id()
+            wallet: self.wallet.id(),
+            fromWallet: self.wallet.id()
           };
         }
 
@@ -316,9 +327,9 @@ export class CrossChainRecoveryTool {
       txInfo.unspents = _.clone(txInfo.inputs);
 
       // Normalize total found to base unit before we print it out
-      this._log(`Found lost ${totalFound * 1e-8} ${this.sourceCoin.type}.`);
+      self._log(`Found lost ${totalFound * 1e-8} ${self.sourceCoin.type}.`);
 
-      this.txInfo = txInfo;
+      self.txInfo = txInfo;
       return txInfo;
     }).call(this).asCallback(callback);
   }
@@ -329,7 +340,7 @@ export class CrossChainRecoveryTool {
    * @param recoveryTx {Object} recovery transaction containing inputs
    * @returns {Number} recovery fee for the transaction
    */
-  setFees(recoveryTx) {
+  setFees(recoveryTx?) {
     recoveryTx = recoveryTx || this.recoveryTx;
 
     // Determine fee with default fee rate
@@ -350,7 +361,7 @@ export class CrossChainRecoveryTool {
    * @param outputAmount {Number} amount to send to the recovery address
    * @param recoveryFee {Number} miner fee for the transaction
    */
-  buildOutputs(recoveryAddress, outputAmount, recoveryFee) {
+  buildOutputs(recoveryAddress, outputAmount?, recoveryFee?) {
     if (!outputAmount && !this.txInfo) {
       throw new Error('Could not find transaction info. Please provide an output amount, or call buildInputs.');
     }
@@ -390,23 +401,24 @@ export class CrossChainRecoveryTool {
    * @returns {Object} half-signed transaction
    */
   signTransaction({ prv, passphrase }, callback?) {
+    const self = this;
     return co(function *signTransaction() {
-      if (!this.txInfo) {
+      if (!self.txInfo) {
         throw new Error('Could not find txInfo. Please build a transaction');
       }
 
-      this._log('Signing the transaction...');
+      self._log('Signing the transaction...');
 
-      const transactionHex = this.recoveryTx.buildIncomplete().toHex();
+      const transactionHex = self.recoveryTx.buildIncomplete().toHex();
 
       if (!prv) {
-        prv = yield this.getKeys(passphrase);
+        prv = yield self.getKeys(passphrase);
       }
 
-      const txPrebuild = { txHex: transactionHex, txInfo: this.txInfo };
-      this.halfSignedRecoveryTx = this.sourceCoin.signTransaction({ txPrebuild, prv });
+      const txPrebuild = { txHex: transactionHex, txInfo: self.txInfo };
+      self.halfSignedRecoveryTx = self.sourceCoin.signTransaction({ txPrebuild, prv });
 
-      return this.halfSignedRecoveryTx;
+      return self.halfSignedRecoveryTx;
     }).call(this).asCallback(callback);
   }
 
@@ -417,12 +429,13 @@ export class CrossChainRecoveryTool {
    * @returns {String} decrypted wallet private key
    */
   getKeys(passphrase, callback?) {
+    const self = this;
     return co(function *getKeys() {
       let prv;
 
       let keychain;
       try {
-        keychain = yield this.wallet.getEncryptedUserKeychain();
+        keychain = yield self.wallet.getEncryptedUserKeychain();
       } catch (e) {
         if (e.status !== 404) {
           throw e;
@@ -434,7 +447,7 @@ export class CrossChainRecoveryTool {
       }
 
 
-      if (this.wallet.isV1) {
+      if (self.wallet.isV1) {
         if (!keychain) {
           throw new Error('V1 wallets need a user keychain - could not find the proper keychain. Aborting');
         }
@@ -442,8 +455,8 @@ export class CrossChainRecoveryTool {
 
       if (keychain) {
         try {
-          const encryptedPrv = this.wallet.isV1 ? keychain.encryptedXprv : keychain.encryptedPrv;
-          prv = this.bitgo.decrypt({ input: encryptedPrv, password: passphrase });
+          const encryptedPrv = self.wallet.isV1 ? keychain.encryptedXprv : keychain.encryptedPrv;
+          prv = self.bitgo.decrypt({ input: encryptedPrv, password: passphrase });
         } catch (e) {
           throw new Error('Error reading private key. Please check that you have the correct wallet passphrase');
         }
@@ -454,31 +467,33 @@ export class CrossChainRecoveryTool {
   }
 
   buildTransaction({ wallet, faultyTxId, recoveryAddress }, callback?) {
+    const self = this;
     return co(function *buildTransaction() {
-      yield this.setWallet(wallet);
+      yield self.setWallet(wallet);
 
-      yield this.findUnspents(faultyTxId);
-      yield this.buildInputs();
-      this.setFees();
-      this.buildOutputs(recoveryAddress);
+      yield self.findUnspents(faultyTxId);
+      yield self.buildInputs();
+      self.setFees();
+      self.buildOutputs(recoveryAddress);
 
-      return this.recoveryTx;
-    }).call(this).asCallback(callback);
+      return self.recoveryTx;
+    }).call(self).asCallback(callback);
   }
 
   buildUnsigned(callback?) {
+    const self = this;
     return co(function *() {
-      if (!this.txInfo) {
+      if (!self.txInfo) {
         throw new Error('Could not find txInfo. Please build a transaction');
       }
-      const incomplete = this.recoveryTx.buildIncomplete();
+      const incomplete = self.recoveryTx.buildIncomplete();
 
       const txInfo: any = {
         nP2SHInputs: 0,
         nSegwitInputs: 0
       };
 
-      for (const input of this.txInfo.inputs) {
+      for (const input of self.txInfo.inputs) {
         if (input.chain === 10 || input.chain === 11) {
           txInfo.nSegwitInputs++;
         } else {
@@ -487,16 +502,16 @@ export class CrossChainRecoveryTool {
       }
 
       txInfo.nOutputs = 1;
-      txInfo.unspents = _.map(this.txInfo.inputs, _.partialRight(_.pick, ['chain', 'index', 'redeemScript', 'id', 'address', 'value']));
+      txInfo.unspents = _.map(self.txInfo.inputs, _.partialRight(_.pick, ['chain', 'index', 'redeemScript', 'id', 'address', 'value']));
       txInfo.changeAddresses = [];
       txInfo.walletAddressDetails = {};
 
       const feeInfo: any = {};
 
-      feeInfo.size = VirtualSizes.txOverheadSize + (VirtualSizes.txP2shInputSize * this.txInfo.inputs.length) +
+      feeInfo.size = VirtualSizes.txOverheadSize + (VirtualSizes.txP2shInputSize * self.txInfo.inputs.length) +
           VirtualSizes.txP2pkhOutputSize;
 
-      feeInfo.feeRate = this.feeRates[this.sourceCoin.type];
+      feeInfo.feeRate = self.feeRates[self.sourceCoin.type];
       feeInfo.fee = Math.round(feeInfo.size / 1000 * feeInfo.feeRate);
       feeInfo.payGoFee = 0;
       feeInfo.payGoFeeString = '0';
@@ -505,10 +520,10 @@ export class CrossChainRecoveryTool {
         txHex: incomplete.toHex(),
         txInfo: txInfo,
         feeInfo: feeInfo,
-        walletId: this.wallet.id(),
-        amount: this.recoveryAmount,
-        address: this.recoveryAddress,
-        coin: this.sourceCoin.type
+        walletId: self.wallet.id(),
+        amount: self.recoveryAmount,
+        address: self.recoveryAddress,
+        coin: self.sourceCoin.type
       };
     }).call(this).asCallback(callback);
   }

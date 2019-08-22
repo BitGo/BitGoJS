@@ -5,12 +5,11 @@
 import 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
-const nock = require('nock');
-const common = require('../../../src/common');
+import * as nock from 'nock';
+import * as common from '../../../src/common';
 import * as _ from 'lodash';
-const sinon = require('sinon');
-
-const TestV2BitGo = require('../../lib/test_bitgo');
+import * as sinon from 'sinon';
+import { TestBitGo } from '../../lib/test_bitgo';
 
 describe('V2 Keychains', function v2keychains() {
   let bitgo;
@@ -19,7 +18,7 @@ describe('V2 Keychains', function v2keychains() {
   let bgUrl;
 
   before(function before() {
-    bitgo = new TestV2BitGo({ env: 'mock' });
+    bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
     bitgo.setValidate(false);
     basecoin = bitgo.coin('tltc');
@@ -208,7 +207,7 @@ describe('V2 Keychains', function v2keychains() {
     });
 
     after(function afterUpdatePassword() {
-      nock.activeMocks().should.be.empty();
+      nock.pendingMocks().should.be.empty();
     });
   });
 });

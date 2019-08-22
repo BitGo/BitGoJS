@@ -6,6 +6,7 @@
 
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../bitgo';
 
 import { validateParams } from '../common';
 import { BaseCoin } from './baseCoin';
@@ -34,7 +35,7 @@ export interface SimulateOptions {
 }
 
 export class Webhooks {
-  public constructor(private bitgo: any, private baseCoin: BaseCoin) {}
+  public constructor(private bitgo: BitGo, private baseCoin: BaseCoin) {}
 
   /**
    * Fetch list of user webhooks
@@ -57,10 +58,11 @@ export class Webhooks {
    * @returns {*}
    */
   add(params: AddOptions, callback: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function*() {
       validateParams(params, ['url', 'type'], [], callback);
-      return this.bitgo
-        .post(this.baseCoin.url('/webhooks'))
+      return self.bitgo
+        .post(self.baseCoin.url('/webhooks'))
         .send(params)
         .result();
     })
@@ -76,11 +78,12 @@ export class Webhooks {
    * @returns {*}
    */
   remove(params: RemoveOptions, callback: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function*() {
       validateParams(params, ['url', 'type'], [], callback);
 
-      return this.bitgo
-        .del(this.baseCoin.url('/webhooks'))
+      return self.bitgo
+        .del(self.baseCoin.url('/webhooks'))
         .send(params)
         .result();
     })
@@ -96,6 +99,7 @@ export class Webhooks {
    * @returns {*}
    */
   listNotifications(params: ListNotificationsOptions = {}, callback: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function*() {
       const queryProperties: (keyof ListNotificationsOptions)[] = [];
       if (params.prevId) {
@@ -112,8 +116,8 @@ export class Webhooks {
       }
       const query = _.pick(params, queryProperties);
 
-      return this.bitgo
-        .get(this.baseCoin.url('/webhooks/notifications'))
+      return self.bitgo
+        .get(self.baseCoin.url('/webhooks/notifications'))
         .query(query)
         .result();
     })
@@ -129,12 +133,13 @@ export class Webhooks {
    * @returns {*}
    */
   simulate(params: SimulateOptions, callback: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function*() {
       validateParams(params, ['webhookId', 'blockId'], [], callback);
 
       const webhookId = params.webhookId;
-      return this.bitgo
-        .post(this.baseCoin.url('/webhooks/' + webhookId + '/simulate'))
+      return self.bitgo
+        .post(self.baseCoin.url('/webhooks/' + webhookId + '/simulate'))
         .send(params)
         .result();
     })

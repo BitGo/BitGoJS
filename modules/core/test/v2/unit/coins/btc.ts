@@ -3,14 +3,14 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const { Codes } = require('@bitgo/unspents');
 
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
 
 describe('BTC:', function() {
   let bitgo;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
   });
 

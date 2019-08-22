@@ -3,6 +3,7 @@
  */
 import { BigNumber } from 'bignumber.js';
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../../bitgo';
 
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
@@ -41,12 +42,12 @@ interface CalculateSettlementFeesParams {
 }
 
 export class TradingAccount {
-  private bitgo;
-  private enterpriseId: string;
+  private readonly bitgo: BitGo;
+  private readonly enterpriseId: string;
 
   public wallet: Wallet;
 
-  constructor(enterpriseId: string, wallet: Wallet, bitgo) {
+  constructor(enterpriseId: string, wallet: Wallet, bitgo: BitGo) {
     this.enterpriseId = enterpriseId;
     this.wallet = wallet;
     this.bitgo = bitgo;
@@ -181,12 +182,15 @@ export class TradingAccount {
    * @returns hex-encoded signature of the payload
    */
   signPayload(params: SignPayloadParameters, callback?): Bluebird<string> {
+    const self = this;
     return co(function* signPayload() {
-      const key = yield this.wallet.baseCoin.keychains().get({ id: this.wallet.keyIds()[0] });
-      const prv = this.wallet.bitgo.decrypt({ input: key.encryptedPrv, password: params.walletPassphrase });
+      const key = yield self.wallet.baseCoin.keychains().get({ id: self.wallet.keyIds()[0] });
+      const prv = self.wallet.bitgo.decrypt({
+        input: key.encryptedPrv,
+        password: params.walletPassphrase,
+      });
       const payload = JSON.stringify(params.payload);
-
-      return this.wallet.baseCoin.signMessage({ prv }, payload).toString('hex');
+      return self.wallet.baseCoin.signMessage({ prv }, payload).toString('hex');
     })
       .call(this)
       .asCallback(callback);

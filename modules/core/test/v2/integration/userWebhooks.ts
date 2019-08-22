@@ -6,7 +6,7 @@ import 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
-const TestV2BitGo = require('../../lib/test_bitgo');
+import { TestBitGo } from '../../lib/test_bitgo';
 
 describe('V2 User Webhooks:', function() {
   let bitgo;
@@ -17,7 +17,7 @@ describe('V2 User Webhooks:', function() {
   const type = 'block';
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc');
     basecoin.webhooks();

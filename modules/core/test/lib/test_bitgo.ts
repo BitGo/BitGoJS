@@ -4,7 +4,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-const BitGo = require('../../src/bitgo.ts');
+import { BitGo as BG } from '../../src/bitgo';
 import { Wallet } from '../../src/v2/wallet';
 const BigNumber = require('bignumber.js');
 import * as Bluebird from 'bluebird';
@@ -13,7 +13,7 @@ const co = Bluebird.coroutine;
 import 'should';
 import 'should-http';
 
-const nock = require('nock');
+import * as nock from 'nock';
 nock.enableNetConnect();
 
 try {
@@ -23,6 +23,8 @@ try {
 } catch (e) {
   console.error('failed to enable long stack traces as a promise has already been created. Is BITGO_USE_PROXY set?');
 }
+
+const BitGo: any = BG;
 
 BitGo.TEST_USER = 'tester@bitgo.com';
 
@@ -449,10 +451,9 @@ BitGo.prototype.fetchConstants = function() {
   .reply(200, { ttl: 3600, constants: {} });
 
   // force client constants reload
-  BitGo.prototype._constants = undefined;
+  BitGo._constants = undefined;
 
   return oldFetchConstants.apply(this, arguments);
 };
 
-
-module.exports = BitGo;
+export const TestBitGo = BitGo;

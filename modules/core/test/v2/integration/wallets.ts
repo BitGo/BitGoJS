@@ -5,7 +5,7 @@
 import * as should from 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
-const TestV2BitGo = require('../../lib/test_bitgo');
+import { TestBitGo } from '../../lib/test_bitgo';
 const Q = require('q');
 
 describe('V2 Wallets:', function() {
@@ -16,7 +16,7 @@ describe('V2 Wallets:', function() {
 
   before(function() {
     // TODO: replace dev with test
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc');
     wallets = basecoin.wallets();
@@ -45,7 +45,7 @@ describe('V2 Wallets:', function() {
         };
 
         if (currentCoin === 'teth') {
-          params.enterprise = TestV2BitGo.TEST_ENTERPRISE;
+          params.enterprise = TestBitGo.TEST_ENTERPRISE;
         }
 
         if (currentCoin === 'trmg') {
@@ -315,7 +315,7 @@ describe('V2 Wallets:', function() {
 
   describe('Get Wallet', function() {
     it('should get wallet', function() {
-      return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID })
+      return wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET1_ID })
       .then(function(wallet) {
         should.exist(wallet);
         wallet.should.have.property('baseCoin');
@@ -326,7 +326,7 @@ describe('V2 Wallets:', function() {
         wallet.balance.should.be.greaterThan(0);
         wallet.confirmedBalance.should.be.greaterThan(0);
         wallet.coin.should.equal('tbtc');
-        wallet.id.should.equal(TestV2BitGo.V2.TEST_WALLET1_ID);
+        wallet.id.should.equal(TestBitGo.V2.TEST_WALLET1_ID);
         wallet.approvalsRequired.should.equal(1);
         wallet.m.should.equal(2);
         wallet.n.should.equal(3);
@@ -334,7 +334,7 @@ describe('V2 Wallets:', function() {
     });
 
     it('should get wallet by address', function() {
-      return wallets.getWalletByAddress({ address: TestV2BitGo.V2.TEST_WALLET1_ADDRESS })
+      return wallets.getWalletByAddress({ address: TestBitGo.V2.TEST_WALLET1_ADDRESS })
       .then(function(wallet) {
         should.exist(wallet);
         wallet.should.have.property('baseCoin');
@@ -345,7 +345,7 @@ describe('V2 Wallets:', function() {
         wallet.balance.should.be.greaterThan(0);
         wallet.confirmedBalance.should.be.greaterThan(0);
         wallet.coin.should.equal('tbtc');
-        wallet.id.should.equal(TestV2BitGo.V2.TEST_WALLET1_ID);
+        wallet.id.should.equal(TestBitGo.V2.TEST_WALLET1_ID);
         wallet.approvalsRequired.should.equal(1);
         wallet.m.should.equal(2);
         wallet.n.should.equal(3);
@@ -356,7 +356,7 @@ describe('V2 Wallets:', function() {
       let wallet;
       let count;
       let webhookId;
-      return wallets.getWallet({ id: TestV2BitGo.V2.TEST_WALLET1_ID })
+      return wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET1_ID })
       .then(function(currentWallet) {
         wallet = currentWallet;
         return wallet.listWebhooks();
@@ -383,7 +383,7 @@ describe('V2 Wallets:', function() {
         webhooks.webhooks.length.should.equal(count + 1);
         return wallet.simulateWebhook({
           webhookId: webhookId,
-          transferId: TestV2BitGo.V2.TEST_WEBHOOK_TRANSFER_SIMULATION_ID
+          transferId: TestBitGo.V2.TEST_WEBHOOK_TRANSFER_SIMULATION_ID
         });
       }).then(function(simulation) {
         simulation.should.have.property('webhookNotifications');
@@ -414,7 +414,7 @@ describe('V2 Wallets:', function() {
     let knownBalanceWallets;
 
     before(co(function *() {
-      knownBalanceBitgo = new TestV2BitGo({ env: 'test' });
+      knownBalanceBitgo = new TestBitGo({ env: 'test' });
       knownBalanceBitgo.initializeTestVars();
       knownBalanceBasecoin = knownBalanceBitgo.coin('tltc');
       knownBalanceWallets = knownBalanceBasecoin.wallets();
@@ -442,12 +442,12 @@ describe('V2 Wallets:', function() {
       result.spendableBalanceString.should.be.a.String();
 
       // make sure balances match up with the known balance
-      result.balance.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE);
-      result.confirmedBalance.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE);
-      result.spendableBalance.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE);
-      result.balanceString.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE.toString());
-      result.confirmedBalanceString.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE.toString());
-      result.spendableBalanceString.should.equal(TestV2BitGo.TEST_KNOWN_BALANCE.toString());
+      result.balance.should.equal(TestBitGo.TEST_KNOWN_BALANCE);
+      result.confirmedBalance.should.equal(TestBitGo.TEST_KNOWN_BALANCE);
+      result.spendableBalance.should.equal(TestBitGo.TEST_KNOWN_BALANCE);
+      result.balanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
+      result.confirmedBalanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
+      result.spendableBalanceString.should.equal(TestBitGo.TEST_KNOWN_BALANCE.toString());
     }));
   });
 });

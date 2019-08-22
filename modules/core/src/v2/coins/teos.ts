@@ -1,10 +1,10 @@
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Eos } from './eos';
 import * as common from '../../common';
 
 export class Teos extends Eos {
-
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Teos(bitgo);
   }
 
@@ -21,6 +21,6 @@ export class Teos extends Eos {
   }
 
   getPublicNodeUrls(): string[] {
-    return common.Environments[this.bitgo.env].eosNodeUrls;
+    return common.Environments[this.bitgo.getEnv()].eosNodeUrls;
   }
 }

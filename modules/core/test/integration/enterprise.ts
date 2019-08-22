@@ -10,14 +10,14 @@ import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 const BigNumber = require('bignumber.js');
 
-const TestV2BitGo = require('../lib/test_bitgo');
+const TestBitGo = require('../lib/test_bitgo');
 
 describe('Enterprise', function() {
 
   let bitgo;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     yield bitgo.authenticateEnterpriseCreatorTestUser(bitgo.testUserOTP());
 
@@ -92,7 +92,7 @@ describe('Enterprise', function() {
       const wallet = yield bitgo.coin('tltc').wallets().generateWallet({
         label: 'Enterprise Test Wallet',
         enterprise: enterprise.id,
-        passphrase: TestV2BitGo.TEST_WALLET1_PASSCODE
+        passphrase: TestBitGo.TEST_WALLET1_PASSCODE
       });
       const enterpriseWallets = yield enterprise.coinWallets();
       enterpriseWallets.should.have.property('wallets');

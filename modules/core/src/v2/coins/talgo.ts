@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Algo } from './algo';
 
@@ -9,7 +10,7 @@ export class Talgo extends Algo {
     super(bitgo);
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Talgo(bitgo);
   }
 

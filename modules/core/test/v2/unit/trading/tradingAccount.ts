@@ -4,7 +4,7 @@ import * as nock from 'nock';
 
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { Wallet } from '../../../../src/v2/wallet';
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 describe('Trading Accounts', function() {
   const microservicesUri = 'https://bitgo-microservices.example';
@@ -14,7 +14,7 @@ describe('Trading Accounts', function() {
   let tradingAccount;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'mock', microservicesUri });
+    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
 

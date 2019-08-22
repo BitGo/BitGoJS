@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { BaseCoin, BaseCoinTransactionExplanation, KeyPair } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
@@ -117,7 +118,7 @@ interface ValidateKeyOptions {
 }
 
 export class Eos extends BaseCoin {
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Eos(bitgo);
   }
 
@@ -153,7 +154,7 @@ export class Eos extends BaseCoin {
    * Get URLs of some active public nodes
    */
   getPublicNodeUrls(): string[] {
-    return Environments[this.bitgo.env].eosNodeUrls;
+    return Environments[this.bitgo.getEnv()].eosNodeUrls;
   }
   /**
    * Generate secp256k1 key pair
@@ -363,9 +364,10 @@ export class Eos extends BaseCoin {
     transaction,
     headers,
   }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
+    const self = this;
     return co(function*() {
       const eosClientConfig = {
-        chainId: this.getChainId(),
+        chainId: self.getChainId(),
         transactionHeaders: headers,
       };
       const eosClient = new EosJs(eosClientConfig);
@@ -416,10 +418,11 @@ export class Eos extends BaseCoin {
     params: ExplainTransactionOptions,
     callback?: NodeCallback<BaseCoinTransactionExplanation>
   ): Bluebird<BaseCoinTransactionExplanation> {
+    const self = this;
     return co(function*() {
       let transaction;
       try {
-        transaction = yield this.deserializeTransaction(params);
+        transaction = yield self.deserializeTransaction(params);
       } catch (e) {
         throw new Error('invalid EOS transaction or headers');
       }
@@ -485,6 +488,7 @@ export class Eos extends BaseCoin {
     krsProvider,
     walletPassphrase,
   }: RecoveryOptions): Bluebird<HDNode[]> {
+    const self = this;
     return co(function*() {
       const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
       const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
@@ -495,20 +499,20 @@ export class Eos extends BaseCoin {
           throw new Error('unknown key recovery service provider');
         }
 
-        if (!krsProviderConfig.supportedCoins.includes(this.getFamily())) {
+        if (!krsProviderConfig.supportedCoins.includes(self.getFamily())) {
           throw new Error('specified key recovery service does not support recoveries for this coin');
         }
       }
 
       const keys = [
-        this.validateKey({
+        self.validateKey({
           key: userKey,
           source: 'user',
           passphrase: walletPassphrase,
           isKrsRecovery,
           isUnsignedSweep,
         }),
-        this.validateKey({
+        self.validateKey({
           key: backupKey,
           source: 'backup',
           passphrase: walletPassphrase,
@@ -516,7 +520,7 @@ export class Eos extends BaseCoin {
           isUnsignedSweep,
         }),
       ];
-      if (!this.isValidAddress(recoveryDestination)) {
+      if (!self.isValidAddress(recoveryDestination)) {
         throw new Error('Invalid destination address!');
       }
 
@@ -530,8 +534,9 @@ export class Eos extends BaseCoin {
    * @param payload
    */
   protected getDataFromNode({ endpoint, payload }: { endpoint: string; payload?: object }): Bluebird<any> {
+    const self = this;
     return co(function*() {
-      const nodeUrls = this.getPublicNodeUrls();
+      const nodeUrls = self.getPublicNodeUrls();
       for (const nodeUrl of nodeUrls) {
         try {
           return yield this.bitgo.post(nodeUrl + endpoint).send(payload);
@@ -547,8 +552,9 @@ export class Eos extends BaseCoin {
    * Get EOS chain info from a public node
    */
   protected getChainInfoFromNode(): Bluebird<any> {
+    const self = this;
     return co(function*() {
-      const response = yield this.getDataFromNode({ endpoint: '/v1/chain/get_info' });
+      const response = yield self.getDataFromNode({ endpoint: '/v1/chain/get_info' });
       if (response.status !== 200) {
         throw new Error('Unable to fetch chain info');
       }
@@ -561,8 +567,9 @@ export class Eos extends BaseCoin {
    * @param address
    */
   protected getAccountFromNode({ address }: { address: string }): Bluebird<any> {
+    const self = this;
     return co(function*() {
-      const response = yield this.getDataFromNode({
+      const response = yield self.getDataFromNode({
         endpoint: '/v1/chain/get_account',
         payload: { account_name: address },
       });
@@ -578,8 +585,9 @@ export class Eos extends BaseCoin {
    * @param blockNumOrId
    */
   protected getBlockFromNode({ blockNumOrId }: { blockNumOrId: string }): Bluebird<any> {
+    const self = this;
     return co(function*() {
-      const response = yield this.getDataFromNode({
+      const response = yield self.getDataFromNode({
         endpoint: '/v1/chain/get_block',
         payload: { block_num_or_id: blockNumOrId },
       });
@@ -594,9 +602,10 @@ export class Eos extends BaseCoin {
    * Get headers for an EOS tx from a public node
    */
   protected getTransactionHeadersFromNode(): Bluebird<any> {
+    const self = this;
     return co(function*() {
-      const chainInfo = yield this.getChainInfoFromNode();
-      const headBlockInfoResult = yield this.getBlockFromNode({ blockNumOrId: chainInfo.head_block_num });
+      const chainInfo = yield self.getChainInfoFromNode();
+      const headBlockInfoResult = yield self.getBlockFromNode({ blockNumOrId: chainInfo.head_block_num });
       const expireSeconds = 3600; // maximum tx expire time of 1h
       const chainDate = new Date(chainInfo.head_block_time + 'Z');
       const expirationDate = new Date(chainDate.getTime() + expireSeconds * 1000);
@@ -659,13 +668,14 @@ export class Eos extends BaseCoin {
    * @param callback
    */
   recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
+    const self = this;
     return co(function*() {
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
-      const keys = yield this.initiateRecovery(params);
+      const keys = yield self.initiateRecovery(params);
 
-      const account = yield this.getAccountFromNode({ address: params.rootAddress });
+      const account = yield self.getAccountFromNode({ address: params.rootAddress });
 
       const userPub = ecc.PublicKey.fromBuffer(keys[0].getPublicKeyBuffer()).toString();
       const backupPub = ecc.PublicKey.fromBuffer(keys[1].getPublicKeyBuffer()).toString();
@@ -699,16 +709,16 @@ export class Eos extends BaseCoin {
       const recoveryAmount = this.bigUnitsToBaseUnits(new BigNumber(accountBalance));
 
       const destinationAddress = params.recoveryDestination;
-      const destinationAddressDetails = this.getAddressDetails(destinationAddress);
-      const destinationAccount = yield this.getAccountFromNode({ address: destinationAddress });
+      const destinationAddressDetails = self.getAddressDetails(destinationAddress);
+      const destinationAccount = yield self.getAccountFromNode({ address: destinationAddress });
       if (!destinationAccount) {
         throw new Error('Destination account not found');
       }
 
-      const transactionHeaders = yield this.getTransactionHeadersFromNode();
-      const eosClient = new EosJs({ chainId: this.getChainId(), transactionHeaders });
+      const transactionHeaders = yield self.getTransactionHeadersFromNode();
+      const eosClient = new EosJs({ chainId: self.getChainId(), transactionHeaders });
 
-      const transferAction = this.getTransferAction({
+      const transferAction = self.getTransferAction({
         recipient: destinationAddressDetails.address,
         sender: params.rootAddress,
         amount: new BigNumber(recoveryAmount),
@@ -717,7 +727,7 @@ export class Eos extends BaseCoin {
 
       const transaction = yield eosClient.transaction({ actions: [transferAction] }, { sign: false, broadcast: false });
 
-      const serializedTransaction = this.serializeTransaction(eosClient, transaction);
+      const serializedTransaction = self.serializeTransaction(eosClient, transaction);
       const txObject = {
         transaction: {
           compression: 'none',
@@ -728,7 +738,7 @@ export class Eos extends BaseCoin {
         recoveryAmount: accountBalance,
       };
       const signableTx = Buffer.concat([
-        Buffer.from(this.getChainId(), 'hex'), // The ChainID representing the chain that we are on
+        Buffer.from(self.getChainId(), 'hex'), // The ChainID representing the chain that we are on
         Buffer.from(serializedTransaction, 'hex'), // The serialized unsigned tx
         Buffer.from(new Uint8Array(32)), // Some padding
       ]).toString('hex');
@@ -737,11 +747,11 @@ export class Eos extends BaseCoin {
         return txObject;
       }
 
-      const userSignature = this.signTx(signableTx, keys[0]);
+      const userSignature = self.signTx(signableTx, keys[0]);
       txObject.transaction.signatures.push(userSignature);
 
       if (!isKrsRecovery) {
-        const backupSignature = this.signTx(signableTx, keys[1]);
+        const backupSignature = self.signTx(signableTx, keys[1]);
         txObject.transaction.signatures.push(backupSignature);
       }
 

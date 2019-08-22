@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import { BitGo } from '../bitgo';
 import { validateParams } from '../common';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
@@ -63,12 +64,12 @@ export interface ApproveOptions {
 }
 
 export class PendingApproval {
-  private readonly bitgo: any;
+  private readonly bitgo: BitGo;
   private readonly baseCoin: BaseCoin;
   private wallet?: Wallet;
   private _pendingApproval: PendingApprovalData;
 
-  constructor(bitgo: any, baseCoin: BaseCoin, pendingApprovalData: PendingApprovalData, wallet?: Wallet) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin, pendingApprovalData: PendingApprovalData, wallet?: Wallet) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     this.wallet = wallet;
@@ -222,8 +223,8 @@ export class PendingApproval {
        * Therefore, if neither of these is true, the transaction cannot be recreated, which is reflected in the if
        * statement below.
        */
-      const isColdWallet = !!_.get(this.wallet, '_wallet.isCold');
-      const isOFCWallet = this.baseCoin.getFamily() === 'ofc'; // Off-chain transactions don't need to be rebuilt
+      const isColdWallet = !!_.get(self.wallet, '_wallet.isCold');
+      const isOFCWallet = self.baseCoin.getFamily() === 'ofc'; // Off-chain transactions don't need to be rebuilt
       if (!params.xprv && !(params.walletPassphrase && !isColdWallet && !isOFCWallet)) {
         canRecreateTransaction = false;
       }

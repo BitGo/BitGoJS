@@ -8,6 +8,7 @@ import * as debugLib from 'debug';
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 import { hdPath } from '../../bitcoin';
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { NodeCallback } from '../types';
 import * as config from '../../config';
@@ -157,7 +158,7 @@ export interface SignTransactionOptions {
     }
   };
   prv: string;
-  isLastSignature: boolean;
+  isLastSignature?: boolean;
 }
 
 export interface MultiSigAddress {
@@ -179,8 +180,8 @@ export interface RecoverFromWrongChainOptions {
   wallet: Wallet;
   walletPassphrase: string;
   xprv: string;
-  coin?: BaseCoin;
-  recoveryCoin?: BaseCoin;
+  coin?: AbstractUtxoCoin;
+  recoveryCoin?: AbstractUtxoCoin;
   signed?: boolean;
 }
 
@@ -235,7 +236,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   public supportAltScriptDestination: boolean;
   private readonly _network: UtxoNetwork;
 
-  protected constructor(bitgo: any, network: UtxoNetwork) {
+  protected constructor(bitgo: BitGo, network: UtxoNetwork) {
     super(bitgo);
     if (!_.isObject(network)) {
       throw new Error('network must be an object');
@@ -738,7 +739,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             throw new Error('attempting to retrieve transaction details externally with networking disabled');
           }
           if (reqId) {
-            self.bitgo._reqId = reqId;
+            self.bitgo.setRequestTracer(reqId);
           }
           transactionCache[transactionId] = yield self.bitgo.get(self.url(`/public/tx/${transactionId}`)).result();
         }
@@ -1855,6 +1856,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @returns {*}
    */
   recoverFromWrongChain(params: RecoverFromWrongChainOptions, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function *recoverFromWrongChain() {
       const {
         txid,
@@ -1869,7 +1871,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // signed should default to true, and only be disabled if explicitly set to false (not undefined)
       const signed = params.signed !== false;
 
-      const sourceCoinFamily = this.getFamily();
+      const sourceCoinFamily = self.getFamily();
       const recoveryCoinFamily = recoveryCoin.getFamily();
       const supportedRecoveryCoins = config.supportedCrossChainRecoveries[sourceCoinFamily];
 
@@ -1878,8 +1880,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       const recoveryTool = new CrossChainRecoveryTool({
-        bitgo: this.bitgo,
-        sourceCoin: this,
+        bitgo: self.bitgo,
+        sourceCoin: self,
         recoveryCoin: recoveryCoin,
         logging: false,
       });

@@ -1,17 +1,15 @@
 import * as should from 'should';
-import  { coroutine as co } from 'bluebird';
-const sinon = require('sinon');
+import { coroutine as co } from 'bluebird';
+import * as sinon from 'sinon';
 const recoveryNocks = require('../../lib/recovery-nocks');
 const fixtures = require('../../fixtures/abstractUtxoCoin.ts');
-const TestBitGo = require('../../../lib/test_bitgo');
-const nock = require('nock');
+import { TestBitGo } from '../../../lib/test_bitgo';
+import * as nock from 'nock';
 const utxoLib = require('bitgo-utxo-lib');
-import errors = require('../../../../src/errors');
+import * as errors from '../../../../src/errors';
 
 describe('Abstract UTXO Coin:', () => {
-
   describe('Parse Transaction:', () => {
-
     let coin;
     let bitgo;
 

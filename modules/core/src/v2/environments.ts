@@ -17,6 +17,7 @@ interface EnvironmentTemplate {
   hsmXpub: string;
   smartBitApiBaseUrl: string;
   bchExplorerBaseUrl: string;
+  bsvExplorerBaseUrl?: string;
   btgExplorerBaseUrl?: string;
   etherscanBaseUrl: string;
   ltcExplorerBaseUrl: string;

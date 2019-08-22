@@ -5,6 +5,7 @@ import * as crypto from 'crypto';
 import * as _ from 'lodash';
 import * as url from 'url';
 import * as querystring from 'querystring';
+import { BitGo } from '../../bitgo';
 
 const rippleAddressCodec = require('ripple-address-codec');
 const rippleBinaryCodec = require('ripple-binary-codec');
@@ -83,12 +84,11 @@ interface HalfSignedTransaction {
 }
 
 export class Xrp extends BaseCoin {
-
-  protected constructor(bitgo: any) {
+  protected constructor(bitgo: BitGo) {
     super(bitgo);
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Xrp(bitgo);
   }
 
@@ -134,7 +134,7 @@ export class Xrp extends BaseCoin {
     if (destinationDetails.pathname === address) {
       return {
         address: address,
-        destinationTag: null
+        destinationTag: null,
       };
     }
 
@@ -159,7 +159,7 @@ export class Xrp extends BaseCoin {
 
     return {
       address: destinationAddress,
-      destinationTag: parsedTag
+      destinationTag: parsedTag,
     };
   }
 
@@ -207,10 +207,10 @@ export class Xrp extends BaseCoin {
   /**
    * Get fee info from server
    */
-  public getFeeInfo(_, callback): Promise<FeeInfo> {
+  public getFeeInfo(_?, callback?): Promise<FeeInfo> {
     return this.bitgo.get(this.url('/public/feeinfo'))
-    .result()
-    .nodeify(callback);
+      .result()
+      .nodeify(callback);
   }
 
   /**
@@ -250,7 +250,6 @@ export class Xrp extends BaseCoin {
    * @param walletParams
    * - rootPrivateKey: optional hex-encoded Ripple private key
    * @param keychains
-   * @return {*|Request|Promise.<TResult>|{anyOf}}
    */
   supplementGenerateWallet(walletParams, keychains): Bluebird<any> {
     return co(function *() {
@@ -469,8 +468,9 @@ export class Xrp extends BaseCoin {
    * @param callback
    */
   public recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryInfo | string>): Bluebird<RecoveryInfo | string> {
+    const self = this;
     return co(function *explainTransaction() {
-      const rippledUrl = this.getRippledUrl();
+      const rippledUrl = self.getRippledUrl();
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
@@ -486,15 +486,15 @@ export class Xrp extends BaseCoin {
       };
 
       const { keys, addressDetails, feeDetails, serverDetails } = yield Bluebird.props({
-        keys: this.initiateRecovery(params),
-        addressDetails: this.bitgo.post(rippledUrl).send(accountInfoParams),
-        feeDetails: this.bitgo.post(rippledUrl).send({ method: 'fee' }),
-        serverDetails: this.bitgo.post(rippledUrl).send({ method: 'server_info' }),
+        keys: self.initiateRecovery(params),
+        addressDetails: self.bitgo.post(rippledUrl).send(accountInfoParams),
+        feeDetails: self.bitgo.post(rippledUrl).send({ method: 'fee' }),
+        serverDetails: self.bitgo.post(rippledUrl).send({ method: 'server_info' }),
       });
 
       const openLedgerFee = new BigNumber(feeDetails.body.result.drops.open_ledger_fee);
-      const baseReserve = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_base_xrp).times(this.getBaseFactor());
-      const reserveDelta = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_inc_xrp).times(this.getBaseFactor());
+      const baseReserve = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_base_xrp).times(self.getBaseFactor());
+      const reserveDelta = new BigNumber(serverDetails.body.result.info.validated_ledger.reserve_inc_xrp).times(self.getBaseFactor());
       const currentLedger = serverDetails.body.result.info.validated_ledger.seq;
       const sequenceId = addressDetails.body.result.account_data.Sequence;
       const balance = new BigNumber(addressDetails.body.result.account_data.Balance);
@@ -584,7 +584,7 @@ export class Xrp extends BaseCoin {
         Flags: 2147483648,
         LastLedgerSequence: currentLedger + 1000000, // give it 1 million ledgers' time (~1 month, suitable for KRS)
         Fee: openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
-        Sequence: sequenceId
+        Sequence: sequenceId,
       };
       const txJSON = JSON.stringify(transaction);
 
@@ -605,12 +605,14 @@ export class Xrp extends BaseCoin {
         signedTransaction = rippleLib.combine([userSignature.signedTransaction, backupSignature.signedTransaction]);
       }
 
-      const transactionExplanation = yield this.explainTransaction({ txHex: signedTransaction.signedTransaction }) as RecoveryInfo;
+      const transactionExplanation: RecoveryInfo = yield self.explainTransaction({
+        txHex: signedTransaction.signedTransaction,
+      });
       transactionExplanation.txHex = signedTransaction.signedTransaction;
 
       if (isKrsRecovery) {
         transactionExplanation.backupKey = params.backupKey;
-        transactionExplanation.coin = this.getChain();
+        transactionExplanation.coin = self.getChain();
       }
       return transactionExplanation;
     }).call(this).asCallback(callback);
@@ -620,6 +622,7 @@ export class Xrp extends BaseCoin {
    * Prepare and validate all keychains from the keycard for recovery
    */
   initiateRecovery(params: RecoveryOptions): Bluebird<HDNode[]> {
+    const self = this;
     return co(function *initiateRecovery() {
       const keys = [];
       const userKey = params.userKey; // Box A
@@ -665,13 +668,13 @@ export class Xrp extends BaseCoin {
         const bitgoHDNode = HDNode.fromBase58(bitgoXpub);
         keys.push(bitgoHDNode);
       } catch (e) {
-        if (this.getFamily() !== 'xrp') {
+        if (self.getFamily() !== 'xrp') {
           // in XRP recoveries, the BitGo xpub is optional
           throw new Error('Failed to parse bitgo xpub!');
         }
       }
       // Validate the destination address
-      if (!this.isValidAddress(destinationAddress)) {
+      if (!self.isValidAddress(destinationAddress)) {
         throw new Error('Invalid destination address!');
       }
 
@@ -694,7 +697,7 @@ export class Xrp extends BaseCoin {
     const xpub = extendedKey.neutered().toBase58();
     return {
       pub: xpub,
-      prv: extendedKey.toBase58()
+      prv: extendedKey.toBase58(),
     };
   }
 }

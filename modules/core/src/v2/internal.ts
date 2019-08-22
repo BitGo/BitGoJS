@@ -2,6 +2,7 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
+import { BitGo } from '../bitgo';
 import { BaseCoin } from './baseCoin';
 
 const co = Bluebird.coroutine;
@@ -17,7 +18,7 @@ const co = Bluebird.coroutine;
 export function getFirstPendingTransaction(
   params: { walletId?: string; enterpriseId?: string },
   baseCoin: BaseCoin,
-  bitgo: any
+  bitgo: BitGo
 ): Bluebird<any> {
   return co(function*() {
     // These errors should never happen when this is called from wallet.js or enterprise.js

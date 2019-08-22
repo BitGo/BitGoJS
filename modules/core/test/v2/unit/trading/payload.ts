@@ -8,8 +8,8 @@ import fixtures from '../../fixtures/trading/payload';
 
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { Wallet } from '../../../../src/v2/wallet';
-const TestV2BitGo = require('../../../lib/test_bitgo');
-const common = require('../../../../src/common');
+import { TestBitGo } from '../../../lib/test_bitgo';
+import * as common from '../../../../src/common';
 
 describe('Trade Payloads', function() {
   const microservicesUri = 'https://bitgo-microservices.example';
@@ -20,7 +20,7 @@ describe('Trade Payloads', function() {
   let bgUrl;
 
   before(co(function *() {
-    bitgo = new TestV2BitGo({ env: 'mock', microservicesUri });
+    bitgo = new TestBitGo({ env: 'mock', microservicesUri });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('ofc');
     basecoin.keychains();
@@ -49,7 +49,7 @@ describe('Trade Payloads', function() {
       .get('/api/v2/ofc/key/keyid')
       .reply(200, {
         pub: xpub,
-        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestV2BitGo.OFC_TEST_PASSWORD })
+        encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
       });
 
     const msScope = nock(microservicesUri)
@@ -87,7 +87,7 @@ describe('Trade Payloads', function() {
       party.should.have.property('amount');
     }
 
-    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestV2BitGo.OFC_TEST_PASSWORD });
+    const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
 
     // signature should be a hex string
     signature.should.match(/^[0-9a-f]+$/);

@@ -1,15 +1,15 @@
+import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Xlm } from './xlm';
 const stellar = require('stellar-sdk');
 
 export class Txlm extends Xlm {
-
-  constructor(bitgo: any) {
+  constructor(bitgo: BitGo) {
     super(bitgo);
     stellar.Network.use(new stellar.Network(stellar.Networks.TESTNET));
   }
 
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Txlm(bitgo);
   }
 

@@ -1,13 +1,14 @@
 /**
  * @prettier
  */
+import { BitGo } from '../../bitgo';
 import { BaseCoin, KeyPair } from '../baseCoin';
 import * as crypto from 'crypto';
 import * as bitGoUtxoLib from 'bitgo-utxo-lib';
 import * as errors from '../../errors';
 
 export class Ofc extends BaseCoin {
-  static createInstance(bitgo: any): BaseCoin {
+  static createInstance(bitgo: BitGo): BaseCoin {
     return new Ofc(bitgo);
   }
 

@@ -4,14 +4,14 @@ const co = Promise.coroutine;
 import * as ecc from 'eosjs-ecc';
 import * as bitcoin from 'bitgo-utxo-lib';
 
-const TestV2BitGo = require('../../../lib/test_bitgo');
+import { TestBitGo } from '../../../lib/test_bitgo';
 
 describe('EOS:', function() {
   let bitgo;
   let basecoin;
 
   before(function() {
-    bitgo = new TestV2BitGo({ env: 'test' });
+    bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('teos');
   });

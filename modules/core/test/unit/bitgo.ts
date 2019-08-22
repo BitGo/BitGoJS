@@ -8,7 +8,7 @@ import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 
 import * as BitGoJS from '../../src/index';
-const TestBitGo = require('../lib/test_bitgo');
+import { TestBitGo } from '../lib/test_bitgo';
 import * as common from '../../src/common';
 const rp = require('request-promise');
 import * as _ from 'lodash';
@@ -287,45 +287,17 @@ describe('BitGo Prototype Methods', function() {
 
     describe('should fail to change the password', function changePWFail() {
       it('wrong arguments', co(function *coWrongArguments() {
-        try {
-          yield bitgo.changePassword({ newPassword: '5678' });
-          throw new Error();
-        } catch (e) {
-          e.message.should.equal('Missing parameter: oldPassword');
-        }
-
-        try {
-          yield bitgo.changePassword({ oldPassword: 1234, newPassword: '5678' });
-          throw new Error();
-        } catch (e) {
-          e.message.should.equal('Expecting parameter string: oldPassword but found number');
-        }
-
-        try {
-          yield bitgo.changePassword({ oldPassword: '1234' });
-          throw new Error();
-        } catch (e) {
-          e.message.should.equal('Missing parameter: newPassword');
-        }
-
-        try {
-          yield bitgo.changePassword({ oldPassword: '1234', newPassword: 5678 });
-          throw new Error();
-        } catch (e) {
-          e.message.should.equal('Expecting parameter string: newPassword but found number');
-        }
+        yield bitgo.changePassword({ newPassword: '5678' }).should.be.rejectedWith('expected string oldPassword');
+        yield bitgo.changePassword({ oldPassword: 1234, newPassword: '5678' }).should.be.rejectedWith('expected string oldPassword');
+        yield bitgo.changePassword({ oldPassword: '1234' }).should.be.rejectedWith('expected string newPassword');
+        yield bitgo.changePassword({ oldPassword: '1234', newPassword: 5678 }).should.be.rejectedWith('expected string newPassword');
       }));
 
       it('incorrect old password', co(function *coIncorrectOldPW() {
         nock(bgUrl)
         .post('/api/v1/user/verifypassword')
         .reply(200, { valid: false });
-        try {
-          yield bitgo.changePassword({ oldPassword, newPassword });
-          throw new Error();
-        } catch (e) {
-          e.message.should.equal('the provided oldPassword is incorrect');
-        }
+        yield bitgo.changePassword({ oldPassword, newPassword }).should.be.rejectedWith('the provided oldPassword is incorrect');
       }));
     });
 
