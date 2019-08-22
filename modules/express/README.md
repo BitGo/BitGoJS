@@ -116,6 +116,24 @@ Error: Must enable TLS when running against prod and listening on external inter
 
 We strongly recommend always enabling TLS when running against the BitGo production environment. However, if you must opt out of this requirement, you may do so by setting the `disableSSL` configuration option. **Use at your own risk, as this may allow a man-in-the-middle to access sensitive information as it is sent over the wire in cleartext.**
 
+### BitGo Express Proxy Support
+
+BitGo Express can also make requests to BitGo via a proxy. This can be done by setting the `BITGO_USE_PROXY` environment variable to the URI where your proxy is listening.
+
+For example, to instruct BitGo Express to use a SOCKS proxy which is listening at 192.0.2.1 on port 12000, you should start BitGo Express with the following command:
+
+```shell
+docker run -e BITGO_USE_PROXY="socks://192.0.2.1:12000" -p 3080:3080 bitgosdk/express:latest
+```
+
+BitGo Express currently supports the following proxy protocols:
+
+* HTTP
+* HTTPS
+* SOCKSv4
+* SOCKSv5
+* PAC
+
 ## Configuration Values
 
 BitGo Express is able to take configuration options from either command line arguments, or via environment variables.
