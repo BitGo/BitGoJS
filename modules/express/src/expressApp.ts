@@ -1,19 +1,23 @@
+/**
+ * @prettier
+ */
 import * as express from 'express';
 import * as httpProxy from 'http-proxy';
 import * as url from 'url';
-import * as Promise from 'bluebird';
+import * as Bluebird from 'bluebird';
 import * as path from 'path';
 import * as _ from 'lodash';
 import * as debugLib from 'debug';
 import * as https from 'https';
 import * as http from 'http';
+import { Server } from 'net';
 
 const morgan = require('morgan');
-const fs = Promise.promisifyAll(require('fs'));
+const fs = Bluebird.promisifyAll(require('fs'));
 
 import { Config, config } from './config';
 
-const co = Promise.coroutine;
+const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:express');
 
 // eslint-disable-next-line @typescript-eslint/camelcase
@@ -32,7 +36,7 @@ const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version
  * @param app
  * @param config
  */
-function setupLogging(app, config: Config) {
+function setupLogging(app, config: Config): void {
   // Set up morgan for logging, with optional logging into a file
   let middleware;
   if (config.logFile) {
@@ -47,7 +51,9 @@ function setupLogging(app, config: Config) {
   }
 
   app.use(middleware);
-  morgan.token('remote-user', function(req) { return req.isProxy ? 'proxy' : 'local_express'; });
+  morgan.token('remote-user', function(req) {
+    return req.isProxy ? 'proxy' : 'local_express';
+  });
 }
 
 /**
@@ -55,7 +61,7 @@ function setupLogging(app, config: Config) {
  *
  * @param config
  */
-function configureEnvironment(config: Config) {
+function configureEnvironment(config: Config): void {
   const { customRootUri, customBitcoinNetwork } = config;
   if (customRootUri) {
     Environments['custom'].uri = customRootUri;
@@ -72,7 +78,7 @@ function configureEnvironment(config: Config) {
  * @param app bitgo-express Express app
  * @param config
  */
-function configureProxy(app, config: Config) {
+function configureProxy(app, config: Config): void {
   const { env, timeout } = config;
 
   // Mount the proxy middleware
@@ -101,7 +107,9 @@ function configureProxy(app, config: Config) {
     // Need to rewrite the host, otherwise cross-site protection kicks in
     proxyReq.setHeader('host', url.parse(Environments[env].uri).hostname);
 
-    const userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
+    const userAgent = req.headers['user-agent']
+      ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent']
+      : BITGOEXPRESS_USER_AGENT;
     proxyReq.setHeader('User-Agent', userAgent);
   });
 
@@ -115,7 +123,8 @@ function configureProxy(app, config: Config) {
   proxy.on('econnreset', (err, _, res) => {
     debug('Proxy server connection reset error: ', err);
     sendError(res, 500, {
-      error: 'BitGo Express encountered a connection reset error while attempting to proxy your request to BitGo. Please try again.',
+      error:
+        'BitGo Express encountered a connection reset error while attempting to proxy your request to BitGo. Please try again.',
     });
   });
 
@@ -138,13 +147,13 @@ function configureProxy(app, config: Config) {
  * @param app
  * @return {Server}
  */
-function createHttpsServer(app, config: Config) {
-  return co(function *createHttpsServer() {
+function createHttpsServer(app, config: Config): Bluebird<Server> {
+  return co(function* createHttpsServer() {
     const { keyPath, crtPath } = config;
     const privateKeyPromise = fs.readFileAsync(keyPath, 'utf8');
     const certificatePromise = fs.readFileAsync(crtPath, 'utf8');
 
-    const [key, cert] = yield Promise.all([privateKeyPromise, certificatePromise]);
+    const [key, cert] = yield Bluebird.all([privateKeyPromise, certificatePromise]);
 
     // eslint-disable-next-line @typescript-eslint/camelcase
     return https.createServer({ secureOptions: SSL_OP_NO_TLSv1, key, cert }, app);
@@ -157,7 +166,7 @@ function createHttpsServer(app, config: Config) {
  * @param app
  * @return {Server}
  */
-function createHttpServer(app) {
+function createHttpServer(app): Server {
   return http.createServer(app);
 }
 
@@ -168,7 +177,7 @@ function createHttpServer(app) {
  * @param baseUri
  * @return {Function}
  */
-module.exports.startup = function(config: Config, baseUri: string) {
+export function startup(config: Config, baseUri: string): () => void {
   return function() {
     const { env, customRootUri, customBitcoinNetwork } = config;
     console.log('BitGo-Express running');
@@ -181,12 +190,12 @@ module.exports.startup = function(config: Config, baseUri: string) {
       console.log(`Custom bitcoin network: ${customBitcoinNetwork}`);
     }
   };
-};
+}
 
 /**
  * helper function to determine whether we should run the server over TLS or not
  */
-function isTLS(config: Config) {
+function isTLS(config: Config): boolean {
   const { keyPath, crtPath } = config;
   return Boolean(keyPath && crtPath);
 }
@@ -198,20 +207,22 @@ function isTLS(config: Config) {
  * @param app
  * @return {Server}
  */
-module.exports.createServer = co(function *(config: Config, app) {
-  return isTLS(config) ? yield createHttpsServer(app, config) : createHttpServer(app);
-});
+export function createServer(config: Config, app) {
+  return co(function*() {
+    return isTLS(config) ? yield createHttpsServer(app, config) : createHttpServer(app);
+  }).call(this);
+}
 
 /**
  * Create the base URI where the BitGoExpress server will be available once started
  * @return {string}
  */
-module.exports.createBaseUri = function(config: Config) {
+export function createBaseUri(config: Config): string {
   const { bind, port } = config;
   const tls = isTLS(config);
   const isStandardPort = (port === 80 && !tls) || (port === 443 && tls);
   return `http${tls ? 's' : ''}://${bind}${!isStandardPort ? ':' + port : ''}`;
-};
+}
 
 /**
  * Check environment and other preconditions to ensure bitgo-express can start safely
@@ -223,9 +234,13 @@ function checkPreconditions(config: Config) {
   // warn or throw if the NODE_ENV is not production when BITGO_ENV is production - this can leak system info from express
   if (env === 'prod' && process.env.NODE_ENV !== 'production') {
     if (!disableEnvCheck) {
-      throw new NodeEnvironmentError('NODE_ENV should be set to production when running against prod environment. Use --disableenvcheck if you really want to run in a non-production node configuration.');
+      throw new NodeEnvironmentError(
+        'NODE_ENV should be set to production when running against prod environment. Use --disableenvcheck if you really want to run in a non-production node configuration.'
+      );
     } else {
-      console.warn(`warning: unsafe NODE_ENV '${process.env.NODE_ENV}'. NODE_ENV must be set to 'production' when running against BitGo production environment.`);
+      console.warn(
+        `warning: unsafe NODE_ENV '${process.env.NODE_ENV}'. NODE_ENV must be set to 'production' when running against BitGo production environment.`
+      );
     }
   }
 
@@ -246,7 +261,7 @@ function checkPreconditions(config: Config) {
   }
 }
 
-module.exports.app = function(cfg: Config) {
+export function app(cfg: Config): any {
   debug('app is initializing');
 
   const app = express();
@@ -257,7 +272,7 @@ module.exports.app = function(cfg: Config) {
 
   // enable specified debug namespaces
   if (_.isArray(debugNamespace)) {
-    _.forEach(debugNamespace, (ns) => debugLib.enable(ns));
+    _.forEach(debugNamespace, ns => debugLib.enable(ns));
   }
 
   checkPreconditions(cfg);
@@ -278,17 +293,19 @@ module.exports.app = function(cfg: Config) {
   }
 
   return app;
-};
+}
 
-module.exports.init = co(function *() {
-  const cfg = config();
-  const app = module.exports.app(cfg);
+export function init(): Bluebird<any> {
+  return co(function*() {
+    const cfg = config();
+    const expressApp = app(cfg);
 
-  const server = yield module.exports.createServer(cfg, app);
+    const server = yield module.exports.createServer(cfg, expressApp);
 
-  const { port, bind } = cfg;
-  const baseUri = module.exports.createBaseUri(cfg);
+    const { port, bind } = cfg;
+    const baseUri = createBaseUri(cfg);
 
-  server.listen(port, bind, module.exports.startup(cfg, baseUri));
-  server.timeout = 300 * 1000; // 5 minutes
-});
+    server.listen(port, bind, startup(cfg, baseUri));
+    server.timeout = 300 * 1000; // 5 minutes
+  }).call(this);
+}
