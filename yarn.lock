@@ -97,10 +97,10 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/statics@^1.2.0":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-1.4.1.tgz#b643daba9478febcd52fee2d02911210220b3517"
-  integrity sha512-J6sdP05hpQ6cTq7g7to3tj4Q1aArMIaxnQvcYtmeuYmNl/J4YwV5mis8yaHpPM86QXtnnnskoJ6yrVxS2ldNOA==
+"@bitgo/statics@^1.6.1-rc.0":
+  version "1.6.1-rc.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-1.6.1-rc.0.tgz#4bc23e93e0d02bbc4d6e8406af14c7a6f108621d"
+  integrity sha512-JSL1rMEdsKiis/ZLRHKU8dzKg9DNRy274U6dBciDhTqIyNtfhHkLipp+hrsVEdKpHhdYdgpLFHmE+u1SqM3GHQ==
 
 "@bitgo/unspents@^0.6.0":
   version "0.6.1"

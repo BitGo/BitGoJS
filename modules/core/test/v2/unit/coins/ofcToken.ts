@@ -14,14 +14,14 @@ describe('OFC:', function() {
 
   it('functions that return constants', function() {
     otestusdCoin.getChain().should.equal('ofctusd');
-    otestusdCoin.getFullName().should.equal('Offchain Test USD');
+    otestusdCoin.getFullName().should.equal('Test USD');
     otestusdCoin.getBaseFactor().should.equal('100');
   });
 
   it('test crypto coins', function() {
     const tbtc = bitgo.coin('ofctbtc');
     tbtc.getChain().should.equal('ofctbtc');
-    tbtc.getFullName().should.equal('Offchain Bitcoin Test');
+    tbtc.getFullName().should.equal('Test Bitcoin');
     tbtc.getBaseFactor().should.equal('100000000');
     tbtc.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.true;
     tbtc.isValidAddress('3NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
@@ -30,7 +30,7 @@ describe('OFC:', function() {
 
     const teth = bitgo.coin('ofcteth');
     teth.getChain().should.equal('ofcteth');
-    teth.getFullName().should.equal('Offchain Ether Testnet');
+    teth.getFullName().should.equal('Test Ether');
     teth.getBaseFactor().should.equal('1000000000000000000');
     teth.isValidAddress('0x801b2954117cf3439479df391bed2f472e4bd4b8').should.be.true;
     teth.isValidAddress('2NBSpUjBQUg4BmWUft8m2VePGDEZ2QBFM7X').should.be.false;
