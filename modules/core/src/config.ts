@@ -32,7 +32,7 @@ const formattedErc20Tokens = coins.filter((coin: BaseCoin) => {
     coin: token.network.type === NetworkType.MAINNET ? 'eth' : 'teth',
     network: token.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
     name: token.fullName,
-    tokenContractAddress: token.contractAddress.toString(),
+    tokenContractAddress: token.contractAddress.toString().toLowerCase(),
     decimalPlaces: token.decimalPlaces,
   };
 });
