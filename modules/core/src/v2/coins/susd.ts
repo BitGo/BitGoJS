@@ -2,8 +2,17 @@
  * @prettier
  */
 import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
+import {
+  BaseCoin,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+} from '../baseCoin';
 import { MethodNotImplementedError } from '../../errors';
+import { NodeCallback } from '../types';
+import * as Bluebird from 'bluebird';
 
 export class Susd extends BaseCoin {
   static createInstance(bitgo: BitGo): BaseCoin {
@@ -39,5 +48,28 @@ export class Susd extends BaseCoin {
 
   isValidAddress(address: string): boolean {
     throw new MethodNotImplementedError();
+  }
+
+  generateKeyPair(seed?: Buffer): KeyPair {
+    throw new MethodNotImplementedError();
+  }
+
+  isValidPub(pub: string): boolean {
+    throw new MethodNotImplementedError();
+  }
+
+  parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({}).asCallback(callback);
+  }
+
+  verifyAddress(params: VerifyAddressOptions): boolean {
+    return true;
+  }
+
+  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+    return Bluebird.resolve(true).asCallback(callback);
   }
 }

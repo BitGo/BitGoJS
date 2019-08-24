@@ -7,7 +7,7 @@ import { makeRandomKey } from '../bitcoin';
 import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { AddressGenerationError } from '../errors';
-import { BaseCoin } from './baseCoin';
+import { BaseCoin, CoinSpecific } from './baseCoin';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Eth } from './coins/eth';
 import * as internal from './internal';
@@ -24,8 +24,8 @@ export class Wallet {
 
   public readonly bitgo: BitGo;
   public readonly baseCoin: BaseCoin;
-  public _wallet: any;
-  public readonly _permissions?: any;
+  private _wallet: any;
+  private readonly _permissions?: any;
 
   constructor(bitgo: BitGo, baseCoin: BaseCoin, walletData: any) {
     this.bitgo = bitgo;
@@ -137,6 +137,16 @@ export class Wallet {
   }
 
   /**
+   * Get the wallet id of the wallet that this wallet was migrated from.
+   *
+   * For example, if this is a BCH wallet that was created from a BTC wallet,
+   * the BCH wallet migrated from field would have the BTC wallet id.
+   */
+  public migratedFrom(): string | undefined {
+    return this._wallet.migratedFrom;
+  }
+
+  /**
    * Return the token flush thresholds for this wallet
    * @return {*|Object} pairs of { [tokenName]: thresholds } base units
    */
@@ -145,6 +155,13 @@ export class Wallet {
       throw new Error('not supported for this wallet');
     }
     return this._wallet.coinSpecific.tokenFlushThresholds;
+  }
+
+  /**
+   * Get wallet properties which are specific to certain coin implementations
+   */
+  coinSpecific(): CoinSpecific | undefined {
+    return this._wallet.coinSpecific;
   }
 
   /**
@@ -163,8 +180,9 @@ export class Wallet {
    * @returns {Wallet}
    */
   refresh(params: {} = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
+    const self = this;
     return co(function *() {
-      this._wallet = yield this.bitgo.get(this.url()).result();
+      self._wallet = yield self.bitgo.get(self.url()).result();
       return this;
     }).call(this).asCallback(callback);
   }
@@ -545,7 +563,7 @@ export class Wallet {
         }
 
         const value = self.spendableBalanceString();
-        if (!value || value === '0') {
+        if (_.isUndefined(value) || value === '0') {
           throw new Error('no funds to sweep');
         }
         params.recipients = [{
@@ -686,7 +704,7 @@ export class Wallet {
   getAddress(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, [], ['address', 'id'], callback);
     let query;
-    if (!params.address && !params.id) {
+    if (_.isUndefined(params.address) && _.isUndefined(params.id)) {
       throw new Error('address or id of address required');
     }
     if (params.address) {

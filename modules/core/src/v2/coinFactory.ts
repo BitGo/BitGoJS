@@ -41,7 +41,7 @@ import { Zec } from './coins/zec';
 
 import * as errors from '../errors';
 
-export type CoinConstructor = (bitgo: BitGo, staticsCoin: Readonly<StaticsBaseCoin>) => BaseCoin;
+export type CoinConstructor = (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
 
 export class CoinFactory {
   private coinConstructors = new Map<string, CoinConstructor>();
@@ -80,7 +80,7 @@ export class CoinFactory {
           tokenContractAddress: name,
           decimalPlaces: 0,
         });
-        return unknownTokenConstructor(bitgo, null);
+        return unknownTokenConstructor(bitgo);
       }
     }
 

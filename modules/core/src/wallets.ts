@@ -28,7 +28,7 @@ Wallets.prototype.list = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const args = [];
+  const args: string[] = [];
 
   if (params.skip && params.prevId) {
     throw new Error('cannot specify both skip and prevId');

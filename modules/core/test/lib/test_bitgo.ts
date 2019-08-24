@@ -5,6 +5,7 @@
 //
 
 import { BitGo as BG } from '../../src/bitgo';
+import { KeyIndices } from '../../src/v2/keychains';
 import { Wallet } from '../../src/v2/wallet';
 const BigNumber = require('bignumber.js');
 import * as Bluebird from 'bluebird';
@@ -420,7 +421,7 @@ BitGo.prototype.nockEthWallet = function() {
     gasPrice: 20000000000,
     nextContractSequenceId: 101
   })
-  .get(`/api/v2/teth/key/${wallet._wallet.keys[0]}`)
+  .get(`/api/v2/teth/key/${wallet.keyIds()[KeyIndices.USER]}`)
   .reply(200, {
     id: '598f606cd8fc24710d2ebad89dce86c2',
     users: ['543c11ed356d00cb7600000b98794503'],

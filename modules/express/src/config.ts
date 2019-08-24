@@ -35,9 +35,9 @@ export const ArgConfig = (args): Config => ({
 });
 
 export const EnvConfig = (): Config => ({
-  port: Number(process.env.BITGO_PORT) || undefined,
-  bind: process.env.BITGO_BIND,
-  env: process.env.BITGO_ENV,
+  port: Number(process.env.BITGO_PORT),
+  bind: process.env.BITGO_BIND!,
+  env: process.env.BITGO_ENV!,
   debugNamespace: (process.env.BITGO_DEBUG_NAMESPACE || '').split(','),
   keyPath: process.env.BITGO_KEYPATH,
   crtPath: process.env.BITGO_CRTPATH,
@@ -45,7 +45,7 @@ export const EnvConfig = (): Config => ({
   disableSSL: Boolean(process.env.DISABLE_SSL),
   disableProxy: Boolean(process.env.DISABLE_PROXY),
   disableEnvCheck: Boolean(process.env.DISABLE_ENV_CHECK),
-  timeout: Number(process.env.BITGO_TIMEOUT) || undefined,
+  timeout: Number(process.env.BITGO_TIMEOUT),
   customRootUri: process.env.BITGO_CUSTOM_ROOT_URI,
   customBitcoinNetwork: process.env.BITGO_CUSTOM_BITCOIN_NETWORK,
 });

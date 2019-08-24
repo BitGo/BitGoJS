@@ -1229,7 +1229,7 @@ describe('Wallet API', function() {
       });
 
       it('conflicting output script and address', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: '2Mx3TZycg4XL5sQFfERBgNmg9Ma7uxowK9y', script: '76a914cd3af9b7b4587133693da3f40854da2b0ac99ec588ad', amount: wallet1.balance() - 5000 });
         return Q()
         .then(function() {
@@ -1325,7 +1325,7 @@ describe('Wallet API', function() {
       });
 
       it('ok', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: 'n3Eii3DYh5z3SMzWiq7ZVS43bQLvuArsd4', script: '76a914ee40c53bd6f0dcc34f024b6dd13803db2bc8beba88ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients })
@@ -1477,7 +1477,7 @@ describe('Wallet API', function() {
       });
 
       it('ok', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: 'n3Eii3DYh5z3SMzWiq7ZVS43bQLvuArsd4', script: '76a914ee40c53bd6f0dcc34f024b6dd13803db2bc8beba88ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients })
@@ -1556,7 +1556,7 @@ describe('Wallet API', function() {
       });
 
       it('estimateFee with recipients (1 recipient)', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 6200 * 1e8 });
         return wallet1.estimateFee({ recipients: recipients, noSplitChange: true })
         .then(function(result) {
@@ -1567,7 +1567,7 @@ describe('Wallet API', function() {
       });
 
       it('estimateFee with recipients (2 recipients)', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: TestBitGo.TEST_WALLET2_ADDRESS, amount: 6195 * 1e8 });
 
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 5 * 1e8 });
@@ -1736,7 +1736,7 @@ describe('Wallet API', function() {
       });
 
       it('insufficient inputs in single key address', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: 'n3Eii3DYh5z3SMzWiq7ZVS43bQLvuArsd4', script: '76a914ee40c53bd6f0dcc34f024b6dd13803db2bc8beba88ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.1 * 1e8;
 
@@ -1755,7 +1755,7 @@ describe('Wallet API', function() {
       });
 
       it('single key address and WIF do not match', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: 'n3Eii3DYh5z3SMzWiq7ZVS43bQLvuArsd4', script: '76a914ee40c53bd6f0dcc34f024b6dd13803db2bc8beba88ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
 
@@ -1778,7 +1778,7 @@ describe('Wallet API', function() {
       });
 
       it('ok with single fee wallet key', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: 'n3Eii3DYh5z3SMzWiq7ZVS43bQLvuArsd4', script: '76a914ee40c53bd6f0dcc34f024b6dd13803db2bc8beba88ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, feeSingleKeyWIF: 'cRVQ6cbUyGHVvByPKF9GnEhaB4HUBFgLQ2jVX1kbQARHaTaD7WJ2', splitChangeSize: 0 })
@@ -1797,7 +1797,7 @@ describe('Wallet API', function() {
       });
 
       it('ok with single fee wallet address', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: 'n3Eii3DYh5z3SMzWiq7ZVS43bQLvuArsd4', script: '76a914ee40c53bd6f0dcc34f024b6dd13803db2bc8beba88ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, feeSingleKeySourceAddress: 'mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7', splitChangeSize: 0 })
@@ -1834,7 +1834,7 @@ describe('Wallet API', function() {
       });
 
       it('ok with single fee wallet address and key', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: 'n3Eii3DYh5z3SMzWiq7ZVS43bQLvuArsd4', script: '76a914ee40c53bd6f0dcc34f024b6dd13803db2bc8beba88ac', amount: 0.01 * 1e8 });
         recipients[TestBitGo.TEST_WALLET2_ADDRESS] = 0.01 * 1e8;
         return TransactionBuilder.createTransaction({ wallet: wallet1, recipients: recipients, feeSingleKeySourceAddress: 'mibJ4uJc9f1fbMeaUXNuWqsB1JgNMcTZK7', feeSingleKeyWIF: 'cRVQ6cbUyGHVvByPKF9GnEhaB4HUBFgLQ2jVX1kbQARHaTaD7WJ2' })
@@ -2405,7 +2405,7 @@ describe('Wallet API', function() {
       });
 
       it('send many - wallet3 to wallet1 (single output, using xprv instead of passphrase)', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8 });
         return wallet3.sendMany({
           recipients: recipients,
@@ -2420,7 +2420,7 @@ describe('Wallet API', function() {
       });
 
       it('send many - wallet3 to wallet1 (single output, using keychain)', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: TestBitGo.TEST_WALLET1_ADDRESS, amount: 0.001 * 1e8 });
         return wallet3.getEncryptedUserKeychain()
         .then(function(keychain) {
@@ -2436,7 +2436,7 @@ describe('Wallet API', function() {
       });
 
       it('send many - wallet1 to wallet3 with dynamic fee', function(done) {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS, amount: 0.001 * 1e8 });
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS2, amount: 0.001 * 1e8 });
         recipients.push({ address: TestBitGo.TEST_WALLET3_ADDRESS3, amount: 0.006 * 1e8 });
@@ -2453,7 +2453,7 @@ describe('Wallet API', function() {
       });
 
       it('send many - wallet1 to wallet3 with travel info', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({
           address: TestBitGo.TEST_WALLET3_ADDRESS,
           amount: 0.001 * 1e8,
@@ -2572,7 +2572,7 @@ describe('Wallet API', function() {
       });
 
       it('create and sign transaction with global no validation', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({
           address: TestBitGo.TEST_WALLET2_ADDRESS,
           amount: 0.001 * 1e8
@@ -2606,7 +2606,7 @@ describe('Wallet API', function() {
       });
 
       it('create tx with bad travelInfo', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({
           address: TestBitGo.TEST_WALLET2_ADDRESS,
           amount: 0.001 * 1e8,
@@ -2626,7 +2626,7 @@ describe('Wallet API', function() {
       });
 
       it('create tx with travelInfo', function() {
-        const recipients = [];
+        const recipients: any[] = [];
         recipients.push({
           address: TestBitGo.TEST_WALLET2_ADDRESS,
           amount: 0.001 * 1e8,

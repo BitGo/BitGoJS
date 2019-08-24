@@ -123,7 +123,7 @@ export class Token extends Eth {
 
       const isKrsRecovery = params.backupKey.startsWith('xpub');
 
-      if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
+      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new Error('unknown key recovery service provider');
       }
 

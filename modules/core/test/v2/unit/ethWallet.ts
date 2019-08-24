@@ -121,7 +121,7 @@ describe('Ethereum Hop Transactions', co(function *() {
     }));
 
     it('should fail if the HSM prebuild recipient is wrong', co(function *() {
-      let error = undefined;
+      let error: string | undefined = undefined;
       const badBuildParams = JSON.parse(JSON.stringify(buildParams));
       badBuildParams.recipients[0].address = '0x54bf1609aeed804aa231f08c53dbb18f7d374615';
 
@@ -131,11 +131,11 @@ describe('Ethereum Hop Transactions', co(function *() {
         error = e.message;
       }
       should.exist(error);
-      error.should.containEql('does not equal original recipient');
+      error!.should.containEql('does not equal original recipient');
     }));
 
     it('should fail if the HSM prebuild tx amount is wrong', co(function *() {
-      let error = undefined;
+      let error: string | undefined = undefined;
       const badBuildParams = JSON.parse(JSON.stringify(buildParams));
       badBuildParams.recipients[0].amount = '50000000';
 
@@ -145,11 +145,11 @@ describe('Ethereum Hop Transactions', co(function *() {
         error = e.message;
       }
       should.exist(error);
-      error.should.containEql('does not equal original amount');
+      error!.should.containEql('does not equal original amount');
     }));
 
     it('should fail if the HSM signature is invalid', co(function *() {
-      let error = undefined;
+      let error: string | undefined = undefined;
       // Mocking a different BitGo key means the signing key should be wrong (it maps to a different address than this xpub)
       const goodXpub = common.Environments[env].hsmXpub;
       common.Environments[env].hsmXpub = 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL';
@@ -160,12 +160,12 @@ describe('Ethereum Hop Transactions', co(function *() {
         error = e.message;
       }
       should.exist(error);
-      error.should.containEql('Hop txid signature invalid');
+      error!.should.containEql('Hop txid signature invalid');
       common.Environments[env].hsmXpub = goodXpub;
     }));
 
     it('should fail if the HSM signature signed the wrong HSM commitment digest', co(function *() {
-      let error = undefined;
+      let error: string | undefined = undefined;
       const badTxid = '0xb4b3827a529c9166786e796528017889ac5027255b65b3fa2a3d3ad91244a12b';
       const badTxidBuffer = Buffer.from(badTxid.slice(2), 'hex');
       const xprvNode = bitGoUtxoLib.HDNode.fromBase58(bitgoKeyXprv);
@@ -180,7 +180,7 @@ describe('Ethereum Hop Transactions', co(function *() {
         error = e.message;
       }
       should.exist(error);
-      error.should.containEql('Hop txid signature invalid');
+      error!.should.containEql('Hop txid signature invalid');
     }));
   }));
 

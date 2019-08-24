@@ -54,6 +54,8 @@ declare module 'superagent' {
     // end: (callback?: NodeCallback<superagent.Response>) => Bluebird<superagent.Response>;
     verifyResponse: (response: superagent.Response) => superagent.Response;
     forceV1Auth: boolean;
+    authenticationToken?: string;
+    isV2Authenticated?: boolean;
   }
 }
 
@@ -174,8 +176,8 @@ interface User {
 }
 
 interface BitGoJson {
-  user: User;
-  token: string;
+  user?: User;
+  token?: string;
   extensionKey?: string;
 }
 
@@ -396,7 +398,7 @@ export class BitGo {
   private readonly _microservicesUrl?: string;
   private readonly _baseApiUrl: string;
   private readonly _baseApiUrlV2: string;
-  private _user: User;
+  private _user?: User;
   private _keychains: any;
   private _wallets: any;
   private readonly _clientId?: string;
@@ -406,9 +408,9 @@ export class BitGo {
   private readonly _userAgent: string;
   private readonly _promise: typeof Bluebird;
   private _validate: boolean;
-  private readonly _proxy: string;
+  private readonly _proxy?: string;
   private _reqId: RequestTracer;
-  private _ecdhXprv: string;
+  private _ecdhXprv?: string;
   private _extensionKey?: bitcoin.ECPair;
   private _markets?: any;
   private _blockchain?: any;
@@ -493,13 +495,12 @@ export class BitGo {
     this._microservicesUrl = params.microservicesUri;
     this._baseApiUrl = this._baseUrl + '/api/v1';
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
-    this._user = null;
     this._keychains = null;
     this._wallets = null;
     this._clientId = params.clientId;
     this._clientSecret = params.clientSecret;
-    this._token = params.accessToken || null;
-    this._refreshToken = params.refreshToken || null;
+    this._token = params.accessToken;
+    this._refreshToken = params.refreshToken;
     this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
     this._promise = Bluebird;
 
@@ -548,19 +549,20 @@ export class BitGo {
   private createPatch(method: string): (url: string, callback?: NodeCallback<superagent.Response>) => superagent.Request {
     const self = this;
     return function(...args) {
-      let req = superagent[method].apply(null, args);
+      let req: superagent.SuperAgentRequest = superagent[method].apply(null, args);
       if (self._proxy) {
         req = req.proxy(self._proxy);
       }
 
       // Patch superagent to return promises
-      req.prototypicalEnd = req.end;
+      const prototypicalEnd = req.end;
       req.end = function() {
+        const thisReq: superagent.SuperAgentRequest = this;
         // intercept a request before it's submitted to the server for v2 authentication (based on token)
-        this.set('BitGo-SDK-Version', self.version());
+        thisReq.set('BitGo-SDK-Version', self.version());
 
         if (!_.isUndefined(self._reqId)) {
-          this.set('Request-ID', self._reqId.toString());
+          thisReq.set('Request-ID', self._reqId.toString());
 
           // increment after setting the header so the sequence numbers start at 0
           self._reqId.inc();
@@ -572,28 +574,28 @@ export class BitGo {
         }
 
         // if there is no token, and we're not logged in, the request cannot be v2 authenticated
-        this.isV2Authenticated = true;
-        this.authenticationToken = self._token;
+        thisReq.isV2Authenticated = true;
+        thisReq.authenticationToken = self._token;
         // some of the older tokens appear to be only 40 characters long
         if ((self._token && self._token.length !== 67 && self._token.indexOf('v2x') !== 0)
           || req.forceV1Auth) {
           // use the old method
-          this.isV2Authenticated = false;
+          thisReq.isV2Authenticated = false;
 
-          this.set('Authorization', 'Bearer ' + self._token);
-          return this.prototypicalEnd.apply(this, arguments);
+          thisReq.set('Authorization', 'Bearer ' + self._token);
+          return prototypicalEnd.apply(thisReq, arguments);
         }
 
-        this.set('BitGo-Auth-Version', '2.0');
+        thisReq.set('BitGo-Auth-Version', '2.0');
         // prevent IE from caching requests
-        this.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
+        thisReq.set('If-Modified-Since', 'Mon, 26 Jul 1997 05:00:00 GMT');
         if (self._token) {
 
           // do a localized data serialization process
-          let data = this._data;
+          let data = (thisReq as any)._data;
           if (typeof data !== 'string') {
 
-            let contentType = this.getHeader('Content-Type');
+            let contentType = thisReq.get('Content-Type');
             // Parse out just the content type from the header (ignore the charset)
             if (contentType) {
               contentType = contentType.split(';')[0];
@@ -606,19 +608,21 @@ export class BitGo {
               data = serialize(data);
             }
           }
-          this._data = data;
+          (thisReq as any)._data = data;
 
-          const urlDetails: any = url.parse(req.url);
+          const urlDetails = url.parse(req.url);
 
-          let queryString = null;
-          if (req._query && req._query.length > 0) {
+          let queryString: string | undefined;
+          const query: string[] = (req as any)._query;
+          const qs: { [key: string]: string } = (req as any).qs;
+          if (query && query.length > 0) {
             // browser version
-            queryString = req._query.join('&');
-            req._query = [];
-          } else if (req.qs) {
+            queryString = query.join('&');
+            (req as any)._query = [];
+          } else if (qs) {
             // node version
-            queryString = querystring.stringify(req.qs);
-            req.qs = null;
+            queryString = querystring.stringify(qs);
+            (req as any).qs = null;
           }
 
           if (queryString) {
@@ -627,20 +631,20 @@ export class BitGo {
             } else {
               urlDetails.search = '?' + queryString;
             }
-            req.url = urlDetails.format();
+            req.url = url.format(urlDetails);
           }
 
           const requestProperties = self.calculateRequestHeaders({ url: req.url, token: self._token, text: data });
-          this.set('Auth-Timestamp', requestProperties.timestamp);
+          thisReq.set('Auth-Timestamp', requestProperties.timestamp.toString());
 
           // we're not sending the actual token, but only its hash
-          this.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
+          thisReq.set('Authorization', 'Bearer ' + requestProperties.tokenHash);
 
           // set the HMAC
-          this.set('HMAC', requestProperties.hmac);
+          thisReq.set('HMAC', requestProperties.hmac);
         }
 
-        return this.prototypicalEnd.apply(this, arguments);
+        return prototypicalEnd.apply(thisReq, arguments);
       };
 
       // verify that the response received from the server is signed correctly
@@ -652,20 +656,20 @@ export class BitGo {
 
         const verificationResponse = self.verifyResponse({
           url: req.url,
-          hmac: response.headers.hmac,
-          statusCode: response.statusCode,
+          hmac: response.header.hmac,
+          statusCode: response.status,
           text: response.text,
-          timestamp: response.headers.timestamp,
+          timestamp: response.header.timestamp,
           token: req.authenticationToken
         });
 
         if (!verificationResponse.isValid) {
           // calculate the HMAC
-          const receivedHmac = response.headers.hmac;
+          const receivedHmac = response.header.hmac;
           const expectedHmac = verificationResponse.expectedHmac;
           const signatureSubject = verificationResponse.signatureSubject;
           // Log only the first 10 characters of the token to ensure the full token isn't logged.
-          const partialBitgoToken = self._token.substring(0, 10);
+          const partialBitgoToken = self._token ? self._token.substring(0, 10) : '';
           const errorDetails = {
             expectedHmac,
             receivedHmac,
@@ -682,18 +686,19 @@ export class BitGo {
         return response;
       };
 
-      let lastPromise = null;
+      let lastPromise: Bluebird<any> | null = null;
       req.then = function() {
-
         if (!lastPromise) {
-          const reference = req.end()
+          // cannot redefine end() to return a Bluebird<any>, even though
+          // that gets monkey patched in at runtime, so this cast is required
+          const reference: Bluebird<any> = (req.end() as unknown as Bluebird<any>)
             .then(req.verifyResponse);
           lastPromise = reference.then.apply(reference, arguments);
         } else {
           lastPromise = lastPromise.then.apply(lastPromise, arguments);
         }
 
-        return lastPromise;
+        return lastPromise!;
       };
 
       if (!(process as any).browser) {
@@ -733,9 +738,10 @@ export class BitGo {
    * @param callback
    */
   token(tokenName: string, callback?: NodeCallback<BaseCoin>): Bluebird<BaseCoin> {
+    const self = this;
     return co(function *() {
-      yield this.fetchConstants();
-      return this.coin(tokenName);
+      yield self.fetchConstants();
+      return self.coin(tokenName);
     }).call(this).asCallback(callback);
   }
 
@@ -827,7 +833,7 @@ export class BitGo {
   /**
    * Get the current user
    */
-  user(): User {
+  user(): User | undefined {
     return this._user;
   }
 
@@ -854,7 +860,9 @@ export class BitGo {
    * @deprecated
    */
   verifyPassword(params: VerifyPasswordOptions = {}, callback?: NodeCallback<any>) {
-    common.validateParams(params, ['password'], []);
+    if (!_.isString(params.password)) {
+      throw new Error('missing required string password');
+    }
 
     if (!this._user || !this._user.username) {
       throw new Error('no current user');
@@ -996,8 +1004,8 @@ export class BitGo {
      * @param entryIndices Recursively trailing set of currently chosen array indices for the combination subset under construction
      * @returns {Array}
      */
-    const generateCombinations = (array, m, entryIndices = []) => {
-      let combinations = [];
+    const generateCombinations = (array: string[], m: number, entryIndices: number[] = []): string[][] => {
+      let combinations: string[][] = [];
 
       if (entryIndices.length === m) {
         const currentCombination = _.at(array, entryIndices);
@@ -1737,6 +1745,11 @@ export class BitGo {
         throw new Error('expected string newPassword');
       }
 
+      const user = self.user();
+      if (typeof user !== "object" || !user.username) {
+        throw new Error('missing required object user');
+      }
+
       const validation = yield self.verifyPassword({ password: oldPassword });
       if (!validation) {
         throw new Error('the provided oldPassword is incorrect');
@@ -1754,8 +1767,8 @@ export class BitGo {
         keychains: v1KeychainUpdatePWResult.keychains,
         v2_keychains: v2Keychains,
         version: v1KeychainUpdatePWResult.version,
-        oldPassword: self.calculateHMAC(self.user().username, oldPassword),
-        password: self.calculateHMAC(self.user().username, newPassword)
+        oldPassword: self.calculateHMAC(user.username, oldPassword),
+        password: self.calculateHMAC(user.username, newPassword)
       };
 
       return self.post(self.url('/user/changepassword'))
@@ -1780,11 +1793,12 @@ export class BitGo {
    * @param callback
    */
   unlock({ otp, duration }: UnlockOptions, callback?: NodeCallback<any>):  Bluebird<any> {
+    const self = this;
     return co(function *() {
       if (otp && !_.isString(otp)) {
         throw new Error('expected string or undefined otp');
       }
-      return this.post(this.url('/user/unlock'))
+      return self.post(self.url('/user/unlock'))
         .send({ otp, duration })
         .result()
     })
@@ -2141,7 +2155,7 @@ export class BitGo {
    * @param callback
    * @returns {*}
    */
-  listWebhookNotifications(params?: ListWebhookiNotificationsOptions, callback?: NodeCallback<any>): Bluebird<any> {
+  listWebhookNotifications(params: ListWebhookiNotificationsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const query: any = {};
     if (params.prevId) {
       if (!_.isString(params.prevId)) {

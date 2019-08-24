@@ -5,8 +5,7 @@
 //
 
 import 'should';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import { coroutine as co } from 'bluebird';
 const BitGoJS = require('../../../src/index');
 
 describe('Market', function() {
@@ -16,7 +15,7 @@ describe('Market', function() {
   // We will check whether a coin is in supportedCoins to test whether it is a test or mainnet coin
   // bitcoinaverage gives back different sets of data for each (real coins have more data)
   const supportedCoins = ['btc', 'xrp', 'eth', 'ltc'];
-  const coinsToUse = supportedCoins.reduce((memo, coin) => memo.concat([coin, 't' + coin]), []);
+  const coinsToUse = supportedCoins.reduce((memo, coin) => memo.concat([coin, 't' + coin]), [] as string[]);
   const isMainnet = (coinName) => supportedCoins.includes(coinName);
 
   for (const coin of coinsToUse) {

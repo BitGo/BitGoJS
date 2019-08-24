@@ -2,7 +2,15 @@
  * @prettier
  */
 import { BitGo } from '../../bitgo';
-import { BaseCoin, BaseCoinTransactionExplanation, KeyPair } from '../baseCoin';
+import {
+  BaseCoin,
+  TransactionExplanation,
+  KeyPair,
+  ParseTransactionOptions,
+  ParsedTransaction,
+  VerifyTransactionOptions,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+} from '../baseCoin';
 import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
 import * as crypto from 'crypto';
@@ -22,7 +30,7 @@ const EOS_ADDRESS_LENGTH = 12;
 
 interface AddressDetails {
   address: string;
-  memoId: string;
+  memoId?: string;
 }
 
 export interface EosTx {
@@ -106,7 +114,7 @@ interface RecoveryOptions {
   recoveryDestination: string;
   krsProvider?: string;
   walletPassphrase?: string;
-  rootAddress: string;
+  rootAddress?: string;
 }
 
 interface ValidateKeyOptions {
@@ -115,6 +123,9 @@ interface ValidateKeyOptions {
   passphrase?: string;
   isUnsignedSweep: boolean;
   isKrsRecovery: boolean;
+}
+interface VerifyAddressOptions extends BaseVerifyAddressOptions {
+  rootAddress: string;
 }
 
 export class Eos extends BaseCoin {
@@ -210,7 +221,7 @@ export class Eos extends BaseCoin {
    * @param value - the memo to be checked
    */
   isValidMemo({ value }: { value: string }): boolean {
-    return value && value.length <= 256;
+    return _.isString(value) && value.length <= 256;
   }
 
   /**
@@ -239,8 +250,11 @@ export class Eos extends BaseCoin {
    */
   getAddressDetails(address: string): AddressDetails {
     const destinationDetails = url.parse(address);
-    const queryDetails = querystring.parse(destinationDetails.query);
     const destinationAddress = destinationDetails.pathname;
+
+    if (!destinationAddress) {
+      throw new InvalidAddressError(`failed to parse address: ${address}`);
+    }
 
     // EOS addresses have to be "human readable", which means start with a letter, up to 12 characters and only a-z1-5., i.e.mtoda1.bitgo
     // source: https://developers.eos.io/eosio-cpp/docs/naming-conventions
@@ -252,10 +266,15 @@ export class Eos extends BaseCoin {
     if (destinationDetails.pathname === address) {
       return {
         address: address,
-        memoId: null,
+        memoId: undefined,
       };
     }
 
+    if (!destinationDetails.query) {
+      throw new InvalidAddressError(`failed to parse query string: ${address}`);
+    }
+
+    const queryDetails = querystring.parse(destinationDetails.query);
     if (!queryDetails.memoId) {
       // if there are more properties, the query details need to contain the memoId property
       throw new InvalidAddressError(`invalid property in address: ${address}`);
@@ -284,7 +303,7 @@ export class Eos extends BaseCoin {
    * @param memoId
    */
   normalizeAddress({ address, memoId }: AddressDetails): string {
-    if (this.isValidMemoId(memoId)) {
+    if (memoId && this.isValidMemoId(memoId)) {
       return `${address}?memoId=${memoId}`;
     }
     return address;
@@ -310,19 +329,25 @@ export class Eos extends BaseCoin {
    * @param address - the address to verify
    * @param rootAddress - the wallet's root address
    */
-  verifyAddress({ address, rootAddress }: { address: string; rootAddress: string }): void {
-    if (!this.isValidAddress(address)) {
+  verifyAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
+    if (!rootAddress || !this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
     const addressDetails = this.getAddressDetails(address);
     const rootAddressDetails = this.getAddressDetails(rootAddress);
 
+    if (!addressDetails || !rootAddressDetails) {
+      return false;
+    }
+
     if (addressDetails.address !== rootAddressDetails.address) {
       throw new UnexpectedAddressError(
         `address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`
       );
     }
+
+    return true;
   }
 
   /**
@@ -416,8 +441,8 @@ export class Eos extends BaseCoin {
    */
   explainTransaction(
     params: ExplainTransactionOptions,
-    callback?: NodeCallback<BaseCoinTransactionExplanation>
-  ): Bluebird<BaseCoinTransactionExplanation> {
+    callback?: NodeCallback<TransactionExplanation>
+  ): Bluebird<TransactionExplanation> {
     const self = this;
     return co(function*() {
       let transaction;
@@ -494,11 +519,10 @@ export class Eos extends BaseCoin {
       const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 
       if (isKrsRecovery) {
-        const krsProviderConfig = config.krsProviders[krsProvider];
-        if (_.isUndefined(krsProviderConfig)) {
+        if (!krsProvider || _.isUndefined(config.krsProviders[krsProvider])) {
           throw new Error('unknown key recovery service provider');
         }
-
+        const krsProviderConfig = config.krsProviders[krsProvider];
         if (!krsProviderConfig.supportedCoins.includes(self.getFamily())) {
           throw new Error('specified key recovery service does not support recoveries for this coin');
         }
@@ -670,6 +694,9 @@ export class Eos extends BaseCoin {
   recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
     const self = this;
     return co(function*() {
+      if (!params.rootAddress) {
+        throw new Error('missing required string rootAddress');
+      }
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
@@ -732,7 +759,7 @@ export class Eos extends BaseCoin {
         transaction: {
           compression: 'none',
           packed_trx: serializedTransaction,
-          signatures: [],
+          signatures: [] as string[],
         },
         txid: transaction.transaction_id,
         recoveryAmount: accountBalance,
@@ -759,5 +786,19 @@ export class Eos extends BaseCoin {
     })
       .call(this)
       .asCallback(callback);
+  }
+
+  parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({}).asCallback(callback);
+  }
+
+  verifyTransaction(
+    params: VerifyTransactionOptions,
+    callback?: (err: Error, res: boolean) => void
+  ): Bluebird<boolean> {
+    return Bluebird.resolve(true).asCallback(callback);
   }
 }

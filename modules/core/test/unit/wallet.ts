@@ -1343,8 +1343,8 @@ describe('Wallet Prototype Methods', function() {
         decodedChild.ins.length.should.equal(2);
         decodedChild.outs.length.should.equal(1);
 
-        let inputFromParent = undefined;
-        let additionalInput = undefined;
+        let inputFromParent: any = undefined;
+        let additionalInput: any = undefined;
 
         _.forEach(decodedChild.ins, (input) => {
           input.should.have.property('hash');
@@ -1469,8 +1469,8 @@ describe('Wallet Prototype Methods', function() {
         decodedChild.ins.length.should.equal(2);
         decodedChild.outs.length.should.equal(1);
 
-        let inputFromParent = undefined;
-        let additionalInput = undefined;
+        let inputFromParent: any = undefined;
+        let additionalInput: any = undefined;
 
         _.forEach(decodedChild.ins, (input) => {
           input.should.have.property('hash');
@@ -1601,8 +1601,8 @@ describe('Wallet Prototype Methods', function() {
         decodedChild.ins.length.should.equal(3);
         decodedChild.outs.length.should.equal(1);
 
-        let inputFromParent = undefined;
-        const additionalInputs = [];
+        let inputFromParent: any = undefined;
+        const additionalInputs: any[] = [];
 
         _.forEach(decodedChild.ins, (input) => {
           input.should.have.property('hash');

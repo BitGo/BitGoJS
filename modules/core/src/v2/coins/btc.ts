@@ -3,7 +3,7 @@ import { BaseCoin } from '../baseCoin';
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import * as common from '../../common';
 import * as bitcoin from 'bitgo-utxo-lib';
-const request = require('superagent');
+import * as request from 'superagent';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
@@ -62,17 +62,18 @@ export class Btc extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<any> {
+  getRecoveryFeeRecommendationApiBaseUrl(): Bluebird<string> {
     return Bluebird.resolve('https://bitcoinfees.earn.com/api/v1/fees/recommended');
   }
 
   recoveryBlockchainExplorerUrl(url: string): string {
-    return common.Environments[this.bitgo.env].smartBitApiBaseUrl + '/blockchain' + url;
+    return common.Environments[this.bitgo.getEnv()].smartBitApiBaseUrl + '/blockchain' + url;
   }
 
   getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
+    const self = this;
     return co(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/address/${addressBase58}`)).result();
+      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/address/${addressBase58}`)).result();
 
       addrInfo.txCount = addrInfo.address.total.transaction_count;
       addrInfo.totalBalance = addrInfo.address.total.balance_int;
@@ -82,8 +83,9 @@ export class Btc extends AbstractUtxoCoin {
   }
 
   getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
+    const self = this;
     return co(function *getUnspentInfoFromExplorer() {
-      const unspentInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/address/${addressBase58}/unspent`)).result();
+      const unspentInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/address/${addressBase58}/unspent`)).result();
 
       const unspents = unspentInfo.unspent;
 
@@ -96,8 +98,9 @@ export class Btc extends AbstractUtxoCoin {
   }
 
   public verifyRecoveryTransaction(txInfo: TransactionInfo): Bluebird<any> {
+    const self = this;
     return co(function *verifyRecoveryTransaction() {
-      const decodedTx = yield request.post(this.recoveryBlockchainExplorerUrl(`/decodetx`))
+      const decodedTx = yield request.post(self.recoveryBlockchainExplorerUrl(`/decodetx`))
       .send({ hex: txInfo.transactionHex })
       .result();
 

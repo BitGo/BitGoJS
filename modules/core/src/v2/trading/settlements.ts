@@ -19,6 +19,11 @@ interface CreateSettlementParams {
   trades: Trade[];
 }
 
+interface GetOptions {
+  id: string;
+  accountId: string;
+}
+
 export class Settlements {
   private bitgo: BitGo;
   private enterpriseId: string;
@@ -59,18 +64,18 @@ export class Settlements {
    * @param accountId ID of the trading account that the affirmation belongs to
    * @param callback
    */
-  get({ id, accountId }, callback?: NodeCallback<Settlement>): Bluebird<Settlement> {
+  get({ id, accountId }: GetOptions, callback?: NodeCallback<Settlement>): Bluebird<Settlement> {
     const self = this;
     return co(function* get() {
-      if (!accountId && !self.account) {
+      const account = accountId || (self.account && self.account.id);
+      if (!account) {
         throw new Error('accountId must be provided in parameters for an enterprise context');
       }
 
       const url = self.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${accountId || self.account.id}/settlements/${id}`
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${account}/settlements/${id}`
       );
       const response = yield self.bitgo.get(url).result();
-
       return new Settlement(response, self.bitgo, self.enterpriseId);
     })
       .call(this)

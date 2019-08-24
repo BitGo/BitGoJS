@@ -9,6 +9,7 @@ import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
 import * as errors from '../errors';
 import { NodeCallback } from './types';
+import { RequestTracer } from './util';
 const co = Bluebird.coroutine;
 
 import { Wallet } from './wallet';
@@ -16,33 +17,115 @@ import { Wallets } from './wallets';
 import { Markets } from './markets';
 import { Webhooks } from './webhooks';
 import { PendingApprovals } from './pendingApprovals';
-import { Keychains } from './keychains';
+import { Keychain, Keychains, KeyIndices } from './keychains';
 import { Enterprises } from './enterprises';
 
-export interface BaseCoinTransactionOutput {
+export interface TransactionOutput {
   address: string;
   amount: string;
 }
 
-export interface BaseCoinTransactionFee {
+export interface TransactionFee {
   fee: string;
   feeRate?: number;
   size?: number;
 }
 
-export interface BaseCoinTransactionExplanation {
+export interface TransactionExplanation {
   displayOrder: string[];
   id: string;
-  outputs: BaseCoinTransactionOutput[];
+  outputs: TransactionOutput[];
   outputAmount: string;
-  changeOutputs: BaseCoinTransactionOutput[];
+  changeOutputs: TransactionOutput[];
   changeAmount: string;
-  fee: BaseCoinTransactionFee;
+  fee: TransactionFee;
 }
 
 export interface KeyPair {
   pub?: string;
   prv: string;
+}
+
+export interface VerifyAddressOptions {
+  address: string;
+  addressType?: string;
+  chain?: number;
+  index?;
+  number;
+  keychains?: {
+    pub: string;
+  }[];
+  coinSpecific?: CoinSpecific;
+}
+
+export interface TransactionParams {
+  recipients: TransactionOutput[];
+  walletPassphrase?: string;
+}
+
+export interface VerificationOptions {
+  disableNetworking?: boolean;
+  keychains?: {
+    user?: Keychain;
+    backup?: Keychain;
+  };
+}
+
+export interface VerifyTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  txParams: TransactionParams;
+  wallet: Wallet;
+  verification?: VerificationOptions;
+  reqId?: RequestTracer;
+}
+
+export interface SupplementGenerateWalletOptions {}
+
+export interface ExtraPrebuildParamsOptions {}
+
+export interface PresignTransactionOptions {}
+
+export interface FeeEstimateOptions {
+  numBlocks?: number;
+  hop?: boolean;
+  recipient?: string;
+  data?: string;
+  amount?: string;
+}
+
+export interface PrecreateBitGoOptions {}
+
+export interface VerifyRecoveryTransactionOptions {}
+
+export interface ParseTransactionOptions {}
+
+export interface InitiateRecoveryOptions {
+  userKey: string;
+  backupKey: string;
+  bitgoKey: string;
+  recoveryDestination: string;
+  walletPassphrase?: string;
+}
+
+export interface KeychainsTriplet {
+  userKeychain: Keychain;
+  backupKeychain: Keychain;
+  bitgoKeychain: Keychain;
+}
+
+export interface TransactionPrebuild {
+  txBase64?: string;
+  txHex?: string;
+  wallet?: Wallet;
+}
+
+export interface ParsedTransaction {}
+
+export interface CoinSpecific {
+  outputScript?: string;
+  redeemScript?: string;
+  witnessScript?: string;
+  baseAddress?: string;
 }
 
 export abstract class BaseCoin {
@@ -101,26 +184,20 @@ export abstract class BaseCoin {
   /**
    * Name of the chain which supports this coin (eg, 'btc', 'eth')
    */
-  getChain(): string {
-    throw new Error('Basecoin method not implemented');
-  }
+  abstract getChain(): string;
 
   /**
    * Name of the coin family (eg. for tbtc, this would be btc)
    */
-  getFamily(): string {
-    throw new Error('Basecoin method not implemented');
-  }
+  abstract getFamily(): string;
 
   /**
    * Human readable full name for the coin
    */
-  getFullName(): string {
-    throw new Error('Basecoin method not implemented');
-  }
+  abstract getFullName(): string;
 
   /**
-   * Flag for sending value of 0
+   * Flag for sending value of 0.
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
   valuelessTransferAllowed(): boolean {
@@ -139,21 +216,17 @@ export abstract class BaseCoin {
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
-  getBaseFactor(): any {
-    throw new Error('Basecoin method not implemented');
-  }
+  abstract getBaseFactor(): number | string;
 
   /**
    * Convert a currency amount represented in base units (satoshi, wei, atoms, drops, stroops)
    * to big units (btc, eth, rmg, xrp, xlm)
-   * @param {string|number} baseUnits
-   * @returns {string}
    */
-  baseUnitsToBigUnits(baseUnits) {
+  baseUnitsToBigUnits(baseUnits: string | number): string {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts
-    return bigNumber.toFormat(null, null, { groupSeparator: '', decimalSeparator: '.' });
+    return bigNumber.toFormat(null!, null!, { groupSeparator: '', decimalSeparator: '.' });
   }
 
   /**
@@ -161,7 +234,7 @@ export abstract class BaseCoin {
    * to base units (satoshi, wei, atoms, drops, stroops)
    * @param bigUnits
    */
-  bigUnitsToBaseUnits(bigUnits) {
+  bigUnitsToBaseUnits(bigUnits: string | number): string {
     const multiplier = this.getBaseFactor();
     const bigNumber = new BigNumber(bigUnits).times(multiplier);
     if (!bigNumber.isInteger()) {
@@ -187,17 +260,13 @@ export abstract class BaseCoin {
   /**
    * Verify that a transaction prebuild complies with the original intention
    */
-  verifyTransaction(params, callback?: NodeCallback<any>) {
-    return Bluebird.resolve(true).asCallback(callback);
-  }
+  abstract verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean>;
 
   /**
    * Verify that an address belongs to a wallet
    * @returns {boolean}
    */
-  verifyAddress(params): any {
-    return true;
-  }
+  abstract verifyAddress(params: VerifyAddressOptions): boolean;
 
   /**
    * Check whether a coin supports blockTarget for transactions to be included in
@@ -208,53 +277,48 @@ export abstract class BaseCoin {
   }
 
   /**
-   * If a coin needs to add additional parameters to the wallet generation, it does it in this method
+   * Hook to add additional parameters to the wallet generation
    * @param walletParams
+   * @param keychains
    * @return {*}
    */
-  supplementGenerateWallet(walletParams, keychains): Bluebird<any> {
+  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions, keychains: KeychainsTriplet): Bluebird<any> {
     return Bluebird.resolve(walletParams);
   }
 
   /**
    * Get extra parameters for prebuilding a tx. Add things like hop transaction params
    */
-  getExtraPrebuildParams(buildParams, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.method(function() {
-      return {};
-    })
-      .call(this)
-      .asCallback(callback);
+  getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions, callback?: NodeCallback<object>): Bluebird<object> {
+    return Bluebird.resolve({}).asCallback(callback);
   }
 
   /**
    * Modify prebuild after receiving it from the server. Add things like nlocktime
    */
-  postProcessPrebuild(prebuildResponse, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.method(function() {
-      return prebuildResponse;
-    })
-      .call(this)
-      .asCallback(callback);
+  postProcessPrebuild(
+    prebuildResponse: TransactionPrebuild,
+    callback?: NodeCallback<TransactionPrebuild>
+  ): Bluebird<TransactionPrebuild> {
+    return Bluebird.resolve(prebuildResponse).asCallback(callback);
   }
 
   /**
    * Coin-specific things done before signing a transaction, i.e. verification
    */
-  presignTransaction(params, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.method(function() {
-      return params;
-    })
-      .call(this)
-      .asCallback(callback);
+  presignTransaction(
+    prebuild: TransactionPrebuild,
+    callback?: NodeCallback<TransactionPrebuild>
+  ): Bluebird<TransactionPrebuild> {
+    return Bluebird.resolve(prebuild).asCallback(callback);
   }
 
-  newWalletObject(walletParams) {
+  /**
+   * Create a new wallet object from a wallet data object
+   * @param walletParams
+   */
+  newWalletObject(walletParams: any): Wallet {
     return new Wallet(this.bitgo, this, walletParams);
-  }
-
-  toJSON() {
-    return undefined;
   }
 
   /**
@@ -264,15 +328,16 @@ export abstract class BaseCoin {
    * @param callback
    * @returns {Object} The info returned from the merchant server
    */
-  feeEstimate(params, callback?: NodeCallback<any>): Bluebird<any> {
+  feeEstimate(params: FeeEstimateOptions, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
     return co(function* coFeeEstimate() {
       const query: any = {};
       if (params && params.numBlocks) {
         query.numBlocks = params.numBlocks;
       }
 
-      return this.bitgo
-        .get(this.url('/tx/fee'))
+      return self.bitgo
+        .get(self.url('/tx/fee'))
         .query(query)
         .result();
     })
@@ -306,7 +371,7 @@ export abstract class BaseCoin {
    * user key.
    */
   keyIdsForSigning(): number[] {
-    return [0];
+    return [KeyIndices.USER];
   }
 
   /**
@@ -314,14 +379,12 @@ export abstract class BaseCoin {
    * is a no-op, but coin-specific controller may do something
    * @param params
    */
-  preCreateBitGo(params) {
-    return;
-  }
+  preCreateBitGo(params: PrecreateBitGoOptions): void {}
 
-  initiateRecovery(params): Bluebird<any> {
+  initiateRecovery(params: InitiateRecoveryOptions): Bluebird<any> {
+    const self = this;
     return co(function* initiateRecovery() {
-      const self = this;
-      const keys = [];
+      const keys: bitcoin.HDNode[] = [];
       const userKey = params.userKey; // Box A
       let backupKey = params.backupKey; // Box B
       const bitgoXpub = params.bitgoKey; // Box C
@@ -330,7 +393,7 @@ export abstract class BaseCoin {
 
       const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
 
-      const validatePassphraseKey = function(userKey, passphrase) {
+      function validatePassphraseKey(userKey: string, passphrase?: string): bitcoin.HDNode {
         try {
           if (!userKey.startsWith('xprv') && !userKey.startsWith('xpub')) {
             userKey = self.bitgo.decrypt({
@@ -338,14 +401,13 @@ export abstract class BaseCoin {
               password: passphrase,
             });
           }
-          const userHDNode = bitcoin.HDNode.fromBase58(userKey);
-          return Promise.resolve(userHDNode);
+          return bitcoin.HDNode.fromBase58(userKey);
         } catch (e) {
           throw new Error('Failed to decrypt user key with passcode - try again!');
         }
-      };
+      }
 
-      const key = yield validatePassphraseKey(userKey, passphrase);
+      const key: bitcoin.HDNode = validatePassphraseKey(userKey, passphrase);
 
       keys.push(key);
 
@@ -366,14 +428,14 @@ export abstract class BaseCoin {
         const bitgoHDNode = bitcoin.HDNode.fromBase58(bitgoXpub);
         keys.push(bitgoHDNode);
       } catch (e) {
-        if (this.getFamily() !== 'xrp') {
+        if (self.getFamily() !== 'xrp') {
           // in XRP recoveries, the BitGo xpub is optional
           throw new Error('Failed to parse bitgo xpub!');
         }
       }
       // Validate the destination address
       try {
-        if (!this.isValidAddress(destinationAddress)) {
+        if (!self.isValidAddress(destinationAddress)) {
           throw new Error('Invalid destination address!');
         }
       } catch (e) {
@@ -391,23 +453,21 @@ export abstract class BaseCoin {
   }
 
   // Some coins can have their tx info verified, if a public tx decoder is available
-  verifyRecoveryTransaction(txInfo): Bluebird<any> {
-    // yieldable no-op
+  verifyRecoveryTransaction(txInfo: VerifyRecoveryTransactionOptions): Bluebird<any> {
     return Bluebird.reject(new errors.MethodNotImplementedError());
   }
 
-  parseTransaction(params, callback?: NodeCallback<any>): Bluebird<any> {
-    return Bluebird.resolve({});
-  }
+  abstract parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction>;
 
   /**
    * Generate a key pair on the curve used by the coin
    *
    * @param seed
    */
-  generateKeyPair(seed): KeyPair {
-    throw new Error('abstract method');
-  }
+  abstract generateKeyPair(seed?: Buffer): KeyPair;
 
   /**
    * Return boolean indicating whether input is valid public key for the coin.
@@ -415,16 +475,21 @@ export abstract class BaseCoin {
    * @param {String} pub the pub to be checked
    * @returns {Boolean} is it valid?
    */
-  isValidPub(pub) {
-    throw new Error('Basecoin method not implemented');
-  }
+  abstract isValidPub(pub: string): boolean;
 
   /**
    * Return wether the given m of n wallet signers/ key amounts are valid for the coin
    */
-  isValidMofNSetup({ m, n }) {
+  isValidMofNSetup({ m, n }: { m: number; n: number }): boolean {
     return m === 2 && n === 3;
   }
 
+  /**
+   * Check if `address` is a plausibly valid address for the given coin.
+   *
+   * Does not verify that the address belongs to a wallet. For that,
+   * use [[verifyAddress]]
+   * @param address
+   */
   abstract isValidAddress(address: string): boolean;
 }

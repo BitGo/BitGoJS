@@ -10,6 +10,29 @@ import * as common from './common';
 import * as _ from 'lodash';
 import { getNetwork, makeRandomKey, hdPath } from './bitcoin';
 
+interface DecryptReceivedTravelRuleOptions {
+  tx?: {
+    receivedTravelInfo?: {
+      toPubKeyPath: string;
+      fromPubKey: string;
+      encryptedTravelInfo: string;
+      travelInfo: string;
+      transactionId: string;
+      outputIndex: number;
+    }[];
+  };
+  keychain?: {
+    xprv?: string;
+  };
+  hdnode?: bitcoin.HDNode;
+}
+
+interface Recipient {
+  enterprise: string;
+  pubKey: string;
+  outputIndex: string;
+}
+
 //
 // Constructor
 //
@@ -86,9 +109,7 @@ TravelRule.prototype.validateTravelInfo = function(info) {
  * Returns:
  *   the tx object, augmented with decrypted travelInfo fields
  */
-TravelRule.prototype.decryptReceivedTravelInfo = function(params) {
-  params = params || {};
-
+TravelRule.prototype.decryptReceivedTravelInfo = function(params: DecryptReceivedTravelRuleOptions = {}) {
   const tx = params.tx;
   if (!_.isObject(tx)) {
     throw new Error('expecting tx param to be object');
@@ -137,7 +158,7 @@ TravelRule.prototype.prepareParams = function(params) {
   params.txid = params.txid || params.hash;
   common.validateParams(params, ['txid'], ['fromPrivateInfo']);
   const txid = params.txid;
-  const recipient = params.recipient;
+  const recipient: Recipient | undefined = params.recipient;
   let travelInfo = params.travelInfo;
   if (!recipient || !_.isObject(recipient)) {
     throw new Error('invalid or missing recipient');
@@ -173,12 +194,13 @@ TravelRule.prototype.prepareParams = function(params) {
     password: sharedSecret
   });
 
-  const result: any = {
+  const result = {
     txid: txid,
     outputIndex: recipient.outputIndex,
     toPubKey: recipient.pubKey,
     fromPubKey: fromKey.getPublicKeyBuffer().toString('hex'),
-    encryptedTravelInfo: encryptedTravelInfo
+    encryptedTravelInfo: encryptedTravelInfo,
+    fromPrivateInfo: undefined
   };
 
   if (params.fromPrivateInfo) {
@@ -249,7 +271,7 @@ TravelRule.prototype.sendMany = function(params, callback) {
   .then(function(recipients) {
 
     // Build up data to post
-    const sendParamsList = [];
+    const sendParamsList: any[] = [];
     // don't regenerate a new random key for each recipient
     const fromKey = params.fromKey || makeRandomKey().toWIF();
 
@@ -271,7 +293,13 @@ TravelRule.prototype.sendMany = function(params, callback) {
       }
     });
 
-    const result = {
+    const result: {
+      matched: number;
+      results: {
+        result?: any;
+        error?: string;
+      }[];
+    } = {
       matched: sendParamsList.length,
       results: []
     };

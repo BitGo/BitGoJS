@@ -219,7 +219,7 @@ export const Environments: Environments = {
   ),
   custom: Object.assign(
     {
-      uri: process.env.BITGO_CUSTOM_ROOT_URI,
+      uri: process.env.BITGO_CUSTOM_ROOT_URI!,
       networks: {
         btc: bitcoin.networks.bitcoin,
         tbtc: bitcoin.networks.testnet,

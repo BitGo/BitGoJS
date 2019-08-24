@@ -80,7 +80,7 @@
     "@types/bluebird": "^3.5.25",
     "@types/create-hmac": "^1.1.0",
     "@types/debug": "^4.1.4",
-    "@types/lodash": "=4.14.121",
+    "@types/lodash": "^4.14.121",
     "@types/mocha": "^5.2.6",
     "@types/nock": "^9.3.1",
     "@types/node": "^11.11.4",

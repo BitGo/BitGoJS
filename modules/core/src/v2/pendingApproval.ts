@@ -28,7 +28,7 @@ export interface PendingApprovalData {
   enterprise?: string;
   state: State;
   creator: string;
-  info?: PendingApprovalInfo;
+  info: PendingApprovalInfo;
   approvalsRequired?: number;
 }
 
@@ -184,19 +184,22 @@ export class PendingApproval {
   private populateWallet(): Bluebird<undefined> {
     const self = this;
     return co(function*() {
-      if (!self.wallet) {
-        const updatedWallet: Wallet = yield self.baseCoin
-          .wallets()
-          .get({ id: self.info().transactionRequest.sourceWallet });
+      const transactionRequest = self.info().transactionRequest;
+      if (_.isUndefined(transactionRequest)) {
+        throw new Error('missing required object property transactionRequest');
+      }
 
-        if (!updatedWallet) {
+      if (_.isUndefined(self.wallet)) {
+        const updatedWallet: Wallet = yield self.baseCoin.wallets().get({ id: transactionRequest.sourceWallet });
+
+        if (_.isUndefined(updatedWallet)) {
           throw new Error('unexpected - unable to get wallet using sourcewallet');
         }
 
         self.wallet = updatedWallet;
       }
 
-      if (self.wallet.id() !== self.info().transactionRequest.sourceWallet) {
+      if (self.wallet.id() !== transactionRequest.sourceWallet) {
         throw new Error('unexpected source wallet for pending approval');
       }
 
@@ -334,8 +337,12 @@ export class PendingApproval {
     return co(function*() {
       // this method only makes sense with existing transaction requests
       const transactionRequest = self.info().transactionRequest;
-      if (!transactionRequest) {
+      if (_.isUndefined(transactionRequest)) {
         throw new Error('cannot recreate transaction without transaction request');
+      }
+
+      if (_.isUndefined(self.wallet)) {
+        throw new Error('cannot recreate transaction without wallet');
       }
 
       const originalPrebuild = transactionRequest.coinSpecific[self.baseCoin.type];

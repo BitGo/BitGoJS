@@ -4,6 +4,7 @@
 import { BitGo } from '../../bitgo';
 import { CoinConstructor } from '../coinFactory';
 import { Ofc } from './ofc';
+import { isString } from 'lodash';
 
 export interface OfcTokenConfig {
   type: string;
@@ -97,8 +98,11 @@ export class OfcToken extends Ofc {
    * or are an address which is valid on the backing coin of this ofc token.
    * @param address address to check for validity
    */
-  isValidAddress(address: string): boolean {
-    if (typeof address === 'string' && address.startsWith('bg-')) {
+  isValidAddress(address?: string): boolean {
+    if (!isString(address)) {
+      return false;
+    }
+    if (address.startsWith('bg-')) {
       const parts = address.split('-');
       const accountId = parts[1];
       return parts.length === 2 && publicIdRegex.test(accountId);

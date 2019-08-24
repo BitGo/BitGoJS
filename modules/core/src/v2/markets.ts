@@ -66,7 +66,7 @@ export class Markets {
     return co(function*() {
       validateParams(params, ['currencyName'], []);
 
-      const days = !isNaN(parseInt(params.days, 10)) ? parseInt(params.days, 10) : 90;
+      const days = params.days && !isNaN(parseInt(params.days, 10)) ? parseInt(params.days, 10) : 90;
 
       if (days && days < 0) {
         throw new Error('must use a non-negative number of days');

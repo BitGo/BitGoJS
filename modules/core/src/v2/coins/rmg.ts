@@ -1,13 +1,13 @@
 import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
-import { BaseCoin } from '../baseCoin';
+import { BaseCoin, VerifyAddressOptions } from '../baseCoin';
 import {
   AbstractUtxoCoin, AddressInfo,
   ExplainTransactionOptions,
   TransactionExplanation, UnspentInfo,
   GenerateAddressOptions, AddressDetails,
-  VerifyAddressOptions, SignTransactionOptions,
+  SignTransactionOptions,
 } from './abstractUtxoCoin';
 import { NodeCallback } from '../types';
 import * as _ from 'lodash';
@@ -63,15 +63,17 @@ export class Rmg extends AbstractUtxoCoin {
     }
 
     const expectedAddress: any = this.generateAddress({
-      keychains: params.keychains,
+      keychains: params.keychains!,
       threshold: 2,
-      chain: params.chain,
+      chain: params.chain!,
       index: params.index
     });
 
     if (expectedAddress.address !== params.address) {
       throw new Error(`address validation failure: expected ${expectedAddress.address} but got ${params.address}`);
     }
+
+    return true;
   }
 
   /**
@@ -95,7 +97,7 @@ export class Rmg extends AbstractUtxoCoin {
     }
 
     let derivationChain = 0;
-    if (_.isInteger(params.chain) && params.chain > 0) {
+    if (_.isNumber(params.chain) && _.isInteger(params.chain) && params.chain > 0) {
       derivationChain = params.chain;
     }
 
@@ -109,7 +111,7 @@ export class Rmg extends AbstractUtxoCoin {
     const keychainCopy = _.cloneDeep(params.keychains);
     const userKey = keychainCopy.shift();
     const aspKeyIds = keychainCopy.map((key) => key.aspKeyId);
-    const userKeyNode = prova.HDNode.fromBase58(userKey.pub);
+    const userKeyNode = prova.HDNode.fromBase58(userKey!.pub);
     const derivedUserKey = hdPath(userKeyNode).deriveKey(path).getPublicKeyBuffer();
 
     const provaAddress = new prova.Address(derivedUserKey, aspKeyIds, this.network);
@@ -121,7 +123,7 @@ export class Rmg extends AbstractUtxoCoin {
       coin: this.getChain(),
       coinSpecific: {
         outputScript: provaAddress.toScript().toString('hex')
-      }
+      },
     };
 
     try {
@@ -167,7 +169,7 @@ export class Rmg extends AbstractUtxoCoin {
 
     const keychain = prova.HDNode.fromBase58(userPrv, this.network);
 
-    const signatureIssues = [];
+    const signatureIssues: any[] = [];
     const keychainHdPath = hdPath(keychain);
 
     for (let index = 0; index < transaction.ins.length; ++index) {
@@ -223,7 +225,7 @@ export class Rmg extends AbstractUtxoCoin {
    * @param verificationSettings.publicKey The hex of the public key to verify (will verify all signatures)
    * @returns {boolean}
    */
-  verifySignature(transaction: any, inputIndex: number, amount: number, verificationSettings: { signatureIndex?: number; publicKey?: string; } = {}): boolean {
+  verifySignature(transaction: any, inputIndex: number, amount?: number, verificationSettings: { signatureIndex?: number; publicKey?: string; } = {}): boolean {
     if (!(transaction instanceof prova.Transaction)) {
       throw new Error('transaction has to be an instance of prova.Transaction');
     }
@@ -291,7 +293,7 @@ export class Rmg extends AbstractUtxoCoin {
       const self = this;
       const transaction = prova.Transaction.fromHex(params.txHex);
       const id = transaction.getId();
-      let changeAddresses = [];
+      let changeAddresses: string[] = [];
       let spendAmount = 0;
       let changeAmount = 0;
       if (params.txInfo && params.txInfo.changeAddresses) {
