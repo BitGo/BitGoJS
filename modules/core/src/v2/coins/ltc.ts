@@ -2,11 +2,10 @@ import { BitGo } from '../../bitgo';
 import { InvalidAddressError } from '../../errors';
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import { BaseCoin } from '../baseCoin';
-import * as bitcoin from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 import * as common from '../../common';
-const request = require('superagent');
+import * as request from 'superagent';
+const co = Bluebird.coroutine;
 
 export class Ltc extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?) {
@@ -15,7 +14,7 @@ export class Ltc extends AbstractUtxoCoin {
       messagePrefix: '\x19Litecoin Signed Message:\n',
       bip32: {
         public: 0x0488b21e,
-        private: 0x0488ade4
+        private: 0x0488ade4,
       },
       bech32: 'ltc',
       pubKeyHash: 0x30,
@@ -24,10 +23,10 @@ export class Ltc extends AbstractUtxoCoin {
       dustThreshold: 0, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L360-L365
       dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
       feePerKb: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
-      coin: 'ltc'
+      coin: 'ltc',
     });
     // use legacy script hash version, which is the current Bitcoin one
-    this.altScriptHash = bitcoin.networks.bitcoin.scriptHash;
+    this.altScriptHash = this.getCoinLibrary().networks.bitcoin.scriptHash;
     // do not support alt destinations in prod
     this.supportAltScriptDestination = false;
   }
@@ -73,14 +72,14 @@ export class Ltc extends AbstractUtxoCoin {
 
     try {
       // try deserializing as bech32
-      bitcoin.address.fromBech32(address);
+      this.getCoinLibrary().address.fromBech32(address);
       // address may be all uppercase, but canonical bech32 addresses are all lowercase
       return address.toLowerCase();
     } catch (e) {
       // not a valid bech32, try to decode as base58
     }
 
-    const addressDetails = bitcoin.address.fromBase58Check(address);
+    const addressDetails = this.getCoinLibrary().address.fromBase58Check(address);
     if (addressDetails.version === this.network.pubKeyHash) {
       // the pub keys never changed
       return address;
@@ -96,11 +95,11 @@ export class Ltc extends AbstractUtxoCoin {
       2: this.network.scriptHash
     };
     const newScriptHash = scriptHashMap[scriptHashVersion];
-    return bitcoin.address.toBase58Check(addressDetails.hash, newScriptHash);
+    return this.getCoinLibrary().address.toBase58Check(addressDetails.hash, newScriptHash);
   }
 
   calculateRecoveryAddress(scriptHashScript: Buffer): string {
-    const bitgoAddress = bitcoin.address.fromOutputScript(scriptHashScript, this.network);
+    const bitgoAddress = this.getCoinLibrary().address.fromOutputScript(scriptHashScript, this.network);
     const blockrAddress = this.canonicalAddress(bitgoAddress, 1);
     return blockrAddress;
   }
