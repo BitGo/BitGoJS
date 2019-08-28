@@ -1,5 +1,104 @@
 # BitGoJS Release Notes
 
+## 8.0.0
+
+### Breaking Changes 
+
+#### Elimination of synchronous error behavior for async functions
+* Previously, some async functions had strange error behavior where they would throw a synchronous error sometimes, and fail with a rejected promise other times. Which behavior you get for a given error is only really discoverable via source code inspection. Depending on how callers handled async calls and errors, this could break some callers.
+* One example of a changed function is `bitgo.refreshToken()`, which previously would throw a synchronous error if the `params.refreshToken` were not provided. This function can also return a Bluebird promise, which will reject if there is a failure with the network request. If you are a caller who uses `.then()` to handle async behavior, some errors which previously required a surrounding `try`/`catch` will now fall through to a `.catch()` handler attached to the returned promise.
+
+Perhaps an example will help clarify:
+
+```javascript
+const BitGoJS = require('bitgo');
+const bitgo = new BitGoJS.BitGo({ env: 'test' });
+
+try {
+  bitgo.refreshToken()
+    .then(() => console.log('then'))
+    .catch(() => console.log('async catch'));
+} catch (e) {
+  console.log('sync catch');
+}
+```
+
+Previous to version 8, the string `sync catch` would have been printed for some errors, and `async catch` would have been printed for others. In version 8 and later, `async catch` should be printed regardless of the error encountered. If you find this is not the case, then this is a bug and please open issue so we can correct it. We may alter more async functions to match this behavior if needed, and this major version bump will cover those changes as well (there will not be another major version bump for similar changes in the future).
+
+By eliminating one error channel, correct error handling is greatly simplified for callers. The goal here is to make all async functions always return a promise and never throw directly (instead, the returned promise would be rejected).
+
+If you are relying on synchronous error behavior from an async function, this breaking change may require fixes in calling code.
+
+**Note:** If you are using `async/await` syntax, or a helper library like Bluebird which turns async promise rejections into sync errors, this change will not affect you. We currently recommend using `async/await` syntax for new code written against BitGoJS.
+
+If you believe you may be affected by this breaking change, and would like more information or a complete list of functions which have been altered in this way, please send an email to support at bitgo dot com.
+
+#### Deprecation of v1 methods on BitGo object
+* There are several methods on the BitGo object which have been deprecated in this release. These methods lead to the version 1 wallet codebase, and is a common source of errors for new users of BitGoJS. To make it clear that these are not the functions recommended for normal usage, they have been deprecated. The complete list of newly deprecated functions is as follows:
+  * `sendOTP()`
+  * `reject()`
+  * `verifyAddress()`
+  * `blockchain()`
+  * `keychains()`
+  * `market()`
+  * `wallets()`
+  * `travelRule()`
+  * `pendingApprovals()`
+  * `registerPushToken()`
+  * `verifyPushToken()`
+  * `newWalletObject()`
+  * `estimateFee()`
+  * `instantGuarantee()`
+  * `getBitGoFeeAddress()`
+  * `getWalletAddress()`
+  * `listWebhooks()`
+  * `addWebhook()`
+  * `removeWebhook()`
+  * `getConstants()`
+  * `calculateMinerFeeInfo()`
+  
+Additionally, `ethSignMsgHash` in `util.ts` has been deprecated. This will be relocated to an Ethereum specific part of the code in the future.
+
+Direct usage of the `env` property of the BitGo object has also been deprecated. Please use `bitgo.getEnv()` as an alternative.
+
+**Note:** We have no immediate plans to remove these functions. If you are relying on these functions, they will continue to work, but you should begin considering alternatives provided by the version 2 wallet API. If you find there is a feature gap which is preventing you from moving to the v2 wallet API, please send an email to support at bitgo dot com.
+
+**Note:** The following functions have been incorrectly marked as deprecated in the source code, but in fact are NOT deprecated. This will be fixed in the next version of BitGoJS:
+* `verifyPassword()`
+* `generateRandomPassword()`
+* `extendToken()`
+
+**Note:** We may deprecate more functions, and these deprecations may be done without a major version bump. However, prior to any deprecated method being actually removed and made unavailable, a major version bump will be required.
+
+### New Features
+* Add support for ERC 20 tokens (CIX100, KOZ, AGWD)
+
+### Bug Fixes
+* Fix incorrect parameters in keycard.ts (thanks @DCRichards)
+
+### Other Changes
+* Refactor Settlement API and add function for calculating settlement fees. Note that this API is still experimental and is not yet ready for general usage.
+* Update microservices authentication route format.
+* Improve Typescript support in expressApp, Ethereum and ERC 20 token implementations, recovery and BitGo object.
+
+## 7.1.1
+
+### Other Changes
+* Allow creation of wallets with custom addresses, where supported (currently only EOS supports this feature).
+
+## 7.1.0
+
+### New Features
+* Add support for new ERC 20 tokens (TGBP)
+* Support for applying second signature to ALGO transactions
+* Update EOS transaction prebuild format
+* Implement `isValidAddress` for Offchain Tokens
+
+### Bug Fixes
+
+### Other Changes
+* Improve Typescript support in many coin implementations.
+
 ## 7.0.0
 
 ### Breaking Changes

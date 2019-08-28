@@ -1,5 +1,25 @@
 # BitGo Express Release Notes
 
+## 8.0.0
+
+There are no breaking changes in this version, and the major version is being bumped in order to keep versions in sync with the main `bitgo` package.
+
+### Other Changes
+* Update to `bitgo@8.0.0`
+
+## 7.1.1
+
+### Other Changes
+* Update to `bitgo@7.1.1`
+
+## 7.1.0
+
+### Other Changes
+* Clarify documentation for running BitGo Express in README
+* Add missing dependencies to package.json
+* Update to `bitgo@7.1.0`
+* Copy some test utilities out of core module, so we don't have to do a cross-module include from core for these.
+
 ## 7.0.0
 
 ### Breaking Changes
