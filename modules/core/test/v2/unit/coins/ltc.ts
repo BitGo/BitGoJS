@@ -10,32 +10,75 @@ import { Wallet } from '../../../../src/v2/wallet';
 
 describe('LTC:', function() {
   let bitgo;
+  let ltc;
+  let tltc;
 
   before(function() {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
+    ltc = bitgo.coin('ltc');
+    tltc = bitgo.coin('tltc');
   });
 
-  describe('Should canonicalize address', function() {
-    it('for prod address', function() {
-      const prodLtc = bitgo.coin('ltc');
+  describe('Canonicalize address', function() {
+    it('base58 mainnet address', function() {
       const oldAddress = '3GBygsGPvTdfKMbq4AKZZRu1sPMWPEsBfd';
-      const newAddress = prodLtc.canonicalAddress(oldAddress, 2);
+      const newAddress = ltc.canonicalAddress(oldAddress, 2);
       newAddress.should.equal('MNQ7zkgMsaV67rsjA3JuP59RC5wxRXpwgE');
-      const sameAddress = prodLtc.canonicalAddress(oldAddress, 1);
+      const sameAddress = ltc.canonicalAddress(oldAddress, 1);
       oldAddress.should.equal(sameAddress);
-      const newOldAddress = prodLtc.canonicalAddress(newAddress, 1);
+      const newOldAddress = ltc.canonicalAddress(newAddress, 1);
       oldAddress.should.equal(newOldAddress);
     });
-    it('for test address', function() {
-      const testLtc = bitgo.coin('tltc');
+
+    it('base58 testnet address', function() {
       const newAddress = 'QLc2RwpX2rFtZzoZrexLibcAgV6Nsg74Jn';
-      const oldAddress = testLtc.canonicalAddress(newAddress, 1);
+      const oldAddress = tltc.canonicalAddress(newAddress, 1);
       oldAddress.should.equal('2MsFGJvxH1kCoRp3XEYvKduAjY6eYz9PJHz');
-      const sameAddress = testLtc.canonicalAddress(newAddress, 2);
+      const sameAddress = tltc.canonicalAddress(newAddress, 2);
       newAddress.should.equal(sameAddress);
-      const newNewAddress = testLtc.canonicalAddress(oldAddress, 2);
+      const newNewAddress = tltc.canonicalAddress(oldAddress, 2);
       newAddress.should.equal(newNewAddress);
+    });
+
+    it('bech32 mainnet address', function() {
+      // canonicalAddress is a no-op for bech32 addresses - they are already in canonical format,
+      // and the script hash version is not relevant
+      const bech32Address = 'ltc1qgrl8zpndsklaa9swgd5vevyxmx5x63vcrl7dk4';
+      const newAddress = ltc.canonicalAddress(bech32Address, 2);
+      newAddress.should.equal(bech32Address);
+    });
+
+    it('upper case bech32 mainnet address', function() {
+      // casing is not relevant for bech32 addresses, but canonical bech32 addresses should be lowercase
+      const bech32Address = 'LTC1QGRL8ZPNDSKLAA9SWGD5VEVYXMX5X63VCRL7DK4';
+      const newAddress = ltc.canonicalAddress(bech32Address);
+      newAddress.should.equal(bech32Address.toLowerCase());
+    });
+
+    it('bech32 testnet address', function() {
+      const newAddress = 'tltc1qu78xur5xnq6fjy83amy0qcjfau8m367defyhms';
+      const oldAddress = tltc.canonicalAddress(newAddress, 1);
+      oldAddress.should.equal(newAddress);
+      const sameAddress = tltc.canonicalAddress(newAddress, 2);
+      newAddress.should.equal(sameAddress);
+      const newNewAddress = tltc.canonicalAddress(oldAddress, 2);
+      newAddress.should.equal(newNewAddress);
+    });
+  });
+
+  describe('should validate addresses', () => {
+    it('should validate base58 addresses', () => {
+      ltc.isValidAddress('MH6J1PzpsAfapZek7QGHv2mheUxnP8Kdek').should.be.true();
+      tltc.isValidAddress('QWC1miKKHFikbwg2iyt8KZBGsTSEBKr21i').should.be.true();
+      ltc.isValidAddress('MH6J1PzpsAfapZek7QGHv2mheUxnP8Kder').should.be.false();
+      tltc.isValidAddress('QWC1miKKHFikbwg2iyt8KZBGsTSEBKr21l').should.be.false();
+    });
+    it('should validate bech32 addresses', () => {
+      ltc.isValidAddress('ltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3wspfryg7').should.be.true();
+      tltc.isValidAddress('tltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3ws2x86ht').should.be.true();
+      ltc.isValidAddress('ltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3wspfryg9').should.be.false();
+      tltc.isValidAddress('tltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3ws2x86hl').should.be.false();
     });
   });
 
@@ -56,16 +99,9 @@ describe('LTC:', function() {
       }
     ];
 
-    let coin;
-    let testCoin;
-    before(() => {
-      coin = bitgo.coin('ltc');
-      testCoin = bitgo.coin('tltc');
-    });
-
     it('should generate p2sh address', () => {
-      const generatedAddress = coin.generateAddress({ keychains });
-      const generatedTestAddress = testCoin.generateAddress({ keychains });
+      const generatedAddress = ltc.generateAddress({ keychains });
+      const generatedTestAddress = tltc.generateAddress({ keychains });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
         currentAddress.chain.should.equal(0);
@@ -77,13 +113,13 @@ describe('LTC:', function() {
       generatedAddress.address.should.equal('MAfbWxccd7BxKFBcYGD5kTYhkGEVTkPv3o');
       generatedTestAddress.address.should.equal('QPNRPpzvJYtxriJJjcsddTiznJJ35u6Chk');
 
-      coin.verifyAddress(_.extend({}, generatedAddress, { keychains }));
-      testCoin.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
+      ltc.verifyAddress(_.extend({}, generatedAddress, { keychains }));
+      tltc.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
     });
 
     it('should generate custom chain p2sh address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, chain: 1, index: 113 });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, chain: 1, index: 113 });
+      const generatedAddress = ltc.generateAddress({ keychains, chain: 1, index: 113 });
+      const generatedTestAddress = tltc.generateAddress({ keychains, chain: 1, index: 113 });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
         currentAddress.chain.should.equal(1);
@@ -95,13 +131,13 @@ describe('LTC:', function() {
       generatedAddress.address.should.equal('ME2rjC91XunT3h3WGKyyWTrLWyBsieoQuD');
       generatedTestAddress.address.should.equal('QSjgc4XKDMVTbAACTgeXPU2dZ1FRUzCVKn');
 
-      coin.verifyAddress(_.extend({}, generatedAddress, { keychains }));
-      testCoin.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
+      ltc.verifyAddress(_.extend({}, generatedAddress, { keychains }));
+      tltc.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
     });
 
     it('should generate custom chain p2wsh bech32 address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, chain: 21, index: 113, addressType: Codes.UnspentTypeTcomb('p2wsh') });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, chain: 21, index: 113, addressType: Codes.UnspentTypeTcomb('p2wsh') });
+      const generatedAddress = ltc.generateAddress({ keychains, chain: 21, index: 113, addressType: Codes.UnspentTypeTcomb('p2wsh') });
+      const generatedTestAddress = tltc.generateAddress({ keychains, chain: 21, index: 113, addressType: Codes.UnspentTypeTcomb('p2wsh') });
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
         currentAddress.chain.should.equal(21);
         currentAddress.index.should.equal(113);
@@ -113,15 +149,15 @@ describe('LTC:', function() {
       generatedAddress.address.should.equal('ltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3wspfryg7');
       generatedTestAddress.address.should.equal('tltc1qq7fzt3ek5ege3v92wh0q6wzcjr39pqswlpe36mu28f6yufark3ws2x86ht');
 
-      coin.verifyAddress(_.extend({}, generatedAddress, { keychains }));
-      testCoin.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
+      ltc.verifyAddress(_.extend({}, generatedAddress, { keychains }));
+      tltc.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
     });
 
     it('should generate p2sh-wrapped segwit address', () => {
       const addressType = Codes.UnspentTypeTcomb('p2shP2wsh');
       const chain = Codes.forType(addressType)[Codes.PurposeTcomb('external')];
-      const generatedAddress = coin.generateAddress({ keychains, addressType, chain });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, addressType, chain });
+      const generatedAddress = ltc.generateAddress({ keychains, addressType, chain });
+      const generatedTestAddress = tltc.generateAddress({ keychains, addressType, chain });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
         currentAddress.chain.should.equal(chain);
@@ -134,13 +170,13 @@ describe('LTC:', function() {
       generatedAddress.address.should.equal('MKZf3w3b2hACjfJNbqifSYPixNkZjxBTg9');
       generatedTestAddress.address.should.equal('QYGUvoRti8sDH8R4oCPDKYa1zQp7UWCfAA');
 
-      coin.verifyAddress(_.extend({}, generatedAddress, { keychains }));
-      testCoin.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
+      ltc.verifyAddress(_.extend({}, generatedAddress, { keychains }));
+      tltc.verifyAddress(_.extend({}, generatedTestAddress, { keychains }));
     });
 
     it('should generate 3/3 p2sh address', () => {
-      const generatedAddress = coin.generateAddress({ keychains, threshold: 3 });
-      const generatedTestAddress = testCoin.generateAddress({ keychains, threshold: 3 });
+      const generatedAddress = ltc.generateAddress({ keychains, threshold: 3 });
+      const generatedTestAddress = tltc.generateAddress({ keychains, threshold: 3 });
 
       [generatedAddress, generatedTestAddress].forEach((currentAddress) => {
         currentAddress.chain.should.equal(0);
@@ -156,8 +192,8 @@ describe('LTC:', function() {
     it('should generate 3/3 custom chain p2sh-wrapped segwit address', () => {
       const addressType = Codes.UnspentTypeTcomb('p2shP2wsh');
       const chain = Codes.forType(addressType)[Codes.PurposeTcomb('external')];
-      const generatedAddress = coin.generateAddress({ keychains, threshold: 3, addressType, chain, index: 756 });
-      const generatedTestAddress = testCoin.generateAddress({
+      const generatedAddress = ltc.generateAddress({ keychains, threshold: 3, addressType, chain, index: 756 });
+      const generatedTestAddress = tltc.generateAddress({
         keychains,
         threshold: 3,
         addressType,
@@ -178,8 +214,8 @@ describe('LTC:', function() {
     });
 
     it('should validate pub key', () => {
-      const { pub } = coin.keychains().create();
-      coin.isValidPub(pub).should.equal(true);
+      const { pub } = ltc.keychains().create();
+      ltc.isValidPub(pub).should.equal(true);
     });
   });
 

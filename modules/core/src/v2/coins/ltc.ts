@@ -1,4 +1,5 @@
 import { BitGo } from '../../bitgo';
+import { InvalidAddressError } from '../../errors';
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
 import { BaseCoin } from '../baseCoin';
 import * as bitcoin from 'bitgo-utxo-lib';
@@ -67,8 +68,18 @@ export class Ltc extends AbstractUtxoCoin {
    */
   canonicalAddress(address: string, scriptHashVersion: number = 2): string {
     if (!this.isValidAddress(address, true)) {
-      throw new Error('invalid address');
+      throw new InvalidAddressError();
     }
+
+    try {
+      // try deserializing as bech32
+      bitcoin.address.fromBech32(address);
+      // address may be all uppercase, but canonical bech32 addresses are all lowercase
+      return address.toLowerCase();
+    } catch (e) {
+      // not a valid bech32, try to decode as base58
+    }
+
     const addressDetails = bitcoin.address.fromBase58Check(address);
     if (addressDetails.version === this.network.pubKeyHash) {
       // the pub keys never changed
