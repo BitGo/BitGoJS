@@ -45,7 +45,7 @@ function setup () {
 
   test('streaming', function (t) {
     var isntance = blake2b(blake2b.BYTES)
-    var buf = new Buffer('Hej, Verden')
+    var buf = Buffer.from('Hej, Verden')
 
     for (var i = 0; i < 10; i++) isntance.update(buf)
 
@@ -61,7 +61,7 @@ function setup () {
     key.fill('lo')
 
     var instance = blake2b(blake2b.BYTES, key)
-    var buf = new Buffer('Hej, Verden')
+    var buf = Buffer.from('Hej, Verden')
 
     for (var i = 0; i < 10; i++) instance.update(buf)
 
@@ -74,7 +74,7 @@ function setup () {
 
   test('streaming with hash length', function (t) {
     var isntance = blake2b(blake2b.BYTES_MIN)
-    var buf = new Buffer('Hej, Verden')
+    var buf = Buffer.from('Hej, Verden')
 
     for (var i = 0; i < 10; i++) isntance.update(buf)
 
@@ -90,7 +90,7 @@ function setup () {
     key.fill('lo')
 
     var instance = blake2b(blake2b.BYTES_MIN, key)
-    var buf = new Buffer('Hej, Verden')
+    var buf = Buffer.from('Hej, Verden')
 
     for (var i = 0; i < 10; i++) instance.update(buf)
 
