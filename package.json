@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "blake2b-wasm": "https://github.com/BitGo/blake2b-wasm#193cdb71656c1a6c7f89b05d0327bb9b758d071b",
-    "nanoassert": "^1.0.0"
+    "nanoassert": "^2.0.0"
   },
   "devDependencies": {
     "browserify": "^14.4.0",
