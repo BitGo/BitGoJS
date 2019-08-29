@@ -3,11 +3,8 @@ notifications:
 language: node_js
 node_js:
 - node
-- 8
-- 6
-- 4
-- 0.12
-- 0.10
+- lts/*
+
 deploy:
   provider: npm
   email: github@tixz.dk
@@ -15,3 +12,4 @@ deploy:
     secure: 1GHS+5u1mrPL8AE1331do7o0gjNg5Mrz4835e+G/UdSoVyX1iQUFtAh0REnVmU+db5RxGsz7ktMTSHt2g6/6JolnxTMQRNPQRCIvaq/M8EHWOdLSCV/ee0VHehy60PpgBOxPhkrnsbNBxA3D9MGd7nF6orZKk5VCAR9UESTi2T0N/S5pREin+/n82N8jXJjhdtMUxheRUmZBKSuqhmYv/l7C3rrNn5+/aV+wFXkOMWwVh488Ho8n/catcIhSEquOOlAL2tlY3VmJLA4zO3rv2W7vOGWHx83OFWr0Eykucw48oVpGPSgfjTWq0IyuN9UKHexJFh6Wv2YH7g5GMhDiNzTzJi4cYGuWK72Fm0qEyIhDB681VDF2GOtJ6VBjn/ZIVyWBE6enXyyzG1RqsUNQBwpssrumBtHJebXdaSoffYc9IQBaJ1bQZbQQhCErpCViZSzm9RxsjthpWg9ii25szFpQhvPHjmAi7x8On+hQSb9Hv/akyDG4/iRMcmi6eiwU6mOqjLt/S+yIAsMlJV7bq6NibRrXKIxeJbhC6HlyANUNCk9mYE8SV4HtvagE1M/Q9w5N4v0iWGTtMkAN9NHwDEW9dT5QFjbDpW0O1kHOoLSHHEkgr4cTAcwkWqnh+LIoEIhJY9qPOTvmo+HqYVxIQv9QXks/Q90Hy0+KUStvyrQ=
   on:
     tags: true
+    node: 'node'
