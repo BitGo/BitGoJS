@@ -241,83 +241,66 @@ describe('V2 Wallet:', function() {
 
   describe('List Transfers', function() {
 
-    let thirdTransfer;
     let lookupTransfer;
-    it('transfers', function() {
-      return wallet.transfers()
-      .then(function(transfers) {
-        transfers.should.have.property('transfers');
-        transfers.transfers.length.should.be.greaterThan(0);
-        thirdTransfer = transfers.transfers[2];
+    let wallet;
+    let thirdTransfer;
+    before(co(function*() {
+      wallet = yield wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET2_UNSPENTS_ID });
+      const transfers = yield wallet.transfers();
+      transfers.should.have.property('transfers');
+      transfers.transfers.length.should.be.greaterThan(2);
 
-        // need a confirmed transaction to ensure lookup works correctly
-        lookupTransfer = _(transfers.transfers).filter(t => t.state === 'confirmed').sample();
-      });
-    });
+      thirdTransfer = transfers.transfers[2];
+      // need a confirmed transaction to ensure lookup works correctly
+      lookupTransfer = _(transfers.transfers).filter(t => t.state === 'confirmed').sample();
+    }));
 
-    it('transfers with limit and nextBatchPrevId', function() {
-      return wallet.transfers({ limit: 2 })
-      .then(function(transfers) {
-        transfers.should.have.property('transfers');
-        transfers.transfers.length.should.eql(2);
-        return wallet.transfers({ prevId: transfers.nextBatchPrevId });
-      })
-      .then(function(transfers) {
-        transfers.should.have.property('transfers');
-        transfers.transfers.length.should.be.greaterThan(0);
-        transfers.transfers[0].id.should.eql(thirdTransfer.id);
-      });
-    });
+    it('transfers with limit and nextBatchPrevId', co(function*() {
+      const transfers = yield wallet.transfers({ limit: 2 });
+      transfers.should.have.property('transfers');
+      transfers.transfers.length.should.eql(2);
+      const nextBatch = yield wallet.transfers({ prevId: transfers.nextBatchPrevId });
+      nextBatch.should.have.property('transfers');
+      nextBatch.transfers.length.should.be.greaterThan(0);
+      nextBatch.transfers[0].id.should.eql(thirdTransfer.id);
+    }));
 
     // test is currently broken/flaky (BG-6378)
-    xit('transfers with a searchLabel', function() {
-      return wallet.transfers({ limit: 2, searchLabel: 'test' })
-      .then(function(transfers) {
-        transfers.should.have.property('transfers');
-        transfers.transfers.length.should.eql(2);
-        return wallet.transfers({ prevId: transfers.nextBatchPrevId });
-      });
-    });
+    xit('transfers with a searchLabel', co(function*() {
+      const transfers = yield wallet.transfers({ limit: 2, searchLabel: 'test' });
+      transfers.should.have.property('transfers');
+      transfers.transfers.length.should.eql(2);
+    }));
 
-    it('get a transfer by id', function() {
-      return wallet.getTransfer({ id: lookupTransfer.id })
-      .then(function(transfer) {
-        transfer.should.have.property('coin');
-        transfer.should.have.property('height');
-        transfer.should.have.property('txid');
-        transfer.id.should.eql(lookupTransfer.id);
-      });
-    });
+    it('get a transfer by id', co(function*() {
+      const transfer = yield wallet.getTransfer({ id: lookupTransfer.id });
+      transfer.should.have.property('coin');
+      transfer.should.have.property('height');
+      transfer.should.have.property('txid');
+      transfer.id.should.eql(lookupTransfer.id);
+    }));
 
-    it('update comment', function() {
-      return wallet.transfers()
-      .then(function(result) {
-        const params = {
-          id: result.transfers[0].id,
-          comment: 'testComment'
-        };
-        return wallet.transferComment(params);
-      })
-      .then(function(transfer) {
-        transfer.should.have.property('comment');
-        transfer.comment.should.eql('testComment');
-      });
-    });
+    it('update comment', co(function*() {
+      const result = yield wallet.transfers();
+      const params = {
+        id: result.transfers[0].id,
+        comment: 'testComment',
+      };
+      const transfer = yield wallet.transferComment(params);
+      transfer.should.have.property('comment');
+      transfer.comment.should.eql('testComment');
+    }));
 
-    it('remove comment', function() {
-      return wallet.transfers()
-      .then(function(result) {
-        const params = {
-          id: result.transfers[0].id,
-          comment: null
-        };
-        return wallet.transferComment(params);
-      })
-      .then(function(transfer) {
-        transfer.should.have.property('comment');
-        transfer.comment.should.eql('');
-      });
-    });
+    it('remove comment', co(function*() {
+      const result = yield wallet.transfers();
+      const params = {
+        id: result.transfers[0].id,
+        comment: null,
+      };
+      const transfer = yield wallet.transferComment(params);
+      transfer.should.have.property('comment');
+      transfer.comment.should.eql('');
+    }));
   });
 
   describe('Send Transactions', function() {
