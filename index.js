@@ -318,6 +318,6 @@ var PERSONALBYTES = module.exports.PERSONALBYTES = 16
 b2wasm.ready(function (err) {
   if (!err) {
     module.exports.WASM_LOADED = true
-    Proto = b2wasm
+    module.exports = b2wasm
   }
 })
