@@ -218,6 +218,16 @@ class SUSDTestnet extends Testnet implements AccountNetwork {
   explorerUrl = undefined;
 }
 
+class Trx extends Mainnet implements AccountNetwork {
+  family = CoinFamily.TRX;
+  explorerUrl = 'https://tronscan.org/#/transaction/';
+}
+
+class TrxTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.TRX;
+  explorerUrl = 'https://shasta.tronscan.org/#/transaction/';
+}
+
 class Xrp extends Mainnet implements AccountNetwork {
   family = CoinFamily.XRP;
   explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
@@ -258,6 +268,7 @@ export const Networks = {
     ofc: Object.freeze(new Ofc()),
     stellar: Object.freeze(new Stellar()),
     susd: Object.freeze(new SUSD()),
+    trx: Object.freeze(new Trx()),
     xrp: Object.freeze(new Xrp()),
     zCash: Object.freeze(new ZCash()),
   },
@@ -273,6 +284,7 @@ export const Networks = {
     ofc: Object.freeze(new OfcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
+    trx: Object.freeze(new TrxTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
   },
