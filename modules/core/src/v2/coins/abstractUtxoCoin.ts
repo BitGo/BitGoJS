@@ -296,7 +296,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     // otherwise, try decoding as bech32
     try {
       const { version, prefix } = this.getCoinLibrary().address.fromBech32(address);
-      if (prefix === this.network.bech32) {
+      if (_.isString(this.network.bech32) && prefix === this.network.bech32) {
         return version;
       }
     } catch (e) {
@@ -334,7 +334,15 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const addressVersion = this.getAddressVersion(address);
 
     // the address version needs to be among the valid ones
-    return validVersions.includes(addressVersion) || this.network.bech32 === this.getAddressPrefix(address);
+    const addressVersionValid = _.isNumber(addressVersion) && validVersions.includes(addressVersion);
+    const addressPrefix = this.getAddressPrefix(address);
+
+    if (!this.supportsP2wsh() || _.isUndefined(addressPrefix)) {
+      return addressVersionValid;
+    }
+
+    // address has a potential bech32 prefix, validate that
+    return _.isString(this.network.bech32) && this.network.bech32 === addressPrefix;
   }
 
   /**
