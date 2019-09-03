@@ -1,13 +1,17 @@
 import * as _ from 'lodash';
 import { Environments, EnvironmentName } from './v2/environments';
 import { OfcTokenConfig } from './v2/coins/ofcToken';
-import { TokenConfig } from './v2/coins/token';
-import { coins, BaseCoin, Erc20Coin, OfcCoin, CoinKind, NetworkType } from '@bitgo/statics';
+import { Erc20TokenConfig } from './v2/coins/erc20Token';
+import { StellarTokenConfig } from './v2/coins/stellarToken';
+import { coins, BaseCoin, Erc20Coin, StellarCoin, OfcCoin, CoinKind, NetworkType } from '@bitgo/statics';
 
 export interface Tokens {
   bitcoin: {
     eth: {
-      tokens: TokenConfig[];
+      tokens: Erc20TokenConfig[];
+    };
+    xlm: {
+      tokens: StellarTokenConfig[];
     };
     ofc: {
       tokens: OfcTokenConfig[];
@@ -15,7 +19,10 @@ export interface Tokens {
   };
   testnet: {
     eth: {
-      tokens: TokenConfig[];
+      tokens: Erc20TokenConfig[];
+    };
+    xlm: {
+      tokens: StellarTokenConfig[];
     };
     ofc: {
       tokens: OfcTokenConfig[];
@@ -26,13 +33,26 @@ export interface Tokens {
 // Get the list of ERC-20 tokens from statics and format it properly
 const formattedErc20Tokens = coins.filter((coin: BaseCoin) => {
   return coin instanceof Erc20Coin;
-}).map((token: Erc20Coin): TokenConfig => {
+}).map((token: Erc20Coin): Erc20TokenConfig => {
   return {
     type: token.name,
     coin: token.network.type === NetworkType.MAINNET ? 'eth' : 'teth',
     network: token.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
     name: token.fullName,
     tokenContractAddress: token.contractAddress.toString().toLowerCase(),
+    decimalPlaces: token.decimalPlaces,
+  };
+});
+
+// Get the list of Stellar tokens from statics and format it properly
+const formattedStellarTokens = coins.filter((coin: BaseCoin) => {
+  return coin instanceof StellarCoin;
+}).map((token: StellarCoin): StellarTokenConfig => {
+  return {
+    type: token.name,
+    coin: token.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
+    network: token.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: token.fullName,
     decimalPlaces: token.decimalPlaces,
   };
 });
@@ -58,44 +78,54 @@ export const tokens: Tokens = {
     eth: {
       tokens: formattedErc20Tokens.filter(token => token.network === 'Mainnet'),
     },
+    xlm: {
+      tokens: formattedStellarTokens.filter(token => token.network === 'Mainnet'),
+    },
     ofc: {
-      tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.MAINNET)
-    }
+      tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.MAINNET),
+    },
   },
   // network name for test environments
   testnet: {
     eth: {
       tokens: formattedErc20Tokens.filter(token => token.network === 'Testnet'),
     },
+    xlm: {
+      tokens: formattedStellarTokens.filter(token => token.network === 'Testnet'),
+    },
     ofc: {
-      tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.TESTNET)
-    }
+      tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.TESTNET),
+    },
   },
 };
 
-export const mainnetTokens = {};
-_.forEach(tokens.bitcoin.eth.tokens, function(value) {
-  if (mainnetTokens[value.type]) {
-    throw new Error('token : ' + value.type + ' duplicated.');
-  }
-  mainnetTokens[value.type] = true;
+/**
+ * Verify mainnet or testnet tokens
+ * @param tokens
+ */
+const verifyTokens = function(tokens) {
+  const verifiedTokens = {};
+  _.forEach(tokens, function(token) {
+    if (verifiedTokens[token.type]) {
+      throw new Error('token : ' + token.type + ' duplicated.');
+    }
+    verifiedTokens[token.type] = true;
 
-  if (value.tokenContractAddress !== _.toLower(value.tokenContractAddress)) {
-    throw new Error('token contract: ' + value.type + ' is not all lower case: ' + value.tokenContractAddress);
-  }
-});
+    if (token.tokenContractAddress && token.tokenContractAddress !== _.toLower(token.tokenContractAddress)) {
+      throw new Error('token contract: ' + token.type + ' is not all lower case: ' + token.tokenContractAddress);
+    }
+  });
+  return verifiedTokens;
+};
 
-export const testnetTokens = {};
-_.forEach(tokens.testnet.eth.tokens, function(value) {
-  if (testnetTokens[value.type]) {
-    throw new Error('token : ' + value.type + ' duplicated.');
-  }
-  testnetTokens[value.type] = true;
+const mainnetErc20Tokens = verifyTokens(tokens.bitcoin.eth.tokens);
+const mainnetStellarTokens = verifyTokens(tokens.bitcoin.xlm.tokens);
+export const mainnetTokens = _.assign({}, mainnetErc20Tokens, mainnetStellarTokens);
 
-  if (value.tokenContractAddress !== _.toLower(value.tokenContractAddress)) {
-    throw new Error('token contract: ' + value.type + ' is not all lower case: ' + value.tokenContractAddress);
-  }
-});
+const testnetErc20Tokens = verifyTokens(tokens.testnet.eth.tokens);
+const testnetStellarTokens = verifyTokens(tokens.testnet.xlm.tokens);
+export const testnetTokens = _.assign({}, testnetErc20Tokens, testnetStellarTokens);
+
 
 export const defaults = {
   maxFee: 0.1e8,

@@ -34,7 +34,8 @@ import { Txrp } from './coins/txrp';
 import { Tzec } from './coins/tzec';
 import { Xlm } from './coins/xlm';
 import { Xrp } from './coins/xrp';
-import { Token } from './coins/token';
+import { Erc20Token } from './coins/erc20Token';
+import { StellarToken } from './coins/stellarToken';
 import { OfcToken } from './coins/ofcToken';
 import { tokens } from '../config';
 import { Zec } from './coins/zec';
@@ -42,6 +43,7 @@ import { Zec } from './coins/zec';
 import * as errors from '../errors';
 
 export type CoinConstructor = (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
+export const coinTokenPatternSeparator = ':';
 
 export class CoinFactory {
   private coinConstructors = new Map<string, CoinConstructor>();
@@ -72,7 +74,7 @@ export class CoinFactory {
     if (ethConstructor) {
       const ethCoin = ethConstructor(bitgo, staticsCoin);
       if (ethCoin.isValidAddress(name)) {
-        const unknownTokenConstructor = Token.createTokenConstructor({
+        const unknownTokenConstructor = Erc20Token.createTokenConstructor({
           type: 'unknown',
           coin: 'eth',
           network: 'Mainnet',
@@ -130,9 +132,14 @@ GlobalCoinFactory.registerCoinConstructor('susd', Susd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsusd', Tsusd.createInstance);
 
 for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
-  const tokenConstructor = Token.createTokenConstructor(token);
+  const tokenConstructor = Erc20Token.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
   GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor);
+}
+
+for (const token of [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]) {
+  const tokenConstructor = StellarToken.createTokenConstructor(token);
+  GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
 }
 
 for (const ofcToken of [...tokens.bitcoin.ofc.tokens, ...tokens.testnet.ofc.tokens]) {

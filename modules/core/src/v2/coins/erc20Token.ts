@@ -14,7 +14,7 @@ import * as config from '../../config';
 
 const co = Bluebird.coroutine;
 
-export interface TokenConfig {
+export interface Erc20TokenConfig {
   name: string;
   type: string;
   coin: string;
@@ -23,16 +23,16 @@ export interface TokenConfig {
   decimalPlaces: number;
 }
 
-export class Token extends Eth {
-  public readonly tokenConfig: TokenConfig;
+export class Erc20Token extends Eth {
+  public readonly tokenConfig: Erc20TokenConfig;
 
-  constructor(bitgo: BitGo, tokenConfig: TokenConfig) {
+  constructor(bitgo: BitGo, tokenConfig: Erc20TokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
   }
 
-  static createTokenConstructor(config: TokenConfig): CoinConstructor {
-    return (bitgo: BitGo) => new Token(bitgo, config);
+  static createTokenConstructor(config: Erc20TokenConfig): CoinConstructor {
+    return (bitgo: BitGo) => new Erc20Token(bitgo, config);
   }
 
   get type() {
