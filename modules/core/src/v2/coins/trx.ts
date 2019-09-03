@@ -1,31 +1,36 @@
 const tronweb = require('tronweb');
 
 import { BaseCoin } from '../baseCoin';
+import { BitGo } from '../../bitgo';
+import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 export class Trx extends BaseCoin {
+  protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo) {
+  constructor(bitgo: BitGo, staticsCoin: Readonly<StaticsBaseCoin>) {
     super(bitgo);
+
+    this._staticsCoin = staticsCoin;
   }
 
   getChain() {
-    return 'trx';
+    return this._staticsCoin.name;
   }
 
   getFamily() {
-    return 'trx';
+    return this._staticsCoin.family;
   }
 
   getFullName() {
-    return 'Tron';
+    return this._staticsCoin.fullName;
   }
 
   getBaseFactor() {
-    return 1e6;
+    return new Number('1e' + this._staticsCoin.decimalPlaces);
   }
 
-  static createInstance(bitgo: any): BaseCoin {
-    return new Trx(bitgo);
+  static createInstance(bitgo: BitGo, staticsCoin: Readonly<StaticsBaseCoin>): BaseCoin {
+    return new Trx(bitgo, staticsCoin);
   }
 
   /**
