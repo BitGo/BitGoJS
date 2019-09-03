@@ -25,10 +25,7 @@ export class OfcCoin extends BaseCoin {
   public readonly addressCoin?: string;
 
   constructor(options: OfcConstructorOptions) {
-    const {
-      addressCoin,
-      ...baseOptions
-    } = options;
+    const { addressCoin, ...baseOptions } = options;
     super(baseOptions);
     this.addressCoin = addressCoin;
   }
@@ -158,7 +155,7 @@ export function ofcerc20(
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.main.ofc,
   isToken: boolean = true,
-  addressCoin: string = 'eth',
+  addressCoin: string = 'eth'
 ) {
   return Object.freeze(
     new OfcCoin({
@@ -201,7 +198,7 @@ export function tofcerc20(
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.test.ofc,
   isToken: boolean = true,
-  addressCoin: string = 'teth',
+  addressCoin: string = 'teth'
 ) {
   return Object.freeze(
     new OfcCoin({
