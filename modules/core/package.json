@@ -46,7 +46,7 @@
     "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
   },
   "dependencies": {
-    "@bitgo/statics": "^1.6.1-rc.0",
+    "@bitgo/statics": "^2.0.0-rc.0",
     "@bitgo/unspents": "^0.6.0",
     "algosdk": "git+https://github.com/BitGo/algosdk-bitgo.git",
     "assert": "^0.4.9",
@@ -73,7 +73,8 @@
     "secrets.js-grempe": "^1.1.0",
     "stellar-sdk": "^0.11.0",
     "superagent": "^3.8.3",
-    "superagent-proxy": "^1.0.3"
+    "superagent-proxy": "^1.0.3",
+    "tronweb": "^2.7.0"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.25",
