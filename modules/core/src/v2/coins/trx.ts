@@ -26,7 +26,7 @@ export class Trx extends BaseCoin {
   }
 
   getBaseFactor() {
-    return new Number('1e' + this._staticsCoin.decimalPlaces);
+    return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
   static createInstance(bitgo: BitGo, staticsCoin: Readonly<StaticsBaseCoin>): BaseCoin {
