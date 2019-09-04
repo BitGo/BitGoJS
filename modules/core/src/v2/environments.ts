@@ -7,8 +7,8 @@ import { V1Network, V1RmgNetwork } from './types';
 interface EnvironmentTemplate {
   uri?: string;
   networks: {
-    btc?: any;
-    tbtc?: any;
+    btc?: bitcoin.Network;
+    tbtc?: bitcoin.Network;
   };
   network: V1Network;
   rmgNetwork: V1RmgNetwork;
@@ -219,6 +219,7 @@ export const Environments: Environments = {
   ),
   custom: Object.assign(
     {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       uri: process.env.BITGO_CUSTOM_ROOT_URI!,
       networks: {
         btc: bitcoin.networks.bitcoin,

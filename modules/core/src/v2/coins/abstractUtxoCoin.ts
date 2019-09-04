@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import * as bitcoin from 'bitgo-utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import * as Bluebird from 'bluebird';
@@ -5,7 +6,8 @@ import * as crypto from 'crypto';
 import * as request from 'superagent';
 import * as _ from 'lodash';
 import * as debugLib from 'debug';
-import { Codes, VirtualSizes, UnspentType } from '@bitgo/unspents';
+import { Codes, VirtualSizes } from '@bitgo/unspents';
+import { UnspentType } from '@bitgo/unspents/dist/codes';
 
 import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
@@ -849,22 +851,23 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @returns {{chain: number, index: number, coin: number, coinSpecific: {outputScript, redeemScript}}}
    */
   generateAddress(params: GenerateAddressOptions): AddressDetails {
-    let { addressType } = params;
     const { keychains, threshold, chain, index, segwit = false, bech32 = false } = params;
     let derivationChain = 0;
     if (_.isNumber(chain) && _.isInteger(chain) && chain > 0) {
       derivationChain = chain;
     }
 
-    if (_.isUndefined(addressType)) {
-      addressType = Codes.UnspentTypeTcomb('p2sh');
+    function convertFlagsToAddressType(): string {
       if (_.isBoolean(segwit) && segwit) {
-        addressType = Codes.UnspentTypeTcomb('p2shP2wsh');
-      }
-      if (_.isBoolean(bech32) && bech32) {
-        addressType = Codes.UnspentTypeTcomb('p2wsh');
+        return Codes.UnspentTypeTcomb('p2shP2wsh');
+      } else if (_.isBoolean(bech32) && bech32) {
+        return Codes.UnspentTypeTcomb('p2wsh');
+      } else {
+        return Codes.UnspentTypeTcomb('p2sh');
       }
     }
+
+    const addressType = params.addressType || convertFlagsToAddressType();
 
     switch (addressType) {
       case Codes.UnspentTypeTcomb('p2sh'):
@@ -1260,7 +1263,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       if (hasSignatureBuffer && Buffer.isBuffer(pubScript) && pubScript.length > 0) {
         // slice the last byte from the signature hash input because it's the hash type
         const signature = bitcoin.ECSignature.fromDER(signatureBuffer.slice(0, -1));
-        const hashType = _.last(signatureBuffer)!;
+        const hashType = _.last(signatureBuffer);
+        if (!hashType) {
+          // missing hashType byte - signature cannot be validated
+          return false;
+        }
         const signatureHash = this.calculateSignatureHash(transaction, inputIndex, pubScript, amount, hashType, isSegwitInput);
 
         for (let publicKeyIndex = 0; publicKeyIndex < publicKeys.length; publicKeyIndex++) {
@@ -1786,7 +1793,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @returns the transaction builder originally passed in as the first argument
    */
   signRecoveryTransaction(txb: any, unspents: Output[], addresses: any, cosign: boolean): any {
-    type SignatureIssue = {
+    interface SignatureIssue {
       inputIndex: number;
       unspent: Output;
       error: Error | null;
@@ -1891,7 +1898,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // params.recoveryCoin used to be params.coin, backwards compatibility
       const recoveryCoin = params.coin || params.recoveryCoin;
       if (!recoveryCoin) {
-        throw new Error('missing required object recoveryCoin')
+        throw new Error('missing required object recoveryCoin');
       }
       // signed should default to true, and only be disabled if explicitly set to false (not undefined)
       const signed = params.signed !== false;

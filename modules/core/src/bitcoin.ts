@@ -1,6 +1,6 @@
-import { Network } from 'bitgo-utxo-lib';
 import * as common from './common';
 import * as bitcoin from 'bitgo-utxo-lib';
+import { V1Network } from './v2/types';
 const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
 const BigInteger = require('bigi');
@@ -14,7 +14,7 @@ try {
   console.log('running without secp256k1 acceleration');
 }
 
-export function getNetwork(network?: keyof bitcoin.networks): bitcoin.Network {
+export function getNetwork(network?: V1Network): bitcoin.Network {
   network = network || common.getNetwork();
   return bitcoin.networks[network];
 }
@@ -23,7 +23,7 @@ export function makeRandomKey(): bitcoin.ECPair {
   return bitcoin.ECPair.makeRandom({ network: getNetwork() });
 }
 
-function getKey(network?: bitcoin.network): bitcoin.ECPair {
+function getKey(network?: bitcoin.Network): bitcoin.ECPair {
   network = network || getNetwork();
   const k = this.keyPair;
   const result = new bitcoin.ECPair(k.d, k.d ? null : k.Q, { network: network, compressed: k.compressed });
@@ -44,7 +44,7 @@ bitcoin.HDNode.prototype.getKey = getKey;
  * @param   {Number} index   child index
  * @returns {HDNode}         derived HDNode
  */
-function deriveFast(hdnode: bitcoin.HDNode, index): bitcoin.HDNode {
+function deriveFast(hdnode: bitcoin.HDNode, index: number): bitcoin.HDNode {
   // no fast path for private key derivations -- delegate to standard method
   if (!secp256k1 || hdnode.keyPair.d) {
     return hdnode.derive(index);
@@ -62,7 +62,7 @@ function deriveFast(hdnode: bitcoin.HDNode, index): bitcoin.HDNode {
   //      = serP(Kpar) || ser32(index)
   const data = Buffer.concat([
     hdnode.keyPair.getPublicKeyBuffer(),
-    indexBuffer
+    indexBuffer,
   ]);
 
   const I = createHmac('sha512', hdnode.chainCode).update(data).digest();
@@ -146,6 +146,6 @@ export function hdPath(rootKey): { derive: (path: string) => bitcoin.HDNode; der
 
   return {
     derive: derive,
-    deriveKey: deriveKey
+    deriveKey: deriveKey,
   };
 }

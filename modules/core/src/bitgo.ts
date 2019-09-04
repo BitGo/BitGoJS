@@ -232,7 +232,7 @@ interface VerifyShardsOptions {
 
 interface GetEcdhSecretOptions {
   otherPubKeyHex: string;
-  eckey: { d: any };
+  eckey: bitcoin.ECPair;
 }
 
 interface AccessTokenOptions {
@@ -698,6 +698,7 @@ export class BitGo {
           lastPromise = lastPromise.then.apply(lastPromise, arguments);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return lastPromise!;
       };
 
@@ -778,9 +779,8 @@ export class BitGo {
     this._token = undefined;
     this._refreshToken = undefined;
     this._ecdhXprv = undefined;
-  };
+  }
 
-//
   /**
    * Helper function to return a rejected promise or call callback with error
    *
@@ -795,7 +795,7 @@ export class BitGo {
    */
   version(): string {
     return pjson.version;
-  };
+  }
 
   /**
    * Serialize this BitGo object to a JSON object.
@@ -806,7 +806,7 @@ export class BitGo {
     return {
       user: this._user,
       token: this._token,
-      extensionKey: this._extensionKey ? this._extensionKey.toWIF() : null
+      extensionKey: this._extensionKey ? this._extensionKey.toWIF() : undefined,
     };
   }
 
@@ -843,6 +843,10 @@ export class BitGo {
    */
   verifyAddress(params: VerifyAddressOptions = {}): boolean {
     common.validateParams(params, ['address'], []);
+
+    if (!_.isString(params.address)) {
+      throw new Error('missing required string address');
+    }
 
     let address;
     try {
@@ -956,9 +960,9 @@ export class BitGo {
       xpub: node.neutered().toBase58(),
       m,
       n,
-      seedShares: shards
+      seedShares: shards,
     };
-  };
+  }
 
   /**
    * Reconstitute a secret which was sharded with `splitSecret`.
@@ -985,7 +989,7 @@ export class BitGo {
     return {
       xpub: node.neutered().toBase58() as string,
       xprv: node.toBase58() as string,
-      seed
+      seed,
     };
   }
 
@@ -1078,7 +1082,7 @@ export class BitGo {
     }
 
     const otherKeyPub = bitcoin.ECPair.fromPublicKeyBuffer(new Buffer(otherPubKeyHex, 'hex'));
-    const secretPoint = otherKeyPub.Q.multiply(eckey.d);
+    const secretPoint = otherKeyPub.Q.multiply((eckey as bitcoin.ECPair).d);
     const secret = Util.bnToByteArrayUnsigned(secretPoint.affineX);
     return new Buffer(secret).toString('hex');
   }
@@ -1225,7 +1229,7 @@ export class BitGo {
 
     // calculate the HMAC
     return this.calculateHMAC(token, signatureSubject);
-  };
+  }
 
   /**
    * Calculate request headers with HMAC
@@ -1240,9 +1244,9 @@ export class BitGo {
     return {
       hmac,
       timestamp,
-      tokenHash
+      tokenHash,
     };
-  };
+  }
 
   /**
    * Verify the HMAC for an HTTP response
@@ -1252,7 +1256,7 @@ export class BitGo {
       urlPath,
       text,
       timestamp,
-      statusCode
+      statusCode,
     });
 
     // calculate the HMAC
@@ -1262,7 +1266,7 @@ export class BitGo {
     return {
       isValid: expectedHmac === hmac,
       expectedHmac,
-      signatureSubject
+      signatureSubject,
     };
   }
 
@@ -1371,7 +1375,7 @@ export class BitGo {
     }).call(this)
       .then(handleResponseResult(), handleResponseError)
       .nodeify(callback);
-  };
+  }
 
   /**
    * @param params
@@ -1473,7 +1477,7 @@ export class BitGo {
     })
       .call(this)
       .nodeify(callback);
-  };
+  }
 
   /**
    * Use refresh token to get new access token.
@@ -1508,7 +1512,7 @@ export class BitGo {
     })
     .call(this)
     .nodeify(callback);
-  };
+  }
 
   /**
    *
@@ -1634,33 +1638,31 @@ export class BitGo {
 //
 // removeAccessToken
 //
-// Params:
-// {
-//    id: <id of the access token to be deleted>
-//    label: <label of the access token to be deleted>
-// }
-// Returns:
-// {
-//    id: <id of the token>
-//    label: <user-provided label for this token>
-//    user: <id of the user on the token>
-//    enterprise <id of the enterprise this token is valid for>
-//    client: <the auth client that this token belongs to>
-//    scope: <list of allowed OAuth scope values>
-//    created: <date the token was created>
-//    expires: <date the token will expire>
-//    origin: <the origin for which this token is valid>
-//    isExtensible: <flag indicating if the token can be extended>
-//    extensionAddress: <address whose private key's signature is necessary for extensions>
-//    unlock: <info for actions that require an unlock before firing>
-// }
 //
   /**
    * Sets the expire time of an access token matching either the id or label to the current date, effectively deleting it
+   *
+   * Params:
+   * id: <id of the access token to be deleted>
+   * label: <label of the access token to be deleted>
+   *
+   * Returns:
+   * id: <id of the token>
+   * label: <user-provided label for this token>
+   * user: <id of the user on the token>
+   * enterprise <id of the enterprise this token is valid for>
+   * client: <the auth client that this token belongs to>
+   * scope: <list of allowed OAuth scope values>
+   * created: <date the token was created>
+   * expires: <date the token will expire>
+   * origin: <the origin for which this token is valid>
+   * isExtensible: <flag indicating if the token can be extended>
+   * extensionAddress: <address whose private key's signature is ne*cessary for extensions>
+   * unlock: <info for actions that require an unlock before firing>
    * @param params
    * @param callback
    */
-  removeAccessToken({ id,  label }: RemoveAccessTokenOptions, callback?: NodeCallback<any>): Bluebird<any> {
+  removeAccessToken({ id, label }: RemoveAccessTokenOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
       if ((!id && !label) || (id && label)) {
@@ -1746,7 +1748,7 @@ export class BitGo {
       }
 
       const user = self.user();
-      if (typeof user !== "object" || !user.username) {
+      if (typeof user !== 'object' || !user.username) {
         throw new Error('missing required object user');
       }
 
@@ -1792,7 +1794,7 @@ export class BitGo {
    * @param {number} duration Desired duration of the unlock in seconds (default=600, max=3600).
    * @param callback
    */
-  unlock({ otp, duration }: UnlockOptions, callback?: NodeCallback<any>):  Bluebird<any> {
+  unlock({ otp, duration }: UnlockOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       if (otp && !_.isString(otp)) {
@@ -1800,7 +1802,7 @@ export class BitGo {
       }
       return self.post(self.url('/user/unlock'))
         .send({ otp, duration })
-        .result()
+        .result();
     })
       .call(this)
       .nodeify(callback);
@@ -1846,6 +1848,10 @@ export class BitGo {
    * @deprecated
    */
   extendToken(params: ExtendTokenOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    if (!this._extensionKey) {
+      throw new Error('missing required property _extensionKey');
+    }
+
     const timestamp = Date.now();
     const duration = params.duration;
     const message = timestamp + '|' + this._token + '|' + duration;
@@ -1966,7 +1972,7 @@ export class BitGo {
   url(path: string, version = 1): string {
     const baseUrl = version === 2 ? this._baseApiUrlV2 : this._baseApiUrl;
     return baseUrl + path;
-  };
+  }
 
   /**
    * Create a url for calling BitGo microservice APIs
@@ -2174,7 +2180,7 @@ export class BitGo {
       .query(query)
       .result()
       .nodeify(callback);
-  };
+  }
 
   /**
    * Simulate a user webhook

@@ -79,11 +79,22 @@ export interface VerifyTransactionOptions {
   reqId?: RequestTracer;
 }
 
-export interface SupplementGenerateWalletOptions {}
-
-export interface ExtraPrebuildParamsOptions {}
-
-export interface PresignTransactionOptions {}
+export interface SupplementGenerateWalletOptions {
+  label: string;
+  m: number;
+  n: number;
+  enterprise?: string;
+  disableTransactionNotifications?: boolean;
+  gasPrice?: number;
+  keys: string[];
+  isCold: boolean;
+  keySignatures?: {
+    backup: string;
+    bitgo: string;
+  };
+  rootPrivateKey?: string;
+  disableKRSEmail?: boolean;
+}
 
 export interface FeeEstimateOptions {
   numBlocks?: number;
@@ -93,11 +104,29 @@ export interface FeeEstimateOptions {
   amount?: string;
 }
 
-export interface PrecreateBitGoOptions {}
+// TODO (SDKT-9): reverse engineer and add options
+// export interface ExtraPrebuildParamsOptions {}
+export type ExtraPrebuildParamsOptions = any;
 
-export interface VerifyRecoveryTransactionOptions {}
+// TODO (SDKT-9): reverse engineer and add options
+// export interface PresignTransactionOptions {}
+export type PresignTransactionOptions = any;
 
-export interface ParseTransactionOptions {}
+// TODO (SDKT-9): reverse engineer and add options
+// export interface PrecreateBitGoOptions {}
+export type PrecreateBitGoOptions = any;
+
+// TODO (SDKT-9): reverse engineer and add options
+// export interface VerifyRecoveryTransactionOptions {}
+export type VerifyRecoveryTransactionOptions = any;
+
+// TODO (SDKT-9): reverse engineer and add options
+// export interface ParseTransactionOptions {}
+export type ParseTransactionOptions = any;
+
+// TODO (SDKT-9): reverse engineer and add options
+// export interface ParsedTransaction {}
+export type ParsedTransaction = any;
 
 export interface InitiateRecoveryOptions {
   userKey: string;
@@ -118,8 +147,6 @@ export interface TransactionPrebuild {
   txHex?: string;
   wallet?: Wallet;
 }
-
-export interface ParsedTransaction {}
 
 export interface CoinSpecific {
   outputScript?: string;
@@ -226,6 +253,7 @@ export abstract class BaseCoin {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return bigNumber.toFormat(null!, null!, { groupSeparator: '', decimalSeparator: '.' });
   }
 

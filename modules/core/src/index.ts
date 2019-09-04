@@ -14,8 +14,10 @@ export { BitGo } from './bitgo';
 import * as utxoLib from 'bitgo-utxo-lib';
 import { hdPath, makeRandomKey } from './bitcoin';
 
-utxoLib.hdPath = hdPath;
-utxoLib.makeRandomKey = makeRandomKey;
+// can't add types for these since they are part of bitgo-utxo-lib's default export
+// see https://github.com/Microsoft/TypeScript/issues/14080
+(utxoLib as any).hdPath = hdPath;
+(utxoLib as any).makeRandomKey = makeRandomKey;
 
 export const bitcoin = utxoLib;
 export const sjcl = require('./vendor/sjcl.min.js');
@@ -28,6 +30,8 @@ import * as errors from './errors';
 export const Environments = _.cloneDeep(common.Environments);
 export const Errors = errors;
 export { GlobalCoinFactory, CoinConstructor } from './v2/coinFactory';
+export { V1Network, V1RmgNetwork } from './v2/types';
+export { EnvironmentName } from './v2/environments';
 
 /**
  * Set the network, i.e. either "bitcoin" for production with real bitcoin, or

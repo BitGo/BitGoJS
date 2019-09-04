@@ -12,7 +12,7 @@ import * as https from 'https';
 import * as http from 'http';
 import { Server } from 'net';
 
-const morgan = require('morgan');
+import * as morgan from 'morgan';
 const fs = Bluebird.promisifyAll(require('fs'));
 
 import { Config, config } from './config';
@@ -205,12 +205,11 @@ function isTLS(config: Config): boolean {
 
 /**
  * Create either a HTTP or HTTPS server
- * @param args
- * @param tls
+ * @param config
  * @param app
  * @return {Server}
  */
-export function createServer(config: Config, app) {
+export function createServer(config: Config, app: express.Express) {
   return co(function*() {
     return isTLS(config) ? yield createHttpsServer(app, config) : createHttpServer(app);
   }).call(this);

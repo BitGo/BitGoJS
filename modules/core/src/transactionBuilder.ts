@@ -24,7 +24,7 @@ interface AddressOutput extends BaseOutput {
 }
 
 interface ScriptOutput extends BaseOutput {
-  script: string;
+  script: Buffer;
 }
 
 type Output = AddressOutput | ScriptOutput;

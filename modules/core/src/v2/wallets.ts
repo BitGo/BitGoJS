@@ -4,7 +4,7 @@
 import * as bitcoin from 'bitgo-utxo-lib';
 import { BitGo } from '../bitgo';
 import * as common from '../common';
-import { BaseCoin } from './baseCoin';
+import { BaseCoin, SupplementGenerateWalletOptions } from './baseCoin';
 import { NodeCallback } from './types';
 import { Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
@@ -204,11 +204,16 @@ export class Wallets {
     return co(function*() {
       common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub'], callback);
       const label = params.label;
+      const passphrase = params.passphrase;
+      const canEncrypt = !!passphrase && typeof passphrase === 'string';
+      const isCold = !canEncrypt || !!params.userKey;
 
-      let walletParams: any = {
+      const walletParams: SupplementGenerateWalletOptions = {
         label: label,
         m: 2,
         n: 3,
+        keys: [],
+        isCold,
       };
 
       const hasBackupXpub = !!params.backupXpub;
@@ -248,6 +253,7 @@ export class Wallets {
         if (!_.isBoolean(params.disableKRSEmail)) {
           throw new Error('invalid disableKRSEmail argument, expecting boolean');
         }
+        walletParams.disableKRSEmail = params.disableKRSEmail;
       }
 
       // Ensure each krsSpecific param is either a string, boolean, or number
@@ -262,9 +268,6 @@ export class Wallets {
 
       let derivationPath: string | undefined = undefined;
 
-      const passphrase = params.passphrase;
-      const canEncrypt = !!passphrase && typeof passphrase === 'string';
-      const isCold = !canEncrypt || !!params.userKey;
       const reqId = new RequestTracer();
 
       // Add the user keychain
@@ -358,11 +361,11 @@ export class Wallets {
         backupKeychain,
         bitgoKeychain,
       };
-      walletParams = yield self.baseCoin.supplementGenerateWallet(walletParams, keychains);
+      const finalWalletParams = yield self.baseCoin.supplementGenerateWallet(walletParams, keychains);
       self.bitgo.setRequestTracer(reqId);
       const newWallet = yield self.bitgo
         .post(self.baseCoin.url('/wallet'))
-        .send(walletParams)
+        .send(finalWalletParams)
         .result();
       const result: any = {
         wallet: new Wallet(self.bitgo, self.baseCoin, newWallet),

@@ -5,7 +5,7 @@ import * as debugLib from 'debug';
 
 import { Config } from './config';
 
-const BitGoJS = require('bitgo');
+import * as BitGoJS from 'bitgo';
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
 const debug = debugLib('bitgo:express');
