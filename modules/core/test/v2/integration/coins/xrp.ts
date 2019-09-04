@@ -10,7 +10,7 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 const nock = require('nock');
 nock.enableNetConnect();
 
-describe('XRP:', function() {
+xdescribe('XRP:', function() {
   let bitgo;
   let basecoin;
   const someWalletId = '595ecd567615fbc707c601324127abb7'; // one of the many random XRP wallets on this account
