@@ -2,7 +2,8 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
-import * as tronweb from 'tronweb';
+const tronweb = require('tronweb');
+
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { MethodNotImplementedError } from '../../errors';
 import {
@@ -60,14 +61,24 @@ export class Trx extends BaseCoin {
   }
 
   /**
+   * Generate ed25519 key pair
+   *
+   * @param seed
+   * @returns {Object} object with generated pub, prv
+   */
+  generateKeyPair(seed?: Buffer): KeyPair {
+    const account = tronweb.utils.accounts.generateAccount();
+    return {
+      pub: account.address.publicKey,
+      prv: account.privateKey,
+    };
+  }
+
+  /**
    * Get an instance of the library which can be used to perform low-level operations for this coin
    */
   getCoinLibrary() {
     return tronweb;
-  }
-
-  generateKeyPair(seed?: Buffer): KeyPair {
-    throw new MethodNotImplementedError();
   }
 
   isValidPub(pub: string): boolean {
@@ -92,4 +103,47 @@ export class Trx extends BaseCoin {
   signTransaction(params: SignTransactionOptions = {}): SignedTransaction {
     throw new MethodNotImplementedError();
   }
+  
+  /**
+   * Derive a hardened child public key from a master key seed using an additional seed for randomness.
+   *
+   * Due to technical differences between keypairs on the ed25519 curve and the secp256k1 curve,
+   * only hardened private key derivation is supported.
+   *
+   * @param key seed for the master key. Note: Not the public key or encoded private key. This is the raw seed.
+   * @param entropySeed random seed which is hashed to generate the derivation path
+   */
+  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
+    // TODO: not sure if we need this just yet
+    throw new Error();
+  }
+
+  /**
+   * Sign message with private key
+   *
+   * @param key
+   * @param message
+   */
+  signMessage(key: KeyPair, message: string | Buffer) {
+    let toSign;
+    if (typeof message === 'string') {
+      toSign = message;
+    } else if (Buffer.isBuffer(message)) {
+      toSign = message.toString('hex');
+    } else {
+      throw new Error('Invalid messaged passed to signMessage');
+    }
+
+    // convert the hex string to their representation of a byte array
+    const tronByteArray = tronweb.utils.code.hexStr2byteArray(toSign);
+
+    // note the key in the keypair should already be hex-encoded
+    return tronweb.utils.crypto.signBytes(key.prv, tronByteArray);
+  }
+
+
+  // it's possible we need to implement these later
+  // preCreateBitGo?
+  // supplementGenerateWallet?
+
 }
