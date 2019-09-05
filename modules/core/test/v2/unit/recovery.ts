@@ -574,9 +574,9 @@ describe('Recovery:', function() {
 
       recoveryTx.should.have.property('transaction');
       recoveryTx.transaction.compression.should.equal('none');
-      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f640000000000000000454f53000000000000');
+      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000');
       recoveryTx.transaction.signatures.length.should.equal(2);
-      recoveryTx.txid.should.equal('48185c63f724831382ab860171d5bdf4b433471707b8c59fa2f4ea8e151ab093');
+      recoveryTx.txid.should.equal('60c2b010854a7f199648e5175df052f09d2da09d0d23a33f3c148c30a3099e8d');
     }));
 
     it('should generate EOS recovery tx with unencrypted keys', co(function *() {
@@ -589,9 +589,9 @@ describe('Recovery:', function() {
 
       recoveryTx.should.have.property('transaction');
       recoveryTx.transaction.compression.should.equal('none');
-      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f640000000000000000454f53000000000000');
+      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000');
       recoveryTx.transaction.signatures.length.should.equal(2);
-      recoveryTx.txid.should.equal('48185c63f724831382ab860171d5bdf4b433471707b8c59fa2f4ea8e151ab093');
+      recoveryTx.txid.should.equal('60c2b010854a7f199648e5175df052f09d2da09d0d23a33f3c148c30a3099e8d');
     }));
 
     it('should generate an EOS unsigned sweep', co(function *() {
@@ -605,9 +605,9 @@ describe('Recovery:', function() {
 
       recoveryTx.should.have.property('transaction');
       recoveryTx.transaction.compression.should.equal('none');
-      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f640000000000000000454f53000000000000');
+      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000');
       recoveryTx.transaction.signatures.length.should.equal(0);
-      recoveryTx.txid.should.equal('48185c63f724831382ab860171d5bdf4b433471707b8c59fa2f4ea8e151ab093');
+      recoveryTx.txid.should.equal('60c2b010854a7f199648e5175df052f09d2da09d0d23a33f3c148c30a3099e8d');
     }));
   });
 
