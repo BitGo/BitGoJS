@@ -1,13 +1,13 @@
 import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
-import { BaseCoin, VerifyAddressOptions } from '../baseCoin';
+import { BaseCoin } from '../baseCoin';
 import {
   AbstractUtxoCoin, AddressInfo,
   ExplainTransactionOptions,
   TransactionExplanation, UnspentInfo,
   GenerateAddressOptions, AddressDetails,
-  SignTransactionOptions,
+  SignTransactionOptions, VerifyAddressOptions,
 } from './abstractUtxoCoin';
 import { NodeCallback } from '../types';
 import * as _ from 'lodash';
@@ -58,15 +58,19 @@ export class Rmg extends AbstractUtxoCoin {
    * @param index Derivation index
    */
   verifyAddress(params: VerifyAddressOptions) {
+    if (!params.keychains) {
+      throw new Error('missing required param keychains');
+    }
+
     if (!this.isValidAddress(params.address)) {
       throw new Error(`invalid address: ${params.address}`);
     }
 
     const expectedAddress: any = this.generateAddress({
-      keychains: params.keychains!,
+      keychains: params.keychains,
       threshold: 2,
-      chain: params.chain!,
-      index: params.index
+      chain: params.chain,
+      index: params.index,
     });
 
     if (expectedAddress.address !== params.address) {
@@ -110,8 +114,12 @@ export class Rmg extends AbstractUtxoCoin {
     // do not modify the original argument
     const keychainCopy = _.cloneDeep(params.keychains);
     const userKey = keychainCopy.shift();
+
+    if (!userKey) {
+      throw new Error('invalid required param keychains - missing user key');
+    }
     const aspKeyIds = keychainCopy.map((key) => key.aspKeyId);
-    const userKeyNode = prova.HDNode.fromBase58(userKey!.pub);
+    const userKeyNode = prova.HDNode.fromBase58(userKey.pub);
     const derivedUserKey = hdPath(userKeyNode).deriveKey(path).getPublicKeyBuffer();
 
     const provaAddress = new prova.Address(derivedUserKey, aspKeyIds, this.network);
