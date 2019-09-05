@@ -1107,7 +1107,7 @@ export class Wallet {
    * @param callback
    * @return {*}
    */
-   removeUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  removeUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['userId'], [], callback);
 
     const userId = params.userId;

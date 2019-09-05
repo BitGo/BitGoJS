@@ -799,10 +799,7 @@ export class Eos extends BaseCoin {
     return Bluebird.resolve({}).asCallback(callback);
   }
 
-  verifyTransaction(
-    params: VerifyTransactionOptions,
-    callback?: (err: Error, res: boolean) => void
-  ): Bluebird<boolean> {
+  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     return Bluebird.resolve(true).asCallback(callback);
   }
 }

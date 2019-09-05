@@ -69,15 +69,17 @@ export const DefaultConfig: Config = {
  * Earlier configs have higher precedence over subsequent configs.
  */
 function mergeConfigs(...configs: Config[]): Config {
+  function isNilOrNaN(val: unknown): val is null | undefined | number {
+    return isNil(val) || (isNumber(val) && isNaN(val));
+  }
   // helper to get the first defined value for a given config key
   // from the config sources in a type safe manner
-  const get = <T extends keyof Config>(k: T): Config[T] =>
-    configs.reduce((item: Config[T], c) => {
+  function get<T extends keyof Config>(k: T): Config[T] {
+    return configs.reduce((item: Config[T], c) => {
       const current = c[k];
-      return (isNil(item) || (isNumber(item) && isNaN(item))) &&
-      (!isNil(current) || (isNumber(current) && !isNaN(current))) ?
-        current : item;
+      return isNilOrNaN(item) && !isNilOrNaN(current) ? current : item;
     }, undefined);
+  }
 
   return {
     port: get('port'),

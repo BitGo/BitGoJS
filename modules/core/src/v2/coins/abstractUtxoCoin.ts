@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 import * as bitcoin from 'bitgo-utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import * as Bluebird from 'bluebird';
@@ -216,7 +215,6 @@ export interface RecoverParams {
 }
 
 export abstract class AbstractUtxoCoin extends BaseCoin {
-
   public altScriptHash: number;
   public supportAltScriptDestination: boolean;
   private readonly _network: UtxoNetwork;
@@ -356,7 +354,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * @param reqId
    * @param callback
    */
-  getLatestBlockHeight(reqId?: any, callback?: NodeCallback<number>): Bluebird<number> {
+  getLatestBlockHeight(reqId?: RequestTracer, callback?: NodeCallback<number>): Bluebird<number> {
     const self = this;
     return co(function *() {
       if (reqId) {

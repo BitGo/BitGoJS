@@ -76,14 +76,14 @@ export class Trx extends BaseCoin {
     params: ParseTransactionOptions,
     callback?: NodeCallback<ParsedTransaction>
   ): Bluebird<ParsedTransaction> {
-    throw new MethodNotImplementedError();
+    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress(params: VerifyAddressOptions): boolean {
-    throw new MethodNotImplementedError();
+    return true;
   }
 
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    throw new MethodNotImplementedError();
+    return Bluebird.resolve(true).asCallback(callback);
   }
 }

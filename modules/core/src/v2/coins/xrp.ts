@@ -710,6 +710,6 @@ export class Xrp extends BaseCoin {
   }
 
   parseTransaction(params: ParseTransactionOptions, callback?: NodeCallback<ParsedTransaction>): Bluebird<ParsedTransaction> {
-    return Bluebird.resolve({});
+    return Bluebird.resolve({}).asCallback(callback);
   }
 }
