@@ -1540,34 +1540,34 @@ export class BitGo {
       .nodeify(callback);
   }
 
-/**
- * addAccessToken
- * Add a BitGo API Access Token to the current user account
- * @param params {
- *    otp: (required) <valid otp code>
- *    label: (required) <label for the token>
- *    duration: <length of time in seconds the token will be valid for>
- *    ipRestrict: <array of IP address strings to whitelist>
- *    txValueLimit: <number of outgoing satoshis allowed on this token>
- *    scope: (required) <authorization scope of the requested token>
- * }
- * @param callback
- * @return {
- *    id: <id of the token>
- *    token: <access token hex string to be used for BitGo API request verification>
- *    label: <user-provided label for this token>
- *    user: <id of the user on the token>
- *    enterprise <id of the enterprise this token is valid for>
- *    client: <the auth client that this token belongs to>
- *    scope: <list of allowed OAuth scope values>
- *    created: <date the token was created>
- *    expires: <date the token will expire>
- *    origin: <the origin for which this token is valid>
- *    isExtensible: <flag indicating if the token can be extended>
- *    extensionAddress: <address whose private key's signature is necessary for extensions>
- *    unlock: <info for actions that require an unlock before firing>
- * }
- */
+  /**
+   * addAccessToken
+   * Add a BitGo API Access Token to the current user account
+   * @param params {
+   *    otp: (required) <valid otp code>
+   *    label: (required) <label for the token>
+   *    duration: <length of time in seconds the token will be valid for>
+   *    ipRestrict: <array of IP address strings to whitelist>
+   *    txValueLimit: <number of outgoing satoshis allowed on this token>
+   *    scope: (required) <authorization scope of the requested token>
+   * }
+   * @param callback
+   * @return {
+   *    id: <id of the token>
+   *    token: <access token hex string to be used for BitGo API request verification>
+   *    label: <user-provided label for this token>
+   *    user: <id of the user on the token>
+   *    enterprise <id of the enterprise this token is valid for>
+   *    client: <the auth client that this token belongs to>
+   *    scope: <list of allowed OAuth scope values>
+   *    created: <date the token was created>
+   *    expires: <date the token will expire>
+   *    origin: <the origin for which this token is valid>
+   *    isExtensible: <flag indicating if the token can be extended>
+   *    extensionAddress: <address whose private key's signature is necessary for extensions>
+   *    unlock: <info for actions that require an unlock before firing>
+   * }
+   */
   addAccessToken(params: AddAccessTokenOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
@@ -1635,10 +1635,6 @@ export class BitGo {
       .nodeify(callback);
   }
 
-//
-// removeAccessToken
-//
-//
   /**
    * Sets the expire time of an access token matching either the id or label to the current date, effectively deleting it
    *
