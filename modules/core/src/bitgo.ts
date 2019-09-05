@@ -851,7 +851,6 @@ export class BitGo {
   }
 
   /**
-   * @deprecated
    */
   verifyPassword(params: VerifyPasswordOptions = {}, callback?: NodeCallback<any>) {
     common.validateParams(params, ['password'], []);
@@ -910,10 +909,9 @@ export class BitGo {
   }
 
   /**
-   * Generate a random password on the client
+   * Generate a random password
    * @param   {Number} numWords     Number of 32-bit words
    * @returns {String}          base58 random password
-   * @deprecated
    */
   generateRandomPassword(numWords: number = 5): string {
     const bytes = sjcl.codec.bytes.fromBits(sjcl.random.randomWords(numWords));
@@ -1829,7 +1827,6 @@ export class BitGo {
    * @param params
    * - duration: duration in seconds by which to extend the token, starting at the current time
    * @param callback
-   * @deprecated
    */
   extendToken(params: ExtendTokenOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const timestamp = Date.now();
