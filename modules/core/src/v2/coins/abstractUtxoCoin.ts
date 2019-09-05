@@ -15,7 +15,8 @@ import {
   BaseCoin, CoinSpecific,
   ExtraPrebuildParamsOptions, KeychainsTriplet,
   PrecreateBitGoOptions, PresignTransactionOptions, SupplementGenerateWalletOptions,
-  VerifyAddressOptions, VerifyRecoveryTransactionOptions,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+  VerifyRecoveryTransactionOptions,
   VerifyTransactionOptions,
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild, VerificationOptions,
@@ -30,6 +31,11 @@ import { Wallet } from '../wallet';
 
 const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
+
+export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
+  chain: number;
+  index: number;
+}
 
 export interface Output {
   address: string;

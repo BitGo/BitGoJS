@@ -29,6 +29,12 @@ interface ScriptOutput extends BaseOutput {
 
 type Output = AddressOutput | ScriptOutput;
 
+interface BitGoUnspent {
+  value: number;
+  tx_hash: Buffer;
+  tx_output_n: number;
+}
+
 //
 // TransactionBuilder
 // @params:
@@ -353,11 +359,7 @@ exports.createTransaction = function(params) {
   };
 
   // Get the unspents for the single key fee address
-  let feeSingleKeyUnspents: {
-    value: number;
-    tx_hash: Buffer;
-    tx_output_n: number;
-  }[] = [];
+  let feeSingleKeyUnspents: BitGoUnspent[] = [];
   const getUnspentsForSingleKey = function() {
     if (feeSingleKeySourceAddress) {
       let feeTarget = 0.01e8;
@@ -379,11 +381,7 @@ exports.createTransaction = function(params) {
 
   // Iterate unspents, sum the inputs, and save _inputs with the total
   // input amount and final list of inputs to use with the transaction.
-  let feeSingleKeyUnspentsUsed: {
-    value: number;
-    tx_hash: Buffer;
-    tx_output_n: number;
-  }[] = [];
+  let feeSingleKeyUnspentsUsed: BitGoUnspent[] = [];
 
   const collectInputs = function() {
     if (!unspents.length) {

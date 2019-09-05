@@ -1,7 +1,9 @@
+/**
+ * @prettier
+ */
 import { BinaryLike } from 'crypto';
-declare module 'bitgo-utxo-lib' {
-  // HDNode from bitgo-utxo-lib
 
+declare module 'bitgo-utxo-lib' {
   export class HDNode {
     static fromBase58(key: string): HDNode;
     static fromSeedHex(seed: string): HDNode;

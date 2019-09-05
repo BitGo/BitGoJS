@@ -49,9 +49,6 @@ export interface KeyPair {
 export interface VerifyAddressOptions {
   address: string;
   addressType?: string;
-  chain?: number;
-  index?;
-  number;
   keychains?: {
     pub: string;
   }[];

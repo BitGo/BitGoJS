@@ -330,7 +330,11 @@ export class Eos extends BaseCoin {
    * @param rootAddress - the wallet's root address
    */
   verifyAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
-    if (!rootAddress || !this.isValidAddress(address)) {
+    if (!rootAddress || !_.isString(rootAddress)) {
+      throw new Error('missing required string rootAddress');
+    }
+
+    if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
