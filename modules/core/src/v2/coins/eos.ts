@@ -17,6 +17,7 @@ const co = Bluebird.coroutine;
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
+import * as request from 'superagent';
 
 const EOS_ADDRESS_LENGTH = 12;
 
@@ -539,7 +540,7 @@ export class Eos extends BaseCoin {
       const nodeUrls = self.getPublicNodeUrls();
       for (const nodeUrl of nodeUrls) {
         try {
-          return yield this.bitgo.post(nodeUrl + endpoint).send(payload);
+          return yield request.post(nodeUrl + endpoint).send(payload);
         } catch (e) {
           // let's hope another call succeeds
         }
