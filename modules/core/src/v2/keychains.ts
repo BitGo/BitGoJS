@@ -10,6 +10,22 @@ import { validateParams } from '../common';
 
 const co = Bluebird.coroutine;
 
+export interface Keychain {
+  pub: string;
+  source: string;
+  provider?: string;
+  encryptedPrv?: string;
+}
+
+export interface ChangedKeychains {
+  [pubkey: string]: string;
+}
+
+export interface ListKeychainsResult {
+  keys: Keychain[];
+  nextBatchPrevId?: string;
+}
+
 export interface GetKeychainOptions {
   id: string;
   xpub?: string;
@@ -28,7 +44,7 @@ export interface UpdatePasswordOptions {
 }
 
 interface UpdateSingleKeychainPasswordOptions {
-  keychain?: any;
+  keychain?: Keychain;
   oldPassword?: string;
   newPassword?: string;
 }
@@ -67,6 +83,12 @@ interface GetKeysForSigningOptions {
   wallet?: Wallet;
 }
 
+export enum KeyIndices {
+  USER = 0,
+  BACKUP = 1,
+  BITGO = 2,
+}
+
 export class Keychains {
 
   private readonly bitgo: BitGo;
@@ -86,10 +108,10 @@ export class Keychains {
    * @param params.reqId (optional)
    * @param callback
    */
-  get(params: GetKeychainOptions, callback?: NodeCallback<any>): Bluebird<any> {
+  get(params: GetKeychainOptions, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
     validateParams(params, [], ['xpub', 'ethAddress'], callback);
 
-    if (!params.id) {
+    if (_.isUndefined(params.id)) {
       throw new Error('id must be defined');
     }
 
@@ -104,12 +126,13 @@ export class Keychains {
 
   /**
    * list the users keychains
+   * @param params
    * @param params.limit - Max number of results in a single call.
    * @param params.prevId - Continue iterating (provided by nextBatchPrevId in the previous list)
    * @param callback
    * @returns {*}
    */
-  list(params: ListKeychainOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  list(params: ListKeychainOptions = {}, callback?: NodeCallback<ListKeychainsResult>): Bluebird<ListKeychainsResult> {
     const self = this;
     return co(function *() {
       const queryObject: any = {};
@@ -140,6 +163,7 @@ export class Keychains {
    * This should be called when a user changes their login password, and are expecting
    * that their wallet passwords are changed to match the new login password.
    *
+   * @param params
    * @param params.oldPassword - The old password used for encrypting the key
    * @param params.newPassword - The new password to be used for encrypting the key
    * @param callback
@@ -149,15 +173,15 @@ export class Keychains {
    *    ...
    *  }
    */
-  updatePassword(params: UpdatePasswordOptions, callback?: NodeCallback<any>): Bluebird<any> {
+  updatePassword(params: UpdatePasswordOptions, callback?: NodeCallback<ChangedKeychains>): Bluebird<ChangedKeychains> {
     const self = this;
     return co(function *() {
       validateParams(params, ['oldPassword', 'newPassword'], [], callback);
-      const changedKeys = {};
+      const changedKeys: ChangedKeychains = {};
       let prevId;
       let keysLeft = true;
       while (keysLeft) {
-        const result = yield self.list({ limit: 500, prevId });
+        const result: ListKeychainsResult = yield self.list({ limit: 500, prevId });
         for (const key of result.keys) {
           const oldEncryptedPrv = key.encryptedPrv;
           if (_.isUndefined(oldEncryptedPrv)) {
@@ -169,7 +193,9 @@ export class Keychains {
               oldPassword: params.oldPassword,
               newPassword: params.newPassword
             });
-            changedKeys[updatedKeychain.pub] = updatedKeychain.encryptedPrv;
+            if (updatedKeychain.encryptedPrv) {
+              changedKeys[updatedKeychain.pub] = updatedKeychain.encryptedPrv;
+            }
           } catch (e) {
             // if the password was incorrect, silence the error, throw otherwise
             if (!e.message.includes('private key is incorrect')) {
@@ -195,7 +221,7 @@ export class Keychains {
    * @param params.newPassword - The new password to be used for encrypting the key
    * @returns {object}
    */
-  updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions = {}): any {
+  updateSingleKeychainPassword(params: UpdateSingleKeychainPasswordOptions = {}): Keychain {
     if (!_.isString(params.oldPassword)) {
       throw new Error('expected old password to be a string');
     }
@@ -220,10 +246,10 @@ export class Keychains {
   }
 
   /**
-   * Create a keychain
+   * Create a public/private key pair
    * @param params.seed
    */
-  create(params: { seed?: string } = {}): KeyPair {
+  create(params: { seed?: Buffer } = {}): KeyPair {
     return this.baseCoin.generateKeyPair(params.seed);
   }
 
@@ -232,7 +258,7 @@ export class Keychains {
    * @param params
    * @param callback
    */
-  add(params: AddKeychainOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  add(params: AddKeychainOptions = {}, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
     params = params || {};
     validateParams(params, [], ['pub', 'encryptedPrv', 'type', 'source', 'originalPasscodeEncryptionCode', 'enterprise', 'derivedFromParentWithSeed'], callback);
 
@@ -246,20 +272,20 @@ export class Keychains {
       this.bitgo.setRequestTracer(params.reqId);
     }
     return this.bitgo.post(this.baseCoin.url('/key'))
-        .send({
-          pub: params.pub,
-          encryptedPrv: params.encryptedPrv,
-          type: params.type,
-          source: params.source,
-          provider: params.provider,
-          originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
-          enterprise: params.enterprise,
-          derivedFromParentWithSeed: params.derivedFromParentWithSeed,
-          disableKRSEmail: params.disableKRSEmail,
-          krsSpecific: params.krsSpecific
-        })
-        .result()
-        .nodeify(callback);
+      .send({
+        pub: params.pub,
+        encryptedPrv: params.encryptedPrv,
+        type: params.type,
+        source: params.source,
+        provider: params.provider,
+        originalPasscodeEncryptionCode: params.originalPasscodeEncryptionCode,
+        enterprise: params.enterprise,
+        derivedFromParentWithSeed: params.derivedFromParentWithSeed,
+        disableKRSEmail: params.disableKRSEmail,
+        krsSpecific: params.krsSpecific
+      })
+      .result()
+      .nodeify(callback);
   }
 
   /**
@@ -267,7 +293,7 @@ export class Keychains {
    * @param params (empty)
    * @param callback
    */
-  createBitGo(params: CreateBitGoOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  createBitGo(params: CreateBitGoOptions = {}, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
     params.source = 'bitgo';
 
     this.baseCoin.preCreateBitGo(params);
@@ -280,12 +306,12 @@ export class Keychains {
    * @param params.provider (optional)
    * @param callback
    */
-  createBackup(params: CreateBackupOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  createBackup(params: CreateBackupOptions = {}, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
     const self = this;
     return co(function *() {
       params.source = 'backup';
 
-      if (!params.provider) {
+      if (_.isUndefined(params.provider)) {
         // if the provider is undefined, we generate a local key and add the source details
         const key = self.create();
         _.extend(params, key);
@@ -302,13 +328,17 @@ export class Keychains {
    * @param callback
    * @returns {Bluebird[]}
    */
-  getKeysForSigning(params: GetKeysForSigningOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getKeysForSigning(params: GetKeysForSigningOptions = {}, callback?: NodeCallback<Keychain[]>): Bluebird<Keychain[]> {
     const self = this;
     return co(function *() {
+      if (!_.isObject(params.wallet)) {
+        throw new Error('missing required param wallet');
+      }
+      const wallet = params.wallet;
       const reqId = params.reqId || new RequestTracer();
-      const ids = params.wallet.baseCoin.keyIdsForSigning();
+      const ids = wallet.baseCoin.keyIdsForSigning();
       const keychainQueriesBluebirds = ids.map(
-        id => self.get({ id: params.wallet.keyIds()[id], reqId })
+        id => self.get({ id: wallet.keyIds()[id], reqId })
       );
       return Bluebird.all(keychainQueriesBluebirds);
     }).call(this).asCallback(callback);

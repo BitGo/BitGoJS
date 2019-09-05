@@ -29,7 +29,7 @@ export function setNetwork(network: V1Network): void {
  *
  * @deprecated
  */
-export function getNetwork(): string {
+export function getNetwork(): V1Network {
   return bitcoinNetwork;
 }
 
@@ -66,7 +66,7 @@ export function validateParams(
   params: object,
   expectedParams: string[],
   optionalParams: string[] = [],
-  optionalCallback: NodeCallback<any> = undefined
+  optionalCallback?: NodeCallback<any>
 ): boolean {
   if (!_.isObject(params)) {
     throw new Error('Must pass in parameters dictionary');

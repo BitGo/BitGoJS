@@ -7,6 +7,7 @@ import * as request from 'superagent';
 import * as stellar from 'stellar-sdk';
 import { BigNumber } from 'bignumber.js';
 import { BitGo } from '../../bitgo';
+import { KeyIndices } from '../keychains';
 
 import { Ed25519KeyDeriver } from '../keyDeriver';
 import * as config from '../../config';
@@ -17,7 +18,18 @@ import {
   KeyRecoveryServiceError,
   UnexpectedAddressError
 } from '../../errors';
-import { BaseCoin, BaseCoinTransactionOutput, BaseCoinTransactionExplanation, KeyPair } from '../baseCoin';
+import {
+  BaseCoin,
+  TransactionOutput,
+  TransactionExplanation as BaseTransactionExplanation,
+  KeyPair,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  VerifyTransactionOptions as BaseVerifyTransactionOptions,
+  ParseTransactionOptions,
+  ParsedTransaction,
+  VerifyTransactionOptions,
+} from '../baseCoin';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 
@@ -33,11 +45,6 @@ interface Memo {
   value: string;
 }
 
-interface VerifyAddressOptions {
-  address: string;
-  rootAddress: string;
-}
-
 interface InitiateRecoveryOptions {
   userKey: string;
   backupKey: string;
@@ -47,7 +54,7 @@ interface InitiateRecoveryOptions {
 }
 
 interface RecoveryOptions extends InitiateRecoveryOptions {
-  rootAddress: string;
+  rootAddress?: string;
 }
 
 interface RecoveryTransaction {
@@ -57,7 +64,7 @@ interface RecoveryTransaction {
   coin?: string;
 }
 
-interface TransactionPrebuild {
+interface TransactionPrebuild extends BaseTransactionPrebuild {
   txBase64: string;
 }
 
@@ -85,36 +92,16 @@ interface TransactionMemo {
   type?: string;
 }
 
-interface TransactionExplanation extends BaseCoinTransactionExplanation {
+interface TransactionExplanation extends BaseTransactionExplanation {
   memo: TransactionMemo;
 }
 
-interface TransactionParams {
-  recipients: BaseCoinTransactionOutput[];
-}
-
-interface VerificationOptions {
-  disableNetworking?: boolean;
-  keychains?: {
-    user: {
-      pub: string;
-    },
-    backup: {
-      pub: string;
-    }
-  }
-}
-
-interface VerifyTransactionOptions {
-  txPrebuild: TransactionPrebuild;
-  txParams: TransactionParams;
-  wallet: Wallet;
-  verification?: VerificationOptions;
+interface VerifyAddressOptions extends BaseVerifyAddressOptions {
+  rootAddress: string;
 }
 
 export class Xlm extends BaseCoin {
-
-  readonly homeDomain: string;
+  public readonly homeDomain: string;
   static readonly maxMemoId: string = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
 
   constructor(bitgo: BitGo) {
@@ -319,19 +306,23 @@ export class Xlm extends BaseCoin {
    */
   getAddressDetails(address: string): AddressDetails {
     const destinationDetails = url.parse(address);
-    const queryDetails = querystring.parse(destinationDetails.query);
     const destinationAddress = destinationDetails.pathname;
-    if (!stellar.StrKey.isValidEd25519PublicKey(destinationAddress)) {
+    if (!destinationAddress || !stellar.StrKey.isValidEd25519PublicKey(destinationAddress)) {
       throw new Error(`invalid address: ${address}`);
     }
     // address doesn't have a memo id
     if (destinationDetails.pathname === address) {
       return {
         address: address,
-        memoId: null,
+        memoId: undefined,
       };
     }
 
+    if (!destinationDetails.query) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+
+    const queryDetails = querystring.parse(destinationDetails.query);
     if (!queryDetails.memoId) {
       // if there are more properties, the query details need to contain the memo id property
       throw new InvalidAddressError(`invalid address: ${address}`);
@@ -370,7 +361,7 @@ export class Xlm extends BaseCoin {
     if (!stellar.StrKey.isValidEd25519PublicKey(address)) {
       throw new Error(`invalid address details: ${address}`);
     }
-    if (this.isValidMemoId(memoId)) {
+    if (memoId && this.isValidMemoId(memoId)) {
       return `${address}?memoId=${memoId}`;
     }
     return address;
@@ -472,7 +463,7 @@ export class Xlm extends BaseCoin {
    * @param address {String} the address to verify
    * @param rootAddress {String} the wallet's root address
    */
-  verifyAddress({ address, rootAddress }: VerifyAddressOptions): void {
+  verifyAddress({ address, rootAddress }: VerifyAddressOptions): boolean {
     if (!this.isValidAddress(address)) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
@@ -483,6 +474,8 @@ export class Xlm extends BaseCoin {
     if (addressDetails.address !== rootAddressDetails.address) {
       throw new UnexpectedAddressError(`address validation failure: ${addressDetails.address} vs ${rootAddressDetails.address}`);
     }
+
+    return true;
   }
 
   /**
@@ -492,7 +485,7 @@ export class Xlm extends BaseCoin {
   initiateRecovery(params: RecoveryOptions): Bluebird<stellar.Keypair[]> {
     const self = this;
     return co(function *() {
-      const keys = [];
+      const keys: stellar.Keypair[] = [];
       let userKey = params.userKey;
       let backupKey = params.backupKey;
 
@@ -501,11 +494,11 @@ export class Xlm extends BaseCoin {
       const isUnsignedSweep = backupKey.startsWith('G') && userKey.startsWith('G');
 
 
-      if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
+      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new KeyRecoveryServiceError(`Unknown key recovery service provider - ${params.krsProvider}`);
       }
 
-      if (isKrsRecovery && !config.krsProviders[params.krsProvider].supportedCoins.includes(self.getFamily())) {
+      if (isKrsRecovery && params.krsProvider && !config.krsProviders[params.krsProvider].supportedCoins.includes(self.getFamily())) {
         throw new KeyRecoveryServiceError(`Specified key recovery service does not support recoveries for ${self.getChain()}`);
       }
 
@@ -568,7 +561,7 @@ export class Xlm extends BaseCoin {
       const isKrsRecovery = params.backupKey.startsWith('G') && !params.userKey.startsWith('G');
       const isUnsignedSweep = params.backupKey.startsWith('G') && params.userKey.startsWith('G');
 
-      if (!stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
+      if (!params.rootAddress || !stellar.StrKey.isValidEd25519PublicKey(params.rootAddress)) {
         throw new Error(`Invalid wallet address: ${params.rootAddress}`);
       }
 
@@ -784,7 +777,7 @@ export class Xlm extends BaseCoin {
         const memoId = _.get(memo, 'type') === 'id' && ! _.get(memo, 'value') ?
           `?memoId=${memo.value}` :
           '';
-        const output: BaseCoinTransactionOutput = {
+        const output: TransactionOutput = {
           amount: self.bigUnitsToBaseUnits(
             (operation as stellar.Operation.CreateAccount).startingBalance || (operation as stellar.Operation.Payment).amount
           ),
@@ -839,6 +832,10 @@ export class Xlm extends BaseCoin {
       } = options;
       const disableNetworking = !!verification.disableNetworking;
 
+      if (!txPrebuild.txBase64) {
+        throw new Error('missing required tx prebuild property txBase64');
+      }
+
       const tx = new stellar.Transaction(txPrebuild.txBase64);
 
       if (txParams.recipients.length !== 1) {
@@ -881,9 +878,13 @@ export class Xlm extends BaseCoin {
           throw new Error('cannot fetch keychains without networking');
         } else if (!keychains) {
           keychains = yield Bluebird.props({
-            user: self.keychains().get({ id: wallet.keyIds()[0] }),
-            backup: self.keychains().get({ id: wallet.keyIds()[1] }),
+            user: self.keychains().get({ id: wallet.keyIds()[KeyIndices.USER] }),
+            backup: self.keychains().get({ id: wallet.keyIds()[KeyIndices.BACKUP] }),
           });
+        }
+
+        if (!keychains || !keychains.backup || !keychains.user) {
+          throw new Error('keychains are required, but could not be fetched');
         }
 
         if (self.verifySignature(keychains.backup.pub, tx.hash(), userSignature)) {
@@ -931,4 +932,8 @@ export class Xlm extends BaseCoin {
    * @param tx transaction to convert
    */
   protected static txToString = (tx: stellar.Transaction): string => (tx.toEnvelope().toXDR as ((_: string) => string))('base64');
+
+  parseTransaction(params: ParseTransactionOptions, callback?: NodeCallback<ParsedTransaction>): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({}).asCallback(callback);
+  }
 }

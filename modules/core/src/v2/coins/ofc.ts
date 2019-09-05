@@ -1,11 +1,20 @@
 /**
  * @prettier
  */
+import {
+  BaseCoin,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+} from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import { BaseCoin, KeyPair } from '../baseCoin';
+import * as Bluebird from 'bluebird';
 import * as crypto from 'crypto';
 import * as bitGoUtxoLib from 'bitgo-utxo-lib';
 import * as errors from '../../errors';
+import { NodeCallback } from '../types';
 
 export class Ofc extends BaseCoin {
   static createInstance(bitgo: BitGo): BaseCoin {
@@ -69,5 +78,24 @@ export class Ofc extends BaseCoin {
 
   isValidAddress(address: string): boolean {
     throw new errors.MethodNotImplementedError();
+  }
+
+  getBaseFactor(): number | string {
+    return 0;
+  }
+
+  parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({}).asCallback(callback);
+  }
+
+  verifyAddress(params: VerifyAddressOptions): boolean {
+    return true;
+  }
+
+  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+    return Bluebird.resolve(true).asCallback(callback);
   }
 }

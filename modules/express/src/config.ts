@@ -1,11 +1,12 @@
-import { isNil } from 'lodash';
+import { EnvironmentName, V1Network } from 'bitgo';
+import { isNil, isNumber } from 'lodash';
 
 import { args } from './args';
 
 export interface Config {
   port: number;
   bind: string;
-  env: string;
+  env: EnvironmentName;
   debugNamespace: string[];
   keyPath?: string;
   crtPath?: string;
@@ -15,7 +16,7 @@ export interface Config {
   disableEnvCheck: boolean;
   timeout: number;
   customRootUri?: string;
-  customBitcoinNetwork?: string;
+  customBitcoinNetwork?: V1Network;
 }
 
 export const ArgConfig = (args): Config => ({
@@ -35,9 +36,9 @@ export const ArgConfig = (args): Config => ({
 });
 
 export const EnvConfig = (): Config => ({
-  port: Number(process.env.BITGO_PORT) || undefined,
-  bind: process.env.BITGO_BIND,
-  env: process.env.BITGO_ENV,
+  port: Number(process.env.BITGO_PORT),
+  bind: process.env.BITGO_BIND || DefaultConfig.bind,
+  env: (process.env.BITGO_ENV as EnvironmentName) || DefaultConfig.env,
   debugNamespace: (process.env.BITGO_DEBUG_NAMESPACE || '').split(','),
   keyPath: process.env.BITGO_KEYPATH,
   crtPath: process.env.BITGO_CRTPATH,
@@ -45,9 +46,9 @@ export const EnvConfig = (): Config => ({
   disableSSL: Boolean(process.env.DISABLE_SSL),
   disableProxy: Boolean(process.env.DISABLE_PROXY),
   disableEnvCheck: Boolean(process.env.DISABLE_ENV_CHECK),
-  timeout: Number(process.env.BITGO_TIMEOUT) || undefined,
+  timeout: Number(process.env.BITGO_TIMEOUT),
   customRootUri: process.env.BITGO_CUSTOM_ROOT_URI,
-  customBitcoinNetwork: process.env.BITGO_CUSTOM_BITCOIN_NETWORK,
+  customBitcoinNetwork: (process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network),
 });
 
 export const DefaultConfig: Config = {
@@ -68,11 +69,17 @@ export const DefaultConfig: Config = {
  * Earlier configs have higher precedence over subsequent configs.
  */
 function mergeConfigs(...configs: Config[]): Config {
+  function isNilOrNaN(val: unknown): val is null | undefined | number {
+    return isNil(val) || (isNumber(val) && isNaN(val));
+  }
   // helper to get the first defined value for a given config key
   // from the config sources in a type safe manner
-  const get = <T extends keyof Config>(k: T): Config[T] =>
-    configs.reduce((item: Config[T], c) =>
-      isNil(item) && !isNil(c[k]) ? c[k] : item, undefined);
+  function get<T extends keyof Config>(k: T): Config[T] {
+    return configs.reduce((item: Config[T], c) => {
+      const current = c[k];
+      return isNilOrNaN(item) && !isNilOrNaN(current) ? current : item;
+    }, undefined);
+  }
 
   return {
     port: get('port'),

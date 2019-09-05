@@ -5,7 +5,7 @@ import * as debugLib from 'debug';
 
 import { Config } from './config';
 
-const BitGoJS = require('bitgo');
+import * as BitGoJS from 'bitgo';
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
 const debug = debugLib('bitgo:express');
@@ -407,7 +407,7 @@ const handleV2CoinSpecificREST = function(req, res, next) {
     return redirectRequest(bitgo, method, coinURL, req, next);
   } catch (e) {
     if (e instanceof BitGoJS.Errors.UnsupportedCoinError) {
-      const queryParams = _.transform(req.query, (acc, value, key) => {
+      const queryParams = _.transform(req.query, (acc: string[], value, key) => {
         for (const val of _.castArray(value)) {
           acc.push(`${key}=${val}`);
         }
@@ -438,7 +438,7 @@ const redirectRequest = function(bitgo, method, url, req, next) {
   next();
 };
 
-const apiResponse = function(status, result, message = null) {
+const apiResponse = function(status, result, message?: string) {
   const err: any = new Error(message);
   err.status = status;
   err.result = result;
@@ -459,13 +459,6 @@ const parseBody = function(req, res, next) {
 // Create the bitgo object in the request
 const prepareBitGo = function(config: Config) {
   const { env, customRootUri, customBitcoinNetwork } = config;
-  const bitgoConstructorParams = {
-    env,
-    customRootURI: customRootUri,
-    customBitcoinNetwork,
-    accessToken: undefined as string,
-    userAgent: undefined as string,
-  };
 
   return function(req, res, next) {
     // Get access token
@@ -476,10 +469,14 @@ const prepareBitGo = function(config: Config) {
         accessToken = authSplit[1];
       }
     }
-
     const userAgent = req.headers['user-agent'] ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent'] : BITGOEXPRESS_USER_AGENT;
-    bitgoConstructorParams.accessToken = accessToken;
-    bitgoConstructorParams.userAgent = userAgent;
+    const bitgoConstructorParams = {
+      env,
+      customRootURI: customRootUri,
+      customBitcoinNetwork,
+      accessToken,
+      userAgent,
+    };
 
     req.bitgo = new BitGoJS.BitGo(bitgoConstructorParams);
     req.bitgo._promise.longStackSupport = true;

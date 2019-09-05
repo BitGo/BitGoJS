@@ -1,8 +1,20 @@
-const tronweb = require('tronweb');
-
-import { BaseCoin } from '../baseCoin';
-import { BitGo } from '../../bitgo';
+/**
+ * @prettier
+ */
+import * as Bluebird from 'bluebird';
+import * as tronweb from 'tronweb';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { MethodNotImplementedError } from '../../errors';
+import {
+  BaseCoin,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+} from '../baseCoin';
+import { BitGo } from '../../bitgo';
+import { NodeCallback } from '../types';
 
 export class Trx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -38,7 +50,7 @@ export class Trx extends BaseCoin {
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
   valuelessTransferAllowed(): boolean {
-      return true;
+    return true;
   }
 
   isValidAddress(address: string): boolean {
@@ -50,5 +62,28 @@ export class Trx extends BaseCoin {
    */
   getCoinLibrary() {
     return tronweb;
+  }
+
+  generateKeyPair(seed?: Buffer): KeyPair {
+    throw new MethodNotImplementedError();
+  }
+
+  isValidPub(pub: string): boolean {
+    throw new MethodNotImplementedError();
+  }
+
+  parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({}).asCallback(callback);
+  }
+
+  verifyAddress(params: VerifyAddressOptions): boolean {
+    return true;
+  }
+
+  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+    return Bluebird.resolve(true).asCallback(callback);
   }
 }

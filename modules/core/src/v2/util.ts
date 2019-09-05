@@ -79,7 +79,7 @@ export class Util {
    * @param pubKeys
    * @deprecated
    */
-  static p2shMultisigOutputScript(m: number, pubKeys: string[]) {
+  static p2shMultisigOutputScript(m: number, pubKeys: Buffer[]) {
     const redeemScript = bitcoin.script.multisig.output.encode(m, pubKeys);
     const hash = bitcoin.crypto.hash160(redeemScript);
     return bitcoin.script.scriptHash.output.encode(hash);

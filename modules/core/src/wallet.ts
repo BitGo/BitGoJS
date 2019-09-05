@@ -399,7 +399,7 @@ Wallet.prototype.addresses = function(params, callback) {
 Wallet.prototype.stats = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
-  const args = [];
+  const args: string[] = [];
   if (params.limit) {
     if (!_.isInteger(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
@@ -575,10 +575,10 @@ Wallet.prototype.unspents = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const allUnspents = [];
+  const allUnspents: any[] = [];
   const self = this;
 
-  const getUnspentsBatch = function(skip, limit) {
+  const getUnspentsBatch = function(skip, limit?) {
 
     const queryObject = _.cloneDeep(params);
     if (skip > 0) {
@@ -609,7 +609,7 @@ Wallet.prototype.unspents = function(params, callback) {
         // we need to fetch the next batch
         // let's just offset the current skip by the count
         const newSkip = skip + result.count;
-        let newLimit = null;
+        let newLimit: number | undefined;
         if (limit > 0) {
           // we set the new limit to be precisely the number of missing unspents to hit our own limit
           newLimit = limit - allUnspents.length;
@@ -711,7 +711,7 @@ Wallet.prototype.transactions = function(params, callback) {
   params = params || {};
   common.validateParams(params, [], [], callback);
 
-  const args = [];
+  const args: string[] = [];
   if (params.limit) {
     if (!_.isInteger(params.limit)) {
       throw new Error('invalid limit argument, expecting number');
@@ -1287,7 +1287,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
   const findAdditionalUnspents = ({ inputs, parentOutputValue, parentFee, parentVSize, maxUnspents }) => {
     return co(function *coFindAdditionalUnspents() {
 
-      const additionalUnspents = [];
+      const additionalUnspents: any[] = [];
 
       // ask the server for enough unspents to cover the child fee, assuming
       // that it can be done without additional unspents (which is not possible,
@@ -2013,7 +2013,7 @@ Wallet.prototype.consolidateUnspents = function(params, callback) {
    * @returns {*}
    */
   const runNextConsolidation = co(function *() {
-    const consolidationTransactions = [];
+    const consolidationTransactions: any[] = [];
     let isFinalConsolidation = false;
     iterationCount++;
     /*

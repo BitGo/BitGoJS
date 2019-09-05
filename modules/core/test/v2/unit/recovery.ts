@@ -591,7 +591,6 @@ describe('Recovery:', function() {
       recoveryTx.transaction.compression.should.equal('none');
       recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f640000000000000000454f53000000000000');
       recoveryTx.transaction.signatures.length.should.equal(2);
-      console.log('WITH unencrypted keys');
       recoveryTx.txid.should.equal('48185c63f724831382ab860171d5bdf4b433471707b8c59fa2f4ea8e151ab093');
     }));
 

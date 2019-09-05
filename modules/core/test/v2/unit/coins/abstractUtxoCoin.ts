@@ -1,6 +1,7 @@
 import * as should from 'should';
 import { coroutine as co } from 'bluebird';
 import * as sinon from 'sinon';
+import { Wallet } from '../../../../src/v2/wallet';
 const recoveryNocks = require('../../lib/recovery-nocks');
 const fixtures = require('../../fixtures/abstractUtxoCoin.ts');
 import { TestBitGo } from '../../../lib/test_bitgo';
@@ -18,15 +19,14 @@ describe('Abstract UTXO Coin:', () => {
      * These objects are structured to force parse transaction into a
      * particular execution path for these tests.
      */
-    const wallet = {
-      _wallet: {
-        migratedFrom: 'v1_wallet_base_address'
-      }
-    };
     const verification = {
       disableNetworking: true,
       keychains: {}
     };
+
+    const wallet = sinon.createStubInstance(Wallet, {
+      migratedFrom: 'v1_wallet_base_address'
+    });
 
     const outputAmount = 0.01 * 1e8;
 
@@ -39,7 +39,7 @@ describe('Abstract UTXO Coin:', () => {
       sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [],
         changeOutputs: [{
-          address: wallet._wallet.migratedFrom,
+          address: wallet.migratedFrom(),
           amount: outputAmount
         }]
       });
@@ -47,11 +47,11 @@ describe('Abstract UTXO Coin:', () => {
       sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
 
 
-      const parsedTransaction = yield coin.parseTransaction({ txParams: {}, txPrebuild: {}, wallet, verification });
+      const parsedTransaction = yield coin.parseTransaction({ txParams: {}, txPrebuild: { txHex: '' }, wallet, verification });
 
       should.exist(parsedTransaction.outputs[0]);
       parsedTransaction.outputs[0].should.deepEqual({
-        address: wallet._wallet.migratedFrom,
+        address: wallet.migratedFrom(),
         amount: outputAmount,
         external: false
       });
@@ -72,7 +72,7 @@ describe('Abstract UTXO Coin:', () => {
 
       sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
 
-      const parsedTransaction = yield coin.parseTransaction({ txParams: {}, txPrebuild: {}, wallet, verification });
+      const parsedTransaction = yield coin.parseTransaction({ txParams: {}, txPrebuild: { txHex: '' }, wallet, verification });
 
       should.exist(parsedTransaction.outputs[0]);
       parsedTransaction.outputs[0].should.deepEqual({
@@ -101,7 +101,7 @@ describe('Abstract UTXO Coin:', () => {
         ],
       });
 
-      const parsedTransaction = yield coin.parseTransaction({ txParams: { changeAddress, recipients }, txPrebuild: {}, wallet, verification });
+      const parsedTransaction = yield coin.parseTransaction({ txParams: { changeAddress, recipients }, txPrebuild: { txHex: '' }, wallet, verification });
 
       should.exist(parsedTransaction.outputs[0]);
       parsedTransaction.outputs[0].should.deepEqual({

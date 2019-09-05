@@ -11,7 +11,16 @@ import * as _ from 'lodash';
 import * as secp256k1 from 'secp256k1';
 import * as request from 'superagent';
 
-import { BaseCoin, KeyPair } from '../baseCoin';
+import {
+  BaseCoin,
+  FeeEstimateOptions,
+  KeyPair,
+  ParsedTransaction,
+  ParseTransactionOptions,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+  TransactionPrebuild as BaseTransactionPrebuild,
+} from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
@@ -217,13 +226,6 @@ interface HopTransactionBuildOptions {
   walletPassphrase: string;
 }
 
-interface FeeEstimateOptions {
-  hop?: boolean;
-  recipient?: string;
-  data?: string;
-  amount?: string;
-}
-
 interface BuildOptions {
   hop?: boolean;
   wallet?: Wallet;
@@ -236,9 +238,8 @@ interface FeeEstimate {
   feeEstimate: number;
 }
 
-interface TransactionPrebuild {
+interface TransactionPrebuild extends BaseTransactionPrebuild {
   hopTransaction?: HopPrebuild;
-  wallet?: Wallet;
   buildParams: {
     recipients: Recipient[];
   };
@@ -593,18 +594,19 @@ export class Eth extends BaseCoin {
 
     const secondsSinceEpoch = Math.floor(new Date().getTime() / 1000);
     const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
+    const sequenceId = txPrebuild.nextContractSequenceId;
 
-    const operationHash = this.getOperationSha3ForExecuteAndConfirm(
-      params.recipients,
-      expireTime,
-      txPrebuild.nextContractSequenceId
-    );
+    if (_.isUndefined(sequenceId)) {
+      throw new Error('transaction prebuild missing required property nextContractSequenceId');
+    }
+
+    const operationHash = this.getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, sequenceId);
     const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
     const txParams = {
       recipients: params.recipients,
       expireTime: expireTime,
-      contractSequenceId: txPrebuild.nextContractSequenceId,
+      contractSequenceId: sequenceId,
       sequenceId: params.sequenceId,
       operationHash: operationHash,
       signature: signature,
@@ -765,7 +767,7 @@ export class Eth extends BaseCoin {
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
 
-      if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
+      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new Error('unknown key recovery service provider');
       }
 
@@ -956,8 +958,11 @@ export class Eth extends BaseCoin {
       }
 
       // Get token balance from external API
-      const walletContractAddress = params.wallet._wallet.coinSpecific.baseAddress;
-      const recoveryAmount = yield self.queryAddressTokenBalance(params.tokenContractAddress, walletContractAddress);
+      const coinSpecific = params.wallet.coinSpecific();
+      if (!coinSpecific || !_.isString(coinSpecific.baseAddress)) {
+        throw new Error('missing required coin specific property baseAddress');
+      }
+      const recoveryAmount = yield self.queryAddressTokenBalance(params.tokenContractAddress, coinSpecific.baseAddress);
 
       if (params.broadcast) {
         // We're going to create a normal ETH transaction that sends an amount of 0 ETH to the
@@ -1398,5 +1403,20 @@ export class Eth extends BaseCoin {
       pub: xpub,
       prv: extendedKey.toBase58(),
     };
+  }
+
+  parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({}).asCallback(callback);
+  }
+
+  verifyAddress(params: VerifyAddressOptions): boolean {
+    return true;
+  }
+
+  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+    return Bluebird.resolve(true).asCallback(callback);
   }
 }

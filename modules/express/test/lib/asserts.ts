@@ -2,7 +2,7 @@
 /// <reference types="node" />
 // Additional convenience assertions for should
 
-const { Assertion } = require('should');
+import { Assertion } from 'should';
 
 Assertion.add('calledOnceWith', function(...args) {
   this.params = { operator: 'to be called once with' };

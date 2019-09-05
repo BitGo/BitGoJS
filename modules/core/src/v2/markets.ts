@@ -16,8 +16,13 @@ import { NodeCallback } from './types';
 
 const co = Bluebird.coroutine;
 
-export interface LatestOptions {}
-export interface YesterdayOptions {}
+// TODO (SDKT-9): reverse engineer and add options
+// export interface LatestOptions {}
+export type LatestOptions = any;
+
+// TODO (SDKT-9): reverse engineer and add options
+// export interface YesterdayOptions {}
+export type YesterdayOptions = any;
 
 export interface LastDaysOptions {
   currencyName: string;
@@ -25,7 +30,13 @@ export interface LastDaysOptions {
 }
 
 export class Markets {
-  public constructor(private bitgo: BitGo, private baseCoin: BaseCoin) {}
+  private readonly bitgo: BitGo;
+  private readonly baseCoin: BaseCoin;
+
+  public constructor(bitgo: BitGo, baseCoin: BaseCoin) {
+    this.bitgo = bitgo;
+    this.baseCoin = baseCoin;
+  }
 
   /**
    * Get the latest price data
@@ -66,7 +77,7 @@ export class Markets {
     return co(function*() {
       validateParams(params, ['currencyName'], []);
 
-      const days = !isNaN(parseInt(params.days, 10)) ? parseInt(params.days, 10) : 90;
+      const days = params.days && !isNaN(parseInt(params.days, 10)) ? parseInt(params.days, 10) : 90;
 
       if (days && days < 0) {
         throw new Error('must use a non-negative number of days');

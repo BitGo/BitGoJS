@@ -250,7 +250,7 @@ describe('PendingApproval', function() {
     });
 
     it('cannot approve when transaction needs reconstructing', function() {
-      let approvals = [];
+      let approvals: any[] = [];
       return Q.all([
         createTransactionPendingApproval(),
         createTransactionPendingApproval()

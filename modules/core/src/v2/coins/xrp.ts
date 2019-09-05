@@ -14,10 +14,16 @@ const rippleKeypairs = require('ripple-keypairs');
 
 import {
   BaseCoin,
-  BaseCoinTransactionExplanation,
+  TransactionExplanation,
   KeyPair,
+  VerifyAddressOptions as BaseVerifyAddressOptions,
+  ParseTransactionOptions,
+  ParsedTransaction,
+  TransactionPrebuild,
+  VerifyTransactionOptions,
 } from '../baseCoin';
 import * as config from '../../config';
+import { KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 
@@ -26,9 +32,9 @@ const sjcl = require('../../vendor/sjcl.min.js');
 
 const co = Bluebird.coroutine;
 
-interface AddressDetails {
+interface Address {
   address: string;
-  destinationTag: number;
+  destinationTag?: number;
 }
 
 interface FeeInfo {
@@ -38,30 +44,20 @@ interface FeeInfo {
   baseFee: string;
 }
 
-interface TransactionPrebuild {
-  txHex: string;
-}
-
 interface SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
 }
 
 interface ExplainTransactionOptions {
-  txHex: string;
+  txHex?: string;
 }
 
-interface VerifyTransactionOptions {
-  txParams: any;
-  txPrebuild: TransactionPrebuild;
-}
-
-interface VerifyAddressOptions {
-  address: string;
+interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   rootAddress: string;
 }
 
-interface RecoveryInfo extends BaseCoinTransactionExplanation {
+interface RecoveryInfo extends TransactionExplanation {
   txHex: string;
   backupKey?: string;
   coin?: string;
@@ -123,21 +119,25 @@ export class Xrp extends BaseCoin {
   /**
    * Parse an address string into address and destination tag
    */
-  public getAddressDetails(address: string): AddressDetails {
+  public getAddressDetails(address: string): Address {
     const destinationDetails = url.parse(address);
-    const queryDetails = querystring.parse(destinationDetails.query);
     const destinationAddress = destinationDetails.pathname;
-    if (!rippleAddressCodec.isValidAddress(destinationAddress)) {
+    if (!destinationAddress || !rippleAddressCodec.isValidAddress(destinationAddress)) {
       throw new InvalidAddressError(`destination address "${destinationAddress}" is not valid`);
     }
     // there are no other properties like destination tags
     if (destinationDetails.pathname === address) {
       return {
         address: address,
-        destinationTag: null,
+        destinationTag: undefined,
       };
     }
 
+    if (!destinationDetails.query) {
+      throw new InvalidAddressError('no query params present');
+    }
+
+    const queryDetails = querystring.parse(destinationDetails.query);
     if (!queryDetails.dt) {
       // if there are more properties, the query details need to contain the destination tag property.
       throw new InvalidAddressError('destination tag missing');
@@ -166,7 +166,7 @@ export class Xrp extends BaseCoin {
   /**
    * Construct a full, normalized address from an address and destination tag
    */
-  public normalizeAddress({ address, destinationTag }): string {
+  public normalizeAddress({ address, destinationTag }: Address): string {
     if (!_.isString(address)) {
       throw new InvalidAddressError('invalid address details');
     }
@@ -180,7 +180,7 @@ export class Xrp extends BaseCoin {
    * Evaluates whether an address string is valid for this coin
    * @param address
    */
-  public isValidAddress(address): boolean {
+  public isValidAddress(address: string): boolean {
     try {
       const addressDetails = this.getAddressDetails(address);
       return address === this.normalizeAddress(addressDetails);
@@ -357,8 +357,11 @@ export class Xrp extends BaseCoin {
    * @param params
    * @param callback
    */
-  explainTransaction(params: ExplainTransactionOptions, callback?: NodeCallback<BaseCoinTransactionExplanation>): Bluebird<BaseCoinTransactionExplanation> {
+  explainTransaction(params: ExplainTransactionOptions = {}, callback?: NodeCallback<TransactionExplanation>): Bluebird<TransactionExplanation> {
     return co(function *() {
+      if (!params.txHex) {
+        throw new Error('missing required param txHex');
+      }
       let transaction;
       let txHex;
       try {
@@ -404,8 +407,9 @@ export class Xrp extends BaseCoin {
    * @returns {boolean}
    */
   public verifyTransaction({ txParams, txPrebuild }: VerifyTransactionOptions, callback): Bluebird<boolean> {
+    const self = this;
     return co(function *() {
-      const explanation = yield this.explainTransaction({
+      const explanation = yield self.explainTransaction({
         txHex: txPrebuild.txHex
       });
 
@@ -446,6 +450,8 @@ export class Xrp extends BaseCoin {
     if (addressDetails.address !== rootAddressDetails.address) {
       throw new UnexpectedAddressError(`address validation failure: ${addressDetails.address} vs. ${rootAddressDetails.address}`);
     }
+
+    return true;
   }
 
   /**
@@ -561,18 +567,21 @@ export class Xrp extends BaseCoin {
 
       const rawDestination = params.recoveryDestination;
       const destinationDetails = url.parse(rawDestination);
-      const queryDetails = querystring.parse(destinationDetails.query);
       const destinationAddress = destinationDetails.pathname;
-      let destinationTag = undefined;
 
-      if (Array.isArray(queryDetails.dt)) {
-        // if queryDetails.dt is an array, that means dt was given multiple times, which is not valid
-        throw new InvalidAddressError(`destination tag can appear at most once, but ${queryDetails.dt.length} destination tags were found`);
-      }
+      // parse destination tag from query
+      let destinationTag: number | undefined;
+      if (destinationDetails.query) {
+        const queryDetails = querystring.parse(destinationDetails.query);
+        if (Array.isArray(queryDetails.dt)) {
+          // if queryDetails.dt is an array, that means dt was given multiple times, which is not valid
+          throw new InvalidAddressError(`destination tag can appear at most once, but ${queryDetails.dt.length} destination tags were found`);
+        }
 
-      const parsedTag = parseInt(queryDetails.dt, 10);
-      if (Number.isInteger(parsedTag)) {
-        destinationTag = parsedTag;
+        const parsedTag = parseInt(queryDetails.dt, 10);
+        if (Number.isInteger(parsedTag)) {
+          destinationTag = parsedTag;
+        }
       }
 
       const transaction = {
@@ -624,7 +633,7 @@ export class Xrp extends BaseCoin {
   initiateRecovery(params: RecoveryOptions): Bluebird<HDNode[]> {
     const self = this;
     return co(function *initiateRecovery() {
-      const keys = [];
+      const keys: HDNode[] = [];
       const userKey = params.userKey; // Box A
       let backupKey = params.backupKey; // Box B
       const bitgoXpub = params.bitgoKey; // Box C
@@ -638,19 +647,18 @@ export class Xrp extends BaseCoin {
         throw new Error('unknown key recovery service provider');
       }
 
-      const validatePassphraseKey = function(userKey, passphrase): Promise<HDNode> {
+      const validatePassphraseKey = function(userKey, passphrase): HDNode {
         try {
           if (!userKey.startsWith('xprv') && !isUnsignedSweep) {
             userKey = sjcl.decrypt(passphrase, userKey);
           }
-          const userHDNode = HDNode.fromBase58(userKey);
-          return Promise.resolve(userHDNode);
+          return HDNode.fromBase58(userKey);
         } catch (e) {
           throw new Error('Failed to decrypt user key with passcode - try again!');
         }
       };
 
-      const key = yield validatePassphraseKey(userKey, passphrase);
+      const key = validatePassphraseKey(userKey, passphrase);
 
       keys.push(key);
 
@@ -699,5 +707,9 @@ export class Xrp extends BaseCoin {
       pub: xpub,
       prv: extendedKey.toBase58(),
     };
+  }
+
+  parseTransaction(params: ParseTransactionOptions, callback?: NodeCallback<ParsedTransaction>): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({}).asCallback(callback);
   }
 }

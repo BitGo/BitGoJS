@@ -14,6 +14,27 @@ import debugLib = require('debug');
 const debug = debugLib('bitgo:v1:txb');
 import * as common from './common';
 
+interface BaseOutput {
+  amount: number;
+  travelInfo?: any;
+}
+
+interface AddressOutput extends BaseOutput {
+  address: string;
+}
+
+interface ScriptOutput extends BaseOutput {
+  script: Buffer;
+}
+
+type Output = AddressOutput | ScriptOutput;
+
+interface BitGoUnspent {
+  value: number;
+  tx_hash: Buffer;
+  tx_output_n: number;
+}
+
 //
 // TransactionBuilder
 // @params:
@@ -36,10 +57,10 @@ import * as common from './common';
 exports.createTransaction = function(params) {
   const minConfirms = params.minConfirms || 0;
   const validate = params.validate === undefined ? true : params.validate;
-  let recipients = [];
-  let opReturns = [];
-  let extraChangeAmounts = [];
-  let estTxSize;
+  let recipients: { address: string; amount: number; script?: string; travelInfo?: any; }[] = [];
+  let opReturns: { message: string; amount: number; }[] = [];
+  let extraChangeAmounts: number[] = [];
+  let estTxSize: number;
   let travelInfos;
 
   // Sanity check the arguments passed in
@@ -201,7 +222,7 @@ exports.createTransaction = function(params) {
   // The sum of the input values for this transaction.
   let inputAmount;
 
-  let changeOutputs = [];
+  let changeOutputs: Output[] = [];
 
   // The transaction.
   let transaction = new bitcoin.TransactionBuilder(network);
@@ -338,7 +359,7 @@ exports.createTransaction = function(params) {
   };
 
   // Get the unspents for the single key fee address
-  let feeSingleKeyUnspents = [];
+  let feeSingleKeyUnspents: BitGoUnspent[] = [];
   const getUnspentsForSingleKey = function() {
     if (feeSingleKeySourceAddress) {
       let feeTarget = 0.01e8;
@@ -360,7 +381,7 @@ exports.createTransaction = function(params) {
 
   // Iterate unspents, sum the inputs, and save _inputs with the total
   // input amount and final list of inputs to use with the transaction.
-  let feeSingleKeyUnspentsUsed = [];
+  let feeSingleKeyUnspentsUsed: BitGoUnspent[] = [];
 
   const collectInputs = function() {
     if (!unspents.length) {
@@ -545,7 +566,7 @@ exports.createTransaction = function(params) {
       throw new Error('transaction too large: estimated size ' + minerFeeInfo.size + ' bytes');
     }
 
-    const outputs = [];
+    const outputs: Output[] = [];
 
     recipients.forEach(function(recipient) {
       let script;
@@ -577,12 +598,12 @@ exports.createTransaction = function(params) {
       outputs.push({ script, amount });
     });
 
-    const getChangeOutputs = function(changeAmount) {
+    const getChangeOutputs = function(changeAmount: number): Output[] | Bluebird<Output[]> {
       if (changeAmount < 0) {
         throw new Error('negative change amount: ' + changeAmount);
       }
 
-      const result = [];
+      const result: Output[] = [];
       // if we paid fees from a single key wallet, return the fee change first
       if (feeSingleKeySourceAddress) {
         const feeSingleKeyWalletChangeAmount = feeSingleKeyInputAmount - (fee + (bitgoFeeInfo ? bitgoFeeInfo.amount : 0));
@@ -617,7 +638,7 @@ exports.createTransaction = function(params) {
       allChangeAmounts.push(changeAmount - extraChangeTotal);
 
       // Recursive async func to add all change outputs
-      const addChangeOutputs = function() {
+      const addChangeOutputs = function(): Output[] | Bluebird<Output[]> {
         const thisAmount = allChangeAmounts.shift();
         if (!thisAmount) {
           return result;
@@ -655,7 +676,7 @@ exports.createTransaction = function(params) {
       if (bitgoFeeInfo && bitgoFeeInfo.amount > 0) {
         extraOutputs.push(bitgoFeeInfo);
       }
-      extraOutputs.forEach(function(output) {
+      extraOutputs.forEach(function(output: AddressOutput & ScriptOutput) {
         output.script = bitcoin.address.toOutputScript(output.address, network);
 
         // decide where to put the outputs - default is to randomize unless forced to end
@@ -664,7 +685,7 @@ exports.createTransaction = function(params) {
       });
 
       // Add all outputs to the transaction
-      outputs.forEach(function(output) {
+      outputs.forEach(function(output: ScriptOutput) {
         transaction.addOutput(output.script, output.amount);
       });
 
@@ -828,7 +849,7 @@ exports.signTransaction = function(params) {
   let network = getNetwork();
   const enableBCH = (_.isBoolean(params.forceBCH) && params.forceBCH === true);
 
-  if (!_.isObject(keychain) || !_.isString(keychain.xprv)) {
+  if (!_.isObject(keychain) || !_.isString((keychain as any).xprv)) {
     if (_.isString(params.signingKey)) {
       privKey = bitcoin.ECPair.fromWIF(params.signingKey, network);
       keychain = undefined;
@@ -856,8 +877,8 @@ exports.signTransaction = function(params) {
   }
 
   // decorate transaction with input values for TransactionBuilder instantiation
-  const isUtxoTx = _.isObject(transaction) && Array.isArray(transaction.ins);
-  const areValidUnspents = _.isObject(params) && Array.isArray(params.unspents);
+  const isUtxoTx = _.isObject(transaction) && Array.isArray((transaction as any).ins);
+  const areValidUnspents = _.isObject(params) && Array.isArray((params as any).unspents);
   if (isUtxoTx && areValidUnspents) {
     // extend the transaction inputs with the values
     const inputValues = _.map(params.unspents, (u => _.pick(u, 'value')));
@@ -1022,8 +1043,8 @@ exports.verifyInputSignatures = function(transaction, inputIndex, pubScript, ign
   const currentTransactionInput = transaction.ins[inputIndex];
   let sigScript = currentTransactionInput.script;
   let sigsNeeded = 1;
-  const sigs = [];
-  const pubKeys = [];
+  const sigs: string[] = [];
+  const pubKeys: string[] = [];
   let decompiledSigScript = bitcoin.script.decompile(sigScript);
 
   const isSegwitInput = currentTransactionInput.witness.length > 0;

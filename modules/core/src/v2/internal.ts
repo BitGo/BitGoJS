@@ -4,6 +4,7 @@
 import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
 import { BaseCoin } from './baseCoin';
+import { isUndefined } from 'lodash';
 
 const co = Bluebird.coroutine;
 
@@ -22,13 +23,13 @@ export function getFirstPendingTransaction(
 ): Bluebird<any> {
   return co(function*() {
     // These errors should never happen when this is called from wallet.js or enterprise.js
-    if (!baseCoin) {
+    if (isUndefined(baseCoin)) {
       throw new Error('Must provide baseCoin');
     }
-    if (!bitgo) {
+    if (isUndefined(bitgo)) {
       throw new Error('Must provide BitGo object');
     }
-    if (!params.walletId && !params.enterpriseId) {
+    if (isUndefined(params.walletId) && isUndefined(params.enterpriseId)) {
       throw new Error('Must provide either walletId or enterpriseId');
     }
     return bitgo
@@ -44,7 +45,7 @@ export function getFirstPendingTransaction(
  * @param bytes
  * @return 4 byte number
  */
-export function bytesToWord(bytes: Uint8Array): number {
+export function bytesToWord(bytes?: Uint8Array): number {
   if (!(bytes instanceof Uint8Array) || bytes.length !== 4) {
     throw new Error('bytes must be a Uint8Array with length 4');
   }

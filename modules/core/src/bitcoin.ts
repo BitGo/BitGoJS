@@ -1,10 +1,10 @@
-import common = require('./common');
-const bitcoin = require('bitgo-utxo-lib');
+import * as common from './common';
+import * as bitcoin from 'bitgo-utxo-lib';
+import { V1Network } from './v2/types';
 const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
 const BigInteger = require('bigi');
 const createHmac = require('create-hmac');
-const HDNode = bitcoin.HDNode;
 
 let secp256k1;
 
@@ -14,16 +14,16 @@ try {
   console.log('running without secp256k1 acceleration');
 }
 
-export function getNetwork(network?: any) {
+export function getNetwork(network?: V1Network): bitcoin.Network {
   network = network || common.getNetwork();
   return bitcoin.networks[network];
 }
 
-export function makeRandomKey() {
+export function makeRandomKey(): bitcoin.ECPair {
   return bitcoin.ECPair.makeRandom({ network: getNetwork() });
 }
 
-HDNode.prototype.getKey = function(network?: any) {
+function getKey(network?: bitcoin.Network): bitcoin.ECPair {
   network = network || getNetwork();
   const k = this.keyPair;
   const result = new bitcoin.ECPair(k.d, k.d ? null : k.Q, { network: network, compressed: k.compressed });
@@ -32,7 +32,9 @@ HDNode.prototype.getKey = function(network?: any) {
     result.__Q = ecurve.Point.decodeFrom(curve, secp256k1.publicKeyCreate(k.d.toBuffer(32), false));
   }
   return result;
-};
+}
+
+bitcoin.HDNode.prototype.getKey = getKey;
 
 /**
  * Derive a child HDNode from a parent HDNode and index. Uses secp256k1 to speed
@@ -42,7 +44,7 @@ HDNode.prototype.getKey = function(network?: any) {
  * @param   {Number} index   child index
  * @returns {HDNode}         derived HDNode
  */
-function deriveFast(hdnode, index) {
+function deriveFast(hdnode: bitcoin.HDNode, index: number): bitcoin.HDNode {
   // no fast path for private key derivations -- delegate to standard method
   if (!secp256k1 || hdnode.keyPair.d) {
     return hdnode.derive(index);
@@ -60,7 +62,7 @@ function deriveFast(hdnode, index) {
   //      = serP(Kpar) || ser32(index)
   const data = Buffer.concat([
     hdnode.keyPair.getPublicKeyBuffer(),
-    indexBuffer
+    indexBuffer,
   ]);
 
   const I = createHmac('sha512', hdnode.chainCode).update(data).digest();
@@ -103,9 +105,9 @@ function deriveFast(hdnode, index) {
  * @param path the path, e.g. 'm/0/0/0/1'
  * @returns {*} the derived hd key
  */
-export function hdPath(rootKey) {
+export function hdPath(rootKey): { derive: (path: string) => bitcoin.HDNode; deriveKey: (path: string) => bitcoin.ECPair; } {
   const cache = {};
-  const derive = function(path) {
+  const derive = function(path: string): bitcoin.HDNode {
     const components = path.split('/').filter(function(c) {
       return c !== '';
     });
@@ -137,13 +139,13 @@ export function hdPath(rootKey) {
     return derived;
   };
 
-  const deriveKey = function(path) {
-    const hdNode = this.derive(path);
+  function deriveKey(path: string): bitcoin.ECPair {
+    const hdNode = derive(path);
     return hdNode.keyPair;
-  };
+  }
 
   return {
     derive: derive,
-    deriveKey: deriveKey
+    deriveKey: deriveKey,
   };
 }

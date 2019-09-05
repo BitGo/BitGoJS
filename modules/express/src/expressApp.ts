@@ -12,7 +12,7 @@ import * as https from 'https';
 import * as http from 'http';
 import { Server } from 'net';
 
-const morgan = require('morgan');
+import * as morgan from 'morgan';
 const fs = Bluebird.promisifyAll(require('fs'));
 
 import { Config, config } from './config';
@@ -85,7 +85,7 @@ function configureProxy(app, config: Config): void {
   const options = {
     timeout: timeout,
     proxyTimeout: timeout,
-    secure: null,
+    secure: true,
   };
 
   if (Environments[env].network === 'testnet') {
@@ -105,7 +105,10 @@ function configureProxy(app, config: Config): void {
 
   proxy.on('proxyReq', function(proxyReq, req) {
     // Need to rewrite the host, otherwise cross-site protection kicks in
-    proxyReq.setHeader('host', url.parse(Environments[env].uri).hostname);
+    const parsedUri = url.parse(Environments[env].uri).hostname;
+    if (parsedUri) {
+      proxyReq.setHeader('host', parsedUri);
+    }
 
     const userAgent = req.headers['user-agent']
       ? BITGOEXPRESS_USER_AGENT + ' ' + req.headers['user-agent']
@@ -202,12 +205,11 @@ function isTLS(config: Config): boolean {
 
 /**
  * Create either a HTTP or HTTPS server
- * @param args
- * @param tls
+ * @param config
  * @param app
  * @return {Server}
  */
-export function createServer(config: Config, app) {
+export function createServer(config: Config, app: express.Express) {
   return co(function*() {
     return isTLS(config) ? yield createHttpsServer(app, config) : createHttpServer(app);
   }).call(this);

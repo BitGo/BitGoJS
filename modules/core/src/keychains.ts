@@ -84,7 +84,7 @@ Keychains.prototype.create = function(params) {
   const extendedKey = bitcoin.HDNode.fromSeedBuffer(seed);
   const xpub = extendedKey.neutered().toBase58();
 
-  let ethAddress = undefined;
+  let ethAddress;
   try {
     ethAddress = Util.xpubToEthAddress(xpub);
   } catch (e) {
@@ -137,7 +137,7 @@ Keychains.prototype.deriveLocal = function(params) {
 
   const xpub = derivedNode.neutered().toBase58();
 
-  let ethAddress = undefined;
+  let ethAddress;
   try {
     ethAddress = Util.xpubToEthAddress(xpub);
   } catch (e) {

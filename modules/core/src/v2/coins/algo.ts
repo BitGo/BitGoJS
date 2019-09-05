@@ -18,12 +18,21 @@ import {
 } from 'algosdk';
 import { BitGo } from '../../bitgo';
 
-import { BaseCoin, BaseCoinTransactionExplanation, KeyPair } from '../baseCoin';
+import {
+  BaseCoin,
+  TransactionExplanation,
+  KeyPair,
+  ParseTransactionOptions,
+  ParsedTransaction,
+  VerifyAddressOptions,
+  VerifyTransactionOptions,
+} from '../baseCoin';
+import { KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
 
 const co = Bluebird.coroutine;
 
-export interface TransactionExplanation extends BaseCoinTransactionExplanation {
+export interface TransactionExplanation extends TransactionExplanation {
   memo: string;
 }
 
@@ -190,7 +199,7 @@ export class Algo extends BaseCoin {
    * Specifies what key we will need for signing` - Algorand needs the backup, bitgo pubs.
    */
   keyIdsForSigning(): number[] {
-    return [0, 1, 2];
+    return [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO];
   }
 
   /**
@@ -204,9 +213,12 @@ export class Algo extends BaseCoin {
   ): Bluebird<TransactionExplanation> {
     return co(function*() {
       // take txHex first always, but as it might already be signed, take halfSigned second
-      const txHex = params.txHex ? params.txHex : params.halfSigned.txHex;
-      let tx;
+      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
 
+      if (!txHex) {
+        throw new Error('missing required param txHex or halfSigned.txHex');
+      }
+      let tx;
       try {
         const txToHex = Buffer.from(txHex, 'base64');
         const decodedTx = Encoding.decode(txToHex);
@@ -225,7 +237,7 @@ export class Algo extends BaseCoin {
       const fee = { fee: tx.fee };
 
       const outputAmount = tx.amount || 0;
-      const outputs = [];
+      const outputs: { amount: number; address: string }[] = [];
       if (tx.to) {
         outputs.push({
           amount: outputAmount,
@@ -255,7 +267,7 @@ export class Algo extends BaseCoin {
     return stellar.StrKey.isValidEd25519SecretSeed(seed);
   }
 
-  convertFromStellarSeed(seed: string): string {
+  convertFromStellarSeed(seed: string): string | null {
     // assume this is a trust custodial seed if its a valid ed25519 prv
     if (!this.isStellarSeed(seed)) {
       return null;
@@ -357,5 +369,20 @@ export class Algo extends BaseCoin {
     } else {
       return { halfSigned: { txHex: signedBase64 } };
     }
+  }
+
+  parseTransaction(
+    params: ParseTransactionOptions,
+    callback?: NodeCallback<ParsedTransaction>
+  ): Bluebird<ParsedTransaction> {
+    return Bluebird.resolve({}).asCallback(callback);
+  }
+
+  verifyAddress(params: VerifyAddressOptions): boolean {
+    return true;
+  }
+
+  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+    return Bluebird.resolve(true).asCallback(callback);
   }
 }

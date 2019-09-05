@@ -1,35 +1,34 @@
 // eslint-disable-next-line
 /// <reference types="mocha" />
-import 'should';
+import * as should from 'should';
 import 'should-http';
 import 'should-sinon';
 import '../lib/asserts';
 
-const nock = require('nock');
-const sinon = require('sinon');
+import * as nock from 'nock';
+import * as sinon from 'sinon';
 
-const fs = require('fs');
-const http = require('http');
-const https = require('https');
-const debug = require('debug');
-const path = require('path');
-const httpProxy = require('http-proxy');
-const { Environments } = require('bitgo');
-const co = require('bluebird').coroutine;
+import * as fs from 'fs';
+import * as http from 'http';
+import * as https from 'https';
+import * as debugLib from 'debug';
+import * as path from 'path';
+import * as httpProxy from 'http-proxy';
+import { Environments } from 'bitgo';
+import { coroutine as co } from 'bluebird';
 
 // eslint-disable-next-line @typescript-eslint/camelcase
 import { SSL_OP_NO_TLSv1 } from 'constants';
-import { DefaultConfig } from '../../src/config';
 import { TlsConfigurationError, NodeEnvironmentError } from '../../src/errors';
 
 nock.disableNetConnect();
 
-const {
-  app: expressApp,
+import {
+  app as expressApp,
   startup,
   createServer,
   createBaseUri
-} = require('../../src/expressApp');
+} from '../../src/expressApp';
 
 describe('Bitgo Express', function() {
 
@@ -41,14 +40,14 @@ describe('Bitgo Express', function() {
       try {
         (() => expressApp({
           env: 'prod',
-          bind: 'localhost'
-        })).should.not.throw();
+          bind: 'localhost',
+        } as any)).should.not.throw();
 
         process.env.NODE_ENV = 'dev';
         (() => expressApp({
           env: 'prod',
-          bind: 'localhost'
-        })).should.throw(NodeEnvironmentError);
+          bind: 'localhost',
+        } as any)).should.throw(NodeEnvironmentError);
       } finally {
         envStub.restore();
       }
@@ -62,20 +61,20 @@ describe('Bitgo Express', function() {
           env: 'prod',
           bind: 'localhost',
           disableEnvCheck: true,
-        })).should.not.throw();
+        } as any)).should.not.throw();
       } finally {
         envStub.restore();
       }
     });
 
     it('should require TLS for prod env when listening on external interfaces', function() {
-      const args = {
+      const args: any = {
         env: 'prod',
         bind: '1',
         disableEnvCheck: true,
         disableSSL: false,
-        crtPath: null,
-        keyPath: null,
+        crtPath: undefined as string | undefined,
+        keyPath: undefined as string | undefined,
       };
 
       (() => expressApp(args)).should.throw(TlsConfigurationError);
@@ -101,11 +100,11 @@ describe('Bitgo Express', function() {
     });
 
     it('should require both keypath and crtpath when using TLS, but TLS is not required', function() {
-      const args = {
+      const args: any = {
         env: 'test',
         bind: '1',
         keyPath: '/tmp/key.pem',
-        crtPath: null,
+        crtPath: undefined as string | undefined,
       };
 
       (() => expressApp(args)).should.throw(TlsConfigurationError);
@@ -117,98 +116,98 @@ describe('Bitgo Express', function() {
     });
 
     it('should create an http server when not using TLS', co(function *() {
-      sinon.stub(http, 'createServer');
+      const createServerStub = sinon.stub(http, 'createServer');
 
-      const args = {
+      const args: any = {
         env: 'prod',
-        bind: 'localhost'
+        bind: 'localhost',
       };
 
-      createServer(args);
+      createServer(args, null as any);
 
-      http.createServer.should.be.calledOnce();
-      http.createServer.restore();
+      createServerStub.should.be.calledOnce();
+      createServerStub.restore();
     }));
 
     it('should create an https server when using TLS', co(function *() {
-      sinon.stub(https, 'createServer');
-      sinon.stub(fs, 'readFileAsync')
-      .onFirstCall().resolves('key')
-      .onSecondCall().resolves('cert');
+      const createServerStub = sinon.stub(https, 'createServer');
+      const readFileAsyncStub = sinon.stub(fs, 'readFileAsync' as any)
+        .onFirstCall().resolves('key')
+        .onSecondCall().resolves('cert');
 
-      const args = {
+      const args: any = {
         env: 'prod',
         bind: '1.2.3.4',
         crtPath: '/tmp/crt.pem',
-        keyPath: '/tmp/key.pem'
+        keyPath: '/tmp/key.pem',
       };
 
-      yield createServer(args, true);
+      yield createServer(args, null as any);
 
       https.createServer.should.be.calledOnce();
       https.createServer.should.be.calledWith({ secureOptions: SSL_OP_NO_TLSv1, key: 'key', cert: 'cert' });
 
-      https.createServer.restore();
-      fs.readFileAsync.restore();
+      createServerStub.restore();
+      readFileAsyncStub.restore();
     }));
 
     it('should output basic information upon server startup', () => {
-      sinon.stub(console, 'log');
+      const logStub = sinon.stub(console, 'log');
 
-      const args = {
-        env: 'test'
+      const args: any = {
+        env: 'test',
       };
 
       startup(args, 'base')();
 
-      (console.log.should.have as any).callCount(3);
-      (console.log.should.have.been as any).calledWith('BitGo-Express running');
-      (console.log.should.have.been as any).calledWith(`Environment: ${args.env}`);
-      (console.log.should.have.been as any).calledWith('Base URI: base');
+      logStub.should.have.callCount(3);
+      logStub.should.have.been.calledWith('BitGo-Express running');
+      logStub.should.have.been.calledWith(`Environment: ${args.env}`);
+      logStub.should.have.been.calledWith('Base URI: base');
 
-      (console.log as any).restore();
+      logStub.restore();
     });
 
     it('should output custom root uri information upon server startup', () => {
-      sinon.stub(console, 'log');
+      const logStub = sinon.stub(console, 'log');
 
-      const args = {
+      const args: any = {
         env: 'test',
-        customRootUri: 'customuri'
+        customRootUri: 'customuri',
       };
 
       startup(args, 'base')();
 
-      (console.log.should.have as any).callCount(4);
-      (console.log.should.have.been as any).calledWith('BitGo-Express running');
-      (console.log.should.have.been as any).calledWith(`Environment: ${args.env}`);
-      (console.log.should.have.been as any).calledWith('Base URI: base');
-      (console.log.should.have.been as any).calledWith(`Custom root URI: ${args.customRootUri}`);
+      logStub.should.have.callCount(4);
+      logStub.should.have.been.calledWith('BitGo-Express running');
+      logStub.should.have.been.calledWith(`Environment: ${args.env}`);
+      logStub.should.have.been.calledWith('Base URI: base');
+      logStub.should.have.been.calledWith(`Custom root URI: ${args.customRootUri}`);
 
-      (console.log as any).restore();
+      logStub.restore();
     });
 
     it('should output custom bitcoin network information upon server startup', () => {
-      sinon.stub(console, 'log');
+      const logStub = sinon.stub(console, 'log');
 
-      const args = {
+      const args: any = {
         env: 'test',
-        customBitcoinNetwork: 'customnetwork'
+        customBitcoinNetwork: 'customnetwork',
       };
 
       startup(args, 'base')();
 
-      (console.log.should.have as any).callCount(4);
-      (console.log.should.have.been as any).calledWith('BitGo-Express running');
-      (console.log.should.have.been as any).calledWith(`Environment: ${args.env}`);
-      (console.log.should.have.been as any).calledWith('Base URI: base');
-      (console.log.should.have.been as any).calledWith(`Custom bitcoin network: ${args.customBitcoinNetwork}`);
+      logStub.should.have.callCount(4);
+      logStub.should.have.been.calledWith('BitGo-Express running');
+      logStub.should.have.been.calledWith(`Environment: ${args.env}`);
+      logStub.should.have.been.calledWith('Base URI: base');
+      logStub.should.have.been.calledWith(`Custom bitcoin network: ${args.customBitcoinNetwork}`);
 
-      (console.log as any).restore();
+      logStub.restore();
     });
 
     it('should create http base URIs', () => {
-      const args = {
+      const args: any = {
         bind: '1',
         port: 2,
       };
@@ -223,7 +222,7 @@ describe('Bitgo Express', function() {
     });
 
     it('should create https base URIs', () => {
-      const args = {
+      const args: any = {
         bind: '6',
         port: 8,
         keyPath: '3',
@@ -240,79 +239,81 @@ describe('Bitgo Express', function() {
     });
 
     it('should set up logging with a logfile', () => {
-      sinon.spy(path, 'resolve');
-      sinon.spy(fs, 'createWriteStream');
-      sinon.stub(console, 'log');
+      const resolveSpy = sinon.spy(path, 'resolve');
+      const createWriteStreamSpy = sinon.spy(fs, 'createWriteStream');
+      const logStub = sinon.stub(console, 'log');
 
-      const args = {
+      const args: any = {
         logFile: '/dev/null',
-        disableProxy: true
+        disableProxy: true,
       };
 
       expressApp(args);
 
       path.resolve.should.have.been.calledWith(args.logFile);
       fs.createWriteStream.should.have.been.calledOnceWith(args.logFile, { flags: 'a' });
-      (console.log.should.have.been as any).calledOnceWith(`Log location: ${args.logFile}`);
+      logStub.should.have.been.calledOnceWith(`Log location: ${args.logFile}`);
 
-      path.resolve.restore();
-      fs.createWriteStream.restore();
-      (console.log as any).restore();
+      resolveSpy.restore();
+      createWriteStreamSpy.restore();
+      logStub.restore();
     });
 
     it('should enable specified debug namespaces', () => {
-      sinon.stub(debug, 'enable');
+      const enableStub = sinon.stub(debugLib, 'enable');
 
-      const args = {
+      const args: any = {
         debugNamespace: ['a', 'b'],
-        disableProxy: true
+        disableProxy: true,
       };
 
       expressApp(args);
 
-      debug.enable.should.have.been.calledTwice();
-      debug.enable.should.have.been.calledWith(args.debugNamespace[0]);
-      debug.enable.should.have.been.calledWith(args.debugNamespace[1]);
+      enableStub.should.have.been.calledTwice();
+      enableStub.should.have.been.calledWith(args.debugNamespace[0]);
+      enableStub.should.have.been.calledWith(args.debugNamespace[1]);
 
-      debug.enable.restore();
+      enableStub.restore();
     });
 
     it('should configure a custom root URI', () => {
-      const args = {
+      const args: any = {
         customRootUri: 'customroot',
-        env: null,
+        env: undefined as string | undefined,
       };
 
       expressApp(args);
 
-      args.env.should.equal('custom');
+      should(args.env).equal('custom');
       Environments.custom.uri.should.equal(args.customRootUri);
     });
 
     it('should configure a custom bitcoin network', () => {
-      const args = {
+      const args: any = {
         customBitcoinNetwork: 'custombitcoinnetwork',
-        env: null,
+        env: undefined as string | undefined,
       };
 
       expressApp(args);
 
-      args.env.should.equal('custom');
+      should(args.env).equal('custom');
       Environments.custom.network.should.equal(args.customBitcoinNetwork);
     });
 
     it('should configure the request proxy for testnet', () => {
       const onStub = sinon.stub();
-      sinon.stub(httpProxy, 'createProxyServer').returns({ on: onStub });
+      const createProxyServerStub = sinon.stub(httpProxy, 'createProxyServer')
+        .returns({ on: onStub } as any);
 
-      const args = {
+      const timeout = 100000;
+      const args: any = {
         env: 'test',
-        timeout: DefaultConfig.timeout,
+        timeout,
       };
 
       expressApp(args);
 
-      httpProxy.createProxyServer.should.have.been.calledOnceWith({ secure: false, timeout: 305 * 1000, proxyTimeout: 305 * 1000 });
+      createProxyServerStub.should.have.been.calledOnceWith({ secure: false, timeout, proxyTimeout: timeout });
       onStub.should.have.been.calledThrice();
       onStub.should.have.been.calledWith('proxyReq');
       onStub.should.have.been.calledWith('error');
@@ -328,23 +329,24 @@ describe('Bitgo Express', function() {
       setHeaderStub.should.have.been.calledWith('host');
       setHeaderStub.should.have.been.calledWith('User-Agent');
 
-      httpProxy.createProxyServer.restore();
+      createProxyServerStub.restore();
     });
 
     it('should configure the request proxy for mainnet', () => {
       const onStub = sinon.stub();
-      sinon.stub(httpProxy, 'createProxyServer').returns({ on: onStub });
+      const createProxyServerStub = sinon.stub(httpProxy, 'createProxyServer')
+        .returns({ on: onStub } as any);
 
-      const args = {
+      const args: any = {
         env: 'prod',
         disableSSL: true,
         disableEnvCheck: true,
-        timeout: DefaultConfig.timeout,
+        timeout: 305 * 1000,
       };
 
       expressApp(args);
 
-      httpProxy.createProxyServer.should.have.been.calledOnceWith({ timeout: 305 * 1000, secure: null, proxyTimeout: 305 * 1000 });
+      createProxyServerStub.should.have.been.calledOnceWith({ timeout: 305 * 1000, secure: true, proxyTimeout: 305 * 1000 });
       onStub.should.have.been.calledThrice();
       onStub.should.have.been.calledWith('proxyReq');
       onStub.should.have.been.calledWith('error');
@@ -360,21 +362,22 @@ describe('Bitgo Express', function() {
       setHeaderStub.should.have.been.calledWith('host');
       setHeaderStub.should.have.been.calledWith('User-Agent');
 
-      httpProxy.createProxyServer.restore();
+      createProxyServerStub.restore();
     });
 
     it('should configure the request proxy for testnet with custom timeout', () => {
       const onStub = sinon.stub();
-      sinon.stub(httpProxy, 'createProxyServer').returns({ on: onStub });
+      const createProxyServerStub = sinon.stub(httpProxy, 'createProxyServer')
+        .returns({ on: onStub } as any);
 
-      const args = {
+      const args: any = {
         env: 'test',
         timeout: 1000,
       };
 
       expressApp(args);
 
-      httpProxy.createProxyServer.should.have.been.calledOnceWith({ timeout: args.timeout, secure: false, proxyTimeout: args.timeout });
+      createProxyServerStub.should.have.been.calledOnceWith({ timeout: args.timeout, secure: false, proxyTimeout: args.timeout });
       onStub.should.have.been.calledThrice();
       onStub.should.have.been.calledWith('proxyReq');
       onStub.should.have.been.calledWith('error');
@@ -390,7 +393,7 @@ describe('Bitgo Express', function() {
       setHeaderStub.should.have.been.calledWith('host');
       setHeaderStub.should.have.been.calledWith('User-Agent');
 
-      httpProxy.createProxyServer.restore();
+      createProxyServerStub.restore();
     });
   });
 });

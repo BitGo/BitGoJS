@@ -1,3 +1,4 @@
+import { isUndefined } from 'lodash';
 /**
  * Return the list of questions that will appear on the second page of the keycard
  * @param coin name of the coin
@@ -160,7 +161,7 @@ function getKeyData(options: GetKeyDataOptions): any {
     qrData.backup.keyID = backupKeyID;
   }
 
-  if (!userKeychain.encryptedPrv) {
+  if (isUndefined(userKeychain.encryptedPrv)) {
     // User provided their own key - this is a cold wallet
     qrData.user.title = 'A: Provided User Key';
     qrData.user.desc = 'This is the public key you provided for your wallet.';
@@ -168,22 +169,22 @@ function getKeyData(options: GetKeyDataOptions): any {
 
     // The user provided their own public key, we can remove box D
     delete qrData.passcode;
-  } else if (!encryptedWalletPasscode) {
+  } else if (isUndefined(encryptedWalletPasscode)) {
     delete qrData.passcode;
   }
 
-  if (backupKeychain.provider) {
+  if (!isUndefined(backupKeychain.provider)) {
     const backupKeyProviderName = backupKeychain.provider;
     // Backup key held with KRS
     qrData.backup = {
       title: 'B: Backup Key',
       desc:
-        `This is the public key held at ${backupKeyProviderName}` + 
+        `This is the public key held at ${backupKeyProviderName}` +
         `, an ${coinShortName} recovery service. If you lose\r\nyour key, ${backupKeyProviderName}` +
         ' will be able to sign transactions to recover funds.',
       data: backupKeychain.pub
     };
-  } else if (!backupKeychain.encryptedPrv) {
+  } else if (isUndefined(backupKeychain.encryptedPrv)) {
     // User supplied the xpub
     qrData.backup = {
       title: 'B: Backup Key',

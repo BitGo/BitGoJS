@@ -9,7 +9,7 @@
     "modules/*"
   ],
   "scripts": {
-    "postinstall": "lerna run build --stream --parallel",
+    "postinstall": "lerna run build --stream",
     "generate-drone": "drone jsonnet --stream",
     "audit": "yarn audit",
     "lint": "lerna run lint --stream",
