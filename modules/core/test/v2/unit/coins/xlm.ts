@@ -1,4 +1,4 @@
-import 'should';
+import * as should from 'should';
 import * as crypto from 'crypto';
 import * as stellar from 'stellar-sdk';
 import * as Bluebird from 'bluebird';
@@ -24,13 +24,83 @@ describe('XLM:', function() {
     nock.cleanAll();
   });
 
-  it('should validate address', function() {
-    basecoin.isValidAddress('GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4').should.equal(true);
-    basecoin.isValidAddress('GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2').should.equal(true);
-    basecoin.isValidAddress('GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=1').should.equal(true);
-    basecoin.isValidAddress('GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=x').should.equal(false);
-    basecoin.isValidAddress('SBKGCMBY56MHTT4EGE3YJIYL4CPWKSGJ7VDEQF4J3B3YO576KNL7DOYJ').should.equal(false); // private key
-    basecoin.isValidAddress('r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8').should.equal(false); // xrp account
+  describe('Addresses:', () => {
+    const noMemoIdAddress = 'GBIEJQUARJ33DIZU4AIRDOKYPSVK66Z3O5XU7OOI7LUOAJWTPI4OA4JI';
+    const validMemoIdAddress = 'GBIEJQUARJ33DIZU4AIRDOKYPSVK66Z3O5XU7OOI7LUOAJWTPI4OA4JI?memoId=5';
+    const invalidMemoIdAddress = 'GBIEJQUARJ33DIZU4AIRDOKYPSVK66Z3O5XU7OOI7LUOAJWTPI4OA4JI?memoId=x';
+    const multipleMemoIdAddress = 'GBIEJQUARJ33DIZU4AIRDOKYPSVK66Z3O5XU7OOI7LUOAJWTPI4OA4JI?memoId=5&memoId=3';
+
+    it('should get address details without memoId', function() {
+      const addressDetails = basecoin.getAddressDetails(noMemoIdAddress);
+      addressDetails.address.should.equal(noMemoIdAddress);
+      should.not.exist(addressDetails.memoId);
+    });
+
+    it('should get address details with memoId', function() {
+      const addressDetails = basecoin.getAddressDetails(validMemoIdAddress);
+      addressDetails.address.should.equal(validMemoIdAddress.split('?')[0]);
+      addressDetails.memoId.should.equal('5');
+    });
+
+    it('should throw on invalid memo id address', () => {
+      (() => { basecoin.getAddressDetails(invalidMemoIdAddress); }).should.throw();
+    });
+
+    it('should throw on multiple memo id address', () => {
+      (() => { basecoin.getAddressDetails(multipleMemoIdAddress); }).should.throw();
+    });
+
+    it('should validate address', function() {
+      basecoin.isValidAddress('GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4').should.equal(true);
+      basecoin.isValidAddress('GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2').should.equal(true);
+      basecoin.isValidAddress('GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=1').should.equal(true);
+      basecoin.isValidAddress('GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=x').should.equal(false);
+      basecoin.isValidAddress('SBKGCMBY56MHTT4EGE3YJIYL4CPWKSGJ7VDEQF4J3B3YO576KNL7DOYJ').should.equal(false); // private key
+      basecoin.isValidAddress('r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8').should.equal(false); // xrp account
+    });
+
+    it('verifyAddress should work', function() {
+      basecoin.verifyAddress({
+        address: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4',
+        rootAddress: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4'
+      });
+      basecoin.verifyAddress({
+        address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=1',
+        rootAddress: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2'
+      });
+
+      (() => {
+        basecoin.verifyAddress({
+          address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=243432',
+          rootAddress: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4'
+        });
+      }).should.throw();
+
+      (() => {
+        basecoin.verifyAddress({
+          address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2=x',
+          rootAddress: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2'
+        });
+      }).should.throw();
+
+      (() => {
+        basecoin.verifyAddress({
+          address: 'SBKGCMBY56MHTT4EGE3YJIYL4CPWKSGJ7VDEQF4J3B3YO576KNL7DOYJ'
+        });
+      }).should.throw();
+
+      (() => {
+        basecoin.verifyAddress({
+          address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8'
+        });
+      }).should.throw();
+    });
+
+  });
+
+  it('should validate pub key', () => {
+    const { pub } = basecoin.keychains().create();
+    basecoin.isValidPub(pub).should.equal(true);
   });
 
   it('should validate stellar username', function() {
@@ -40,43 +110,6 @@ describe('XLM:', function() {
     basecoin.isValidStellarUsername('').should.equal(false);
     basecoin.isValidStellarUsername('foo bar.baz').should.equal(false); // whitespace is not allowed
     basecoin.isValidStellarUsername('Foo@bar.baz').should.equal(false); // only lowercase letters are allowed
-  });
-
-  it('verifyAddress should work', function() {
-    basecoin.verifyAddress({
-      address: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4',
-      rootAddress: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4'
-    });
-    basecoin.verifyAddress({
-      address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=1',
-      rootAddress: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2'
-    });
-
-    (() => {
-      basecoin.verifyAddress({
-        address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2?memoId=243432',
-        rootAddress: 'GBRIS6W5OZNWWFJA6GYRF3JBK5WZNX5WWD2KC6NCOOIEMF7H6JMQLUI4'
-      });
-    }).should.throw();
-
-    (() => {
-      basecoin.verifyAddress({
-        address: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2=x',
-        rootAddress: 'GDU2FEL6THGGOFDHHP4I5FHNWY4S2SXYUBCEDB5ZREMD6UFRT4SYWSW2'
-      });
-    }).should.throw();
-
-    (() => {
-      basecoin.verifyAddress({
-        address: 'SBKGCMBY56MHTT4EGE3YJIYL4CPWKSGJ7VDEQF4J3B3YO576KNL7DOYJ'
-      });
-    }).should.throw();
-
-    (() => {
-      basecoin.verifyAddress({
-        address: 'r2udSsspYjWSoUZxzxLzV6RxGcbygngJ8'
-      });
-    }).should.throw();
   });
 
   it('Should be able to explain an XLM transaction', co(function *() {
@@ -120,11 +153,6 @@ describe('XLM:', function() {
     walletParams.should.have.property('rootPrivateKey');
     walletParams.rootPrivateKey.should.equal(rootPrivateKey);
   }));
-
-  it('should validate pub key', () => {
-    const { pub } = basecoin.keychains().create();
-    basecoin.isValidPub(pub).should.equal(true);
-  });
 
   describe('Transaction Verification', function() {
     let basecoin;
@@ -578,6 +606,11 @@ describe('XLM:', function() {
         key: 'GCJR3ORBWOKGFA3FTGYDDQVFEEMCYXFHY6KAUOTU4MQMFHK4LLSWWGLW',
         derivationPath: 'm/999999\'/230673453\'/206129755\'',
       });
+    });
+
+    it('should validate pub key', () => {
+      const { pub } = basecoin.keychains().create();
+      basecoin.isValidPub(pub).should.equal(true);
     });
   });
 });
