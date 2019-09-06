@@ -58,17 +58,25 @@ export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
 
+export class AccountCoinToken extends AccountCoin {
+  constructor(options: AccountConstructorOptions) {
+    super({
+      ...options,
+      isToken: true,
+    });
+  }
+}
+
 /**
  * ERC 20 is a token standard for the Ethereum blockchain. They are similar to other account coins, but have a
  * contract address property which identifies the smart contract which defines the token.
  */
-export class Erc20Coin extends AccountCoin {
+export class Erc20Coin extends AccountCoinToken {
   public contractAddress: ContractAddress;
 
   constructor(options: Erc20ConstructorOptions) {
     super({
       ...options,
-      isToken: true,
     });
 
     // valid ERC 20 contract addresses are "0x" followed by 40 lowercase hex characters
@@ -77,6 +85,20 @@ export class Erc20Coin extends AccountCoin {
     }
 
     this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
+  }
+}
+
+/**
+ * The Stellar network supports tokens (non-native assets)
+ * XLM is also known as the native asset.
+ * Stellar tokens work similar to XLM, but the token name is determined by the chain,
+ * the token code and the issuer account in the form: (t)xlm:<token>-<issuer>
+ */
+export class StellarCoin extends AccountCoinToken {
+  constructor(options: AccountConstructorOptions) {
+    super({
+      ...options,
+    });
   }
 }
 
@@ -184,4 +206,66 @@ export function terc20(
   network: AccountNetwork = Networks.test.kovan
 ) {
   return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for Stellar token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Stellar mainnet.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ */
+export function stellarToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.stellar
+) {
+  return Object.freeze(
+    new StellarCoin({
+      name,
+      fullName,
+      network,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet Stellar token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Stellar testnet.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ */
+export function tstellarToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.stellar
+) {
+  return stellarToken(name, fullName, decimalPlaces, asset, features, prefix, suffix, network);
 }
