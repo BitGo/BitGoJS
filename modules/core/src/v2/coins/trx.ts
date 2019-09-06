@@ -141,9 +141,7 @@ export class Trx extends BaseCoin {
     return tronweb.utils.crypto.signBytes(key.prv, tronByteArray);
   }
 
-
   // it's possible we need to implement these later
   // preCreateBitGo?
   // supplementGenerateWallet?
-
 }
