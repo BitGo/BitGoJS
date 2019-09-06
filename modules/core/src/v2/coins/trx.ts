@@ -2,10 +2,9 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
-const tronweb = require('tronweb');
+const tronWeb = require('tronweb');
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   KeyPair,
@@ -67,9 +66,9 @@ export class Trx extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const account = tronweb.utils.accounts.generateAccount();
+    const account = tronWeb.utils.accounts.generateAccount();
     return {
-      pub: account.address.publicKey,
+      pub: account.address.base58,
       prv: account.privateKey,
     };
   }
@@ -78,11 +77,11 @@ export class Trx extends BaseCoin {
    * Get an instance of the library which can be used to perform low-level operations for this coin
    */
   getCoinLibrary() {
-    return tronweb;
+    return tronWeb;
   }
 
   isValidPub(pub: string): boolean {
-    throw new MethodNotImplementedError();
+    return tronWeb.isAddress(pub);
   }
 
   parseTransaction(
@@ -135,10 +134,10 @@ export class Trx extends BaseCoin {
     }
 
     // convert the hex string to their representation of a byte array
-    const tronByteArray = tronweb.utils.code.hexStr2byteArray(toSign);
+    const tronByteArray = tronWeb.utils.code.hexStr2byteArray(toSign);
 
     // note the key in the keypair should already be hex-encoded
-    return tronweb.utils.crypto.signBytes(key.prv, tronByteArray);
+    return tronWeb.utils.crypto.signBytes(key.prv, tronByteArray);
   }
 
   // it's possible we need to implement these later
