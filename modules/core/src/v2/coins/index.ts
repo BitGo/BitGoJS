@@ -1,3 +1,4 @@
+export { AbstractUtxoCoin } from './abstractUtxoCoin';
 export { Algo } from './algo';
 export { Bch } from './bch';
 export { Bsv } from './bsv';

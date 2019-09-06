@@ -10,21 +10,20 @@ import * as _ from 'lodash';
 import * as debugLib from 'debug';
 import * as https from 'https';
 import * as http from 'http';
-import { Server } from 'net';
 
 import * as morgan from 'morgan';
 const fs = Bluebird.promisifyAll(require('fs'));
 
 import { Config, config } from './config';
 
-const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:express');
 
 // eslint-disable-next-line @typescript-eslint/camelcase
 import { SSL_OP_NO_TLSv1 } from 'constants';
 import { NodeEnvironmentError, TlsConfigurationError } from './errors';
 
-const { Environments } = require('bitgo');
+import { Environments } from 'bitgo';
+import { setupRoutes } from './clientRoutes';
 const { version } = require('bitgo/package.json');
 const pjson = require('../package.json');
 
@@ -36,7 +35,7 @@ const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version
  * @param app
  * @param config
  */
-function setupLogging(app, config: Config): void {
+function setupLogging(app: express.Application, config: Config): void {
   // Set up morgan for logging, with optional logging into a file
   let middleware;
   if (config.logFile) {
@@ -78,7 +77,7 @@ function configureEnvironment(config: Config): void {
  * @param app bitgo-express Express app
  * @param config
  */
-function configureProxy(app, config: Config): void {
+function configureProxy(app: express.Application, config: Config): void {
   const { env, timeout } = config;
 
   // Mount the proxy middleware
@@ -131,7 +130,7 @@ function configureProxy(app, config: Config): void {
     });
   });
 
-  app.use(function(req, res) {
+  app.use(function(req: express.Request, res: express.Response) {
     if (req.url && (/^\/api\/v[12]\/.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
       req.isProxy = true;
       proxy.web(req, res, { target: Environments[env].uri, changeOrigin: true });
@@ -150,17 +149,15 @@ function configureProxy(app, config: Config): void {
  * @param app
  * @return {Server}
  */
-function createHttpsServer(app, config: Config): Bluebird<Server> {
-  return co(function* createHttpsServer() {
-    const { keyPath, crtPath } = config;
-    const privateKeyPromise = fs.readFileAsync(keyPath, 'utf8');
-    const certificatePromise = fs.readFileAsync(crtPath, 'utf8');
+async function createHttpsServer(app: express.Application, config: Config): Promise<https.Server> {
+  const { keyPath, crtPath } = config;
+  const privateKeyPromise = fs.readFileAsync(keyPath, 'utf8');
+  const certificatePromise = fs.readFileAsync(crtPath, 'utf8');
 
-    const [key, cert] = yield Bluebird.all([privateKeyPromise, certificatePromise]);
+  const [key, cert] = await Promise.all([privateKeyPromise, certificatePromise]);
 
-    // eslint-disable-next-line @typescript-eslint/camelcase
-    return https.createServer({ secureOptions: SSL_OP_NO_TLSv1, key, cert }, app);
-  }).call(this);
+  // eslint-disable-next-line @typescript-eslint/camelcase
+  return https.createServer({ secureOptions: SSL_OP_NO_TLSv1, key, cert }, app);
 }
 
 /**
@@ -169,7 +166,7 @@ function createHttpsServer(app, config: Config): Bluebird<Server> {
  * @param app
  * @return {Server}
  */
-function createHttpServer(app): Server {
+function createHttpServer(app: express.Application): http.Server {
   return http.createServer(app);
 }
 
@@ -209,10 +206,8 @@ function isTLS(config: Config): boolean {
  * @param app
  * @return {Server}
  */
-export function createServer(config: Config, app: express.Express) {
-  return co(function*() {
-    return isTLS(config) ? yield createHttpsServer(app, config) : createHttpServer(app);
-  }).call(this);
+export async function createServer(config: Config, app: express.Application) {
+  return isTLS(config) ? await createHttpsServer(app, config) : createHttpServer(app);
 }
 
 /**
@@ -263,7 +258,7 @@ function checkPreconditions(config: Config) {
   }
 }
 
-export function app(cfg: Config): any {
+export function app(cfg: Config): express.Application {
   debug('app is initializing');
 
   const app = express();
@@ -286,7 +281,7 @@ export function app(cfg: Config): any {
   });
 
   // Decorate the client routes
-  require('./clientRoutes')(app, cfg);
+  setupRoutes(app, cfg);
 
   configureEnvironment(cfg);
 
@@ -297,17 +292,15 @@ export function app(cfg: Config): any {
   return app;
 }
 
-export function init(): Bluebird<any> {
-  return co(function*() {
-    const cfg = config();
-    const expressApp = app(cfg);
+export async function init(): Bluebird<void> {
+  const cfg = config();
+  const expressApp = app(cfg);
 
-    const server = yield module.exports.createServer(cfg, expressApp);
+  const server = await createServer(cfg, expressApp);
 
-    const { port, bind } = cfg;
-    const baseUri = createBaseUri(cfg);
+  const { port, bind } = cfg;
+  const baseUri = createBaseUri(cfg);
 
-    server.listen(port, bind, startup(cfg, baseUri));
-    server.timeout = 300 * 1000; // 5 minutes
-  }).call(this);
+  server.listen(port, bind, startup(cfg, baseUri));
+  server.timeout = 300 * 1000; // 5 minutes
 }

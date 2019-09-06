@@ -1,9 +1,9 @@
 import * as superagent from 'superagent';
-import * as Bluebird from 'bluebird';
+import * as bluebird from 'bluebird';
 
 declare module 'superagent' {
   interface Request {
-    result: (optionalField?: string) => Bluebird<any>;
+    result: (optionalField?: string) => bluebird<any>;
     proxy: (proxyUrl: string) => this;
     // can't redefine return type of end() ...  makes sense
     // end: (callback?: NodeCallback<superagent.Response>) => Bluebird<superagent.Response>;
