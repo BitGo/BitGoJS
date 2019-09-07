@@ -15,6 +15,7 @@ interface EnvironmentTemplate {
   signingAddress: string;
   serverXpub: string;
   hsmXpub: string;
+  batcherContractAddress: string;
   smartBitApiBaseUrl: string;
   bchExplorerBaseUrl: string;
   bsvExplorerBaseUrl?: string;
@@ -63,6 +64,7 @@ const mainnetBase: EnvironmentTemplate = {
     'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
   hsmXpub:
     'xpub661MyMwAqRbcGEtTFgMAoxMFoqsRdDaiaR63byNfZdV7cBZFvovQSNJ5bpyeoQtuKVgXBk6sFQ7TtvyWqadt41DnKwveYgM5KoU2EKYjdY2',
+  batcherContractAddress: '', // TODO [CT-928] replace with mainnet Batcher contract address
   smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1',
   bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
   btgExplorerBaseUrl: 'https://btgexplorer.com/api',
@@ -84,6 +86,7 @@ const testnetBase: EnvironmentTemplate = {
     'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
   hsmXpub:
     'xpub661MyMwAqRbcGFKe4Bqvk4Sgric4gNFC8pUbw4tUkVjZxubjCA522gPzc1YaXb3bQVmDWc7CjG8AGNWRpcdAU38RETBh8n2bnqEU4kbV4oK',
+  batcherContractAddress: '0x0C7F3Bc5d2b2C0DBee1b45536B82569f41B54331'.toLowerCase(),
   smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
   bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
   etherscanBaseUrl: 'https://kovan.etherscan.io',
