@@ -1,11 +1,14 @@
 /**
  * @prettier
  */
+import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
+  SignedTransaction,
+  SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '../baseCoin';
@@ -97,5 +100,9 @@ export class Ofc extends BaseCoin {
 
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     return Bluebird.resolve(true).asCallback(callback);
+  }
+
+  signTransaction(params: SignTransactionOptions): SignedTransaction {
+    throw new MethodNotImplementedError();
   }
 }

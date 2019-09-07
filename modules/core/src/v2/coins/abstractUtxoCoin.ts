@@ -65,7 +65,7 @@ export interface Unspent {
 
 export interface ExplainTransactionOptions {
   txHex: string;
-  txInfo: { changeAddresses: string[], unspents: Unspent[] };
+  txInfo?: { changeAddresses: string[], unspents: Unspent[] };
   feeInfo?: string;
 }
 

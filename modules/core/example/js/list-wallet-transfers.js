@@ -1,4 +1,12 @@
-const BitGoJS = require('../../src/index');
+/**
+ * List all transfers on multi-sig wallets at BitGo for the given coin.
+ *
+ * This tool will help you see how to use the BitGo API to easily list your
+ * BitGo wallets.
+ *
+ * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ */
+const BitGoJS = require('../../dist/src');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
 
@@ -12,10 +20,9 @@ Promise.coroutine(function *() {
   bitgo.authenticateWithAccessToken({ accessToken: accessToken });
 
   const walletInstance = yield basecoin.wallets().get({ id: walletId });
+  const transfers = yield walletInstance.transfers();
 
   console.log('Wallet ID:', walletInstance.id());
   console.log('Current Receive Address:', walletInstance.receiveAddress());
-  console.log('Balance:', walletInstance.balanceString());
-  console.log('Confirmed Balance:', walletInstance.confirmedBalanceString());
-  console.log('Spendable Balance:', walletInstance.spendableBalanceString());
+  console.log('Wallet Transactions:', JSON.stringify(transfers, null, 4));
 })();

@@ -1,14 +1,14 @@
-//
-// Get a multi-sig wallet at BitGo.
-// This makes use of the convenience function wallets().get()
-//
-// This tool will help you see how to use the BitGo API to easily get
-// information about a wallet.
-//
-// Copyright 2018, BitGo, Inc.  All Rights Reserved.
-//
+/**
+ * Get a multi-sig wallet at BitGo.
+ * This makes use of the convenience function wallets().get()
+ *
+ * This tool will help you see how to use the BitGo API to easily get
+ * information about a wallet.
+ *
+ * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ */
 
-const BitGoJS = require('../../src/index.js');
+const BitGoJS = require('../../dist/src');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
 

@@ -11,10 +11,12 @@ import { validateParams } from '../common';
 const co = Bluebird.coroutine;
 
 export interface Keychain {
+  id: string;
   pub: string;
-  source: string;
+  prv?: string;
   provider?: string;
   encryptedPrv?: string;
+  derivationPath?: string;
 }
 
 export interface ChangedKeychains {

@@ -26,6 +26,10 @@ import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
+import {
+  HalfSignedTransaction as BaseHalfSignedTransaction,
+  SignTransactionOptions as BaseSignTransactionOptions,
+} from '../baseCoin';
 
 const EOS_ADDRESS_LENGTH = 12;
 
@@ -61,7 +65,7 @@ interface EosTransactionPrebuild {
   txid: string;
 }
 
-export interface EosSignTransactionParams {
+export interface EosSignTransactionParams extends BaseSignTransactionOptions {
   prv: string;
   txPrebuild: EosTransactionPrebuild;
   recipients: Recipient[];
@@ -75,7 +79,7 @@ export interface EosHalfSigned {
   txid: string;
 }
 
-export interface EosSignedTransaction {
+export interface EosSignedTransaction extends BaseHalfSignedTransaction {
   halfSigned: EosHalfSigned;
 }
 

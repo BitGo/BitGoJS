@@ -25,9 +25,10 @@ import {
   KeyPair,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
-  VerifyTransactionOptions as BaseVerifyTransactionOptions,
   ParseTransactionOptions,
   ParsedTransaction,
+  VerifyTransactionOptions,
+  SignTransactionOptions as BaseSignTransactionOptions,
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 
@@ -66,7 +67,7 @@ interface TransactionPrebuild extends BaseTransactionPrebuild {
   txBase64: string;
 }
 
-interface SignTransactionOptions {
+interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
 }
@@ -868,7 +869,7 @@ export class Xlm extends BaseCoin {
    * @param options.verification.keychains Pass keychains manually rather than fetching them by id
    * @param callback
    */
-  verifyTransaction(options: BaseVerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+  verifyTransaction(options: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     // TODO BG-5600 Add parseTransaction / improve verification
     const self = this;
     return co(function *() {
@@ -886,7 +887,7 @@ export class Xlm extends BaseCoin {
 
       const tx = new stellar.Transaction(txPrebuild.txBase64);
 
-      if (txParams.recipients.length !== 1) {
+      if (txParams.recipients && txParams.recipients.length !== 1) {
         throw new Error('cannot specify more than 1 recipient');
       }
 

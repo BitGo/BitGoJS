@@ -4,7 +4,7 @@
 import * as bitcoin from 'bitgo-utxo-lib';
 import { BitGo } from '../bitgo';
 import * as common from '../common';
-import { BaseCoin, SupplementGenerateWalletOptions } from './baseCoin';
+import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
 import { NodeCallback } from './types';
 import { Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
@@ -13,6 +13,35 @@ import { hdPath } from '../bitcoin';
 import { RequestTracer } from './util';
 
 const co = Bluebird.coroutine;
+
+export interface WalletWithKeychains extends KeychainsTriplet {
+  wallet: Wallet;
+  warning?: string;
+}
+
+export interface GetWalletOptions {
+  allTokens?: boolean;
+  reqId?: RequestTracer;
+  id?: string;
+}
+
+export interface GenerateWalletOptions {
+  label?: string;
+  passphrase?: string;
+  userKey?: string;
+  backupXpub?: string;
+  backupXpubProvider?: string;
+  passcodeEncryptionCode?: string;
+  enterprise?: string;
+  disableTransactionNotifications?: string;
+  gasPrice?: string;
+  disableKRSEmail?: boolean;
+  krsSpecific?: {
+    [index: string]: boolean | string | number;
+  };
+  coldDerivationSeed?: string;
+  rootPrivateKey?: string;
+}
 
 export class Wallets {
   private readonly bitgo: BitGo;
@@ -28,7 +57,7 @@ export class Wallets {
    * @param params
    * @param callback
    */
-  get(params: any = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
+  get(params: GetWalletOptions = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     return this.getWallet(params, callback);
   }
 
@@ -199,11 +228,14 @@ export class Wallets {
    * @param callback
    * @returns {*}
    */
-  generateWallet(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  generateWallet(
+    params: GenerateWalletOptions = {},
+    callback?: NodeCallback<WalletWithKeychains>
+  ): Bluebird<WalletWithKeychains> {
     const self = this;
     return co(function*() {
       common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub'], callback);
-      const label = params.label;
+      const label: string = params.label!;
       const passphrase = params.passphrase;
       const canEncrypt = !!passphrase && typeof passphrase === 'string';
       const isCold = !canEncrypt || !!params.userKey;
@@ -257,9 +289,10 @@ export class Wallets {
       }
 
       // Ensure each krsSpecific param is either a string, boolean, or number
-      if (!_.isUndefined(params.krsSpecific)) {
-        Object.keys(params.krsSpecific).forEach(key => {
-          const val = params.krsSpecific[key];
+      const { krsSpecific } = params;
+      if (!_.isUndefined(krsSpecific)) {
+        Object.keys(krsSpecific).forEach(key => {
+          const val = krsSpecific[key];
           if (!_.isBoolean(val) && !_.isString(val) && !_.isNumber(val)) {
             throw new Error('krsSpecific object contains illegal values. values must be strings, booleans, or numbers');
           }
@@ -335,7 +368,7 @@ export class Wallets {
         }
       }).call(this);
 
-      const { userKeychain, backupKeychain, bitgoKeychain } = yield Bluebird.props({
+      const { userKeychain, backupKeychain, bitgoKeychain }: KeychainsTriplet = yield Bluebird.props({
         userKeychain: userKeychainPromise,
         backupKeychain: backupKeychainPromise,
         bitgoKeychain: self.baseCoin.keychains().createBitGo({ enterprise: params.enterprise, reqId }),
@@ -345,10 +378,11 @@ export class Wallets {
 
       walletParams.isCold = isCold;
 
-      if (_.isString(userKeychain.prv)) {
+      const { prv } = userKeychain;
+      if (_.isString(prv)) {
         walletParams.keySignatures = {
-          backup: self.baseCoin.signMessage(userKeychain, backupKeychain.pub).toString('hex'),
-          bitgo: self.baseCoin.signMessage(userKeychain, bitgoKeychain.pub).toString('hex'),
+          backup: self.baseCoin.signMessage({ prv }, backupKeychain.pub).toString('hex'),
+          bitgo: self.baseCoin.signMessage({ prv }, bitgoKeychain.pub).toString('hex'),
         };
       }
 
@@ -367,7 +401,8 @@ export class Wallets {
         .post(self.baseCoin.url('/wallet'))
         .send(finalWalletParams)
         .result();
-      const result: any = {
+
+      const result: WalletWithKeychains = {
         wallet: new Wallet(self.bitgo, self.baseCoin, newWallet),
         userKeychain: userKeychain,
         backupKeychain: backupKeychain,
@@ -561,7 +596,7 @@ export class Wallets {
    * @param callback
    * @returns {*}
    */
-  getWallet(params: any = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
+  getWallet(params: GetWalletOptions = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     const self = this;
     return co(function*() {
       common.validateParams(params, ['id'], [], callback);

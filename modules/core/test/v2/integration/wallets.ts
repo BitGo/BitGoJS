@@ -3,9 +3,9 @@
 //
 
 import * as should from 'should';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import { coroutine as co } from 'bluebird';
 import { TestBitGo } from '../../lib/test_bitgo';
+import { restore } from 'nock';
 const Q = require('q');
 
 describe('V2 Wallets:', function() {
@@ -16,6 +16,7 @@ describe('V2 Wallets:', function() {
 
   before(function() {
     // TODO: replace dev with test
+    restore();
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc');
@@ -25,44 +26,56 @@ describe('V2 Wallets:', function() {
   });
 
   describe('Per-coin tests', function() {
-    /** enable tbtg once btg is in test **/
-    // TODO enable add txlm when it's supported by the platform and IMS in test
-    const coins = ['tbtc', 'tbch', 'txrp', 'teth', 'tltc', 'trmg'];
 
-    for (const currentCoin of coins) {
-      let basecoin;
-      let wallets;
-
-      before(function() {
-        basecoin = bitgo.coin(currentCoin);
-        wallets = basecoin.wallets();
-      });
-
-      it(`generates ${currentCoin} wallet`, function() {
+    function testWalletGeneration(coin) {
+      return co(function *() {
+        const basecoin = bitgo.coin(coin);
+        const wallets = basecoin.wallets();
         const params: any = {
-          label: `Test ${currentCoin} wallet`,
+          label: `Test ${coin} wallet`,
           passphrase: 'yoplait'
         };
 
-        if (currentCoin === 'teth') {
+        if (coin === 'teth') {
           params.enterprise = TestBitGo.TEST_ENTERPRISE;
         }
 
-        if (currentCoin === 'trmg') {
+        if (coin === 'trmg') {
           params.backupXpubProvider = 'trm';
         }
 
-        return wallets.generateWallet(params)
-        .then(function(wallet) {
-          const walletObject = wallet.wallet;
-          walletObject._wallet.coin.should.equal(currentCoin);
-          return wallet.wallet.remove();
-        })
-        .then(function(removal) {
-          removal.deleted.should.equal(true);
-        });
-      });
+        const wallet = yield wallets.generateWallet(params);
+        const walletObject = wallet.wallet;
+        walletObject._wallet.coin.should.equal(coin);
+        const removal = yield wallet.wallet.remove();
+        removal.deleted.should.equal(true);
+      }).call(this);
     }
+
+    // TODO enable add txlm when it's supported by the platform and IMS in test
+    it(`should generate a tbtc wallet`, co(function *() {
+      yield testWalletGeneration('tbtc');
+    }));
+
+    it(`should generate a tbch wallet`, co(function *() {
+      yield testWalletGeneration('tbch');
+    }));
+
+    it(`should generate a txrp wallet`, co(function *() {
+      yield testWalletGeneration('txrp');
+    }));
+
+    it(`should generate a teth wallet`, co(function *() {
+      yield testWalletGeneration('teth');
+    }));
+
+    it(`should generate a tltc wallet`, co(function *() {
+      yield testWalletGeneration('tltc');
+    }));
+
+    it(`should generate a trmg wallet`, co(function *() {
+      yield testWalletGeneration('trmg');
+    }));
   });
 
   describe('Generate Wallet', function() {

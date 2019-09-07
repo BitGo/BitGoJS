@@ -1,18 +1,17 @@
+/**
+ * Get the maximum amount spendable in a single transaction from a wallet.
+ * This value is the sum of the 200 most valuable unspent transactions in your wallet.
+ * This limit exists because an outbound transaction cannot use more than 200 unspent transactions as input,
+ * due to transaction size limits. Note that this value is NOT relevant for account-based coins
+ * i.e. [eth, xrp, xlm], as these coins do not use the unspent transactions data model
+ *
+ * Note that this value may be different than balance, confirmedBalance, and spendableBalance,
+ * which can be obtained using the example in the file: get-wallet-balance.js
+ *
+ * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ */
 
-//
-// Get the maximum amount spendable in a single transaction from a wallet.
-// This value is the sum of the 200 most valuable unspent transactions in your wallet.
-// This limit exists because an outbound transaction cannot use more than 200 unspent transactions as input,
-// due to transaction size limits. Note that this value is NOT relevant for account-based coins
-// i.e. [eth, xrp, xlm], as these coins do not use the unspent transactions data model
-//
-// Note that this value may be different than balance, confirmedBalance, and spendableBalance,
-// which can be obtained using the example in the file: get-wallet-balance.js
-
-// Copyright 2018, BitGo, Inc.  All Rights Reserved.
-//
-
-const BitGoJS = require('../../src/index.js');
+const BitGoJS = require('../../dist/src');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
 

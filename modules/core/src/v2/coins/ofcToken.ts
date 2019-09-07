@@ -5,6 +5,7 @@ import { BitGo } from '../../bitgo';
 import { CoinConstructor } from '../coinFactory';
 import { Ofc } from './ofc';
 import { isString } from 'lodash';
+import { SignTransactionOptions as BaseSignTransactionOptions } from '../baseCoin';
 
 export interface OfcTokenConfig {
   type: string;
@@ -15,7 +16,7 @@ export interface OfcTokenConfig {
   isFiat: boolean;
 }
 
-export interface SignTransactionOptions {
+export interface SignTransactionOptions extends BaseSignTransactionOptions {
   txPrebuild: {
     payload: string;
   };

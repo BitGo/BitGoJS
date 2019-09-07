@@ -4,41 +4,43 @@
 import { coins, BaseCoin as StaticsBaseCoin, CoinNotDefinedError } from '@bitgo/statics';
 import { BitGo } from '../bitgo';
 import { BaseCoin } from './baseCoin';
-import { Algo } from './coins/algo';
-import { Bch } from './coins/bch';
-import { Bsv } from './coins/bsv';
-import { Btc } from './coins/btc';
-import { Btg } from './coins/btg';
-import { Dash } from './coins/dash';
-import { Eos } from './coins/eos';
-import { Eth } from './coins/eth';
-import { Ltc } from './coins/ltc';
-import { Ofc } from './coins/ofc';
-import { Rmg } from './coins/rmg';
-import { Susd } from './coins/susd';
-import { Talgo } from './coins/talgo';
-import { Tbch } from './coins/tbch';
-import { Tbsv } from './coins/tbsv';
-import { Tbtc } from './coins/tbtc';
-import { Tbtg } from './coins/tbtg';
-import { Tdash } from './coins/tdash';
-import { Teos } from './coins/teos';
-import { Teth } from './coins/teth';
-import { Tltc } from './coins/tltc';
-import { Trmg } from './coins/trmg';
-import { Tsusd } from './coins/tsusd';
-import { Trx } from './coins/trx';
-import { Ttrx } from './coins/ttrx';
-import { Txlm } from './coins/txlm';
-import { Txrp } from './coins/txrp';
-import { Tzec } from './coins/tzec';
-import { Xlm } from './coins/xlm';
-import { Xrp } from './coins/xrp';
-import { Erc20Token } from './coins/erc20Token';
-import { StellarToken } from './coins/stellarToken';
-import { OfcToken } from './coins/ofcToken';
+import {
+  Algo,
+  Bch,
+  Bsv,
+  Btc,
+  Btg,
+  Dash,
+  Eos,
+  Eth,
+  Ltc,
+  Ofc,
+  Rmg,
+  Susd,
+  Talgo,
+  Tbch,
+  Tbsv,
+  Tbtc,
+  Tbtg,
+  Tdash,
+  Teos,
+  Teth,
+  Tltc,
+  Trmg,
+  Tsusd,
+  Trx,
+  Ttrx,
+  Txlm,
+  Txrp,
+  Tzec,
+  Xlm,
+  Xrp,
+  Erc20Token,
+  StellarToken,
+  OfcToken,
+  Zec,
+} from './coins';
 import { tokens } from '../config';
-import { Zec } from './coins/zec';
 
 import * as errors from '../errors';
 

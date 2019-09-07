@@ -1,13 +1,13 @@
-//
-// Create a velocity limit policy on a multi-sig wallet at BitGo.
-//
-// This tool will help you see how to use the BitGo API to easily
-// create new wallet policies
-//
-// Copyright 2018, BitGo, Inc.  All Rights Reserved.
-//
+/**
+ * Create a velocity limit policy on a multi-sig wallet at BitGo.
+ *
+ * This tool will help you see how to use the BitGo API to easily
+ * create new wallet policies
+ *
+ * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ */
 
-const BitGoJS = require('../../src/index.js');
+const BitGoJS = require('../../dist/src');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
 

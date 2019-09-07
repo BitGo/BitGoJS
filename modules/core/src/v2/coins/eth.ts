@@ -27,6 +27,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
+  HalfSignedTransaction as BaseHalfSignedTransaction,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import { NodeCallback, Recipient } from '../types';
@@ -150,19 +151,22 @@ interface SignTransactionOptions extends SignFinalOptions {
   gasPrice: number;
 }
 
-interface HalfSignedTransaction {
+export interface HalfSignedTransaction extends BaseHalfSignedTransaction {
   halfSigned: {
     recipients: EthRecipient[];
     expireTime: number;
     contractSequenceId: number;
     sequenceId: number;
     isBatch: boolean;
+    txHex?: never;
   };
 }
 
-interface FullySignedTransaction {
+export interface FullySignedTransaction {
   txHex: string;
 }
+
+export type SignedTransaction = HalfSignedTransaction | FullySignedTransaction;
 
 interface PrecreateBitGoOptions {
   enterprise?: string;
@@ -571,7 +575,7 @@ export class Eth extends BaseCoin {
    * - prv
    * @returns {{txHex}}
    */
-  signTransaction(params: SignTransactionOptions): HalfSignedTransaction | FullySignedTransaction {
+  signTransaction(params: SignTransactionOptions): SignedTransaction {
     const txPrebuild = params.txPrebuild;
     const userPrv = params.prv;
     const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
