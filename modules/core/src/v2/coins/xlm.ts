@@ -16,11 +16,11 @@ import {
   InvalidAddressError,
   InvalidMemoIdError,
   KeyRecoveryServiceError,
-  UnexpectedAddressError
+  UnexpectedAddressError,
 } from '../../errors';
 import {
   BaseCoin,
-  TransactionOutput,
+  TransactionOutput as BaseTransactionOutput,
   TransactionExplanation as BaseTransactionExplanation,
   KeyPair,
   VerifyAddressOptions as BaseVerifyAddressOptions,
@@ -28,10 +28,8 @@ import {
   VerifyTransactionOptions as BaseVerifyTransactionOptions,
   ParseTransactionOptions,
   ParsedTransaction,
-  VerifyTransactionOptions,
 } from '../baseCoin';
 import { NodeCallback } from '../types';
-import { Wallet } from '../wallet';
 
 const co = Bluebird.coroutine;
 
@@ -92,6 +90,17 @@ interface TransactionMemo {
   type?: string;
 }
 
+interface TransactionOperation {
+  type: string;
+  coin: string;
+  limit?: string;
+  asset?: stellar.Asset;
+}
+
+interface TransactionOutput extends BaseTransactionOutput {
+  coin: string;
+}
+
 interface TransactionExplanation extends BaseTransactionExplanation {
   memo: TransactionMemo;
 }
@@ -102,6 +111,7 @@ interface VerifyAddressOptions extends BaseVerifyAddressOptions {
 
 export class Xlm extends BaseCoin {
   public readonly homeDomain: string;
+  public static readonly tokenPatternSeparator = '-'; // separator for token code and issuer
   static readonly maxMemoId: string = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
 
   constructor(bitgo: BitGo) {
@@ -380,6 +390,20 @@ export class Xlm extends BaseCoin {
     } catch (e) {
       return false;
     }
+  }
+
+  /**
+   * Return a Stellar Asset in coin:token form (i.e. (t)xlm:<code>-<issuer>)
+   * If the asset is XLM, return the chain
+   * @param {stellar.Asset} asset - instance of Stellar Asset
+   */
+  getTokenNameFromStellarAsset(asset: stellar.Asset) {
+    const code = asset.getCode();
+    const issuer = asset.getIssuer();
+    if (asset.isNative()) {
+      return this.getChain();
+    }
+    return `${this.getChain()}${BaseCoin.coinTokenPatternSeparator}${code}${Xlm.tokenPatternSeparator}${issuer}`;
   }
 
   /**
@@ -764,31 +788,53 @@ export class Xlm extends BaseCoin {
           type: _.result(tx, '_memo.arm'),
         } : {};
 
-      let spendAmount = new BigNumber(0);
-      // Process only operations of the native asset (XLM)
-      const operations = _.filter(tx.operations,
-        (operation: stellar.Operation.Payment) => !operation.asset || operation.asset.getCode() === 'XLM'
-      );
-      if (_.isEmpty(operations)) {
+      let spendAmount = new BigNumber(0); // amount of XLM used in XLM-only txs
+      const spendAmounts = {}; // track both xlm and token amounts
+      if (_.isEmpty(tx.operations)) {
         throw new Error('missing operations');
       }
-      const outputs = _.map(operations, (operation: stellar.Operation.CreateAccount | stellar.Operation.Payment) => {
-        // Get memo to attach to address, if type is 'id'
-        const memoId = _.get(memo, 'type') === 'id' && ! _.get(memo, 'value') ?
-          `?memoId=${memo.value}` :
-          '';
-        const output: TransactionOutput = {
-          amount: self.bigUnitsToBaseUnits(
-            (operation as stellar.Operation.CreateAccount).startingBalance || (operation as stellar.Operation.Payment).amount
-          ),
-          address: operation.destination + memoId,
-        };
-        spendAmount = spendAmount.plus(output.amount);
-        return output;
+
+      const outputs: TransactionOutput[] = [];
+      const operations: TransactionOperation[] = []; // non-payment operations
+
+      _.forEach(tx.operations, op => {
+        if (op.type === 'createAccount' || op.type === 'payment') {
+          // TODO Remove memoId from address
+          // Get memo to attach to address, if type is 'id'
+          const memoId = _.get(memo, 'type') === 'id' && ! _.get(memo, 'value') ?
+            `?memoId=${memo.value}` :
+            '';
+          const asset = op.type === 'payment' ? op.asset : stellar.Asset.native();
+          const coin = this.getTokenNameFromStellarAsset(asset); // coin or token id
+          const output: TransactionOutput = {
+            amount: self.bigUnitsToBaseUnits(
+              (op as stellar.Operation.CreateAccount).startingBalance || (op as stellar.Operation.Payment).amount
+            ),
+            address: op.destination + memoId,
+            coin,
+          };
+
+          if (!_.isUndefined(spendAmounts[coin])) {
+            spendAmounts[coin] = spendAmounts[coin].plus(output.amount);
+          } else {
+            spendAmounts[coin] = new BigNumber(output.amount);
+          }
+          if (asset.isNative()) {
+            spendAmount = spendAmount.plus(output.amount);
+          }
+          outputs.push(output);
+        } else if (op.type === 'changeTrust') {
+          operations.push({
+            type: op.type,
+            coin: this.getTokenNameFromStellarAsset(op.line),
+            asset: op.line,
+            limit: op.limit,
+          });
+        }
       });
 
       const outputAmount = spendAmount.toFixed(0);
-
+      const outputAmounts = _.mapValues(spendAmounts, (amount: BigNumber) => amount.toFixed(0));
       const fee = {
         fee: tx.fee.toFixed(0),
         feeRate: null,
@@ -796,14 +842,16 @@ export class Xlm extends BaseCoin {
       };
 
       return {
-        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+        displayOrder: ['id', 'outputAmount', 'outputAmounts', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo', 'operations'],
         id,
         outputs,
         outputAmount,
+        outputAmounts,
         changeOutputs: [],
         changeAmount: '0',
         memo,
         fee,
+        operations,
       };
     }).call(this).asCallback(callback);
   }
@@ -820,7 +868,7 @@ export class Xlm extends BaseCoin {
    * @param options.verification.keychains Pass keychains manually rather than fetching them by id
    * @param callback
    */
-  verifyTransaction(options: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+  verifyTransaction(options: BaseVerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     // TODO BG-5600 Add parseTransaction / improve verification
     const self = this;
     return co(function *() {

@@ -43,7 +43,6 @@ import { Zec } from './coins/zec';
 import * as errors from '../errors';
 
 export type CoinConstructor = (bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) => BaseCoin;
-export const coinTokenPatternSeparator = ':';
 
 export class CoinFactory {
   private coinConstructors = new Map<string, CoinConstructor>();
