@@ -46,19 +46,6 @@ if (!(process as any).browser) {
   require('superagent-proxy')(superagent);
 }
 
-declare module 'superagent' {
-  interface Request {
-    result: (optionalField?: string) => Bluebird<any>;
-    proxy: (proxyUrl: string) => this;
-    // can't redefine return type of end() ...  makes sense
-    // end: (callback?: NodeCallback<superagent.Response>) => Bluebird<superagent.Response>;
-    verifyResponse: (response: superagent.Response) => superagent.Response;
-    forceV1Auth: boolean;
-    authenticationToken?: string;
-    isV2Authenticated?: boolean;
-  }
-}
-
 // Patch superagent to return bluebird promises
 const _end = (superagent as any).Request.prototype.end;
 (superagent as any).Request.prototype.end = function(cb) {
