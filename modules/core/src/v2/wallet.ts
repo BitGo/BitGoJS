@@ -1133,6 +1133,7 @@ export class Wallet {
    * @param {Number} params.lastLedgerSequence - Absolute max ledger the transaction should be accepted in, whereafter it will be rejected.
    * @param {String} params.ledgerSequenceDelta - Relative ledger height (in relation to the current ledger) that the transaction should be accepted in, whereafter it will be rejected.
    * @param {Number} params.gasPrice - Custom gas price to be used for sending the transaction
+   * @param {Number} params.gasLimit - Custom gas limit to be used for sending the transaction
    * @param {Boolean} params.noSplitChange - Set to true to disable automatic change splitting for purposes of unspent management
    * @param {Array} params.unspents - The unspents to use in the transaction. Each unspent should be in the form prevTxId:nOutput
    * @param {String} params.changeAddress - Specifies the destination of the change output
@@ -1153,7 +1154,7 @@ export class Wallet {
       const whitelistedParams = _.pick(params, [
         'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
         'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
-        'ledgerSequenceDelta', 'gasPrice', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
+        'ledgerSequenceDelta', 'gasPrice', 'gasLimit', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
         'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy',
         'validFromBlock', 'validToBlock',
       ]);

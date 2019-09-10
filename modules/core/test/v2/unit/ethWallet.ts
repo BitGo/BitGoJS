@@ -292,3 +292,36 @@ describe('Add final signature to ETH tx from offline vault', function() {
     response.txHex.should.equal(expectedResult.txHex);
   });
 });
+
+describe('prebuildTransaction', function() {
+  let bitgo;
+  let ethWallet;
+  let recipients;
+  let bgUrl;
+  let gasLimit;
+
+  before(function() {
+    bitgo = new TestBitGo({ env: 'test' });
+    bitgo.initializeTestVars();
+    const coin = bitgo.coin('teth');
+    ethWallet = coin.newWalletObject(bitgo, coin, {});
+    gasLimit = 2100000;
+    recipients = [{
+      address: '0xe59dfe5c67114b39a5662cc856be536c614124c0',
+      amount: '100000'
+    }];
+    bgUrl = common.Environments[bitgo.getEnv()].uri;
+  });
+
+  it('should successfully accept gasLimit as a param', co(function *() {
+    const scope = nock(bgUrl)
+      .post('/api/v2/teth/wallet/' + ethWallet.id() + '/tx/build', {
+        recipients,
+        gasLimit,
+      })
+      .reply(200, { success: true });
+    const prebuild = yield ethWallet.prebuildTransaction({ recipients, gasLimit });
+    scope.isDone().should.equal(true);
+    prebuild.success.should.equal(true);
+  }));
+});
