@@ -77,21 +77,21 @@ import('ethereumjs-tx')
 export const optionalDeps = {
   get ethAbi() {
     if (!ethAbi) {
-      throw new EthereumLibraryUnavailableError();
+      throw new EthereumLibraryUnavailableError(`ethereumjs-abi`);
     }
     return ethAbi;
   },
 
   get ethUtil() {
     if (!ethUtil) {
-      throw new EthereumLibraryUnavailableError();
+      throw new EthereumLibraryUnavailableError(`ethereumjs-util`);
     }
     return ethUtil;
   },
 
   get EthTx() {
     if (!ethTx) {
-      throw new EthereumLibraryUnavailableError();
+      throw new EthereumLibraryUnavailableError(`ethereumjs-tx`);
     }
     return ethTx;
   },
