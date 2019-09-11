@@ -36,6 +36,31 @@ steps:
   commands:
   - yarn run check-fmt
 
+- name: generate docs
+  image: bitgosdk/upload-tools:latest
+  commands:
+  - yarn run gen-docs
+  when:
+    event:
+    - tag
+    status:
+    - success
+
+- name: upload docs
+  image: bitgosdk/upload-tools:latest
+  commands:
+  - yarn run upload-docs
+  environment:
+    reports_s3_akid:
+      from_secret: reports_s3_akid
+    reports_s3_sak:
+      from_secret: reports_s3_sak
+  when:
+    event:
+    - tag
+    status:
+    - success
+
 ---
 kind: pipeline
 name: size and timing (node:lts)
@@ -88,10 +113,9 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
-  image: node:6
+- name: upload artifacts
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
@@ -145,10 +169,9 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
-  image: node:8
+- name: upload artifacts
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
@@ -202,10 +225,9 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
-  image: node:10
+- name: upload artifacts
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
@@ -259,10 +281,9 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
-  image: node:11
+- name: upload artifacts
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
@@ -316,10 +337,9 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
-  image: node:lts
+- name: upload artifacts
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
   - yarn run gen-coverage
   - yarn run coverage -F integration

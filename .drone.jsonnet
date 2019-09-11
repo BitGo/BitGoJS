@@ -70,16 +70,43 @@ local ExcludeBranches(pipeline, excluded_branches=branches()) = pipeline + {
   },
 };
 
-local UploadReports(version, tag="untagged", only_changed=false) = {
-  name: "upload reports",
-  image: "node:"  + version,
+local GenerateDocs(version) = {
+  name: "generate docs",
+  image: "bitgosdk/upload-tools:latest",
+  commands: [
+    "yarn run gen-docs",
+  ],
+  when: {
+    status: ["success"],
+    event: ["tag"],
+  }
+};
+
+local UploadDocs(version) = {
+  name: "upload docs",
+  image: "bitgosdk/upload-tools:latest",
+  environment: {
+    reports_s3_akid: { from_secret: "reports_s3_akid" },
+    reports_s3_sak: { from_secret: "reports_s3_sak" },
+  },
+  commands: [
+    "yarn run upload-docs",
+  ],
+  when: {
+    status: ["success"],
+    event: ["tag"],
+  }
+};
+
+local UploadArtifacts(version, tag="untagged", only_changed=false) = {
+  name: "upload artifacts",
+  image: "bitgosdk/upload-tools:latest",
   environment: {
     CODECOV_TOKEN: { from_secret: "codecov" },
     reports_s3_akid: { from_secret: "reports_s3_akid" },
     reports_s3_sak: { from_secret: "reports_s3_sak" },
   },
   commands: [
-    "yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk",
     "yarn run artifacts",
     "yarn run gen-coverage" + (if only_changed then "-changed" else ""),
     "yarn run coverage -F " + tag,
@@ -96,13 +123,8 @@ local UnitTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("unit-test-changed", version),
-    UploadReports(version, "unit", true),
+    UploadArtifacts(version, "unit", true),
   ],
-  trigger: {
-    branch: {
-      exclude: branches(),
-    },
-  },
 };
 
 local IntegrationTest(version) = {
@@ -112,7 +134,7 @@ local IntegrationTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("integration-test", version),
-    UploadReports(version, "integration"),
+    UploadArtifacts(version, "integration"),
   ],
 };
 
@@ -140,6 +162,8 @@ local CheckPreconditions(version) = {
     Command("audit", version),
     Command("lint", version),
     Command("check-fmt", version),
+    GenerateDocs(version),
+    UploadDocs(version),
   ]
 };
 

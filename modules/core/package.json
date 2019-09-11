@@ -42,7 +42,9 @@
     "check-fmt": "prettier --check '{src,test}/**/*.{ts,js,json}'",
     "precommit": "lint-staged",
     "unprettied": "grep -R -L --include '*.ts' --include '*.js' --include '*.json' '@prettier' src test",
-    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'"
+    "fmt": "prettier --write '{src,test}/**/*.{ts,js,json}'",
+    "upload-docs": "node scripts/upload-docs.js",
+    "gen-docs": "typedoc"
   },
   "dependencies": {
     "@bitgo/statics": "^2.1.0",
@@ -115,7 +117,7 @@
     "terser": "^3.16.1",
     "terser-webpack-plugin": "^1.2.3",
     "ts-node": "^8.3.0",
-    "typescript": "~3.3.4000",
+    "typescript": "~3.5.3",
     "utf-8-validate": "^4.0.2",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3"
