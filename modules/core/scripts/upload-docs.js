@@ -45,7 +45,6 @@ function walkSync(currentDirPath, callback) {
 function uploadDocs(root, key) {
   walkSync(root, (filePath) => {
     const bucketPath = `${key}/${filePath.replace(DOCS_ROOT, '')}`;
-    console.log('bucketpath', bucketPath);
     const uploadParams = {
       Body: fs.readFileSync(filePath),
       Bucket: 'bitgo-sdk-docs',
@@ -65,7 +64,7 @@ function uploadDocs(root, key) {
   console.log();
 }
 
-if (!fs.statSync(DOCS_ROOT).isDirectory()) {
+if (!fs.existsSync(DOCS_ROOT) || !fs.statSync(DOCS_ROOT).isDirectory()) {
   console.warn(`Docs directory '${DOCS_ROOT}' not found. Skipping docs upload...`);
 } else {
   uploadDocs(DOCS_ROOT, OBJECT_ROOT);
