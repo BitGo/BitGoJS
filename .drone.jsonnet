@@ -1,8 +1,7 @@
 local branches() = [
-  "refs/heads/master",
-  "refs/heads/rel/*",
-  "refs/heads/prod/production",
-  "refs/tags/**",
+  "master",
+  "rel/*",
+  "prod/production",
 ];
 
 local BuildInfo(version) = {
@@ -57,7 +56,7 @@ local LernaCommand(command, version="lts", with_secrets=false) = {
 
 local IncludeBranches(pipeline, included_branches=branches()) = pipeline + {
   trigger: {
-    ref: {
+    branch: {
       include: included_branches,
     },
   },
@@ -65,7 +64,7 @@ local IncludeBranches(pipeline, included_branches=branches()) = pipeline + {
 
 local ExcludeBranches(pipeline, excluded_branches=branches()) = pipeline + {
   trigger: {
-    ref: {
+    branch: {
       exclude: excluded_branches
     },
   },
