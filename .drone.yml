@@ -316,14 +316,6 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: generate docs
-  image: bitgosdk/upload-tools:latest
-  commands:
-  - yarn run gen-docs
-  when:
-    event:
-    - tag
-
 - name: upload artifacts
   image: bitgosdk/upload-tools:latest
   commands:

@@ -118,7 +118,7 @@ local IntegrationTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("integration-test", version),
-    GenerateDocs(version),
+    // GenerateDocs(version),
     UploadArtifacts(version, "integration"),
   ],
 };
