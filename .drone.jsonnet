@@ -70,8 +70,19 @@ local ExcludeBranches(pipeline, excluded_branches=branches()) = pipeline + {
   },
 };
 
-local UploadReports(version, tag="untagged", only_changed=false) = {
-  name: "upload reports",
+local GenerateDocs(version) = {
+  name: "generate docs",
+  image: "bitgosdk/upload-tools:latest",
+  commands: [
+    "yarn run gen-docs",
+  ],
+  when: {
+    event: ["tag"]
+  }
+};
+
+local UploadArtifacts(version, tag="untagged", only_changed=false) = {
+  name: "upload artifacts",
   image: "bitgosdk/upload-tools:latest",
   environment: {
     CODECOV_TOKEN: { from_secret: "codecov" },
@@ -80,7 +91,7 @@ local UploadReports(version, tag="untagged", only_changed=false) = {
   },
   commands: [
     "yarn run artifacts",
-    "yarn run docs",
+    "yarn run upload-docs",
     "yarn run gen-coverage" + (if only_changed then "-changed" else ""),
     "yarn run coverage -F " + tag,
   ],
@@ -96,7 +107,7 @@ local UnitTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("unit-test-changed", version),
-    UploadReports(version, "unit", true),
+    UploadArtifacts(version, "unit", true),
   ],
   trigger: {
     branch: {
@@ -112,7 +123,8 @@ local IntegrationTest(version) = {
     BuildInfo(version),
     Install(version),
     CommandWithSecrets("integration-test", version),
-    UploadReports(version, "integration"),
+    GenerateDocs(version),
+    UploadArtifacts(version, "integration"),
   ],
 };
 

@@ -88,11 +88,11 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
+- name: upload artifacts
   image: bitgosdk/upload-tools:latest
   commands:
   - yarn run artifacts
-  - yarn run docs
+  - yarn run upload-docs
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
@@ -145,11 +145,11 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
+- name: upload artifacts
   image: bitgosdk/upload-tools:latest
   commands:
   - yarn run artifacts
-  - yarn run docs
+  - yarn run upload-docs
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
@@ -202,11 +202,11 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
+- name: upload artifacts
   image: bitgosdk/upload-tools:latest
   commands:
   - yarn run artifacts
-  - yarn run docs
+  - yarn run upload-docs
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
@@ -259,11 +259,11 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
+- name: upload artifacts
   image: bitgosdk/upload-tools:latest
   commands:
   - yarn run artifacts
-  - yarn run docs
+  - yarn run upload-docs
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
@@ -316,11 +316,19 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: upload reports
+- name: generate docs
+  image: bitgosdk/upload-tools:latest
+  commands:
+  - yarn run gen-docs
+  when:
+    event:
+    - tag
+
+- name: upload artifacts
   image: bitgosdk/upload-tools:latest
   commands:
   - yarn run artifacts
-  - yarn run docs
+  - yarn run upload-docs
   - yarn run gen-coverage
   - yarn run coverage -F integration
   environment:

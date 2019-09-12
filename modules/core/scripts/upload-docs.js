@@ -45,7 +45,6 @@ function walkSync(currentDirPath, callback) {
 function uploadDocs(root, key) {
   walkSync(root, (filePath) => {
     const bucketPath = `${key}/${filePath.replace(DOCS_ROOT, '')}`;
-    console.log('bucketpath', bucketPath);
     const uploadParams = {
       Body: fs.readFileSync(filePath),
       Bucket: 'bitgo-sdk-docs',
