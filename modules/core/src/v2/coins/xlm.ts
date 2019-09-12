@@ -16,7 +16,7 @@ import {
   InvalidAddressError,
   InvalidMemoIdError,
   KeyRecoveryServiceError,
-  UnexpectedAddressError
+  UnexpectedAddressError,
 } from '../../errors';
 import {
   BaseCoin,
@@ -25,13 +25,11 @@ import {
   KeyPair,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
-  VerifyTransactionOptions as BaseVerifyTransactionOptions,
   ParseTransactionOptions,
   ParsedTransaction,
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { NodeCallback } from '../types';
-import { Wallet } from '../wallet';
 
 const co = Bluebird.coroutine;
 
@@ -760,7 +758,7 @@ export class Xlm extends BaseCoin {
       // value() and arm() that provide memo value and type, respectively.
       const memo: TransactionMemo = _.result(tx, '_memo.value') && _.result(tx, '_memo.arm') ?
         {
-          value: _.result(tx, '_memo.value').toString(),
+          value: (_.result(tx, '_memo.value') as any).toString(),
           type: _.result(tx, '_memo.arm'),
         } : {};
 

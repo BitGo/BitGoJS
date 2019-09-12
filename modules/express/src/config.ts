@@ -75,10 +75,9 @@ function mergeConfigs(...configs: Config[]): Config {
   // helper to get the first defined value for a given config key
   // from the config sources in a type safe manner
   function get<T extends keyof Config>(k: T): Config[T] {
-    return configs.reduce((item: Config[T], c) => {
-      const current = c[k];
-      return isNilOrNaN(item) && !isNilOrNaN(current) ? current : item;
-    }, undefined);
+    return configs
+      .reverse()
+      .reduce((entry: Config[T], config) => !isNilOrNaN(config[k]) ? config[k] : entry, DefaultConfig[k]);
   }
 
   return {
@@ -101,5 +100,5 @@ function mergeConfigs(...configs: Config[]): Config {
 export const config = () => {
   const arg = ArgConfig(args());
   const env = EnvConfig();
-  return mergeConfigs(arg, env, DefaultConfig);
+  return mergeConfigs(arg, env);
 };
