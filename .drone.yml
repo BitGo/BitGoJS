@@ -53,9 +53,10 @@ steps:
 
 trigger:
   branch:
-  - master
-  - "rel/*"
-  - prod/production
+  - refs/heads/master
+  - "refs/heads/rel/*"
+  - refs/heads/prod/production
+  - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -110,9 +111,10 @@ steps:
 trigger:
   branch:
     exclude:
-    - master
-    - "rel/*"
-    - prod/production
+    - refs/heads/master
+    - "refs/heads/rel/*"
+    - refs/heads/prod/production
+    - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -167,9 +169,10 @@ steps:
 trigger:
   branch:
     exclude:
-    - master
-    - "rel/*"
-    - prod/production
+    - refs/heads/master
+    - "refs/heads/rel/*"
+    - refs/heads/prod/production
+    - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -224,9 +227,10 @@ steps:
 trigger:
   branch:
     exclude:
-    - master
-    - "rel/*"
-    - prod/production
+    - refs/heads/master
+    - "refs/heads/rel/*"
+    - refs/heads/prod/production
+    - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -281,9 +285,10 @@ steps:
 trigger:
   branch:
     exclude:
-    - master
-    - "rel/*"
-    - prod/production
+    - refs/heads/master
+    - "refs/heads/rel/*"
+    - refs/heads/prod/production
+    - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -345,8 +350,9 @@ steps:
 
 trigger:
   branch:
-  - master
-  - "rel/*"
-  - prod/production
+  - refs/heads/master
+  - "refs/heads/rel/*"
+  - refs/heads/prod/production
+  - "refs/tags/**"
 
 ...

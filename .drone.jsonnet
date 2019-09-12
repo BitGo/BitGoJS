@@ -1,7 +1,8 @@
 local branches() = [
-  "master",
-  "rel/*",
-  "prod/production",
+  "refs/heads/master",
+  "refs/heads/rel/*",
+  "refs/heads/prod/production",
+  "refs/tags/**",
 ];
 
 local BuildInfo(version) = {
