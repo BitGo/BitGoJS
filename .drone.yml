@@ -52,10 +52,11 @@ steps:
   - slow-deps
 
 trigger:
-  branch:
-  - master
-  - "rel/*"
-  - prod/production
+  ref:
+  - refs/heads/master
+  - "refs/heads/rel/*"
+  - refs/heads/prod/production
+  - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -108,11 +109,12 @@ steps:
     - failure
 
 trigger:
-  branch:
+  ref:
     exclude:
-    - master
-    - "rel/*"
-    - prod/production
+    - refs/heads/master
+    - "refs/heads/rel/*"
+    - refs/heads/prod/production
+    - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -165,11 +167,12 @@ steps:
     - failure
 
 trigger:
-  branch:
+  ref:
     exclude:
-    - master
-    - "rel/*"
-    - prod/production
+    - refs/heads/master
+    - "refs/heads/rel/*"
+    - refs/heads/prod/production
+    - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -222,11 +225,12 @@ steps:
     - failure
 
 trigger:
-  branch:
+  ref:
     exclude:
-    - master
-    - "rel/*"
-    - prod/production
+    - refs/heads/master
+    - "refs/heads/rel/*"
+    - refs/heads/prod/production
+    - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -279,11 +283,12 @@ steps:
     - failure
 
 trigger:
-  branch:
+  ref:
     exclude:
-    - master
-    - "rel/*"
-    - prod/production
+    - refs/heads/master
+    - "refs/heads/rel/*"
+    - refs/heads/prod/production
+    - "refs/tags/**"
 
 ---
 kind: pipeline
@@ -344,9 +349,10 @@ steps:
     - failure
 
 trigger:
-  branch:
-  - master
-  - "rel/*"
-  - prod/production
+  ref:
+  - refs/heads/master
+  - "refs/heads/rel/*"
+  - refs/heads/prod/production
+  - "refs/tags/**"
 
 ...
