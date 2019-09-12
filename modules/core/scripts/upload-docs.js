@@ -7,6 +7,7 @@ const {
   reports_s3_sak,
   DRONE,
   DRONE_TAG,
+  DRONE_STAGE_STATUS,
 } = process.env;
 
 if (!DRONE) {
@@ -16,6 +17,11 @@ if (!DRONE) {
 
 if (!DRONE_TAG) {
   console.log('Not a tag build, exiting...');
+  process.exit(0);
+}
+
+if (DRONE_STAGE_STATUS !== 'success') {
+  console.log('Drone pipeline is failed, exiting...');
   process.exit(0);
 }
 
