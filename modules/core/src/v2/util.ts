@@ -13,7 +13,8 @@ const debug = debugLib('bitgo:v2:util');
 let ethUtil;
 let isEthAvailable = false;
 
-import('ethereumjs-util')
+const ethImport = 'ethereumjs-util';
+import(ethImport)
   .then(eth => {
     ethUtil = eth;
     isEthAvailable = true;
@@ -121,7 +122,7 @@ export class Util {
    */
   static xpubToEthAddress(xpub: string): string {
     if (!isEthAvailable) {
-      throw new EthereumLibraryUnavailableError();
+      throw new EthereumLibraryUnavailableError(ethImport);
     }
     const hdNode = bitcoin.HDNode.fromBase58(xpub);
     const ethPublicKey = hdNode.keyPair.__Q.getEncoded(false).slice(1);
@@ -147,7 +148,7 @@ export class Util {
    */
   static ethSignMsgHash(msgHash: string, privKey: string): string {
     if (!isEthAvailable) {
-      throw new EthereumLibraryUnavailableError();
+      throw new EthereumLibraryUnavailableError(ethImport);
     }
     const signatureInParts = ethUtil.ecsign(
       new Buffer(ethUtil.stripHexPrefix(msgHash), 'hex'),
@@ -170,7 +171,7 @@ export class Util {
    */
   static weiToEtherString(wei: any): string {
     if (!isEthAvailable) {
-      throw new EthereumLibraryUnavailableError();
+      throw new EthereumLibraryUnavailableError(ethImport);
     }
     let bn = wei;
     if (!(wei instanceof ethUtil.BN)) {
