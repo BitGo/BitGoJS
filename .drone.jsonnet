@@ -72,15 +72,15 @@ local ExcludeBranches(pipeline, excluded_branches=branches()) = pipeline + {
 
 local UploadReports(version, tag="untagged", only_changed=false) = {
   name: "upload reports",
-  image: "node:"  + version,
+  image: "bitgosdk/upload-tools:latest",
   environment: {
     CODECOV_TOKEN: { from_secret: "codecov" },
     reports_s3_akid: { from_secret: "reports_s3_akid" },
     reports_s3_sak: { from_secret: "reports_s3_sak" },
   },
   commands: [
-    "yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk",
     "yarn run artifacts",
+    "yarn run docs",
     "yarn run gen-coverage" + (if only_changed then "-changed" else ""),
     "yarn run coverage -F " + tag,
   ],

@@ -89,10 +89,10 @@ steps:
       from_secret: password
 
 - name: upload reports
-  image: node:6
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
+  - yarn run docs
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
@@ -146,10 +146,10 @@ steps:
       from_secret: password
 
 - name: upload reports
-  image: node:8
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
+  - yarn run docs
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
@@ -203,10 +203,10 @@ steps:
       from_secret: password
 
 - name: upload reports
-  image: node:10
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
+  - yarn run docs
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
@@ -260,10 +260,10 @@ steps:
       from_secret: password
 
 - name: upload reports
-  image: node:11
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
+  - yarn run docs
   - yarn run gen-coverage-changed
   - yarn run coverage -F unit
   environment:
@@ -317,10 +317,10 @@ steps:
       from_secret: password
 
 - name: upload reports
-  image: node:lts
+  image: bitgosdk/upload-tools:latest
   commands:
-  - yarn add -s -W --ignore-engines --no-lockfile --ignore-scripts codecov aws-sdk
   - yarn run artifacts
+  - yarn run docs
   - yarn run gen-coverage
   - yarn run coverage -F integration
   environment:
