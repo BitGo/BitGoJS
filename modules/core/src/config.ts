@@ -186,3 +186,15 @@ export const defaultConstants = (env: EnvironmentName) => {
   const network = Environments[env].network;
   return _.merge({}, defaults, tokens[network]);
 };
+
+        { type: 'pass', coin: 'eth', network: 'Mainnet', name: 'Blockpass', tokenContractAddress: '0xee4458e052b533b1aabd493b5f8c4d85d7b263dc', decimalPlaces: 6 },
+        { type: 'sxp', coin: 'eth', network: 'Mainnet', name: 'Swipe', tokenContractAddress: '0x8ce9137d39326ad0cd6491fb5cc0cba0e089b6a9', decimalPlaces: 18 },
+        { type: 'snc', coin: 'eth', network: 'Mainnet', name: 'SunContract', tokenContractAddress: '0xf4134146af2d511dd5ea8cdb1c4ac88c57d60404', decimalPlaces: 18 },
+        { type: 'ampx', coin: 'eth', network: 'Mainnet', name: 'Amplify Exchange', tokenContractAddress: '0x735af341f2d9ce3663616cd84ff522dbf62fbc1f', decimalPlaces: 18 },
+        { type: 'bidl', coin: 'eth', network: 'Mainnet', name: 'Blockbid Liquidity', tokenContractAddress: '0x5c7ec304a60ed545518085bb4aba156e8a7596f6', decimalPlaces: 2 },
+        { type: 'sgdx', coin: 'eth', network: 'Mainnet', name: 'eToro Singapore Dollar', tokenContractAddress: '0x0e3e965acffb719e2f5dd4309969e2debe6215dd', decimalPlaces: 18 },
+        { type: 'hkdx', coin: 'eth', network: 'Mainnet', name: 'eToro Hong Kong Dollar', tokenContractAddress: '0x1af20b8d1ede928f437b3a86801796b167840d2b', decimalPlaces: 18 },
+        { type: 'zarx', coin: 'eth', network: 'Mainnet', name: 'eToro South African Rand', tokenContractAddress: '0x29ec3ff4e1dcad5a207dbd5d14e48073abba0bd3', decimalPlaces: 18 },
+        { type: 'plnx', coin: 'eth', network: 'Mainnet', name: 'eToro Polish Zloty', tokenContractAddress: '0xaace6480798b4a7b596ec4ce3a26b8de9b9ae2e2', decimalPlaces: 18 },
+        { type: 'tryx', coin: 'eth', network: 'Mainnet', name: 'eToro Turkish Lira', tokenContractAddress: '0x6faff971d9248e7d398a98fdbe6a81f6d7489568', decimalPlaces: 18 },
+        { type: 'ivy', coin: 'eth', network: 'Mainnet', name: 'Ivy Koin', tokenContractAddress: '0xa4ea687a2a7f29cf2dc66b39c68e4411c0d00c49', decimalPlaces: 18 },
