@@ -18,7 +18,9 @@ We recommend using `nvm`, the [Node Version Manager](https://github.com/creation
 
 # Full Documentation
 
-View our [API Documentation](https://www.bitgo.com/api/v2).
+Please see our [SDK Documentation](https://bitgo.com) for detailed information about the Typescript SDK and functionality.
+
+For more general information about the BitGo API, please see our [REST API Documentation](https://www.bitgo.com/api/v2).
 
 # Release Notes
 
@@ -31,52 +33,43 @@ Create an access token by logging into your bitgo account, going to the API acce
 ```js
 const BitGo = require('bitgo');
 const bitgo = new BitGo.BitGo({ accessToken: ACCESS_TOKEN }); // defaults to testnet. add env: 'prod' if you want to go against mainnet
-bitgo.session({}, function(err,res) {
-  console.dir(err);
-  console.dir(res);
-});
+const result = await bitgo.session();
+console.dir(result);
 ```
 
 ## Create Wallet
 ```js
-let wallet;
 const params = {
   "passphrase": "replaceme",
   "label": "firstwallet"
 };
-bitgo.coin('tbtc').wallets().generateWallet(params, function(err, result) {
-  wallet = result.wallet;
-  console.dir(wallet._wallet);
-});
+const { wallet } = await bitgo.coin('tbtc').wallets().generateWallet(params);
+console.dir(wallet);
 ```
 
 ## Create new address
 ```js
-wallet.createAddress({ "chain": 10 }, function callback(err, address) {
-    console.dir(address);
-});
+const address = await wallet.createAddress();
+console.dir(address);
 ```
 
 ## View wallet transfers
 ```js
-wallet.transfers({}, function callback(err, transfers) {
-    console.dir(transfers);
-});
+const transfers = await wallet.transfers();
 ```
 
 ## Send coins
 ```js
-wallet.sendCoins({
+const result = await wallet.sendCoins({
   address: "2NEe9QhKPB2gnQLB3hffMuDcoFKZFjHYJYx",
   amount: 0.01 * 1e8,
   walletPassphrase:  "replaceme"
-}, function(err, result) {
-    console.dir(result);
 });
+console.dir(result);
 ```
 
 ## More examples
-Further demos and examples can be found in the [example](example/v2) directory and [documented here](https://www.bitgo.com/api/v2/?javascript#examples).
+Further demos and examples in both Javascript and Typescript can be found in the [example](modules/core/example) directory.
 
 # Usage in Browser
 

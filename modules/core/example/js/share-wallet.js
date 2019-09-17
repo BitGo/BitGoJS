@@ -1,13 +1,13 @@
-//
-// Share a BitGo multi-sig wallet with another BitGo user.
-//
-// This tool will help you see how to use the BitGo API to easily share your 
-// BitGo wallet with another BitGo user.
-//
-// Copyright 2018, BitGo, Inc.  All Rights Reserved.
-//
+/**
+ * Share a BitGo multi-sig wallet with another BitGo user.
+ *
+ * This tool will help you see how to use the BitGo API to easily share your
+ * BitGo wallet with another BitGo user.
+ *
+ * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ */
 
-const BitGoJS = require('bitgo');
+const BitGoJS = require('../../dist/src');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
 

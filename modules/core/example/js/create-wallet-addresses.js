@@ -1,4 +1,9 @@
-const BitGoJS = require('../../src/index');
+/**
+ * Create a new receive address on a multi-sig wallet at BitGo.
+ *
+ * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ */
+const BitGoJS = require('../../dist/src');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
 
@@ -13,11 +18,11 @@ Promise.coroutine(function *() {
   bitgo.authenticateWithAccessToken({ accessToken: accessToken });
 
   const wallet = yield basecoin.wallets()
-  .generateWallet({
-    label: `Test Wallet Example`,
-    passphrase: walletPassphrase,
-    backupXpubProvider: 'keyternal'
-  });
+    .generateWallet({
+      label: `Test Wallet Example`,
+      passphrase: walletPassphrase,
+      backupXpubProvider: 'keyternal',
+    });
   const walletInstance = wallet.wallet;
 
   const newReceiveAddress = yield walletInstance.createAddress();

@@ -32,6 +32,7 @@ export const Errors = errors;
 export { GlobalCoinFactory, CoinConstructor } from './v2/coinFactory';
 export { V1Network, V1RmgNetwork } from './v2/types';
 export { EnvironmentName } from './v2/environments';
+export * from './v2';
 
 /**
  * Set the network, i.e. either "bitcoin" for production with real bitcoin, or

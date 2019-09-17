@@ -7,11 +7,19 @@ import { makeRandomKey } from '../bitcoin';
 import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { AddressGenerationError } from '../errors';
-import { BaseCoin, CoinSpecific } from './baseCoin';
+import {
+  BaseCoin,
+  CoinSpecific,
+  FullySignedTransaction,
+  HalfSignedTransaction,
+  SignedTransaction, TransactionPrebuild,
+  VerificationOptions,
+} from './baseCoin';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
-import { Eth } from './coins/eth';
+import { Eth } from './coins';
 import * as internal from './internal';
 import { drawKeycard } from './keycard';
+import { Keychain } from './keychains';
 import { TradingAccount } from './trading/tradingAccount';
 import { NodeCallback } from './types';
 import { PendingApproval } from './pendingApproval';
@@ -19,6 +27,81 @@ import { RequestTracer } from './util';
 
 const debug = debugLib('bitgo:v2:wallet');
 const co = Bluebird.coroutine;
+
+export interface MaximumSpendableOptions {
+  minValue?: number;
+  maxValue?: number;
+  minHeight?: number;
+  minConfirms?: number;
+  enforceMinConfirmsForChange?: boolean;
+  feeRate?: number;
+  maxFeeRate?: number;
+  recipientAddress?: string;
+  limit?: number;
+  target?: number;
+  plainTarget?: number;
+}
+
+export interface MaximumSpendable {
+  maximumSpendable: number;
+  coin: string;
+}
+
+export interface PrebuildTransactionOptions {
+  reqId?: RequestTracer;
+  recipients?: {
+    address: string;
+    amount: string;
+  }[];
+  numBlocks?: number;
+  feeRate?: number;
+  maxFeeRate?: number;
+  minConfirms?: number;
+  enforceMinConfirmsForChange?: boolean;
+  targetWalletUnspents?: number;
+  minValue?: number;
+  maxValue?: number;
+  sequenceId?: number;
+  lastLedgerSequence?: number;
+  ledgerSequenceDelta?: string;
+  gasPrice?: number;
+  noSplitChange?: boolean;
+  unspents?: any[];
+  changeAddress?: string;
+  validFromBlock?: number;
+  validToBlock?: number;
+  instant?: boolean;
+  memo?: {
+    value: string;
+    type: string;
+  }[];
+  addressType?: string;
+  hop?: boolean;
+  walletPassphrase?: string;
+}
+
+export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
+  prebuildTx?: string;
+  verification?: VerificationOptions;
+}
+
+export interface PrebuildTransactionResult extends TransactionPrebuild {
+  walletId: string;
+}
+
+export interface WalletSignTransactionOptions {
+  txPrebuild?: TransactionPrebuild;
+  prv?: string;
+  isLastSignature?: boolean;
+}
+
+export interface GetUserPrvOptions {
+  keychain?: Keychain;
+  key?: Keychain;
+  prv?: string;
+  coldDerivationSeed?: string;
+  walletPassphrase?: string;
+}
 
 export class Wallet {
 
@@ -402,7 +485,7 @@ export class Wallet {
    * @returns {{maximumSpendable: Number, coin: String}}
    * NOTE : feeTxConfirmTarget omitted on purpose because gauging the maximum spendable amount with dynamic fees does not make sense
    */
-  maximumSpendable(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  maximumSpendable(params: MaximumSpendableOptions = {}, callback?: NodeCallback<MaximumSpendable>): Bluebird<MaximumSpendable> {
     const self = this;
     return co(function *() {
       const filteredParams = _.pick(params, [
@@ -1147,7 +1230,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  prebuildTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  prebuildTransaction(params: PrebuildTransactionOptions = {}, callback?: NodeCallback<PrebuildTransactionResult>): Bluebird<PrebuildTransactionResult> {
     const self = this;
     return co(function *() {
       // Whitelist params to build tx
@@ -1178,14 +1261,14 @@ export class Wallet {
       if (!_.isUndefined(blockHeight)) {
         buildResponse.blockHeight = blockHeight;
       }
-      let prebuild = yield self.baseCoin.postProcessPrebuild(
+      let prebuild: TransactionPrebuild = yield self.baseCoin.postProcessPrebuild(
         Object.assign(buildResponse, { wallet: self, buildParams: whitelistedParams })
       );
       delete prebuild.wallet;
       delete prebuild.buildParams;
       prebuild = _.extend({}, prebuild, { walletId: self.id() });
       debug('final transaction prebuild: %O', prebuild);
-      return prebuild;
+      return prebuild as PrebuildTransactionResult;
     }).call(this).asCallback(callback);
   }
 
@@ -1198,7 +1281,10 @@ export class Wallet {
    * @param callback
    * @return {*}
    */
-  signTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  signTransaction(
+    params: WalletSignTransactionOptions = {},
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
     const self = this;
     return co(function *() {
       const txPrebuild = params.txPrebuild;
@@ -1208,7 +1294,7 @@ export class Wallet {
       const presign = yield self.baseCoin.presignTransaction(params);
       const userPrv = self.getUserPrv(presign);
       const signingParams = _.extend({}, presign, { txPrebuild: txPrebuild, prv: userPrv });
-      return (self.baseCoin as any).signTransaction(signingParams);
+      return self.baseCoin.signTransaction(signingParams);
     }).call(this).asCallback(callback);
   }
 
@@ -1217,7 +1303,7 @@ export class Wallet {
    * @param [params.keychain / params.key] (object) or params.prv (string)
    * @param params.walletPassphrase (string)
    */
-  getUserPrv(params: any = {}): any {
+  getUserPrv(params: GetUserPrvOptions = {}): string {
     const userKeychain = params.keychain || params.key;
     let userPrv = params.prv;
     if (userPrv && typeof userPrv !== 'string') {
@@ -1249,7 +1335,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  prebuildAndSignTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  prebuildAndSignTransaction(params: PrebuildAndSignTransactionOptions = {}, callback?: NodeCallback<SignedTransaction>): Bluebird<SignedTransaction> {
     const self = this;
     return co(function *() {
       if (params.prebuildTx && params.recipients) {

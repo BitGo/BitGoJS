@@ -26,6 +26,7 @@ import {
   ParsedTransaction,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  SignedTransaction,
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
@@ -335,7 +336,7 @@ export class Algo extends BaseCoin {
    * @param params.prv {String} user prv
    * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
    */
-  signTransaction(params: SignTransactionOptions): HalfSignedTransaction | FullySignedTransaction {
+  signTransaction(params: SignTransactionOptions): SignedTransaction {
     const { txHex, addressVersion, keys, sk, isHalfSigned } = this.verifySignTransactionParams(params);
     const encodedPublicKeys = _.map(keys, k => Address.decode(k).publicKey);
 

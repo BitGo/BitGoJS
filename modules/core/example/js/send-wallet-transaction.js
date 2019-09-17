@@ -1,4 +1,9 @@
-const BitGoJS = require('../../src/index');
+/**
+ * Send a transaction from a multi-sig wallet at BitGo.
+ *
+ * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ */
+const BitGoJS = require('../../src');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
 

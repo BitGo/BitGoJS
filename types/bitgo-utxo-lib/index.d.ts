@@ -24,7 +24,7 @@ declare module 'bitgo-utxo-lib' {
     parentFingerprint: number;
 
     // bitgojs augmentation
-    getKey: (network: Network) => ECPair;
+    getKey: (network?: Network) => ECPair;
   }
 
   export class ECPair {

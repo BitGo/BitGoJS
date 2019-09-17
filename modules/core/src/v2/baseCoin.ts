@@ -56,7 +56,7 @@ export interface VerifyAddressOptions {
 }
 
 export interface TransactionParams {
-  recipients: TransactionOutput[];
+  recipients?: TransactionOutput[];
   walletPassphrase?: string;
 }
 
@@ -125,10 +125,14 @@ export type ParseTransactionOptions = any;
 // export interface ParsedTransaction {}
 export type ParsedTransaction = any;
 
+// TODO (SDKT-9): reverse engineer and add options
+// export interface ParseTransactionOptions {}
+export type SignTransactionOptions = any;
+
 export interface InitiateRecoveryOptions {
   userKey: string;
   backupKey: string;
-  bitgoKey: string;
+  bitgoKey?: string; // optional for xrp recoveries
   recoveryDestination: string;
   walletPassphrase?: string;
 }
@@ -143,6 +147,7 @@ export interface TransactionPrebuild {
   txBase64?: string;
   txHex?: string;
   wallet?: Wallet;
+  buildParams?: any;
 }
 
 export interface CoinSpecific {
@@ -151,6 +156,20 @@ export interface CoinSpecific {
   witnessScript?: string;
   baseAddress?: string;
 }
+
+export interface FullySignedTransaction {
+  txHex: string;
+}
+
+export interface HalfSignedTransaction {
+  halfSigned?: {
+    txHex?: string;
+    payload?: string;
+    txBase64?: string;
+  };
+}
+
+export type SignedTransaction = HalfSignedTransaction | FullySignedTransaction;
 
 export abstract class BaseCoin {
   protected readonly bitgo: BitGo;
@@ -279,7 +298,7 @@ export abstract class BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key, message) {
+  signMessage(key: { prv: string }, message: string): Buffer {
     const privateKey = bitcoin.HDNode.fromBase58(key.prv).getKey();
     const privateKeyBuffer = privateKey.d.toBuffer(32);
     const isCompressed = privateKey.compressed;
@@ -337,10 +356,10 @@ export abstract class BaseCoin {
    * Coin-specific things done before signing a transaction, i.e. verification
    */
   presignTransaction(
-    prebuild: TransactionPrebuild,
+    params: PresignTransactionOptions,
     callback?: NodeCallback<TransactionPrebuild>
   ): Bluebird<TransactionPrebuild> {
-    return Bluebird.resolve(prebuild).asCallback(callback);
+    return Bluebird.resolve(params).asCallback(callback);
   }
 
   /**
@@ -522,4 +541,9 @@ export abstract class BaseCoin {
    * @param address
    */
   abstract isValidAddress(address: string): boolean;
+
+  /**
+   * Sign a transaction
+   */
+  abstract signTransaction(params: SignTransactionOptions): SignedTransaction;
 }

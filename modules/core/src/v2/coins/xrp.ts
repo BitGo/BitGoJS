@@ -21,6 +21,7 @@ import {
   ParsedTransaction,
   TransactionPrebuild,
   VerifyTransactionOptions,
+  InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
 } from '../baseCoin';
 import * as config from '../../config';
 import { KeyIndices } from '../keychains';
@@ -63,14 +64,18 @@ interface RecoveryInfo extends TransactionExplanation {
   coin?: string;
 }
 
-interface RecoveryOptions {
+export interface InitiateRecoveryOptions extends BaseInitiateRecoveryOptions {
+  krsProvider?: string;
+}
+
+export interface RecoveryOptions {
   backupKey: string;
   userKey: string;
   rootAddress: string;
   recoveryDestination: string;
-  bitgoKey: string;
+  bitgoKey?: string;
   walletPassphrase: string;
-  krsProvider: string;
+  krsProvider?: string;
 }
 
 interface HalfSignedTransaction {
@@ -414,7 +419,7 @@ export class Xrp extends BaseCoin {
       });
 
       const output = [...explanation.outputs, ...explanation.changeOutputs][0];
-      const expectedOutput = txParams.recipients[0];
+      const expectedOutput = txParams.recipients && txParams.recipients[0];
 
       const comparator = (recipient1, recipient2) => {
         if (recipient1.address !== recipient2.address) {
@@ -595,7 +600,7 @@ export class Xrp extends BaseCoin {
         Fee: openLedgerFee.times(3).toFixed(0), // the factor three is for the multisigning
         Sequence: sequenceId,
       };
-      const txJSON = JSON.stringify(transaction);
+      const txJSON: string = JSON.stringify(transaction);
 
       if (isUnsignedSweep) {
         return txJSON;
@@ -630,7 +635,7 @@ export class Xrp extends BaseCoin {
   /**
    * Prepare and validate all keychains from the keycard for recovery
    */
-  initiateRecovery(params: RecoveryOptions): Bluebird<HDNode[]> {
+  initiateRecovery(params: InitiateRecoveryOptions): Bluebird<HDNode[]> {
     const self = this;
     return co(function *initiateRecovery() {
       const keys: HDNode[] = [];
@@ -643,7 +648,7 @@ export class Xrp extends BaseCoin {
       const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
       const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 
-      if (isKrsRecovery && _.isUndefined(config.krsProviders[params.krsProvider])) {
+      if (isKrsRecovery && params.krsProvider && _.isUndefined(config.krsProviders[params.krsProvider])) {
         throw new Error('unknown key recovery service provider');
       }
 

@@ -97,10 +97,10 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/statics@^2.0.0-rc.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-2.0.0.tgz#4935b513deba548cf875a3b8cbebd2eb40483403"
-  integrity sha512-xlpvlQuybo1cEgtY2Xh1HV2jyWGYGSq3Lg4cGFWzQmJiiCnGyW4CPWoDMJrhE5EZPxpbS2mToN1bc+kXldpXBQ==
+"@bitgo/statics@^2.1.0":
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-2.1.0.tgz#dc4e86267abc467cbff7f29c0d3975a914344f33"
+  integrity sha512-wdXnSdjk8+crUNVji9+ApNWDpBzOWQs41VKeGy82NbG2R5bKfEdh2Fs9jnC63ppxMh9IbU0yDePrZ+OXB7XC5g==
 
 "@bitgo/unspents@^0.6.0":
   version "0.6.1"
@@ -10074,7 +10074,7 @@ tronweb@^2.7.0:
     semver "^5.6.0"
     validator "^10.7.1"
 
-ts-node@^8.0.2, ts-node@^8.1.0:
+ts-node@^8.1.0, ts-node@^8.3.0:
   version "8.3.0"
   resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-8.3.0.tgz#e4059618411371924a1fb5f3b125915f324efb57"
   integrity sha512-dyNS/RqyVTDcmNM4NIBAeDMpsAdaQ+ojdf0GOLqE6nwJOgzEkdRNzJywhDfwnuvB10oa6NLVG1rUJQCpRN7qoQ==

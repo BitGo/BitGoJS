@@ -1,11 +1,11 @@
-//
-// Resend the invitation email for sharing a BitGo wallet
-//
-// Copyright 2018, BitGo, Inc.  All Rights Reserved.
-//
+/**
+ * Resend the invitation email for sharing a BitGo wallet
+ *
+ * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ */
 
 const Promise = require('bluebird');
-const BitGoJS = require('../../src/index.js');
+const BitGoJS = require('../../src');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 
 // TODO: set your access token here
