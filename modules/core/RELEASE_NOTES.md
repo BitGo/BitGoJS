@@ -1,5 +1,30 @@
 # BitGoJS Release Notes
 
+## 8.1.1
+
+### Bug Fixes
+* Fix superagent typescript declaration augmentation
+* Pass `gasLimit` when creating Ethereum transaction prebuilds
+
+## 8.1.0
+
+### New Features
+* Use `@bitgo/statics` for ERC20 and OFC coin definitions
+
+### Bug Fixes
+* Fix bug in `isValidAddress` which would cause it to incorrectly return true for coins which don't support bech32.
+* Remove deprecation markers for the following functions:
+  * `verifyPassword()`
+  * `generateRandomPassword()`
+  * `extendToken()`
+
+### Other Changes
+* Upgrade `@bitgo/statics` to 2.0.0-rc.0
+* Upgrade `bitgo-utxo-lib` to 1.6.0
+* Enable `strictNullChecks` typescript compiler option
+* More Typescript improvements across the project. `baseCoin.ts` and `bitgo.ts` in particular have seen much improvement.
+* Fix HMAC errors when doing non-BitGo EOS recoveries
+
 ## 8.0.0
 
 ### Breaking Changes 

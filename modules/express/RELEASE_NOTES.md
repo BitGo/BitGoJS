@@ -1,5 +1,10 @@
 # BitGo Express Release Notes
 
+## 8.1.0
+
+### Other Changes
+* Update to `bitgo@8.1.0`
+
 ## 8.0.0
 
 There are no breaking changes in this version, and the major version is being bumped in order to keep versions in sync with the main `bitgo` package.
