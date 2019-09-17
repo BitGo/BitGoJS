@@ -112,9 +112,14 @@ describe('XLM:', function() {
     basecoin.isValidStellarUsername('Foo@bar.baz').should.equal(false); // only lowercase letters are allowed
   });
 
-  it('Should be able to explain an XLM transaction', co(function *() {
+  it('Should explain an XLM transaction', co(function *() {
     const signedExplanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAB9AAEvJEAAAABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAB1RFU1RJTkcAAAAAAQAAAAAAAAABAAAAALgEl4p84728zfXtl/JdOsx3QbI97mcybqcXdfgdv54zAAAAAAAAAAEqBfIAAAAAAAAAAAFWi1PfAAAAQDoqo7juOBZawMlk8znIbYqSKemjgmINosp/P4+0SFGo/xJy1YgD6YEc65aWuyBxucFFBXCSlAxP2Z7nPMyjewM=' });
     signedExplanation.outputAmount.should.equal('5000000000');
+    signedExplanation.outputAmounts.should.have.property('txlm', '5000000000');
+    signedExplanation.outputs.length.should.equal(1);
+    signedExplanation.outputs[0].address.should.equal('GC4AJF4KPTR33PGN6XWZP4S5HLGHOQNSHXXGOMTOU4LXL6A5X6PDH445');
+    signedExplanation.outputs[0].amount.should.equal('5000000000');
+    signedExplanation.outputs[0].coin.should.equal('txlm');
     signedExplanation.fee.fee.should.equal('500');
     signedExplanation.memo.value.should.equal('TESTING');
     signedExplanation.memo.type.should.equal('text');
@@ -122,11 +127,42 @@ describe('XLM:', function() {
     signedExplanation.changeAmount.should.equal('0');
     const unsignedExplanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAMDHAbd3O7B2auR1e+EH/LRKe8IcQBOF+XP2lOxWi1PfAAAAZAAEvJEAAAACAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAEAAAABAAAAAAAAAAEAAAAAuASXinzjvbzN9e2X8l06zHdBsj3uZzJupxd1+B2/njMAAAAAAAAAAlQL5AAAAAAAAAAAAA==' });
     unsignedExplanation.outputAmount.should.equal('10000000000');
+    unsignedExplanation.outputAmounts.should.have.property('txlm', '10000000000');
+    unsignedExplanation.outputs.length.should.equal(1);
+    unsignedExplanation.outputs[0].address.should.equal('GC4AJF4KPTR33PGN6XWZP4S5HLGHOQNSHXXGOMTOU4LXL6A5X6PDH445');
+    unsignedExplanation.outputs[0].amount.should.equal('10000000000');
+    unsignedExplanation.outputs[0].coin.should.equal('txlm');
     unsignedExplanation.fee.fee.should.equal('100');
     unsignedExplanation.memo.value.should.equal('1');
     unsignedExplanation.memo.type.should.equal('id');
     unsignedExplanation.changeOutputs.length.should.equal(0);
     unsignedExplanation.changeAmount.should.equal('0');
+  }));
+
+  it('Should explain a trustline transaction', co(function *() {
+    const explanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAIKWO6R0/V4oJDk2LZsdiEInIzgJ6L0GxmSU2Ffs8Y7ZAAABLAAIj4EAAAACAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=' });
+    explanation.outputAmount.should.equal('0');
+    explanation.fee.fee.should.equal('300');
+    explanation.memo.should.be.empty();
+    explanation.changeOutputs.length.should.equal(0);
+    explanation.changeAmount.should.equal('0');
+    explanation.operations.length.should.equal(1);
+    explanation.operations[0].limit.should.equal('100000');
+    explanation.operations[0].coin.should.equal('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
+    explanation.operations[0].type.should.equal('changeTrust');
+    explanation.operations[0].should.have.property('asset');
+    explanation.operations[0].asset.code.should.equal('BST');
+    explanation.operations[0].asset.issuer.should.equal('GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
+  }));
+
+  it('Should explain a token transaction', co(function *() {
+    const explanation = yield basecoin.explainTransaction({ txBase64: 'AAAAAIXpiGPR/Yc+gSN614hAf1N1hecXFL7Lac99olpq38K/AAAAZAAC9TAAAAAEAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAgpY7pHT9XigkOTYtmx2IQicjOAnovQbGZJTYV+zxjtkAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAdzWUAAAAAAAAAAAFq38K/AAAAQPJTLIGGY06BuVDw0ISasYwHZpR6V38CaOfGhSooclY+4IBE9JKdKuMyGNXXCcFxM/NxrX64jhBXk+lWvjjo4wY=' });
+    explanation.outputAmount.should.equal('0');
+    explanation.fee.fee.should.equal('100');
+    explanation.memo.should.be.empty();
+    explanation.changeOutputs.length.should.equal(0);
+    explanation.changeAmount.should.equal('0');
+    explanation.outputAmounts.should.have.property('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L', '500000000');
   }));
 
   it('isValidMemoId should work', function() {

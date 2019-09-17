@@ -161,6 +161,7 @@ export abstract class BaseCoin {
   protected readonly _webhooks: Webhooks;
   protected readonly _pendingApprovals: PendingApprovals;
   protected readonly _markets: Markets;
+  protected static readonly _coinTokenPatternSeparator = ':';
 
   protected constructor(bitgo: BitGo) {
     this.bitgo = bitgo;
@@ -199,6 +200,10 @@ export abstract class BaseCoin {
 
   public markets(): Markets {
     return this._markets;
+  }
+
+  public static get coinTokenPatternSeparator(): string {
+    return this._coinTokenPatternSeparator;
   }
 
   public get type(): string {

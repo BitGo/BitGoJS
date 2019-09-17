@@ -4,7 +4,7 @@
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';
 import { Xlm } from './xlm';
-import { CoinConstructor, coinTokenPatternSeparator } from '../coinFactory';
+import { CoinConstructor } from '../coinFactory';
 import { BitGoJsError } from '../../errors';
 
 export interface StellarTokenConfig {
@@ -25,7 +25,7 @@ export class StellarToken extends Xlm {
     super(bitgo);
     this.tokenConfig = tokenConfig;
 
-    const [tokenCoin, token] = _.split(this.tokenConfig.type, coinTokenPatternSeparator);
+    const [tokenCoin, token] = _.split(this.tokenConfig.type, Xlm.coinTokenPatternSeparator);
     if (tokenCoin !== tokenConfig.coin) {
       throw new BitGoJsError(`invalid coin found in token: ${this.tokenConfig.type}`);
     }
