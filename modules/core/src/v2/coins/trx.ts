@@ -5,6 +5,7 @@ import * as Bluebird from 'bluebird';
 const tronWeb = require('tronweb');
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   KeyPair,
@@ -68,7 +69,7 @@ export class Trx extends BaseCoin {
   generateKeyPair(seed?: Buffer): KeyPair {
     const account = tronWeb.utils.accounts.generateAccount();
     return {
-      pub: account.address.base58,
+      pub: account.publicKey,
       prv: account.privateKey,
     };
   }
@@ -102,7 +103,7 @@ export class Trx extends BaseCoin {
   signTransaction(params: SignTransactionOptions = {}): SignedTransaction {
     throw new MethodNotImplementedError();
   }
-  
+
   /**
    * Derive a hardened child public key from a master key seed using an additional seed for randomness.
    *
@@ -118,26 +119,36 @@ export class Trx extends BaseCoin {
   }
 
   /**
+   * Convert a message to string in hexadecimal format.
+   *
+   * @param message {Buffer|String} message to sign
+   * @return the message as a hexadecimal string
+   */
+  toHexString(message: string | Buffer): string {
+    if (typeof message === 'string') {
+      return Buffer.from(message).toString('hex');
+    } else if (Buffer.isBuffer(message)) {
+      return message.toString('hex');
+    } else {
+      throw new Error('Invalid messaged passed to signMessage');
+    }
+  }
+
+  /**
    * Sign message with private key
    *
    * @param key
    * @param message
    */
-  signMessage(key: KeyPair, message: string | Buffer) {
-    let toSign;
-    if (typeof message === 'string') {
-      toSign = message;
-    } else if (Buffer.isBuffer(message)) {
-      toSign = message.toString('hex');
-    } else {
-      throw new Error('Invalid messaged passed to signMessage');
-    }
+  signMessage(key: KeyPair, message: string | Buffer): Buffer {
+    const toSign = this.toHexString(message);
 
-    // convert the hex string to their representation of a byte array
-    const tronByteArray = tronWeb.utils.code.hexStr2byteArray(toSign);
+    let sig = tronWeb.Trx.signString(toSign, key.prv, true);
 
-    // note the key in the keypair should already be hex-encoded
-    return tronWeb.utils.crypto.signBytes(key.prv, tronByteArray);
+    // remove the preceding 0x
+    sig = sig.replace(/^0x/, '');
+
+    return Buffer.from(sig, 'hex');
   }
 
   // it's possible we need to implement these later
