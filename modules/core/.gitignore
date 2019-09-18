@@ -19,3 +19,5 @@ example/eth/test.js
 .nyc_output/
 coverage.lcov
 dist/
+docs/
+bitgo-*.tgz

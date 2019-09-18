@@ -34,7 +34,7 @@ import { NodeCallback, Recipient } from '../types';
 import { Wallet } from '../wallet';
 import * as common from '../../common';
 import * as config from '../../config';
-import { Util } from '../util';
+import { Util } from '../internal/util';
 
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');

@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 //
 // Markets Object
 // BitGo accessor to Bitcoin market data.

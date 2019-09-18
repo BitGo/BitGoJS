@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 import * as common from './common';
 import * as bitcoin from 'bitgo-utxo-lib';
 import { V1Network } from './v2/types';
@@ -99,11 +105,10 @@ function deriveFast(hdnode: bitcoin.HDNode, index: number): bitcoin.HDNode {
 }
 
 /**
- *  Derive a BIP32 path, given a root key
- *  We cache keys at each level of hierarchy we derive, to avoid re-deriving (approx 25ms per derivation)
+ * Derive a BIP32 path, given a root key
+ * We cache keys at each level of hierarchy we derive, to avoid re-deriving (approx 25ms per derivation)
  * @param rootKey key to derive off
- * @param path the path, e.g. 'm/0/0/0/1'
- * @returns {*} the derived hd key
+ * @returns {*} function which can be used to derive a new HDNode from the root HDNode on a given path
  */
 export function hdPath(rootKey): { derive: (path: string) => bitcoin.HDNode; deriveKey: (path: string) => bitcoin.ECPair; } {
   const cache = {};

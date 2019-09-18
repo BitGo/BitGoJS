@@ -13,5 +13,14 @@
   "include": [
     "src/**/*",
     "package.json"
-  ]
+  ],
+  "typedocOptions": {
+    "mode": "modules",
+    "out": "docs",
+    "title": "BitGo SDK Documentation",
+    "excludeNotExported": true,
+    "excludePrivate": true,
+    "excludeProtected": true,
+    "ignoreCompilerErrors": true
+  }
 }

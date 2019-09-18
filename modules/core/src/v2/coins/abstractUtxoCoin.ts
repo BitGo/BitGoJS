@@ -25,7 +25,7 @@ import { NodeCallback } from '../types';
 import * as config from '../../config';
 import { CrossChainRecoveryTool } from '../recovery';
 import * as errors from '../../errors';
-import { RequestTracer } from '../util';
+import { RequestTracer } from '../internal/util';
 import { Wallet } from '../wallet';
 
 const debug = debugLib('bitgo:v2:utxo');

@@ -9,7 +9,7 @@ import * as Bluebird from 'bluebird';
 import { BitGo } from '../bitgo';
 import * as errors from '../errors';
 import { NodeCallback } from './types';
-import { RequestTracer } from './util';
+import { RequestTracer } from './internal/util';
 const co = Bluebird.coroutine;
 
 import { Wallet } from './wallet';

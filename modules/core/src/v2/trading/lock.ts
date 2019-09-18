@@ -1,5 +1,9 @@
 /**
  * @prettier
+ * @hidden
+ */
+
+/**
  */
 export interface Lock {
   id: string;

@@ -9,7 +9,7 @@ import { NodeCallback } from '../types';
 
 import { Eth, RecoverOptions, RecoveryInfo, optionalDeps } from './eth';
 import { CoinConstructor } from '../coinFactory';
-import { Util } from '../util';
+import { Util } from '../internal/util';
 import * as config from '../../config';
 
 const co = Bluebird.coroutine;

@@ -1,5 +1,9 @@
 /**
  * @prettier
+ * @hidden
+ */
+
+/**
  */
 import * as Bluebird from 'bluebird';
 import { BitGo } from '../../bitgo';

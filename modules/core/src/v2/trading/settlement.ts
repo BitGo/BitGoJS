@@ -1,5 +1,9 @@
 /**
  * @prettier
+ * @hidden
+ */
+
+/**
  */
 import { BitGo } from '../../bitgo';
 import { Trade } from './trade';

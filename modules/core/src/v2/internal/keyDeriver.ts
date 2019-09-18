@@ -1,5 +1,9 @@
 /**
  * @prettier
+ * @hidden
+ */
+
+/**
  */
 import * as createHmac from 'create-hmac';
 

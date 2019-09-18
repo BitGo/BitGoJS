@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 const rippleKeypairs = require('ripple-keypairs');
 const ripple = require('ripple-lib');
 const prova = require('./prova');

@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 //
 // Keychains Object
 // BitGo accessor to a user's keychain.
@@ -7,7 +13,7 @@
 
 import * as crypto from 'crypto';
 import * as common from './common';
-import { Util } from './v2/util';
+import { Util } from './v2/internal/util';
 import * as bitcoin from 'bitgo-utxo-lib';
 import { hdPath } from './bitcoin';
 const _ = require('lodash');

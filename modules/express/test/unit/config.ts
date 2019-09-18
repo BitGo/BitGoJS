@@ -28,4 +28,12 @@ describe('Config:', () => {
     config().port.should.equal(DefaultConfig.port);
     argStub.restore();
   });
+
+  it('should correctly handle config precedence', () => {
+    const argStub = sinon.stub(args, 'args').returns({ port: 23456 });
+    const envStub = sinon.stub(process, 'env').value({ BITGO_PORT: '12345' });
+    config().port.should.equal(23456);
+    argStub.restore();
+    envStub.restore();
+  });
 });

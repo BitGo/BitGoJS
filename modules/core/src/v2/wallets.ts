@@ -10,7 +10,7 @@ import { Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { hdPath } from '../bitcoin';
-import { RequestTracer } from './util';
+import { RequestTracer } from './internal/util';
 
 const co = Bluebird.coroutine;
 

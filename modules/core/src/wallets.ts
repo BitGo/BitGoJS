@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 //
 // Wallets Object
 // BitGo accessor to a user's wallets.

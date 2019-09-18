@@ -9,7 +9,7 @@ import { BigNumber } from 'bignumber.js';
 import { BitGo } from '../../bitgo';
 import { KeyIndices } from '../keychains';
 
-import { Ed25519KeyDeriver } from '../keyDeriver';
+import { Ed25519KeyDeriver } from '../internal/keyDeriver';
 import * as config from '../../config';
 import * as common from '../../common';
 import {
@@ -785,7 +785,7 @@ export class Xlm extends BaseCoin {
       // value() and arm() that provide memo value and type, respectively.
       const memo: TransactionMemo = _.result(tx, '_memo.value') && _.result(tx, '_memo.arm') ?
         {
-          value: _.result(tx, '_memo.value').toString(),
+          value: (_.result(tx, '_memo.value') as any).toString(),
           type: _.result(tx, '_memo.arm'),
         } : {};
 

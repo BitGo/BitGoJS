@@ -1,7 +1,10 @@
 /**
  * @prettier
+ * @hidden
  */
 
+/**
+ */
 type CURRENT_PAYLOAD_VERSION = '1.1.1';
 
 export interface Payload {
