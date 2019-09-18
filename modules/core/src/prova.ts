@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 import common = require('./common');
 const prova = require('prova-lib');
 

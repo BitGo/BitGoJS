@@ -9,7 +9,7 @@ import { BigNumber } from 'bignumber.js';
 import { BitGo } from '../../bitgo';
 import { KeyIndices } from '../keychains';
 
-import { Ed25519KeyDeriver } from '../keyDeriver';
+import { Ed25519KeyDeriver } from '../internal/keyDeriver';
 import * as config from '../../config';
 import * as common from '../../common';
 import {

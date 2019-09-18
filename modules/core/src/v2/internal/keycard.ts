@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 import { isUndefined } from 'lodash';
 /**
  * Return the list of questions that will appear on the second page of the keycard

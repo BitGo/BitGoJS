@@ -18,7 +18,7 @@ import bs58 = require('bs58');
 import * as common from './common';
 import { EnvironmentName } from './v2/environments';
 import { NodeCallback, V1Network } from './v2/types';
-import { RequestTracer, Util } from './v2/util';
+import { RequestTracer, Util } from './v2/internal/util';
 import * as Bluebird from 'bluebird';
 import co = Bluebird.coroutine;
 import pjson = require('../package.json');
@@ -29,7 +29,7 @@ import * as querystring from 'querystring';
 import * as config from './config';
 import * as crypto from 'crypto';
 import * as debugLib from 'debug';
-import { bytesToWord } from './v2/internal';
+import { bytesToWord } from './v2/internal/internal';
 
 const TransactionBuilder = require('./transactionBuilder');
 const Blockchain = require('./blockchain');

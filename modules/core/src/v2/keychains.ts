@@ -5,7 +5,7 @@ import { BitGo } from '../bitgo';
 import { BaseCoin, KeyPair } from './baseCoin';
 import { NodeCallback } from './types';
 import { Wallet } from './wallet';
-import { RequestTracer } from './util';
+import { RequestTracer } from './internal/util';
 import { validateParams } from '../common';
 
 const co = Bluebird.coroutine;

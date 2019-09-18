@@ -1,12 +1,17 @@
 /**
  * @prettier
+ * @hidden
+ */
+
+/**
  */
 import * as bitcoin from 'bitgo-utxo-lib';
 import * as Big from 'big.js';
 import * as _ from 'lodash';
 import * as crypto from 'crypto';
 import * as debugLib from 'debug';
-import { EthereumLibraryUnavailableError } from '../errors';
+import { EthereumLibraryUnavailableError } from '../../errors';
+import { RequestTracer as IRequestTracer } from '../types';
 
 const debug = debugLib('bitgo:v2:util');
 
@@ -28,7 +33,7 @@ import(ethImport)
 /**
  * Create a request tracer for tracing workflows which involve multiple round trips to the server
  */
-export class RequestTracer {
+export class RequestTracer implements IRequestTracer {
   private _seq = 0;
   private readonly _seed: Buffer;
   constructor() {

@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 //
 // TransactionBuilder
 // A utility for building and signing transactions

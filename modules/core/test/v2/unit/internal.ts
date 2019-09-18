@@ -1,7 +1,7 @@
 import 'should';
 
 import { randomBytes } from 'crypto';
-import { bytesToWord } from '../../../src/v2/internal';
+import { bytesToWord } from '../../../src/v2/internal/internal';
 
 describe('Internal:', () => {
   describe('bytesToWord', () => {

@@ -7,7 +7,7 @@ import { BitGo } from '../bitgo';
 import { BaseCoin } from './baseCoin';
 import { NodeCallback } from './types';
 import { Wallet } from './wallet';
-import { getFirstPendingTransaction } from './internal';
+import { getFirstPendingTransaction } from './internal/internal';
 
 import { Settlements } from './trading/settlements';
 import { Affirmations } from './trading/affirmations';

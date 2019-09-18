@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 //
 // Blockchain Object
 // BitGo accessor to a any Bitcoin address.

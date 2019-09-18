@@ -1,5 +1,5 @@
 import 'should';
-import { Ed25519KeyDeriver } from '../../../src/v2/keyDeriver';
+import { Ed25519KeyDeriver } from '../../../src/v2/internal/keyDeriver';
 import { keys } from '../fixtures/keyDeriver';
 
 describe('Key Derivation:', () => {

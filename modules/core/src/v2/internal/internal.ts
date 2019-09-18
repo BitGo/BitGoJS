@@ -1,9 +1,13 @@
 /**
  * @prettier
+ * @hidden
+ */
+
+/**
  */
 import * as Bluebird from 'bluebird';
-import { BitGo } from '../bitgo';
-import { BaseCoin } from './baseCoin';
+import { BitGo } from '../../bitgo';
+import { BaseCoin } from '../baseCoin';
 import { isUndefined } from 'lodash';
 
 const co = Bluebird.coroutine;

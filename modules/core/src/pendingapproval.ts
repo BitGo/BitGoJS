@@ -1,4 +1,9 @@
-//
+/**
+ * @hidden
+ */
+
+/**
+ */
 // Pending Approval Object
 // Handles approving, rejecting and getting information on pending approvals
 //

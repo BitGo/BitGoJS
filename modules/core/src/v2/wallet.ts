@@ -17,13 +17,13 @@ import {
 } from './baseCoin';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Eth } from './coins';
-import * as internal from './internal';
-import { drawKeycard } from './keycard';
+import * as internal from './internal/internal';
+import { drawKeycard } from './internal/keycard';
 import { Keychain } from './keychains';
 import { TradingAccount } from './trading/tradingAccount';
 import { NodeCallback } from './types';
 import { PendingApproval } from './pendingApproval';
-import { RequestTracer } from './util';
+import { RequestTracer } from './internal/util';
 
 const debug = debugLib('bitgo:v2:wallet');
 const co = Bluebird.coroutine;

@@ -1,3 +1,9 @@
+/**
+ * @hidden
+ */
+
+/**
+ */
 //
 // TravelRule Object
 // BitGo accessor for a specific enterprise

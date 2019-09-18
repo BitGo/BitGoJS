@@ -18,7 +18,6 @@
     "mode": "modules",
     "out": "docs",
     "title": "BitGo SDK Documentation",
-    "theme": "minimal",
     "excludeNotExported": true,
     "excludePrivate": true,
     "excludeProtected": true,
