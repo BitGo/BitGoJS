@@ -68,7 +68,7 @@ export class StellarToken extends Xlm {
   }
 
   getChain() {
-    return this.tokenConfig.coin;
+    return this.tokenConfig.type;
   }
 
   getFullName() {
