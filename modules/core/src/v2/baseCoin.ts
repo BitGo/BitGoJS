@@ -274,8 +274,8 @@ export abstract class BaseCoin {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return bigNumber.toFormat(null!, null!, { groupSeparator: '', decimalSeparator: '.' });
+    // @ts-ignore
+    return bigNumber.toFormat(null, null, { groupSeparator: '', decimalSeparator: '.' });
   }
 
   /**

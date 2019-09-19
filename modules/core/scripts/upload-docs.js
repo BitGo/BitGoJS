@@ -36,7 +36,6 @@ const s3 = new S3({
 const readdir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
 const stat = promisify(fs.stat);
-const putObject = promisify(s3.putObject);
 
 const ROOTDIR = path.dirname(path.dirname(require.main.filename));
 const MODULE = path.basename(ROOTDIR);
@@ -59,11 +58,28 @@ async function walk(currentDirPath, seen = []) {
 
 async function upload(uploadParams) {
   try {
-    await putObject(uploadParams);
+    await s3.putObject(uploadParams).promise();
   } catch (e) {
     console.error(`S3 error: ${e}\n${e.stack}`);
     throw e;
   }
+}
+
+const contentTypes = {
+  js: 'text/javascript',
+  css: 'text/css',
+  png: 'image/png',
+  html: 'text/html',
+};
+
+function contentType(filePath) {
+  const search = filePath.match(/\.([a-z0-9]+)$/i);
+
+  if (search && search[1] && search[1] in contentTypes) {
+    return contentTypes[search[1]];
+  }
+
+  return 'text/html';
 }
 
 async function uploadDocs(root, key) {
@@ -78,7 +94,7 @@ async function uploadDocs(root, key) {
       Bucket: 'bitgo-sdk-docs',
       Key: bucketPath,
       ACL: 'public-read',
-      ContentType: 'text/html',
+      ContentType: contentType(filePath),
     };
 
     uploadPromises.push(upload(uploadParams));
@@ -94,5 +110,6 @@ async function uploadDocs(root, key) {
 if (!fs.existsSync(DOCS_ROOT) || !fs.statSync(DOCS_ROOT).isDirectory()) {
   console.warn(`Docs directory '${DOCS_ROOT}' not found. Skipping docs upload...`);
 } else {
-  uploadDocs(DOCS_ROOT, OBJECT_ROOT);
+  uploadDocs(DOCS_ROOT, OBJECT_ROOT)
+    .catch((e) => console.error('fatal', e, e.stack));
 }
