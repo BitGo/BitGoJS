@@ -14,7 +14,7 @@ describe('Stellar Token:', function() {
   });
 
   it('should return constants', function() {
-    stellarTokenCoin.getChain().should.equal('txlm');
+    stellarTokenCoin.getChain().should.equal('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
     stellarTokenCoin.getFullName().should.equal('Stellar Token');
     stellarTokenCoin.getBaseFactor().should.equal(1e7);
     stellarTokenCoin.type.should.equal(tokenName);
