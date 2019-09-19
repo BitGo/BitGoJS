@@ -128,7 +128,7 @@ export class Trx extends BaseCoin {
    */
   deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
     // TODO: not sure if we need this just yet
-    throw new Error();
+    throw new MethodNotImplementedError();
   }
 
   /**
