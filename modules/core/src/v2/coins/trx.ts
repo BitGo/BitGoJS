@@ -16,6 +16,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '../baseCoin';
+import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 
@@ -81,8 +82,20 @@ export class Trx extends BaseCoin {
     return tronWeb;
   }
 
+  isValidXpub(xpub: string): boolean {
+    try {
+      return utxoLib.HDNode.fromBase58(xpub).isNeutered();
+    } catch (e) {
+      return false;
+    }
+  }
+
   isValidPub(pub: string): boolean {
-    return tronWeb.isAddress(pub);
+    if (this.isValidXpub(pub)) {
+      // xpubs can be converted into regular pubs, so technically it is a valid pub
+      return true;
+    }
+    return new RegExp('^04[a-zA-Z0-9]{128}$').test(pub);
   }
 
   parseTransaction(
