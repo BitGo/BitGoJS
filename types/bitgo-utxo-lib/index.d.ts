@@ -28,7 +28,7 @@ declare module 'bitgo-utxo-lib' {
   }
 
   export class ECPair {
-    static makeRandom({ network: Network }): ECPair;
+    static makeRandom({ network }: { network: Network }): ECPair;
     static fromWIF(wif: string, network: Network): ECPair;
     static fromPublicKeyBuffer(buffer: Buffer): ECPair;
     constructor(d: any, Q: any, options: any): ECPair;
@@ -122,7 +122,6 @@ declare module 'bitgo-utxo-lib' {
     static types: {
       P2PKH: string;
       P2SH: string;
-      P2PKH: string;
       P2WSH: string;
     };
     static classifyWitness(script: string, something: boolean): InputClassification;
