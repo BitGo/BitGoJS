@@ -2,7 +2,8 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
-import * as tronweb from 'tronweb';
+const tronWeb = require('tronweb');
+
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { MethodNotImplementedError } from '../../errors';
 import {
@@ -15,6 +16,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
 } from '../baseCoin';
+import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 
@@ -60,18 +62,40 @@ export class Trx extends BaseCoin {
   }
 
   /**
+   * Generate ed25519 key pair
+   *
+   * @param seed
+   * @returns {Object} object with generated pub, prv
+   */
+  generateKeyPair(seed?: Buffer): KeyPair {
+    const account = tronWeb.utils.accounts.generateAccount();
+    return {
+      pub: account.publicKey,
+      prv: account.privateKey,
+    };
+  }
+
+  /**
    * Get an instance of the library which can be used to perform low-level operations for this coin
    */
   getCoinLibrary() {
-    return tronweb;
+    return tronWeb;
   }
 
-  generateKeyPair(seed?: Buffer): KeyPair {
-    throw new MethodNotImplementedError();
+  isValidXpub(xpub: string): boolean {
+    try {
+      return utxoLib.HDNode.fromBase58(xpub).isNeutered();
+    } catch (e) {
+      return false;
+    }
   }
 
   isValidPub(pub: string): boolean {
-    throw new MethodNotImplementedError();
+    if (this.isValidXpub(pub)) {
+      // xpubs can be converted into regular pubs, so technically it is a valid pub
+      return true;
+    }
+    return new RegExp('^04[a-zA-Z0-9]{128}$').test(pub);
   }
 
   parseTransaction(
@@ -92,4 +116,55 @@ export class Trx extends BaseCoin {
   signTransaction(params: SignTransactionOptions = {}): SignedTransaction {
     throw new MethodNotImplementedError();
   }
+
+  /**
+   * Derive a hardened child public key from a master key seed using an additional seed for randomness.
+   *
+   * Due to technical differences between keypairs on the ed25519 curve and the secp256k1 curve,
+   * only hardened private key derivation is supported.
+   *
+   * @param key seed for the master key. Note: Not the public key or encoded private key. This is the raw seed.
+   * @param entropySeed random seed which is hashed to generate the derivation path
+   */
+  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
+    // TODO: not sure if we need this just yet
+    throw new MethodNotImplementedError();
+  }
+
+  /**
+   * Convert a message to string in hexadecimal format.
+   *
+   * @param message {Buffer|String} message to sign
+   * @return the message as a hexadecimal string
+   */
+  toHexString(message: string | Buffer): string {
+    if (typeof message === 'string') {
+      return Buffer.from(message).toString('hex');
+    } else if (Buffer.isBuffer(message)) {
+      return message.toString('hex');
+    } else {
+      throw new Error('Invalid messaged passed to signMessage');
+    }
+  }
+
+  /**
+   * Sign message with private key
+   *
+   * @param key
+   * @param message
+   */
+  signMessage(key: KeyPair, message: string | Buffer): Buffer {
+    const toSign = this.toHexString(message);
+
+    let sig = tronWeb.Trx.signString(toSign, key.prv, true);
+
+    // remove the preceding 0x
+    sig = sig.replace(/^0x/, '');
+
+    return Buffer.from(sig, 'hex');
+  }
+
+  // it's possible we need to implement these later
+  // preCreateBitGo?
+  // supplementGenerateWallet?
 }

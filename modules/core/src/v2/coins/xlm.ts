@@ -733,7 +733,7 @@ export class Xlm extends BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key: KeyPair, message: string | Buffer) {
+  signMessage(key: KeyPair, message: string | Buffer): Buffer {
     if (!this.isValidPrv(key.prv)) {
       throw new Error(`invalid prv: ${key.prv}`);
     }
