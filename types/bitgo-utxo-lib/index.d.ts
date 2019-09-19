@@ -122,7 +122,6 @@ declare module 'bitgo-utxo-lib' {
     static types: {
       P2PKH: string;
       P2SH: string;
-      P2PKH: string;
       P2WSH: string;
     };
     static classifyWitness(script: string, something: boolean): InputClassification;
