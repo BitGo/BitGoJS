@@ -10,6 +10,8 @@ import {
   ParsedTransaction,
   VerifyTransactionOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
+  HalfSignedTransaction as BaseHalfSignedTransaction,
+  SignTransactionOptions as BaseSignTransactionOptions,
 } from '../baseCoin';
 import { NodeCallback, Recipient } from '../types';
 import { BigNumber } from 'bignumber.js';
@@ -26,10 +28,6 @@ import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
-import {
-  HalfSignedTransaction as BaseHalfSignedTransaction,
-  SignTransactionOptions as BaseSignTransactionOptions,
-} from '../baseCoin';
 
 const EOS_ADDRESS_LENGTH = 12;
 
@@ -304,8 +302,8 @@ export class Eos extends BaseCoin {
     const dividend = this.getBaseFactor();
     const bigNumber = new BigNumber(baseUnits).dividedBy(dividend);
     // set the format so commas aren't added to large coin amounts
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return bigNumber.toFormat(4, null!, { groupSeparator: '', decimalSeparator: '.' });
+    // @ts-ignore
+    return bigNumber.toFormat(4, null, { groupSeparator: '', decimalSeparator: '.' });
   }
 
   /**
