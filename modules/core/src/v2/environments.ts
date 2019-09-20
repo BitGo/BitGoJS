@@ -259,6 +259,12 @@ export const Environments: Environments = {
           ? `https://${process.env.BITGO_CUSTOM_ROOT_URI}/api/v2/txlm/federation`
           : `https://${process.env.BITGO_CUSTOM_ROOT_URI}/api/v2/xlm/federation`,
     },
-    mainnetBase
+    mainnetBase,
+    {
+      serverXpub:
+        process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
+          ? 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
+          : 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
+    }
   ),
 };
