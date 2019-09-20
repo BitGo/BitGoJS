@@ -88,8 +88,8 @@ describe('Express ETH', () => {
       ]
     });
 
-    // Ethereum does not support "sendmany" with multiple recipients, see JIRA BG-994
-    res.should.have.status(400);
+    // Ethereum supports sendmany 
+    res.should.have.status(200);
 
     // Sendmany with single recipient is fine
     res = yield agent
