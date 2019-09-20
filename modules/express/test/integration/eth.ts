@@ -88,8 +88,8 @@ describe('Express ETH', () => {
       ]
     });
 
-    // Ethereum supports sendmany 
-    res.should.have.status(200);
+    // Ethereum does not supports sendmany until Batching is enabled
+    res.should.have.status(400);
 
     // Sendmany with single recipient is fine
     res = yield agent

@@ -10,13 +10,6 @@ import * as Keccak from 'keccak';
 import * as _ from 'lodash';
 import * as secp256k1 from 'secp256k1';
 import * as request from 'superagent';
-import {
-  EthereumLibraryUnavailableError,
-  InvalidAddressError,
-  InvalidAmountError,
-  InvalidEthereumBatchData,
-  InvalidEthereumRecipients,
-} from '../../errors';
 
 import {
   BaseCoin,
@@ -30,11 +23,12 @@ import {
   HalfSignedTransaction as BaseHalfSignedTransaction,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import { NodeCallback, Recipient } from '../types';
+import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import * as common from '../../common';
 import * as config from '../../config';
 import { Util } from '../internal/util';
+import { EthereumLibraryUnavailableError } from '../../errors';
 
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
@@ -98,10 +92,6 @@ export const optionalDeps = {
   },
 };
 
-interface EthRecipient extends Recipient {
-  data?: string;
-}
-
 /**
  * The extra parameters to send to platform build route for hop transactions
  */
@@ -123,12 +113,17 @@ interface HopPrebuild {
   signature: string;
 }
 
+interface Recipient {
+  address: string;
+  amount: string;
+  data?: string;
+}
+
 interface SignFinalOptions {
   txPrebuild: {
     gasPrice: string;
     gasLimit: string;
-    recipients: EthRecipient[];
-    isBatch: boolean;
+    recipients: Recipient[];
     halfSigned: {
       expireTime: number;
       contractSequenceId: number;
@@ -140,7 +135,7 @@ interface SignFinalOptions {
   signingKeyNonce: number;
   walletContractAddress: string;
   prv: string;
-  recipients: EthRecipient[];
+  recipients: Recipient[];
 }
 
 interface SignTransactionOptions extends SignFinalOptions {
@@ -153,11 +148,10 @@ interface SignTransactionOptions extends SignFinalOptions {
 
 export interface HalfSignedTransaction extends BaseHalfSignedTransaction {
   halfSigned: {
-    recipients: EthRecipient[];
+    recipients: Recipient[];
     expireTime: number;
     contractSequenceId: number;
     sequenceId: number;
-    isBatch: boolean;
     txHex?: never;
   };
 }
@@ -182,14 +176,14 @@ interface OfflineVaultTxInfo {
   coin: string;
   gasPrice: number;
   gasLimit: number;
-  recipients: EthRecipient[];
+  recipients: Recipient[];
   walletContractAddress: string;
   amount: string;
   backupKeyNonce: number;
 }
 
 interface UnformattedTxInfo {
-  recipient: EthRecipient;
+  recipient: Recipient;
 }
 
 export interface RecoverOptions {
@@ -218,7 +212,7 @@ interface RecoverTokenOptions {
 }
 
 interface GetSendMethodArgsOptions {
-  recipient: EthRecipient;
+  recipient: Recipient;
   expireTime: number;
   contractSequenceId: number;
   signature: string;
@@ -232,14 +226,14 @@ interface SendMethodArgs {
 
 interface HopTransactionBuildOptions {
   wallet: Wallet;
-  recipients: EthRecipient[];
+  recipients: Recipient[];
   walletPassphrase: string;
 }
 
 interface BuildOptions {
   hop?: boolean;
   wallet?: Wallet;
-  recipients?: EthRecipient[];
+  recipients?: Recipient[];
   walletPassphrase?: string;
 }
 
@@ -251,13 +245,13 @@ interface FeeEstimate {
 interface TransactionPrebuild extends BaseTransactionPrebuild {
   hopTransaction?: HopPrebuild;
   buildParams: {
-    recipients: EthRecipient[];
+    recipients: Recipient[];
   };
 }
 
 interface RecoverTokenTransaction {
   halfSigned: {
-    recipient: EthRecipient;
+    recipient: Recipient;
     expireTime: number;
     contractSequenceId: number;
     operationHash: string;
@@ -270,9 +264,7 @@ interface RecoverTokenTransaction {
 }
 
 export class Eth extends BaseCoin {
-  static readonly hopTransactionSalt = 'bitgoHopAddressRequestSalt';
-  static readonly batcherFunctionSignature = 'cf4c58e2';
-  static readonly batchMethodTypes = ['address[]', 'uint256[]'];
+  static hopTransactionSalt = 'bitgoHopAddressRequestSalt';
 
   static createInstance(bitgo: BitGo): BaseCoin {
     return new Eth(bitgo);
@@ -424,7 +416,7 @@ export class Eth extends BaseCoin {
    * @param contractSequenceId sequence id
    * @returns {Array} operation array
    */
-  getOperation(recipient: EthRecipient, expireTime: number, contractSequenceId: number): (string | Buffer)[][] {
+  getOperation(recipient: Recipient, expireTime: number, contractSequenceId: number): (string | Buffer)[][] {
     return [
       ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
       [
@@ -439,20 +431,17 @@ export class Eth extends BaseCoin {
   }
 
   getOperationSha3ForExecuteAndConfirm(
-    recipients: EthRecipient[],
+    recipients: Recipient[],
     expireTime: number,
     contractSequenceId: number
   ): string {
     if (!recipients || !Array.isArray(recipients)) {
-      throw new InvalidEthereumRecipients('expecting array of recipients');
+      throw new Error('expecting array of recipients');
     }
 
-    // Even in batch transactions, the recipients array will be of size 1
-    // because rest of recipients will be in data
+    // Right now we only support 1 recipient
     if (recipients.length !== 1) {
-      throw new InvalidEthereumRecipients(
-        `during sending, the recipient array should always be of length 1, length was ${recipients.length} here`
-      );
+      throw new Error('must send to exactly 1 recipient');
     }
 
     if (!_.isNumber(expireTime)) {
@@ -628,7 +617,6 @@ export class Eth extends BaseCoin {
       gasLimit: params.gasLimit,
       gasPrice: params.gasPrice,
       hopTransaction: txPrebuild.hopTransaction,
-      isBatch: txPrebuild.isBatch,
     };
     return { halfSigned: txParams };
   }
@@ -1218,120 +1206,6 @@ export class Eth extends BaseCoin {
   }
 
   /**
-   * Verifies that the provided batch data is valid
-   * @param prebuildRecipients the recipients in the prebuild object
-   * @param originalRecipients the original recipients array passed in
-   */
-  protected validateBatchData(prebuildRecipients: EthRecipient[], originalRecipients: EthRecipient[]): void {
-    const [{ address: sendAddress, amount: sendAmount, data: batchData }] = prebuildRecipients;
-
-    if (
-      !batchData ||
-      typeof batchData !== 'string' ||
-      batchData.length % 2 !== 0 ||
-      !batchData.match(/^(0x)?[0-9a-fA-F]*$/)
-    ) {
-      throw new InvalidEthereumBatchData('batch data must be a hex string');
-    }
-    prebuildRecipients[0].data = optionalDeps.ethUtil.addHexPrefix(batchData).toLowerCase();
-
-    if (typeof sendAmount !== 'string' || !sendAmount.match(/^[0-9]+$/)) {
-      throw new InvalidAmountError('total amount to send not in valid string form');
-    }
-
-    if (sendAddress !== common.Environments[this.bitgo.env].batcherContractAddress) {
-      throw new InvalidEthereumBatchData('batch transactions must be addressed to the Batcher');
-    }
-
-    const functionSignatureHash = batchData.slice(2, 10);
-    if (functionSignatureHash !== Eth.batcherFunctionSignature) {
-      throw new InvalidEthereumBatchData('batch data function signature hash does not match expected');
-    }
-
-    const [addresses, amounts] = optionalDeps.ethAbi.rawDecode(
-      Eth.batchMethodTypes,
-      Buffer.from(batchData.slice(10), 'hex')
-    );
-    if (addresses.length !== amounts.length) {
-      throw new InvalidEthereumBatchData('recipients and amounts arrays must be the same size');
-    }
-
-    const batchRecipients: EthRecipient[] = [];
-    let totalAmount = new BigNumber(0);
-    for (let i = 0; i < addresses.length; i++) {
-      const address = addresses[i].toString('hex');
-      if (!this.isValidAddress(address)) {
-        throw new InvalidAddressError('invalid address: ' + address);
-      }
-
-      const amount = amounts[i].toString();
-      if (typeof amount !== 'string' || !amount.match(/^[0-9]+$/)) {
-        throw new InvalidAmountError('invalid amount: ' + amounts[i].toString());
-      }
-      totalAmount = totalAmount.plus(amount);
-
-      batchRecipients.push({
-        address,
-        amount,
-      });
-    }
-
-    const sortedBatchRecipients = _(batchRecipients)
-      .sortBy(['address', 'amount'])
-      .map(({ address, amount }) => ({
-        address: optionalDeps.ethUtil.addHexPrefix(address),
-        amount: new BigNumber(amount).toFixed(),
-      }))
-      .value();
-
-    const sortedOriginalRecipients = _(originalRecipients)
-      .sortBy(['address', 'amount'])
-      .map(({ address, amount }) => ({
-        address: optionalDeps.ethUtil.addHexPrefix(address),
-        amount: new BigNumber(amount).toFixed(),
-      }))
-      .value();
-
-    if (!_.isEqual(sortedBatchRecipients, sortedOriginalRecipients)) {
-      throw new InvalidEthereumBatchData('batch recipients in data does not match original recipients');
-    }
-
-    if (!totalAmount.eq(sendAmount)) {
-      throw new InvalidEthereumBatchData(
-        `Batcher send amount ${sendAmount} is not equal to sum of individual transfers ${totalAmount.toFixed()}`
-      );
-    }
-  }
-
-  /**
-   * Validates that the prebuild data returned by platform is valid
-   * @param params
-   * @param callback
-   * @throws Error if the prebuild is invalid
-   */
-  verifyTransaction(params: any, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function*() {
-      const { txParams, txPrebuild } = params;
-      if (txPrebuild.recipients.length !== 1) {
-        throw new InvalidEthereumRecipients(
-          `prebuild recipients array should always be of length 1, was of length ${txPrebuild.recipients.length} here`
-        );
-      }
-      if (txParams.recipients.length === 1 && !_.isEqual(txPrebuild.recipients, txParams.recipients)) {
-        throw new InvalidEthereumRecipients(
-          'recipients returned by BitGo are not equal to recipients in original tx request'
-        );
-      }
-      if (txParams.recipients.length > 1) {
-        self.validateBatchData(txPrebuild.recipients, txParams.recipients);
-      }
-    })
-      .call(this)
-      .asCallback(callback);
-  }
-
-  /**
    * Validates that the hop prebuild from the HSM is valid and correct
    * @param wallet The wallet that the prebuild is for
    * @param hopPrebuild The prebuild to validate
@@ -1343,7 +1217,7 @@ export class Eth extends BaseCoin {
   validateHopPrebuild(
     wallet: Wallet,
     hopPrebuild: HopPrebuild,
-    originalParams?: { recipients: EthRecipient[] },
+    originalParams?: { recipients: Recipient[] },
     callback?: NodeCallback<void>
   ): Bluebird<void> {
     const self = this;
@@ -1544,5 +1418,9 @@ export class Eth extends BaseCoin {
 
   verifyAddress(params: VerifyAddressOptions): boolean {
     return true;
+  }
+
+  verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
+    return Bluebird.resolve(true).asCallback(callback);
   }
 }
