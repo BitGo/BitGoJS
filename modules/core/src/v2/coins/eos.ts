@@ -13,7 +13,7 @@ import {
   HalfSignedTransaction as BaseHalfSignedTransaction,
   SignTransactionOptions as BaseSignTransactionOptions,
 } from '../baseCoin';
-import { NodeCallback, Recipient } from '../types';
+import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
 import * as crypto from 'crypto';
 import { HDNode } from 'bitgo-utxo-lib';
@@ -40,6 +40,11 @@ export interface EosTx {
   signatures: string[];
   packed_trx: string;
   compression: string;
+}
+
+export interface Recipient {
+  address: string;
+  amount: string;
 }
 
 interface EosTransactionHeaders {
