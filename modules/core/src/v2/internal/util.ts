@@ -19,7 +19,7 @@ let ethUtil;
 let isEthAvailable = false;
 
 const ethImport = 'ethereumjs-util';
-import(ethImport)
+import('ethereumjs-util')
   .then(eth => {
     ethUtil = eth;
     isEthAvailable = true;
