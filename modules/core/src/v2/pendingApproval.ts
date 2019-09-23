@@ -349,6 +349,11 @@ export class PendingApproval {
 
       const recipients = transactionRequest.recipients;
       const prebuildParams = _.extend({}, params, { recipients: recipients }, transactionRequest.buildParams);
+
+      if (!_.isUndefined(originalPrebuild.hopTransaction)) {
+        prebuildParams.hop = true;
+      }
+
       const signedTransaction = yield self.wallet.prebuildAndSignTransaction(prebuildParams);
       // compare PAYGo fees
       const originalParsedTransaction = yield self.baseCoin.parseTransaction({

@@ -97,13 +97,10 @@ const testnetBase: EnvironmentTemplate = {
   ],
 };
 
-const devBase: EnvironmentTemplate = Object.assign(
-  {
-    hsmXpub:
-      'xpub661MyMwAqRbcFWzoz8qnYRDYEFQpPLYwxVFoG6WLy3ck5ZupRGJTG4ju6yGb7Dj3ey6GsC4kstLRER2nKzgjLtmxyPgC4zHy7kVhUt6yfGn',
-  },
-  testnetBase
-);
+const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
+  hsmXpub:
+    'xpub661MyMwAqRbcFWzoz8qnYRDYEFQpPLYwxVFoG6WLy3ck5ZupRGJTG4ju6yGb7Dj3ey6GsC4kstLRER2nKzgjLtmxyPgC4zHy7kVhUt6yfGn',
+});
 
 export const Environments: Environments = {
   prod: Object.assign(
