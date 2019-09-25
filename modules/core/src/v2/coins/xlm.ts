@@ -27,10 +27,12 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   ParseTransactionOptions,
   ParsedTransaction,
-  VerifyTransactionOptions,
+  VerifyTransactionOptions as BaseVerifyTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
+  TransactionParams as BaseTransactionParams, ExtraPrebuildParamsOptions,
 } from '../baseCoin';
 import { NodeCallback } from '../types';
+import { Wallet } from '../wallet';
 
 const co = Bluebird.coroutine;
 
@@ -61,6 +63,13 @@ interface RecoveryTransaction {
   recoveryAmount: number;
   backupKey?: string;
   coin?: string;
+}
+
+interface BuildOptions {
+  wallet?: Wallet;
+  recipients?: object[];
+  type?: string;
+  walletPassphrase?: string;
 }
 
 interface TransactionPrebuild extends BaseTransactionPrebuild {
@@ -110,10 +119,27 @@ interface VerifyAddressOptions extends BaseVerifyAddressOptions {
   rootAddress: string;
 }
 
+interface TrustlineOptions {
+  token: string;
+  action: string;
+  limit?: string;
+}
+
+interface TransactionParams extends BaseTransactionParams {
+  trustlines?: TrustlineOptions[];
+}
+
+interface VerifyTransactionOptions extends BaseVerifyTransactionOptions {
+  txParams: TransactionParams;
+}
+
 export class Xlm extends BaseCoin {
   public readonly homeDomain: string;
   public static readonly tokenPatternSeparator = '-'; // separator for token code and issuer
   static readonly maxMemoId: string = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
+  // max int64 number supported by the network ((2^63)-1)/(10^7)
+  // See: https://www.stellar.org/developers/guides/concepts/assets.html#amount-precision-and-representation
+  static readonly maxTrustlineLimit: string = '922337203685.4775807';
 
   constructor(bitgo: BitGo) {
     super(bitgo);
@@ -504,6 +530,18 @@ export class Xlm extends BaseCoin {
   }
 
   /**
+   * Get extra parameters for prebuilding a tx
+   * Set empty recipients array in trustline txs
+   */
+  getExtraPrebuildParams(buildParams: ExtraPrebuildParamsOptions, callback?: NodeCallback<BuildOptions>): Bluebird<BuildOptions> {
+    const params: { recipients?: object[] } = {};
+    if (buildParams.type === 'trustline') {
+      params.recipients = [];
+    }
+    return Bluebird.resolve(params).asCallback(callback);
+  }
+
+  /**
    * Generates Stellar keypairs from the user key and backup key
    * @param params
    */
@@ -858,6 +896,29 @@ export class Xlm extends BaseCoin {
   }
 
   /**
+   * Verify that a tx prebuild's operations comply with the original intention
+   * @param {stellar.Operation} operations - tx operations
+   * @param {TransactionParams} txParams - params used to build the tx
+   */
+  verifyTrustlineTxOperations(operations: stellar.Operation[], txParams: TransactionParams): void {
+    const trustlineOperations = _.filter(operations, ['type', 'changeTrust']) as stellar.Operation.ChangeTrust[];
+    if (trustlineOperations.length !== _.get(txParams, 'trustlines', []).length) {
+      throw new Error('transaction prebuild does not match expected trustline operations');
+    }
+    _.forEach(trustlineOperations, op => {
+      const opToken = this.getTokenNameFromStellarAsset(op.line);
+      const tokenTrustline = _.find(txParams.trustlines, trustline => {
+        return trustline.token === opToken &&
+          ((_.isUndefined(trustline.limit) && op.limit === Xlm.maxTrustlineLimit) || // no limit was specified, max by default
+            trustline.limit === op.limit);
+      });
+      if (!tokenTrustline) {
+        throw new Error('transaction prebuild does not match expected trustline tokens');
+      }
+    });
+  };
+
+  /**
    * Verify that a transaction prebuild complies with the original intention
    *
    * @param options
@@ -887,7 +948,7 @@ export class Xlm extends BaseCoin {
 
       const tx = new stellar.Transaction(txPrebuild.txBase64);
 
-      if (txParams.recipients && txParams.recipients.length !== 1) {
+      if (txParams.recipients && txParams.recipients.length > 1) {
         throw new Error('cannot specify more than 1 recipient');
       }
 
@@ -896,26 +957,30 @@ export class Xlm extends BaseCoin {
         operation.type === 'createAccount' || operation.type === 'payment'
       );
 
-      if (_.isEmpty(outputOperations)) {
-        throw new Error('transaction prebuild does not have any operations');
+      if (txParams.type === 'trustline') {
+        this.verifyTrustlineTxOperations(tx.operations, txParams);
+      } else {
+        if (_.isEmpty(outputOperations)) {
+          throw new Error('transaction prebuild does not have any operations');
+        }
+
+        _.forEach(txParams.recipients, (expectedOutput, index) => {
+          const expectedOutputAddress = self.getAddressDetails(expectedOutput.address);
+          const output = outputOperations[index] as (stellar.Operation.Payment | stellar.Operation.CreateAccount);
+          if (output.destination !== expectedOutputAddress.address) {
+            throw new Error('transaction prebuild does not match expected recipient');
+          }
+
+          const expectedOutputAmount = new BigNumber(expectedOutput.amount);
+          // The output amount is expressed as startingBalance in createAccount operations and as amount in payment operations.
+          const outputAmountString = (output.type === 'createAccount') ? output.startingBalance : output.amount;
+          const outputAmount = new BigNumber(self.bigUnitsToBaseUnits(outputAmountString));
+
+          if (!outputAmount.eq(expectedOutputAmount)) {
+            throw new Error('transaction prebuild does not match expected amount');
+          }
+        });
       }
-
-      _.forEach(txParams.recipients, (expectedOutput, index) => {
-        const expectedOutputAddress = self.getAddressDetails(expectedOutput.address);
-        const output = outputOperations[index] as (stellar.Operation.Payment | stellar.Operation.CreateAccount);
-        if (output.destination !== expectedOutputAddress.address) {
-          throw new Error('transaction prebuild does not match expected recipient');
-        }
-
-        const expectedOutputAmount = new BigNumber(expectedOutput.amount);
-        // The output amount is expressed as startingBalance in createAccount operations and as amount in payment operations.
-        const outputAmountString = (output.type === 'createAccount') ? output.startingBalance : output.amount;
-        const outputAmount = new BigNumber(self.bigUnitsToBaseUnits(outputAmountString));
-
-        if (!outputAmount.eq(expectedOutputAmount)) {
-          throw new Error('transaction prebuild does not match expected amount');
-        }
-      });
 
       // Verify the user signature, if the tx is half-signed
       if (!_.isEmpty(tx.signatures)) {

@@ -58,6 +58,7 @@ export interface VerifyAddressOptions {
 export interface TransactionParams {
   recipients?: TransactionOutput[];
   walletPassphrase?: string;
+  type?: string;
 }
 
 export interface VerificationOptions {
