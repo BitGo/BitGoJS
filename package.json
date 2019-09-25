@@ -31,5 +31,8 @@
     "hooks": {
       "pre-commit": "lerna run --concurrency 1 --stream precommit"
     }
+  },
+  "resolutions": {
+    "handlebars": "^4.3.0"
   }
 }
