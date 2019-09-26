@@ -1812,8 +1812,8 @@ export class Wallet {
       params.recipients = [];
 
       // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
-      const submitParams = Object.assign(params, yield self.prebuildAndSignTransaction(params));
-      return yield self.submitTransaction(submitParams);
+      const { txHex } = yield self.prebuildAndSignTransaction(params);
+      return yield self.submitTransaction({ recipients: [], txHex });
     }).call(this).asCallback(callback);
   }
 
