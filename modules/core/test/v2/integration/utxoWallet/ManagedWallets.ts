@@ -144,7 +144,7 @@ export class ManagedWallets {
     if (!['test', 'dev'].includes(env)) {
       throw new Error(`unsupported env "${env}"`);
     }
-    this.debug = debug.extend(`[${env}]`);
+    this.debug = debug.extend(`[${env}/${walletConfig.name}]`);
     const password = process.env.BITGOJS_TEST_PASSWORD;
     if (!password) {
       throw new Error(`envvar BITGOJS_TEST_PASSWORD must be set`);
