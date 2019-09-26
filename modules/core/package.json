@@ -3,7 +3,7 @@
   "version": "8.2.2",
   "description": "BitGo Javascript SDK",
   "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "types": "./dist/types/src/index.d.ts",
   "keywords": [
     "bitgo",
     "bitcoin",
@@ -49,6 +49,8 @@
   "dependencies": {
     "@bitgo/statics": "^2.1.0",
     "@bitgo/unspents": "^0.6.0",
+    "@types/bluebird": "^3.5.25",
+    "@types/superagent": "^4.1.3",
     "algosdk": "git+https://github.com/BitGo/algosdk-bitgo.git",
     "assert": "^0.4.9",
     "big.js": "^3.1.3",
@@ -78,7 +80,6 @@
     "tronweb": "^2.7.0"
   },
   "devDependencies": {
-    "@types/bluebird": "^3.5.25",
     "@types/create-hmac": "^1.1.0",
     "@types/debug": "^4.1.4",
     "@types/lodash": "^4.14.121",
@@ -87,7 +88,6 @@
     "@types/node": "^11.11.4",
     "@types/sinon": "^7.0.6",
     "@types/stellar-sdk": "^0.11.1",
-    "@types/superagent": "^4.1.3",
     "@typescript-eslint/eslint-plugin": "^1.4.2",
     "@typescript-eslint/parser": "^1.4.2",
     "awesome-typescript-loader": "^5.2.1",
