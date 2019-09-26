@@ -69,6 +69,7 @@
     "eosjs": "^16.0.8",
     "eosjs-ecc": "^4.0.4",
     "lodash": "^4.17.14",
+    "mocha-junit-reporter": "1.23.0",
     "moment": "^2.20.1",
     "prova-lib": "^0.2.10",
     "ripple-address-codec": "^4.0.0",
@@ -79,7 +80,9 @@
     "secrets.js-grempe": "^1.1.0",
     "stellar-sdk": "^0.11.0",
     "superagent": "^3.8.3",
-    "superagent-proxy": "^1.0.3"
+    "superagent-proxy": "^1.0.3",
+    "tronweb": "^2.7.0",
+    "table": "5.4.1"
   },
   "devDependencies": {
     "@types/create-hmac": "^1.1.0",
