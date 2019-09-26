@@ -33,62 +33,35 @@ import { EthereumLibraryUnavailableError } from '../../errors';
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
 
-// The following dependencies are optional. If they are missing we still want to be
-// able to require `eth.js` without error.
-let ethAbi: any = null;
-let ethUtil: any = null;
-let ethTx: any = null;
-
-import('ethereumjs-util')
-  .then(eth => {
-    ethUtil = eth;
-  })
-  .catch(e => {
-    // ethereum currently not supported
-    debug('unable to load ethereumjs-util:');
-    debug(e.stack);
-  });
-
-import('ethereumjs-abi')
-  .then(eth => {
-    ethAbi = eth;
-  })
-  .catch(e => {
-    // ethereum currently not supported
-    debug('unable to load ethereumjs-abi:');
-    debug(e.stack);
-  });
-
-import('ethereumjs-tx')
-  .then(eth => {
-    ethTx = eth;
-  })
-  .catch(e => {
-    // ethereum currently not supported
-    debug('unable to load ethereumjs-tx:');
-    debug(e.stack);
-  });
-
 export const optionalDeps = {
   get ethAbi() {
-    if (!ethAbi) {
+    try {
+      return require('ethereumjs-abi');
+    } catch (e) {
+      debug('unable to load ethereumjs-abi:');
+      debug(e.stack);
       throw new EthereumLibraryUnavailableError(`ethereumjs-abi`);
     }
-    return ethAbi;
   },
 
   get ethUtil() {
-    if (!ethUtil) {
+    try {
+      return require('ethereumjs-util');
+    } catch (e) {
+      debug('unable to load ethereumjs-util:');
+      debug(e.stack);
       throw new EthereumLibraryUnavailableError(`ethereumjs-util`);
     }
-    return ethUtil;
   },
 
   get EthTx() {
-    if (!ethTx) {
+    try {
+      return require('ethereumjs-tx');
+    } catch (e) {
+      debug('unable to load ethereumjs-tx:');
+      debug(e.stack);
       throw new EthereumLibraryUnavailableError(`ethereumjs-tx`);
     }
-    return ethTx;
   },
 };
 
