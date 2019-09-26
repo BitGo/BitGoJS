@@ -495,8 +495,7 @@ export class ManagedWallets {
     });
 
     const errors = await runCollectErrors(
-      // @ts-ignore
-      [...sendsByWallet.entries()],
+      Array.from(sendsByWallet.entries()),
       async([w, sends]) => {
         if (sends.length === 0) {
           throw new Error(`no sends for ${w}`);
