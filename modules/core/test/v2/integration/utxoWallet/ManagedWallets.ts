@@ -56,7 +56,8 @@ export const walletPassphrase = '7fdfda5f50a433ae127a784fc143105fb6d93fedec7601d
 
 const runCollectErrors = async <T>(
   items: T[],
-  func: (v: T) => Promise<unknown>
+  func: (v: T) => Promise<unknown>,
+  options = { concurrency: concurrencyBitGoApi }
 ): Promise<Error[]> =>
   (
     await Bluebird.map(items, async(v): Promise<Error | null> => {
@@ -67,7 +68,8 @@ const runCollectErrors = async <T>(
         console.error(e);
         return e;
       }
-    }, { concurrency: concurrencyBitGoApi })
+    },
+    options)
   ).filter((e) => e !== null) as Error[];
 
 export class ManagedWallets {
@@ -453,6 +455,57 @@ export class ManagedWallets {
     }
   }
 
+  async execWalletSends(w: BitGoWallet, sends: Send[], { feeRate } : { feeRate: number }) {
+    const faucet = this.faucet;
+
+    if (sends.length === 0) {
+      throw new Error(`no sends for ${w}`);
+    }
+
+    let unspents;
+    if (sends.length === 1) {
+      unspents = sends[0].unspents;
+    } else {
+      if (!sends.every(({ unspents }) => unspents === undefined)) {
+        throw new Error(`cannot declare unspent in send with more than one send per wallet`);
+      }
+    }
+
+    const recipients =
+      sends.reduce((rs, s: Send) => [...rs, ...s.recipients], []);
+
+    const sum = recipients.reduce((sum, v) => sum + v.amount, 0);
+    if (sum > w.spendableBalance()) {
+      if (w === faucet) {
+        throw new DryFaucetError(faucet, sum);
+      }
+      throw new ErrorExcessSendAmount(w, sum);
+    }
+
+    if (w === faucet) {
+      if (unspents !== undefined) {
+        throw new Error(`expected faucet unspents to be empty`);
+      }
+      const faucetUnspents = await this.getUnspents(faucet);
+      if (faucetUnspents.length > 100) {
+        unspents = faucetUnspents.map(u => u.id);
+        this.debug(`consolidate ${unspents.length} faucet unspents`);
+      }
+    }
+
+    if (this.dryRun) {
+      console.warn(`dryRun set: skipping sendMany for ${w.label()}`);
+      return;
+    }
+
+    await w.sendMany({
+      feeRate,
+      unspents,
+      recipients,
+      walletPassphrase,
+    });
+  }
+
   async resetWallets() {
     // refresh unspents of used wallets
     for (const mw of await this.getAll()) {
@@ -496,54 +549,8 @@ export class ManagedWallets {
 
     const errors = await runCollectErrors(
       Array.from(sendsByWallet.entries()),
-      async([w, sends]) => {
-        if (sends.length === 0) {
-          throw new Error(`no sends for ${w}`);
-        }
-
-        let unspents;
-        if (sends.length === 1) {
-          unspents = sends[0].unspents;
-        } else {
-          if (!sends.every(({ unspents }) => unspents === undefined)) {
-            throw new Error(`cannot declare unspent in send with more than one send per wallet`);
-          }
-        }
-
-        const recipients =
-          sends.reduce((rs, s: Send) => [...rs, ...s.recipients], []);
-
-        const sum = recipients.reduce((sum, v) => sum + v.amount, 0);
-        if (sum > w.spendableBalance()) {
-          if (w === faucet) {
-            throw new DryFaucetError(faucet, sum);
-          }
-          throw new ErrorExcessSendAmount(w, sum);
-        }
-
-        if (w === faucet) {
-          if (unspents !== undefined) {
-            throw new Error(`expected faucet unspents to be empty`);
-          }
-          const faucetUnspents = await this.getUnspents(faucet);
-          if (faucetUnspents.length > 100) {
-            unspents = faucetUnspents.map(u => u.id);
-            this.debug(`consolidate ${unspents.length} faucet unspents`);
-          }
-        }
-
-        if (this.dryRun) {
-          console.warn(`dryRun set: skipping sendMany for ${w.label()}`);
-          return;
-        }
-
-        await w.sendMany({
-          feeRate,
-          unspents,
-          recipients,
-          walletPassphrase,
-        });
-      }
+      ([w, sends]) => this.execWalletSends(w, sends, { feeRate }),
+      { concurrency: 1 }
     );
 
     if (errors.length > 0) {
