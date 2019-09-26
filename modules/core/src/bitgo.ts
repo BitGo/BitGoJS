@@ -43,6 +43,8 @@ import { GlobalCoinFactory } from './v2/coinFactory';
 
 const debug = debugLib('bitgo:index');
 
+import { isRequestSourceError, tryVerifyRequestSource } from './v2/requestSourceVerification';
+
 if (!(process as any).browser) {
   require('superagent-proxy')(superagent);
 }
@@ -283,6 +285,7 @@ export interface AuthenticateOptions {
   forceSMS?: boolean;
   extensible?: boolean;
   forceV1Auth?: boolean;
+  verifyRequestSource?: boolean;
 }
 
 export interface ProcessedAuthenticationOptions {
@@ -1147,6 +1150,18 @@ export class BitGo {
   }
 
   /**
+   * Verify request source using userId and nonce.
+   * Use @utils.decodeVerifySourceUrl to obtain values from the email link.
+   * @param userId
+   * @param nonce
+   */
+  async verifyRequestSource(userId: string, nonce: string) {
+    return this
+      .get(this.url('/user/verifysource'))
+      .query({ userId, nonce });
+  }
+
+  /**
    *
    * @param responseBody Response body object
    * @param password Password for the symmetric decryption
@@ -1377,7 +1392,18 @@ export class BitGo {
 
       return response;
     }).call(this)
-      .then(handleResponseResult(), handleResponseError)
+      .then(handleResponseResult(), async(err) => {
+        if (isRequestSourceError(err)) {
+          const { verifyRequestSource = true } = params;
+          if (verifyRequestSource) {
+            if (await tryVerifyRequestSource(this, err)) {
+              return this.authenticate({ ...params, verifyRequestSource: false }, callback);
+            }
+          }
+          console.error(`failed to verify request source, not retrying.`);
+        }
+        return handleResponseError(err);
+      })
       .nodeify(callback);
   }
 
