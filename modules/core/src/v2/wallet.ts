@@ -47,6 +47,11 @@ export interface MaximumSpendable {
   coin: string;
 }
 
+export interface Memo {
+  value: string;
+  type: string;
+}
+
 export interface PrebuildTransactionOptions {
   reqId?: RequestTracer;
   recipients?: {
@@ -71,10 +76,7 @@ export interface PrebuildTransactionOptions {
   validFromBlock?: number;
   validToBlock?: number;
   instant?: boolean;
-  memo?: {
-    value: string;
-    type: string;
-  }[];
+  memo?: Memo;
   addressType?: string;
   hop?: boolean;
   walletPassphrase?: string;
@@ -1239,7 +1241,7 @@ export class Wallet {
         'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
         'ledgerSequenceDelta', 'gasPrice', 'gasLimit', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
         'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy',
-        'validFromBlock', 'validToBlock',
+        'validFromBlock', 'validToBlock', 'type', 'trustlines',
       ]);
       debug('prebuilding transaction: %O', whitelistedParams);
 
@@ -1558,6 +1560,8 @@ export class Wallet {
    * @param {String} params.changeAddress - Specifies the destination of the change output
    * @param {Boolean} params.instant - Send this transaction using coin-specific instant sending method (if available)
    * @param {{value: String, type: String}} params.memo - Memo to use in transaction (supported by Stellar)
+   * @param {String} params.type - Type of the transaction (e.g. trustline)
+   * @param {{token: params, action: String, limit: String}[]} options.trustlines - Array of trustlines to manage (supported by Stellar)
    * @param callback
    * @returns {*}
    */
@@ -1588,7 +1592,7 @@ export class Wallet {
         'message', 'minValue', 'maxValue', 'sequenceId',
         'lastLedgerSequence', 'ledgerSequenceDelta', 'gasPrice',
         'noSplitChange', 'unspents', 'comment', 'otp', 'changeAddress',
-        'instant', 'memo'
+        'instant', 'memo', 'type', 'trustlines',
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
       self.bitgo.setRequestTracer(reqId);

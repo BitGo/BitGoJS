@@ -6,6 +6,7 @@ import { BitGo } from '../../bitgo';
 import { Xlm } from './xlm';
 import { CoinConstructor } from '../coinFactory';
 import { BitGoJsError } from '../../errors';
+import * as stellar from 'stellar-sdk';
 
 export interface StellarTokenConfig {
   name: string;
@@ -24,6 +25,8 @@ export class StellarToken extends Xlm {
   constructor(bitgo: BitGo, tokenConfig: StellarTokenConfig) {
     super(bitgo);
     this.tokenConfig = tokenConfig;
+    const network = this.tokenConfig.network === 'Testnet' ? stellar.Networks.TESTNET : stellar.Networks.PUBLIC;
+    stellar.Network.use(new stellar.Network(network));
 
     const [tokenCoin, token] = _.split(this.tokenConfig.type, Xlm.coinTokenPatternSeparator);
     if (tokenCoin !== tokenConfig.coin) {

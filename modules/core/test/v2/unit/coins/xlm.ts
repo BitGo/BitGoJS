@@ -325,13 +325,10 @@ describe('XLM:', function() {
         keychains: {
           user: { pub: userKeychain.pub },
           backup: { pub: backupKeychain.pub }
-        }
+        },
       };
-      try {
-        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
-      } catch (e) {
-        e.message.should.equal('transaction signed with wrong key');
-      }
+      yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('transaction signed with wrong key');
     }));
 
     it('should fail to verify a transaction to the wrong recipient', co(function *() {
@@ -354,14 +351,11 @@ describe('XLM:', function() {
         disableNetworking: true,
         keychains: {
           user: { pub: userKeychain.pub },
-          backup: { pub: backupKeychain.pub }
-        }
+          backup: { pub: backupKeychain.pub },
+        },
       };
-      try {
-        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
-      } catch (e) {
-        e.message.should.equal('transaction prebuild does not match expected recipient');
-      }
+      yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('transaction prebuild does not match expected recipient');
     }));
 
     it('should fail to verify a transaction with the wrong amount', co(function *() {
@@ -384,14 +378,11 @@ describe('XLM:', function() {
         disableNetworking: true,
         keychains: {
           user: { pub: userKeychain.pub },
-          backup: { pub: backupKeychain.pub }
-        }
+          backup: { pub: backupKeychain.pub },
+        },
       };
-      try {
-        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
-      } catch (e) {
-        e.message.should.equal('transaction prebuild does not match expected amount');
-      }
+      yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('transaction prebuild does not match expected amount');
     }));
 
     it('should fail to verify a transaction without recipients', co(function *() {
@@ -437,14 +428,11 @@ describe('XLM:', function() {
         disableNetworking: true,
         keychains: {
           user: { pub: userKeychain.pub },
-          backup: { pub: backupKeychain.pub }
-        }
+          backup: { pub: backupKeychain.pub },
+        },
       };
-      try {
-        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
-      } catch (e) {
-        e.message.should.equal('transaction prebuild does not have any operations');
-      }
+      yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+        .should.be.rejectedWith('transaction prebuild does not have any operations');
     }));
 
     it('should verify a transaction', co(function *() {
@@ -468,26 +456,145 @@ describe('XLM:', function() {
       validTransaction.should.equal(true);
     }));
 
-    describe('Federation lookups:', function() {
-      describe('Look up by stellar address:', function() {
-        it('should fail to loop up an invalid stellar address with a bitgo.com domain', co(function *() {
-          const stellarAddress = 'invalid*bitgo.com';
-          try {
-            yield basecoin.federationLookupByName(stellarAddress);
-          } catch (e) {
-            e.message.should.equal('account not found');
-          }
-        }));
+    describe('trustline transactions', function() {
+      it('should fail to verify a trustline transaction with unmatching number of trustlines', co(function *() {
+        const txParams = {
+          recipients: [],
+          type: 'trustline',
+          trustlines: [],
+        };
 
-        it('should resolve a stellar address into an account', co(function *() {
-          const stellarAddress = 'test12345*lobstr.co';
-          const accountId = 'GB5MEYCR4V2NRZH4NSI465ZEFRXPBZ74P43BMYN7AWVMAI5NNCKNZSVY';
+        const buildResult = {
+          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+        };
 
-          nock('https://lobstr.co')
+        nock('https://test.bitgo.com')
+          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+          .reply(200, buildResult);
+
+        const txPrebuild = yield wallet.prebuildTransaction(txParams);
+        const verification = {
+          disableNetworking: true,
+          keychains: {
+            user: { pub: userKeychain.pub },
+            backup: { pub: backupKeychain.pub },
+          },
+        };
+        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+          .should.be.rejectedWith('transaction prebuild does not match expected trustline operations');
+      }));
+
+      it('should fail to verify a trustline transaction with unmatching trustlines', co(function *() {
+        const txParams = {
+          type: 'trustline',
+          recipients: [],
+          trustlines: [{
+            token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+            action: 'remove',
+          }],
+        };
+
+        const buildResult = {
+          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+        };
+
+        nock('https://test.bitgo.com')
+          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+          .reply(200, buildResult);
+
+        const txPrebuild = yield wallet.prebuildTransaction(txParams);
+        const verification = {
+          disableNetworking: true,
+          keychains: {
+            user: { pub: userKeychain.pub },
+            backup: { pub: backupKeychain.pub },
+          },
+        };
+        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+          .should.be.rejectedWith('transaction prebuild does not match expected trustline tokens');
+      }));
+
+      it('should fail to verify a trustline transaction with unmatching limit', co(function *() {
+        const txParams = {
+          type: 'trustline',
+          recipients: [],
+          trustlines: [{
+            token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+            action: 'add',
+            limit: '999',
+          }],
+        };
+
+        const buildResult = {
+          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+        };
+
+        nock('https://test.bitgo.com')
+          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+          .reply(200, buildResult);
+
+        const txPrebuild = yield wallet.prebuildTransaction(txParams);
+        const verification = {
+          disableNetworking: true,
+          keychains: {
+            user: { pub: userKeychain.pub },
+            backup: { pub: backupKeychain.pub },
+          },
+        };
+        yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification })
+          .should.be.rejectedWith('transaction prebuild does not match expected trustline tokens');
+      }));
+
+      it('should verify a trustline transaction', co(function *() {
+        const txParams = {
+          type: 'trustline',
+          recipients: [],
+          trustlines: [{
+            token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+            action: 'add',
+            limit: '100000',
+          }],
+        };
+
+        const buildResult = {
+          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+        };
+
+        nock('https://test.bitgo.com')
+          .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+          .reply(200, buildResult);
+
+        const txPrebuild = yield wallet.prebuildTransaction(txParams);
+        const verification = {
+          disableNetworking: true,
+          keychains: {
+            user: { pub: userKeychain.pub },
+            backup: { pub: backupKeychain.pub },
+          },
+        };
+        const validTransaction = yield basecoin.verifyTransaction({ txParams, txPrebuild, wallet, verification });
+        validTransaction.should.equal(true);
+      }));
+    });
+  });
+
+  describe('Federation lookups:', function() {
+    describe('Look up by stellar address:', function() {
+      it('should fail to loop up an invalid stellar address with a bitgo.com domain', co(function *() {
+        const stellarAddress = 'invalid*bitgo.com';
+        yield basecoin.federationLookupByName(stellarAddress)
+          .should.be.rejectedWith('account not found');
+      }));
+
+      it('should resolve a stellar address into an account', co(function *() {
+        const stellarAddress = 'test12345*lobstr.co';
+        const accountId = 'GB5MEYCR4V2NRZH4NSI465ZEFRXPBZ74P43BMYN7AWVMAI5NNCKNZSVY';
+
+        nock('https://lobstr.co')
           .get('/.well-known/stellar.toml')
           .reply(200, 'FEDERATION_SERVER=\'https://lobstr.co/federation\'');
 
-          nock('https://lobstr.co')
+        nock('https://lobstr.co')
           .get('/federation')
           .query({
             q: stellarAddress,
@@ -498,17 +605,17 @@ describe('XLM:', function() {
             account_id: accountId
           });
 
-          const res = yield basecoin.federationLookupByName(stellarAddress);
-          res.should.have.property('stellar_address');
-          res.should.have.property('account_id');
-          res.stellar_address.should.equal(stellarAddress);
-          res.account_id.should.equal(accountId);
-        }));
+        const res = yield basecoin.federationLookupByName(stellarAddress);
+        res.should.have.property('stellar_address');
+        res.should.have.property('account_id');
+        res.stellar_address.should.equal(stellarAddress);
+        res.account_id.should.equal(accountId);
+      }));
 
-        it('should resolve a stellar address with a bitgo.com domain', co(function *() {
-          const stellarAddress = 'tester*bitgo.com';
+      it('should resolve a stellar address with a bitgo.com domain', co(function *() {
+        const stellarAddress = 'tester*bitgo.com';
 
-          nock('https://test.bitgo.com')
+        nock('https://test.bitgo.com')
           .get('/api/v2/txlm/federation')
           .query({
             q: stellarAddress,
@@ -521,23 +628,23 @@ describe('XLM:', function() {
             memo: '0'
           });
 
-          const res = yield basecoin.federationLookupByName(stellarAddress);
-          res.should.have.property('stellar_address');
-          res.should.have.property('account_id');
-          res.should.have.property('memo_type');
-          res.should.have.property('memo');
-          res.stellar_address.should.equal(stellarAddress);
-          res.account_id.should.equal('GCBYY3S62QY43PMEKGJHRCBHEFJOHCLGSMWXREUZYDQHJHQ2LK4I42JA');
-          res.memo_type.should.equal('id');
-          res.memo.should.equal('0');
-        }));
-      });
+        const res = yield basecoin.federationLookupByName(stellarAddress);
+        res.should.have.property('stellar_address');
+        res.should.have.property('account_id');
+        res.should.have.property('memo_type');
+        res.should.have.property('memo');
+        res.stellar_address.should.equal(stellarAddress);
+        res.account_id.should.equal('GCBYY3S62QY43PMEKGJHRCBHEFJOHCLGSMWXREUZYDQHJHQ2LK4I42JA');
+        res.memo_type.should.equal('id');
+        res.memo.should.equal('0');
+      }));
+    });
 
-      describe('Look up by account id:', function() {
-        it('should fail to look up an account if the account id is invalid', co(function *() {
-          const accountId = '123';
+    describe('Look up by account id:', function() {
+      it('should fail to look up an account if the account id is invalid', co(function *() {
+        const accountId = '123';
 
-          nock('https://test.bitgo.com')
+        nock('https://test.bitgo.com')
           .get('/api/v2/txlm/federation')
           .query({
             q: accountId,
@@ -547,17 +654,14 @@ describe('XLM:', function() {
             detail: 'invalid id: ' + accountId
           });
 
-          try {
-            yield basecoin.federationLookupByAccountId(accountId);
-          } catch (e) {
-            e.message.should.equal(`invalid id: ${accountId}`);
-          }
-        }));
+        yield basecoin.federationLookupByAccountId(accountId)
+          .should.be.rejectedWith(`invalid id: ${accountId}`);
+      }));
 
-        it('should return only account_id for non-bitgo accounts', co(function *() {
-          const accountId = 'GCROXHYJSTCS3CQQIU7GFC7YQIRIVGPYZQRZEM6PN7P7TAZ3PU4CHJRG';
+      it('should return only account_id for non-bitgo accounts', co(function *() {
+        const accountId = 'GCROXHYJSTCS3CQQIU7GFC7YQIRIVGPYZQRZEM6PN7P7TAZ3PU4CHJRG';
 
-          nock('https://test.bitgo.com')
+        nock('https://test.bitgo.com')
           .get('/api/v2/txlm/federation')
           .query({
             q: accountId,
@@ -567,18 +671,18 @@ describe('XLM:', function() {
             account_id: accountId
           });
 
-          const res = yield basecoin.federationLookupByAccountId(accountId);
-          res.should.not.have.property('stellar_address');
-          res.should.not.have.property('memo_type');
-          res.should.not.have.property('memo');
-          res.should.have.property('account_id');
-          res.account_id.should.equal(accountId);
-        }));
+        const res = yield basecoin.federationLookupByAccountId(accountId);
+        res.should.not.have.property('stellar_address');
+        res.should.not.have.property('memo_type');
+        res.should.not.have.property('memo');
+        res.should.have.property('account_id');
+        res.account_id.should.equal(accountId);
+      }));
 
-        it('should resolve a valid account id into an account', co(function *() {
-          const accountId = 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH';
+      it('should resolve a valid account id into an account', co(function *() {
+        const accountId = 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH';
 
-          nock('https://test.bitgo.com')
+        nock('https://test.bitgo.com')
           .get('/api/v2/txlm/federation')
           .query({
             q: accountId,
@@ -591,15 +695,14 @@ describe('XLM:', function() {
             memo: '0'
           });
 
-          const res = yield basecoin.federationLookupByAccountId(accountId);
-          res.should.have.property('stellar_address');
-          res.should.have.property('account_id');
-          res.should.have.property('memo_type');
-          res.should.have.property('memo');
-          res.account_id.should.equal(accountId);
-          res.stellar_address.should.equal('tester*bitgo.com');
-        }));
-      });
+        const res = yield basecoin.federationLookupByAccountId(accountId);
+        res.should.have.property('stellar_address');
+        res.should.have.property('account_id');
+        res.should.have.property('memo_type');
+        res.should.have.property('memo');
+        res.account_id.should.equal(accountId);
+        res.stellar_address.should.equal('tester*bitgo.com');
+      }));
     });
   });
 
