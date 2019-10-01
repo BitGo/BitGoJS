@@ -10,8 +10,9 @@ import * as _ from 'lodash';
 import * as debugLib from 'debug';
 import * as https from 'https';
 import * as http from 'http';
-
 import * as morgan from 'morgan';
+import { Request as StaticRequest } from 'express-serve-static-core';
+
 const fs = Bluebird.promisifyAll(require('fs'));
 
 import { Config, config } from './config';
@@ -130,7 +131,7 @@ function configureProxy(app: express.Application, config: Config): void {
     });
   });
 
-  app.use(function(req: express.Request, res: express.Response) {
+  app.use(function(req: StaticRequest, res: express.Response) {
     if (req.url && (/^\/api\/v[12]\/.*$/.test(req.url) || /^\/oauth\/token.*$/.test(req.url))) {
       req.isProxy = true;
       proxy.web(req, res, { target: Environments[env].uri, changeOrigin: true });

@@ -10,6 +10,7 @@ import { Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { hdPath } from '../bitcoin';
+import { RequestTracer as IRequestTracer } from './types';
 import { RequestTracer } from './internal/util';
 
 const co = Bluebird.coroutine;
@@ -21,7 +22,7 @@ export interface WalletWithKeychains extends KeychainsTriplet {
 
 export interface GetWalletOptions {
   allTokens?: boolean;
-  reqId?: RequestTracer;
+  reqId?: IRequestTracer;
   id?: string;
 }
 
