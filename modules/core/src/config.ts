@@ -3,7 +3,7 @@ import { Environments, EnvironmentName } from './v2/environments';
 import { OfcTokenConfig } from './v2/coins/ofcToken';
 import { Erc20TokenConfig } from './v2/coins/erc20Token';
 import { StellarTokenConfig } from './v2/coins/stellarToken';
-import { coins, BaseCoin, Erc20Coin, StellarCoin, OfcCoin, CoinKind, NetworkType } from '@bitgo/statics';
+import { coins, Erc20Coin, StellarCoin, OfcCoin, CoinKind, NetworkType } from '@bitgo/statics';
 
 export interface Tokens {
   bitcoin: {
@@ -31,46 +31,51 @@ export interface Tokens {
 }
 
 // Get the list of ERC-20 tokens from statics and format it properly
-const formattedErc20Tokens = coins.filter((coin: BaseCoin) => {
-  return coin instanceof Erc20Coin;
-}).map((token: Erc20Coin): Erc20TokenConfig => {
-  return {
-    type: token.name,
-    coin: token.network.type === NetworkType.MAINNET ? 'eth' : 'teth',
-    network: token.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-    name: token.fullName,
-    tokenContractAddress: token.contractAddress.toString().toLowerCase(),
-    decimalPlaces: token.decimalPlaces,
-  };
-});
+const formattedErc20Tokens = coins.reduce((acc, coin) => {
+  if (!(coin instanceof Erc20Coin)) {
+    return acc;
+  }
+  acc.push({
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'eth' : 'teth',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+    decimalPlaces: coin.decimalPlaces,
+  });
+  return acc;
+}, [] as Erc20TokenConfig[]);
 
 // Get the list of Stellar tokens from statics and format it properly
-const formattedStellarTokens = coins.filter((coin: BaseCoin) => {
-  return coin instanceof StellarCoin;
-}).map((token: StellarCoin): StellarTokenConfig => {
-  return {
-    type: token.name,
-    coin: token.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
-    network: token.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-    name: token.fullName,
-    decimalPlaces: token.decimalPlaces,
-  };
-});
+const formattedStellarTokens = coins.reduce((acc, coin) => {
+  if (!(coin instanceof StellarCoin)) {
+    return acc;
+  }
+  acc.push({
+    type: coin.name,
+    coin: coin.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
+    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+  });
+  return acc;
+}, [] as StellarTokenConfig[]);
 
 // Get the list of OFC tokens from statics and format it properly
-const formattedOfcCoins = coins.filter((coin: BaseCoin) => {
-  return coin instanceof OfcCoin;
-}).map((token: OfcCoin): OfcTokenConfig => {
-  return {
-    type: token.name,
+const formattedOfcCoins = coins.reduce((acc, coin) => {
+  if (!(coin instanceof OfcCoin)) {
+    return acc;
+  }
+  acc.push({
+    type: coin.name,
     coin: 'ofc',
-    backingCoin: token.asset,
-    name: token.fullName,
-    decimalPlaces: token.decimalPlaces,
-    isFiat: token.kind === CoinKind.FIAT,
-  };
-});
-
+    backingCoin: coin.asset,
+    name: coin.fullName,
+    decimalPlaces: coin.decimalPlaces,
+    isFiat: coin.kind === CoinKind.FIAT,
+  });
+  return acc;
+}, [] as OfcTokenConfig[]);
 
 export const tokens: Tokens = {
   // network name for production environments

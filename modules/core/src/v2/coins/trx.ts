@@ -23,8 +23,12 @@ import { NodeCallback } from '../types';
 export class Trx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin: Readonly<StaticsBaseCoin>) {
+  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
+
+    if (!staticsCoin) {
+      throw new Error('missing required constructor parameter staticsCoin');
+    }
 
     this._staticsCoin = staticsCoin;
   }
@@ -45,7 +49,7 @@ export class Trx extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin: Readonly<StaticsBaseCoin>): BaseCoin {
+  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
     return new Trx(bitgo, staticsCoin);
   }
 

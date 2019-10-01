@@ -1,12 +1,13 @@
+import * as bitcoin from 'bitgo-utxo-lib';
+import * as Bluebird from 'bluebird';
+const cashaddress = require('cashaddress');
+import * as _ from 'lodash';
+import * as request from 'superagent';
+
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
-import { AbstractUtxoCoin } from './abstractUtxoCoin';
-import * as bitcoin from 'bitgo-utxo-lib';
-import * as request from 'superagent';
-import * as Bluebird from 'bluebird';
+import { AbstractUtxoCoin, AddressInfo, UnspentInfo } from './abstractUtxoCoin';
 import * as common from '../../common';
-import * as _ from 'lodash';
-const cashaddress = require('cashaddress');
 const co = Bluebird.coroutine;
 
 const VALID_ADDRESS_VERSIONS = {
@@ -189,7 +190,7 @@ export class Bch extends AbstractUtxoCoin {
   }
 
   getAddressInfoFromExplorer(addressBase58) {
-    return co(function *getAddressInfoFromExplorer() {
+    return co<AddressInfo>(function *getAddressInfoFromExplorer() {
       const addrInfo = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
       addrInfo.txCount = addrInfo.txApperances;
@@ -200,7 +201,7 @@ export class Bch extends AbstractUtxoCoin {
   }
 
   getUnspentInfoFromExplorer(addressBase58) {
-    return co(function *getUnspentInfoFromExplorer() {
+    return co<UnspentInfo[]>(function *getUnspentInfoFromExplorer() {
       const unspents = yield request.get(this.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
       unspents.forEach(function processUnspent(unspent) {

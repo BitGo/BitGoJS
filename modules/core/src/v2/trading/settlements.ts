@@ -45,7 +45,7 @@ export class Settlements {
    */
   list(callback?: NodeCallback<Settlement[]>): Bluebird<Settlement[]> {
     const self = this;
-    return co(function* list() {
+    return co<Settlement[]>(function* list() {
       let url;
       if (self.account) {
         url = self.bitgo.microservicesUrl(
@@ -70,7 +70,7 @@ export class Settlements {
    */
   get({ id, accountId }: GetOptions, callback?: NodeCallback<Settlement>): Bluebird<Settlement> {
     const self = this;
-    return co(function* get() {
+    return co<Settlement>(function* get() {
       const account = accountId || (self.account && self.account.id);
       if (!account) {
         throw new Error('accountId must be provided in parameters for an enterprise context');
@@ -98,7 +98,7 @@ export class Settlements {
    */
   create(params: CreateSettlementParams, callback?: NodeCallback<Settlement>): Bluebird<Settlement> {
     const self = this;
-    return co(function* create() {
+    return co<Settlement>(function* create() {
       if (!self.account) {
         throw new Error(
           'Must select a trading account before creating a settlement. Try tradingAccount.settlements().create()'

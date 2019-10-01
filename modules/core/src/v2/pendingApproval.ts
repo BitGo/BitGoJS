@@ -170,7 +170,7 @@ export class PendingApproval {
    */
   get(params: {} = {}, callback?: NodeCallback<PendingApproval>): Bluebird<PendingApproval> {
     const self = this;
-    return co(function*() {
+    return co<PendingApproval>(function*() {
       self._pendingApproval = yield self.bitgo.get(self.url()).result();
       return self;
     })
@@ -183,7 +183,7 @@ export class PendingApproval {
    */
   private populateWallet(): Bluebird<undefined> {
     const self = this;
-    return co(function*() {
+    return co<undefined>(function*() {
       const transactionRequest = self.info().transactionRequest;
       if (_.isUndefined(transactionRequest)) {
         throw new Error('missing required object property transactionRequest');
@@ -236,7 +236,7 @@ export class PendingApproval {
        * Internal helper function to get the serialized transaction which is being approved
        */
       function getApprovalTransaction(): Bluebird<{ txHex: string }> {
-        return co(function*() {
+        return co<{ txHex: string }>(function*() {
           if (self.type() === 'transactionRequest') {
             /*
              * If this is a request for approving a transaction, depending on whether this user has a private key to the wallet

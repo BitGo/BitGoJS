@@ -363,7 +363,7 @@ export class Xrp extends BaseCoin {
    * @param callback
    */
   explainTransaction(params: ExplainTransactionOptions = {}, callback?: NodeCallback<TransactionExplanation>): Bluebird<TransactionExplanation> {
-    return co(function *() {
+    return co<TransactionExplanation>(function *() {
       if (!params.txHex) {
         throw new Error('missing required param txHex');
       }
@@ -413,7 +413,7 @@ export class Xrp extends BaseCoin {
    */
   public verifyTransaction({ txParams, txPrebuild }: VerifyTransactionOptions, callback): Bluebird<boolean> {
     const self = this;
-    return co(function *() {
+    return co<boolean>(function *() {
       const explanation = yield self.explainTransaction({
         txHex: txPrebuild.txHex
       });
@@ -480,7 +480,7 @@ export class Xrp extends BaseCoin {
    */
   public recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryInfo | string>): Bluebird<RecoveryInfo | string> {
     const self = this;
-    return co(function *explainTransaction() {
+    return co<RecoveryInfo | string>(function *explainTransaction() {
       const rippledUrl = self.getRippledUrl();
       const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
       const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
@@ -637,7 +637,7 @@ export class Xrp extends BaseCoin {
    */
   initiateRecovery(params: InitiateRecoveryOptions): Bluebird<HDNode[]> {
     const self = this;
-    return co(function *initiateRecovery() {
+    return co<HDNode[]>(function *initiateRecovery() {
       const keys: HDNode[] = [];
       const userKey = params.userKey; // Box A
       let backupKey = params.backupKey; // Box B
