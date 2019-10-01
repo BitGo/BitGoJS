@@ -19,6 +19,7 @@ import * as common from './common';
 import { EnvironmentName } from './v2/environments';
 import { NodeCallback, V1Network } from './v2/types';
 import { RequestTracer, Util } from './v2/internal/util';
+import { RequestTracer as IRequestTracer } from './v2/types';
 import * as Bluebird from 'bluebird';
 import co = Bluebird.coroutine;
 import pjson = require('../package.json');
@@ -332,7 +333,7 @@ export interface GetSharingKeyOptions {
 }
 
 export interface PingOptions {
-  reqId?: RequestTracer;
+  reqId?: IRequestTracer;
 }
 
 /**
@@ -413,7 +414,7 @@ export class BitGo {
   private readonly _promise: typeof Bluebird;
   private _validate: boolean;
   private readonly _proxy?: string;
-  private _reqId?: RequestTracer;
+  private _reqId?: IRequestTracer;
   private _ecdhXprv?: string;
   private _extensionKey?: bitcoin.ECPair;
   private _markets?: any;
@@ -2282,7 +2283,7 @@ export class BitGo {
   /**
    * Set a request tracer to provide request IDs during multi-request workflows
    */
-  setRequestTracer(reqTracer: RequestTracer) {
+  setRequestTracer(reqTracer: IRequestTracer) {
     if (reqTracer) {
       this._reqId = reqTracer;
     }
