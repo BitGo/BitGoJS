@@ -266,7 +266,7 @@ export class Wallet {
    */
   refresh(params: {} = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     const self = this;
-    return co(function *() {
+    return co<Wallet>(function *() {
       self._wallet = yield self.bitgo.get(self.url()).result();
       return this;
     }).call(this).asCallback(callback);
@@ -489,7 +489,7 @@ export class Wallet {
    */
   maximumSpendable(params: MaximumSpendableOptions = {}, callback?: NodeCallback<MaximumSpendable>): Bluebird<MaximumSpendable> {
     const self = this;
-    return co(function *() {
+    return co<MaximumSpendable>(function *() {
       const filteredParams = _.pick(params, [
         'minValue', 'maxValue', 'minHeight', 'target', 'plainTarget', 'limit', 'minConfirms',
         'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'recipientAddress'
@@ -1234,7 +1234,7 @@ export class Wallet {
    */
   prebuildTransaction(params: PrebuildTransactionOptions = {}, callback?: NodeCallback<PrebuildTransactionResult>): Bluebird<PrebuildTransactionResult> {
     const self = this;
-    return co(function *() {
+    return co<PrebuildTransactionResult>(function *() {
       // Whitelist params to build tx
       const whitelistedParams = _.pick(params, [
         'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
@@ -1288,7 +1288,7 @@ export class Wallet {
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
     const self = this;
-    return co(function *() {
+    return co<SignedTransaction>(function *() {
       const txPrebuild = params.txPrebuild;
       if (!txPrebuild || typeof txPrebuild !== 'object') {
         throw new Error('txPrebuild must be an object');
@@ -1339,7 +1339,7 @@ export class Wallet {
    */
   prebuildAndSignTransaction(params: PrebuildAndSignTransactionOptions = {}, callback?: NodeCallback<SignedTransaction>): Bluebird<SignedTransaction> {
     const self = this;
-    return co(function *() {
+    return co<SignedTransaction>(function *() {
       if (params.prebuildTx && params.recipients) {
         const error: any = new Error('Only one of prebuildTx and recipients may be specified');
         error.code = 'both_prebuildtx_and_recipients_specified';

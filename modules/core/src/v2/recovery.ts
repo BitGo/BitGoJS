@@ -67,9 +67,9 @@ export class CrossChainRecoveryTool {
   logger: any;
   private unspents?: any;
   txInfo?: RecoveryTxInfo;
-  recoveryAddress: string;
-  recoveryAmount: number;
-  halfSignedRecoveryTx: HalfSignedRecoveryTx;
+  recoveryAddress?: string;
+  recoveryAmount?: number;
+  halfSignedRecoveryTx?: HalfSignedRecoveryTx;
 
   constructor(opts: CrossChainRecoveryToolOptions) {
     this.bitgo = opts.bitgo;
@@ -128,7 +128,7 @@ export class CrossChainRecoveryTool {
    */
   protected setWallet(walletId?: string, callback?: NodeCallback<any>): Bluebird<void> {
     const self = this;
-    return co(function* setWallet() {
+    return co<void>(function* setWallet() {
       const coinType = self.recoveryCoin.getChain();
       if (_.isUndefined(walletId)) {
         throw new Error('Please provide wallet id');
@@ -492,7 +492,7 @@ export class CrossChainRecoveryTool {
    */
   getKeys(passphrase: string, callback?: NodeCallback<string>): Bluebird<string> {
     const self = this;
-    return co(function* getKeys() {
+    return co<string>(function* getKeys() {
       let prv;
 
       let keychain;
@@ -608,7 +608,7 @@ export class CrossChainRecoveryTool {
       walletId: this.wallet.id(),
       recoveryAddress: this.recoveryAddress,
       recoveryAmount: this.recoveryAmount,
-      txHex: this.halfSignedRecoveryTx.txHex || this.halfSignedRecoveryTx.tx,
+      txHex: this.halfSignedRecoveryTx && (this.halfSignedRecoveryTx.txHex || this.halfSignedRecoveryTx.tx),
       txInfo: this.txInfo,
     };
   }

@@ -13,6 +13,10 @@
     "inlineSourceMap": true,
     "inlineSources": true,
     "declarationMap": true,
+    "noFallthroughCasesInSwitch": true,
+    "strictPropertyInitialization": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
     "typeRoots": [
       "./node_modules/@types",
       "./types"

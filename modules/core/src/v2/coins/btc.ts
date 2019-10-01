@@ -47,7 +47,7 @@ export class Btc extends AbstractUtxoCoin {
 
   getRecoveryFeePerBytes(): Bluebird<number> {
     const self = this;
-    return co(function *getRecoveryFeePerBytes() {
+    return co<number>(function *getRecoveryFeePerBytes() {
       const recoveryFeeUrl = yield self.getRecoveryFeeRecommendationApiBaseUrl();
 
       const publicFeeDataReq = request.get(recoveryFeeUrl);

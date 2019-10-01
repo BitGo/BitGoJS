@@ -46,7 +46,7 @@ export class PendingApprovals {
     callback?: NodeCallback<ListPendingApprovalsResult>
   ): Bluebird<ListPendingApprovalsResult> {
     const self = this;
-    return co(function*() {
+    return co<ListPendingApprovalsResult>(function*() {
       validateParams(params, [], ['walletId', 'enterpriseId'], callback);
 
       const queryParams: any = {};
@@ -81,7 +81,7 @@ export class PendingApprovals {
    */
   get(params: GetPendingApprovalOptions = {}, callback?: NodeCallback<PendingApproval>): Bluebird<PendingApproval> {
     const self = this;
-    return co(function*() {
+    return co<PendingApproval>(function*() {
       validateParams(params, ['id'], [], callback);
 
       const approvalData = yield self.bitgo.get(self.baseCoin.url('/pendingapprovals/' + params.id)).result();

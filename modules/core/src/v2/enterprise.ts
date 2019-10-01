@@ -58,7 +58,7 @@ export class Enterprise {
    * @param callback
    */
   coinWallets(params: {} = {}, callback?: NodeCallback<Wallet[]>): Bluebird<Wallet[]> {
-    return co(function* coCoinWallets() {
+    return co<Wallet[]>(function* coCoinWallets() {
       const walletData = yield this.bitgo.get(this.baseCoin.url('/wallet/enterprise/' + this.id)).result();
       walletData.wallets = walletData.wallets.map(w => {
         return new Wallet(this.bitgo, this.baseCoin, w);

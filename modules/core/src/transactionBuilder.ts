@@ -682,8 +682,11 @@ exports.createTransaction = function(params) {
       if (bitgoFeeInfo && bitgoFeeInfo.amount > 0) {
         extraOutputs.push(bitgoFeeInfo);
       }
-      extraOutputs.forEach(function(output: AddressOutput & ScriptOutput) {
-        output.script = bitcoin.address.toOutputScript(output.address, network);
+      extraOutputs.forEach(function(output) {
+        if ((output as AddressOutput).address) {
+          (output as ScriptOutput).script =
+            bitcoin.address.toOutputScript((output as AddressOutput).address, network);
+        }
 
         // decide where to put the outputs - default is to randomize unless forced to end
         const outputIndex = params.forceChangeAtEnd ? outputs.length : _.random(0, outputs.length);
@@ -691,8 +694,8 @@ exports.createTransaction = function(params) {
       });
 
       // Add all outputs to the transaction
-      outputs.forEach(function(output: ScriptOutput) {
-        transaction.addOutput(output.script, output.amount);
+      outputs.forEach(function(output) {
+        transaction.addOutput((output as ScriptOutput).script, output.amount);
       });
 
       travelInfos = _(outputs).map(function(output, index) {

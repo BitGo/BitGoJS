@@ -72,7 +72,7 @@ export class Zec extends AbstractUtxoCoin {
 
   getAddressInfoFromExplorer(addressBase58: string): Bluebird<{ txCount: number; totalBalance: number; }> {
     const self = this;
-    return co(function *getAddressInfoFromExplorer() {
+    return co<{ txCount: number; totalBalance: number; }>(function *getAddressInfoFromExplorer() {
       const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
 
       addrInfo.txCount = addrInfo.txApperances;
@@ -84,7 +84,7 @@ export class Zec extends AbstractUtxoCoin {
 
   getUnspentInfoFromExplorer(addressBase58: string): Bluebird<{ address: string; amount: number; n: number; }[]> {
     const self = this;
-    return co(function *getUnspentInfoFromExplorer() {
+    return co<{ address: string; amount: number; n: number; }[]>(function *getUnspentInfoFromExplorer() {
       const unspents = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
 
       unspents.forEach(function processUnspent(unspent) {

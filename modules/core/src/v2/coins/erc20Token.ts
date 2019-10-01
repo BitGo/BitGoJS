@@ -100,7 +100,7 @@ export class Erc20Token extends Eth {
    */
   recover(params: RecoverOptions, callback?: NodeCallback<RecoveryInfo>): Bluebird<RecoveryInfo> {
     const self = this;
-    return co(function* recover() {
+    return co<RecoveryInfo>(function* recover() {
       if (_.isUndefined(params.userKey)) {
         throw new Error('missing userKey');
       }
