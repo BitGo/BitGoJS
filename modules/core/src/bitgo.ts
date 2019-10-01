@@ -158,112 +158,115 @@ export interface BitGoOptions {
   proxy?: string;
 }
 
-interface User {
+export interface User {
   username: string;
 }
 
-interface BitGoJson {
+export interface BitGoJson {
   user?: User;
   token?: string;
   extensionKey?: string;
 }
 
-interface VerifyAddressOptions {
+/**
+ * @deprecated
+ */
+export interface DeprecatedVerifyAddressOptions {
   address?: string;
 }
 
-interface VerifyPasswordOptions {
+export interface VerifyPasswordOptions {
   password?: string;
 }
 
-interface EncryptOptions {
+export interface EncryptOptions {
   input?: string;
   password?: string;
 }
 
-interface DecryptOptions {
+export interface DecryptOptions {
   input?: string;
   password?: string;
 }
 
-interface SplitSecretOptions {
+export interface SplitSecretOptions {
   seed: string;
   passwords: string[];
   m: number;
 }
 
-interface SplitSecret {
+export interface SplitSecret {
   xpub: string;
   m: number;
   n: number;
   seedShares: any;
 }
 
-interface ReconstituteSecretOptions {
+export interface ReconstituteSecretOptions {
   shards: string[];
   passwords: string[];
 }
 
-interface ReconstitutedSecret {
+export interface ReconstitutedSecret {
   xpub: string;
   xprv: string;
   seed: string;
 }
 
-interface VerifyShardsOptions {
+export interface VerifyShardsOptions {
   shards: string[];
   passwords: string[];
   m: number;
   xpub: string;
 }
 
-interface GetEcdhSecretOptions {
+export interface GetEcdhSecretOptions {
   otherPubKeyHex: string;
   eckey: bitcoin.ECPair;
 }
 
-interface AccessTokenOptions {
+export interface AccessTokenOptions {
   accessToken: string;
 }
 
-interface TokenIssuanceResponse {
+export interface TokenIssuanceResponse {
   derivationPath: string;
   encryptedToken: string;
   encryptedECDHXprv?: string;
 }
 
-interface TokenIssuance {
+export interface TokenIssuance {
   token: string;
   ecdhXprv?: string;
 }
 
-interface CalculateHmacSubjectOptions {
+export interface CalculateHmacSubjectOptions {
   urlPath: string;
   text: string;
   timestamp: number;
   statusCode?: number;
 }
 
-interface CalculateRequestHmacOptions {
+export interface CalculateRequestHmacOptions {
   url: string;
   text: string;
   timestamp: number;
   token: string;
 }
 
-interface CalculateRequestHeadersOptions {
+export interface CalculateRequestHeadersOptions {
   url: string;
   text: string;
   token: string;
 }
 
-interface RequestHeaders {
+export interface RequestHeaders {
   hmac: string;
   timestamp: number;
   tokenHash: string;
 }
 
-interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
+export interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
   hmac: string;
   url: string;
   text: string;
@@ -271,7 +274,7 @@ interface VerifyResponseOptions extends CalculateRequestHeadersOptions {
   statusCode?: number;
 }
 
-interface AuthenticateOptions {
+export interface AuthenticateOptions {
   username: string;
   password: string;
   otp?: string;
@@ -281,7 +284,7 @@ interface AuthenticateOptions {
   forceV1Auth?: boolean;
 }
 
-interface ProcessedAuthenticationOptions {
+export interface ProcessedAuthenticationOptions {
   email: string;
   password: string;
   forceSMS: boolean;
@@ -292,7 +295,7 @@ interface ProcessedAuthenticationOptions {
   forceV1Auth?: boolean;
 }
 
-interface AddAccessTokenOptions {
+export interface AddAccessTokenOptions {
   label: string;
   otp?: string;
   duration?: number;
@@ -301,38 +304,41 @@ interface AddAccessTokenOptions {
   scope: string[];
 }
 
-interface RemoveAccessTokenOptions {
+export interface RemoveAccessTokenOptions {
   id?: string;
   label?: string;
 }
 
-interface GetUserOptions {
+export interface GetUserOptions {
   id: string;
 }
 
-interface ChangePasswordOptions {
+export interface ChangePasswordOptions {
   oldPassword: string;
   newPassword: string;
 }
 
-interface UnlockOptions {
+export interface UnlockOptions {
   otp?: string;
   duration?: number
 }
 
-interface ExtendTokenOptions {
+export interface ExtendTokenOptions {
   duration?: string;
 }
 
-interface GetSharingKeyOptions {
+export interface GetSharingKeyOptions {
   email: string;
 }
 
-interface PingOptions {
+export interface PingOptions {
   reqId?: RequestTracer;
 }
 
-interface EstimateFeeOptions {
+/**
+ * @deprecated
+ */
+export interface EstimateFeeOptions {
   numBlocks?: number;
   maxFee?: number;
   inputs?: string[];
@@ -340,35 +346,46 @@ interface EstimateFeeOptions {
   cpfpAware?: boolean;
 }
 
-interface WebhookOptions {
+/**
+ * @deprecated
+ */
+export interface WebhookOptions {
   url: string;
   type: string;
 }
 
-interface ListWebhookiNotificationsOptions {
+export interface ListWebhookNotificationsOptions {
   prevId?: string;
   limit?: number;
 }
 
-interface SimulateWebhookOptions {
+export interface SimulateWebhookOptions {
   webhookId: string;
   blockId: string;
 }
 
-interface AuthenticateWithAuthCodeOptions {
+export interface AuthenticateWithAuthCodeOptions {
   authCode: string;
 }
 
-interface VerifyPushTokenOptions {
+/**
+ * @deprecated
+ */
+export interface VerifyPushTokenOptions {
   pushVerificationToken: string;
 }
 
+export interface BitGoRequest extends superagent.Request {
+  result: (optionalField?: string) => Bluebird<any>;
+  end: (callback?: NodeCallback<superagent.Response>) => Bluebird<superagent.Response>;
+}
+
 export interface BitGo {
-  get(url: string, callback?: NodeCallback<superagent.Response>): superagent.Request;
-  post(url: string, callback?: NodeCallback<superagent.Response>): superagent.Request;
-  put(url: string, callback?: NodeCallback<superagent.Response>): superagent.Request;
-  del(url: string, callback?: NodeCallback<superagent.Response>): superagent.Request;
-  patch(url: string, callback?: NodeCallback<superagent.Response>): superagent.Request;
+  get(url: string, callback?: NodeCallback<superagent.Response>): BitGoRequest;
+  post(url: string, callback?: NodeCallback<superagent.Response>): BitGoRequest;
+  put(url: string, callback?: NodeCallback<superagent.Response>): BitGoRequest;
+  del(url: string, callback?: NodeCallback<superagent.Response>): BitGoRequest;
+  patch(url: string, callback?: NodeCallback<superagent.Response>): BitGoRequest;
 }
 
 export class BitGo {
@@ -828,7 +845,7 @@ export class BitGo {
    * Verify a Bitcoin address is a valid base58 address
    * @deprecated
    */
-  verifyAddress(params: VerifyAddressOptions = {}): boolean {
+  verifyAddress(params: DeprecatedVerifyAddressOptions = {}): boolean {
     common.validateParams(params, ['address'], []);
 
     if (!_.isString(params.address)) {
@@ -2141,7 +2158,7 @@ export class BitGo {
    * @param callback
    * @returns {*}
    */
-  listWebhookNotifications(params: ListWebhookiNotificationsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  listWebhookNotifications(params: ListWebhookNotificationsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const query: any = {};
     if (params.prevId) {
       if (!_.isString(params.prevId)) {

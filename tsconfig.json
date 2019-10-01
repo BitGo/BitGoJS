@@ -6,11 +6,13 @@
       "dom",
       "es2016"
     ],
-    "sourceMap": true,
     "declaration": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "declarationMap": true,
     "typeRoots": [
       "./node_modules/@types",
       "./types"

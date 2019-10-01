@@ -8,7 +8,8 @@
       "../../types",
       "./node_modules/@types",
       "../../node_modules/@types"
-    ]
+    ],
+    "declarationDir": "./dist/types"
   },
   "include": [
     "src/**/*",

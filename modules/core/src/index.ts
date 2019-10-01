@@ -8,7 +8,7 @@
 //
 import * as common from './common';
 
-export { BitGo } from './bitgo';
+export * from './bitgo';
 
 // Expose bitcoin and sjcl
 import * as utxoLib from 'bitgo-utxo-lib';

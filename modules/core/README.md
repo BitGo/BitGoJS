@@ -71,6 +71,10 @@ console.dir(result);
 ## More examples
 Further demos and examples in both Javascript and Typescript can be found in the [example](example) directory.
 
+# Using with Typescript
+
+`bitgo` is not yet compatible with the `noImplicitAny` compiler option. If you want to use this option in your project (and we recommend that you do), you must set the `skipLibCheck` option to supress errors about missing type definitions for dependencies of `bitgo`.
+
 # Usage in Browser
 
 Since version 6, `bitgo` includes a minified, browser-compatible bundle by default at `dist/browser/BitGoJS.min.js`. It can be copied from there directly into your project.
