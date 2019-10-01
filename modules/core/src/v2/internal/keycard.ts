@@ -5,6 +5,7 @@
 /**
  */
 import { isUndefined } from 'lodash';
+import { Keychain } from '../keychains';
 /**
  * Return the list of questions that will appear on the second page of the keycard
  * @param coin name of the coin
@@ -88,14 +89,14 @@ const generateQuestions = (coin: string) => {
 
 interface GetKeyDataOptions {
   encrypt: (params: {input: string, password: string}) => string,
-  userKeychain: any;
-  bitgoKeychain: any;
-  backupKeychain: any;
+  userKeychain: Keychain;
+  bitgoKeychain: Keychain;
+  backupKeychain: Keychain;
   coinShortName: string;
-  passphrase: string;
-  passcodeEncryptionCode: string;
-  walletKeyID: string;
-  backupKeyID: string
+  passphrase?: string;
+  passcodeEncryptionCode?: string;
+  walletKeyID?: string;
+  backupKeyID?: string
 }
 
 /**
@@ -112,7 +113,7 @@ function getKeyData(options: GetKeyDataOptions): any {
     passphrase,
     passcodeEncryptionCode,
     walletKeyID,
-    backupKeyID
+    backupKeyID,
   } = options;
 
   // When using just 'generateWallet', we get back an unencrypted prv for the backup keychain
@@ -129,7 +130,7 @@ function getKeyData(options: GetKeyDataOptions): any {
   if (passphrase && passcodeEncryptionCode) {
     encryptedWalletPasscode = encrypt({
       input: passphrase,
-      password: passcodeEncryptionCode
+      password: passcodeEncryptionCode,
     });
   }
 
@@ -138,25 +139,25 @@ function getKeyData(options: GetKeyDataOptions): any {
     user: {
       title: 'A: User Key',
       desc: 'This is your private key, encrypted with your passcode.',
-      data: userKeychain.encryptedPrv
+      data: userKeychain.encryptedPrv,
     },
     backup: {
       title: 'B: Backup Key',
       desc: 'This is your backup private key, encrypted with your passcode.',
-      data: backupKeychain.encryptedPrv
+      data: backupKeychain.encryptedPrv,
     },
     bitgo: {
       title: 'C: BitGo Public Key',
       desc: 'This is the public part of the key that BitGo will use to ' +
         'co-sign transactions\r\nwith you on your wallet.',
-      data: bitgoKeychain.pub
+      data: bitgoKeychain.pub,
     },
     passcode: {
       title: 'D: Encrypted Wallet Password',
       desc: 'This is the wallet  password, encrypted client-side ' +
         'with a key held by\r\nBitGo.',
-      data: encryptedWalletPasscode
-    }
+      data: encryptedWalletPasscode,
+    },
   };
 
   if (walletKeyID) {
@@ -188,14 +189,14 @@ function getKeyData(options: GetKeyDataOptions): any {
         `This is the public key held at ${backupKeyProviderName}` +
         `, an ${coinShortName} recovery service. If you lose\r\nyour key, ${backupKeyProviderName}` +
         ' will be able to sign transactions to recover funds.',
-      data: backupKeychain.pub
+      data: backupKeychain.pub,
     };
   } else if (isUndefined(backupKeychain.encryptedPrv)) {
     // User supplied the xpub
     qrData.backup = {
       title: 'B: Backup Key',
       desc: 'This is the public portion of your backup key, which you provided.',
-      data: backupKeychain.pub
+      data: backupKeychain.pub,
     };
   }
 

@@ -20,9 +20,9 @@ import { PendingApprovals } from './pendingApprovals';
 import { Keychain, Keychains, KeyIndices } from './keychains';
 import { Enterprises } from './enterprises';
 
-export interface TransactionOutput {
+export interface TransactionRecipient {
   address: string;
-  amount: string;
+  amount: string | number;
 }
 
 export interface TransactionFee {
@@ -34,9 +34,9 @@ export interface TransactionFee {
 export interface TransactionExplanation {
   displayOrder: string[];
   id: string;
-  outputs: TransactionOutput[];
+  outputs: TransactionRecipient[];
   outputAmount: string;
-  changeOutputs: TransactionOutput[];
+  changeOutputs: TransactionRecipient[];
   changeAmount: string;
   fee: TransactionFee;
 }
@@ -52,11 +52,11 @@ export interface VerifyAddressOptions {
   keychains?: {
     pub: string;
   }[];
-  coinSpecific?: CoinSpecific;
+  coinSpecific?: AddressCoinSpecific;
 }
 
 export interface TransactionParams {
-  recipients?: TransactionOutput[];
+  recipients?: TransactionRecipient[];
   walletPassphrase?: string;
   type?: string;
 }
@@ -151,7 +151,7 @@ export interface TransactionPrebuild {
   buildParams?: any;
 }
 
-export interface CoinSpecific {
+export interface AddressCoinSpecific {
   outputScript?: string;
   redeemScript?: string;
   witnessScript?: string;
@@ -530,7 +530,7 @@ export abstract class BaseCoin {
   /**
    * Return wether the given m of n wallet signers/ key amounts are valid for the coin
    */
-  isValidMofNSetup({ m, n }: { m: number; n: number }): boolean {
+  isValidMofNSetup({ m, n }: { m?: number; n?: number }): boolean {
     return m === 2 && n === 3;
   }
 

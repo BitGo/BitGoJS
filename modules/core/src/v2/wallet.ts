@@ -8,12 +8,9 @@ import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { AddressGenerationError } from '../errors';
 import {
-  BaseCoin,
-  CoinSpecific,
-  FullySignedTransaction,
-  HalfSignedTransaction,
-  SignedTransaction, TransactionPrebuild,
-  VerificationOptions,
+    BaseCoin,
+    SignedTransaction, TransactionPrebuild,
+    VerificationOptions,
 } from './baseCoin';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Eth } from './coins';
@@ -22,41 +19,300 @@ import { drawKeycard } from './internal/keycard';
 import { Keychain } from './keychains';
 import { TradingAccount } from './trading/tradingAccount';
 import { NodeCallback } from './types';
-import { PendingApproval } from './pendingApproval';
+import { PendingApproval, PendingApprovalData } from './pendingApproval';
 import { RequestTracer } from './internal/util';
 
 const debug = debugLib('bitgo:v2:wallet');
 const co = Bluebird.coroutine;
 
+type ManageUnspents = 'consolidate' | 'fanout';
+
 export interface MaximumSpendableOptions {
+    minValue?: number;
+    maxValue?: number;
+    minHeight?: number;
+    minConfirms?: number;
+    enforceMinConfirmsForChange?: boolean;
+    feeRate?: number;
+    maxFeeRate?: number;
+    recipientAddress?: string;
+    limit?: number;
+    target?: number;
+    plainTarget?: number;
+}
+
+export interface MaximumSpendable {
+    maximumSpendable: number;
+    coin: string;
+}
+
+export interface Memo {
+    value: string;
+    type: string;
+}
+
+export interface PrebuildTransactionOptions {
+    reqId?: RequestTracer;
+    recipients?: {
+        address: string;
+        amount: string | number;
+    }[];
+    numBlocks?: number;
+    feeRate?: number;
+    maxFeeRate?: number;
+    minConfirms?: number;
+    enforceMinConfirmsForChange?: boolean;
+    targetWalletUnspents?: number;
+    minValue?: number;
+    maxValue?: number;
+    sequenceId?: number;
+    lastLedgerSequence?: number;
+    ledgerSequenceDelta?: string;
+    gasPrice?: number;
+    noSplitChange?: boolean;
+    unspents?: any[];
+    changeAddress?: string;
+    validFromBlock?: number;
+    validToBlock?: number;
+    instant?: boolean;
+    memo?: Memo;
+    addressType?: string;
+    hop?: boolean;
+    walletPassphrase?: string;
+}
+
+export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
+    prebuildTx?: string;
+    verification?: VerificationOptions;
+}
+
+export interface PrebuildTransactionResult extends TransactionPrebuild {
+    walletId: string;
+}
+
+export interface WalletSignTransactionOptions {
+    txPrebuild?: TransactionPrebuild;
+    prv?: string;
+    isLastSignature?: boolean;
+}
+
+export interface GetUserPrvOptions {
+    keychain?: Keychain;
+    key?: Keychain;
+    prv?: string;
+    coldDerivationSeed?: string;
+    walletPassphrase?: string;
+}
+
+export interface WalletCoinSpecific {
+  tokenFlushThresholds?: any;
+  addressVersion?: number;
+  baseAddress?: string;
+}
+
+export interface PaginationOptions {
+  prevId?: string;
+  limit?: number;
+}
+
+export interface GetTransactionOptions extends PaginationOptions {
+  txHash?: string;
+}
+
+export interface TransfersOptions extends PaginationOptions {
+  txHash?: string;
+  allTokens?: string;
+  searchLabel?: string;
+  address?: string[] | string;
+  dateGte?: string;
+  dateLt?: string;
+  valueGte?: string;
+  valueLt?: string;
+  includeHex?: boolean;
+  state?: string[] | string;
+  type?: string;
+}
+
+export interface GetTransferOptions {
+  id?: string;
+}
+
+export interface TransferBySequenceIdOptions {
+  sequenceId?: string;
+}
+
+export interface UnspentsOptions extends PaginationOptions {
   minValue?: number;
   maxValue?: number;
   minHeight?: number;
   minConfirms?: number;
+  target?: number;
+  segwit?: boolean;
+  chains?: number[];
+}
+
+export interface ConsolidateUnspentsOptions {
+  walletPassphrase?: string;
+  xprv?: string;
+  minValue?: number;
+  maxValue?: number;
+  minHeight?: number
+  numUnspentsToMake?: number;
+  feeTxConfirmTarget?: number;
+  limit?: number;
+  minConfirms?: number;
   enforceMinConfirmsForChange?: boolean;
   feeRate?: number;
   maxFeeRate?: number;
-  recipientAddress?: string;
-  limit?: number;
-  target?: number;
-  plainTarget?: number;
+  maxFeePercentage?: number;
+  comment?: string;
+  otp?: string;
 }
 
-export interface MaximumSpendable {
-  maximumSpendable: number;
-  coin: string;
+export interface FanoutUnspentsOptions {
+  walletPassphrase?: string;
+  xprv?: string;
+  minValue?: number;
+  maxValue?: number;
+  minHeight?: number
+  maxNumInputsToUse?: number;
+  numUnspentsToMake?: number;
+  minConfirms?: number;
+  enforceMinConfirmsForChange?: boolean;
+  feeRate?: number;
+  maxFeeRate?: number;
+  maxFeePercentage?: number;
+  feeTxConfirmTarget?: number;
+  comment?: string;
+  otp?: string;
 }
 
-export interface Memo {
-  value: string;
-  type: string;
+export interface SweepOptions {
+  address?: string;
+  walletPassphrase?: string;
+  xprv?: string;
+  otp?: string;
+  feeRate?: number;
+  maxFeeRate?: number;
+  feeTxConfirmTarget?: number;
 }
 
-export interface PrebuildTransactionOptions {
+export interface FreezeOptions {
+  duration?: number;
+}
+
+export interface TransferCommentOptions {
+  id?: string;
+  comment?: string;
+}
+
+export interface AddressesOptions extends PaginationOptions {
+  mine?: boolean;
+  sort?: number;
+  labelContains?: string;
+  segwit?: boolean;
+  chains?: number[];
+}
+
+export interface GetAddressOptions {
+  address?: string;
+  id?: string;
   reqId?: RequestTracer;
+}
+
+export interface CreateAddressOptions {
+  chain?: number;
+  gasPrice?: number | string;
+  count?: number;
+  label?: string;
+  lowPriority?: boolean;
+}
+
+export interface UpdateAddressOptions {
+  label?: string;
+  address?: string;
+}
+
+export interface SimulateWebhookOptions {
+  webhookId?: string;
+  transferId?: string;
+  pendingApprovalId?: string;
+}
+
+export interface ModifyWebhookOptions {
+  url?: string;
+  type?: string;
+}
+
+export interface GetPrvOptions {
+  prv?: string;
+  walletPassphrase?: string;
+}
+
+export interface CreateShareOptions {
+  user?: string;
+  permissions?: string;
+  keychain?: {
+    pub?: string;
+    encryptedPrv?: string;
+    fromPubKey?: string;
+    toPubKey?: string;
+    path?: string;
+  },
+  reshare?: boolean;
+  message?: string;
+  disableEmail?: boolean;
+}
+
+export interface ShareWalletOptions {
+  email?: string;
+  permissions?: string;
+  walletPassphrase?: string;
+  message?: string;
+  reshare?: boolean;
+  skipKeychain?: boolean;
+  disableEmail?: boolean;
+}
+
+export interface RemoveUserOptions {
+  userId?: string;
+}
+
+export interface AccelerateTransactionOptions {
+  cpfpTxIds?: string[];
+  cpfpFeeRate?: number;
+  noCpfpFeeRate?: boolean;
+  maxFee?: number;
+  noMaxFee?: boolean;
   recipients?: {
     address: string;
     amount: string;
+  }[];
+}
+
+export interface SubmitTransactionOptions {
+  otp?: string;
+  txHex?: string;
+  halfSigned?: string;
+}
+
+export interface SendOptions {
+  address?: string;
+  amount?: number | string;
+  data?: string;
+  message?: string;
+  walletPassphrase?: string;
+  prv?: string;
+  minConfirms?: number;
+  enforceMinConfirmsForChange?: number;
+}
+
+export interface SendManyOptions {
+  reqId?: RequestTracer;
+  recipients?: {
+    address: string;
+    amount: string | number;
+    data?: string;
   }[];
   numBlocks?: number;
   feeRate?: number;
@@ -64,6 +320,7 @@ export interface PrebuildTransactionOptions {
   minConfirms?: number;
   enforceMinConfirmsForChange?: boolean;
   targetWalletUnspents?: number;
+  message?: string;
   minValue?: number;
   maxValue?: number;
   sequenceId?: number;
@@ -71,48 +328,87 @@ export interface PrebuildTransactionOptions {
   ledgerSequenceDelta?: string;
   gasPrice?: number;
   noSplitChange?: boolean;
-  unspents?: any[];
+  unspents?: string[];
+  comment?: string;
+  otp?: string;
   changeAddress?: string;
-  validFromBlock?: number;
-  validToBlock?: number;
   instant?: boolean;
   memo?: Memo;
-  addressType?: string;
-  hop?: boolean;
+}
+
+interface WalletData {
+  id: string;
+  approvalsRequired: number;
+  balance: number;
+  confirmedBalance: number;
+  spendableBalance: number;
+  balanceString: string;
+  confirmedBalanceString: string;
+  spendableBalanceString: string;
+  coin: string;
+  label: string;
+  keys: string[];
+  receiveAddress: {
+    address: string;
+  };
+  migratedFrom?: string;
+  coinSpecific: WalletCoinSpecific;
+  pendingApprovals: PendingApprovalData[];
+  enterprise: string;
+}
+
+export interface RecoverTokenOptions {
+  tokenContractAddress?: string;
+  recipient?: string;
+  broadcast?: boolean;
   walletPassphrase?: string;
-}
-
-export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
-  prebuildTx?: string;
-  verification?: VerificationOptions;
-}
-
-export interface PrebuildTransactionResult extends TransactionPrebuild {
-  walletId: string;
-}
-
-export interface WalletSignTransactionOptions {
-  txPrebuild?: TransactionPrebuild;
   prv?: string;
-  isLastSignature?: boolean;
 }
 
-export interface GetUserPrvOptions {
-  keychain?: Keychain;
-  key?: Keychain;
-  prv?: string;
-  coldDerivationSeed?: string;
-  walletPassphrase?: string;
+export interface ChangeFeeOptions {
+  txid?: string;
+  fee?: string;
 }
 
-type ManageUnspents = 'consolidate' | 'fanout';
+export interface CreatePolicyRuleOptions {
+  id?: string;
+  type?: string;
+  message?: string;
+  condition?: unknown;
+  action?: unknown;
+}
+
+export interface SetPolicyRuleOptions {
+  id?: string;
+  type?: string;
+  message?: string;
+  condition?: unknown;
+  action?: unknown;
+}
+
+export interface RemovePolicyRuleOptions {
+  id?: string;
+  message?: string;
+}
+
+export interface DownloadKeycardOptions {
+  jsPDF?: any;
+  QRCode?: any;
+  userKeychain?: Keychain;
+  backupKeychain?: Keychain;
+  bitgoKeychain?: Keychain;
+  passphrase?: string;
+  passcodeEncryptionCode?: string;
+  activationCode?: string;
+  walletKeyID?: string;
+  backupKeyID?: string;
+}
 
 export class Wallet {
-
   public readonly bitgo: BitGo;
   public readonly baseCoin: BaseCoin;
-  private _wallet: any;
-  private readonly _permissions?: any;
+  private _wallet: WalletData;
+  private readonly _permissions?: string[];
 
   constructor(bitgo: BitGo, baseCoin: BaseCoin, walletData: any) {
     this.bitgo = bitgo;
@@ -247,7 +543,7 @@ export class Wallet {
   /**
    * Get wallet properties which are specific to certain coin implementations
    */
-  coinSpecific(): CoinSpecific | undefined {
+  coinSpecific(): WalletCoinSpecific | undefined {
     return this._wallet.coinSpecific;
   }
 
@@ -280,8 +576,9 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  transactions(params: { prevId?: string, limit?: number } = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const query: any = {};
+  transactions(params: PaginationOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const query: PaginationOptions = {};
+
     if (params.prevId) {
       if (!_.isString(params.prevId)) {
         throw new Error('invalid prevId argument, expecting string');
@@ -309,10 +606,10 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  getTransaction(params: { prevId?: string, limit?: number, txHash?: string } = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getTransaction(params: GetTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['txHash'], [], callback);
 
-    const query: any = {};
+    const query: PaginationOptions = {};
     if (!_.isUndefined(params.prevId)) {
       if (!_.isString(params.prevId)) {
         throw new Error('invalid prevId argument, expecting string');
@@ -339,8 +636,8 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  transfers(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const query: any = {};
+  transfers(params: TransfersOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const query: TransfersOptions = {};
     if (params.prevId) {
       if (!_.isString(params.prevId)) {
         throw new Error('invalid prevId argument, expecting string');
@@ -451,7 +748,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  getTransfer(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getTransfer(params: GetTransferOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['id'], [], callback);
 
     return this.bitgo.get(this.url('/transfer/' + params.id))
@@ -464,7 +761,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  transferBySequenceId(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  transferBySequenceId(params: TransferBySequenceIdOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['sequenceId'], [], callback);
 
     return this.bitgo.get(this.url('/transfer/sequenceId/' + params.sequenceId))
@@ -509,7 +806,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  unspents(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  unspents(params: UnspentsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const query = _.pick(params, ['prevId', 'limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'segwit', 'chains']);
 
     return this.bitgo.get(this.url('/unspents'))
@@ -548,11 +845,9 @@ export class Wallet {
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
    *
    * @param callback
-   * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
    */
-  private manageUnspents(routeName: ManageUnspents, params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  private manageUnspents(routeName: ManageUnspents, params: ConsolidateUnspentsOptions | FanoutUnspentsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-
     return co(function *() {
       common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
@@ -591,16 +886,49 @@ export class Wallet {
   }
 
   /**
-   * {@see manageUnspents}
+   * Consolidate unspents on a wallet
+   *
+   * @param {Object} params - parameters object
+   * @param {String} params.walletPassphrase - the users wallet passphrase
+   * @param {String} params.xprv - the private key in string form if the walletPassphrase is not available
+   * @param {Number} params.feeRate - The fee rate to use for the consolidation in satoshis/kB
+   * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
+   * @param {Number} params.maxFeePercentage - the maximum relative portion that you're willing to spend towards fees
+   * @param {Number} params.feeTxConfirmTarget - estimate the fees to aim for first confirmation with this number of blocks
+   * @param {Number} params.minValue - the minimum value of unspents to use in satoshis
+   * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis
+   * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
+   * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
+   * @param {Boolean} params.enforceMinConfirmsForChange - if true, minConfirms also applies to change outputs
+   * @param {Number} params.limit                for routeName === 'consolidate'
+   *                 params.maxNumUnspentsToUse  for routeName === 'fanout'
+   *                  - maximum number of unspents you want to use in the transaction
+   * @param {Number} params.numUnspentsToMake - the number of new unspents to make
+   * @param callback
    */
-  consolidateUnspents(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  consolidateUnspents(params: ConsolidateUnspentsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.manageUnspents('consolidate', params, callback);
   }
 
   /**
-   * {@see manageUnspents}
+   * Fanout unspents on a wallet
+   *
+   * @param {Object} params - parameters object
+   * @param {String} params.walletPassphrase - the users wallet passphrase
+   * @param {String} params.xprv - the private key in string form if the walletPassphrase is not available
+   * @param {Number} params.minValue - the minimum value of unspents to use
+   * @param {Number} params.maxValue - the maximum value of unspents to use
+   * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
+   * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
+   * @param {Number} params.maxFeePercentage - the maximum proportion of an unspent you are willing to lose to fees
+   * @param {Number} params.feeTxConfirmTarget - estimate the fees to aim for first confirmation with this number of blocks
+   * @param {Number} params.feeRate - The desired fee rate for the transaction in satoshis/kB
+   * @param {Number} params.maxFeeRate - The max limit for a fee rate in satoshis/kB
+   * @param {Number} params.maxNumInputsToUse - the number of unspents you want to use in the transaction
+   * @param {Number} params.numUnspentsToMake - the number of new unspents to make
+   * @param callback
    */
-  fanoutUnspents(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  fanoutUnspents(params: FanoutUnspentsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.manageUnspents('fanout', params, callback);
   }
 
@@ -637,7 +965,7 @@ export class Wallet {
    * @param [callback]
    * @returns txHex {String} the txHex of the signed transaction
    */
-  sweep(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  sweep(params: SweepOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       params = params || {};
@@ -652,9 +980,9 @@ export class Wallet {
         if (_.isUndefined(value) || value === '0') {
           throw new Error('no funds to sweep');
         }
-        params.recipients = [{
+        (params as any).recipients = [{
           address: params.address,
-          amount: value
+          amount: value,
         }];
 
         return self.sendMany(params);
@@ -688,7 +1016,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  freeze(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  freeze(params: FreezeOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     params = params || {};
     common.validateParams(params, [], [], callback);
 
@@ -709,7 +1037,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  transferComment(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  transferComment(params: TransferCommentOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['id'], ['comment'], callback);
 
     return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/transfer/' + params.id + '/comment'))
@@ -724,10 +1052,10 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  addresses(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  addresses(params: AddressesOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, [], [], callback);
 
-    const query: any = {};
+    const query: AddressesOptions = {};
 
     if (params.mine) {
       query.mine = !!params.mine;
@@ -787,7 +1115,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  getAddress(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getAddress(params: GetAddressOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, [], ['address', 'id'], callback);
     let query;
     if (_.isUndefined(params.address) && _.isUndefined(params.id)) {
@@ -815,24 +1143,27 @@ export class Wallet {
    * array property named `addresses` containing `count` address objects
    * will be returned. Otherwise, a single address object is returned.
    *
-   * @param {Number} [chain] on which the new address should be created
-   * @param {(Number|String)} [gasPrice] gas price for new address creation, if applicable
-   * @param {String} [label] label for the new address(es)
-   * @param {Number} [count=1] number of new addresses which should be created (maximum 250)
-   * @param {Boolean} [lowPriority] Ethereum-specific param to create address using low priority fee address
+   * @param params
+   * @param {Number} params.chain on which the new address should be created
+   * @param {(Number|String)} params.gasPrice gas price for new address creation, if applicable
+   * @param {String} params.label label for the new address(es)
+   * @param {Number} params.count=1 number of new addresses which should be created (maximum 250)
+   * @param {Boolean} params.lowPriority Ethereum-specific param to create address using low priority fee address
    * @param callback
    */
-  createAddress({
-    chain = undefined,
-    gasPrice = undefined,
-    count = 1,
-    label = undefined,
-    lowPriority = undefined
-  } = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  createAddress(params: CreateAddressOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
-      const addressParams: any = {};
+      const addressParams: CreateAddressOptions = {};
       const reqId = new RequestTracer();
+
+      const {
+        chain,
+        gasPrice,
+        label,
+        lowPriority,
+        count = 1,
+      } = params;
 
       if (!_.isUndefined(chain)) {
         if (!_.isInteger(chain)) {
@@ -902,7 +1233,7 @@ export class Wallet {
       }
 
       return {
-        addresses: yield Promise.all(newAddresses)
+        addresses: yield Promise.all(newAddresses),
       };
     }).call(this).asCallback(callback);
   }
@@ -913,10 +1244,14 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  updateAddress(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  updateAddress(params: UpdateAddressOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       const address = params.address;
+
+      if (!_.isString(address)) {
+        throw new Error('missing required string parameter address');
+      }
 
       const putParams = _.pick(params, ['label']);
       const url = self.url('/address/' + encodeURIComponent(address));
@@ -930,8 +1265,8 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  listWebhooks(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const query: any = {};
+  listWebhooks(params: PaginationOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const query: PaginationOptions = {};
     if (params.prevId) {
       if (!_.isString(params.prevId)) {
         throw new Error('invalid prevId argument, expecting string');
@@ -961,7 +1296,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  simulateWebhook(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  simulateWebhook(params: SimulateWebhookOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['webhookId'], ['transferId', 'pendingApprovalId'], callback);
 
     const hasTransferId = !!params.transferId;
@@ -992,7 +1327,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  addWebhook(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  addWebhook(params: ModifyWebhookOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['url', 'type'], [], callback);
 
     return this.bitgo.post(this.url('/webhooks'))
@@ -1006,7 +1341,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  removeWebhook(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  removeWebhook(params: ModifyWebhookOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['url', 'type'], [], callback);
 
     return this.bitgo.del(this.url('/webhooks'))
@@ -1023,7 +1358,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  getEncryptedUserKeychain(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getEncryptedUserKeychain(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     const tryKeyChain = co(function *(index: number) {
       if (!self._wallet.keys || index >= self._wallet.keys.length) {
@@ -1050,7 +1385,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  getPrv(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getPrv(params: GetPrvOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       common.validateParams(params, [], ['walletPassphrase', 'prv'], callback);
@@ -1091,7 +1426,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  createShare(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  createShare(params: CreateShareOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['user', 'permissions'], [], callback);
 
     if (params.keychain && !_.isEmpty(params.keychain)) {
@@ -1112,7 +1447,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  shareWallet(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  shareWallet(params: ShareWalletOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       common.validateParams(params, ['email', 'permissions'], ['walletPassphrase', 'message'], callback);
@@ -1124,10 +1459,14 @@ export class Wallet {
       if (params.skipKeychain !== undefined && !_.isBoolean(params.skipKeychain)) {
         throw new Error('Expected skipKeychain to be a boolean. ');
       }
-      const needsKeychain = !params.skipKeychain && params.permissions.indexOf('spend') !== -1;
+      const needsKeychain = !params.skipKeychain && params.permissions && params.permissions.indexOf('spend') !== -1;
 
       if (params.disableEmail !== undefined && !_.isBoolean(params.disableEmail)) {
         throw new Error('Expected disableEmail to be a boolean.');
+      }
+
+      if (!_.isString(params.email)) {
+        throw new Error('missing required string parameter email');
       }
 
       const sharing = yield self.bitgo.getSharingKey({ email: params.email.toLowerCase() });
@@ -1155,7 +1494,7 @@ export class Wallet {
               encryptedPrv: newEncryptedPrv,
               fromPubKey: eckey.getPublicKeyBuffer().toString('hex'),
               toPubKey: sharing.pubkey,
-              path: sharing.path
+              path: sharing.path,
             };
           }
         } catch (e) {
@@ -1168,12 +1507,12 @@ export class Wallet {
         }
       }
 
-      const options: any = {
+      const options: CreateShareOptions = {
         user: sharing.userId,
         permissions: params.permissions,
         reshare: params.reshare,
         message: params.message,
-        disableEmail: params.disableEmail
+        disableEmail: params.disableEmail,
       };
 
       if (sharedKeychain) {
@@ -1193,7 +1532,7 @@ export class Wallet {
    * @param callback
    * @return {*}
    */
-  removeUser(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  removeUser(params: RemoveUserOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['userId'], [], callback);
 
     const userId = params.userId;
@@ -1375,7 +1714,7 @@ export class Wallet {
           txPrebuild,
           wallet: self,
           verification: verificationParams,
-          reqId: params.reqId
+          reqId: params.reqId,
         });
       } catch (e) {
         debug('Transaction prebuild failure:', e);
@@ -1420,7 +1759,7 @@ export class Wallet {
    * @param params
    * @param callback
    */
-  accelerateTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  accelerateTransaction(params: AccelerateTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       // TODO(BG-9349): change the last check to > 0 and the error message once platform allows multiple transactions to
@@ -1480,7 +1819,7 @@ export class Wallet {
    * - halfSigned: object containing transaction (txHex or txBase64) to submit
    * @param callback
    */
-  submitTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  submitTransaction(params: SubmitTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, [], ['otp', 'txHex'], callback);
     const hasTxHex = !!params.txHex;
     const hasHalfSigned = !!params.halfSigned;
@@ -1508,8 +1847,17 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  send(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  send(params: SendOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['address'], ['message', 'data'], callback);
+
+    if (_.isUndefined(params.amount)) {
+      throw new Error('missing required parameter amount');
+    }
+
+    if (_.isUndefined(params.address)) {
+      throw new Error('missing required parameter amount');
+    }
+
     const coin = this.baseCoin;
 
     const amount = new BigNumber(params.amount);
@@ -1521,15 +1869,17 @@ export class Wallet {
       throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
     }
 
-    params.recipients = [{
+    const recipients: SendManyOptions['recipients'] = [{
       address: params.address,
-      amount: params.amount
+      amount: params.amount,
     }];
+
     if (params.data && coin.transactionDataAllowed()) {
-      params.recipients[0].data = params.data;
+      recipients[0].data = params.data;
     }
 
-    return this.sendMany(params).nodeify(callback);
+    const sendManyOptions: SendManyOptions = Object.assign({}, params, { recipients });
+    return this.sendMany(sendManyOptions).nodeify(callback);
   }
 
   /**
@@ -1566,7 +1916,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  sendMany(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  sendMany(params: SendManyOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       common.validateParams(params, [], ['comment', 'otp'], callback);
@@ -1613,44 +1963,50 @@ export class Wallet {
    * @param params.prv the xprv
    * @param callback
    */
-  recoverToken(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  recoverToken(params: RecoverTokenOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       if (self.baseCoin.getFamily() !== 'eth') {
         throw new Error('token recovery only supported for eth wallets');
       }
 
-      return (self.baseCoin as Eth).recoverToken(
-        _.merge(params, { wallet: self })
-      );
+      const {
+        tokenContractAddress,
+        recipient,
+      } = params;
+
+      if (_.isUndefined(tokenContractAddress)) {
+        throw new Error('missing required string parameter tokenContractAddress');
+      }
+
+      if (_.isUndefined(recipient)) {
+        throw new Error('missing required string parameter recipient');
+      }
+
+      const recoverTokenOptions = Object.assign({ tokenContractAddress, recipient }, params, { wallet: self });
+      return (self.baseCoin as Eth).recoverToken(recoverTokenOptions);
     }).call(this).asCallback(callback);
   }
 
   /**
    * Get transaction metadata for the oldest transaction that is still pending or attempted
-   * @param callback
    * @param params
-   * @param params.walletId [Optional] The ID of the wallet (must provide one of walletId and enterpriseId)
-   * @param params.enterpriseId [Optional] The ID of the enterprise (must provide one of walletId and enterpriseId)
+   * @param callback
    * @returns {Object} Object with txid, walletId, tx, and fee (if supported for coin)
    */
-  getFirstPendingTransaction(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function *() {
-      const query = { walletId: self.id() };
-      return internal.getFirstPendingTransaction(query, self.baseCoin, self.bitgo);
-    }).call(this).asCallback(callback);
+  getFirstPendingTransaction(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return internal.getFirstPendingTransaction({ walletId: this.id() }, this.baseCoin, this.bitgo).asCallback(callback);
   }
 
   /**
    * Change the fee on the pending transaction that corresponds to the given txid to the given new fee
    * @param params
    * @param {String} params.txid The transaction Id corresponding to the transaction whose fee is to be changed
-   * @param {Number} params.fee The new fee to apply to the denoted transaction
+   * @param {String} params.fee The new fee to apply to the denoted transaction
    * @param callback
    * @returns {String} The transaction ID of the new transaction that contains the new fee rate
    */
-  changeFee(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  changeFee(params: ChangeFeeOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       common.validateParams(params, ['txid', 'fee'], [], callback);
@@ -1667,8 +2023,9 @@ export class Wallet {
    * @param {String} params.url The Url to retrieve info from
    * @param callback
    * @returns {Object} The info returned from the merchant server
+   * @deprecated
    */
-  getPaymentInfo(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getPaymentInfo(params: { url?: string; } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *coGetPaymentInfo() {
       params = params || {};
@@ -1689,14 +2046,13 @@ export class Wallet {
    * @param {String} params.expires {String} - ISO Date format of when the payment request expires
    * @param callback
    * @returns {Object} The info returned from the merchant server Payment Ack
+   * @deprecated
    */
-  sendPaymentResponse(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function *coSendPaymentResponse() {
-      return self.bitgo.post(self.url('/sendPayment'))
-        .send(params)
-        .result();
-    }).call(this).asCallback(callback);
+  sendPaymentResponse(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return this.bitgo.post(this.url('/sendPayment'))
+      .send(params)
+      .result()
+      .asCallback(callback);
   }
 
   /**
@@ -1707,7 +2063,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  createPolicyRule(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  createPolicyRule(params: CreatePolicyRuleOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       common.validateParams(params, ['id', 'type'], ['message'], callback);
@@ -1759,7 +2115,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  removePolicyRule(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  removePolicyRule(params: RemovePolicyRuleOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function *() {
       common.validateParams(params, ['id'], ['message'], callback);
@@ -1776,7 +2132,7 @@ export class Wallet {
    * @param callback
    * @returns {*}
    */
-  remove(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  remove(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.bitgo.del(this.url()).result().asCallback(callback);
   }
 
@@ -1808,7 +2164,7 @@ export class Wallet {
    *   * backupKeyID - the Key ID used for deriving a cold wallet's backup key
    * @returns {*}
    */
-  downloadKeycard(params: any = {}): void {
+  downloadKeycard(params: DownloadKeycardOptions = {}): void {
     if (!window || !window.location) {
       throw new Error('The downloadKeycard function is only callable within a browser.');
     }
@@ -1824,7 +2180,7 @@ export class Wallet {
       passcodeEncryptionCode,
       walletKeyID,
       backupKeyID,
-      activationCode = Math.floor(Math.random() * 900000 + 100000).toString()
+      activationCode = Math.floor(Math.random() * 900000 + 100000).toString(),
     } = params;
 
     if (!jsPDF || typeof jsPDF !== 'function') {

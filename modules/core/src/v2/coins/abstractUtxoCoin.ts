@@ -11,14 +11,14 @@ import { UnspentType } from '@bitgo/unspents/dist/codes';
 import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
 import {
-  BaseCoin, CoinSpecific,
+  BaseCoin, AddressCoinSpecific,
   ExtraPrebuildParamsOptions, KeychainsTriplet,
   PrecreateBitGoOptions, PresignTransactionOptions, SupplementGenerateWalletOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyRecoveryTransactionOptions,
   VerifyTransactionOptions,
   TransactionParams as BaseTransactionParams,
-  TransactionPrebuild as BaseTransactionPrebuild, VerificationOptions,
+  TransactionPrebuild as BaseTransactionPrebuild, VerificationOptions, TransactionRecipient,
 } from '../baseCoin';
 import { Keychain, KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
@@ -38,7 +38,7 @@ export interface VerifyAddressOptions extends BaseVerifyAddressOptions {
 
 export interface Output {
   address: string;
-  amount: string;
+  amount: string | number;
   external?: boolean;
 }
 
@@ -137,7 +137,7 @@ export interface AddressDetails {
   chain: number;
   index: number;
   coin: string;
-  coinSpecific: CoinSpecific;
+  coinSpecific: AddressCoinSpecific;
   addressType?: string;
 }
 
@@ -409,7 +409,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    * Determine an address' type based on its witness and redeem script presence
    * @param addressDetails
    */
-  static inferAddressType(addressDetails: { coinSpecific: CoinSpecific }): string | null {
+  static inferAddressType(addressDetails: { coinSpecific: AddressCoinSpecific }): string | null {
     if (_.isObject(addressDetails.coinSpecific)) {
       if (_.isString(addressDetails.coinSpecific.redeemScript) && _.isString(addressDetails.coinSpecific.witnessScript)) {
         return Codes.UnspentTypeTcomb('p2shP2wsh');
@@ -480,7 +480,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const allOutputs = [...explanation.outputs, ...explanation.changeOutputs];
 
       // verify that each recipient from txParams has their own output
-      const expectedOutputs = _.get(txParams, 'recipients', []);
+      const expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]);
       const missingOutputs = AbstractUtxoCoin.findMissingOutputs(expectedOutputs, allOutputs);
 
       /**

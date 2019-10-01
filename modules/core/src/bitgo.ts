@@ -360,7 +360,7 @@ export interface ListWebhookNotificationsOptions {
   limit?: number;
 }
 
-export interface SimulateWebhookOptions {
+export interface BitGoSimulateWebhookOptions {
   webhookId: string;
   blockId: string;
 }
@@ -2188,7 +2188,7 @@ export class BitGo {
    * @param callback
    * @returns {*}
    */
-  simulateWebhook(params: SimulateWebhookOptions, callback?: NodeCallback<any>): Bluebird<any> {
+  simulateWebhook(params: BitGoSimulateWebhookOptions, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['webhookId', 'blockId'], [], callback);
     if (!_.isString(params.webhookId)) {
       throw new Error('required string webhookId');
