@@ -31,51 +31,48 @@ export interface Tokens {
 }
 
 // Get the list of ERC-20 tokens from statics and format it properly
-const formattedErc20Tokens = coins.reduce((acc, coin) => {
-  if (!(coin instanceof Erc20Coin)) {
-    return acc;
+const formattedErc20Tokens = coins.reduce((acc: Erc20TokenConfig[], coin) => {
+  if (coin instanceof Erc20Coin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'eth' : 'teth',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
   }
-  acc.push({
-    type: coin.name,
-    coin: coin.network.type === NetworkType.MAINNET ? 'eth' : 'teth',
-    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-    name: coin.fullName,
-    tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
-    decimalPlaces: coin.decimalPlaces,
-  });
   return acc;
-}, [] as Erc20TokenConfig[]);
+}, []);
 
 // Get the list of Stellar tokens from statics and format it properly
-const formattedStellarTokens = coins.reduce((acc, coin) => {
-  if (!(coin instanceof StellarCoin)) {
-    return acc;
+const formattedStellarTokens = coins.reduce((acc: StellarTokenConfig[], coin) => {
+  if (coin instanceof StellarCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      decimalPlaces: coin.decimalPlaces,
+    });
   }
-  acc.push({
-    type: coin.name,
-    coin: coin.network.type === NetworkType.MAINNET ? 'xlm' : 'txlm',
-    network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
-    name: coin.fullName,
-    decimalPlaces: coin.decimalPlaces,
-  });
   return acc;
-}, [] as StellarTokenConfig[]);
+}, []);
 
 // Get the list of OFC tokens from statics and format it properly
-const formattedOfcCoins = coins.reduce((acc, coin) => {
-  if (!(coin instanceof OfcCoin)) {
-    return acc;
+const formattedOfcCoins = coins.reduce((acc: OfcTokenConfig[], coin) => {
+  if (coin instanceof OfcCoin) {
+    acc.push({
+      type: coin.name,
+      coin: 'ofc',
+      backingCoin: coin.asset,
+      name: coin.fullName,
+      decimalPlaces: coin.decimalPlaces,
+      isFiat: coin.kind === CoinKind.FIAT,
+    });
   }
-  acc.push({
-    type: coin.name,
-    coin: 'ofc',
-    backingCoin: coin.asset,
-    name: coin.fullName,
-    decimalPlaces: coin.decimalPlaces,
-    isFiat: coin.kind === CoinKind.FIAT,
-  });
   return acc;
-}, [] as OfcTokenConfig[]);
+}, []);
 
 export const tokens: Tokens = {
   // network name for production environments
