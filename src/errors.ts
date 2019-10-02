@@ -40,10 +40,17 @@ export class MissingRequiredCoinFeatureError extends BitGoStaticsError {
   }
 }
 
-export class InvalidContractAddress extends BitGoStaticsError {
+export class InvalidContractAddressError extends BitGoStaticsError {
   public constructor(coinName: string, contractAddress: string) {
     super(`invalid contract address '${contractAddress}' for coin '${coinName}'`);
-    Object.setPrototypeOf(this, InvalidContractAddress.prototype);
+    Object.setPrototypeOf(this, InvalidContractAddressError.prototype);
+  }
+}
+
+export class InvalidDomainError extends BitGoStaticsError {
+  public constructor(coinName: string, domain: string) {
+    super(`invalid domain '${domain}' for coin '${coinName}'`);
+    Object.setPrototypeOf(this, InvalidDomainError.prototype);
   }
 }
 
@@ -52,6 +59,6 @@ export class ConflictingCoinFeaturesError extends BitGoStaticsError {
     super(
       `coin feature(s) for coin '${coinName}' cannot be both required and disallowed: ${conflictingFeatures.join(', ')}`
     );
-    Object.setPrototypeOf(this, InvalidContractAddress.prototype);
+    Object.setPrototypeOf(this, ConflictingCoinFeaturesError.prototype);
   }
 }
