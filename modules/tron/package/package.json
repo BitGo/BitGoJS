@@ -1,7 +1,7 @@
 {
-  "name": "bitgo-account-lib",
+  "name": "tron",
   "version": "1.0.0",
-  "description": "Bitgo account library functions",
+  "description": "Bitgo's tron library functions",
   "main": "index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
@@ -13,7 +13,6 @@
     "compile": "npm run browserify && npm run webpack-prod",
     "compile-dev": "npm run browserify && npm run webpack-dev",
     "compile-test": "npm run browserify && npm run webpack-test",
-    "prepublishOnly": "npm run compile",
     "prepare": "npm run build",
     "browserify": "mkdir -p ./dist/browserify && browserify ./dist/src/index.js -s tron -o ./dist/browserify/tron.browserify.js",
     "test": "nyc -- mocha --opts test/mocha.opts \"test/unit/*.ts\""
