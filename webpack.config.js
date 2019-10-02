@@ -80,7 +80,7 @@ module.exports = function setupWebpack(env) {
       extensions: ['.js']
     },
     // Main project entry point
-    entry: path.join(__dirname, 'dist', 'browserify', 'BitGoJS.browserify.js'),
+    entry: path.join(__dirname, 'dist', 'browserify', 'tron.browserify.js'),
 
     // Output directory and filename
     output: {

@@ -1,6 +1,6 @@
 const tronweb = require('tronweb');
-const tronproto = require('../protobuf/tron_pb');
-const contractproto = require('../protobuf/Contract_pb');
+const tronproto = require('./protobuf/tron_pb');
+const contractproto = require('./protobuf/Contract_pb');
 
 import * as assert from 'assert';
 
