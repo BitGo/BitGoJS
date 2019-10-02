@@ -3,5 +3,6 @@ npm-debug.log
 dist/
 .nyc_output/
 browser/
-mochawesome-report/*
+mochawesome-report/
 .DS_STORE
+package/

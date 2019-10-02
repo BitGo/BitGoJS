@@ -1,3 +1,3 @@
-# BitGo Account Lib
+# TRON Account Lib
 
-Signing and transaction building logic for account-based coins.
+Signing and transaction building logic for TRON from BitGo.

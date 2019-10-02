@@ -120,7 +120,6 @@ export interface ParsedTransaction {
   // base58 encoded address
   toAddress: string;
   ownerAddress: string;
-
   amount: number;
 }
 

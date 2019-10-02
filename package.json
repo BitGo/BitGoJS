@@ -1,8 +1,8 @@
 {
-  "name": "bitgo-account-lib",
+  "name": "@bitgo/tron-lib",
   "version": "1.0.0",
-  "description": "Bitgo account library functions",
-  "main": "index.js",
+  "description": "Bitgo's tron account library functions",
+  "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
     "webpack-dev": "webpack --progress --colors --env.dev",

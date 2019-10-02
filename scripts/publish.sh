@@ -51,7 +51,7 @@ npm install
 # build
 npm run build
 echo "executing dry run publish of $PACKAGE_NAME@$PACKAGE_VERSION from ref $REF_NAME..."
-npm publish --dry-run
+npm publish --dry-run --access public
 confirm "Does everything look ok?"
 
 echo
