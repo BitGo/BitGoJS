@@ -1,4 +1,4 @@
-import Tron from '../../src/index';
+import Tron, { ParsedTransaction } from '../../src/index';
 import * as should from 'should';
 
 describe('Tron library should', function() {
@@ -63,8 +63,18 @@ describe('Tron library should', function() {
 
   it('get an base58 address', () => {
     const addr = Tron.getAddressFromPriKey(Buffer.from(prv, 'hex'));
-    const addr58 = Tron.getBase58Address(addr);
+    const addr58 = Tron.getBase58AddressFromByteArray(addr);
     should.equal(addr58, base58);
+  });
+
+  it('get an base58 address from hex', () => {
+    const addr58 = Tron.getBase58AddressFromHex(addressHex);
+    should.equal(addr58, base58);
+  });
+
+  it('get hex from base58 address', () => {
+    const hexAddr = Tron.getHexFromBase58Address(base58);
+    should.equal(hexAddr, addressHex);
   });
 
   it('sign a transaction', () => {
@@ -85,6 +95,19 @@ describe('Tron library should', function() {
     const pubBytes = Tron.hexStr2byteArray(pub); 
     const bytes = Tron.computeAddress(pubBytes);
     should.deepEqual(bytes, addrBytes);
+  });
+
+  it('should decode a transfer contract', () => {
+    const tron = new Tron('ttrx');
+    const parsedTx = tron.parseTransaction(tx.raw_data_hex) as ParsedTransaction;
+
+    const toAddress = Tron.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.to_address);
+    const ownerAddress = Tron.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.owner_address);
+    const amount = tx.raw_data.contract[0].parameter.value.amount;
+
+    should.equal(parsedTx.toAddress, toAddress);
+    should.equal(parsedTx.ownerAddress, ownerAddress);
+    should.equal(parsedTx.amount, amount);
   });
 
 });
