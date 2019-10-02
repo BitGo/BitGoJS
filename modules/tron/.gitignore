@@ -4,3 +4,4 @@ dist/
 .nyc_output/
 browser/
 mochawesome-report/*
+.DS_STORE
