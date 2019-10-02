@@ -25,7 +25,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@bitgo/statics": "1.6.1",
     "tronweb": "^2.7.2"
   },
   "devDependencies": {

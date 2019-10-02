@@ -2,7 +2,6 @@ const tronweb = require('tronweb');
 const tronproto = require('../protobuf/tron_pb');
 const contractproto = require('../protobuf/Contract_pb');
 
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import * as assert from 'assert';
 
 // this is a construct unique to tron
@@ -10,11 +9,9 @@ export type ByteArray = number[];
 export type Transaction = { txID: string, signature?: string[] };
 
 export default class Tron { 
-  baseCoin: Readonly<StaticsBaseCoin>;
 
   constructor(coinName: string) {
     // TODO: this will probably need to become more useful if we need to decode if based on network
-    // this.baseCoin = coins.get(coinName);
   }
 
   parseTransaction(base64EncodedHex: string): ParsedTransaction | ParsedAccountUpdatePermission {
