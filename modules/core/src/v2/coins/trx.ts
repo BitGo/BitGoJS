@@ -2,7 +2,8 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
-const tronWeb = require('tronweb');
+
+import Tron from '@bitgo/tron-lib';
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { MethodNotImplementedError } from '../../errors';
@@ -15,10 +16,29 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  TransactionExplanation,
 } from '../baseCoin';
 import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
+
+const co = Bluebird.coroutine;
+
+export interface TronSignTransactionOptions extends SignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string;
+}
+
+export interface TransactionPrebuild {
+  txHex: string;
+  txInfo: {
+    from: string;
+    to: string;
+    amount: string;
+    fee: number;
+    txID: string;
+  };
+}
 
 export class Trx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -62,7 +82,7 @@ export class Trx extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    return this.getCoinLibrary().isAddress(address);
+    return Tron.isAddress(address);
   }
 
   /**
@@ -72,7 +92,7 @@ export class Trx extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const account = tronWeb.utils.accounts.generateAccount();
+    const account = Tron.generateAccount();
     return {
       pub: account.publicKey,
       prv: account.privateKey,
@@ -83,7 +103,7 @@ export class Trx extends BaseCoin {
    * Get an instance of the library which can be used to perform low-level operations for this coin
    */
   getCoinLibrary() {
-    return tronWeb;
+    return Tron;
   }
 
   isValidXpub(xpub: string): boolean {
@@ -117,8 +137,10 @@ export class Trx extends BaseCoin {
     return Bluebird.resolve(true).asCallback(callback);
   }
 
-  signTransaction(params: SignTransactionOptions = {}): SignedTransaction {
-    throw new MethodNotImplementedError();
+  signTransaction(params: TronSignTransactionOptions): SignedTransaction {
+    const tx = { txID: params.txPrebuild.txInfo.txID };
+    // this prv should be hex-encoded
+    return Tron.signTransaction(params.prv, tx);
   }
 
   /**
@@ -160,7 +182,7 @@ export class Trx extends BaseCoin {
   signMessage(key: KeyPair, message: string | Buffer): Buffer {
     const toSign = this.toHexString(message);
 
-    let sig = tronWeb.Trx.signString(toSign, key.prv, true);
+    let sig = Tron.signString(toSign, key.prv, true);
 
     // remove the preceding 0x
     sig = sig.replace(/^0x/, '');
