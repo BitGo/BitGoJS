@@ -908,15 +908,22 @@ export class Xlm extends BaseCoin {
     _.forEach(trustlineOperations, op => {
       const opToken = this.getTokenNameFromStellarAsset(op.line);
       const tokenTrustline = _.find(txParams.trustlines, trustline => {
-        return trustline.token === opToken &&
-          ((_.isUndefined(trustline.limit) && op.limit === Xlm.maxTrustlineLimit) || // no limit was specified, max by default
-            trustline.limit === op.limit);
+        // Prepare the conditions to check for
+        // Limit will always be set in the operation, even if it was omitted from txParams in the following cases:
+        // 1. Action is 'add' - limit is set to Xlm.maxTrustlineLimit by default
+        // 2. Action is 'remove' - limit is set to '0'
+        const noLimit = _.isUndefined(trustline.limit);
+        const addTrustlineWithDefaultLimit = (trustline.action === 'add' && op.limit === Xlm.maxTrustlineLimit);
+        const removeTrustline = (trustline.action === 'remove' && op.limit === '0');
+        return (trustline.token === opToken &&
+          (trustline.limit === op.limit || (noLimit && (addTrustlineWithDefaultLimit || removeTrustline)))
+        );
       });
       if (!tokenTrustline) {
         throw new Error('transaction prebuild does not match expected trustline tokens');
       }
     });
-  };
+  }
 
   /**
    * Verify that a transaction prebuild complies with the original intention
