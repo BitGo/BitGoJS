@@ -331,7 +331,8 @@ export const coins = CoinMap.fromCoins([
     'xlm:VELO-GC7GMEKN2P5LKGOVW55WGHMVQRPPRPHIRFMIC75Z6WPYPYR7B3Z3WEKH',
     'Velo Token',
     7,
-    UnderlyingAsset['xlm:VELO-GC7GMEKN2P5LKGOVW55WGHMVQRPPRPHIRFMIC75Z6WPYPYR7B3Z3WEKH']
+    UnderlyingAsset['xlm:VELO-GC7GMEKN2P5LKGOVW55WGHMVQRPPRPHIRFMIC75Z6WPYPYR7B3Z3WEKH'],
+    'velo.org'
   ),
   terc20('terc', 'ERC Test Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.ERC),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),

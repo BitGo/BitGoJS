@@ -1,5 +1,5 @@
 import { BaseCoin, CoinFeature, CoinKind, UnderlyingAsset } from './base';
-import { InvalidContractAddress } from './errors';
+import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, Networks } from './networks';
 
 export interface AccountConstructorOptions {
@@ -54,6 +54,10 @@ export interface Erc20ConstructorOptions extends AccountConstructorOptions {
   contractAddress: string;
 }
 
+export interface StellarCoinConstructorOptions extends AccountConstructorOptions {
+  domain: string;
+}
+
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -81,7 +85,7 @@ export class Erc20Coin extends AccountCoinToken {
 
     // valid ERC 20 contract addresses are "0x" followed by 40 lowercase hex characters
     if (!options.contractAddress.match(/^0x[a-f0-9]{40}$/)) {
-      throw new InvalidContractAddress(options.name, options.contractAddress);
+      throw new InvalidContractAddressError(options.name, options.contractAddress);
     }
 
     this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
@@ -95,10 +99,19 @@ export class Erc20Coin extends AccountCoinToken {
  * the token code and the issuer account in the form: (t)xlm:<token>-<issuer>
  */
 export class StellarCoin extends AccountCoinToken {
-  constructor(options: AccountConstructorOptions) {
+  public domain: string;
+
+  constructor(options: StellarCoinConstructorOptions) {
     super({
       ...options,
     });
+
+    const domainPattern = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/;
+    if (options.domain !== '' && !options.domain.match(domainPattern)) {
+      throw new InvalidDomainError(options.name, options.domain);
+    }
+
+    this.domain = options.domain as string;
   }
 }
 
@@ -215,6 +228,8 @@ export function terc20(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param domain Domain of the token issuer (used to access token information from the issuer's stellar.toml file)
+ * See https://www.stellar.org/developers/guides/concepts/stellar-toml.html
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Stellar mainnet.
@@ -225,6 +240,7 @@ export function stellarToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  domain: string = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
@@ -234,12 +250,13 @@ export function stellarToken(
     new StellarCoin({
       name,
       fullName,
-      network,
-      prefix,
-      suffix,
-      features,
       decimalPlaces,
       asset,
+      domain,
+      features,
+      prefix,
+      suffix,
+      network,
       isToken: true,
     })
   );
@@ -252,6 +269,8 @@ export function stellarToken(
  * @param fullName Complete human-readable name of the token
  * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
  * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param domain Domain of the token issuer (used to access token information from the issuer's stellar.toml file)
+ * See https://www.stellar.org/developers/guides/concepts/stellar-toml.html
  * @param prefix? Optional token prefix. Defaults to empty string
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Stellar testnet.
@@ -262,10 +281,11 @@ export function tstellarToken(
   fullName: string,
   decimalPlaces: number,
   asset: UnderlyingAsset,
+  domain: string = '',
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   network: AccountNetwork = Networks.test.stellar
 ) {
-  return stellarToken(name, fullName, decimalPlaces, asset, features, prefix, suffix, network);
+  return stellarToken(name, fullName, decimalPlaces, asset, domain, features, prefix, suffix, network);
 }
