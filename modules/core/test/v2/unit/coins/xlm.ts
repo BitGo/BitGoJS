@@ -549,15 +549,21 @@ describe('XLM:', function() {
         const txParams = {
           type: 'trustline',
           recipients: [],
-          trustlines: [{
-            token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
-            action: 'add',
-            limit: '100000',
-          }],
+          trustlines: [
+            {
+              token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              action: 'add',
+              limit: '100000',
+            },
+            {
+              token: 'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+              action: 'remove',
+            },
+          ],
         };
 
         const buildResult = {
-          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
+          txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAAAyAAM4aEAAAAJAAAAAAAAAAAAAAACAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAYAAAABVFNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAAAAAAAAAAAAAAAAA=',
         };
 
         nock('https://test.bitgo.com')
