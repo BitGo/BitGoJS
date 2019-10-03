@@ -46,6 +46,35 @@ Environment: test
 Base URI: http://0.0.0.0:4000
 ```
 
+### Docker in production
+
+When running BitGo Express in production, we strongly recommended using HTTPS to secure your connections.
+
+If you have your own certificate, you can use it.
+
+Or, to generate a self-signed certificate, first make a directory and navigate into it:
+```bash
+$ mkdir certs
+$ cd certs
+```
+Then do the following and fill out the information that it prompts you for:
+```bash
+$ openssl req -newkey rsa:2048 -nodes -keyout cert.key -x509 -days 3650 -out cert.crt
+```
+This will output a key file ```cert.key``` and certificate file ```cert.crt```
+
+Finally you can run your docker container like this (note, replace ```/path/to``` with the full path to your ```certs``` folder):
+```bash
+$ docker run -it --volume /path/to/certs:/private -p 4000:4000 bitgosdk/express:latest -p 4000 -k /private/cert.key -c /private/cert.crt -e prod
+```
+
+BitGo Express should start on the specified port, 4000:
+```
+BitGo-Express running
+Environment: prod
+Base URI: https://0.0.0.0:4000
+```
+
 ### Building the docker container
 
 If you'd like to build the BitGo Express docker container yourself from the source code, first check out the latest release branch **rel/latest**, then run `docker build` from the project root. Here's the commands:
