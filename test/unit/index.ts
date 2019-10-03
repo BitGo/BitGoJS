@@ -77,6 +77,11 @@ describe('Tron library should', function() {
     should.equal(hexAddr, addressHex);
   });
 
+  it('detect an address', () => {
+    const addrDetect = Tron.isAddress(Tron.getHexFromBase58Address(base58));
+    should.equal(addrDetect, true);
+  });
+
   it('sign a transaction', () => {
     const prvArray = Tron.hexStr2byteArray(prv); 
     const signedTx = Tron.signTransaction(prvArray, tx);
@@ -99,7 +104,7 @@ describe('Tron library should', function() {
 
   it('should decode a transfer contract', () => {
     const tron = new Tron('ttrx');
-    const parsedTx = tron.parseTransaction(tx.raw_data_hex) as ParsedTransaction;
+    const parsedTx = Tron.parseTransaction(tx.raw_data_hex) as ParsedTransaction;
 
     const toAddress = Tron.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.to_address);
     const ownerAddress = Tron.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.owner_address);

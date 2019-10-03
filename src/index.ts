@@ -14,7 +14,7 @@ export default class Tron {
     // TODO: this will probably need to become more useful if we need to decode if based on network
   }
 
-  parseTransaction(base64EncodedHex: string): ParsedTransaction | ParsedAccountUpdatePermission {
+  static parseTransaction(base64EncodedHex: string): ParsedTransaction | ParsedAccountUpdatePermission {
     const bytes = Buffer.from(base64EncodedHex, 'hex');
     let raw;
 
@@ -40,7 +40,7 @@ export default class Tron {
     }
   }
 
-  decodeTransferContract(base64: string): ParsedTransaction {
+  static decodeTransferContract(base64: string): ParsedTransaction {
     const contractBytes = Buffer.from(base64, 'base64');
     let transferContract;
 
@@ -67,8 +67,16 @@ export default class Tron {
     };
   }
 
-  decodeAccountPermissionUpdateContract(base64: string): ParsedAccountUpdatePermission {
+  static decodeAccountPermissionUpdateContract(base64: string): ParsedAccountUpdatePermission {
     throw new Error('Not implemented yet.');
+  }
+
+  static generateAccount(): Account {
+    return tronweb.utils.accounts.generateAccount();
+  }
+
+  static isAddress(hexAddress: string): boolean {
+    return tronweb.isAddress(hexAddress);
   }
 
   static hexStr2byteArray(str: string): ByteArray {
@@ -125,4 +133,9 @@ export interface ParsedTransaction {
 
 export interface ParsedAccountUpdatePermission {
   // TODO: tbd
+}
+
+export interface Account {
+  publicKey: string;
+  privateKey: string;
 }
