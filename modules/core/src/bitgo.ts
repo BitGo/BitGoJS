@@ -19,6 +19,7 @@ import * as common from './common';
 import { EnvironmentName } from './v2/environments';
 import { NodeCallback, V1Network } from './v2/types';
 import { RequestTracer, Util } from './v2/internal/util';
+import { RequestTracer as IRequestTracer } from './v2/types';
 import * as Bluebird from 'bluebird';
 import co = Bluebird.coroutine;
 import pjson = require('../package.json');
@@ -332,7 +333,7 @@ export interface GetSharingKeyOptions {
 }
 
 export interface PingOptions {
-  reqId?: RequestTracer;
+  reqId?: IRequestTracer;
 }
 
 /**
@@ -413,7 +414,7 @@ export class BitGo {
   private readonly _promise: typeof Bluebird;
   private _validate: boolean;
   private readonly _proxy?: string;
-  private _reqId: RequestTracer;
+  private _reqId?: IRequestTracer;
   private _ecdhXprv?: string;
   private _extensionKey?: bitcoin.ECPair;
   private _markets?: any;
@@ -507,6 +508,7 @@ export class BitGo {
     this._refreshToken = params.refreshToken;
     this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
     this._promise = Bluebird;
+    this._reqId = undefined;
 
     // whether to perform extra client-side validation for some things, such as
     // address validation or signature validation. defaults to true, but can be
@@ -587,7 +589,7 @@ export class BitGo {
           thisReq.isV2Authenticated = false;
 
           thisReq.set('Authorization', 'Bearer ' + self._token);
-          return prototypicalEnd.apply(thisReq, arguments);
+          return prototypicalEnd.apply(thisReq, arguments as any);
         }
 
         thisReq.set('BitGo-Auth-Version', '2.0');
@@ -648,7 +650,7 @@ export class BitGo {
           thisReq.set('HMAC', requestProperties.hmac);
         }
 
-        return prototypicalEnd.apply(thisReq, arguments);
+        return prototypicalEnd.apply(thisReq, arguments as any);
       };
 
       // verify that the response received from the server is signed correctly
@@ -697,9 +699,9 @@ export class BitGo {
           // that gets monkey patched in at runtime, so this cast is required
           const reference: Bluebird<any> = (req.end() as unknown as Bluebird<any>)
             .then(req.verifyResponse);
-          lastPromise = reference.then.apply(reference, arguments);
+          lastPromise = reference.then.apply(reference, arguments as any);
         } else {
-          lastPromise = lastPromise.then.apply(lastPromise, arguments);
+          lastPromise = lastPromise.then.apply(lastPromise, arguments as any);
         }
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -744,7 +746,7 @@ export class BitGo {
    */
   token(tokenName: string, callback?: NodeCallback<BaseCoin>): Bluebird<BaseCoin> {
     const self = this;
-    return co(function *() {
+    return co<BaseCoin>(function *() {
       yield self.fetchConstants();
       return self.coin(tokenName);
     }).call(this).asCallback(callback);
@@ -1315,7 +1317,7 @@ export class BitGo {
    */
   authenticate(params: AuthenticateOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function *() {
+    return co<superagent.Response>(function *() {
       if (!_.isObject(params)) {
         throw new Error('required object params');
       }
@@ -1346,7 +1348,7 @@ export class BitGo {
         // tell the server that the client was forced to downgrade the authentication protocol
         authParams.forceV1Auth = true;
       }
-      const response = yield request.send(authParams);
+      const response: superagent.Response = yield request.send(authParams);
       // extract body and user information
       const body = response.body;
       self._user = body.user;
@@ -1572,7 +1574,7 @@ export class BitGo {
    */
   addAccessToken(params: AddAccessTokenOptions, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-    return co(function *() {
+    return co<superagent.Response>(function *() {
       if (!_.isString(params.label)) {
         throw new Error('required string label');
       }
@@ -2281,7 +2283,7 @@ export class BitGo {
   /**
    * Set a request tracer to provide request IDs during multi-request workflows
    */
-  setRequestTracer(reqTracer: RequestTracer) {
+  setRequestTracer(reqTracer: IRequestTracer) {
     if (reqTracer) {
       this._reqId = reqTracer;
     }

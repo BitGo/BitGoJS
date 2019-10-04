@@ -22,7 +22,7 @@ const debug = debugLib('bitgo:express');
 
 const BITGOEXPRESS_USER_AGENT = `BitGoExpress/${pjson.version} BitGoJS/${version}`;
 
-declare module 'express' {
+declare module 'express-serve-static-core' {
   export interface Request {
     bitgo: BitGo;
   }

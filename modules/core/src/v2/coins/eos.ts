@@ -409,7 +409,7 @@ export class Eos extends BaseCoin {
     headers,
   }: ExplainTransactionOptions): Bluebird<DeserializedEosTransaction> {
     const self = this;
-    return co(function*() {
+    return co<DeserializedEosTransaction>(function*() {
       const eosClientConfig = {
         chainId: self.getChainId(),
         transactionHeaders: headers,
@@ -463,7 +463,7 @@ export class Eos extends BaseCoin {
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
     const self = this;
-    return co(function*() {
+    return co<TransactionExplanation>(function*() {
       let transaction;
       try {
         transaction = yield self.deserializeTransaction(params);
@@ -533,7 +533,7 @@ export class Eos extends BaseCoin {
     walletPassphrase,
   }: RecoveryOptions): Bluebird<HDNode[]> {
     const self = this;
-    return co(function*() {
+    return co<HDNode[]>(function*() {
       const isKrsRecovery = backupKey.startsWith('xpub') && !userKey.startsWith('xpub');
       const isUnsignedSweep = backupKey.startsWith('xpub') && userKey.startsWith('xpub');
 
@@ -712,7 +712,7 @@ export class Eos extends BaseCoin {
    */
   recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
     const self = this;
-    return co(function*() {
+    return co<RecoveryTransaction>(function*() {
       if (!params.rootAddress) {
         throw new Error('missing required string rootAddress');
       }

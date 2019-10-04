@@ -297,7 +297,7 @@ export class Rmg extends AbstractUtxoCoin {
    * @param callback
    */
   explainTransaction(params: ExplainTransactionOptions, callback?: NodeCallback<TransactionExplanation>): Bluebird<TransactionExplanation> {
-    return co(function *() {
+    return co<TransactionExplanation>(function *() {
       const self = this;
       const transaction = prova.Transaction.fromHex(params.txHex);
       const id = transaction.getId();

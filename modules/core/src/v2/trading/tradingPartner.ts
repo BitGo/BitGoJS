@@ -44,7 +44,7 @@ export class TradingPartner {
    */
   checkBalance(currency: string, amount: string, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     const self = this;
-    return co(function* checkBalance() {
+    return co<boolean>(function* checkBalance() {
       const url = self.bitgo.microservicesUrl(
         `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.currentAccount.id}/tradingpartners/${self.accountId}/balance`
       );

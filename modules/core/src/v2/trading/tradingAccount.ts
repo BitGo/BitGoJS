@@ -72,7 +72,7 @@ export class TradingAccount {
    * @returns unsigned trade payload for the given parameters. This object should be stringified with JSON.stringify() before being submitted
    */
   buildPayload(params: BuildPayloadParameters, callback?: NodeCallback<Payload>): Bluebird<Payload> {
-    return co(function* buildTradePayload() {
+    return co<Payload>(function* buildTradePayload() {
       const url = this.bitgo.microservicesUrl(
         `/api/trade/v1/enterprise/${this.enterpriseId}/account/${this.id}/payload`
       );
@@ -187,7 +187,7 @@ export class TradingAccount {
    */
   signPayload(params: SignPayloadParameters, callback?): Bluebird<string> {
     const self = this;
-    return co(function* signPayload() {
+    return co<string>(function* signPayload() {
       const key = yield self.wallet.baseCoin.keychains().get({ id: self.wallet.keyIds()[0] });
       const prv = self.wallet.bitgo.decrypt({
         input: key.encryptedPrv,

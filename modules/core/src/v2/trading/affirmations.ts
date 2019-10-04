@@ -36,7 +36,7 @@ export class Affirmations {
    */
   list(status?: AffirmationStatus, callback?: NodeCallback<Affirmation[]>): Bluebird<Affirmation[]> {
     const self = this;
-    return co(function* list() {
+    return co<Affirmation[]>(function* list() {
       let url;
       if (self.account) {
         url = self.bitgo.microservicesUrl(
@@ -65,7 +65,7 @@ export class Affirmations {
    */
   get({ id, accountId }: GetAffirmationParameters, callback?: NodeCallback<Affirmation>): Bluebird<Affirmation> {
     const self = this;
-    return co(function* get() {
+    return co<Affirmation>(function* get() {
       const account = (self.account && self.account.id) || accountId;
       if (!account) {
         throw new Error('accountId must be provided in parameters for an enterprise context');

@@ -20,7 +20,7 @@ describe('Wallets', function() {
   let bitgo;
   let wallets;
   let testWallet;      // Test will create this wallet
-  const keychains = [];  // Test will create these keychains
+  const keychains: any[] = [];  // Test will create these keychains
 
   before(function(done) {
     nock.restore();

@@ -462,7 +462,7 @@ export class Eth extends BaseCoin {
    */
   querySequenceId(address: string, callback?: NodeCallback<number>): Bluebird<number> {
     const self = this;
-    return co(function*() {
+    return co<number>(function*() {
       // Get sequence ID using contract call
       const sequenceIdMethodSignature = optionalDeps.ethAbi.methodID('getNextSequenceId', []);
       const sequenceIdArgs = optionalDeps.ethAbi.rawEncode([], []);
@@ -636,7 +636,7 @@ export class Eth extends BaseCoin {
    */
   getAddressNonce(address: string, callback?: NodeCallback<number>): Bluebird<number> {
     const self = this;
-    return co(function*() {
+    return co<number>(function*() {
       // Get nonce for backup key (should be 0)
       let nonce = 0;
 
@@ -679,7 +679,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<OfflineVaultTxInfo>
   ): Bluebird<OfflineVaultTxInfo> {
     const self = this;
-    return co(function*() {
+    return co<OfflineVaultTxInfo>(function*() {
       const backupHDNode = utxoLib.HDNode.fromBase58(backupKey);
       const backupSigningKey = backupHDNode.getKey().getPublicKeyBuffer();
       const response: OfflineVaultTxInfo = {
@@ -720,7 +720,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<RecoveryInfo | OfflineVaultTxInfo>
   ): Bluebird<RecoveryInfo | OfflineVaultTxInfo> {
     const self = this;
-    return co(function* recover() {
+    return co<RecoveryInfo | OfflineVaultTxInfo>(function* recover() {
       if (_.isUndefined(params.userKey)) {
         throw new Error('missing userKey');
       }
@@ -901,7 +901,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<RecoverTokenTransaction>
   ): Bluebird<RecoverTokenTransaction> {
     const self = this;
-    return co(function*() {
+    return co<RecoverTokenTransaction>(function*() {
       if (!_.isObject(params)) {
         throw new Error(`recoverToken must be passed a params object. Got ${params} (type ${typeof params})`);
       }
@@ -1119,7 +1119,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<HopParams>
   ): Bluebird<HopParams> {
     const self = this;
-    return co(function*() {
+    return co<HopParams>(function*() {
       const wallet = buildParams.wallet;
       const recipients = buildParams.recipients;
       const walletPassphrase = buildParams.walletPassphrase;
@@ -1194,7 +1194,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<void>
   ): Bluebird<void> {
     const self = this;
-    return co(function*() {
+    return co<void>(function*() {
       const { tx, id, signature } = hopPrebuild;
 
       // first, validate the HSM signature
@@ -1260,7 +1260,7 @@ export class Eth extends BaseCoin {
    */
   getExtraPrebuildParams(buildParams: BuildOptions, callback?: NodeCallback<BuildOptions>): Bluebird<BuildOptions> {
     const self = this;
-    return co(function*() {
+    return co<BuildOptions>(function*() {
       if (
         !_.isUndefined(buildParams.hop) &&
         buildParams.hop &&
@@ -1288,7 +1288,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<TransactionPrebuild>
   ): Bluebird<TransactionPrebuild> {
     const self = this;
-    return co(function*() {
+    return co<TransactionPrebuild>(function*() {
       if (
         !_.isUndefined(params.hopTransaction) &&
         !_.isUndefined(params.wallet) &&
@@ -1312,7 +1312,7 @@ export class Eth extends BaseCoin {
     callback?: NodeCallback<TransactionPrebuild>
   ): Bluebird<TransactionPrebuild> {
     const self = this;
-    return co(function*() {
+    return co<TransactionPrebuild>(function*() {
       if (
         !_.isUndefined(params.hopTransaction) &&
         !_.isUndefined(params.wallet) &&
@@ -1337,7 +1337,7 @@ export class Eth extends BaseCoin {
    */
   feeEstimate(params: FeeEstimateOptions, callback?: NodeCallback<FeeEstimate>): Bluebird<FeeEstimate> {
     const self = this;
-    return co(function* coFeeEstimate() {
+    return co<FeeEstimate>(function* coFeeEstimate() {
       const query: FeeEstimateOptions = {};
       if (params && params.hop) {
         query.hop = params.hop;

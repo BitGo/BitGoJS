@@ -136,7 +136,7 @@ export class Keychains {
    */
   list(params: ListKeychainOptions = {}, callback?: NodeCallback<ListKeychainsResult>): Bluebird<ListKeychainsResult> {
     const self = this;
-    return co(function *() {
+    return co<ListKeychainsResult>(function *() {
       const queryObject: any = {};
 
       if (!_.isUndefined(params.limit)) {
@@ -177,7 +177,7 @@ export class Keychains {
    */
   updatePassword(params: UpdatePasswordOptions, callback?: NodeCallback<ChangedKeychains>): Bluebird<ChangedKeychains> {
     const self = this;
-    return co(function *() {
+    return co<ChangedKeychains>(function *() {
       validateParams(params, ['oldPassword', 'newPassword'], [], callback);
       const changedKeys: ChangedKeychains = {};
       let prevId;
@@ -310,7 +310,7 @@ export class Keychains {
    */
   createBackup(params: CreateBackupOptions = {}, callback?: NodeCallback<Keychain>): Bluebird<Keychain> {
     const self = this;
-    return co(function *() {
+    return co<Keychain>(function *() {
       params.source = 'backup';
 
       if (_.isUndefined(params.provider)) {
@@ -332,7 +332,7 @@ export class Keychains {
    */
   getKeysForSigning(params: GetKeysForSigningOptions = {}, callback?: NodeCallback<Keychain[]>): Bluebird<Keychain[]> {
     const self = this;
-    return co(function *() {
+    return co<Keychain[]>(function *() {
       if (!_.isObject(params.wallet)) {
         throw new Error('missing required param wallet');
       }

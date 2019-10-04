@@ -27,14 +27,14 @@ export class Affirmation {
   private bitgo: BitGo;
   private enterpriseId: string;
 
-  public id: string;
-  public partyAccountId: string;
-  public status: AffirmationStatus;
-  public settlement: string;
-  public lock: Lock;
-  public payload: string;
-  public createdAt: Date;
-  public expireAt: Date;
+  public id?: string;
+  public partyAccountId?: string;
+  public status?: AffirmationStatus;
+  public settlement?: string;
+  public lock?: Lock;
+  public payload?: string;
+  public createdAt?: Date;
+  public expireAt?: Date;
 
   constructor(affirmationData, bitgo: BitGo, enterpriseId: string) {
     this.bitgo = bitgo;
@@ -76,7 +76,7 @@ export class Affirmation {
 
   private updateStatus(status: AffirmationStatus, body?, callback?: NodeCallback<void>): Bluebird<void> {
     const self = this;
-    return co(function* updateStatus() {
+    return co<void>(function* updateStatus() {
       const bodyWithStatus = { status, ...body };
       const url = self.bitgo.microservicesUrl(
         `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.partyAccountId}/affirmations/${self.id}`

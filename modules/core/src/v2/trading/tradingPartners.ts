@@ -40,7 +40,7 @@ export class TradingPartners {
    */
   list(callback?: NodeCallback<TradingPartner[]>): Bluebird<TradingPartner[]> {
     const self = this;
-    return co(function* list() {
+    return co<TradingPartner[]>(function* list() {
       const url = self.bitgo.microservicesUrl(
         `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners`
       );
@@ -66,7 +66,7 @@ export class TradingPartners {
    */
   refer(params: TradingPartnerReferralParameters, callback?: NodeCallback<{}>): Bluebird<{}> {
     const self = this;
-    return co(function* refer() {
+    return co<{}>(function* refer() {
       const url = self.bitgo.microservicesUrl(
         `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners/referrals`
       );

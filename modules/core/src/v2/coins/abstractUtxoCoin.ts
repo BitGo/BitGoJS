@@ -215,8 +215,8 @@ export interface RecoverParams {
 }
 
 export abstract class AbstractUtxoCoin extends BaseCoin {
-  public altScriptHash: number;
-  public supportAltScriptDestination: boolean;
+  public altScriptHash?: number;
+  public supportAltScriptDestination?: boolean;
   private readonly _network: UtxoNetwork;
 
   protected constructor(bitgo: BitGo, network: UtxoNetwork) {
@@ -356,7 +356,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   getLatestBlockHeight(reqId?: RequestTracer, callback?: NodeCallback<number>): Bluebird<number> {
     const self = this;
-    return co(function *() {
+    return co<number>(function *() {
       if (reqId) {
         this.bitgo._reqId = reqId;
       }
@@ -372,7 +372,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   postProcessPrebuild(prebuild: TransactionPrebuild, callback?: NodeCallback<TransactionPrebuild>): Bluebird<TransactionPrebuild> {
     const self = this;
-    return co(function *() {
+    return co<TransactionPrebuild>(function *() {
       if (_.isUndefined(prebuild.txHex)) {
         throw new Error('missing required txPrebuild property txHex');
       }
@@ -430,7 +430,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   parseTransaction(params: ParseTransactionOptions, callback?: NodeCallback<ParsedTransaction>): Bluebird<ParsedTransaction> {
     const self = this;
-    return co(function *() {
+    return co<ParsedTransaction>(function *() {
       const {
         txParams,
         txPrebuild,
@@ -639,7 +639,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     const self = this;
-    return co(function *() {
+    return co<boolean>(function *() {
       const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
       const disableNetworking = !!verification.disableNetworking;
       const parsedTransaction = yield self.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
@@ -1318,7 +1318,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   explainTransaction(params: ExplainTransactionOptions, callback?: NodeCallback<TransactionExplanation>): Bluebird<TransactionExplanation> {
     const self = this;
-    return co(function *() {
+    return co<TransactionExplanation>(function *() {
       const txHex = _.get(params, 'txHex');
       if (!txHex || !_.isString(txHex) || !txHex.match(/^([a-f0-9]{2})+$/i)) {
         throw new Error('invalid transaction hex, must be a valid hex string');
@@ -1513,7 +1513,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   getRecoveryMarketPrice(): Bluebird<string> {
     const self = this;
-    return co(function *getRecoveryMarketPrice() {
+    return co<string>(function *getRecoveryMarketPrice() {
       const bitcoinAverageUrl = config.bitcoinAverageBaseUrl + self.getFamily().toUpperCase() + 'USD';
       const response = yield request.get(bitcoinAverageUrl).retry(2).result();
 
@@ -1856,7 +1856,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   calculateFeeAmount(params: { provider: string, amount?: number }, callback?: NodeCallback<number>): Bluebird<number> {
     const self = this;
-    return co(function *calculateFeeAmount() {
+    return co<number>(function *calculateFeeAmount() {
       const krsProvider = config.krsProviders[params.provider];
 
       if (krsProvider === undefined) {

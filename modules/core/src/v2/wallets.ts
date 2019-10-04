@@ -10,6 +10,7 @@ import { Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { hdPath } from '../bitcoin';
+import { RequestTracer as IRequestTracer } from './types';
 import { RequestTracer } from './internal/util';
 
 const co = Bluebird.coroutine;
@@ -21,7 +22,7 @@ export interface WalletWithKeychains extends KeychainsTriplet {
 
 export interface GetWalletOptions {
   allTokens?: boolean;
-  reqId?: RequestTracer;
+  reqId?: IRequestTracer;
   id?: string;
 }
 
@@ -69,7 +70,7 @@ export class Wallets {
    */
   list(params: any = {}, callback?: NodeCallback<{ wallets: Wallet[] }>): Bluebird<{ wallets: Wallet[] }> {
     const self = this;
-    return co(function*() {
+    return co<{ wallets: Wallet[] }>(function*() {
       const queryObject: any = {};
 
       if (params.skip && params.prevId) {
@@ -233,7 +234,7 @@ export class Wallets {
     callback?: NodeCallback<WalletWithKeychains>
   ): Bluebird<WalletWithKeychains> {
     const self = this;
-    return co(function*() {
+    return co<WalletWithKeychains>(function*() {
       common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub'], callback);
       const label: string = params.label!;
       const passphrase = params.passphrase;
@@ -598,7 +599,7 @@ export class Wallets {
    */
   getWallet(params: GetWalletOptions = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     const self = this;
-    return co(function*() {
+    return co<Wallet>(function*() {
       common.validateParams(params, ['id'], [], callback);
 
       const query: any = {};
@@ -630,7 +631,7 @@ export class Wallets {
    */
   getWalletByAddress(params: any = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     const self = this;
-    return co(function*() {
+    return co<Wallet>(function*() {
       common.validateParams(params, ['address'], [], callback);
 
       self.bitgo.setRequestTracer(params.reqId || new RequestTracer());
