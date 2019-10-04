@@ -526,7 +526,6 @@ export class Wallet {
    * @param {Number} params.minValue - the minimum value of unspents to use in satoshis/kB
    * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis/kB
    * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
-   * @param {Number} params.targetUnspentPoolSize - the number of unspents you want after the consolidation of valid unspents
    * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
    * @param {Number} params.feeRate - The fee rate to use for the consolidation in satoshis/kB
    * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
