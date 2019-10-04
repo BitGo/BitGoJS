@@ -521,7 +521,6 @@ export class Wallet {
    *
    * @param {Object} params - parameters object
    * @param {String} params.walletPassphrase - the users wallet passphrase
-   * @param {String} params.prevId - used in batch requests
    * @param {Number} params.limit - the number of unspents retrieved per call
    * @param {Number} params.minValue - the minimum value of unspents to use in satoshis/kB
    * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis/kB
