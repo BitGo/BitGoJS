@@ -105,6 +105,8 @@ export interface GetUserPrvOptions {
   walletPassphrase?: string;
 }
 
+type ManageUnspents = 'consolidate' | 'fanout';
+
 export class Wallet {
 
   public readonly bitgo: BitGo;
@@ -517,88 +519,87 @@ export class Wallet {
   }
 
   /**
-   * Consolidate unspents on a wallet
+   * Consolidate or fanout unspents on a wallet
+   *
+   * @param {String} routeName - either `consolidate` or `fanout`
    *
    * @param {Object} params - parameters object
+   *
+   * Wallet parameters:
    * @param {String} params.walletPassphrase - the users wallet passphrase
-   * @param {Number} params.limit - the number of unspents retrieved per call
-   * @param {Number} params.minValue - the minimum value of unspents to use in satoshis/kB
-   * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis/kB
-   * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
-   * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
+   * @param {String} params.xprv - the private key in string form if the walletPassphrase is not available
+   *
+   * Fee parameters:
    * @param {Number} params.feeRate - The fee rate to use for the consolidation in satoshis/kB
    * @param {Number} params.maxFeeRate - upper limit for feeRate in satoshis/kB
    * @param {Number} params.maxFeePercentage - the maximum relative portion that you're willing to spend towards fees
+   * @param {Number} params.feeTxConfirmTarget - estimate the fees to aim for first confirmation with this number of blocks
+   *
+   * Input parameters:
+   * @param {Number} params.minValue - the minimum value of unspents to use in satoshis
+   * @param {Number} params.maxValue - the maximum value of unspents to use in satoshis
+   * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
+   * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
+   * @param {Boolean} params.enforceMinConfirmsForChange - if true, minConfirms also applies to change outputs
+   * @param {Number} params.limit                for routeName === 'consolidate'
+   *                 params.maxNumUnspentsToUse  for routeName === 'fanout'
+   *                  - maximum number of unspents you want to use in the transaction
+   * Output parameters:
+   * @param {Number} params.numUnspentsToMake - the number of new unspents to make
+   *
    * @param callback
    * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
    */
-  consolidateUnspents(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
+  manageUnspents(routeName: ManageUnspents, params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return co(function *() {
       common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
       const reqId = new RequestTracer();
-      const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
-      const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'numUnspentsToMake', 'feeTxConfirmTarget', 'limit', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'maxFeePercentage']);
-      self.bitgo.setRequestTracer(reqId);
-      const response = yield self.bitgo.post(self.url('/consolidateUnspents'))
+      const filteredParams = _.pick(params, [
+        'feeRate',
+        'maxFeeRate',
+        'maxFeePercentage',
+        'feeTxConfirmTarget',
+
+        'minValue',
+        'maxValue',
+        'minHeight',
+        'minConfirms',
+        'enforceMinConfirmsForChange',
+
+        routeName === 'consolidate' ? 'limit' : 'maxNumUnspentsToUse',
+        'numUnspentsToMake',
+      ]);
+      this.bitgo.setRequestTracer(reqId);
+      const response = yield this.bitgo.post(this.url(`/${routeName}Unspents`))
         .send(filteredParams)
         .result();
 
-      const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain });
-      const signedTransaction = yield self.signTransaction(transactionParams);
+      const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0], reqId });
+      const transactionParams = _.extend({}, params, { txPrebuild: response, keychain });
+      const signedTransaction = yield this.signTransaction(transactionParams);
       const selectParams = _.pick(params, ['comment', 'otp']);
       const finalTxParams = _.extend({}, signedTransaction, selectParams);
 
-      self.bitgo.setRequestTracer(reqId);
-      return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
+      this.bitgo.setRequestTracer(reqId);
+      return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
         .send(finalTxParams)
         .result();
-    }).call(this).asCallback(callback);
+    }.bind(this)).call(this).asCallback(callback);
   }
 
   /**
-   * Fanout unspents for a wallet
-   *
-   * @param {Object} params - parameters object
-   * @param {String} params.walletPassphrase - the users wallet passphrase
-   * @param {String} params.xprv - the private key in string form if the walletPassphrase is not available
-   * @param {Number} params.minValue - the minimum value of unspents to use
-   * @param {Number} params.maxValue - the maximum value of unspents to use
-   * @param {Number} params.minHeight - the minimum height of unspents on the block chain to use
-   * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
-   * @param {Number} params.maxFeePercentage - the maximum proportion of an unspent you are willing to lose to fees
-   * @param {Number} params.feeTxConfirmTarget - estimate the fees to aim for first confirmation with this number of blocks
-   * @param {Number} params.feeRate - The desired fee rate for the transaction in satoshis/kB
-   * @param {Number} params.maxFeeRate - The max limit for a fee rate in satoshis/kB
-   * @param {Number} params.maxNumInputsToUse - the number of unspents you want to use in the transaction
-   * @param {Number} params.numUnspentsToMake - the number of new unspents to make
-   * @param callback
-   * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
+   * {@see manageUnspents}
+   */
+  consolidateUnspents(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    return this.manageUnspents('consolidate', params, callback);
+  }
+
+  /**
+   * {@see manageUnspents}
    */
   fanoutUnspents(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const self = this;
-    return co(function *() {
-      common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
-
-      const filteredParams = _.pick(params, ['minValue', 'maxValue', 'minHeight', 'maxNumInputsToUse', 'numUnspentsToMake', 'minConfirms', 'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'maxFeePercentage', 'feeTxConfirmTarget']);
-      const reqId = new RequestTracer();
-      self.bitgo.setRequestTracer(reqId);
-      const response = yield self.bitgo.post(self.url('/fanoutUnspents'))
-        .send(filteredParams)
-        .result();
-
-      const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
-      const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain, prv: params.xprv });
-      const signedTransaction = yield self.signTransaction(transactionParams);
-
-      const selectParams = _.pick(params, ['comment', 'otp']);
-      const finalTxParams = _.extend({}, signedTransaction, selectParams);
-      self.bitgo.setRequestTracer(reqId);
-      return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
-        .send(finalTxParams)
-        .result();
-    }).call(this).asCallback(callback);
+    return this.manageUnspents('fanout', params, callback);
   }
 
   /**
