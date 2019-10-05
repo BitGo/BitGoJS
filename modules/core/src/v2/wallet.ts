@@ -550,7 +550,9 @@ export class Wallet {
    * @param callback
    * @returns txHex {String} the txHex of the incomplete transaction that needs to be signed by the user in the SDK
    */
-  manageUnspents(routeName: ManageUnspents, params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  private manageUnspents(routeName: ManageUnspents, params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+
     return co(function *() {
       common.validateParams(params, [], ['walletPassphrase', 'xprv'], callback);
 
@@ -570,22 +572,22 @@ export class Wallet {
         routeName === 'consolidate' ? 'limit' : 'maxNumUnspentsToUse',
         'numUnspentsToMake',
       ]);
-      this.bitgo.setRequestTracer(reqId);
-      const response = yield this.bitgo.post(this.url(`/${routeName}Unspents`))
+      self.bitgo.setRequestTracer(reqId);
+      const response = yield self.bitgo.post(self.url(`/${routeName}Unspents`))
         .send(filteredParams)
         .result();
 
-      const keychain = yield this.baseCoin.keychains().get({ id: this._wallet.keys[0], reqId });
+      const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
       const transactionParams = _.extend({}, params, { txPrebuild: response, keychain });
-      const signedTransaction = yield this.signTransaction(transactionParams);
+      const signedTransaction = yield self.signTransaction(transactionParams);
       const selectParams = _.pick(params, ['comment', 'otp']);
       const finalTxParams = _.extend({}, signedTransaction, selectParams);
 
-      this.bitgo.setRequestTracer(reqId);
-      return this.bitgo.post(this.baseCoin.url('/wallet/' + this._wallet.id + '/tx/send'))
+      self.bitgo.setRequestTracer(reqId);
+      return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))
         .send(finalTxParams)
         .result();
-    }.bind(this)).call(this).asCallback(callback);
+    }).call(this).asCallback(callback);
   }
 
   /**
