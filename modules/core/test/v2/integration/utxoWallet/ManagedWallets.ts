@@ -18,6 +18,7 @@ import {
   CodeGroups,
   ManagedWalletPredicate,
   Send,
+  Recipient,
   Timechain,
   Unspent,
   WalletConfig,
@@ -47,6 +48,12 @@ class ErrorExcessSendAmount extends Error {
       `spendable=${wallet.spendableBalance()}, ` +
       `sendAmount=${spendAmount}].`
     );
+  }
+}
+
+class ErrorInit extends Error {
+  constructor() {
+    super(`must call init() first`);
   }
 }
 
@@ -107,15 +114,15 @@ export class ManagedWallets {
   }
 
 
-  public chain: Timechain;
+  public _chain?: Timechain;
 
   private debug: Debugger;
   private username: string;
   private password: string;
   private bitgo: any;
   private basecoin: any;
-  private walletList: BitGoWallet[];
-  private wallets: Promise<BitGoWallet[]>;
+  private _walletList?: BitGoWallet[];
+  private _wallets?: Promise<BitGoWallet[]>;
   private usedWallets: Set<BitGoWallet> = new Set();
   private faucet: BitGoWallet;
   private walletUnspents: Map<BitGoWallet, Promise<Unspent[]>> = new Map();
@@ -163,6 +170,25 @@ export class ManagedWallets {
     this.walletConfig = walletConfig;
     this.labelPrefix = `managed/${walletConfig.name}`;
     this.dryRun = dryRun;
+  }
+
+  private static withInit<T>(v: T | undefined): T {
+    if (!v) {
+      throw new ErrorInit();
+    }
+    return v;
+  }
+
+  public get chain(): Timechain {
+    return ManagedWallets.withInit(this._chain);
+  }
+
+  public get wallets(): Promise<BitGoWallet[]> {
+    return ManagedWallets.withInit(this._wallets);
+  }
+
+  public get walletList(): BitGoWallet[] {
+    return ManagedWallets.withInit(this._walletList);
   }
 
   public async cleanup() {
@@ -213,7 +239,7 @@ export class ManagedWallets {
 
     const { height } = await this.bitgo.get(this.basecoin.url('/public/block/latest')).result();
     this.debug('chainHeight=', height);
-    this.chain = new Timechain(height, this.basecoin._network);
+    this._chain = new Timechain(height, this.basecoin._network);
 
     const response = await this.bitgo.authenticate({
       username: this.username,
@@ -228,11 +254,11 @@ export class ManagedWallets {
     await this.bitgo.unlock({ otp: ManagedWallets.testUserOTP() });
 
     this.debug(`fetching wallets for ${this.username}...`);
-    this.walletList = await this.getWalletList();
+    this._walletList = await this.getWalletList();
 
     this.faucet = await this.getWalletWithLabel('managed-faucet', { create: true });
 
-    this.wallets = (async() => await Bluebird.map(
+    this._wallets = (async() => await Bluebird.map(
       Array(this.poolSize).fill(null).map((v, i) => i),
       (i) => this.getWalletWithLabel(this.getLabelForIndex(i), { create: !this.dryRun }),
       { concurrency: 4 }
@@ -472,7 +498,7 @@ export class ManagedWallets {
     }
 
     const recipients =
-      sends.reduce((rs, s: Send) => [...rs, ...s.recipients], []);
+      sends.reduce((rs: Recipient[], s: Send) => [...rs, ...s.recipients], []);
 
     const sum = recipients.reduce((sum, v) => sum + v.amount, 0);
     if (sum > w.spendableBalance()) {
