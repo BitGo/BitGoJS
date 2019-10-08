@@ -359,6 +359,34 @@ export class ManagedWallets {
     );
   }
 
+  private async walletSendMany(
+    wallet: BitGoWallet,
+    { recipients, unspents, feeRate }: {
+      recipients: Recipient[];
+      unspents?: Unspent[];
+      feeRate?: number;
+    }
+  ) {
+    const unspentIds = unspents ? unspents.map(u => u.id) : undefined;
+    this.debug(`sendMany() inputs=${unspentIds} recipients=${
+      recipients.map(({ address, amount }) => `${address}=${amount}`)
+    }`);
+    try {
+      await wallet.sendMany({
+        feeRate,
+        unspents: unspentIds,
+        recipients,
+        walletPassphrase,
+      });
+    } catch (e) {
+      console.error(`error in sendMany(): ${e}`);
+      console.error(`unspents: ${unspentIds ? unspentIds.join(',') : '(empty)'}`);
+      const availableUnspents = await this.getUnspents(wallet, { cache: false });
+      console.error(`availableUnspents: ${availableUnspents.map(u => u.id).join(',')}`);
+      throw e;
+    }
+  }
+
   /**
    * Get next wallet satisfying some criteria
    * @param predicate - Callback with wallet as argument. Can return promise.
@@ -436,11 +464,8 @@ export class ManagedWallets {
     const nextUnspents = unspents.splice(maxUnspents);
     const amount = this.chain.getMaxSpendable(unspents, [address], feeRate);
     this.debug(`customSweep ${wallet.label()}: ${amount} with ${unspents.length} unspents`);
-    await wallet.sendMany({
-      feeRate,
-      unspents: unspents.map(u => u.id),
-      recipients: [{ address, amount }],
-      walletPassphrase,
+    await this.walletSendMany(wallet, {
+      feeRate, unspents, recipients: [{ address, amount }],
     });
     await this.customSweepWallet(wallet, address, nextUnspents);
   }
@@ -514,7 +539,7 @@ export class ManagedWallets {
       }
       const faucetUnspents = await this.getUnspents(faucet);
       if (faucetUnspents.length > 100) {
-        unspents = faucetUnspents.map(u => u.id);
+        unspents = faucetUnspents;
         this.debug(`consolidate ${unspents.length} faucet unspents`);
       }
     }
@@ -524,12 +549,7 @@ export class ManagedWallets {
       return;
     }
 
-    await w.sendMany({
-      feeRate,
-      unspents,
-      recipients,
-      walletPassphrase,
-    });
+    await this.walletSendMany(w, { feeRate, unspents, recipients });
   }
 
   async resetWallets() {

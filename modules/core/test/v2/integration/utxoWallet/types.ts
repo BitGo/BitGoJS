@@ -73,7 +73,7 @@ export interface WalletLimits {
 
 export interface Send {
   source: BitGoWallet;
-  unspents?: string[];
+  unspents?: Unspent[];
   recipients: Recipient[];
 }
 

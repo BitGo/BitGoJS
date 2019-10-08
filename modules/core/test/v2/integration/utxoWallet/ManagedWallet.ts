@@ -160,7 +160,7 @@ export class ManagedWallet {
       const refundAmount = this.chain.getMaxSpendable(excessUnspents, [faucetAddress], feeRate);
       sends.push({
         source: this.wallet,
-        unspents: excessUnspents.map((u) => u.id),
+        unspents: excessUnspents,
         recipients: [{ address: faucetAddress, amount: refundAmount }],
       });
     }
