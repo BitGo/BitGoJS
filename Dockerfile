@@ -3,6 +3,7 @@ MAINTAINER Tyler Levine <tyler@bitgo.com>
 COPY --chown=node:node . /tmp/bitgo/
 WORKDIR /tmp/bitgo/modules/express
 USER node
+RUN npm install
 RUN npm ci && npm prune --production
 FROM node:lts-alpine
 RUN apk add --no-cache tini
