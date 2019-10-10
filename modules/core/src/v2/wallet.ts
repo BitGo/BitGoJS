@@ -1597,7 +1597,7 @@ export class Wallet {
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
       self.bitgo.setRequestTracer(reqId);
-      return self.bitgo.post(self.url('/tx/send'))
+      return self.bitgo.post(self.url('/tx/send')) // FIXME: shouldn't this be calling the v2 route instead? 
         .send(finalTxParams)
         .result();
     }).call(this).asCallback(callback);

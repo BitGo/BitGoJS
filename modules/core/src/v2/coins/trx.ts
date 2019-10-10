@@ -3,12 +3,21 @@
  */
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 const tronWeb = require('tronweb');
+//const TronLib = require('@bitgo/tron-lib');
+import * as TronLib from '@bitgo/tron-lib';
+import Tron from '@bitgo/tron-lib/dist/src/index';
+import * as tronproto from '@bitgo/tron-lib/dist/src/protobuf/tron_pb';
+import * as troncontractproto from '@bitgo/tron-lib/dist/src/protobuf/Contract_pb';
+// const tronproto = require('@bitgo/tron-lib/src/protobuf/tron_pb.js');
+// const troncontractproto = require('@bitgo/tron-lib/Contract_pb.js');
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
+  TransactionExplanation,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -20,6 +29,18 @@ import {
 import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
+//import { interface } from 'tcomb'; // FIXME
+//import { Transaction } from 'stellar-sdk'; // FIXME
+
+interface ExplainTransactionOptions {
+  // transaction: { packed_trx: string };
+  // headers: EosTransactionHeaders;
+  txHex?: string; // unsigned and fully signed?
+  halfSigned?: {
+    txHex: string;
+  };
+  fee: number;
+}
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -191,5 +212,59 @@ export class Trx extends BaseCoin {
     sig = sig.replace(/^0x/, '');
 
     return Buffer.from(sig, 'hex');
+  }
+
+  // it's possible we need to implement these later
+  // preCreateBitGo?
+  // supplementGenerateWallet?
+
+  // expectation
+
+  /**
+   * Explain a Tron transaction
+   * Use case: In OVC, after user has updated either a halfsigned or fully signd
+   * trasaction, we confirm with them the tx details by explaining the tx
+   * QUESTION - will explain tx ever be used for explaining a tx without sig?
+   * @param params
+   * @param callback
+   */
+  explainTransaction(
+    //TODO how to make sure the function that calls it has the properties
+    // could either be a tx with a signaure or a tx that has not been signed
+    params: ExplainTransactionOptions,
+    callback?: NodeCallback<TransactionExplanation>
+  ): Bluebird<TransactionExplanation> {
+    return co<TransactionExplanation>(function*() {
+      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+      if (!txHex) {
+        throw new Error('missing required param txHex or halfSigned.txHex');
+      }
+      if (!params.fee) {
+        throw new Error('explain params must contain fee property');
+      }
+      // we want to deserialize the txHex to get a real transaction object
+      // ......
+      const raw = tronproto.Transaction.raw.deserializeBinary(txHex).toObject(); // TODO import tronproto lib
+      //const TronObj = new TronLib.Tron('trx') // FIXME: string?
+      const transfer = Tron.decodeTransferContract(txHex); // TODO import tronproto lib
+      const outputAmount = transfer.amount;
+      const outputs = {
+        amount: outputAmount,
+        address: transfer.toAddress,
+      };
+      return {
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+        //id: params.transaction.txID, // FIXME
+        outputs,
+        outputAmount,
+        changeOutputs: [], // account based does not use change outputs?
+        changeAmount: 0, // account base does not make change
+        fee: params.fee,
+        expiration: raw.expiration,
+        timestamp: raw.timestamp,
+      };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 }
