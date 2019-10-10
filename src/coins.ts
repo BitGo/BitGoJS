@@ -328,6 +328,13 @@ export const coins = CoinMap.fromCoins([
   erc20('zoom', 'CoinZoom', 18, '0x69cf3091c91eb72db05e45c76e58225177dea742', UnderlyingAsset.ZOOM),
   erc20('zrx', '0x Token', 18, '0xe41d2489571d322189246dafa5ebde1f4699f498', UnderlyingAsset.ZRX),
   stellarToken(
+    'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
+    'BitGo Shield Token',
+    7,
+    UnderlyingAsset['xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ'],
+    'bitgo.com'
+  ),
+  stellarToken(
     'xlm:VELO-GC7GMEKN2P5LKGOVW55WGHMVQRPPRPHIRFMIC75Z6WPYPYR7B3Z3WEKH',
     'Velo Token',
     7,
@@ -342,9 +349,10 @@ export const coins = CoinMap.fromCoins([
   terc20('tfmf', 'Test Formosa Financial Token', 18, '0xd8463d2f8c5b3be9de95c63b73a0ae4c79423452', UnderlyingAsset.FMF),
   tstellarToken(
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
-    'Test BST Token',
+    'BitGo Shield Token',
     7,
-    UnderlyingAsset['txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L']
+    UnderlyingAsset['txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L'],
+    'bitgo.com'
   ),
   tofcerc20('ofcterc', 'ERC Test Token', 0, UnderlyingAsset.ERC),
   ofcerc20('ofcerc', 'ERC Token', 0, UnderlyingAsset.ERC),
