@@ -3,7 +3,7 @@
  */
 import * as Bluebird from 'bluebird';
 
-import Tron from '@bitgo/tron-lib';
+const tronWeb = require('tronweb');
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { MethodNotImplementedError } from '../../errors';
@@ -16,13 +16,10 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
-  TransactionExplanation,
 } from '../baseCoin';
 import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
-
-const co = Bluebird.coroutine;
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -31,6 +28,8 @@ export interface TronSignTransactionOptions extends SignTransactionOptions {
 
 export interface TransactionPrebuild {
   txHex: string;
+  txid: string;
+  transaction: any;
   txInfo: {
     from: string;
     to: string;
@@ -82,7 +81,7 @@ export class Trx extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    return Tron.isAddress(address);
+    return this.getCoinLibrary().isAddress(address);
   }
 
   /**
@@ -92,7 +91,7 @@ export class Trx extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const account = Tron.generateAccount();
+    const account = tronWeb.utils.accounts.generateAccount();
     return {
       pub: account.publicKey,
       prv: account.privateKey,
@@ -103,7 +102,7 @@ export class Trx extends BaseCoin {
    * Get an instance of the library which can be used to perform low-level operations for this coin
    */
   getCoinLibrary() {
-    return Tron;
+    return tronWeb;
   }
 
   isValidXpub(xpub: string): boolean {
@@ -138,9 +137,10 @@ export class Trx extends BaseCoin {
   }
 
   signTransaction(params: TronSignTransactionOptions): SignedTransaction {
-    const tx = { txID: params.txPrebuild.txInfo.txID };
+    const tx = params.txPrebuild.transaction;
     // this prv should be hex-encoded
-    return Tron.signTransaction(params.prv, tx);
+    const halfSigned = tronWeb.utils.crypto.signTransaction(params.prv, tx);
+    return { halfSigned };
   }
 
   /**
@@ -182,15 +182,11 @@ export class Trx extends BaseCoin {
   signMessage(key: KeyPair, message: string | Buffer): Buffer {
     const toSign = this.toHexString(message);
 
-    let sig = Tron.signString(toSign, key.prv, true);
+    let sig = tronWeb.Trx.signString(toSign, key.prv, true);
 
     // remove the preceding 0x
     sig = sig.replace(/^0x/, '');
 
     return Buffer.from(sig, 'hex');
   }
-
-  // it's possible we need to implement these later
-  // preCreateBitGo?
-  // supplementGenerateWallet?
 }

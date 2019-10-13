@@ -48,7 +48,6 @@
   },
   "dependencies": {
     "@bitgo/statics": "^2.1.0",
-    "@bitgo/tron-lib": "^1.0.0-rc.3",
     "@bitgo/unspents": "^0.6.0",
     "@types/bluebird": "^3.5.25",
     "@types/superagent": "^4.1.3",
