@@ -1,8 +1,8 @@
 /**
  * @prettier
  */
+import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
-
 const tronWeb = require('tronweb');
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -140,6 +140,9 @@ export class Trx extends BaseCoin {
     const tx = params.txPrebuild.transaction;
     // this prv should be hex-encoded
     const halfSigned = tronWeb.utils.crypto.signTransaction(params.prv, tx);
+    if (_.isEmpty(halfSigned.signature)) {
+      throw new Error('failed to sign transaction');
+    }
     return { halfSigned };
   }
 
