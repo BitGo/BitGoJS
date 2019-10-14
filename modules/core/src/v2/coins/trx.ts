@@ -1,6 +1,7 @@
 /**
  * @prettier
  */
+import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const tronWeb = require('tronweb');
 
@@ -19,6 +20,24 @@ import {
 import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
+
+export interface TronSignTransactionOptions extends SignTransactionOptions {
+  txPrebuild: TransactionPrebuild;
+  prv: string;
+}
+
+export interface TransactionPrebuild {
+  txHex: string;
+  txid: string;
+  transaction: any;
+  txInfo: {
+    from: string;
+    to: string;
+    amount: string;
+    fee: number;
+    txID: string;
+  };
+}
 
 export class Trx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -117,8 +136,14 @@ export class Trx extends BaseCoin {
     return Bluebird.resolve(true).asCallback(callback);
   }
 
-  signTransaction(params: SignTransactionOptions = {}): SignedTransaction {
-    throw new MethodNotImplementedError();
+  signTransaction(params: TronSignTransactionOptions): SignedTransaction {
+    const tx = params.txPrebuild.transaction;
+    // this prv should be hex-encoded
+    const halfSigned = tronWeb.utils.crypto.signTransaction(params.prv, tx);
+    if (_.isEmpty(halfSigned.signature)) {
+      throw new Error('failed to sign transaction');
+    }
+    return { halfSigned };
   }
 
   /**
@@ -167,8 +192,4 @@ export class Trx extends BaseCoin {
 
     return Buffer.from(sig, 'hex');
   }
-
-  // it's possible we need to implement these later
-  // preCreateBitGo?
-  // supplementGenerateWallet?
 }
