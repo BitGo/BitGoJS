@@ -8,8 +8,6 @@ const tronWeb = require('tronweb');
 //const TronLib = require('@bitgo/tron-lib');
 import * as TronLib from '@bitgo/tron-lib';
 import Tron from '@bitgo/tron-lib/dist/src/index';
-import * as tronproto from '@bitgo/tron-lib/dist/src/protobuf/tron_pb';
-import * as troncontractproto from '@bitgo/tron-lib/dist/src/protobuf/Contract_pb';
 // const tronproto = require('@bitgo/tron-lib/src/protobuf/tron_pb.js');
 // const troncontractproto = require('@bitgo/tron-lib/Contract_pb.js');
 
@@ -40,6 +38,7 @@ interface ExplainTransactionOptions {
     txHex: string;
   };
   fee: number;
+  txID: string;
 }
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
@@ -223,14 +222,12 @@ export class Trx extends BaseCoin {
   /**
    * Explain a Tron transaction
    * Use case: In OVC, after user has updated either a halfsigned or fully signd
-   * trasaction, we confirm with them the tx details by explaining the tx
+   * transaction, we confirm with them the tx details by explaining the tx
    * QUESTION - will explain tx ever be used for explaining a tx without sig?
    * @param params
    * @param callback
    */
   explainTransaction(
-    //TODO how to make sure the function that calls it has the properties
-    // could either be a tx with a signaure or a tx that has not been signed
     params: ExplainTransactionOptions,
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
@@ -242,11 +239,11 @@ export class Trx extends BaseCoin {
       if (!params.fee) {
         throw new Error('explain params must contain fee property');
       }
-      // we want to deserialize the txHex to get a real transaction object
-      // ......
-      const raw = tronproto.Transaction.raw.deserializeBinary(txHex).toObject(); // TODO import tronproto lib
-      //const TronObj = new TronLib.Tron('trx') // FIXME: string?
-      const transfer = Tron.decodeTransferContract(txHex); // TODO import tronproto lib
+      if (!params.txID) {
+        throw new Error('explain params must contain id property');
+      }
+      const txData = Tron.getTransactionData(txHex); // TODO reference the right tron lib branch
+      const transfer = Tron.decodeTransferContract(txData.transferContractRaw);
       const outputAmount = transfer.amount;
       const outputs = {
         amount: outputAmount,
@@ -254,14 +251,14 @@ export class Trx extends BaseCoin {
       };
       return {
         displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
-        //id: params.transaction.txID, // FIXME
+        id: params.txID, // FIXME
         outputs,
         outputAmount,
         changeOutputs: [], // account based does not use change outputs?
         changeAmount: 0, // account base does not make change
         fee: params.fee,
-        expiration: raw.expiration,
-        timestamp: raw.timestamp,
+        expiration: txData.expiration,
+        timestamp: txData.timestamp,
       };
     })
       .call(this)

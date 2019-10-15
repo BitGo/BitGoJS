@@ -40,15 +40,18 @@ describe('TRON:', function() {
   });
 
   it('should explain an half-signed transaction', co(function *() {
-    const explainParams = { 
-      halfSigned: { txHex: mockTx.raw_data_hex }, 
+    const explainParams = {
+      halfSigned: { txHex: mockTx.raw_data_hex },
       fee: 1,
+      txID: mockTx.txID,
     };
     const explanation = yield basecoin.explainTransaction(explainParams);
-
+    explanation.id.should.equal(mockTx.txID);
     explanation.outputs[0].amount.should.equal(10);
     explanation.outputs[0].address.should.equal('41c4530f6bfa902b7398ac773da56106a15af15f92');
-    explanation.id.should.equal(mockTx.txID);
+    explanation.fee.should.equal(1)
+    explanation.expiration.should.equal(mockTx.raw_data.expiration)
+    explanation.timestamp.should.equal((mockTx.raw_data.timestamp))
   }));
 
   it('should explain an fully signed transaction', co(function *() {

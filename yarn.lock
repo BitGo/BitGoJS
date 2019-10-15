@@ -108,6 +108,14 @@
   resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-2.2.0.tgz#98685610e737a429d031aaac98f3b937c28d0da4"
   integrity sha512-C5pBry15BDWj2FL4Cos6Y54emyM9r1nl8s9OUYhT1vdfNkBRTUIgjCg/A06jaGLTVtsRNTGdP0Pf0GflOCIKjQ==
 
+"@bitgo/tron-lib@^1.0.0-rc.3":
+  version "1.0.0-rc.3"
+  resolved "https://registry.yarnpkg.com/@bitgo/tron-lib/-/tron-lib-1.0.0-rc.3.tgz#fe1f3b4360866784ce2f317191d808a041fb1f1f"
+  integrity sha512-KMgC+yrl0LEzntMai7JNUhhQng8bNsvc11j+GDaYgeBWzQ69UqmZ/YgI83P09h6tJaDswCWPonT+aBEMRsy35Q==
+  dependencies:
+    google-protobuf "^3.9.1"
+    tronweb "^2.7.2"
+
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
@@ -1112,7 +1120,7 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.14.21.tgz#4a9db7ef1d1671c0015e632c5fa3d46c86c58c1e"
   integrity sha512-nuFlRdBiqbF+PJIEVxm2jLFcQWN7q7iWEJGsBV4n7v1dbI9qXB8im2pMMKMCUZe092sQb5SQft2DHfuQGK5hqQ==
 
-"@types/node@^11.11.4":
+"@types/node@^11.11.4", "@types/node@^11.13.22":
   version "11.13.22"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-11.13.22.tgz#91ee88ebfa25072433497f6f3150f84fa8c3a91b"
   integrity sha512-rOsaPRUGTOXbRBOKToy4cgZXY4Y+QSVhxcLwdEveozbk7yuudhWMpxxcaXqYizLMP3VY7OcWCFtx9lGFh5j5kg==
@@ -4955,6 +4963,11 @@ globby@^9.2.0:
     ignore "^4.0.3"
     pify "^4.0.1"
     slash "^2.0.0"
+
+google-protobuf@^3.9.1:
+  version "3.10.0"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.10.0.tgz#f36171128090615049f9b0e42252b1a10a4bc534"
+  integrity sha512-d0cMO8TJ6xtB/WrVHCv5U81L2ulX+aCD58IljyAN6mHwdHHJ2jbcauX5glvivi3s3hx7EYEo7eUA9WftzamMnw==
 
 graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.2:
   version "4.2.2"
@@ -10206,7 +10219,7 @@ trim-off-newlines@^1.0.0:
   resolved "https://registry.yarnpkg.com/trim-off-newlines/-/trim-off-newlines-1.0.1.tgz#9f9ba9d9efa8764c387698bcbfeb2c848f11adb3"
   integrity sha1-n5up2e+odkw4dpi8v+sshI8RrbM=
 
-tronweb@^2.7.0:
+tronweb@^2.7.0, tronweb@^2.7.2:
   version "2.7.3"
   resolved "https://registry.yarnpkg.com/tronweb/-/tronweb-2.7.3.tgz#52726e4fb6bff00889a475a3ca9f2e1ffd369bd0"
   integrity sha512-KgDGFsXozUfe+2vO19LL5E/Mazv1x+2FVmFBZEuzWp9yP/E1aT3zf1eMR7b+B0KGqB5UpTk2LXNIYCsY8adYDQ==
@@ -10222,7 +10235,7 @@ tronweb@^2.7.0:
     semver "^5.6.0"
     validator "^10.7.1"
 
-ts-node@^8.1.0, ts-node@^8.3.0:
+ts-node@^8.1.0, ts-node@^8.4.1:
   version "8.4.1"
   resolved "https://registry.yarnpkg.com/ts-node/-/ts-node-8.4.1.tgz#270b0dba16e8723c9fa4f9b4775d3810fd994b4f"
   integrity sha512-5LpRN+mTiCs7lI5EtbXmF/HfMeCjzt7DH9CZwtkr6SywStrNQC723wG+aOWFiLNn7zT3kD/RnFqi3ZUfr4l5Qw==
@@ -10333,6 +10346,11 @@ typeforce@~1.10.6:
   integrity sha1-cb3KNbTmNbYSRTcbV8AIzt++xNs=
   dependencies:
     inherits "^2.0.1"
+
+typescript@^3.6.4:
+  version "3.6.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.6.4.tgz#b18752bb3792bc1a0281335f7f6ebf1bbfc5b91d"
+  integrity sha512-unoCll1+l+YK4i4F8f22TaNVPRHcD9PA3yCuZ8g5e0qGqlVlJ/8FSateOLLSagn+Yg5+ZwuPkL8LFUc0Jcvksg==
 
 typescript@~3.5.3:
   version "3.5.3"
