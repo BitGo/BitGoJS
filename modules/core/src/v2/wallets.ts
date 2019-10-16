@@ -6,7 +6,7 @@ import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
 import { NodeCallback } from './types';
-import { Wallet } from './wallet';
+import { PaginationOptions, Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { hdPath } from '../bitcoin';
@@ -44,6 +44,46 @@ export interface GenerateWalletOptions {
   rootPrivateKey?: string;
 }
 
+export interface GetWalletByAddressOptions {
+  address?: string;
+  reqId?: RequestTracer;
+}
+
+export interface UpdateShareOptions {
+  walletShareId?: string;
+  state?: string;
+  encryptedPrv?: string;
+}
+
+export interface AcceptShareOptions {
+  overrideEncryptedPrv?: string;
+  walletShareId?: string;
+  userPassword?: string;
+  newWalletPassphrase?: string;
+}
+
+export interface AddWalletOptions {
+  type?: string;
+  keys?: string[];
+  m?: number;
+  n?: number;
+  tags?: string[];
+  clientFlags?: string[];
+  isCold?: boolean;
+  isCustodial?: boolean;
+  address?: string;
+  rootPub?: string;
+  rootPrivateKey?: string;
+  initializationTxs?: any;
+  disableTransactionNotifications?: boolean;
+}
+
+export interface ListWalletOptions extends PaginationOptions {
+  skip?: number;
+  getbalances?: boolean;
+  allTokens?: boolean;
+}
+
 export class Wallets {
   private readonly bitgo: BitGo;
   private readonly baseCoin: BaseCoin;
@@ -68,10 +108,13 @@ export class Wallets {
    * @param callback
    * @returns {*}
    */
-  list(params: any = {}, callback?: NodeCallback<{ wallets: Wallet[] }>): Bluebird<{ wallets: Wallet[] }> {
+  list(
+    params: ListWalletOptions = {},
+    callback?: NodeCallback<{ wallets: Wallet[] }>
+  ): Bluebird<{ wallets: Wallet[] }> {
     const self = this;
     return co<{ wallets: Wallet[] }>(function*() {
-      const queryObject: any = {};
+      const queryObject: ListWalletOptions = {};
 
       if (params.skip && params.prevId) {
         throw new Error('cannot specify both skip and prevId');
@@ -124,7 +167,7 @@ export class Wallets {
    *    "n": number of keys available on the wallet (3)
    *    "keys": array of keychain ids
    */
-  add(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  add(params: AddWalletOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
       common.validateParams(params, [], ['label', 'enterprise', 'type'], callback);
@@ -161,7 +204,7 @@ export class Wallets {
         throw new Error('invalid argument for address - valid address string expected');
       }
 
-      const walletParams: any = _.pick(params, [
+      const walletParams = _.pick(params, [
         'label',
         'm',
         'n',
@@ -236,7 +279,10 @@ export class Wallets {
     const self = this;
     return co<WalletWithKeychains>(function*() {
       common.validateParams(params, ['label'], ['passphrase', 'userKey', 'backupXpub'], callback);
-      const label: string = params.label!;
+      if (!_.isString(params.label)) {
+        throw new Error('missing required string parameter label');
+      }
+      const label = params.label;
       const passphrase = params.passphrase;
       const canEncrypt = !!passphrase && typeof passphrase === 'string';
       const isCold = !canEncrypt || !!params.userKey;
@@ -429,7 +475,7 @@ export class Wallets {
    * @param params
    * @param callback
    */
-  listShares(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  listShares(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.bitgo
       .get(this.baseCoin.url('/walletshare'))
       .result()
@@ -442,7 +488,7 @@ export class Wallets {
    * @param params.walletShareId - the wallet share to get information on
    * @param callback
    */
-  getShare(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getShare(params: { walletShareId?: string } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['walletShareId'], [], callback);
 
     return this.bitgo
@@ -458,8 +504,7 @@ export class Wallets {
    * @param params
    * @param callback
    */
-  updateShare(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    params = params || {};
+  updateShare(params: UpdateShareOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['walletShareId'], [], callback);
 
     return this.bitgo
@@ -475,7 +520,7 @@ export class Wallets {
    * @param params.walletShareId - the wallet share whose invitiation should be resent
    * @param callback
    */
-  resendShareInvite(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  resendShareInvite(params: { walletShareId?: string } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
       common.validateParams(params, ['walletShareId'], [], callback);
@@ -493,8 +538,7 @@ export class Wallets {
    * @param params.walletShareId - the wallet share to update
    * @param callback
    */
-  cancelShare(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    params = params || {};
+  cancelShare(params: { walletShareId?: string } = {}, callback?: NodeCallback<any>): Bluebird<any> {
     common.validateParams(params, ['walletShareId'], [], callback);
 
     return this.bitgo
@@ -517,7 +561,7 @@ export class Wallets {
    * @param params.overrideEncryptedPrv - set only if the prv was received out-of-band.
    * @param callback
    */
-  acceptShare(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  acceptShare(params: AcceptShareOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
       common.validateParams(
@@ -575,7 +619,7 @@ export class Wallets {
         password: newWalletPassphrase,
         input: decryptedSharedWalletPrv,
       });
-      const updateParams: any = {
+      const updateParams: UpdateShareOptions = {
         walletShareId: params.walletShareId,
         state: 'accepted',
       };
@@ -602,7 +646,7 @@ export class Wallets {
     return co<Wallet>(function*() {
       common.validateParams(params, ['id'], [], callback);
 
-      const query: any = {};
+      const query: GetWalletOptions = {};
       if (params.allTokens) {
         if (!_.isBoolean(params.allTokens)) {
           throw new Error('invalid allTokens argument, expecting boolean');
@@ -629,7 +673,7 @@ export class Wallets {
    * @param callback
    * @returns {*}
    */
-  getWalletByAddress(params: any = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
+  getWalletByAddress(params: GetWalletByAddressOptions = {}, callback?: NodeCallback<Wallet>): Bluebird<Wallet> {
     const self = this;
     return co<Wallet>(function*() {
       common.validateParams(params, ['address'], [], callback);
@@ -650,7 +694,7 @@ export class Wallets {
    * @param callback
    * @returns {*}
    */
-  getTotalBalances(params: any = {}, callback?: NodeCallback<any>): Bluebird<any> {
+  getTotalBalances(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.bitgo
       .get(this.baseCoin.url('/wallet/balances'))
       .result()

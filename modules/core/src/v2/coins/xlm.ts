@@ -20,7 +20,7 @@ import {
 } from '../../errors';
 import {
   BaseCoin,
-  TransactionOutput as BaseTransactionOutput,
+  TransactionRecipient as BaseTransactionOutput,
   TransactionExplanation as BaseTransactionExplanation,
   KeyPair,
   VerifyAddressOptions as BaseVerifyAddressOptions,
