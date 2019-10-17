@@ -103,6 +103,17 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
+"@bitgo/account-lib@0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-0.1.0.tgz#3204d0b89ac3d36c8392f88e4d3ccf7ddba6d075"
+  integrity sha512-Bq2XFvhFquT16R8NNUJtgTP+AB9vPUOxICwyNuT0gz3QpRlnlLEXUP3/X2CHZK/UhH+vUXTV0BRV0oIDPFY1EQ==
+  dependencies:
+    "@bitgo/statics" "^2.3.0-rc.0"
+    "@types/node" "^11.13.22"
+    bignumber.js "^9.0.0"
+    google-protobuf "^3.9.1"
+    tronweb "^2.7.2"
+
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
@@ -1107,7 +1118,7 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-10.14.21.tgz#4a9db7ef1d1671c0015e632c5fa3d46c86c58c1e"
   integrity sha512-nuFlRdBiqbF+PJIEVxm2jLFcQWN7q7iWEJGsBV4n7v1dbI9qXB8im2pMMKMCUZe092sQb5SQft2DHfuQGK5hqQ==
 
-"@types/node@^11.11.4":
+"@types/node@^11.11.4", "@types/node@^11.13.22":
   version "11.13.22"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-11.13.22.tgz#91ee88ebfa25072433497f6f3150f84fa8c3a91b"
   integrity sha512-rOsaPRUGTOXbRBOKToy4cgZXY4Y+QSVhxcLwdEveozbk7yuudhWMpxxcaXqYizLMP3VY7OcWCFtx9lGFh5j5kg==
@@ -1892,6 +1903,11 @@ bignumber.js@^8.0.1:
   version "8.1.1"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-8.1.1.tgz#4b072ae5aea9c20f6730e4e5d529df1271c4d885"
   integrity sha512-QD46ppGintwPGuL1KqmwhR0O+N2cZUg8JG/VzwI2e28sM9TqHjQB10lI4QAaMHVbLzwVLLAwEglpKPViWX+5NQ==
+
+bignumber.js@^9.0.0:
+  version "9.0.0"
+  resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-9.0.0.tgz#805880f84a329b5eac6e7cb6f8274b6d82bdf075"
+  integrity sha512-t/OYhhJ2SD+YGBQcjY8GzzDHEk9f3nerxjtfa6tlMXfe7frs/WozhvCNoGvpM0P3bNf3Gq5ZRMlGr5f3r4/N8A==
 
 binary-extensions@^1.0.0:
   version "1.13.1"
@@ -4950,6 +4966,11 @@ globby@^9.2.0:
     ignore "^4.0.3"
     pify "^4.0.1"
     slash "^2.0.0"
+
+google-protobuf@^3.9.1:
+  version "3.10.0"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.10.0.tgz#f36171128090615049f9b0e42252b1a10a4bc534"
+  integrity sha512-d0cMO8TJ6xtB/WrVHCv5U81L2ulX+aCD58IljyAN6mHwdHHJ2jbcauX5glvivi3s3hx7EYEo7eUA9WftzamMnw==
 
 graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.2:
   version "4.2.2"
@@ -10193,7 +10214,7 @@ trim-off-newlines@^1.0.0:
   resolved "https://registry.yarnpkg.com/trim-off-newlines/-/trim-off-newlines-1.0.1.tgz#9f9ba9d9efa8764c387698bcbfeb2c848f11adb3"
   integrity sha1-n5up2e+odkw4dpi8v+sshI8RrbM=
 
-tronweb@^2.7.0:
+tronweb@^2.7.0, tronweb@^2.7.2:
   version "2.7.3"
   resolved "https://registry.yarnpkg.com/tronweb/-/tronweb-2.7.3.tgz#52726e4fb6bff00889a475a3ca9f2e1ffd369bd0"
   integrity sha512-KgDGFsXozUfe+2vO19LL5E/Mazv1x+2FVmFBZEuzWp9yP/E1aT3zf1eMR7b+B0KGqB5UpTk2LXNIYCsY8adYDQ==
