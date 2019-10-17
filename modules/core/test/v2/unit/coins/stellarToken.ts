@@ -18,7 +18,7 @@ describe('Stellar Token:', function() {
     stellarTokenCoin.getFullName().should.equal('Stellar Token');
     stellarTokenCoin.getBaseFactor().should.equal(1e7);
     stellarTokenCoin.type.should.equal(tokenName);
-    stellarTokenCoin.name.should.equal('Test BST Token');
+    stellarTokenCoin.name.should.equal('BitGo Shield Token');
     stellarTokenCoin.coin.should.equal('txlm');
     stellarTokenCoin.network.should.equal('Testnet');
     stellarTokenCoin.code.should.equal('BST');
