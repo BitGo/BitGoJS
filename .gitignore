@@ -6,3 +6,4 @@ browser/
 mochawesome-report/
 .DS_STORE
 package/
+.idea/
