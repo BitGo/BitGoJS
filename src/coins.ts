@@ -324,7 +324,7 @@ export const coins = CoinMap.fromCoins([
   erc20('xcd', 'CapdaxToken', 18, '0xca00bc15f67ebea4b20dfaaa847cace113cc5501', UnderlyingAsset.XCD),
   erc20('xin', 'Mixin', 18, '0xa974c709cfb4566686553a20790685a47aceaa33', UnderlyingAsset.XIN),
   erc20('xrl', 'Rialto', 9, '0xb24754be79281553dc1adc160ddf5cd9b74361a4', UnderlyingAsset.XRL),
-  erc20('yng', 'Young Token', 18, '0xa26cbb76156090f4b40a1799a220fc4c946afb3', UnderlyingAsset.YNG),
+  erc20('yng', 'Young Token', 18, '0xa26cbb76156090f4b40a1799a220fc4c946afb3c', UnderlyingAsset.YNG),
   erc20('ysey', 'YSEY Utility Token', 3, '0x1358efe5d9bfc2005918c0b2f220a4345c9ee7a3', UnderlyingAsset.YSEY),
   erc20('zarx', 'eToro South African Rand', 18, '0x29ec3ff4e1dcad5a207dbd5d14e48073abba0bd3', UnderlyingAsset.ZARX),
   erc20('zco', 'Zebi Coin', 8, '0x2008e3057bd734e10ad13c9eae45ff132abc1722', UnderlyingAsset.ZCO),
