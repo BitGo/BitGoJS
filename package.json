@@ -1,0 +1,50 @@
+{
+  "name": "@bitgo/bitgo-account-lib",
+  "version": "1.0.0-rc.0",
+  "description": "BitGo's account library functions",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "webpack-dev": "webpack --progress --colors --env.dev",
+    "webpack-test": "webpack --progress --colors --env.test",
+    "webpack-prod": "webpack --progress --colors --env.prod",
+    "build": "tsc && cp -r ./src/protobuf ./dist/src",
+    "clean": "rm -r dist/*",
+    "compile": "npm run browserify && npm run webpack-prod",
+    "compile-dev": "npm run browserify && npm run webpack-dev",
+    "compile-test": "npm run browserify && npm run webpack-test",
+    "prepublishOnly": "npm run compile",
+    "prepare": "npm run build",
+    "browserify": "mkdir -p ./dist/browserify && browserify ./dist/src/index.js -s bitgo-account-lib -o ./dist/browserify/bitgo-account-lib.browserify.js",
+    "test": "nyc -- mocha --opts test/mocha.opts \"test/unit/*.ts\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/bitgo-account-lib.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.11.4",
+    "awesome-typescript-loader": "^5.2.1",
+    "browserify": "^16.2.3",
+    "glob": "^7.1.3",
+    "mocha": "^6.1.4",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.2.3",
+    "nyc": "^14.0.0",
+    "mochawesome": "^3.1.2",
+    "should": "^13.1.3",
+    "terser-webpack-plugin": "^1.2.3",
+    "ts-node": "^8.3.0",
+    "typescript": "~3.5.3"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ]
+  }
+}
