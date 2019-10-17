@@ -400,6 +400,7 @@ export const enum UnderlyingAsset {
   XCD = 'xcd',
   XIN = 'xin',
   XRL = 'xrl',
+  YNG = 'yng',
   YSEY = 'ysey',
   ZARX = 'zarx',
   ZCO = 'zco',
