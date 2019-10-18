@@ -147,7 +147,7 @@ describe('XLM:', function() {
     explanation.changeOutputs.length.should.equal(0);
     explanation.changeAmount.should.equal('0');
     explanation.operations.length.should.equal(1);
-    explanation.operations[0].limit.should.equal('100000');
+    explanation.operations[0].limit.should.equal('1000000000000');
     explanation.operations[0].coin.should.equal('txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L');
     explanation.operations[0].type.should.equal('changeTrust');
     explanation.operations[0].should.have.property('asset');
@@ -553,7 +553,7 @@ describe('XLM:', function() {
             {
               token: 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
               action: 'add',
-              limit: '100000',
+              limit: '1000000000000',
             },
             {
               token: 'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
