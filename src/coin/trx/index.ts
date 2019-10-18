@@ -1,26 +1,26 @@
 import { BaseCoin } from "../baseCoin";
-import { Network, ITransaction, ISignature, IKey } from "../..";
+import { Network, Transaction, Signature, Key } from "../..";
 import { coins } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 
 export default class Trx extends BaseCoin {
-  public buildTransaction(transaction: ITransaction): ITransaction {
+  public buildTransaction(transaction: Transaction): Transaction {
     throw new Error("Method not implemented.");
   }
 
-  public validateTransaction(transaction: ITransaction): boolean {
+  public validateTransaction(transaction: Transaction): boolean {
     throw new Error("Method not implemented.");
   }
 
-  public validatePrivateKey(key: IKey): boolean {
+  public validatePrivateKey(key: Key): boolean {
     throw new Error("Method not implemented.");
   }
 
-  public parseTransaction(rawTransaction: any): ITransaction {
+  public parseTransaction(rawTransaction: any): Transaction {
     throw new Error("Method not implemented.");
   }
 
-  public sign(privateKey: any, address: string, transaction: ITransaction): ISignature {
+  public sign(privateKey: any, address: string, transaction: Transaction): Signature {
     throw new Error("Method not implemented.");
   }
   

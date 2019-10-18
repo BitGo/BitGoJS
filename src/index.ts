@@ -29,7 +29,6 @@ export enum Network {
 }
 
 export enum TransactionType {
-  NotSet,
   Send,
   Recieve,
   WalletInitialization,

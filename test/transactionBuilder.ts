@@ -5,7 +5,7 @@ describe("Transaction builder", () => {
   let txBuilder;
 
   before(() => {
-    txBuilder = new TransactionBuilder
+    //txBuilder = new TransactionBuilder();
   });
 
 

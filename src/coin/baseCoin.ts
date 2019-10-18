@@ -1,4 +1,4 @@
-import { Network, ITransaction, ISignature, IKey, TransactionType } from "..";
+import { Network, Transaction, Signature, Key, TransactionType } from "..";
 import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 
@@ -49,13 +49,13 @@ export abstract class BaseCoin {
    * @param rawTransaction the raw transaction in this case. format determined by the coin
    * @param transactionType the type/direction of the transaction
    */
-  public abstract parseTransaction(rawTransaction: any, transactionType: TransactionType): ITransaction;
+  public abstract parseTransaction(rawTransaction: any, transactionType: TransactionType): Transaction;
 
   /**
    * Build our transaction. Returns the resultant transaction with a completed transaction (or error state)
    * @param transaction 
    */
-  public abstract buildTransaction(transaction: ITransaction): ITransaction;
+  public abstract buildTransaction(transaction: Transaction): Transaction;
 
   /**
    * Sign a transaction. Returns a signature or a signature with invalid state.
@@ -63,5 +63,5 @@ export abstract class BaseCoin {
    * @param address 
    * @param transaction the transaction 
    */
-  public abstract sign(privateKey: IKey, address: string, transaction: ITransaction): ISignature;
+  public abstract sign(privateKey: Key, address: string, transaction: Transaction): Signature;
 }

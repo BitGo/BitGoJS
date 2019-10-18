@@ -5,7 +5,6 @@ import BigNumber from "bignumber.js";
 
 export default class TransactionBuilder<T extends BaseCoin> {
   private coin: T;
-  private transactionType: TransactionType;
   private transaction: Transaction;
 
   private fromAddrs: Array<string>;
@@ -18,16 +17,10 @@ export default class TransactionBuilder<T extends BaseCoin> {
     this.fromAddrs = new Array<string>();
     this.destination = new Array<Destination>();
     this.signatures = new Array<Signature>();
-
-    this.transactionType = TransactionType.NotSet;
   }
 
-  from(rawTransaction: any) {
-    if (this.transactionType === TransactionType.NotSet) {
-      throw new Error('Transaction type has not been set.');
-    }
-
-    let transaction = this.coin.parseTransaction(rawTransaction, this.transactionType);
+  from(rawTransaction: any, transactionType: TransactionType) {
+    let transaction = this.coin.parseTransaction(rawTransaction, transactionType);
     if (!transaction.isValid()) {
       throw new Error(`Transaction is not valid for ${this.coin.displayName}`);
     }
@@ -66,10 +59,6 @@ export default class TransactionBuilder<T extends BaseCoin> {
     this.transaction = transaction;
 
     return this.transaction;
-  }
-
-  setTransactionType(transactionType: TransactionType) {
-    this.transactionType = transactionType;
   }
 
   addFrom(address: string) {
