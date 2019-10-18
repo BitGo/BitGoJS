@@ -3,16 +3,15 @@ import { Transaction, Destination, Signature, Key, TransactionType, Network } fr
 import BigNumber from "bignumber.js";
 
 
-export default class TransactionBuilder<T extends BaseCoin> {
-  private coin: T;
+export default class TransactionBuilder {
   private transaction: Transaction;
 
   private fromAddrs: Array<string>;
   private destination: Array<Destination>;
   private signatures: Array<Signature>;
 
-  constructor(private coinType: new (network) => T, network: Network) {
-    this.coin = new coinType(network);
+  constructor(private coin: BaseCoin) {
+    this.coin = coin;
 
     this.fromAddrs = new Array<string>();
     this.destination = new Array<Destination>();
