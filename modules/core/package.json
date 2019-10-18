@@ -47,7 +47,7 @@
     "gen-docs": "typedoc"
   },
   "dependencies": {
-    "@bitgo/statics": "^2.2.0",
+    "@bitgo/statics": "2.2.0",
     "@bitgo/unspents": "^0.6.0",
     "algosdk": "git+https://github.com/BitGo/algosdk-bitgo.git",
     "assert": "^0.4.9",
