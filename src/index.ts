@@ -1,32 +1,36 @@
+import BigNumber from "bignumber.js";
+
 export class Destination {
   constructor(private address: string, private value: BigNumber) {}
 }
 
-export interface ISignature {
+export interface Signature {
   isValid(): boolean;
 }
 
 /**
  * Specifies the members expected for a Transaction
  */
-export interface ITransaction {
+export interface Transaction {
   rawTx: any;
   parsedTx: any;
 
+  transactionType: TransactionType;
   isValid(): boolean;
 }
 
-export interface IKey {
+export interface Key {
   isValid(): boolean;
 }
 
 export enum Network {
   Test,
-  Main
+  Main,
 }
 
 export enum TransactionType {
   NotSet,
   Send,
-  Recieve
+  Recieve,
+  WalletInitialization,
 }

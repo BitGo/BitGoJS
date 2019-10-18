@@ -1,23 +1,23 @@
 import { BaseCoin } from "./coin/baseCoin";
-import { ITransaction, Destination, ISignature, IKey, TransactionType, Network } from ".";
+import { Transaction, Destination, Signature, Key, TransactionType, Network } from ".";
 import BigNumber from "bignumber.js";
 
 
 export default class TransactionBuilder<T extends BaseCoin> {
   private coin: T;
   private transactionType: TransactionType;
-  private transaction: ITransaction;
+  private transaction: Transaction;
 
   private fromAddrs: Array<string>;
   private destination: Array<Destination>;
-  private signatures: Array<ISignature>;
+  private signatures: Array<Signature>;
 
   constructor(private coinType: new (network) => T, network: Network) {
     this.coin = new coinType(network);
 
     this.fromAddrs = new Array<string>();
     this.destination = new Array<Destination>();
-    this.signatures = new Array<ISignature>();
+    this.signatures = new Array<Signature>();
 
     this.transactionType = TransactionType.NotSet;
   }
@@ -40,7 +40,7 @@ export default class TransactionBuilder<T extends BaseCoin> {
    * @param privateKey 
    * @param fromAddress 
    */
-  sign(privateKey: IKey, fromAddress: string) {
+  sign(privateKey: Key, fromAddress: string) {
     if (!this.coin.validateAddress(fromAddress)) {
       throw new Error(`${fromAddress} is not valid for ${this.coin.displayName}`);
     }
@@ -57,12 +57,8 @@ export default class TransactionBuilder<T extends BaseCoin> {
     this.signatures.push(sig);
   }
 
-  build(): ITransaction {
-    if (this.transactionType === TransactionType.NotSet) {
-      throw new Error('Transaction type has not been set.');
-    }
-
-    let transaction = this.coin.buildTransaction(this.transaction, this.transactionType);
+  build(): Transaction {
+    let transaction = this.coin.buildTransaction(this.transaction);
     if (!transaction.isValid()) {
       throw new Error(`Transaction is not valid for ${this.coin.displayName}`);
     }

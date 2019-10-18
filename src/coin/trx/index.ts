@@ -33,16 +33,6 @@ export default class Trx extends BaseCoin {
     // TODO: tbd
     return true;
   }
-  
-  public validateAddSender(address: string): boolean {
-    // TODO: tbd
-    return true;
-  }
-
-  public validateAddDestination(address: string, value: BigNumber): boolean {
-    // TODO: tbd
-    return true;
-  }
 
   get displayName(): string {
     return this.staticsCoin.fullName;
