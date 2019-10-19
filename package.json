@@ -25,6 +25,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@bitgo/statics": "^2.3.0-rc.0",
+    "bignumber.js": "^9.0.0"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.6",
