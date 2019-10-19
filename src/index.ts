@@ -4,14 +4,14 @@ export class Destination {
   constructor(private address: string, private value: BigNumber) {}
 }
 
-export interface Signature {
+export interface BaseSignature {
   isValid(): boolean;
 }
 
 /**
  * Specifies the members expected for a Transaction
  */
-export interface Transaction {
+export interface BaseTransaction {
   rawTx: any;
   parsedTx: any;
 
@@ -19,7 +19,7 @@ export interface Transaction {
   isValid(): boolean;
 }
 
-export interface Key {
+export interface BaseKey {
   isValid(): boolean;
 }
 

@@ -1,21 +1,21 @@
 import { BaseCoin } from "./coin/baseCoin";
-import { Transaction, Destination, Signature, Key, TransactionType, Network } from ".";
+import { BaseTransaction, Destination, BaseSignature, BaseKey, TransactionType, Network } from ".";
 import BigNumber from "bignumber.js";
 
 
 export default class TransactionBuilder {
-  private transaction: Transaction;
+  private transaction: BaseTransaction;
 
   private fromAddrs: Array<string>;
   private destination: Array<Destination>;
-  private signatures: Array<Signature>;
+  private signatures: Array<BaseSignature>;
 
   constructor(private coin: BaseCoin) {
     this.coin = coin;
 
     this.fromAddrs = new Array<string>();
     this.destination = new Array<Destination>();
-    this.signatures = new Array<Signature>();
+    this.signatures = new Array<BaseSignature>();
   }
 
   from(rawTransaction: any, transactionType: TransactionType) {
@@ -32,7 +32,7 @@ export default class TransactionBuilder {
    * @param privateKey 
    * @param fromAddress 
    */
-  sign(privateKey: Key, fromAddress: string) {
+  sign(privateKey: BaseKey, fromAddress: string) {
     if (!this.coin.validateAddress(fromAddress)) {
       throw new Error(`${fromAddress} is not valid for ${this.coin.displayName}`);
     }
@@ -49,7 +49,7 @@ export default class TransactionBuilder {
     this.signatures.push(sig);
   }
 
-  build(): Transaction {
+  build(): BaseTransaction {
     let transaction = this.coin.buildTransaction(this.transaction);
     if (!transaction.isValid()) {
       throw new Error(`Transaction is not valid for ${this.coin.displayName}`);

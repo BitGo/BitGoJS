@@ -1,5 +1,5 @@
 import { BaseCoin } from "../baseCoin";
-import { Network, TransactionType, Transaction, Signature, Key } from "../..";
+import { Network, TransactionType, BaseTransaction, BaseSignature, BaseKey } from "../..";
 import BigNumber from "bignumber.js";
 
 /**
@@ -14,9 +14,9 @@ export default class TestCoin extends BaseCoin {
   _dests: number;
   _validateAddress: boolean; 
   _validateValue: boolean;
-  _parseTransaction: Transaction; 
-  _buildTransaction: Transaction;
-  _sign: Signature;
+  _parseTransaction: BaseTransaction; 
+  _buildTransaction: BaseTransaction;
+  _sign: BaseSignature;
 
   public setVariable(tcParams: TestCoinParams) {
       this._from = tcParams.from === undefined ? this._from : tcParams.from;
@@ -48,15 +48,15 @@ export default class TestCoin extends BaseCoin {
     return this._validateValue;
   }
 
-  public parseTransaction(rawTransaction: any, transactionType: TransactionType): Transaction {
+  public parseTransaction(rawTransaction: any, transactionType: TransactionType): BaseTransaction {
     return this._parseTransaction;
   }
 
-  public buildTransaction(transaction: Transaction): Transaction {
+  public buildTransaction(transaction: BaseTransaction): BaseTransaction {
     return this._buildTransaction;
   }
 
-  public sign(privateKey: Key, address: string, transaction: Transaction): Signature {
+  public sign(privateKey: BaseKey, address: string, transaction: BaseTransaction): BaseSignature {
     return this._sign;
   }
 }
@@ -66,7 +66,7 @@ interface TestCoinParams {
   dests?: number; 
   validateAddress?: boolean;
   validateValue?: boolean;
-  parseTransaction?: Transaction;
-  buildTransaction?: Transaction;
-  sign?: Signature;
+  parseTransaction?: BaseTransaction;
+  buildTransaction?: BaseTransaction;
+  sign?: BaseSignature;
 }

@@ -47,6 +47,4 @@ describe('Transaction builder', () => {
     txBuilder.from(null, TransactionType.Send);
     txBuilder.build();
   });
-
-
 });

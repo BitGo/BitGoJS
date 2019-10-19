@@ -1,4 +1,4 @@
-import { Network, Transaction, Signature, Key, TransactionType } from "..";
+import { Network, BaseTransaction, BaseSignature, BaseKey, TransactionType } from "../..";
 import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 
@@ -13,6 +13,10 @@ export abstract class BaseCoin {
    */
   protected staticsCoin: Readonly<StaticsBaseCoin>;
 
+  /**
+   * Constructor
+   * @param network the network for this coin
+   */
   constructor(network: Network) {
     this.network = network;
   }
@@ -33,29 +37,29 @@ export abstract class BaseCoin {
   abstract get maxDestinations(): number;
 
   /**
-   * Validate an address. Returns false if the address is invalid
+   * Validate an address. Throws an exception if invalid.
    * @param address the address
    * @param addressFormat the address format - this will be handled by the implementing coin as an enum
    */
-  public abstract validateAddress(address: string, addressFormat?: string): boolean;
+  public abstract validateAddress(address: string, addressFormat?: string);
 
   /***
-   * Validates the value corresponding to an amount can be used for this transaction.
+   * Validates the value corresponding to an amount can be used for this transaction. Throws an exception if invalid.
    */
-  public abstract validateValue(value: BigNumber): boolean;
+  public abstract validateValue(value: BigNumber);
 
   /**
    * Parse a transaction from a raw format.
    * @param rawTransaction the raw transaction in this case. format determined by the coin
    * @param transactionType the type/direction of the transaction
    */
-  public abstract parseTransaction(rawTransaction: any, transactionType: TransactionType): Transaction;
+  public abstract parseTransaction(rawTransaction: any, transactionType: TransactionType): BaseTransaction;
 
   /**
    * Build our transaction. Returns the resultant transaction with a completed transaction (or error state)
    * @param transaction 
    */
-  public abstract buildTransaction(transaction: Transaction): Transaction;
+  public abstract buildTransaction(transaction: BaseTransaction): BaseTransaction;
 
   /**
    * Sign a transaction. Returns a signature or a signature with invalid state.
@@ -63,5 +67,5 @@ export abstract class BaseCoin {
    * @param address 
    * @param transaction the transaction 
    */
-  public abstract sign(privateKey: Key, address: string, transaction: Transaction): Signature;
+  public abstract sign(privateKey: BaseKey, address: string, transaction: BaseTransaction): BaseSignature;
 }
