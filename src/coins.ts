@@ -387,6 +387,13 @@ export const coins = CoinMap.fromCoins([
     UnderlyingAsset['txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L'],
     'bitgo.com'
   ),
+  tstellarToken(
+    'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
+    'BitGo Test Token',
+    7,
+    UnderlyingAsset['txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L'],
+    'bitgo.com'
+  ),
   tofcerc20('ofcterc', 'ERC Test Token', 0, UnderlyingAsset.ERC),
   ofcerc20('ofcerc', 'ERC Token', 0, UnderlyingAsset.ERC),
 ]);
