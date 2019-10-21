@@ -1,7 +1,3 @@
-export interface AccountPermissionUpdateContract {
-  // TODO: tbd
-}
-
 export interface Account {
   publicKey: string;
   privateKey: string;
@@ -29,9 +25,33 @@ export enum ContractType {
   AccountPermissionUpdate,
 }
 
+export enum PermissionType {
+  Owner,
+  Witness,
+  Active,
+}
+
 export interface TransferContract {
   amount: number;
   // base58 encoded addresses
   toAddress: string; 
   ownerAddress: string;
+}
+
+export interface AccountPermissionUpdateContract {
+  ownerAddress: string;
+  owner: Permission;
+  witness?: Permission;
+  actives: Array<Permission>;
+}
+
+export interface Permission {
+  type: PermissionType;
+  threshold: number;
+
+}
+
+export interface PermissionKey {
+  address: string;
+  weight: number;
 }

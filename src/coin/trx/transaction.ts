@@ -1,21 +1,30 @@
-import { DecodedTransaction } from "./iface";
+import { RawTransaction } from "./iface";
 import { BaseTransaction } from "../baseCoin/iface";
-import { Network } from "../baseCoin/enum";
+import { NetworkType } from "@bitgo/statics";
 
 export class Transaction extends BaseTransaction {
+  /**
+   * This is what is passed into a from in transactionBuilder. 
+   */
   rawTx: any;
 
-  parsedTx: DecodedTransaction;
+  /**
+   * Output of parsed transaction.
+   */
+  tx: TransactionReceipt;
 
-  existingSignatures: Array<string>;
+  constructor(private network: NetworkType) { 
+    super();
+  }
+}
 
+export class TransactionReceipt {
+  raw_data: RawTransaction;
+  signature?: Array<string>;
+  
   /**
    * We have to get this from an external source typically as
    * it is not in the raw transaction.
    */
-  txID: string;
-
-  constructor(private network: Network) { 
-    super();
-  }
+  txID?: string;
 }

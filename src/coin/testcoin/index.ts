@@ -1,13 +1,14 @@
 import { BaseCoin } from "../baseCoin";
 import BigNumber from "bignumber.js";
 import { BaseTransaction, BaseSignature, BaseAddress, BaseKey } from "../baseCoin/iface";
-import { Network, TransactionType } from "../baseCoin/enum";
+import { TransactionType } from "../baseCoin/enum";
+import { NetworkType } from "@bitgo/statics";
 
 /**
  * The purpose of this coin is a mock to use for the test runner. Its capable of returning what we want under any circumstance.
  */
 export default class TestCoin extends BaseCoin {
-  constructor(network: Network) {
+  constructor(network: NetworkType) {
     super(network);
   }
 

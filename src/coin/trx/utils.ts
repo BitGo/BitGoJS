@@ -3,7 +3,7 @@ const tronproto = require('../../../resources/trx/protobuf/tron_pb');
 const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
 
 import * as assert from 'assert';
-import { TransferContract, DecodedTransaction, AccountPermissionUpdateContract, ContractType, Account } from './iface';
+import { TransferContract, RawTransaction, AccountPermissionUpdateContract, ContractType } from './iface';
 
 export type ByteArray = number[];
 export type RawTransaction = { txID: string, signature?: string[] };
@@ -72,7 +72,7 @@ export default class Utils {
    * Decodes a base64 encoded transaction in its protobuf representation.
    * @param base64EncodedHex
    */
-  static decodeTransaction(base64EncodedHex: string): DecodedTransaction {
+  static decodeTransaction(base64EncodedHex: string): RawTransaction {
     const rawTransaction = this.decodeRawTransaction(base64EncodedHex);
 
     // there should not be multiple contracts in this data
@@ -174,6 +174,6 @@ export default class Utils {
   }
 
   static decodeAccountPermissionUpdateContract(base64: string): AccountPermissionUpdateContract {
-    throw new Error('Not implemented yet.');
+    // TODO: here
   }
 }

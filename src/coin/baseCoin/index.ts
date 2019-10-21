@@ -1,7 +1,7 @@
-import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { coins, BaseCoin as StaticsBaseCoin, NetworkType } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 import { BaseAddress, BaseKey, BaseTransaction, BaseSignature } from "./iface";
-import { Network, TransactionType } from './enum';
+import { TransactionType } from './enum';
 
 export abstract class BaseCoin {
   /**
@@ -13,7 +13,7 @@ export abstract class BaseCoin {
    * Constructor
    * @param network the network for this coin
    */
-  constructor(public network: Network) { }
+  constructor(public network: NetworkType) { }
 
   /**
    * The statics fullName of this coin

@@ -1,15 +1,15 @@
 import { BaseCoin } from "../baseCoin";
-import { coins } from '@bitgo/statics';
+import { coins, NetworkType } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 import { Transaction } from './transaction';
 import Utils, { RawTransaction } from "./utils";
-import { DecodedTransaction, ContractType } from "./iface";
+import { RawTransaction, ContractType } from "./iface";
 import { Key } from "./key";
 import { Signature } from "./signature";
 import { ParseTransactionError, SigningError } from "../baseCoin/errors";
 import { Address } from "./address";
 import { BaseKey } from "../baseCoin/iface";
-import { TransactionType, Network } from "../baseCoin/enum";
+import { TransactionType } from "../baseCoin/enum";
 
 const tronweb = require('tronweb');
 const tronproto = require('../../../resources/trx/protobuf/tron_pb');
@@ -17,7 +17,9 @@ const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
 
 export default class Trx extends BaseCoin {
   public buildTransaction(transaction: Transaction): Transaction {
-    throw new Error("Method not implemented.");
+    // returns the format that will go to the full node,
+    //   the structure of the transaction
+    return transaction;
   }
 
   public parseTransaction(rawTransaction: any, transactionType: TransactionType): Transaction {
@@ -32,7 +34,7 @@ export default class Trx extends BaseCoin {
     tx.transactionType = transactionType;
 
     // try to parse our transaction
-    let parsedTx: DecodedTransaction;
+    let parsedTx: RawTransaction;
     try {
       parsedTx = Utils.decodeTransaction(rawTransaction);
     } catch (e) {
@@ -40,8 +42,9 @@ export default class Trx extends BaseCoin {
     }
 
     switch (parsedTx.contractType) {
+      case ContractType.AccountPermissionUpdate:
       case ContractType.Transfer: 
-        tx.parsedTx = parsedTx;
+        tx.tx = parsedTx;
         break;
       default:
         throw new ParseTransactionError('This contract type is undefined or unsupported.');
@@ -56,7 +59,6 @@ export default class Trx extends BaseCoin {
     }
 
     // we pass 0 signatures, since we want a fresh signature
-    let rawTx: RawTransaction = { txID: transaction.txID, signature: [] };
     let signedTx: RawTransaction;
     let sig = new Signature();
     try {
@@ -116,12 +118,12 @@ export default class Trx extends BaseCoin {
     return 1;
   }
 
-  constructor(network: Network) {
+  constructor(network: NetworkType) {
     super(network);
 
-    if (network === Network.Main) {
+    if (network === NetworkType.MAINNET) {
       this.staticsCoin = coins.get('TRX');
-    } else if (network === Network.Test) {
+    } else if (network === NetworkType.TESTNET) {
       this.staticsCoin = coins.get('TTRX');
     }
   }
