@@ -3,7 +3,7 @@ const tronproto = require('../../../resources/trx/protobuf/tron_pb');
 const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
 
 import * as assert from 'assert';
-import { TransferContract, DecodedTransaction, AccountPermissionUpdateContract, ContractType } from './iface';
+import { TransferContract, DecodedTransaction, AccountPermissionUpdateContract, ContractType, Account } from './iface';
 
 export type ByteArray = number[];
 export type RawTransaction = { txID: string, signature?: string[] };
@@ -15,7 +15,7 @@ export default class Utils {
   static generateAccount(): Account {
     return tronweb.utils.accounts.generateAccount();
   }
-  
+
   static isBase58Address(address: string): boolean {
     return tronweb.utils.crypto.isAddressValid(address);
   }
@@ -70,7 +70,7 @@ export default class Utils {
 
   /**
    * Decodes a base64 encoded transaction in its protobuf representation.
-   * @param base64EncodedHex 
+   * @param base64EncodedHex
    */
   static decodeTransaction(base64EncodedHex: string): DecodedTransaction {
     const rawTransaction = this.decodeRawTransaction(base64EncodedHex);
@@ -104,7 +104,7 @@ export default class Utils {
 
   /**
    * Decodes a transaction's raw field from a base64 encoded string. This is a protobuf representation.
-   * @param base64EncodedHex 
+   * @param base64EncodedHex
    * @example
    * @see {@link }
    */
