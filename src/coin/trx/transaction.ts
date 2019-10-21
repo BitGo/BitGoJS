@@ -1,5 +1,6 @@
-import { BaseTransaction, TransactionType, Network } from "../..";
 import { DecodedTransaction } from "./iface";
+import { BaseTransaction } from "../baseCoin/iface";
+import { Network } from "../baseCoin/enum";
 
 export class Transaction extends BaseTransaction {
   rawTx: any;

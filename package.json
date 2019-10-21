@@ -8,7 +8,7 @@
     "webpack-dev": "webpack --progress --colors --env.dev",
     "webpack-test": "webpack --progress --colors --env.test",
     "webpack-prod": "webpack --progress --colors --env.prod",
-    "build": "tsc && cp -r ./src/protobuf ./dist/src",
+    "build": "tsc && cp -r ./resources/trx/protobuf ./dist/src",
     "clean": "rm -r dist/*",
     "compile": "npm run browserify && npm run webpack-prod",
     "compile-dev": "npm run browserify && npm run webpack-dev",

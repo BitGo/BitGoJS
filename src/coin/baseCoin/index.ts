@@ -1,6 +1,7 @@
-import { Network, BaseTransaction, BaseSignature, BaseKey, TransactionType, BaseAddress } from "../..";
 import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
+import { BaseAddress, BaseKey, BaseTransaction, BaseSignature } from "./iface";
+import { Network, TransactionType } from './enum';
 
 export abstract class BaseCoin {
   /**

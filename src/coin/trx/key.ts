@@ -1,4 +1,4 @@
-import { BaseKey } from "../..";
+import { BaseKey } from "../baseCoin/iface";
 
 export class Key implements BaseKey {
   /**

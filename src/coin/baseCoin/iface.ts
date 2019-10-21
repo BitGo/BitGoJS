@@ -1,3 +1,5 @@
+import { TransactionType } from "./enum";
+
 export interface BaseAddress { 
   address: any;
 
@@ -19,15 +21,4 @@ export abstract class BaseTransaction {
 
 export interface BaseKey {
   key: any;
-}
-
-export enum Network {
-  Test,
-  Main,
-}
-
-export enum TransactionType {
-  Send,
-  Recieve,
-  WalletInitialization,
 }

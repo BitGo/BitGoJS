@@ -1,8 +1,8 @@
 import * as should from 'should';
-import TransactionBuilder from '../src/transactionBuilder';
-import TestCoin from '../src/coin/test';
-import { Network, TransactionType } from '../src/index';
+import TransactionBuilder from '../../src/transactionBuilder';
+import TestCoin, { Address } from '../../src/coin/test';
 import BigNumber from 'bignumber.js';
+import { TransactionType, Network } from '../../src/coin/baseCoin/enum';
 
 describe('Transaction builder', () => {
   let txBuilder: TransactionBuilder;
@@ -16,13 +16,13 @@ describe('Transaction builder', () => {
   it('should add an destination address that is valid', () => {
     coin.setVariable({ validateAddress: true });
 
-    txBuilder.addDestination('fakeAddress', new BigNumber(0));
+    txBuilder.addDestination(new Address(), new BigNumber(0));
   });
 
   it('should add an from address that is valid', () => {
     coin.setVariable({ validateAddress: true });
 
-    txBuilder.addFrom('fakeAddress');
+    txBuilder.addFrom(new Address());
   });
 
   it('should parse a raw transaction that is valid', () => {
@@ -34,10 +34,11 @@ describe('Transaction builder', () => {
 
   it('should sign a transaction that is valid', () => {
     const validTx = { isValid: () => true, rawTx: null, parsedTx: null, transactionType: TransactionType.Send };
-    coin.setVariable({ sign: validTx });
+
+    coin.setVariable({ sign: { signature: '' }, validateKey: true, parseTransaction: validTx });
 
     txBuilder.from(null, TransactionType.Send);
-    txBuilder.sign({ isValid: () => true }, 'fakeAddress');
+    txBuilder.sign({ key: ''  }, new Address());
   });
 
   it('should build an existing transaction that is valid', () => {

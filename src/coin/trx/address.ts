@@ -1,4 +1,4 @@
-import { BaseAddress } from "../..";
+import { BaseAddress } from "../baseCoin/iface";
 
 /**
  * Addresses can be encoded in three varieties:

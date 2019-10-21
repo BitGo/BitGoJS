@@ -1,7 +1,8 @@
 import { BaseCoin } from "./coin/baseCoin";
-import { BaseTransaction, Destination, BaseSignature, BaseKey, TransactionType, Network, BaseAddress } from ".";
 import BigNumber from "bignumber.js";
 import { SigningError } from "./coin/baseCoin/errors";
+import { BaseTransaction, BaseAddress, BaseSignature, BaseKey } from "./coin/baseCoin/iface";
+import { TransactionType } from "./coin/baseCoin/enum";
 
 
 export default class TransactionBuilder {
@@ -74,4 +75,8 @@ export default class TransactionBuilder {
 
     this.destination.push(new Destination(address, value));
   }
+}
+
+export class Destination {
+  constructor(private address: BaseAddress, private value: BigNumber) {}
 }

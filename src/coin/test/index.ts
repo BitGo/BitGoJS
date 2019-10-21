@@ -1,6 +1,7 @@
 import { BaseCoin } from "../baseCoin";
-import { Network, TransactionType, BaseTransaction, BaseSignature, BaseKey, BaseAddress } from "../..";
 import BigNumber from "bignumber.js";
+import { BaseTransaction, BaseSignature, BaseAddress, BaseKey } from "../baseCoin/iface";
+import { Network, TransactionType } from "../baseCoin/enum";
 
 /**
  * The purpose of this coin is a mock to use for the test runner. Its capable of returning what we want under any circumstance.
@@ -76,4 +77,8 @@ interface TestCoinParams {
   parseTransaction?: BaseTransaction;
   buildTransaction?: BaseTransaction;
   sign?: BaseSignature;
+}
+
+export class Address implements BaseAddress {
+  address: string;
 }

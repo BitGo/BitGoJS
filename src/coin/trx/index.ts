@@ -1,5 +1,4 @@
 import { BaseCoin } from "../baseCoin";
-import { Network, TransactionType, BaseKey } from "../..";
 import { coins } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 import { Transaction } from './transaction';
@@ -9,6 +8,8 @@ import { Key } from "./key";
 import { Signature } from "./signature";
 import { ParseTransactionError, SigningError } from "../baseCoin/errors";
 import { Address } from "./address";
+import { BaseKey } from "../baseCoin/iface";
+import { TransactionType, Network } from "../baseCoin/enum";
 
 const tronweb = require('tronweb');
 const tronproto = require('../../../resources/trx/protobuf/tron_pb');
