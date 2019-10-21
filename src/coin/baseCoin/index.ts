@@ -1,13 +1,8 @@
-import { Network, BaseTransaction, BaseSignature, BaseKey, TransactionType } from "../..";
+import { Network, BaseTransaction, BaseSignature, BaseKey, TransactionType, BaseAddress } from "../..";
 import { coins, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 
 export abstract class BaseCoin {
-  /**
-   * The network this transaction is being built for.
-   */
-  public network: Network;
-
   /**
    * Our coin from statics
    */
@@ -17,9 +12,7 @@ export abstract class BaseCoin {
    * Constructor
    * @param network the network for this coin
    */
-  constructor(network: Network) {
-    this.network = network;
-  }
+  constructor(public network: Network) { }
 
   /**
    * The statics fullName of this coin
@@ -41,12 +34,17 @@ export abstract class BaseCoin {
    * @param address the address
    * @param addressFormat the address format - this will be handled by the implementing coin as an enum
    */
-  public abstract validateAddress(address: string, addressFormat?: string);
+  public abstract validateAddress(address: BaseAddress, addressFormat?: string);
 
   /***
    * Validates the value corresponding to an amount can be used for this transaction. Throws an exception if invalid.
    */
   public abstract validateValue(value: BigNumber);
+
+  /***
+   * Validates a private key.
+   */
+  public abstract validateKey(key: BaseKey);
 
   /**
    * Parse a transaction from a raw format.
@@ -67,5 +65,5 @@ export abstract class BaseCoin {
    * @param address 
    * @param transaction the transaction 
    */
-  public abstract sign(privateKey: BaseKey, address: string, transaction: BaseTransaction): BaseSignature;
+  public abstract sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseSignature;
 }

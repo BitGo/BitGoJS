@@ -1,5 +1,5 @@
 import { BaseCoin } from "../baseCoin";
-import { Network, TransactionType, BaseTransaction, BaseSignature, BaseKey } from "../..";
+import { Network, TransactionType, BaseTransaction, BaseSignature, BaseKey, BaseAddress } from "../..";
 import BigNumber from "bignumber.js";
 
 /**
@@ -14,6 +14,7 @@ export default class TestCoin extends BaseCoin {
   _dests: number;
   _validateAddress: boolean; 
   _validateValue: boolean;
+  _validateKey: boolean;
   _parseTransaction: BaseTransaction; 
   _buildTransaction: BaseTransaction;
   _sign: BaseSignature;
@@ -23,6 +24,7 @@ export default class TestCoin extends BaseCoin {
       this._dests = tcParams.dests === undefined ? this._dests : tcParams.dests;
       this._validateAddress = tcParams.validateAddress === undefined ? this._validateAddress : tcParams.validateAddress;
       this._validateValue = tcParams.validateValue === undefined ? this._validateValue : tcParams.validateValue;
+      this._validateKey = tcParams.validateKey === undefined ? this._validateKey : tcParams.validateKey;
       this._parseTransaction = tcParams.parseTransaction === undefined ? this._parseTransaction : tcParams.parseTransaction;
       this._buildTransaction = tcParams.buildTransaction === undefined ? this._buildTransaction : tcParams.buildTransaction;
       this._sign = tcParams.sign === undefined ? this._sign : tcParams.sign;
@@ -40,12 +42,16 @@ export default class TestCoin extends BaseCoin {
     return this._dests;
   }
 
-  public validateAddress(address: string): boolean {
+  public validateAddress(address: BaseAddress): boolean {
     return this._validateAddress;
   }
 
   public validateValue(value: BigNumber): boolean {
     return this._validateValue;
+  }
+
+  public validateKey(key: BaseKey) {
+    return this._validateKey;
   }
 
   public parseTransaction(rawTransaction: any, transactionType: TransactionType): BaseTransaction {
@@ -56,7 +62,7 @@ export default class TestCoin extends BaseCoin {
     return this._buildTransaction;
   }
 
-  public sign(privateKey: BaseKey, address: string, transaction: BaseTransaction): BaseSignature {
+  public sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseSignature {
     return this._sign;
   }
 }
@@ -66,6 +72,7 @@ interface TestCoinParams {
   dests?: number; 
   validateAddress?: boolean;
   validateValue?: boolean;
+  validateKey?: boolean;
   parseTransaction?: BaseTransaction;
   buildTransaction?: BaseTransaction;
   sign?: BaseSignature;

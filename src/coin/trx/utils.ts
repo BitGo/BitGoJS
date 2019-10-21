@@ -8,7 +8,10 @@ import { TransferContract, DecodedTransaction, AccountPermissionUpdateContract, 
 export type ByteArray = number[];
 export type RawTransaction = { txID: string, signature?: string[] };
 
-export default class TronHelpers {
+/**
+ * Tron-specific helpers
+ */
+export default class Utils {
   static generateAccount(): Account {
     return tronweb.utils.accounts.generateAccount();
   }
@@ -17,15 +20,15 @@ export default class TronHelpers {
     return tronweb.utils.crypto.isAddressValid(address);
   }
 
-  static isAddress(hexAddress: string): boolean {
-    return tronweb.isAddress(hexAddress);
+  static isHexAddress(address: string): boolean {
+    return tronweb.isAddress(address);
   }
 
-  static hexStr2byteArray(str: string): ByteArray {
+  static getByteArrayFromHexAddress(str: string): ByteArray {
     return tronweb.utils.code.hexStr2byteArray(str);
   }
 
-  static byteArray2hexStr(arr: ByteArray): string {
+  static getHexAddressFromByteArray(arr: ByteArray): string {
     return tronweb.utils.code.byteArray2hexStr(arr);
   }
 
@@ -42,8 +45,8 @@ export default class TronHelpers {
   }
 
   static getBase58AddressFromHex(hex: string): string {
-    const arr = TronHelpers.hexStr2byteArray(hex);
-    return TronHelpers.getBase58AddressFromByteArray(arr);
+    const arr = Utils.getByteArrayFromHexAddress(hex);
+    return Utils.getBase58AddressFromByteArray(arr);
   }
 
   static signTransaction(privateKey: string | ByteArray, transaction: RawTransaction): RawTransaction {
@@ -54,15 +57,15 @@ export default class TronHelpers {
     return tronweb.Trx.signString(message, privateKey, useTronHeader);
   }
 
-  static computeAddress(pubBytes: number[] | string): ByteArray {
+  static getRawAddressFromPubKey(pubBytes: number[] | string): ByteArray {
     return tronweb.utils.crypto.computeAddress(pubBytes);
   }
 
-  static getHexFromBase58Address(base58: string): string {
+  static getHexAddressFromBase58Address(base58: string): string {
     // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
     // but they don't surface this call in index.js
     const bytes = tronweb.utils.crypto.decodeBase58Address(base58);
-    return TronHelpers.byteArray2hexStr(bytes);
+    return Utils.getHexAddressFromByteArray(bytes);
   }
 
   /**
@@ -126,14 +129,14 @@ export default class TronHelpers {
 
   /**
    * Indicates whether the passed string is a safe hex string for tron's purposes.
-   * @param str A valid hex string must be a string made of numbers and characters and has an even length.
+   * @param hex A valid hex string must be a string made of numbers and characters and has an even length.
    */
-  static safeHexString(str: string): Boolean {
-    if (!str.match(/^(0x)?[0-9a-fA-F]*$/)) {
+  static isValidHex(hex: string): Boolean {
+    if (!hex.match(/^(0x)?[0-9a-fA-F]*$/)) {
       return false;
     }
 
-    if ((str.length % 2) !== 0) {
+    if ((hex.length % 2) !== 0) {
       return false;
     }
 
@@ -159,8 +162,8 @@ export default class TronHelpers {
     assert(transferContract.hasOwnProperty('amount'));
 
     // deserialize attributes
-    const ownerAddress = TronHelpers.getBase58AddressFromByteArray(TronHelpers.hexStr2byteArray(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')));
-    const toAddress = TronHelpers.getBase58AddressFromByteArray(TronHelpers.hexStr2byteArray(Buffer.from(transferContract.toAddress, 'base64').toString('hex')));
+    const ownerAddress = Utils.getBase58AddressFromByteArray(Utils.getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')));
+    const toAddress = Utils.getBase58AddressFromByteArray(Utils.getByteArrayFromHexAddress(Buffer.from(transferContract.toAddress, 'base64').toString('hex')));
     const amount = transferContract.amount;
 
     return {

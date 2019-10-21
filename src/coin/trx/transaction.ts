@@ -1,27 +1,20 @@
-import { BaseTransaction, TransactionType } from "../..";
+import { BaseTransaction, TransactionType, Network } from "../..";
 import { DecodedTransaction } from "./iface";
 
-export class Transaction implements BaseTransaction {
-  constructor() {
-    this.failedParse = false;
-  }
-
+export class Transaction extends BaseTransaction {
   rawTx: any;
 
   parsedTx: DecodedTransaction;
 
-  transactionType: TransactionType;
-
   existingSignatures: Array<string>;
 
-  failedParse: boolean;
-
   /**
-   * We have to get this from an external source.
+   * We have to get this from an external source typically as
+   * it is not in the raw transaction.
    */
   txID: string;
 
-  isValid(): boolean {
-    return !this.failedParse;
+  constructor(private network: Network) { 
+    super();
   }
 }

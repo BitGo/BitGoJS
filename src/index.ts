@@ -1,26 +1,30 @@
 import BigNumber from "bignumber.js";
 
 export class Destination {
-  constructor(private address: string, private value: BigNumber) {}
+  constructor(private address: BaseAddress, private value: BigNumber) {}
 }
 
-export interface BaseSignature {
-  isValid(): boolean;
+export interface BaseAddress { 
+  address: any;
+
+  toString(): string;
+}
+
+export interface BaseSignature { 
+  signature: any;
 }
 
 /**
  * Specifies the members expected for a Transaction
  */
-export interface BaseTransaction {
-  rawTx: any;
-  parsedTx: any;
-
+export abstract class BaseTransaction {
+  abstract rawTx: any;
+  abstract parsedTx: any;
   transactionType: TransactionType;
-  isValid(): boolean;
 }
 
 export interface BaseKey {
-  isValid(): boolean;
+  key: any;
 }
 
 export enum Network {
