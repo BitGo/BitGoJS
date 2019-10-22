@@ -35,3 +35,10 @@ export class AddressValidationError extends ExtendableError {
     this.name = 'AddressValidationError';
   }
 }
+
+export class BuildTransactionError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BuildTransactionError';
+  }
+}

@@ -1,7 +1,7 @@
 import { BaseCoin } from "./coin/baseCoin";
 import BigNumber from "bignumber.js";
 import { SigningError } from "./coin/baseCoin/errors";
-import { BaseTransaction, BaseAddress, BaseSignature, BaseKey } from "./coin/baseCoin/iface";
+import { BaseTransaction, BaseAddress, BaseKey } from "./coin/baseCoin/iface";
 import { TransactionType } from "./coin/baseCoin/enum";
 
 
@@ -10,14 +10,12 @@ export default class TransactionBuilder {
 
   private fromAddresses: Array<BaseAddress>;
   private destination: Array<Destination>;
-  private signatures: Array<BaseSignature>;
 
   constructor(private coin: BaseCoin) {
     this.coin = coin;
 
     this.fromAddresses = new Array<BaseAddress>();
     this.destination = new Array<Destination>();
-    this.signatures = new Array<BaseSignature>();
   }
 
   from(rawTransaction: any, transactionType: TransactionType) {
@@ -39,9 +37,7 @@ export default class TransactionBuilder {
       throw new SigningError(`Key is not valid for ${fromAddress}`);
     }
 
-    let sig = this.coin.sign(key, fromAddress, this.transaction);
-    
-    this.signatures.push(sig);
+    this.transaction = this.coin.sign(key, fromAddress, this.transaction);
   }
 
   build(): BaseTransaction {

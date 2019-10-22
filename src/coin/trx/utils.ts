@@ -3,10 +3,10 @@ const tronproto = require('../../../resources/trx/protobuf/tron_pb');
 const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
 
 import * as assert from 'assert';
-import { TransferContract, RawTransaction, AccountPermissionUpdateContract, ContractType, Account } from './iface';
+import { TransferContract, RawTransaction, AccountPermissionUpdateContract, Account, TransactionReceipt } from './iface';
+import { ContractType } from './enum';
 
 export type ByteArray = number[];
-export type RawTransaction = { txID: string, signature?: string[] };
 
 /**
  * Tron-specific helpers
@@ -49,7 +49,7 @@ export default class Utils {
     return Utils.getBase58AddressFromByteArray(arr);
   }
 
-  static signTransaction(privateKey: string | ByteArray, transaction: RawTransaction): RawTransaction {
+  static signTransaction(privateKey: string | ByteArray, transaction: TransactionReceipt): TransactionReceipt {
     return tronweb.utils.crypto.signTransaction(privateKey, transaction);
   }
 
@@ -174,6 +174,7 @@ export default class Utils {
   }
 
   static decodeAccountPermissionUpdateContract(base64: string): AccountPermissionUpdateContract {
-    // TODO: here
+    throw new Error();
+    // TODO: build
   }
 }

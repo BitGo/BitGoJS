@@ -1,6 +1,6 @@
 import * as should from 'should';
 import TransactionBuilder from '../../src/transactionBuilder';
-import TestCoin, { Address } from '../../src/coin/test';
+import TestCoin, { Address } from '../../src/coin/testcoin';
 import BigNumber from 'bignumber.js';
 import { TransactionType, Network } from '../../src/coin/baseCoin/enum';
 

@@ -19,7 +19,7 @@ export default class TestCoin extends BaseCoin {
   _validateKey: boolean;
   _parseTransaction: BaseTransaction; 
   _buildTransaction: BaseTransaction;
-  _sign: BaseSignature;
+  _sign: BaseTransaction;
 
   public setVariable(tcParams: TestCoinParams) {
       this._from = tcParams.from === undefined ? this._from : tcParams.from;
@@ -64,7 +64,7 @@ export default class TestCoin extends BaseCoin {
     return this._buildTransaction;
   }
 
-  public sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseSignature {
+  public sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseTransaction {
     return this._sign;
   }
 }
@@ -77,7 +77,7 @@ interface TestCoinParams {
   validateKey?: boolean;
   parseTransaction?: BaseTransaction;
   buildTransaction?: BaseTransaction;
-  sign?: BaseSignature;
+  sign?: BaseTransaction;
 }
 
 export class Address implements BaseAddress {

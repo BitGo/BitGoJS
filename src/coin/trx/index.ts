@@ -2,82 +2,126 @@ import { BaseCoin } from "../baseCoin";
 import { coins, NetworkType } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 import { Transaction } from './transaction';
-import Utils, { RawTransaction } from "./utils";
-import { RawTransaction, ContractType } from "./iface";
-import { Key } from "./key";
-import { Signature } from "./signature";
-import { ParseTransactionError, SigningError } from "../baseCoin/errors";
-import { Address } from "./address";
-import { BaseKey } from "../baseCoin/iface";
-import { TransactionType } from "../baseCoin/enum";
-
-const tronweb = require('tronweb');
-const tronproto = require('../../../resources/trx/protobuf/tron_pb');
-const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
+import { RawTransaction, TransactionReceipt } from './iface';
+import { Key } from './key';
+import { Signature } from './signature';
+import { ParseTransactionError, SigningError, BuildTransactionError } from '../baseCoin/errors';
+import { Address } from './address';
+import { BaseKey, BaseTransaction } from '../baseCoin/iface';
+import { TransactionType } from '../baseCoin/enum';
+import Utils from "./utils";
+import { ContractType } from "./enum";
 
 export default class Trx extends BaseCoin {
   public buildTransaction(transaction: Transaction): Transaction {
-    // returns the format that will go to the full node,
-    //   the structure of the transaction
-    return transaction;
-  }
-
-  public parseTransaction(rawTransaction: any, transactionType: TransactionType): Transaction {
-    const tx = new Transaction(this.network);
-
-    if (typeof rawTransaction !== 'string') {
-      throw new ParseTransactionError('Raw transaction needs to be a base64 encoded string.');
+    if (transaction.transactionType === TransactionType.Recieve) {
+      throw new BuildTransactionError('Called build on a recieve transaction.');
     }
 
-    // store our transaction
-    tx.rawTx = rawTransaction;
-    tx.transactionType = transactionType;
+    switch (transaction.tx.raw_data.contractType) {
+      case ContractType.Transfer:
+      case ContractType.AccountPermissionUpdate:
+        return transaction;
+      default:
+        throw new BuildTransactionError('Contract type not implemented.');
+    }
+  }
 
-    // try to parse our transaction
+  /**
+   * Helper function for parsing a transaction's raw_data field.
+   * @param rawDataHex Raw data field encoded as hex in tron.proto
+   */
+  private createRawTransaction(rawDataHex: string): RawTransaction {
     let parsedTx: RawTransaction;
     try {
-      parsedTx = Utils.decodeTransaction(rawTransaction);
+      parsedTx = Utils.decodeTransaction(rawDataHex);
     } catch (e) {
       throw new ParseTransactionError('Failed to decode transaction.');
     }
 
-    switch (parsedTx.contractType) {
-      case ContractType.AccountPermissionUpdate:
-      case ContractType.Transfer: 
-        tx.tx = parsedTx;
-        break;
-      default:
-        throw new ParseTransactionError('This contract type is undefined or unsupported.');
+    return parsedTx;
+  }
+
+  /**
+   * Helper function for parsing a transaction.
+   * @param rawTransaction Transaction from the node
+   */
+  private createTransactionReceipt(rawTransaction: string): TransactionReceipt {
+    const raw = JSON.parse(rawTransaction);
+    
+    let txID: string;
+    // TODO: need a validation method for txID
+    if (raw.txID && Utils.isValidHex(raw.txID)) {
+      txID = raw.txID;
+    } else {
+      throw new ParseTransactionError('Raw transaction needs to have a valid txID.');
     }
+
+    // this is an optional field - its possible signature is an empty array
+    let signature: Array<string> = new Array<string>();
+    if (raw.signature && Array.isArray(raw.signature)) {
+      signature = raw.signature;
+    }
+
+    let rawData: RawTransaction;
+    if (raw.raw_data_hex && Utils.isValidHex(raw.raw_data_hex)) {
+      rawData = this.createRawTransaction(raw.raw_data_hex);
+    } else {
+      throw new ParseTransactionError('Raw transaction needs to have a valid state.');
+    }
+    
+    return {
+      txID,
+      raw_data: rawData,
+      signature,
+    };
+  }
+
+  /**
+   * Parse transaction takes in raw JSON directly from the node.
+   */
+  public parseTransaction(rawTransaction: any, transactionType: TransactionType): Transaction {
+    const tx = new Transaction(this.network);
+
+    if (typeof rawTransaction !== 'string') {
+      throw new ParseTransactionError('Raw transaction needs to be a JSON encoded string.');
+    }
+
+    // store our transaction data for later
+    tx.rawTx = rawTransaction;
+    tx.transactionType = transactionType;
+    tx.tx = this.createTransactionReceipt(rawTransaction);
 
     return tx;
   }
 
-  public sign(privateKey: Key, address: Address, transaction: Transaction): Signature {
-    if (!transaction.txID) {
-      throw new SigningError('txID needs to be set to sign.');
+  public sign(privateKey: Key, address: Address, transaction: Transaction): Transaction {
+    if (!transaction.tx) {
+      throw new SigningError('tx needs to be parsed.');
     }
 
-    // we pass 0 signatures, since we want a fresh signature
-    let signedTx: RawTransaction;
-    let sig = new Signature();
+    if (!transaction.tx.txID) {
+      throw new SigningError('txID needs to exist on our transaction.');
+    }
+
+    // store our signatures, since we want to compare the new sig to another in a later step
+    const oldSigs = transaction.tx.signature;
+    let signedTx: TransactionReceipt;
     try {
-      signedTx = Utils.signTransaction(privateKey.key, rawTx);
+      signedTx = Utils.signTransaction(privateKey.key, transaction.tx);
     } catch (e) {
       throw new SigningError('Failed to sign transaction via helper.');
     }
 
-    if (signedTx.signature && signedTx.signature.length > 0) {
-      sig.signature = signedTx.signature[0];
-    } else {
+    // ensure that we have more signatures than what we started with
+    let oldSignatureCount = oldSigs ? oldSigs.length : 0;
+    if (!signedTx.signature || oldSignatureCount >= signedTx.signature.length) {
       throw new SigningError('Transaction signing did not return an additional signature.');
     }
 
-    if (transaction.existingSignatures && transaction.existingSignatures.some((sig) => signedTx.signature && signedTx.signature[0] === sig)) {
-      throw new SigningError('Signing yielded an existing signature on the transaction.');
-    }
+    transaction.tx = signedTx;
 
-    return sig;
+    return transaction;
   }
   
   /**

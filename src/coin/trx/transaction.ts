@@ -1,4 +1,4 @@
-import { RawTransaction } from "./iface";
+import { RawTransaction, TransactionReceipt } from "./iface";
 import { BaseTransaction } from "../baseCoin/iface";
 import { NetworkType } from "@bitgo/statics";
 
@@ -16,15 +16,4 @@ export class Transaction extends BaseTransaction {
   constructor(private network: NetworkType) { 
     super();
   }
-}
-
-export class TransactionReceipt {
-  raw_data: RawTransaction;
-  signature?: Array<string>;
-  
-  /**
-   * We have to get this from an external source typically as
-   * it is not in the raw transaction.
-   */
-  txID?: string;
 }

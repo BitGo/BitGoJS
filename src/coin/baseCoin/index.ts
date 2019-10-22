@@ -61,10 +61,10 @@ export abstract class BaseCoin {
   public abstract buildTransaction(transaction: BaseTransaction): BaseTransaction;
 
   /**
-   * Sign a transaction. Returns a signature or a signature with invalid state.
+   * Sign a transaction. Creates and attaches a signature to this transaction.
    * @param privateKey the private key associated with this signing mechanism
    * @param address 
    * @param transaction the transaction 
    */
-  public abstract sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseSignature;
+  public abstract sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseTransaction;
 }

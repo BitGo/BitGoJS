@@ -1,6 +1,7 @@
 import { TransferContract } from '../../../../src/coin/trx/iface';
 import Utils from '../../../../src/coin/trx/utils';
 import * as should from 'should';
+import { UnsignedTransferContractTx } from './mock';
 
 describe('Tron library should', function() {
   // arbitrary text
@@ -17,29 +18,6 @@ describe('Tron library should', function() {
   const addrBytes = [ 65, 44, 43, 164, 169, 255, 108, 83, 32, 125, 197, 182,134,191,236,247,94,167,184,5,119 ]
 
   // tx information
-  const sig = '0a9944316924ec7fba4895f1ea1e7cc95f9e2b828ae268a48a8dbeddef40c6f5e127170a95aed9f3f5425b13058d0cb6ef1f5c2213190e482e87043691f22e6800';
-  const tx = { visible: false,
-    txID:
-     'ee0bbf72b238361577a9dc41d79f7a74f6ba9efe472c21bfd3e7dc850c9e9020',
-    raw_data:
-     { contract:
-        [ { parameter:
-             { value:
-                { amount: 10,
-                  owner_address: '41e5e00fc1cdb3921b8340c20b2b65b543c84aa1dd',
-                  to_address: '412c2ba4a9ff6c53207dc5b686bfecf75ea7b80577' },
-               type_url: 'type.googleapis.com/protocol.TransferContract' },
-            type: 'TransferContract' } ],
-       ref_block_bytes: '5123',
-       ref_block_hash: '52a26dea963a47bc',
-       expiration: 1569463320000,
-       timestamp: 1569463261623 },
-    raw_data_hex:
-     '0a025123220852a26dea963a47bc40c0fbb6dad62d5a65080112610a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412300a1541e5e00fc1cdb3921b8340c20b2b65b543c84aa1dd1215412c2ba4a9ff6c53207dc5b686bfecf75ea7b80577180a70b7b3b3dad62d',
-    signature:
-     [ ]
-    };
-
   it('be able to convert hex to bytes', () => {
     const ba = Utils.getByteArrayFromHexAddress(hex);
     should.deepEqual(ba, arr);
@@ -85,8 +63,8 @@ describe('Tron library should', function() {
 
   it('sign a transaction', () => {
     const prvArray = Utils.getByteArrayFromHexAddress(prv);
-    const signedTx = Utils.signTransaction(prvArray, tx);
-    should.equal(signedTx.signature[0], sig);
+    const signedTx = Utils.signTransaction(prvArray, UnsignedTransferContractTx.tx);
+    should.equal(signedTx.signature[0], UnsignedTransferContractTx.sig);
   });
 
   it('sign a string', () => {
@@ -104,18 +82,18 @@ describe('Tron library should', function() {
   });
 
   it('should return transaction data', () => {
-    const data = Utils.decodeRawTransaction(tx.raw_data_hex);
-    should.equal(data.timestamp, tx.raw_data.timestamp);
-    should.equal(data.expiration, tx.raw_data.expiration);
+    const data = Utils.decodeRawTransaction(UnsignedTransferContractTx.tx.raw_data_hex);
+    should.equal(data.timestamp, UnsignedTransferContractTx.tx.raw_data.timestamp);
+    should.equal(data.expiration, UnsignedTransferContractTx.tx.raw_data.expiration);
     should.exist(data.contracts);
   });
 
   it('should decode a transfer contract', () => {
-    const parsedTx = Utils.decodeTransferContract(tx.raw_data_hex) as TransferContract;
+    const parsedTx = Utils.decodeTransferContract(UnsignedTransferContractTx.tx.raw_data_hex) as TransferContract;
 
-    const toAddress = Utils.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.to_address);
-    const ownerAddress = Utils.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.owner_address);
-    const amount = tx.raw_data.contract[0].parameter.value.amount;
+    const toAddress = Utils.getBase58AddressFromHex(UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value.to_address);
+    const ownerAddress = Utils.getBase58AddressFromHex(UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value.owner_address);
+    const amount = UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value.amount;
 
     should.equal(parsedTx.toAddress, toAddress);
     should.equal(parsedTx.ownerAddress, ownerAddress);

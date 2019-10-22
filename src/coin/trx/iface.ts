@@ -1,3 +1,5 @@
+import { ContractType, PermissionType } from "./enum";
+
 export interface Account {
   publicKey: string;
   privateKey: string;
@@ -13,22 +15,25 @@ export interface Contract {
   type: string;
 }
 
-export interface DecodedTransaction {
+/**
+ * This interface represents a form of:
+ * @external https://github.com/BitGo/bitgo-account-lib/blob/5f282588701778a4421c75fa61f42713f56e95b9/resources/trx/protobuf/tron.proto#L239
+ */
+export interface TransactionReceipt {
+  raw_data: RawTransaction;
+  signature: Array<string>;
+  
+  /**
+   * This does not exist in protobuf because it's attached by the node rpc calls.
+   */
+  txID?: string;
+}
+
+export interface RawTransaction {
   expiration: number;
   timestamp: number;
   contractType: ContractType;
   contract: TransferContract | AccountPermissionUpdateContract;
-}
-
-export enum ContractType {
-  Transfer,
-  AccountPermissionUpdate,
-}
-
-export enum PermissionType {
-  Owner,
-  Witness,
-  Active,
 }
 
 export interface TransferContract {
