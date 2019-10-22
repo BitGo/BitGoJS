@@ -18,7 +18,7 @@ import {
   VerifyAddressOptions,
   VerifyTransactionOptions,
   TransactionFee,
-  TransactionRecipient as recipient,
+  TransactionRecipient as Recipient,
   TransactionPrebuild as BaseTransactionPrebuild,
 } from '../baseCoin';
 import * as utxoLib from 'bitgo-utxo-lib';
@@ -30,16 +30,15 @@ export interface TronSignTransactionOptions extends SignTransactionOptions {
   prv: string;
 }
 
-export interface txInfo {
-  transaction: any;
-  recipients: recipient[];
+export interface TxInfo {
+  recipients: Recipient[];
   from: string;
   txid: string;
 }
 
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txHex: string;
-  txInfo: txInfo;
+  txInfo: TxInfo;
   feeInfo: TransactionFee;
 }
 
@@ -141,19 +140,21 @@ export class Trx extends BaseCoin {
   }
 
   signTransaction(params: TronSignTransactionOptions): SignedTransaction {
-    const tx = params.txPrebuild.txInfo.transaction;
-    // this prv should be hex-encoded
+    const tx = JSON.parse(params.txPrebuild.txHex);
+    let expectedSignaturesCount = 1;
+    if (!_.isEmpty(tx.signature)) {
+      expectedSignaturesCount += tx.signature.length;
+    }
     const transaction = tronWeb.utils.crypto.signTransaction(params.prv, tx);
-    if (_.isEmpty(transaction.signature)) {
+    if (transaction.signature.length !== expectedSignaturesCount) {
       throw new Error('failed to sign transaction');
     }
     const response = {
-      txHex: transaction.raw_data_hex,
-      transaction,
+      txHex: JSON.stringify(transaction),
     };
 
-    // Fully signed transaction have 3 signatures
-    if (transaction.signature.length >= 3) {
+    // Multisig fully signed transaction have at least 2 signatures
+    if (transaction.signature.length >= 2) {
       return response;
     }
     // Half signed transaction
