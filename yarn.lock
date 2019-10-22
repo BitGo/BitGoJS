@@ -103,7 +103,7 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/statics@2.3.0-rc.0":
+"@bitgo/statics@^2.3.0-rc":
   version "2.3.0-rc.0"
   resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-2.3.0-rc.0.tgz#652ff4dff7d165630fcc538ba0255a75fc70450b"
   integrity sha512-1q7sBtxLVc+OPJtC8XzDqCWmasZvIRXMY3LVlqynoVFQAQYoukOi9UIfchf5x1H5TWSPCBd4GUjJnISX+cT5UQ==
