@@ -3,6 +3,7 @@
  */
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
+import { CoinFamily } from '@bitgo/statics';
 const tronWeb = require('tronweb');
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -16,6 +17,9 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  TransactionFee,
+  TransactionRecipient as recipient,
+  TransactionPrebuild as BaseTransactionPrebuild,
 } from '../baseCoin';
 import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
@@ -26,17 +30,17 @@ export interface TronSignTransactionOptions extends SignTransactionOptions {
   prv: string;
 }
 
-export interface TransactionPrebuild {
-  txHex: string;
-  txid: string;
+export interface txInfo {
   transaction: any;
-  txInfo: {
-    from: string;
-    to: string;
-    amount: string;
-    fee: number;
-    txID: string;
-  };
+  recipients: recipient[];
+  from: string;
+  txid: string;
+}
+
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txHex: string;
+  txInfo: txInfo;
+  feeInfo: TransactionFee;
 }
 
 export class Trx extends BaseCoin {
@@ -56,7 +60,7 @@ export class Trx extends BaseCoin {
     return this._staticsCoin.name;
   }
 
-  getFamily() {
+  getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
 
@@ -137,13 +141,25 @@ export class Trx extends BaseCoin {
   }
 
   signTransaction(params: TronSignTransactionOptions): SignedTransaction {
-    const tx = params.txPrebuild.transaction;
+    const tx = params.txPrebuild.txInfo.transaction;
     // this prv should be hex-encoded
-    const halfSigned = tronWeb.utils.crypto.signTransaction(params.prv, tx);
-    if (_.isEmpty(halfSigned.signature)) {
+    const transaction = tronWeb.utils.crypto.signTransaction(params.prv, tx);
+    if (_.isEmpty(transaction.signature)) {
       throw new Error('failed to sign transaction');
     }
-    return { halfSigned };
+    const response = {
+      txHex: transaction.raw_data_hex,
+      transaction,
+    };
+
+    // Fully signed transaction have 3 signatures
+    if (transaction.signature.length >= 3) {
+      return response;
+    }
+    // Half signed transaction
+    return {
+      halfSigned: response,
+    };
   }
 
   /**

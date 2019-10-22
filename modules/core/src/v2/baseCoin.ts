@@ -160,6 +160,7 @@ export interface AddressCoinSpecific {
 
 export interface FullySignedTransaction {
   txHex: string;
+  transaction?: any; // full transaction in JSON format
 }
 
 export interface HalfSignedTransaction {
@@ -167,6 +168,7 @@ export interface HalfSignedTransaction {
     txHex?: string;
     payload?: string;
     txBase64?: string;
+    transaction?: any; // full transaction in JSON format
   };
 }
 
