@@ -3,23 +3,40 @@ import BigNumber from "bignumber.js";
 import { SigningError } from "./coin/baseCoin/errors";
 import { BaseTransaction, BaseAddress, BaseKey } from "./coin/baseCoin/iface";
 import { TransactionType } from "./coin/baseCoin/enum";
+import { CoinFactory } from "./coinFactory";
 
+export interface TransactionBuilderParams {
+  coin?: BaseCoin;
+  coinName?: string;
+}
 
 export default class TransactionBuilder {
   private transaction: BaseTransaction;
+  private coin: BaseCoin;
 
   private fromAddresses: Array<BaseAddress>;
   private destination: Array<Destination>;
 
-  constructor(private coin: BaseCoin) {
-    this.coin = coin;
+  
 
+  constructor(options: TransactionBuilderParams) {
+    let coin = options.coin;
+    if (!coin) {
+      if (!options.coinName) {
+        throw new Error('Failed to provide a coin and coinName.')
+      }
+
+      coin = CoinFactory.getCoin(options.coinName);
+    }
+
+    this.coin = coin;
     this.fromAddresses = new Array<BaseAddress>();
     this.destination = new Array<Destination>();
   }
 
   from(rawTransaction: any, transactionType: TransactionType) {
     let transaction = this.coin.parseTransaction(rawTransaction, transactionType);
+
     this.transaction = transaction;
   }
  

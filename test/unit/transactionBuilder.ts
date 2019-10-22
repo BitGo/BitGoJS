@@ -1,16 +1,18 @@
 import * as should from 'should';
 import TransactionBuilder from '../../src/transactionBuilder';
-import TestCoin, { Address } from '../../src/coin/testcoin';
+import { CoinFactory } from '../../src/coinFactory';
 import BigNumber from 'bignumber.js';
-import { TransactionType, Network } from '../../src/coin/baseCoin/enum';
+import { TransactionType } from '../../src/coin/baseCoin/enum';
+import { NetworkType } from '@bitgo/statics';
+import TestCoin, { Address } from '../../src/coin/testcoin';
 
 describe('Transaction builder', () => {
   let txBuilder: TransactionBuilder;
   let coin: TestCoin;
 
   before(() => {
-    coin = new TestCoin(Network.Test);
-    txBuilder = new TransactionBuilder(coin);
+    coin = CoinFactory.getCoin('test') as TestCoin;
+    txBuilder = new TransactionBuilder({ coin });
   });
 
   it('should add an destination address that is valid', () => {

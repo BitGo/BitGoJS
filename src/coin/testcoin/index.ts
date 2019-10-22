@@ -8,8 +8,8 @@ import { NetworkType } from "@bitgo/statics";
  * The purpose of this coin is a mock to use for the test runner. Its capable of returning what we want under any circumstance.
  */
 export default class TestCoin extends BaseCoin {
-  constructor(network: NetworkType) {
-    super(network);
+  constructor() {
+    super(NetworkType.TESTNET);
   }
 
   _from: number;
