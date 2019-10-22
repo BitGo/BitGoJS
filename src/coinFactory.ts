@@ -1,5 +1,6 @@
 import { BaseCoin } from "./coin/baseCoin";
-import { Trx, Ttrx } from "./coin/trx";
+import { Trx } from "./coin/trx/network/trx";
+import { Ttrx } from "./coin/trx/network/ttrx";
 import { TestCoin } from "./coin/testcoin";
 
 /**
