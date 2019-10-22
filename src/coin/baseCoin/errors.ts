@@ -18,7 +18,7 @@ export class ExtendableError extends Error {
 export class ParseTransactionError extends ExtendableError {
   constructor(message: string) {
     super(message);
-    this.name = 'TransactionParseError';
+    this.name = 'ParseTransactionError';
   }
 }
 

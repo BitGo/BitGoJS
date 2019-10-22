@@ -1,5 +1,4 @@
 import { BaseCoin } from "../../baseCoin";
-import { coins, NetworkType } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 import { Transaction } from '../transaction';
 import { RawTransaction, TransactionReceipt } from '../iface';
