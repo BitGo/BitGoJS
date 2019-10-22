@@ -22,7 +22,7 @@ export interface Contract {
 export interface TransactionReceipt {
   raw_data: RawTransaction;
   signature: Array<string>;
-  
+
   /**
    * This does not exist in protobuf because it's attached by the node rpc calls.
    */
@@ -39,7 +39,7 @@ export interface RawTransaction {
 export interface TransferContract {
   amount: number;
   // base58 encoded addresses
-  toAddress: string; 
+  toAddress: string;
   ownerAddress: string;
 }
 
@@ -53,7 +53,6 @@ export interface AccountPermissionUpdateContract {
 export interface Permission {
   type: PermissionType;
   threshold: number;
-
 }
 
 export interface PermissionKey {

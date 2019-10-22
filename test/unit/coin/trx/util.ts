@@ -1,7 +1,10 @@
-import { TransferContract } from '../../../../src/coin/trx/iface';
-import { getByteArrayFromHexAddress, getBase58AddressFromHex, decodeTransferContract, decodeRawTransaction, getRawAddressFromPubKey, signString, signTransaction, isHexAddress, getHexAddressFromBase58Address, getBase58AddressFromByteArray, getPubKeyFromPriKey, getHexAddressFromByteArray, getAddressFromPriKey } from '../../../../src/coin/trx/utils';
+import { TransferContract, AccountPermissionUpdateContract } from '../../../../src/coin/trx/iface';
+import { Utils } from '../../../../src/coin/trx/index';
+
 import * as should from 'should';
 import { UnsignedTransferContractTx } from './mock';
+import { UnsignedAccountPermissionUpdateContractTx } from './mock';
+
 
 describe('Util library should', function() {
   // arbitrary text
@@ -19,84 +22,101 @@ describe('Util library should', function() {
 
   // tx information
   it('be able to convert hex to bytes', () => {
-    const ba = getByteArrayFromHexAddress(hex);
+    const ba = Utils.getByteArrayFromHexAddress(hex);
     should.deepEqual(ba, arr);
   });
 
   it('be able to convert hex to bytes', () => {
-    const hs = getHexAddressFromByteArray(arr);
+    const hs = Utils.getHexAddressFromByteArray(arr);
     should.equal(hs, hex);
   });
 
   it('get a pub from a prv', () => {
-    const derivedPub = getPubKeyFromPriKey(Buffer.from(prv, 'hex'));
-    const derivedPubHex = getHexAddressFromByteArray(derivedPub);
+    const derivedPub = Utils.getPubKeyFromPriKey(Buffer.from(prv, 'hex'));
+    const derivedPubHex = Utils.getHexAddressFromByteArray(derivedPub);
     should.equal(derivedPubHex, pub);
   })
 
   it('get an hex address from a prv', () => {
-    const addr = getAddressFromPriKey(Buffer.from(prv, 'hex'));
-    const hexAddr = getHexAddressFromByteArray(addr);
+    const addr = Utils.getAddressFromPriKey(Buffer.from(prv, 'hex'));
+    const hexAddr = Utils.getHexAddressFromByteArray(addr);
     should.equal(hexAddr, addressHex);
   });
 
   it('get an base58 address', () => {
-    const addr = getAddressFromPriKey(Buffer.from(prv, 'hex'));
-    const addr58 = getBase58AddressFromByteArray(addr);
+    const addr = Utils.getAddressFromPriKey(Buffer.from(prv, 'hex'));
+    const addr58 = Utils.getBase58AddressFromByteArray(addr);
     should.equal(addr58, base58);
   });
 
   it('get an base58 address from hex', () => {
-    const addr58 = getBase58AddressFromHex(addressHex);
+    const addr58 = Utils.getBase58AddressFromHex(addressHex);
     should.equal(addr58, base58);
   });
 
   it('get hex from base58 address', () => {
-    const hexAddr = getHexAddressFromBase58Address(base58);
+    const hexAddr = Utils.getHexAddressFromBase58Address(base58);
     should.equal(hexAddr, addressHex);
   });
 
   it('detect an address', () => {
-    const addrDetect = isHexAddress(getHexAddressFromBase58Address(base58));
+    const addrDetect = Utils.isHexAddress(Utils.getHexAddressFromBase58Address(base58));
     should.equal(addrDetect, true);
   });
 
   it('sign a transaction', () => {
-    const prvArray = getByteArrayFromHexAddress(prv);
-    const signedTx = signTransaction(prvArray, UnsignedTransferContractTx.tx);
+    const prvArray = Utils.getByteArrayFromHexAddress(prv);
+    const signedTx = Utils.signTransaction(prvArray, UnsignedTransferContractTx.tx);
     should.equal(signedTx.signature[0], UnsignedTransferContractTx.sig);
   });
 
   it('sign a string', () => {
     const hexText = Buffer.from(txt).toString('hex');
-    const prvArray = getByteArrayFromHexAddress(prv);
-    const signed = signString(hexText, prvArray);
+    const prvArray = Utils.getByteArrayFromHexAddress(prv);
+    const signed = Utils.signString(hexText, prvArray);
 
     should.equal(signedString, signed);
   });
 
   it('should calculate an address from a pub', () => {
-    const pubBytes = getByteArrayFromHexAddress(pub);
-    const bytes = getRawAddressFromPubKey(pubBytes);
+    const pubBytes = Utils.getByteArrayFromHexAddress(pub);
+    const bytes = Utils.getRawAddressFromPubKey(pubBytes);
     should.deepEqual(bytes, addrBytes);
   });
 
   it('should return transaction data', () => {
-    const data = decodeRawTransaction(UnsignedTransferContractTx.tx.raw_data_hex);
+    const data = Utils.decodeRawTransaction(UnsignedTransferContractTx.tx.raw_data_hex);
     should.equal(data.timestamp, UnsignedTransferContractTx.tx.raw_data.timestamp);
     should.equal(data.expiration, UnsignedTransferContractTx.tx.raw_data.expiration);
     should.exist(data.contracts);
   });
 
   it('should decode a transfer contract', () => {
-    const parsedTx = decodeTransferContract(UnsignedTransferContractTx.tx.raw_data_hex) as TransferContract;
+    const tx = UnsignedTransferContractTx.tx;
+    const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
+    const value = UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value;
+    const parsedTx = Utils.decodeTransferContract(rawTx.contracts[0].parameter.value) as TransferContract;
 
-    const toAddress = getBase58AddressFromHex(UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value.to_address);
-    const ownerAddress = getBase58AddressFromHex(UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value.owner_address);
-    const amount = UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value.amount;
+    const toAddress = Utils.getBase58AddressFromHex(value.to_address);
+    const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
+    const amount = value.amount;
 
     should.equal(parsedTx.toAddress, toAddress);
     should.equal(parsedTx.ownerAddress, ownerAddress);
     should.equal(parsedTx.amount, amount);
   });
+
+   it('should decode an AccountPermissionUpdate Contract', () => {
+     const tx = UnsignedAccountPermissionUpdateContractTx.tx;
+     const value = tx.raw_data.contract[0].parameter.value;
+     const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
+     const parsedTx = Utils.decodeAccountPermissionUpdateContract(rawTx.contracts[0].parameter.value) as AccountPermissionUpdateContract;
+     const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
+     should.equal(parsedTx.ownerAddress, ownerAddress);
+     should.equal(parsedTx.owner.type, 'owner');
+     should.equal(parsedTx.owner.threshold, 2);
+     parsedTx.actives.length.should.equal(1);
+     should.equal(parsedTx.actives[0].type, 'active0');
+     should.equal(parsedTx.actives[0].threshold, 2);
+   });
 });

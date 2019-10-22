@@ -1,5 +1,4 @@
 
-export { default as Trx } from './coin';
 export { Address } from './address';
 export { Key } from './key';
 export { Signature } from './signature';

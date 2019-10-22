@@ -3,7 +3,14 @@ const tronproto = require('../../../resources/trx/protobuf/tron_pb');
 const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
 
 import * as assert from 'assert';
-import { TransferContract, RawTransaction, AccountPermissionUpdateContract, Account, TransactionReceipt } from './iface';
+import {
+  TransferContract,
+  RawTransaction,
+  AccountPermissionUpdateContract,
+  Account,
+  TransactionReceipt,
+  Permission,
+} from './iface';
 import { ContractType } from './enum';
 
 /**
@@ -123,7 +130,7 @@ export function decodeRawTransaction(base64EncodedHex: string): { expiration: nu
   return {
     expiration: raw.expiration,
     timestamp: raw.timestamp,
-    contracts: raw.contracts,
+    contracts: raw.contractList,
   };
 }
 
@@ -174,7 +181,34 @@ export function decodeTransferContract(transferHex: string): TransferContract {
 }
 
 export function decodeAccountPermissionUpdateContract(base64: string): AccountPermissionUpdateContract {
-  throw new Error();
-  // TODO: build
+  const accountUpdateContract = contractproto.AccountPermissionUpdateContract.deserializeBinary(Buffer.from(base64, 'base64')).toObject();
+  assert(accountUpdateContract.ownerAddress);
+  assert(accountUpdateContract.owner);
+  assert(accountUpdateContract.hasOwnProperty('activesList'));
+
+  const ownerAddress = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(accountUpdateContract.ownerAddress, 'base64').toString('hex')));
+  const owner: Permission = {
+    type: accountUpdateContract.owner.permissionName,
+    threshold: accountUpdateContract.owner.threshold,
+  }
+  let witness: Permission | undefined = undefined;
+  if(accountUpdateContract.witness) {
+    witness = {
+      type: accountUpdateContract.witness.permissionName,
+      threshold: accountUpdateContract.witness.threshold,
+    }
+  }
+  const activeList = accountUpdateContract.activesList.map((active) => {
+    return {
+      type: active.permissionName,
+      threshold: active.threshold,
+    }
+  })
+  return {
+    ownerAddress,
+    owner,
+    witness,
+    actives: activeList,
+  }
 }
 
