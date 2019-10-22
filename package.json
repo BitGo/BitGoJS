@@ -8,7 +8,7 @@
     "webpack-dev": "webpack --progress --colors --env.dev",
     "webpack-test": "webpack --progress --colors --env.test",
     "webpack-prod": "webpack --progress --colors --env.prod",
-    "build": "tsc && cp -r ./src/protobuf ./dist/src",
+    "build": "tsc && cp -r ./resources/trx/protobuf ./dist/src",
     "clean": "rm -r dist/*",
     "compile": "npm run browserify && npm run webpack-prod",
     "compile-dev": "npm run browserify && npm run webpack-dev",
@@ -26,7 +26,10 @@
   "license": "ISC",
   "dependencies": {
     "@bitgo/statics": "^2.3.0-rc.0",
-    "bignumber.js": "^9.0.0"
+    "@types/node": "^11.13.22",
+    "bignumber.js": "^9.0.0",
+    "google-protobuf": "^3.9.1",
+    "tronweb": "^2.7.2"
   },
   "devDependencies": {
     "@types/mocha": "^5.2.6",

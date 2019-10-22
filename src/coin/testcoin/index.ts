@@ -1,28 +1,32 @@
 import { BaseCoin } from "../baseCoin";
-import { Network, TransactionType, Transaction, Signature, Key } from "../..";
 import BigNumber from "bignumber.js";
+import { BaseTransaction, BaseSignature, BaseAddress, BaseKey } from "../baseCoin/iface";
+import { TransactionType } from "../baseCoin/enum";
+import { NetworkType } from "@bitgo/statics";
 
 /**
  * The purpose of this coin is a mock to use for the test runner. Its capable of returning what we want under any circumstance.
  */
 export default class TestCoin extends BaseCoin {
-  constructor(network: Network) {
-    super(network);
+  constructor() {
+    super(NetworkType.TESTNET);
   }
 
   _from: number;
   _dests: number;
   _validateAddress: boolean; 
   _validateValue: boolean;
-  _parseTransaction: Transaction; 
-  _buildTransaction: Transaction;
-  _sign: Signature;
+  _validateKey: boolean;
+  _parseTransaction: BaseTransaction; 
+  _buildTransaction: BaseTransaction;
+  _sign: BaseTransaction;
 
   public setVariable(tcParams: TestCoinParams) {
       this._from = tcParams.from === undefined ? this._from : tcParams.from;
       this._dests = tcParams.dests === undefined ? this._dests : tcParams.dests;
       this._validateAddress = tcParams.validateAddress === undefined ? this._validateAddress : tcParams.validateAddress;
       this._validateValue = tcParams.validateValue === undefined ? this._validateValue : tcParams.validateValue;
+      this._validateKey = tcParams.validateKey === undefined ? this._validateKey : tcParams.validateKey;
       this._parseTransaction = tcParams.parseTransaction === undefined ? this._parseTransaction : tcParams.parseTransaction;
       this._buildTransaction = tcParams.buildTransaction === undefined ? this._buildTransaction : tcParams.buildTransaction;
       this._sign = tcParams.sign === undefined ? this._sign : tcParams.sign;
@@ -40,7 +44,7 @@ export default class TestCoin extends BaseCoin {
     return this._dests;
   }
 
-  public validateAddress(address: string): boolean {
+  public validateAddress(address: BaseAddress): boolean {
     return this._validateAddress;
   }
 
@@ -48,15 +52,19 @@ export default class TestCoin extends BaseCoin {
     return this._validateValue;
   }
 
-  public parseTransaction(rawTransaction: any, transactionType: TransactionType): Transaction {
+  public validateKey(key: BaseKey) {
+    return this._validateKey;
+  }
+
+  public parseTransaction(rawTransaction: any, transactionType: TransactionType): BaseTransaction {
     return this._parseTransaction;
   }
 
-  public buildTransaction(transaction: Transaction): Transaction {
+  public buildTransaction(transaction: BaseTransaction): BaseTransaction {
     return this._buildTransaction;
   }
 
-  public sign(privateKey: Key, address: string, transaction: Transaction): Signature {
+  public sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseTransaction {
     return this._sign;
   }
 }
@@ -66,7 +74,12 @@ interface TestCoinParams {
   dests?: number; 
   validateAddress?: boolean;
   validateValue?: boolean;
-  parseTransaction?: Transaction;
-  buildTransaction?: Transaction;
-  sign?: Signature;
+  validateKey?: boolean;
+  parseTransaction?: BaseTransaction;
+  buildTransaction?: BaseTransaction;
+  sign?: BaseTransaction;
+}
+
+export class Address implements BaseAddress {
+  address: string;
 }

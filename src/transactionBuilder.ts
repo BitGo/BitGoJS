@@ -1,66 +1,71 @@
 import { BaseCoin } from "./coin/baseCoin";
-import { Transaction, Destination, Signature, Key, TransactionType, Network } from ".";
 import BigNumber from "bignumber.js";
+import { SigningError } from "./coin/baseCoin/errors";
+import { BaseTransaction, BaseAddress, BaseKey } from "./coin/baseCoin/iface";
+import { TransactionType } from "./coin/baseCoin/enum";
+import { CoinFactory } from "./coinFactory";
 
+export interface TransactionBuilderParams {
+  coin?: BaseCoin;
+  coinName?: string;
+}
 
 export default class TransactionBuilder {
-  private transaction: Transaction;
+  private transaction: BaseTransaction;
+  private coin: BaseCoin;
 
-  private fromAddrs: Array<string>;
+  private fromAddresses: Array<BaseAddress>;
   private destination: Array<Destination>;
-  private signatures: Array<Signature>;
 
-  constructor(private coin: BaseCoin) {
+  
+
+  constructor(options: TransactionBuilderParams) {
+    let coin = options.coin;
+    if (!coin) {
+      if (!options.coinName) {
+        throw new Error('Failed to provide a coin and coinName.')
+      }
+
+      coin = CoinFactory.getCoin(options.coinName);
+    }
+
     this.coin = coin;
-
-    this.fromAddrs = new Array<string>();
+    this.fromAddresses = new Array<BaseAddress>();
     this.destination = new Array<Destination>();
-    this.signatures = new Array<Signature>();
   }
 
   from(rawTransaction: any, transactionType: TransactionType) {
     let transaction = this.coin.parseTransaction(rawTransaction, transactionType);
-    if (!transaction.isValid()) {
-      throw new Error(`Transaction is not valid for ${this.coin.displayName}`);
-    }
 
     this.transaction = transaction;
   }
  
   /**
    * Signs the transaction in our builder.
-   * @param privateKey 
+   * @param key the key associated with this transaction
    * @param fromAddress 
    */
-  sign(privateKey: Key, fromAddress: string) {
+  sign(key: BaseKey, fromAddress: BaseAddress) {
     if (!this.coin.validateAddress(fromAddress)) {
-      throw new Error(`${fromAddress} is not valid for ${this.coin.displayName}`);
+      throw new SigningError(`${fromAddress} is not valid for ${this.coin.displayName}`);
     }
 
-    if (!privateKey.isValid()) {
-      throw new Error(`Key is not valid for ${fromAddress}`);
+    if (!this.coin.validateKey(key)) {
+      throw new SigningError(`Key is not valid for ${fromAddress}`);
     }
 
-    let sig = this.coin.sign(privateKey, fromAddress, this.transaction);
-    if (!sig.isValid()) {
-      throw new Error(`Signature is not valid for ${fromAddress}`);
-    }
-
-    this.signatures.push(sig);
+    this.transaction = this.coin.sign(key, fromAddress, this.transaction);
   }
 
-  build(): Transaction {
+  build(): BaseTransaction {
     let transaction = this.coin.buildTransaction(this.transaction);
-    if (!transaction.isValid()) {
-      throw new Error(`Transaction is not valid for ${this.coin.displayName}`);
-    }
-
+    
     this.transaction = transaction;
 
     return this.transaction;
   }
 
-  addFrom(address: string) {
+  addFrom(address: BaseAddress) {
     if (this.coin.maxFrom + 1 > this.from.length) {
       throw new Error(`${this.coin.displayName} does not support more than ${this.coin.maxFrom} senders`);
     }
@@ -69,10 +74,10 @@ export default class TransactionBuilder {
       throw new Error(`${address} is not valid for ${this.coin.displayName}`);
     }
     
-    this.fromAddrs.push(address);
+    this.fromAddresses.push(address);
   }
 
-  addDestination(address: string, value: BigNumber) {
+  addDestination(address: BaseAddress, value: BigNumber) {
     if (this.coin.maxDestinations + 1 > this.destination.length) {
       throw new Error(`${this.coin.displayName} does not support more than ${this.coin.maxFrom} destinations`);
     }
@@ -83,4 +88,8 @@ export default class TransactionBuilder {
 
     this.destination.push(new Destination(address, value));
   }
+}
+
+export class Destination {
+  constructor(private address: BaseAddress, private value: BigNumber) {}
 }
