@@ -1,4 +1,5 @@
-import * as Tron from '../../../../src/coin/trx/utils';
+import { TransferContract } from '../../../../src/coin/trx/iface';
+import Utils from '../../../../src/coin/trx/utils';
 import * as should from 'should';
 
 describe('Tron library should', function() {
@@ -40,80 +41,80 @@ describe('Tron library should', function() {
     };
 
   it('be able to convert hex to bytes', () => {
-    const ba = Tron.hexStr2byteArray(hex);
+    const ba = Utils.getByteArrayFromHexAddress(hex);
     should.deepEqual(ba, arr);
   });
 
   it('be able to convert hex to bytes', () => {
-    const hs = Tron.byteArray2hexStr(arr);
+    const hs = Utils.getHexAddressFromByteArray(arr);
     should.equal(hs, hex);
   });
 
   it('get a pub from a prv', () => {
-    const derivedPub = Tron.getPubKeyFromPriKey(Buffer.from(prv, 'hex'));
-    const derivedPubHex = Tron.byteArray2hexStr(derivedPub);
+    const derivedPub = Utils.getPubKeyFromPriKey(Buffer.from(prv, 'hex'));
+    const derivedPubHex = Utils.getHexAddressFromByteArray(derivedPub);
     should.equal(derivedPubHex, pub);
   })
 
   it('get an hex address from a prv', () => {
-    const addr = Tron.getAddressFromPriKey(Buffer.from(prv, 'hex'));
-    const hexAddr = Tron.byteArray2hexStr(addr);
+    const addr = Utils.getAddressFromPriKey(Buffer.from(prv, 'hex'));
+    const hexAddr = Utils.getHexAddressFromByteArray(addr);
     should.equal(hexAddr, addressHex);
   });
 
   it('get an base58 address', () => {
-    const addr = Tron.getAddressFromPriKey(Buffer.from(prv, 'hex'));
-    const addr58 = Tron.getBase58AddressFromByteArray(addr);
+    const addr = Utils.getAddressFromPriKey(Buffer.from(prv, 'hex'));
+    const addr58 = Utils.getBase58AddressFromByteArray(addr);
     should.equal(addr58, base58);
   });
 
   it('get an base58 address from hex', () => {
-    const addr58 = Tron.getBase58AddressFromHex(addressHex);
+    const addr58 = Utils.getBase58AddressFromHex(addressHex);
     should.equal(addr58, base58);
   });
 
   it('get hex from base58 address', () => {
-    const hexAddr = Tron.getHexFromBase58Address(base58);
+    const hexAddr = Utils.getHexAddressFromBase58Address(base58);
     should.equal(hexAddr, addressHex);
   });
 
   it('detect an address', () => {
-    const addrDetect = Tron.isAddress(Tron.getHexFromBase58Address(base58));
+    const addrDetect = Utils.isHexAddress(Utils.getHexAddressFromBase58Address(base58));
     should.equal(addrDetect, true);
   });
 
   it('sign a transaction', () => {
-    const prvArray = Tron.hexStr2byteArray(prv);
-    const signedTx = Tron.signTransaction(prvArray, tx);
+    const prvArray = Utils.getByteArrayFromHexAddress(prv);
+    const signedTx = Utils.signTransaction(prvArray, tx);
     should.equal(signedTx.signature[0], sig);
   });
 
   it('sign a string', () => {
     const hexText = Buffer.from(txt).toString('hex');
-    const prvArray = Tron.hexStr2byteArray(prv);
-    const signed = Tron.signString(hexText, prvArray);
+    const prvArray = Utils.getByteArrayFromHexAddress(prv);
+    const signed = Utils.signString(hexText, prvArray);
 
     should.equal(signedString, signed);
   });
 
   it('should calculate an address from a pub', () => {
-    const pubBytes = Tron.hexStr2byteArray(pub);
-    const bytes = Tron.computeAddress(pubBytes);
+    const pubBytes = Utils.getByteArrayFromHexAddress(pub);
+    const bytes = Utils.getRawAddressFromPubKey(pubBytes);
     should.deepEqual(bytes, addrBytes);
   });
 
   it('should return transaction data', () => {
-    const data = Tron.getRawTransferContract(tx.raw_data_hex);
+    const data = Utils.decodeRawTransaction(tx.raw_data_hex);
     should.equal(data.timestamp, tx.raw_data.timestamp);
     should.equal(data.expiration, tx.raw_data.expiration);
-    should.exist(data.contractList);
+    should.exist(data.contracts);
   });
 
   it('should decode a transfer contract', () => {
-    const parsedTx = Tron.decodeContract(tx.raw_data_hex) as DecodedContract;
+    const parsedTx = Utils.decodeTransferContract(tx.raw_data_hex) as TransferContract;
 
-    const toAddress = Tron.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.to_address);
-    const ownerAddress = Tron.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.owner_address);
+    const toAddress = Utils.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.to_address);
+    const ownerAddress = Utils.getBase58AddressFromHex(tx.raw_data.contract[0].parameter.value.owner_address);
     const amount = tx.raw_data.contract[0].parameter.value.amount;
 
     should.equal(parsedTx.toAddress, toAddress);

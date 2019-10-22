@@ -3,7 +3,7 @@ const tronproto = require('../../../resources/trx/protobuf/tron_pb');
 const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
 
 import * as assert from 'assert';
-import { TransferContract, RawTransaction, AccountPermissionUpdateContract, ContractType } from './iface';
+import { TransferContract, RawTransaction, AccountPermissionUpdateContract, ContractType, Account } from './iface';
 
 export type ByteArray = number[];
 export type RawTransaction = { txID: string, signature?: string[] };
