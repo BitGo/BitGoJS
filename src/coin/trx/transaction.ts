@@ -4,7 +4,7 @@ import { NetworkType } from "@bitgo/statics";
 
 export class Transaction extends BaseTransaction {
   /**
-   * This is what is passed into a from in transactionBuilder. 
+   * This is what is passed into a from in transactionBuilder.
    */
   rawTx: any;
 
@@ -12,8 +12,9 @@ export class Transaction extends BaseTransaction {
    * Output of parsed transaction.
    */
   tx: TransactionReceipt;
+  parsedTx: any;
 
-  constructor(private network: NetworkType) { 
+  constructor(private network: NetworkType) {
     super();
   }
 }
