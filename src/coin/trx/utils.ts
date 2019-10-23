@@ -109,9 +109,9 @@ export function decodeTransaction(hexString: string): RawTransaction {
 
 /**
  * Decodes a transaction's raw field from a base64 encoded string. This is a protobuf representation.
- * @param hexString
+ * @param hexString this is the raw hexadecimal encoded string. Doc found in the following link.
  * @example
- * @see {@link }
+ * @see {@link https://github.com/BitGo/bitgo-account-lib/blob/5f282588701778a4421c75fa61f42713f56e95b9/resources/trx/protobuf/tron.proto#L319}
  */
 export function decodeRawTransaction(hexString: string): { expiration: number, timestamp: number, contracts: Array<any>  } {
   const bytes = Buffer.from(hexString, 'hex');

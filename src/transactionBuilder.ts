@@ -11,7 +11,7 @@ export interface TransactionBuilderParams {
 }
 
 export class TransactionBuilder {
-  public transaction: BaseTransaction;
+  private transaction: BaseTransaction;
   private coin: BaseCoin;
 
   private fromAddresses: Array<BaseAddress>;
