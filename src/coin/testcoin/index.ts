@@ -14,9 +14,9 @@ export class TestCoin extends BaseCoin {
 
   _from: number;
   _dests: number;
-  _validateAddress: boolean; 
+  _validateAddress: boolean = true; 
   _validateValue: boolean;
-  _validateKey: boolean;
+  _validateKey: boolean = true;
   _parseTransaction: BaseTransaction; 
   _buildTransaction: BaseTransaction;
   _sign: BaseTransaction;
@@ -36,7 +36,7 @@ export class TestCoin extends BaseCoin {
     return "Test";
   }  
 
-  public validateAddress(address: BaseAddress): boolean {
+  public validateAddress(address: BaseAddress, addressFormat?: string) {
     return this._validateAddress;
   }
 

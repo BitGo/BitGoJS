@@ -16,7 +16,7 @@
     "prepublishOnly": "npm run compile",
     "prepare": "npm run build",
     "browserify": "mkdir -p ./dist/browserify && browserify ./dist/src/index.js -s bitgo-account-lib -o ./dist/browserify/bitgo-account-lib.browserify.js",
-    "test": "nyc -- mocha --opts test/mocha.opts \"test/unit/*.ts\""
+    "test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\""
   },
   "repository": {
     "type": "git",

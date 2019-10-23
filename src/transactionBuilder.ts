@@ -45,7 +45,7 @@ export class TransactionBuilder {
    */
   sign(key: BaseKey, fromAddress: BaseAddress) {
     if (!this.coin.validateAddress(fromAddress)) {
-      throw new SigningError(`${fromAddress} is not valid for ${this.coin.displayName}`);
+      throw new SigningError(`${fromAddress.address} is not valid for ${this.coin.displayName}`);
     }
 
     if (!this.coin.validateKey(key)) {
