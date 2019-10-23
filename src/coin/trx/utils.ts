@@ -6,6 +6,7 @@ import * as assert from 'assert';
 import { TransferContract, RawTransaction, AccountPermissionUpdateContract, Account, TransactionReceipt, Permission } from './iface';
 import { ContractType, PermissionType } from './enum';
 import { UtilsError } from '../baseCoin/errors';
+import { InvalidContractAddressError } from '@bitgo/statics';
 
 /**
  * Tron-specific helper functions
@@ -72,13 +73,15 @@ export function getHexAddressFromBase58Address(base58: string): string {
 
 /**
  * Decodes a base64 encoded transaction in its protobuf representation.
- * @param base64EncodedHex
+ * @param hexString
  */
-export function decodeTransaction(base64EncodedHex: string): RawTransaction {
-  const rawTransaction = this.decodeRawTransaction(base64EncodedHex);
+export function decodeTransaction(hexString: string): RawTransaction {
+  const rawTransaction = decodeRawTransaction(hexString);
 
   // there should not be multiple contracts in this data
-  assert(rawTransaction.contracts.length === 1);
+  if (rawTransaction.contracts.length !== 1) {
+    throw new UtilsError('Number of contracts is greater than 1.');
+  }
 
   let contract: TransferContract | AccountPermissionUpdateContract;
   let contractType: ContractType;
@@ -93,7 +96,7 @@ export function decodeTransaction(base64EncodedHex: string): RawTransaction {
       contract = this.decodeAccountPermissionUpdateContract(rawTransaction.contracts[0].parameter.value);
       break;
     default:
-      throw new Error('Unsupported contract type');
+      throw new UtilsError('Unsupported contract type');
   }
 
   return {
@@ -106,12 +109,12 @@ export function decodeTransaction(base64EncodedHex: string): RawTransaction {
 
 /**
  * Decodes a transaction's raw field from a base64 encoded string. This is a protobuf representation.
- * @param base64EncodedHex
+ * @param hexString
  * @example
  * @see {@link }
  */
-export function decodeRawTransaction(base64EncodedHex: string): { expiration: number, timestamp: number, contracts: Array<any>  } {
-  const bytes = Buffer.from(base64EncodedHex, 'hex');
+export function decodeRawTransaction(hexString: string): { expiration: number, timestamp: number, contracts: Array<any>  } {
+  const bytes = Buffer.from(hexString, 'hex');
 
   let raw;
   try {

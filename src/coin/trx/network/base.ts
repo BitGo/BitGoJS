@@ -48,7 +48,7 @@ export class TrxBase extends BaseCoin {
     const raw = JSON.parse(rawTransaction);
     
     let txID: string;
-    // TODO: need a validation method for txID
+    // TODO: need a more specific validation method for txID
     if (raw.txID && isValidHex(raw.txID)) {
       txID = raw.txID;
     } else {

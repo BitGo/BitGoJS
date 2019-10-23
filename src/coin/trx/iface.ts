@@ -21,8 +21,8 @@ export interface Contract {
  */
 export interface TransactionReceipt {
   raw_data: RawTransaction;
-  signature: Array<string>;
-
+  signature?: Array<string>;
+  
   /**
    * This does not exist in protobuf because it's attached by the node rpc calls.
    */

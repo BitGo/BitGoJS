@@ -1,5 +1,5 @@
 export enum ContractType {
-  Transfer,
+  Transfer = 1,
   AccountPermissionUpdate,
 }
 

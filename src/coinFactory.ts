@@ -8,7 +8,7 @@ import { TestCoin } from "./coin/testcoin";
  */
 export abstract class CoinFactory {
   public static getCoin(coinName: string): BaseCoin {
-    switch (coinName.toLowerCase()) {
+    switch (coinName.toLowerCase().trim()) {
       case 'ttrx':
         return new Ttrx();
       case 'trx':
