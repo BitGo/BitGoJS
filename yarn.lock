@@ -103,11 +103,6 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/statics@^2.3.0-rc":
-  version "2.3.0-rc.0"
-  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-2.3.0-rc.0.tgz#652ff4dff7d165630fcc538ba0255a75fc70450b"
-  integrity sha512-1q7sBtxLVc+OPJtC8XzDqCWmasZvIRXMY3LVlqynoVFQAQYoukOi9UIfchf5x1H5TWSPCBd4GUjJnISX+cT5UQ==
-
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
@@ -6086,7 +6081,7 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.1.6.tgz#1c00c743b433cd0a4e80758f7b64a57440d9ff00"
   integrity sha1-HADHQ7QzzQpOgHWPe2SldEDZ/wA=
 
-lint-staged@^8.1.4:
+lint-staged@^8.1.4, lint-staged@^8.1.5:
   version "8.2.1"
   resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-8.2.1.tgz#752fcf222d9d28f323a3b80f1e668f3654ff221f"
   integrity sha512-n0tDGR/rTCgQNwXnUf/eWIpPNddGWxC32ANTNYsj2k02iZb7Cz5ox2tytwBu+2r0zDXMEMKw7Y9OD/qsav561A==
@@ -8069,7 +8064,7 @@ prelude-ls@~1.1.2:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.1.2.tgz#21932a549f5e52ffd9a827f570e04be62a97da54"
   integrity sha1-IZMqVJ9eUv/ZqCf1cOBL5iqX2lQ=
 
-prettier@^1.16.3, prettier@^1.17.0:
+prettier@^1.16.3, prettier@^1.16.4, prettier@^1.17.0:
   version "1.18.2"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-1.18.2.tgz#6823e7c5900017b4bd3acf46fe9ac4b4d7bda9ea"
   integrity sha512-OeHeMc0JhFE9idD4ZdtNibzY0+TPHSpSSb9h8FqtP+YnoZZ1sl8Vc9b1sasjfymH3SonAF4QcA2+mzHPhMvIiw==
@@ -10325,6 +10320,11 @@ typeforce@~1.10.6:
   integrity sha1-cb3KNbTmNbYSRTcbV8AIzt++xNs=
   dependencies:
     inherits "^2.0.1"
+
+typescript@^3.4.0:
+  version "3.6.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.6.4.tgz#b18752bb3792bc1a0281335f7f6ebf1bbfc5b91d"
+  integrity sha512-unoCll1+l+YK4i4F8f22TaNVPRHcD9PA3yCuZ8g5e0qGqlVlJ/8FSateOLLSagn+Yg5+ZwuPkL8LFUc0Jcvksg==
 
 typescript@~3.5.3:
   version "3.5.3"
