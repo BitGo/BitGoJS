@@ -12,10 +12,10 @@ export class TestCoin extends BaseCoin {
     super(NetworkType.TESTNET);
   }
 
-  _from: number;
-  _dests: number;
+  _from: number = 1;
+  _dests: number = 1;
   _validateAddress: boolean = true; 
-  _validateValue: boolean;
+  _validateValue: boolean = true;
   _validateKey: boolean = true;
   _parseTransaction: BaseTransaction; 
   _buildTransaction: BaseTransaction;
