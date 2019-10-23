@@ -2,9 +2,7 @@ import { TransferContract, AccountPermissionUpdateContract } from '../../../../s
 import { Utils } from '../../../../src/coin/trx/index';
 
 import * as should from 'should';
-import { UnsignedTransferContractTx } from './mock';
-import { UnsignedAccountPermissionUpdateContractTx } from './mock';
-
+import { UnsignedTransferContractTx, UnsignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
 
 describe('Util library should', function() {
   // arbitrary text

@@ -1,7 +1,7 @@
 import * as should from 'should';
 import { TransactionBuilder } from '../../../../src/transactionBuilder';
-import { UnsignedBuildTransaction, FirstSigOnBuildTransaction } from '../../../resources/mock';
 import { TransactionType } from '../../../../src/coin/baseCoin/enum';
+import { UnsignedBuildTransaction, FirstSigOnBuildTransaction } from '../../../resources/trx';
 
 describe('Tron test network', function() {
   let txBuilder: TransactionBuilder;
