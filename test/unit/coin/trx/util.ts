@@ -113,10 +113,10 @@ describe('Util library should', function() {
      const parsedTx = Utils.decodeAccountPermissionUpdateContract(rawTx.contracts[0].parameter.value) as AccountPermissionUpdateContract;
      const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
      should.equal(parsedTx.ownerAddress, ownerAddress);
-     should.equal(parsedTx.owner.type, 'owner');
+     should.equal(parsedTx.owner.type, 0);
      should.equal(parsedTx.owner.threshold, 2);
      parsedTx.actives.length.should.equal(1);
-     should.equal(parsedTx.actives[0].type, 'active0');
+     should.equal(parsedTx.actives[0].type, 2);
      should.equal(parsedTx.actives[0].threshold, 2);
    });
 });

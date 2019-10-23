@@ -11,7 +11,7 @@ import {
   TransactionReceipt,
   Permission,
 } from './iface';
-import { ContractType } from './enum';
+import { ContractType, PermissionType } from './enum';
 
 /**
  * Tron-specific helper functions
@@ -150,7 +150,7 @@ export function isValidHex(hex: string): Boolean {
   return true;
 }
 
-/** Deserialize the portion of the txHex which corresponds with the details of the transfer
+/** Deserialize the segment of the txHex which corresponds with the details of the transfer
  * @param transferHex is the value property of the "parameter" field of contractList[0]
  * */
 export function decodeTransferContract(transferHex: string): TransferContract {
@@ -180,6 +180,12 @@ export function decodeTransferContract(transferHex: string): TransferContract {
   };
 }
 
+/**
+ * Deserialize the segment of the txHex corresponding with the details of the contract which updates
+ * account permission
+ * @param {string} base64
+ * @returns {AccountPermissionUpdateContract}
+ */
 export function decodeAccountPermissionUpdateContract(base64: string): AccountPermissionUpdateContract {
   const accountUpdateContract = contractproto.AccountPermissionUpdateContract.deserializeBinary(Buffer.from(base64, 'base64')).toObject();
   assert(accountUpdateContract.ownerAddress);
@@ -187,28 +193,34 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
   assert(accountUpdateContract.hasOwnProperty('activesList'));
 
   const ownerAddress = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(accountUpdateContract.ownerAddress, 'base64').toString('hex')));
-  const owner: Permission = {
-    type: accountUpdateContract.owner.permissionName,
-    threshold: accountUpdateContract.owner.threshold,
-  }
+  const owner: Permission = createPermission((accountUpdateContract.owner));
   let witness: Permission | undefined = undefined;
   if(accountUpdateContract.witness) {
-    witness = {
-      type: accountUpdateContract.witness.permissionName,
-      threshold: accountUpdateContract.witness.threshold,
-    }
+    witness = createPermission(accountUpdateContract.witness);
   }
-  const activeList = accountUpdateContract.activesList.map((active) => {
-    return {
-      type: active.permissionName,
-      threshold: active.threshold,
-    }
-  })
+  const activeList = accountUpdateContract.activesList.map((active) => createPermission(active));
+
   return {
     ownerAddress,
     owner,
     witness,
     actives: activeList,
   }
+}
+
+export function createPermission(raw: { permissionName: string, threshold: number}): Permission {
+  let permissionType: PermissionType;
+  const permission = raw.permissionName.toLowerCase().trim();
+  if (permission === 'owner') {
+    permissionType = PermissionType.Owner;
+  }
+  else if (permission === "witness") {
+    permissionType = PermissionType.Witness;
+  } else if (permission.substr(0,6) === "active") {
+    permissionType = PermissionType.Active;
+  } else {
+    throw new Error('Permission type not parseable.');
+  }
+  return { type: permissionType, threshold: raw.threshold };
 }
 
