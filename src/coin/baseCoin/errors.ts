@@ -44,3 +44,10 @@ export class UtilsError extends ExtendableError {
     super(message);
   }
 }
+
+export class UtilsError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UtilsError';
+  }
+}
