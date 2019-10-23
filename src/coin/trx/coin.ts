@@ -1,16 +1,17 @@
-import { BaseCoin } from "../../baseCoin";
 import BigNumber from "bignumber.js";
-import { Transaction } from '../transaction';
-import { RawTransaction, TransactionReceipt } from '../iface';
-import { Key } from '../key';
-import { ParseTransactionError, SigningError, BuildTransactionError } from '../../baseCoin/errors';
-import { Address } from '../address';
-import { BaseKey } from '../../baseCoin/iface';
-import { TransactionType } from '../../baseCoin/enum';
-import { ContractType } from "../enum";
-import { decodeTransaction, isValidHex, signTransaction, isBase58Address } from "../utils";
+import { Transaction } from './transaction';
+import { RawTransaction, TransactionReceipt } from './iface';
+import { Key } from './key';
+import { ParseTransactionError, SigningError, BuildTransactionError } from '../baseCoin/errors';
+import { Address } from './address';
+import { BaseKey, BaseTransaction } from '../baseCoin/iface';
+import { TransactionType } from '../baseCoin/enum';
+import { ContractType } from "./enum";
+import { decodeTransaction, isValidHex, signTransaction, isBase58Address } from "./utils";
+import { BaseCoin } from "../baseCoin";
+import { NetworkType, coins } from "@bitgo/statics";
 
-export class TrxBase extends BaseCoin {
+export class Trx extends BaseCoin {
   public buildTransaction(transaction: Transaction): Transaction {
     if (transaction.transactionType === TransactionType.Recieve) {
       throw new BuildTransactionError('Called build on a recieve transaction.');
@@ -150,5 +151,23 @@ export class TrxBase extends BaseCoin {
 
   get displayName(): string {
     return this.staticsCoin.fullName;
+  }
+
+  get maxFrom(): number {
+    return 1;
+  }
+
+  get maxDestinations(): number {
+    return 1;
+  }
+
+  constructor(network: NetworkType) {
+    super(network);
+
+    if (network === NetworkType.MAINNET) {
+      this.staticsCoin = coins.get('TRX');
+    } else if (network === NetworkType.TESTNET) {
+      this.staticsCoin = coins.get('TTRX');
+    }
   }
 }

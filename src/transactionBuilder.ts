@@ -10,14 +10,12 @@ export interface TransactionBuilderParams {
   coinName?: string;
 }
 
-export default class TransactionBuilder {
+export class TransactionBuilder {
   private transaction: BaseTransaction;
   private coin: BaseCoin;
 
   private fromAddresses: Array<BaseAddress>;
   private destination: Array<Destination>;
-
-  
 
   constructor(options: TransactionBuilderParams) {
     let coin = options.coin;
@@ -63,30 +61,6 @@ export default class TransactionBuilder {
     this.transaction = transaction;
 
     return this.transaction;
-  }
-
-  addFrom(address: BaseAddress) {
-    if (this.coin.maxFrom + 1 > this.from.length) {
-      throw new Error(`${this.coin.displayName} does not support more than ${this.coin.maxFrom} senders`);
-    }
-
-    if (!this.coin.validateAddress(address)) {
-      throw new Error(`${address} is not valid for ${this.coin.displayName}`);
-    }
-    
-    this.fromAddresses.push(address);
-  }
-
-  addDestination(address: BaseAddress, value: BigNumber) {
-    if (this.coin.maxDestinations + 1 > this.destination.length) {
-      throw new Error(`${this.coin.displayName} does not support more than ${this.coin.maxFrom} destinations`);
-    }
-
-    if (!this.coin.validateAddress(address)) {
-      throw new Error(`${address} is not valid for ${this.coin.displayName}`);
-    }
-
-    this.destination.push(new Destination(address, value));
   }
 }
 

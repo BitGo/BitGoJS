@@ -7,7 +7,7 @@ import { NetworkType } from "@bitgo/statics";
 /**
  * The purpose of this coin is a mock to use for the test runner. Its capable of returning what we want under any circumstance.
  */
-export default class TestCoin extends BaseCoin {
+export class TestCoin extends BaseCoin {
   constructor() {
     super(NetworkType.TESTNET);
   }
@@ -35,14 +35,6 @@ export default class TestCoin extends BaseCoin {
   get displayName(): string {
     return "Test";
   }  
-  
-  get maxFrom(): number {
-    return this._from;
-  }
-
-  get maxDestinations(): number {
-    return this._dests;
-  }
 
   public validateAddress(address: BaseAddress): boolean {
     return this._validateAddress;

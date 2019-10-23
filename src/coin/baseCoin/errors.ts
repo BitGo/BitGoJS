@@ -42,3 +42,10 @@ export class BuildTransactionError extends ExtendableError {
     this.name = 'BuildTransactionError';
   }
 }
+
+export class UtilsError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UtilsError';
+  }
+}
