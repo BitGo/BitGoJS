@@ -3,20 +3,16 @@ const tronproto = require('../../../resources/trx/protobuf/tron_pb');
 const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
 
 import * as assert from 'assert';
-import {
-  TransferContract,
-  RawTransaction,
-  AccountPermissionUpdateContract,
-  Account,
-  TransactionReceipt,
-  Permission,
-} from './iface';
+import { TransferContract, RawTransaction, AccountPermissionUpdateContract, Account, TransactionReceipt, Permission } from './iface';
 import { ContractType, PermissionType } from './enum';
+import { UtilsError } from '../baseCoin/errors';
+import { InvalidContractAddressError } from '@bitgo/statics';
 
 /**
  * Tron-specific helper functions
  */
 
+export type TronBinaryLike = ByteArray | Buffer | Uint8Array | string;
 export type ByteArray = number[];
 
 export function generateAccount(): Account {
@@ -39,11 +35,11 @@ export function getHexAddressFromByteArray(arr: ByteArray): string {
   return tronweb.utils.code.byteArray2hexStr(arr);
 }
 
-export function getPubKeyFromPriKey(privateKey: ByteArray | Buffer | Uint8Array | string): ByteArray {
+export function getPubKeyFromPriKey(privateKey: TronBinaryLike): ByteArray {
   return tronweb.utils.crypto.getPubKeyFromPriKey(privateKey);
 }
 
-export function getAddressFromPriKey(privateKey: ByteArray | Buffer | Uint8Array | string): ByteArray {
+export function getAddressFromPriKey(privateKey: TronBinaryLike): ByteArray {
   return tronweb.utils.crypto.getAddressFromPriKey(privateKey);
 }
 
@@ -64,7 +60,7 @@ export function signString(message: string, privateKey: string | ByteArray, useT
   return tronweb.Trx.signString(message, privateKey, useTronHeader);
 }
 
-export function getRawAddressFromPubKey(pubBytes: number[] | string): ByteArray {
+export function getRawAddressFromPubKey(pubBytes: ByteArray | string): ByteArray {
   return tronweb.utils.crypto.computeAddress(pubBytes);
 }
 
@@ -77,13 +73,15 @@ export function getHexAddressFromBase58Address(base58: string): string {
 
 /**
  * Decodes a base64 encoded transaction in its protobuf representation.
- * @param base64EncodedHex
+ * @param hexString
  */
-export function decodeTransaction(base64EncodedHex: string): RawTransaction {
-  const rawTransaction = this.decodeRawTransaction(base64EncodedHex);
+export function decodeTransaction(hexString: string): RawTransaction {
+  const rawTransaction = decodeRawTransaction(hexString);
 
   // there should not be multiple contracts in this data
-  assert(rawTransaction.contracts.length === 1);
+  if (rawTransaction.contracts.length !== 1) {
+    throw new UtilsError('Number of contracts is greater than 1.');
+  }
 
   let contract: TransferContract | AccountPermissionUpdateContract;
   let contractType: ContractType;
@@ -98,7 +96,7 @@ export function decodeTransaction(base64EncodedHex: string): RawTransaction {
       contract = this.decodeAccountPermissionUpdateContract(rawTransaction.contracts[0].parameter.value);
       break;
     default:
-      throw new Error('Unsupported contract type');
+      throw new UtilsError('Unsupported contract type');
   }
 
   return {
@@ -111,20 +109,19 @@ export function decodeTransaction(base64EncodedHex: string): RawTransaction {
 
 /**
  * Decodes a transaction's raw field from a base64 encoded string. This is a protobuf representation.
- * @param base64EncodedHex
+ * @param hexString this is the raw hexadecimal encoded string. Doc found in the following link.
  * @example
- * @see {@link }
+ * @see {@link https://github.com/BitGo/bitgo-account-lib/blob/5f282588701778a4421c75fa61f42713f56e95b9/resources/trx/protobuf/tron.proto#L319}
  */
-export function decodeRawTransaction(base64EncodedHex: string): { expiration: number, timestamp: number, contracts: Array<any>  } {
-  const bytes = Buffer.from(base64EncodedHex, 'hex');
+export function decodeRawTransaction(hexString: string): { expiration: number, timestamp: number, contracts: Array<any>  } {
+  const bytes = Buffer.from(hexString, 'hex');
 
   let raw;
   try {
     // we need to decode our raw_data_hex field first
     raw = tronproto.Transaction.raw.deserializeBinary(bytes).toObject();
   } catch (e) {
-    console.log('There was an error decoding the initial raw_data_hex from the serialized tx.');
-    throw e;
+    throw new UtilsError('There was an error decoding the initial raw_data_hex from the serialized tx.');
   }
 
   return {
@@ -139,15 +136,7 @@ export function decodeRawTransaction(base64EncodedHex: string): { expiration: nu
  * @param hex A valid hex string must be a string made of numbers and characters and has an even length.
  */
 export function isValidHex(hex: string): Boolean {
-  if (!hex.match(/^(0x)?[0-9a-fA-F]*$/)) {
-    return false;
-  }
-
-  if ((hex.length % 2) !== 0) {
-    return false;
-  }
-
-  return true;
+  return /^(0x)?([0-9a-f]{2})+$/i.test(hex);
 }
 
 /** Deserialize the segment of the txHex which corresponds with the details of the transfer
@@ -160,13 +149,20 @@ export function decodeTransferContract(transferHex: string): TransferContract {
   try {
     transferContract = contractproto.TransferContract.deserializeBinary(contractBytes).toObject();
   } catch (e) {
-    console.log('There was an error decoding the transfer contract in the transaction.');
-    throw e;
+    throw new UtilsError('There was an error decoding the transfer contract in the transaction.');
   }
 
-  assert(transferContract.ownerAddress);
-  assert(transferContract.toAddress);
-  assert(transferContract.hasOwnProperty('amount'));
+  if (!transferContract.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this transfer contract.');
+  }
+
+  if (!transferContract.toAddress) {
+    throw new UtilsError('Destination address does not exist in this transfer contract.');
+  }
+
+  if (!transferContract.hasOwnProperty('amount')) {
+    throw new UtilsError('Amount does not exist in this transfer contract.');
+  }
 
   // deserialize attributes
   const ownerAddress = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')));

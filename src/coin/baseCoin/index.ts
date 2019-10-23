@@ -21,16 +21,6 @@ export abstract class BaseCoin {
   abstract get displayName(): string;
 
   /**
-   * This is the maximum senders this coin can have for a given transaction.
-   */
-  abstract get maxFrom(): number;
-
-  /**
-   * This is the maximum destinations this coin can have for a given transaction.
-   */
-  abstract get maxDestinations(): number;
-
-  /**
    * Validate an address. Throws an exception if invalid.
    * @param address the address
    * @param addressFormat the address format - this will be handled by the implementing coin as an enum

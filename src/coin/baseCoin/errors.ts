@@ -18,27 +18,29 @@ export class ExtendableError extends Error {
 export class ParseTransactionError extends ExtendableError {
   constructor(message: string) {
     super(message);
-    this.name = 'TransactionParseError';
   }
 }
 
 export class SigningError extends ExtendableError {
   constructor(message: string) {
     super(message);
-    this.name = 'SigningError';
   }
 }
 
 export class AddressValidationError extends ExtendableError {
   constructor(message: string) {
     super(message);
-    this.name = 'AddressValidationError';
   }
 }
 
 export class BuildTransactionError extends ExtendableError {
   constructor(message: string) {
     super(message);
-    this.name = 'BuildTransactionError';
+  }
+}
+
+export class UtilsError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
   }
 }

@@ -1,17 +1,16 @@
 import { BaseCoin } from "../../baseCoin";
-import { coins, NetworkType } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
 import { Transaction } from '../transaction';
 import { RawTransaction, TransactionReceipt } from '../iface';
 import { Key } from '../key';
 import { ParseTransactionError, SigningError, BuildTransactionError } from '../../baseCoin/errors';
 import { Address } from '../address';
-import { BaseKey, BaseTransaction } from '../../baseCoin/iface';
+import { BaseKey } from '../../baseCoin/iface';
 import { TransactionType } from '../../baseCoin/enum';
 import { ContractType } from "../enum";
 import { decodeTransaction, isValidHex, signTransaction, isBase58Address } from "../utils";
 
-export default class TrxBase extends BaseCoin {
+export class TrxBase extends BaseCoin {
   public buildTransaction(transaction: Transaction): Transaction {
     if (transaction.transactionType === TransactionType.Recieve) {
       throw new BuildTransactionError('Called build on a recieve transaction.');
@@ -49,7 +48,7 @@ export default class TrxBase extends BaseCoin {
     const raw = JSON.parse(rawTransaction);
     
     let txID: string;
-    // TODO: need a validation method for txID
+    // TODO: need a more specific validation method for txID
     if (raw.txID && isValidHex(raw.txID)) {
       txID = raw.txID;
     } else {
@@ -151,13 +150,5 @@ export default class TrxBase extends BaseCoin {
 
   get displayName(): string {
     return this.staticsCoin.fullName;
-  }
-
-  get maxFrom(): number {
-    return 1;
-  }
-
-  get maxDestinations(): number {
-    return 1;
   }
 }

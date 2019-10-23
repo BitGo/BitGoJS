@@ -64,6 +64,14 @@ describe('Util library should', function() {
     should.equal(addrDetect, true);
   });
 
+  it('validate a hex string', () => {
+    const hex = ['0xaffd', '0x11'];
+   hex.map((hex) => { should(isValidHex(hex)).ok(); });
+
+    const invalidHex = ['0xa11', '0xFFdYYY', '0x', ''];
+    invalidHex.map((hex) => { should(isValidHex(hex)).equal(false); });
+  });
+
   it('sign a transaction', () => {
     const prvArray = Utils.getByteArrayFromHexAddress(prv);
     const signedTx = Utils.signTransaction(prvArray, UnsignedTransferContractTx.tx);
