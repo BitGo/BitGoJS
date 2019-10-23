@@ -3,6 +3,7 @@
  */
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
+import { CoinFamily } from '@bitgo/statics';
 const tronWeb = require('tronweb');
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
@@ -16,6 +17,9 @@ import {
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  TransactionFee,
+  TransactionRecipient as Recipient,
+  TransactionPrebuild as BaseTransactionPrebuild,
 } from '../baseCoin';
 import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
@@ -26,17 +30,16 @@ export interface TronSignTransactionOptions extends SignTransactionOptions {
   prv: string;
 }
 
-export interface TransactionPrebuild {
-  txHex: string;
+export interface TxInfo {
+  recipients: Recipient[];
+  from: string;
   txid: string;
-  transaction: any;
-  txInfo: {
-    from: string;
-    to: string;
-    amount: string;
-    fee: number;
-    txID: string;
-  };
+}
+
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txHex: string;
+  txInfo: TxInfo;
+  feeInfo: TransactionFee;
 }
 
 export class Trx extends BaseCoin {
@@ -56,7 +59,7 @@ export class Trx extends BaseCoin {
     return this._staticsCoin.name;
   }
 
-  getFamily() {
+  getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
 
@@ -137,13 +140,27 @@ export class Trx extends BaseCoin {
   }
 
   signTransaction(params: TronSignTransactionOptions): SignedTransaction {
-    const tx = params.txPrebuild.transaction;
-    // this prv should be hex-encoded
-    const halfSigned = tronWeb.utils.crypto.signTransaction(params.prv, tx);
-    if (_.isEmpty(halfSigned.signature)) {
+    const tx = JSON.parse(params.txPrebuild.txHex);
+    let expectedSignaturesCount = 1;
+    if (!_.isEmpty(tx.signature)) {
+      expectedSignaturesCount += tx.signature.length;
+    }
+    const transaction = tronWeb.utils.crypto.signTransaction(params.prv, tx);
+    if (transaction.signature.length !== expectedSignaturesCount) {
       throw new Error('failed to sign transaction');
     }
-    return { halfSigned };
+    const response = {
+      txHex: JSON.stringify(transaction),
+    };
+
+    // Multisig fully signed transaction have at least 2 signatures
+    if (transaction.signature.length >= 2) {
+      return response;
+    }
+    // Half signed transaction
+    return {
+      halfSigned: response,
+    };
   }
 
   /**
