@@ -168,11 +168,11 @@ local CheckPreconditions(version) = {
 };
 
 local UnitVersions = ["6", "8", "10", "11"];
-local IntegrationVersions = ["lts"];
+local IntegrationVersions = ["10"];
 
 [
-  CheckPreconditions("lts"),
-  IncludeBranches(MeasureSizeAndTiming("lts")),
+  CheckPreconditions("10"),
+  IncludeBranches(MeasureSizeAndTiming("10")),
 ] + [
   ExcludeBranches(UnitTest(version))
   for version in UnitVersions

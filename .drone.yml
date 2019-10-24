@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: check preconditions (node:lts)
+name: check preconditions (node:10)
 
 platform:
   os: linux
@@ -8,7 +8,7 @@ platform:
 
 steps:
 - name: build information
-  image: node:lts
+  image: node:10
   commands:
   - node --version
   - npm --version
@@ -16,23 +16,23 @@ steps:
   - git --version
 
 - name: install
-  image: node:lts
+  image: node:10
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
 - name: audit
-  image: node:lts
+  image: node:10
   commands:
   - yarn run audit
 
 - name: lint
-  image: node:lts
+  image: node:10
   commands:
   - yarn run lint
 
 - name: check-fmt
-  image: node:lts
+  image: node:10
   commands:
   - yarn run check-fmt
 
@@ -63,7 +63,7 @@ steps:
 
 ---
 kind: pipeline
-name: size and timing (node:lts)
+name: size and timing (node:10)
 
 platform:
   os: linux
@@ -71,7 +71,7 @@ platform:
 
 steps:
 - name: slow-deps
-  image: node:lts
+  image: node:10
   commands:
   - npm install -g slow-deps
   - slow-deps
@@ -308,7 +308,7 @@ trigger:
 
 ---
 kind: pipeline
-name: integration tests (node:lts)
+name: integration tests (node:10)
 
 platform:
   os: linux
@@ -316,7 +316,7 @@ platform:
 
 steps:
 - name: build information
-  image: node:lts
+  image: node:10
   commands:
   - node --version
   - npm --version
@@ -324,13 +324,13 @@ steps:
   - git --version
 
 - name: install
-  image: node:lts
+  image: node:10
   commands:
   - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
   - yarn install
 
 - name: integration-test
-  image: node:lts
+  image: node:10
   commands:
   - yarn run integration-test
   environment:
