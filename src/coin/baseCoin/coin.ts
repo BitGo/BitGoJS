@@ -1,19 +1,22 @@
-import { coins, BaseCoin as StaticsBaseCoin, NetworkType } from '@bitgo/statics';
+import { AccountNetwork, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import BigNumber from "bignumber.js";
-import { BaseAddress, BaseKey, BaseTransaction, BaseSignature } from "./iface";
-import { TransactionType } from './enum';
+import { BaseAddress, BaseKey } from "./iface";
+import { BaseTransaction } from "../../transaction";
 
 export abstract class BaseCoin {
   /**
    * Our coin from statics
    */
   protected staticsCoin: Readonly<StaticsBaseCoin>;
+  protected _network: AccountNetwork;
 
   /**
    * Constructor
    * @param network the network for this coin
    */
-  constructor(public network: NetworkType) { }
+  constructor(network: AccountNetwork) {
+    this._network = network;
+  }
 
   /**
    * The statics fullName of this coin
@@ -40,13 +43,12 @@ export abstract class BaseCoin {
   /**
    * Parse a transaction from a raw format.
    * @param rawTransaction the raw transaction in this case. format determined by the coin
-   * @param transactionType the type/direction of the transaction
    */
-  public abstract parseTransaction(rawTransaction: any, transactionType: TransactionType): BaseTransaction;
+  public abstract parseTransaction(rawTransaction: any): BaseTransaction;
 
   /**
    * Build our transaction. Returns the resultant transaction with a completed transaction (or error state)
-   * @param transaction 
+   * @param transaction
    */
   public abstract buildTransaction(transaction: BaseTransaction): BaseTransaction;
 

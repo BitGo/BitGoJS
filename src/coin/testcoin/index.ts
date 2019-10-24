@@ -1,23 +1,23 @@
 import { BaseCoin } from "../baseCoin";
 import BigNumber from "bignumber.js";
-import { BaseTransaction, BaseSignature, BaseAddress, BaseKey } from "../baseCoin/iface";
-import { TransactionType } from "../baseCoin/enum";
-import { NetworkType } from "@bitgo/statics";
+import { BaseAddress, BaseKey } from "../baseCoin/iface";
+import { AccountNetwork } from "@bitgo/statics";
+import { BaseTransaction } from "../../transaction";
 
 /**
  * The purpose of this coin is a mock to use for the test runner. Its capable of returning what we want under any circumstance.
  */
 export class TestCoin extends BaseCoin {
   constructor() {
-    super(NetworkType.TESTNET);
+    super({} as AccountNetwork);
   }
 
   _from: number = 1;
   _dests: number = 1;
-  _validateAddress: boolean = true; 
+  _validateAddress: boolean = true;
   _validateValue: boolean = true;
   _validateKey: boolean = true;
-  _parseTransaction: BaseTransaction; 
+  _parseTransaction: BaseTransaction;
   _buildTransaction: BaseTransaction;
   _sign: BaseTransaction;
 
@@ -34,7 +34,7 @@ export class TestCoin extends BaseCoin {
 
   get displayName(): string {
     return "Test";
-  }  
+  }
 
   public validateAddress(address: BaseAddress, addressFormat?: string) {
     return this._validateAddress;
@@ -48,7 +48,7 @@ export class TestCoin extends BaseCoin {
     return this._validateKey;
   }
 
-  public parseTransaction(rawTransaction: any, transactionType: TransactionType): BaseTransaction {
+  public parseTransaction(rawTransaction: any): BaseTransaction {
     return this._parseTransaction;
   }
 
@@ -63,7 +63,7 @@ export class TestCoin extends BaseCoin {
 
 interface TestCoinParams {
   from?: number;
-  dests?: number; 
+  dests?: number;
   validateAddress?: boolean;
   validateValue?: boolean;
   validateKey?: boolean;

@@ -1,43 +1,24 @@
 import { BaseCoin } from "../../baseCoin";
 import BigNumber from "bignumber.js";
 import { Transaction } from '../transaction';
-import { RawTransaction, TransactionReceipt } from '../iface';
+import { RawData, TransactionReceipt } from '../iface';
 import { Key } from '../key';
 import { ParseTransactionError, SigningError, BuildTransactionError } from '../../baseCoin/errors';
 import { Address } from '../address';
 import { BaseKey } from '../../baseCoin/iface';
-import { TransactionType } from '../../baseCoin/enum';
-import { ContractType } from "../enum";
 import { decodeTransaction, isValidHex, signTransaction, isBase58Address } from "../utils";
+import { AccountNetwork } from "@bitgo/statics";
 
 export class TrxBase extends BaseCoin {
-  public buildTransaction(transaction: Transaction): Transaction {
-    if (transaction.transactionType === TransactionType.Recieve) {
-      throw new BuildTransactionError('Called build on a recieve transaction.');
-    }
-
-    switch (transaction.tx.raw_data.contractType) {
-      case ContractType.Transfer:
-      case ContractType.AccountPermissionUpdate:
-        // attach our signatures to the raw object, because that's what we'll send back to the node
-        return this.attachSignaturesToRaw(transaction);
-      default:
-        throw new BuildTransactionError('Contract type not implemented.');
-    }
+  protected constructor(network: AccountNetwork) {
+    super(network);
   }
 
-  /**
-   * Attaches any signatures to the raw transaction.
-   * @param transaction Transaction incoming
-   */
-  public attachSignaturesToRaw(transaction: Transaction): Transaction {
-    const rawTx = JSON.parse(transaction.rawTx);
-
-    rawTx.signature = transaction.tx.signature;
-
-    // we need to re-compose this for any downstream consumers
-    transaction.finalTx = JSON.stringify(rawTx);
-
+  public buildTransaction(transaction: Transaction): Transaction {
+    // This is a no-op since Tron transactions are built from
+    if (!transaction.id) {
+      throw new BuildTransactionError('A valid transaction must have an id');
+    }
     return transaction;
   }
 
@@ -45,8 +26,8 @@ export class TrxBase extends BaseCoin {
    * Helper function for parsing a transaction's raw_data field.
    * @param rawDataHex Raw data field encoded as hex in tron.proto
    */
-  private createRawTransaction(rawDataHex: string): RawTransaction {
-    let parsedTx: RawTransaction;
+  private createRawTransaction(rawDataHex: string): RawData {
+    let parsedTx: RawData;
     try {
       parsedTx = decodeTransaction(rawDataHex);
     } catch (e) {
@@ -62,7 +43,7 @@ export class TrxBase extends BaseCoin {
    */
   private createTransactionReceipt(rawTransaction: string): TransactionReceipt {
     const raw = JSON.parse(rawTransaction);
-    
+
     let txID: string;
     // TODO: need a more specific validation method for txID
     if (raw.txID && isValidHex(raw.txID)) {
@@ -77,52 +58,48 @@ export class TrxBase extends BaseCoin {
       signature = raw.signature;
     }
 
-    let rawData: RawTransaction;
+    let rawData: RawData;
     if (raw.raw_data_hex && isValidHex(raw.raw_data_hex)) {
       rawData = this.createRawTransaction(raw.raw_data_hex);
     } else {
       throw new ParseTransactionError('Raw transaction needs to have a valid state.');
     }
-    
+
     return {
       txID,
       raw_data: rawData,
+      raw_data_hex: raw.raw_data_hex,
       signature,
     };
   }
 
   /**
    * Parse transaction takes in raw JSON directly from the node.
+   * @param rawTransaction The Tron transaction in JSON format.
    */
-  public parseTransaction(rawTransaction: any, transactionType: TransactionType): Transaction {
-    const tx = new Transaction(this.network);
-
-    if (typeof rawTransaction !== 'string') {
-      throw new ParseTransactionError('Raw transaction needs to be a JSON encoded string.');
+  public parseTransaction(rawTransaction: TransactionReceipt | string): Transaction {
+    if (typeof rawTransaction === 'string') {
+      const transaction = this.createTransactionReceipt(rawTransaction);
+      return new Transaction(this._network, transaction);
     }
-
-    // store our transaction data for later
-    tx.rawTx = rawTransaction;
-    tx.transactionType = transactionType;
-    tx.tx = this.createTransactionReceipt(rawTransaction);
-
-    return tx;
+    return new Transaction(this._network, rawTransaction);
   }
 
   public sign(privateKey: Key, address: Address, transaction: Transaction): Transaction {
-    if (!transaction.tx) {
-      throw new SigningError('tx needs to be parsed.');
+    if (!transaction.senders) {
+      throw new SigningError('transaction has no sender');
     }
 
-    if (!transaction.tx.txID) {
-      throw new SigningError('txID needs to exist on our transaction.');
+    if (!transaction.destinations) {
+      throw new SigningError('transaction has no receiver');
     }
 
+    const oldTransaction = transaction.toJson();
     // store our signatures, since we want to compare the new sig to another in a later step
-    const oldSignatureCount = transaction.tx.signature ? transaction.tx.signature.length : 0;
+    const oldSignatureCount = oldTransaction.signature ? oldTransaction.signature.length : 0;
     let signedTx: TransactionReceipt;
     try {
-      signedTx = signTransaction(privateKey.key, transaction.tx);
+      signedTx = signTransaction(privateKey.key, transaction.toJson());
     } catch (e) {
       throw new SigningError('Failed to sign transaction via helper.');
     }
@@ -132,11 +109,9 @@ export class TrxBase extends BaseCoin {
       throw new SigningError('Transaction signing did not return an additional signature.');
     }
 
-    transaction.tx = signedTx;
-
-    return transaction;
+    return new Transaction(this._network, signedTx);
   }
-  
+
   /**
    * Validates a passed value. This is TRX units.
    */

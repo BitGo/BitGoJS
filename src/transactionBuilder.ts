@@ -1,47 +1,41 @@
 import { BaseCoin } from "./coin/baseCoin";
-import BigNumber from "bignumber.js";
-import { SigningError } from "./coin/baseCoin/errors";
-import { BaseTransaction, BaseAddress, BaseKey } from "./coin/baseCoin/iface";
-import { TransactionType } from "./coin/baseCoin/enum";
+import { BaseAddress, BaseKey } from "./coin/baseCoin/iface";
 import { CoinFactory } from "./coinFactory";
+import { BaseTransaction } from "./transaction";
 
 export interface TransactionBuilderParams {
-  coin?: BaseCoin;
-  coinName?: string;
+  coinName: string;
 }
 
+/**
+ * Generic transaction builder.
+ */
 export class TransactionBuilder {
-  public transaction: BaseTransaction;
+  private transaction: BaseTransaction;
   private coin: BaseCoin;
 
-  private fromAddresses: Array<BaseAddress>;
-  private destination: Array<Destination>;
-
+  /**
+   * Public constructor. It will initialize the correct builder based on the coin.
+   *
+   * @param options
+   */
   constructor(options: TransactionBuilderParams) {
-    let coin = options.coin;
-    if (!coin) {
-      if (!options.coinName) {
-        throw new Error('Failed to provide a coin and coinName.')
-      }
-
-      coin = CoinFactory.getCoin(options.coinName);
-    }
-
-    this.coin = coin;
-    this.fromAddresses = new Array<BaseAddress>();
-    this.destination = new Array<Destination>();
+    this.coin = CoinFactory.getCoin(options.coinName);
   }
 
-  from(rawTransaction: any, transactionType: TransactionType) {
-    let transaction = this.coin.parseTransaction(rawTransaction, transactionType);
-
-    this.transaction = transaction;
+  /**
+   * Build a transaction based on existing data. The input format will depend on the coin, and it
+   * could be hex, base64, JSON, etc.
+   * @param rawTransaction
+   */
+  from(rawTransaction: any) {
+    this.transaction = this.coin.parseTransaction(rawTransaction);
   }
- 
+
   /**
    * Signs the transaction in our builder.
    * @param key the key associated with this transaction
-   * @param fromAddress 
+   * @param fromAddress
    */
   sign(key: BaseKey, fromAddress: BaseAddress) {
     this.coin.validateAddress(fromAddress);
@@ -50,15 +44,13 @@ export class TransactionBuilder {
     this.transaction = this.coin.sign(key, fromAddress, this.transaction);
   }
 
+  /**
+   * Finalize the transaction by performing any extra step like calculating hashes, verifying
+   * integrity, or adding default values.
+   * @return transaction object
+   */
   build(): BaseTransaction {
-    let transaction = this.coin.buildTransaction(this.transaction);
-    
-    this.transaction = transaction;
-
+    this.transaction = this.coin.buildTransaction(this.transaction);
     return this.transaction;
   }
-}
-
-export class Destination {
-  constructor(private address: BaseAddress, private value: BigNumber) {}
 }
