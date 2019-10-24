@@ -68,7 +68,7 @@ confirm "confirm publish"
 
 echo -n "enter OTP: "
 read -r otp
-npm publish --otp="$otp"
+npm publish --otp="$otp" --access public
 git checkout -q -
 
 # verify package
