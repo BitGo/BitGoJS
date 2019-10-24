@@ -2,5 +2,8 @@
 import * as Trx from './coin/trx';
 export { Trx };
 
+import * as BaseCoin from './coin/baseCoin';
+export { BaseCoin };
+
 // classes
-export { TransactionBuilder } from './transactionBuilder';
+export { TransactionBuilder, TransactionBuilderParams } from './transactionBuilder';
