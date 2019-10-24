@@ -11,7 +11,7 @@ export abstract class BaseTransaction {
   protected _destination: Destination[];
   protected _type: TransactionType;
 
-  protected constructor(private _coinConfig: Readonly<CoinConfig>) { }
+  protected constructor(protected _coinConfig: Readonly<CoinConfig>) { }
 
   get id() {
     return this._id;
