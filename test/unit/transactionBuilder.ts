@@ -1,41 +1,42 @@
-import * as should from 'should';
-import { TransactionBuilder } from '../../src/transactionBuilder';
-import { CoinFactory } from '../../src/coinFactory';
-import BigNumber from 'bignumber.js';
-import { TransactionType } from '../../src/coin/baseCoin/enum';
-import { NetworkType } from '@bitgo/statics';
-import { TestCoin, Address } from '../../src/coin/testcoin';
+import { TransactionBuilder } from '../../src/';
+import { TestCoin } from '../resources/testCoin';
+import { CoinFactory } from "../../src/coinFactory";
+import sinon = require('sinon');
 
 describe('Transaction builder', () => {
   let txBuilder: TransactionBuilder;
-  let coin: TestCoin;
+  let testCoin;
+  let sandbox: sinon.SinonSandbox;
 
-  before(() => {
-    coin = CoinFactory.getCoin('test') as TestCoin;
-    txBuilder = new TransactionBuilder({ coin });
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+    testCoin = sinon.createStubInstance(TestCoin);
+    sandbox.stub(CoinFactory, 'getCoin').returns(testCoin);
+    txBuilder = new TransactionBuilder({ coinName: 'test' });
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it('should parse a raw transaction that is valid', () => {
-    const validTx = { isValid: () => true, finalTx: null, rawTx: null, tx: null, transactionType: TransactionType.Send };
-    coin.setVariable({ parseTransaction: validTx });
+    txBuilder.from(null);
 
-    txBuilder.from(null, TransactionType.Send);
+    sandbox.assert.calledOnce(testCoin.parseTransaction);
   });
 
   it('should sign a transaction that is valid', () => {
-    const validTx = { isValid: () => true, finalTx: null, rawTx: null, tx: null, transactionType: TransactionType.Send };
-
-    coin.setVariable({ parseTransaction: validTx });
-
-    txBuilder.from(null, TransactionType.Send);
+    txBuilder.from(null);
     txBuilder.sign({ key: ''  }, { address: 'fakeAddress' });
+
+    sandbox.assert.calledOnce(testCoin.validateAddress);
+    sandbox.assert.calledOnce(testCoin.validateKey);
   });
 
   it('should build an existing transaction that is valid', () => {
-    const validTx = { isValid: () => true, finalTx: null, rawTx: null, tx: null, transactionType: TransactionType.Send };
-    coin.setVariable({ buildTransaction: validTx, validateAddress: true });
-
-    txBuilder.from(null, TransactionType.Send);
+    txBuilder.from(null);
     txBuilder.build();
+
+    sandbox.assert.calledOnce(testCoin.buildTransaction);
   });
 });

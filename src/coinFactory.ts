@@ -1,7 +1,6 @@
 import { BaseCoin } from "./coin/baseCoin";
-import { Trx } from "./coin/trx/network/trx";
-import { Ttrx } from "./coin/trx/network/ttrx";
-import { TestCoin } from "./coin/testcoin";
+import { Trx, Ttrx } from "./coin/trx";
+import {BuildTransactionError} from "./coin/baseCoin/errors";
 
 /**
  * We "hide" this class from the outside world because we don't really want it being called directly.
@@ -14,10 +13,8 @@ export abstract class CoinFactory {
         return new Ttrx();
       case 'trx':
         return new Trx();
-      case 'test':
-        return new TestCoin();
       default:
-        throw new Error(`Coin ${coinName} not supported`);
+        throw new BuildTransactionError(`Coin ${coinName} not supported`);
     }
   }
 }

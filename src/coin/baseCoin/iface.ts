@@ -1,25 +1,17 @@
-import { TransactionType } from "./enum";
+import BigNumber from "bignumber.js";
 
-export interface BaseAddress { 
+export interface BaseAddress {
   address: any;
-
-  toString(): string;
 }
 
-export interface BaseSignature { 
+export interface BaseSignature {
   signature: any;
-}
-
-/**
- * Specifies the members expected for a Transaction
- */
-export abstract class BaseTransaction {
-  abstract rawTx: any;
-  abstract tx: any;
-  abstract finalTx: any;
-  transactionType: TransactionType;
 }
 
 export interface BaseKey {
   key: any;
+}
+
+export interface Destination extends BaseAddress {
+  value: BigNumber
 }

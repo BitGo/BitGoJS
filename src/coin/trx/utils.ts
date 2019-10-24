@@ -3,14 +3,13 @@ const tronproto = require('../../../resources/trx/protobuf/tron_pb');
 const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
 
 import * as assert from 'assert';
-import { TransferContract, RawTransaction, AccountPermissionUpdateContract, Account, TransactionReceipt, Permission } from './iface';
+import { TransferContract, RawData, AccountPermissionUpdateContract, Account, TransactionReceipt, Permission } from './iface';
 import { ContractType, PermissionType } from './enum';
 import { UtilsError } from '../baseCoin/errors';
 
 /**
  * Tron-specific helper functions
  */
-
 export type TronBinaryLike = ByteArray | Buffer | Uint8Array | string;
 export type ByteArray = number[];
 
@@ -72,9 +71,9 @@ export function getRawAddressFromPubKey(pubBytes: ByteArray | string): ByteArray
 
 /**
  * Decodes a base64 encoded transaction in its protobuf representation.
- * @param hexString
+ * @param hexString raw_data_hex field from tron transactions
  */
-export function decodeTransaction(hexString: string): RawTransaction {
+export function decodeTransaction(hexString: string): RawData {
   const rawTransaction = decodeRawTransaction(hexString);
 
   // there should not be multiple contracts in this data
@@ -203,7 +202,7 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
   }
 }
 
-export function createPermission(raw: { permissionName: string, threshold: number}): Permission {
+function createPermission(raw: { permissionName: string, threshold: number}): Permission {
   let permissionType: PermissionType;
   const permission = raw.permissionName.toLowerCase().trim();
   if (permission === 'owner') {
