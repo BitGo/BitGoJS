@@ -2,9 +2,7 @@ import { TransferContract, AccountPermissionUpdateContract } from '../../../../s
 import { Utils } from '../../../../src/coin/trx/index';
 
 import * as should from 'should';
-import { UnsignedTransferContractTx } from './mock';
-import { UnsignedAccountPermissionUpdateContractTx } from './mock';
-
+import { UnsignedTransferContractTx, UnsignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
 
 describe('Util library should', function() {
   // arbitrary text
@@ -66,16 +64,10 @@ describe('Util library should', function() {
 
   it('validate a hex string', () => {
     const hex = ['0xaffd', '0x11'];
-   hex.map((hex) => { should(isValidHex(hex)).ok(); });
+    hex.map((hex) => { should(Utils.isValidHex(hex)).ok(); });
 
     const invalidHex = ['0xa11', '0xFFdYYY', '0x', ''];
-    invalidHex.map((hex) => { should(isValidHex(hex)).equal(false); });
-  });
-
-  it('sign a transaction', () => {
-    const prvArray = Utils.getByteArrayFromHexAddress(prv);
-    const signedTx = Utils.signTransaction(prvArray, UnsignedTransferContractTx.tx);
-    should.equal(signedTx.signature[0], UnsignedTransferContractTx.sig);
+    invalidHex.map((hex) => { should(Utils.isValidHex(hex)).equal(false); });
   });
 
   it('sign a string', () => {

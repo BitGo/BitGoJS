@@ -16,6 +16,7 @@ export interface BaseSignature {
 export abstract class BaseTransaction {
   abstract rawTx: any;
   abstract tx: any;
+  abstract finalTx: any;
   transactionType: TransactionType;
 }
 

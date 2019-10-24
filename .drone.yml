@@ -1,0 +1,78 @@
+---
+kind: pipeline
+name: check preconditions (node:10)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:10
+  commands:
+  - node --version
+  - npm --version
+  - git --version
+
+- name: install
+  image: node:10
+  commands:
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - npm install
+
+- name: lint
+  image: node:10
+  commands:
+  - npm run lint
+
+---
+kind: pipeline
+name: unit tests (node:10)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:10
+  commands:
+  - node --version
+  - npm --version
+  - git --version
+
+- name: audit
+  image: node:10
+  commands:
+  - npm audit
+
+- name: install
+  image: node:10
+  commands:
+  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - npm install
+
+- name: unit-test
+  image: node:10
+  commands:
+  - npm run test
+
+- name: upload artifacts
+  image: bitgosdk/upload-tools:latest
+  commands:
+  - npm run coverage -F unit
+  environment:
+    CODECOV_TOKEN:
+      from_secret: codecov
+  when:
+    status:
+    - success
+    - failure
+
+trigger:
+  branch:
+    exclude:
+    - master
+    - "rel/*"
+    - prod/production
+...

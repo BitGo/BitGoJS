@@ -9,10 +9,14 @@ export class Transaction extends BaseTransaction {
   rawTx: any;
 
   /**
+   * This is what is signed and comes out tansactionBuilder build().
+   */
+  finalTx: any;
+
+  /**
    * Output of parsed transaction.
    */
   tx: TransactionReceipt;
-  parsedTx: any;
 
   constructor(private network: NetworkType) {
     super();

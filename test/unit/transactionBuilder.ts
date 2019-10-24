@@ -16,24 +16,24 @@ describe('Transaction builder', () => {
   });
 
   it('should parse a raw transaction that is valid', () => {
-    const validTx = { isValid: () => true, rawTx: null, parsedTx: null, transactionType: TransactionType.Send };
+    const validTx = { isValid: () => true, finalTx: null, rawTx: null, tx: null, transactionType: TransactionType.Send };
     coin.setVariable({ parseTransaction: validTx });
 
     txBuilder.from(null, TransactionType.Send);
   });
 
   it('should sign a transaction that is valid', () => {
-    const validTx = { isValid: () => true, rawTx: null, parsedTx: null, transactionType: TransactionType.Send };
+    const validTx = { isValid: () => true, finalTx: null, rawTx: null, tx: null, transactionType: TransactionType.Send };
 
-    coin.setVariable({ sign: { signature: '' }, validateKey: true, parseTransaction: validTx });
+    coin.setVariable({ parseTransaction: validTx });
 
     txBuilder.from(null, TransactionType.Send);
-    txBuilder.sign({ key: ''  }, new Address());
+    txBuilder.sign({ key: ''  }, { address: 'fakeAddress' });
   });
 
   it('should build an existing transaction that is valid', () => {
-    const validTx = { isValid: () => true, rawTx: null, parsedTx: null, transactionType: TransactionType.Send };
-    coin.setVariable({ buildTransaction: validTx });
+    const validTx = { isValid: () => true, finalTx: null, rawTx: null, tx: null, transactionType: TransactionType.Send };
+    coin.setVariable({ buildTransaction: validTx, validateAddress: true });
 
     txBuilder.from(null, TransactionType.Send);
     txBuilder.build();
