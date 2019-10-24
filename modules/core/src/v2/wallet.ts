@@ -1947,9 +1947,13 @@ export class Wallet {
       ]);
       const finalTxParams = _.extend({}, halfSignedTransaction, selectParams);
       self.bitgo.setRequestTracer(reqId);
-      return self.bitgo.post(self.url('/tx/send'))
+      const result = yield self.bitgo.post(self.url('/tx/send'))
         .send(finalTxParams)
         .result();
+      if (result.pendingApproval) {
+        result.status = 'pendingApproval';
+      }
+      return result;
     }).call(this).asCallback(callback);
   }
 

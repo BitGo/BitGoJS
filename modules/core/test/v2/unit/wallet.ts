@@ -791,4 +791,51 @@ describe('V2 Wallet:', function() {
       createShareNock.isDone().should.be.True();
     }));
   });
+
+  describe('Wallet Send', function walletSend() {
+    let bgUrl;
+
+    before(co(function *() {
+      nock.pendingMocks().should.be.empty();
+      bgUrl = common.Environments[bitgo.getEnv()].uri;
+    }));
+
+    it('should return status=pendingApproval for pending approval response', co(function *() {
+      const sendParams = {
+        amount: '100000',
+        address: '2NCUFDLiUz9CVnmdVqQe9acVonoM89e76df',
+        walletPasphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
+      };
+
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/send`;
+      const response = nock(bgUrl)
+        .post(path)
+        .reply(200, {
+          error: 'triggered all transactions policy',
+          pendingApproval:
+            { id: '5db1e519d742e647062c3f820df9dda1',
+              coin: 'tbtc',
+              wallet: '5c33da5cadc74bd2038002dcfd945527',
+              enterprise: '5bac2216b3a92fc303bff39d9ac7a62e',
+              creator: '5bac0335c9ff8ebd03f6294d926ff461',
+              createDate: '2019-10-24T17:53:29.495Z',
+              info: { type: 'transactionRequest', transactionRequest: [Object] },
+              state: 'pending',
+              scope: 'wallet',
+              userIds: [
+                '5bac0335c9ff8ebd03f6294d926ff461',
+                '5c2e7c40fcf6519d03d6cbdf0133ea59',
+              ],
+              approvalsRequired: 1,
+              resolvers: [] },
+          triggeredPolicy: '5c33da5dadc74bd2038002f00b2f1d75'
+        });
+
+      const prebuildReturn = { txHex: '123' };
+      sinon.stub(wallet, 'prebuildAndSignTransaction').resolves(prebuildReturn);
+
+      const reply = yield wallet.send(sendParams);
+      reply.status.should.equal('pendingApproval');
+    }));
+  });
 });
