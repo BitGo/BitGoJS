@@ -26,18 +26,26 @@ export class Transaction extends BaseTransaction {
       this._fromAddresses = [senderAddress];
 
       // Destination depends on the contract type
-      switch (this._decodedRawDataHex.contractType) {
-        case ContractType.Transfer:
-          this._type = TransactionType.Send;
-          const destination = {
-            address: (this._decodedRawDataHex.contract as TransferContract).toAddress,
-            value: new BigNumber((this._decodedRawDataHex.contract as TransferContract).amount),
-          };
-          this._destination = [destination];
-          break;
-        default:
-          throw new ParseTransactionError('Unsupported contract type');
-      }
+      this.recordRawDataFields(this._decodedRawDataHex);
+    }
+  }
+
+  /**
+   * Parse the transaction raw data and record the most important fields.
+   * @param rawData Object from a tron transaction
+   */
+  private recordRawDataFields(rawData: RawData) {
+    switch (rawData.contractType) {
+      case ContractType.Transfer:
+        this._type = TransactionType.Send;
+        const destination = {
+          address: (rawData.contract as TransferContract).toAddress,
+          value: new BigNumber((rawData.contract as TransferContract).amount),
+        };
+        this._destination = [destination];
+        break;
+      default:
+        throw new ParseTransactionError('Unsupported contract type');
     }
   }
 

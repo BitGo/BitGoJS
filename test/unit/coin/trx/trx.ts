@@ -17,10 +17,6 @@ describe('Tron test network', function() {
     txBuilder = new TransactionBuilder({ coinName: 'ttrx '});
   });
 
-  it('should instantiate the txBuilder properly', () => {
-    should.exist(txBuilder);
-  });
-
   describe('Transaction build', () => {
     it('should use from with a transfer contract for an unsigned tx', () => {
       const txJson = JSON.stringify(UnsignedBuildTransaction);
