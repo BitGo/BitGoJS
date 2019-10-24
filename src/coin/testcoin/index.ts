@@ -1,17 +1,12 @@
 import { BaseCoin } from "../baseCoin";
 import BigNumber from "bignumber.js";
 import { BaseAddress, BaseKey } from "../baseCoin/iface";
-import { AccountNetwork } from "@bitgo/statics";
 import { BaseTransaction } from "../../transaction";
 
 /**
  * The purpose of this coin is a mock to use for the test runner. Its capable of returning what we want under any circumstance.
  */
-export class TestCoin extends BaseCoin {
-  constructor() {
-    super({} as AccountNetwork);
-  }
-
+export class TestCoin implements BaseCoin {
   _from: number = 1;
   _dests: number = 1;
   _validateAddress: boolean = true;
@@ -32,7 +27,7 @@ export class TestCoin extends BaseCoin {
       this._sign = tcParams.sign === undefined ? this._sign : tcParams.sign;
   }
 
-  get displayName(): string {
+  public displayName(): string {
     return "Test";
   }
 

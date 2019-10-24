@@ -1,5 +1,5 @@
 import {RawData, TransactionReceipt, TransferContract} from "./iface";
-import { AccountNetwork } from "@bitgo/statics";
+import { BaseCoin as CoinConfig } from "@bitgo/statics";
 import { BaseTransaction } from "../../transaction";
 import { decodeTransaction } from "./utils";
 import { ContractType} from "./enum";
@@ -11,8 +11,8 @@ export class Transaction extends BaseTransaction {
   private _decodedRawDataHex: RawData;
   private _transaction?: TransactionReceipt;
 
-  constructor(network: AccountNetwork, rawTransaction?: TransactionReceipt) {
-    super(network);
+  constructor(coinConfig: Readonly<CoinConfig>, rawTransaction?: TransactionReceipt) {
+    super(coinConfig);
     if (rawTransaction) {
       if (!rawTransaction.txID) {
         throw new ParseTransactionError('Transaction has no id');

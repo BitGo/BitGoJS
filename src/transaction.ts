@@ -1,20 +1,17 @@
 import { BaseAddress, Destination } from "./coin/baseCoin/iface";
-import { AccountNetwork } from "@bitgo/statics";
+import { BaseCoin as CoinConfig } from "@bitgo/statics";
 import { TransactionType } from "./coin/baseCoin/enum";
 
 /**
  * Specifies the members expected for a Transaction
  */
 export abstract class BaseTransaction {
-  private _network: AccountNetwork;
   protected _id: string;
   protected _fromAddresses: BaseAddress[];
   protected _destination: Destination[];
   protected _type: TransactionType;
 
-  protected constructor(network: AccountNetwork) {
-    this._network = network;
-  }
+  protected constructor(private _coinConfig: Readonly<CoinConfig>) { }
 
   get id() {
     return this._id;

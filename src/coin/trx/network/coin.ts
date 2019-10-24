@@ -7,12 +7,10 @@ import { ParseTransactionError, SigningError, BuildTransactionError } from '../.
 import { Address } from '../address';
 import { BaseKey } from '../../baseCoin/iface';
 import { decodeTransaction, isValidHex, signTransaction, isBase58Address } from "../utils";
-import { AccountNetwork } from "@bitgo/statics";
+import { BaseCoin as CoinConfig } from "@bitgo/statics";
 
-export class TrxBase extends BaseCoin {
-  protected constructor(network: AccountNetwork) {
-    super(network);
-  }
+export class TrxBase implements BaseCoin {
+  protected constructor(private _coinConfig: Readonly<CoinConfig>) { }
 
   public buildTransaction(transaction: Transaction): Transaction {
     // This is a no-op since Tron transactions are built from
@@ -80,9 +78,9 @@ export class TrxBase extends BaseCoin {
   public parseTransaction(rawTransaction: TransactionReceipt | string): Transaction {
     if (typeof rawTransaction === 'string') {
       const transaction = this.createTransactionReceipt(rawTransaction);
-      return new Transaction(this._network, transaction);
+      return new Transaction(this._coinConfig, transaction);
     }
-    return new Transaction(this._network, rawTransaction);
+    return new Transaction(this._coinConfig, rawTransaction);
   }
 
   public sign(privateKey: Key, address: Address, transaction: Transaction): Transaction {
@@ -109,7 +107,7 @@ export class TrxBase extends BaseCoin {
       throw new SigningError('Transaction signing did not return an additional signature.');
     }
 
-    return new Transaction(this._network, signedTx);
+    return new Transaction(this._coinConfig, signedTx);
   }
 
   /**
@@ -138,7 +136,7 @@ export class TrxBase extends BaseCoin {
     return true;
   }
 
-  get displayName(): string {
-    return this.staticsCoin.fullName;
+  public displayName(): string {
+    return this._coinConfig.fullName;
   }
 }

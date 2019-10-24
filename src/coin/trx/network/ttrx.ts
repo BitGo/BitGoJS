@@ -1,8 +1,8 @@
-import { TrxBase } from "./base";
-import { Networks } from "@bitgo/statics";
+import { TrxBase } from "./coin";
+import { coins } from "@bitgo/statics";
 
 export class Ttrx extends TrxBase {
   constructor() {
-    super(Networks.test.trx);
+    super(coins.get('ttrx'));
   }
 }
