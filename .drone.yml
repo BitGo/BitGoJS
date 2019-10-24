@@ -41,6 +41,11 @@ steps:
   - npm --version
   - git --version
 
+- name: audit
+  image: node:10
+  commands:
+  - npm audit
+
 - name: install
   image: node:10
   commands:

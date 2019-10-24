@@ -53,8 +53,8 @@ export abstract class BaseCoin {
   /**
    * Sign a transaction. Creates and attaches a signature to this transaction.
    * @param privateKey the private key associated with this signing mechanism
-   * @param address 
-   * @param transaction the transaction 
+   * @param address the address we're signing from
+   * @param transaction our txBuilder's transaction typically
    */
   public abstract sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseTransaction;
 }

@@ -16,14 +16,14 @@ describe('Transaction builder', () => {
   });
 
   it('should parse a raw transaction that is valid', () => {
-    const validTx = { isValid: () => true, rawTx: null, tx: null, transactionType: TransactionType.Send };
+    const validTx = { isValid: () => true, finalTx: null, rawTx: null, tx: null, transactionType: TransactionType.Send };
     coin.setVariable({ parseTransaction: validTx });
 
     txBuilder.from(null, TransactionType.Send);
   });
 
   it('should sign a transaction that is valid', () => {
-    const validTx = { isValid: () => true, rawTx: null, tx: null, transactionType: TransactionType.Send };
+    const validTx = { isValid: () => true, finalTx: null, rawTx: null, tx: null, transactionType: TransactionType.Send };
 
     coin.setVariable({ parseTransaction: validTx });
 
@@ -32,7 +32,7 @@ describe('Transaction builder', () => {
   });
 
   it('should build an existing transaction that is valid', () => {
-    const validTx = { isValid: () => true, rawTx: null, tx: null, transactionType: TransactionType.Send };
+    const validTx = { isValid: () => true, finalTx: null, rawTx: null, tx: null, transactionType: TransactionType.Send };
     coin.setVariable({ buildTransaction: validTx, validateAddress: true });
 
     txBuilder.from(null, TransactionType.Send);

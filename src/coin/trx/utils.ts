@@ -6,7 +6,6 @@ import * as assert from 'assert';
 import { TransferContract, RawTransaction, AccountPermissionUpdateContract, Account, TransactionReceipt, Permission } from './iface';
 import { ContractType, PermissionType } from './enum';
 import { UtilsError } from '../baseCoin/errors';
-import { InvalidContractAddressError } from '@bitgo/statics';
 
 /**
  * Tron-specific helper functions
@@ -33,6 +32,13 @@ export function getByteArrayFromHexAddress(str: string): ByteArray {
 
 export function getHexAddressFromByteArray(arr: ByteArray): string {
   return tronweb.utils.code.byteArray2hexStr(arr);
+}
+
+export function getHexAddressFromBase58Address(base58: string): string {
+  // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
+  // but they don't surface this call in index.js
+  const bytes = tronweb.utils.crypto.decodeBase58Address(base58);
+  return getHexAddressFromByteArray(bytes);
 }
 
 export function getPubKeyFromPriKey(privateKey: TronBinaryLike): ByteArray {
@@ -62,13 +68,6 @@ export function signString(message: string, privateKey: string | ByteArray, useT
 
 export function getRawAddressFromPubKey(pubBytes: ByteArray | string): ByteArray {
   return tronweb.utils.crypto.computeAddress(pubBytes);
-}
-
-export function getHexAddressFromBase58Address(base58: string): string {
-  // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
-  // but they don't surface this call in index.js
-  const bytes = tronweb.utils.crypto.decodeBase58Address(base58);
-  return getHexAddressFromByteArray(bytes);
 }
 
 /**
@@ -215,7 +214,7 @@ export function createPermission(raw: { permissionName: string, threshold: numbe
   } else if (permission.substr(0,6) === "active") {
     permissionType = PermissionType.Active;
   } else {
-    throw new Error('Permission type not parseable.');
+    throw new UtilsError('Permission type not parseable.');
   }
   return { type: permissionType, threshold: raw.threshold };
 }

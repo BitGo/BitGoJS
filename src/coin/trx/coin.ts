@@ -10,6 +10,7 @@ import { ContractType } from "./enum";
 import { decodeTransaction, isValidHex, signTransaction, isBase58Address } from "./utils";
 import { BaseCoin } from "../baseCoin";
 import { NetworkType, coins } from "@bitgo/statics";
+import { Utils } from ".";
 
 export class Trx extends BaseCoin {
   public buildTransaction(transaction: Transaction): Transaction {
@@ -101,6 +102,17 @@ export class Trx extends BaseCoin {
 
     if (!transaction.tx.txID) {
       throw new SigningError('txID needs to exist on our transaction.');
+    }
+
+    // compare our fromAddress to the derived privateKey address
+    try {
+      const expectedAddress = Utils.getHexAddressFromByteArray(Utils.getAddressFromPriKey(privateKey.key));
+      const actualAddress = Utils.getHexAddressFromBase58Address(address.address);
+      if (actualAddress !== expectedAddress) {
+        throw new SigningError('Private key address does not match the expected address.');
+      }
+    } catch (e) {
+      throw new SigningError('Error decodign and comparing key addresses.');
     }
 
     // store our signatures, since we want to compare the new sig to another in a later step

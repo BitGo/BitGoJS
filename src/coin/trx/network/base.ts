@@ -19,10 +19,26 @@ export class TrxBase extends BaseCoin {
     switch (transaction.tx.raw_data.contractType) {
       case ContractType.Transfer:
       case ContractType.AccountPermissionUpdate:
-        return transaction;
+        // attach our signatures to the raw object, because that's what we'll send back to the node
+        return this.attachSignaturesToRaw(transaction);
       default:
         throw new BuildTransactionError('Contract type not implemented.');
     }
+  }
+
+  /**
+   * Attaches any signatures to the raw transaction.
+   * @param transaction Transaction incoming
+   */
+  public attachSignaturesToRaw(transaction: Transaction): Transaction {
+    const rawTx = JSON.parse(transaction.rawTx);
+
+    rawTx.signature = transaction.tx.signature;
+
+    // we need to re-compose this for any downstream consumers
+    transaction.finalTx = JSON.stringify(rawTx);
+
+    return transaction;
   }
 
   /**
@@ -103,7 +119,7 @@ export class TrxBase extends BaseCoin {
     }
 
     // store our signatures, since we want to compare the new sig to another in a later step
-    const oldSigs = transaction.tx.signature;
+    const oldSignatureCount = transaction.tx.signature ? transaction.tx.signature.length : 0;
     let signedTx: TransactionReceipt;
     try {
       signedTx = signTransaction(privateKey.key, transaction.tx);
@@ -112,7 +128,6 @@ export class TrxBase extends BaseCoin {
     }
 
     // ensure that we have more signatures than what we started with
-    let oldSignatureCount = oldSigs ? oldSigs.length : 0;
     if (!signedTx.signature || oldSignatureCount >= signedTx.signature.length) {
       throw new SigningError('Transaction signing did not return an additional signature.');
     }
