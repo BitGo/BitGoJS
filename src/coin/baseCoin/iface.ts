@@ -12,7 +12,6 @@ export interface BaseKey {
   key: any;
 }
 
-export interface Destination {
-  address: any,
+export interface Destination extends BaseAddress {
   value: BigNumber
 }

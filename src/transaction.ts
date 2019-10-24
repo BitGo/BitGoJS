@@ -1,12 +1,12 @@
 import { BaseAddress, Destination } from "./coin/baseCoin/iface";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
-import { TransactionType } from "./coin/baseCoin/enum";
+import { TransactionType } from "./coin/baseCoin";
 
 /**
  * Specifies the members expected for a Transaction
  */
 export abstract class BaseTransaction {
-  protected _id: string;
+  protected _id: string;  // The transaction id as seen in the blockchain
   protected _fromAddresses: BaseAddress[];
   protected _destination: Destination[];
   protected _type: TransactionType;

@@ -73,7 +73,8 @@ export class TrxBase implements BaseCoin {
 
   /**
    * Parse transaction takes in raw JSON directly from the node.
-   * @param rawTransaction The Tron transaction in JSON format.
+   * @param rawTransaction The Tron transaction in JSON format as returned by the Tron lib or a
+   *     stringifyed version of such JSON.
    */
   public parseTransaction(rawTransaction: TransactionReceipt | string): Transaction {
     if (typeof rawTransaction === 'string') {
