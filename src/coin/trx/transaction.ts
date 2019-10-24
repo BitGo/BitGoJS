@@ -25,6 +25,9 @@ export class Transaction extends BaseTransaction {
       };
       this._fromAddresses = [senderAddress];
 
+      this._validFrom = this._decodedRawDataHex.timestamp;
+      this._validTo = this._decodedRawDataHex.expiration;
+
       // Destination depends on the contract type
       this.recordRawDataFields(this._decodedRawDataHex);
     }
@@ -47,14 +50,6 @@ export class Transaction extends BaseTransaction {
       default:
         throw new ParseTransactionError('Unsupported contract type');
     }
-  }
-
-  get getValidFrom(): number {
-    return this._decodedRawDataHex.expiration;
-  }
-
-  get getValidTo(): number {
-    return this._decodedRawDataHex.timestamp;
   }
 
   toJson(): TransactionReceipt {

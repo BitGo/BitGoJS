@@ -10,6 +10,8 @@ export abstract class BaseTransaction {
   protected _fromAddresses: BaseAddress[];
   protected _destination: Destination[];
   protected _type: TransactionType;
+  protected _validFrom: number;
+  protected _validTo: number;
 
   protected constructor(protected _coinConfig: Readonly<CoinConfig>) { }
 
@@ -27,6 +29,14 @@ export abstract class BaseTransaction {
 
   get senders(): BaseAddress[] {
     return this._fromAddresses;
+  }
+
+  get validFrom(): number {
+    return this._validFrom;
+  }
+
+  get validTo(): number {
+    return this._validTo;
   }
 
   abstract toJson(): any;

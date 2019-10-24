@@ -98,6 +98,8 @@ describe('Tron test network', function() {
       tx.destinations.length.should.equal(1);
       tx.destinations[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
       tx.destinations[0].value.toString().should.equal('1718');
+      tx.validFrom.should.equal(1571811410819);
+      tx.validTo.should.equal(1571811468000);
     });
   });
 });
