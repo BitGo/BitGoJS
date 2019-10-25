@@ -15,6 +15,7 @@ The BitGo SDK repository is a monorepo composed of separate modules, each of whi
 | --- | --- | --- | --- |
 | bitgo | `core` | Authentication, wallet management, user authentication, cryptographic primitives, abstract coin interfaces, coin implementations | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/core) |
 | @bitgo/express | `express` | Local BitGo transaction signing server and proxy | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/express) |
+| @bitgo/statics | `statics` | Static configuration values used across the BitGo platform | [Link](https://github.com/BitGo/BitGoJS/tree/master/modules/statics) |
 
 # Release Notes
 
