@@ -33,6 +33,22 @@ export function getHexAddressFromByteArray(arr: ByteArray): string {
   return tronweb.utils.code.byteArray2hexStr(arr);
 }
 
+export function verifySignature(messageToVerify: string, base58Address: string, sigHex: string, useTronHeader: boolean = true): ByteArray {
+  if (!isValidHex(sigHex)) {
+    throw new UtilsError('signature is not in a valid format, needs to be hexadecimal');
+  }
+
+  if (!isValidHex(messageToVerify)) {
+    throw new UtilsError('message is not in a valid format, needs to be hexadecimal');
+  }
+
+  if (!isBase58Address(base58Address)) {
+    throw new UtilsError('address needs to be base58 encoded');
+  }
+
+  return tronweb.Trx.verifySignature(messageToVerify, base58Address, sigHex, useTronHeader);
+}
+
 export function getHexAddressFromBase58Address(base58: string): string {
   // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
   // but they don't surface this call in index.js

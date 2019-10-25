@@ -84,6 +84,11 @@ describe('Util library should', function() {
     should.deepEqual(bytes, addrBytes);
   });
 
+  it('should verify a signed message', () => {
+    const hexEncodedMessage = Buffer.from(txt).toString('hex');
+    should.ok(Utils.verifySignature(hexEncodedMessage, base58, signedString, true));
+  });
+
   it('should return transaction data', () => {
     const data = Utils.decodeRawTransaction(UnsignedTransferContractTx.tx.raw_data_hex);
     should.equal(data.timestamp, UnsignedTransferContractTx.tx.raw_data.timestamp);
