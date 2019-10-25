@@ -42,20 +42,20 @@ describe('Tron test network', function() {
     it('should sign an unsigned tx', () => {
       const txJson = JSON.stringify(UnsignedBuildTransaction);
       txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey }, { address: FirstExpectedKeyAddress });
+      txBuilder.sign({ key: FirstPrivateKey });
     });
 
     it('should sign an unsigned tx', () => {
       const txJson = JSON.stringify(FirstSigOnBuildTransaction);
       txBuilder.from(txJson);
-      txBuilder.sign({ key: SecondPrivateKey }, { address: SecondExpectedKeyAddress });
+      txBuilder.sign({ key: SecondPrivateKey });
     });
 
     it('should not duplicate an signed tx', (done) => {
       const txJson = JSON.stringify(FirstSigOnBuildTransaction);
       txBuilder.from(txJson);
       try {
-        txBuilder.sign({ key: FirstPrivateKey }, { address: FirstExpectedKeyAddress });
+        txBuilder.sign({ key: FirstPrivateKey });
         should.fail('didnt throw an error', 'throws an error');
       } catch {
         done();
@@ -71,7 +71,7 @@ describe('Tron test network', function() {
     it('should build an half signed tx', () => {
       const txJson = JSON.stringify(UnsignedBuildTransaction);
       txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey }, { address: FirstExpectedKeyAddress });
+      txBuilder.sign({ key: FirstPrivateKey });
       const tx = txBuilder.build();
 
       tx.id.should.equal('80b8b9eaed51c8bba3b49f7f0e7cc5f21ac99a6f3e2893c663b544bf2c695b1d');
@@ -85,7 +85,7 @@ describe('Tron test network', function() {
 
     it('should sign a fully signed tx', () => {
       txBuilder.from(FirstSigOnBuildTransaction);
-      txBuilder.sign({ key: SecondPrivateKey }, { address: SecondExpectedKeyAddress });
+      txBuilder.sign({ key: SecondPrivateKey});
       const tx = txBuilder.build();
 
       tx.toJson().signature[0].should.equal('bd08e6cd876bb573dd00a32870b58b70ea8b7908f5131686502589941bfa4fdda76b8c81bbbcfc549be6d4988657cea122df7da46c72041def2683d6ecb04a7401');

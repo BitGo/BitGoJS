@@ -6,6 +6,7 @@ import { ContractType} from "./enum";
 import BigNumber from "bignumber.js";
 import { ParseTransactionError } from "../baseCoin/errors";
 import { TransactionType } from "../baseCoin/enum";
+import {BaseKey} from "../baseCoin/iface";
 
 export class Transaction extends BaseTransaction {
   private _decodedRawDataHex: RawData;
@@ -50,6 +51,15 @@ export class Transaction extends BaseTransaction {
       default:
         throw new ParseTransactionError('Unsupported contract type');
     }
+  }
+
+  /**
+   * Tron transaction do not contain the owners account address so it is not possible to check the
+   * private key with any but the account main address. This is not enough to fail this check, so it
+   * is a no-op.
+   */
+  canSign(key: BaseKey): boolean {
+    return true;
   }
 
   toJson(): TransactionReceipt {

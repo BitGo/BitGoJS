@@ -2,6 +2,7 @@ import { BaseCoin } from "./coin/baseCoin";
 import { BaseAddress, BaseKey } from "./coin/baseCoin/iface";
 import { CoinFactory } from "./coinFactory";
 import { BaseTransaction } from "./transaction";
+import {SigningError} from "./coin/baseCoin/errors";
 
 export interface TransactionBuilderParams {
   coinName: string;
@@ -34,14 +35,16 @@ export class TransactionBuilder {
 
   /**
    * Signs the transaction in our builder.
-   * @param key the key associated with this transaction
-   * @param fromAddress
+   * @param key one of the keys associated with this transaction
    */
-  sign(key: BaseKey, fromAddress: BaseAddress) {
-    this.coin.validateAddress(fromAddress);
+  sign(key: BaseKey) {
+    // Make sure the key is valid
     this.coin.validateKey(key);
+    if (!this.transaction.canSign(key)) {
+      throw new SigningError('Private key cannot sign the transaction');
+    }
 
-    this.transaction = this.coin.sign(key, fromAddress, this.transaction);
+    this.transaction = this.coin.sign(key, this.transaction);
   }
 
   /**
