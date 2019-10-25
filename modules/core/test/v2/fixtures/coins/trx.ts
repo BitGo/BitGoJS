@@ -30,7 +30,6 @@ const txInfo =  {
 
 export const signTxOptions = {
   prv: 'FB3AA887E0BE3FAC9D75E661DAFF4A7FE0E91AAB13DA9775CD8586D7CB9B7640',
-  address:'TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz',
   txPrebuild: {
     txHex: JSON.stringify(mockTx),
     txInfo,

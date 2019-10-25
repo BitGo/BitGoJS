@@ -152,7 +152,7 @@ export class Trx extends BaseCoin {
     const coinName = this.getChain();
     const txBuilder = new TransactionBuilder({ coinName });
     txBuilder.from(params.txPrebuild.txHex);
-    txBuilder.sign({ key: params.prv }, { address: params.address }); // TODO remove address parameter once account lib is updated
+    txBuilder.sign({ key: params.prv });
     const transaction = txBuilder.build();
     const response = {
       txHex: JSON.stringify(transaction.toJson()),

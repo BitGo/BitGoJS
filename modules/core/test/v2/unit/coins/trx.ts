@@ -72,7 +72,7 @@ describe('TRON:', function() {
   }));
 
   it('should sign a half signed tx', () => {
-    let tx = basecoin.signTransaction(signTxOptions, { address: signTxOptions.address });
+    let tx = basecoin.signTransaction(signTxOptions);
     let txHex = tx.halfSigned.txHex;
     txHex = JSON.parse(txHex)
     txHex.txID.should.equal(signTxOptions.txPrebuild.txInfo.txid);
