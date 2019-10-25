@@ -11,12 +11,14 @@ export interface BaseCoin {
   /**
    * Validate an address. Throws an exception if invalid.
    * @param address the address
-   * @param addressFormat the address format - this will be handled by the implementing coin as an enum
+   * @param addressFormat the address format - this will be handled by the implementing coin as an
+   *     enum
    */
   validateAddress(address: BaseAddress, addressFormat?: string);
 
   /***
-   * Validates the value corresponding to an amount can be used for this transaction. Throws an exception if invalid.
+   * Validates the value corresponding to an amount can be used for this transaction. Throws an
+   * exception if invalid.
    */
   validateValue(value: BigNumber);
 
@@ -40,8 +42,7 @@ export interface BaseCoin {
   /**
    * Sign a transaction. Creates and attaches a signature to this transaction.
    * @param privateKey the private key associated with this signing mechanism
-   * @param address the address we're signing from
    * @param transaction our txBuilder's transaction typically
    */
-  sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseTransaction;
+  sign(privateKey: BaseKey, transaction: BaseTransaction): BaseTransaction;
 }

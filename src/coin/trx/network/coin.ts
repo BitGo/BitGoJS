@@ -84,7 +84,7 @@ export class TrxBase implements BaseCoin {
     return new Transaction(this._coinConfig, rawTransaction);
   }
 
-  public sign(privateKey: Key, address: Address, transaction: Transaction): Transaction {
+  public sign(privateKey: Key, transaction: Transaction): Transaction {
     if (!transaction.senders) {
       throw new SigningError('transaction has no sender');
     }

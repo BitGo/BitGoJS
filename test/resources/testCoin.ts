@@ -33,7 +33,7 @@ export class TestCoin implements BaseCoin {
     return this._buildTransaction;
   }
 
-  public sign(privateKey: BaseKey, address: BaseAddress, transaction: BaseTransaction): BaseTransaction {
+  public sign(privateKey: BaseKey, transaction: BaseTransaction): BaseTransaction {
     return this._sign;
   }
 }

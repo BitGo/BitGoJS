@@ -2,6 +2,8 @@ import { TransactionBuilder } from '../../src/';
 import { TestCoin } from '../resources/testCoin';
 import { CoinFactory } from "../../src/coinFactory";
 import sinon = require('sinon');
+import {TestTransaction} from "../resources/testTransaction";
+import * as should from 'should';
 
 describe('Transaction builder', () => {
   let txBuilder: TransactionBuilder;
@@ -26,10 +28,24 @@ describe('Transaction builder', () => {
   });
 
   it('should sign a transaction that is valid', () => {
-    txBuilder.from(null);
-    txBuilder.sign({ key: ''  }, { address: 'fakeAddress' });
+    let testTx = sinon.createStubInstance(TestTransaction);
+    testTx.canSign.returns(true);
+    testCoin.parseTransaction.returns(testTx);
 
-    sandbox.assert.calledOnce(testCoin.validateAddress);
+    txBuilder.from(null);
+    txBuilder.sign({ key: ''  });
+
+    sandbox.assert.calledOnce(testCoin.validateKey);
+  });
+
+  it('should sign a transaction with an invalid signature', () => {
+    let testTx = sinon.createStubInstance(TestTransaction);
+    testTx.canSign.returns(false);
+    testCoin.parseTransaction.returns(testTx);
+
+    txBuilder.from(null);
+    should.throws(() => txBuilder.sign({ key: ''  }));
+
     sandbox.assert.calledOnce(testCoin.validateKey);
   });
 
