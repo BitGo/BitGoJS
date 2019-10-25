@@ -10214,7 +10214,7 @@ trim-off-newlines@^1.0.0:
   resolved "https://registry.yarnpkg.com/trim-off-newlines/-/trim-off-newlines-1.0.1.tgz#9f9ba9d9efa8764c387698bcbfeb2c848f11adb3"
   integrity sha1-n5up2e+odkw4dpi8v+sshI8RrbM=
 
-tronweb@^2.7.0, tronweb@^2.7.2:
+tronweb@^2.7.2:
   version "2.7.3"
   resolved "https://registry.yarnpkg.com/tronweb/-/tronweb-2.7.3.tgz#52726e4fb6bff00889a475a3ca9f2e1ffd369bd0"
   integrity sha512-KgDGFsXozUfe+2vO19LL5E/Mazv1x+2FVmFBZEuzWp9yP/E1aT3zf1eMR7b+B0KGqB5UpTk2LXNIYCsY8adYDQ==

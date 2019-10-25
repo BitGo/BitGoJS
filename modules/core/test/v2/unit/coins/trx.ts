@@ -2,7 +2,7 @@ import * as Promise from 'bluebird';
 import * as should from 'should';
 import { Trx } from '../../../../src/v2/coins/trx';
 import * as bitgoAccountLib from '@bitgo/account-lib';
-import { mockTx } from '../../fixtures/coins/trx';
+import { signTxOptions, mockTx } from '../../fixtures/coins/trx';
 
 const co = Promise.coroutine;
 import { TestBitGo } from '../../../lib/test_bitgo';
@@ -71,12 +71,28 @@ describe('TRON:', function() {
     explanation.outputs.address.should.equal(toAddress);
   }));
 
+  it('should sign a half signed tx', () => {
+    let tx = basecoin.signTransaction(signTxOptions, { address: signTxOptions.address });
+    let txHex = tx.halfSigned.txHex;
+    txHex = JSON.parse(txHex)
+    txHex.txID.should.equal(signTxOptions.txPrebuild.txInfo.txid);
+    txHex.raw_data.contractType.should.equal(0);
+    const contract = txHex.raw_data.contract;
+    contract.ownerAddress.should.equal(bitgoAccountLib.Trx.Utils.getBase58AddressFromHex(signTxOptions.txPrebuild.txInfo.from))
+    contract.toAddress.should.equal(bitgoAccountLib.Trx.Utils.getBase58AddressFromHex(signTxOptions.txPrebuild.txInfo.recipients[0].address));
+    contract.amount.should.equal(parseInt(signTxOptions.txPrebuild.txInfo.recipients[0].amount,10));
+    txHex.should.have.property('signature');
+    txHex.should.have.property('raw_data_hex');
+    txHex.signature.length.should.equal(1);
+    txHex.raw_data.timestamp.should.equal(mockTx.raw_data.timestamp);
+    txHex.raw_data.expiration.should.equal(mockTx.raw_data.expiration);
+    });
+
   describe('Keypairs:', () => {
     it('should generate a keypair from random seed', function() {
       const keyPair = basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
-
       basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
   });

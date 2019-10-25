@@ -149,22 +149,15 @@ export class Trx extends BaseCoin {
   }
 
   signTransaction(params: TronSignTransactionOptions): SignedTransaction {
-    const tx = JSON.parse(params.txPrebuild.txHex);
-    let expectedSignaturesCount = 1;
-    if (!_.isEmpty(tx.signature)) {
-      expectedSignaturesCount += tx.signature.length;
-    }
-    //TODO use builder instead of utils to sign tx
-    const transaction = bitgoAccountLib.Trx.Utils.signTransaction(params.prv, tx);
-    if (!transaction.signature || transaction.signature.length !== expectedSignaturesCount) {
-      throw new Error('failed to sign transaction');
-    }
+    const coinName = this.getChain();
+    const txBuilder = new TransactionBuilder({ coinName });
+    txBuilder.from(params.txPrebuild.txHex);
+    txBuilder.sign({ key: params.prv }, { address: params.address }); // TODO remove address parameter once account lib is updated
+    const transaction = txBuilder.build();
     const response = {
-      txHex: JSON.stringify(transaction),
+      txHex: JSON.stringify(transaction.toJson()),
     };
-
-    // Multisig fully signed transaction have at least 2 signatures
-    if (transaction.signature.length >= 2) {
+    if (transaction.toJson().signature.length >= 2) {
       return response;
     }
     // Half signed transaction
