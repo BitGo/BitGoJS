@@ -56,4 +56,12 @@ export class TransactionBuilder {
     this.transaction = this.coin.buildTransaction(this.transaction);
     return this.transaction;
   }
+
+  /**
+   * Extend the validity of this transaction by the given amount of time
+   * @param extensionMs The number of milliseconds to extend the validTo time
+   */
+  extendValidTo(extensionMs: number) {
+    this.transaction = this.coin.extendTransaction(this.transaction, extensionMs);
+  }
 }

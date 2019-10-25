@@ -114,4 +114,37 @@ describe('Tron test network', function() {
       tx.validTo.should.equal(1571811468000);
     });
   });
+
+  describe('Transaction extend', () => {
+    beforeEach(() => {
+      txBuilder = new TransactionBuilder({ coinName: 'ttrx '});
+    });
+
+    it('should not extend a half signed tx', () => {
+      const txJson = JSON.stringify(UnsignedBuildTransaction);
+      txBuilder.from(txJson);
+      txBuilder.sign({ key: FirstPrivateKey });
+
+      should.throws(() => txBuilder.extendValidTo(10000));
+    });
+
+    it('should extend an unsigned tx', () => {
+      const extendMs = 10000;
+      txBuilder.from(JSON.parse(JSON.stringify(UnsignedBuildTransaction)));
+      txBuilder.extendValidTo(extendMs);
+      const tx = txBuilder.build();
+
+      tx.id.should.not.equal(UnsignedBuildTransaction.txID);
+      tx.id.should.equal('764aa8a72c2c720a6556def77d6092f729b6e14209d8130f1692d5aff13f2503');
+      const oldExpiration = UnsignedBuildTransaction.raw_data.expiration;
+      tx.validTo.should.equal(oldExpiration + extendMs);
+      tx.type.should.equal(TransactionType.Send);
+      tx.senders.length.should.equal(1);
+      tx.senders[0].address.should.equal('TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz');
+      tx.destinations.length.should.equal(1);
+      tx.destinations[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
+      tx.destinations[0].value.toString().should.equal('1718');
+      tx.validFrom.should.equal(1571811410819);
+    });
+  });
 });

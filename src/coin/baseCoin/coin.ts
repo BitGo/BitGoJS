@@ -45,4 +45,11 @@ export interface BaseCoin {
    * @param transaction our txBuilder's transaction typically
    */
   sign(privateKey: BaseKey, transaction: BaseTransaction): BaseTransaction;
+
+  /**
+   * Extends transaction's expiration date by the given number of milliseconds
+   * @param transaction The transaction to update
+   * @param extensionMs The number of milliseconds to extend the expiration by
+   */
+  extendTransaction(transaction: BaseTransaction, extensionMs: number): BaseTransaction;
 }

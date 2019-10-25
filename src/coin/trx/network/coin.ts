@@ -72,6 +72,16 @@ export class TrxBase implements BaseCoin {
   }
 
   /**
+   * Extends transaction's expiration date by the given number of milliseconds
+   * @param transaction The transaction to update
+   * @param extensionMs The number of milliseconds to extend the expiration by
+   */
+  public extendTransaction(transaction: Transaction, extensionMs: number): Transaction {
+    transaction.extendExpiration(extensionMs);
+    return transaction;
+  }
+
+  /**
    * Parse transaction takes in raw JSON directly from the node.
    * @param rawTransaction The Tron transaction in JSON format as returned by the Tron lib or a
    *     stringifyed version of such JSON.

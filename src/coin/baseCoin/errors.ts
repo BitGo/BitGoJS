@@ -9,11 +9,11 @@ export class ExtendableError extends Error {
     this.name = this.constructor.name;
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
-    } else { 
-      this.stack = (new Error(message)).stack; 
+    } else {
+      this.stack = (new Error(message)).stack;
     }
   }
-}  
+}
 
 export class ParseTransactionError extends ExtendableError {
   constructor(message: string) {
@@ -44,3 +44,10 @@ export class UtilsError extends ExtendableError {
     super(message);
   }
 }
+
+export class ExtendTransactionError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
