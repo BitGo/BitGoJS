@@ -32,6 +32,23 @@ export interface Environment extends EnvironmentTemplate {
   stellarFederationServerUrl: string;
 }
 
+export const hardcodedPublicKeys = Object.freeze({
+  serverXpub: {
+    prod:
+      'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
+    test:
+      'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
+  },
+  hsmXpub: {
+    prod:
+      'xpub661MyMwAqRbcGEtTFgMAoxMFoqsRdDaiaR63byNfZdV7cBZFvovQSNJ5bpyeoQtuKVgXBk6sFQ7TtvyWqadt41DnKwveYgM5KoU2EKYjdY2',
+    test:
+      'xpub661MyMwAqRbcGFKe4Bqvk4Sgric4gNFC8pUbw4tUkVjZxubjCA522gPzc1YaXb3bQVmDWc7CjG8AGNWRpcdAU38RETBh8n2bnqEU4kbV4oK',
+    dev:
+      'xpub661MyMwAqRbcFWzoz8qnYRDYEFQpPLYwxVFoG6WLy3ck5ZupRGJTG4ju6yGb7Dj3ey6GsC4kstLRER2nKzgjLtmxyPgC4zHy7kVhUt6yfGn',
+  },
+});
+
 export type EnvironmentName =
   | 'prod'
   | 'rmgProd'
@@ -48,6 +65,14 @@ export type EnvironmentName =
   | 'mock'
   | 'rmgLocal'
   | 'rmglocalNonSecure'
+  | 'msProd'
+  | 'msTest'
+  | 'msDev'
+  | 'msLatest'
+  | 'adminProd'
+  | 'adminTest'
+  | 'adminDev'
+  | 'adminLatest'
   | 'custom';
 
 export type Environments = { [k in EnvironmentName]: Environment };
@@ -59,10 +84,8 @@ const mainnetBase: EnvironmentTemplate = {
   network: 'bitcoin' as V1Network,
   rmgNetwork: 'rmg' as V1RmgNetwork,
   signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
-  serverXpub:
-    'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
-  hsmXpub:
-    'xpub661MyMwAqRbcGEtTFgMAoxMFoqsRdDaiaR63byNfZdV7cBZFvovQSNJ5bpyeoQtuKVgXBk6sFQ7TtvyWqadt41DnKwveYgM5KoU2EKYjdY2',
+  serverXpub: hardcodedPublicKeys.serverXpub.prod,
+  hsmXpub: hardcodedPublicKeys.hsmXpub.prod,
   smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1',
   bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
   btgExplorerBaseUrl: 'https://btgexplorer.com/api',
@@ -80,10 +103,8 @@ const testnetBase: EnvironmentTemplate = {
   network: 'testnet' as V1Network,
   rmgNetwork: 'rmgTest' as V1RmgNetwork,
   signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
-  serverXpub:
-    'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL',
-  hsmXpub:
-    'xpub661MyMwAqRbcGFKe4Bqvk4Sgric4gNFC8pUbw4tUkVjZxubjCA522gPzc1YaXb3bQVmDWc7CjG8AGNWRpcdAU38RETBh8n2bnqEU4kbV4oK',
+  serverXpub: hardcodedPublicKeys.serverXpub.test,
+  hsmXpub: hardcodedPublicKeys.hsmXpub.test,
   smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
   bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
   etherscanBaseUrl: 'https://kovan.etherscan.io',
@@ -98,8 +119,7 @@ const testnetBase: EnvironmentTemplate = {
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
-  hsmXpub:
-    'xpub661MyMwAqRbcFWzoz8qnYRDYEFQpPLYwxVFoG6WLy3ck5ZupRGJTG4ju6yGb7Dj3ey6GsC4kstLRER2nKzgjLtmxyPgC4zHy7kVhUt6yfGn',
+  hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
 });
 
 export const Environments: Environments = {
@@ -169,6 +189,38 @@ export const Environments: Environments = {
     uri: 'http://rmglocalhost:3000',
     stellarFederationServerUrl: 'http://rmglocalhost:3000/api/v2/txlm/federation',
   }),
+  msProd: Object.assign({}, mainnetBase, {
+    uri: 'https://app.bitgo.com',
+    stellarFederationServerUrl: 'http://app.bitgo.com/api/v2/xlm/federation',
+  }),
+  msTest: Object.assign({}, testnetBase, {
+    uri: 'https://app.bitgo-test.com',
+    stellarFederationServerUrl: 'http://app.bitgo-test.com/api/v2/txlm/federation',
+  }),
+  msDev: Object.assign({}, devBase, {
+    uri: 'https://app.bitgo-dev.com',
+    stellarFederationServerUrl: 'http://app.bitgo-dev.com/api/v2/txlm/federation',
+  }),
+  msLatest: Object.assign({}, devBase, {
+    uri: 'https://app.bitgo-latest.com',
+    stellarFederationServerUrl: 'http://app.bitgo-latest.com/api/v2/xlm/federation',
+  }),
+  adminProd: Object.assign({}, mainnetBase, {
+    uri: 'https://admin.bitgo.com',
+    stellarFederationServerUrl: 'http://admin.bitgo.com/api/v2/xlm/federation',
+  }),
+  adminTest: Object.assign({}, testnetBase, {
+    uri: 'https://admin.bitgo-test.com',
+    stellarFederationServerUrl: 'http://admin.bitgo-test.com/api/v2/txlm/federation',
+  }),
+  adminDev: Object.assign({}, devBase, {
+    uri: 'https://admin.bitgo-dev.com',
+    stellarFederationServerUrl: 'http://admin.bitgo-dev.com/api/v2/txlm/federation',
+  }),
+  adminLatest: Object.assign({}, devBase, {
+    uri: 'https://admin.bitgo-latest.com',
+    stellarFederationServerUrl: 'http://admin.bitgo-latest.com/api/v2/xlm/federation',
+  }),
   custom: Object.assign({}, mainnetBase, {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     uri: process.env.BITGO_CUSTOM_ROOT_URI!,
@@ -178,8 +230,7 @@ export const Environments: Environments = {
     },
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network,
     rmgNetwork: process.env.BITGO_CUSTOM_RMG_NETWORK as V1RmgNetwork,
-    hsmXpub:
-      'xpub661MyMwAqRbcFWzoz8qnYRDYEFQpPLYwxVFoG6WLy3ck5ZupRGJTG4ju6yGb7Dj3ey6GsC4kstLRER2nKzgjLtmxyPgC4zHy7kVhUt6yfGn',
+    hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
     smartBitApiBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://testnet-api.smartbit.com.au/v1'
@@ -211,7 +262,7 @@ export const Environments: Environments = {
         : `https://${process.env.BITGO_CUSTOM_ROOT_URI}/api/v2/xlm/federation`,
     serverXpub:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
-        ? 'xpub661MyMwAqRbcErFqVXGiUFv9YeoPbhN72UiNCUdj9nj3T6M8h7iKNmbCYpMVWVZP7LA2ma3HWcPngz1gRTm4FPdtm9mHfrNvU93MCoszsGL'
-        : 'xpub661MyMwAqRbcEtUgu9HF8ai4ipuVKKHBzUqks4jSFypW8dwwQL1zygLgQx99NmC7zJJznSiwKG6RQfVjAKMtCsx8VjR6kQW8x7HrkXFZdnQ',
+        ? hardcodedPublicKeys.serverXpub.test
+        : hardcodedPublicKeys.serverXpub.prod,
   }),
 };
