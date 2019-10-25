@@ -8,7 +8,7 @@ import { Util } from '../../../src/v2/internal/util';
 import * as common from '../../../src/common';
 
 import { TestBitGo } from '../../lib/test_bitgo';
-const fixtures = require('../fixtures/eth.ts');
+const fixtures = require('../fixtures/coins/eth');
 const EthTx = require('ethereumjs-tx');
 
 const co = Bluebird.coroutine;
