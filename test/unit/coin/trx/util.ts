@@ -89,6 +89,20 @@ describe('Util library should', function() {
     should.ok(Utils.verifySignature(hexEncodedMessage, base58, signedString, true));
   });
 
+  it('should fail to verify a signed message if the message is not in hex', () => {
+    should.throws(() => Utils.verifySignature(txt, base58, signedString, true));
+  });
+
+  it('should fail to verify a signed message if the address is not in base58', () => {
+    const hexEncodedString = Buffer.from(txt).toString('hex');
+    should.throws(() => Utils.verifySignature(hexEncodedString, addressHex, signedString, true));
+  });
+  
+  it('should fail to verify a signed message if the signature is not in hex', () => {
+    const hexEncodedString = Buffer.from(txt).toString('hex');
+    should.throws(() => Utils.verifySignature(hexEncodedString, base58, 'abc', true));
+  });
+
   it('should return transaction data', () => {
     const data = Utils.decodeRawTransaction(UnsignedTransferContractTx.tx.raw_data_hex);
     should.equal(data.timestamp, UnsignedTransferContractTx.tx.raw_data.timestamp);
