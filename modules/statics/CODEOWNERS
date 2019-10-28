@@ -1,0 +1,5 @@
+# @bito/statics code owners and first officers will automatically be requested for review whenever a pull request touches the files they own.
+# Each line is a file pattern followed by one or more owners.
+
+# These owners and first officers will be the default owners for everything in the repo.
+*   tyler@bitgo.com elle@bitgo.com

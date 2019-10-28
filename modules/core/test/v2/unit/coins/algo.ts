@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 import * as algosdk from 'algosdk';
 import 'should';
 
-const algoFixtures = require('../../fixtures/algo');
+const algoFixtures = require('../../fixtures/coins/algo');
 const co = Promise.coroutine;
 import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';

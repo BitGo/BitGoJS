@@ -3,8 +3,15 @@
 ```bash
 $ yarn install
 $ yarn lerna bootstrap
-```
+``` 
 
+#Things to Avoid
+You should not be using the "tsc" command in terminal. Calling "tsc" in a directory WITHOUT a tsconfig file which informs tsc the 
+correct directory to install files would lead to files useful for translating TS to JS (ended with d.ts and d.ts.map)
+installed in the wrong location.
+
+If this happens, make sure you are in BitGoJs directory and run "git clean -f -d" to get rid of the files
+Avoid using npm commands and stick with yarn.
 # Running tests
 
 Modules typically provide both unit and integration tests.
@@ -25,6 +32,12 @@ Or just the modules which have changed since master:
 ```bash
 $ yarn run unit-test-changed
 ```
+
+Or the file that contains a specific string:
+```
+$ yarn run unit-test --grep"keyword"
+```
+
 
 **Note:** Each module's output will be prefixed with it's name, but it may be difficult to unmangle the test output.
 

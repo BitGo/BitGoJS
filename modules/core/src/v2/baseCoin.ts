@@ -159,12 +159,12 @@ export interface AddressCoinSpecific {
 }
 
 export interface FullySignedTransaction {
-  txHex: string;
+  txHex: string; // Transaction in any format required by each coin, i.e. in Tron it is a stringifyed JSON
 }
 
 export interface HalfSignedTransaction {
   halfSigned?: {
-    txHex?: string;
+    txHex?: string; // Transaction in any format required by each coin, i.e. in Tron it is a stringifyed JSON
     payload?: string;
     txBase64?: string;
   };

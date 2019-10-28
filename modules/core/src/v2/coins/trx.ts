@@ -3,40 +3,59 @@
  */
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
-const tronWeb = require('tronweb');
+import { CoinFamily } from '@bitgo/statics';
+const co = Bluebird.coroutine;
+import * as bitgoAccountLib from '@bitgo/account-lib';
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   KeyPair,
+  HalfSignedTransaction,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
   SignTransactionOptions,
   VerifyAddressOptions,
   VerifyTransactionOptions,
+  TransactionFee,
+  TransactionRecipient as Recipient,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionExplanation,
 } from '../baseCoin';
 import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
+import { TransactionBuilder } from '@bitgo/account-lib';
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
 }
 
-export interface TransactionPrebuild {
-  txHex: string;
+export interface TxInfo {
+  recipients: Recipient[];
+  from: string;
   txid: string;
-  transaction: any;
-  txInfo: {
-    from: string;
-    to: string;
-    amount: string;
-    fee: number;
-    txID: string;
+}
+export interface TronTransactionExplanation extends TransactionExplanation {
+  expiration: number;
+  timestamp: number;
+}
+
+export interface TransactionPrebuild extends BaseTransactionPrebuild {
+  txHex: string;
+  txInfo: TxInfo;
+  feeInfo: TransactionFee;
+}
+
+export interface ExplainTransactionOptions {
+  txHex?: string; // txHex is poorly named here; it is just a wrapped JSON object
+  halfSigned?: {
+    txHex: string; // txHex is poorly named here; it is just a wrapped JSON object
   };
+  feeInfo: TransactionFee;
 }
 
 export class Trx extends BaseCoin {
@@ -56,7 +75,7 @@ export class Trx extends BaseCoin {
     return this._staticsCoin.name;
   }
 
-  getFamily() {
+  getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
 
@@ -81,7 +100,7 @@ export class Trx extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    return this.getCoinLibrary().isAddress(address);
+    return bitgoAccountLib.Trx.Utils.isHexAddress(address);
   }
 
   /**
@@ -91,18 +110,11 @@ export class Trx extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const account = tronWeb.utils.accounts.generateAccount();
+    const account = bitgoAccountLib.Trx.Utils.generateAccount();
     return {
       pub: account.publicKey,
       prv: account.privateKey,
     };
-  }
-
-  /**
-   * Get an instance of the library which can be used to perform low-level operations for this coin
-   */
-  getCoinLibrary() {
-    return tronWeb;
   }
 
   isValidXpub(xpub: string): boolean {
@@ -137,13 +149,21 @@ export class Trx extends BaseCoin {
   }
 
   signTransaction(params: TronSignTransactionOptions): SignedTransaction {
-    const tx = params.txPrebuild.transaction;
-    // this prv should be hex-encoded
-    const halfSigned = tronWeb.utils.crypto.signTransaction(params.prv, tx);
-    if (_.isEmpty(halfSigned.signature)) {
-      throw new Error('failed to sign transaction');
+    const coinName = this.getChain();
+    const txBuilder = new TransactionBuilder({ coinName });
+    txBuilder.from(params.txPrebuild.txHex);
+    txBuilder.sign({ key: params.prv });
+    const transaction = txBuilder.build();
+    const response = {
+      txHex: JSON.stringify(transaction.toJson()),
+    };
+    if (transaction.toJson().signature.length >= 2) {
+      return response;
     }
-    return { halfSigned };
+    // Half signed transaction
+    return {
+      halfSigned: response,
+    };
   }
 
   /**
@@ -185,11 +205,49 @@ export class Trx extends BaseCoin {
   signMessage(key: KeyPair, message: string | Buffer): Buffer {
     const toSign = this.toHexString(message);
 
-    let sig = tronWeb.Trx.signString(toSign, key.prv, true);
+    let sig = bitgoAccountLib.Trx.Utils.signString(toSign, key.prv, true);
 
     // remove the preceding 0x
     sig = sig.replace(/^0x/, '');
 
     return Buffer.from(sig, 'hex');
+  }
+
+  /**
+   * Explain a Tron transaction from txHex
+   * @param params
+   * @param callback
+   */
+  explainTransaction(
+    params: ExplainTransactionOptions,
+    callback?: NodeCallback<TronTransactionExplanation>
+  ): Bluebird<TronTransactionExplanation> {
+    return co<TronTransactionExplanation>(function*() {
+      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+      if (!txHex || !params.feeInfo) {
+        throw new Error('missing explain tx parameters');
+      }
+      const coinName = this.getChain();
+      const txBuilder = new TransactionBuilder({ coinName });
+      txBuilder.from(txHex);
+      const tx = txBuilder.build();
+      const outputs = {
+        amount: tx.destinations[0].value.toString(),
+        address: tx.destinations[0].address, // Should turn it into a readable format, aka base58
+      };
+      return {
+        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+        id: tx.id,
+        outputs,
+        outputAmount: outputs.amount,
+        changeOutputs: [], // account based does not use change outputs
+        changeAmount: 0, // account base does not make change
+        fee: params.feeInfo.fee,
+        timestamp: tx.validFrom,
+        expiration: tx.validTo,
+      };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 }

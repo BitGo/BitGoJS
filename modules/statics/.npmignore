@@ -1,0 +1,6 @@
+!dist/
+.idea/
+.prettierrc.yml
+tsconfig.json
+src/
+
