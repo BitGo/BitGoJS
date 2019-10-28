@@ -337,42 +337,60 @@ export const coins = CoinMap.fromCoins([
     'BitGo Shield Token',
     7,
     UnderlyingAsset['xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ'],
-    'bitgo.com'
+    'bitgo.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'BST'
   ),
   stellarToken(
     'xlm:VELO-GC7GMEKN2P5LKGOVW55WGHMVQRPPRPHIRFMIC75Z6WPYPYR7B3Z3WEKH',
     'Velo Token',
     7,
     UnderlyingAsset['xlm:VELO-GC7GMEKN2P5LKGOVW55WGHMVQRPPRPHIRFMIC75Z6WPYPYR7B3Z3WEKH'],
-    'velo.org'
+    'velo.org',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'VELO'
   ),
   stellarToken(
     'xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP',
     'Smartlands Token',
     7,
     UnderlyingAsset['xlm:SLT-GCKA6K5PCQ6PNF5RQBF7PQDJWRHO6UOGFMRLK3DYHDOI244V47XKQ4GP'],
-    'smartlands.io'
+    'smartlands.io',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'SLT'
   ),
   stellarToken(
     'xlm:USD-GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX',
     'US Dollar',
     7,
     UnderlyingAsset['xlm:USD-GDUKMGUGDZQK6YHYA5Z6AY2G4XDSZPSZ3SW5UN3ARVMO6QSRDWP5YLEX'],
-    'anchorusd.com'
+    'anchorusd.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'USD'
   ),
   stellarToken(
     'xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5',
     'Ethereum',
     7,
     UnderlyingAsset['xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5'],
-    'stellarport.io'
+    'stellarport.io',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'ETH'
   ),
   stellarToken(
     'xlm:WXT-GASBLVHS5FOABSDNW5SPPH3QRJYXY5JHA2AOA2QHH2FJLZBRXSG4SWXT',
     'Wirex Token',
     7,
     UnderlyingAsset['xlm:WXT-GASBLVHS5FOABSDNW5SPPH3QRJYXY5JHA2AOA2QHH2FJLZBRXSG4SWXT'],
-    'wxt.wirexapp.com'
+    'wxt.wirexapp.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'WXT'
   ),
   terc20('terc', 'ERC Test Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.ERC),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
@@ -385,14 +403,20 @@ export const coins = CoinMap.fromCoins([
     'BitGo Shield Token',
     7,
     UnderlyingAsset['txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L'],
-    'bitgo.com'
+    'bitgo.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'BST'
   ),
   tstellarToken(
     'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
     'BitGo Test Token',
     7,
     UnderlyingAsset['txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L'],
-    'bitgo.com'
+    'bitgo.com',
+    AccountCoin.DEFAULT_FEATURES,
+    '',
+    'TST'
   ),
   tofcerc20('ofcterc', 'ERC Test Token', 0, UnderlyingAsset.ERC),
   ofcerc20('ofcerc', 'ERC Token', 0, UnderlyingAsset.ERC),
