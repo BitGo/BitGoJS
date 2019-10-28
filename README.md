@@ -57,12 +57,11 @@ const tx = builder.build();
 To generate static code from the proto files, run:
 
 ```bash
-cd resources/trx/protobuf/
-node ../../../node_modules/protobufjs/cli/bin/pbjs -t static-module -w commonjs -o tron.js Discover.proto Contract.proto tron.proto
+npm run gen-protobuf
 ```
 
 Then, to generate the respective TypeScript definitions:
 
 ```bash
-node ../../../node_modules/protobufjs/cli/bin/pbts -o tron.d.ts tron.js
+npm run gen-protobufts
 ```
