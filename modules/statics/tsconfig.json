@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "lib": [
+      "es2016"
+    ],
+    "outDir": "./dist",
+    "rootDir": ".",
+    "strict": true
+  },
+  "include": [
+    "src/**/*"
+  ]
+}

@@ -137,9 +137,9 @@ export class Xlm extends BaseCoin {
   public readonly homeDomain: string;
   public static readonly tokenPatternSeparator = '-'; // separator for token code and issuer
   static readonly maxMemoId: string = '0xFFFFFFFFFFFFFFFF'; // max unsigned 64-bit number = 18446744073709551615
-  // max int64 number supported by the network ((2^63)-1)/(10^7)
+  // max int64 number supported by the network (2^63)-1
   // See: https://www.stellar.org/developers/guides/concepts/assets.html#amount-precision-and-representation
-  static readonly maxTrustlineLimit: string = '922337203685.4775807';
+  static readonly maxTrustlineLimit: string = '9223372036854775807';
 
   constructor(bitgo: BitGo) {
     super(bitgo);
@@ -844,7 +844,7 @@ export class Xlm extends BaseCoin {
             `?memoId=${memo.value}` :
             '';
           const asset = op.type === 'payment' ? op.asset : stellar.Asset.native();
-          const coin = this.getTokenNameFromStellarAsset(asset); // coin or token id
+          const coin = self.getTokenNameFromStellarAsset(asset); // coin or token id
           const output: TransactionOutput = {
             amount: self.bigUnitsToBaseUnits(
               (op as stellar.Operation.CreateAccount).startingBalance || (op as stellar.Operation.Payment).amount
@@ -865,9 +865,9 @@ export class Xlm extends BaseCoin {
         } else if (op.type === 'changeTrust') {
           operations.push({
             type: op.type,
-            coin: this.getTokenNameFromStellarAsset(op.line),
+            coin: self.getTokenNameFromStellarAsset(op.line),
             asset: op.line,
-            limit: op.limit,
+            limit: self.bigUnitsToBaseUnits(op.limit),
           });
         }
       });
@@ -908,15 +908,17 @@ export class Xlm extends BaseCoin {
     _.forEach(trustlineOperations, op => {
       const opToken = this.getTokenNameFromStellarAsset(op.line);
       const tokenTrustline = _.find(txParams.trustlines, trustline => {
+        // trustline params use limits in base units
+        const opLimitBaseUnits = this.bigUnitsToBaseUnits(op.limit);
         // Prepare the conditions to check for
         // Limit will always be set in the operation, even if it was omitted from txParams in the following cases:
         // 1. Action is 'add' - limit is set to Xlm.maxTrustlineLimit by default
         // 2. Action is 'remove' - limit is set to '0'
         const noLimit = _.isUndefined(trustline.limit);
-        const addTrustlineWithDefaultLimit = (trustline.action === 'add' && op.limit === Xlm.maxTrustlineLimit);
-        const removeTrustline = (trustline.action === 'remove' && op.limit === '0');
+        const addTrustlineWithDefaultLimit = (trustline.action === 'add' && opLimitBaseUnits === Xlm.maxTrustlineLimit);
+        const removeTrustline = (trustline.action === 'remove' && opLimitBaseUnits === '0');
         return (trustline.token === opToken &&
-          (trustline.limit === op.limit || (noLimit && (addTrustlineWithDefaultLimit || removeTrustline)))
+          (trustline.limit === opLimitBaseUnits || (noLimit && (addTrustlineWithDefaultLimit || removeTrustline)))
         );
       });
       if (!tokenTrustline) {
