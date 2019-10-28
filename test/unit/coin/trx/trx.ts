@@ -1,13 +1,11 @@
 import * as should from 'should';
 import { TransactionBuilder } from '../../../../src';
-import { TransactionType } from '../../../../src/coin/baseCoin/enum';
+import { TransactionType } from '../../../../src/coin/baseCoin/';
 import { UnsignedBuildTransaction,
   FirstSigOnBuildTransaction,
   FirstPrivateKey,
-  FirstExpectedKeyAddress,
   SecondSigOnBuildTransaction,
   SecondPrivateKey,
-  SecondExpectedKeyAddress
 } from '../../../resources/trx';
 
 describe('Tron test network', function() {

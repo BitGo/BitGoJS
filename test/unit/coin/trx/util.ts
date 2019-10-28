@@ -33,7 +33,7 @@ describe('Util library should', function() {
     const derivedPub = Utils.getPubKeyFromPriKey(Buffer.from(prv, 'hex'));
     const derivedPubHex = Utils.getHexAddressFromByteArray(derivedPub);
     should.equal(derivedPubHex, pub);
-  })
+  });
 
   it('get an hex address from a prv', () => {
     const addr = Utils.getAddressFromPriKey(Buffer.from(prv, 'hex'));
@@ -97,7 +97,7 @@ describe('Util library should', function() {
     const hexEncodedString = Buffer.from(txt).toString('hex');
     should.throws(() => Utils.verifySignature(hexEncodedString, addressHex, signedString, true));
   });
-  
+
   it('should fail to verify a signed message if the signature is not in hex', () => {
     const hexEncodedString = Buffer.from(txt).toString('hex');
     should.throws(() => Utils.verifySignature(hexEncodedString, base58, 'abc', true));
