@@ -26,8 +26,8 @@ export class Transaction extends BaseTransaction {
       };
       this._fromAddresses = [senderAddress];
 
-      this._validFrom = this._decodedRawDataHex.timestamp;
-      this._validTo = this._decodedRawDataHex.expiration;
+      this._validFrom = Number(this._decodedRawDataHex.timestamp);
+      this._validTo = Number(this._decodedRawDataHex.expiration);
 
       // Destination depends on the contract type
       this.recordRawDataFields(this._decodedRawDataHex);

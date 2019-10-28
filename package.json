@@ -33,6 +33,7 @@
     "@types/node": "^11.13.22",
     "bignumber.js": "^9.0.0",
     "google-protobuf": "^3.9.1",
+    "protobufjs": "^6.8.8",
     "tronweb": "^2.7.2"
   },
   "devDependencies": {

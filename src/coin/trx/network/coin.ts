@@ -29,7 +29,7 @@ export class TrxBase implements BaseCoin {
     try {
       parsedTx = decodeTransaction(rawDataHex);
     } catch (e) {
-      throw new ParseTransactionError('Failed to decode transaction.');
+      throw new ParseTransactionError('Failed to decode transaction: ' + e);
     }
 
     return parsedTx;

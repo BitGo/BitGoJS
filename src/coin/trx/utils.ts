@@ -1,6 +1,5 @@
 const tronweb = require('tronweb');
-const tronproto = require('../../../resources/trx/protobuf/tron_pb');
-const contractproto = require('../../../resources/trx/protobuf/Contract_pb');
+import { protocol } from '../../../resources/trx/protobuf/tron';
 
 import * as assert from 'assert';
 import { TransferContract, RawData, AccountPermissionUpdateContract, Account, TransactionReceipt, Permission } from './iface';
@@ -100,7 +99,7 @@ export function decodeTransaction(hexString: string): RawData {
   let contract: TransferContract | AccountPermissionUpdateContract;
   let contractType: ContractType;
   // ensure the contract type is supported
-  switch  (rawTransaction.contracts[0].parameter.typeUrl) {
+  switch  (rawTransaction.contracts[0].parameter.type_url) {
     case 'type.googleapis.com/protocol.TransferContract':
       contractType = ContractType.Transfer;
       contract = this.decodeTransferContract(rawTransaction.contracts[0].parameter.value);
@@ -133,7 +132,7 @@ export function decodeRawTransaction(hexString: string): { expiration: number, t
   let raw;
   try {
     // we need to decode our raw_data_hex field first
-    raw = tronproto.Transaction.raw.deserializeBinary(bytes).toObject();
+    raw = protocol.Transaction.raw.decode(bytes).toJSON();
   } catch (e) {
     throw new UtilsError('There was an error decoding the initial raw_data_hex from the serialized tx.');
   }
@@ -141,7 +140,7 @@ export function decodeRawTransaction(hexString: string): { expiration: number, t
   return {
     expiration: raw.expiration,
     timestamp: raw.timestamp,
-    contracts: raw.contractList,
+    contracts: raw.contract,
   };
 }
 
@@ -161,7 +160,7 @@ export function decodeTransferContract(transferHex: string): TransferContract {
   let transferContract;
 
   try {
-    transferContract = contractproto.TransferContract.deserializeBinary(contractBytes).toObject();
+    transferContract = protocol.TransferContract.decode(contractBytes).toJSON();
   } catch (e) {
     throw new UtilsError('There was an error decoding the transfer contract in the transaction.');
   }
@@ -197,10 +196,10 @@ export function decodeTransferContract(transferHex: string): TransferContract {
  * @returns {AccountPermissionUpdateContract}
  */
 export function decodeAccountPermissionUpdateContract(base64: string): AccountPermissionUpdateContract {
-  const accountUpdateContract = contractproto.AccountPermissionUpdateContract.deserializeBinary(Buffer.from(base64, 'base64')).toObject();
+  const accountUpdateContract = protocol.AccountPermissionUpdateContract.decode(Buffer.from(base64, 'base64')).toJSON();
   assert(accountUpdateContract.ownerAddress);
   assert(accountUpdateContract.owner);
-  assert(accountUpdateContract.hasOwnProperty('activesList'));
+  assert(accountUpdateContract.hasOwnProperty('actives'));
 
   const ownerAddress = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(accountUpdateContract.ownerAddress, 'base64').toString('hex')));
   const owner: Permission = createPermission((accountUpdateContract.owner));
@@ -208,7 +207,7 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
   if(accountUpdateContract.witness) {
     witness = createPermission(accountUpdateContract.witness);
   }
-  const activeList = accountUpdateContract.activesList.map((active) => createPermission(active));
+  const activeList = accountUpdateContract.actives.map((active) => createPermission(active));
 
   return {
     ownerAddress,
