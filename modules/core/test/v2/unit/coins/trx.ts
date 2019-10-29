@@ -73,20 +73,15 @@ describe('TRON:', function() {
   }));
 
   it('should sign a half signed tx', () => {
-    let tx = basecoin.signTransaction(signTxOptions);
-    let txHex = tx.halfSigned.txHex;
-    txHex = JSON.parse(txHex)
-    txHex.txID.should.equal(signTxOptions.txPrebuild.txInfo.txid);
-    txHex.raw_data.contractType.should.equal(0);
-    const contract = txHex.raw_data.contract;
-    contract.ownerAddress.should.equal(bitgoAccountLib.Trx.Utils.getBase58AddressFromHex(signTxOptions.txPrebuild.txInfo.from))
-    contract.toAddress.should.equal(bitgoAccountLib.Trx.Utils.getBase58AddressFromHex(signTxOptions.txPrebuild.txInfo.recipients[0].address));
-    contract.amount.should.equal(parseInt(signTxOptions.txPrebuild.txInfo.recipients[0].amount,10));
-    txHex.should.have.property('signature');
-    txHex.should.have.property('raw_data_hex');
-    txHex.signature.length.should.equal(1);
-    txHex.raw_data.timestamp.should.equal(mockTx.raw_data.timestamp);
-    txHex.raw_data.expiration.should.equal(mockTx.raw_data.expiration);
+    const tx = basecoin.signTransaction(signTxOptions);
+    const unsignedTxJson = JSON.parse(signTxOptions.txPrebuild.txHex);
+    const signedTxJson = JSON.parse(tx.halfSigned.txHex);
+
+    signedTxJson.txID.should.equal(unsignedTxJson.txID);
+    signedTxJson.raw_data_hex.should.equal(unsignedTxJson.raw_data_hex);
+    JSON.stringify(signedTxJson.raw_data).should.eql(JSON.stringify(unsignedTxJson.raw_data));
+    signedTxJson.signature.length.should.equal(1);
+    signedTxJson.signature[0].should.equal('0a9944316924ec7fba4895f1ea1e7cc95f9e2b828ae268a48a8dbeddef40c6f5e127170a95aed9f3f5425b13058d0cb6ef1f5c2213190e482e87043691f22e6800');
     });
 
   describe('Keypairs:', () => {
