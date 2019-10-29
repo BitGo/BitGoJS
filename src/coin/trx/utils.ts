@@ -185,7 +185,7 @@ export function decodeTransferContract(transferHex: string): TransferContract[] 
   return [{
     parameter: {
       value: {
-        amount,
+        amount: Number(amount),
         owner_address,
         to_address,
       }
