@@ -1,6 +1,5 @@
 import * as Promise from 'bluebird';
-import * as should from 'should';
-import { Trx } from '../../../../src/v2/coins/trx';
+import { Trx } from '../../../../src/v2/coins/';
 import * as bitgoAccountLib from '@bitgo/account-lib';
 import { signTxOptions, mockTx } from '../../fixtures/coins/trx';
 
@@ -32,14 +31,15 @@ describe('TRON:', function() {
     const explanation = yield basecoin.explainTransaction(explainParams);
     const toAddress = bitgoAccountLib.Trx.Utils.getBase58AddressFromHex(mockTx.raw_data.contract[0].parameter.value.to_address);
     explanation.id.should.equal(mockTx.txID);
-    explanation.outputs.amount.should.equal('10');
+    explanation.outputs.length.should.equal(1);
+    explanation.outputs[0].amount.should.equal('10');
+    explanation.outputs[0].address.should.equal(toAddress);
     explanation.outputAmount.should.equal('10');
-    explanation.changeAmount.should.equal(0);
+    explanation.changeAmount.should.equal('0');
     explanation.changeOutputs.length.should.equal(0);
-    explanation.fee.should.equal(1);
+    explanation.fee.fee.should.equal(1);
     explanation.expiration.should.equal(mockTx.raw_data.expiration);
     explanation.timestamp.should.equal((mockTx.raw_data.timestamp));
-    explanation.outputs.address.should.equal(toAddress);
   }));
 
   it('should throw if the params object is missing parameters', co(function *() {
@@ -61,14 +61,15 @@ describe('TRON:', function() {
     const explanation = yield basecoin.explainTransaction(explainParams);
     const toAddress = bitgoAccountLib.Trx.Utils.getBase58AddressFromHex(mockTx.raw_data.contract[0].parameter.value.to_address);
     explanation.id.should.equal(mockTx.txID);
-    explanation.outputs.amount.should.equal('10');
+    explanation.outputs.length.should.equal(1);
+    explanation.outputs[0].amount.should.equal('10');
+    explanation.outputs[0].address.should.equal(toAddress);
     explanation.outputAmount.should.equal('10');
-    explanation.changeAmount.should.equal(0);
+    explanation.changeAmount.should.equal('0');
     explanation.changeOutputs.length.should.equal(0);
-    explanation.fee.should.equal(1);
+    explanation.fee.fee.should.equal(1);
     explanation.expiration.should.equal(mockTx.raw_data.expiration);
     explanation.timestamp.should.equal((mockTx.raw_data.timestamp));
-    explanation.outputs.address.should.equal(toAddress);
   }));
 
   it('should sign a half signed tx', () => {
