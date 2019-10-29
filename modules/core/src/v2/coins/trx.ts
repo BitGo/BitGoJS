@@ -1,7 +1,6 @@
 /**
  * @prettier
  */
-import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import { CoinFamily } from '@bitgo/statics';
 const co = Bluebird.coroutine;
@@ -12,7 +11,6 @@ import { MethodNotImplementedError } from '../../errors';
 import {
   BaseCoin,
   KeyPair,
-  HalfSignedTransaction,
   ParsedTransaction,
   ParseTransactionOptions,
   SignedTransaction,
@@ -231,21 +229,37 @@ export class Trx extends BaseCoin {
       const txBuilder = new TransactionBuilder({ coinName });
       txBuilder.from(txHex);
       const tx = txBuilder.build();
-      const outputs = {
-        amount: tx.destinations[0].value.toString(),
-        address: tx.destinations[0].address, // Should turn it into a readable format, aka base58
-      };
-      return {
-        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+      const outputs = [
+        {
+          amount: tx.destinations[0].value.toString(),
+          address: tx.destinations[0].address, // Should turn it into a readable format, aka base58
+        },
+      ];
+
+      const displayOrder = [
+        'id',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        'timestamp',
+        'expiration',
+      ];
+
+      const explanationResult: TronTransactionExplanation = {
+        displayOrder,
         id: tx.id,
         outputs,
-        outputAmount: outputs.amount,
+        outputAmount: outputs[0].amount,
         changeOutputs: [], // account based does not use change outputs
-        changeAmount: 0, // account base does not make change
-        fee: params.feeInfo.fee,
+        changeAmount: '0', // account base does not make change
+        fee: params.feeInfo,
         timestamp: tx.validFrom,
         expiration: tx.validTo,
       };
+
+      return explanationResult;
     })
       .call(this)
       .asCallback(callback);
