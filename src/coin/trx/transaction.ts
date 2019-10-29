@@ -5,7 +5,7 @@ import { decodeTransaction } from "./utils";
 import { ContractType} from "./enum";
 import BigNumber from "bignumber.js";
 import { ParseTransactionError } from "../baseCoin/errors";
-import { TransactionType } from "../baseCoin/enum";
+import { TransactionType } from "../baseCoin/";
 import {BaseKey} from "../baseCoin/iface";
 
 export class Transaction extends BaseTransaction {
@@ -22,7 +22,7 @@ export class Transaction extends BaseTransaction {
       this._transaction = rawTransaction;
       this._decodedRawDataHex = decodeTransaction(rawTransaction.raw_data_hex);
       const senderAddress = {
-        address: this._decodedRawDataHex.contract.ownerAddress
+        address: (this._decodedRawDataHex.contract[0] as TransferContract).parameter.value.owner_address
       };
       this._fromAddresses = [senderAddress];
 
@@ -43,8 +43,8 @@ export class Transaction extends BaseTransaction {
       case ContractType.Transfer:
         this._type = TransactionType.Send;
         const destination = {
-          address: (rawData.contract as TransferContract).toAddress,
-          value: new BigNumber((rawData.contract as TransferContract).amount),
+          address: (rawData.contract[0] as TransferContract).parameter.value.to_address,
+          value: new BigNumber((rawData.contract[0] as TransferContract).parameter.value.amount),
         };
         this._destination = [destination];
         break;

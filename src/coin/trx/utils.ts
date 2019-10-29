@@ -96,7 +96,7 @@ export function decodeTransaction(hexString: string): RawData {
     throw new UtilsError('Number of contracts is greater than 1.');
   }
 
-  let contract: TransferContract | AccountPermissionUpdateContract;
+  let contract: TransferContract[] | AccountPermissionUpdateContract[];
   let contractType: ContractType;
   // ensure the contract type is supported
   switch  (rawTransaction.contracts[0].parameter.type_url) {
@@ -132,14 +132,14 @@ export function decodeRawTransaction(hexString: string): { expiration: number, t
   let raw;
   try {
     // we need to decode our raw_data_hex field first
-    raw = protocol.Transaction.raw.decode(bytes).toJSON();
+    raw = protocol.Transaction.raw.decode(bytes);
   } catch (e) {
     throw new UtilsError('There was an error decoding the initial raw_data_hex from the serialized tx.');
   }
 
   return {
-    expiration: raw.expiration,
-    timestamp: raw.timestamp,
+    expiration: Number(raw.expiration),
+    timestamp: Number(raw.timestamp),
     contracts: raw.contract,
   };
 }
@@ -155,12 +155,12 @@ export function isValidHex(hex: string): Boolean {
 /** Deserialize the segment of the txHex which corresponds with the details of the transfer
  * @param transferHex is the value property of the "parameter" field of contractList[0]
  * */
-export function decodeTransferContract(transferHex: string): TransferContract {
+export function decodeTransferContract(transferHex: string): TransferContract[] {
   const contractBytes = Buffer.from(transferHex, 'base64');
   let transferContract;
 
   try {
-    transferContract = protocol.TransferContract.decode(contractBytes).toJSON();
+    transferContract = protocol.TransferContract.decode(contractBytes);
   } catch (e) {
     throw new UtilsError('There was an error decoding the transfer contract in the transaction.');
   }
@@ -178,15 +178,19 @@ export function decodeTransferContract(transferHex: string): TransferContract {
   }
 
   // deserialize attributes
-  const ownerAddress = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')));
-  const toAddress = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.toAddress, 'base64').toString('hex')));
+  const owner_address = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')));
+  const to_address = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.toAddress, 'base64').toString('hex')));
   const amount = transferContract.amount;
 
-  return {
-    toAddress,
-    ownerAddress,
-    amount,
-  };
+  return [{
+    parameter: {
+      value: {
+        amount: Number(amount),
+        owner_address,
+        to_address,
+      }
+    }
+  }];
 }
 
 /**

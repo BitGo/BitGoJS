@@ -81,6 +81,20 @@ describe('Tron test network', function() {
       tx.destinations[0].value.toString().should.equal('1718');
     });
 
+    it('should build the right JSON after is half signed tx', () => {
+      const txJson = JSON.stringify(UnsignedBuildTransaction);
+      txBuilder.from(txJson);
+      txBuilder.sign({ key: FirstPrivateKey });
+      const tx = txBuilder.build();
+      const signedTxJson = tx.toJson();
+
+      signedTxJson.txID.should.equal(UnsignedBuildTransaction.txID);
+      signedTxJson.raw_data_hex.should.equal(UnsignedBuildTransaction.raw_data_hex);
+      (JSON.stringify(signedTxJson.raw_data) === JSON.stringify(UnsignedBuildTransaction.raw_data)).should.be.ok;
+      signedTxJson.signature.length.should.equal(1);
+      signedTxJson.signature[0].should.equal('bd08e6cd876bb573dd00a32870b58b70ea8b7908f5131686502589941bfa4fdda76b8c81bbbcfc549be6d4988657cea122df7da46c72041def2683d6ecb04a7401');
+    });
+
     it('should sign a fully signed tx', () => {
       txBuilder.from(FirstSigOnBuildTransaction);
       txBuilder.sign({ key: SecondPrivateKey});
