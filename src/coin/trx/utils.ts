@@ -114,7 +114,7 @@ export function decodeTransaction(hexString: string): RawData {
 
   return {
     contractType,
-    contract: contract,
+    contract,
     expiration: rawTransaction.expiration,
     timestamp: rawTransaction.timestamp,
   };

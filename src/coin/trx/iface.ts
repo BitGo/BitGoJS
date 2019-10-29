@@ -48,7 +48,7 @@ export interface ValueFields {
 }
 
 export interface TransferContract {
-  parameter: Value
+  parameter: Value;
 }
 
 export interface AccountPermissionUpdateContract {
