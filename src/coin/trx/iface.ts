@@ -33,14 +33,22 @@ export interface RawData {
   expiration: number;
   timestamp: number;
   contractType: ContractType;
-  contract: TransferContract | AccountPermissionUpdateContract;
+  contract: TransferContract[] | AccountPermissionUpdateContract[];
+}
+
+export interface Value {
+  value: ValueFields
+}
+
+export interface ValueFields {
+  amount: number;
+  // base58 encoded addresses
+  owner_address: string;
+  to_address: string;
 }
 
 export interface TransferContract {
-  amount: number;
-  // base58 encoded addresses
-  toAddress: string;
-  ownerAddress: string;
+  parameter: Value
 }
 
 export interface AccountPermissionUpdateContract {

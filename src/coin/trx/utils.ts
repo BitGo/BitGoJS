@@ -96,7 +96,7 @@ export function decodeTransaction(hexString: string): RawData {
     throw new UtilsError('Number of contracts is greater than 1.');
   }
 
-  let contract: TransferContract | AccountPermissionUpdateContract;
+  let contract: TransferContract[] | AccountPermissionUpdateContract[];
   let contractType: ContractType;
   // ensure the contract type is supported
   switch  (rawTransaction.contracts[0].parameter.type_url) {
@@ -114,7 +114,7 @@ export function decodeTransaction(hexString: string): RawData {
 
   return {
     contractType,
-    contract,
+    contract: contract,
     expiration: rawTransaction.expiration,
     timestamp: rawTransaction.timestamp,
   };
@@ -155,7 +155,7 @@ export function isValidHex(hex: string): Boolean {
 /** Deserialize the segment of the txHex which corresponds with the details of the transfer
  * @param transferHex is the value property of the "parameter" field of contractList[0]
  * */
-export function decodeTransferContract(transferHex: string): TransferContract {
+export function decodeTransferContract(transferHex: string): TransferContract[] {
   const contractBytes = Buffer.from(transferHex, 'base64');
   let transferContract;
 
@@ -178,15 +178,19 @@ export function decodeTransferContract(transferHex: string): TransferContract {
   }
 
   // deserialize attributes
-  const ownerAddress = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')));
-  const toAddress = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.toAddress, 'base64').toString('hex')));
+  const owner_address = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')));
+  const to_address = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.toAddress, 'base64').toString('hex')));
   const amount = transferContract.amount;
 
-  return {
-    toAddress,
-    ownerAddress,
-    amount,
-  };
+  return [{
+    parameter: {
+      value: {
+        amount,
+        owner_address,
+        to_address,
+      }
+    }
+  }];
 }
 
 /**

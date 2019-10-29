@@ -114,15 +114,15 @@ describe('Util library should', function() {
     const tx = UnsignedTransferContractTx.tx;
     const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
     const value = UnsignedTransferContractTx.tx.raw_data.contract[0].parameter.value;
-    const parsedTx = Utils.decodeTransferContract(rawTx.contracts[0].parameter.value) as TransferContract;
+    const parsedContract = Utils.decodeTransferContract(rawTx.contracts[0].parameter.value) as TransferContract[];
 
     const toAddress = Utils.getBase58AddressFromHex(value.to_address);
     const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
     const amount = value.amount;
 
-    should.equal(parsedTx.toAddress, toAddress);
-    should.equal(parsedTx.ownerAddress, ownerAddress);
-    should.equal(parsedTx.amount, amount);
+    should.equal(parsedContract[0].parameter.value.to_address, toAddress);
+    should.equal(parsedContract[0].parameter.value.owner_address, ownerAddress);
+    should.equal(parsedContract[0].parameter.value.amount, amount);
   });
 
    it('should decode an AccountPermissionUpdate Contract', () => {
