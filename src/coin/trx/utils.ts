@@ -132,14 +132,14 @@ export function decodeRawTransaction(hexString: string): { expiration: number, t
   let raw;
   try {
     // we need to decode our raw_data_hex field first
-    raw = protocol.Transaction.raw.decode(bytes).toJSON();
+    raw = protocol.Transaction.raw.decode(bytes);
   } catch (e) {
     throw new UtilsError('There was an error decoding the initial raw_data_hex from the serialized tx.');
   }
 
   return {
-    expiration: raw.expiration,
-    timestamp: raw.timestamp,
+    expiration: Number(raw.expiration),
+    timestamp: Number(raw.timestamp),
     contracts: raw.contract,
   };
 }
@@ -160,7 +160,7 @@ export function decodeTransferContract(transferHex: string): TransferContract[] 
   let transferContract;
 
   try {
-    transferContract = protocol.TransferContract.decode(contractBytes).toJSON();
+    transferContract = protocol.TransferContract.decode(contractBytes);
   } catch (e) {
     throw new UtilsError('There was an error decoding the transfer contract in the transaction.');
   }
