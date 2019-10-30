@@ -1,6 +1,7 @@
 import 'should';
 
 import * as Bluebird from 'bluebird';
+import { BaseCoin } from '../../../../src/v2';
 const co = Bluebird.coroutine;
 
 import { TestBitGo } from '../../../lib/test_bitgo';
@@ -8,44 +9,46 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
 
 describe('XLM:', function() {
-  let bitgo;
-  let basecoin;
-  const uninitializedWallet = '5d00475a913edd7d0340fb45728c43e2'; // wallet which has not been initialized on-chain
-  const initializedWallet = '5d0d1fbe957f229b03de7998c2495070'; // wallet which has been correctly initialized on chain
+  let bitgo: typeof TestBitGo;
+  let basecoin: BaseCoin;
+  const uninitializedWallet = '5db9e854e6895ae1050ef414f9b8e0e9'; // wallet which has not been initialized on-chain
+  const initializedWallet = '5db9e8a736378852063fc715b5722751'; // wallet which has been correctly initialized on chain
 
-  before(function() {
+  before(co(function*() {
     nock.restore();
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
-    return bitgo.authenticateTestUser(bitgo.testUserOTP())
-    .then(function() {
-      basecoin = bitgo.coin('txlm');
-    });
-  });
+    yield bitgo.authenticateTestUser(bitgo.testUserOTP());
+    basecoin = bitgo.coin('txlm');
+  }));
+
+  function verifyGeneratedWallet(wallet) {
+    wallet.should.have.property('wallet');
+    wallet.should.have.property('userKeychain');
+    wallet.should.have.property('backupKeychain');
+    wallet.should.have.property('bitgoKeychain');
+
+    wallet.userKeychain.should.have.property('pub');
+    wallet.userKeychain.should.have.property('prv');
+    wallet.userKeychain.should.have.property('encryptedPrv');
+
+    wallet.backupKeychain.should.have.property('pub');
+    wallet.backupKeychain.should.have.property('prv');
+
+    wallet.bitgoKeychain.should.have.property('pub');
+    wallet.bitgoKeychain.isBitGo.should.equal(true);
+    wallet.bitgoKeychain.should.not.have.property('prv');
+    wallet.bitgoKeychain.should.not.have.property('encryptedPrv');
+  }
 
   it('Should generate wallet', co(function *() {
     const params = {
       passphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
-      label: 'Stellar Wallet Test'
+      label: 'Stellar Wallet Test',
     };
 
     const res = yield basecoin.wallets().generateWallet(params);
-    res.should.have.property('wallet');
-    res.should.have.property('userKeychain');
-    res.should.have.property('backupKeychain');
-    res.should.have.property('bitgoKeychain');
-
-    res.userKeychain.should.have.property('pub');
-    res.userKeychain.should.have.property('prv');
-    res.userKeychain.should.have.property('encryptedPrv');
-
-    res.backupKeychain.should.have.property('pub');
-    res.backupKeychain.should.have.property('prv');
-
-    res.bitgoKeychain.should.have.property('pub');
-    res.bitgoKeychain.isBitGo.should.equal(true);
-    res.bitgoKeychain.should.not.have.property('prv');
-    res.bitgoKeychain.should.not.have.property('encryptedPrv');
+    verifyGeneratedWallet(res);
   }));
 
   it('Should generate wallet with custom root address', co(function *() {
@@ -53,27 +56,11 @@ describe('XLM:', function() {
     const params = {
       passphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
       label: 'Stellar Wallet Test',
-      rootPrivateKey: keyPair.prv
+      rootPrivateKey: keyPair.prv,
     };
 
     const res = yield basecoin.wallets().generateWallet(params);
-
-    res.should.have.property('wallet');
-    res.should.have.property('userKeychain');
-    res.should.have.property('backupKeychain');
-    res.should.have.property('bitgoKeychain');
-
-    res.userKeychain.should.have.property('pub');
-    res.userKeychain.should.have.property('prv');
-    res.userKeychain.should.have.property('encryptedPrv');
-
-    res.backupKeychain.should.have.property('pub');
-    res.backupKeychain.should.have.property('prv');
-
-    res.bitgoKeychain.should.have.property('pub');
-    res.bitgoKeychain.isBitGo.should.equal(true);
-    res.bitgoKeychain.should.not.have.property('prv');
-    res.bitgoKeychain.should.not.have.property('encryptedPrv');
+    verifyGeneratedWallet(res);
   }));
 
   it('should fail to create an XLM address for a wallet pending on-chain init', co(function *() {
