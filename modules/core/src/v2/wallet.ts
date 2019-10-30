@@ -79,6 +79,10 @@ export interface PrebuildTransactionOptions {
     addressType?: string;
     hop?: boolean;
     walletPassphrase?: string;
+    reservation?: {
+      expireTime?: string;
+      pendingApprovalId?: string;
+    };
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
@@ -1568,6 +1572,7 @@ export class Wallet {
    * @param {{value: String, type: String}} params.memo - Memo to use in transaction (supported by Stellar)
    * @param {String} params.addressType - The type of address to create for change. One of `p2sh`, `p2shP2wsh`, and `p2wsh`. Case-sensitive.
    * @param {Boolean} params.hop - Build this as an Ethereum hop transaction
+   * @param {Object} params.reservation - Object to reserve the unspents that this tx build uses. Format is reservation = { expireTime: ISODateString, pendingApprovalId: String }
    * @param {String} params.walletPassphrase The passphrase to the wallet user key, to sign commitment data for Ethereum hop transactions
    * @param callback
    * @returns {*}
@@ -1581,7 +1586,7 @@ export class Wallet {
         'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
         'ledgerSequenceDelta', 'gasPrice', 'gasLimit', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
         'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy',
-        'validFromBlock', 'validToBlock', 'type', 'trustlines',
+        'validFromBlock', 'validToBlock', 'type', 'trustlines', 'reservation',
       ]);
       debug('prebuilding transaction: %O', whitelistedParams);
 
