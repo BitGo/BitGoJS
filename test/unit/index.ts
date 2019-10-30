@@ -1,18 +1,18 @@
-import { TransactionBuilder } from '../../src/';
 import * as should from 'should';
+import { getBuilder } from "../../src";
 
 describe('Coin factory', () => {
   it('should fail to instantiate an unsupported coin', () => {
-    should.throws(() => new TransactionBuilder({ coinName : 'fakeUnsupported' }));
+    should.throws(() => getBuilder('fakeUnsupported'));
   });
 
   it('should instantiate TRX builder properly', () => {
-    const trxBuilder = new TransactionBuilder({ coinName : 'trx' });
+    const trxBuilder = getBuilder('trx' );
     should.exist(trxBuilder);
   });
 
   it('should instantiate TTRX builder properly', () => {
-    const ttrxBuilder = new TransactionBuilder({ coinName : 'ttrx' });
+    const ttrxBuilder = getBuilder('ttrx' );
     should.exist(ttrxBuilder);
   });
 });

@@ -1,6 +1,6 @@
-import {BaseAddress, BaseKey, Destination} from "./coin/baseCoin/iface";
+import {BaseAddress, BaseKey, Destination} from "./iface";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
-import { TransactionType } from "./coin/baseCoin";
+import { TransactionType } from "./enum";
 
 /**
  * Specifies the members expected for a Transaction

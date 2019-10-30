@@ -1,5 +1,4 @@
 import * as should from 'should';
-import { TransactionBuilder } from '../../../../src';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import {
   UnsignedBuildTransaction,
@@ -10,12 +9,13 @@ import {
   SignedAccountPermissionUpdateContractTx,
   UnsignedAccountPermissionUpdateContractTx, UnsignedAccountPermissionUpdateContractPriv,
 } from '../../../resources/trx';
+import {getBuilder} from "../../../../src";
 
 describe('Tron test network', function() {
-  let txBuilder: TransactionBuilder;
+  let txBuilder;
 
   beforeEach(() => {
-    txBuilder = new TransactionBuilder({ coinName: 'ttrx '});
+    txBuilder = getBuilder('ttrx ');
   });
 
   describe('Transaction build', () => {
@@ -37,7 +37,7 @@ describe('Tron test network', function() {
 
   describe('Transaction sign', () => {
     beforeEach(() => {
-      txBuilder = new TransactionBuilder({ coinName: 'ttrx '});
+      txBuilder = getBuilder('ttrx ');
     });
 
     it('should sign an unsigned tx', () => {
@@ -66,7 +66,7 @@ describe('Tron test network', function() {
 
   describe('Transaction build', () => {
     beforeEach(() => {
-      txBuilder = new TransactionBuilder({ coinName: 'ttrx '});
+      txBuilder = getBuilder('ttrx ');
     });
 
     it('should build an update account tx', () => {
@@ -134,7 +134,7 @@ describe('Tron test network', function() {
 
   describe('Transaction extend', () => {
     beforeEach(() => {
-      txBuilder = new TransactionBuilder({ coinName: 'ttrx '});
+      txBuilder = getBuilder('ttrx ');
     });
 
     it('should not extend a half signed tx', () => {

@@ -2,7 +2,7 @@ import { protocol } from '../../../resources/trx/protobuf/tron';
 const crypto = require('crypto');
 import {RawData, TransactionReceipt, TransferContract, ValueFields} from "./iface";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
-import { BaseTransaction } from "../../transaction";
+import { BaseTransaction } from "../baseCoin/baseTransaction";
 import { decodeTransaction } from "./utils";
 import { ContractType} from "./enum";
 import BigNumber from "bignumber.js";
