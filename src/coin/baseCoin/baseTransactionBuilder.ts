@@ -12,7 +12,7 @@ export abstract class BaseTransactionBuilder {
 
   /**
    *
-   * @param {Readonly<BaseCoin>} _coinConfig
+   * @param _coinConfig
    */
   protected constructor(protected _coinConfig: Readonly<CoinConfig>) { }
 
@@ -21,30 +21,49 @@ export abstract class BaseTransactionBuilder {
    * could be hex, base64, JSON, etc.
    * @param rawTransaction
    */
-  abstract from(rawTransaction: any): void;
+  from(rawTransaction: any): void {
+    this.validateRawTransaction(rawTransaction);
+    this.transaction = this.fromImplementation(rawTransaction);
+  }
+
+  protected abstract fromImplementation(rawTransaction: any): BaseTransaction;
 
   /**
    * Signs the transaction in our builder.
    * @param key one of the keys associated with this transaction
    */
-  sign(key: BaseKey) {
+  sign(key: BaseKey): void {
     // Make sure the key is valid
     this.validateKey(key);
     if (!this.transaction.canSign(key)) {
       throw new SigningError('Private key cannot sign the transaction');
     }
 
-    this.transaction = this.signInternal(key);
+    this.transaction = this.signImplementation(key);
   }
 
-  protected abstract signInternal(key: BaseKey)
+  /**
+   * Coin specific transaction signing logic.
+   * @param {BaseKey} key
+   * @return {BaseTransaction}
+   */
+  protected abstract signImplementation(key: BaseKey): BaseTransaction;
 
   /**
    * Finalize the transaction by performing any extra step like calculating hashes, verifying
    * integrity, or adding default values.
    * @return transaction object
    */
-  abstract build(): BaseTransaction;
+  build(): BaseTransaction {
+    this.validateTransaction(this.transaction);
+    return this.buildImplementation();
+  }
+
+  /**
+   *
+   * @return {BaseTransaction}
+   */
+  protected abstract buildImplementation(): BaseTransaction;
 
   /**
    * The statics fullName of this coin
@@ -69,6 +88,10 @@ export abstract class BaseTransactionBuilder {
    * exception if invalid.
    */
   abstract validateValue(value: BigNumber);
+
+  abstract validateRawTransaction(rawTransaction: any);
+
+  abstract validateTransaction(transaction: BaseTransaction);
 
   protected abstract get transaction(): BaseTransaction;
 

@@ -38,14 +38,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param rawTransaction The Tron transaction in JSON format as returned by the Tron lib or a
    *     stringifyed version of such JSON.
    */
-  public from(rawTransaction: TransactionReceipt | string) {
+  public fromImplementation(rawTransaction: TransactionReceipt | string): Transaction {
     // TODO: add checks to ensure the raw_data, raw_data_hex, and txID are from the same transaction
     if (typeof rawTransaction === 'string') {
       const transaction = JSON.parse(rawTransaction);
-      this.transaction = new Transaction(this._coinConfig, transaction);
-    } else {
-      this.transaction = new Transaction(this._coinConfig, rawTransaction);
+      return new Transaction(this._coinConfig, transaction);
     }
+    return new Transaction(this._coinConfig, rawTransaction);
   }
 
   /**
@@ -53,7 +52,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param {Key} key
    * @return {Transaction}
    */
-  protected signInternal(key: BaseKey) {
+  protected signImplementation(key: BaseKey): Transaction {
     if (!this.transaction.senders) {
       throw new SigningError('transaction has no sender');
     }
@@ -81,7 +80,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
 
-  public build(): Transaction {
+  public buildImplementation(): Transaction {
     // This is a no-op since Tron transactions are built from
     if (!this.transaction.id) {
       throw new BuildTransactionError('A valid transaction must have an id');
@@ -177,4 +176,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   public displayName(): string {
     return this._coinConfig.fullName;
   }
+
+  validateRawTransaction(rawTransaction: any) { }
+
+  validateTransaction(transaction: Transaction) { }
 }

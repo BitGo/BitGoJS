@@ -31,15 +31,15 @@ export class TestTransactionBuilder extends BaseTransactionBuilder {
 
   public validateKey(key: BaseKey) { }
 
-  public from(rawTransaction: any) {
-    this._transaction = rawTransaction;
+  public fromImplementation(rawTransaction: any) {
+    return rawTransaction;
   }
 
-  protected signInternal(privateKey: BaseKey) {
+  protected signImplementation(privateKey: BaseKey) {
     return this._transaction;
   }
 
-  public build(): BaseTransaction {
+  public buildImplementation(): BaseTransaction {
     return this._transaction;
   }
 
@@ -50,4 +50,8 @@ export class TestTransactionBuilder extends BaseTransactionBuilder {
   protected set transaction(transaction: BaseTransaction) {
     this._transaction = transaction;
   }
+
+  validateRawTransaction(rawTransaction: any) { }
+
+  validateTransaction(transaction: BaseTransaction) { }
 }
