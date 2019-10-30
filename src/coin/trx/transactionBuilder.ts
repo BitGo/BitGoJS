@@ -1,16 +1,16 @@
-import { BaseCoin } from "../../baseCoin";
+import { BaseCoin } from "../baseCoin";
 import BigNumber from "bignumber.js";
-import { Transaction } from '../transaction';
-import { RawData, TransactionReceipt } from '../iface';
-import { Key } from '../key';
-import { ParseTransactionError, SigningError, BuildTransactionError } from '../../baseCoin/errors';
-import { Address } from '../address';
-import { BaseKey } from '../../baseCoin/iface';
-import { decodeTransaction, isValidHex, signTransaction, isBase58Address } from "../utils";
+import { Transaction } from './transaction';
+import { RawData, TransactionReceipt } from './iface';
+import { Key } from './key';
+import { ParseTransactionError, SigningError, BuildTransactionError } from '../baseCoin/errors';
+import { Address } from './address';
+import { BaseKey } from '../baseCoin/iface';
+import { decodeTransaction, isValidHex, signTransaction, isBase58Address } from "./utils";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
 
-export class TrxBase implements BaseCoin {
-  protected constructor(private _coinConfig: Readonly<CoinConfig>) { }
+export class TransactionBuilder implements BaseCoin {
+  constructor(private _coinConfig: Readonly<CoinConfig>) { }
 
   public buildTransaction(transaction: Transaction): Transaction {
     // This is a no-op since Tron transactions are built from

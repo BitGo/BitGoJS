@@ -1,8 +1,8 @@
 import { BaseCoin } from "./coin/baseCoin";
-import { BaseAddress, BaseKey } from "./coin/baseCoin/iface";
+import { BaseKey } from "./coin/baseCoin/iface";
 import { CoinFactory } from "./coinFactory";
 import { BaseTransaction } from "./transaction";
-import {SigningError} from "./coin/baseCoin/errors";
+import { SigningError } from "./coin/baseCoin/errors";
 
 export interface TransactionBuilderParams {
   coinName: string;
