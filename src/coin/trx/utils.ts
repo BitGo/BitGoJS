@@ -28,10 +28,6 @@ export function isBase58Address(address: string): boolean {
   return tronweb.utils.crypto.isAddressValid(address);
 }
 
-export function isHexAddress(address: string): boolean {
-  return tronweb.isAddress(address);
-}
-
 export function getByteArrayFromHexAddress(str: string): ByteArray {
   return tronweb.utils.code.hexStr2byteArray(str);
 }

@@ -2,7 +2,7 @@ import { TransferContract, AccountPermissionUpdateContract } from '../../../../s
 import { Utils } from '../../../../src/coin/trx/index';
 
 import * as should from 'should';
-import { UnsignedTransferContractTx, UnsignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
+import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
 
 describe('Util library should', function() {
   // arbitrary text
@@ -55,11 +55,6 @@ describe('Util library should', function() {
   it('get hex from base58 address', () => {
     const hexAddr = Utils.getHexAddressFromBase58Address(base58);
     should.equal(hexAddr, addressHex);
-  });
-
-  it('detect an address', () => {
-    const addrDetect = Utils.isHexAddress(Utils.getHexAddressFromBase58Address(base58));
-    should.equal(addrDetect, true);
   });
 
   it('validate a hex string', () => {
@@ -126,7 +121,7 @@ describe('Util library should', function() {
   });
 
    it('should decode an AccountPermissionUpdate Contract', () => {
-     const tx = UnsignedAccountPermissionUpdateContractTx.tx;
+     const tx = SignedAccountPermissionUpdateContractTx.tx;
      const value = tx.raw_data.contract[0].parameter.value;
      const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
      const parsedTx = Utils.decodeAccountPermissionUpdateContract(rawTx.contracts[0].parameter.value) as AccountPermissionUpdateContract;
