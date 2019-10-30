@@ -1,18 +1,20 @@
-import {BaseAddress, BaseKey, Destination} from "./iface";
+import { BaseAddress, BaseKey, Destination } from "./iface";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
 import { TransactionType } from "./enum";
 
 /**
- * Specifies the members expected for a Transaction
+ * Generic transaction. Should be extended with coin specific members.
  */
 export abstract class BaseTransaction {
   protected _id: string;  // The transaction id as seen in the blockchain
   protected _fromAddresses: BaseAddress[];
   protected _destination: Destination[];
   protected _type: TransactionType;
-  protected _validFrom: number;
-  protected _validTo: number;
 
+  /**
+   * Base constructor.
+   * @param _coinConfig BaseCoin from statics library
+   */
   protected constructor(protected _coinConfig: Readonly<CoinConfig>) { }
 
   get id() {
@@ -31,14 +33,6 @@ export abstract class BaseTransaction {
     return this._fromAddresses;
   }
 
-  get validFrom(): number {
-    return this._validFrom;
-  }
-
-  get validTo(): number {
-    return this._validTo;
-  }
-
   /**
    * Whether the private key can sign this transaction in its current state or not. it is possible
    * some transactions can only enforce this check after some other fields have been filled already
@@ -48,5 +42,8 @@ export abstract class BaseTransaction {
    */
   abstract canSign(key: BaseKey): boolean;
 
+  /**
+   * Returns the transaction in a valid JSON format.
+   */
   abstract toJson(): any;
 }

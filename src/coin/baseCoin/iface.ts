@@ -15,7 +15,3 @@ export interface BaseKey {
 export interface Destination extends BaseAddress {
   value: BigNumber
 }
-
-export interface TransactionBuilderParams {
-  coinName: string;
-}

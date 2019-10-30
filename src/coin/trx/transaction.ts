@@ -11,8 +11,13 @@ import { TransactionType } from "../baseCoin/";
 import { BaseKey } from "../baseCoin/iface";
 
 export class Transaction extends BaseTransaction {
+  // Tron specific fields
+  protected _validFrom: number;
+  protected _validTo: number;
+
   private _decodedRawDataHex: RawData;
   private _transaction?: TransactionReceipt;
+
 
   constructor(coinConfig: Readonly<CoinConfig>, rawTransaction?: TransactionReceipt) {
     super(coinConfig);
@@ -111,6 +116,14 @@ export class Transaction extends BaseTransaction {
     } catch (e) {
       throw new ExtendTransactionError('There was an error decoding the initial raw_data_hex from the serialized tx.');
     }
+  }
+
+  get validFrom(): number {
+    return this._validFrom;
+  }
+
+  get validTo(): number {
+    return this._validTo;
   }
 
   /**

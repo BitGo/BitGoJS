@@ -6,19 +6,20 @@ import { BaseCoin as CoinConfig } from "@bitgo/statics";
 
 /**
  * Generic transaction builder. It contains the set of default steps (i.e. from, sign, build) and
- * mandatory validations.
+ * enforces mandatory validations.
+ * Should be extended with coin specific steps.
  */
 export abstract class BaseTransactionBuilder {
 
   /**
-   *
-   * @param _coinConfig
+   * Base constructor.
+   * @param _coinConfig BaseCoin from statics library
    */
   protected constructor(protected _coinConfig: Readonly<CoinConfig>) { }
 
   /**
-   * Build a transaction based on existing data. The input format will depend on the coin, and it
-   * could be hex, base64, JSON, etc.
+   * Parse a transaction based on existing data. The input format is determined by the coin
+   * extending this class. Some examples are hex, base64, or JSON.
    * @param rawTransaction
    */
   from(rawTransaction: any): void {
@@ -26,10 +27,15 @@ export abstract class BaseTransactionBuilder {
     this.transaction = this.fromImplementation(rawTransaction);
   }
 
+  /**
+   * Coin specific implementation of {@code from}
+   * @see from
+   * @return the parsed coin specific transaction object
+   */
   protected abstract fromImplementation(rawTransaction: any): BaseTransaction;
 
   /**
-   * Signs the transaction in our builder.
+   * Validate keys and sign the transaction.
    * @param key one of the keys associated with this transaction
    */
   sign(key: BaseKey): void {
@@ -38,14 +44,13 @@ export abstract class BaseTransactionBuilder {
     if (!this.transaction.canSign(key)) {
       throw new SigningError('Private key cannot sign the transaction');
     }
-
     this.transaction = this.signImplementation(key);
   }
 
   /**
-   * Coin specific transaction signing logic.
-   * @param {BaseKey} key
-   * @return {BaseTransaction}
+   * Coin specific implementation of {@code sign}
+   * @see sign
+   * @return the signed coin specific transaction object
    */
   protected abstract signImplementation(key: BaseKey): BaseTransaction;
 
@@ -60,8 +65,8 @@ export abstract class BaseTransactionBuilder {
   }
 
   /**
-   *
-   * @return {BaseTransaction}
+   * Coin specific implementation of {@code build}
+   * @return the final coin specific transaction object
    */
   protected abstract buildImplementation(): BaseTransaction;
 
@@ -89,11 +94,23 @@ export abstract class BaseTransactionBuilder {
    */
   abstract validateValue(value: BigNumber);
 
+  /**
+   * Validates the raw transaction has the coin specific correct format, throws otherwise.
+   */
   abstract validateRawTransaction(rawTransaction: any);
 
+  /**
+   * Validates the transaction has all mandatory fields before and are correct, throws otherwise.
+   */
   abstract validateTransaction(transaction: BaseTransaction);
 
+  /**
+   * Get the transaction being built.
+   */
   protected abstract get transaction(): BaseTransaction;
 
+  /**
+   * Set the transaction being built.
+   */
   protected abstract set transaction(transaction: BaseTransaction);
 }
