@@ -19,20 +19,22 @@ describe('Transaction builder', () => {
   it('should sign a transaction that is valid', () => {
     let testTx = sinon.createStubInstance(TestTransaction);
     testTx.canSign.returns(true);
+    let validateKey = sinon.spy(txBuilder, 'validateKey');
 
     txBuilder.from(testTx);
-    txBuilder.sign({ key: ''  });
+    txBuilder.sign({ key: 'validKey'  });
 
-    sandbox.assert.calledOnce(txBuilder.validateKey);
+    sandbox.assert.calledOnce(validateKey);
   });
 
   it('should sign a transaction with an invalid signature', () => {
     let testTx = sinon.createStubInstance(TestTransaction);
     testTx.canSign.returns(false);
+    let validateKey = sinon.spy(txBuilder, 'validateKey');
 
     txBuilder.from(testTx);
-    should.throws(() => txBuilder.sign({ key: ''  }));
+    should.throws(() => txBuilder.sign({ key: 'invalidKey'  }));
 
-    sandbox.assert.calledOnce(txBuilder.validateKey);
+    sandbox.assert.calledOnce(validateKey);
   });
 });

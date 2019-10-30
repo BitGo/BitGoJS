@@ -9,7 +9,7 @@ import {
   SignedAccountPermissionUpdateContractTx,
   UnsignedAccountPermissionUpdateContractTx, UnsignedAccountPermissionUpdateContractPriv,
 } from '../../../resources/trx';
-import {getBuilder} from "../../../../src";
+import { getBuilder } from "../../../../src";
 
 describe('Tron test network', function() {
   let txBuilder;
