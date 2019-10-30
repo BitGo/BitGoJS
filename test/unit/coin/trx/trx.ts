@@ -6,8 +6,7 @@ import {
   FirstPrivateKey,
   SecondSigOnBuildTransaction,
   SecondPrivateKey,
-  SignedAccountPermissionUpdateContractTx,
-  UnsignedAccountPermissionUpdateContractTx, UnsignedAccountPermissionUpdateContractPriv,
+  UnsignedAccountPermissionUpdateContractTx, AccountPermissionUpdateContractPriv,
 } from '../../../resources/trx';
 import { getBuilder } from "../../../../src";
 
@@ -72,7 +71,7 @@ describe('Tron test network', function() {
     it('should build an update account tx', () => {
       const txJson = JSON.stringify(UnsignedAccountPermissionUpdateContractTx);
       txBuilder.from(txJson);
-      txBuilder.sign({ key: UnsignedAccountPermissionUpdateContractPriv });
+      txBuilder.sign({ key: AccountPermissionUpdateContractPriv });
       const tx = txBuilder.build();
       const signedTxJson = tx.toJson();
 

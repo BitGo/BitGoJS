@@ -76,7 +76,7 @@ export const UnsignedTransferContractTx = {
     sig: '0a9944316924ec7fba4895f1ea1e7cc95f9e2b828ae268a48a8dbeddef40c6f5e127170a95aed9f3f5425b13058d0cb6ef1f5c2213190e482e87043691f22e6800',
 };
 
-export const UnsignedAccountPermissionUpdateContractPriv = '88413601C267316040413C68AAB35651F8C7AB05EC8FFEF42D42DDA16AA3732C';
+export const AccountPermissionUpdateContractPriv = '88413601C267316040413C68AAB35651F8C7AB05EC8FFEF42D42DDA16AA3732C';
 export const UnsignedAccountPermissionUpdateContractTx = {
   visible: false,
   txID: '7d5407d81d4e95f4c3c28f8849947b91fbfa9c5b102bfd5b48fe77e63c68107d',
@@ -141,70 +141,67 @@ export const UnsignedAccountPermissionUpdateContractTx = {
 };
 
 export const SignedAccountPermissionUpdateContractTx = {
-  tx: {
-    raw_data: {
-      contract: [
-        {
-          parameter: {
-            type_url: "type.googleapis.com/protocol.AccountPermissionUpdateContract",
-            value: {
-              actives: [
+  visible: false,
+  txID: '7d5407d81d4e95f4c3c28f8849947b91fbfa9c5b102bfd5b48fe77e63c68107d',
+  raw_data: {
+    contract: [
+      {
+        parameter: {
+          value: {
+            owner: {
+              keys: [
                 {
-                  keys: [
-                    {
-                      address: "4113001e2a65db1465868dde56ba0710040a587af3",
-                      weight: 1
-                    },
-                    {
-                      address: "4184465de31fc25bf6345a09d3abf8bf76ec98dc19",
-                      weight: 1
-                    },
-                    {
-                      address: "41b808cf439e09302b2e36ace3cd9153b5c747fd8b",
-                      weight: 1
-                    }
-                  ],
-                  operations: "7fff1fc0037e0000000000000000000000000000000000000000000000000000",
-                  permission_name: "active0",
-                  threshold: 2,
-                  type: "Active"
+                  address: '41ca42a499a2eee394323baa2c2f7d8a764ce0689c',
+                  weight: 1
+                },
+                {
+                  address: '412c2ba4a9ff6c53207dc5b686bfecf75ea7b80577',
+                  weight: 1
+                },
+                {
+                  address: '41e0c0f581d7d02d40826c1c6cbee71f625d6344d0',
+                  weight: 1
                 }
               ],
-              owner: {
+              threshold: 2,
+              permission_name: 'owner'
+            },
+            owner_address: '41ca42a499a2eee394323baa2c2f7d8a764ce0689c',
+            actives: [
+              {
+                operations: '7fff1fc0037e0000000000000000000000000000000000000000000000000000',
                 keys: [
                   {
-                    address: "4113001e2a65db1465868dde56ba0710040a587af3",
+                    address: '41ca42a499a2eee394323baa2c2f7d8a764ce0689c',
                     weight: 1
                   },
                   {
-                    address: "4184465de31fc25bf6345a09d3abf8bf76ec98dc19",
+                    address: '412c2ba4a9ff6c53207dc5b686bfecf75ea7b80577',
                     weight: 1
                   },
                   {
-                    address: "41b808cf439e09302b2e36ace3cd9153b5c747fd8b",
+                    address: '41e0c0f581d7d02d40826c1c6cbee71f625d6344d0',
                     weight: 1
                   }
                 ],
-                permission_name: "owner",
-                threshold: 2
-              },
-              owner_address: "4113001e2a65db1465868dde56ba0710040a587af3"
-            }
+                threshold: 2,
+                type: 'Active',
+                permission_name: 'active0'
+              }
+            ]
           },
-          type: "AccountPermissionUpdateContract"
-        }
-      ],
-      expiration: 1571691861000,
-      ref_block_bytes: "2147",
-      ref_block_hash: "e5ea2176dd736cc0",
-      timestamp: 1571691802033
-    },
-    raw_data_hex: "0a0221472208e5ea2176dd736cc04088a88a81df2d5abc02082e12b7020a3c747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e4163636f756e745065726d697373696f6e557064617465436f6e747261637412f6010a154113001e2a65db1465868dde56ba0710040a587af3125a1a056f776e657220023a190a154113001e2a65db1465868dde56ba0710040a587af310013a190a154184465de31fc25bf6345a09d3abf8bf76ec98dc1910013a190a1541b808cf439e09302b2e36ace3cd9153b5c747fd8b100122800108021a0761637469766530200232207fff1fc0037e00000000000000000000000000000000000000000000000000003a190a154113001e2a65db1465868dde56ba0710040a587af310013a190a154184465de31fc25bf6345a09d3abf8bf76ec98dc1910013a190a1541b808cf439e09302b2e36ace3cd9153b5c747fd8b100170b1db8681df2d",
-    signature: [
-      "37708fcec317b5579280085e258ddc437727a1bb47de2be746e894e26bc51b0e25513c1e91576a9560829fdf688bdd53af40a50e1e61dbd683f31508961a5c5301"
+          type_url: 'type.googleapis.com/protocol.AccountPermissionUpdateContract'
+        },
+        type: 'AccountPermissionUpdateContract'
+      }
     ],
-    txID: "8677936f55a6ca665a84dc3104087a63ac53dbf30fc802202b537d7ecffd9b1c",
-    visible: false
+    ref_block_bytes: 'eeb2',
+    ref_block_hash: '97904e2922d6b5e8',
+    expiration: 1572473529000,
+    timestamp: 1572473469065
   },
-  signature:[],
+  raw_data_hex: '0a02eeb2220897904e2922d6b5e840a8c5e7f5e12d5abc02082e12b7020a3c747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e4163636f756e745065726d697373696f6e557064617465436f6e747261637412f6010a1541ca42a499a2eee394323baa2c2f7d8a764ce0689c125a1a056f776e657220023a190a1541ca42a499a2eee394323baa2c2f7d8a764ce0689c10013a190a15412c2ba4a9ff6c53207dc5b686bfecf75ea7b8057710013a190a1541e0c0f581d7d02d40826c1c6cbee71f625d6344d0100122800108021a0761637469766530200232207fff1fc0037e00000000000000000000000000000000000000000000000000003a190a1541ca42a499a2eee394323baa2c2f7d8a764ce0689c10013a190a15412c2ba4a9ff6c53207dc5b686bfecf75ea7b8057710013a190a1541e0c0f581d7d02d40826c1c6cbee71f625d6344d010017089f1e3f5e12d',
+  signature: [
+    '2bc5030727d42ed642c2806a3c1a5a0393408b159541f2163df4ba692c5c1240e2dde5a2aae4ecad465414e60b5aeca8522d0a2b6606f88a326658809161334f00'
+  ]
 };
