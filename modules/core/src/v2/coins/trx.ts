@@ -5,6 +5,7 @@ import * as Bluebird from 'bluebird';
 import { CoinFamily } from '@bitgo/statics';
 const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
+import { HDNode } from 'bitgo-utxo-lib';
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { MethodNotImplementedError } from '../../errors';
@@ -150,7 +151,15 @@ export class Trx extends BaseCoin {
     const coinName = this.getChain();
     const txBuilder = new TransactionBuilder({ coinName });
     txBuilder.from(params.txPrebuild.txHex);
-    txBuilder.sign({ key: params.prv });
+
+    let key = params.prv;
+    if (this.isValidXprv(params.prv)) {
+      key = HDNode.fromBase58(params.prv)
+        .getKey()
+        .getPrivateKeyBuffer();
+    }
+
+    txBuilder.sign({ key });
     const transaction = txBuilder.build();
     const response = {
       txHex: JSON.stringify(transaction.toJson()),
@@ -162,6 +171,20 @@ export class Trx extends BaseCoin {
     return {
       halfSigned: response,
     };
+  }
+
+  /**
+   * Return boolean indicating whether input is valid seed for the coin
+   *
+   * @param prv - the prv to be checked
+   */
+  isValidXprv(prv: string): boolean {
+    try {
+      HDNode.fromBase58(prv);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /**
