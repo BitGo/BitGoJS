@@ -1,8 +1,8 @@
 import { protocol } from '../../../resources/trx/protobuf/tron';
 const crypto = require('crypto');
-import {RawData, TransactionReceipt, TransferContract, ValueFields} from "./iface";
+import { RawData, TransactionReceipt, TransferContract } from "./iface";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
-import { BaseTransaction } from "../baseCoin/baseTransaction";
+import { BaseTransaction } from "../baseCoin";
 import { decodeTransaction } from "./utils";
 import { ContractType} from "./enum";
 import BigNumber from "bignumber.js";
@@ -10,6 +10,9 @@ import { ParseTransactionError, ExtendTransactionError } from "../baseCoin/error
 import { TransactionType } from "../baseCoin/";
 import { BaseKey } from "../baseCoin/iface";
 
+/**
+ * Tron transaction model.
+ */
 export class Transaction extends BaseTransaction {
   // Tron specific fields
   protected _validFrom: number;
@@ -19,6 +22,9 @@ export class Transaction extends BaseTransaction {
   private _transaction?: TransactionReceipt;
 
 
+  /**
+   * Tron transaction constructor.
+   */
   constructor(coinConfig: Readonly<CoinConfig>, rawTransaction?: TransactionReceipt) {
     super(coinConfig);
     if (rawTransaction) {
@@ -76,7 +82,7 @@ export class Transaction extends BaseTransaction {
    * Updates the txid of this transaction after a protobuf update
    * Every time protobuf is updated, we need to update the txid
    */
-  private updateTxid(): void {
+  private updateId(): void {
     if (!this._transaction) {
       throw new ParseTransactionError('Empty transaction');
     }
@@ -112,7 +118,7 @@ export class Transaction extends BaseTransaction {
       this._transaction.raw_data.expiration = newExpiration;
       this._decodedRawDataHex = decodeTransaction(newRawDataHex);
       this.recordRawDataFields(this._decodedRawDataHex);
-      this.updateTxid();
+      this.updateId();
     } catch (e) {
       throw new ExtendTransactionError('There was an error decoding the initial raw_data_hex from the serialized tx.');
     }

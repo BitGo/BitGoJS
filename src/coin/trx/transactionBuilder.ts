@@ -1,33 +1,23 @@
 import BigNumber from "bignumber.js";
 
-import { RawData, TransactionReceipt } from './iface';
-import { Key } from './key';
-import { ParseTransactionError, SigningError, BuildTransactionError } from '../baseCoin/errors';
+import { TransactionReceipt } from './iface';
+import { SigningError, BuildTransactionError } from '../baseCoin/errors';
 import { Address } from './address';
 import { BaseKey } from '../baseCoin/iface';
-import { decodeTransaction, isValidHex, signTransaction, isBase58Address } from "./utils";
+import { signTransaction, isBase58Address } from "./utils";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
-import { BaseTransactionBuilder } from "../baseCoin/baseTransactionBuilder";
+import { BaseTransactionBuilder } from "../baseCoin";
 import { Transaction } from './transaction';
 
 /**
- *
+ * Tron transaction builder.
  */
 export class TransactionBuilder extends BaseTransactionBuilder {
-  // Tron specific transaction being built
+  // transaction being built
   private _transaction: Transaction;
-
-  protected get transaction(): Transaction {
-    return this._transaction;
-  }
-
-  protected set transaction(transaction: Transaction) {
-    this._transaction = transaction;
-  }
 
   /**
    * Tron transaction builder constructor.
-   * @param _coinConfig
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -38,7 +28,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param rawTransaction The Tron transaction in JSON format as returned by the Tron lib or a
    *     stringifyed version of such JSON.
    */
-  public fromImplementation(rawTransaction: TransactionReceipt | string): Transaction {
+  protected fromImplementation(rawTransaction: TransactionReceipt | string): Transaction {
     // TODO: add checks to ensure the raw_data, raw_data_hex, and txID are from the same transaction
     if (typeof rawTransaction === 'string') {
       const transaction = JSON.parse(rawTransaction);
@@ -48,9 +38,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   *
-   * @param {Key} key
-   * @return {Transaction}
+   * Tron transaction signing implementation.
    */
   protected signImplementation(key: BaseKey): Transaction {
     if (!this.transaction.senders) {
@@ -80,7 +68,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
 
-  public buildImplementation(): Transaction {
+  /**
+   * Tron transaction building and verification implementation.
+   */
+  protected buildImplementation(): Transaction {
     // This is a no-op since Tron transactions are built from
     if (!this.transaction.id) {
       throw new BuildTransactionError('A valid transaction must have an id');
@@ -92,59 +83,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * Extend the validity of this transaction by the given amount of time
    * @param extensionMs The number of milliseconds to extend the validTo time
    */
-  extendValidTo(extensionMs: number) {
+  public extendValidTo(extensionMs: number) {
     this.transaction.extendExpiration(extensionMs);
-  }
-
-  /**
-   * Helper function for parsing a transaction's raw_data field.
-   * @param rawDataHex Raw data field encoded as hex in tron.proto
-   */
-  private createRawTransaction(rawDataHex: string): RawData {
-    let parsedTx: RawData;
-    try {
-      parsedTx = decodeTransaction(rawDataHex);
-    } catch (e) {
-      throw new ParseTransactionError('Failed to decode transaction: ' + e);
-    }
-
-    return parsedTx;
-  }
-
-  /**
-   * Helper function for parsing a transaction.
-   * @param rawTransaction Transaction from the node
-   */
-  private createTransactionReceipt(rawTransaction: string): TransactionReceipt {
-    const raw = JSON.parse(rawTransaction);
-
-    let txID: string;
-    // TODO: need a more specific validation method for txID
-    if (raw.txID && isValidHex(raw.txID)) {
-      txID = raw.txID;
-    } else {
-      throw new ParseTransactionError('Raw transaction needs to have a valid txID.');
-    }
-
-    // this is an optional field - its possible signature is an empty array
-    let signature: Array<string> = new Array<string>();
-    if (raw.signature && Array.isArray(raw.signature)) {
-      signature = raw.signature;
-    }
-
-    let rawData: RawData;
-    if (raw.raw_data_hex && isValidHex(raw.raw_data_hex)) {
-      rawData = this.createRawTransaction(raw.raw_data_hex);
-    } else {
-      throw new ParseTransactionError('Raw transaction needs to have a valid state.');
-    }
-
-    return {
-      txID,
-      raw_data: rawData,
-      raw_data_hex: raw.raw_data_hex,
-      signature,
-    };
   }
 
   /**
@@ -169,15 +109,27 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   public validateKey(key: BaseKey) {
-    // TODO: determine format for key
+    // TODO: determine valid key format
     return true;
+  }
+
+  public validateRawTransaction(rawTransaction: any) {
+    // TODO: parse the transaction raw_data_hex and compare it with the raw_data
+  }
+
+  public validateTransaction(transaction: Transaction) {
+    // TODO: verify the transaction has the right transaction id
   }
 
   public displayName(): string {
     return this._coinConfig.fullName;
   }
 
-  validateRawTransaction(rawTransaction: any) { }
+  protected get transaction(): Transaction {
+    return this._transaction;
+  }
 
-  validateTransaction(transaction: Transaction) { }
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
+  }
 }
