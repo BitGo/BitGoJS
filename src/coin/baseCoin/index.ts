@@ -1,3 +1,6 @@
+export { BaseTransaction } from './baseTransaction';
+export { BaseTransactionBuilder } from './baseTransactionBuilder';
+
 import { TransactionType } from './enum';
 import * as Error from './errors';
 import * as Interface from './iface';
