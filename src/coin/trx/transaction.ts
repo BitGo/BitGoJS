@@ -1,12 +1,14 @@
-import {RawData, TransactionReceipt, TransferContract} from "./iface";
+import { protocol } from '../../../resources/trx/protobuf/tron';
+const crypto = require('crypto');
+import { RawData, TransactionReceipt, TransferContract } from "./iface";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
 import { BaseTransaction } from "../../transaction";
 import { decodeTransaction } from "./utils";
 import { ContractType} from "./enum";
 import BigNumber from "bignumber.js";
-import { ParseTransactionError } from "../baseCoin/errors";
+import { ParseTransactionError, ExtendTransactionError } from "../baseCoin/errors";
 import { TransactionType } from "../baseCoin/";
-import {BaseKey} from "../baseCoin/iface";
+import { BaseKey } from "../baseCoin/iface";
 
 export class Transaction extends BaseTransaction {
   private _decodedRawDataHex: RawData;
@@ -21,13 +23,6 @@ export class Transaction extends BaseTransaction {
       this._id = rawTransaction.txID;
       this._transaction = rawTransaction;
       this._decodedRawDataHex = decodeTransaction(rawTransaction.raw_data_hex);
-      const senderAddress = {
-        address: (this._decodedRawDataHex.contract[0] as TransferContract).parameter.value.owner_address
-      };
-      this._fromAddresses = [senderAddress];
-
-      this._validFrom = Number(this._decodedRawDataHex.timestamp);
-      this._validTo = Number(this._decodedRawDataHex.expiration);
 
       // Destination depends on the contract type
       this.recordRawDataFields(this._decodedRawDataHex);
@@ -39,6 +34,16 @@ export class Transaction extends BaseTransaction {
    * @param rawData Object from a tron transaction
    */
   private recordRawDataFields(rawData: RawData) {
+    // Contract-agnostic fields
+    const senderAddress = {
+      address: (rawData.contract[0] as TransferContract).parameter.value.owner_address
+    };
+    this._fromAddresses = [senderAddress];
+
+    this._validFrom = rawData.timestamp;
+    this._validTo = rawData.expiration;
+
+    // Contract-specific fields
     switch (rawData.contractType) {
       case ContractType.Transfer:
         this._type = TransactionType.Send;
@@ -50,6 +55,52 @@ export class Transaction extends BaseTransaction {
         break;
       default:
         throw new ParseTransactionError('Unsupported contract type');
+    }
+  }
+
+  /**
+   * Updates the txid of this transaction after a protobuf update
+   * Every time protobuf is updated, we need to update the txid
+   */
+  private updateTxid(): void {
+    if (!this._transaction) {
+      throw new ParseTransactionError('Empty transaction');
+    }
+    const hexBuffer = Buffer.from(this._transaction.raw_data_hex, 'hex');
+    const newTxid = crypto.createHash('sha256').update(hexBuffer).digest('hex');
+    this._transaction.txID = newTxid;
+    this._id = newTxid;
+  }
+
+  /**
+   * Extends this transaction's expiration date by the given number of milliseconds
+   * @param extensionMs The number of milliseconds to extend the expiration by
+   */
+  extendExpiration(extensionMs: number): void {
+    if (!this._transaction) {
+      throw new ExtendTransactionError('Empty transaction');
+    }
+
+    if (this._transaction.signature && this._transaction.signature.length > 0) {
+      throw new ExtendTransactionError('Cannot extend a signed transaction');
+    }
+
+    const rawDataHex = this._transaction.raw_data_hex;
+    const bytes = Buffer.from(rawDataHex, 'hex');
+    let raw;
+    try {
+      raw = protocol.Transaction.raw.decode(bytes);
+      const newExpiration = (new BigNumber(raw.expiration).plus(extensionMs)).toNumber();
+      raw.expiration = newExpiration;
+      const newRawDataHex = Buffer.from(protocol.Transaction.raw.encode(raw).finish()).toString('hex');
+      // Set the internal variables to account for the new expiration date
+      this._transaction.raw_data_hex = newRawDataHex;
+      this._transaction.raw_data.expiration = newExpiration;
+      this._decodedRawDataHex = decodeTransaction(newRawDataHex);
+      this.recordRawDataFields(this._decodedRawDataHex);
+      this.updateTxid();
+    } catch (e) {
+      throw new ExtendTransactionError('There was an error decoding the initial raw_data_hex from the serialized tx.');
     }
   }
 

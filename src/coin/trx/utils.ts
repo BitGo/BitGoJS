@@ -1,8 +1,16 @@
+const crypto = require('crypto');
 const tronweb = require('tronweb');
 import { protocol } from '../../../resources/trx/protobuf/tron';
 
 import * as assert from 'assert';
-import { TransferContract, RawData, AccountPermissionUpdateContract, Account, TransactionReceipt, Permission } from './iface';
+import {
+  TransferContract,
+  RawData,
+  AccountPermissionUpdateContract,
+  Account,
+  TransactionReceipt,
+  Permission,
+} from './iface';
 import { ContractType, PermissionType } from './enum';
 import { UtilsError } from '../baseCoin/errors';
 
@@ -85,7 +93,7 @@ export function getRawAddressFromPubKey(pubBytes: ByteArray | string): ByteArray
 }
 
 /**
- * Decodes a base64 encoded transaction in its protobuf representation.
+ * Decodes a hex encoded transaction in its protobuf representation.
  * @param hexString raw_data_hex field from tron transactions
  */
 export function decodeTransaction(hexString: string): RawData {

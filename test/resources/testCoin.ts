@@ -11,6 +11,7 @@ import { BaseTransaction } from "../../src/transaction";
 export class TestCoin implements BaseCoin {
   _parseTransaction: BaseTransaction;
   _buildTransaction: BaseTransaction;
+  _extendTransaction: BaseTransaction;
   _sign: BaseTransaction;
 
   public displayName(): string {
@@ -31,6 +32,10 @@ export class TestCoin implements BaseCoin {
 
   public buildTransaction(transaction: BaseTransaction): BaseTransaction {
     return this._buildTransaction;
+  }
+
+  public extendTransaction(transaction: BaseTransaction, extensionMs: number): BaseTransaction {
+    return this._extendTransaction;
   }
 
   public sign(privateKey: BaseKey, transaction: BaseTransaction): BaseTransaction {

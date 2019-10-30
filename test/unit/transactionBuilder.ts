@@ -55,4 +55,13 @@ describe('Transaction builder', () => {
 
     sandbox.assert.calledOnce(testCoin.buildTransaction);
   });
+
+  it('should extend a transaction validTo field', () => {
+    txBuilder.from(null);
+    txBuilder.extendValidTo(10000);
+    txBuilder.build();
+
+    sandbox.assert.calledOnce(testCoin.extendTransaction);
+    sandbox.assert.calledOnce(testCoin.buildTransaction);
+  });
 });
