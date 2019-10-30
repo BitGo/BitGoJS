@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const tronweb = require('tronweb');
 import { protocol } from '../../../resources/trx/protobuf/tron';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
