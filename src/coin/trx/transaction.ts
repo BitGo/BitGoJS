@@ -1,6 +1,6 @@
 import { protocol } from '../../../resources/trx/protobuf/tron';
 const crypto = require('crypto');
-import { RawData, TransactionReceipt, TransferContract } from "./iface";
+import {RawData, TransactionReceipt, TransferContract, ValueFields} from "./iface";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
 import { BaseTransaction } from "../../transaction";
 import { decodeTransaction } from "./utils";
@@ -35,27 +35,36 @@ export class Transaction extends BaseTransaction {
    */
   private recordRawDataFields(rawData: RawData) {
     // Contract-agnostic fields
-    const senderAddress = {
-      address: (rawData.contract[0] as TransferContract).parameter.value.owner_address
-    };
-    this._fromAddresses = [senderAddress];
-
     this._validFrom = rawData.timestamp;
     this._validTo = rawData.expiration;
 
+    let destination, senderAddress;
     // Contract-specific fields
     switch (rawData.contractType) {
       case ContractType.Transfer:
         this._type = TransactionType.Send;
-        const destination = {
+        destination = {
           address: (rawData.contract[0] as TransferContract).parameter.value.to_address,
           value: new BigNumber((rawData.contract[0] as TransferContract).parameter.value.amount),
         };
-        this._destination = [destination];
+        senderAddress = {
+          address: (rawData.contract[0] as TransferContract).parameter.value.owner_address
+        };
+        break;
+      case ContractType.AccountPermissionUpdate:
+        destination = {
+          address: (rawData.contract as any).owner_address,
+          value: new BigNumber(0)
+        };
+        senderAddress = {
+          address: (rawData.contract as any).owner_address,
+        };
         break;
       default:
         throw new ParseTransactionError('Unsupported contract type');
     }
+    this._fromAddresses = [senderAddress];
+    this._destination = [destination];
   }
 
   /**

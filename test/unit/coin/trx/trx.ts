@@ -1,11 +1,14 @@
 import * as should from 'should';
 import { TransactionBuilder } from '../../../../src';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
-import { UnsignedBuildTransaction,
+import {
+  UnsignedBuildTransaction,
   FirstSigOnBuildTransaction,
   FirstPrivateKey,
   SecondSigOnBuildTransaction,
   SecondPrivateKey,
+  SignedAccountPermissionUpdateContractTx,
+  UnsignedAccountPermissionUpdateContractTx, UnsignedAccountPermissionUpdateContractPriv,
 } from '../../../resources/trx';
 
 describe('Tron test network', function() {
@@ -64,6 +67,20 @@ describe('Tron test network', function() {
   describe('Transaction build', () => {
     beforeEach(() => {
       txBuilder = new TransactionBuilder({ coinName: 'ttrx '});
+    });
+
+    it('should build an update account tx', () => {
+      const txJson = JSON.stringify(UnsignedAccountPermissionUpdateContractTx);
+      txBuilder.from(txJson);
+      txBuilder.sign({ key: UnsignedAccountPermissionUpdateContractPriv });
+      const tx = txBuilder.build();
+      const signedTxJson = tx.toJson();
+
+      signedTxJson.txID.should.equal(UnsignedAccountPermissionUpdateContractTx.txID);
+      signedTxJson.raw_data_hex.should.equal(UnsignedAccountPermissionUpdateContractTx.raw_data_hex);
+      (JSON.stringify(signedTxJson.raw_data) === JSON.stringify(UnsignedAccountPermissionUpdateContractTx.raw_data)).should.be.ok;
+      signedTxJson.signature.length.should.equal(1);
+      signedTxJson.signature[0].should.equal('2bc5030727d42ed642c2806a3c1a5a0393408b159541f2163df4ba692c5c1240e2dde5a2aae4ecad465414e60b5aeca8522d0a2b6606f88a326658809161334f00');
     });
 
     it('should build an half signed tx', () => {
