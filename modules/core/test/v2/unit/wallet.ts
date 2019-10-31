@@ -724,6 +724,28 @@ describe('V2 Wallet:', function() {
         });
       }));
     }));
+
+    it('should pass unspent reservation parameter through when building transactions', co(function *() {
+      const reservation = {
+        expireTime: '2029-08-12',
+      };
+      const recipients = [{
+        address: 'aaa',
+        amount: '1000',
+      }];
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
+      const response = nock(bgUrl)
+        .post(path, _.matches({ recipients, reservation })) // use _.matches to do a partial match on request body object instead of strict matching
+        .reply(200);
+      try {
+        yield wallet.prebuildTransaction({ recipients, reservation });
+      } catch (e) {
+        // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
+        // we only care about /tx/build and whether reservation is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    }));
   });
 
   describe('Maximum Spendable', function maximumSpendable() {
