@@ -3,7 +3,7 @@
   "private": true,
   "devDependencies": {
     "husky": "^3.0.0",
-    "lerna": "^3.13.4"
+    "lerna": "^3.18.3"
   },
   "workspaces": [
     "modules/*"
@@ -31,9 +31,5 @@
     "hooks": {
       "pre-commit": "lerna run --concurrency 1 --stream precommit"
     }
-  },
-  "resolutions": {
-    "handlebars": "^4.5.0",
-    "https-proxy-agent": "^3.0.0"
   }
 }

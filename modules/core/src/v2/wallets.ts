@@ -34,7 +34,7 @@ export interface GenerateWalletOptions {
   backupXpubProvider?: string;
   passcodeEncryptionCode?: string;
   enterprise?: string;
-  disableTransactionNotifications?: string;
+  disableTransactionNotifications?: boolean;
   gasPrice?: string;
   disableKRSEmail?: boolean;
   krsSpecific?: {

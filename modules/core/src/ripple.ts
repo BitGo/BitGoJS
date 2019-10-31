@@ -6,11 +6,11 @@
  */
 const rippleKeypairs = require('ripple-keypairs');
 const ripple = require('ripple-lib');
-const prova = require('./prova');
+import * as utxoLib from 'bitgo-utxo-lib';
 
 const keypairs = require('ripple-keypairs');
 const binary = require('ripple-binary-codec');
-const { computeBinaryTransactionHash } = require('ripple-hashes');
+const { computeBinaryTransactionHash } = require('ripple-lib/dist/npm/common/hashes');
 
 function computeSignature(tx, privateKey, signAs) {
   const signingData = signAs ?
@@ -30,7 +30,7 @@ const signWithPrivateKey = function(txHex, privateKey, options) {
   if (privateKeyBuffer.length === 33 && privateKeyBuffer[0] === 0) {
     privateKeyBuffer = privateKeyBuffer.slice(1, 33);
   }
-  const privateKeyObject = prova.ECPair.fromPrivateKeyBuffer(privateKeyBuffer);
+  const privateKeyObject = utxoLib.ECPair.fromPrivateKeyBuffer(privateKeyBuffer);
   const publicKey = privateKeyObject.getPublicKeyBuffer().toString('hex').toUpperCase();
 
   let tx;

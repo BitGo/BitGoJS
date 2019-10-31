@@ -17,6 +17,7 @@ export interface Keychain {
   provider?: string;
   encryptedPrv?: string;
   derivationPath?: string;
+  isBitGo?: boolean;
 }
 
 export interface ChangedKeychains {

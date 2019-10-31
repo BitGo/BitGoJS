@@ -167,8 +167,8 @@ local CheckPreconditions(version) = {
   ]
 };
 
-local UnitVersions = ["6", "8", "10", "11"];
-local IntegrationVersions = ["10"];
+local UnitVersions = ["6", "8", "10", "12", "13"];
+local IntegrationVersions = ["12"];
 
 [
   CheckPreconditions("10"),
