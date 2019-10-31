@@ -98,8 +98,9 @@ export class Trx extends BaseCoin {
     return true;
   }
 
+  /** Check whether the address is a tron address in hex format */
   isValidAddress(address: string): boolean {
-    return bitgoAccountLib.Trx.Utils.isHexAddress(address);
+    return address.length === 42 && /^(0x)?([0-9a-f]{2})+$/i.test(address);
   }
 
   /**
