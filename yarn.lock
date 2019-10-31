@@ -103,17 +103,22 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/account-lib@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-0.1.3.tgz#84251eb12a26716ab6a451628a9f399db0ea297f"
-  integrity sha512-6v5ZP4Tkk2W1ZsWY/iuxG6AinvDvUwVDfWoRUqp+fa2D8pMvh1ByPZedUYL7Ck0+IOZ1nEPA/+luGzPKO2vuIw==
+"@bitgo/account-lib@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-0.1.4.tgz#ae56d104605e91a58241c2d8483ed1d899f186fa"
+  integrity sha512-k7zUCslm4cBsrRjyFIH2vvXildURHEFwaMbKNua6rYsy3p3qclprrboSWHrmDMhnCzLJsUUw2t9cqyCQyqn6/A==
   dependencies:
-    "@bitgo/statics" "^2.3.0-rc.0"
+    "@bitgo/statics" "^2.4.0-rc.0"
     "@types/node" "^11.13.22"
     bignumber.js "^9.0.0"
     google-protobuf "^3.9.1"
     protobufjs "^6.8.8"
     tronweb "^2.7.2"
+
+"@bitgo/statics@^2.4.0-rc", "@bitgo/statics@^2.4.0-rc.0":
+  version "2.4.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-2.4.0-rc.0.tgz#60be54c54789e9af6229b38e5b0783bc056a02f7"
+  integrity sha512-BueTCAZ8KZXwnoUOEugdx8UjkBL/PhU5XidmpnAhUmltSISXgoJAnu57AamQ5psjm3/Il9Jboc+MruG6dDYsVQ==
 
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
