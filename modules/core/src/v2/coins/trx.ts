@@ -203,20 +203,6 @@ export class Trx extends BaseCoin {
   }
 
   /**
-   * Derive a hardened child public key from a master key seed using an additional seed for randomness.
-   *
-   * Due to technical differences between keypairs on the ed25519 curve and the secp256k1 curve,
-   * only hardened private key derivation is supported.
-   *
-   * @param key seed for the master key. Note: Not the public key or encoded private key. This is the raw seed.
-   * @param entropySeed random seed which is hashed to generate the derivation path
-   */
-  deriveKeyWithSeed({ key, seed }: { key: string; seed: string }): { derivationPath: string; key: string } {
-    // TODO: not sure if we need this just yet
-    throw new MethodNotImplementedError();
-  }
-
-  /**
    * Convert a message to string in hexadecimal format.
    *
    * @param message {Buffer|String} message to sign
