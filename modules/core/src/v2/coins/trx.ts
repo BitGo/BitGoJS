@@ -98,8 +98,22 @@ export class Trx extends BaseCoin {
     return true;
   }
 
-  /** Check whether the address is a tron address in hex format */
+  /**
+   * Checks if this is a valid base58 or hex address
+   * @param address
+   */
   isValidAddress(address: string): boolean {
+    if (!address) {
+      return false;
+    }
+    return this.isValidHexAddress(address) || bitgoAccountLib.Trx.Utils.isBase58Address(address);
+  }
+
+  /**
+   * Checks if this is a valid hex address
+   * @param address hex address
+   */
+  isValidHexAddress(address: string): boolean {
     return address.length === 42 && /^(0x)?([0-9a-f]{2})+$/i.test(address);
   }
 

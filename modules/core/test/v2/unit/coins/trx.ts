@@ -42,6 +42,14 @@ describe('TRON:', function() {
     explanation.timestamp.should.equal((mockTx.raw_data.timestamp));
   }));
 
+  it('should check valid addresses', co(function *() {
+    const badAddresses = [ '', null, 'xxxx', 'YZ09fd-', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B805772', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80', 'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLLZ' ];
+    const goodAddresses = [ 'TBChwKYNaTo4a4N68Me1qEiiKsRDspXqLp', 'TPcf5jtYUhCN1X14tN577zF4NepbDZbxT7', '41E0C0F581D7D02D40826C1C6CBEE71F625D6344D0', '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80577' ];
+    
+    badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); })
+    goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); })
+  }));
+
   it('should throw if the params object is missing parameters', co(function *() {
     const explainParams = {
       feeInfo: { fee: 1 },
