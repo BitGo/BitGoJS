@@ -100,7 +100,7 @@ export class Trx extends BaseCoin {
 
   /**
    * Checks if this is a valid base58 or hex address
-   * @param address 
+   * @param address
    */
   isValidAddress(address: string): boolean {
     if (!address) {
