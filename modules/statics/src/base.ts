@@ -388,7 +388,7 @@ export const enum UnderlyingAsset {
   UQC = 'uqc',
   USDC = 'usdc',
   USDT = 'usdt',
-  USDX = 'usdx',
+  USDEX = 'usdex',
   USX = 'usx',
   VALOR = 'valor',
   VDX = 'vdx',

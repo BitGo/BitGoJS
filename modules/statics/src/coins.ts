@@ -312,7 +312,7 @@ export const coins = CoinMap.fromCoins([
   erc20('uqc', 'Uquid Coin', 18, '0xd01db73e047855efb414e6202098c4be4cd2423b', UnderlyingAsset.UQC),
   erc20('usdc', 'USD Coin', 6, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', UnderlyingAsset.USDC),
   erc20('usdt', 'Tether', 6, '0xdac17f958d2ee523a2206206994597c13d831ec7', UnderlyingAsset.USDT),
-  erc20('usdx', 'eToro United States Dollar', 18, '0x4e3856c37b2fe7ff2fe34510cda82a1dffd63cd0', UnderlyingAsset.USDX),
+  erc20('usdex', 'eToro United States Dollar', 18, '0x4e3856c37b2fe7ff2fe34510cda82a1dffd63cd0', UnderlyingAsset.USDEX),
   erc20('usx', 'USD Stable Token', 18, '0xe72f4c4ff9d294fc34829947e4371da306f90465', UnderlyingAsset.USX),
   erc20('valor', 'ValorToken', 18, '0x297e4e5e59ad72b1b0a2fd446929e76117be0e0a', UnderlyingAsset.VALOR),
   erc20('vdx', 'Vodi X', 18, '0x91e64f39c1fe14492e8fdf5a8b0f305bd218c8a1', UnderlyingAsset.VDX),
