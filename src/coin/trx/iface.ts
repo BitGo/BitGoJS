@@ -3,6 +3,10 @@ import { ContractType, PermissionType } from "./enum";
 export interface Account {
   publicKey: string;
   privateKey: string;
+  address: {
+    base58: string;
+    hex: string;
+  }
 }
 
 export interface Parameter {

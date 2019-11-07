@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -32,6 +32,7 @@
     "@bitgo/statics": "^2.4.0-rc.0",
     "@types/node": "^11.13.22",
     "bignumber.js": "^9.0.0",
+    "bitgo-utxo-lib": "^1.6.0",
     "google-protobuf": "^3.9.1",
     "protobufjs": "^6.8.8",
     "tronweb": "^2.7.2"
