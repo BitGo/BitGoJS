@@ -120,7 +120,7 @@ export class KeyRecoveryServiceError extends BitGoJsError {
 export class AddressGenerationError extends BitGoJsError {
   public constructor(message?: string) {
     super(message || 'address generation failed');
-    Object.setPrototypeOf(this, KeyRecoveryServiceError.prototype);
+    Object.setPrototypeOf(this, AddressGenerationError.prototype);
   }
 }
 
@@ -128,5 +128,12 @@ export class EthereumLibraryUnavailableError extends BitGoJsError {
   public constructor(packageName: string) {
     super(`Ethereum library required for operation is not available. Please install "${(packageName)}".`);
     Object.setPrototypeOf(this, EthereumLibraryUnavailableError.prototype);
+  }
+}
+
+export class StellarFederationUserNotFoundError extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'account not found');
+    Object.setPrototypeOf(this, StellarFederationUserNotFoundError.prototype);
   }
 }

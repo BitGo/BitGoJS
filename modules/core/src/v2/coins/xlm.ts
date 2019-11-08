@@ -17,6 +17,7 @@ import {
   InvalidMemoIdError,
   KeyRecoveryServiceError,
   UnexpectedAddressError,
+  StellarFederationUserNotFoundError,
 } from '../../errors';
 import {
   BaseCoin,
@@ -459,34 +460,48 @@ export class Xlm extends BaseCoin {
   }
 
   /**
-   * Attempt to resolve a stellar address into a stellar account
-   * If address domain matches bitgo's then resolve on our federation server
-   * Else, make the request to the federation server hosting the address
+   * Perform federation lookups
+   * Our federation server handles lookups for bitgo as well as for other federation domains
    *
-   * @param address - stellar address to look for
+   * @param {String} [address] - address to look up
+   * @param {String} [accountId] - account id to look up
+   */
+  private federationLookup({ address, accountId }: { address?: string, accountId?: string }): Bluebird<stellar.FederationServer.Record> {
+    const self = this;
+    return co<stellar.FederationServer.Record>(function *() {
+      try {
+        const federationServer = self.getBitGoFederationServer();
+        if (address) {
+          return yield federationServer.resolveAddress(address);
+        } else if (accountId) {
+          return yield federationServer.resolveAccountId(accountId);
+        } else {
+          throw new Error('invalid argument - must provide Stellar address or account id');
+        }
+      } catch (e) {
+        const error = _.get(e, 'response.data.detail');
+        if (error) {
+          throw new StellarFederationUserNotFoundError(error);
+        } else {
+          throw e;
+        }
+      }
+    }).call(this);
+  }
+
+  /**
+   * Attempt to resolve a stellar address into a stellar account
+   *
+   * @param {String} address - stellar address to look for
    */
   federationLookupByName(address: string): Bluebird<stellar.FederationServer.Record> {
     const self = this;
     return co<stellar.FederationServer.Record>(function *() {
-      const addressParts = _.split(address, '*');
-      if (addressParts.length !== 2) {
-        throw new InvalidAddressError(`invalid stellar address: ${address}`);
+      if (!address) {
+        throw new Error('invalid Stellar address');
       }
-      const [, homeDomain] = addressParts;
-      try {
-        if (homeDomain === self.homeDomain) {
-          const federationServer = self.getBitGoFederationServer();
-          return yield federationServer.resolveAddress(address);
-        } else {
-          return yield stellar.FederationServer.resolve(address);
-        }
-      } catch (e) {
-        if (e.message === 'Network Error') {
-          throw e;
-        } else {
-          throw new Error('account not found');
-        }
-      }
+
+      return self.federationLookup({ address });
     }).call(this);
   }
 
@@ -494,17 +509,15 @@ export class Xlm extends BaseCoin {
    * Attempt to resolve an account id into a stellar account
    * Only works for accounts that can be resolved by our federation server
    *
-   * @param accountId - stellar account id
+   * @param {String} accountId - stellar account id
    */
   federationLookupByAccountId(accountId: string): Bluebird<stellar.FederationServer.Record> {
     const self = this;
     return co<stellar.FederationServer.Record>(function *() {
-      try {
-        const federationServer = self.getBitGoFederationServer() as stellar.FederationServer;
-        return yield federationServer.resolveAccountId(accountId);
-      } catch (e) {
-        throw new Error(e.response.data.detail);
+      if (!accountId) {
+        throw new Error('invalid Stellar account');
       }
+      return self.federationLookup({ accountId });
     }).call(this);
   }
 
