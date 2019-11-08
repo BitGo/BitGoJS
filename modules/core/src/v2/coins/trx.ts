@@ -124,7 +124,7 @@ export class Trx extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const account = bitgoAccountLib.Trx.Utils.generateAccount();
+    const account = bitgoAccountLib.Trx.Utils.generateAccount(seed);
     return {
       pub: account.publicKey,
       prv: account.privateKey,

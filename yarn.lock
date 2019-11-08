@@ -103,14 +103,15 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/account-lib@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-0.1.4.tgz#ae56d104605e91a58241c2d8483ed1d899f186fa"
-  integrity sha512-k7zUCslm4cBsrRjyFIH2vvXildURHEFwaMbKNua6rYsy3p3qclprrboSWHrmDMhnCzLJsUUw2t9cqyCQyqn6/A==
+"@bitgo/account-lib@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-0.1.5.tgz#880f07dd31e7d7cea2f2ff295decadd561f34a4b"
+  integrity sha512-FwtjvxVezDDEhy0hXNFCl8aObmOhA8xs9jwCYoF6Ldo8n0j62B6ynwspjGxlBG+JUi/57UZ17ngWeN80o8dxcg==
   dependencies:
     "@bitgo/statics" "^2.4.0-rc.0"
     "@types/node" "^11.13.22"
     bignumber.js "^9.0.0"
+    bitgo-utxo-lib "^1.6.0"
     google-protobuf "^3.9.1"
     protobufjs "^6.8.8"
     tronweb "^2.7.2"
