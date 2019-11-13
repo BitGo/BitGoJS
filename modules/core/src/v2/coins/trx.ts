@@ -2,13 +2,14 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
+import * as crypto from 'crypto';
 import { CoinFamily } from '@bitgo/statics';
 const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
 import { HDNode } from 'bitgo-utxo-lib';
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { MethodNotImplementedError } from '../../errors';
+
 import {
   BaseCoin,
   KeyPair,
@@ -124,10 +125,16 @@ export class Trx extends BaseCoin {
    * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const account = bitgoAccountLib.Trx.Utils.generateAccount(seed);
+    // TODO: move this and address creation logic to account-lib
+    if (!seed) {
+      // An extended private key has both a normal 256 bit private key and a 256 bit chain code, both of which must be
+      // random. 512 bits is therefore the maximum entropy and gives us maximum security against cracking.
+      seed = crypto.randomBytes(512 / 8);
+    }
+    const hd = utxoLib.HDNode.fromSeedBuffer(seed);
     return {
-      pub: account.publicKey,
-      prv: account.privateKey,
+      pub: hd.neutered().toBase58(),
+      prv: hd.toBase58(),
     };
   }
 
@@ -227,7 +234,14 @@ export class Trx extends BaseCoin {
   signMessage(key: KeyPair, message: string | Buffer): Buffer {
     const toSign = this.toHexString(message);
 
-    let sig = bitgoAccountLib.Trx.Utils.signString(toSign, key.prv, true);
+    let prv = key.prv;
+    if (this.isValidXprv(prv)) {
+      prv = HDNode.fromBase58(prv)
+        .getKey()
+        .getPrivateKeyBuffer();
+    }
+
+    let sig = bitgoAccountLib.Trx.Utils.signString(toSign, prv, true);
 
     // remove the preceding 0x
     sig = sig.replace(/^0x/, '');
