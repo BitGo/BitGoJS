@@ -208,6 +208,7 @@ export const coins = CoinMap.fromCoins([
   erc20('lrc', 'loopring', 18, '0xef68e7c694f40c8202821edf525de3782458639f', UnderlyingAsset.LRC),
   erc20('man', 'Matrix AI Network', 18, '0xe25bcec5d3801ce3a794079bf94adf1b8ccd802d', UnderlyingAsset.MAN),
   erc20('mana', 'Decentraland', 18, '0x0f5d2fb29fb7d3cfee444a200298f468908cc942', UnderlyingAsset.MANA),
+  erc20('mcdai', 'Dai', 18, '0x6b175474e89094c44da98b954eedeac495271d0f', UnderlyingAsset.MCDAI),
   erc20('mco', 'Crypto.com', 8, '0xb63b606ac810a52cca15e44bb630fd42d8d1d83d', UnderlyingAsset.MCO),
   erc20('mcx', 'MachiX Token', 18, '0xd15ecdcf5ea68e3995b2d0527a0ae0a3258302f8', UnderlyingAsset.MCX),
   erc20('mdx', 'Mandala', 18, '0x9d03393d297e42c135625d450c814892505f1a84', UnderlyingAsset.MDX),
