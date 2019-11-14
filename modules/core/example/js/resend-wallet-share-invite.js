@@ -5,7 +5,7 @@
  */
 
 const Promise = require('bluebird');
-const BitGoJS = require('../../src');
+const BitGoJS = require('bitgo');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 
 // TODO: set your access token here

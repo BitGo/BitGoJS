@@ -5,8 +5,9 @@
  * create new wallet policies
  *
  * Copyright 2019, BitGo, Inc.  All Rights Reserved.
+ *
  */
-import { BitGo, Wallet } from '../../src';
+import { BitGo, Wallet } from 'bitgo';
 const bitgo = new BitGo({ env: 'test' });
 
 // TODO: set your access token here
