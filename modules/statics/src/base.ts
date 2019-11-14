@@ -284,6 +284,7 @@ export const enum UnderlyingAsset {
   LRC = 'lrc',
   MAN = 'man',
   MANA = 'mana',
+  MCDAI = 'mcdai',
   MCO = 'mco',
   MCX = 'mcx',
   MDX = 'mdx',
