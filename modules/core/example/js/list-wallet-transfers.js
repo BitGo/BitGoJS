@@ -6,7 +6,7 @@
  *
  * Copyright 2019, BitGo, Inc.  All Rights Reserved.
  */
-const BitGoJS = require('../../dist/src');
+const BitGoJS = require('bitgo');
 const bitgo = new BitGoJS.BitGo({ env: 'test' });
 const Promise = require('bluebird');
 

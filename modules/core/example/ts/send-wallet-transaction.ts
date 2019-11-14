@@ -3,7 +3,7 @@
  *
  * Copyright 2019, BitGo, Inc.  All Rights Reserved.
  */
-import { BitGo, Coin } from '../../src';
+import { BitGo, Coin } from 'bitgo';
 const bitgo = new BitGo({ env: 'test' });
 
 const coin = 'tltc';

@@ -4,7 +4,7 @@
  * Copyright 2019, BitGo, Inc.  All Rights Reserved.
  */
 const Promise = require('bluebird');
-const BitGoJS = require('../../src');
+const BitGoJS = require('bitgo');
 const bitgo = new BitGoJS.BitGo({ env: 'prod' });
 
 const coin = 'xrp';
