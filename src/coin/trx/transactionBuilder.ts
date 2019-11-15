@@ -52,19 +52,19 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     const oldTransaction = this.transaction.toJson();
     // store our signatures, since we want to compare the new sig to another in a later step
     const oldSignatureCount = oldTransaction.signature ? oldTransaction.signature.length : 0;
-    let signedTx: TransactionReceipt;
+    let signedTransaction: TransactionReceipt;
     try {
-      signedTx = signTransaction(key.key, this.transaction.toJson());
+      signedTransaction = signTransaction(key.key, this.transaction.toJson());
     } catch (e) {
       throw new SigningError('Failed to sign transaction via helper.');
     }
 
     // ensure that we have more signatures than what we started with
-    if (!signedTx.signature || oldSignatureCount >= signedTx.signature.length) {
+    if (!signedTransaction.signature || oldSignatureCount >= signedTransaction.signature.length) {
       throw new SigningError('Transaction signing did not return an additional signature.');
     }
 
-    return new Transaction(this._coinConfig, signedTx);
+    return new Transaction(this._coinConfig, signedTransaction);
   }
 
 
@@ -83,14 +83,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * Extend the validity of this transaction by the given amount of time
    * @param extensionMs The number of milliseconds to extend the validTo time
    */
-  public extendValidTo(extensionMs: number) {
+  extendValidTo(extensionMs: number) {
     this.transaction.extendExpiration(extensionMs);
   }
 
   /**
    * Validates a passed value. This is TRX units.
    */
-  public validateValue(value: BigNumber) {
+  validateValue(value: BigNumber) {
     if (value.isLessThanOrEqualTo(0)) {
       throw new Error('Value cannot be below zero.');
     }
@@ -101,27 +101,27 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  public validateAddress(address: Address) {
+  validateAddress(address: Address) {
     // assumes a base 58 address for our addresses
     if (!isBase58Address(address.address)) {
       throw new Error(address + ' is not a valid base58 address.');
     }
   }
 
-  public validateKey(key: BaseKey) {
+  validateKey(key: BaseKey) {
     // TODO: determine valid key format
     return true;
   }
 
-  public validateRawTransaction(rawTransaction: any) {
+  validateRawTransaction(rawTransaction: any) {
     // TODO: parse the transaction raw_data_hex and compare it with the raw_data
   }
 
-  public validateTransaction(transaction: Transaction) {
+  validateTransaction(transaction: Transaction) {
     // TODO: verify the transaction has the right transaction id
   }
 
-  public displayName(): string {
+  displayName(): string {
     return this._coinConfig.fullName;
   }
 

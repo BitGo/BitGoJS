@@ -21,7 +21,6 @@ export class Transaction extends BaseTransaction {
   private _decodedRawDataHex: RawData;
   private _transaction?: TransactionReceipt;
 
-
   /**
    * Tron transaction constructor.
    */
@@ -97,6 +96,10 @@ export class Transaction extends BaseTransaction {
    * @param extensionMs The number of milliseconds to extend the expiration by
    */
   extendExpiration(extensionMs: number): void {
+    if (extensionMs < 0) {
+      throw new ExtendTransactionError('Invalid extension range. Must be positive a integer');
+    }
+
     if (!this._transaction) {
       throw new ExtendTransactionError('Empty transaction');
     }
