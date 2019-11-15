@@ -146,7 +146,7 @@ describe('Util library should', function() {
   });
 
    it('should decode an AccountPermissionUpdate Contract', () => {
-     const tx = SignedAccountPermissionUpdateContractTx.tx;
+     const tx = SignedAccountPermissionUpdateContractTx;
      const value = tx.raw_data.contract[0].parameter.value;
      const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
      const parsedTx = Utils.decodeAccountPermissionUpdateContract(rawTx.contracts[0].parameter.value) as AccountPermissionUpdateContract;
