@@ -7,10 +7,10 @@ import * as url from 'url';
 import * as querystring from 'querystring';
 import { BitGo } from '../../bitgo';
 
-const rippleAddressCodec = require('ripple-address-codec');
-const rippleBinaryCodec = require('ripple-binary-codec');
-const rippleHashes = require('ripple-hashes');
-const rippleKeypairs = require('ripple-keypairs');
+import * as rippleAddressCodec from 'ripple-address-codec';
+import * as rippleBinaryCodec from 'ripple-binary-codec';
+import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';
+import * as rippleKeypairs from 'ripple-keypairs';
 
 import {
   BaseCoin,
@@ -24,7 +24,6 @@ import {
   InitiateRecoveryOptions as BaseInitiateRecoveryOptions,
 } from '../baseCoin';
 import * as config from '../../config';
-import { KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, UnexpectedAddressError } from '../../errors';
 
@@ -127,7 +126,7 @@ export class Xrp extends BaseCoin {
   public getAddressDetails(address: string): Address {
     const destinationDetails = url.parse(address);
     const destinationAddress = destinationDetails.pathname;
-    if (!destinationAddress || !rippleAddressCodec.isValidAddress(destinationAddress)) {
+    if (!destinationAddress || !rippleAddressCodec.isValidClassicAddress(destinationAddress)) {
       throw new InvalidAddressError(`destination address "${destinationAddress}" is not valid`);
     }
     // there are no other properties like destination tags
@@ -380,7 +379,7 @@ export class Xrp extends BaseCoin {
           throw new Error('txHex needs to be either hex or JSON string for XRP');
         }
       }
-      const id = rippleHashes.computeBinaryTransactionHash(txHex);
+      const id = computeBinaryTransactionHash(txHex);
       const address = transaction.Destination + ((transaction.DestinationTag >= 0) ? '?dt=' + transaction.DestinationTag : '');
       return {
         displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
