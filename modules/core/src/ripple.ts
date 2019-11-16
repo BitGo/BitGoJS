@@ -4,18 +4,17 @@
 
 /**
  */
-const rippleKeypairs = require('ripple-keypairs');
-const ripple = require('ripple-lib');
-const prova = require('./prova');
+import * as rippleKeypairs from 'ripple-keypairs';
+import * as ripple from 'ripple-lib';
+import { ECPair } from 'bitgo-utxo-lib';
 
-const keypairs = require('ripple-keypairs');
-const binary = require('ripple-binary-codec');
-const { computeBinaryTransactionHash } = require('ripple-hashes');
+import * as binary from 'ripple-binary-codec';
+import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';
 
 function computeSignature(tx, privateKey, signAs) {
   const signingData = signAs ?
     binary.encodeForMultisigning(tx, signAs) : binary.encodeForSigning(tx);
-  return keypairs.sign(signingData, privateKey);
+  return rippleKeypairs.sign(signingData, privateKey);
 }
 
 /**
@@ -30,7 +29,7 @@ const signWithPrivateKey = function(txHex, privateKey, options) {
   if (privateKeyBuffer.length === 33 && privateKeyBuffer[0] === 0) {
     privateKeyBuffer = privateKeyBuffer.slice(1, 33);
   }
-  const privateKeyObject = prova.ECPair.fromPrivateKeyBuffer(privateKeyBuffer);
+  const privateKeyObject = ECPair.fromPrivateKeyBuffer(privateKeyBuffer);
   const publicKey = privateKeyObject.getPublicKeyBuffer().toString('hex').toUpperCase();
 
   let tx;
@@ -57,7 +56,7 @@ const signWithPrivateKey = function(txHex, privateKey, options) {
     const signer = {
       Account: options.signAs,
       SigningPubKey: publicKey,
-      TxnSignature: computeSignature(tx, privateKey, options.signAs)
+      TxnSignature: computeSignature(tx, privateKey, options.signAs),
     };
     tx.Signers = [{ Signer: signer }];
   } else {
@@ -67,12 +66,12 @@ const signWithPrivateKey = function(txHex, privateKey, options) {
   const serialized = binary.encode(tx);
   return {
     signedTransaction: serialized,
-    id: computeBinaryTransactionHash(serialized)
+    id: computeBinaryTransactionHash(serialized),
   };
 };
 
-export = (params) => {
+export = (params): ripple.RippleAPI => {
   const rippleLib = new ripple.RippleAPI(params);
-  rippleLib.signWithPrivateKey = signWithPrivateKey;
+  (rippleLib as any).signWithPrivateKey = signWithPrivateKey;
   return rippleLib;
 };
