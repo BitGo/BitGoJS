@@ -33,7 +33,6 @@
     }
   },
   "resolutions": {
-    "handlebars": "^4.5.0",
-    "https-proxy-agent": "^3.0.0"
+    "handlebars": "^4.5.2"
   }
 }
