@@ -23,6 +23,7 @@ export class CoinMap {
    */
   public get(key: string): Readonly<BaseCoin> {
     if (this._map.has(key)) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this._map.get(key)!;
     }
 
