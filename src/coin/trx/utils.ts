@@ -1,4 +1,3 @@
-const crypto = require('crypto');
 const tronweb = require('tronweb');
 import { protocol } from '../../../resources/trx/protobuf/tron';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
@@ -8,7 +7,6 @@ import {
   TransferContract,
   RawData,
   AccountPermissionUpdateContract,
-  Account,
   TransactionReceipt,
   Permission,
 } from './iface';
@@ -20,40 +18,6 @@ import { UtilsError } from '../baseCoin/errors';
  */
 export type TronBinaryLike = ByteArray | Buffer | Uint8Array | string;
 export type ByteArray = number[];
-
-/**
- * Generate a Tron account offline using known bitcoin libraries
- * @param seed Optional random seed
- * @return {Account}
- */
-export function generateAccount(seed?: Buffer): Account {
-  if (!seed) {
-    seed = crypto.randomBytes(512 / 8);
-  }
-
-  const extendedKey = HDNode.fromSeedBuffer(seed);
-
-  // convert our prv, pub
-  const prv = extendedKey.keyPair.getPrivateKeyBuffer().toString('hex').toUpperCase();
-
-  const keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
-
-  const priKeyBytes = getByteArrayFromHexAddress(keyPair.getPrivateKeyBuffer().toString('hex'));
-  const pubKeyBytes = getPubKeyFromPriKey(priKeyBytes);
-  const publicKey = getHexAddressFromByteArray(pubKeyBytes);
-
-  // used for meaningful address conversion
-  const addressBytes = getAddressFromPriKey(priKeyBytes);
-
-  return {
-    privateKey: prv,
-    publicKey,
-    address: {
-      base58: getBase58AddressFromByteArray(addressBytes),
-      hex: getHexAddressFromByteArray(addressBytes),
-    },
-  };
-}
 
 export function isBase58Address(address: string): boolean {
   return tronweb.utils.crypto.isAddressValid(address);
@@ -115,7 +79,7 @@ export function signString(message: string, privateKey: string | ByteArray, useT
   return tronweb.Trx.signString(message, privateKey, useTronHeader);
 }
 
-export function getRawAddressFromPubKey(pubBytes: ByteArray | string): ByteArray {
+export function getRawAddressFromPubKey(pubBytes: TronBinaryLike): ByteArray {
   return tronweb.utils.crypto.computeAddress(pubBytes);
 }
 

@@ -27,12 +27,6 @@ export class SigningError extends ExtendableError {
   }
 }
 
-export class AddressValidationError extends ExtendableError {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
 export class BuildTransactionError extends ExtendableError {
   constructor(message: string) {
     super(message);
