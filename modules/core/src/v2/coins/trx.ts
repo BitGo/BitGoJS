@@ -7,6 +7,8 @@ import { CoinFamily } from '@bitgo/statics';
 const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
 import { HDNode } from 'bitgo-utxo-lib';
+import * as request from 'superagent';
+import * as common from '../../common';
 
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
@@ -28,6 +30,9 @@ import * as utxoLib from 'bitgo-utxo-lib';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { TransactionBuilder } from '@bitgo/account-lib';
+
+import debug = require('debug');
+import {utxo} from "@bitgo/statics/dist/src/utxo";
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -57,6 +62,27 @@ export interface ExplainTransactionOptions {
   };
   feeInfo: TransactionFee;
 }
+
+export interface RecoveryOptions {
+  userKey: string; // Box A
+  backupKey: string; // Box B
+  bitgoKey: string; // Box C - this is bitgo's xpub and will be used to derive their root address
+  recoveryDestination: string; // base58 address
+  krsProvider?: string;
+  walletPassphrase?: string;
+}
+
+export interface RecoveryTransaction {
+  transaction: TransactionPrebuild;
+  txid: string;
+  recoveryAmount: number;
+}
+
+export enum NodeTypes {
+  Full,
+  Solidity,
+}
+
 
 export class Trx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -247,6 +273,200 @@ export class Trx extends BaseCoin {
     sig = sig.replace(/^0x/, '');
 
     return Buffer.from(sig, 'hex');
+  }
+
+  /**
+   * Converts an xpub to a compressed pub
+   * @param xpub
+   */
+  xpubToCompressedPub(xpub: string): string {
+    if (!this.isValidXpub(xpub)) {
+      throw new Error('invalid xpub');
+    }
+
+    const hdNode = utxoLib.HDNode.fromBase58(xpub, this.bitcoinEncoding());
+    return hdNode.keyPair.__Q.getEncoded(false).toString('hex');
+  }
+
+  compressedPubToHexAddress(pub: string): string {
+    const byteArrayAddr = bitgoAccountLib.Trx.Utils.getByteArrayFromHexAddress(pub);
+    const rawAddress = bitgoAccountLib.Trx.Utils.getRawAddressFromPubKey(byteArrayAddr);
+    return Buffer.from(rawAddress).toString('hex').toUpperCase();
+  }
+
+  xprvToCompressedPrv(xprv: string): string {
+    if (!this.isValidXprv(xprv)) {
+      throw new Error('invalid xprv');
+    }
+
+    const hdNode = utxoLib.HDNode.fromBase58(xprv, this.bitcoinEncoding());
+    return hdNode.keyPair.d.toBuffer(32).toString('hex');
+  };
+
+  bitcoinEncoding(): any {
+    return {
+      messagePrefix: '\x18Bitcoin Signed Message:\n',
+      bech32: 'bc',
+      bip32: {
+        public: 0x0488b21e,
+        private: 0x0488ade4
+      },
+      pubKeyHash: 0x00,
+      scriptHash: 0x05,
+      wif: 0x80,
+      coin: 'btc',
+    };
+  }
+
+  /**
+   * Make a query to Trongrid for information such as balance, token balance, solidity calls
+   * @param query {Object} key-value pairs of parameters to append after /api
+   * @param callback
+   * @returns {Object} response from Trongrid
+   */
+  recoveryPost(query: { path: string, jsonObj: any, node: NodeTypes }, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co(function*() {
+      let nodeUri = '';
+      switch (query.node) {
+        case NodeTypes.Full:
+          nodeUri = common.Environments[self.bitgo.getEnv()].tronNodes.full;
+          break;
+        case NodeTypes.Solidity:
+          nodeUri = common.Environments[self.bitgo.getEnv()].tronNodes.solidity;
+          break;
+        default:
+          throw new Error('node type not found');
+      }
+
+      const response = yield request
+          .post(nodeUri + query.path)
+          .send(query.jsonObj);
+
+      if (!response.ok) {
+        throw new Error('could not reach Tron node');
+      }
+      return response.body;
+    })
+        .call(this)
+        .asCallback(callback);
+  }
+
+  /**
+   * Query our explorer for the balance of an address
+   * @param address {String} the address encoded in hex
+   * @param callback
+   * @returns {BigNumber} address balance
+   */
+  getAccountBalanceFromNode(address: string, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co(function*() {
+      const result = yield self.recoveryPost({
+        path: '/walletsolidity/getaccount',
+        jsonObj: { address },
+        node: NodeTypes.Solidity,
+      });
+      return result.balance;
+    })
+      .call(this)
+      .asCallback(callback);
+  }
+
+  /**
+   * Retrieves our build transaction from a node.
+   * @param toAddr hex-encoded address
+   * @param fromAddr hex-encoded address
+   * @param amount
+   * @param callback
+   */
+  getBuildTransaction(toAddr: string, fromAddr: string, amount: number, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co(function*() {
+      // our addresses should be base58, we'll have to encode to hex
+      const result = yield self.recoveryPost({
+        path: '/wallet/createtransaction',
+        jsonObj: {
+          to_address: toAddr,
+          from_address: fromAddr,
+          amount: amount.toFixed(0),
+        },
+        node: NodeTypes.Full,
+      });
+      return result.balance;
+    })
+        .call(this)
+        .asCallback(callback);
+  }
+
+  /**
+   * Builds a funds recovery transaction without BitGo.
+   * We need to do three queries during this:
+   * 1) Node query - how much money is in the account
+   * 2) Build transaction - build our transaction for the amount
+   * 3) Send signed build - send our signed build to a public node
+   * @param params
+   * @param callback
+   */
+  recover(params: RecoveryOptions, callback?: NodeCallback<RecoveryTransaction>): Bluebird<RecoveryTransaction> {
+    const self = this;
+    return co<RecoveryTransaction>(function*() {
+      const isKrsRecovery = params.backupKey.startsWith('xpub') && !params.userKey.startsWith('xpub');
+      const isUnsignedSweep = params.backupKey.startsWith('xpub') && params.userKey.startsWith('xpub');
+
+      // get our user, backup keys
+      const keys = yield self.initiateRecovery(params);
+
+      // we need to decode our bitgoKey to a base58 address
+      const bitgoAddress = self.compressedPubToHexAddress(self.xpubToCompressedPub(params.bitgoKey));
+      const recoveryAddressHex = bitgoAccountLib.Trx.Utils.getHexAddressFromBase58Address(params.recoveryDestination);
+
+      const recoveryAmount = yield self.getAccountBalanceFromNode(bitgoAddress);
+
+      //const userPrv = HDKey.fromExtendedKey(keys[0]).privateKey;
+      const userXPub = keys[0].neutered().toBase58();
+      const userXPrv = keys[0].toBase58();
+      const backupXPub = keys[1].neutered().toBase58();
+
+      const userPrv = self.xprvToCompressedPrv(userXPrv);
+      const userHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(userXPub));
+      const backupHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(backupXPub));
+
+      // TODO: some checks here about pubs being valid, for this wallet, etc.
+
+      // construct the tx
+      // TODO: recovery amount might not include fees, we'll have to figure out the max we can spend
+      //   sensitive to energy and tx cost amounts
+      // there's an assumption here being made about fees: for a wallet that hasn't been used in awhile, the implication is
+      // it has maximum bandwidth. thus, a recovery should cost the minimum amount (1e6 sun)
+      if (1e6 > recoveryAmount) {
+        throw new Error('Amount of funds to recover wouldnt be able to fund a send');
+      }
+      const recoveryAmountMinusFees = recoveryAmount - 1e6;
+      const buildTx = self.getBuildTransaction(recoveryAddressHex, bitgoAddress, recoveryAmountMinusFees);
+
+      // construct our tx
+      const txBuilder = new bitgoAccountLib.TransactionBuilder({ coinName: this.getChain() });
+      txBuilder.from(buildTx);
+
+      // this tx should be enough to drop into a node
+      if (isUnsignedSweep) {
+        return txBuilder.build().toJson();
+      }
+
+      // sign our tx
+      txBuilder.sign({ key: userPrv });
+
+      if (!isKrsRecovery) {
+        const backupXPrv = keys[0].toBase58();
+        const backupPrv = self.xprvToCompressedPrv(backupXPrv);
+
+        txBuilder.sign({ key: backupPrv });
+      }
+
+      return txBuilder.build().toJson();
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

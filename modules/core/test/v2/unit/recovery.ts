@@ -33,6 +33,7 @@ describe('Recovery:', function() {
   after(function() {
     nock.cleanAll();
   });
+
   describe('Recover Bitcoin', function() {
     it('should generate BTC recovery tx', co(function *() {
       recoveryNocks.nockBtcRecovery(bitgo, false);
@@ -551,6 +552,36 @@ describe('Recovery:', function() {
       recovery.tx.should.equal('AAAAACgDTXtoc/a/dEMyKqcM87TVUf68Zq4TtcjqiF9iDhFWAAAAZACoLvwAAAACAAAAAAAAAAAAAAABAAAAAAAAAAEAAAAAJW1/8tZcT5/g6SHT9Apb/UB7PQKdK1fAiEhpyQZmWC8AAAAAAAAAAAR4ZswAAAAAAAAAAA==');
       recovery.should.have.property('recoveryAmount');
       recovery.recoveryAmount.should.equal(74999500);
+    }));
+  });
+
+  describe('Recover TRON', function() {
+    let baseCoin;
+
+    before(function() {
+      baseCoin = bitgo.coin('ttrx');
+    });
+
+    beforeEach(function() {
+      recoveryNocks.nockTronRecovery();
+    });
+
+    it('should generate TRON recovery tx', co(function *() {
+      const recoveryTx = yield baseCoin.recover({
+        userKey: '{"iv":"QPX3xtGROshqHW8kGPAYCw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"LJ4YYCyClRE=","ct":"hlJH8lWk/FaciymG8UsscxVFCnOduLRjoWxaK8xU7TjsqUDXsQjj0BpH7aNm64p6ldueaGoU2/VfrrzX9lWrcVmXspFp2oON5EyK45JbI13hirqG2dkOqoT8G8mrMydMp6zG5iOA+EtXRy69kYDCI1Re6mR7k1c="}',
+        backupKey: '{"iv":"xbOCFaZVnrQLAYKcgMvdNw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"86cZ+hT+S0Y=","ct":"RH7Uks/JjNARX9wuIw6r4Map2C9FtLlWYk4zjLcrjzkBuNTCUNQgxF7kU5/SWzD+tomVBj6P9CLkXYzPlR1NhVi+aT9mTW6LK9nJ+ErpLKXzbIAxBLezDjJ5xqUS5cGkjoHCtANL7qTZcDBvOfejLDrUjQdw2WQ="}',
+        bitgoKey: 'xpub661MyMwAqRbcFcaxCPsEyhj79VUuVVThWinZnjhvAPnFLB1SBp7Yk4gvqWsGE3MHdw1tPRLnHRRQLNcrKqaCyBnFK5XTrZUrLyY94LXn4v9',
+        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+        recoveryDestination: 'TYBTURKpanKxnx91uyfvvtztNeHE3EQf6G',
+      });
+    }));
+
+    it('should generate TRON recovery tx with unencrypted keys', co(function *() {
+
+    }));
+
+    it('should generate an TRON unsigned sweep', co(function *() {
+
     }));
   });
 

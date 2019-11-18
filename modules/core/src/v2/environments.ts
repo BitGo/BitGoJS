@@ -25,6 +25,10 @@ interface EnvironmentTemplate {
   dashExplorerBaseUrl: string;
   stellarFederationServerUrl?: string;
   eosNodeUrls: string[];
+  tronNodes: {
+    full: string;
+    solidity: string;
+  }
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -94,6 +98,10 @@ const mainnetBase: EnvironmentTemplate = {
   zecExplorerBaseUrl: 'https://zcashnetwork.info/api',
   dashExplorerBaseUrl: 'https://insight.dash.org/insight-api',
   eosNodeUrls: ['https://bp.cryptolions.io', 'https://api.eosnewyork.io', 'https://api.eosdetroit.io'],
+  tronNodes: {
+    full: 'https://api.trongrid.io',
+    solidity: 'https://api.trongrid.io',
+  }
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -116,6 +124,10 @@ const testnetBase: EnvironmentTemplate = {
     'https://eos-jungle.eosblocksmith.io',
     'https://api.jungle.alohaeos.com',
   ],
+  tronNodes: {
+    full: 'http://47.252.81.135:8090',
+    solidity: 'http://47.252.81.135:8091',
+  }
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
