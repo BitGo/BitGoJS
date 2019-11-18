@@ -4,7 +4,7 @@ import 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
-const prova = require('../../../../src/prova');
+import { HDNode } from 'bitgo-utxo-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 
 const nock = require('nock');
@@ -29,7 +29,7 @@ describe('XRP:', function() {
   });
 
   it('Should generate wallet with custom root address', function() {
-    const hdNode = prova.HDNode.fromSeedBuffer(crypto.randomBytes(32));
+    const hdNode = HDNode.fromSeedBuffer(crypto.randomBytes(32));
     const params = {
       passphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
       label: 'Ripple Root Address Test',
