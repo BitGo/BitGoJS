@@ -2496,6 +2496,65 @@ module.exports.nockXlmRecovery = function() {
     });
 };
 
+module.exports.nockTronRecovery = function() {
+  // full node - sendTrx from tronweb, build transaction call
+  nock('http://47.252.81.135:8090')
+    .post('/wallet/createtransaction')
+    .reply(200, { visible: false,
+      txID:
+          '55d76a068b97933a98e5d02e6fecd4c2971f1d37f0bb850a919b17def906a239',
+      raw_data:
+          { contract:
+              [ { parameter:
+                    { value:
+                          { amount: 899000000,
+                            owner_address: '414d0941161d0f7e1da0c8989b1566c9d9b43e1226',
+                            to_address: '41f3a3d6d514e7d43fbbf632a687acd65aafb8a50c' },
+                      type_url: 'type.googleapis.com/protocol.TransferContract' },
+                type: 'TransferContract' } ],
+            ref_block_bytes: '3ffb',
+            ref_block_hash: 'c1647593403d263b',
+            expiration: 1574098803000,
+            timestamp: 1574098744605 },
+      raw_data_hex:
+          '0a023ffb2208c1647593403d263b40b8b2e6fce72d5a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a15414d0941161d0f7e1da0c8989b1566c9d9b43e1226121541f3a3d6d514e7d43fbbf632a687acd65aafb8a50c18c0cdd6ac03709deae2fce72d' }
+  );
+
+
+  // solidity node - retrieve account information call
+  nock('http://47.252.81.135:8091')
+    // this address is equal to TGzY7ps8orxQ24yY2YyoJertyrjdWUEU4E
+    .post(`/walletsolidity/getaccount`)
+    .reply(200, { address: '414d0941161d0f7e1da0c8989b1566c9d9b43e1226',
+      balance: 900000000,
+      create_time: 1573831677000,
+      latest_opration_time: 1573831692000,
+      free_net_usage: 431,
+      latest_consume_free_time: 1573831692000,
+      account_resource: {},
+      owner_permission: {
+        permission_name: 'owner',
+        threshold: 2,
+        keys:
+            [{ address: '414d0941161d0f7e1da0c8989b1566c9d9b43e1226', weight: 1 },
+              { address: '41ea340b1c5806fa6fa45d7d4ec84ff84b6a5478bc', weight: 1 },
+              { address: '41b93c8db3137395f68243611e79aceb158f4a51df', weight: 1 }]
+      },
+      active_permission: [
+        { type: 'Active',
+          id: 2,
+          permission_name: 'active0',
+          threshold: 2,
+          operations: '7fff1fc0037e0000000000000000000000000000000000000000000000000000',
+          keys: [
+            { address: '414d0941161d0f7e1da0c8989b1566c9d9b43e1226', weight: 1 },
+            { address: '41ea340b1c5806fa6fa45d7d4ec84ff84b6a5478bc', weight: 1 },
+            { address: '41b93c8db3137395f68243611e79aceb158f4a51df', weight: 1 }
+          ]
+        }]
+    });
+};
+
 module.exports.nockEosRecovery = function() {
   nock('https://jungle2.cryptolions.io')
     .post('*')
