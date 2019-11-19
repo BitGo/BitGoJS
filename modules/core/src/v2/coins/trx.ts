@@ -341,7 +341,7 @@ export class Trx extends BaseCoin {
    * @param callback
    * @returns {BigNumber} address balance
    */
-  getAccountBalanceFromNode(address: string, callback?: NodeCallback<any>): Bluebird<any> {
+  getAccountFromNode(address: string, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
       const result = yield self.recoveryPost({
@@ -349,7 +349,7 @@ export class Trx extends BaseCoin {
         jsonObj: { address },
         node: NodeTypes.Solidity,
       });
-      return result.balance;
+      return result;
     })
       .call(this)
       .asCallback(callback);
@@ -382,6 +382,26 @@ export class Trx extends BaseCoin {
   }
 
   /**
+   * Throws an error if any keys in the ownerKeys collection don't match the keys array we pass
+   * @param ownerKeys
+   * @param keysToFind
+   */
+  checkPermissions(ownerKeys: { address: string; weight: number }[], keys: string[]) {
+    keys = keys.map(k => k.toUpperCase());
+
+    ownerKeys.map(key => {
+      const hexKey = key.address.toUpperCase();
+      if (!keys.includes(hexKey)) {
+        throw new Error(`pub address ${hexKey} not found in account`);
+      }
+
+      if (key.weight !== 1) {
+        throw new Error('owner permission is invalid for this structure');
+      }
+    });
+  }
+
+  /**
    * Builds a funds recovery transaction without BitGo.
    * We need to do three queries during this:
    * 1) Node query - how much money is in the account
@@ -400,19 +420,16 @@ export class Trx extends BaseCoin {
       const keys = yield self.initiateRecovery(params);
 
       // we need to decode our bitgoKey to a base58 address
-      const bitgoAddress = self.compressedPubToHexAddress(self.xpubToCompressedPub(params.bitgoKey));
+      const bitgoHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(params.bitgoKey));
       const recoveryAddressHex = bitgoAccountLib.Trx.Utils.getHexAddressFromBase58Address(params.recoveryDestination);
 
       // call the node to get our account balance
-      const recoveryAmount = yield self.getAccountBalanceFromNode(bitgoAddress);
+      const account = yield self.getAccountFromNode(bitgoHexAddr);
+      const recoveryAmount = account.balance;
 
       const userXPub = keys[0].neutered().toBase58();
       const userXPrv = keys[0].toBase58();
       const backupXPub = keys[1].neutered().toBase58();
-
-      const userPrv = self.xprvToCompressedPrv(userXPrv);
-      const userHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(userXPub));
-      const backupHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(backupXPub));
 
       // construct the tx -
       // there's an assumption here being made about fees: for a wallet that hasn't been used in awhile, the implication is
@@ -421,9 +438,16 @@ export class Trx extends BaseCoin {
         throw new Error('Amount of funds to recover wouldnt be able to fund a send');
       }
       const recoveryAmountMinusFees = recoveryAmount - 1e6;
-      const buildTx = yield self.getBuildTransaction(recoveryAddressHex, bitgoAddress, recoveryAmountMinusFees);
+      const buildTx = yield self.getBuildTransaction(recoveryAddressHex, bitgoHexAddr, recoveryAmountMinusFees);
 
-      // TODO: some checks here about pubs being valid, for this wallet, etc. from build transaction
+      // run a check to ensure this is a valid tx
+      const keyHexAddresses = [
+        self.compressedPubToHexAddress(self.xpubToCompressedPub(userXPub)),
+        self.compressedPubToHexAddress(self.xpubToCompressedPub(backupXPub)),
+        bitgoHexAddr,
+      ];
+      self.checkPermissions(account.owner_permission.keys, keyHexAddresses);
+      self.checkPermissions(account.active_permission[0].keys, keyHexAddresses);
 
       // construct our tx
       const txBuilder = new bitgoAccountLib.TransactionBuilder({ coinName: this.getChain() });
@@ -433,6 +457,8 @@ export class Trx extends BaseCoin {
       if (isUnsignedSweep) {
         return txBuilder.build().toJson();
       }
+
+      const userPrv = self.xprvToCompressedPrv(userXPrv);
 
       txBuilder.sign({ key: userPrv });
 
