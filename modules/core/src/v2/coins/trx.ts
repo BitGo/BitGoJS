@@ -27,7 +27,8 @@ import {
 
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
-import { TransactionBuilder } from '@bitgo/account-lib';
+
+export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -77,6 +78,18 @@ export interface RecoveryTransaction {
 export enum NodeTypes {
   Full,
   Solidity,
+}
+
+/**
+ * This structure is not a complete model of the AccountResponse from a node.
+ */
+export interface AccountResponse {
+  address: string;
+  balance: number;
+  owner_permission: {
+    keys: [bitgoAccountLib.Trx.Interface.PermissionKey];
+  };
+  active_permission: [{ keys: [bitgoAccountLib.Trx.Interface.PermissionKey] }];
 }
 
 export class Trx extends BaseCoin {
@@ -192,7 +205,7 @@ export class Trx extends BaseCoin {
 
   signTransaction(params: TronSignTransactionOptions): SignedTransaction {
     const coinName = this.getChain();
-    const txBuilder = new TransactionBuilder({ coinName });
+    const txBuilder = new bitgoAccountLib.TransactionBuilder({ coinName });
     txBuilder.from(params.txPrebuild.txHex);
 
     let key = params.prv;
@@ -304,7 +317,10 @@ export class Trx extends BaseCoin {
    * @param callback
    * @returns {Object} response from Trongrid
    */
-  recoveryPost(query: { path: string; jsonObj: any; node: NodeTypes }, callback?: NodeCallback<any>): Bluebird<any> {
+  private recoveryPost(
+    query: { path: string; jsonObj: any; node: NodeTypes },
+    callback?: NodeCallback<any>
+  ): Bluebird<any> {
     const self = this;
     return co(function*() {
       let nodeUri = '';
@@ -341,9 +357,9 @@ export class Trx extends BaseCoin {
    * @param callback
    * @returns {BigNumber} address balance
    */
-  getAccountFromNode(address: string, callback?: NodeCallback<any>): Bluebird<any> {
+  private getAccountFromNode(address: string, callback?: NodeCallback<AccountResponse>): Bluebird<AccountResponse> {
     const self = this;
-    return co(function*() {
+    return co<AccountResponse>(function*() {
       const result = yield self.recoveryPost({
         path: '/walletsolidity/getaccount',
         jsonObj: { address },
@@ -362,9 +378,14 @@ export class Trx extends BaseCoin {
    * @param amount
    * @param callback
    */
-  getBuildTransaction(toAddr: string, fromAddr: string, amount: number, callback?: NodeCallback<any>): Bluebird<any> {
+  private getBuildTransaction(
+    toAddr: string,
+    fromAddr: string,
+    amount: number,
+    callback?: NodeCallback<bitgoAccountLib.Trx.Interface.TransactionReceipt>
+  ): Bluebird<bitgoAccountLib.Trx.Interface.TransactionReceipt> {
     const self = this;
-    return co(function*() {
+    return co<bitgoAccountLib.Trx.Interface.TransactionReceipt>(function*() {
       // our addresses should be base58, we'll have to encode to hex
       const result = yield self.recoveryPost({
         path: '/wallet/createtransaction',
@@ -434,18 +455,19 @@ export class Trx extends BaseCoin {
       // construct the tx -
       // there's an assumption here being made about fees: for a wallet that hasn't been used in awhile, the implication is
       // it has maximum bandwidth. thus, a recovery should cost the minimum amount (1e6 sun or 1 Tron)
-      if (1e6 > recoveryAmount) {
+      if (MINIMUM_TRON_MSIG_TRANSACTION_FEE > recoveryAmount) {
         throw new Error('Amount of funds to recover wouldnt be able to fund a send');
       }
-      const recoveryAmountMinusFees = recoveryAmount - 1e6;
+      const recoveryAmountMinusFees = recoveryAmount - MINIMUM_TRON_MSIG_TRANSACTION_FEE;
       const buildTx = yield self.getBuildTransaction(recoveryAddressHex, bitgoHexAddr, recoveryAmountMinusFees);
 
-      // run a check to ensure this is a valid tx
       const keyHexAddresses = [
         self.compressedPubToHexAddress(self.xpubToCompressedPub(userXPub)),
         self.compressedPubToHexAddress(self.xpubToCompressedPub(backupXPub)),
         bitgoHexAddr,
       ];
+
+      // run checks to ensure this is a valid tx - permissions match our signer keys
       self.checkPermissions(account.owner_permission.keys, keyHexAddresses);
       self.checkPermissions(account.active_permission[0].keys, keyHexAddresses);
 
@@ -491,7 +513,7 @@ export class Trx extends BaseCoin {
         throw new Error('missing explain tx parameters');
       }
       const coinName = this.getChain();
-      const txBuilder = new TransactionBuilder({ coinName });
+      const txBuilder = new bitgoAccountLib.TransactionBuilder({ coinName });
       txBuilder.from(txHex);
       const tx = txBuilder.build();
       const outputs = [
