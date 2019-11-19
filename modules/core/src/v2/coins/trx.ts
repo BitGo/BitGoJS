@@ -3,14 +3,12 @@
  */
 import * as Bluebird from 'bluebird';
 import * as crypto from 'crypto';
-import { CoinFamily } from '@bitgo/statics';
+import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
-import { HDNode } from 'bitgo-utxo-lib';
+import { HDNode, networks } from 'bitgo-utxo-lib';
 import * as request from 'superagent';
 import * as common from '../../common';
-
-import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
 import {
   BaseCoin,
@@ -26,13 +24,10 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   TransactionExplanation,
 } from '../baseCoin';
-import * as utxoLib from 'bitgo-utxo-lib';
+
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { TransactionBuilder } from '@bitgo/account-lib';
-
-import debug = require('debug');
-import {utxo} from "@bitgo/statics/dist/src/utxo";
 
 export interface TronSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -44,6 +39,7 @@ export interface TxInfo {
   from: string;
   txid: string;
 }
+
 export interface TronTransactionExplanation extends TransactionExplanation {
   expiration: number;
   timestamp: number;
@@ -82,7 +78,6 @@ export enum NodeTypes {
   Full,
   Solidity,
 }
-
 
 export class Trx extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -157,7 +152,7 @@ export class Trx extends BaseCoin {
       // random. 512 bits is therefore the maximum entropy and gives us maximum security against cracking.
       seed = crypto.randomBytes(512 / 8);
     }
-    const hd = utxoLib.HDNode.fromSeedBuffer(seed);
+    const hd = HDNode.fromSeedBuffer(seed);
     return {
       pub: hd.neutered().toBase58(),
       prv: hd.toBase58(),
@@ -166,7 +161,7 @@ export class Trx extends BaseCoin {
 
   isValidXpub(xpub: string): boolean {
     try {
-      return utxoLib.HDNode.fromBase58(xpub).isNeutered();
+      return HDNode.fromBase58(xpub).isNeutered();
     } catch (e) {
       return false;
     }
@@ -284,14 +279,14 @@ export class Trx extends BaseCoin {
       throw new Error('invalid xpub');
     }
 
-    const hdNode = utxoLib.HDNode.fromBase58(xpub, this.bitcoinEncoding());
+    const hdNode = HDNode.fromBase58(xpub, networks.bitcoin);
     return hdNode.keyPair.__Q.getEncoded(false).toString('hex');
   }
 
   compressedPubToHexAddress(pub: string): string {
     const byteArrayAddr = bitgoAccountLib.Trx.Utils.getByteArrayFromHexAddress(pub);
     const rawAddress = bitgoAccountLib.Trx.Utils.getRawAddressFromPubKey(byteArrayAddr);
-    return Buffer.from(rawAddress).toString('hex').toUpperCase();
+    return bitgoAccountLib.Trx.Utils.getHexAddressFromByteArray(rawAddress);
   }
 
   xprvToCompressedPrv(xprv: string): string {
@@ -299,23 +294,8 @@ export class Trx extends BaseCoin {
       throw new Error('invalid xprv');
     }
 
-    const hdNode = utxoLib.HDNode.fromBase58(xprv, this.bitcoinEncoding());
+    const hdNode = HDNode.fromBase58(xprv, networks.bitcoin);
     return hdNode.keyPair.d.toBuffer(32).toString('hex');
-  };
-
-  bitcoinEncoding(): any {
-    return {
-      messagePrefix: '\x18Bitcoin Signed Message:\n',
-      bech32: 'bc',
-      bip32: {
-        public: 0x0488b21e,
-        private: 0x0488ade4
-      },
-      pubKeyHash: 0x00,
-      scriptHash: 0x05,
-      wif: 0x80,
-      coin: 'btc',
-    };
   }
 
   /**
@@ -324,7 +304,7 @@ export class Trx extends BaseCoin {
    * @param callback
    * @returns {Object} response from Trongrid
    */
-  recoveryPost(query: { path: string, jsonObj: any, node: NodeTypes }, callback?: NodeCallback<any>): Bluebird<any> {
+  recoveryPost(query: { path: string; jsonObj: any; node: NodeTypes }, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
       let nodeUri = '';
@@ -340,16 +320,19 @@ export class Trx extends BaseCoin {
       }
 
       const response = yield request
-          .post(nodeUri + query.path)
-          .send(query.jsonObj);
+        .post(nodeUri + query.path)
+        .type('json')
+        .send(query.jsonObj);
 
       if (!response.ok) {
         throw new Error('could not reach Tron node');
       }
-      return response.body;
+
+      // unfortunately, it doesn't look like most TRON nodes return valid json as body
+      return JSON.parse(response.text);
     })
-        .call(this)
-        .asCallback(callback);
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -387,15 +370,15 @@ export class Trx extends BaseCoin {
         path: '/wallet/createtransaction',
         jsonObj: {
           to_address: toAddr,
-          from_address: fromAddr,
-          amount: amount.toFixed(0),
+          owner_address: fromAddr,
+          amount,
         },
         node: NodeTypes.Full,
       });
-      return result.balance;
+      return result;
     })
-        .call(this)
-        .asCallback(callback);
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -420,9 +403,9 @@ export class Trx extends BaseCoin {
       const bitgoAddress = self.compressedPubToHexAddress(self.xpubToCompressedPub(params.bitgoKey));
       const recoveryAddressHex = bitgoAccountLib.Trx.Utils.getHexAddressFromBase58Address(params.recoveryDestination);
 
+      // call the node to get our account balance
       const recoveryAmount = yield self.getAccountBalanceFromNode(bitgoAddress);
 
-      //const userPrv = HDKey.fromExtendedKey(keys[0]).privateKey;
       const userXPub = keys[0].neutered().toBase58();
       const userXPrv = keys[0].toBase58();
       const backupXPub = keys[1].neutered().toBase58();
@@ -431,18 +414,16 @@ export class Trx extends BaseCoin {
       const userHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(userXPub));
       const backupHexAddr = self.compressedPubToHexAddress(self.xpubToCompressedPub(backupXPub));
 
-      // TODO: some checks here about pubs being valid, for this wallet, etc.
-
-      // construct the tx
-      // TODO: recovery amount might not include fees, we'll have to figure out the max we can spend
-      //   sensitive to energy and tx cost amounts
+      // construct the tx -
       // there's an assumption here being made about fees: for a wallet that hasn't been used in awhile, the implication is
-      // it has maximum bandwidth. thus, a recovery should cost the minimum amount (1e6 sun)
+      // it has maximum bandwidth. thus, a recovery should cost the minimum amount (1e6 sun or 1 Tron)
       if (1e6 > recoveryAmount) {
         throw new Error('Amount of funds to recover wouldnt be able to fund a send');
       }
       const recoveryAmountMinusFees = recoveryAmount - 1e6;
-      const buildTx = self.getBuildTransaction(recoveryAddressHex, bitgoAddress, recoveryAmountMinusFees);
+      const buildTx = yield self.getBuildTransaction(recoveryAddressHex, bitgoAddress, recoveryAmountMinusFees);
+
+      // TODO: some checks here about pubs being valid, for this wallet, etc. from build transaction
 
       // construct our tx
       const txBuilder = new bitgoAccountLib.TransactionBuilder({ coinName: this.getChain() });
@@ -453,11 +434,11 @@ export class Trx extends BaseCoin {
         return txBuilder.build().toJson();
       }
 
-      // sign our tx
       txBuilder.sign({ key: userPrv });
 
+      // krs recoveries don't get signed
       if (!isKrsRecovery) {
-        const backupXPrv = keys[0].toBase58();
+        const backupXPrv = keys[1].toBase58();
         const backupPrv = self.xprvToCompressedPrv(backupXPrv);
 
         txBuilder.sign({ key: backupPrv });
