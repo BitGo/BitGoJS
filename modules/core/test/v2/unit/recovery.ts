@@ -566,7 +566,7 @@ describe('Recovery:', function() {
       recoveryNocks.nockTronRecovery();
     });
 
-    it('should generate TRON recovery tx', co(function *() {
+    it('should generate TRON recovery tx from user and backup keys', co(function *() {
       const recoveryTx = yield baseCoin.recover({
         userKey: '{"iv":"QPX3xtGROshqHW8kGPAYCw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"LJ4YYCyClRE=","ct":"hlJH8lWk/FaciymG8UsscxVFCnOduLRjoWxaK8xU7TjsqUDXsQjj0BpH7aNm64p6ldueaGoU2/VfrrzX9lWrcVmXspFp2oON5EyK45JbI13hirqG2dkOqoT8G8mrMydMp6zG5iOA+EtXRy69kYDCI1Re6mR7k1c="}',
         backupKey: '{"iv":"xbOCFaZVnrQLAYKcgMvdNw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"86cZ+hT+S0Y=","ct":"RH7Uks/JjNARX9wuIw6r4Map2C9FtLlWYk4zjLcrjzkBuNTCUNQgxF7kU5/SWzD+tomVBj6P9CLkXYzPlR1NhVi+aT9mTW6LK9nJ+ErpLKXzbIAxBLezDjJ5xqUS5cGkjoHCtANL7qTZcDBvOfejLDrUjQdw2WQ="}',
@@ -574,6 +574,13 @@ describe('Recovery:', function() {
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: 'TYBTURKpanKxnx91uyfvvtztNeHE3EQf6G',
       });
+
+      should.exist(recoveryTx);
+
+      recoveryTx.signature[0].should.equal('f4b0b12f1226765c7d4f775244693da0d95726cd4f9dc7c16c67a211a372390ad0fe9dde01dbd418c502c3282c7ac8417132f86544c37b64e1526ffa8b43dead01');
+      recoveryTx.signature[1].should.equal('1c637c8c317df0b815cdc27637e4403964d74e3b1751efda08c11acdf226c83263ef4c9f4b7731514ded6b19dc846efb58371b653bbadc8040ac18101cafedb501');
+      recoveryTx.txID.should.equal('55d76a068b97933a98e5d02e6fecd4c2971f1d37f0bb850a919b17def906a239');
+      recoveryTx.raw_data_hex.should.equal('0a023ffb2208c1647593403d263b40b8b2e6fce72d5a69080112650a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412340a15414d0941161d0f7e1da0c8989b1566c9d9b43e1226121541f3a3d6d514e7d43fbbf632a687acd65aafb8a50c18c0cdd6ac03709deae2fce72d');
     }));
 
     it('should generate TRON recovery tx with unencrypted keys', co(function *() {
