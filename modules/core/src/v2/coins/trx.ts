@@ -70,8 +70,7 @@ export interface RecoveryOptions {
 }
 
 export interface RecoveryTransaction {
-  transaction: TransactionPrebuild;
-  txid: string;
+  tx: TransactionPrebuild;
   recoveryAmount: number;
 }
 
@@ -477,7 +476,10 @@ export class Trx extends BaseCoin {
 
       // this tx should be enough to drop into a node
       if (isUnsignedSweep) {
-        return txBuilder.build().toJson();
+        return {
+          tx: txBuilder.build().toJson(),
+          recoveryAmount: recoveryAmountMinusFees,
+        };
       }
 
       const userPrv = self.xprvToCompressedPrv(userXPrv);
@@ -492,7 +494,10 @@ export class Trx extends BaseCoin {
         txBuilder.sign({ key: backupPrv });
       }
 
-      return txBuilder.build().toJson();
+      return {
+        tx: txBuilder.build().toJson(),
+        recoveryAmount: recoveryAmountMinusFees,
+      };
     })
       .call(this)
       .asCallback(callback);
