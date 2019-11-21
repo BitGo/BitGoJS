@@ -324,4 +324,21 @@ describe('prebuildTransaction', function() {
     scope.isDone().should.equal(true);
     prebuild.success.should.equal(true);
   }));
+
+  it('should reject hop param for an erc20 token build', co(function *() {
+    const token = bitgo.coin('terc');
+    const tokenWallet = token.newWalletObject(bitgo, token, {});
+    recipients = [{
+      address: '0xe59dfe5c67114b39a5662cc856be536c614124c0',
+      amount: '100',
+    }];
+    let error;
+    try {
+      yield tokenWallet.prebuildTransaction({ recipients, hop: true, walletPassphrase: 'hi' });
+    } catch (err) {
+      error = err;
+    }
+    should.exist(error);
+    error.message.should.equal(`Hop transactions are not enabled for ERC-20 tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`);
+  }));
 });
