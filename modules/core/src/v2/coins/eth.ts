@@ -22,6 +22,7 @@ import {
   TransactionPrebuild as BaseTransactionPrebuild,
   HalfSignedTransaction as BaseHalfSignedTransaction,
 } from '../baseCoin';
+import { Erc20Token } from './erc20Token';
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
@@ -1268,6 +1269,11 @@ export class Eth extends BaseCoin {
         !_.isUndefined(buildParams.recipients) &&
         !_.isUndefined(buildParams.walletPassphrase)
       ) {
+        if (this instanceof Erc20Token) {
+          throw new Error(
+            `Hop transactions are not enabled for ERC-20 tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`
+          );
+        }
         return yield self.createHopTransactionParams({
           wallet: buildParams.wallet,
           recipients: buildParams.recipients,
