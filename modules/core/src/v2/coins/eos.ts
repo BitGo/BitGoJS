@@ -421,25 +421,50 @@ export class Eos extends BaseCoin {
       const serializedTxBuffer = Buffer.from(transaction.packed_trx, 'hex');
       const tx = EosJs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedTxBuffer);
 
+      // TODO: fix comment below
       // Get transfer action values
       // Only support transactions with one action: transfer
-      if (tx.actions.length !== 1) {
+      if (tx.actions.length !== 1 || tx.actions.length !== 2) {
         throw new Error(`invalid number of actions: ${tx.actions.length}`);
       }
+
       const txAction = tx.actions[0];
       if (!txAction) {
         throw new Error('missing transaction action');
       }
-      if (txAction.name !== 'transfer') {
-        throw new Error(`invalid action: ${txAction.name}`);
-      }
-      const transferStruct = eosClient.fc.abiCache.abi('eosio.token').structs.transfer;
-      const serializedTransferDataBuffer = Buffer.from(txAction.data, 'hex');
-      const transferActionData = EosJs.modules.Fcbuffer.fromBuffer(transferStruct, serializedTransferDataBuffer);
-      tx.address = transferActionData.to;
-      tx.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
-      tx.memo = transferActionData.memo;
 
+      const throwOnInvalidSecondAction = function(actions, validAction) {
+        if (actions.length === 2) {
+          const txAction = actions[1];
+          if (!txAction) {
+            throw new Error('missing transaction action');
+          }
+
+          if (txAction !== validAction) {
+            throw new Error(`invalid action: ${txAction.name}`);
+          }
+        }
+      };
+
+      if (txAction.name !== 'transfer') {
+        const transferStruct = eosClient.fc.abiCache.abi('eosio.token').structs.transfer;
+        const serializedTransferDataBuffer = Buffer.from(txAction.data, 'hex');
+        const transferActionData = EosJs.modules.Fcbuffer.fromBuffer(transferStruct, serializedTransferDataBuffer);
+        tx.address = transferActionData.to;
+        tx.amount = this.bigUnitsToBaseUnits(transferActionData.quantity.split(' ')[0]);
+        tx.memo = transferActionData.memo;
+      } else {
+        tx.address = 'what do i put here';
+        tx.amount = '0';
+        tx.memo = '';
+        if (txAction.name === 'delegatebw') {
+          throwOnInvalidSecondAction(tx.actions, 'voteproducer');
+        } else if (txAction.name === 'voteproducer') {
+          throwOnInvalidSecondAction(tx.actions, 'delegatebw');
+        } else {
+          throw new Error(`invalid action: ${txAction.name}`);
+        }
+      }
       // Get the tx id if tx headers were provided
       if (headers) {
         const rebuiltTransaction = yield eosClient.transaction(
