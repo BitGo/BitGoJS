@@ -588,27 +588,39 @@ describe('XLM:', function() {
     describe('Look up by stellar address:', function() {
       it('should fail to loop up an invalid stellar address with a bitgo.com domain', co(function *() {
         const stellarAddress = 'invalid*bitgo.com';
+
+        nock('https://test.bitgo.com')
+          .get('/.well-known/stellar.toml')
+          .reply(200, 'FEDERATION_SERVER="https://test.bitgo.com/api/v2/txlm/federation"')
+          .get('/api/v2/txlm/federation')
+          .query({
+            q: stellarAddress,
+            type: 'name',
+          })
+          .reply(404, {
+            detail: `user not found: ${stellarAddress}`,
+            name: 'UserNotFound',
+          });
+
         yield basecoin.federationLookupByName(stellarAddress)
-          .should.be.rejectedWith('account not found');
+          .should.be.rejectedWith(`user not found: ${stellarAddress}`);
       }));
 
       it('should resolve a stellar address into an account', co(function *() {
-        const stellarAddress = 'test12345*lobstr.co';
-        const accountId = 'GB5MEYCR4V2NRZH4NSI465ZEFRXPBZ74P43BMYN7AWVMAI5NNCKNZSVY';
+        const stellarAddress = 'tester*bitgo.com';
+        const accountId = 'GCBYY3S62QY43PMEKGJHRCBHEFJOHCLGSMWXREUZYDQHJHQ2LK4I42JA';
 
-        nock('https://lobstr.co')
+        nock('https://test.bitgo.com')
           .get('/.well-known/stellar.toml')
-          .reply(200, 'FEDERATION_SERVER=\'https://lobstr.co/federation\'');
-
-        nock('https://lobstr.co')
-          .get('/federation')
+          .reply(200, 'FEDERATION_SERVER="https://test.bitgo.com/api/v2/txlm/federation"')
+          .get('/api/v2/txlm/federation')
           .query({
             q: stellarAddress,
-            type: 'name'
+            type: 'name',
           })
           .reply(200, {
             stellar_address: stellarAddress,
-            account_id: accountId
+            account_id: accountId,
           });
 
         const res = yield basecoin.federationLookupByName(stellarAddress);
@@ -616,33 +628,6 @@ describe('XLM:', function() {
         res.should.have.property('account_id');
         res.stellar_address.should.equal(stellarAddress);
         res.account_id.should.equal(accountId);
-      }));
-
-      it('should resolve a stellar address with a bitgo.com domain', co(function *() {
-        const stellarAddress = 'tester*bitgo.com';
-
-        nock('https://test.bitgo.com')
-          .get('/api/v2/txlm/federation')
-          .query({
-            q: stellarAddress,
-            type: 'name'
-          })
-          .reply(200, {
-            stellar_address: stellarAddress,
-            account_id: 'GCBYY3S62QY43PMEKGJHRCBHEFJOHCLGSMWXREUZYDQHJHQ2LK4I42JA',
-            memo_type: 'id',
-            memo: '0'
-          });
-
-        const res = yield basecoin.federationLookupByName(stellarAddress);
-        res.should.have.property('stellar_address');
-        res.should.have.property('account_id');
-        res.should.have.property('memo_type');
-        res.should.have.property('memo');
-        res.stellar_address.should.equal(stellarAddress);
-        res.account_id.should.equal('GCBYY3S62QY43PMEKGJHRCBHEFJOHCLGSMWXREUZYDQHJHQ2LK4I42JA');
-        res.memo_type.should.equal('id');
-        res.memo.should.equal('0');
       }));
     });
 
