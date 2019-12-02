@@ -722,10 +722,10 @@ describe('Recovery:', function() {
 
       should.exist(recovery);
       recovery.recoveryAddress.should.equal('2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm');
-      recovery.recoveryAmount.should.equal(20972720);
+      recovery.recoveryAmount.should.equal(21048960);
       recovery.recoveryCoin.should.equal('tltc');
       recovery.sourceCoin.should.equal('tbtc');
-      recovery.txHex.should.equal('0100000001c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f54100000000b60047304402207215a1337d7d873ce6eed9bc7984fe69ca7c995a21745dc0a70e2c8afa6740a702204c3a164f817019f90c710fc25f351b3b0847ed155d031c5aeaa3c54b7a73cde10100004c69522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953aeffffffff01b00440010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
+      recovery.txHex.should.equal('0100000002c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f54100000000b60047304402202a6cc293695524de16f9d5e837745101dd5164f723e20f8241b65399e1c6070a02207e06d4580bf6723d3a4319d2e43472690a260ba6fb2a3d66c37ec115559b83e00100004c69522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953aeffffffffc61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f54102000000b60047304402200ab7e68ca154420ea175b773bef75555bb79878b9a9a37d38944f746e859c50702200dd36dd85df588d96f36649998d50998277ce150afcb552558cf4b86e1132e650100004c69522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953aeffffffff01802e41010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
       recovery.walletId.should.equal('5abacebe28d72fbd07e0b8cbba0ff39e');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
@@ -801,14 +801,14 @@ describe('Recovery:', function() {
         txid: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
         recoveryAddress: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
         wallet: '5abacebe28d72fbd07e0b8cbba0ff39e',
-        signed: false
+        signed: false,
       });
 
       should.exist(recovery);
-      recovery.txHex.should.equal('0100000001c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410000000000ffffffff01b00440010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
+      recovery.txHex.should.equal('0100000002c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410000000000ffffffffc61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410200000000ffffffff01802e41010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
       recovery.walletId.should.equal('5abacebe28d72fbd07e0b8cbba0ff39e');
       recovery.address.should.equal('2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm');
-      recovery.amount.should.equal(20972720);
+      recovery.amount.should.equal(21048960);
       recovery.coin.should.equal('tbtc');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');

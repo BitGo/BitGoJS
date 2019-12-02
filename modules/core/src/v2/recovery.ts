@@ -244,7 +244,7 @@ export class CrossChainRecoveryTool {
       self._log(`Finding unspents for these output addresses: ${outputAddresses.join(', ')}`);
 
       // Get unspents for addresses
-      const ADDRESS_UNSPENTS_URL = self.sourceCoin.url(`/public/addressUnspents/${outputAddresses.join(',')}`);
+      const ADDRESS_UNSPENTS_URL = self.sourceCoin.url(`/public/addressUnspents/${_.uniq(outputAddresses).join(',')}`);
       const addressRes = yield request.get(ADDRESS_UNSPENTS_URL);
       const unspents = addressRes.body;
 

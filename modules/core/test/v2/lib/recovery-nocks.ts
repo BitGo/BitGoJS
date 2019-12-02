@@ -1363,7 +1363,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       pendingApprovals: [],
     })
     .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
-    .times(2)
+    .times(4)
     .reply(200, {
       id: '5abacebe28d72fbd07e0b8cf3d571ba8',
       address: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
@@ -1387,7 +1387,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
     .times(2)
     .reply(404)
     .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
-    .times(2)
+    .times(4)
     .reply(200, {
       id: '5abacebe28d72fbd07e0b8cf3d571ba8',
       address: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
@@ -1493,6 +1493,12 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
           value: 43998878,
           valueString: '43998878',
         },
+        {
+          id: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6:2',
+          address: '2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx',
+          value: 100000,
+          valueString: '100000',
+        },
       ],
       entries: [
         {
@@ -1519,13 +1525,21 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       ],
     })
     .get('/tbtc/public/addressUnspents/2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx')
-    .times(2)
+    .times(4)
     .reply(200, [
       {
         id: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6:0',
         address: '2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx',
         value: 21000000,
         valueString: '21000000',
+        blockHeight: 1289343,
+        date: '2018-03-27T23:29:42.799Z',
+      },
+      {
+        id: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6:2',
+        address: '2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx',
+        value: 100000,
+        valueString: '100000',
         blockHeight: 1289343,
         date: '2018-03-27T23:29:42.799Z',
       },
