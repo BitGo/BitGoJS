@@ -3,15 +3,16 @@
 ```bash
 $ yarn install
 $ yarn lerna bootstrap
-``` 
+```
 
-#Things to Avoid
-You should not be using the "tsc" command in terminal. Calling "tsc" in a directory WITHOUT a tsconfig file which informs tsc the 
-correct directory to install files would lead to files useful for translating TS to JS (ended with d.ts and d.ts.map)
-installed in the wrong location.
+# Things to Avoid
+You should not be using the `tsc` command in terminal. Doing so WITHOUT a tsconfig file
+(which informs tsc where to install files) would lead to translation files
+(ending with `d.ts` and `d.ts.map`) installed in an incorrect location.
 
-If this happens, make sure you are in BitGoJs directory and run "git clean -f -d" to get rid of the files
-Avoid using npm commands and stick with yarn.
+If this happens, navigate to the BitGoJs directory and run `git clean -f -d` to remove
+any errant files. Avoid using npm commands and stick with yarn.
+
 # Running tests
 
 Modules typically provide both unit and integration tests.
@@ -105,7 +106,7 @@ These npm scripts may be run during lifecycle events and by lerna across all mod
 | `integration-test` | Run module integration tests. These are run when a PR is targeted to merge against master. | No |
 | `prepare` / `build` | Compile typescript sources | No |
 | `clean` | Clean up generated build files | No |
-| `audit` | Run a vulnerability against the module dependencies | Yes | 
+| `audit` | Run a vulnerability against the module dependencies | Yes |
 | `gen-coverage` | Generate a code coverage report | No |
 | `upload-coverage` | Upload a code coverage report | No |
 | `upload-artifacts` | Upload any artifacts produced by the build and test process | No |
