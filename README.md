@@ -1,28 +1,63 @@
 # BitGo Account Lib
 
-Signing and transaction building logic for account-based coins.
+This library is responsible for building and signing transactions for account-based coins (ie: coins such as Ethereum, Algorand, EOS, Tron, etc.). This library is used by BitGo and our multi-sig wallets, however, it can be used independently, outside of our wallet ecosystem.
 
-## Supported coins
+## Supported Coins
+Below is the list of coins supported by this library -- as well as those that are on the roadmap.
 
-- Tron - trx/ttrx
+|Coin|Mainnet Ticker|Testnet Ticker|Supported In Library|
+|---|---|---|---|
+|Tron|trx|ttrx|Yes|
+|Tezos|xtz|txtz|Not yet...|
+|Ethereum|eth|teth|Not yet...|
+|EOS|eos|teos|Not yet...|
+|Alogrand|algo|talgo|Not yet...|
+|Ripple|xrp|txrp|Not yet...|
+|Stellar|xlm|txlm|Not yet...|
 
-## Usage
+## Core Concepts
 
-### Instantiation
+### TransactionBuilder
+The `TranssactionBuilder` class guides a user through the construction of a transaction. The purpose of the `TransactionBuilder` is to yield `Transaction` object that is able to be broadcast to the network.
 
-To instantiate the builder, use the `getBuilder('ticker')` function:
+### Transaction
+`Transaction` objects are javascript representations of blockchain transactions that implement protocol specific validation rules. `Transactions` provide encoding mechanisms that allow them to be validly broadcast to their respective network.
 
-```typescript
-import * as accountLib from '@bitgo/account-lib';
+### Offline Availability
+The intention is that this library can be used in an offline environment, for offline signings.
 
-const builder = accountLib.getBuilder('ttrx');
+---
+
+## Installation
+
+Install the library via npm. If you plan on contributing to the project, you may wish to follow different installation instructions [outlined in this doc](DEVELOPER.md).
+
+```
+$ cd <your_project>
+$ npm install @bitgo/account-lib
 ```
 
-### Using the builder to sign an existent transaction
+## Usage
+Below is an example that demonstrates how the library can be used to build and sign a Tron testnet transaction.
 
-```typescript
+### Instantiation
+Instantiate the `TransactionBuilder` for the coin you want to work sign with:
+
+```javascript
+// Import the package (javascript import)
+const accountLib = require('@bitgo/account-lib');
+// or import the pacakage using typescript
 import * as accountLib from '@bitgo/account-lib';
 
+// Instantiate the Transaction Builder for Tron (testnet)
+const txBuilder = new accountLib.TransactionBuilder({'coinName': 'ttrx'});
+```
+
+### Transaction Construction + Signing
+Use that transaction builder instance to sign a transaction:
+
+```javascript
+// Define an unsigned Tron transaction object
 const unsignedBuildTransaction = {
   visible: false,
   txID: '80b8b9eaed51c8bba3b49f7f0e7cc5f21ac99a6f3e2893c663b544bf2c695b1d',
@@ -46,22 +81,13 @@ const unsignedBuildTransaction = {
   raw_data_hex: '0a0290e42208a018bf9892ddb13840e0c58ebadf2d5a66080112620a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412310a1541c4530f6bfa902b7398ac773da56106a15af15f9212154189ffaf9da8c6fae32189b2e6dce228249b1129aa18b60d7083878bbadf2d',
 };
 
-const builder = accountLib.getBuilder('ttrx');
-builder.from(unsignedBuildTransaction);
-builder.sign({ key: 'A81B2E0C55A7E2B2E837ZZC437A6397B316536196989A6F09EE49C19AD33590W' });
-const tx = builder.build();
+// Use that object to build and sign a transaction
+txBuilder.from(unsignedBuildTransaction);
+txBuilder.sign({
+  key: 'A81B2E0C55A7E2B2E837ZZC437A6397B316536196989A6F09EE49C19AD33590W'
+});
+const tx = txBuilder.build();
 ```
 
-## Generating protobufs
-
-To generate static code from the proto files, run:
-
-```bash
-npm run gen-protobuf
-```
-
-Then, to generate the respective TypeScript definitions:
-
-```bash
-npm run gen-protobufts
-```
+## Developers
+If you'd like to contribute to this project, see the [developer guide](DEVELOPER.md) for contribution norms and expectations.
