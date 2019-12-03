@@ -15,5 +15,3 @@ labels: 'feature'
 
 ## Context
 <!--- Not obligatory; but provide any other context that would be helpful in terms of prioritization. -->
-
-## Steps to Reproduce
