@@ -39,6 +39,8 @@ export interface TransactionExplanation {
   changeOutputs: TransactionRecipient[];
   changeAmount: string;
   fee: TransactionFee;
+  proxy?: string;
+  producers?: string[];
 }
 
 export interface KeyPair {
