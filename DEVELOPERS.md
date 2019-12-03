@@ -5,6 +5,9 @@ $ yarn install
 $ yarn lerna bootstrap
 ```
 
+# Documentation
+API and SDK documentation can be found at: https://platform.bitgo.com/.
+
 # Things to Avoid
 You should not be using the `tsc` command in terminal. Doing so WITHOUT a tsconfig file
 (which informs tsc where to install files) would lead to translation files
