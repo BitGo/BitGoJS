@@ -18,7 +18,7 @@ import * as internal from './internal/internal';
 import { drawKeycard } from './internal/keycard';
 import { Keychain } from './keychains';
 import { TradingAccount } from './trading/tradingAccount';
-import { NodeCallback } from './types';
+import {NodeCallback, Recipient} from './types';
 import { PendingApproval, PendingApprovalData } from './pendingApproval';
 import { RequestTracer } from './internal/util';
 
@@ -298,6 +298,7 @@ export interface SubmitTransactionOptions {
   otp?: string;
   txHex?: string;
   halfSigned?: string;
+  recipients?: Recipient[];
 }
 
 export interface SendOptions {
@@ -313,11 +314,7 @@ export interface SendOptions {
 
 export interface SendManyOptions {
   reqId?: RequestTracer;
-  recipients?: {
-    address: string;
-    amount: string | number;
-    data?: string;
-  }[];
+  recipients?: Recipient[];
   numBlocks?: number;
   feeRate?: number;
   maxFeeRate?: number;

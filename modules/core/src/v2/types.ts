@@ -7,7 +7,8 @@ export type V1RmgNetwork = 'rmg' | 'rmgTest';
  */
 export interface Recipient {
   address: string;
-  amount: string;
+  amount: string | number;
+  data?: string;
 }
 
 export interface RequestTracer {
