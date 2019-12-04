@@ -27,6 +27,12 @@ import { ManagedWallet } from './ManagedWallet';
 
 const concurrencyBitGoApi = 4;
 
+export const wait = async (seconds) => {
+  debug(`waiting ${seconds} seconds...`);
+  await Bluebird.delay(seconds * 1000);
+  debug(`done`);
+};
+
 export class LabelTracer implements RequestTracer {
   counter: number = 0;
   constructor(public label: string) { }
@@ -227,6 +233,7 @@ export class ManagedWallets {
   }
 
   public async cleanup() {
+    await wait(10);
     const errors: Error[] = [];
 
     try {

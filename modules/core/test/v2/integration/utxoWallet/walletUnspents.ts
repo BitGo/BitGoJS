@@ -3,27 +3,17 @@
 //
 
 import {
-  LabelTracer,
-  ManagedWallets,
+  ManagedWallets, wait,
 } from './ManagedWallets';
 
 import 'should';
 
-import * as Bluebird from 'bluebird';
-
 import debugLib from 'debug';
 import { TestFunction, ExclusiveTestFunction } from 'mocha';
 import { GroupPureP2sh, GroupPureP2shP2wsh, GroupPureP2wsh, WalletConfig } from './types';
-const debug = debugLib('integration-test-wallet-unspents');
 
 
 type WalletTestFunction = (testWallets) => Promise<void>
-
-const wait = async(seconds) => {
-  debug(`waiting ${seconds} seconds...`);
-  await Bluebird.delay(seconds * 1000);
-  debug(`done`);
-};
 
 const walletTests: [
   TestFunction | ExclusiveTestFunction,
