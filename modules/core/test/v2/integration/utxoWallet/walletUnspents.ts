@@ -2,9 +2,8 @@
 // Tests for Wallets
 //
 
-import * as assert from 'assert';
-
 import {
+  LabelTracer,
   ManagedWallets,
 } from './ManagedWallets';
 
@@ -14,8 +13,9 @@ import * as Bluebird from 'bluebird';
 
 import debugLib from 'debug';
 import { TestFunction, ExclusiveTestFunction } from 'mocha';
-import { GroupPureP2sh, GroupPureP2shP2wsh, GroupPureP2wsh, sumUnspents, WalletConfig } from './types';
+import { GroupPureP2sh, GroupPureP2shP2wsh, GroupPureP2wsh, WalletConfig } from './types';
 const debug = debugLib('integration-test-wallet-unspents');
+
 
 type WalletTestFunction = (testWallets) => Promise<void>
 
@@ -45,7 +45,7 @@ walletTest('should self-send to new default receive addr', async function(testWa
   const address = wallet.receiveAddress();
   const feeRate = 10_000;
   const amount = Math.floor(testWallets.chain.getMaxSpendable(unspents, [address], feeRate) / 2);
-  await wallet.sendMany(testWallets.buildParams(this, {
+  await wallet.sendMany(testWallets.buildParams({
     feeRate,
     recipients: [{ address, amount }],
   }));
@@ -54,7 +54,7 @@ walletTest('should self-send to new default receive addr', async function(testWa
 walletTest('should consolidate the number of unspents to 2', async function(testWallets: ManagedWallets) {
   const wallet = await testWallets.getNextWallet((w, unspents) => unspents.length >= 4);
 
-  const transaction = await wallet.consolidateUnspents(testWallets.buildParams(this, {
+  const transaction = await wallet.consolidateUnspents(testWallets.buildParams({
     limit: 250,
     numUnspentsToMake: 2,
     minValue: 1000,
@@ -69,7 +69,7 @@ walletTest('should fanout the number of unspents to 20', async function(testWall
   const wallet = await testWallets.getNextWallet();
   // it sometimes complains with high feeRates
   const feeRate = 1200;
-  const transaction = await wallet.fanoutUnspents(testWallets.buildParams(this, {
+  const transaction = await wallet.fanoutUnspents(testWallets.buildParams({
     feeRate,
     minHeight: 1,
     maxNumInputsToUse: 80,
@@ -88,7 +88,7 @@ walletTest('should sweep funds from one wallet to another', async function(testW
   const targetWallet = await testWallets.getNextWallet();
   const targetWalletUnspents = await testWallets.getUnspents(targetWallet);
 
-  const transaction = await sweepWallet.sweep(testWallets.buildParams(this, {
+  const transaction = await sweepWallet.sweep(testWallets.buildParams({
     address: targetWallet.receiveAddress(),
   }));
   transaction.status.should.equal('signed');
@@ -105,7 +105,7 @@ walletTest('should make tx with bnb exactMatch', async function(testWallets: Man
   const feeRate = 10_000;
   const address = wallet.receiveAddress();
   const amount = testWallets.chain.getMaxSpendable(unspents, [address], feeRate);
-  const prebuild = await wallet.prebuildTransaction(testWallets.buildParams(this, {
+  const prebuild = await wallet.prebuildTransaction(testWallets.buildParams({
     recipients: [{ address, amount }],
     strategy: 'BNB',
     strategyAllowFallback: false,
@@ -146,7 +146,8 @@ const runTests = (walletConfig: WalletConfig) => {
 
     walletTests.forEach(([testFunc, title, callback]) => {
       testFunc(title, async function() {
-        testWallets.debug(testFunc);
+        testWallets.debug(title);
+        testWallets.setClientLabel(title);
         this.timeout(120_000);
         await callback(testWallets);
       });

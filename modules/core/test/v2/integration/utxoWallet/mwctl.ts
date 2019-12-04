@@ -1,5 +1,5 @@
 import makeDebug from 'debug';
-import { ManagedWallets } from './ManagedWallets';
+import {LabelTracer, ManagedWallets} from './ManagedWallets';
 import { GroupPureP2sh, GroupPureP2shP2wsh, GroupPureP2wsh } from './types';
 import { formatWalletTable } from './display';
 
@@ -43,6 +43,8 @@ const main = async() => {
     forcedPoolSize,
     { dryRun }
   );
+
+  testWallets.setClientLabel(`mwctl-${env}-${walletConfig.name}`);
 
   if ([cleanup, reset, checkTransfers, dump, dumpWallet].filter(Boolean).length !== 1) {
     throw new Error(`must pick one of "cleanup", "reset" or "checkTransfers"`);

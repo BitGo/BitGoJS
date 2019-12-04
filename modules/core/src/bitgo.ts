@@ -2310,6 +2310,9 @@ export class BitGo {
    * Set a request tracer to provide request IDs during multi-request workflows
    */
   setRequestTracer(reqTracer: IRequestTracer) {
+    if (this._reqId) {
+      return;
+    }
     if (reqTracer) {
       this._reqId = reqTracer;
     }

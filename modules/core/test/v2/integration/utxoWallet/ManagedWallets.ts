@@ -9,7 +9,7 @@ import makeDebug, { Debugger } from 'debug';
 
 const debug = makeDebug('ManagedWallets');
 
-import { BitGo } from '../../../../src';
+import { BitGo, RequestTracer } from '../../../../src';
 import * as moment from 'moment';
 import { dumpUnspentsLong, formatWalletTable } from './display';
 import {
@@ -26,6 +26,28 @@ import {
 import { ManagedWallet } from './ManagedWallet';
 
 const concurrencyBitGoApi = 4;
+
+export class LabelTracer implements RequestTracer {
+  counter: number = 0;
+  constructor(public label: string) { }
+
+  inc(): void {
+    this.counter++;
+  }
+
+  toString(): string {
+    const suffix =
+      '-' + Math.random().toString(36).substr(6) +
+      '-' + this.counter.toString().padStart(3, '0');
+
+    const prefix = this.label
+      .toLowerCase()
+      .replace(/[^a-z0-9\-]/g, '')
+      .substr(0, 40 - suffix.length);
+
+    return prefix + suffix;
+  }
+}
 
 class DryFaucetError extends Error {
   constructor(faucetWallet: BitGoWallet, spendAmount) {
@@ -113,14 +135,13 @@ export class ManagedWallets {
       us.every((u) => this.chain.getConfirmations(u) >= confirmations);
   }
 
-
   public _chain?: Timechain;
 
   public debug: Debugger;
   private username: string;
   private password: string;
-  private bitgo: any;
-  private basecoin: any;
+  private clientLabel?: string;
+  private _bitgo: BitGo;
   private _walletList?: BitGoWallet[];
   private _wallets?: Promise<BitGoWallet[]>;
   private usedWallets: Set<BitGoWallet> = new Set();
@@ -164,8 +185,7 @@ export class ManagedWallets {
     }
     this.username = username;
     // @ts-ignore
-    this.bitgo = new BitGo({ env });
-    this.basecoin = this.bitgo.coin('tbtc');
+    this._bitgo = new BitGo({ env });
     this.poolSize = poolSize;
     this.walletConfig = walletConfig;
     this.labelPrefix = `managed/${walletConfig.name}`;
@@ -177,6 +197,21 @@ export class ManagedWallets {
       throw new ErrorInit();
     }
     return v;
+  }
+
+  public setClientLabel(label: string) {
+    this.clientLabel = label;
+  }
+
+  public get bitgo(): any {
+    if (this.clientLabel) {
+      this._bitgo.setRequestTracer(new LabelTracer(this.clientLabel));
+    }
+    return this._bitgo;
+  }
+
+  public get basecoin(): any {
+    return this.bitgo.coin('tbtc');
   }
 
   public get chain(): Timechain {
@@ -506,11 +541,11 @@ export class ManagedWallets {
     }
   }
 
-  buildParams(testContext: { title: string }, params: object) {
-    const buildId = process.env.BUILD_ID;
+  buildParams(params: object) {
+    const buildId = process.env.BUILD_ID || '';
     return {
       ...params,
-      sequenceId: `${this.debug.namespace}/${testContext.title}/build-${buildId}`,
+      sequenceId: `${this.debug.namespace}/${this.clientLabel || ''}/build-${buildId}`,
       walletPassphrase,
     };
   }
