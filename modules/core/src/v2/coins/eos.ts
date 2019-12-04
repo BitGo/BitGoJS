@@ -259,9 +259,9 @@ export class Eos extends BaseCoin {
       throw new InvalidAddressError(`failed to parse address: ${address}`);
     }
 
-    // EOS addresses have to be "human readable", which means start with a letter, up to 12 characters and only a-z1-5., i.e.mtoda1.bitgo
+    // EOS addresses have to be "human readable", which means up to 12 characters and only a-z1-5., i.e.mtoda1.bitgo
     // source: https://developers.eos.io/eosio-cpp/docs/naming-conventions
-    if (!/^[a-z][a-z1-5.]*$/.test(destinationAddress) || destinationAddress.length > EOS_ADDRESS_LENGTH) {
+    if (!/^[a-z1-5.]*$/.test(destinationAddress) || destinationAddress.length > EOS_ADDRESS_LENGTH) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
