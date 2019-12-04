@@ -116,7 +116,7 @@ export class ManagedWallets {
 
   public _chain?: Timechain;
 
-  private debug: Debugger;
+  public debug: Debugger;
   private username: string;
   private password: string;
   private bitgo: any;
@@ -507,9 +507,10 @@ export class ManagedWallets {
   }
 
   buildParams(testContext: { title: string }, params: object) {
+    const buildId = process.env.BUILD_ID;
     return {
       ...params,
-      sequenceId: `${this.debug.namespace}/${testContext.title}`,
+      sequenceId: `${this.debug.namespace}/${testContext.title}/build-${buildId}`,
       walletPassphrase,
     };
   }

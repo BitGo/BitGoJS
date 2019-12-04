@@ -146,6 +146,7 @@ const runTests = (walletConfig: WalletConfig) => {
 
     walletTests.forEach(([testFunc, title, callback]) => {
       testFunc(title, async function() {
+        testWallets.debug(testFunc);
         this.timeout(120_000);
         await callback(testWallets);
       });
