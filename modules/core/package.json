@@ -81,7 +81,6 @@
     "stellar-sdk": "^0.11.0",
     "superagent": "^3.8.3",
     "superagent-proxy": "^1.0.3",
-    "tronweb": "^2.7.0",
     "table": "5.4.1"
   },
   "devDependencies": {
