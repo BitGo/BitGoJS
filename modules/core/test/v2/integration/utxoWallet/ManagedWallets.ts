@@ -506,6 +506,14 @@ export class ManagedWallets {
     }
   }
 
+  buildParams(testContext: { title: string }, params: object) {
+    return {
+      ...params,
+      sequenceId: `${this.debug.namespace}/${testContext.title}`,
+      walletPassphrase,
+    };
+  }
+
   async execWalletSends(w: BitGoWallet, sends: Send[], { feeRate } : { feeRate: number }) {
     const faucet = this.faucet;
 

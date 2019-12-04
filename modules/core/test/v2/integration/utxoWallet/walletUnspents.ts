@@ -6,7 +6,6 @@ import * as assert from 'assert';
 
 import {
   ManagedWallets,
-  walletPassphrase,
 } from './ManagedWallets';
 
 import 'should';
@@ -40,46 +39,43 @@ walletTest.only = function(title, callback) {
   walletTest(title, callback, it.only);
 };
 
-walletTest('should self-send to new default receive addr', async function(testWallets) {
+walletTest('should self-send to new default receive addr', async function(testWallets: ManagedWallets) {
   const wallet = await testWallets.getNextWallet();
   const unspents = await testWallets.getUnspents(wallet);
   const address = wallet.receiveAddress();
   const feeRate = 10_000;
   const amount = Math.floor(testWallets.chain.getMaxSpendable(unspents, [address], feeRate) / 2);
-  await wallet.sendMany({
+  await wallet.sendMany(testWallets.buildParams(this, {
     feeRate,
     recipients: [{ address, amount }],
-    walletPassphrase,
-  });
+  }));
 });
 
-walletTest('should consolidate the number of unspents to 2', async function(testWallets) {
+walletTest('should consolidate the number of unspents to 2', async function(testWallets: ManagedWallets) {
   const wallet = await testWallets.getNextWallet((w, unspents) => unspents.length >= 4);
 
-  const transaction = await wallet.consolidateUnspents({
+  const transaction = await wallet.consolidateUnspents(testWallets.buildParams(this, {
     limit: 250,
     numUnspentsToMake: 2,
     minValue: 1000,
     numBlocks: 12,
-    walletPassphrase,
-  });
+  }));
   transaction.status.should.equal('signed');
   await wait(20);
   (await wallet.unspents({ limit: 100 })).unspents.length.should.eql(2);
 });
 
-walletTest('should fanout the number of unspents to 20', async function(testWallets) {
+walletTest('should fanout the number of unspents to 20', async function(testWallets: ManagedWallets) {
   const wallet = await testWallets.getNextWallet();
   // it sometimes complains with high feeRates
   const feeRate = 1200;
-  const transaction = await wallet.fanoutUnspents({
+  const transaction = await wallet.fanoutUnspents(testWallets.buildParams(this, {
     feeRate,
     minHeight: 1,
     maxNumInputsToUse: 80,
     numUnspentsToMake: 20,
     numBlocks: 12,
-    walletPassphrase,
-  });
+  }));
   transaction.status.should.equal('signed');
 
   await wait(10);
@@ -87,15 +83,14 @@ walletTest('should fanout the number of unspents to 20', async function(testWall
   unspents.length.should.equal(20);
 });
 
-walletTest('should sweep funds from one wallet to another', async function(testWallets) {
+walletTest('should sweep funds from one wallet to another', async function(testWallets: ManagedWallets) {
   const sweepWallet = await testWallets.getNextWallet(testWallets.getPredicateUnspentsConfirmed(6));
   const targetWallet = await testWallets.getNextWallet();
   const targetWalletUnspents = await testWallets.getUnspents(targetWallet);
 
-  const transaction = await sweepWallet.sweep({
+  const transaction = await sweepWallet.sweep(testWallets.buildParams(this, {
     address: targetWallet.receiveAddress(),
-    walletPassphrase,
-  });
+  }));
   transaction.status.should.equal('signed');
 
   await wait(10);
@@ -104,19 +99,18 @@ walletTest('should sweep funds from one wallet to another', async function(testW
   (await targetWallet.unspents()).unspents.length.should.eql(targetWalletUnspents.length + 1);
 });
 
-walletTest('should make tx with bnb exactMatch', async function(testWallets) {
+walletTest('should make tx with bnb exactMatch', async function(testWallets: ManagedWallets) {
   const wallet = await testWallets.getNextWallet();
   const unspents = await testWallets.getUnspents(wallet);
   const feeRate = 10_000;
   const address = wallet.receiveAddress();
   const amount = testWallets.chain.getMaxSpendable(unspents, [address], feeRate);
-  const prebuild = await wallet.prebuildTransaction({
+  const prebuild = await wallet.prebuildTransaction(testWallets.buildParams(this, {
     recipients: [{ address, amount }],
     strategy: 'BNB',
     strategyAllowFallback: false,
     feeRate,
-    walletPassphrase,
-  });
+  }));
   // FIXME: how do we know BnB was used?
   // At least we have sent strategyAllowFallback=false
 
