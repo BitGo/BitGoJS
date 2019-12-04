@@ -91,3 +91,5 @@ const tx = txBuilder.build();
 
 ## Developers
 If you'd like to contribute to this project, see the [developer guide](DEVELOPER.md) for contribution norms and expectations.
+
+Note that there is a near-term goal to move this library towards a plugin-based architecture for coin registration. Until this library gets there (and this note is removed), PRs adding support for new coins will be put on hold.

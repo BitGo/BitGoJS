@@ -60,7 +60,7 @@ npm test
 ```
 
 ## Coding Norms & Expectations
-When contributing, it is recommended that you follow the existing patterns defined in the project. A few specific notes:
+When contributing, it is recommended that you follow the existing patterns defined in the project. Pull requests that break these norms will likely be rejected or require a round of feedback. A few specific notes:
 
 - Do not specify default accessors. In Typescript, the default accessor for a class attribute is
 `public`, so specifying it for functions and attributes is redundant.
