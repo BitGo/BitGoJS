@@ -5,19 +5,26 @@
 
 /**
  */
-type CURRENT_PAYLOAD_VERSION = '1.1.1';
+type CURRENT_PAYLOAD_VERSION = '1.2.0';
 
 export interface Payload {
   version: CURRENT_PAYLOAD_VERSION;
   accountId: string;
-  currency: string;
-  subtotal: string;
+  amounts: PayloadAmounts[];
+  nonceHold: string;
+  nonceSettle: string;
+}
+
+export interface PayloadAmounts {
+  accountId: string;
+  sendAmount: string;
+  sendCurrency: string;
+  receiveAmount: string;
+  receiveCurrency: string;
+  subTotal: string; // sendAmount - fees[].feeAmount
   fees?: {
+    // will only show up if the accountId is the signing accountId
     feeType: string;
     feeAmount: string;
   }[];
-  amount: string;
-  nonceHold: string;
-  nonceSettle: string;
-  otherParties: { accountId: string; currency: string; amount: string }[];
 }

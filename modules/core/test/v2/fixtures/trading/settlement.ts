@@ -113,19 +113,26 @@ export default {
     }]
   },
   createSettlementPayloadRequest: {
-    version: '1.1.1',
-    currency: 'ofctusd',
-    amount: '555',
-    otherParties: [
+    version: '1.2.0',
+    amounts: [
       {
         accountId: '5cf940a49449412d00f53b8f7392f7c0',
-        amount: '500',
-        currency: 'ofctbtc'
+        sendAmount: '500',
+        sendCurrency: 'ofctbtc',
+        receiveAmount: '555',
+        receiveCurrency: 'ofctusd',
+      },
+      {
+        accountId: '5cf940969449412d00f53b4c55fc2139',
+        sendAmount: '555',
+        sendCurrency: 'ofctusd',
+        receiveAmount: '500',
+        receiveCurrency: 'ofctbtc',
       }
     ]
   },
   createSettlementPayloadResponse: {
-    payload: '{"version":"1.1.1","accountId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctusd","subtotal":"555","amount":"555","nonceHold":"djTPc0eRtQixTviodw1iJQ==","nonceSettle":"Wemw9X+iFcwsRFV3nJebxA==","otherParties":[{"accountId":"5cf940a49449412d00f53b8f7392f7c0","currency":"ofctbtc","amount":"500"}]}'
+    payload: '{"version":"1.2.0","accountId":"5cf940969449412d00f53b4c55fc2139","nonceHold":"djTPc0eRtQixTviodw1iJQ==","nonceSettle":"Wemw9X+iFcwsRFV3nJebxA==","amounts":[{"accountId":"5cf940a49449412d00f53b8f7392f7c0","sendCurrency":"ofctbtc","sendSubtotal":"500","sendAmount":"500","receiveCurrency":"ofctusd","receiveAmount":"555"},{"accountId":"5cf940969449412d00f53b4c55fc2139","sendCurrency":"ofctusd","sendSubtotal":"555","sendAmount":"555","receiveCurrency":"ofctbtc","receiveAmount":"500"}]}'
   },
   createSettlementRequest: {
     requesterAccountId: '5cf940969449412d00f53b4c55fc2139',
@@ -178,7 +185,7 @@ export default {
         currency: 'ofctusd',
         createdAt: '2019-06-06T16:36:21.985Z'
       },
-      payload: '{"walletId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctusd","amount":"555","nonceHold":"brJ/Ufv/v4Fg8Emap4vnIA==","nonceSettle":"fMOE8AEEGJVdXZ7143B+qQ==","otherParties":["5cf940a49449412d00f53b8f7392f7c0"]}',
+      payload: '{"version":"1.2.0","accountId":"5cf940969449412d00f53b4c55fc2139","nonceHold":"djTPc0eRtQixTviodw1iJQ==","nonceSettle":"Wemw9X+iFcwsRFV3nJebxA==","amounts":[{"accountId":"5cf940a49449412d00f53b8f7392f7c0","sendCurrency":"ofctbtc","sendAmount":"500","receiveCurrency":"ofctusd","receiveAmount":"555"},{"accountId":"5cf940969449412d00f53b4c55fc2139","sendCurrency":"ofctusd","sendAmount":"555","receiveCurrency":"ofctbtc","receiveAmount":"500"}]}',
       signature: '2049b6cd2e2693f26415987cb14a9e14be81ddf1e3e370fe19477e7da5237835f9467e5846a4d12a7fd23e860153083938080fe1d8f78f673851e470a9e45f7e3d',
       createdAt: '2019-06-06T16:36:22.062Z',
       expireAt: '2019-06-07T16:36:22.057Z'
