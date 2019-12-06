@@ -1,5 +1,5 @@
-import { coins } from "@bitgo/statics";
-import { BuildTransactionError } from "./coin/baseCoin/errors";
+import { coins } from '@bitgo/statics';
+import { BuildTransactionError } from './coin/baseCoin/errors';
 
 // coins
 import * as BaseCoin from './coin/baseCoin';
@@ -13,7 +13,7 @@ export const supportedCoins = ['trx', 'ttrx'];
 
 /**
  * Get a transaction builder for the given coin.
- * 
+ *
  * @param coinName One of the {@code supportedCoins}
  * @return An instance of a {@code TransactionBuilder}
  */

@@ -1,5 +1,5 @@
-
 export { KeyPair } from './keyPair';
+export { Address } from './address';
 export { Transaction } from './transaction';
 export { TransactionBuilder } from './transactionBuilder';
 

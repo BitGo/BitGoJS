@@ -1,8 +1,8 @@
-import { BaseAddress, BaseKey } from "./iface";
-import { BaseTransaction } from "./baseTransaction";
-import { SigningError } from "./errors";
-import BigNumber from "bignumber.js";
-import { BaseCoin as CoinConfig } from "@bitgo/statics";
+import { BaseAddress, BaseKey } from './iface';
+import { BaseTransaction } from './baseTransaction';
+import { SigningError } from './errors';
+import BigNumber from 'bignumber.js';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 /**
  * Generic transaction builder. It contains the set of default steps (i.e. from, sign, build) and
@@ -10,12 +10,11 @@ import { BaseCoin as CoinConfig } from "@bitgo/statics";
  * Should be extended with coin specific steps.
  */
 export abstract class BaseTransactionBuilder {
-
   /**
    * Base constructor.
    * @param _coinConfig BaseCoin from statics library
    */
-  protected constructor(protected _coinConfig: Readonly<CoinConfig>) { }
+  protected constructor(protected _coinConfig: Readonly<CoinConfig>) {}
 
   /**
    * Parse a transaction based on existing data. The input format is determined by the coin
@@ -88,7 +87,7 @@ export abstract class BaseTransactionBuilder {
    */
   abstract validateAddress(address: BaseAddress, addressFormat?: string);
 
-  /***
+  /**
    * Validates the value corresponding to an amount can be used for this transaction. Throws an
    * exception if invalid.
    */

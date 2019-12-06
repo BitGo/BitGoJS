@@ -1,4 +1,4 @@
-import { ContractType, PermissionType } from "./enum";
+import { ContractType, PermissionType } from './enum';
 
 /**
  * A Tron private key in extended or compressed format
@@ -41,7 +41,7 @@ export interface Account {
   address: {
     base58: string;
     hex: string;
-  }
+  };
 }
 
 export interface Parameter {
@@ -76,7 +76,7 @@ export interface RawData {
 }
 
 export interface Value {
-  value: ValueFields
+  value: ValueFields;
 }
 
 export interface ValueFields {

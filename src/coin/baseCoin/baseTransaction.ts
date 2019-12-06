@@ -1,12 +1,12 @@
-import { BaseAddress, BaseKey, Destination } from "./iface";
-import { BaseCoin as CoinConfig } from "@bitgo/statics";
-import { TransactionType } from "./enum";
+import { BaseAddress, BaseKey, Destination } from './iface';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { TransactionType } from './enum';
 
 /**
  * Generic transaction. Should be extended with coin specific members.
  */
 export abstract class BaseTransaction {
-  protected _id: string;  // The transaction id as seen in the blockchain
+  protected _id: string; // The transaction id as seen in the blockchain
   protected _fromAddresses: BaseAddress[];
   protected _destination: Destination[];
   protected _type: TransactionType;
@@ -15,13 +15,13 @@ export abstract class BaseTransaction {
    * Base constructor.
    * @param _coinConfig BaseCoin from statics library
    */
-  protected constructor(protected _coinConfig: Readonly<CoinConfig>) { }
+  protected constructor(protected _coinConfig: Readonly<CoinConfig>) {}
 
-  get id() {
+  get id(): string {
     return this._id;
   }
 
-  get type() {
+  get type(): TransactionType {
     return this._type;
   }
 
