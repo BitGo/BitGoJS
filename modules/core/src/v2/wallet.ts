@@ -1813,6 +1813,7 @@ export class Wallet {
 
       // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
       const submitParams = Object.assign(params, yield self.prebuildAndSignTransaction(params));
+      delete submitParams.wallet;
       return yield self.submitTransaction(submitParams);
     }).call(this).asCallback(callback);
   }
