@@ -10,15 +10,31 @@ import { BitGo } from '../../bitgo';
 
 import { NodeCallback } from '../types';
 import { TradingAccount } from './tradingAccount';
-import { TradingPartner } from './tradingPartner';
+import { TradingPartner, TradingPartnerType } from './tradingPartner';
 
 const co = Bluebird.coroutine;
 
-interface TradingPartnerReferralParameters {
+// Side of the requester (if they should be considered the primary or the secondary)
+// Only important for agency partnerships
+// the primaryAccount is the agent, settling trades for the secondary account id
+export enum TradingReferralRequesterSide {
+  PRIMARY = 'primary', // if partnership is of type agency, primary is the agent
+  SECONDARY = 'secondary',
+}
+
+export interface TradingPartnerAddByCodeParameters {
+  referralCode: string;
+  type: TradingPartnerType;
+  requesterSide: TradingReferralRequesterSide;
+}
+
+export interface TradingPartnerReferralParameters {
   institutionName: string;
   contactName: string;
   contactEmail: string;
   contactPhoneNumber: string;
+  type: TradingPartnerType;
+  requesterSide: TradingReferralRequesterSide;
   memo: string;
 }
 
@@ -76,6 +92,31 @@ export class TradingPartners {
         .result();
 
       return {}; // TODO: return result of referral
+    })
+      .call(this)
+      .asCallback(callback);
+  }
+
+  /**
+   * Add trading partner given the unique referralCode provided by trading partner.
+   * @param params
+   * @param params.referralCode unique referral code provided by counterparty
+   * @param params.type type of trading partnership
+   * @param params.requesterSide side of the requester (primary or secondary) important for agency relationships
+   * @param callback
+   */
+  addByCode(params: TradingPartnerAddByCodeParameters, callback?: NodeCallback<{}>): Bluebird<TradingPartner> {
+    const self = this;
+    return co<TradingPartner>(function* refer() {
+      const url = self.bitgo.microservicesUrl(
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners`
+      );
+      const response = yield self.bitgo
+        .post(url)
+        .send(params)
+        .result();
+
+      return response;
     })
       .call(this)
       .asCallback(callback);

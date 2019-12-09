@@ -98,19 +98,27 @@ export default {
     expireAt: '2019-06-07T22:45:10.105Z'
   },
   affirmAffirmationPayloadRequest: {
-    version: '1.1.1',
-    currency: 'ofctusd',
-    amount: '555',
-    otherParties: [
+    version: '1.2.0',
+    amounts: [
       {
         accountId: '5cf940a49449412d00f53b8f7392f7c0',
-        amount: '500',
-        currency: 'ofctbtc'
+        sendAmount: '500',
+        sendCurrency: 'ofctbtc',
+        receiveAmount: '555',
+        receiveCurrency: 'ofctusd'
+
+      },
+      {
+        accountId: '5cf940969449412d00f53b4c55fc2139',
+        sendAmount: '555',
+        sendCurrency: 'ofctusd',
+        receiveAmount: '500',
+        receiveCurrency: 'ofctbtc'
       }
     ]
   },
   affirmAffirmationPayloadResponse: {
-    payload: '{"version":"1.1.1","accountId":"5cf940969449412d00f53b4c55fc2139","currency":"ofctusd","subtotal":"555","amount":"555","nonceHold":"djTPc0eRtQixTviodw1iJQ==","nonceSettle":"Wemw9X+iFcwsRFV3nJebxA==","otherParties":[{"accountId":"5cf940a49449412d00f53b8f7392f7c0","currency":"ofctbtc","amount":"500"}]}'
+    payload: '{"version":"1.1.1","accountId":"5cf940969449412d00f53b4c55fc2139","nonceHold":"djTPc0eRtQixTviodw1iJQ==","nonceSettle":"Wemw9X+iFcwsRFV3nJebxA==","amounts":[{"accountId":"5cf940a49449412d00f53b8f7392f7c0","sendCurrency":"ofctbtc","sendSubtotal":"500","sendAmount":"500","receiveCurrency":"ofctusd","receiveAmount":"555"},{"accountId":"5cf940969449412d00f53b4c55fc2139","sendCurrency":"ofctusd","sendSubtotal":"555","sendAmount":"555","receiveCurrency":"ofctbtc","receiveAmount":"500"}]}'
   },
   updateAffirmation: function(status) {
     const affirmation = { status, ...this.singleAffirmation };

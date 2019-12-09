@@ -13,7 +13,7 @@ import { TradingAccount } from './tradingAccount';
 
 const co = Bluebird.coroutine;
 
-interface GetAffirmationParameters {
+export interface GetAffirmationParameters {
   id: string;
   accountId?: string;
 }
