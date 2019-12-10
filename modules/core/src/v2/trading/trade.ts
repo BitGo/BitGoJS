@@ -17,6 +17,10 @@ export interface Trade {
   quoteAmount: string;
   baseCurrency: string;
   quoteCurrency: string;
+  baseReceiveAmount?: string;
+  quoteReceiveAmount?: string;
+  baseReceiveCurrency?: string;
+  quoteReceiveCurrency?: string;
   costBasis: string;
   costBasisCurrency: string;
 }
