@@ -32,7 +32,6 @@ export const UnsignedBuildTransaction = {
      timestamp: 1571811410819 },
   raw_data_hex:
      '0a0290e42208a018bf9892ddb13840e0c58ebadf2d5a66080112620a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412310a1541c4530f6bfa902b7398ac773da56106a15af15f9212154189ffaf9da8c6fae32189b2e6dce228249b1129aa18b60d7083878bbadf2d',
-
 };
 
 export const FirstSigOnBuildTransaction = (() => {
@@ -43,7 +42,7 @@ export const FirstSigOnBuildTransaction = (() => {
 })();
 
 export const SecondSigOnBuildTransaction = (() => {
-  let modifiedBuild = JSON.parse(JSON.stringify(UnsignedBuildTransaction));;
+  let modifiedBuild = JSON.parse(JSON.stringify(UnsignedBuildTransaction));
   modifiedBuild["signature"] = [];
   modifiedBuild["signature"].push('f3cabe2f4aed13e2342c78c7bf4626ea36cd6509a44418c24866814d3426703686be9ef21bd993324c520565beee820201f2a50a9ac971732410d3eb69cdb2a600');
   modifiedBuild["signature"].push('bd08e6cd876bb573dd00a32870b58b70ea8b7908f5131686502589941bfa4fdda76b8c81bbbcfc549be6d4988657cea122df7da46c72041def2683d6ecb04a7401');

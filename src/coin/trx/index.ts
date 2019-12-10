@@ -1,7 +1,5 @@
 
-export { Address } from './address';
-export { Key } from './key';
-export { Signature } from './signature';
+export { KeyPair } from './keyPair';
 export { Transaction } from './transaction';
 export { TransactionBuilder } from './transactionBuilder';
 

@@ -1,4 +1,3 @@
-const EC = require('elliptic').ec;
 import { TransferContract, AccountPermissionUpdateContract } from '../../../../src/coin/trx/iface';
 import { Utils } from '../../../../src/coin/trx/index';
 
@@ -18,30 +17,6 @@ describe('Util library should', function() {
   const addressHex = '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80577';
   const base58 = 'TDzm1tCXM2YS1PDa3GoXSvxdy4AgwVbBPE';
   const addrBytes = [ 65, 44, 43, 164, 169, 255, 108, 83, 32, 125, 197, 182,134,191,236,247,94,167,184,5,119 ];
-
-  it('generate a valid account', () => {
-    const seed = Buffer.alloc(32);
-    const account = Utils.generateAccount(seed);
-    account.privateKey.should.equal('82A34E3867EA7EA4E67E27865D500AE84E98D07AB1BAB06526F0A5A5FDCC3EBA');
-    account.publicKey.should.equal('04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355');
-    account.address.base58.should.equal('TXQo5GgQQJYVzreX5yzqqVnzBQP5Ek2iQW');
-    account.address.hex.should.equal('41EB317B9F2E0891D66C061DDC3F5EE7ED42D70A44');
-  });
-
-  it('generate a valid random account when no seed is provided', () => {
-    const account = Utils.generateAccount();
-    should.exists(account.privateKey);
-    should.exists(account.publicKey);
-    should.exists(account.address.base58);
-    should.exists(account.address.hex);
-
-    validateKeyPair(account.publicKey, account.privateKey).should.be.true();
-  });
-
-  it('should fail to create an account with an invalid seed', () => {
-    const seed = Buffer.alloc(8); //  Seed should be at least 128 bits, 16 bytes
-    should.throws(() => Utils.generateAccount(seed));
-  });
 
   // tx information
   it('be able to convert hex to bytes', () => {
@@ -158,28 +133,4 @@ describe('Util library should', function() {
      should.equal(parsedTx.actives[0].type, 2);
      should.equal(parsedTx.actives[0].threshold, 2);
    });
-
-
-  /**
-   * Validate the public key is a valid point on secp256k1 elliptic curve and that it has been derived
-   * from the private key.
-   *
-   * @param pub Account private key
-   * @param prv Account private key
-   * @return whether or not the pub and priv are valid
-   */
-  function validateKeyPair(pub: string, prv: string): boolean {
-    const bufPub = Buffer.from(pub, 'hex');
-    const bufPrv = Buffer.from(prv, 'hex');
-
-    const ec = new EC('secp256k1');
-    const kp = ec.keyPair({ priv: bufPrv, pub: bufPub });
-
-    const validation = kp.validate();
-    if (validation.reason || !validation.result) {
-      throw new Error('Failed to validate generated keys.');
-    }
-
-    return kp.validate().result;
-  }
 });

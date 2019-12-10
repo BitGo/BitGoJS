@@ -8,6 +8,7 @@ import { signTransaction, isBase58Address } from "./utils";
 import { BaseCoin as CoinConfig } from "@bitgo/statics";
 import { BaseTransactionBuilder } from "../baseCoin";
 import { Transaction } from './transaction';
+import { KeyPair } from "./keyPair";
 
 /**
  * Tron transaction builder.
@@ -50,16 +51,20 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     const oldTransaction = this.transaction.toJson();
-    // store our signatures, since we want to compare the new sig to another in a later step
+    // Store the original signatures to compare them with the new ones in a later step. Signatures
+    // can be undefined if this is the first time the transaction is being signed
     const oldSignatureCount = oldTransaction.signature ? oldTransaction.signature.length : 0;
     let signedTransaction: TransactionReceipt;
     try {
-      signedTransaction = signTransaction(key.key, this.transaction.toJson());
+      const keyPair = new KeyPair({ prv: key.key });
+      // Since the key pair was generated using a private key, it will always have a prv attribute,
+      // hence it is safe to use non-null operator
+      signedTransaction = signTransaction(keyPair.getKeys().prv!, this.transaction.toJson());
     } catch (e) {
       throw new SigningError('Failed to sign transaction via helper.');
     }
 
-    // ensure that we have more signatures than what we started with
+    // Ensure that we have more signatures than what we started with
     if (!signedTransaction.signature || oldSignatureCount >= signedTransaction.signature.length) {
       throw new SigningError('Transaction signing did not return an additional signature.');
     }
