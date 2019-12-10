@@ -116,11 +116,6 @@
     protobufjs "^6.8.8"
     tronweb "^2.7.2"
 
-"@bitgo/statics@^2.4.0-rc.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-2.6.0.tgz#994b14045e13b76d77ce6b6886dea0c677325318"
-  integrity sha512-SY8NnfI2uIZH4dH9GBV/GVBQYGrGYC/MCoUB7ZQm2R89O1zMmOmmc8zVI765KdroMXc98sII9byVSBnH77H9eg==
-
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
@@ -2092,6 +2087,31 @@ bitgo-utxo-lib@^1.6.0:
   optionalDependencies:
     secp256k1 "^3.5.2"
 
+bitgo-utxo-lib@^1.7.0-rc:
+  version "1.7.0-rc.0"
+  resolved "https://registry.yarnpkg.com/bitgo-utxo-lib/-/bitgo-utxo-lib-1.7.0-rc.0.tgz#86308e89316fb6e17483e4722ada5c297b309c2c"
+  integrity sha512-H+AN2ocwZfNwH5iFXnvGBc3+QBz6WDlzNUk+y/hlG3g6zD001QYB1LtZ4mySkziXEF1zRM8ksUoIxlb9S07Gfw==
+  dependencies:
+    bech32 "0.0.3"
+    bigi "^1.4.0"
+    bip66 "^1.1.0"
+    bitcoin-ops "^1.3.0"
+    blake2b "https://github.com/BitGo/blake2b#6268e6dd678661e0acc4359e9171b97eb1ebf8ac"
+    bs58check "^2.0.0"
+    create-hash "^1.1.0"
+    create-hmac "^1.1.3"
+    debug "~3.1.0"
+    ecurve "^1.0.0"
+    merkle-lib "^2.0.10"
+    pushdata-bitcoin "^1.0.1"
+    randombytes "^2.0.1"
+    safe-buffer "^5.0.1"
+    typeforce "^1.11.3"
+    varuint-bitcoin "^1.0.4"
+    wif "^2.0.1"
+  optionalDependencies:
+    secp256k1 "^3.5.2"
+
 bl@^1.0.0:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/bl/-/bl-1.2.2.tgz#a160911717103c07410cef63ef51b397c025af9c"
@@ -2104,6 +2124,14 @@ bl@^1.0.0:
   version "2.0.0"
   resolved "https://github.com/BitGo/blake2b-wasm#193cdb71656c1a6c7f89b05d0327bb9b758d071b"
   dependencies:
+    nanoassert "^1.0.0"
+
+"blake2b@git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac":
+  version "2.1.3"
+  uid "6268e6dd678661e0acc4359e9171b97eb1ebf8ac"
+  resolved "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac"
+  dependencies:
+    blake2b-wasm "https://github.com/BitGo/blake2b-wasm#193cdb71656c1a6c7f89b05d0327bb9b758d071b"
     nanoassert "^1.0.0"
 
 "blake2b@https://github.com/BitGo/blake2b#6268e6dd678661e0acc4359e9171b97eb1ebf8ac":
