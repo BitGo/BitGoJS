@@ -99,11 +99,7 @@ describe('Settlements', function() {
         encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
       });
 
-    const payload = yield tradingAccount.buildPayload({
-      currency: 'ofctusd',
-      amount: '555',
-      otherParties: [{ accountId: '5cf940a49449412d00f53b8f7392f7c0', amount: '500', currency: 'ofctbtc' }]
-    });
+    const payload = yield tradingAccount.buildPayload(fixtures.createSettlementPayloadRequest);
 
     const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
 

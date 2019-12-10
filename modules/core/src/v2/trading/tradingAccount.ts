@@ -18,26 +18,32 @@ import { Settlements } from './settlements';
 
 const co = Bluebird.coroutine;
 
-const TRADE_PAYLOAD_VERSION = '1.1.1';
+const TRADE_PAYLOAD_VERSION = '1.2.0';
 
-interface BuildPayloadParameters {
-  currency: string;
-  amount: string;
-  otherParties: { accountId: string; currency: string; amount: string }[];
+export interface BuildPayloadParameters {
+  amounts: BuildPayloadAmounts[];
 }
 
-interface SignPayloadParameters {
+export interface BuildPayloadAmounts {
+  accountId: string;
+  sendAmount: string;
+  sendCurrency: string;
+  receiveAmount: string;
+  receiveCurrency: string;
+}
+
+export interface SignPayloadParameters {
   payload: Payload;
   walletPassphrase: string;
 }
 
-interface SettlementFees {
+export interface SettlementFees {
   feeRate: string;
   feeAmount: string;
   feeCurrency: string;
 }
 
-interface CalculateSettlementFeesParams {
+export interface CalculateSettlementFeesParams {
   counterpartyAccountId: string;
   sendCurrency: string;
   sendAmount: string;
@@ -62,12 +68,14 @@ export class TradingAccount {
   }
 
   /**
-   * Builds a payload authorizing a trade from this trading account. The currency and amount must be specified, as well as a list
-   * of trade counterparties.
+   * Builds a payload authorizing trade from this trading account.
    * @param params
-   * @param params.currency the currency this account will be sending as part of the trade
-   * @param params.amount the amount of currency (in base units, such as cents, satoshis, or wei)
-   * @param params.otherParties array of counterparties and reciprocal funds authorized to receive funds as part of this trade
+   * @param params.amounts[] array of amounts that will be traded as part of the settlement
+   * @param params.amounts[].accountId the accountId corresponding with the sending and receiving amounts for the settlement
+   * @param params.amounts[].sendAmount amount of currency sent by trading account of given accountId
+   * @param params.amounts[].sendCurrency currency of amount sent by trading account of given accountId
+   * @param params.amounts[].receiveAmount amount of currency received by trading account of given accountId
+   * @param params.amounts[].receiveCurrency currency of amount received by trading account of given accountId
    * @param callback
    * @returns unsigned trade payload for the given parameters. This object should be stringified with JSON.stringify() before being submitted
    */
@@ -79,9 +87,7 @@ export class TradingAccount {
 
       const body = {
         version: TRADE_PAYLOAD_VERSION,
-        currency: params.currency,
-        amount: params.amount,
-        otherParties: params.otherParties,
+        amounts: params.amounts,
       };
 
       const response = yield this.bitgo
@@ -113,41 +119,47 @@ export class TradingAccount {
     const paramsCopy = JSON.parse(JSON.stringify(params)); // needs to be a deep copy
 
     // Verifies that for each party in the payload, we requested a matching party, only checking sensitive fields
-    let partiesMatch = true;
-    for (const party of payloadObj.otherParties) {
-      const matchingExpectedParty = paramsCopy.otherParties.findIndex(
-        expectedParty =>
-          party.accountId === expectedParty.accountId &&
-          party.currency === expectedParty.currency &&
-          party.amount === expectedParty.amount
+    let validAmounts = 0;
+    for (const amount of payloadObj.amounts) {
+      const matchingExpectedParty = paramsCopy.amounts.findIndex(
+        expectedAmount =>
+          amount.accountId === expectedAmount.accountId &&
+          amount.sendCurrency === expectedAmount.sendCurrency &&
+          amount.sendSubtotal === expectedAmount.sendAmount &&
+          amount.receiveAmount === expectedAmount.receiveAmount &&
+          amount.receiveCurrency === expectedAmount.receiveCurrency
       );
 
       if (matchingExpectedParty === -1) {
-        partiesMatch = false;
+        // matchingExpectedParty not found to the payloadObject
+        // payload is not valid
         break;
       }
 
-      // delete so we ensure no duplicates
-      paramsCopy.otherParties.splice(matchingExpectedParty, 1);
-    }
+      if (amount.fees && amount.fees.length > 0) {
+        let feeTotal = new BigNumber(0);
+        for (const fee of amount.fees) {
+          feeTotal = feeTotal.plus(new BigNumber(fee.feeAmount));
+        }
 
-    // the amount field will change if fees are present, but subtotal should always equal the requested send amount
-    let expectedAmount: string = params.amount;
-    if (payloadObj.fees) {
-      const totalFees = payloadObj.fees.reduce(
-        (fees: BigNumber, feeObj) => fees.plus(feeObj.feeAmount),
-        new BigNumber(0)
-      );
-      expectedAmount = new BigNumber(payloadObj.subtotal).plus(totalFees).toString();
+        const expectedTotalAmount = new BigNumber(paramsCopy.amounts[matchingExpectedParty].sendAmount).plus(feeTotal);
+        if (expectedTotalAmount.toString() !== amount.sendAmount) {
+          // expected total does not match the sendAmount of the payload
+          // payload is not valid
+          break;
+        }
+      }
+
+      // matching party found, and fee found
+      validAmounts = validAmounts + 1;
+      // delete so we ensure no duplicates
+      paramsCopy.amounts.splice(matchingExpectedParty, 1);
     }
 
     return (
       payloadObj.accountId === this.id &&
-      payloadObj.currency === params.currency &&
-      payloadObj.subtotal === params.amount &&
-      payloadObj.amount === expectedAmount &&
-      payloadObj.otherParties.length === params.otherParties.length &&
-      partiesMatch
+      payloadObj.amounts.length === params.amounts.length &&
+      validAmounts === payloadObj.amounts.length
     );
   }
 
