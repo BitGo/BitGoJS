@@ -242,10 +242,15 @@ describe('Bitgo Express V1', function() {
         res.body.message.should.equal('Insufficient funds');
         res.body.fee.should.be.greaterThan(546);
         res.body.available.should.be.greaterThan(546);
-        const txInfo = res.body.txInfo;
-        txInfo.nP2shInputs.should.be.greaterThan(0);
-        txInfo.nP2pkhInputs.should.eql(0);
-        txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
+        const {
+          nP2shInputs = 0,
+          nP2shP2wshInputs = 0,
+          nP2pkhInputs = 0,
+          nOutputs,
+        } = res.body.txInfo;
+        (nP2shInputs + nP2shP2wshInputs).should.be.greaterThan(0);
+        nP2pkhInputs.should.eql(0);
+        nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
       });
     });
 
@@ -263,10 +268,15 @@ describe('Bitgo Express V1', function() {
         res.body.message.should.equal('Insufficient funds');
         res.body.should.have.property('fee');
         res.body.fee.should.equal(0.0003 * 1e8);
-        const txInfo = res.body.txInfo;
-        txInfo.nP2shInputs.should.be.greaterThan(0);
-        txInfo.nP2pkhInputs.should.eql(0);
-        txInfo.nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
+        const {
+          nP2shInputs = 0,
+          nP2shP2wshInputs = 0,
+          nP2pkhInputs = 0,
+          nOutputs,
+        } = res.body.txInfo;
+        (nP2shInputs + nP2shP2wshInputs).should.be.greaterThan(0);
+        nP2pkhInputs.should.eql(0);
+        nOutputs.should.be.greaterThan(2); // change + bitgo fee + destination
       });
     });
 
