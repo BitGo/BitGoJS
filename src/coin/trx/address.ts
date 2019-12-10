@@ -1,4 +1,4 @@
-import { BaseAddress } from "../baseCoin/iface";
+import { BaseAddress } from '../baseCoin/iface';
 
 /**
  * Addresses can be encoded in three varieties:
@@ -8,5 +8,5 @@ import { BaseAddress } from "../baseCoin/iface";
  */
 export class Address implements BaseAddress {
   // the base58 representation
-  address: string; 
+  address: string;
 }

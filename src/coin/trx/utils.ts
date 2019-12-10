@@ -1,4 +1,4 @@
-const tronweb = require('tronweb');
+import * as tronweb from 'tronweb';
 import { protocol } from '../../../resources/trx/protobuf/tron';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
 
@@ -31,7 +31,12 @@ export function getHexAddressFromByteArray(arr: ByteArray): string {
   return tronweb.utils.code.byteArray2hexStr(arr);
 }
 
-export function verifySignature(messageToVerify: string, base58Address: string, sigHex: string, useTronHeader: boolean = true): ByteArray {
+export function verifySignature(
+  messageToVerify: string,
+  base58Address: string,
+  sigHex: string,
+  useTronHeader = true,
+): ByteArray {
   if (!isValidHex(sigHex)) {
     throw new UtilsError('signature is not in a valid format, needs to be hexadecimal');
   }
@@ -75,7 +80,7 @@ export function signTransaction(privateKey: string | ByteArray, transaction: Tra
   return tronweb.utils.crypto.signTransaction(privateKey, transaction);
 }
 
-export function signString(message: string, privateKey: string | ByteArray, useTronHeader: boolean = true): string {
+export function signString(message: string, privateKey: string | ByteArray, useTronHeader = true): string {
   return tronweb.Trx.signString(message, privateKey, useTronHeader);
 }
 
@@ -98,7 +103,7 @@ export function decodeTransaction(hexString: string): RawData {
   let contract: TransferContract[] | AccountPermissionUpdateContract[];
   let contractType: ContractType;
   // ensure the contract type is supported
-  switch  (rawTransaction.contracts[0].parameter.type_url) {
+  switch (rawTransaction.contracts[0].parameter.type_url) {
     case 'type.googleapis.com/protocol.TransferContract':
       contractType = ContractType.Transfer;
       contract = this.decodeTransferContract(rawTransaction.contracts[0].parameter.value);
@@ -125,7 +130,9 @@ export function decodeTransaction(hexString: string): RawData {
  * @example
  * @see {@link https://github.com/BitGo/bitgo-account-lib/blob/5f282588701778a4421c75fa61f42713f56e95b9/resources/trx/protobuf/tron.proto#L319}
  */
-export function decodeRawTransaction(hexString: string): { expiration: number, timestamp: number, contracts: Array<any>  } {
+export function decodeRawTransaction(
+  hexString: string,
+): { expiration: number; timestamp: number; contracts: Array<any> } {
   const bytes = Buffer.from(hexString, 'hex');
 
   let raw;
@@ -147,7 +154,7 @@ export function decodeRawTransaction(hexString: string): { expiration: number, t
  * Indicates whether the passed string is a safe hex string for tron's purposes.
  * @param hex A valid hex string must be a string made of numbers and characters and has an even length.
  */
-export function isValidHex(hex: string): Boolean {
+export function isValidHex(hex: string): boolean {
   return /^(0x)?([0-9a-f]{2})+$/i.test(hex);
 }
 
@@ -177,19 +184,25 @@ export function decodeTransferContract(transferHex: string): TransferContract[] 
   }
 
   // deserialize attributes
-  const owner_address = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')));
-  const to_address = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(transferContract.toAddress, 'base64').toString('hex')));
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(transferContract.ownerAddress, 'base64').toString('hex')),
+  );
+  const to_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(transferContract.toAddress, 'base64').toString('hex')),
+  );
   const amount = transferContract.amount;
 
-  return [{
-    parameter: {
-      value: {
-        amount: Number(amount),
-        owner_address,
-        to_address,
-      }
-    }
-  }];
+  return [
+    {
+      parameter: {
+        value: {
+          amount: Number(amount),
+          owner_address,
+          to_address,
+        },
+      },
+    },
+  ];
 }
 
 /**
@@ -204,35 +217,35 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
   assert(accountUpdateContract.owner);
   assert(accountUpdateContract.hasOwnProperty('actives'));
 
-  const ownerAddress = getBase58AddressFromByteArray(getByteArrayFromHexAddress(Buffer.from(accountUpdateContract.ownerAddress, 'base64').toString('hex')));
-  const owner: Permission = createPermission((accountUpdateContract.owner));
+  const ownerAddress = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(accountUpdateContract.ownerAddress, 'base64').toString('hex')),
+  );
+  const owner: Permission = createPermission(accountUpdateContract.owner);
   let witness: Permission | undefined = undefined;
-  if(accountUpdateContract.witness) {
+  if (accountUpdateContract.witness) {
     witness = createPermission(accountUpdateContract.witness);
   }
-  const activeList = accountUpdateContract.actives.map((active) => createPermission(active));
+  const activeList = accountUpdateContract.actives.map(active => createPermission(active));
 
   return {
     ownerAddress,
     owner,
     witness,
     actives: activeList,
-  }
+  };
 }
 
-function createPermission(raw: { permissionName: string, threshold: number}): Permission {
+function createPermission(raw: { permissionName: string; threshold: number }): Permission {
   let permissionType: PermissionType;
   const permission = raw.permissionName.toLowerCase().trim();
   if (permission === 'owner') {
     permissionType = PermissionType.Owner;
-  }
-  else if (permission === "witness") {
+  } else if (permission === 'witness') {
     permissionType = PermissionType.Witness;
-  } else if (permission.substr(0,6) === "active") {
+  } else if (permission.substr(0, 6) === 'active') {
     permissionType = PermissionType.Active;
   } else {
     throw new UtilsError('Permission type not parseable.');
   }
   return { type: permissionType, threshold: raw.threshold };
 }
-

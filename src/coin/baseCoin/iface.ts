@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js";
+import BigNumber from 'bignumber.js';
 
 export interface BaseAddress {
   address: any;
@@ -25,5 +25,5 @@ export type ExtendedKeys = {
 }
 
 export interface Destination extends BaseAddress {
-  value: BigNumber
+  value: BigNumber;
 }

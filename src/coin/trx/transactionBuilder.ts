@@ -1,12 +1,12 @@
-import BigNumber from "bignumber.js";
+import BigNumber from 'bignumber.js';
 
 import { TransactionReceipt } from './iface';
 import { SigningError, BuildTransactionError } from '../baseCoin/errors';
 import { Address } from './address';
 import { BaseKey } from '../baseCoin/iface';
-import { signTransaction, isBase58Address } from "./utils";
-import { BaseCoin as CoinConfig } from "@bitgo/statics";
-import { BaseTransactionBuilder } from "../baseCoin";
+import { signTransaction, isBase58Address } from './utils';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseTransactionBuilder } from '../baseCoin';
 import { Transaction } from './transaction';
 import { KeyPair } from "./keyPair";
 
@@ -72,7 +72,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return new Transaction(this._coinConfig, signedTransaction);
   }
 
-
   /**
    * Tron transaction building and verification implementation.
    */
@@ -101,7 +100,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     // max long in Java - assumed upper limit for a TRX transaction
-    if (value.isGreaterThan(new BigNumber("9223372036854775807"))) {
+    if (value.isGreaterThan(new BigNumber('9223372036854775807'))) {
       throw new Error('Value cannot be greater than handled by the javatron node.');
     }
   }

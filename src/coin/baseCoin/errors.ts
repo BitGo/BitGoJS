@@ -1,4 +1,3 @@
-
 /**
  * This base class ensures that our stack trace is captured properly but also that we have classes of errors
  * that can be found in a switch.
@@ -10,7 +9,7 @@ export class ExtendableError extends Error {
     if (typeof Error.captureStackTrace === 'function') {
       Error.captureStackTrace(this, this.constructor);
     } else {
-      this.stack = (new Error(message)).stack;
+      this.stack = new Error(message).stack;
     }
   }
 }
@@ -44,4 +43,3 @@ export class ExtendTransactionError extends ExtendableError {
     super(message);
   }
 }
-

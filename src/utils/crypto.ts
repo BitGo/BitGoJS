@@ -1,5 +1,5 @@
-import { ExtendedKeys } from '../coin/baseCoin/iface';
 import { HDNode, ECPair, networks } from 'bitgo-utxo-lib';
+import { ExtendedKeys } from '../coin/baseCoin/iface';
 
 /**
  * Get the uncompressed public key from a BIP32 xpub
@@ -40,7 +40,6 @@ export function compressedPrvToExtendedKeys(prv: string): ExtendedKeys {
     xpub: hd.neutered().toBase58(),
   };
 }
-
 
 /**
  * Whether the input is a valid BIP32 xpub or not

@@ -9,7 +9,7 @@ export enum ContractType {
   /**
    * This is the multi-sig initialization contract.
    */
-  AccountPermissionUpdate, 
+  AccountPermissionUpdate,
 }
 
 export enum PermissionType {
