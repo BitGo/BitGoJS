@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "9.1.0",
+  "version": "9.2.0",
   "description": "BitGo Javascript SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/types/src/index.d.ts",
@@ -57,7 +57,7 @@
     "bigi": "^1.4.0",
     "bignumber.js": "^8.0.1",
     "bitcoinjs-message": "^2.0.0",
-    "bitgo-utxo-lib": "^1.6.0",
+    "bitgo-utxo-lib": "^1.7.0-rc",
     "bluebird": "^3.5.3",
     "bs58": "^2.0.1",
     "bs58check": "^1.0.4",
