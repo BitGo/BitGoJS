@@ -42,11 +42,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * Tron transaction signing implementation.
    */
   protected signImplementation(key: BaseKey): Transaction {
-    if (!this.transaction.senders) {
+    if (!this.transaction.inputs) {
       throw new SigningError('transaction has no sender');
     }
 
-    if (!this.transaction.destinations) {
+    if (!this.transaction.outputs) {
       throw new SigningError('transaction has no receiver');
     }
 

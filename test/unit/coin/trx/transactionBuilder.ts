@@ -67,11 +67,12 @@ describe('Tron', function() {
 
         tx.id.should.equal('80b8b9eaed51c8bba3b49f7f0e7cc5f21ac99a6f3e2893c663b544bf2c695b1d');
         tx.type.should.equal(TransactionType.Send);
-        tx.senders.length.should.equal(1);
-        tx.senders[0].address.should.equal('TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz');
-        tx.destinations.length.should.equal(1);
-        tx.destinations[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
-        tx.destinations[0].value.toString().should.equal('1718');
+        tx.inputs.length.should.equal(1);
+        tx.inputs[0].address.should.equal('TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz');
+        tx.inputs[0].value.toString().should.equal('1718');
+        tx.outputs.length.should.equal(1);
+        tx.outputs[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
+        tx.outputs[0].value.toString().should.equal('1718');
         tx.validFrom.should.equal(1571811410819);
         tx.validTo.should.equal(1571811468000);
       });
@@ -113,11 +114,12 @@ describe('Tron', function() {
 
       tx.id.should.equal('80b8b9eaed51c8bba3b49f7f0e7cc5f21ac99a6f3e2893c663b544bf2c695b1d');
       tx.type.should.equal(TransactionType.Send);
-      tx.senders.length.should.equal(1);
-      tx.senders[0].address.should.equal('TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz');
-      tx.destinations.length.should.equal(1);
-      tx.destinations[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
-      tx.destinations[0].value.toString().should.equal('1718');
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].address.should.equal('TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz');
+      tx.inputs[0].value.toString().should.equal('1718');
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
+      tx.outputs[0].value.toString().should.equal('1718');
     });
 
     it('should build the right JSON after is half signed tx', () => {
@@ -153,11 +155,12 @@ describe('Tron', function() {
       const oldExpiration = UnsignedBuildTransaction.raw_data.expiration;
       tx.validTo.should.equal(oldExpiration + extendMs);
       tx.type.should.equal(TransactionType.Send);
-      tx.senders.length.should.equal(1);
-      tx.senders[0].address.should.equal('TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz');
-      tx.destinations.length.should.equal(1);
-      tx.destinations[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
-      tx.destinations[0].value.toString().should.equal('1718');
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].address.should.equal('TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz');
+      tx.inputs[0].value.toString().should.equal('1718');
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
+      tx.outputs[0].value.toString().should.equal('1718');
       tx.validFrom.should.equal(1571811410819);
     });
   });
