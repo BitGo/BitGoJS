@@ -19,7 +19,7 @@ export interface Config {
   customBitcoinNetwork?: V1Network;
 }
 
-export const ArgConfig = (args): Config => ({
+export const ArgConfig = (args): Partial<Config> => ({
   port: args.port,
   bind: args.bind,
   env: args.env,
@@ -35,7 +35,7 @@ export const ArgConfig = (args): Config => ({
   customBitcoinNetwork: args.custombitcoinnetwork,
 });
 
-export const EnvConfig = (): Config => ({
+export const EnvConfig = (): Partial<Config> => ({
   port: Number(process.env.BITGO_PORT),
   bind: process.env.BITGO_BIND || DefaultConfig.bind,
   env: (process.env.BITGO_ENV as EnvironmentName) || DefaultConfig.env,
@@ -43,9 +43,9 @@ export const EnvConfig = (): Config => ({
   keyPath: process.env.BITGO_KEYPATH,
   crtPath: process.env.BITGO_CRTPATH,
   logFile: process.env.BITGO_LOGFILE,
-  disableSSL: Boolean(process.env.DISABLE_SSL),
-  disableProxy: Boolean(process.env.DISABLE_PROXY),
-  disableEnvCheck: Boolean(process.env.DISABLE_ENV_CHECK),
+  disableSSL: process.env.DISABLE_SSL ? Boolean(process.env.DISABLE_SSL) : undefined,
+  disableProxy: process.env.DISABLE_PROXY ? Boolean(process.env.DISABLE_PROXY) : undefined,
+  disableEnvCheck: process.env.DISABLE_ENV_CHECK ? Boolean(process.env.DISABLE_ENV_CHECK) : undefined,
   timeout: Number(process.env.BITGO_TIMEOUT),
   customRootUri: process.env.BITGO_CUSTOM_ROOT_URI,
   customBitcoinNetwork: (process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network),
@@ -68,7 +68,7 @@ export const DefaultConfig: Config = {
  *
  * Earlier configs have higher precedence over subsequent configs.
  */
-function mergeConfigs(...configs: Config[]): Config {
+function mergeConfigs(...configs: Partial<Config>[]): Config {
   function isNilOrNaN(val: unknown): val is null | undefined | number {
     return isNil(val) || (isNumber(val) && isNaN(val));
   }
@@ -77,7 +77,7 @@ function mergeConfigs(...configs: Config[]): Config {
   function get<T extends keyof Config>(k: T): Config[T] {
     return configs
       .reverse()
-      .reduce((entry: Config[T], config) => !isNilOrNaN(config[k]) ? config[k] : entry, DefaultConfig[k]);
+      .reduce((entry: Config[T], config) => !isNilOrNaN(config[k]) ? config[k] as Config[T] : entry, DefaultConfig[k]);
   }
 
   return {

@@ -36,4 +36,12 @@ describe('Config:', () => {
     argStub.restore();
     envStub.restore();
   });
+
+  it('should correctly handle boolean config precedence', () => {
+    const argStub = sinon.stub(args, 'args').returns({ disablessl: true });
+    const envStub = sinon.stub(process, 'env').value({ DISABLE_SSL: undefined });
+    config().disableSSL.should.equal(true);
+    argStub.restore();
+    envStub.restore();
+  });
 });
