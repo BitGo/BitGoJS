@@ -7,7 +7,9 @@
 export class BitGoJsError extends Error {
   public constructor(message?: string) {
     super(message);
-    Error.captureStackTrace(this, this.constructor);
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this, this.constructor);
+    }
     Object.setPrototypeOf(this, BitGoJsError.prototype);
   }
 }
