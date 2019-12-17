@@ -58,7 +58,7 @@
     "dhttp": "^2.4.2",
     "minimaldata": "^1.0.2",
     "mocha": "^5.2.0",
-    "nyc": "^13.0.1",
+    "nyc": "^14.1.1",
     "proxyquire": "^1.4.0",
     "sinon": "^1.12.2",
     "standard": "^9.0.2"
