@@ -58,7 +58,7 @@ describe('Tron', function() {
 
       it('a signed transaction with an xprv', () => {
         txBuilder.from(FirstSigOnBuildTransaction);
-        const SecondPrivateKeyXprv = Crypto.compressedPrvToExtendedKeys(SecondPrivateKey);
+        const SecondPrivateKeyXprv = Crypto.rawPrvToExtendedKeys(SecondPrivateKey);
         txBuilder.sign({ key: SecondPrivateKeyXprv.xprv});
         const tx = txBuilder.build();
 

@@ -20,7 +20,7 @@ export class KeyPair {
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
    *
-   * @param source Either a master seed, a private key (extended or compressed), or a public key
+   * @param source Either a master seed, a private key (extended or raw), or a public key
    *     (extended, compressed, or uncompressed)
    */
   constructor(source?: KeyPairOptions) {
@@ -45,7 +45,7 @@ export class KeyPair {
   /**
    * Build a Hierarchical Deterministic node or an ECPair from a private key.
    *
-   * @param prv An extended or compressed private key
+   * @param prv An extended or raw private key
    */
   private recordKeysFromPrivateKey(prv: string): void {
     if (Crypto.isValidXprv(prv)) {
@@ -61,7 +61,7 @@ export class KeyPair {
   /**
    * Build a Hierarchical Deterministic node or an ECPair from a public key.
    *
-   * @param pub An extended, compressed, or uncompressed public key
+   * @param {String} pub - An extended, compressed, or uncompressed public key
    */
   private recordKeysFromPublicKey(pub: string): void {
     if (Crypto.isValidXpub(pub)) {
@@ -75,7 +75,7 @@ export class KeyPair {
   }
 
   /**
-   * Tron default keys format is compressed private and uncompressed public key
+   * Tron default keys format is raw private and uncompressed public key
    * @return The keys in the protocol default key format
    */
   getKeys(): DefaultKeys {
