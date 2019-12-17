@@ -35,6 +35,10 @@ const co = Bluebird.coroutine;
 
 export interface TransactionExplanation extends TransactionExplanation {
   memo: string;
+  type?: string;
+  senderAddress?: string;
+  voteKeyBase64?: string;
+  voteLastBlock?: number;
 }
 
 export interface SignTransactionOptions {
@@ -219,7 +223,7 @@ export class Algo extends BaseCoin {
       if (!txHex) {
         throw new Error('missing required param txHex or halfSigned.txHex');
       }
-      let tx;
+      let tx, type, senderAddress, voteKeyBase64, voteLastBlock;
       try {
         const txToHex = Buffer.from(txHex, 'base64');
         const decodedTx = Encoding.decode(txToHex);
@@ -228,6 +232,12 @@ export class Algo extends BaseCoin {
         // if we are not signed, the decoded tx is the txn - refer to partialSignTxn and MultiSig constructor
         //   in algosdk for more information
         const txnForDecoding = decodedTx.txn || decodedTx;
+        if (!!txnForDecoding.votekey) {
+          type = txnForDecoding.type;
+          senderAddress = Address.encode(txnForDecoding.snd);
+          voteKeyBase64 = txnForDecoding.votekey.toString('base64');
+          voteLastBlock = txnForDecoding.votelst;
+        }
 
         tx = Multisig.MultiSigTransaction.from_obj_for_encoding(txnForDecoding);
       } catch (ex) {
@@ -250,7 +260,19 @@ export class Algo extends BaseCoin {
       const memo = tx.note;
 
       return {
-        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+        displayOrder: [
+          'id',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+          'type',
+          'senderAddress',
+          'voteKeyBase64',
+          'voteLastBlock',
+        ],
         id,
         outputs,
         outputAmount,
@@ -258,6 +280,10 @@ export class Algo extends BaseCoin {
         fee,
         changeOutputs: [],
         memo,
+        type,
+        senderAddress,
+        voteKeyBase64,
+        voteLastBlock,
       };
     })
       .call(this)
