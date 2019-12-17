@@ -2,9 +2,8 @@ import { HDNode, ECPair, networks } from 'bitgo-utxo-lib';
 import { ExtendedKeys } from '../coin/baseCoin/iface';
 
 /**
- * Get the uncompressed public key from a BIP32 xpub
- * @param {String} xpub the xpub to extract the compressed public key from
- * @return the compressed public key in hexadecimal
+ * @param {String} xpub - a base-58 encoded extended public key (BIP32)
+ * @return {String} the uncompressed public key in hexadecimal
  */
 export function xpubToUncompressedPub(xpub: string): string {
   if (!isValidXpub(xpub)) {
@@ -15,11 +14,10 @@ export function xpubToUncompressedPub(xpub: string): string {
 }
 
 /**
- * Get the original private key from its extended version.
- * @param xprv In base 58
- * @return the original compressed public key
+ * @param {String} xprv - base58-encoded extended private key (BIP32)
+ * @return {String} the hex-encoded raw private key
  */
-export function xprvToCompressedPrv(xprv: string): string {
+export function xprvToRawPrv(xprv: string): string {
   if (!isValidXprv(xprv)) {
     throw new Error('invalid xprv');
   }
@@ -28,11 +26,10 @@ export function xprvToCompressedPrv(xprv: string): string {
 }
 
 /**
- * Get the extended public and private key for a compressed private key.
- * @param prv Private key in hex format to get the extended keys for
- * @return xprv and xpub in string format
+ * @param {String} prv - Private key in hex format to get the extended keys for
+ * @return {ExtendedKeys} xprv and xpub in string format
  */
-export function compressedPrvToExtendedKeys(prv: string): ExtendedKeys {
+export function rawPrvToExtendedKeys(prv: string): ExtendedKeys {
   const keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
   const hd = new HDNode(keyPair, Buffer.alloc(32));
   return {

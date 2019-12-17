@@ -1,14 +1,14 @@
 import { ContractType, PermissionType } from './enum';
 
 /**
- * A Tron private key in extended or compressed format
+ * A Tron private key in extended or raw format
  */
 export type PrivateKey = {
   prv: string
 }
 
 /**
- * A Tron public key in extended, compressed, or uncompressed
+ * A Tron public key in extended, compressed, or uncompressed format
  */
 export type PublicKey = {
   pub: string

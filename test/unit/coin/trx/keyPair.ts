@@ -64,7 +64,7 @@ describe('Trx KeyPair', function() {
       should.throws(() => keyPair.getExtendedKeys());
     });
 
-    it('from a compressed private key', () => {
+    it('from a raw private key', () => {
       const source = {
         prv: '82A34E3867EA7EA4E67E27865D500AE84E98D07AB1BAB06526F0A5A5FDCC3EBA'
       };
