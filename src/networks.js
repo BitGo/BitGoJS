@@ -27,7 +27,6 @@ module.exports = {
   },
   bitcoincash: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: 'bc',
     bip32: {
       public: 0x0488b21e,
       private: 0x0488ade4
@@ -40,7 +39,6 @@ module.exports = {
   },
   bitcoincashTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: 'tb',
     bip32: {
       public: 0x043587cf,
       private: 0x04358394
@@ -52,7 +50,6 @@ module.exports = {
   },
   bitcoinsv: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: 'bc',
     bip32: {
       public: 0x0488b21e,
       private: 0x0488ade4
@@ -65,7 +62,6 @@ module.exports = {
   },
   bitcoinsvTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: 'tb',
     bip32: {
       public: 0x043587cf,
       private: 0x04358394
@@ -77,7 +73,6 @@ module.exports = {
   },
   zcash: {
     messagePrefix: '\x18ZCash Signed Message:\n',
-    bech32: 'bc',
     bip32: {
       public: 0x0488b21e,
       private: 0x0488ade4
@@ -98,7 +93,6 @@ module.exports = {
   },
   zcashTest: {
     messagePrefix: '\x18ZCash Signed Message:\n',
-    bech32: 'tb',
     bip32: {
       public: 0x043587cf,
       private: 0x04358394
