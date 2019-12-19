@@ -138,15 +138,7 @@ ECPair.prototype.getPublicKeyBuffer = function () {
 ECPair.prototype.getPrivateKeyBuffer = function () {
   if (!this.d) throw new Error('Missing private key')
 
-  var bigIntBuffer = this.d.toBuffer()
-  if (bigIntBuffer.length > 32) throw new Error('Private key size exceeds 32 bytes')
-
-  if (bigIntBuffer.length === 32) {
-    return bigIntBuffer
-  }
-  var newBuffer = Buffer.alloc(32)
-  bigIntBuffer.copy(newBuffer, newBuffer.length - bigIntBuffer.length, 0, bigIntBuffer.length)
-  return newBuffer
+  return this.d.toBuffer(32)
 }
 
 ECPair.prototype.sign = function (hash) {
