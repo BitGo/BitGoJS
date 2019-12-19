@@ -18,7 +18,7 @@ const {
 describe('privateKeyBufferFromECPair', function () {
   it('pads short private keys', function () {
     var keyPair = new ECPair(BigInteger.ONE)
-    assert.strictEqual(privateKeyBufferFromECPair(keyPair).byteLength, 32)
+    assert.strictEqual(privateKeyBufferFromECPair(keyPair).length, 32)
     assert.strictEqual(privateKeyBufferFromECPair(keyPair).toString('hex'),
       '0000000000000000000000000000000000000000000000000000000000000001')
   })
@@ -26,7 +26,7 @@ describe('privateKeyBufferFromECPair', function () {
   it('does not pad 32 bytes private keys', function () {
     var hexString = 'a000000000000000000000000000000000000000000000000000000000000000'
     var keyPair = new ECPair(new BigInteger(hexString, 16))
-    assert.strictEqual(privateKeyBufferFromECPair(keyPair).byteLength, 32)
+    assert.strictEqual(privateKeyBufferFromECPair(keyPair).length, 32)
     assert.strictEqual(privateKeyBufferFromECPair(keyPair).toString('hex'), hexString)
   })
 
