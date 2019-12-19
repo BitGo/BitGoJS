@@ -44,7 +44,8 @@ function ECPair (d, Q, options) {
 Object.defineProperty(ECPair.prototype, 'Q', {
   get: function () {
     if (!this.__Q && this.d) {
-      this.__Q = secp256k1.G.multiply(this.d)
+      const qBuf = fastcurve.publicKeyCreate(this.d.toBuffer(32), false)
+      this.__Q = qBuf ? ecurve.Point.decodeFrom(curve, qBuf) : secp256k1.G.multiply(this.d)
     }
 
     return this.__Q
@@ -72,17 +73,7 @@ ECPair.fromPrivateKeyBuffer = function (buffer, network) {
   }
 
   var d = BigInteger.fromBuffer(buffer)
-
-  if (d.signum() <= 0 || d.compareTo(curve.n) >= 0) {
-    throw new Error('private key out of range')
-  }
-
-  var ecPair = new ECPair(d, null, { network: network })
-  if (!ecPair.__Q && curve) {
-    ecPair.__Q = ecurve.Point.decodeFrom(curve, fastcurve.publicKeyCreate(d.toBuffer(32), false))
-  }
-
-  return ecPair
+  return new ECPair(d, null, { network: network })
 }
 
 ECPair.fromWIF = function (string, network) {

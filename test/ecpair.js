@@ -313,7 +313,7 @@ describe('ECPair', function () {
       var prvKeyBuffer = Buffer.alloc(32, 0xff)
       assert.throws(function () {
         ECPair.fromPrivateKeyBuffer(prvKeyBuffer)
-      }, new RegExp('private key out of range'))
+      }, new RegExp('Private key must be less than the curve order'))
     })
 
     it('throws if the private key buffer is not a buffer', function () {
