@@ -134,6 +134,9 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Get the signatures associated with this transaction.
+   */
   get signature(): string[] {
     if (!this._transaction) {
       throw new ParseTransactionError('Empty transaction');

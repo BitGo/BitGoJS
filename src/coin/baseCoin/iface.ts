@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 export interface BaseAddress {
-  address: any;
+  address: string;
 }
 
 export interface BaseKey {
