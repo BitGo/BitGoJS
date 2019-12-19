@@ -1,4 +1,3 @@
-const ecurve = require('ecurve')
 const BigInteger = require('bigi')
 const ECPair = require('../ecpair')
 

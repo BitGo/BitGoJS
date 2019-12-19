@@ -29,15 +29,6 @@ describe('privateKeyBufferFromECPair', function () {
     assert.strictEqual(privateKeyBufferFromECPair(keyPair).length, 32)
     assert.strictEqual(privateKeyBufferFromECPair(keyPair).toString('hex'), hexString)
   })
-
-  it('throws if the key is too long', function () {
-    var hexString = '10000000000000000000000000000000000000000000000000000000000000000'
-
-    assert.throws(function () {
-      var keyPair = new ECPair(new BigInteger(hexString, 16))
-      privateKeyBufferFromECPair(keyPair)
-    }, new RegExp('Private key must be less than the curve order'))
-  })
 })
 
 describe('privateKeyBufferToECPair', function () {
@@ -46,13 +37,6 @@ describe('privateKeyBufferToECPair', function () {
     var ecPair = privateKeyBufferToECPair(prvKeyBuffer)
     var ecPairPrvBuffer = privateKeyBufferFromECPair(ecPair)
     assert.strictEqual(Buffer.compare(ecPairPrvBuffer, prvKeyBuffer), 0)
-  })
-
-  it('throws if the private key is out of range', function () {
-    var prvKeyBuffer = Buffer.alloc(32, 0xff)
-    assert.throws(function () {
-      privateKeyBufferToECPair(prvKeyBuffer)
-    }, new RegExp('private key out of range'))
   })
 
   it('throws if the private key buffer is not a buffer', function () {
