@@ -6,6 +6,7 @@ for (var key in templates) {
 }
 
 module.exports = {
+  bitgo: require('./bitgo'),
   bufferutils: require('./bufferutils'), // TODO: remove in 4.0.0
 
   Block: require('./block'),

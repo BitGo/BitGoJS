@@ -60,22 +60,6 @@ ECPair.fromPublicKeyBuffer = function (buffer, network) {
     network: network
   })
 }
-
-/**
- * Create an ECPair from the raw private key bytes
- * @param buffer {Buffer} Private key for the ECPair. Must be exactly 32 bytes.
- * @param network {Object} Network for the ECPair. Defaults to bitcoin.
- * @return {ECPair}
- */
-ECPair.fromPrivateKeyBuffer = function (buffer, network) {
-  if (!Buffer.isBuffer(buffer) || buffer.length !== 32) {
-    throw new Error('invalid private key buffer')
-  }
-
-  var d = BigInteger.fromBuffer(buffer)
-  return new ECPair(d, null, { network: network })
-}
-
 ECPair.fromWIF = function (string, network) {
   var decoded = wif.decode(string)
   var version = decoded.version
@@ -131,16 +115,6 @@ ECPair.prototype.getPublicKeyBuffer = function () {
   return this.Q.getEncoded(this.compressed)
 }
 
-/**
- * Get the private key as a 32 bytes buffer. If it is smaller than 32 bytes, pad it with zeros
- * @return Buffer
- */
-ECPair.prototype.getPrivateKeyBuffer = function () {
-  if (!this.d) throw new Error('Missing private key')
-
-  return this.d.toBuffer(32)
-}
-
 ECPair.prototype.sign = function (hash) {
   if (!this.d) throw new Error('Missing private key')
 
@@ -159,6 +133,28 @@ ECPair.prototype.verify = function (hash, signature) {
   var fastsig = fastcurve.verify(hash, signature, this.getPublicKeyBuffer())
   if (fastsig !== undefined) return fastsig
   return ecdsa.verify(hash, signature, this.Q)
+}
+
+/**
+ * @deprecated
+ * Use {@see keyutil.privateKeyBufferToECPair} instead
+ * Will be removed in next major version (BLOCK-267)
+ */
+ECPair.fromPrivateKeyBuffer = function (buffer, network) {
+  // toplevel import unavailable due to circular dependency
+  var keyutil = require('./bitgo/keyutil')
+  return keyutil.privateKeyBufferToECPair(buffer, network)
+}
+
+/**
+ * @deprecated
+ * Use {@see keyutil.privateKeyBufferFromECPair} instead
+ * Will be removed in next major version (BLOCK-267)
+ */
+ECPair.prototype.getPrivateKeyBuffer = function () {
+  // toplevel import unavailable due to circular dependency
+  var keyutil = require('./bitgo/keyutil')
+  return keyutil.privateKeyBufferFromECPair(this)
 }
 
 module.exports = ECPair
