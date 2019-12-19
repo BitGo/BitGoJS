@@ -1,7 +1,7 @@
 /* global describe, it */
 
 const assert = require('assert')
-var randombytes = require('randombytes')
+const crypto = require('crypto')
 
 const BigInteger = require('bigi')
 
@@ -42,7 +42,7 @@ describe('privateKeyBufferFromECPair', function () {
 
 describe('privateKeyBufferToECPair', function () {
   it('constructs an ECPair from a random private key buffer', function () {
-    var prvKeyBuffer = randombytes(32)
+    var prvKeyBuffer = crypto.randomBytes(32)
     var ecPair = privateKeyBufferToECPair(prvKeyBuffer)
     var ecPairPrvBuffer = privateKeyBufferFromECPair(ecPair)
     assert.strictEqual(Buffer.compare(ecPairPrvBuffer, prvKeyBuffer), 0)
