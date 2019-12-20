@@ -14,6 +14,7 @@ var TransactionBuilder = require('../src/transaction_builder')
 var NETWORKS = require('../src/networks')
 
 var fixtures = require('./fixtures/transaction_builder')
+var fixturesZec = require('./fixtures/forks/zcash/transaction_builder')
 
 function construct (f, dontSign) {
   var network = NETWORKS[f.network]
@@ -136,7 +137,7 @@ describe('TransactionBuilder', function () {
       })
     })
 
-    fixtures.zcash.valid.forEach(function (testData) {
+    fixturesZec.valid.forEach(function (testData) {
       it('returns TransactionBuilder, with ' + testData.description, function () {
         var network = NETWORKS['zcash']
         var tx = Transaction.fromHex(testData.hex, network)
