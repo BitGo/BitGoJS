@@ -4,6 +4,7 @@ var assert = require('assert')
 var bscript = require('../src/script')
 var networks = require('../src/networks')
 var fixtures = require('./fixtures/transaction')
+var fixturesDashTest = require('./fixtures/forks/dashTest/transaction')
 var Transaction = require('../src/transaction')
 
 describe('Transaction', function () {
@@ -89,7 +90,7 @@ describe('Transaction', function () {
   })
 
   describe('fromBuffer/fromHex for Testnet Dash', function () {
-    fixtures.dasht.valid.forEach(function (testData) {
+    fixturesDashTest.valid.forEach(function (testData) {
       it('imports ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.dashTest)
         assert.equal(tx.version, testData.version)
@@ -105,7 +106,7 @@ describe('Transaction', function () {
       })
     })
 
-    fixtures.dasht.valid.forEach(function (testData) {
+    fixturesDashTest.valid.forEach(function (testData) {
       it('exports ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.dashTest)
         const hexTx = tx.toHex()
@@ -113,7 +114,7 @@ describe('Transaction', function () {
       })
     })
 
-    fixtures.dasht.valid.forEach(function (testData) {
+    fixturesDashTest.valid.forEach(function (testData) {
       it('clone ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.dashTest)
         const clonedTx = tx.clone()
@@ -123,7 +124,7 @@ describe('Transaction', function () {
   })
 
   describe('getPrevoutHash', function () {
-    fixtures.dasht.valid.filter(f => !!f.proRegTx).forEach(function (testData) {
+    fixturesDashTest.valid.filter(f => !!f.proRegTx).forEach(function (testData) {
       it('produces the correct inputsHash on ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.dashTest)
         assert.equal(tx.getPrevoutHash(Transaction.SIGHASH_ALL).reverse().toString('hex'), testData.proRegTx.inputsHash)
