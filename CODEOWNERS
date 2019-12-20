@@ -1,0 +1,13 @@
+# bitgo-utxo-lib code owners and first officers will automatically be requested
+# for review whenever a pull request touches the files they own.  Each line is
+# a file pattern followed by one or more owners.
+
+# These owners and first officers will be the default owners for everything in
+# the repo.
+*  otto@bitgo.com mark@bitgo.com jorge@bitgo.com
+
+# Order is important. The last matching pattern has the most precedence.  So if
+# a pull request only touches files in one specific dir, only these owners will
+# be requested to review.
+
+/CODEOWNERS otto@bitgo.com mark@bitgo.com jorge@bitgo.com
