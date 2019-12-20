@@ -48,33 +48,37 @@ export class Transaction extends BaseTransaction {
     this._validFrom = rawData.timestamp;
     this._validTo = rawData.expiration;
 
-    let destination, senderAddress;
+    let output, input;
     // Contract-specific fields
     switch (rawData.contractType) {
       case ContractType.Transfer:
         this._type = TransactionType.Send;
-        destination = {
+        const value = new BigNumber((rawData.contract[0] as TransferContract).parameter.value.amount);
+        output = {
           address: (rawData.contract[0] as TransferContract).parameter.value.to_address,
-          value: new BigNumber((rawData.contract[0] as TransferContract).parameter.value.amount),
+          value,
         };
-        senderAddress = {
+        input = {
           address: (rawData.contract[0] as TransferContract).parameter.value.owner_address,
+          value,
         };
         break;
       case ContractType.AccountPermissionUpdate:
-        destination = {
+        this._type = TransactionType.WalletInitialization;
+        output = {
           address: (rawData.contract as any).owner_address,
           value: new BigNumber(0),
         };
-        senderAddress = {
+        input = {
           address: (rawData.contract as any).owner_address,
+          value: new BigNumber(0),
         };
         break;
       default:
         throw new ParseTransactionError('Unsupported contract type');
     }
-    this._fromAddresses = [senderAddress];
-    this._destination = [destination];
+    this._inputs = [input];
+    this._outputs = [output];
   }
 
   /**
@@ -128,6 +132,19 @@ export class Transaction extends BaseTransaction {
     } catch (e) {
       throw new ExtendTransactionError('There was an error decoding the initial raw_data_hex from the serialized tx.');
     }
+  }
+
+  /**
+   * Get the signatures associated with this transaction.
+   */
+  get signature(): string[] {
+    if (!this._transaction) {
+      throw new ParseTransactionError('Empty transaction');
+    }
+    if (this._transaction.signature) {
+      return this._transaction.signature;
+    }
+    return [];
   }
 
   get validFrom(): number {

@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 export interface BaseAddress {
-  address: any;
+  address: string;
 }
 
 export interface BaseKey {
@@ -24,6 +24,6 @@ export type ExtendedKeys = {
   xpub: string;
 }
 
-export interface Destination extends BaseAddress {
+export interface Entry extends BaseAddress {
   value: BigNumber;
 }

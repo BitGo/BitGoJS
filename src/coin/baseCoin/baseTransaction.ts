@@ -1,4 +1,4 @@
-import { BaseAddress, BaseKey, Destination } from './iface';
+import { BaseKey, Entry } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType } from './enum';
 
@@ -7,8 +7,8 @@ import { TransactionType } from './enum';
  */
 export abstract class BaseTransaction {
   protected _id: string; // The transaction id as seen in the blockchain
-  protected _fromAddresses: BaseAddress[];
-  protected _destination: Destination[];
+  protected _inputs: Entry[];
+  protected _outputs: Entry[];
   protected _type: TransactionType;
 
   /**
@@ -25,12 +25,12 @@ export abstract class BaseTransaction {
     return this._type;
   }
 
-  get destinations(): Destination[] {
-    return this._destination;
+  get outputs(): Entry[] {
+    return this._outputs;
   }
 
-  get senders(): BaseAddress[] {
-    return this._fromAddresses;
+  get inputs(): Entry[] {
+    return this._inputs;
   }
 
   /**
