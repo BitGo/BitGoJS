@@ -4,6 +4,7 @@ var assert = require('assert')
 var bscript = require('../src/script')
 var networks = require('../src/networks')
 var fixtures = require('./fixtures/transaction')
+var fixturesZec = require('./fixtures/forks/zcashTest/transaction')
 var Transaction = require('../src/transaction')
 
 describe('Transaction', function () {
@@ -89,7 +90,7 @@ describe('Transaction', function () {
   })
 
   describe('fromBuffer/fromHex for Zcash', function () {
-    fixtures.zcash.valid.forEach(function (testData) {
+    fixturesZec.valid.forEach(function (testData) {
       it('imports ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.zcashTest)
         assert.equal(tx.version, testData.version)
@@ -121,7 +122,7 @@ describe('Transaction', function () {
       })
     })
 
-    fixtures.zcash.valid.forEach(function (testData) {
+    fixturesZec.valid.forEach(function (testData) {
       it('exports ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.zcashTest)
         const hexTx = tx.toHex()
@@ -129,7 +130,7 @@ describe('Transaction', function () {
       })
     })
 
-    fixtures.zcash.valid.forEach(function (testData) {
+    fixturesZec.valid.forEach(function (testData) {
       it('clone ' + testData.description, function () {
         const tx = Transaction.fromHex(testData.hex, networks.zcashTest)
         const clonedTx = tx.clone()
@@ -381,7 +382,7 @@ describe('Transaction', function () {
   })
 
   describe('hashForZcashSignature', function () {
-    fixtures.hashForZcashSignature.valid.forEach(function (testData) {
+    fixturesZec.hashForZcashSignature.valid.forEach(function (testData) {
       it('should return ' + testData.hash + ' for ' + testData.description, function () {
         var network = networks.zcash
         network.consensusBranchId[testData.version] = parseInt(testData.branchId, 16)
@@ -397,7 +398,7 @@ describe('Transaction', function () {
       })
     })
 
-    fixtures.hashForZcashSignature.invalid.forEach(function (testData) {
+    fixturesZec.hashForZcashSignature.invalid.forEach(function (testData) {
       it('should throw on ' + testData.description, function () {
         var tx = Transaction.fromHex(testData.txHex, networks.zcashTest)
         var script = Buffer.from(testData.script, 'hex')
