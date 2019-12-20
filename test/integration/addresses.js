@@ -98,6 +98,12 @@ describe('bitcoinjs-lib (addresses)', function () {
   })
 
   it('can support the retrieval of transactions for an address (via 3PBP)', function (done) {
+    if (process.env.BITGO_UTXO_LIB_TEST_SKIP_3PBP === '1') {
+      console.warn(`BLOCK-253 - skip test because we can get rate limited by Cloudflare`)
+      this.skip()
+      return done()
+    }
+
     var keyPair = bitcoin.ECPair.makeRandom()
     var address = keyPair.getAddress()
 
