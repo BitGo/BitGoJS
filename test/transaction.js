@@ -2,7 +2,6 @@
 
 var assert = require('assert')
 var bscript = require('../src/script')
-var networks = require('../src/networks')
 var fixtures = require('./fixtures/transaction')
 var Transaction = require('../src/transaction')
 
@@ -85,99 +84,6 @@ describe('Transaction', function () {
       var tx = Transaction.fromHex(txHex)
       assert.equal(-1, tx.version)
       assert.equal(0xffffffff, tx.locktime)
-    })
-  })
-
-  describe('fromBuffer/fromHex for Zcash', function () {
-    fixtures.zcash.valid.forEach(function (testData) {
-      it('imports ' + testData.description, function () {
-        const tx = Transaction.fromHex(testData.hex, networks.zcashTest)
-        assert.equal(tx.version, testData.version)
-        assert.equal(tx.versionGroupId, parseInt(testData.versionGroupId, 16))
-        assert.equal(tx.overwintered, testData.overwintered)
-        assert.equal(tx.locktime, testData.locktime)
-        assert.equal(tx.expiryHeight, testData.expiryHeight)
-        assert.equal(tx.ins.length, testData.insLength)
-        assert.equal(tx.outs.length, testData.outsLength)
-        assert.equal(tx.joinsplits.length, testData.joinsplitsLength)
-        assert.equal(tx.joinsplitPubkey.length, testData.joinsplitPubkeyLength)
-        assert.equal(tx.joinsplitSig.length, testData.joinsplitSigLength)
-
-        if (testData.valueBalance) {
-          assert.equal(tx.valueBalance, testData.valueBalance)
-        }
-        if (testData.nShieldedSpend > 0) {
-          for (var i = 0; i < testData.nShieldedSpend; ++i) {
-            assert.equal(tx.vShieldedSpend[i].cv.toString('hex'), testData.vShieldedSpend[i].cv)
-            assert.equal(tx.vShieldedSpend[i].anchor.toString('hex'), testData.vShieldedSpend[i].anchor)
-            assert.equal(tx.vShieldedSpend[i].nullifier.toString('hex'), testData.vShieldedSpend[i].nullifier)
-            assert.equal(tx.vShieldedSpend[i].rk.toString('hex'), testData.vShieldedSpend[i].rk)
-            assert.equal(tx.vShieldedSpend[i].zkproof.sA.toString('hex') +
-              tx.vShieldedSpend[i].zkproof.sB.toString('hex') +
-              tx.vShieldedSpend[i].zkproof.sC.toString('hex'), testData.vShieldedSpend[i].zkproof)
-            assert.equal(tx.vShieldedSpend[i].spendAuthSig.toString('hex'), testData.vShieldedSpend[i].spendAuthSig)
-          }
-        }
-      })
-    })
-
-    fixtures.zcash.valid.forEach(function (testData) {
-      it('exports ' + testData.description, function () {
-        const tx = Transaction.fromHex(testData.hex, networks.zcashTest)
-        const hexTx = tx.toHex()
-        assert.equal(testData.hex, hexTx)
-      })
-    })
-
-    fixtures.zcash.valid.forEach(function (testData) {
-      it('clone ' + testData.description, function () {
-        const tx = Transaction.fromHex(testData.hex, networks.zcashTest)
-        const clonedTx = tx.clone()
-        assert.equal(clonedTx.toHex(), testData.hex)
-      })
-    })
-  })
-
-  describe('fromBuffer/fromHex for Testnet Dash', function () {
-    fixtures.dasht.valid.forEach(function (testData) {
-      it('imports ' + testData.description, function () {
-        const tx = Transaction.fromHex(testData.hex, networks.dashTest)
-        assert.equal(tx.version, testData.version)
-        if (tx.versionSupportsDashSpecialTransactions()) {
-          assert.equal(tx.type, testData.type)
-        }
-        assert.equal(tx.locktime, testData.locktime)
-        assert.equal(tx.ins.length, testData.vin.length)
-        assert.equal(tx.outs.length, testData.vout.length)
-        if (tx.isDashSpecialTransaction()) {
-          assert.equal(tx.extraPayload.toString('hex'), testData.extraPayload)
-        }
-      })
-    })
-
-    fixtures.dasht.valid.forEach(function (testData) {
-      it('exports ' + testData.description, function () {
-        const tx = Transaction.fromHex(testData.hex, networks.dashTest)
-        const hexTx = tx.toHex()
-        assert.equal(testData.hex, hexTx)
-      })
-    })
-
-    fixtures.dasht.valid.forEach(function (testData) {
-      it('clone ' + testData.description, function () {
-        const tx = Transaction.fromHex(testData.hex, networks.dashTest)
-        const clonedTx = tx.clone()
-        assert.equal(clonedTx.toHex(), testData.hex)
-      })
-    })
-  })
-
-  describe('getPrevoutHash', function () {
-    fixtures.dasht.valid.filter(f => !!f.proRegTx).forEach(function (testData) {
-      it('produces the correct inputsHash on ' + testData.description, function () {
-        const tx = Transaction.fromHex(testData.hex, networks.dashTest)
-        assert.equal(tx.getPrevoutHash(Transaction.SIGHASH_ALL).reverse().toString('hex'), testData.proRegTx.inputsHash)
-      })
     })
   })
 
@@ -377,35 +283,6 @@ describe('Transaction', function () {
       assert.throws(function () {
         (new Transaction()).setWitness(0, 'foobar')
       }, /Expected property "1" of type \[Buffer], got String "foobar"/)
-    })
-  })
-
-  describe('hashForZcashSignature', function () {
-    fixtures.hashForZcashSignature.valid.forEach(function (testData) {
-      it('should return ' + testData.hash + ' for ' + testData.description, function () {
-        var network = networks.zcash
-        network.consensusBranchId[testData.version] = parseInt(testData.branchId, 16)
-        var tx = Transaction.fromHex(testData.txHex, network)
-        var script = Buffer.from(testData.script, 'hex')
-        var hash = Buffer.from(testData.hash, 'hex')
-        hash.reverse()
-        hash = hash.toString('hex')
-
-        assert.strictEqual(
-          tx.hashForZcashSignature(testData.inIndex, script, testData.value, testData.type).toString('hex'),
-          hash)
-      })
-    })
-
-    fixtures.hashForZcashSignature.invalid.forEach(function (testData) {
-      it('should throw on ' + testData.description, function () {
-        var tx = Transaction.fromHex(testData.txHex, networks.zcashTest)
-        var script = Buffer.from(testData.script, 'hex')
-
-        assert.throws(function () {
-          tx.hashForZcashSignature(testData.inIndex, script, testData.value, testData.type)
-        }, new RegExp(testData.exception))
-      })
     })
   })
 })
