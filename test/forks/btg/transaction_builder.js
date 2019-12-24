@@ -8,7 +8,7 @@ const {
   networks,
   ECPair,
   script,
-  crypto,
+  crypto
 } = require('..')
 
 describe('TransactionBuilder (BTG)', function () {
