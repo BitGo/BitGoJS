@@ -6,11 +6,6 @@ import { AddressFormat } from '../../../../src/coin/baseCoin/enum';
 describe('Trx KeyPair', function() {
   const defaultSeed = { seed: Buffer.alloc(32) };
 
-  it('should fail to create a KeyPair with an invalid seed', () => {
-    const seed = { seed: Buffer.alloc(8) }; //  Seed should be at least 128 bits (16 bytes, not 8)
-    should.throws(() => new Trx.KeyPair(seed));
-  });
-
   describe('should create a KeyPair', function() {
     it('from an xpub', () => {
       const source = {
@@ -77,7 +72,12 @@ describe('Trx KeyPair', function() {
     });
   });
 
-  describe('should throw when creating a KeyPair', function() {
+  describe('should fail to create a KeyPair', function() {
+    it('from an invalid seed', () => {
+      const seed = { seed: Buffer.alloc(8) }; //  Seed should be at least 128 bits (16 bytes, not 8)
+      should.throws(() => new Trx.KeyPair(seed));
+    });
+
     it('from an invalid public key', () => {
       const source = {
         pub: '01D63D'
@@ -142,6 +142,41 @@ describe('Trx KeyPair', function() {
       const { xprv, xpub } = keyPair.getExtendedKeys();
       should.exist(xprv);
       should.exist(xpub);
+    });
+  });
+
+  describe('signMessage', function() {
+    it('should sign a message', () => {
+      const keyPair = new Trx.KeyPair(defaultSeed);
+      const message = 'Hello world';
+      const signature = keyPair.signMessage(message);
+      signature.toString('hex').should.equal('83eec642ee0215c5d645393fa3f23b586bfe426ec4206fdb2b66d1620d308a4d4df57cc10cc4207c4a4c19e2ed572229bb1afe26ca0018eaed2bd2a44528f67d1b');
+      keyPair.verifySignature(message, signature).should.be.true();
+    });
+
+    it('should fail if there is no private key', () => {
+      const source = {
+        pub: '03D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A8275'
+      };
+      const keyPair = new Trx.KeyPair(source);
+      const message = 'Hello world';
+      should.throws(() => keyPair.signMessage(message));
+    });
+  });
+
+  describe('verifySignature', function() {
+    it('should be true for a properly signed message', () => {
+      const keyPair = new Trx.KeyPair(defaultSeed);
+      const message = 'Hello world';
+      const signature = Buffer.from('83eec642ee0215c5d645393fa3f23b586bfe426ec4206fdb2b66d1620d308a4d4df57cc10cc4207c4a4c19e2ed572229bb1afe26ca0018eaed2bd2a44528f67d1b', 'hex');
+      keyPair.verifySignature(message, signature).should.be.true();
+    });
+
+    it('should be false for a message with the wrong signature', () => {
+      const keyPair = new Trx.KeyPair(defaultSeed);
+      const message = 'Not the message you expected';
+      const signature = Buffer.from('83eec642ee0215c5d645393fa3f23b586bfe426ec4206fdb2b66d1620d308a4d4df57cc10cc4207c4a4c19e2ed572229bb1afe26ca0018eaed2bd2a44528f67d1b', 'hex');
+      keyPair.verifySignature(message, signature).should.be.false();
     });
   });
 });

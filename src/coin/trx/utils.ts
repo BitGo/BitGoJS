@@ -36,7 +36,7 @@ export function verifySignature(
   base58Address: string,
   sigHex: string,
   useTronHeader = true,
-): ByteArray {
+): boolean {
   if (!isValidHex(sigHex)) {
     throw new UtilsError('signature is not in a valid format, needs to be hexadecimal');
   }

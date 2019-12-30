@@ -123,4 +123,32 @@ export class KeyPair {
     }
     throw new Error('Unsupported address format');
   }
+
+  /**
+   * Generates a signature for an arbitrary string with the current private key using keccak256
+   * hashing algorithm. Throws if there is no private key.
+   * @param {string} message to produce a signature for
+   * @return The signature as a buffer
+   */
+  signMessage(message: string): Buffer {
+    const messageToSign = Buffer.from(message).toString('hex');
+    const { prv } = this.getKeys();
+    if (!prv) {
+      throw new Error('Missing private key');
+    }
+    const signature = Utils.signString(messageToSign, prv, true).replace(/^0x/, '');
+    return Buffer.from(signature, 'hex');
+  }
+
+  /**
+   * Verifies a message signature using the current public key.
+   * @param {string} message signed
+   * @param {Buffer} signature to verify
+   * @return True if the message was signed with the current key pair
+   */
+  verifySignature(message: string, signature: Buffer): boolean {
+    const messageToVerify = Buffer.from(message).toString('hex');
+    const address = this.getAddress(AddressFormat.base58);
+    return Utils.verifySignature(messageToVerify, address, signature.toString('hex'), true);
+  }
 }

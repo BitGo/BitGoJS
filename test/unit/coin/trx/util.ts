@@ -81,7 +81,7 @@ describe('Util library should', function() {
 
   it('should verify a signed message', () => {
     const hexEncodedMessage = Buffer.from(txt).toString('hex');
-    should.ok(Utils.verifySignature(hexEncodedMessage, base58, signedString, true));
+    Utils.verifySignature(hexEncodedMessage, base58, signedString, true).should.be.true();
   });
 
   it('should fail to verify a signed message if the message is not in hex', () => {
