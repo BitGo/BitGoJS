@@ -380,7 +380,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       if (_.isUndefined(prebuild.blockHeight)) {
         prebuild.blockHeight = (yield self.getLatestBlockHeight()) as number;
       }
-      transaction.locktime = prebuild.blockHeight + 1;
+      // Lock transaction to the next block to discourage fee sniping
+      // See: https://github.com/bitcoin/bitcoin/blob/fb0ac482eee761ec17ed2c11df11e054347a026d/src/wallet/wallet.cpp#L2133
+      transaction.locktime = prebuild.blockHeight;
       return _.extend({}, prebuild, { txHex: transaction.toHex() });
     }).call(this).asCallback(callback);
   }

@@ -414,7 +414,7 @@ describe('V2 Wallet:', function() {
       explanation.outputAmount.should.equal(0.01 * 1e8);
       explanation.outputs[0].amount.should.equal(0.01 * 1e8);
       const chainhead = yield bitgo.get(basecoin.url('/public/block/latest')).result();
-      explanation.locktime.should.be.greaterThan(chainhead.height);
+      explanation.locktime.should.equal(chainhead.height);
       explanation.should.have.property('fee');
       const transaction = yield wallet.sendMany({
         prebuildTx: prebuild,
