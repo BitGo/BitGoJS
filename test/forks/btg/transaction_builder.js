@@ -9,7 +9,7 @@ const {
   ECPair,
   script,
   crypto
-} = require('..')
+} = require('../../../src')
 
 describe('TransactionBuilder (BTG)', function () {
   var network = networks['bitcoingold']
