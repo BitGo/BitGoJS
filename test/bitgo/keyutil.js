@@ -29,6 +29,12 @@ describe('privateKeyBufferFromECPair', function () {
     assert.strictEqual(privateKeyBufferFromECPair(keyPair).length, 32)
     assert.strictEqual(privateKeyBufferFromECPair(keyPair).toString('hex'), hexString)
   })
+
+  it('throws if passed value is not ecpair', function () {
+    assert.throws(function () {
+      privateKeyBufferFromECPair({})
+    }, new RegExp('invalid argument ecpair'))
+  })
 })
 
 describe('privateKeyBufferToECPair', function () {
