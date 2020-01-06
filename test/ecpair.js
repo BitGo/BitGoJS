@@ -84,6 +84,11 @@ describe('ECPair', function () {
     }))
   })
 
+  /**
+   * @deprecated
+   * Use {@see keyutil.privateKeyBufferToECPair} instead
+   * Will be removed in next major version (BLOCK-267)
+   */
   describe('getPrivateKeyBuffer', function () {
     it('pads short private keys', sinon.test(function () {
       var keyPair = new ECPair(BigInteger.ONE)
@@ -301,6 +306,11 @@ describe('ECPair', function () {
     })
   })
 
+  /**
+   * @deprecated
+   * Use {@see keyutil.privateKeyBufferToECPair} instead
+   * Will be removed in next major version (BLOCK-267)
+   */
   describe('fromPrivateKeyBuffer', function () {
     it('constructs an ECPair from a random private key buffer', function () {
       var prvKeyBuffer = randombytes(32)
@@ -313,7 +323,7 @@ describe('ECPair', function () {
       var prvKeyBuffer = Buffer.alloc(32, 0xff)
       assert.throws(function () {
         ECPair.fromPrivateKeyBuffer(prvKeyBuffer)
-      }, new RegExp('private key out of range'))
+      }, new RegExp('Private key must be less than the curve order'))
     })
 
     it('throws if the private key buffer is not a buffer', function () {
