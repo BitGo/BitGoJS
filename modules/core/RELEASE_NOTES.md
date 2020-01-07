@@ -1,6 +1,168 @@
 # BitGoJS Release Notes
 
-## 8.1.1
+## 9.3.0 (12-17-2019)
+
+### New Features
+* Return key registration data for Algorand's `explainTransaction()`
+
+### Bug Fixes
+* Fix circular json serialization error when using `accelerateTransaction`
+* Filter out duplicate addresses when doing address lookups for cross chain recoveries 
+* Allow EOS addresses to begin with a number
+* Properly deserialize EOS staking transactions
+* Ensure `Error.captureStackTrace` is defined before using, as this is not standard and only available in V8-based Javascript runtimes.
+
+### Other Changes
+* Improve the `DEVELOPERS.md` document, which helps to onboard new developers who want to work on the BitGo SDK itself.
+* Add a basic GitHub issue template
+
+## 9.2.0 (12-10-2019)
+
+### Other Changes
+* Update `bitgo-utxo-lib` to version 1.7.0 for new ZCash chain parameters
+* Check for wrapped segwit unspents in express v1 integration test
+
+## 9.1.0 (12-04-2019)
+
+### New Features
+* Use BitGo Stellar Federation proxy for Stellar Federation lookups
+
+### Bug Fixes
+* Reject hop params for ERC20 token transaction builds, as these do not make sense
+
+## 9.0.1 (11-27-2019)
+
+### Bug Fixes
+* Fix TRON recovery transaction object format
+
+### Other Changes
+* Include recovery amount for TRON recovery transactions
+
+## 9.0.0 (11-20-2019)
+
+### Breaking Changes
+* Support for Node 6 has been dropped. Node 8 is now the oldest supported version.
+
+### New Features
+* Partial support for recoveries of TRON wallets
+
+### Other Changes
+* Remove deprecated v1 examples
+* Update Javascript and Typescript examples
+* Remove node 6 and node 11 from Drone CI
+
+## 8.5.3 (12-17-2019)
+
+### New Features
+* Backported from 9.3.0: Return key registration data for Algorand's `explainTransaction()`
+
+## 8.5.2 (11-13-2019)
+
+### Bug Fixes
+* Unify TRON keycard key format with other coins
+
+## 8.5.1 (11-08-2019)
+
+### Bug Fixes
+* If given, pass seed to TRON account generation utility function provided by `bitgo-account-lib`
+
+### Other Changes
+* Resolve dependency `handlebars` to version 4.5.0
+* Update dependency `bitgo-account-lib` to  version 0.1.5
+
+## 8.5.0 (11-06-2019)
+
+### New Features
+* Enable usage of new Unspent Reservation system when building transactions. Using this feature allows a transaction to temporarily have an exclusive right to spend a one or more UTXO(s). This can help prevent unspent not found errors when sending interleaved transactions.
+* Allow signing TRON transactions with a raw extended private key.
+* Allow explaining a TRON transaction from the raw transaction hex using `explainTransaction()`
+
+### Bug Fixes
+* Remove unimplemented and unnecessary override of `deriveKeyWithSeed` for TRON
+* Allow both base58 and hex addresses for TRON
+* Fix number of decimals for offchain Stellar
+* Return fully signed TRON transaction in same format as other coins
+
+### Other Changes
+* Import `@bitgo/statics` library into BitGo SDK monorepo
+* Update `bitgo-account-lib` to version 0.1.4
+* Recreate Stellar integration test wallets following testnet reset
+* Limit Stellar trustline transactions by using base units instead of native units
+* Temporarily use node 10 in Drone pipelines instead of LTS
+
+## 8.4.0 (10-25-2019)
+
+### New Features
+* Allow removing Stellar Trustlines from a wallet
+* Add additional environment presets for new BitGo backend environments
+
+### Bug Fixes
+* Fix incorrect precedence in environment configurations
+
+### Other Changes
+* Resolve `https-proxy-agent` to version 3.0.0 for patch in `ripple-lib`
+* *Unstable feature*: Add support for sending from TRON hot wallets
+* Add missing options types in `Wallet` and `Wallets` classes
+* Add new internal method `manageUnspents` to `Wallet`. This method combines the fanouts and consolidation implementations into a single method. *Note:* There is no change to the public API.
+* Enable more strict Typescript compilation options, update code which was not compatible
+
+## 8.2.4 (10-18-2019)
+
+__No changes__
+
+## 8.2.3 (10-18-2019)
+
+### Other Changes
+* Update dependency `@bitgo/statics` to version 2.2.0
+
+## 8.2.2 (09-27-2019)
+
+### Bug Fixes
+* Use `require()` instead of ES `import()` for dynamically importing ethereum dependencies. This was causing issues in browsers.
+
+### Other Changes
+* Resolve `handlebars` dependency to `^4.3.0` for patch in dev dependency
+
+## 8.2.1 (09-24-2019)
+
+### Bug Fixes
+* Fix importing `ethereumjs-util` in browsers, where it was previously failing
+* Fix hop transactions which need to go through a pending approval flow
+* Fix two broken/flaky Ethereum and XRP tests
+
+### Other Changes
+* Allow custom env to use testnet server public key if network is testnet.
+* Revert enabling batched Ethereum sends due to incompatibility in `validateTransaction`
+
+## 8.2.0 (09-19-2019)
+
+### New Features
+* Generate and upload BitGo SDK documentation on each build run. See [here](https://bitgo-sdk-docs.s3.amazonaws.com/core/8.2.0/index.html) for an example.
+* Improve `explainTransaction` so it can explain Stellar Trustline and Stellar Token transactions
+
+### Bug Fixes
+* Export all Typescript types which are part of the public API. If you find there is a type which is used in the public API but not exported, please open an issue.
+* Fix incorrect implementation of `getChain` for Stellar Tokens
+* Fix incorrect Content Type on documentation uploaded by Drone CI
+* Fix inadvertent param rename instead of type specification, and duplicate identifier (thanks @workflow and @arigatodl)
+
+### Other Changes
+* Clean up and update all examples
+* Separate JavaScript examples from Typescript examples
+* Remove examples for removed v1 Ethereum code
+* Improve error message displayed when optional Ethereum libraries could not be required
+* *Unstable feature*: Allow for creation of TRON wallets
+
+## 8.1.2 (09-19-2019)
+
+### New Features
+* Allow `gasLimit` param to be sent when prebuilding Ethereum transactions
+
+### Bug Fixes
+* Fix type custom type inclusion in core module
+* Move superagent type augmentation into `core/types`
+
+## 8.1.1 (09-11-2019)
 
 ### Bug Fixes
 * Fix superagent typescript declaration augmentation
@@ -27,7 +189,7 @@
 
 ## 8.0.0
 
-### Breaking Changes 
+### Breaking Changes
 
 #### Elimination of synchronous error behavior for async functions
 * Previously, some async functions had strange error behavior where they would throw a synchronous error sometimes, and fail with a rejected promise other times. Which behavior you get for a given error is only really discoverable via source code inspection. Depending on how callers handled async calls and errors, this could break some callers.
@@ -81,7 +243,7 @@ If you believe you may be affected by this breaking change, and would like more 
   * `removeWebhook()`
   * `getConstants()`
   * `calculateMinerFeeInfo()`
-  
+
 Additionally, `ethSignMsgHash` in `util.ts` has been deprecated. This will be relocated to an Ethereum specific part of the code in the future.
 
 Direct usage of the `env` property of the BitGo object has also been deprecated. Please use `bitgo.getEnv()` as an alternative.
@@ -299,7 +461,7 @@ To switch to another bitcoin network, a new bitgo object should be constructed i
 * Add install size and timing metrics to CI system.
 
 ### Other Changes
-* Remove version 1 support for Ethereum wallets and associated tests. This functionality has been broken for some time due to the required server side routes being removed. 
+* Remove version 1 support for Ethereum wallets and associated tests. This functionality has been broken for some time due to the required server side routes being removed.
 
 **V2 Ethereum wallets are unaffected**. If your Ethereum wallet was working before this change, it will continue functioning normally.
 
@@ -375,7 +537,7 @@ npm WARN prepublish-on-install See the deprecation note in `npm help scripts` fo
 This is expected, and we cannot yet change to using a prepare script because this script type is not yet available in some of our supported npm versions.
 
 #### Potential error when starting `bitgo-express`
-If you see the following error when running `bin/bitgo-express`, it means the typescript files have not been compiled. 
+If you see the following error when running `bin/bitgo-express`, it means the typescript files have not been compiled.
 ```
 module.js:478
     throw err;
@@ -507,4 +669,4 @@ Instead, the address type will be determined by the `chain` parameter, with the 
 - Improve formatting for large numbers used in `baseUnitsToBigUnits`
 - Disallow proxying of non-API requests through BitGo Express
 - Check for both `txHex` and `halfSigned` parameters in Wallet `prebuildAndSignTransaction`
-- Improve handling of failed stellar federation lookups 
+- Improve handling of failed stellar federation lookups
