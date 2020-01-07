@@ -153,6 +153,7 @@ module.exports = {
     messagePrefix: '\x19Litecoin Signed Message:\n',
     bech32: 'ltc',
     bip32: {
+      // FIXME(BG-16466): these are incorrect
       public: 0x019da462,
       private: 0x019d9cfe
     },
@@ -165,6 +166,7 @@ module.exports = {
     messagePrefix: '\x19Litecoin Signed Message:\n',
     bech32: 'tltc',
     bip32: {
+      // FIXME(BG-16466): these are incorrect
       public: 0x0488b21e,
       private: 0x0488ade4
     },

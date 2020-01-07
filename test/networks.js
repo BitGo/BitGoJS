@@ -71,6 +71,26 @@ describe('networks', function () {
         assert(coins.isValidNetwork(network))
       })
 
+      it('getNetworkName() returns network name', function () {
+        assert.strictEqual(name, coins.getNetworkName(network))
+      })
+
+      it('has corresponding testnet/mainnet', function () {
+        if (coins.isMainnet(network)) {
+          assert.strictEqual(coins.isTestnet(network), false)
+          assert.strictEqual(coins.getMainnet(network), network)
+          assert.strictEqual(
+            typeof coins.getTestnet(network),
+            (network === networks.bitcoingold) ? 'undefined' : 'object'
+          )
+        } else {
+          assert.strictEqual(coins.isMainnet(network), false)
+          assert.strictEqual(coins.getTestnet(network), network)
+          assert.notStrictEqual(coins.getMainnet(network), network)
+          assert.strictEqual(typeof coins.getMainnet(network), 'object')
+        }
+      })
+
       it('has expected properties', function () {
         assert.strictEqual(typeof network, 'object')
         assert.strictEqual(typeof network.messagePrefix, 'string')
@@ -80,6 +100,25 @@ describe('networks', function () {
         assert.strictEqual(typeof network.scriptHash, 'number')
         assert.strictEqual(typeof network.wif, 'number')
         assert.strictEqual(typeof network.coin, 'string')
+
+        // FIXME(BG-16466): litecoin should not be a special case here -- all forks have the same bip32 values
+        const isLitecoin = coins.getMainnet(network) === networks.litecoin
+
+        if (coins.isMainnet(network)) {
+          assert.strictEqual(
+            (network.bip32.public === networks.bitcoin.bip32.public), !isLitecoin
+          )
+          assert.strictEqual(
+            (network.bip32.private === networks.bitcoin.bip32.private), !isLitecoin
+          )
+        } else {
+          assert.strictEqual(
+            (network.bip32.public === networks.testnet.bip32.public), !isLitecoin
+          )
+          assert.strictEqual(
+            (network.bip32.private === networks.testnet.bip32.private), !isLitecoin
+          )
+        }
       })
 
       for (const otherName in networks) {
