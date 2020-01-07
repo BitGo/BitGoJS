@@ -14,7 +14,16 @@ wif:           src/chainparams.cpp  base58Prefixes[SECRET_KEY]
 
 */
 
-var coins = require('./coins')
+const coins = {
+  BCH: 'bch',
+  BSV: 'bsv',
+  BTC: 'btc',
+  BTG: 'btg',
+  LTC: 'ltc',
+  ZEC: 'zec',
+  DASH: 'dash'
+}
+
 
 module.exports = {
 
