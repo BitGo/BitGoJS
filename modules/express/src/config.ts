@@ -43,7 +43,8 @@ export const EnvConfig = (): Partial<Config> => ({
   keyPath: process.env.BITGO_KEYPATH,
   crtPath: process.env.BITGO_CRTPATH,
   logFile: process.env.BITGO_LOGFILE,
-  disableSSL: process.env.DISABLE_SSL ? Boolean(process.env.DISABLE_SSL) : undefined,
+  disableSSL: (process.env.DISABLESSL || process.env.DISABLE_SSL) ?
+    Boolean((process.env.DISABLESSL || process.env.DISABLE_SSL)) : undefined,
   disableProxy: process.env.DISABLE_PROXY ? Boolean(process.env.DISABLE_PROXY) : undefined,
   disableEnvCheck: process.env.DISABLE_ENV_CHECK ? Boolean(process.env.DISABLE_ENV_CHECK) : undefined,
   timeout: Number(process.env.BITGO_TIMEOUT),

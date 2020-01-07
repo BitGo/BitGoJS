@@ -44,4 +44,20 @@ describe('Config:', () => {
     argStub.restore();
     envStub.restore();
   });
+
+  it('should allow DISABLE_SSL option', () => {
+    const argStub = sinon.stub(args, 'args').returns({});
+    const envStub = sinon.stub(process, 'env').value({ DISABLE_SSL: true });
+    config().disableSSL.should.equal(true);
+    argStub.restore();
+    envStub.restore();
+  });
+
+  it('should also allow DISABLESSL option', () => {
+    const argStub = sinon.stub(args, 'args').returns({});
+    const envStub = sinon.stub(process, 'env').value({ DISABLESSL: true });
+    config().disableSSL.should.equal(true);
+    argStub.restore();
+    envStub.restore();
+  });
 });
