@@ -24,7 +24,6 @@ const coins = {
   DASH: 'dash'
 }
 
-
 module.exports = {
 
   // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
@@ -171,6 +170,7 @@ module.exports = {
     },
     pubKeyHash: 0x6f,
     scriptHash: 0x3a,
+    // FIXME(BG-16466): should be 0xef instead
     wif: 0xb0,
     coin: coins.LTC
   },
