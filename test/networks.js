@@ -67,6 +67,10 @@ describe('networks', function () {
     const network = networks[name]
 
     describe(`networks.${name}`, function () {
+      it('is valid network', function () {
+        assert(coins.isValidNetwork(network))
+      })
+
       it('has expected properties', function () {
         assert.strictEqual(typeof network, 'object')
         assert.strictEqual(typeof network.messagePrefix, 'string')

@@ -62,8 +62,9 @@ function isZcash (network) {
 const isValidNetwork = typeforce.oneOf(
   isBitcoin,
   isBitcoinCash,
-  isBitcoinSV,
   isBitcoinGold,
+  isBitcoinSV,
+  isDash,
   isLitecoin,
   isZcash
 )
