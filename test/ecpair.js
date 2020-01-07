@@ -18,7 +18,15 @@ var curve = ecdsa.__curve
 var NETWORKS = require('../src/networks')
 var NETWORKS_LIST = [] // Object.values(NETWORKS)
 for (var networkName in NETWORKS) {
-  NETWORKS_LIST.push(NETWORKS[networkName])
+  // Methods like `fromWIF` accept a list of networks and select the *last* matching network,
+  // which is expected to be bitcoin/testnet in tests.
+  // Unfortunately some other networks have the same constants, so we make sure that bitcoin
+  // comes last in the array.
+  if (networkName === 'bitcoin' || networkName === 'testnet') {
+    NETWORKS_LIST.push(NETWORKS[networkName])
+  } else {
+    NETWORKS_LIST.unshift(NETWORKS[networkName])
+  }
 }
 
 describe('ECPair', function () {

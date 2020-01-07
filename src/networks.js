@@ -17,29 +17,32 @@ wif:           src/chainparams.cpp  base58Prefixes[SECRET_KEY]
 var coins = require('./coins')
 
 module.exports = {
-  // https://github.com/dashpay/dash/blob/master/src/validation.cpp
-  // https://github.com/dashpay/dash/blob/master/src/chainparams.cpp
-  dash: {
-    messagePrefix: '\x19DarkCoin Signed Message:\n',
+
+  // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
+  // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
+  bitcoin: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bech32: 'bc',
     bip32: {
       public: 0x0488b21e,
       private: 0x0488ade4
     },
-    pubKeyHash: 0x4c,
-    scriptHash: 0x10,
-    wif: 0xcc,
-    coin: coins.DASH
+    pubKeyHash: 0x00,
+    scriptHash: 0x05,
+    wif: 0x80,
+    coin: coins.BTC
   },
-  dashTest: {
-    messagePrefix: '\x19DarkCoin Signed Message:\n',
+  testnet: {
+    messagePrefix: '\x18Bitcoin Signed Message:\n',
+    bech32: 'tb',
     bip32: {
       public: 0x043587cf,
       private: 0x04358394
     },
-    pubKeyHash: 0x8c,
-    scriptHash: 0x13,
+    pubKeyHash: 0x6f,
+    scriptHash: 0xc4,
     wif: 0xef,
-    coin: coins.DASH
+    coin: coins.BTC
   },
 
   // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
@@ -68,6 +71,23 @@ module.exports = {
     coin: coins.BCH
   },
 
+  // https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
+  // https://github.com/BTCGPU/BTCGPU/blob/master/src/chainparams.cpp
+  bitcoingold: {
+    messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
+    bech32: 'btg',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x26,
+    scriptHash: 0x17,
+    wif: 0x80,
+    coin: coins.BTG,
+    forkId: 0x4F /* 79 */
+  },
+  // bitcoingoldTest: TODO
+
   // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp
   // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/chainparams.cpp
   bitcoinsv: {
@@ -92,6 +112,58 @@ module.exports = {
     scriptHash: 0xc4,
     wif: 0xef,
     coin: coins.BSV
+  },
+
+  // https://github.com/dashpay/dash/blob/master/src/validation.cpp
+  // https://github.com/dashpay/dash/blob/master/src/chainparams.cpp
+  dash: {
+    messagePrefix: '\x19DarkCoin Signed Message:\n',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x4c,
+    scriptHash: 0x10,
+    wif: 0xcc,
+    coin: coins.DASH
+  },
+  dashTest: {
+    messagePrefix: '\x19DarkCoin Signed Message:\n',
+    bip32: {
+      public: 0x043587cf,
+      private: 0x04358394
+    },
+    pubKeyHash: 0x8c,
+    scriptHash: 0x13,
+    wif: 0xef,
+    coin: coins.DASH
+  },
+
+  // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
+  // https://github.com/litecoin-project/litecoin/blob/master/src/chainparams.cpp
+  litecoin: {
+    messagePrefix: '\x19Litecoin Signed Message:\n',
+    bech32: 'ltc',
+    bip32: {
+      public: 0x019da462,
+      private: 0x019d9cfe
+    },
+    pubKeyHash: 0x30,
+    scriptHash: 0x32,
+    wif: 0xb0,
+    coin: coins.LTC
+  },
+  litecoinTest: {
+    messagePrefix: '\x19Litecoin Signed Message:\n',
+    bech32: 'tltc',
+    bip32: {
+      public: 0x0488b21e,
+      private: 0x0488ade4
+    },
+    pubKeyHash: 0x6f,
+    scriptHash: 0x3a,
+    wif: 0xb0,
+    coin: coins.LTC
   },
 
   // https://github.com/zcash/zcash/blob/master/src/validation.cpp
@@ -133,76 +205,5 @@ module.exports = {
       4: 0x2bb40e60
     },
     coin: coins.ZEC
-  },
-
-  // https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
-  // https://github.com/BTCGPU/BTCGPU/blob/master/src/chainparams.cpp
-  bitcoingold: {
-    messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
-    bech32: 'btg',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
-    pubKeyHash: 0x26,
-    scriptHash: 0x17,
-    wif: 0x80,
-    coin: coins.BTG,
-    forkId: 0x4F /* 79 */
-  },
-  // bitcoingoldTest: TODO
-
-  // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
-  // https://github.com/litecoin-project/litecoin/blob/master/src/chainparams.cpp
-  litecoin: {
-    messagePrefix: '\x19Litecoin Signed Message:\n',
-    bech32: 'ltc',
-    bip32: {
-      public: 0x019da462,
-      private: 0x019d9cfe
-    },
-    pubKeyHash: 0x30,
-    scriptHash: 0x32,
-    wif: 0xb0,
-    coin: coins.LTC
-  },
-  litecoinTest: {
-    messagePrefix: '\x19Litecoin Signed Message:\n',
-    bech32: 'tltc',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
-    pubKeyHash: 0x6f,
-    scriptHash: 0x3a,
-    wif: 0xb0,
-    coin: coins.LTC
-  },
-
-  // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
-  // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
-  bitcoin: {
-    messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: 'bc',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
-    pubKeyHash: 0x00,
-    scriptHash: 0x05,
-    wif: 0x80,
-    coin: coins.BTC
-  },
-  testnet: {
-    messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bech32: 'tb',
-    bip32: {
-      public: 0x043587cf,
-      private: 0x04358394
-    },
-    pubKeyHash: 0x6f,
-    scriptHash: 0xc4,
-    wif: 0xef,
-    coin: coins.BTC
   }
 }
