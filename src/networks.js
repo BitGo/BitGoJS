@@ -1,15 +1,31 @@
-// https://en.bitcoin.it/wiki/List_of_address_prefixes
-// Dogecoin BIP32 is a proposed standard: https://bitcointalk.org/index.php?topic=409731
+/*
+
+The values for the various fork coins can be found in these files:
+
+property       filename             varname
+------------------------------------------------------------------
+messagePrefix: src/validation.cpp   strMessageMagic
+bech32_hrp:    src/chainparams.cpp  bech32_hrp
+bip32.public:  src/chainparams.cpp  base58Prefixes[EXT_PUBLIC_KEY]
+bip32.private  src/chainparams.cpp  base58Prefixes[EXT_SECRET_KEY]
+pubKeyHash:    src/chainparams.cpp  base58Prefixes[PUBKEY_ADDRESS]
+scriptHash:    src/chainparams.cpp  base58Prefixes[SCRIPT_ADDRESS]
+wif:           src/chainparams.cpp  base58Prefixes[SECRET_KEY]
+
+*/
+
 var coins = require('./coins')
 
 module.exports = {
+  // https://github.com/dashpay/dash/blob/master/src/validation.cpp
+  // https://github.com/dashpay/dash/blob/master/src/chainparams.cpp
   dash: {
     messagePrefix: '\x19DarkCoin Signed Message:\n',
     bip32: {
       public: 0x0488b21e,
       private: 0x0488ade4
     },
-    pubKeyHash: 0x4c, // https://dash-docs.github.io/en/developer-reference#opcodes
+    pubKeyHash: 0x4c,
     scriptHash: 0x10,
     wif: 0xcc,
     coin: coins.DASH
@@ -20,11 +36,14 @@ module.exports = {
       public: 0x043587cf,
       private: 0x04358394
     },
-    pubKeyHash: 0x8c, // https://dash-docs.github.io/en/developer-reference#opcodes
+    pubKeyHash: 0x8c,
     scriptHash: 0x13,
-    wif: 0xef, // https://github.com/dashpay/godashutil/blob/master/wif.go#L72
+    wif: 0xef,
     coin: coins.DASH
   },
+
+  // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
+  // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
   bitcoincash: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bip32: {
@@ -48,6 +67,9 @@ module.exports = {
     wif: 0xef,
     coin: coins.BCH
   },
+
+  // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp
+  // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/chainparams.cpp
   bitcoinsv: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bip32: {
@@ -71,6 +93,9 @@ module.exports = {
     wif: 0xef,
     coin: coins.BSV
   },
+
+  // https://github.com/zcash/zcash/blob/master/src/validation.cpp
+  // https://github.com/zcash/zcash/blob/master/src/chainparams.cpp
   zcash: {
     messagePrefix: '\x18ZCash Signed Message:\n',
     bip32: {
@@ -109,6 +134,9 @@ module.exports = {
     },
     coin: coins.ZEC
   },
+
+  // https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
+  // https://github.com/BTCGPU/BTCGPU/blob/master/src/chainparams.cpp
   bitcoingold: {
     messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
     bech32: 'btg',
@@ -122,6 +150,10 @@ module.exports = {
     coin: coins.BTG,
     forkId: 0x4F /* 79 */
   },
+  // bitcoingoldTest: TODO
+
+  // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
+  // https://github.com/litecoin-project/litecoin/blob/master/src/chainparams.cpp
   litecoin: {
     messagePrefix: '\x19Litecoin Signed Message:\n',
     bech32: 'ltc',
@@ -146,6 +178,9 @@ module.exports = {
     wif: 0xb0,
     coin: coins.LTC
   },
+
+  // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
+  // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
   bitcoin: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bech32: 'bc',
