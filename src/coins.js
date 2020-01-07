@@ -55,7 +55,11 @@ function isZcash (network) {
   return typeforce.value(networks.zcash.coin)(network.coin)
 }
 
-isValidCoin = typeforce.oneOf(
+/**
+ * @param network
+ * @returns {boolean} returns true iff network is any of the network stated in the argument
+ */
+const isValidNetwork = typeforce.oneOf(
   isBitcoin,
   isBitcoinCash,
   isBitcoinSV,
@@ -85,5 +89,10 @@ module.exports = {
   isDash,
   isLitecoin,
   isZcash,
-  isValidCoin
+
+  isValidNetwork,
+  /**
+   * @deprecated: use isValidNetwork
+   */
+  isValidCoin: isValidNetwork
 }
