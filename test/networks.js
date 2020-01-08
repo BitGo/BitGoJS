@@ -39,20 +39,6 @@ describe('networks', function () {
     'zcash'
   ]
 
-  const bitcoinTestnetSharedWIFPrefix = [
-    'testnet',
-    'bitcoincashTestnet',
-    'bitcoinsvTestnet',
-    'dashTest',
-    'zcashTest'
-  ]
-
-  // FIXME(BG-16466): this is a bug, they should be distinct
-  const litecoinSharedWIFPrefix = [
-    'litecoin',
-    'litecoinTest'
-  ]
-
   const bech32Coins = [
     'bitcoin', 'testnet',
     'bitcoingold',
@@ -150,9 +136,7 @@ describe('networks', function () {
           assert.strictEqual(
             (network.wif === otherNetwork.wif),
             sameGroup(bitcoinMainnetSharedWIFPrefix, name, otherName) ||
-            sameGroup(bitcoinTestnetSharedWIFPrefix, name, otherName) ||
-            // FIXME(BG-16466): this group should not exist
-            sameGroup(litecoinSharedWIFPrefix, name, otherName)
+            (coins.isTestnet(network) && coins.isTestnet(otherNetwork))
           )
         })
       }
