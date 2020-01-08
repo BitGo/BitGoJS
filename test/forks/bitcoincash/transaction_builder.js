@@ -3,16 +3,16 @@
 var assert = require('assert')
 
 const {
-  networks,
-  ECPair,
   Transaction,
   TransactionBuilder,
+  networks,
+  ECPair,
   script
-} = require('../src')
+} = require('../../../src')
 
-describe('TransactionBuilder', function () {
+describe('TransactionBuilder (bitcoincash)', function () {
   var network = networks.bitcoincashTestnet
-  it('Build and sign p2pkh', function () {
+  it('Build and sign p2pk', function () {
     var value = 50 * 1e8
     var txid = '40c8a218923f23df3692530fa8e475251c50c7d630dccbdfbd92ba8092f4aa13'
     var vout = 0
