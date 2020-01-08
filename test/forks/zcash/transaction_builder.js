@@ -9,7 +9,7 @@ const {
 
 const fixtures = require('../../fixtures/forks/zcash/transaction_builder')
 
-describe('TransactionBuilder', function () {
+describe('TransactionBuilder (zcash)', function () {
   fixtures.valid.forEach(function (testData) {
     it('returns TransactionBuilder, with ' + testData.description, function () {
       var network = networks.zcash

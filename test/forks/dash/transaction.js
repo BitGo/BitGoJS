@@ -7,9 +7,9 @@ const {
   Transaction
 } = require('../../../src')
 
-var fixtures = require('../../fixtures/forks/dashTest/transaction')
+var fixtures = require('../../fixtures/forks/dash/transaction')
 
-describe('Transaction', function () {
+describe('Transaction (dash)', function () {
   describe('fromBuffer/fromHex for Testnet Dash', function () {
     fixtures.valid.forEach(function (testData) {
       it('imports ' + testData.description, function () {
