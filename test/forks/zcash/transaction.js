@@ -7,7 +7,7 @@ const {
   Transaction
 } = require('../../../src')
 
-const fixtures = require('../../fixtures/forks/zcashTest/transaction')
+const fixtures = require('../../fixtures/forks/zcash/transaction')
 
 describe('Transaction (ZEC)', function () {
   describe('fromBuffer/fromHex', function () {

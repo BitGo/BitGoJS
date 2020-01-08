@@ -7,7 +7,7 @@ const {
   Transaction
 } = require('../../../src')
 
-var fixtures = require('../../fixtures/forks/dashTest/transaction')
+var fixtures = require('../../fixtures/forks/dash/transaction')
 
 describe('Transaction', function () {
   describe('fromBuffer/fromHex for Testnet Dash', function () {
