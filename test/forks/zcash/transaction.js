@@ -9,7 +9,7 @@ const {
 
 const fixtures = require('../../fixtures/forks/zcash/transaction')
 
-describe('Transaction (ZEC)', function () {
+describe('Transaction (zcash)', function () {
   describe('fromBuffer/fromHex', function () {
     fixtures.valid.forEach(function (testData) {
       it('imports ' + testData.description, function () {

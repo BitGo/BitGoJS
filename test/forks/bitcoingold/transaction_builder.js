@@ -11,7 +11,7 @@ const {
   crypto
 } = require('../../../src')
 
-describe('TransactionBuilder (BTG)', function () {
+describe('TransactionBuilder (bitcoingold)', function () {
   var network = networks['bitcoingold']
   it('Build and sign p2pkh', function () {
     var value = 50 * 1e8
