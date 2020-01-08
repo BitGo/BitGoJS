@@ -56,7 +56,6 @@ HDNode.fromSeedHex = function (hex, network) {
 }
 
 HDNode.fromBase58 = function (string, networks) {
-  // FixMe: Issue #38, this method just pops the latest network object from the list instead of being more discerning.
   var buffer = base58check.decode(string)
   if (buffer.length !== 78) throw new Error('Invalid buffer length')
 
@@ -66,6 +65,9 @@ HDNode.fromBase58 = function (string, networks) {
 
   // list of networks?
   if (Array.isArray(networks)) {
+    // FIXME(BG-16845):
+    // This is only useful when you know the coin but you are not sure if it is mainnet or testnet.
+    // All mainnets have xpub/xprv and all testnets have tpub/tprv as version.
     network = networks.filter(function (x) {
       return version === x.bip32.private ||
              version === x.bip32.public

@@ -87,23 +87,12 @@ describe('networks', function () {
         assert.strictEqual(typeof network.wif, 'number')
         assert.strictEqual(typeof network.coin, 'string')
 
-        // FIXME(BG-16466): litecoin should not be a special case here -- all forks have the same bip32 values
-        const isLitecoin = coins.getMainnet(network) === networks.litecoin
-
         if (coins.isMainnet(network)) {
-          assert.strictEqual(
-            (network.bip32.public === networks.bitcoin.bip32.public), !isLitecoin
-          )
-          assert.strictEqual(
-            (network.bip32.private === networks.bitcoin.bip32.private), !isLitecoin
-          )
+          assert.strictEqual(network.bip32.public, networks.bitcoin.bip32.public)
+          assert.strictEqual(network.bip32.private, networks.bitcoin.bip32.private)
         } else {
-          assert.strictEqual(
-            (network.bip32.public === networks.testnet.bip32.public), !isLitecoin
-          )
-          assert.strictEqual(
-            (network.bip32.private === networks.testnet.bip32.private), !isLitecoin
-          )
+          assert.strictEqual(network.bip32.public, networks.testnet.bip32.public)
+          assert.strictEqual(network.bip32.private, networks.testnet.bip32.private)
         }
       })
 

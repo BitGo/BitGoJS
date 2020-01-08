@@ -2,15 +2,15 @@
 
 The values for the various fork coins can be found in these files:
 
-property       filename             varname
-------------------------------------------------------------------
-messagePrefix: src/validation.cpp   strMessageMagic
-bech32_hrp:    src/chainparams.cpp  bech32_hrp
-bip32.public:  src/chainparams.cpp  base58Prefixes[EXT_PUBLIC_KEY]
-bip32.private  src/chainparams.cpp  base58Prefixes[EXT_SECRET_KEY]
-pubKeyHash:    src/chainparams.cpp  base58Prefixes[PUBKEY_ADDRESS]
-scriptHash:    src/chainparams.cpp  base58Prefixes[SCRIPT_ADDRESS]
-wif:           src/chainparams.cpp  base58Prefixes[SECRET_KEY]
+property       filename             varname                           notes
+------------------------------------------------------------------------------------------------------------------------
+messagePrefix  src/validation.cpp   strMessageMagic                   Format `${CoinName} Signed Message`
+bech32_hrp     src/chainparams.cpp  bech32_hrp                        Only for some networks
+bip32.public   src/chainparams.cpp  base58Prefixes[EXT_PUBLIC_KEY]    Mainnets have same value, testnets have same value
+bip32.private  src/chainparams.cpp  base58Prefixes[EXT_SECRET_KEY]    Mainnets have same value, testnets have same value
+pubKeyHash     src/chainparams.cpp  base58Prefixes[PUBKEY_ADDRESS]
+scriptHash     src/chainparams.cpp  base58Prefixes[SCRIPT_ADDRESS]
+wif            src/chainparams.cpp  base58Prefixes[SECRET_KEY]        Testnets have same value
 
 */
 
@@ -24,6 +24,24 @@ const coins = {
   DASH: 'dash'
 }
 
+function getDefaultBip32Mainnet () {
+  return {
+    // base58 'xpub'
+    public: 0x0488b21e,
+    // base58 'xprv'
+    private: 0x0488ade4
+  }
+}
+
+function getDefaultBip32Testnet () {
+  return {
+    // base58 'tpub'
+    public: 0x043587cf,
+    // base58 'tprv'
+    private: 0x04358394
+  }
+}
+
 module.exports = {
 
   // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
@@ -31,10 +49,7 @@ module.exports = {
   bitcoin: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bech32: 'bc',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
+    bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x00,
     scriptHash: 0x05,
     wif: 0x80,
@@ -43,10 +58,7 @@ module.exports = {
   testnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
     bech32: 'tb',
-    bip32: {
-      public: 0x043587cf,
-      private: 0x04358394
-    },
+    bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
@@ -57,10 +69,7 @@ module.exports = {
   // https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
   bitcoincash: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
+    bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x00,
     scriptHash: 0x05,
     wif: 0x80,
@@ -69,10 +78,7 @@ module.exports = {
   },
   bitcoincashTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bip32: {
-      public: 0x043587cf,
-      private: 0x04358394
-    },
+    bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
@@ -84,10 +90,7 @@ module.exports = {
   bitcoingold: {
     messagePrefix: '\x18Bitcoin Gold Signed Message:\n',
     bech32: 'btg',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
+    bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x26,
     scriptHash: 0x17,
     wif: 0x80,
@@ -100,10 +103,7 @@ module.exports = {
   // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/chainparams.cpp
   bitcoinsv: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
+    bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x00,
     scriptHash: 0x05,
     wif: 0x80,
@@ -112,10 +112,7 @@ module.exports = {
   },
   bitcoinsvTestnet: {
     messagePrefix: '\x18Bitcoin Signed Message:\n',
-    bip32: {
-      public: 0x043587cf,
-      private: 0x04358394
-    },
+    bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x6f,
     scriptHash: 0xc4,
     wif: 0xef,
@@ -126,10 +123,7 @@ module.exports = {
   // https://github.com/dashpay/dash/blob/master/src/chainparams.cpp
   dash: {
     messagePrefix: '\x19DarkCoin Signed Message:\n',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
+    bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x4c,
     scriptHash: 0x10,
     wif: 0xcc,
@@ -137,10 +131,7 @@ module.exports = {
   },
   dashTest: {
     messagePrefix: '\x19DarkCoin Signed Message:\n',
-    bip32: {
-      public: 0x043587cf,
-      private: 0x04358394
-    },
+    bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x8c,
     scriptHash: 0x13,
     wif: 0xef,
@@ -152,11 +143,7 @@ module.exports = {
   litecoin: {
     messagePrefix: '\x19Litecoin Signed Message:\n',
     bech32: 'ltc',
-    bip32: {
-      // FIXME(BG-16466): these are incorrect
-      public: 0x019da462,
-      private: 0x019d9cfe
-    },
+    bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x30,
     scriptHash: 0x32,
     wif: 0xb0,
@@ -165,11 +152,7 @@ module.exports = {
   litecoinTest: {
     messagePrefix: '\x19Litecoin Signed Message:\n',
     bech32: 'tltc',
-    bip32: {
-      // FIXME(BG-16466): these are incorrect
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
+    bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x6f,
     scriptHash: 0x3a,
     wif: 0xef,
@@ -180,10 +163,7 @@ module.exports = {
   // https://github.com/zcash/zcash/blob/master/src/chainparams.cpp
   zcash: {
     messagePrefix: '\x18ZCash Signed Message:\n',
-    bip32: {
-      public: 0x0488b21e,
-      private: 0x0488ade4
-    },
+    bip32: getDefaultBip32Mainnet(),
     pubKeyHash: 0x1cb8,
     scriptHash: 0x1cbd,
     wif: 0x80,
@@ -200,10 +180,7 @@ module.exports = {
   },
   zcashTest: {
     messagePrefix: '\x18ZCash Signed Message:\n',
-    bip32: {
-      public: 0x043587cf,
-      private: 0x04358394
-    },
+    bip32: getDefaultBip32Testnet(),
     pubKeyHash: 0x1d25,
     scriptHash: 0x1cba,
     wif: 0xef,
