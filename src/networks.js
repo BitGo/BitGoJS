@@ -14,7 +14,15 @@ wif:           src/chainparams.cpp  base58Prefixes[SECRET_KEY]
 
 */
 
-var coins = require('./coins')
+const coins = {
+  BCH: 'bch',
+  BSV: 'bsv',
+  BTC: 'btc',
+  BTG: 'btg',
+  LTC: 'ltc',
+  ZEC: 'zec',
+  DASH: 'dash'
+}
 
 module.exports = {
 
@@ -145,6 +153,7 @@ module.exports = {
     messagePrefix: '\x19Litecoin Signed Message:\n',
     bech32: 'ltc',
     bip32: {
+      // FIXME(BG-16466): these are incorrect
       public: 0x019da462,
       private: 0x019d9cfe
     },
@@ -157,11 +166,13 @@ module.exports = {
     messagePrefix: '\x19Litecoin Signed Message:\n',
     bech32: 'tltc',
     bip32: {
+      // FIXME(BG-16466): these are incorrect
       public: 0x0488b21e,
       private: 0x0488ade4
     },
     pubKeyHash: 0x6f,
     scriptHash: 0x3a,
+    // FIXME(BG-16466): should be 0xef instead
     wif: 0xb0,
     coin: coins.LTC
   },
