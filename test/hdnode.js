@@ -13,10 +13,10 @@ var fixtures = require('./fixtures/hdnode.json')
 var curve = ecdsa.__curve
 
 var NETWORKS = require('../src/networks')
-var NETWORKS_LIST = [] // Object.values(NETWORKS)
-for (var networkName in NETWORKS) {
-  NETWORKS_LIST.push(NETWORKS[networkName])
-}
+var NETWORKS_LIST = [
+  NETWORKS.bitcoin,
+  NETWORKS.testnet
+]
 
 var validAll = []
 fixtures.valid.forEach(function (f) {
@@ -176,7 +176,7 @@ describe('HDNode', function () {
   describe('fromBase58 / toBase58', function () {
     validAll.forEach(function (f) {
       it('exports ' + f.base58 + ' (public) correctly', function () {
-        var hd = HDNode.fromBase58(f.base58, NETWORKS_LIST)
+        var hd = HDNode.fromBase58(f.base58, f.network ? NETWORKS[f.network] : undefined)
 
         assert.strictEqual(hd.toBase58(), f.base58)
         assert.throws(function () { hd.keyPair.toWIF() }, /Missing private key/)
@@ -185,7 +185,7 @@ describe('HDNode', function () {
 
     validAll.forEach(function (f) {
       it('exports ' + f.base58Priv + ' (private) correctly', function () {
-        var hd = HDNode.fromBase58(f.base58Priv, NETWORKS_LIST)
+        var hd = HDNode.fromBase58(f.base58Priv, f.network ? NETWORKS[f.network] : undefined)
 
         assert.strictEqual(hd.toBase58(), f.base58Priv)
         assert.strictEqual(hd.keyPair.toWIF(), f.wif)
