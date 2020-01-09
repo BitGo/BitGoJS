@@ -13,7 +13,7 @@ var Transaction = require('../src/transaction')
 var TransactionBuilder = require('../src/transaction_builder')
 var NETWORKS = require('../src/networks')
 
-var fixtures = require('./fixtures').getFixturesTransactionBuilder()
+var fixtures = require('./fixtures').combine('transaction_builder', ['dash', 'zcash'])
 
 function construct (f, dontSign) {
   var network = NETWORKS[f.network]

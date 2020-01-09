@@ -1,5 +1,14 @@
 const { networks, coins } = require('../..')
 
+class ErrorInvalidFixtures extends Error {
+  constructor (network, message) {
+    super(
+      `invalid fixtures for ${coins.getNetworkName(network)}` +
+      (message ? `: ${message}` : '')
+    )
+  }
+}
+
 /**
  * @param {Network} network
  * @param {Network} fileName
@@ -18,6 +27,61 @@ function getFixturesForNetwork (network, fileName) {
 }
 
 /**
+ * Thrown if fixtures cannot be merged
+ */
+class ErrorMergeFixtures extends ErrorInvalidFixtures {
+  constructor (network, baseValue, value, path) {
+    super(
+      network,
+      `error merging fixtures at path ${path.join('.')}: ` +
+      `fork fixture is ${typeof value}, ` +
+      `base fixture is ${typeof baseValue}`
+    )
+  }
+}
+
+/**
+ * Combines base fixtures with fork fixtures.
+ * If forkFixture property is an object and baseFixture has a property with the same name that is also an object,
+ * merge both fixtures recursively.
+ * If forkFixture property is an array and baseFixture has a property with the same name that is also an array,
+ * append elements to baseFixture.
+ * Error if property types do not match.
+ *
+ * @param {Network} network - used in error message
+ * @param {Object} baseFixtures - the input fixtures (standard bitcoin fixtures by default)
+ * @param {Object} forkFixtures - the fork fixtures. Keys must be subset of baseFixtures and must have same types.
+ * @param {string[]?} path - used in error message
+ * @returns {Object} merged fixtures
+ */
+function mergeFixtures (network, baseFixtures, forkFixtures, path = []) {
+  const merged = {}
+  for (const key in forkFixtures) {
+    const keyPath = [...path, key]
+    const baseValue = baseFixtures[key]
+    const forkValue = forkFixtures[key]
+
+    if (Array.isArray(forkValue)) {
+      if (!Array.isArray(baseValue)) {
+        throw new ErrorMergeFixtures(network, baseValue, forkValue, keyPath)
+      }
+
+      merged[key] = [...baseValue, ...forkValue]
+    } else if (typeof forkValue === 'object') {
+      if (typeof baseValue !== 'object') {
+        throw new ErrorMergeFixtures(network, baseValue, forkValue, keyPath)
+      }
+
+      merged[key] = mergeFixtures(network, baseValue, forkValue, keyPath)
+    } else {
+      throw new ErrorMergeFixtures(network, baseValue, forkValue, keyPath)
+    }
+  }
+
+  return Object.assign({}, baseFixtures, merged)
+}
+
+/**
  *
  * @param {Network[]} forkNetworks - networks (beside bitcoin) to load fixtures for
  * @param {string} fileName - the fixture file name
@@ -27,8 +91,7 @@ function getFixturesForNetwork (network, fileName) {
  *                                 Will be called with bitcoin fixtures on first call.
  * @returns {Object}
  */
-function combineFixtures (forkNetworks, fileName, combineFunc) {
-  // FIXME(BG-16846): add fixtures for all coins, remove `forkNetworks`
+function combineFixtureFiles (forkNetworks, fileName, combineFunc) {
   return forkNetworks
     .reduce(
       (acc, network) => combineFunc(acc, network, getFixturesForNetwork(network, fileName)),
@@ -36,27 +99,37 @@ function combineFixtures (forkNetworks, fileName, combineFunc) {
     )
 }
 
-/**
- * @returns {Object} combined fixtures for TransactionBuilder tests
- */
-function getFixturesTransactionBuilder () {
-  return combineFixtures(
-    [networks.dash, networks.zcash],
-    'transaction_builder',
-    (acc, network, fixtures) => {
-      if (
-        ((typeof fixtures.valid) !== 'object') ||
-        !Array.isArray(fixtures.valid.multisig)
-      ) {
-        throw new Error(`invalid fixtures for ${coins.getNetworkName(network)}`)
-      }
+const forkMainnetNames = coins
+  .getNetworkList()
+  .filter(n => coins.isMainnet(n) && !coins.isBitcoin(n))
+  .map(n => coins.getNetworkName(n))
 
-      acc.valid.multisig.push(...fixtures.valid.multisig)
-      return acc
+/**
+ * @param {string} fileName - the fixture file name to require
+ * @param {string[]?} forkNames - additional fork coins to add fixtures from. Must be mainnets.
+ * @returns {Object} combined fixtures for bitcoin and forks specified in _networks_.
+ */
+// FIXME(BG-16846): add fixtures for all coins, remove `networks` argument
+function combine (fileName, forkNames = forkMainnetNames) {
+  if (!Array.isArray(forkNames)) {
+    throw new TypeError(`invalid argument: forkNames`)
+  }
+
+  const forkNetworks = forkNames.map(n => networks[n])
+  if (!forkNetworks.every(n => coins.isMainnet(n) && !coins.isBitcoin(n))) {
+    throw new TypeError(`forkNames must name non-bitcoin mainnets`)
+  }
+
+  return combineFixtureFiles(
+    forkNetworks, fileName, (baseFixtures, network, forkFixtures) => {
+      return mergeFixtures(network, baseFixtures, forkFixtures)
     }
   )
 }
 
 module.exports = {
-  getFixturesTransactionBuilder
+  ErrorInvalidFixtures,
+  ErrorMergeFixtures,
+  mergeFixtures,
+  combine
 }
