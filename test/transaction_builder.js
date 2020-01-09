@@ -13,7 +13,7 @@ var Transaction = require('../src/transaction')
 var TransactionBuilder = require('../src/transaction_builder')
 var NETWORKS = require('../src/networks')
 
-var fixtures = require('./fixtures/transaction_builder')
+var fixtures = require('./fixtures').getFixturesTransactionBuilder()
 
 function construct (f, dontSign) {
   var network = NETWORKS[f.network]
@@ -454,7 +454,7 @@ describe('TransactionBuilder', function () {
 
   describe('multisig', function () {
     fixtures.valid.multisig.forEach(function (f) {
-      it(f.description, function () {
+      it(`${f.description} network=${f.network}`, function () {
         var txb = construct(f, true)
         var tx
         var network = NETWORKS[f.network]

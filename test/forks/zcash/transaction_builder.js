@@ -10,7 +10,7 @@ const {
 const fixtures = require('../../fixtures/forks/zcash/transaction_builder')
 
 describe('TransactionBuilder (zcash)', function () {
-  fixtures.valid.forEach(function (testData) {
+  fixtures.valid.fromTransaction.forEach(function (testData) {
     it('returns TransactionBuilder, with ' + testData.description, function () {
       var network = networks.zcash
       var tx = Transaction.fromHex(testData.hex, network)
