@@ -4,7 +4,7 @@ const typeforce = require('typeforce')
 const networks = require('./networks')
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {string} the name of the network. Returns undefined if network is not a value
  *                   of `networks`
  */
@@ -13,7 +13,7 @@ function getNetworkName (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {Object} the mainnet corresponding to a testnet
  */
 function getMainnet (network) {
@@ -50,7 +50,7 @@ function getMainnet (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} true iff network is a mainnet
  */
 function isMainnet (network) {
@@ -58,23 +58,38 @@ function isMainnet (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} true iff network is a testnet
  */
 function isTestnet (network) {
   return getMainnet(network) !== network
 }
 
+/**
+ *
+ * @param {Network} network
+ * @param {Network} otherNetwork
+ * @returns {boolean} true iff both networks are for the same coin
+ */
+function isSameCoin (network, otherNetwork) {
+  return getMainnet(network) === getMainnet(otherNetwork)
+}
+
 const networksArray = Object.keys(networks).map(name => networks[name])
 const mainnets = networksArray.filter(isMainnet)
 const testnets = networksArray.filter(isTestnet)
+
+/**
+ * Map where keys are mainnet networks and values are testnet networks
+ * @type {Map<Network, Network[]>}
+ */
 const mainnetTestnetPairs = new Map(
   mainnets.map(m => [m, testnets.filter(t => getMainnet(t) === m)])
 )
 
 /**
- * @param network
- * @returns {Object|undefined} - The testnet corresponding to a mainnet.
+ * @param {Network} network
+ * @returns {Network|undefined} - The testnet corresponding to a mainnet.
  *                               Returns undefined if a network has no testnet.
  */
 function getTestnet (network) {
@@ -95,7 +110,7 @@ function getTestnet (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} true iff network bitcoin or testnet
  */
 function isBitcoin (network) {
@@ -103,7 +118,7 @@ function isBitcoin (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} true iff network is bitcoincash or bitcoincashTestnet
  */
 function isBitcoinCash (network) {
@@ -111,7 +126,7 @@ function isBitcoinCash (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} true iff network is bitcoingold
  */
 function isBitcoinGold (network) {
@@ -119,7 +134,7 @@ function isBitcoinGold (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} true iff network is bitcoinsv or bitcoinsvTestnet
  */
 function isBitcoinSV (network) {
@@ -127,7 +142,7 @@ function isBitcoinSV (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} true iff network is dash or dashTest
  */
 function isDash (network) {
@@ -135,7 +150,7 @@ function isDash (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} true iff network is litecoin or litecoinTest
  */
 function isLitecoin (network) {
@@ -143,7 +158,7 @@ function isLitecoin (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} true iff network is zcash or zcashTest
  */
 function isZcash (network) {
@@ -151,7 +166,7 @@ function isZcash (network) {
 }
 
 /**
- * @param network
+ * @param {Network} network
  * @returns {boolean} returns true iff network is any of the network stated in the argument
  */
 const isValidNetwork = typeforce.oneOf(
@@ -179,6 +194,7 @@ module.exports = {
   isMainnet,
   getTestnet,
   isTestnet,
+  isSameCoin,
 
   isBitcoin,
   isBitcoinCash,

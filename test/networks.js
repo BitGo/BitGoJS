@@ -97,7 +97,22 @@ describe('networks', function () {
       })
 
       for (const otherName in networks) {
-        if (name === otherName) {
+        const otherNetwork = networks[otherName]
+
+        it('isSameCoin() returns true testnet/mainnet variants', function () {
+          assert.strictEqual(
+            coins.isSameCoin(network, otherNetwork),
+            otherNetwork === coins.getMainnet(network) ||
+            otherNetwork === coins.getTestnet(network)
+          )
+
+          assert.strictEqual(
+            name === otherName,
+            network === otherNetwork
+          )
+        })
+
+        if (network === otherNetwork) {
           continue
         }
 
