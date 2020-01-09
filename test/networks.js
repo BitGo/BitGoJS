@@ -8,46 +8,52 @@ describe('networks', function () {
   // However, there are some exceptions and some networks share the same properties.
 
   // Here we define some groups of networks that are allowed to share properties.
-  const bitcoinSharedMessagePrefix = [
-    'bitcoin', 'testnet',
-    'bitcoincash', 'bitcoincashTestnet',
-    'bitcoinsv', 'bitcoinsvTestnet'
-  ]
+  const bitcoinSharedMessagePrefix = (network) =>
+    coins.isBitcoin(network) ||
+    coins.isBitcoinCash(network) ||
+    coins.isBitcoinSV(network)
 
-  const bitcoinMainnetSharedPubkeyPrefix = [
-    'bitcoin',
-    'bitcoincash',
-    'bitcoinsv'
-  ]
+  const bitcoinMainnetSharedPubkeyPrefix = (network) =>
+    coins.isMainnet(network) &&
+    (
+      coins.isBitcoin(network) ||
+      coins.isBitcoinCash(network) ||
+      coins.isBitcoinSV(network)
+    )
 
-  const bitcoinMainnetSharedScriptPrefix = bitcoinMainnetSharedPubkeyPrefix.filter(() => true)
+  const bitcoinMainnetSharedScriptPrefix = (network) =>
+    bitcoinMainnetSharedPubkeyPrefix(network)
 
-  const bitcoinTestnetSharedPubkeyPrefix = [
-    'testnet',
-    'bitcoincashTestnet',
-    'bitcoinsvTestnet',
-    'litecoinTest'
-  ]
+  const bitcoinTestnetSharedPubkeyPrefix = (network) =>
+    coins.isTestnet(network) &&
+    (
+      coins.isBitcoin(network) ||
+      coins.isBitcoinCash(network) ||
+      coins.isBitcoinSV(network) ||
+      coins.isLitecoin(network)
+    )
 
-  const bitcoinTestnetSharedScriptPrefix = bitcoinTestnetSharedPubkeyPrefix.filter(n => n !== 'litecoinTest')
+  const bitcoinTestnetSharedScriptPrefix = (network) =>
+    bitcoinTestnetSharedPubkeyPrefix(network) &&
+    !coins.isLitecoin(network)
 
-  const bitcoinMainnetSharedWIFPrefix = [
-    'bitcoin',
-    'bitcoincash',
-    'bitcoingold',
-    'bitcoinsv',
-    'zcash'
-  ]
+  const bitcoinMainnetSharedWIFPrefix = (network) =>
+    coins.isMainnet(network) &&
+    (
+      coins.isBitcoin(network) ||
+      coins.isBitcoinCash(network) ||
+      coins.isBitcoinGold(network) ||
+      coins.isBitcoinSV(network) ||
+      coins.isZcash(network)
+    )
 
-  const bech32Coins = [
-    'bitcoin', 'testnet',
-    'bitcoingold',
-    'litecoin', 'litecoinTest'
-  ]
+  const bech32Coins = (network) =>
+    coins.isBitcoin(network) ||
+    coins.isBitcoinGold(network) ||
+    coins.isLitecoin(network)
 
-  function sameGroup (group, name, otherName) {
-    return group.includes(name) && group.includes(otherName)
-  }
+  const sameGroup = (group, network, otherNetwork) =>
+    group(network) && group(otherNetwork)
 
   for (const name in networks) {
     const network = networks[name]
@@ -80,7 +86,7 @@ describe('networks', function () {
       it('has expected properties', function () {
         assert.strictEqual(typeof network, 'object')
         assert.strictEqual(typeof network.messagePrefix, 'string')
-        assert.strictEqual(typeof network.bech32, bech32Coins.includes(name) ? 'string' : 'undefined')
+        assert.strictEqual(typeof network.bech32, bech32Coins(network) ? 'string' : 'undefined')
         assert.strictEqual(typeof network.bip32, 'object')
         assert.strictEqual(typeof network.pubKeyHash, 'number')
         assert.strictEqual(typeof network.scriptHash, 'number')
@@ -117,30 +123,28 @@ describe('networks', function () {
         }
 
         it(`has distinct properties with ${otherName}`, function () {
-          const otherNetwork = networks[otherName]
-
           assert.strictEqual(
             (network.messagePrefix === otherNetwork.messagePrefix),
-            (network.coin === otherNetwork.coin) ||
-            sameGroup(bitcoinSharedMessagePrefix, name, otherName)
+            coins.isSameCoin(network, otherNetwork) ||
+            sameGroup(bitcoinSharedMessagePrefix, network, otherNetwork)
           )
 
           assert.strictEqual(
             (network.pubKeyHash === otherNetwork.pubKeyHash),
-            sameGroup(bitcoinMainnetSharedPubkeyPrefix, name, otherName) ||
-            sameGroup(bitcoinTestnetSharedPubkeyPrefix, name, otherName)
+            sameGroup(bitcoinMainnetSharedPubkeyPrefix, network, otherNetwork) ||
+            sameGroup(bitcoinTestnetSharedPubkeyPrefix, network, otherNetwork)
           )
 
           assert.strictEqual(
             (network.scriptHash === otherNetwork.scriptHash),
-            sameGroup(bitcoinMainnetSharedScriptPrefix, name, otherName) ||
-            sameGroup(bitcoinTestnetSharedScriptPrefix, name, otherName)
+            sameGroup(bitcoinMainnetSharedScriptPrefix, network, otherNetwork) ||
+            sameGroup(bitcoinTestnetSharedScriptPrefix, network, otherNetwork)
           )
 
           assert.strictEqual(
             (network.wif === otherNetwork.wif),
-            sameGroup(bitcoinMainnetSharedWIFPrefix, name, otherName) ||
-            (coins.isTestnet(network) && coins.isTestnet(otherNetwork))
+            sameGroup(bitcoinMainnetSharedWIFPrefix, network, otherNetwork) ||
+            sameGroup(coins.isTestnet, network, otherNetwork)
           )
         })
       }
