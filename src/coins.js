@@ -4,6 +4,13 @@ const typeforce = require('typeforce')
 const networks = require('./networks')
 
 /**
+ * @returns {Network[]} all known networks as array
+ */
+function getNetworkList () {
+  return Object.keys(networks).map(n => networks[n])
+}
+
+/**
  * @param {Network} network
  * @returns {string} the name of the network. Returns undefined if network is not a value
  *                   of `networks`
@@ -75,9 +82,8 @@ function isSameCoin (network, otherNetwork) {
   return getMainnet(network) === getMainnet(otherNetwork)
 }
 
-const networksArray = Object.keys(networks).map(name => networks[name])
-const mainnets = networksArray.filter(isMainnet)
-const testnets = networksArray.filter(isTestnet)
+const mainnets = getNetworkList().filter(isMainnet)
+const testnets = getNetworkList().filter(isTestnet)
 
 /**
  * Map where keys are mainnet networks and values are testnet networks
@@ -188,6 +194,7 @@ module.exports = {
   LTC: networks.litecoin.coin,
   ZEC: networks.zcash.coin,
 
+  getNetworkList,
   getNetworkName,
 
   getMainnet,
@@ -209,5 +216,4 @@ module.exports = {
    * @deprecated: use isValidNetwork
    */
   isValidCoin: isValidNetwork
-
 }

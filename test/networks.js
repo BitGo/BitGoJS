@@ -55,6 +55,31 @@ describe('networks', function () {
   const sameGroup = (group, network, otherNetwork) =>
     group(network) && group(otherNetwork)
 
+  describe('getNetworkList()', function () {
+    it('mainnets are sorted alphabetically', function () {
+      const mainnets = coins.getNetworkList().filter(coins.isMainnet)
+      const sortedMainnets = [...mainnets].sort((a, b) =>
+        coins.getNetworkName(a).localeCompare(coins.getNetworkName(b))
+      )
+      assert.deepStrictEqual(mainnets, sortedMainnets)
+    })
+
+    it('testnet(s) follow mainnets', function () {
+      const list = coins.getNetworkList()
+      while (list.length > 0) {
+        // first element is a mainnet
+        const mainnet = list.shift()
+        assert.strictEqual(coins.isMainnet(mainnet), true)
+
+        // subsequent entries are testnets
+        while (list.length > 0 && coins.isTestnet(list[0])) {
+          assert.strictEqual(coins.getMainnet(list[0]), mainnet)
+          list.shift()
+        }
+      }
+    })
+  })
+
   for (const name in networks) {
     const network = networks[name]
 
