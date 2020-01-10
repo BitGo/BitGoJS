@@ -67,6 +67,13 @@ describe('EOS:', function() {
     }).should.throw();
   });
 
+  it('should generate valid random addresses', () => {
+    for (let i = 0; i < 100; i++) {
+      const address = basecoin.generateRandomAddress();
+      basecoin.isValidAddress(address).should.be.true();
+    }
+  });
+
   it('isValidMemoId should work', function() {
     basecoin.isValidMemo({ value: '1' }).should.equal(true);
     basecoin.isValidMemo({ value: 'uno' }).should.equal(true);
