@@ -4,7 +4,7 @@ var assert = require('assert')
 var bscript = require('../src/script')
 var minimalData = require('minimaldata')
 
-var fixtures = require('./fixtures/script.json')
+var fixtures = require('./fixtures').combine('script', ['zcash'])
 var fixtures2 = require('./fixtures/templates.json')
 
 describe('script', function () {
