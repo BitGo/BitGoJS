@@ -11,6 +11,19 @@ export abstract class BaseNetwork {
   public abstract readonly explorerUrl: string | undefined;
 }
 
+/*
+The values for the various fork coins can be found in these files:
+
+property       filename             varname                           notes
+------------------------------------------------------------------------------------------------------------------------
+messagePrefix  src/validation.cpp   strMessageMagic                   Format `${CoinName} Signed Message`
+bech32_hrp     src/chainparams.cpp  bech32_hrp                        Only for some networks
+bip32.public   src/chainparams.cpp  base58Prefixes[EXT_PUBLIC_KEY]    Mainnets have same value, testnets have same value
+bip32.private  src/chainparams.cpp  base58Prefixes[EXT_SECRET_KEY]    Mainnets have same value, testnets have same value
+pubKeyHash     src/chainparams.cpp  base58Prefixes[PUBKEY_ADDRESS]
+scriptHash     src/chainparams.cpp  base58Prefixes[SCRIPT_ADDRESS]
+wif            src/chainparams.cpp  base58Prefixes[SECRET_KEY]        Testnets have same value
+ */
 export interface UtxoNetwork extends BaseNetwork {
   messagePrefix: string;
   bech32?: string;
@@ -46,9 +59,13 @@ abstract class Testnet extends BaseNetwork {
  * overrides to ensure you're not missing any changes.
  */
 abstract class BitcoinLikeMainnet extends Mainnet implements UtxoNetwork {
+  // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
+  // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
   messagePrefix = '\x18Bitcoin Signed Message:\n';
   bip32 = {
+    // base58 'xpub'
     public: 0x0488b21e,
+    // base58 'xprv'
     private: 0x0488ade4,
   };
   pubKeyHash = 0x00;
@@ -62,6 +79,8 @@ abstract class BitcoinLikeMainnet extends Mainnet implements UtxoNetwork {
  * except the constants are taken from the Bitcoin test network.
  */
 abstract class BitcoinLikeTestnet extends Testnet implements UtxoNetwork {
+  // https://github.com/bitcoin/bitcoin/blob/master/src/validation.cpp
+  // https://github.com/bitcoin/bitcoin/blob/master/src/chainparams.cpp
   messagePrefix = '\x18Bitcoin Signed Message:\n';
   bip32 = {
     public: 0x043587cf,
@@ -82,6 +101,7 @@ class AlgorandTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.ALGO;
   explorerUrl = 'https://testnet.algoexplorer.io/tx/';
 }
+
 class Bitcoin extends BitcoinLikeMainnet {
   family = CoinFamily.BTC;
   explorerUrl = 'https://smartbit.com.au/tx/';
@@ -94,6 +114,8 @@ class BitcoinTestnet extends BitcoinLikeTestnet {
   bech32 = 'tb';
 }
 
+// https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/validation.cpp
+// https://github.com/Bitcoin-ABC/bitcoin-abc/blob/master/src/chainparams.cpp
 class BitcoinCash extends BitcoinLikeMainnet {
   family = CoinFamily.BCH;
   explorerUrl = 'http://blockdozer.com/tx/';
@@ -104,6 +126,8 @@ class BitcoinCashTestnet extends BitcoinLikeTestnet {
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
 
+// https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp
+// https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/chainparams.cpp
 class BitcoinSV extends BitcoinLikeMainnet {
   family = CoinFamily.BSV;
   explorerUrl = 'https://blockchair.com/bitcoin-sv/transaction/';
@@ -114,6 +138,8 @@ class BitcoinSVTestnet extends BitcoinLikeTestnet {
   explorerUrl = 'https://testnet.bitcoincloud.net/tx/';
 }
 
+// https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
+// https://github.com/BTCGPU/BTCGPU/blob/master/src/chainparams.cpp
 class BitcoinGold extends BitcoinLikeMainnet {
   messagePrefix = '\x18Bitcoin Gold Signed Message:\n';
   bech32 = 'btg';
@@ -123,6 +149,8 @@ class BitcoinGold extends BitcoinLikeMainnet {
   explorerUrl = 'https://btgexplorer.com/tx/';
 }
 
+// https://github.com/dashpay/dash/blob/master/src/validation.cpp
+// https://github.com/dashpay/dash/blob/master/src/chainparams.cpp
 class Dash extends BitcoinLikeMainnet {
   messagePrefix = '\x19DarkCoin Signed Message:\n';
   pubKeyHash = 0x4c;
@@ -134,13 +162,8 @@ class Dash extends BitcoinLikeMainnet {
 
 class DashTestnet extends BitcoinLikeTestnet {
   messagePrefix = '\x19DarkCoin Signed Message:\n';
-  bip32 = {
-    public: 0x043587cf,
-    private: 0x04358394,
-  };
   pubKeyHash = 0x8c;
   scriptHash = 0x13;
-  wif = 0xef;
   family = CoinFamily.DASH;
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
@@ -165,6 +188,8 @@ class EosTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://jungle.bloks.io/transaction/';
 }
 
+// https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
+// https://github.com/litecoin-project/litecoin/blob/master/src/chainparams.cpp
 class Litecoin extends BitcoinLikeMainnet {
   messagePrefix = '\x19Litecoin Signed Message:\n';
   bech32 = 'ltc';
@@ -178,13 +203,8 @@ class Litecoin extends BitcoinLikeMainnet {
 class LitecoinTestnet extends BitcoinLikeTestnet {
   messagePrefix = '\x19Litecoin Signed Message:\n';
   bech32 = 'tltc';
-  bip32 = {
-    public: 0x0488b21e,
-    private: 0x0488ade4,
-  };
   pubKeyHash = 0x6f;
   scriptHash = 0x3a;
-  wif = 0xb0;
   family = CoinFamily.LTC;
   explorerUrl = 'http://explorer.litecointools.com/tx/';
 }
@@ -238,6 +258,8 @@ class XrpTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
 }
 
+// https://github.com/zcash/zcash/blob/master/src/validation.cpp
+// https://github.com/zcash/zcash/blob/master/src/chainparams.cpp
 class ZCash extends BitcoinLikeMainnet {
   messagePrefix = '\x18ZCash Signed Message:\n';
   pubKeyHash = 0x1cb8;
