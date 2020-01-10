@@ -29,8 +29,6 @@ import * as config from '../../config';
 import { Environments } from '../environments';
 import * as request from 'superagent';
 
-const EOS_ADDRESS_LENGTH = 12;
-
 interface AddressDetails {
   address: string;
   memoId?: string;
@@ -145,6 +143,9 @@ interface VerifyAddressOptions extends BaseVerifyAddressOptions {
 }
 
 export class Eos extends BaseCoin {
+  public static VALID_ADDRESS_CHARS = '12345abcdefghijklmnopqrstuvwxyz'.split('');
+  public static ADDRESS_LENGTH = 12;
+
   static createInstance(bitgo: BitGo): BaseCoin {
     return new Eos(bitgo);
   }
@@ -274,7 +275,7 @@ export class Eos extends BaseCoin {
 
     // EOS addresses have to be "human readable", which means up to 12 characters and only a-z1-5., i.e.mtoda1.bitgo
     // source: https://developers.eos.io/eosio-cpp/docs/naming-conventions
-    if (!/^[a-z1-5.]*$/.test(destinationAddress) || destinationAddress.length > EOS_ADDRESS_LENGTH) {
+    if (!/^[a-z1-5.]*$/.test(destinationAddress) || destinationAddress.length > Eos.ADDRESS_LENGTH) {
       throw new InvalidAddressError(`invalid address: ${address}`);
     }
 
@@ -925,5 +926,28 @@ export class Eos extends BaseCoin {
 
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     return Bluebird.resolve(true).asCallback(callback);
+  }
+
+  /**
+   * Generate a random EOS address.
+   *
+   * This is just a random string which abides by the EOS adddress constraints,
+   * and is not actually checked for availability on the EOS blockchain.
+   *
+   * Current EOS address constraints are:
+   * * Address must be exactly 12 characters
+   * * Address must only contain lowercase letters and numbers 1-5
+   * @returns a validly formatted EOS address, which may or may not actually be available on chain.
+   */
+  generateRandomAddress(params: {}): string {
+    const address: string[] = [];
+    while (address.length < 12) {
+      const char = _.sample(Eos.VALID_ADDRESS_CHARS);
+      if (!char) {
+        throw new Error('failed to sample valid EOS address characters');
+      }
+      address.push(char);
+    }
+    return address.join('');
   }
 }
