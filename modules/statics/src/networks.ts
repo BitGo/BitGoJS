@@ -162,10 +162,6 @@ class Dash extends BitcoinLikeMainnet {
 
 class DashTestnet extends BitcoinLikeTestnet {
   messagePrefix = '\x19DarkCoin Signed Message:\n';
-  bip32 = {
-    public: 0x043587cf,
-    private: 0x04358394,
-  };
   pubKeyHash = 0x8c;
   scriptHash = 0x13;
   wif = 0xef;
@@ -208,10 +204,6 @@ class Litecoin extends BitcoinLikeMainnet {
 class LitecoinTestnet extends BitcoinLikeTestnet {
   messagePrefix = '\x19Litecoin Signed Message:\n';
   bech32 = 'tltc';
-  bip32 = {
-    public: 0x0488b21e,
-    private: 0x0488ade4,
-  };
   pubKeyHash = 0x6f;
   scriptHash = 0x3a;
   wif = 0xb0;
