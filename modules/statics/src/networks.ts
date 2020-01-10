@@ -164,7 +164,6 @@ class DashTestnet extends BitcoinLikeTestnet {
   messagePrefix = '\x19DarkCoin Signed Message:\n';
   pubKeyHash = 0x8c;
   scriptHash = 0x13;
-  wif = 0xef;
   family = CoinFamily.DASH;
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
@@ -206,7 +205,6 @@ class LitecoinTestnet extends BitcoinLikeTestnet {
   bech32 = 'tltc';
   pubKeyHash = 0x6f;
   scriptHash = 0x3a;
-  wif = 0xb0;
   family = CoinFamily.LTC;
   explorerUrl = 'http://explorer.litecointools.com/tx/';
 }
