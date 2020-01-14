@@ -1,5 +1,5 @@
 var Buffer = require('safe-buffer').Buffer
-var BufferWriter = require('./bufferWriter')
+var { BufferWriter } = require('./buffer_writer')
 var bcrypto = require('./crypto')
 var bscript = require('./script')
 var bufferutils = require('./bufferutils')
@@ -742,7 +742,7 @@ Transaction.prototype.getBlake2bHash = function (bufferToHash, personalization) 
  */
 Transaction.prototype.getPrevoutHash = function (hashType) {
   if (!(hashType & Transaction.SIGHASH_ANYONECANPAY)) {
-    var bufferWriter = new BufferWriter(36 * this.ins.length)
+    var bufferWriter = new BufferWriter(Buffer.allocUnsafe(36 * this.ins.length))
 
     this.ins.forEach(function (txIn) {
       bufferWriter.writeSlice(txIn.hash)
@@ -750,9 +750,9 @@ Transaction.prototype.getPrevoutHash = function (hashType) {
     })
 
     if (coins.isZcash(this.network)) {
-      return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashPrevoutHash')
+      return this.getBlake2bHash(bufferWriter.buffer, 'ZcashPrevoutHash')
     }
-    return bcrypto.hash256(bufferWriter.getBuffer())
+    return bcrypto.hash256(bufferWriter.buffer)
   }
   return ZERO
 }
@@ -766,16 +766,16 @@ Transaction.prototype.getSequenceHash = function (hashType) {
   if (!(hashType & Transaction.SIGHASH_ANYONECANPAY) &&
     (hashType & 0x1f) !== Transaction.SIGHASH_SINGLE &&
     (hashType & 0x1f) !== Transaction.SIGHASH_NONE) {
-    var bufferWriter = new BufferWriter(4 * this.ins.length)
+    var bufferWriter = new BufferWriter(Buffer.allocUnsafe(4 * this.ins.length))
 
     this.ins.forEach(function (txIn) {
       bufferWriter.writeUInt32(txIn.sequence)
     })
 
     if (coins.isZcash(this.network)) {
-      return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashSequencHash')
+      return this.getBlake2bHash(bufferWriter.buffer, 'ZcashSequencHash')
     }
-    return bcrypto.hash256(bufferWriter.getBuffer())
+    return bcrypto.hash256(bufferWriter.buffer)
   }
   return ZERO
 }
@@ -794,7 +794,7 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
       return sum + 8 + varSliceSize(output.script)
     }, 0)
 
-    bufferWriter = new BufferWriter(txOutsSize)
+    bufferWriter = new BufferWriter(Buffer.allocUnsafe(txOutsSize))
 
     this.outs.forEach(function (out) {
       bufferWriter.writeUInt64(out.value)
@@ -802,21 +802,21 @@ Transaction.prototype.getOutputsHash = function (hashType, inIndex) {
     })
 
     if (coins.isZcash(this.network)) {
-      return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashOutputsHash')
+      return this.getBlake2bHash(bufferWriter.buffer, 'ZcashOutputsHash')
     }
-    return bcrypto.hash256(bufferWriter.getBuffer())
+    return bcrypto.hash256(bufferWriter.buffer)
   } else if ((hashType & 0x1f) === Transaction.SIGHASH_SINGLE && inIndex < this.outs.length) {
     // Write only the output specified in inIndex
     var output = this.outs[inIndex]
 
-    bufferWriter = new BufferWriter(8 + varSliceSize(output.script))
+    bufferWriter = new BufferWriter(Buffer.allocUnsafe(8 + varSliceSize(output.script)))
     bufferWriter.writeUInt64(output.value)
     bufferWriter.writeVarSlice(output.script)
 
     if (coins.isZcash(this.network)) {
-      return this.getBlake2bHash(bufferWriter.getBuffer(), 'ZcashOutputsHash')
+      return this.getBlake2bHash(bufferWriter.buffer, 'ZcashOutputsHash')
     }
-    return bcrypto.hash256(bufferWriter.getBuffer())
+    return bcrypto.hash256(bufferWriter.buffer)
   }
   return ZERO
 }
@@ -865,7 +865,7 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
       baseBufferSize += 32 * 2  // hashShieldedSpends and hashShieldedOutputs
       baseBufferSize += 8  // valueBalance
     }
-    bufferWriter = new BufferWriter(baseBufferSize)
+    bufferWriter = new BufferWriter(Buffer.alloc(baseBufferSize))
 
     bufferWriter.writeInt32(this.getHeader())
     bufferWriter.writeUInt32(this.versionGroupId)
@@ -902,7 +902,7 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     personalization.write(prefix)
     personalization.writeUInt32LE(this.network.consensusBranchId[this.version], prefix.length)
 
-    return this.getBlake2bHash(bufferWriter.getBuffer(), personalization)
+    return this.getBlake2bHash(bufferWriter.buffer, personalization)
   }
   // TODO: support non overwinter transactions
 }
@@ -914,7 +914,7 @@ Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value
   var hashSequence = this.getSequenceHash(hashType)
   var hashOutputs = this.getOutputsHash(hashType, inIndex)
 
-  var bufferWriter = new BufferWriter(156 + varSliceSize(prevOutScript))
+  var bufferWriter = new BufferWriter(Buffer.allocUnsafe(156 + varSliceSize(prevOutScript)))
   var input = this.ins[inIndex]
   bufferWriter.writeUInt32(this.version)
   bufferWriter.writeSlice(hashPrevouts)
@@ -927,7 +927,7 @@ Transaction.prototype.hashForWitnessV0 = function (inIndex, prevOutScript, value
   bufferWriter.writeSlice(hashOutputs)
   bufferWriter.writeUInt32(this.locktime)
   bufferWriter.writeUInt32(hashType)
-  return bcrypto.hash256(bufferWriter.getBuffer())
+  return bcrypto.hash256(bufferWriter.buffer)
 }
 
 /**
