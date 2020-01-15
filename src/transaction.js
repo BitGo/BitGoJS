@@ -486,7 +486,7 @@ Transaction.prototype.getJoinSplitByteLength = function () {
   }
   var joinSplitsLen = this.joinsplits.length
   var byteLength = 0
-  byteLength += bufferutils.varIntSize(joinSplitsLen)  // vJoinSplit
+  byteLength += varuint.encodingLength(joinSplitsLen)  // vJoinSplit
 
   if (joinSplitsLen > 0) {
     // Both pre and post Sapling JoinSplits are encoded with the following data:
