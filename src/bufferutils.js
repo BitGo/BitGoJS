@@ -1,4 +1,3 @@
-var pushdata = require('pushdata-bitcoin')
 var varuint = require('varuint-bitcoin')
 
 // https://github.com/feross/buffer/blob/master/index.js#L1127
@@ -52,14 +51,11 @@ function writeVarInt (buffer, number, offset) {
 }
 
 module.exports = {
-  pushDataSize: pushdata.encodingLength,
-  readPushDataInt: pushdata.decode,
   readUInt64LE: readUInt64LE,
   readInt64LE: readInt64LE,
   readVarInt: readVarInt,
   varIntBuffer: varuint.encode,
   varIntSize: varuint.encodingLength,
-  writePushDataInt: pushdata.encode,
   writeUInt64LE: writeUInt64LE,
   writeVarInt: writeVarInt
 }

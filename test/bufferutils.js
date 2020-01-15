@@ -6,45 +6,6 @@ var bufferutils = require('../src/bufferutils')
 var fixtures = require('./fixtures/bufferutils.json')
 
 describe('bufferutils', function () {
-  describe('pushDataSize', function () {
-    fixtures.valid.forEach(function (f) {
-      it('determines the pushDataSize of ' + f.dec + ' correctly', function () {
-        if (!f.hexPD) return
-
-        var size = bufferutils.pushDataSize(f.dec)
-
-        assert.strictEqual(size, f.hexPD.length / 2)
-      })
-    })
-  })
-
-  describe('readPushDataInt', function () {
-    fixtures.valid.forEach(function (f) {
-      if (!f.hexPD) return
-
-      it('decodes ' + f.hexPD + ' correctly', function () {
-        var buffer = Buffer.from(f.hexPD, 'hex')
-        var d = bufferutils.readPushDataInt(buffer, 0)
-        var fopcode = parseInt(f.hexPD.substr(0, 2), 16)
-
-        assert.strictEqual(d.opcode, fopcode)
-        assert.strictEqual(d.number, f.dec)
-        assert.strictEqual(d.size, buffer.length)
-      })
-    })
-
-    fixtures.invalid.readPushDataInt.forEach(function (f) {
-      if (!f.hexPD) return
-
-      it('decodes ' + f.hexPD + ' as null', function () {
-        var buffer = Buffer.from(f.hexPD, 'hex')
-
-        var n = bufferutils.readPushDataInt(buffer, 0)
-        assert.strictEqual(n, null)
-      })
-    })
-  })
-
   describe('readInt64LE', function () {
     fixtures.negative.forEach(function (f) {
       it('decodes ' + f.hex64 + ' correctly', function () {
@@ -115,19 +76,6 @@ describe('bufferutils', function () {
         var size = bufferutils.varIntSize(f.dec)
 
         assert.strictEqual(size, f.hexVI.length / 2)
-      })
-    })
-  })
-
-  describe('writePushDataInt', function () {
-    fixtures.valid.forEach(function (f) {
-      if (!f.hexPD) return
-
-      it('encodes ' + f.dec + ' correctly', function () {
-        var buffer = Buffer.alloc(5, 0)
-
-        var n = bufferutils.writePushDataInt(buffer, f.dec, 0)
-        assert.strictEqual(buffer.slice(0, n).toString('hex'), f.hexPD)
       })
     })
   })

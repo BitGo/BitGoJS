@@ -98,20 +98,6 @@
         "hexVI": "ff0100000000000020",
         "dec": 9007199254740993
       }
-    ],
-    "readPushDataInt": [
-      {
-        "description": "OP_PUSHDATA1, no size",
-        "hexPD": "4c"
-      },
-      {
-        "description": "OP_PUSHDATA2, no size",
-        "hexPD": "4d"
-      },
-      {
-        "description": "OP_PUSHDATA4, no size",
-        "hexPD": "4e"
-      }
     ]
   },
   "negative": [
