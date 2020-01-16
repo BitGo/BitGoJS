@@ -20,7 +20,7 @@ import { BitGo } from '../../bitgo';
 
 import {
   BaseCoin,
-  TransactionExplanation,
+  TransactionExplanation as BaseTransactionExplanation,
   KeyPair,
   ParseTransactionOptions,
   ParsedTransaction,
@@ -33,7 +33,7 @@ import { NodeCallback } from '../types';
 
 const co = Bluebird.coroutine;
 
-export interface TransactionExplanation extends TransactionExplanation {
+export interface TransactionExplanation extends BaseTransactionExplanation {
   memo: string;
   type?: string;
   senderAddress?: string;
