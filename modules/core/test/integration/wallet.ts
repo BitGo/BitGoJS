@@ -1812,7 +1812,7 @@ describe('Wallet API', function() {
           // parse tx to make sure the single key address was used to pay the fee
           const transaction = bitcoin.Transaction.fromHex(result.transactionHex);
           const singleKeyInput = transaction.ins[transaction.ins.length - 1];
-          const inputTxHash = bitcoin.bufferutils.reverse(singleKeyInput.hash).toString('hex');
+          const inputTxHash = Buffer.from(singleKeyInput.hash).reverse().toString('hex');
 
           // get the input tx to find the amount taken from the single key fee address
           return bitgo.get(bitgo.url('/tx/' + inputTxHash))
