@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import BigNumber from 'bignumber.js';
 
 import { TransactionReceipt } from './iface';
@@ -121,8 +122,18 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // TODO: parse the transaction raw_data_hex and compare it with the raw_data
   }
 
+  /**
+   * Validates a transaction has the right transaction id.
+   */
   validateTransaction(transaction: Transaction) {
-    // TODO: verify the transaction has the right transaction id
+    const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
+    const txId = crypto
+      .createHash('sha256')
+      .update(hexBuffer)
+      .digest('hex');
+    if (transaction.id != txId) {
+      throw new Error(transaction.id + ' is not a valid transaction id');
+    }
   }
 
   displayName(): string {

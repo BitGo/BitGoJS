@@ -204,3 +204,28 @@ export const SignedAccountPermissionUpdateContractTx = {
     '2bc5030727d42ed642c2806a3c1a5a0393408b159541f2163df4ba692c5c1240e2dde5a2aae4ecad465414e60b5aeca8522d0a2b6606f88a326658809161334f00'
   ]
 };
+
+export const InvalidIDTransaction = {
+  visible: false,
+  txID:
+      '90b8b9eaed51c8bba3b49f7f0e7cc5f21ac99a6f3e2893c663b544bf2c695b1d',
+  raw_data:
+      { contract:
+            [ { parameter:
+                  {
+                    value:
+                        {
+                          amount: 1718,
+                          owner_address: '41c4530f6bfa902b7398ac773da56106a15af15f92',
+                          to_address: '4189ffaf9da8c6fae32189b2e6dce228249b1129aa'
+                        },
+                    type_url: 'type.googleapis.com/protocol.TransferContract'
+                  },
+              type: 'TransferContract' } ],
+        ref_block_bytes: '90e4',
+        ref_block_hash: 'a018bf9892ddb138',
+        expiration: 1571811468000,
+        timestamp: 1571811410819 },
+  raw_data_hex:
+      '0a0290e42208a018bf9892ddb13840e0c58ebadf2d5a66080112620a2d747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e5472616e73666572436f6e747261637412310a1541c4530f6bfa902b7398ac773da56106a15af15f9212154189ffaf9da8c6fae32189b2e6dce228249b1129aa18b60d7083878bbadf2d',
+};
