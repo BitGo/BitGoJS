@@ -10,8 +10,13 @@ export { BaseCoin };
 import * as Trx from './coin/trx';
 export { Trx };
 
-// TODO: verify these with the coins available in the statics lib
-export const supportedCoins = ['trx', 'ttrx'];
+import * as Xtz from './coin/xtz';
+export { Xtz };
+
+export const supportedCoins = {
+  'trx': new Trx.TransactionBuilder(coins.get('trx')),
+  'ttrx': new Trx.TransactionBuilder(coins.get('ttrx'))
+};
 
 /**
  * Get a transaction builder for the given coin.
@@ -21,9 +26,9 @@ export const supportedCoins = ['trx', 'ttrx'];
  */
 export function getBuilder(coinName: string) {
   const coin = coinName.toLowerCase().trim();
-
-  if (supportedCoins.includes(coin)) {
-    return new Trx.TransactionBuilder(coins.get(coin));
+  const builder = supportedCoins[coin];
+  if (builder) {
+    return builder;
   }
   throw new BuildTransactionError(`Coin ${coinName} not supported`);
 }
