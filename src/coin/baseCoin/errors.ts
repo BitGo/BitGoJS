@@ -43,3 +43,9 @@ export class ExtendTransactionError extends ExtendableError {
     super(message);
   }
 }
+
+export class InvalidIDError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}

@@ -172,12 +172,5 @@ describe('Tron', function() {
       // Build calls validateTransaction()
       should.throws(() => txBuilder.build());
     });
-
-    it('should build a valid transaction', () => {
-      const txJson = JSON.stringify(UnsignedBuildTransaction);
-      txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey });
-      txBuilder.build();
-    });
   });
 });
