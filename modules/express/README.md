@@ -167,21 +167,32 @@ BitGo Express currently supports the following proxy protocols:
 
 BitGo Express is able to take configuration options from either command line arguments, or via environment variables.
 
-| Flag Short Name | Flag Long Name | Environment Variable | Default Value | Description |
-| --- | --- | --- | --- | --- |
-| -p | --port | `BITGO_PORT` | 3080 | Port which bitgo express should listen on. |
-| -b | --bind | `BITGO_BIND` | localhost | Interface which bitgo express should listen on. To listen on all interfaces, this should be set to `0.0.0.0`. |
-| -e | --env | `BITGO_ENV` | test | BitGo environment to interact with. |
-| -d | --debug | N/A, use `BITGO_DEBUG_NAMESPACE` instead | N/A | Enable debug output for bitgo-express. This is equivalent to passing `--debugnamespace bitgo:express`. |
-| -D | --debugnamespace | `BITGO_DEBUG_NAMESPACE` | N/A | Enable debug output for a particular debug namespace. Multiple debug namespaces can be given as a comma separated list. |
-| -k | --keypath | `BITGO_KEYPATH` | N/A | Path to SSL .key file (required if running against production environment). |
-| -c | --crtpath | `BITGO_CRTPATH` | N/A | Path to SSL .crt file (required if running against production environment). |
-| -u | --customrooturi | `BITGO_CUSTOM_ROOT_URI` | N/A | Force a custom BitGo URI. |
-| -n | --custombitcoinnetwork | `BITGO_CUSTOM_BITCOIN_NETWORK` | N/A | Force a custom BitGo network |
-| -l | --logfile | `BITGO_LOGFILE` | N/A | Filepath to write access logs. |
-| N/A | --disablessl | `BITGO_DISABLESSL` | N/A | Disable requiring SSL when accessing bitgo production environment. **USE AT YOUR OWN RISK, NOT RECOMMENDED**. |
-| N/A | --disableproxy | `BITGO_DISABLE_PROXY` | N/A | Disable proxying of routes not explicitly handled by bitgo-express |
-| N/A | --disableenvcheck | `BITGO_DISABLE_ENV_CHECK` | N/A | Disable checking for correct `NODE_ENV` environment variable when running against BitGo production environment. |
+| Flag Short Name | Flag Long Name         | Environment Variable                     | Default Value | Description                                                                                                             |
+| --------------- | ---------------------- | ---------------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| -p              | --port                 | `BITGO_PORT`                             | 3080          | Port which bitgo express should listen on.                                                                              |
+| -b              | --bind                 | `BITGO_BIND`                             | localhost     | Interface which bitgo express should listen on. To listen on all interfaces, this should be set to `0.0.0.0`.           |
+| -e              | --env                  | `BITGO_ENV`                              | test          | BitGo environment to interact with.                                                                                     |
+| -t              | --timeout              | `BITGO_TIMEOUT`                          | 305000        | Number of milliseconds to wait before requests made by `bitgo-express` time out.
+| -d              | --debug                | N/A, use `BITGO_DEBUG_NAMESPACE` instead | N/A           | Enable debug output for bitgo-express. This is equivalent to passing `--debugnamespace bitgo:express`.                  |
+| -D              | --debugnamespace       | `BITGO_DEBUG_NAMESPACE`                  | N/A           | Enable debug output for a particular debug namespace. Multiple debug namespaces can be given as a comma separated list. |
+| -k              | --keypath              | `BITGO_KEYPATH`                          | N/A           | Path to SSL .key file (required if running against production environment).                                             |
+| -c              | --crtpath              | `BITGO_CRTPATH`                          | N/A           | Path to SSL .crt file (required if running against production environment).                                             |
+| -u              | --customrooturi        | `BITGO_CUSTOM_ROOT_URI`                  | N/A           | Force a custom BitGo URI.                                                                                               |
+| -n              | --custombitcoinnetwork | `BITGO_CUSTOM_BITCOIN_NETWORK`           | N/A           | Force a custom BitGo network                                                                                            |
+| -l              | --logfile              | `BITGO_LOGFILE`                          | N/A           | Filepath to write access logs.                                                                                          |
+| N/A             | --disablessl           | `BITGO_DISABLE_SSL` <sup>0</sup>         | N/A           | Disable requiring SSL when accessing bitgo production environment. **USE AT YOUR OWN RISK, NOT RECOMMENDED**.           |
+| N/A             | --disableproxy         | `BITGO_DISABLE_PROXY` <sup>0</sup>       | N/A           | Disable proxying of routes not explicitly handled by bitgo-express                                                      |
+| N/A             | --disableenvcheck      | `BITGO_DISABLE_ENV_CHECK` <sup>0</sup>   | N/A           | Disable checking for correct `NODE_ENV` environment variable when running against BitGo production environment.         |
+
+\[0]: BitGo will also check the additional environment variables for some options for backwards compatibility, but these environment variables should be considered deprecated:
+* Disable SSL
+  * `DISABLESSL`
+  * `DISABLE_SSL`
+  * `BITGO_DISABLESSL`
+* Disable Proxy
+  * `DISABLE_PROXY`
+* Disable Environment Check
+  * `DISABLE_ENV_CHECK`
 
 # Release Notes
 
