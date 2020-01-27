@@ -203,35 +203,35 @@ export const Environments: Environments = {
   }),
   msProd: Object.assign({}, mainnetBase, {
     uri: 'https://app.bitgo.com',
-    stellarFederationServerUrl: 'http://app.bitgo.com/api/v2/xlm/federation',
+    stellarFederationServerUrl: 'https://app.bitgo.com/api/v2/xlm/federation',
   }),
   msTest: Object.assign({}, testnetBase, {
     uri: 'https://app.bitgo-test.com',
-    stellarFederationServerUrl: 'http://app.bitgo-test.com/api/v2/txlm/federation',
+    stellarFederationServerUrl: 'https://app.bitgo-test.com/api/v2/txlm/federation',
   }),
   msDev: Object.assign({}, devBase, {
     uri: 'https://app.bitgo-dev.com',
-    stellarFederationServerUrl: 'http://app.bitgo-dev.com/api/v2/txlm/federation',
+    stellarFederationServerUrl: 'https://app.bitgo-dev.com/api/v2/txlm/federation',
   }),
   msLatest: Object.assign({}, devBase, {
     uri: 'https://app.bitgo-latest.com',
-    stellarFederationServerUrl: 'http://app.bitgo-latest.com/api/v2/xlm/federation',
+    stellarFederationServerUrl: 'https://app.bitgo-latest.com/api/v2/xlm/federation',
   }),
   adminProd: Object.assign({}, mainnetBase, {
     uri: 'https://admin.bitgo.com',
-    stellarFederationServerUrl: 'http://admin.bitgo.com/api/v2/xlm/federation',
+    stellarFederationServerUrl: 'https://admin.bitgo.com/api/v2/xlm/federation',
   }),
   adminTest: Object.assign({}, testnetBase, {
     uri: 'https://admin.bitgo-test.com',
-    stellarFederationServerUrl: 'http://admin.bitgo-test.com/api/v2/txlm/federation',
+    stellarFederationServerUrl: 'https://admin.bitgo-test.com/api/v2/txlm/federation',
   }),
   adminDev: Object.assign({}, devBase, {
     uri: 'https://admin.bitgo-dev.com',
-    stellarFederationServerUrl: 'http://admin.bitgo-dev.com/api/v2/txlm/federation',
+    stellarFederationServerUrl: 'https://admin.bitgo-dev.com/api/v2/txlm/federation',
   }),
   adminLatest: Object.assign({}, devBase, {
     uri: 'https://admin.bitgo-latest.com',
-    stellarFederationServerUrl: 'http://admin.bitgo-latest.com/api/v2/xlm/federation',
+    stellarFederationServerUrl: 'https://admin.bitgo-latest.com/api/v2/xlm/federation',
   }),
   custom: Object.assign({}, mainnetBase, {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
