@@ -2,7 +2,7 @@ import * as crypto from 'crypto';
 import BigNumber from 'bignumber.js';
 
 import { TransactionReceipt } from './iface';
-import { SigningError, BuildTransactionError, InvalidIDError } from '../baseCoin/errors';
+import { SigningError, BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { Address } from './address';
 import { BaseKey } from '../baseCoin/iface';
 import { signTransaction, isBase58Address } from './utils';
@@ -130,7 +130,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       .update(hexBuffer)
       .digest('hex');
     if (transaction.id != txId) {
-      throw new InvalidIDError(transaction.id + ' is not a valid transaction id. Expecting: ' + txId);
+      throw new InvalidTransactionError(transaction.id + ' is not a valid transaction id. Expecting: ' + txId);
     }
   }
 
