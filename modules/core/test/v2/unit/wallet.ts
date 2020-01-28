@@ -681,6 +681,39 @@ describe('V2 Wallet:', function() {
     }));
   });
 
+  describe('allowPartialSweep verification', function() {
+    const address = '5b34252f1bf349930e34020a';
+    const allowPartialSweep = true;
+    let basecoin;
+    let wallet;
+
+    before(co(function *() {
+      basecoin = bitgo.coin('tbtc');
+      const walletData = {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: ['5b3424f91bf349930e340175'],
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    }));
+
+    it('should pass allowPartialSweep parameter when calling sweep wallets', co(function *() {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
+      const response = nock(bgUrl)
+          .post(path, _.matches({ address, allowPartialSweep })) // use _.matches to do a partial match on request body object instead of strict matching
+          .reply(200);
+
+      try {
+        yield wallet.sweep({ address, allowPartialSweep });
+      } catch (e) {
+        // the sweep method will probably throw an exception for not having all of the correct nocks
+        // we only care about /sweepWallet and whether allowPartialSweep is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    }));
+  });
+
   describe('Transaction prebuilds', function() {
     it('prebuild should call build and getLatestBlockHeight for utxo coins', co(function *() {
       const params = {};
