@@ -150,6 +150,8 @@ export interface SignTransactionOptions {
         index?: number;
         value?: number;
         address?: string;
+        redeemScript?: string;
+        witnessScript?: string;
       }[];
     }
   };

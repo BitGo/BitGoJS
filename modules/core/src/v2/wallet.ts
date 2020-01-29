@@ -199,6 +199,7 @@ export interface SweepOptions {
   feeRate?: number;
   maxFeeRate?: number;
   feeTxConfirmTarget?: number;
+  allowPartialSweep?: boolean;
 }
 
 export interface FreezeOptions {
@@ -966,6 +967,7 @@ export class Wallet {
    * @param {Number} params.feeTxConfirmTarget - Estimate the fees to aim for first confirmation within this number of blocks
    * @param {Number} params.feeRate - The desired fee rate for the transaction in satoshis/kB
    * @param {Number} [params.maxFeeRate] - upper limit for feeRate in satoshis/kB
+   * @param {Boolean} [params.allowPartialSweep] - allows sweeping 200 unspents when the wallet has more than that
    * @param [callback]
    * @returns txHex {String} the txHex of the signed transaction
    */
@@ -994,12 +996,12 @@ export class Wallet {
       // the following flow works for all UTXO coins
 
       const reqId = new RequestTracer();
-      const filteredParams = _.pick(params, ['address', 'feeRate', 'maxFeeRate', 'feeTxConfirmTarget']);
+      const filteredParams = _.pick(params, ['address', 'feeRate', 'maxFeeRate', 'feeTxConfirmTarget', 'allowPartialSweep']);
       self.bitgo.setRequestTracer(reqId);
       const response = yield self.bitgo.post(self.url('/sweepWallet'))
         .send(filteredParams)
         .result();
-      // TODO: add txHex validation to protect man in the middle attacks replacing the txHex, BG-3588
+      // TODO(BG-3588): add txHex validation to protect man in the middle attacks replacing the txHex
 
       const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
       const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain, prv: params.xprv });

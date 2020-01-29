@@ -300,7 +300,7 @@ export const coins = CoinMap.fromCoins([
   erc20('zco', 'Zebi Coin', 8, '0x2008e3057bd734e10ad13c9eae45ff132abc1722', UnderlyingAsset.ZCO),
   erc20('zil', 'Zilliqa', 12, '0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27', UnderlyingAsset.ZIL),
   erc20('zix', 'Zeex Token', 18, '0xf3c092ca8cd6d3d4ca004dc1d0f1fe8ccab53599', UnderlyingAsset.ZIX),
-  erc20('zmt', 'Zipmex Token', 18, '0x79adc3ba33625e3e801e2ba9cba83e43c555c797', UnderlyingAsset.ZMT),
+  erc20('zmt', 'Zipmex Token', 18, '0xaa602de53347579f86b996d2add74bb6f79462b2', UnderlyingAsset.ZMT),
   erc20('zoom', 'CoinZoom', 18, '0x69cf3091c91eb72db05e45c76e58225177dea742', UnderlyingAsset.ZOOM),
   erc20('zrx', '0x Token', 18, '0xe41d2489571d322189246dafa5ebde1f4699f498', UnderlyingAsset.ZRX),
   stellarToken(
