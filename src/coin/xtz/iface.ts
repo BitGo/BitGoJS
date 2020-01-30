@@ -2,14 +2,14 @@
  * A Tezos private key with the spsk prefix or raw
  */
 export type PrivateKey = {
-  prv: string
+  prv: string;
 }
 
 /**
  * A Tezos public key with the sppk prefix or raw
  */
 export type PublicKey = {
-  pub: string
+  pub: string;
 }
 
 /**

@@ -11,11 +11,12 @@ import * as Trx from './coin/trx';
 export { Trx };
 
 import * as Xtz from './coin/xtz';
+import {BaseTransactionBuilder} from "./coin/baseCoin";
 export { Xtz };
 
 export const supportedCoins = {
-  'trx': new Trx.TransactionBuilder(coins.get('trx')),
-  'ttrx': new Trx.TransactionBuilder(coins.get('ttrx'))
+  trx: new Trx.TransactionBuilder(coins.get('trx')),
+  ttrx: new Trx.TransactionBuilder(coins.get('ttrx')),
 };
 
 /**
@@ -24,7 +25,7 @@ export const supportedCoins = {
  * @param coinName One of the {@code supportedCoins}
  * @return An instance of a {@code TransactionBuilder}
  */
-export function getBuilder(coinName: string) {
+export function getBuilder(coinName: string): BaseTransactionBuilder {
   const coin = coinName.toLowerCase().trim();
   const builder = supportedCoins[coin];
   if (builder) {

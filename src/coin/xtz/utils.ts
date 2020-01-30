@@ -6,16 +6,16 @@ import * as base58check from 'bs58check';
  * @param {Buffer} payload to encode
  * @return {any} base58 payload with a Tezos prefix
  */
-export function base58encode(prefix: Uint8Array, payload: Buffer) {
-  let n = Buffer.alloc(prefix.length + payload.length);
+export function base58encode(prefix: Uint8Array, payload: Buffer): string {
+  const n = Buffer.alloc(prefix.length + payload.length);
   n.set(prefix);
   n.set(payload, prefix.length);
-  // @ts-ignore
+
   return base58check.encode(n);
 }
 
 /** Whether or not the string is a valid Tezos key given a prefix. */
-export function isValidTezosKey(prefix: Uint8Array, text: string) {
+export function isValidTezosKey(prefix: Uint8Array, text: string): boolean {
   const decodedText = base58check.decode(text);
   const textPrefix = decodedText.slice(0, prefix.length);
   // Check prefix

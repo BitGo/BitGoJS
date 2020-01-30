@@ -1,9 +1,9 @@
-import { DefaultKeys, ExtendedKeys} from '../baseCoin/iface';
+import { DefaultKeys, ExtendedKeys } from '../baseCoin/iface';
 import * as crypto from 'crypto';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
 import * as Utils from './utils';
 import { isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from './iface';
-import * as Crypto from '../../utils/crypto';
+import * as CryptoUtils from '../../utils/crypto';
 import * as blake2b from 'blake2b';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
@@ -48,9 +48,9 @@ export class KeyPair {
    * @param prv An extended or raw private key
    */
   private recordKeysFromPrivateKey(prv: string): void {
-    if (Crypto.isValidXprv(prv)) {
+    if (CryptoUtils.isValidXprv(prv)) {
       this.hdNode = HDNode.fromBase58(prv);
-    } else if (Crypto.isValidPrv(prv)) {
+    } else if (CryptoUtils.isValidPrv(prv)) {
       // Cannot create the HD node without the chain code, so create a regular Key Chain
       this.keyPair = ECPair.fromPrivateKeyBuffer(new Buffer(prv, 'hex'));
     } else if (Utils.isValidTezosKey(Utils.prefix.spsk, prv)) {
@@ -66,15 +66,15 @@ export class KeyPair {
    * @param {String} pub - An extended, compressed, or uncompressed public key
    */
   private recordKeysFromPublicKey(pub: string): void {
-    if (Crypto.isValidXpub(pub)) {
+    if (CryptoUtils.isValidXpub(pub)) {
       this.hdNode = HDNode.fromBase58(pub);
-    } else if (Crypto.isValidPub(pub)) {
+    } else if (CryptoUtils.isValidPub(pub)) {
       // Cannot create an HD node without the chain code, so create a regular Key Chain
       this.keyPair = ECPair.fromPublicKeyBuffer(new Buffer(pub, 'hex'));
     } else if (Utils.isValidTezosKey(Utils.prefix.sppk, pub)) {
       this.keyPair = ECPair.fromPublicKeyBuffer(Utils.decodeKey(Utils.prefix.sppk, pub));
     } else {
-      throw new Error('Unsupported public key: ' + pub );
+      throw new Error('Unsupported public key: ' + pub);
     }
   }
 
@@ -105,7 +105,7 @@ export class KeyPair {
     if (!this.hdNode) {
       throw new Error('Cannot get extended keys');
     }
-    let result: ExtendedKeys = {
+    const result: ExtendedKeys = {
       xpub: this.hdNode.neutered().toBase58(),
     };
     // A neutered HD node means it only contains the public key information
@@ -121,7 +121,9 @@ export class KeyPair {
   getAddress(): string {
     const { pub } = this.getKeys();
     const out = Buffer.alloc(20);
-    const b2b = blake2b(out.length).update(pub).digest(out);
+    const b2b = blake2b(out.length)
+      .update(pub)
+      .digest(out);
 
     return Utils.base58encode(Utils.prefix.tz2, b2b);
   }
