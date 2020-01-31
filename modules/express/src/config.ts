@@ -3,6 +3,19 @@ import { isNil, isNumber } from 'lodash';
 
 import { args } from './args';
 
+function readEnvVar(name, ...deprecatedAliases): string | undefined {
+  if (process.env[name] !== undefined) {
+    return process.env[name];
+  }
+
+  for (const deprecatedAlias of deprecatedAliases) {
+    if (process.env[deprecatedAlias] !== undefined) {
+      console.warn(`warning: using deprecated environment variable '${deprecatedAlias}'. Please use the '${name}' environment variable instead.`);
+      return process.env[deprecatedAlias];
+    }
+  }
+}
+
 export interface Config {
   port: number;
   bind: string;
@@ -36,20 +49,20 @@ export const ArgConfig = (args): Partial<Config> => ({
 });
 
 export const EnvConfig = (): Partial<Config> => ({
-  port: Number(process.env.BITGO_PORT),
-  bind: process.env.BITGO_BIND || DefaultConfig.bind,
-  env: (process.env.BITGO_ENV as EnvironmentName) || DefaultConfig.env,
-  debugNamespace: (process.env.BITGO_DEBUG_NAMESPACE || '').split(','),
-  keyPath: process.env.BITGO_KEYPATH,
-  crtPath: process.env.BITGO_CRTPATH,
-  logFile: process.env.BITGO_LOGFILE,
-  disableSSL: (process.env.DISABLESSL || process.env.DISABLE_SSL) ?
-    Boolean((process.env.DISABLESSL || process.env.DISABLE_SSL)) : undefined,
-  disableProxy: process.env.DISABLE_PROXY ? Boolean(process.env.DISABLE_PROXY) : undefined,
-  disableEnvCheck: process.env.DISABLE_ENV_CHECK ? Boolean(process.env.DISABLE_ENV_CHECK) : undefined,
-  timeout: Number(process.env.BITGO_TIMEOUT),
-  customRootUri: process.env.BITGO_CUSTOM_ROOT_URI,
-  customBitcoinNetwork: (process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network),
+  port: Number(readEnvVar('BITGO_PORT')),
+  bind: readEnvVar('BITGO_BIND') || DefaultConfig.bind,
+  env: (readEnvVar('BITGO_ENV') as EnvironmentName) || DefaultConfig.env,
+  debugNamespace: (readEnvVar('BITGO_DEBUG_NAMESPACE') || '').split(','),
+  keyPath: readEnvVar('BITGO_KEYPATH'),
+  crtPath: readEnvVar('BITGO_CRTPATH'),
+  logFile: readEnvVar('BITGO_LOGFILE'),
+  disableSSL: readEnvVar('BITGO_DISABLE_SSL', 'BITGO_DISABLESSL', 'DISABLESSL', 'DISABLE_SSL') ?
+    true : undefined,
+  disableProxy: readEnvVar('BITGO_DISABLE_PROXY', 'DISABLE_PROXY') ? true : undefined,
+  disableEnvCheck: readEnvVar('BITGO_DISABLE_ENV_CHECK', 'DISABLE_ENV_CHECK') ? true : undefined,
+  timeout: Number(readEnvVar('BITGO_TIMEOUT')),
+  customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
+  customBitcoinNetwork: (readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network),
 });
 
 export const DefaultConfig: Config = {
