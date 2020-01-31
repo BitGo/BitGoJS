@@ -8,6 +8,7 @@ import {
   SecondPrivateKey,
   UnsignedAccountPermissionUpdateContractTx,
   AccountPermissionUpdateContractPriv,
+  InvalidIDTransaction,
 } from '../../../resources/trx';
 import { getBuilder } from "../../../../src";
 import * as Crypto from "../../../../src/utils/crypto";
@@ -162,6 +163,14 @@ describe('Tron', function() {
       tx.outputs[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
       tx.outputs[0].value.toString().should.equal('1718');
       tx.validFrom.should.equal(1571811410819);
+    });
+
+    it('should catch an invalid id', () => {
+      const txJson = JSON.stringify(InvalidIDTransaction);
+      txBuilder.from(txJson);
+      txBuilder.sign({ key: FirstPrivateKey });
+      // Build calls validateTransaction()
+      should.throws(() => txBuilder.build());
     });
   });
 });

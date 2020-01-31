@@ -1,7 +1,8 @@
+import * as crypto from 'crypto';
 import BigNumber from 'bignumber.js';
 
 import { TransactionReceipt } from './iface';
-import { SigningError, BuildTransactionError } from '../baseCoin/errors';
+import { SigningError, BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { Address } from './address';
 import { BaseKey } from '../baseCoin/iface';
 import { signTransaction, isBase58Address } from './utils';
@@ -121,8 +122,16 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // TODO: parse the transaction raw_data_hex and compare it with the raw_data
   }
 
+  /** @inheritDoc Specifically, checks hex underlying transaction hashes to correct transaction ID. */
   validateTransaction(transaction: Transaction) {
-    // TODO: verify the transaction has the right transaction id
+    const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
+    const txId = crypto
+      .createHash('sha256')
+      .update(hexBuffer)
+      .digest('hex');
+    if (transaction.id != txId) {
+      throw new InvalidTransactionError(transaction.id + ' is not a valid transaction id. Expecting: ' + txId);
+    }
   }
 
   displayName(): string {
