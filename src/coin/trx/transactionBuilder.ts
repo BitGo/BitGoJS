@@ -177,10 +177,38 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any) {
-    // TODO: parse the transaction raw_data_hex and compare it with the raw_data
+    //TODO: Validation of signature
+    /** @inheritDoc Specifically, checks hex underlying transaction hashes to correct transaction ID. */
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Raw transaction is empty');
+    }
+    const currTransaction = JSON.parse(rawTransaction);
+    const decodedRawDataHex = decodeTransaction(currTransaction.raw_data_hex);
+    if (!currTransaction.txID) {
+      throw new InvalidTransactionError('Transaction ID is empty');
+    }
+    //Validate the transaction ID from the raw data hex
+    const hexBuffer = Buffer.from(currTransaction.raw_data_hex, 'hex');
+    const currTxID = crypto
+      .createHash('sha256')
+      .update(hexBuffer)
+      .digest('hex');
+    if (currTransaction.txID != currTxID) {
+      throw new InvalidTransactionError('Transaction has not have a valid id');
+    }
+    // Validate the expiration time from the raw-data-hex
+    if (currTransaction.raw_data.expiration != decodedRawDataHex.expiration) {
+      throw new InvalidTransactionError('Transaction has not have a valid expiration');
+    }
+    // Validate the timestamp from the raw-data-hex
+    if (currTransaction.raw_data.timestamp != decodedRawDataHex.timestamp) {
+      throw new InvalidTransactionError('Transaction has not have a valid timetamp');
+    }
+    // Transaction contract must exist
+    if (!currTransaction.raw_data.contract) {
+      throw new InvalidTransactionError('Transaction contracts are empty');
+    }
   }
-
-  /** @inheritDoc Specifically, checks hex underlying transaction hashes to correct transaction ID. */
   validateTransaction(transaction: Transaction) {
     const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
     const txId = crypto
