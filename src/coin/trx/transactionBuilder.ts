@@ -182,7 +182,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
-    const currTransaction = JSON.parse(rawTransaction);
+    let currTransaction;
+    try {
+      currTransaction = JSON.parse(rawTransaction);
+    } catch (e) {
+      throw new ParseTransactionError('There was error in parsing the JSON string');
+    }
     const decodedRawDataHex = decodeTransaction(currTransaction.raw_data_hex);
     if (!currTransaction.txID) {
       throw new InvalidTransactionError('Transaction ID is empty');
