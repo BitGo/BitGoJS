@@ -2,7 +2,12 @@ import * as crypto from 'crypto';
 import BigNumber from 'bignumber.js';
 
 import { TransactionReceipt } from './iface';
-import { SigningError, BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
+import {
+  SigningError,
+  BuildTransactionError,
+  InvalidTransactionError,
+  ExtendTransactionError, ParseTransactionError,
+} from '../baseCoin/errors';
 import { Address } from './address';
 import { BaseKey } from '../baseCoin/iface';
 import { signTransaction, isBase58Address, decodeTransaction } from './utils';
@@ -10,7 +15,6 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilder } from '../baseCoin';
 import { Transaction } from './transaction';
 import { KeyPair } from "./keyPair";
-import * as crypto from "crypto";
 
 /**
  * Tron transaction builder.
@@ -135,7 +139,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
-    const currTransaction = JSON.parse(rawTransaction);
+    let currTransaction;
+    try {
+      currTransaction = JSON.parse(rawTransaction);
+    } catch (e) {
+      throw new ParseTransactionError('There was error in parsing the JSON string');
+    }
     const decodedRawDataHex = decodeTransaction(currTransaction.raw_data_hex);
     if (!currTransaction.txID) {
       throw new InvalidTransactionError('Transaction ID is empty');
