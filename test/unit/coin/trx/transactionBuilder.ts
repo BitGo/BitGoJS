@@ -15,6 +15,7 @@ import {
 } from '../../../resources/trx';
 import { getBuilder } from "../../../../src";
 import * as Crypto from "../../../../src/utils/crypto";
+import { InvalidTransactionError } from '../../../../src/coin/baseCoin/errors';
 
 describe('Tron', function() {
   let txBuilder;
@@ -173,39 +174,27 @@ describe('Tron', function() {
       txBuilder.from(txJson);
       txBuilder.sign({ key: FirstPrivateKey });
       // Build calls validateTransaction()
+    });
     it('should throw exception of wrong id', () => {
       const txJson = JSON.stringify(UnsignedBuildInvalidIDTransaction);
-      txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey });
-      should.throws(() => txBuilder.build());
+      should.throws(() => txBuilder.from(txJson));
     });
 
     it('should throw exception of empty id', () => {
       const txJson = JSON.stringify(UnsignedBuildEmptyIDTransaction);
-      txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey });
-      should.throws(() => txBuilder.build());
+      should.throws(() => txBuilder.from(txJson));
     });
-
     it('should throw exception of invalid time stamp', () => {
       const txJson = JSON.stringify(UnsignedInvalidTimeStampBuildTransaction);
-      txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey });
-      should.throws(() => txBuilder.build());
+      should.throws(() => txBuilder.from(txJson));
     });
-
     it('should throw exception of invalid expiration time', () => {
       const txJson = JSON.stringify(UnsignedInvalidExpirationBuildTransaction);
-      txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey });
-      should.throws(() => txBuilder.build());
+      should.throws(() => txBuilder.from(txJson));
     });
-
     it('should throw exception of non-existence of contract', () => {
       const txJson = JSON.stringify(UnsignedInvalidContractBuildTransaction);
-      txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey });
-      should.throws(() => txBuilder.build());
+      should.throws(() => txBuilder.from(txJson));
     });
   });
 });
