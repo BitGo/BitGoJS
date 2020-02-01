@@ -15,7 +15,6 @@ import {
 } from '../../../resources/trx';
 import { getBuilder } from "../../../../src";
 import * as Crypto from "../../../../src/utils/crypto";
-import { InvalidTransactionError } from '../../../../src/coin/baseCoin/errors';
 
 describe('Tron', function() {
   let txBuilder;
@@ -177,24 +176,37 @@ describe('Tron', function() {
     });
     it('should throw exception of wrong id', () => {
       const txJson = JSON.stringify(UnsignedBuildInvalidIDTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      txBuilder.from(txJson);
+      txBuilder.sign({ key: FirstPrivateKey });
+      should.throws(() => txBuilder.build());
     });
 
     it('should throw exception of empty id', () => {
       const txJson = JSON.stringify(UnsignedBuildEmptyIDTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      txBuilder.from(txJson);
+      txBuilder.sign({ key: FirstPrivateKey });
+      should.throws(() => txBuilder.build());
     });
+
     it('should throw exception of invalid time stamp', () => {
       const txJson = JSON.stringify(UnsignedInvalidTimeStampBuildTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      txBuilder.from(txJson);
+      txBuilder.sign({ key: FirstPrivateKey });
+      should.throws(() => txBuilder.build());
     });
+
     it('should throw exception of invalid expiration time', () => {
       const txJson = JSON.stringify(UnsignedInvalidExpirationBuildTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      txBuilder.from(txJson);
+      txBuilder.sign({ key: FirstPrivateKey });
+      should.throws(() => txBuilder.build());
     });
+
     it('should throw exception of non-existence of contract', () => {
       const txJson = JSON.stringify(UnsignedInvalidContractBuildTransaction);
-      should.throws(() => txBuilder.from(txJson));
+      txBuilder.from(txJson);
+      txBuilder.sign({ key: FirstPrivateKey });
+      should.throws(() => txBuilder.build());
     });
   });
 });
