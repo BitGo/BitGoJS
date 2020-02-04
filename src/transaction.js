@@ -1,8 +1,8 @@
 var Buffer = require('safe-buffer').Buffer
 var bcrypto = require('./crypto')
 var bscript = require('./script')
-var { BufferWriter, BufferReader } = require('./bufferutils')
-var { ZcashBufferReader } = require('./forks/zcash/bufferutils')
+var { BufferReader, BufferWriter } = require('./bufferutils')
+var { ZcashBufferReader, ZcashBufferWriter } = require('./forks/zcash/bufferutils')
 var coins = require('./coins')
 var opcodes = require('bitcoin-ops')
 var networks = require('./networks')
@@ -10,6 +10,8 @@ var typeforce = require('typeforce')
 var types = require('./types')
 var varuint = require('varuint-bitcoin')
 var blake2b = require('blake2b')
+
+var zcashVersion = require('./forks/zcash/version')
 
 function varSliceSize (someScript) {
   var length = someScript.length
@@ -74,16 +76,6 @@ var BLANK_OUTPUT = {
   valueBuffer: VALUE_UINT64_MAX
 }
 
-Transaction.ZCASH_OVERWINTER_VERSION = 3
-Transaction.ZCASH_SAPLING_VERSION = 4
-Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION = 2
-Transaction.ZCASH_NUM_JOINSPLITS_INPUTS = 2
-Transaction.ZCASH_NUM_JOINSPLITS_OUTPUTS = 2
-Transaction.ZCASH_NOTECIPHERTEXT_SIZE = 1 + 8 + 32 + 32 + 512 + 16
-
-Transaction.ZCASH_G1_PREFIX_MASK = 0x02
-Transaction.ZCASH_G2_PREFIX_MASK = 0x0a
-
 Transaction.DASH_NORMAL = 0
 Transaction.DASH_PROVIDER_REGISTER = 1
 Transaction.DASH_PROVIDER_UPDATE_SERVICE = 2
@@ -93,131 +85,9 @@ Transaction.DASH_COINBASE = 5
 Transaction.DASH_QUORUM_COMMITMENT = 6
 
 Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStrict) {
-  const bufferReader = coins.isZcash(network)
-    ? new ZcashBufferReader(buffer)
-    : new BufferReader(buffer)
+  let bufferReader = new BufferReader(buffer)
 
-  // FIXME: move to ZcashBufferReader
-  function readCompressedG1 () {
-    var yLsb = bufferReader.readUInt8() & 1
-    var x = bufferReader.readSlice(32)
-    return {
-      x: x,
-      yLsb: yLsb
-    }
-  }
-
-  // FIXME: move to ZcashBufferReader
-  function readCompressedG2 () {
-    var yLsb = bufferReader.readUInt8() & 1
-    var x = bufferReader.readSlice(64)
-    return {
-      x: x,
-      yLsb: yLsb
-    }
-  }
-
-  // FIXME: move to ZcashBufferReader
-  function readZKProof () {
-    var zkproof
-    if (tx.isSaplingCompatible()) {
-      zkproof = {
-        sA: bufferReader.readSlice(48),
-        sB: bufferReader.readSlice(96),
-        sC: bufferReader.readSlice(48)
-      }
-    } else {
-      zkproof = {
-        gA: readCompressedG1(),
-        gAPrime: readCompressedG1(),
-        gB: readCompressedG2(),
-        gBPrime: readCompressedG1(),
-        gC: readCompressedG1(),
-        gCPrime: readCompressedG1(),
-        gK: readCompressedG1(),
-        gH: readCompressedG1()
-      }
-    }
-    return zkproof
-  }
-
-  // FIXME: move to ZcashBufferReader
-  function readJoinSplit () {
-    var vpubOld = bufferReader.readUInt64()
-    var vpubNew = bufferReader.readUInt64()
-    var anchor = bufferReader.readSlice(32)
-    var nullifiers = []
-    for (var j = 0; j < Transaction.ZCASH_NUM_JOINSPLITS_INPUTS; j++) {
-      nullifiers.push(bufferReader.readSlice(32))
-    }
-    var commitments = []
-    for (j = 0; j < Transaction.ZCASH_NUM_JOINSPLITS_OUTPUTS; j++) {
-      commitments.push(bufferReader.readSlice(32))
-    }
-    var ephemeralKey = bufferReader.readSlice(32)
-    var randomSeed = bufferReader.readSlice(32)
-    var macs = []
-    for (j = 0; j < Transaction.ZCASH_NUM_JOINSPLITS_INPUTS; j++) {
-      macs.push(bufferReader.readSlice(32))
-    }
-
-    var zkproof = readZKProof()
-    var ciphertexts = []
-    for (j = 0; j < Transaction.ZCASH_NUM_JOINSPLITS_OUTPUTS; j++) {
-      ciphertexts.push(bufferReader.readSlice(Transaction.ZCASH_NOTECIPHERTEXT_SIZE))
-    }
-    return {
-      vpubOld: vpubOld,
-      vpubNew: vpubNew,
-      anchor: anchor,
-      nullifiers: nullifiers,
-      commitments: commitments,
-      ephemeralKey: ephemeralKey,
-      randomSeed: randomSeed,
-      macs: macs,
-      zkproof: zkproof,
-      ciphertexts: ciphertexts
-    }
-  }
-
-  // FIXME: move to ZcashBufferReader
-  function readShieldedSpend () {
-    var cv = bufferReader.readSlice(32)
-    var anchor = bufferReader.readSlice(32)
-    var nullifier = bufferReader.readSlice(32)
-    var rk = bufferReader.readSlice(32)
-    var zkproof = readZKProof()
-    var spendAuthSig = bufferReader.readSlice(64)
-    return {
-      cv: cv,
-      anchor: anchor,
-      nullifier: nullifier,
-      rk: rk,
-      zkproof: zkproof,
-      spendAuthSig: spendAuthSig
-    }
-  }
-
-  // FIXME: move to ZcashBufferReader
-  function readShieldedOutput () {
-    var cv = bufferReader.readSlice(32)
-    var cmu = bufferReader.readSlice(32)
-    var ephemeralKey = bufferReader.readSlice(32)
-    var encCiphertext = bufferReader.readSlice(580)
-    var outCiphertext = bufferReader.readSlice(80)
-    var zkproof = readZKProof()
-
-    return {
-      cv: cv,
-      cmu: cmu,
-      ephemeralKey: ephemeralKey,
-      encCiphertext: encCiphertext,
-      outCiphertext: outCiphertext,
-      zkproof: zkproof
-    }
-  }
-
-  var tx = new Transaction(network)
+  let tx = new Transaction(network)
   tx.version = bufferReader.readInt32()
 
   if (coins.isZcash(network)) {
@@ -227,6 +97,11 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     if (!network.consensusBranchId.hasOwnProperty(tx.version)) {
       throw new Error('Unsupported Zcash transaction')
     }
+    bufferReader = new ZcashBufferReader(
+      bufferReader.buffer,
+      bufferReader.offset,
+      tx.version,
+    )
   }
 
   if (coins.isDash(network)) {
@@ -292,19 +167,19 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
       tx.valueBalance = bufferReader.readInt64()
       var nShieldedSpend = bufferReader.readVarInt()
       for (i = 0; i < nShieldedSpend; ++i) {
-        tx.vShieldedSpend.push(readShieldedSpend())
+        tx.vShieldedSpend.push(bufferReader.readShieldedSpend())
       }
 
       var nShieldedOutput = bufferReader.readVarInt()
       for (i = 0; i < nShieldedOutput; ++i) {
-        tx.vShieldedOutput.push(readShieldedOutput())
+        tx.vShieldedOutput.push(bufferReader.readShieldedOutput())
       }
     }
 
     if (tx.supportsJoinSplits()) {
       var joinSplitsLen = bufferReader.readVarInt()
       for (i = 0; i < joinSplitsLen; ++i) {
-        tx.joinsplits.push(readJoinSplit())
+        tx.joinsplits.push(bufferReader.readJoinSplit())
       }
       if (joinSplitsLen > 0) {
         tx.joinsplitPubkey = bufferReader.readSlice(32)
@@ -343,15 +218,15 @@ Transaction.isCoinbaseHash = function (buffer) {
 }
 
 Transaction.prototype.isSaplingCompatible = function () {
-  return coins.isZcash(this.network) && this.version >= Transaction.ZCASH_SAPLING_VERSION
+  return coins.isZcash(this.network) && this.version >= zcashVersion.SAPLING
 }
 
 Transaction.prototype.isOverwinterCompatible = function () {
-  return coins.isZcash(this.network) && this.version >= Transaction.ZCASH_OVERWINTER_VERSION
+  return coins.isZcash(this.network) && this.version >= zcashVersion.OVERWINTER
 }
 
 Transaction.prototype.supportsJoinSplits = function () {
-  return coins.isZcash(this.network) && this.version >= Transaction.ZCASH_JOINSPLITS_SUPPORT_VERSION
+  return coins.isZcash(this.network) && this.version >= zcashVersion.JOINSPLITS_SUPPORT
 }
 
 Transaction.prototype.versionSupportsDashSpecialTransactions = function () {
@@ -957,20 +832,12 @@ Transaction.prototype.toBuffer = function (buffer, initialOffset) {
 Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitness) {
   if (!buffer) buffer = Buffer.allocUnsafe(this.__byteLength(__allowWitness))
 
-  const bufferWriter = new BufferWriter(buffer, initialOffset || 0)
+  const bufferWriter = coins.isZcash(this.network)
+    ? new ZcashBufferWriter(buffer, initialOffset || 0)
+    : new BufferWriter(buffer, initialOffset || 0)
 
   function writeUInt16 (i) {
     bufferWriter.offset = bufferWriter.buffer.writeUInt16LE(i, bufferWriter.offset)
-  }
-
-  function writeCompressedG1 (i) {
-    bufferWriter.writeUInt8(Transaction.ZCASH_G1_PREFIX_MASK | i.yLsb)
-    bufferWriter.writeSlice(i.x)
-  }
-
-  function writeCompressedG2 (i) {
-    bufferWriter.writeUInt8(Transaction.ZCASH_G2_PREFIX_MASK | i.yLsb)
-    bufferWriter.writeSlice(i.x)
   }
 
   if (this.isOverwinterCompatible()) {
@@ -1072,14 +939,14 @@ Transaction.prototype.__toBuffer = function (buffer, initialOffset, __allowWitne
         bufferWriter.writeSlice(joinsplit.zkproof.sB)
         bufferWriter.writeSlice(joinsplit.zkproof.sC)
       } else {
-        writeCompressedG1(joinsplit.zkproof.gA)
-        writeCompressedG1(joinsplit.zkproof.gAPrime)
-        writeCompressedG2(joinsplit.zkproof.gB)
-        writeCompressedG1(joinsplit.zkproof.gBPrime)
-        writeCompressedG1(joinsplit.zkproof.gC)
-        writeCompressedG1(joinsplit.zkproof.gCPrime)
-        writeCompressedG1(joinsplit.zkproof.gK)
-        writeCompressedG1(joinsplit.zkproof.gH)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gA)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gAPrime)
+        bufferWriter.writeCompressedG2(joinsplit.zkproof.gB)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gBPrime)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gC)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gCPrime)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gK)
+        bufferWriter.writeCompressedG1(joinsplit.zkproof.gH)
       }
       joinsplit.ciphertexts.forEach(function (ciphertext) {
         bufferWriter.writeSlice(ciphertext)
