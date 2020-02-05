@@ -53,8 +53,8 @@ export class KeyPair {
     } else if (CryptoUtils.isValidPrv(prv)) {
       // Cannot create the HD node without the chain code, so create a regular Key Chain
       this.keyPair = ECPair.fromPrivateKeyBuffer(new Buffer(prv, 'hex'));
-    } else if (Utils.isValidTezosKey(Utils.prefix.spsk, prv)) {
-      this.keyPair = ECPair.fromPrivateKeyBuffer(Utils.decodeKey(Utils.prefix.spsk, prv));
+    } else if (Utils.isValidKey(prv, Utils.hashTypes.spsk)) {
+      this.keyPair = ECPair.fromPrivateKeyBuffer(Utils.decodeKey(prv, Utils.hashTypes.spsk));
     } else {
       throw new Error('Unsupported private key');
     }
@@ -71,8 +71,8 @@ export class KeyPair {
     } else if (CryptoUtils.isValidPub(pub)) {
       // Cannot create an HD node without the chain code, so create a regular Key Chain
       this.keyPair = ECPair.fromPublicKeyBuffer(new Buffer(pub, 'hex'));
-    } else if (Utils.isValidTezosKey(Utils.prefix.sppk, pub)) {
-      this.keyPair = ECPair.fromPublicKeyBuffer(Utils.decodeKey(Utils.prefix.sppk, pub));
+    } else if (Utils.isValidKey(pub, Utils.hashTypes.sppk)) {
+      this.keyPair = ECPair.fromPublicKeyBuffer(Utils.decodeKey(pub, Utils.hashTypes.sppk));
     } else {
       throw new Error('Unsupported public key: ' + pub);
     }
@@ -87,12 +87,12 @@ export class KeyPair {
     const pub = this.keyPair.Q.getEncoded(true);
 
     const result: DefaultKeys = {
-      pub: Utils.base58encode(Utils.prefix.sppk, pub),
+      pub: Utils.base58encode(Utils.hashTypes.sppk.prefix, pub),
     };
 
     if (this.keyPair.d) {
       const prv = this.keyPair.getPrivateKeyBuffer();
-      result.prv = Utils.base58encode(Utils.prefix.spsk, prv);
+      result.prv = Utils.base58encode(Utils.hashTypes.spsk.prefix, prv);
     }
     return result;
   }
@@ -125,6 +125,6 @@ export class KeyPair {
       .update(pub)
       .digest(out);
 
-    return Utils.base58encode(Utils.prefix.tz2, b2b);
+    return Utils.base58encode(Utils.hashTypes.tz2.prefix, b2b);
   }
 }
