@@ -33,6 +33,8 @@ export const coins = CoinMap.fromCoins([
   account('txrp', 'Testnet Ripple', Networks.test.xrp, 6, UnderlyingAsset.XRP),
   account('xlm', 'Stellar', Networks.main.stellar, 7, UnderlyingAsset.XLM),
   account('txlm', 'Testnet Stellar', Networks.test.stellar, 7, UnderlyingAsset.XLM),
+  account('xtz', 'Tezos', Networks.main.xtz, 6, UnderlyingAsset.XTZ),
+  account('txtz', 'Testnet Tezos Babylonnet', Networks.test.xtz, 6, UnderlyingAsset.XTZ),
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD),
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),

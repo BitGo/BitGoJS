@@ -258,6 +258,16 @@ class XrpTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://xrpcharts.ripple.com/#/transactions/';
 }
 
+class Xtz extends Mainnet implements AccountNetwork {
+  family = CoinFamily.XTZ;
+  explorerUrl = 'https://tezblock.io/transaction/';
+}
+
+class XtzTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.XTZ;
+  explorerUrl = 'https://babylonnet.tezblock.io/transaction/';
+}
+
 // https://github.com/zcash/zcash/blob/master/src/validation.cpp
 // https://github.com/zcash/zcash/blob/master/src/chainparams.cpp
 class ZCash extends BitcoinLikeMainnet {
@@ -292,6 +302,7 @@ export const Networks = {
     susd: Object.freeze(new SUSD()),
     trx: Object.freeze(new Trx()),
     xrp: Object.freeze(new Xrp()),
+    xtz: Object.freeze(new Xtz()),
     zCash: Object.freeze(new ZCash()),
   },
   test: {
@@ -308,6 +319,7 @@ export const Networks = {
     susd: Object.freeze(new SUSDTestnet()),
     trx: Object.freeze(new TrxTestnet()),
     xrp: Object.freeze(new XrpTestnet()),
+    xtz: Object.freeze(new XtzTestnet()),
     zCash: Object.freeze(new ZCashTestnet()),
   },
 };
