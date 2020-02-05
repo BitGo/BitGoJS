@@ -178,15 +178,20 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any) {
     //TODO: Validation of signature
-    /** @inheritDoc Specifically, checks hex underlying transaction hashes to correct transaction ID. */
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
-    let currTransaction;
-    try {
-      currTransaction = JSON.parse(rawTransaction);
-    } catch (e) {
-      throw new ParseTransactionError('There was error in parsing the JSON string');
+    let currTransaction: TransactionReceipt;
+    // rawTransaction can be either Stringified JSON OR
+    // it can be a regular JSON object (not stringified).
+    if (typeof rawTransaction === 'string') {
+      try {
+        currTransaction = JSON.parse(rawTransaction);
+      } catch (e) {
+        throw new ParseTransactionError('There was error in parsing the JSON string');
+      }
+    } else {
+      currTransaction = rawTransaction;
     }
     const decodedRawDataHex = decodeTransaction(currTransaction.raw_data_hex);
     if (!currTransaction.txID) {
@@ -214,6 +219,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       throw new InvalidTransactionError('Transaction contracts are empty');
     }
   }
+
+  /** @inheritDoc Specifically, checks hex underlying transaction hashes to correct transaction ID. */
   validateTransaction(transaction: Transaction) {
     const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
     const txId = crypto
