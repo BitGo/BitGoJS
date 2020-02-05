@@ -30,6 +30,7 @@ export const enum CoinFamily {
   TRX = 'trx',
   XLM = 'xlm',
   XRP = 'xrp',
+  XTZ = 'xtz',
   ZEC = 'zec',
 }
 
@@ -134,6 +135,7 @@ export const enum UnderlyingAsset {
   TRX = 'trx',
   XRP = 'xrp',
   XLM = 'xlm',
+  XTZ = 'xtz',
   ZEC = 'zec',
 
   // ERC 20 tokens
