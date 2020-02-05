@@ -170,10 +170,10 @@ describe('Tron', function() {
 
     it('should catch an invalid id', () => {
       const txJson = JSON.stringify(InvalidIDTransaction);
-      txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey });
+      should.throws(() => txBuilder.from(txJson));
+      // txBuilder.sign({ key: FirstPrivateKey });
       // Build calls validateTransaction()
-      should.throws(() => txBuilder.build());
+      // should.throws(() => txBuilder.build());
     });
 
     it('should throw exception of wrong id', () => {
