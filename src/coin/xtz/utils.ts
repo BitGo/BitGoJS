@@ -1,12 +1,14 @@
 import * as base58check from 'bs58check';
+import { HashType } from './iface';
 
 /**
  * Encode the payload to base58 with a specific Tezos prefix.
- * @param {Uint8Array} prefix to add to the encoded payload
+ *
+ * @param {Buffer} prefix to add to the encoded payload
  * @param {Buffer} payload to encode
  * @return {any} base58 payload with a Tezos prefix
  */
-export function base58encode(prefix: Uint8Array, payload: Buffer): string {
+export function base58encode(prefix: Buffer, payload: Buffer): string {
   const n = Buffer.alloc(prefix.length + payload.length);
   n.set(prefix);
   n.set(payload, prefix.length);
@@ -14,69 +16,227 @@ export function base58encode(prefix: Uint8Array, payload: Buffer): string {
   return base58check.encode(n);
 }
 
-/** Whether or not the string is a valid Tezos key given a prefix. */
-export function isValidTezosKey(prefix: Uint8Array, text: string): boolean {
-  const decodedText = base58check.decode(text);
-  const textPrefix = decodedText.slice(0, prefix.length);
+/**
+ * Returns whether or not the string is a valid Tezos hash of the given type
+ *
+ * @param {String} hash - the string to validate
+ * @param {HashType} hashType - the type of the provided hash
+ * @returns {Boolean}
+ */
+export function isValidHash(hash: string, hashType: HashType): boolean {
+  // Validate encoding
+  let decodedHash;
+  try {
+    decodedHash = base58check.decode(hash);
+  } catch (e) {
+    return false;
+  }
+  const hashPrefix = decodedHash.slice(0, hashType.prefix.length);
+
   // Check prefix
-  if (!textPrefix.equals(Buffer.from(prefix))) {
+  if (!hashPrefix.equals(Buffer.from(hashType.prefix))) {
     return false;
   }
-  // Check length:
-  // - 33 bytes for compressed pub keys (1 byte for the prefix)
-  // - 65 bytes for uncompressed pub keys (1 byte for the prefix)
-  // - 32 bytes for private keys
-  const keyLength = (decodedText.length - textPrefix.length);
-  if (keyLength != 33 && keyLength != 65 && keyLength != 32) {
-    return false;
-  }
-  return true;
+
+  // Check length
+  const hashLength = decodedHash.length - hashPrefix.length;
+  return hashLength === hashType.byteLength;
+}
+
+/**
+ * Returns whether or not the string is a valid Tezos address
+ *
+ * @param {String} hash - the address to validate
+ * @returns {Boolean}
+ */
+export function isValidAddress(hash: string): boolean {
+  return (
+    isValidHash(hash, hashTypes.tz1) ||
+    isValidHash(hash, hashTypes.tz2) ||
+    isValidHash(hash, hashTypes.tz3) ||
+    isValidHash(hash, hashTypes.KT)
+  );
+}
+
+/**
+ * Returns whether or not the string is a valid Tezos block hash
+ *
+ * @param {String} hash - the address to validate
+ * @returns {Boolean}
+ */
+export function isValidBlockHash(hash: string): boolean {
+  return isValidHash(hash, hashTypes.b);
+}
+
+/**
+ * Returns whether or not the string is a valid Tezos transaction hash
+ *
+ * @param {String} hash - the address to validate
+ * @returns {Boolean}
+ */
+export function isValidTransactionHash(hash: string): boolean {
+  return isValidHash(hash, hashTypes.o);
+}
+
+/**
+ * Returns whether or not the string is a valid Tezos key given a prefix
+ *
+ * @param {String} hash - the key to validate
+ * @param {HashType} hashType - the type of the provided hash
+ * @returns {Boolean}
+ */
+export function isValidKey(hash: string, hashType: HashType): boolean {
+  return isValidHash(hash, hashType);
 }
 
 /**
  * Get the original key form the text without the given prefix.
- * @param {Uint8Array} prefix to remove from the text
- * @param {string} text base58 encoded key with a Tezos prefix
- * @return {Buffer} the original decoded key
+ *
+ * @param {string} hash - base58 encoded key with a Tezos prefix
+ * @param {HashType} hashType - the type of the provided hash
+ * @returns {Buffer} the original decoded key
  */
-export function decodeKey(prefix: Uint8Array, text: string): Buffer {
-  if (!isValidTezosKey(prefix, text)) {
+export function decodeKey(hash: string, hashType: HashType): Buffer {
+  if (!isValidKey(hash, hashType)) {
     throw new Error('Unsupported private key');
   }
-  const decodedPrv = base58check.decode(text);
-  return Buffer.from(decodedPrv.slice(prefix.length, decodedPrv.length));
+  const decodedPrv = base58check.decode(hash);
+  return Buffer.from(decodedPrv.slice(hashType.prefix.length, decodedPrv.length));
 }
 
-/** Tezos known prefixes bytes. */
-export const prefix = {
-  tz1: new Uint8Array([6, 161, 159]),
-  tz2: new Uint8Array([6, 161, 161]),
-  tz3: new Uint8Array([6, 161, 164]),
-  KT: new Uint8Array([2,90,121]),
-
-  edpk: new Uint8Array([13, 15, 37, 217]),
-  edsk2: new Uint8Array([13, 15, 58, 7]),
-  spsk: new Uint8Array([17, 162, 224, 201]),
-  p2sk: new Uint8Array([16,81,238,189]),
-
-  sppk: new Uint8Array([3, 254, 226, 86]),
-  p2pk: new Uint8Array([3, 178, 139, 127]),
-
-  edesk: new Uint8Array([7, 90, 60, 179, 41]),
-
-  edsk: new Uint8Array([43, 246, 78, 7]),
-  edsig: new Uint8Array([9, 245, 205, 134, 18]),
-  spsig1: new Uint8Array([13, 115, 101, 19, 63]),
-  p2sig: new Uint8Array([54, 240, 44, 52]),
-  sig: new Uint8Array([4, 130, 43]),
-
-  Net: new Uint8Array([87, 82, 0]),
-  nce: new Uint8Array([69, 220, 169]),
-  b: new Uint8Array([1,52]),
-  o: new Uint8Array([5, 116]),
-  Lo: new Uint8Array([133, 233]),
-  LLo: new Uint8Array([29, 159, 109]),
-  P: new Uint8Array([2, 170]),
-  Co: new Uint8Array([79, 179]),
-  id: new Uint8Array([153, 103]),
+// Base58Check is used for encoding
+// hashedTypes is used to validate hashes by type, by checking their prefix and
+// the length of the Buffer obtained by decoding the hash (excluding the prefix)
+export const hashTypes = {
+  /* 20 bytes long */
+  // ed25519 public key hash
+  tz1: {
+    prefix: new Buffer([6, 161, 159]),
+    byteLength: 20,
+  },
+  // secp256k1 public key hash
+  tz2: {
+    prefix: new Buffer([6, 161, 161]),
+    byteLength: 20,
+  },
+  // p256 public key hash
+  tz3: {
+    prefix: new Buffer([6, 161, 164]),
+    byteLength: 20,
+  },
+  KT: {
+    prefix: new Buffer([2, 90, 121]),
+    byteLength: 20,
+  },
+  /* 32 bytes long */
+  // ed25519 public key
+  edpk: {
+    prefix: new Buffer([13, 15, 37, 217]),
+    byteLength: 32,
+  },
+  // ed25519 secret key
+  edsk2: {
+    prefix: new Buffer([13, 15, 58, 7]),
+    byteLength: 32,
+  },
+  // secp256k1 secret key
+  spsk: {
+    prefix: new Buffer([17, 162, 224, 201]),
+    byteLength: 32,
+  },
+  // p256 secret key
+  p2sk: {
+    prefix: new Buffer([16, 81, 238, 189]),
+    byteLength: 32,
+  },
+  // block hash
+  b: {
+    prefix: new Buffer([1, 52]),
+    byteLength: 32,
+  },
+  // operation hash
+  o: {
+    prefix: new Buffer([5, 116]),
+    byteLength: 32,
+  },
+  // operation list hash
+  Lo: {
+    prefix: new Buffer([133, 233]),
+    byteLength: 32,
+  },
+  // operation list list hash
+  LLo: {
+    prefix: new Buffer([29, 159, 109]),
+    byteLength: 32,
+  },
+  // protocol hash
+  P: {
+    prefix: new Buffer([2, 170]),
+    byteLength: 32,
+  },
+  // context hash
+  Co: {
+    prefix: new Buffer([79, 179]),
+    byteLength: 32,
+  },
+  /* 33 bytes long */
+  // secp256k1 public key
+  sppk: {
+    prefix: new Buffer([3, 254, 226, 86]),
+    byteLength: 33,
+  },
+  // p256 public key
+  p2pk: {
+    prefix: new Buffer([3, 178, 139, 127]),
+    byteLength: 33,
+  },
+  /* 56 bytes long */
+  // ed25519 encrypted seed
+  edesk: {
+    prefix: new Buffer([7, 90, 60, 179, 41]),
+    byteLength: 56,
+  },
+  /* 63 bytes long */
+  // ed25519 secret key
+  edsk: {
+    prefix: new Buffer([43, 246, 78, 7]),
+    byteLength: 64,
+  },
+  // ed25519 signature
+  edsig: {
+    prefix: new Buffer([9, 245, 205, 134, 18]),
+    byteLength: 64,
+  },
+  // secp256k1 signature
+  spsig1: {
+    prefix: new Buffer([13, 115, 101, 19, 63]),
+    byteLength: 64,
+  },
+  // p256_signature
+  p2sig: {
+    prefix: new Buffer([54, 240, 44, 52]),
+    byteLength: 64,
+  },
+  // generic signature
+  sig: {
+    prefix: new Buffer([4, 130, 43]),
+    byteLength: 64,
+  },
+  /* 15 bytes long */
+  // network hash
+  Net: {
+    prefix: new Buffer([87, 82, 0]),
+    byteLength: 15,
+  },
+  // nonce hash
+  nce: {
+    prefix: new Buffer([69, 220, 169]),
+    byteLength: 15,
+  },
+  /* 4 bytes long */
+  // chain id
+  id: {
+    prefix: new Buffer([153, 103]),
+    byteLength: 4,
+  },
 };

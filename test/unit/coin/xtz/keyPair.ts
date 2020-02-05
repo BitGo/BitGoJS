@@ -8,7 +8,8 @@ describe('Xtz KeyPair', function() {
   describe('should create a KeyPair', function() {
     it('from an xpub', () => {
       const source = {
-        pub: 'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY'
+        pub:
+          'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -17,12 +18,15 @@ describe('Xtz KeyPair', function() {
 
       const extendedKeys = keyPair.getExtendedKeys();
       should.not.exist(extendedKeys.xprv);
-      extendedKeys.xpub.should.equal('xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY');
+      extendedKeys.xpub.should.equal(
+        'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+      );
     });
 
     it('from an xprv', () => {
       const source = {
-        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2'
+        prv:
+          'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -30,13 +34,18 @@ describe('Xtz KeyPair', function() {
       defaultKeys.pub.should.equal('sppk7csjXKT4wvUNCPMfAgZMNuvSjzW4Y2ZAKZEdvyEPtYagE6pCwkw');
 
       const extendedKeys = keyPair.getExtendedKeys();
-      extendedKeys.xprv!.should.equal('xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2');
-      extendedKeys.xpub.should.equal('xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY');
+      extendedKeys.xprv!.should.equal(
+        'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      );
+      extendedKeys.xpub.should.equal(
+        'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+      );
     });
 
     it('from an uncompressed public key', () => {
       const source = {
-        pub: '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355'
+        pub:
+          '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -48,7 +57,7 @@ describe('Xtz KeyPair', function() {
 
     it('from a compressed public key', () => {
       const source = {
-        pub: '03D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A8275'
+        pub: '03D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A8275',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -60,7 +69,7 @@ describe('Xtz KeyPair', function() {
 
     it('from a Tezos public key', () => {
       const source = {
-        pub: 'sppk7csjXKT4wvUNCPMfAgZMNuvSjzW4Y2ZAKZEdvyEPtYagE6pCwkw'
+        pub: 'sppk7csjXKT4wvUNCPMfAgZMNuvSjzW4Y2ZAKZEdvyEPtYagE6pCwkw',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -72,7 +81,7 @@ describe('Xtz KeyPair', function() {
 
     it('from a raw private key', () => {
       const source = {
-        prv: '82A34E3867EA7EA4E67E27865D500AE84E98D07AB1BAB06526F0A5A5FDCC3EBA'
+        prv: '82A34E3867EA7EA4E67E27865D500AE84E98D07AB1BAB06526F0A5A5FDCC3EBA',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -84,7 +93,7 @@ describe('Xtz KeyPair', function() {
 
     it('from a Tezos private key', () => {
       const source = {
-        prv: 'spsk2R6ek35CtfJMt2XHPWgFcf1wUGLK2fKbU3f4hWZNABo1YrrqP7'
+        prv: 'spsk2R6ek35CtfJMt2XHPWgFcf1wUGLK2fKbU3f4hWZNABo1YrrqP7',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
@@ -103,14 +112,14 @@ describe('Xtz KeyPair', function() {
 
     it('from an invalid public key', () => {
       const source = {
-        pub: '01D63D'
+        pub: '01D63D',
       };
       should.throws(() => new Xtz.KeyPair(source));
     });
 
     it('from an invalid private key', () => {
       const source = {
-        prv: '82A34E'
+        prv: '82A34E',
       };
       should.throws(() => new Xtz.KeyPair(source));
     });
@@ -144,8 +153,12 @@ describe('Xtz KeyPair', function() {
     it('should get the keys in extended format', () => {
       const keyPair = new Xtz.KeyPair(defaultSeed);
       const { xprv, xpub } = keyPair.getExtendedKeys();
-      xprv!.should.equal('xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2');
-      xpub.should.equal('xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY');
+      xprv!.should.equal(
+        'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      );
+      xpub.should.equal(
+        'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+      );
     });
 
     it('should get the keys in extended format  for a random seed', () => {
