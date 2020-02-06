@@ -7,6 +7,7 @@ import { TransactionType } from './enum';
  */
 export abstract class BaseTransaction {
   protected _id: string;
+  protected _id: string; // The transaction id as seen in the blockchain
   protected _inputs: Entry[] = [];
   protected _outputs: Entry[] = [];
   protected _type: TransactionType;

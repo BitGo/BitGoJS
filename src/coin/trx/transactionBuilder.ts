@@ -175,6 +175,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (!currTransaction.raw_data.contract) {
       throw new InvalidTransactionError('Transaction contracts are empty');
     }
+  /** @inheritdoc */
+  validateRawTransaction(rawTransaction: any) {
+    // TODO: parse the transaction raw_data_hex and compare it with the raw_data
   }
 
   /** @inheritDoc Specifically, checks hex underlying transaction hashes to correct transaction ID. */
