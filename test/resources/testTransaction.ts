@@ -11,4 +11,6 @@ export class TestTransaction extends BaseTransaction {
   }
 
   toJson(): any { }
+
+  toBroadcastFormat(): any { }
 }
