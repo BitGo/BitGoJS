@@ -22,7 +22,7 @@ export class Transaction extends BaseTransaction {
   private _transaction?: TransactionReceipt;
 
   /**
-   * Tron transaction constructor.
+   * Public constructor.
    */
   constructor(coinConfig: Readonly<CoinConfig>, rawTransaction?: TransactionReceipt) {
     super(coinConfig);
@@ -41,6 +41,7 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Parse the transaction raw data and record the most important fields.
+   *
    * @param rawData Object from a tron transaction
    */
   private recordRawDataFields(rawData: RawData) {
@@ -82,8 +83,8 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Updates the txid of this transaction after a protobuf update
-   * Every time protobuf is updated, we need to update the txid
+   * Recalculate and update the transaction id. This should be done after changing any transaction
+   * field since the the id is a hash of the transaction body.
    */
   private updateId(): void {
     if (!this._transaction) {
@@ -99,7 +100,8 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Extends this transaction's expiration date by the given number of milliseconds
+   * Extend the expiration date by the given number of milliseconds.
+   *
    * @param extensionMs The number of milliseconds to extend the expiration by
    */
   extendExpiration(extensionMs: number): void {
@@ -147,27 +149,39 @@ export class Transaction extends BaseTransaction {
     return [];
   }
 
+  /**
+   * Get the time in milliseconds this transaction becomes valid and can be broadcasted to the
+   * network.
+   */
   get validFrom(): number {
     return this._validFrom;
   }
 
+  /**
+   * Get the expiration time in milliseconds.
+   */
   get validTo(): number {
     return this._validTo;
   }
 
-  /**
-   * Tron transaction do not contain the owners account address so it is not possible to check the
-   * private key with any but the account main address. This is not enough to fail this check, so it
-   * is a no-op.
-   */
+  /** @inheritdoc */
   canSign(key: BaseKey): boolean {
+    // Tron transaction do not contain the owners account address so it is not possible to check the
+    // private key with any but the account main address. This is not enough to fail this check, so
+    // it is a no-op.
     return true;
   }
 
+  /** @inheritdoc */
   toJson(): TransactionReceipt {
     if (!this._transaction) {
       throw new ParseTransactionError('Empty transaction');
     }
     return this._transaction;
+  }
+
+  /** @inheritdoc */
+  toBroadcastFormat(): any {
+    return JSON.stringify(this.toJson());
   }
 }

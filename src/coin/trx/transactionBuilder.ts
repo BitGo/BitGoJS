@@ -19,7 +19,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
 
   /**
-   * Tron transaction builder constructor.
+   * Public constructor.
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -27,6 +27,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Parse transaction takes in raw JSON directly from the node.
+   *
    * @param rawTransaction The Tron transaction in JSON format as returned by the Tron lib or a
    *     stringifyed version of such JSON.
    */
@@ -39,9 +40,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return new Transaction(this._coinConfig, rawTransaction);
   }
 
-  /**
-   * Tron transaction signing implementation.
-   */
+  /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     if (!this.transaction.inputs) {
       throw new SigningError('transaction has no sender');
@@ -73,9 +72,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return new Transaction(this._coinConfig, signedTransaction);
   }
 
-  /**
-   * Tron transaction building and verification implementation.
-   */
+  /** @inheritdoc */
   protected buildImplementation(): Transaction {
     // This is a no-op since Tron transactions are built from
     if (!this.transaction.id) {
@@ -92,9 +89,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.extendExpiration(extensionMs);
   }
 
-  /**
-   * Validates a passed value. This is TRX units.
-   */
+  /** @inheritdoc */
   validateValue(value: BigNumber) {
     if (value.isLessThanOrEqualTo(0)) {
       throw new Error('Value cannot be below zero.');
@@ -106,6 +101,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /** @inheritdoc */
   validateAddress(address: Address) {
     // assumes a base 58 address for our addresses
     if (!isBase58Address(address.address)) {
@@ -113,11 +109,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /** @inheritdoc */
   validateKey(key: BaseKey) {
     // TODO: determine valid key format
     return true;
   }
 
+  /** @inheritdoc */
   validateRawTransaction(rawTransaction: any) {
     // TODO: parse the transaction raw_data_hex and compare it with the raw_data
   }
@@ -134,14 +132,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  displayName(): string {
-    return this._coinConfig.fullName;
-  }
-
+  /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
   }
 
+  /** @inheritdoc */
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
   }

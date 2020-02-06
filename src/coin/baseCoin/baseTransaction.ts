@@ -3,16 +3,17 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { TransactionType } from './enum';
 
 /**
- * Generic transaction. Should be extended with coin specific members.
+ * Generic transaction to be extended with coin specific logic.
  */
 export abstract class BaseTransaction {
   protected _id: string; // The transaction id as seen in the blockchain
-  protected _inputs: Entry[];
-  protected _outputs: Entry[];
+  protected _inputs: Entry[] = [];
+  protected _outputs: Entry[] = [];
   protected _type: TransactionType;
 
   /**
    * Base constructor.
+   *
    * @param _coinConfig BaseCoin from statics library
    */
   protected constructor(protected _coinConfig: Readonly<CoinConfig>) {}
@@ -37,13 +38,19 @@ export abstract class BaseTransaction {
    * Whether the private key can sign this transaction in its current state or not. it is possible
    * some transactions can only enforce this check after some other fields have been filled already
    * or even during build time.
-   * @param key to verify permissions on
-   * @return false if the key cannot sign the transaction without a doubt, true otherwise
+   *
+   * @param {BaseKey} key Private key to verify permissions on
+   * @return {boolean} false if the key cannot sign the transaction without a doubt, true otherwise
    */
   abstract canSign(key: BaseKey): boolean;
 
   /**
-   * Returns the transaction in a valid JSON format.
+   * Return the transaction in a coin specific JSON format.
    */
   abstract toJson(): any;
+
+  /**
+   * Return the transaction in a format it can be broadcasted to the blockchain.
+   */
+  abstract toBroadcastFormat(): any;
 }

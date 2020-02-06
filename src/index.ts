@@ -1,5 +1,6 @@
 import { coins } from '@bitgo/statics';
 import { BuildTransactionError } from './coin/baseCoin/errors';
+import { BaseTransactionBuilder } from "./coin/baseCoin";
 
 import * as crypto from './utils/crypto'
 export { crypto };
@@ -11,13 +12,17 @@ import * as Trx from './coin/trx';
 export { Trx };
 
 import * as Xtz from './coin/xtz';
-import {BaseTransactionBuilder} from "./coin/baseCoin";
 export { Xtz };
 
-export const supportedCoins = {
-  trx: new Trx.TransactionBuilder(coins.get('trx')),
-  ttrx: new Trx.TransactionBuilder(coins.get('ttrx')),
+const coinBuilderMap = {
+  trx: Trx.TransactionBuilder,
+  ttrx: Trx.TransactionBuilder,
 };
+
+/**
+ * Get the list of coin tickers supported by this library.
+ */
+export const supportedCoins = Object.keys(coinBuilderMap);
 
 /**
  * Get a transaction builder for the given coin.
@@ -27,9 +32,9 @@ export const supportedCoins = {
  */
 export function getBuilder(coinName: string): BaseTransactionBuilder {
   const coin = coinName.toLowerCase().trim();
-  const builder = supportedCoins[coin];
-  if (builder) {
-    return builder;
+  const builderClass = coinBuilderMap[coin];
+  if (!builderClass) {
+    throw new BuildTransactionError(`Coin ${coinName} not supported`);
   }
-  throw new BuildTransactionError(`Coin ${coinName} not supported`);
+  return new builderClass(coins.get(coin));
 }

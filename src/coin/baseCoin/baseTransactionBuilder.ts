@@ -5,13 +5,13 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 /**
- * Generic transaction builder. It contains the set of default steps (i.e. from, sign, build) and
- * enforces mandatory validations.
- * Should be extended with coin specific steps.
+ * Generic transaction builder to be extended with coin specific logic.
+ * Provide a set of default steps (i.e. from, sign, build) and enforces mandatory validations.
  */
 export abstract class BaseTransactionBuilder {
   /**
    * Base constructor.
+   *
    * @param _coinConfig BaseCoin from statics library
    */
   protected constructor(protected _coinConfig: Readonly<CoinConfig>) {}
@@ -19,7 +19,8 @@ export abstract class BaseTransactionBuilder {
   /**
    * Parse a transaction based on existing data. The input format is determined by the coin
    * extending this class. Some examples are hex, base64, or JSON.
-   * @param rawTransaction
+   *
+   * @param rawTransaction A raw transaction to be parsed
    */
   from(rawTransaction: any): void {
     this.validateRawTransaction(rawTransaction);
@@ -27,18 +28,19 @@ export abstract class BaseTransactionBuilder {
   }
 
   /**
-   * Coin specific implementation of {@code from}
-   * @see from
+   * Coin specific implementation of {@code from}.
+   *
+   * @see {@link from}
    * @return the parsed coin specific transaction object
    */
   protected abstract fromImplementation(rawTransaction: any): BaseTransaction;
 
   /**
    * Validate keys and sign the transaction.
-   * @param key one of the keys associated with this transaction
+   *
+   * @param key One of the keys associated with this transaction
    */
   sign(key: BaseKey): void {
-    // Make sure the key is valid
     this.validateKey(key);
     if (!this.transaction.canSign(key)) {
       throw new SigningError('Private key cannot sign the transaction');
@@ -47,16 +49,18 @@ export abstract class BaseTransactionBuilder {
   }
 
   /**
-   * Coin specific implementation of {@code sign}
-   * @see sign
-   * @return the signed coin specific transaction object
+   * Coin specific implementation of {@code sign}.
+   *
+   * @see {@link sign}
+   * @return coin specific transaction with signature data
    */
   protected abstract signImplementation(key: BaseKey): BaseTransaction;
 
   /**
    * Finalize the transaction by performing any extra step like calculating hashes, verifying
    * integrity, or adding default values.
-   * @return transaction object
+   *
+   * @return valid coin specific transaction (signed or unsigned)
    */
   build(): BaseTransaction {
     this.validateTransaction(this.transaction);
@@ -64,44 +68,56 @@ export abstract class BaseTransactionBuilder {
   }
 
   /**
-   * Coin specific implementation of {@code build}
-   * @return the final coin specific transaction object
+   * Coin specific implementation of {@code build}.
+   *
+   * @see {@link build}
+   * @return valid coin specific transaction (signed or unsigned)
    */
   protected abstract buildImplementation(): BaseTransaction;
 
   /**
-   * The statics fullName of this coin
-   */
-  abstract displayName(): string;
-
-  /**
-   * Validates a private key.
+   * Check the private key is valid in the blockchain context, throw otherwise.
+   *
+   * @param {BaseKey} key Private key to validate
    */
   abstract validateKey(key: BaseKey);
 
   /**
-   * Validate an address. Throws an exception if invalid.
-   * @param address the address
-   * @param addressFormat the address format - this will be handled by the implementing coin as an
-   *     enum
+   * Check the address provided is valid in the blockchain context, throw otherwise.
+   *
+   * @param address Address data to be validated
+   * @param addressFormat The format the address should be in if more than one is supported
    */
   abstract validateAddress(address: BaseAddress, addressFormat?: string);
 
   /**
-   * Validates the value corresponding to an amount can be used for this transaction. Throws an
-   * exception if invalid.
+   * Check the amount provided is valid in the blockchain context, throw otherwise.
+   *
+   * @param {BigNumber} value Transaction amount
    */
   abstract validateValue(value: BigNumber);
 
   /**
-   * Validates the raw transaction has the coin specific correct format, throws otherwise.
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   *
+   * @param rawTransaction Transaction in any format
    */
   abstract validateRawTransaction(rawTransaction: any);
 
   /**
-   * Validates the transaction has all mandatory fields before and are correct, throws otherwise.
+   * Check the transaction mandatory fields per transaction type and ensures it is valid, throw
+   * otherwise.
+   *
+   * @param {BaseTransaction} transaction
    */
   abstract validateTransaction(transaction: BaseTransaction);
+
+  /**
+   * Get the underlying coin full name as specified in the statics library.
+   */
+  displayName(): string {
+    return this._coinConfig.fullName;
+  }
 
   /**
    * Get the transaction being built.
