@@ -7,8 +7,8 @@ import { BaseKey } from '../baseCoin/iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { KeyPair } from './keyPair';
 import { InMemorySigner } from '@taquito/signer';
-import { isValidSignature} from './utils';
-import { Operation, ParsedTransaction } from './iface';
+import { Operation, Origination, ParsedTransaction, Reveal } from './iface';
+import * as Utils from './utils';
 
 /**
  * Tezos transaction model.
@@ -21,55 +21,66 @@ export class Transaction extends BaseTransaction {
    * Public constructor.
    *
    * @param {Readonly<CoinConfig>} coinConfig
-   * @param parsedTransaction A Tezos transaction object
    */
-  constructor(coinConfig: Readonly<CoinConfig>, parsedTransaction?: ParsedTransaction) {
+  constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
-    if (parsedTransaction) {
-      this.recordRawDataFields(parsedTransaction);
-    }
   }
 
   /**
-   * Initialize the transaction fields based on a serialized transaction.
+   * Initialize the transaction fields based on another serialized transaction.
    *
    * @param serializedTransaction Transaction in broadcast format.
    */
-  async init(serializedTransaction: string): Promise<void> {
+  async initFromSerializedTransaction(serializedTransaction: string): Promise<void> {
     this._encodedTransaction = serializedTransaction;
     try {
       const parsedTransaction = await localForger.parse(serializedTransaction);
-      this.recordRawDataFields(parsedTransaction);
+      await this.initFromParsedTransaction(parsedTransaction);
     } catch (e) {
       // If it throws, it is possible the serialized transaction is signed, which is not supported
       // by local-forging. Try extracting the last 64 bytes and parse it again.
       const unsignedSerializedTransaction = serializedTransaction.slice(0, -128);
       const signature = serializedTransaction.slice(-128);
-      if (isValidSignature(signature)) {
+      if (Utils.isValidSignature(signature)) {
         throw new ParseTransactionError('Invalid transaction');
       }
       // TODO: encode the signature and save it in _signature
       const parsedTransaction = await localForger.parse(unsignedSerializedTransaction);
-      this.recordRawDataFields(parsedTransaction);
+      const transactionId = await Utils.calculateTransactionId(serializedTransaction);
+      await this.initFromParsedTransaction(parsedTransaction, transactionId);
     }
   }
 
   /**
-   * Record the most important fields from the parsed transaction.
+   * Initialize the transaction fields based on another parsed transaction.
    *
-   * @param parsedTransaction A Tezos transaction object
+   * @param {ParsedTransaction} parsedTransaction A Tezos transaction object
+   * @param {string} transactionId The transaction id of the parsedTransaction if it is signed
    */
-  private recordRawDataFields(parsedTransaction: ParsedTransaction): void {
-    // TODO: make sure transaction ids cannot be calculated offline
-    this._id = '';
+  async initFromParsedTransaction(parsedTransaction: ParsedTransaction, transactionId?: string): Promise<void> {
+    if (transactionId) {
+      // If the transaction id is passed, save it and clean up the entries since they will be
+      // recalculated
+      this._id = transactionId;
+      this._inputs = [];
+      this._outputs = [];
+    } else {
+      this._id = '';
+    }
     this._parsedTransaction = parsedTransaction;
-    parsedTransaction.contents.forEach(operation => {
+    let operationIndex = 0;
+    parsedTransaction.contents.forEach(async operation => {
       switch (operation.kind) {
         case CODEC.OP_ORIGINATION:
-          this.recordOriginationOpFields(operation);
+          await this.recordOriginationOpFields(operation as Origination, operationIndex);
+          operationIndex++;
+          break;
+        case CODEC.OP_REVEAL:
+          this.recordRevealOpFields(operation as Reveal);
           break;
         default:
-          throw new ParseTransactionError('Unsupported contract type');
+          break;
+          // throw new ParseTransactionError('Unsupported contract type');
       }
     });
   }
@@ -77,14 +88,15 @@ export class Transaction extends BaseTransaction {
   /**
    * Record the most important fields from an origination operation.
    *
-   * @param operation An operation object from a Tezos transaction
+   * @param {Operation} operation An operation object from a Tezos transaction
+   * @param {number} index The origination operation index in the transaction. Used to calculate the
+   *      originated address
    */
-  private recordOriginationOpFields(operation: Operation): void {
+  private async recordOriginationOpFields(operation: Origination, index: number): Promise<void> {
     this._type = TransactionType.WalletInitialization;
     this._outputs.push({
-      // TODO: use the function in eztz to calculate the originated account address and assign it to
-      // this._id (https://github.com/TezTech/eztz/blob/cfdc4fcfc891f4f4f077c3056f414476dde3610b/src/main.js#L768)
-      address: '',
+      // Kt addresses can only be calculated for signed transactions with an id
+      address: this._id ? await Utils.calculateOriginatedAddress(this._id, index) : '',
       // Balance
       value: new BigNumber(operation.balance),
     });
@@ -92,6 +104,20 @@ export class Transaction extends BaseTransaction {
       address: operation.source,
       // Balance + fees + max gas + max storage are paid by the source account
       value: new BigNumber(operation.balance).plus(operation.fee)
+    });
+  }
+
+  /**
+   * Record the most important fields from a reveal operation.
+   *
+   * @param {Reveal} operation A reveal operation object from a Tezos transaction
+   */
+  private recordRevealOpFields(operation: Reveal): void {
+    this._type = TransactionType.AddressInitialization;
+    this._inputs.push({
+      address: operation.source,
+      // Balance + fees + max gas + max storage are paid by the source account
+      value: new BigNumber(operation.balance).plus(operation.fee),
     });
   }
 
@@ -120,6 +146,11 @@ export class Transaction extends BaseTransaction {
 
     const signedTransaction = await signer.sign(encodedTransaction, new Uint8Array([3]));
     this._encodedTransaction = signedTransaction.sbytes;
+
+    // The transaction id can only be calculated for signed transactions
+    this._id = await Utils.calculateTransactionId(this._encodedTransaction);
+    await this.initFromParsedTransaction(this._parsedTransaction, this._id);
+
     this._signatures.push(signedTransaction.sig);
   }
 
