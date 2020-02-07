@@ -59,6 +59,21 @@ export function isValidAddress(hash: string): boolean {
 }
 
 /**
+ * Returns whether or not the string is a valid Tezos signature
+ *
+ * @param {String} hash - the signature to validate
+ * @returns {Boolean}
+ */
+export function isValidSignature(hash: string): boolean {
+  return (
+    isValidHash(hash, hashTypes.edsig) ||
+    isValidHash(hash, hashTypes.spsig1) ||
+    isValidHash(hash, hashTypes.p2sig) ||
+    isValidHash(hash, hashTypes.sig)
+  );
+}
+
+/**
  * Returns whether or not the string is a valid Tezos block hash
  *
  * @param {String} hash - the address to validate
