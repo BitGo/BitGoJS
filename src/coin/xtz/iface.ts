@@ -37,3 +37,18 @@ export interface HashType {
   prefix: Buffer;
   byteLength: number;
 }
+
+export interface Operation {
+  kind: string;
+  balance: string;
+  source: string;
+  fee: string;
+  gas_limit: string;
+  storage_limit: string;
+  script: any;
+}
+
+export interface ParsedTransaction {
+  branch: string;
+  contents: Operation[];
+}

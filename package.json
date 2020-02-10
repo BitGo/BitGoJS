@@ -32,7 +32,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@bitgo/statics": "^2.4.0-rc.0",
+    "@bitgo/statics": "^3.2.0-rc.0",
+    "@taquito/local-forging": "^6.0.3-beta.0",
+    "@taquito/signer": "^6.0.3-beta.0",
     "bignumber.js": "^9.0.0",
     "bitgo-utxo-lib": "^1.6.0",
     "blake2b": "^2.1.3",

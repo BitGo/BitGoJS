@@ -6,10 +6,11 @@ import { TransactionType } from './enum';
  * Generic transaction to be extended with coin specific logic.
  */
 export abstract class BaseTransaction {
-  protected _id: string; // The transaction id as seen in the blockchain
+  protected _id: string;
   protected _inputs: Entry[] = [];
   protected _outputs: Entry[] = [];
   protected _type: TransactionType;
+  protected _signatures: string[] = [];
 
   /**
    * Base constructor.
@@ -18,20 +19,40 @@ export abstract class BaseTransaction {
    */
   protected constructor(protected _coinConfig: Readonly<CoinConfig>) {}
 
+  /**
+   * Get the transaction id as seen in the blockchain. Transactions computed offline may not have an
+   * id, however, this is left to the coin implementation.
+   */
   get id(): string {
     return this._id;
   }
 
+  /**
+   * One of {@link TransactionType}
+   */
   get type(): TransactionType {
     return this._type;
   }
 
+  /**
+   * Get the list of outputs. Amounts are expressed in absolute value.
+   */
   get outputs(): Entry[] {
     return this._outputs;
   }
 
+  /**
+   * Get the list of inputs. Amounts are expressed in absolute value.
+   */
   get inputs(): Entry[] {
     return this._inputs;
+  }
+
+  /**
+   * Get the list of signatures (if any) produced for this transaction.
+   */
+  get signature(): string[] {
+    return this._signatures;
   }
 
   /**
