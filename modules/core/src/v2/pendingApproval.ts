@@ -20,6 +20,14 @@ export interface PendingApprovalInfo {
     buildParams: any;
     sourceWallet?: string;
   };
+  signingPolicyUpdate?: {
+    //TODO Add this to allow updates via SDK
+  }
+}
+
+export interface SigningPolicyInfo {
+  payload: string;
+  gatheredSignatures: string[];
 }
 
 export interface PendingApprovalData {
@@ -30,6 +38,7 @@ export interface PendingApprovalData {
   creator: string;
   info: PendingApprovalInfo;
   approvalsRequired?: number;
+  signingPolicy?: SigningPolicyInfo;
 }
 
 export const enum OwnerType {
@@ -42,8 +51,9 @@ export const enum State {
   AWAITING_SIGNATURE = 'awaitingSignature',
   PENDING_BITGO_ADMIN_APPROVAL = 'pendingBitGoAdminApproval',
   PENDING_ID_VERIFICATION = 'pendingIdVerification',
-  PENDING_CUSTODIAN_APPROVAL = 'pendingCustodianApproval',
+  PENDING_CRYPTOGRAPHIC_APPROVAL = 'pendingCryptographicApproval',
   PENDING_FINAL_APPROVAL = 'pendingFinalApproval',
+  PENDING_CUSTODIAN_APPROVAL = 'pendingCustodianApproval',
   APPROVED = 'approved',
   PROCESSING = 'processing',
   REJECTED = 'rejected',
@@ -61,6 +71,11 @@ export interface ApproveOptions {
   otp?: string;
   tx?: string;
   xprv?: string;
+}
+
+export interface CryptographicApproveOptions {
+  signature: string;
+  otp?: string;
 }
 
 export class PendingApproval {
@@ -300,6 +315,37 @@ export class PendingApproval {
       }
     })
       .call(this)
+      .asCallback(callback);
+  }
+
+  getCryptographicApprovalPayload(pendingApproval: PendingApprovalData, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co(function*() {
+      // this function is currently overkill for a getter, but we should in
+      // the future add validation that the payload matches the policy body.
+      // This is an async function so if we need an async validation it does
+      // not require a function signature change.
+      return pendingApproval.signingPolicy.payload;
+    }).call(this)
+      .asCallback(callback);
+  }
+
+  cryptographicApprove(params: CryptographicApproveOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co(function*() {
+      validateParams(params, [], ['walletPassphrase', 'otp'], callback);
+
+      const approvalParams: any = { 
+        state: 'approved',
+        signatures: [params.signature]
+        otp: params.otp,
+      };
+      return self.bitgo
+        .put(self.url())
+        .send(approvalParams)
+        .result()
+        .nodeify(callback);
+    }).call(this)
       .asCallback(callback);
   }
 
