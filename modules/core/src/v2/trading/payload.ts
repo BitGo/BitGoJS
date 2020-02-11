@@ -1,6 +1,5 @@
 /**
  * @prettier
- * @hidden
  */
 
 /**
@@ -21,7 +20,7 @@ export interface PayloadAmounts {
   sendCurrency: string;
   receiveAmount: string;
   receiveCurrency: string;
-  subTotal: string; // sendAmount - fees[].feeAmount
+  sendSubtotal: string; // sendAmount - fees[].feeAmount
   fees?: {
     // will only show up if the accountId is the signing accountId
     feeType: string;

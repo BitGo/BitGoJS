@@ -1,6 +1,5 @@
 /**
  * @prettier
- * @hidden
  */
 
 /**
