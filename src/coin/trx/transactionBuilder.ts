@@ -146,51 +146,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       } catch (e) {
         throw new ParseTransactionError('There was error in parsing the JSON string');
       }
-    } else if (_isObject(rawTransaction)) {
-      currTransaction = rawTransaction;
-    } else {
-      throw new InvalidTransactionError('Raw transaction has an invalid data type');
-    }
-    const decodedRawDataHex = decodeTransaction(currTransaction.raw_data_hex);
-    if (!currTransaction.txID) {
-      throw new InvalidTransactionError('Transaction ID is empty');
-    }
-    //Validate the transaction ID from the raw data hex
-    const hexBuffer = Buffer.from(currTransaction.raw_data_hex, 'hex');
-    const currTxID = crypto
-      .createHash('sha256')
-      .update(hexBuffer)
-      .digest('hex');
-    if (currTransaction.txID != currTxID) {
-      throw new InvalidTransactionError('Transaction has not have a valid id');
-    }
-    // Validate the expiration time from the raw-data-hex
-    if (currTransaction.raw_data.expiration != decodedRawDataHex.expiration) {
-      throw new InvalidTransactionError('Transaction has not have a valid expiration');
-    }
-    // Validate the timestamp from the raw-data-hex
-    if (currTransaction.raw_data.timestamp != decodedRawDataHex.timestamp) {
-      throw new InvalidTransactionError('Transaction has not have a valid timetamp');
-    }
-    // Transaction contract must exist
-    if (!currTransaction.raw_data.contract) {
-      throw new InvalidTransactionError('Transaction contracts are empty');
-    }
-  /** @inheritdoc */
-  validateRawTransaction(rawTransaction: any) {
-    //TODO: Validation of signature
-    if (!rawTransaction) {
-      throw new InvalidTransactionError('Raw transaction is empty');
-    }
-    let currTransaction: TransactionReceipt;
-    // rawTransaction can be either Stringified JSON OR
-    // it can be a regular JSON object (not stringified).
-    if (typeof rawTransaction === 'string') {
-      try {
-        currTransaction = JSON.parse(rawTransaction);
-      } catch (e) {
-        throw new ParseTransactionError('There was error in parsing the JSON string');
-      }
     } else {
       currTransaction = rawTransaction;
     }
