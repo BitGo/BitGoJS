@@ -200,5 +200,16 @@ describe('Tron', function() {
       const txJson = JSON.stringify(UnsignedInvalidContractBuildTransaction);
       should.throws(() => txBuilder.from(txJson));
     });
+
+    it('should validate JSON transaction', () => {
+      const txJson = UnsignedAccountPermissionUpdateContractTx;
+      should.doesNotThrow(() => txBuilder.from(txJson));
+    });
+    console.log
+
+    it('should validate stringified JSON transaction', () => {
+      const txJsonString = JSON.stringify(UnsignedBuildTransaction);
+      should.doesNotThrow(() => txBuilder.from(txJsonString));
+    });
   });
 });
