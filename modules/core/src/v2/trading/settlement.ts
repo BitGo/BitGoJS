@@ -1,6 +1,5 @@
 /**
  * @prettier
- * @hidden
  */
 
 import { BitGo } from '../../bitgo';
