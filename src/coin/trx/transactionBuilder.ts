@@ -22,7 +22,6 @@ import { KeyPair } from "./keyPair";
 export class TransactionBuilder extends BaseTransactionBuilder {
   // transaction being built
   private _transaction: Transaction;
-
   /**
    * Public constructor.
    */
@@ -147,8 +146,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       } catch (e) {
         throw new ParseTransactionError('There was error in parsing the JSON string');
       }
-    } else {
+    } else if (_isObject(rawTransaction)) {
       currTransaction = rawTransaction;
+    } else {
+      throw new InvalidTransactionError('Raw transaction has an invalid data type');
     }
     const decodedRawDataHex = decodeTransaction(currTransaction.raw_data_hex);
     if (!currTransaction.txID) {
@@ -217,6 +218,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // Transaction contract must exist
     if (!currTransaction.raw_data.contract) {
       throw new InvalidTransactionError('Transaction contracts are empty');
+    }
+    function _isObject(rawTransaction: TransactionReceipt) {
+      return rawTransaction === Object(rawTransaction);
     }
   }
 
