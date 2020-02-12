@@ -15,6 +15,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilder } from '../baseCoin';
 import { Transaction } from './transaction';
 import { KeyPair } from "./keyPair";
+import * as _ from 'lodash';
 
 /**
  * Tron transaction builder.
@@ -146,8 +147,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       } catch (e) {
         throw new ParseTransactionError('There was error in parsing the JSON string');
       }
-    } else {
+    } else if (_.isObject(rawTransaction)) {
       currTransaction = rawTransaction;
+    } else {
+      throw new InvalidTransactionError('Transaction is not an object or stringified json');
     }
     const decodedRawDataHex = decodeTransaction(currTransaction.raw_data_hex);
     if (!currTransaction.txID) {
@@ -173,9 +176,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // Transaction contract must exist
     if (!currTransaction.raw_data.contract) {
       throw new InvalidTransactionError('Transaction contracts are empty');
-    }
-    function _isObject(rawTransaction: TransactionReceipt) {
-      return rawTransaction === Object(rawTransaction);
     }
   }
 
