@@ -1,15 +1,15 @@
 import * as crypto from 'crypto';
 import BigNumber from 'bignumber.js';
-
-import { TransactionReceipt } from './iface';
-import { SigningError, BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
-import { Address } from './address';
-import { BaseKey } from '../baseCoin/iface';
-import { signTransaction, isBase58Address } from './utils';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+
 import { BaseTransactionBuilder } from '../baseCoin';
+import { SigningError, BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
+import { BaseKey } from '../baseCoin/iface';
+import { TransactionReceipt } from './iface';
+import { Address } from './address';
+import { signTransaction, isBase58Address } from './utils';
 import { Transaction } from './transaction';
-import { KeyPair } from "./keyPair";
+import { KeyPair } from './keyPair';
 
 /**
  * Tron transaction builder.
@@ -20,6 +20,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Public constructor.
+   *
+   * @param {CoinConfig} _coinConfig Configuration object
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -28,8 +30,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Parse transaction takes in raw JSON directly from the node.
    *
-   * @param rawTransaction The Tron transaction in JSON format as returned by the Tron lib or a
-   *     stringifyed version of such JSON.
+   * @param {TransactionReceipt} rawTransaction The Tron transaction in JSON format as returned by the Tron lib or a stringifyed version of such JSON.
+   * @returns {Transaction} Tron transaction
    */
   protected fromImplementation(rawTransaction: TransactionReceipt | string): Transaction {
     // TODO: add checks to ensure the raw_data, raw_data_hex, and txID are from the same transaction
@@ -43,11 +45,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     if (!this.transaction.inputs) {
-      throw new SigningError('transaction has no sender');
+      throw new SigningError('Transaction has no sender');
     }
 
     if (!this.transaction.outputs) {
-      throw new SigningError('transaction has no receiver');
+      throw new SigningError('Transaction has no receiver');
     }
 
     const oldTransaction = this.transaction.toJson();
@@ -83,14 +85,16 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Extend the validity of this transaction by the given amount of time
-   * @param extensionMs The number of milliseconds to extend the validTo time
+   *
+   * @param {number} extensionMs The number of milliseconds to extend the validTo time
+   * @returns {undefined}
    */
-  extendValidTo(extensionMs: number) {
+  extendValidTo(extensionMs: number): void {
     this.transaction.extendExpiration(extensionMs);
   }
 
   /** @inheritdoc */
-  validateValue(value: BigNumber) {
+  validateValue(value: BigNumber): void {
     if (value.isLessThanOrEqualTo(0)) {
       throw new Error('Value cannot be below zero.');
     }
@@ -102,7 +106,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateAddress(address: Address) {
+  validateAddress(address: Address): void {
     // assumes a base 58 address for our addresses
     if (!isBase58Address(address.address)) {
       throw new Error(address + ' is not a valid base58 address.');
@@ -110,9 +114,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateKey(key: BaseKey) {
-    // TODO: determine valid key format
-    return true;
+  validateKey(key: BaseKey): void {
+    try {
+      new KeyPair({ prv: key.key });
+    } catch (err) {
+      throw new Error('The provided key is not valid');
+    }
   }
 
   /** @inheritdoc */
@@ -120,8 +127,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // TODO: parse the transaction raw_data_hex and compare it with the raw_data
   }
 
-  /** @inheritDoc Specifically, checks hex underlying transaction hashes to correct transaction ID. */
-  validateTransaction(transaction: Transaction) {
+  /** @inheritdoc */
+  // Specifically, checks hex underlying transaction hashes to correct transaction ID.
+  validateTransaction(transaction: Transaction): void {
     const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
     const txId = crypto
       .createHash('sha256')
