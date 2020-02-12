@@ -9,64 +9,83 @@ describe('Trx KeyPair', function() {
   describe('should create a KeyPair', function() {
     it('from an xpub', () => {
       const source = {
-        pub: 'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY'
+        pub:
+          'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
       };
       const keyPair = new Trx.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
       should.not.exist(defaultKeys.prv);
-      defaultKeys.pub.should.equal('04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355');
+      defaultKeys.pub.should.equal(
+        '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
+      );
 
       const extendedKeys = keyPair.getExtendedKeys();
       should.not.exist(extendedKeys.xprv);
-      extendedKeys.xpub.should.equal('xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY');
+      extendedKeys.xpub.should.equal(
+        'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+      );
     });
 
     it('from an xprv', () => {
       const source = {
-        prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2'
+        prv:
+          'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
       };
       const keyPair = new Trx.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
       defaultKeys.prv!.should.equal('82A34E3867EA7EA4E67E27865D500AE84E98D07AB1BAB06526F0A5A5FDCC3EBA');
-      defaultKeys.pub.should.equal('04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355');
+      defaultKeys.pub.should.equal(
+        '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
+      );
 
       const extendedKeys = keyPair.getExtendedKeys();
-      extendedKeys.xprv!.should.equal('xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2');
-      extendedKeys.xpub.should.equal('xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY');
+      extendedKeys.xprv!.should.equal(
+        'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      );
+      extendedKeys.xpub.should.equal(
+        'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+      );
     });
 
     it('from an uncompressed public key', () => {
       const source = {
-        pub: '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355'
+        pub:
+          '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
       };
       const keyPair = new Trx.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
       should.not.exist(defaultKeys.prv);
-      defaultKeys.pub.should.equal('04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355');
+      defaultKeys.pub.should.equal(
+        '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
+      );
 
       should.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a compressed public key', () => {
       const source = {
-        pub: '03D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A8275'
+        pub: '03D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A8275',
       };
       const keyPair = new Trx.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
       should.not.exist(defaultKeys.prv);
-      defaultKeys.pub.should.equal('04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355');
+      defaultKeys.pub.should.equal(
+        '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
+      );
 
       should.throws(() => keyPair.getExtendedKeys());
     });
 
     it('from a raw private key', () => {
       const source = {
-        prv: '82A34E3867EA7EA4E67E27865D500AE84E98D07AB1BAB06526F0A5A5FDCC3EBA'
+        prv: '82A34E3867EA7EA4E67E27865D500AE84E98D07AB1BAB06526F0A5A5FDCC3EBA',
       };
       const keyPair = new Trx.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
       defaultKeys.prv!.should.equal('82A34E3867EA7EA4E67E27865D500AE84E98D07AB1BAB06526F0A5A5FDCC3EBA');
-      defaultKeys.pub.should.equal('04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355');
+      defaultKeys.pub.should.equal(
+        '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
+      );
 
       should.throws(() => keyPair.getExtendedKeys());
     });
@@ -80,14 +99,14 @@ describe('Trx KeyPair', function() {
 
     it('from an invalid public key', () => {
       const source = {
-        pub: '01D63D'
+        pub: '01D63D',
       };
       should.throws(() => new Trx.KeyPair(source));
     });
 
     it('from an invalid private key', () => {
       const source = {
-        prv: '82A34E'
+        prv: '82A34E',
       };
       should.throws(() => new Trx.KeyPair(source));
     });
@@ -118,7 +137,9 @@ describe('Trx KeyPair', function() {
       const keyPair = new Trx.KeyPair(defaultSeed);
       const { prv, pub } = keyPair.getKeys();
       prv!.should.equal('82A34E3867EA7EA4E67E27865D500AE84E98D07AB1BAB06526F0A5A5FDCC3EBA');
-      pub.should.equal('04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355');
+      pub.should.equal(
+        '04D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A827503E948A2FDBF74A981D4E0054F10EDA7042C2D469F44473D3C7791E0E326E355',
+      );
     });
 
     it('should get private and public keys for a random seed', () => {
@@ -133,8 +154,12 @@ describe('Trx KeyPair', function() {
     it('should get the keys in extended format', () => {
       const keyPair = new Trx.KeyPair(defaultSeed);
       const { xprv, xpub } = keyPair.getExtendedKeys();
-      xprv!.should.equal('xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2');
-      xpub.should.equal('xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY');
+      xprv!.should.equal(
+        'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+      );
+      xpub.should.equal(
+        'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+      );
     });
 
     it('should get the keys in extended format  for a random seed', () => {
@@ -150,13 +175,17 @@ describe('Trx KeyPair', function() {
       const keyPair = new Trx.KeyPair(defaultSeed);
       const message = 'Hello world';
       const signature = keyPair.signMessage(message);
-      signature.toString('hex').should.equal('83eec642ee0215c5d645393fa3f23b586bfe426ec4206fdb2b66d1620d308a4d4df57cc10cc4207c4a4c19e2ed572229bb1afe26ca0018eaed2bd2a44528f67d1b');
+      signature
+        .toString('hex')
+        .should.equal(
+          '83eec642ee0215c5d645393fa3f23b586bfe426ec4206fdb2b66d1620d308a4d4df57cc10cc4207c4a4c19e2ed572229bb1afe26ca0018eaed2bd2a44528f67d1b',
+        );
       keyPair.verifySignature(message, signature).should.be.true();
     });
 
     it('should fail if there is no private key', () => {
       const source = {
-        pub: '03D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A8275'
+        pub: '03D63D9FD9FD772A989C5B90EDB37716406356E98273E5F98FE07652247A3A8275',
       };
       const keyPair = new Trx.KeyPair(source);
       const message = 'Hello world';
@@ -168,14 +197,20 @@ describe('Trx KeyPair', function() {
     it('should be true for a properly signed message', () => {
       const keyPair = new Trx.KeyPair(defaultSeed);
       const message = 'Hello world';
-      const signature = Buffer.from('83eec642ee0215c5d645393fa3f23b586bfe426ec4206fdb2b66d1620d308a4d4df57cc10cc4207c4a4c19e2ed572229bb1afe26ca0018eaed2bd2a44528f67d1b', 'hex');
+      const signature = Buffer.from(
+        '83eec642ee0215c5d645393fa3f23b586bfe426ec4206fdb2b66d1620d308a4d4df57cc10cc4207c4a4c19e2ed572229bb1afe26ca0018eaed2bd2a44528f67d1b',
+        'hex',
+      );
       keyPair.verifySignature(message, signature).should.be.true();
     });
 
     it('should be false for a message with the wrong signature', () => {
       const keyPair = new Trx.KeyPair(defaultSeed);
       const message = 'Not the message you expected';
-      const signature = Buffer.from('83eec642ee0215c5d645393fa3f23b586bfe426ec4206fdb2b66d1620d308a4d4df57cc10cc4207c4a4c19e2ed572229bb1afe26ca0018eaed2bd2a44528f67d1b', 'hex');
+      const signature = Buffer.from(
+        '83eec642ee0215c5d645393fa3f23b586bfe426ec4206fdb2b66d1620d308a4d4df57cc10cc4207c4a4c19e2ed572229bb1afe26ca0018eaed2bd2a44528f67d1b',
+        'hex',
+      );
       keyPair.verifySignature(message, signature).should.be.false();
     });
   });

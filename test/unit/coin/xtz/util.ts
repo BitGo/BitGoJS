@@ -1,6 +1,6 @@
 import * as should from 'should';
 import * as Utils from '../../../../src/coin/xtz/utils';
-import { signedSerializedOriginationTransaction } from "../../../resources/xtz/xtz";
+import { signedSerializedOriginationTransaction } from '../../../resources/xtz/xtz';
 
 describe('XTZ util library', function() {
   describe('address', function() {
@@ -89,7 +89,10 @@ describe('XTZ util library', function() {
     });
 
     it('should calculate the originated account address', async function() {
-      const accountAddress = await Utils.calculateOriginatedAddress('opPsNbm7EcqPyryBDDR28BjdthnriktK8TbMvpwc9r4NwmvToYP', 0);
+      const accountAddress = await Utils.calculateOriginatedAddress(
+        'opPsNbm7EcqPyryBDDR28BjdthnriktK8TbMvpwc9r4NwmvToYP',
+        0,
+      );
       accountAddress.should.equal('KT1LJvp55fbdNwbisJFign9wA4cPgq9T9oc4');
     });
   });

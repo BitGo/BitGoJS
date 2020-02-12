@@ -1,5 +1,5 @@
-import { BaseKey, Entry } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseKey, Entry } from './iface';
 import { TransactionType } from './enum';
 
 /**

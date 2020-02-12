@@ -1,13 +1,12 @@
 import * as should from 'should';
 import { coins } from '@bitgo/statics';
-import {UnsignedBuildTransaction} from "../../../resources/trx";
-import {Transaction} from "../../../../src/coin/trx";
-import {TransactionReceipt} from "../../../../src/coin/trx/iface";
+import { UnsignedBuildTransaction } from '../../../resources/trx';
+import { Transaction } from '../../../../src/coin/trx';
+import { TransactionReceipt } from '../../../../src/coin/trx/iface';
 
 describe('Tron transactions', function() {
   describe('should parse', () => {
     it('inputs and outputs from an unsigned transaction', () => {
-      // @ts-ignore
       const tx = new Transaction(coins.get('ttrx'), UnsignedBuildTransaction as TransactionReceipt);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].address.should.equal('TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz');

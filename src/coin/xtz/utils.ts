@@ -42,7 +42,7 @@ export async function calculateOriginatedAddress(transactionId: string, index: n
   const ob = base58check.decode(transactionId).slice(this.hashTypes.o.prefix.length);
 
   let tt: number[] = [];
-  for(let i = 0; i < ob.length; i++) {
+  for (let i = 0; i < ob.length; i++) {
     tt.push(ob[i]);
   }
 
@@ -50,7 +50,7 @@ export async function calculateOriginatedAddress(transactionId: string, index: n
     (index & 0xff000000) >> 24,
     (index & 0x00ff0000) >> 16,
     (index & 0x0000ff00) >> 8,
-    (index & 0x000000ff)
+    index & 0x000000ff,
   ]);
 
   await sodium.ready;

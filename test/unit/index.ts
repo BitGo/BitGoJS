@@ -1,5 +1,5 @@
 import * as should from 'should';
-import { getBuilder } from "../../src";
+import { getBuilder } from '../../src';
 
 describe('Coin factory', () => {
   it('should fail to instantiate an unsupported coin', () => {
@@ -7,12 +7,12 @@ describe('Coin factory', () => {
   });
 
   it('should instantiate TRX builder properly', () => {
-    const trxBuilder = getBuilder('trx' );
+    const trxBuilder = getBuilder('trx');
     should.exist(trxBuilder);
   });
 
   it('should instantiate TTRX builder properly', () => {
-    const ttrxBuilder = getBuilder('ttrx' );
+    const ttrxBuilder = getBuilder('ttrx');
     should.exist(ttrxBuilder);
   });
 });
