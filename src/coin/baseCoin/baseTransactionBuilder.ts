@@ -62,7 +62,7 @@ export abstract class BaseTransactionBuilder {
    *
    * @return valid coin specific transaction (signed or unsigned)
    */
-  build(): BaseTransaction {
+  async build(): Promise<BaseTransaction> {
     this.validateTransaction(this.transaction);
     return this.buildImplementation();
   }
@@ -73,14 +73,14 @@ export abstract class BaseTransactionBuilder {
    * @see {@link build}
    * @return valid coin specific transaction (signed or unsigned)
    */
-  protected abstract buildImplementation(): BaseTransaction;
+  protected abstract async buildImplementation(): Promise<BaseTransaction>;
 
   /**
-   * Check the private key is valid in the blockchain context, throw otherwise.
+   * Check the private key is present and is valid in the blockchain context, throw otherwise.
    *
    * @param {BaseKey} key Private key to validate
    */
-  abstract validateKey(key: BaseKey);
+  abstract validateKey(key: BaseKey): void;
 
   /**
    * Check the address provided is valid in the blockchain context, throw otherwise.
@@ -88,21 +88,21 @@ export abstract class BaseTransactionBuilder {
    * @param address Address data to be validated
    * @param addressFormat The format the address should be in if more than one is supported
    */
-  abstract validateAddress(address: BaseAddress, addressFormat?: string);
+  abstract validateAddress(address: BaseAddress, addressFormat?: string): void;
 
   /**
    * Check the amount provided is valid in the blockchain context, throw otherwise.
    *
    * @param {BigNumber} value Transaction amount
    */
-  abstract validateValue(value: BigNumber);
+  abstract validateValue(value: BigNumber): void;
 
   /**
    * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
    *
    * @param rawTransaction Transaction in any format
    */
-  abstract validateRawTransaction(rawTransaction: any);
+  abstract validateRawTransaction(rawTransaction: any): void;
 
   /**
    * Check the transaction mandatory fields per transaction type and ensures it is valid, throw
@@ -110,7 +110,7 @@ export abstract class BaseTransactionBuilder {
    *
    * @param {BaseTransaction} transaction
    */
-  abstract validateTransaction(transaction: BaseTransaction);
+  abstract validateTransaction(transaction: BaseTransaction): void;
 
   /**
    * Get the underlying coin full name as specified in the statics library.

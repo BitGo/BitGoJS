@@ -60,11 +60,11 @@ describe('Tron', function() {
         txBuilder.sign({ key: SecondPrivateKey });
       });
 
-      it('a signed transaction with an xprv', () => {
+      it('a signed transaction with an xprv', async () => {
         txBuilder.from(FirstSigOnBuildTransaction);
         const SecondPrivateKeyXprv = Crypto.rawPrvToExtendedKeys(SecondPrivateKey);
         txBuilder.sign({ key: SecondPrivateKeyXprv.xprv});
-        const tx = txBuilder.build();
+        const tx = await txBuilder.build();
 
         tx.toJson().signature[0].should.equal('bd08e6cd876bb573dd00a32870b58b70ea8b7908f5131686502589941bfa4fdda76b8c81bbbcfc549be6d4988657cea122df7da46c72041def2683d6ecb04a7401');
         tx.toJson().signature[1].should.equal('f3cabe2f4aed13e2342c78c7bf4626ea36cd6509a44418c24866814d3426703686be9ef21bd993324c520565beee820201f2a50a9ac971732410d3eb69cdb2a600');
@@ -96,11 +96,11 @@ describe('Tron', function() {
       txBuilder = getBuilder('ttrx ');
     });
 
-    it('should build an update account tx', () => {
+    it('should build an update account tx', async () => {
       const txJson = JSON.stringify(UnsignedAccountPermissionUpdateContractTx);
       txBuilder.from(txJson);
       txBuilder.sign({ key: AccountPermissionUpdateContractPriv });
-      const tx = txBuilder.build();
+      const tx = await txBuilder.build();
       const signedTxJson = tx.toJson();
 
       signedTxJson.txID.should.equal(UnsignedAccountPermissionUpdateContractTx.txID);
@@ -110,11 +110,11 @@ describe('Tron', function() {
       signedTxJson.signature[0].should.equal('2bc5030727d42ed642c2806a3c1a5a0393408b159541f2163df4ba692c5c1240e2dde5a2aae4ecad465414e60b5aeca8522d0a2b6606f88a326658809161334f00');
     });
 
-    it('should build an half signed tx', () => {
+    it('should build an half signed tx', async () => {
       const txJson = JSON.stringify(UnsignedBuildTransaction);
       txBuilder.from(txJson);
       txBuilder.sign({ key: FirstPrivateKey });
-      const tx = txBuilder.build();
+      const tx = await txBuilder.build();
 
       tx.id.should.equal('80b8b9eaed51c8bba3b49f7f0e7cc5f21ac99a6f3e2893c663b544bf2c695b1d');
       tx.type.should.equal(TransactionType.Send);
@@ -126,11 +126,11 @@ describe('Tron', function() {
       tx.outputs[0].value.toString().should.equal('1718');
     });
 
-    it('should build the right JSON after is half signed tx', () => {
+    it('should build the right JSON after is half signed tx', async () => {
       const txJson = JSON.stringify(UnsignedBuildTransaction);
       txBuilder.from(txJson);
       txBuilder.sign({ key: FirstPrivateKey });
-      const tx = txBuilder.build();
+      const tx = await txBuilder.build();
       const signedTxJson = tx.toJson();
 
       signedTxJson.txID.should.equal(UnsignedBuildTransaction.txID);
@@ -148,11 +148,11 @@ describe('Tron', function() {
       should.throws(() => txBuilder.extendValidTo(10000));
     });
 
-    it('should extend an unsigned tx', () => {
+    it('should extend an unsigned tx', async () => {
       const extendMs = 10000;
       txBuilder.from(JSON.parse(JSON.stringify(UnsignedBuildTransaction)));
       txBuilder.extendValidTo(extendMs);
-      const tx = txBuilder.build();
+      const tx = await txBuilder.build();
 
       tx.id.should.not.equal(UnsignedBuildTransaction.txID);
       tx.id.should.equal('764aa8a72c2c720a6556def77d6092f729b6e14209d8130f1692d5aff13f2503');
@@ -168,12 +168,9 @@ describe('Tron', function() {
       tx.validFrom.should.equal(1571811410819);
     });
 
-    it('should catch an invalid id', () => {
+    it('should catch an invalid id', async () => {
       const txJson = JSON.stringify(InvalidIDTransaction);
       should.throws(() => txBuilder.from(txJson));
-      // txBuilder.sign({ key: FirstPrivateKey });
-      // Build calls validateTransaction()
-      // should.throws(() => txBuilder.build());
     });
 
     it('should throw exception of wrong id', () => {

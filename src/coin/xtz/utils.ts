@@ -1,4 +1,5 @@
 import * as base58check from 'bs58check';
+import * as sodium from 'libsodium-wrappers';
 import { HashType } from './iface';
 
 /**
@@ -14,6 +15,47 @@ export function base58encode(prefix: Buffer, payload: Buffer): string {
   n.set(payload, prefix.length);
 
   return base58check.encode(n);
+}
+
+/**
+ * Calculate the transaction id for a for a signed transaction.
+ *
+ * @param {string} encodedTransaction Signed transaction in hexadecimal
+ * @return {Promise<string>} The transaction id
+ */
+export async function calculateTransactionId(encodedTransaction: string): Promise<string> {
+  await sodium.ready;
+  const encodedTransactionBuffer = Uint8Array.from(Buffer.from(encodedTransaction, 'hex'));
+  const operationHashPayload = sodium.crypto_generichash(32, encodedTransactionBuffer);
+  return base58encode(this.hashTypes.o.prefix, Buffer.from(operationHashPayload));
+}
+
+/**
+ * Calculate the address of a new originated account.
+ *
+ * @param {string} transactionId The transaction id
+ * @param {number} index The index of the origination operation inside the transaction (starts at 0)
+ * @return {Promise<string>} An originated address with the KT prefix
+ */
+export async function calculateOriginatedAddress(transactionId: string, index: number): Promise<string> {
+  // From https://github.com/TezTech/eztz/blob/cfdc4fcfc891f4f4f077c3056f414476dde3610b/src/main.js#L768
+  const ob = base58check.decode(transactionId).slice(this.hashTypes.o.prefix.length);
+
+  let tt: number[] = [];
+  for(let i = 0; i < ob.length; i++) {
+    tt.push(ob[i]);
+  }
+
+  tt = tt.concat([
+    (index & 0xff000000) >> 24,
+    (index & 0x00ff0000) >> 16,
+    (index & 0x0000ff00) >> 8,
+    (index & 0x000000ff)
+  ]);
+
+  await sodium.ready;
+  const payload = sodium.crypto_generichash(20, new Uint8Array(tt));
+  return base58encode(this.hashTypes.KT.prefix, Buffer.from(payload));
 }
 
 /**
@@ -255,3 +297,26 @@ export const hashTypes = {
     byteLength: 4,
   },
 };
+
+// From https://github.com/ecadlabs/taquito/blob/master/packages/taquito/src/constants.ts
+
+export enum DEFAULT_GAS_LIMIT {
+  DELEGATION = 10600,
+  ORIGINATION = 10600,
+  TRANSFER = 10600,
+  REVEAL = 10600,
+}
+
+export enum DEFAULT_FEE {
+  DELEGATION = 1257,
+  ORIGINATION = 10000,
+  TRANSFER = 10000,
+  REVEAL = 1420,
+}
+
+export enum DEFAULT_STORAGE_LIMIT {
+  DELEGATION = 0,
+  ORIGINATION = 257,
+  TRANSFER = 257,
+  REVEAL = 0,
+}

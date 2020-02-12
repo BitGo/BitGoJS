@@ -17,6 +17,8 @@ export { Xtz };
 const coinBuilderMap = {
   trx: Trx.TransactionBuilder,
   ttrx: Trx.TransactionBuilder,
+  xtz: Xtz.TransactionBuilder,
+  txtz: Xtz.TransactionBuilder,
 };
 
 /**

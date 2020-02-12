@@ -39,8 +39,8 @@ export class TestTransactionBuilder extends BaseTransactionBuilder {
     return this._transaction;
   }
 
-  public buildImplementation(): BaseTransaction {
-    return this._transaction;
+  public buildImplementation(): Promise<BaseTransaction> {
+    return Promise.resolve(this._transaction);
   }
 
   protected get transaction(): BaseTransaction {
