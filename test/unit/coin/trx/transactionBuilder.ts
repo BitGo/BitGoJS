@@ -9,6 +9,9 @@ import {
   UnsignedAccountPermissionUpdateContractTx,
   AccountPermissionUpdateContractPriv,
   InvalidIDTransaction,
+  UnsignedBuildInvalidIDTransaction,
+  UnsignedInvalidExpirationBuildTransaction,
+  UnsignedInvalidContractBuildTransaction, UnsignedBuildEmptyIDTransaction, UnsignedInvalidTimeStampBuildTransaction,
 } from '../../../resources/trx';
 import { getBuilder } from "../../../../src";
 import * as Crypto from "../../../../src/utils/crypto";
@@ -167,10 +170,46 @@ describe('Tron', function() {
 
     it('should catch an invalid id', () => {
       const txJson = JSON.stringify(InvalidIDTransaction);
-      txBuilder.from(txJson);
-      txBuilder.sign({ key: FirstPrivateKey });
+      should.throws(() => txBuilder.from(txJson));
+      // txBuilder.sign({ key: FirstPrivateKey });
       // Build calls validateTransaction()
-      should.throws(() => txBuilder.build());
+      // should.throws(() => txBuilder.build());
+    });
+
+    it('should throw exception of wrong id', () => {
+      const txJson = JSON.stringify(UnsignedBuildInvalidIDTransaction);
+      should.throws(() => txBuilder.from(txJson));
+    });
+
+    it('should throw exception of empty id', () => {
+      const txJson = JSON.stringify(UnsignedBuildEmptyIDTransaction);
+      should.throws(() => txBuilder.from(txJson));
+    });
+
+    it('should throw exception of invalid time stamp', () => {
+      const txJson = JSON.stringify(UnsignedInvalidTimeStampBuildTransaction);
+      should.throws(() => txBuilder.from(txJson));
+    });
+
+    it('should throw exception of invalid expiration time', () => {
+      const txJson = JSON.stringify(UnsignedInvalidExpirationBuildTransaction);
+      should.throws(() => txBuilder.from(txJson));
+    });
+
+    it('should throw exception of non-existence of contract', () => {
+      const txJson = JSON.stringify(UnsignedInvalidContractBuildTransaction);
+      should.throws(() => txBuilder.from(txJson));
+    });
+
+    it('should validate JSON transaction', () => {
+      const txJson = UnsignedAccountPermissionUpdateContractTx;
+      should.doesNotThrow(() => txBuilder.from(txJson));
+    });
+    console.log
+
+    it('should validate stringified JSON transaction', () => {
+      const txJsonString = JSON.stringify(UnsignedBuildTransaction);
+      should.doesNotThrow(() => txBuilder.from(txJsonString));
     });
   });
 });
