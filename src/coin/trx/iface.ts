@@ -4,22 +4,22 @@ import { ContractType, PermissionType } from './enum';
  * A Tron private key in extended or raw format
  */
 export type PrivateKey = {
-  prv: string
-}
+  prv: string;
+};
 
 /**
  * A Tron public key in extended, compressed, or uncompressed format
  */
 export type PublicKey = {
-  pub: string
-}
+  pub: string;
+};
 
 /**
  * A seed to create Tron key pairs. Must be between 16 and 64 Bytes long
  */
 export type Seed = {
   seed: Buffer;
-}
+};
 
 export type KeyPairOptions = Seed | PrivateKey | PublicKey;
 
@@ -71,7 +71,7 @@ export interface TransactionReceipt {
 export interface RawData {
   expiration: number;
   timestamp: number;
-  contractType: ContractType;
+  contractType?: ContractType;
   contract: TransferContract[] | AccountPermissionUpdateContract[];
 }
 

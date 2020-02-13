@@ -1,12 +1,12 @@
 import { localForger, CODEC } from '@taquito/local-forging';
-import { BaseTransaction } from '../baseCoin';
 import BigNumber from 'bignumber.js';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { InMemorySigner } from '@taquito/signer';
+import { BaseTransaction } from '../baseCoin';
 import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { KeyPair } from './keyPair';
-import { InMemorySigner } from '@taquito/signer';
 import { Operation, Origination, ParsedTransaction, Reveal } from './iface';
 import * as Utils from './utils';
 
@@ -15,7 +15,7 @@ import * as Utils from './utils';
  */
 export class Transaction extends BaseTransaction {
   private _parsedTransaction?: ParsedTransaction; // transaction in JSON format
-  private _encodedTransaction?: string;  // transaction in hex format
+  private _encodedTransaction?: string; // transaction in hex format
 
   /**
    * Public constructor.
@@ -80,7 +80,6 @@ export class Transaction extends BaseTransaction {
           break;
         default:
           break;
-          // throw new ParseTransactionError('Unsupported contract type');
       }
     });
   }
@@ -103,7 +102,7 @@ export class Transaction extends BaseTransaction {
     this._inputs.push({
       address: operation.source,
       // Balance + fees + max gas + max storage are paid by the source account
-      value: new BigNumber(operation.balance).plus(operation.fee)
+      value: new BigNumber(operation.balance).plus(operation.fee),
     });
   }
 

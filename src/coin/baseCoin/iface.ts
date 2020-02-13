@@ -13,7 +13,7 @@ export interface BaseKey {
 export type DefaultKeys = {
   prv?: string;
   pub: string;
-}
+};
 
 /**
  * Key pair in extended format. Used for coins supporting secp256k1 elliptic curve.
@@ -21,7 +21,7 @@ export type DefaultKeys = {
 export type ExtendedKeys = {
   xprv?: string;
   xpub: string;
-}
+};
 
 export interface Entry extends BaseAddress {
   value: BigNumber;

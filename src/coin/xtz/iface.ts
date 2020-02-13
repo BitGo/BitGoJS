@@ -1,4 +1,4 @@
-import { Fee as BaseFee} from '../baseCoin/iface';
+import { Fee as BaseFee } from '../baseCoin/iface';
 /**
  * A Tezos private key with the spsk prefix or raw
  */

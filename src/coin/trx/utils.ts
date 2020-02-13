@@ -1,17 +1,11 @@
-import * as tronweb from 'tronweb';
-import { protocol } from '../../../resources/trx/protobuf/tron';
-import { HDNode, ECPair } from 'bitgo-utxo-lib';
-
 import * as assert from 'assert';
-import {
-  TransferContract,
-  RawData,
-  AccountPermissionUpdateContract,
-  TransactionReceipt,
-  Permission,
-} from './iface';
-import { ContractType, PermissionType } from './enum';
+import * as tronweb from 'tronweb';
+import { HDNode, ECPair } from 'bitgo-utxo-lib';
+import { protocol } from '../../../resources/trx/protobuf/tron';
+
 import { UtilsError } from '../baseCoin/errors';
+import { TransferContract, RawData, AccountPermissionUpdateContract, TransactionReceipt, Permission } from './iface';
+import { ContractType, PermissionType } from './enum';
 
 /**
  * Tron-specific helper functions

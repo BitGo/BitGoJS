@@ -2,12 +2,13 @@ import * as should from 'should';
 
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import * as testData from '../../../resources/xtz/xtz';
-import { getBuilder, Xtz } from "../../../../src";
-import { KeyPair } from "../../../../src/coin/xtz";
+import { getBuilder, Xtz } from '../../../../src';
+import { KeyPair } from '../../../../src/coin/xtz';
 
 describe('Tezos Transaction builder', function() {
   const defaultKeyPair = new Xtz.KeyPair({
-    prv: 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
+    prv:
+      'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2',
   });
 
   describe('should parse', () => {
@@ -23,7 +24,7 @@ describe('Tezos Transaction builder', function() {
       tx.inputs[0].value.toString().should.equal('1004764');
       tx.outputs[0].address.should.equal('');
       tx.outputs[0].value.toString().should.equal('1000000');
-      tx.signature.length.should.equal(0)
+      tx.signature.length.should.equal(0);
     });
   });
 
@@ -33,15 +34,22 @@ describe('Tezos Transaction builder', function() {
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.fee({ fee: '10' });
       const source = {
-        pub: 'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+        pub:
+          'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
       };
       const sourceKeyPair = new Xtz.KeyPair(source);
       txBuilder.source(sourceKeyPair);
       txBuilder.amount('1000000');
       txBuilder.counter(0);
-      txBuilder.owner(new Xtz.KeyPair({ pub: 'sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b'}).getKeys().pub);
-      txBuilder.owner(new Xtz.KeyPair({ pub: 'sppk7Zq9KPtwkzkgAsha4jU29C43McgP2skK56tjd7KJjhcmH6AZC1F'}).getKeys().pub);
-      txBuilder.owner(new Xtz.KeyPair({ pub: 'sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf'}).getKeys().pub);
+      txBuilder.owner(
+        new Xtz.KeyPair({ pub: 'sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b' }).getKeys().pub,
+      );
+      txBuilder.owner(
+        new Xtz.KeyPair({ pub: 'sppk7Zq9KPtwkzkgAsha4jU29C43McgP2skK56tjd7KJjhcmH6AZC1F' }).getKeys().pub,
+      );
+      txBuilder.owner(
+        new Xtz.KeyPair({ pub: 'sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf' }).getKeys().pub,
+      );
       txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
       const tx = await txBuilder.build();
 
@@ -61,7 +69,8 @@ describe('Tezos Transaction builder', function() {
       txBuilder.type(TransactionType.AddressInitialization);
       txBuilder.fee({ fee: '10' });
       const source = {
-        pub: 'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+        pub:
+          'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
       };
       const keyPair = new Xtz.KeyPair(source);
       txBuilder.source(keyPair);
@@ -108,7 +117,9 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[0].address.should.equal('KT1J9LfhDV6FQxR7aMaK7R6Rw8mBpfhP5MA3');
       tx.outputs[0].value.toString().should.equal('1000000');
       tx.signature.length.should.equal(1);
-      tx.signature[0].should.equal('sigVD57haAMCobHrCwH9ABfbFvdmyR9ZspZC3Zihb9tEPfhtzCKS1F8fLoVpodvor3PUoo7ry4j46xYETEzELmtnrNTaTPX4');
+      tx.signature[0].should.equal(
+        'sigVD57haAMCobHrCwH9ABfbFvdmyR9ZspZC3Zihb9tEPfhtzCKS1F8fLoVpodvor3PUoo7ry4j46xYETEzELmtnrNTaTPX4',
+      );
     });
 
     it('an init transaction and reveal the source', async () => {
@@ -141,7 +152,9 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[0].address.should.equal('KT1NG74AvJPXf7dK5MEwEpzx6MDe2M2Uqet2');
       tx.outputs[0].value.toString().should.equal('1000000');
       tx.signature.length.should.equal(1);
-      tx.signature[0].should.equal('sigo9DZMEsEDb6JDF4nU4GcJhbSxyAvejJhVzBYNtgdykMzqxLoJYgWtchgwaqa5j8WSZDWgBXFTKdtWeV4U51iMHeQHJzPX');
+      tx.signature[0].should.equal(
+        'sigo9DZMEsEDb6JDF4nU4GcJhbSxyAvejJhVzBYNtgdykMzqxLoJYgWtchgwaqa5j8WSZDWgBXFTKdtWeV4U51iMHeQHJzPX',
+      );
     });
 
     it('a reveal transaction', async () => {
@@ -160,7 +173,9 @@ describe('Tezos Transaction builder', function() {
       tx.inputs[0].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       tx.inputs[0].value.toString().should.equal('1420');
       tx.signature.length.should.equal(1);
-      tx.signature[0].should.equal('sigQyYsfhtrJBKZuJSEizDdxoejNVvJWRZPDMWdpXVvdTVix37HzURwXfXsi9METnRzskvjgsBSgiF4pr7RVxzWLuixxJL8U');
+      tx.signature[0].should.equal(
+        'sigQyYsfhtrJBKZuJSEizDdxoejNVvJWRZPDMWdpXVvdTVix37HzURwXfXsi9METnRzskvjgsBSgiF4pr7RVxzWLuixxJL8U',
+      );
     });
   });
 

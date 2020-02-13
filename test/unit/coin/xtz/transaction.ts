@@ -57,7 +57,9 @@ describe('Tezos transaction', function() {
       tx.outputs[0].address.should.equal('KT1Dh62qPZhJvMMtL4rAnDS2uASptT6GNLMy');
       tx.outputs[0].value.toString().should.equal('1000000');
       tx.signature.length.should.equal(1);
-      tx.signature[0].should.equal('sigu3cjQh8rf79aXG555fRxKzuTa2byZnvMJqkJENpdKjEwCri6SUM9fLywDC3w8e6dHRT8RRaJVQiijC9yzwqL6FSm2Jj9a');
+      tx.signature[0].should.equal(
+        'sigu3cjQh8rf79aXG555fRxKzuTa2byZnvMJqkJENpdKjEwCri6SUM9fLywDC3w8e6dHRT8RRaJVQiijC9yzwqL6FSm2Jj9a',
+      );
     });
 
     it('a signed origination transaction', async () => {
@@ -74,7 +76,9 @@ describe('Tezos transaction', function() {
       tx.outputs[0].address.should.equal('KT1Dh62qPZhJvMMtL4rAnDS2uASptT6GNLMy');
       tx.outputs[0].value.toString().should.equal('1000000');
       tx.signature.length.should.equal(1);
-      tx.signature[0].should.equal('sigu3cjQh8rf79aXG555fRxKzuTa2byZnvMJqkJENpdKjEwCri6SUM9fLywDC3w8e6dHRT8RRaJVQiijC9yzwqL6FSm2Jj9a');
+      tx.signature[0].should.equal(
+        'sigu3cjQh8rf79aXG555fRxKzuTa2byZnvMJqkJENpdKjEwCri6SUM9fLywDC3w8e6dHRT8RRaJVQiijC9yzwqL6FSm2Jj9a',
+      );
     });
   });
 

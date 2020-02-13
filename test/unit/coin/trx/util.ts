@@ -1,22 +1,24 @@
+import * as should from 'should';
 import { TransferContract, AccountPermissionUpdateContract } from '../../../../src/coin/trx/iface';
 import { Utils } from '../../../../src/coin/trx/index';
 
-import * as should from 'should';
 import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
 
 describe('Util library should', function() {
   // arbitrary text
-  const arr = [ 127, 255, 31, 192, 3, 126, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+  const arr = [127, 255, 31, 192, 3, 126, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   const hex = '7FFF1FC0037E0000000000000000000000000000000000000000000000000000';
   const txt = 'arbitrary string to sign';
-  const signedString = '0x9424113f32c17b6ffbeee024e1a54b6991d756e82f66cca16a41231fdfa270d03b08e833f5dbbd5cc86896c2e5ea6c74d2e292cda21f717164f994fcdf28486d1b';
+  const signedString =
+    '0x9424113f32c17b6ffbeee024e1a54b6991d756e82f66cca16a41231fdfa270d03b08e833f5dbbd5cc86896c2e5ea6c74d2e292cda21f717164f994fcdf28486d1b';
 
   // prv-pub-address hex
   const prv = 'FB3AA887E0BE3FAC9D75E661DAFF4A7FE0E91AAB13DA9775CD8586D7CB9B7640';
-  const pub = '046EBFB90C396B4A3B992B727CB4714A32E2A6DE43FDB3EC266286AC2246D8FD1E23E12C0DEB752C631A9011BBF8B56E2FBAA20E99D3952F0A558D11F96E7C1C5D';
+  const pub =
+    '046EBFB90C396B4A3B992B727CB4714A32E2A6DE43FDB3EC266286AC2246D8FD1E23E12C0DEB752C631A9011BBF8B56E2FBAA20E99D3952F0A558D11F96E7C1C5D';
   const addressHex = '412C2BA4A9FF6C53207DC5B686BFECF75EA7B80577';
   const base58 = 'TDzm1tCXM2YS1PDa3GoXSvxdy4AgwVbBPE';
-  const addrBytes = [ 65, 44, 43, 164, 169, 255, 108, 83, 32, 125, 197, 182,134,191,236,247,94,167,184,5,119 ];
+  const addrBytes = [65, 44, 43, 164, 169, 255, 108, 83, 32, 125, 197, 182, 134, 191, 236, 247, 94, 167, 184, 5, 119];
 
   // tx information
   it('be able to convert hex to bytes', () => {
@@ -59,10 +61,14 @@ describe('Util library should', function() {
 
   it('validate a hex string', () => {
     const hex = ['0xaffd', '0x11'];
-    hex.map((hex) => { should(Utils.isValidHex(hex)).ok(); });
+    hex.map(hex => {
+      should(Utils.isValidHex(hex)).ok();
+    });
 
     const invalidHex = ['0xa11', '0xFFdYYY', '0x', ''];
-    invalidHex.map((hex) => { should(Utils.isValidHex(hex)).equal(false); });
+    invalidHex.map(hex => {
+      should(Utils.isValidHex(hex)).equal(false);
+    });
   });
 
   it('sign a string', () => {
@@ -120,17 +126,19 @@ describe('Util library should', function() {
     should.equal(parsedContract[0].parameter.value.amount, amount);
   });
 
-   it('should decode an AccountPermissionUpdate Contract', () => {
-     const tx = SignedAccountPermissionUpdateContractTx;
-     const value = tx.raw_data.contract[0].parameter.value;
-     const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
-     const parsedTx = Utils.decodeAccountPermissionUpdateContract(rawTx.contracts[0].parameter.value) as AccountPermissionUpdateContract;
-     const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
-     should.equal(parsedTx.ownerAddress, ownerAddress);
-     should.equal(parsedTx.owner.type, 0);
-     should.equal(parsedTx.owner.threshold, 2);
-     parsedTx.actives.length.should.equal(1);
-     should.equal(parsedTx.actives[0].type, 2);
-     should.equal(parsedTx.actives[0].threshold, 2);
-   });
+  it('should decode an AccountPermissionUpdate Contract', () => {
+    const tx = SignedAccountPermissionUpdateContractTx;
+    const value = tx.raw_data.contract[0].parameter.value;
+    const rawTx = Utils.decodeRawTransaction(tx.raw_data_hex);
+    const parsedTx = Utils.decodeAccountPermissionUpdateContract(
+      rawTx.contracts[0].parameter.value,
+    ) as AccountPermissionUpdateContract;
+    const ownerAddress = Utils.getBase58AddressFromHex(value.owner_address);
+    should.equal(parsedTx.ownerAddress, ownerAddress);
+    should.equal(parsedTx.owner.type, 0);
+    should.equal(parsedTx.owner.threshold, 2);
+    parsedTx.actives.length.should.equal(1);
+    should.equal(parsedTx.actives[0].type, 2);
+    should.equal(parsedTx.actives[0].threshold, 2);
+  });
 });

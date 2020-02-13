@@ -1,27 +1,15 @@
 import BigNumber from 'bignumber.js';
 
-import {
-  SigningError,
-  BuildTransactionError,
-} from '../baseCoin/errors';
-import { Address } from './address';
-import { BaseKey } from '../baseCoin/iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { SigningError, BuildTransactionError } from '../baseCoin/errors';
+import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { genericMultisigOriginationOperation, revealOperation } from '../../../resources/xtz/multisig';
+import { Address } from './address';
 import { Transaction } from './transaction';
-import { KeyPair } from "./keyPair";
-import {Fee, Operation} from "./iface";
-import {
-  genericMultisigOriginationOperation,
-  revealOperation
-} from "../../../resources/xtz/multisig";
-import {
-  isValidAddress,
-  isValidBlockHash,
-  DEFAULT_GAS_LIMIT,
-  DEFAULT_STORAGE_LIMIT,
-  DEFAULT_FEE
-} from "./utils";
+import { KeyPair } from './keyPair';
+import { Fee, Operation } from './iface';
+import { isValidAddress, isValidBlockHash, DEFAULT_GAS_LIMIT, DEFAULT_STORAGE_LIMIT, DEFAULT_FEE } from './utils';
 
 /**
  * Tezos transaction builder.
@@ -31,7 +19,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
   private _fee: Fee;
   private _type: TransactionType = TransactionType.Send;
-  private _revealSource: boolean = false;
+  private _revealSource = false;
   private _sourceAddress: string;
   private _sourceKeyPair?: KeyPair;
   private _counter: BigNumber = new BigNumber(0);
@@ -90,8 +78,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           DEFAULT_GAS_LIMIT.REVEAL.toString(),
           DEFAULT_STORAGE_LIMIT.REVEAL.toString(),
           this._amount.toString(),
-          this._sourceKeyPair!.getKeys().pub);
-          contents.push(revealOp);
+          this._sourceKeyPair!.getKeys().pub,
+        );
+        contents.push(revealOp);
         this._counter = this._counter.plus(1);
         break;
       case TransactionType.WalletInitialization:
@@ -103,7 +92,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
             DEFAULT_GAS_LIMIT.REVEAL.toString(),
             DEFAULT_STORAGE_LIMIT.REVEAL.toString(),
             '0',
-            this._sourceKeyPair!.getKeys().pub);
+            this._sourceKeyPair!.getKeys().pub,
+          );
           contents.push(revealOp);
           this._counter = this._counter.plus(1);
         }
@@ -114,7 +104,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           this._fee.gasLimit || '0',
           this._fee.storageLimit || '0',
           this._amount.toString(),
-          this._owner);
+          this._owner,
+        );
         contents.push(originationOp);
         break;
       case TransactionType.Send:
@@ -250,7 +241,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    const keyPair = new KeyPair({ prv: key.key});
+    const keyPair = new KeyPair({ prv: key.key });
     if (!keyPair.getKeys().prv) {
       throw new BuildTransactionError('Invalid key');
     }

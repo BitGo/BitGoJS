@@ -1,8 +1,8 @@
+import BigNumber from 'bignumber.js';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseAddress, BaseKey } from './iface';
 import { BaseTransaction } from './baseTransaction';
 import { SigningError } from './errors';
-import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 /**
  * Generic transaction builder to be extended with coin specific logic.

@@ -1,10 +1,10 @@
-import { DefaultKeys, ExtendedKeys} from '../baseCoin/iface';
 import * as crypto from 'crypto';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
+import { DefaultKeys, ExtendedKeys } from '../baseCoin/iface';
 import { AddressFormat } from '../baseCoin/enum';
+import * as Crypto from '../../utils/crypto';
 import * as Utils from './utils';
 import { isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from './iface';
-import * as Crypto from '../../utils/crypto';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
 
@@ -70,7 +70,7 @@ export class KeyPair {
       // Cannot create an HD node without the chain code, so create a regular Key Chain
       this.keyPair = ECPair.fromPublicKeyBuffer(new Buffer(pub, 'hex'));
     } else {
-      throw new Error('Unsupported public key: ' + pub );
+      throw new Error('Unsupported public key: ' + pub);
     }
   }
 
@@ -80,11 +80,16 @@ export class KeyPair {
    */
   getKeys(): DefaultKeys {
     const result: DefaultKeys = {
-      pub: this.keyPair.Q.getEncoded(false).toString('hex').toUpperCase(),
+      pub: this.keyPair.Q.getEncoded(false)
+        .toString('hex')
+        .toUpperCase(),
     };
 
     if (this.keyPair.d) {
-      result.prv = this.keyPair.d.toBuffer(32).toString('hex').toUpperCase();
+      result.prv = this.keyPair.d
+        .toBuffer(32)
+        .toString('hex')
+        .toUpperCase();
     }
     return result;
   }
@@ -97,7 +102,7 @@ export class KeyPair {
     if (!this.hdNode) {
       throw new Error('Cannot get extended keys');
     }
-    let result: ExtendedKeys = {
+    const result: ExtendedKeys = {
       xpub: this.hdNode.neutered().toBase58(),
     };
     // A neutered HD node means it only contains the public key information
