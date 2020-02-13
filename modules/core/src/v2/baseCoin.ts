@@ -265,6 +265,15 @@ export abstract class BaseCoin {
   }
 
   /**
+   * Flag for determining whether this coin supports account consolidations
+   * from its receive addresses to the root address.
+   * @returns {boolean} True if okay to consolidate over this coin; false, otherwise
+   */
+  allowsAccountConsolidations(): boolean {
+    return false;
+  }
+
+  /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */

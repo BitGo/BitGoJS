@@ -126,6 +126,14 @@ export class Algo extends BaseCoin {
   }
 
   /**
+   * Algorand supports account consolidations. These are transfers from the receive addresses
+   * to the main address.
+   */
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
+  /**
    * Generate ed25519 key pair
    *
    * @param seed
