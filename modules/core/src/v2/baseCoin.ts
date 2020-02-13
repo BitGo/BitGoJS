@@ -151,6 +151,7 @@ export interface TransactionPrebuild {
   txHex?: string;
   wallet?: Wallet;
   buildParams?: any;
+  consolidateId?: string;
 }
 
 export interface AddressCoinSpecific {
