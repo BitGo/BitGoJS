@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "9.5.3-rc.0",
+  "version": "9.5.3",
   "description": "BitGo Javascript SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/types/src/index.d.ts",
@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@bitgo/account-lib": "^0.1.5",
-    "@bitgo/statics": "^3.3.0-rc.0",
+    "@bitgo/statics": "^3.3.0",
     "@bitgo/unspents": "^0.6.0",
     "@types/bluebird": "^3.5.25",
     "@types/superagent": "^4.1.3",
