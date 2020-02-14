@@ -1,8 +1,3 @@
-import BigNumber from 'bignumber.js';
-export interface BaseAddress {
-  address: string;
-}
-
 export interface BaseKey {
   key: any;
 }
@@ -23,8 +18,13 @@ export type ExtendedKeys = {
   xpub: string;
 };
 
+export interface BaseAddress {
+  address: string;
+}
+
 export interface Entry extends BaseAddress {
-  value: BigNumber;
+  coin?: string;
+  amount: string;
 }
 
 export interface Fee {

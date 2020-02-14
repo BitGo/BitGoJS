@@ -1,4 +1,4 @@
-import { Fee as BaseFee } from '../baseCoin/iface';
+import { Entry as BaseEntry, Fee as BaseFee } from '../baseCoin/iface';
 /**
  * A Tezos private key with the spsk prefix or raw
  */
@@ -42,19 +42,25 @@ export interface HashType {
 export interface Operation {
   kind: string;
   counter: string;
-  balance: string;
   source: string;
   fee: string;
   gas_limit: string;
   storage_limit: string;
 }
 
-export interface Reveal extends Operation {
+export interface RevealOp extends Operation {
   public_key: string;
 }
 
-export interface Origination extends Operation {
+export interface OriginationOp extends Operation {
+  balance: string;
   script: any;
+}
+
+export interface TransactionOp extends Operation {
+  parameters?: any;
+  destination: string;
+  amount: string;
 }
 
 export interface ParsedTransaction {
@@ -68,4 +74,25 @@ export interface ParsedTransaction {
 export interface Fee extends BaseFee {
   gasLimit?: string;
   storageLimit?: string;
+}
+
+export interface ContractEntry extends BaseEntry {
+  contract: string;
+  packedData: string;
+}
+
+export interface TransferData {
+  amount: string;
+  coin: string;
+  from: string;
+  to: string;
+  fee: Fee;
+  dataToSign: string;
+}
+
+export interface SignResponse {
+  bytes: string;
+  sig: any;
+  prefixSig: any;
+  sbytes: string;
 }
