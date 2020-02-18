@@ -93,12 +93,13 @@ describe('Xtz KeyPair', function() {
 
     it('from a Tezos private key', () => {
       const source = {
-        prv: 'spsk2R6ek35CtfJMt2XHPWgFcf1wUGLK2fKbU3f4hWZNABo1YrrqP7',
+        prv: 'spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL',
       };
       const keyPair = new Xtz.KeyPair(source);
       const defaultKeys = keyPair.getKeys();
-      defaultKeys.prv!.should.equal('spsk2R6ek35CtfJMt2XHPWgFcf1wUGLK2fKbU3f4hWZNABo1YrrqP7');
-      defaultKeys.pub.should.equal('sppk7csjXKT4wvUNCPMfAgZMNuvSjzW4Y2ZAKZEdvyEPtYagE6pCwkw');
+      defaultKeys.prv!.should.equal('spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL');
+      defaultKeys.pub.should.equal('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
+      keyPair.getAddress().should.equal('tz2P2E8EgHaLA6A17rH3pE9T2tx6DA7D4siW');
 
       should.throws(() => keyPair.getExtendedKeys());
     });
@@ -129,7 +130,7 @@ describe('Xtz KeyPair', function() {
     it('should get an address', () => {
       const keyPair = new Xtz.KeyPair(defaultSeed);
       const address = keyPair.getAddress();
-      address.should.equal('tz2SHdGxFGhs68wYNC4hEqxbWARxp2J4mVxv');
+      address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
     });
   });
 

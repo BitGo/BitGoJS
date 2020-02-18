@@ -44,6 +44,9 @@ export class ExtendTransactionError extends ExtendableError {
   }
 }
 
+/**
+ * Error for invalid transaction status
+ */
 export class InvalidTransactionError extends ExtendableError {
   constructor(message: string) {
     super(message);

@@ -1,13 +1,18 @@
 import * as crypto from 'crypto';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-
-import { BaseTransactionBuilder } from '../baseCoin';
-import { SigningError, BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
+import isObject from 'lodash/isObject';
+import {
+  SigningError,
+  BuildTransactionError,
+  InvalidTransactionError,
+  ParseTransactionError,
+} from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
+import { BaseTransactionBuilder } from '../baseCoin';
 import { TransactionReceipt } from './iface';
 import { Address } from './address';
-import { signTransaction, isBase58Address } from './utils';
+import { signTransaction, isBase58Address, decodeTransaction } from './utils';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 
@@ -17,7 +22,6 @@ import { KeyPair } from './keyPair';
 export class TransactionBuilder extends BaseTransactionBuilder {
   // transaction being built
   private _transaction: Transaction;
-
   /**
    * Public constructor.
    *
@@ -75,12 +79,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected buildImplementation(): Transaction {
+  protected buildImplementation(): Promise<Transaction> {
     // This is a no-op since Tron transactions are built from
     if (!this.transaction.id) {
       throw new BuildTransactionError('A valid transaction must have an id');
     }
-    return this.transaction;
+    return Promise.resolve(this.transaction);
   }
 
   /**
@@ -122,9 +126,63 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  /** @inheritdoc */
-  validateRawTransaction(rawTransaction: any) {
-    // TODO: parse the transaction raw_data_hex and compare it with the raw_data
+  /**
+   * Validate the contents of a raw transaction. The validation
+   * phase is to compare the raw-data-hex to the raw-data of the
+   * transaction.
+   *
+   * The contents to be validated are
+   * 1. The transaction id
+   * 2. The expiration date
+   * 3. The timestamp
+   * 4. The contract
+   *
+   * @param {TransactionReceipt | string} rawTransaction The raw transaction to be validated
+   */
+  validateRawTransaction(rawTransaction: TransactionReceipt | string): void {
+    //TODO: Validation of signature
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Raw transaction is empty');
+    }
+    let currTransaction: TransactionReceipt;
+    // rawTransaction can be either Stringified JSON OR
+    // it can be a regular JSON object (not stringified).
+    if (typeof rawTransaction === 'string') {
+      try {
+        currTransaction = JSON.parse(rawTransaction);
+      } catch (e) {
+        throw new ParseTransactionError('There was error in parsing the JSON string');
+      }
+    } else if (isObject(rawTransaction)) {
+      currTransaction = rawTransaction;
+    } else {
+      throw new InvalidTransactionError('Transaction is not an object or stringified json');
+    }
+    const decodedRawDataHex = decodeTransaction(currTransaction.raw_data_hex);
+    if (!currTransaction.txID) {
+      throw new InvalidTransactionError('Transaction ID is empty');
+    }
+    //Validate the transaction ID from the raw data hex
+    const hexBuffer = Buffer.from(currTransaction.raw_data_hex, 'hex');
+    const currTxID = crypto
+      .createHash('sha256')
+      .update(hexBuffer)
+      .digest('hex');
+    if (currTransaction.txID != currTxID) {
+      throw new InvalidTransactionError('Transaction has not have a valid id');
+    }
+    // Validate the expiration time from the raw-data-hex
+    if (currTransaction.raw_data.expiration != decodedRawDataHex.expiration) {
+      throw new InvalidTransactionError('Transaction has not have a valid expiration');
+    }
+    // Validate the timestamp from the raw-data-hex
+    if (currTransaction.raw_data.timestamp != decodedRawDataHex.timestamp) {
+      throw new InvalidTransactionError('Transaction has not have a valid timetamp');
+    }
+    // Transaction contract must exist
+    if (!currTransaction.raw_data.contract) {
+      throw new InvalidTransactionError('Transaction contracts are empty');
+    }
   }
 
   /** @inheritdoc */

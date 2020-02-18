@@ -1,3 +1,37 @@
+import { Origination, Reveal} from "../../src/coin/xtz/iface";
+
+/**
+ * Create a reveal operation for a public key.
+ *
+ * @param {string} counter Source account next counter
+ * @param {string} source Source account address
+ * @param {string} fee Fees in mutez to pay by the source account
+ * @param {string} gasLimit Maximum amount in mutez to spend in gas fees
+ * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
+ * @param {string} balance New multisig account initial balance taken from the source account
+ * @param {string} pubKey The public key to reveal
+ * @return An origination operation
+ */
+export function revealOperation(
+    counter: string,
+    source: string,
+    fee: string,
+    gasLimit: string,
+    storageLimit: string,
+    balance: string,
+    pubKey: string): Reveal {
+  return {
+    kind: 'reveal',
+    counter,
+    source,
+    fee,
+    gas_limit: gasLimit,
+    storage_limit: storageLimit,
+    balance,
+    public_key: pubKey,
+  };
+}
+
 /**
  * Create an origination operation for the generic multisg contract. It does not create a reveal
  * operation for the source account.
@@ -18,7 +52,7 @@ export function genericMultisigOriginationOperation(
     gasLimit: string,
     storageLimit: string,
     balance: string,
-    pubKeys: string[]): any {
+    pubKeys: string[]): Origination {
   const walletPublicKeys: any[] = [];
   pubKeys.forEach(pk => walletPublicKeys.push({ string: pk }));
   return {

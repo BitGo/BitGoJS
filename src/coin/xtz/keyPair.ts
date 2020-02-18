@@ -1,10 +1,10 @@
-import { DefaultKeys, ExtendedKeys } from '../baseCoin/iface';
 import * as crypto from 'crypto';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
+import * as blake2b from 'blake2b';
+import { DefaultKeys, ExtendedKeys } from '../baseCoin/iface';
+import * as CryptoUtils from '../../utils/crypto';
 import * as Utils from './utils';
 import { isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from './iface';
-import * as CryptoUtils from '../../utils/crypto';
-import * as blake2b from 'blake2b';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
 
@@ -116,15 +116,14 @@ export class KeyPair {
   }
 
   /**
-   * Get a public address in the specified format, or in base58 if none is provided.
+   * Get a public address.
    */
   getAddress(): string {
-    const { pub } = this.getKeys();
+    const pub = this.keyPair.Q.getEncoded(true);
     const out = Buffer.alloc(20);
     const b2b = blake2b(out.length)
       .update(pub)
       .digest(out);
-
     return Utils.base58encode(Utils.hashTypes.tz2.prefix, b2b);
   }
 }

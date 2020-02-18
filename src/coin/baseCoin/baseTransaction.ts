@@ -1,12 +1,12 @@
-import { BaseKey, Entry } from './iface';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseKey, Entry } from './iface';
 import { TransactionType } from './enum';
 
 /**
  * Generic transaction to be extended with coin specific logic.
  */
 export abstract class BaseTransaction {
-  protected _id: string;
+  protected _id: string; // The transaction id as seen in the blockchain
   protected _inputs: Entry[] = [];
   protected _outputs: Entry[] = [];
   protected _type: TransactionType;

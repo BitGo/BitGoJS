@@ -1,8 +1,8 @@
 import { coins } from '@bitgo/statics';
 import { BuildTransactionError } from './coin/baseCoin/errors';
-import { BaseTransactionBuilder } from "./coin/baseCoin";
+import { BaseTransactionBuilder } from './coin/baseCoin';
 
-import * as crypto from './utils/crypto'
+import * as crypto from './utils/crypto';
 export { crypto };
 // coins
 import * as BaseCoin from './coin/baseCoin';
@@ -17,6 +17,8 @@ export { Xtz };
 const coinBuilderMap = {
   trx: Trx.TransactionBuilder,
   ttrx: Trx.TransactionBuilder,
+  xtz: Xtz.TransactionBuilder,
+  txtz: Xtz.TransactionBuilder,
 };
 
 /**
