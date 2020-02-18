@@ -27,6 +27,6 @@ export interface Entry extends BaseAddress {
   amount: string;
 }
 
-export interface Fee {
+export interface BaseFee {
   fee: string;
 }

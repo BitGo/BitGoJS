@@ -1,4 +1,4 @@
-import { Entry as BaseEntry, Fee as BaseFee } from '../baseCoin/iface';
+import { BaseFee } from '../baseCoin/iface';
 /**
  * A Tezos private key with the spsk prefix or raw
  */
@@ -76,20 +76,22 @@ export interface Fee extends BaseFee {
   storageLimit?: string;
 }
 
-export interface ContractEntry extends BaseEntry {
-  contract: string;
-  packedData: string;
-}
-
+/**
+ * Send transaction information
+ */
 export interface TransferData {
   amount: string;
   coin: string;
   from: string;
   to: string;
   fee: Fee;
-  dataToSign: string;
+  dataToSign?: string;
+  counter?: string;
 }
 
+/**
+ * Taquito return type for sign operations
+ */
 export interface SignResponse {
   bytes: string;
   sig: any;

@@ -12,6 +12,7 @@ export class TransferBuilder {
   private _gasLimit: string;
   private _storageLimit: string;
   private _dataToSign: string;
+  private _counter: string;
 
   amount(amount: string): TransferBuilder {
     this._amount = amount;
@@ -53,6 +54,11 @@ export class TransferBuilder {
     return this;
   }
 
+  counter(counter: string): TransferBuilder {
+    this._counter = counter;
+    return this;
+  }
+
   build(): TransferData {
     if (!this._amount || !this._fromAddress || !this._toAddress || !this._fee) {
       throw new BuildTransactionError(
@@ -73,6 +79,7 @@ export class TransferBuilder {
         storageLimit: this._storageLimit,
       },
       dataToSign: this._dataToSign,
+      counter: this._counter,
     };
   }
 }

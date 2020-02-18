@@ -54,7 +54,7 @@ export class Transaction extends BaseTransaction {
     switch (rawData.contractType) {
       case ContractType.Transfer:
         this._type = TransactionType.Send;
-        const amount = new BigNumber((rawData.contract[0] as TransferContract).parameter.value.amount).toString();
+        const amount = new BigNumber((rawData.contract[0] as TransferContract).parameter.value.amount).toFixed(0);
         output = {
           address: (rawData.contract[0] as TransferContract).parameter.value.to_address,
           amount,

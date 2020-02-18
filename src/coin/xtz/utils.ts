@@ -66,17 +66,18 @@ export async function calculateOriginatedAddress(transactionId: string, index: n
  * Generic data signing using Tezos library.
  *
  * @param {KeyPair} keyPair A Key Pair with a private key set
- * @param {string} data The data in hexademcimal to sign
+ * @param {string} data The data in hexadecimal to sign
+ * @param {Uint8Array} watermark Magic byte: 1 for block, 2 for endorsement, 3 for generic
  * @return {Promise<SignResponse>}
  */
-export async function sign(keyPair: KeyPair, data: string): Promise<SignResponse> {
+export async function sign(keyPair: KeyPair, data: string, watermark?: Uint8Array): Promise<SignResponse> {
   if (!keyPair.getKeys().prv) {
     throw new SigningError('Missing private key');
   }
   const signer = new InMemorySigner(keyPair.getKeys().prv!);
   // TODO: remove after https://github.com/ecadlabs/taquito/issues/252 is closed
   await signer.publicKeyHash();
-  return signer.sign(data, new Uint8Array([3]));
+  return watermark ? signer.sign(data, watermark) : signer.sign(data, new Uint8Array([3]));
 }
 
 /**
@@ -91,8 +92,8 @@ export function generateDataToSign(contractAddress: string, destinationAddress: 
   if (!isValidOriginatedAddress(contractAddress)) {
     throw new Error('Invalid contract address ' + contractAddress + '. An originated account address was expected');
   }
-  if (!isValidImplicitAddress(destinationAddress)) {
-    throw new Error('Invalid destination address ' + destinationAddress + '. An implicit account address was expected');
+  if (!isValidAddress(destinationAddress)) {
+    throw new Error('Invalid destination address ' + destinationAddress);
   }
   return genericMultisigDataToSign(contractAddress, destinationAddress, amount);
 }

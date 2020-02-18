@@ -5,7 +5,7 @@ import { BaseTransaction } from '../baseCoin';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
-import { getTransferDataFromOperation } from '../../../resources/xtz/multisig';
+import { getMultisigTransferDataFromOperation } from '../../../resources/xtz/multisig';
 import { KeyPair } from './keyPair';
 import { Operation, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
 import * as Utils from './utils';
@@ -130,23 +130,23 @@ export class Transaction extends BaseTransaction {
    */
   private recordTransactionOpFields(operation: TransactionOp): void {
     this._type = TransactionType.Send;
-    // Fees are paid by the source account, same as the amount
+    const transferData = getMultisigTransferDataFromOperation(operation);
+    // Fees are paid by the source account, along with the amount in the transaction
     this._inputs.push({
       address: operation.source,
-      amount: new BigNumber(operation.amount).plus(operation.fee).toString(),
+      amount: new BigNumber(transferData.fee.fee).toFixed(0),
     });
 
-    const transferData = getTransferDataFromOperation(operation);
     if (transferData.coin === 'mutez') {
       this._outputs.push({
         // Kt addresses can only be calculated for signed transactions with an id
-        address: transferData.address,
+        address: transferData.to,
         // Balance
         amount: transferData.amount,
       });
       // The funds being transferred from the wallet
       this._inputs.push({
-        address: operation.destination,
+        address: transferData.from,
         // Balance + fees + max gas + max storage are paid by the source account
         amount: transferData.amount,
       });

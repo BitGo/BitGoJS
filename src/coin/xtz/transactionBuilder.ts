@@ -57,6 +57,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     const signer = new KeyPair({ prv: key.key });
+    if (this._type === TransactionType.Send && this._transfers.length === 0) {
+      throw new SigningError('Cannot sign an empty transaction');
+    }
+
     if (!this._sourceAddress || this._sourceAddress != signer.getAddress()) {
       if (this._type !== TransactionType.Send) {
         throw new SigningError('Private key does not match the source account');
@@ -64,9 +68,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       // If the signer is not the source and it is a send transaction, add it to the list of
       // multisig wallet signers
       this._multisigSignerKeyPairs.push(signer);
+    } else {
+      this._sourceKeyPair = signer;
     }
-
-    this._sourceKeyPair = signer;
 
     // Signing the transaction is an async operation, so save the source and leave the actual
     // signing for the build step
@@ -119,10 +123,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           this._owner,
         );
         contents.push(originationOp);
+        this._counter = this._counter.plus(1);
         break;
       case TransactionType.Send:
-        this._transfers.forEach(async t => {
-          const transfer = t.build();
+        for (let i = 0; i < this._transfers.length; i++) {
+          const transfer = this._transfers[i].build();
           let transactionOp;
           if (transfer.dataToSign) {
             const signatures = await this.getSignatures(transfer.dataToSign);
@@ -135,6 +140,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
               transfer.amount,
               transfer.to,
               transfer.from,
+              transfer.counter,
               signatures,
             );
           } else {
@@ -150,10 +156,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           }
           contents.push(transactionOp);
           this._counter = this._counter.plus(1);
-        });
+        }
         break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
+    }
+    if (contents.length === 0) {
+      throw new BuildTransactionError('Empty transaction');
     }
     const parsedTransaction = {
       branch: this._blockHeader,
@@ -164,6 +173,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // Build and sign a new transaction based on the latest changes
     await this.transaction.initFromParsedTransaction(parsedTransaction);
     if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
+      // TODO: check if there are more signers than needed for a singlesig or multisig transaction
       await this.transaction.sign(this._sourceKeyPair);
     }
 
@@ -217,8 +227,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * be added as an owner of a wallet in a init transaction, unless manually set as one of the
    * owners.
    *
-   * @param {string | KeyPair} source A Tezos address or KeyPair. The latter is required if it is a reveal
-   *      operation
+   * @param {string | KeyPair} source A Tezos address or KeyPair. The latter is required if it is a
+   *      reveal operation
    */
   source(source: string | KeyPair): void {
     if (typeof source === 'string') {
@@ -314,7 +324,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private async getSignatures(packedData: string): Promise<string[]> {
     const signatures: string[] = [];
     for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
-      const signature = await Utils.sign(this._multisigSignerKeyPairs[0], packedData);
+      const signature = await Utils.sign(this._multisigSignerKeyPairs[i], packedData, new Uint8Array());
       signatures.push(signature.sig);
     }
     return signatures;

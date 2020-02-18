@@ -1,32 +1,56 @@
-import { OriginationOp, RevealOp, TransactionOp } from '../../src/coin/xtz/iface';
+import { OriginationOp, RevealOp, TransactionOp, TransferData } from '../../src/coin/xtz/iface';
 import { hashTypes, isValidKey } from '../../src/coin/xtz/utils';
-import { Entry } from '../../src/coin/baseCoin/iface';
 
 /**
  * The the entry values from a transaction operation on a generic multisig smart contract.
  *
  * @param {TransactionOp} operation A transaction operation JSON
- * @return {Entry} Information about the destination, token and transfer amount
+ * @return {TransferData} Information about the destination, token and transfer amount
  */
-export function getTransferDataFromOperation(operation: TransactionOp): Entry {
+export function getMultisigTransferDataFromOperation(operation: TransactionOp): TransferData {
+  const fee = {
+    fee: operation.fee,
+    gasLimit: operation.gas_limit,
+    storageLimit: operation.storage_limit,
+  };
+
+  if (!operation.parameters) {
+    // Singlesig transaction
+    return {
+      coin: 'mutez',
+      from: operation.source,
+      to: operation.destination,
+      amount: operation.amount,
+      fee,
+    };
+  }
+  // These follow the structure from the response of genericMultisigTransferParams()
   const transferArgs = operation.parameters.value.args[0].args[1].args[0];
   const accountType = transferArgs[3].prim;
+  const counter = operation.parameters.value.args[0].args[0].int;
+  // In multisig transactions, the wallet contract is the destination
+  const from = operation.destination;
+
+  let accountTypeIndex;
   switch (accountType) {
     case 'IMPLICIT_ACCOUNT':
-      return {
-        coin: transferArgs[4].args[0].prim,
-        address: transferArgs[2].args[1].string,
-        amount: transferArgs[4].args[1].int,
-      };
+      accountTypeIndex = 4;
+      break;
     case 'CONTRACT':
-      return {
-        coin: transferArgs[5].args[0].prim,
-        address: transferArgs[2].args[1].string,
-        amount: transferArgs[5].args[1].int,
-      };
+      accountTypeIndex = 5;
+      break;
     default:
       throw new Error('Invalid contract parameters');
   }
+
+  return {
+    coin: transferArgs[accountTypeIndex].args[0].prim,
+    from,
+    to: transferArgs[2].args[1].string,
+    amount: transferArgs[accountTypeIndex].args[1].int,
+    fee,
+    counter,
+  };
 }
 
 /**
@@ -42,6 +66,8 @@ export function getTransferDataFromOperation(operation: TransactionOp): Entry {
  * @param {string} destination The account address to send the funds to
  * @param {string} contractAddress If it is a multisig transfer, the smart contract address with the
  *        funds to be transferred from
+ * @param {string} contractCounter If it is a multisig transfer, the smart contract counter to use
+ *        in the next transaction
  * @param {string[]} signatures signatures List of signatures authorizing the funds transfer form
  *        the multisig wallet
  * @return {TransactionOp} A Tezos transaction operation
@@ -55,6 +81,7 @@ export function transactionOperation(
   amount: string,
   destination: string,
   contractAddress?: string,
+  contractCounter?: string,
   signatures: string[] = [],
 ): TransactionOp {
   if (contractAddress) {
@@ -66,6 +93,7 @@ export function transactionOperation(
       storageLimit,
       amount,
       contractAddress,
+      contractCounter || '0',
       destination,
       signatures,
     );
@@ -94,6 +122,7 @@ export function genericMultisigTransactionOperation(
   storageLimit: string,
   amount: string,
   contractAddress: string,
+  contractCounter: string,
   destinationAddress: string,
   signatures: string[],
 ): TransactionOp {
@@ -106,7 +135,7 @@ export function genericMultisigTransactionOperation(
     storage_limit: storageLimit,
     amount: '0', // Don't transfer any funds from he source account to the contract in multisig txs
     destination: contractAddress,
-    parameters: genericMultisigTransferParams(destinationAddress, amount, signatures),
+    parameters: genericMultisigTransferParams(destinationAddress, amount, contractCounter, signatures),
   };
 }
 
@@ -115,12 +144,18 @@ export function genericMultisigTransactionOperation(
  *
  * @param {string} destinationAddress An implicit or originated address
  * @param {number} amount Number of Mutez to be transferred
+ * @param {string} contractCounter Multisig contract counter number
  * @param {string[]} signatures Multisig wallet signatures
  * @return The parameters object
  */
-function genericMultisigTransferParams(destinationAddress: string, amount: string, signatures: string[]) {
+function genericMultisigTransferParams(
+  destinationAddress: string,
+  amount: string,
+  contractCounter: string,
+  signatures: string[],
+) {
   const transactionSignatures: any[] = [];
-  signatures.forEach(s => transactionSignatures.push({ string: s }));
+  signatures.forEach(s => transactionSignatures.push({ prim: 'Some', args: [{ string: s }] }));
   return {
     entrypoint: 'main',
     value: {
@@ -128,16 +163,17 @@ function genericMultisigTransferParams(destinationAddress: string, amount: strin
       args: [
         {
           prim: 'Pair',
-          args: [{ int: '0' }, { prim: 'Left', args: [transferToImplicitAccount(destinationAddress, amount)] }],
+          args: [{ int: contractCounter }, { prim: 'Left', args: [transferToAccount(destinationAddress, amount)] }],
         },
-        [{ prim: 'Some', args: transactionSignatures }],
+        transactionSignatures,
       ],
     },
   };
 }
 
 /**
- * Helper function to build the to be sign to transfer funds from a multisig wallet.
+ * Helper function to build the Michelson script to be signed to transfer funds from a multisig
+ * wallet.
  *
  * @param contractAddress The multisig smart contract address
  * @param {string} destinationAddress The destination account address (implicit or originated)
@@ -151,7 +187,7 @@ export function genericMultisigDataToSign(contractAddress: string, destinationAd
       { int: '0' },
       {
         prim: 'Left',
-        args: [transferToImplicitAccount(destinationAddress, amount)],
+        args: [transferToAccount(destinationAddress, amount)],
       },
     ],
   };
@@ -217,15 +253,17 @@ function buildPair(data: any, type: any, contractAddress: any) {
 }
 
 /**
+ * Build the lambda for the multisig transaction transfer to an implicit or originated account.
  *
- * @param {string} address
- * @param {number} amount
+ * @param {string} address Account address to send the funds to
+ * @param {string} amount The amount in mutez to transfer
  * @see {@link https://tezostaquito.io/docs/making_transfers#transfer-000005-50-mutez-tokens-from-a-kt1-address-to-a-tz1-address}
  */
-function transferToImplicitAccount(address: string, amount: string) {
+function transferToAccount(address: string, amount: string) {
   if (isValidKey(address, hashTypes.KT)) {
     return transferToOriginatedAccount(address, amount);
   }
+  // Lambda to transfer to an implicit account
   return [
     { prim: 'DROP' },
     { prim: 'NIL', args: [{ prim: 'operation' }] },
@@ -245,9 +283,10 @@ function transferToImplicitAccount(address: string, amount: string) {
 }
 
 /**
+ * Build the lambda for the multisig transaction transfer to an originated account.
  *
- * @param {string} address
- * @param {number} amount
+ * @param {string} address Originated account address to send the funds to
+ * @param {string} amount The amount in mutez to transfer
  * @see {@link https://tezostaquito.io/docs/making_transfers#transfer-0000001-1-mutez-tokens-from-a-kt1-address-to-a-kt1-address}
  */
 function transferToOriginatedAccount(address: string, amount: string) {
