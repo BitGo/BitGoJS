@@ -1,13 +1,11 @@
 import * as crypto from 'crypto';
 import BigNumber from 'bignumber.js';
-
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import * as _ from 'lodash';
+import * as isObject from 'lodash/isObject';
 import {
   SigningError,
   BuildTransactionError,
   InvalidTransactionError,
-  ExtendTransactionError,
   ParseTransactionError,
 } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
@@ -26,6 +24,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
   /**
    * Public constructor.
+   *
+   * @param {CoinConfig} _coinConfig Configuration object
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -34,8 +34,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Parse transaction takes in raw JSON directly from the node.
    *
-   * @param rawTransaction The Tron transaction in JSON format as returned by the Tron lib or a
-   *     stringifyed version of such JSON.
+   * @param {TransactionReceipt} rawTransaction The Tron transaction in JSON format as returned by the Tron lib or a stringifyed version of such JSON.
+   * @returns {Transaction} Tron transaction
    */
   protected fromImplementation(rawTransaction: TransactionReceipt | string): Transaction {
     // TODO: add checks to ensure the raw_data, raw_data_hex, and txID are from the same transaction
@@ -49,11 +49,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     if (!this.transaction.inputs) {
-      throw new SigningError('transaction has no sender');
+      throw new SigningError('Transaction has no sender');
     }
 
     if (!this.transaction.outputs) {
-      throw new SigningError('transaction has no receiver');
+      throw new SigningError('Transaction has no receiver');
     }
 
     const oldTransaction = this.transaction.toJson();
@@ -89,14 +89,16 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /**
    * Extend the validity of this transaction by the given amount of time
-   * @param extensionMs The number of milliseconds to extend the validTo time
+   *
+   * @param {number} extensionMs The number of milliseconds to extend the validTo time
+   * @returns {undefined}
    */
-  extendValidTo(extensionMs: number) {
+  extendValidTo(extensionMs: number): void {
     this.transaction.extendExpiration(extensionMs);
   }
 
   /** @inheritdoc */
-  validateValue(value: BigNumber) {
+  validateValue(value: BigNumber): void {
     if (value.isLessThanOrEqualTo(0)) {
       throw new Error('Value cannot be below zero.');
     }
@@ -108,7 +110,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateAddress(address: Address) {
+  validateAddress(address: Address): void {
     // assumes a base 58 address for our addresses
     if (!isBase58Address(address.address)) {
       throw new Error(address + ' is not a valid base58 address.');
@@ -116,12 +118,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateKey(key: BaseKey) {
-    // TODO: determine valid key format
-    return true;
+  validateKey(key: BaseKey): void {
+    try {
+      new KeyPair({ prv: key.key });
+    } catch (err) {
+      throw new Error('The provided key is not valid');
+    }
   }
 
-  /** @inheritdoc */
   /**
    * Validate the contents of a raw transaction. The validation
    * phase is to compare the raw-data-hex to the raw-data of the
@@ -132,7 +136,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * 2. The expiration date
    * 3. The timestamp
    * 4. The contract
-   * @param rawTransaction The raw transaction to be validated
+   *
+   * @param {TransactionReceipt | string} rawTransaction The raw transaction to be validated
    */
   validateRawTransaction(rawTransaction: TransactionReceipt | string): void {
     //TODO: Validation of signature
@@ -148,7 +153,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       } catch (e) {
         throw new ParseTransactionError('There was error in parsing the JSON string');
       }
-    } else if (_.isObject(rawTransaction)) {
+    } else if (isObject(rawTransaction)) {
       currTransaction = rawTransaction;
     } else {
       throw new InvalidTransactionError('Transaction is not an object or stringified json');
@@ -180,8 +185,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  /** @inheritDoc Specifically, checks hex underlying transaction hashes to correct transaction ID. */
-  validateTransaction(transaction: Transaction) {
+  /** @inheritdoc */
+  // Specifically, checks hex underlying transaction hashes to correct transaction ID.
+  validateTransaction(transaction: Transaction): void {
     const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
     const txId = crypto
       .createHash('sha256')

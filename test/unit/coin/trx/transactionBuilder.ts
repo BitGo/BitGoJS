@@ -18,14 +18,14 @@ import {
 import { getBuilder } from '../../../../src';
 import * as Crypto from '../../../../src/utils/crypto';
 
-describe('Tron', function() {
+describe('Tron TransactionBuilder', function() {
   let txBuilder;
 
-  describe('Transaction builder from method', () => {
-    beforeEach(() => {
-      txBuilder = getBuilder('ttrx ');
-    });
+  beforeEach(() => {
+    txBuilder = getBuilder('ttrx');
+  });
 
+  describe('Transaction builder from method', () => {
     describe('should succeed to parse', () => {
       it('a transfer contract for an unsigned tx', () => {
         const txJson = JSON.stringify(UnsignedBuildTransaction);
@@ -45,10 +45,6 @@ describe('Tron', function() {
   });
 
   describe('Transaction builder sign method', () => {
-    beforeEach(() => {
-      txBuilder = getBuilder('ttrx ');
-    });
-
     describe('should succeed to sign', () => {
       it('an unsigned transaction', () => {
         const txJson = JSON.stringify(UnsignedBuildTransaction);
@@ -98,10 +94,6 @@ describe('Tron', function() {
   });
 
   describe('Transaction builder', () => {
-    beforeEach(() => {
-      txBuilder = getBuilder('ttrx ');
-    });
-
     it('should build an update account tx', async () => {
       const txJson = JSON.stringify(UnsignedAccountPermissionUpdateContractTx);
       txBuilder.from(txJson);
@@ -219,6 +211,18 @@ describe('Tron', function() {
     it('should validate stringified JSON transaction', () => {
       const txJsonString = JSON.stringify(UnsignedBuildTransaction);
       should.doesNotThrow(() => txBuilder.from(txJsonString));
+    });
+  });
+
+  describe('#validateKey', () => {
+    it('should not throw an error when the key is valid', () => {
+      const key = '2DBEAC1C22849F47514445A56AEF2EF164528A502DE4BD289E23EA1E2D4C4B06';
+      should.doesNotThrow(() => txBuilder.validateKey({ key }));
+    });
+
+    it('should throw an error when the key is invalid', () => {
+      const key = 'jiraiya';
+      should.throws(() => txBuilder.validateKey({ key }), 'The provided key is not valid');
     });
   });
 });
