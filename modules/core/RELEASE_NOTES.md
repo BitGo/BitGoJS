@@ -1,5 +1,51 @@
 # BitGoJS Release Notes
 
+## 9.5.3 (02-14-2020)
+
+### Other Changes
+* Update `@bitgo/statics` to version 3.3.0
+
+## 9.5.2 (02-11-2020)
+
+### Bug Fixes
+* Recreate XLM integration test wallets following quarterly XLM testnet reset.
+
+### Other Changes
+* Update `@bitgo/statics` to version 3.2.0
+
+## 9.5.1 (02-04-2020)
+
+### Bug Fixes
+* Add missing properties `redeemScript` and `witnessScript` to typescript interface `SignTransactionOptions`.
+
+### Other Changes
+* Update `@bitgo/statics` to version 3.1.1
+
+## 9.5.0 (01-29-2020)
+
+### Bug Fixes
+* Remove usage of deprecated bufferutils function `bufferutils.reverse`.
+
+### Other Changes
+* Update `@bitgo/statics` to version 3.1.0
+
+## 9.4.1 (01-21-2020)
+
+### Bug Fixes
+* Fix incorrect aliasing of interface `TransactionExplanation` in Algorand implementation.
+
+### Other Changes
+* Update `@bitgo/statics` to version 3.0.1
+
+## 9.4.0 (01-15-2020)
+
+### New Features
+* Allow creation of random EOS addresses.
+* Lock transactions to next block to discourage fee sniping.
+
+### Other Changes
+* Update `@bitgo/statics` to version 3.0.0
+
 ## 9.3.0 (12-17-2019)
 
 ### New Features
@@ -7,7 +53,7 @@
 
 ### Bug Fixes
 * Fix circular json serialization error when using `accelerateTransaction`
-* Filter out duplicate addresses when doing address lookups for cross chain recoveries 
+* Filter out duplicate addresses when doing address lookups for cross chain recoveries
 * Allow EOS addresses to begin with a number
 * Properly deserialize EOS staking transactions
 * Ensure `Error.captureStackTrace` is defined before using, as this is not standard and only available in V8-based Javascript runtimes.
