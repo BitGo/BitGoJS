@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import isObject from 'lodash/isObject';
+import * as isObject from 'lodash/isObject';
 import {
   SigningError,
   BuildTransactionError,
