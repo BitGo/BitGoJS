@@ -11,6 +11,7 @@ import {
     BaseCoin,
     SignedTransaction, TransactionPrebuild,
     VerificationOptions,
+    TransactionParams,
 } from './baseCoin';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Eth } from './coins';
@@ -309,7 +310,8 @@ export interface SendOptions {
   walletPassphrase?: string;
   prv?: string;
   minConfirms?: number;
-  enforceMinConfirmsForChange?: number;
+  enforceMinConfirmsForChange?: boolean;
+  reqId?: RequestTracer;
 }
 
 export interface SendManyOptions {
@@ -407,6 +409,18 @@ export interface DownloadKeycardOptions {
   activationCode?: string;
   walletKeyID?: string;
   backupKeyID?: string;
+}
+
+export interface ValidateAndSignOptions extends TransactionParams {
+  verification: VerificationOptions;
+  reqId?: RequestTracer;
+}
+
+export interface CreatePrebuildForSendOptions extends PrebuildTransactionOptions {
+  address?: string;
+  amount?: number | string;
+  data?: string;
+  reqId?: RequestTracer;
 }
 
 export class Wallet {
@@ -1839,6 +1853,123 @@ export class Wallet {
       .send(params)
       .result()
       .nodeify(callback);
+  }
+
+  /**
+   * Create a new transaction prebuild by validating parameters and sending a request to BitGo.
+   * Returns an unsigned, unvalidated prebuilt transaction.
+   * @param params
+   * @param params.address - the destination address
+   * @param params.amount - the amount in satoshis/wei/base value to be sent
+   * @param params.data - [Ethereum Specific] optional data to pass to transaction
+   * @param callback
+   * @returns {*}
+   */
+  createPrebuildForSend(params: CreatePrebuildForSendOptions = {}, callback?: NodeCallback<PrebuildTransactionResult>): Bluebird<PrebuildTransactionResult> {
+    const self = this;
+    return co<PrebuildTransactionResult>(function *() {
+      if (_.isUndefined(params.amount)) {
+        throw new Error('missing required parameter amount');
+      }
+
+      if (_.isUndefined(params.address)) {
+        throw new Error('missing required parameter address');
+      }
+
+      const amount = new BigNumber(params.amount);
+      if (amount.isNegative()) {
+        throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+      }
+
+      const coin = self.baseCoin;
+
+      if (!coin.valuelessTransferAllowed() && amount.isZero()) {
+        throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+      }
+
+      const recipients: SendManyOptions['recipients'] = [{
+        address: params.address,
+        amount: params.amount,
+      }];
+
+      if (params.data && coin.transactionDataAllowed()) {
+        recipients[0].data = params.data;
+      }
+      params.reqId = params.reqId || new RequestTracer();
+      if (_.isObject(recipients)) {
+        recipients.map(function(recipient) {
+          const amount = new BigNumber(recipient.amount);
+          if (amount.isNegative()) {
+            throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+          }
+          if (!coin.valuelessTransferAllowed() && amount.isZero()) {
+            throw new Error('invalid argument for amount - positive number greater than zero or numeric string expected');
+          }
+        });
+      }
+
+      return yield self.prebuildTransaction(params);
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Validates and signs an unsigned transaction prebuild.
+   * @param {ValidateAndSignOptions} params
+   * @param {TransactionPrebuild} txPrebuild
+   * @param {NodeCallback} callback
+   * @returns {Bluebird<SignedTransaction>}
+   */
+  public validateAndSignTransaction(params: ValidateAndSignOptions, txPrebuild: TransactionPrebuild, callback?: NodeCallback<SignedTransaction>): Bluebird<SignedTransaction> {
+    const self = this;
+    return co<SignedTransaction>(function *() {
+      // retrieve our keychains needed to run the prebuild - some coins use all pubs
+      const keychains = yield self.baseCoin.keychains().getKeysForSigning({ wallet: self, reqId: params.reqId });
+
+      try {
+        const verificationParams = _.pick(params.verification || {}, ['disableNetworking', 'keychains', 'addresses']);
+        yield self.baseCoin.verifyTransaction({
+          txParams: params,
+          txPrebuild,
+          wallet: self,
+          verification: verificationParams,
+          reqId: params.reqId,
+        });
+      } catch (e) {
+        debug('Transaction prebuild failure:', e);
+        console.error('transaction prebuild failed local validation:');
+        throw e;
+      }
+
+      // pass our three keys
+      const signingParams = _.extend({}, params, {
+        txPrebuild: txPrebuild,
+        wallet: {
+          // this is the version of the multisig address at wallet creation time
+          addressVersion: self._wallet.coinSpecific.addressVersion
+        },
+        keychain: keychains[0],
+        backupKeychain: (keychains.length > 1) ? keychains[1] : null,
+        bitgoKeychain: (keychains.length > 2) ? keychains[2] : null,
+      });
+
+      try {
+        return yield self.signTransaction(signingParams);
+      } catch (error) {
+        if (error.message.includes('insufficient funds')) {
+          error.code = 'insufficient_funds';
+          error.walletBalances = {
+            balanceString: self.balanceString(),
+            confirmedBalanceString: self.confirmedBalanceString(),
+            spendableBalanceString: self.spendableBalanceString(),
+            balance: self.balance(),
+            confirmedBalance: self.confirmedBalance(),
+            spendableBalance: self.spendableBalance()
+          };
+          error.txParams = _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']);
+        }
+        throw error;
+      }
+    }).call(this).asCallback(callback);
   }
 
   /**
