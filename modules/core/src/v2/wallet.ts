@@ -8,9 +8,9 @@ import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { AddressGenerationError } from '../errors';
 import {
-    BaseCoin,
-    SignedTransaction, TransactionPrebuild,
-    VerificationOptions,
+  BaseCoin,
+  SignedTransaction, TransactionPrebuild,
+  VerificationOptions,
 } from './baseCoin';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Eth } from './coins';
@@ -2280,6 +2280,10 @@ export class Wallet {
   buildAccountConsolidations(params: BuildConsolidationTransactionOptions = {}, callback?: NodeCallback<PrebuildTransactionResult[]>): Bluebird<PrebuildTransactionResult[]> {
     const self = this;
     return co<PrebuildTransactionResult[]>(function *() {
+      if (!self.baseCoin.allowsAccountConsolidations()) {
+        throw new Error('This coin does not allow account consolidations.');
+      }
+
       // Whitelist params to build tx
       const whitelistedParams = _.pick(params, self.prebuildConsolidateTransactionParams());
       debug('prebuilding consolidation transaction: %O', whitelistedParams);
@@ -2321,6 +2325,10 @@ export class Wallet {
   sendAccountConsolidation(params: PrebuildAndSignTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co<any>(function *() {
+      if (!self.baseCoin.allowsAccountConsolidations()) {
+        throw new Error('This coin does not allow account consolidations.');
+      }
+
       // one of a set of consolidation transactions
       if (typeof params.prebuildTx === 'string' || params.prebuildTx === undefined) {
         throw new Error('Invalid build of account consolidation.');
@@ -2348,32 +2356,31 @@ export class Wallet {
    */
   sendAccountConsolidations(params: BuildConsolidationTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
-
-    if (!this.baseCoin.allowsAccountConsolidations()) {
-      throw new Error('This coin does not allow account consolidations.');
-    }
-
     return co<any>(function *() {
+      if (!self.baseCoin.allowsAccountConsolidations()) {
+        throw new Error('This coin does not allow account consolidations.');
+      }
+
       // this gives us a set of account consolidation transactions
       const unsignedBuilds = yield self.buildAccountConsolidations(params);
       if (unsignedBuilds && unsignedBuilds.length > 0) {
-        const successfulTxes = new Array<any>();
-        const failedTxes = new Array<Error>();
+        const successfulTxs: any[] = [];
+        const failedTxs = new Array<Error>();
         for (const unsignedBuild of unsignedBuilds) {
           // fold any of the parameters we used to build this transaction into the unsignedBuild
           const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = Object.assign({}, params);
           unsignedBuildWithOptions.prebuildTx = unsignedBuild;
           try {
             const sendTx = yield self.sendAccountConsolidation(unsignedBuildWithOptions);
-            successfulTxes.push(sendTx);
+            successfulTxs.push(sendTx);
           } catch (e) {
-            failedTxes.push(e);
+            failedTxs.push(e);
           }
         }
 
         return {
-          success: successfulTxes,
-          failure: failedTxes,
+          success: successfulTxs,
+          failure: failedTxs,
         };
       }
     }).call(this).asCallback(callback);

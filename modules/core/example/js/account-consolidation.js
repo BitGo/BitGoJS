@@ -5,7 +5,7 @@
  */
 const bitgo = require('bitgo');
 
-const testBg = new bitgo.BitGo({ env: 'dev' });
+const testBg = new bitgo.BitGo({ env: 'test' });
 
 const coin = 'talgo';
 // this can be found on test.bitgo.com in the URL after clicking on a wallet
@@ -43,11 +43,10 @@ testBg.authenticate({ username: user, password: password, otp: otp }, async func
   // this will take all money off receive addresses in the wallet
   // you can also specify which receive address by passing fromAddresses here:
   // e.g. { walletPassphrase, fromAddresses: ['onchainReceiveAddress'] }
-  await wallet.sendAccountConsolidations({ walletPassphrase })
-    .then(res => {
-      console.log(res);
-    })
-    .error(err => {
-      console.error(err);
-    });
+  try {
+    const sendConsolidations = await wallet.sendAccountConsolidations({ walletPassphrase });
+    console.log(sendConsolidations);
+  } catch (e) {
+    console.error(e);
+  }
 });
