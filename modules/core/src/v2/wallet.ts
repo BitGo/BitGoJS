@@ -8,9 +8,9 @@ import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { AddressGenerationError } from '../errors';
 import {
-    BaseCoin,
-    SignedTransaction, TransactionPrebuild,
-    VerificationOptions,
+  BaseCoin,
+  SignedTransaction, TransactionPrebuild,
+  VerificationOptions,
 } from './baseCoin';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Eth } from './coins';
@@ -51,6 +51,21 @@ export interface Memo {
     type: string;
 }
 
+/**
+ * A small set of parameters should be used for building a consolidation transaction:
+ * - walletPassphrase - necessary for signing
+ * - feeRate
+ * - maxFeeRate
+ * - validFromBlock
+ * - validToBlock
+ *
+ * What shouldn't be passed (these will be ignored):
+ * - recipients
+ */
+export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions {
+  fromAddresses?: string[];
+}
+
 export interface PrebuildTransactionOptions {
     reqId?: RequestTracer;
     recipients?: {
@@ -86,12 +101,15 @@ export interface PrebuildTransactionOptions {
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
-    prebuildTx?: string;
+    prebuildTx?: string | PrebuildTransactionResult;
     verification?: VerificationOptions;
 }
 
 export interface PrebuildTransactionResult extends TransactionPrebuild {
     walletId: string;
+    // Consolidate ID is used for consolidate account transactions and indicates if this is
+    // a consolidation and what consolidate group it should be referenced by.
+    consolidateId?: string;
 }
 
 export interface WalletSignTransactionOptions {
@@ -112,6 +130,7 @@ export interface WalletCoinSpecific {
   tokenFlushThresholds?: any;
   addressVersion?: number;
   baseAddress?: string;
+  rootAddress?: string;
 }
 
 export interface PaginationOptions {
@@ -453,6 +472,25 @@ export class Wallet {
    */
   balance(): number {
     return this._wallet.balance;
+  }
+
+  prebuildWhitelistedParams(): string[] {
+    return [
+      'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
+      'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
+      'ledgerSequenceDelta', 'gasPrice', 'gasLimit', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
+      'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy',
+      'validFromBlock', 'validToBlock', 'type', 'trustlines', 'reservation',
+    ];
+  }
+
+  /**
+   * This is a strict sub-set of prebuildWhitelistedParams.
+   */
+  prebuildConsolidateTransactionParams(): string[] {
+    return [
+      'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock',
+    ];
   }
 
   /**
@@ -1583,13 +1621,7 @@ export class Wallet {
     const self = this;
     return co<PrebuildTransactionResult>(function *() {
       // Whitelist params to build tx
-      const whitelistedParams = _.pick(params, [
-        'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
-        'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
-        'ledgerSequenceDelta', 'gasPrice', 'gasLimit', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
-        'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy',
-        'validFromBlock', 'validToBlock', 'type', 'trustlines', 'reservation',
-      ]);
+      const whitelistedParams = _.pick(params, self.prebuildWhitelistedParams());
       debug('prebuilding transaction: %O', whitelistedParams);
 
       if (params.reqId) {
@@ -2248,5 +2280,120 @@ export class Wallet {
 
     // Save the PDF on the user's browser
     doc.save(`BitGo Keycard for ${walletLabel}.pdf`);
+  }
+
+  /**
+   * Builds a set of consolidation transactions for a wallet.
+   * @param params
+   *     fromAddresses - these are the on-chain receive addresses we want to pick a consolidation amount from
+   * @param callback
+   */
+  buildAccountConsolidations(params: BuildConsolidationTransactionOptions = {}, callback?: NodeCallback<PrebuildTransactionResult[]>): Bluebird<PrebuildTransactionResult[]> {
+    const self = this;
+    return co<PrebuildTransactionResult[]>(function *() {
+      if (!self.baseCoin.allowsAccountConsolidations()) {
+        throw new Error(`${self.baseCoin.getFullName()} does not allow account consolidations.`);
+      }
+
+      // Whitelist params to build tx
+      const whitelistedParams = _.pick(params, self.prebuildConsolidateTransactionParams());
+      debug('prebuilding consolidation transaction: %O', whitelistedParams);
+
+      if (params.reqId) {
+        self.bitgo.setRequestTracer(params.reqId);
+      }
+
+      // this could return 100 build transactions
+      const buildResponse = yield self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/consolidateAccount/build'))
+        .send(whitelistedParams)
+        .result();
+
+      // we need to step over each prebuild now - should be in an array in the body
+      const consolidations:TransactionPrebuild[] = [];
+      for (const consolidateAccountBuild of buildResponse) {
+        let prebuild: TransactionPrebuild = yield self.baseCoin.postProcessPrebuild(
+          Object.assign(consolidateAccountBuild, { wallet: self, buildParams: whitelistedParams })
+        );
+
+        delete prebuild.wallet;
+        delete prebuild.buildParams;
+
+        prebuild = _.extend({}, prebuild, { walletId: self.id() });
+        debug('final consolidation transaction prebuild: %O', prebuild);
+
+        consolidations.push(prebuild);
+      }
+
+      return consolidations;
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Builds and sends a set of consolidation transactions for a wallet.
+   * @param params
+   *     fromAddresses - these are the on-chain receive addresses we want to pick a consolidation amount from
+   */
+  sendAccountConsolidation(params: PrebuildAndSignTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co<any>(function *() {
+      if (!self.baseCoin.allowsAccountConsolidations()) {
+        throw new Error(`${self.baseCoin.getFullName()} does not allow account consolidations.`);
+      }
+
+      // one of a set of consolidation transactions
+      if (typeof params.prebuildTx === 'string' || params.prebuildTx === undefined) {
+        throw new Error('Invalid build of account consolidation.');
+      }
+
+      if (!params.prebuildTx.consolidateId) {
+        throw new Error('Failed to find consolidation id on consolidation transaction.');
+      }
+
+      const signedPrebuild = yield self.prebuildAndSignTransaction(params);
+
+      // decorate with our consolidation id
+      signedPrebuild.consolidateId = params.prebuildTx.consolidateId;
+
+      delete signedPrebuild.wallet;
+
+      return yield self.submitTransaction(signedPrebuild);
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Builds and sends a set of account consolidations. This is intended to flush many balances to the root wallet balance.
+   * @param params
+   * @param callback
+   */
+  sendAccountConsolidations(params: BuildConsolidationTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co<any>(function *() {
+      if (!self.baseCoin.allowsAccountConsolidations()) {
+        throw new Error(`${self.baseCoin.getFullName()} does not allow account consolidations.`);
+      }
+
+      // this gives us a set of account consolidation transactions
+      const unsignedBuilds = yield self.buildAccountConsolidations(params);
+      if (unsignedBuilds && unsignedBuilds.length > 0) {
+        const successfulTxs: any[] = [];
+        const failedTxs = new Array<Error>();
+        for (const unsignedBuild of unsignedBuilds) {
+          // fold any of the parameters we used to build this transaction into the unsignedBuild
+          const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = Object.assign({}, params);
+          unsignedBuildWithOptions.prebuildTx = unsignedBuild;
+          try {
+            const sendTx = yield self.sendAccountConsolidation(unsignedBuildWithOptions);
+            successfulTxs.push(sendTx);
+          } catch (e) {
+            failedTxs.push(e);
+          }
+        }
+
+        return {
+          success: successfulTxs,
+          failure: failedTxs,
+        };
+      }
+    }).call(this).asCallback(callback);
   }
 }
