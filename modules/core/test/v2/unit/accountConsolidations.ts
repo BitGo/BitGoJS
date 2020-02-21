@@ -42,8 +42,9 @@ describe('Account Consolidations:', function() {
 
   describe('Building', function() {
     it('should not allow a non-account consolidation coin build', co(function *() {
-      const invalidWallet = new Wallet(bitgo, bitgo.coin('tbtc'), {});
-      yield invalidWallet.buildAccountConsolidations().should.be.rejectedWith({ message: 'This coin does not allow account consolidations.' });
+      const unsupportedCoin = bitgo.coin('tbtc');
+      const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
+      yield invalidWallet.buildAccountConsolidations().should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
     }));
 
     it('should build with no params', co(function *() {
@@ -66,13 +67,15 @@ describe('Account Consolidations:', function() {
     });
 
     it('should not allow a non-account consolidation coin send', co(function *() {
-      const invalidWallet = new Wallet(bitgo, bitgo.coin('tbtc'), {});
-      yield invalidWallet.sendAccountConsolidation({ }).should.be.rejectedWith({ message: 'This coin does not allow account consolidations.' });
+      const unsupportedCoin = bitgo.coin('tbtc');
+      const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
+      yield invalidWallet.sendAccountConsolidation({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
     }));
 
     it('should not allow a non-account consolidation coin send multiples', co(function *() {
-      const invalidWallet = new Wallet(bitgo, bitgo.coin('tbtc'), {});
-      yield invalidWallet.sendAccountConsolidations({ }).should.be.rejectedWith({ message: 'This coin does not allow account consolidations.' });
+      const unsupportedCoin = bitgo.coin('tbtc');
+      const invalidWallet = new Wallet(bitgo, unsupportedCoin, {});
+      yield invalidWallet.sendAccountConsolidations({ }).should.be.rejectedWith({ message: `${unsupportedCoin.getFullName()} does not allow account consolidations.` });
     }));
 
     it('should not allow a bad pre-build to be passed', co(function *() {

@@ -52,7 +52,15 @@ export interface Memo {
 }
 
 /**
- * We only let a small subset of these params get through in the route.
+ * A small set of parameters should be used for building a consolidation transaction:
+ * - walletPassphrase - necessary for signing
+ * - feeRate
+ * - maxFeeRate
+ * - validFromBlock
+ * - validToBlock
+ *
+ * What shouldn't be passed (these will be ignored):
+ * - recipients
  */
 export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions {
   fromAddresses?: string[];
@@ -99,6 +107,8 @@ export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOp
 
 export interface PrebuildTransactionResult extends TransactionPrebuild {
     walletId: string;
+    // Consolidate ID is used for consolidate account transactions and indicates if this is
+    // a consolidation and what consolidate group it should be referenced by.
     consolidateId?: string;
 }
 
@@ -120,6 +130,7 @@ export interface WalletCoinSpecific {
   tokenFlushThresholds?: any;
   addressVersion?: number;
   baseAddress?: string;
+  rootAddress?: string;
 }
 
 export interface PaginationOptions {
@@ -2281,7 +2292,7 @@ export class Wallet {
     const self = this;
     return co<PrebuildTransactionResult[]>(function *() {
       if (!self.baseCoin.allowsAccountConsolidations()) {
-        throw new Error('This coin does not allow account consolidations.');
+        throw new Error(`${self.baseCoin.getFullName()} does not allow account consolidations.`);
       }
 
       // Whitelist params to build tx
@@ -2326,7 +2337,7 @@ export class Wallet {
     const self = this;
     return co<any>(function *() {
       if (!self.baseCoin.allowsAccountConsolidations()) {
-        throw new Error('This coin does not allow account consolidations.');
+        throw new Error(`${self.baseCoin.getFullName()} does not allow account consolidations.`);
       }
 
       // one of a set of consolidation transactions
@@ -2358,7 +2369,7 @@ export class Wallet {
     const self = this;
     return co<any>(function *() {
       if (!self.baseCoin.allowsAccountConsolidations()) {
-        throw new Error('This coin does not allow account consolidations.');
+        throw new Error(`${self.baseCoin.getFullName()} does not allow account consolidations.`);
       }
 
       // this gives us a set of account consolidation transactions

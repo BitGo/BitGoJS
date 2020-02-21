@@ -3,11 +3,16 @@
  * off receive addresses into the main wallet. This is the only way to get money off
  * receive addresses.
  */
-const BitGoJS = require('bitgo');
-const Promise = require('bluebird');
-const bitgo = new BitGoJS.BitGo({ env: 'test' });
+import { BitGo, Wallet } from 'bitgo';
+const bitgo = new BitGo({ env: 'test' });
+
+const accessToken = ''; // TODO: you'll have to set this here
+
+// TODO: put the new policy on the wallet with this id
+const id = '';
 
 const coin = 'talgo';
+
 // this can be found on test.bitgo.com in the URL after clicking on a wallet
 // https://test.bitgo.com/enterprise/XXXXXXXXX/coin/talgo/YYYYY/transactions
 // YYYYY would be your wallet id in this case minus the last 8 characters
@@ -17,14 +22,16 @@ const walletId = 'your wallet id';
 const walletPassphrase = 'set your wallet passphrase here';
 const otp = '000000';
 
-const accessToken = null; // TODO: you'll have to set this here
-
-Promise.coroutine(function *() {
+async function main() {
   bitgo.authenticateWithAccessToken({ accessToken });
 
-  const wallet = yield bitgo.coin(coin).wallets().get({ id: walletId });
+  const wallet: Wallet = await bitgo.coin(coin).wallets().get({ id: walletId });
 
   console.log('Wallet ID:', wallet.id());
+
+  if (!wallet || !wallet.coinSpecific()) {
+    throw new Error('Failed to retrieve wallet');
+  }
 
   // this is your wallet's address
   console.log('Root Address:', wallet.coinSpecific().rootAddress);
@@ -37,19 +44,16 @@ Promise.coroutine(function *() {
   console.log('Spendable Balance:', wallet.spendableBalanceString());
 
   // we have to unlock this session since we're sending funds
-  const unlock = yield bitgo.unlock({ otp, duration: 3600 });
+  const unlock = await bitgo.unlock({ otp, duration: 3600 });
   if (!unlock) {
-    console.log('We did not unlock.');
-    throw new Error();
+    throw new Error('We did not unlock.');
   }
 
   // this will take all money off receive addresses in the wallet
   // you can also specify which receive address by passing fromAddresses here:
   // e.g. { walletPassphrase, fromAddresses: ['onchainReceiveAddress'] }
-  try {
-    const sendConsolidations = yield wallet.sendAccountConsolidations({ walletPassphrase });
-    console.log(sendConsolidations);
-  } catch (e) {
-    console.error(e);
-  }
-});
+  const sendConsolidations = await wallet.sendAccountConsolidations({ walletPassphrase });
+  console.log(sendConsolidations);
+}
+
+main().catch((e) => console.error(e));
