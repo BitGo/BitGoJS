@@ -1,4 +1,4 @@
-import * as should from 'should';
+import should from 'should';
 
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import * as testData from '../../../resources/xtz/xtz';

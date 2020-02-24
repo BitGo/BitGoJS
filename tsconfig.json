@@ -16,7 +16,8 @@
     "typeRoots": [
       "./node_modules/@types",
       "./types"
-    ]
+    ],
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*",

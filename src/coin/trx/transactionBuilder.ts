@@ -1,7 +1,7 @@
 import * as crypto from 'crypto';
+import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import * as isObject from 'lodash/isObject';
 import {
   SigningError,
   BuildTransactionError,
@@ -153,7 +153,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       } catch (e) {
         throw new ParseTransactionError('There was error in parsing the JSON string');
       }
-    } else if (isObject(rawTransaction)) {
+    } else if (_.isObject(rawTransaction)) {
       currTransaction = rawTransaction;
     } else {
       throw new InvalidTransactionError('Transaction is not an object or stringified json');

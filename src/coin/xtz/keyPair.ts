@@ -1,6 +1,6 @@
 import * as crypto from 'crypto';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
-import * as blake2b from 'blake2b';
+import blake2b from 'blake2b';
 import { DefaultKeys, ExtendedKeys } from '../baseCoin/iface';
 import * as CryptoUtils from '../../utils/crypto';
 import * as Utils from './utils';
@@ -63,7 +63,7 @@ export class KeyPair {
   /**
    * Build a Hierarchical Deterministic node or an ECPair from a public key.
    *
-   * @param {String} pub - An extended, compressed, or uncompressed public key
+   * @param {string} pub - An extended, compressed, or uncompressed public key
    */
   private recordKeysFromPublicKey(pub: string): void {
     if (CryptoUtils.isValidXpub(pub)) {
@@ -80,7 +80,8 @@ export class KeyPair {
 
   /**
    * Return Tezos default keys with the respective prefixes
-   * @return The keys in the protocol default key format
+   *
+   * @returns The keys in the protocol default key format
    */
   getKeys(): DefaultKeys {
     // Always use the compressed version to be consistent

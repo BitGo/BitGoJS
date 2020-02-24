@@ -1,4 +1,4 @@
-import * as should from 'should';
+import should from 'should';
 
 import { Trx } from '../../../../src';
 import { AddressFormat } from '../../../../src/coin/baseCoin/enum';

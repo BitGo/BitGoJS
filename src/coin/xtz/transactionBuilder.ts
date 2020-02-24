@@ -24,24 +24,32 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _serializedTransaction: string;
   private _transaction: Transaction;
   private _fee: Fee;
-  private _type: TransactionType = TransactionType.Send;
-  private _revealSource = false;
+  private _type: TransactionType;
+  private _revealSource;
   private _sourceAddress: string;
   private _sourceKeyPair?: KeyPair;
-  private _multisigSignerKeyPairs: KeyPair[] = [];
+  private _multisigSignerKeyPairs: KeyPair[];
   private _counter: BigNumber;
   private _initialBalance: string;
   private _blockHeader: string;
-  private _transfers: TransferBuilder[] = [];
+  private _transfers: TransferBuilder[];
 
   // Initialization transaction parameters
-  private _owner: string[] = [];
+  private _owner: string[];
 
   /**
    * Public constructor.
+   *
+   * @param _coinConfig
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._type = TransactionType.Send;
+    this._revealSource = false;
+    this._multisigSignerKeyPairs = [];
+    this._counter = new BigNumber(0);
+    this._transfers = [];
+    this._owner = [];
     this.transaction = new Transaction(_coinConfig);
   }
 
@@ -295,7 +303,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * Initialize a new TransferBuilder to for a singlesig or multisig transaction.
    *
    * @param {string} amount Amount in mutez to be transferred
-   * @return {TransferBuilder} A transfer builder
+   * @returns {TransferBuilder} A transfer builder
    */
   transfer(amount: string): TransferBuilder {
     if (this._type !== TransactionType.Send) {
@@ -319,7 +327,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * Calculate the signatures for the multisig transaction.
    *
    * @param {string} packedData The string in hexadecimal to sign
-   * @return {Promise<string[]>} List of signatures for packedData
+   * @returns {Promise<string[]>} List of signatures for packedData
    */
   private async getSignatures(packedData: string): Promise<string[]> {
     const signatures: string[] = [];

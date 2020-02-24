@@ -1,4 +1,4 @@
-import * as should from 'should';
+import should from 'should';
 import { coins } from '@bitgo/statics';
 
 import { KeyPair, Transaction } from '../../../../src/coin/xtz';
