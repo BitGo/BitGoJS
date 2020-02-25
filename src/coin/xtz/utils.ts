@@ -1,6 +1,10 @@
 import * as base58check from 'bs58check';
 import * as sodium from 'libsodium-wrappers';
-import { HashType } from './iface';
+import { InMemorySigner } from '@taquito/signer';
+import { SigningError } from '../baseCoin/errors';
+import { genericMultisigDataToSign } from '../../../resources/xtz/multisig';
+import { HashType, SignResponse } from './iface';
+import { KeyPair } from './keyPair';
 
 /**
  * Encode the payload to base58 with a specific Tezos prefix.
@@ -59,6 +63,42 @@ export async function calculateOriginatedAddress(transactionId: string, index: n
 }
 
 /**
+ * Generic data signing using Tezos library.
+ *
+ * @param {KeyPair} keyPair A Key Pair with a private key set
+ * @param {string} data The data in hexadecimal to sign
+ * @param {Uint8Array} watermark Magic byte: 1 for block, 2 for endorsement, 3 for generic
+ * @return {Promise<SignResponse>}
+ */
+export async function sign(keyPair: KeyPair, data: string, watermark?: Uint8Array): Promise<SignResponse> {
+  if (!keyPair.getKeys().prv) {
+    throw new SigningError('Missing private key');
+  }
+  const signer = new InMemorySigner(keyPair.getKeys().prv!);
+  // TODO: remove after https://github.com/ecadlabs/taquito/issues/252 is closed
+  await signer.publicKeyHash();
+  return watermark ? signer.sign(data, watermark) : signer.sign(data, new Uint8Array([3]));
+}
+
+/**
+ * Useful wrapper to create the generic multisig contract data to sign when moving funds.
+ *
+ * @param {string} contractAddress The wallet contract address with the funds to withdraw
+ * @param {string} destinationAddress The address to transfer the funds to
+ * @param {number} amount Number mutez to transfer
+ * @return {any} A JSON representation of the Michelson script to sign and approve a transfer
+ */
+export function generateDataToSign(contractAddress: string, destinationAddress: string, amount: string): any {
+  if (!isValidOriginatedAddress(contractAddress)) {
+    throw new Error('Invalid contract address ' + contractAddress + '. An originated account address was expected');
+  }
+  if (!isValidAddress(destinationAddress)) {
+    throw new Error('Invalid destination address ' + destinationAddress);
+  }
+  return genericMultisigDataToSign(contractAddress, destinationAddress, amount);
+}
+
+/**
  * Returns whether or not the string is a valid Tezos hash of the given type
  *
  * @param {String} hash - the string to validate
@@ -92,12 +132,27 @@ export function isValidHash(hash: string, hashType: HashType): boolean {
  * @returns {Boolean}
  */
 export function isValidAddress(hash: string): boolean {
-  return (
-    isValidHash(hash, hashTypes.tz1) ||
-    isValidHash(hash, hashTypes.tz2) ||
-    isValidHash(hash, hashTypes.tz3) ||
-    isValidHash(hash, hashTypes.KT)
-  );
+  return isValidImplicitAddress(hash) || isValidHash(hash, hashTypes.KT);
+}
+
+/**
+ * Returns whether or not the string is a valid Tezos implicit account address
+ *
+ * @param {String} hash - the address to validate
+ * @returns {Boolean}
+ */
+export function isValidImplicitAddress(hash: string): boolean {
+  return isValidHash(hash, hashTypes.tz1) || isValidHash(hash, hashTypes.tz2) || isValidHash(hash, hashTypes.tz3);
+}
+
+/**
+ * Returns whether or not the string is a valid Tezos originated account address
+ *
+ * @param {String} hash - the address to validate
+ * @returns {Boolean}
+ */
+export function isValidOriginatedAddress(hash: string): boolean {
+  return isValidHash(hash, hashTypes.KT);
 }
 
 /**

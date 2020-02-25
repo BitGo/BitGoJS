@@ -4,12 +4,18 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { SigningError, BuildTransactionError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
-import { genericMultisigOriginationOperation, revealOperation } from '../../../resources/xtz/multisig';
+import {
+  genericMultisigOriginationOperation,
+  revealOperation,
+  transactionOperation,
+} from '../../../resources/xtz/multisig';
 import { Address } from './address';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Fee, Operation } from './iface';
 import { isValidAddress, isValidBlockHash, DEFAULT_GAS_LIMIT, DEFAULT_STORAGE_LIMIT, DEFAULT_FEE } from './utils';
+import * as Utils from './utils';
+import { TransferBuilder } from './transferBuilder';
 
 /**
  * Tezos transaction builder.
@@ -22,9 +28,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _revealSource = false;
   private _sourceAddress: string;
   private _sourceKeyPair?: KeyPair;
-  private _counter: BigNumber = new BigNumber(0);
-  private _amount: BigNumber = new BigNumber(0);
+  private _multisigSignerKeyPairs: KeyPair[] = [];
+  private _counter: BigNumber;
+  private _initialBalance: string;
   private _blockHeader: string;
+  private _transfers: TransferBuilder[] = [];
 
   // Initialization transaction parameters
   private _owner: string[] = [];
@@ -37,6 +45,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction = new Transaction(_coinConfig);
   }
 
+  // region Base Builder
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     // Decoding the transaction is an async operation, so save it and leave the decoding for the
@@ -48,11 +57,20 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     const signer = new KeyPair({ prv: key.key });
-    if (!this._sourceAddress || this._sourceAddress != signer.getAddress()) {
-      throw new SigningError('Private key does not match the source account');
+    if (this._type === TransactionType.Send && this._transfers.length === 0) {
+      throw new SigningError('Cannot sign an empty transaction');
     }
 
-    this._sourceKeyPair = signer;
+    if (!this._sourceAddress || this._sourceAddress != signer.getAddress()) {
+      if (this._type !== TransactionType.Send) {
+        throw new SigningError('Private key does not match the source account');
+      }
+      // If the signer is not the source and it is a send transaction, add it to the list of
+      // multisig wallet signers
+      this._multisigSignerKeyPairs.push(signer);
+    } else {
+      this._sourceKeyPair = signer;
+    }
 
     // Signing the transaction is an async operation, so save the source and leave the actual
     // signing for the build step
@@ -77,7 +95,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           DEFAULT_FEE.REVEAL.toString(),
           DEFAULT_GAS_LIMIT.REVEAL.toString(),
           DEFAULT_STORAGE_LIMIT.REVEAL.toString(),
-          this._amount.toString(),
           this._sourceKeyPair!.getKeys().pub,
         );
         contents.push(revealOp);
@@ -91,7 +108,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
             DEFAULT_FEE.REVEAL.toString(),
             DEFAULT_GAS_LIMIT.REVEAL.toString(),
             DEFAULT_STORAGE_LIMIT.REVEAL.toString(),
-            '0',
             this._sourceKeyPair!.getKeys().pub,
           );
           contents.push(revealOp);
@@ -101,17 +117,52 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           this._counter.toString(),
           this._sourceAddress,
           this._fee.fee,
-          this._fee.gasLimit || '0',
-          this._fee.storageLimit || '0',
-          this._amount.toString(),
+          this._fee.gasLimit || DEFAULT_GAS_LIMIT.ORIGINATION.toString(),
+          this._fee.storageLimit || DEFAULT_STORAGE_LIMIT.ORIGINATION.toString(),
+          this._initialBalance || '0',
           this._owner,
         );
         contents.push(originationOp);
+        this._counter = this._counter.plus(1);
         break;
       case TransactionType.Send:
-        throw new BuildTransactionError('Send is not supported yet');
+        for (let i = 0; i < this._transfers.length; i++) {
+          const transfer = this._transfers[i].build();
+          let transactionOp;
+          if (transfer.dataToSign) {
+            const signatures = await this.getSignatures(transfer.dataToSign);
+            transactionOp = transactionOperation(
+              this._counter.toString(),
+              this._sourceAddress,
+              transfer.fee.fee,
+              transfer.fee.gasLimit || DEFAULT_GAS_LIMIT.TRANSFER.toString(),
+              transfer.fee.storageLimit || DEFAULT_STORAGE_LIMIT.TRANSFER.toString(),
+              transfer.amount,
+              transfer.to,
+              transfer.from,
+              transfer.counter,
+              signatures,
+            );
+          } else {
+            transactionOp = transactionOperation(
+              this._counter.toString(),
+              this._sourceAddress,
+              transfer.fee.fee,
+              transfer.fee.gasLimit || DEFAULT_GAS_LIMIT.TRANSFER.toString(),
+              transfer.fee.storageLimit || DEFAULT_STORAGE_LIMIT.TRANSFER.toString(),
+              transfer.amount,
+              transfer.to,
+            );
+          }
+          contents.push(transactionOp);
+          this._counter = this._counter.plus(1);
+        }
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
+    }
+    if (contents.length === 0) {
+      throw new BuildTransactionError('Empty transaction');
     }
     const parsedTransaction = {
       branch: this._blockHeader,
@@ -119,12 +170,28 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     };
 
     this.transaction = new Transaction(this._coinConfig);
+    // Build and sign a new transaction based on the latest changes
     await this.transaction.initFromParsedTransaction(parsedTransaction);
     if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
+      // TODO: check if there are more signers than needed for a singlesig or multisig transaction
       await this.transaction.sign(this._sourceKeyPair);
     }
 
     return Promise.resolve(this.transaction);
+  }
+  // endregion
+
+  //region Common builder methods
+  /**
+   * Set the transaction branch id.
+   *
+   * @param {string} blockId A block hash to use as branch reference
+   */
+  branch(blockId: string): void {
+    if (!isValidBlockHash(blockId)) {
+      throw new BuildTransactionError('Invalid block hash ' + blockId);
+    }
+    this._blockHeader = blockId;
   }
 
   /**
@@ -145,7 +212,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param {Fee} fee Baker fees. May also include the maximum gas and storage fees to pay
    */
   fee(fee: Fee): void {
-    // TODO: check fees are not negative
+    this.validateValue(new BigNumber(fee.fee));
+    if (fee.gasLimit) {
+      this.validateValue(new BigNumber(fee.gasLimit));
+    }
+    if (fee.storageLimit) {
+      this.validateValue(new BigNumber(fee.storageLimit));
+    }
     this._fee = fee;
   }
 
@@ -154,8 +227,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * be added as an owner of a wallet in a init transaction, unless manually set as one of the
    * owners.
    *
-   * @param {string | KeyPair} source A Tezos address or KeyPair. The latter is required if it is a reveal
-   *      operation
+   * @param {string | KeyPair} source A Tezos address or KeyPair. The latter is required if it is a
+   *      reveal operation
    */
   source(source: string | KeyPair): void {
     if (typeof source === 'string') {
@@ -171,26 +244,39 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Set the amount to be transferred to the destination or to set up as initial balance for a new
-   * wallet.
+   * Set an amount of mutez to transfer in this transaction this transaction. This is different than
+   * the amount to transfer from a multisig wallet.
    *
-   * @param {BigNumber} amount Amount in mutez (1/1000000 Tezies)
+   * @param {string} amount Amount in mutez (1/1000000 Tezies)
    */
-  amount(amount: string): void {
-    const convertedAmount = new BigNumber(amount);
-    this.validateValue(convertedAmount);
-    this._amount = convertedAmount;
+  initialBalance(amount: string): void {
+    if (this._type !== TransactionType.WalletInitialization) {
+      throw new BuildTransactionError('Initial balance can only be set for wallet initialization transactions');
+    }
+    this.validateValue(new BigNumber(amount));
+    this._initialBalance = amount;
   }
 
   /**
    * Set the transaction counter to prevent submitting repeated transactions.
    *
-   * @param {BigNumber} counter The counter to use
+   * @param {string} counter The counter to use
    */
-  counter(counter: BigNumber): void {
+  counter(counter: string): void {
     this._counter = new BigNumber(counter);
   }
 
+  /**
+   * Reveal the source account in this transaction. This is a no-op if the transaction type is
+   * AddressInitialization. In the rest of the cases, it will add an extra reveal operation before
+   * any other to reveal the source account.
+   */
+  reveal(): void {
+    this._revealSource = true;
+  }
+  // endregion
+
+  //region WalletInitialization builder methods
   /**
    * Set one of the owners of the multisig wallet.
    *
@@ -202,28 +288,50 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     this._owner.push(publicKey);
   }
+  //endregion
 
+  //region Send builder methods
   /**
-   * Reveal the source account in this transaction. This is a no-op if the transaction type is
-   * AddressInitialization. In the rest of the cases, it will add an extra reveal operation before
-   * any other to reveal the source account.
-   */
-  reveal(): void {
-    this._revealSource = true;
-  }
-
-  /**
-   * Set the transaction branch id.
+   * Initialize a new TransferBuilder to for a singlesig or multisig transaction.
    *
-   * @param {string} blockId A block hash to use as branch reference
+   * @param {string} amount Amount in mutez to be transferred
+   * @return {TransferBuilder} A transfer builder
    */
-  branch(blockId: string): void {
-    if (!isValidBlockHash(blockId)) {
-      throw new BuildTransactionError('Invalid block hash ' + blockId);
+  transfer(amount: string): TransferBuilder {
+    if (this._type !== TransactionType.Send) {
+      throw new BuildTransactionError('Contract transfer can only be set for send transactions');
     }
-    this._blockHeader = blockId;
+    let transferBuilder = new TransferBuilder();
+    // If source was set, use it as default for
+    if (this._sourceAddress) {
+      transferBuilder = transferBuilder.from(this._sourceAddress);
+    }
+    if (this._fee) {
+      transferBuilder = transferBuilder.fee(this._fee.fee);
+      transferBuilder = this._fee.gasLimit ? transferBuilder.gasLimit(this._fee.gasLimit) : transferBuilder;
+      transferBuilder = this._fee.storageLimit ? transferBuilder.storageLimit(this._fee.storageLimit) : transferBuilder;
+    }
+    this._transfers.push(transferBuilder);
+    return transferBuilder.amount(amount);
   }
 
+  /**
+   * Calculate the signatures for the multisig transaction.
+   *
+   * @param {string} packedData The string in hexadecimal to sign
+   * @return {Promise<string[]>} List of signatures for packedData
+   */
+  private async getSignatures(packedData: string): Promise<string[]> {
+    const signatures: string[] = [];
+    for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
+      const signature = await Utils.sign(this._multisigSignerKeyPairs[i], packedData, new Uint8Array());
+      signatures.push(signature.sig);
+    }
+    return signatures;
+  }
+  //endregion
+
+  // region Validators
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
     if (value.isLessThan(0)) {
@@ -266,6 +374,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         throw new BuildTransactionError('Transaction type not supported');
     }
   }
+  // endregion
 
   /** @inheritdoc */
   displayName(): string {

@@ -1,13 +1,13 @@
 import { localForger, CODEC } from '@taquito/local-forging';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { InMemorySigner } from '@taquito/signer';
 import { BaseTransaction } from '../baseCoin';
-import { InvalidTransactionError, ParseTransactionError, SigningError } from '../baseCoin/errors';
+import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
+import { getMultisigTransferDataFromOperation } from '../../../resources/xtz/multisig';
 import { KeyPair } from './keyPair';
-import { Operation, Origination, ParsedTransaction, Reveal } from './iface';
+import { Operation, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
 import * as Utils from './utils';
 
 /**
@@ -72,11 +72,14 @@ export class Transaction extends BaseTransaction {
     parsedTransaction.contents.forEach(async operation => {
       switch (operation.kind) {
         case CODEC.OP_ORIGINATION:
-          await this.recordOriginationOpFields(operation as Origination, operationIndex);
+          await this.recordOriginationOpFields(operation as OriginationOp, operationIndex);
           operationIndex++;
           break;
         case CODEC.OP_REVEAL:
-          this.recordRevealOpFields(operation as Reveal);
+          this.recordRevealOpFields(operation as RevealOp);
+          break;
+        case CODEC.OP_TRANSACTION:
+          this.recordTransactionOpFields(operation as TransactionOp);
           break;
         default:
           break;
@@ -91,33 +94,63 @@ export class Transaction extends BaseTransaction {
    * @param {number} index The origination operation index in the transaction. Used to calculate the
    *      originated address
    */
-  private async recordOriginationOpFields(operation: Origination, index: number): Promise<void> {
+  private async recordOriginationOpFields(operation: OriginationOp, index: number): Promise<void> {
     this._type = TransactionType.WalletInitialization;
     this._outputs.push({
       // Kt addresses can only be calculated for signed transactions with an id
       address: this._id ? await Utils.calculateOriginatedAddress(this._id, index) : '',
       // Balance
-      value: new BigNumber(operation.balance),
+      value: operation.balance,
     });
     this._inputs.push({
       address: operation.source,
       // Balance + fees + max gas + max storage are paid by the source account
-      value: new BigNumber(operation.balance).plus(operation.fee),
+      value: new BigNumber(operation.balance).plus(operation.fee).toString(),
     });
   }
 
   /**
    * Record the most important fields from a reveal operation.
    *
-   * @param {Reveal} operation A reveal operation object from a Tezos transaction
+   * @param {RevealOp} operation A reveal operation object from a Tezos transaction
    */
-  private recordRevealOpFields(operation: Reveal): void {
+  private recordRevealOpFields(operation: RevealOp): void {
     this._type = TransactionType.AddressInitialization;
     this._inputs.push({
       address: operation.source,
       // Balance + fees + max gas + max storage are paid by the source account
-      value: new BigNumber(operation.balance).plus(operation.fee),
+      value: operation.fee,
     });
+  }
+
+  /**
+   * Record the most important fields for a Transaction operation.
+   *
+   * @param {TransactionOp} operation A transaction object from a Tezos operation
+   */
+  private recordTransactionOpFields(operation: TransactionOp): void {
+    this._type = TransactionType.Send;
+    const transferData = getMultisigTransferDataFromOperation(operation);
+    // Fees are paid by the source account, along with the amount in the transaction
+    this._inputs.push({
+      address: operation.source,
+      value: new BigNumber(transferData.fee.fee).toFixed(0),
+    });
+
+    if (transferData.coin === 'mutez') {
+      this._outputs.push({
+        // Kt addresses can only be calculated for signed transactions with an id
+        address: transferData.to,
+        // Balance
+        value: transferData.amount,
+      });
+      // The funds being transferred from the wallet
+      this._inputs.push({
+        address: transferData.from,
+        // Balance + fees + max gas + max storage are paid by the source account
+        value: transferData.amount,
+      });
+    }
   }
 
   /**
@@ -128,9 +161,6 @@ export class Transaction extends BaseTransaction {
    */
   async sign(keyPair: KeyPair): Promise<void> {
     // TODO: fail if the transaction is already signed
-    if (!keyPair.getKeys().prv) {
-      throw new SigningError('Missing private key');
-    }
     // Check if there is a transaction to sign
     if (!this._parsedTransaction) {
       throw new InvalidTransactionError('Empty transaction');
@@ -138,12 +168,7 @@ export class Transaction extends BaseTransaction {
     // Get the transaction body to sign
     const encodedTransaction = await localForger.forge(this._parsedTransaction);
 
-    // Sign the transaction offline
-    const signer = new InMemorySigner(keyPair.getKeys().prv!);
-    // TODO: remove after https://github.com/ecadlabs/taquito/issues/252 is closed
-    await signer.publicKeyHash();
-
-    const signedTransaction = await signer.sign(encodedTransaction, new Uint8Array([3]));
+    const signedTransaction = await Utils.sign(keyPair, encodedTransaction);
     this._encodedTransaction = signedTransaction.sbytes;
 
     // The transaction id can only be calculated for signed transactions

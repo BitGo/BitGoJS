@@ -18,10 +18,10 @@ describe('Tezos transaction', function() {
       should.equal(tx.inputs.length, 1);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].address.should.equal('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A');
-      tx.inputs[0].value.toString().should.equal('1004764');
+      tx.inputs[0].value.should.equal('1004764');
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal('');
-      tx.outputs[0].value.toString().should.equal('1000000');
+      tx.outputs[0].value.should.equal('1000000');
       JSON.stringify(tx.toJson()).should.equal(JSON.stringify(parsedTransaction));
       tx.toBroadcastFormat().should.equal(unsignedSerializedOriginationTransaction);
     });
@@ -33,10 +33,10 @@ describe('Tezos transaction', function() {
       should.equal(tx.inputs.length, 1);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].address.should.equal('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A');
-      tx.inputs[0].value.toString().should.equal('1004764');
+      tx.inputs[0].value.should.equal('1004764');
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal('KT1LJvp55fbdNwbisJFign9wA4cPgq9T9oc4');
-      tx.outputs[0].value.toString().should.equal('1000000');
+      tx.outputs[0].value.should.equal('1000000');
       JSON.stringify(tx.toJson()).should.equal(JSON.stringify(parsedTransaction));
       tx.toBroadcastFormat().should.equal(signedSerializedOriginationTransaction);
     });
@@ -52,10 +52,10 @@ describe('Tezos transaction', function() {
       should.equal(tx.inputs.length, 1);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].address.should.equal('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A');
-      tx.inputs[0].value.toString().should.equal('1004764');
+      tx.inputs[0].value.should.equal('1004764');
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal('KT1Dh62qPZhJvMMtL4rAnDS2uASptT6GNLMy');
-      tx.outputs[0].value.toString().should.equal('1000000');
+      tx.outputs[0].value.should.equal('1000000');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
         'sigu3cjQh8rf79aXG555fRxKzuTa2byZnvMJqkJENpdKjEwCri6SUM9fLywDC3w8e6dHRT8RRaJVQiijC9yzwqL6FSm2Jj9a',
@@ -71,10 +71,10 @@ describe('Tezos transaction', function() {
       should.equal(tx.inputs.length, 1);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].address.should.equal('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A');
-      tx.inputs[0].value.toString().should.equal('1004764');
+      tx.inputs[0].value.should.equal('1004764');
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal('KT1Dh62qPZhJvMMtL4rAnDS2uASptT6GNLMy');
-      tx.outputs[0].value.toString().should.equal('1000000');
+      tx.outputs[0].value.should.equal('1000000');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
         'sigu3cjQh8rf79aXG555fRxKzuTa2byZnvMJqkJENpdKjEwCri6SUM9fLywDC3w8e6dHRT8RRaJVQiijC9yzwqL6FSm2Jj9a',
@@ -101,6 +101,7 @@ describe('Tezos transaction', function() {
 
     it('to sign the transaction if the keys are invalid', async () => {
       const tx = new Transaction(coins.get('txtz'));
+      await tx.initFromParsedTransaction(parsedTransaction);
       const signer = new KeyPair({ pub: 'sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b' });
       await tx.sign(signer).should.be.rejectedWith('Missing private key');
     });
