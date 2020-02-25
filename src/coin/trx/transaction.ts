@@ -54,25 +54,25 @@ export class Transaction extends BaseTransaction {
     switch (rawData.contractType) {
       case ContractType.Transfer:
         this._type = TransactionType.Send;
-        const amount = new BigNumber((rawData.contract[0] as TransferContract).parameter.value.amount).toFixed(0);
+        const value = new BigNumber((rawData.contract[0] as TransferContract).parameter.value.amount).toFixed(0);
         output = {
           address: (rawData.contract[0] as TransferContract).parameter.value.to_address,
-          amount,
+          value,
         };
         input = {
           address: (rawData.contract[0] as TransferContract).parameter.value.owner_address,
-          amount,
+          value,
         };
         break;
       case ContractType.AccountPermissionUpdate:
         this._type = TransactionType.WalletInitialization;
         output = {
           address: (rawData.contract as any).owner_address,
-          amount: '0',
+          value: '0',
         };
         input = {
           address: (rawData.contract as any).owner_address,
-          amount: '0',
+          value: '0',
         };
         break;
       default:

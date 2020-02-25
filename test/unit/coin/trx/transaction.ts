@@ -10,10 +10,10 @@ describe('Tron transactions', function() {
       const tx = new Transaction(coins.get('ttrx'), UnsignedBuildTransaction as TransactionReceipt);
       tx.inputs.length.should.equal(1);
       tx.inputs[0].address.should.equal('TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz');
-      tx.inputs[0].amount.should.equal('1718');
+      tx.inputs[0].value.should.equal('1718');
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal('TNYssiPgaf9XYz3urBUqr861Tfqxvko47B');
-      tx.outputs[0].amount.should.equal('1718');
+      tx.outputs[0].value.should.equal('1718');
     });
   });
 

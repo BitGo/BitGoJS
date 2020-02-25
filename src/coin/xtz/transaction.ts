@@ -100,12 +100,12 @@ export class Transaction extends BaseTransaction {
       // Kt addresses can only be calculated for signed transactions with an id
       address: this._id ? await Utils.calculateOriginatedAddress(this._id, index) : '',
       // Balance
-      amount: operation.balance,
+      value: operation.balance,
     });
     this._inputs.push({
       address: operation.source,
       // Balance + fees + max gas + max storage are paid by the source account
-      amount: new BigNumber(operation.balance).plus(operation.fee).toString(),
+      value: new BigNumber(operation.balance).plus(operation.fee).toString(),
     });
   }
 
@@ -119,7 +119,7 @@ export class Transaction extends BaseTransaction {
     this._inputs.push({
       address: operation.source,
       // Balance + fees + max gas + max storage are paid by the source account
-      amount: operation.fee,
+      value: operation.fee,
     });
   }
 
@@ -134,7 +134,7 @@ export class Transaction extends BaseTransaction {
     // Fees are paid by the source account, along with the amount in the transaction
     this._inputs.push({
       address: operation.source,
-      amount: new BigNumber(transferData.fee.fee).toFixed(0),
+      value: new BigNumber(transferData.fee.fee).toFixed(0),
     });
 
     if (transferData.coin === 'mutez') {
@@ -142,13 +142,13 @@ export class Transaction extends BaseTransaction {
         // Kt addresses can only be calculated for signed transactions with an id
         address: transferData.to,
         // Balance
-        amount: transferData.amount,
+        value: transferData.amount,
       });
       // The funds being transferred from the wallet
       this._inputs.push({
         address: transferData.from,
         // Balance + fees + max gas + max storage are paid by the source account
-        amount: transferData.amount,
+        value: transferData.amount,
       });
     }
   }

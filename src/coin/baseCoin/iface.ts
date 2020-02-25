@@ -24,7 +24,7 @@ export interface BaseAddress {
 
 export interface Entry extends BaseAddress {
   coin?: string;
-  amount: string;
+  value: string;
 }
 
 export interface BaseFee {
