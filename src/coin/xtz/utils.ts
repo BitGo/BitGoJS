@@ -11,7 +11,7 @@ import { KeyPair } from './keyPair';
  *
  * @param {Buffer} prefix to add to the encoded payload
  * @param {Buffer} payload to encode
- * @return {any} base58 payload with a Tezos prefix
+ * @returns {any} base58 payload with a Tezos prefix
  */
 export function base58encode(prefix: Buffer, payload: Buffer): string {
   const n = Buffer.alloc(prefix.length + payload.length);
@@ -25,7 +25,7 @@ export function base58encode(prefix: Buffer, payload: Buffer): string {
  * Calculate the transaction id for a for a signed transaction.
  *
  * @param {string} encodedTransaction Signed transaction in hexadecimal
- * @return {Promise<string>} The transaction id
+ * @returns {Promise<string>} The transaction id
  */
 export async function calculateTransactionId(encodedTransaction: string): Promise<string> {
   await sodium.ready;
@@ -39,7 +39,7 @@ export async function calculateTransactionId(encodedTransaction: string): Promis
  *
  * @param {string} transactionId The transaction id
  * @param {number} index The index of the origination operation inside the transaction (starts at 0)
- * @return {Promise<string>} An originated address with the KT prefix
+ * @returns {Promise<string>} An originated address with the KT prefix
  */
 export async function calculateOriginatedAddress(transactionId: string, index: number): Promise<string> {
   // From https://github.com/TezTech/eztz/blob/cfdc4fcfc891f4f4f077c3056f414476dde3610b/src/main.js#L768
@@ -68,7 +68,7 @@ export async function calculateOriginatedAddress(transactionId: string, index: n
  * @param {KeyPair} keyPair A Key Pair with a private key set
  * @param {string} data The data in hexadecimal to sign
  * @param {Uint8Array} watermark Magic byte: 1 for block, 2 for endorsement, 3 for generic
- * @return {Promise<SignResponse>}
+ * @returns {Promise<SignResponse>}
  */
 export async function sign(keyPair: KeyPair, data: string, watermark?: Uint8Array): Promise<SignResponse> {
   if (!keyPair.getKeys().prv) {
@@ -86,24 +86,30 @@ export async function sign(keyPair: KeyPair, data: string, watermark?: Uint8Arra
  * @param {string} contractAddress The wallet contract address with the funds to withdraw
  * @param {string} destinationAddress The address to transfer the funds to
  * @param {number} amount Number mutez to transfer
- * @return {any} A JSON representation of the Michelson script to sign and approve a transfer
+ * @param {string} contractCounter Wallet counter to use in the transaction
+ * @returns {any} A JSON representation of the Michelson script to sign and approve a transfer
  */
-export function generateDataToSign(contractAddress: string, destinationAddress: string, amount: string): any {
+export function generateDataToSign(
+  contractAddress: string,
+  destinationAddress: string,
+  amount: string,
+  contractCounter: string,
+): any {
   if (!isValidOriginatedAddress(contractAddress)) {
     throw new Error('Invalid contract address ' + contractAddress + '. An originated account address was expected');
   }
   if (!isValidAddress(destinationAddress)) {
     throw new Error('Invalid destination address ' + destinationAddress);
   }
-  return genericMultisigDataToSign(contractAddress, destinationAddress, amount);
+  return genericMultisigDataToSign(contractAddress, destinationAddress, amount, contractCounter);
 }
 
 /**
  * Returns whether or not the string is a valid Tezos hash of the given type
  *
- * @param {String} hash - the string to validate
+ * @param {string} hash - the string to validate
  * @param {HashType} hashType - the type of the provided hash
- * @returns {Boolean}
+ * @returns {boolean}
  */
 export function isValidHash(hash: string, hashType: HashType): boolean {
   // Validate encoding
@@ -128,8 +134,8 @@ export function isValidHash(hash: string, hashType: HashType): boolean {
 /**
  * Returns whether or not the string is a valid Tezos address
  *
- * @param {String} hash - the address to validate
- * @returns {Boolean}
+ * @param {string} hash - the address to validate
+ * @returns {boolean}
  */
 export function isValidAddress(hash: string): boolean {
   return isValidImplicitAddress(hash) || isValidHash(hash, hashTypes.KT);
@@ -138,8 +144,8 @@ export function isValidAddress(hash: string): boolean {
 /**
  * Returns whether or not the string is a valid Tezos implicit account address
  *
- * @param {String} hash - the address to validate
- * @returns {Boolean}
+ * @param {string} hash - the address to validate
+ * @returns {boolean}
  */
 export function isValidImplicitAddress(hash: string): boolean {
   return isValidHash(hash, hashTypes.tz1) || isValidHash(hash, hashTypes.tz2) || isValidHash(hash, hashTypes.tz3);
@@ -148,8 +154,8 @@ export function isValidImplicitAddress(hash: string): boolean {
 /**
  * Returns whether or not the string is a valid Tezos originated account address
  *
- * @param {String} hash - the address to validate
- * @returns {Boolean}
+ * @param {string} hash - the address to validate
+ * @returns {boolean}
  */
 export function isValidOriginatedAddress(hash: string): boolean {
   return isValidHash(hash, hashTypes.KT);
@@ -158,8 +164,8 @@ export function isValidOriginatedAddress(hash: string): boolean {
 /**
  * Returns whether or not the string is a valid Tezos signature
  *
- * @param {String} hash - the signature to validate
- * @returns {Boolean}
+ * @param {string} hash - the signature to validate
+ * @returns {boolean}
  */
 export function isValidSignature(hash: string): boolean {
   return (
@@ -173,8 +179,8 @@ export function isValidSignature(hash: string): boolean {
 /**
  * Returns whether or not the string is a valid Tezos block hash
  *
- * @param {String} hash - the address to validate
- * @returns {Boolean}
+ * @param {string} hash - the address to validate
+ * @returns {boolean}
  */
 export function isValidBlockHash(hash: string): boolean {
   return isValidHash(hash, hashTypes.b);
@@ -183,8 +189,8 @@ export function isValidBlockHash(hash: string): boolean {
 /**
  * Returns whether or not the string is a valid Tezos transaction hash
  *
- * @param {String} hash - the address to validate
- * @returns {Boolean}
+ * @param {string} hash - the address to validate
+ * @returns {boolean}
  */
 export function isValidTransactionHash(hash: string): boolean {
   return isValidHash(hash, hashTypes.o);
@@ -193,9 +199,9 @@ export function isValidTransactionHash(hash: string): boolean {
 /**
  * Returns whether or not the string is a valid Tezos key given a prefix
  *
- * @param {String} hash - the key to validate
+ * @param {string} hash - the key to validate
  * @param {HashType} hashType - the type of the provided hash
- * @returns {Boolean}
+ * @returns {boolean}
  */
 export function isValidKey(hash: string, hashType: HashType): boolean {
   return isValidHash(hash, hashType);
