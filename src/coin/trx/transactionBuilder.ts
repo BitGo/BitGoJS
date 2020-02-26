@@ -38,7 +38,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {Transaction} Tron transaction
    */
   protected fromImplementation(rawTransaction: TransactionReceipt | string): Transaction {
-    // TODO: add checks to ensure the raw_data, raw_data_hex, and txID are from the same transaction
     if (typeof rawTransaction === 'string') {
       const transaction = JSON.parse(rawTransaction);
       return new Transaction(this._coinConfig, transaction);

@@ -5,7 +5,7 @@ import { hashTypes, isValidKey } from '../../src/coin/xtz/utils';
  * The the entry values from a transaction operation on a generic multisig smart contract.
  *
  * @param {TransactionOp} operation A transaction operation JSON
- * @return {TransferData} Information about the destination, token and transfer amount
+ * @returns {TransferData} Information about the destination, token and transfer amount
  */
 export function getMultisigTransferDataFromOperation(operation: TransactionOp): TransferData {
   const fee = {
@@ -70,7 +70,7 @@ export function getMultisigTransferDataFromOperation(operation: TransactionOp): 
  *        in the next transaction
  * @param {string[]} signatures signatures List of signatures authorizing the funds transfer form
  *        the multisig wallet
- * @return {TransactionOp} A Tezos transaction operation
+ * @returns {TransactionOp} A Tezos transaction operation
  */
 export function transactionOperation(
   counter: string,
@@ -112,7 +112,18 @@ export function transactionOperation(
 
 /**
  * Create a multisig wallet transaction operation.
+ *
  * @see {@link genericMultisigTransactionOperation}
+ * @param counter
+ * @param source
+ * @param fee
+ * @param gasLimit
+ * @param storageLimit
+ * @param amount
+ * @param contractAddress
+ * @param contractCounter
+ * @param destinationAddress
+ * @param signatures
  */
 export function genericMultisigTransactionOperation(
   counter: string,
@@ -146,7 +157,7 @@ export function genericMultisigTransactionOperation(
  * @param {number} amount Number of Mutez to be transferred
  * @param {string} contractCounter Multisig contract counter number
  * @param {string[]} signatures Multisig wallet signatures
- * @return The parameters object
+ * @returns The parameters object
  */
 function genericMultisigTransferParams(
   destinationAddress: string,
@@ -178,13 +189,19 @@ function genericMultisigTransferParams(
  * @param contractAddress The multisig smart contract address
  * @param {string} destinationAddress The destination account address (implicit or originated)
  * @param {number} amount Number of mutez to transfer
- * @return A JSON representation of the Michelson script to sign and approve a transfer
+ * @param {string} contractCounter Wallet counter to use in the transaction
+ * @returns A JSON representation of the Michelson script to sign and approve a transfer
  */
-export function genericMultisigDataToSign(contractAddress: string, destinationAddress: string, amount: string) {
+export function genericMultisigDataToSign(
+  contractAddress: string,
+  destinationAddress: string,
+  amount: string,
+  contractCounter: string,
+) {
   const data = {
     prim: 'Pair',
     args: [
-      { int: '0' },
+      { int: contractCounter },
       {
         prim: 'Left',
         args: [transferToAccount(destinationAddress, amount)],
@@ -238,6 +255,10 @@ export function genericMultisigDataToSign(contractAddress: string, destinationAd
 
 /**
  * Util function to build a Michelson Pair object.
+ *
+ * @param data
+ * @param type
+ * @param contractAddress
  */
 function buildPair(data: any, type: any, contractAddress: any) {
   return {
@@ -324,7 +345,7 @@ function transferToOriginatedAccount(address: string, amount: string) {
  * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
  * @param {string} balance New multisig account initial balance taken from the source account
  * @param {string} pubKey The public key to reveal
- * @return An origination operation
+ * @returns An origination operation
  */
 export function revealOperation(
   counter: string,
@@ -356,7 +377,7 @@ export function revealOperation(
  * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
  * @param {string} balance New multisig account initial balance taken from the source account
  * @param {string[]} pubKeys List of public keys of the multisig owner
- * @return An origination operation
+ * @returns An origination operation
  */
 export function genericMultisigOriginationOperation(
   counter: string,
