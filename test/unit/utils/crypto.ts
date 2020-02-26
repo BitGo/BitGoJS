@@ -1,4 +1,4 @@
-import * as should from 'should';
+import should from 'should';
 
 import * as Crypto from '../../../src/utils/crypto';
 

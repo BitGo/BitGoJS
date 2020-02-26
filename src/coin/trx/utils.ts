@@ -1,6 +1,5 @@
-import * as assert from 'assert';
+import assert from 'assert';
 import * as tronweb from 'tronweb';
-import { HDNode, ECPair } from 'bitgo-utxo-lib';
 import { protocol } from '../../../resources/trx/protobuf/tron';
 
 import { UtilsError } from '../baseCoin/errors';
@@ -13,18 +12,33 @@ import { ContractType, PermissionType } from './enum';
 export type TronBinaryLike = ByteArray | Buffer | Uint8Array | string;
 export type ByteArray = number[];
 
+/**
+ * @param address
+ */
 export function isBase58Address(address: string): boolean {
   return tronweb.utils.crypto.isAddressValid(address);
 }
 
+/**
+ * @param str
+ */
 export function getByteArrayFromHexAddress(str: string): ByteArray {
   return tronweb.utils.code.hexStr2byteArray(str);
 }
 
+/**
+ * @param arr
+ */
 export function getHexAddressFromByteArray(arr: ByteArray): string {
   return tronweb.utils.code.byteArray2hexStr(arr);
 }
 
+/**
+ * @param messageToVerify
+ * @param base58Address
+ * @param sigHex
+ * @param useTronHeader
+ */
 export function verifySignature(
   messageToVerify: string,
   base58Address: string,
@@ -46,6 +60,9 @@ export function verifySignature(
   return tronweb.Trx.verifySignature(messageToVerify, base58Address, sigHex, useTronHeader);
 }
 
+/**
+ * @param base58
+ */
 export function getHexAddressFromBase58Address(base58: string): string {
   // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
   // but they don't surface this call in index.js
@@ -53,37 +70,62 @@ export function getHexAddressFromBase58Address(base58: string): string {
   return getHexAddressFromByteArray(bytes);
 }
 
+/**
+ * @param privateKey
+ */
 export function getPubKeyFromPriKey(privateKey: TronBinaryLike): ByteArray {
   return tronweb.utils.crypto.getPubKeyFromPriKey(privateKey);
 }
 
+/**
+ * @param privateKey
+ */
 export function getAddressFromPriKey(privateKey: TronBinaryLike): ByteArray {
   return tronweb.utils.crypto.getAddressFromPriKey(privateKey);
 }
 
+/**
+ * @param address
+ */
 export function getBase58AddressFromByteArray(address: ByteArray): string {
   return tronweb.utils.crypto.getBase58CheckAddress(address);
 }
 
+/**
+ * @param hex
+ */
 export function getBase58AddressFromHex(hex: string): string {
   const arr = getByteArrayFromHexAddress(hex);
   return getBase58AddressFromByteArray(arr);
 }
 
+/**
+ * @param privateKey
+ * @param transaction
+ */
 export function signTransaction(privateKey: string | ByteArray, transaction: TransactionReceipt): TransactionReceipt {
   return tronweb.utils.crypto.signTransaction(privateKey, transaction);
 }
 
+/**
+ * @param message
+ * @param privateKey
+ * @param useTronHeader
+ */
 export function signString(message: string, privateKey: string | ByteArray, useTronHeader = true): string {
   return tronweb.Trx.signString(message, privateKey, useTronHeader);
 }
 
+/**
+ * @param pubBytes
+ */
 export function getRawAddressFromPubKey(pubBytes: TronBinaryLike): ByteArray {
   return tronweb.utils.crypto.computeAddress(pubBytes);
 }
 
 /**
  * Decodes a hex encoded transaction in its protobuf representation.
+ *
  * @param hexString raw_data_hex field from tron transactions
  */
 export function decodeTransaction(hexString: string): RawData {
@@ -100,11 +142,11 @@ export function decodeTransaction(hexString: string): RawData {
   switch (rawTransaction.contracts[0].parameter.type_url) {
     case 'type.googleapis.com/protocol.TransferContract':
       contractType = ContractType.Transfer;
-      contract = this.decodeTransferContract(rawTransaction.contracts[0].parameter.value);
+      contract = exports.decodeTransferContract(rawTransaction.contracts[0].parameter.value);
       break;
     case 'type.googleapis.com/protocol.AccountPermissionUpdateContract':
       contractType = ContractType.AccountPermissionUpdate;
-      contract = this.decodeAccountPermissionUpdateContract(rawTransaction.contracts[0].parameter.value);
+      contract = exports.decodeAccountPermissionUpdateContract(rawTransaction.contracts[0].parameter.value);
       break;
     default:
       throw new UtilsError('Unsupported contract type');
@@ -120,6 +162,7 @@ export function decodeTransaction(hexString: string): RawData {
 
 /**
  * Decodes a transaction's raw field from a base64 encoded string. This is a protobuf representation.
+ *
  * @param hexString this is the raw hexadecimal encoded string. Doc found in the following link.
  * @example
  * @see {@link https://github.com/BitGo/bitgo-account-lib/blob/5f282588701778a4421c75fa61f42713f56e95b9/resources/trx/protobuf/tron.proto#L319}
@@ -146,6 +189,7 @@ export function decodeRawTransaction(
 
 /**
  * Indicates whether the passed string is a safe hex string for tron's purposes.
+ *
  * @param hex A valid hex string must be a string made of numbers and characters and has an even length.
  */
 export function isValidHex(hex: string): boolean {
@@ -153,6 +197,7 @@ export function isValidHex(hex: string): boolean {
 }
 
 /** Deserialize the segment of the txHex which corresponds with the details of the transfer
+ *
  * @param transferHex is the value property of the "parameter" field of contractList[0]
  * */
 export function decodeTransferContract(transferHex: string): TransferContract[] {
@@ -202,6 +247,7 @@ export function decodeTransferContract(transferHex: string): TransferContract[] 
 /**
  * Deserialize the segment of the txHex corresponding with the details of the contract which updates
  * account permission
+ *
  * @param {string} base64
  * @returns {AccountPermissionUpdateContract}
  */
@@ -229,6 +275,9 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
   };
 }
 
+/**
+ * @param raw
+ */
 function createPermission(raw: { permissionName: string; threshold: number }): Permission {
   let permissionType: PermissionType;
   const permission = raw.permissionName.toLowerCase().trim();

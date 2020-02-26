@@ -1,4 +1,4 @@
-import * as should from 'should';
+import should from 'should';
 import { TransferContract, AccountPermissionUpdateContract } from '../../../../src/coin/trx/iface';
 import { Utils } from '../../../../src/coin/trx/index';
 
