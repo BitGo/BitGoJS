@@ -1745,8 +1745,13 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       let recoveryAmount = totalInputAmount - approximateFee;
       let krsFee;
       if (isKrsRecovery) {
-        krsFee = yield self.calculateFeeAmount({ provider: params.krsProvider, amount: recoveryAmount });
-        recoveryAmount -= krsFee;
+        try {
+          krsFee = yield self.calculateFeeAmount({ provider: params.krsProvider, amount: recoveryAmount });
+          recoveryAmount -= krsFee;
+        } catch (err) {
+          // Don't let this error block the recovery - 
+          console.dir(err);
+        }
       }
 
       if (recoveryAmount < 0) {
