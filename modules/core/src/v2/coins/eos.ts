@@ -759,7 +759,7 @@ export class Eos extends BaseCoin {
     return co(function*() {
       const chainInfo = yield self.getChainInfoFromNode();
       const headBlockInfoResult = yield self.getBlockFromNode({ blockNumOrId: chainInfo.head_block_num });
-      const expireSeconds = 3600; // maximum tx expire time of 1h
+      const expireSeconds = 28800; // maximum tx expire time of 8h
       const chainDate = new Date(chainInfo.head_block_time + 'Z');
       const expirationDate = new Date(chainDate.getTime() + expireSeconds * 1000);
 
