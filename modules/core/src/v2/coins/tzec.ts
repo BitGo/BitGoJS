@@ -26,7 +26,7 @@ export class Tzec extends Zec {
    * @returns {*}
    */
   prepareTransactionBuilder(txBuilder: ZecTransactionBuilder): any {
-    txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
+    txBuilder.setVersion(4);
     txBuilder.setVersionGroupId(0x892f2085);
     return txBuilder;
   }

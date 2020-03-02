@@ -1,3 +1,4 @@
+import * as utxolib from '@bitgo/utxo-lib';
 import { BitGo } from '../../bitgo';
 import { InvalidAddressError } from '../../errors';
 import { AbstractUtxoCoin } from './abstractUtxoCoin';
@@ -9,22 +10,7 @@ const co = Bluebird.coroutine;
 
 export class Ltc extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?) {
-    // TODO: move to @bitgo/utxo-lib (BG-6821)
-    super(bitgo, network || {
-      messagePrefix: '\x19Litecoin Signed Message:\n',
-      bip32: {
-        public: 0x0488b21e,
-        private: 0x0488ade4,
-      },
-      bech32: 'ltc',
-      pubKeyHash: 0x30,
-      scriptHash: 0x32,
-      wif: 0xb0,
-      dustThreshold: 0, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L360-L365
-      dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
-      feePerKb: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56
-      coin: 'ltc',
-    });
+    super(bitgo, network || utxolib.networks.litecoin);
     // use legacy script hash version, which is the current Bitcoin one
     this.altScriptHash = this.getCoinLibrary().networks.bitcoin.scriptHash;
     // do not support alt destinations in prod
