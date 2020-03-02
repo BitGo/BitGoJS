@@ -876,10 +876,12 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/BTCUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=bitcoin&vs_currencies=USD')
       .reply(200, {
-        last: 10000,
+        bitcoin: {
+          usd: 10000,
+        },
       });
   }
 }
@@ -1089,10 +1091,12 @@ module.exports.nockBchRecovery = function nockBchRecovery(bitgo, isKrsRecovery) 
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/BCHUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=bitcoin-cash&vs_currencies=USD')
       .reply(200, {
-        last: 1000,
+        'bitcoin-cash': {
+          usd: 1000,
+        },
       });
   }
 };
@@ -2053,10 +2057,12 @@ module.exports.nockLtcRecovery = function(isKrsRecovery) {
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/LTCUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=litecoin&vs_currencies=USD')
       .reply(200, {
-        last: 1000,
+        litecoin: {
+          usd: 1000,
+        },
       });
   }
 };
@@ -2245,10 +2251,12 @@ module.exports.nockZecRecovery = function(bitgo, isKrsRecovery) {
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/ZECUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=zcash&vs_currencies=USD')
       .reply(200, {
-        last: 1000,
+        zcash: {
+          usd: 1000,
+        },
       });
   }
 };
@@ -2377,10 +2385,12 @@ module.exports.nockDashRecovery = function(bitgo, isKrsRecovery) {
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/DASHUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=dash&vs_currencies=USD')
       .reply(200, {
-        last: 1000,
+        dash: {
+          usd: 1000,
+        },
       });
   }
 };
