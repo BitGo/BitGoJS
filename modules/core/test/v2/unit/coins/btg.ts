@@ -15,7 +15,7 @@ describe('BTG:', function() {
 
   describe('Should sign transaction', function() {
     it('should successfully sign a prebuilt transaction', co(function *() {
-      const btg = bitgo.coin('tbtg');
+      const btg = bitgo.coin('btg');
       const signedTransaction = yield btg.signTransaction({
         txPrebuild: {
           txHex: '0100000003045a288365350088034b1d894fc1e800e52fb665d21fbf169fbf16475726ee030000000000ffffffffca9fd5670ba2aeed34a0e4c28751b18d1cbdc3bd5a79d3b9bb00a3f67b557c420100000000ffffffffca9fd5670ba2aeed34a0e4c28751b18d1cbdc3bd5a79d3b9bb00a3f67b557c420000000000ffffffff023cbc16000000000017a914ad8a56d62362745789ba6f3c2864a02749e07dac87808d5b000000000017a914976a23395c9f172ab626b8e8278d37436e25472b8700000000',

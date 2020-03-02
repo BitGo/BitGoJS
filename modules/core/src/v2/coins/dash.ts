@@ -1,3 +1,4 @@
+import * as utxolib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
@@ -9,22 +10,7 @@ import * as common from '../../common';
 
 export class Dash extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?) {
-    // TODO: move to @bitgo/utxo-lib (BG-6821)
-    // https://github.com/dashpay/dash/blob/master/src/chainparams.cpp#L152
-    super(bitgo, network || {
-      messagePrefix: '\x19Dash Signed Message:\n',
-      bip32: {
-        public: 0x0488b21e,
-        private: 0x0488ade4,
-      },
-      pubKeyHash: 0x4c,
-      scriptHash: 0x10,
-      wif: 0xcc,
-      dustThreshold: 0, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L360-L365
-      dustSoftThreshold: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.h#L53
-      feePerKb: 100000, // https://github.com/litecoin-project/litecoin/blob/v0.8.7.2/src/main.cpp#L56,
-      coin: 'dash',
-    });
+    super(bitgo, network || utxolib.networks.dash);
   }
 
   static createInstance(bitgo: BitGo): BaseCoin {
