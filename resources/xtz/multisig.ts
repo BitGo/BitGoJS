@@ -167,6 +167,10 @@ function genericMultisigTransferParams(
 ) {
   const transactionSignatures: any[] = [];
   signatures.forEach(s => transactionSignatures.push({ prim: 'Some', args: [{ string: s }] }));
+  // The script has to provide m signatures (from n-of-m)
+  for (let i = 0; i <= 3 - transactionSignatures.length; i++) {
+    transactionSignatures.push({ prim: 'None' });
+  }
   return {
     entrypoint: 'main',
     value: {
@@ -343,7 +347,6 @@ function transferToOriginatedAccount(address: string, amount: string) {
  * @param {string} fee Fees in mutez to pay by the source account
  * @param {string} gasLimit Maximum amount in mutez to spend in gas fees
  * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
- * @param {string} balance New multisig account initial balance taken from the source account
  * @param {string} pubKey The public key to reveal
  * @returns An origination operation
  */

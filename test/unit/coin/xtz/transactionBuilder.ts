@@ -200,7 +200,7 @@ describe('Tezos Transaction builder', function() {
       txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(32) }).getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('oo5hLZZDW3Fakjcv9prqxibLqDP4G67yH96ZfSgHdVuvGktrQYh');
+      tx.id.should.equal('oohPCEvH4RvSW1fjHrTbqQrKN7YrxX1XUzVPHmcNCdanqFJQKhU');
       tx.type.should.equal(TransactionType.Send);
       should.equal(tx.inputs.length, 2);
       should.equal(tx.outputs.length, 1);
@@ -212,10 +212,10 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[0].value.should.equal('1000000');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigtcWyCrWg2qHbKhReCee3Q63WxJqC2GqMzUAprtLi1BXyGjyyBeHa5mr56jPd9tZsy5Wm67hFouSwwyiSj8WYyF1ghcqEw',
+        'sigp4fNuaduyKz85erjQ4ycrNHapzThk5hEYy9qAFVfPRM8YCDUfTNwfWSKRiJV7pqPkEu5ETCUxWydAkeRzrhr9QCcrcdaP',
       );
       tx.toBroadcastFormat().should.equal(
-        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000bc070707070000050502000000430320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a0080897a034f034d031b0200000067050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059ea14ded0e7ad674c2ca146543ba9cfc15b3c9e17482f85617470e18089faccd369782e33c96ddd5fa4cd45b866fa6990a71dd3a7002faaa2c8c4550d29957130',
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000c0070707070000050502000000430320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a0080897a034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705903060306c74f2082f4be756ca41f5a89210bfc0fd9924540bab5a3f03f2790ad9814cfa050cb81bb4f3acceffc074bda07de82b832587531f0ccc4b02d1891e6da6f4fee',
       );
     });
 
@@ -242,7 +242,7 @@ describe('Tezos Transaction builder', function() {
       txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(32) }).getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('onyfdBSVYPsVBdzxSAU9BSSxnTD2UMN4THdoxtcdryN7YKDcn15');
+      tx.id.should.equal('ooSga4Rx815WHJmh8TZbMWddTrRmXqUKo6myYR2BrESTE7jBF43');
       tx.type.should.equal(TransactionType.Send);
       should.equal(tx.inputs.length, 2);
       should.equal(tx.outputs.length, 1);
@@ -254,7 +254,7 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[0].value.should.equal('100');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigsGZAkXDAV65hwgFkCdmFKMVW2tSBmKzbkGQLMFEuH6g1NbzR5iTTqe8Fe8mhR1RVAXHFCW3JTG3vc5ky8LBpSo7rgX8wq',
+        'sigc9nhZtBDckvrN9Nen4ZGhMJt5Bx6ubEWgaDzDSGAeFG6ix6GGZVYxmNeuxeNkwN3JrXyQGimCKqzRRdh3xVqqsemNQDcY',
       );
     });
 
@@ -289,7 +289,7 @@ describe('Tezos Transaction builder', function() {
       txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(32) }).getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('oo1nynTzCSRhhJvxXznnGthaLwBhwngnBTh3yE4aaLFa4pZ8ueF');
+      tx.id.should.equal('ooT43qkUXB5VHz83hYaTiUNd1LBqkbULqxoZaPmKhj8BkeHdQVD');
       tx.type.should.equal(TransactionType.Send);
       should.equal(tx.inputs.length, 4);
       should.equal(tx.outputs.length, 2);
@@ -307,7 +307,7 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[1].value.should.equal('100');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigNgKdACAYYzXAmkZMe1qmprdq1YdmifgXzH4ru84BpB3xN7PeYExkh1y4wYfK1UdCKDH6D5RNfvMBChgZ664SvJj8B2chz',
+        'sigXmArEwQWVeKMPLSs6eqiCyFD4xtnMPxGZaxW9NwYa5j2iNpjxBLYfga2HFcptTFbbiDwYt5KtKMnAwvR7bGUMALZmdzkE',
       );
     });
 
