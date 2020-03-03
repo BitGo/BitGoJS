@@ -75,6 +75,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       }
       // If the signer is not the source and it is a send transaction, add it to the list of
       // multisig wallet signers
+      // TODO: add an index field into BaseKey to allow different keys order
       this._multisigSignerKeyPairs.push(signer);
     } else {
       this._sourceKeyPair = signer;
@@ -95,6 +96,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     const contents: Operation[] = [];
+    // TODO: cleanup (breakdown) this switch
     switch (this._type) {
       case TransactionType.AddressInitialization:
         const revealOp = revealOperation(
