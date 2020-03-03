@@ -78,7 +78,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected buildImplementation(): Promise<Transaction> {
+  protected async buildImplementation(): Promise<Transaction> {
     // This is a no-op since Tron transactions are built from
     if (!this.transaction.id) {
       throw new BuildTransactionError('A valid transaction must have an id');

@@ -41,7 +41,7 @@ export class TestTransactionBuilder extends BaseTransactionBuilder {
     return this._transaction;
   }
 
-  public buildImplementation(): Promise<BaseTransaction> {
+  public async buildImplementation(): Promise<BaseTransaction> {
     return Promise.resolve(this._transaction);
   }
 
