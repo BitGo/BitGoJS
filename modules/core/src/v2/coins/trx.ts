@@ -352,6 +352,7 @@ export class Trx extends BaseCoin {
 
   /**
    * Query our explorer for the balance of an address
+   *
    * @param address {String} the address encoded in hex
    * @param callback
    * @returns {BigNumber} address balance
