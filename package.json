@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "1.0.0",
+  "version": "1.0.0-alpha.1",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -37,7 +37,7 @@
     "@taquito/signer": "^6.0.3-beta.0",
     "bignumber.js": "^9.0.0",
     "bitgo-utxo-lib": "^1.6.0",
-    "blake2b": "^2.1.3",
+    "blake2b": "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
     "bs58check": "^2.1.2",
     "libsodium-wrappers": "^0.7.6",
     "protobufjs": "^6.8.8",
