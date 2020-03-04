@@ -22,14 +22,23 @@ export type Seed = {
 
 export type KeyPairOptions = Seed | PrivateKey | PublicKey;
 
+/**
+ * @param source
+ */
 export function isSeed(source: KeyPairOptions): source is Seed {
   return (source as Seed).seed !== undefined;
 }
 
+/**
+ * @param source
+ */
 export function isPrivateKey(source: KeyPairOptions): source is PrivateKey {
   return (source as PrivateKey).prv !== undefined;
 }
 
+/**
+ * @param source
+ */
 export function isPublicKey(source: KeyPairOptions): source is PublicKey {
   return (source as PublicKey).pub !== undefined;
 }
@@ -81,7 +90,7 @@ export interface Fee extends BaseFee {
  */
 export interface TransferData {
   amount: string;
-  coin: string;
+  coin?: string;
   from: string;
   to: string;
   fee: Fee;

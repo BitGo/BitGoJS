@@ -1,6 +1,10 @@
 import { OriginationOp, RevealOp, TransactionOp, TransferData } from '../../src/coin/xtz/iface';
 import { hashTypes, isValidKey } from '../../src/coin/xtz/utils';
 
+// Default n of m for multisig wallets
+const DEFAULT_N = 2;
+const DEFAULT_M = 3;
+
 /**
  * The the entry values from a transaction operation on a generic multisig smart contract.
  *
@@ -157,6 +161,7 @@ export function genericMultisigTransactionOperation(
  * @param {number} amount Number of Mutez to be transferred
  * @param {string} contractCounter Multisig contract counter number
  * @param {string[]} signatures Multisig wallet signatures
+ * @param {number} m The number of owners for the multisig wallet being used
  * @returns The parameters object
  */
 function genericMultisigTransferParams(
@@ -164,11 +169,13 @@ function genericMultisigTransferParams(
   amount: string,
   contractCounter: string,
   signatures: string[],
+  m?: number,
 ) {
   const transactionSignatures: any[] = [];
   signatures.forEach(s => transactionSignatures.push({ prim: 'Some', args: [{ string: s }] }));
   // The script has to provide m signatures (from n-of-m)
-  for (let i = 0; i <= 3 - transactionSignatures.length; i++) {
+  const sigLength = DEFAULT_M - transactionSignatures.length;
+  for (let i = 0; i <= sigLength; i++) {
     transactionSignatures.push({ prim: 'None' });
   }
   return {

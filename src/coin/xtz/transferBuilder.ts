@@ -2,7 +2,8 @@ import { BuildTransactionError } from '../baseCoin/errors';
 import { isValidOriginatedAddress } from './utils';
 import { TransferData } from './iface';
 
-// TODO: create BaseTransferBuilder and move common fields there
+/** Tezos transfer builder. */
+// TODO: implement BaseTransferBuilder
 export class TransferBuilder {
   private _amount: string;
   private _coin: string;
