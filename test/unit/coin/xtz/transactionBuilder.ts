@@ -3,7 +3,7 @@ import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import * as testData from '../../../resources/xtz/xtz';
 import { getBuilder, Xtz } from '../../../../src';
-import { KeyPair } from '../../../../src/coin/xtz';
+import { KeyPair, TransactionBuilder } from '../../../../src/coin/xtz';
 
 describe('Tezos Transaction builder', function() {
   const defaultKeyPair = new Xtz.KeyPair({
@@ -256,6 +256,9 @@ describe('Tezos Transaction builder', function() {
       tx.signature[0].should.equal(
         'sigc9nhZtBDckvrN9Nen4ZGhMJt5Bx6ubEWgaDzDSGAeFG6ix6GGZVYxmNeuxeNkwN3JrXyQGimCKqzRRdh3xVqqsemNQDcY',
       );
+      tx.toBroadcastFormat().should.equal(
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000db0707070700000505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603066c42f1e015704fce715189cd094b67e9052b059bff39596dd7d5aa4c21fd72682dd7a651f09b7cd694647820103c106cccb8ae3d33d7590e298a4a8b3f0dc28e',
+      );
     });
 
     it('a send transaction to multiple destinations', async () => {
@@ -309,6 +312,9 @@ describe('Tezos Transaction builder', function() {
       tx.signature[0].should.equal(
         'sigXmArEwQWVeKMPLSs6eqiCyFD4xtnMPxGZaxW9NwYa5j2iNpjxBLYfga2HFcptTFbbiDwYt5KtKMnAwvR7bGUMALZmdzkE',
       );
+      tx.toBroadcastFormat().should.equal(
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000db0707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603066c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2501e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000bf070707070002050502000000420320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a00a401034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603064ab4d457fdd8a3077c66c02b05b166c541ce4e69aac3489a37d5f27cd1cb7ae50e529c16fff7041140a9809ad9e9884d5f740c14e7f9f28fe9e3f04a6a5a8c7c',
+      );
     });
 
     it('a send transaction to multiple destinations from implicit account', async () => {
@@ -349,9 +355,89 @@ describe('Tezos Transaction builder', function() {
         '09f5686021aadcfc00063b0873055c2e7c841398fece3d7865a8ed2756708d4a6c01a1525e289aed93119c44fd3aa8e9df8522e0d80d9c25978717e85281026f00006b5ddaef3fb5d7c151cfb36fbe43a7a066777394006c01a1525e289aed93119c44fd3aa8e9df8522e0d80d9c25988717e85281026f0001faf711f98d3a978656651c30875138c086fa871100fcf189b364c021e4be1a032f3867445e0c62ca01047fb853fe02d038e62fcad02ffca1d05e4b5a4e4fdc3ce6fc11607c9ca8ceca6fd7335d3dab6439ce2dee11',
       );
     });
+
+    it('a multisig send transaction with the signatures in custom order', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.Send);
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter('0');
+      txBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .gasLimit('33971')
+        .storageLimit('1292')
+        .dataToSign('00');
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      // Multisig keys
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(18) }).getKeys().prv, index: 2 });
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv, index: 1 });
+      const tx = await txBuilder.build();
+      const signatures = tx.toJson().contents[0].parameters.value.args[1];
+      signatures[0].prim.should.equal('None');
+      signatures[1].prim.should.equal('Some');
+      signatures[1].args[0].string.should.equal(
+        'sigUxvCQSEWQvZrf3yS2VjSTBWycMPe3zBBo6EWva2d3tHV1DKZNUs8b5fmqQeXWvdSSXztx48UsPY5FmJiDofmPSZ6SUjZt',
+      );
+      signatures[2].prim.should.equal('Some');
+      signatures[2].args[0].string.should.equal(
+        'sigiC286gLc1SSWHwKydczwwdwTUPv7e9mkPeHzfE9wEG9PKZ6fUcmrMeYwcH7t9fWsnozB7Fay2uxkmi1u1X1bw3MgJUNpu',
+      );
+    });
+
+    it('a multisig send transaction with the signatures in default order', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.Send);
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter('0');
+      txBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .gasLimit('33971')
+        .storageLimit('1292')
+        .dataToSign('00');
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      // Multisig keys
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(18) }).getKeys().prv });
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv });
+      const tx = await txBuilder.build();
+      const signatures = tx.toJson().contents[0].parameters.value.args[1];
+      signatures[0].prim.should.equal('Some');
+      signatures[0].args[0].string.should.equal(
+        'sigiC286gLc1SSWHwKydczwwdwTUPv7e9mkPeHzfE9wEG9PKZ6fUcmrMeYwcH7t9fWsnozB7Fay2uxkmi1u1X1bw3MgJUNpu',
+      );
+      signatures[1].prim.should.equal('Some');
+      signatures[1].args[0].string.should.equal(
+        'sigUxvCQSEWQvZrf3yS2VjSTBWycMPe3zBBo6EWva2d3tHV1DKZNUs8b5fmqQeXWvdSSXztx48UsPY5FmJiDofmPSZ6SUjZt',
+      );
+      signatures[2].prim.should.equal('None');
+    });
   });
 
   describe('should fail to sign', () => {
+    let genericTxBuilder: any;
+
+    beforeEach(() => {
+      genericTxBuilder = getBuilder('txtz');
+      genericTxBuilder.type(TransactionType.Send);
+      genericTxBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      genericTxBuilder.source(defaultKeyPair.getAddress());
+      genericTxBuilder.counter('0');
+      genericTxBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .gasLimit('33971')
+        .storageLimit('1292')
+        .dataToSign('00');
+    });
+
     it('a transaction with no source account', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.WalletInitialization);
@@ -363,6 +449,46 @@ describe('Tezos Transaction builder', function() {
       txBuilder.from(testData.emptyUnsignedSerializedOriginationTransaction);
       txBuilder.type(TransactionType.WalletInitialization);
       should.throws(() => txBuilder.sign({ key: new KeyPair().getKeys().prv }));
+    });
+
+    it('a transaction with some keys with custom index', async () => {
+      genericTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      // Multisig keys
+      genericTxBuilder.sign({ key: new KeyPair().getKeys().prv });
+      genericTxBuilder.sign({ key: new KeyPair().getKeys().prv });
+      should.throws(
+        () => genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 2 }),
+        new RegExp('Custom index has to be set for all multisig contract signing keys or none'),
+      );
+    });
+
+    it('a transaction with some keys without custom index', async () => {
+      genericTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      // Multisig keys
+      genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 0 });
+      genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 1 });
+      should.throws(
+        () => genericTxBuilder.sign({ key: new KeyPair().getKeys().prv }),
+        new RegExp('Custom index has to be set for all multisig contract signing keys or none'),
+      );
+    });
+
+    it('a transaction with a key with invalid custom index', async () => {
+      genericTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      should.throws(
+        () => genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 3 }),
+        new RegExp('Custom index cannot be greater'),
+      );
+    });
+
+    it('a Send transaction with no transfers', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.Send);
+      txBuilder.fee({ fee: '4764' });
+      txBuilder.branch('BKnfiSVFTjixbhzsTbR1eDmit6yK7UBcgRJPhmgeWcZqiMHRZ6E');
+      txBuilder.counter('1');
+      txBuilder.source(defaultKeyPair.getAddress());
+      should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
     });
   });
 
@@ -395,14 +521,36 @@ describe('Tezos Transaction builder', function() {
       should.throws(() => txBuilder.initialBalance('100'));
     });
 
-    it('sign a transaction with no transfers', async () => {
+    it('build transfer for non send-type transaction', async () => {
       const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.Send);
-      txBuilder.fee({ fee: '4764' });
-      txBuilder.branch('BKnfiSVFTjixbhzsTbR1eDmit6yK7UBcgRJPhmgeWcZqiMHRZ6E');
-      txBuilder.counter('1');
+      txBuilder.type(TransactionType.WalletInitialization);
+      should.throws(() => txBuilder.transfer('100'), new RegExp('Transfers can only be set for send transactions'));
+    });
+
+    it('add a source to a reveal operation without a key pair', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.AddressInitialization);
+      should.throws(
+        () => txBuilder.source('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A'),
+        new RegExp('Reveal transaction requires the source KeyPair'),
+      );
+    });
+
+    it('change the transaction type from Send if it has transfers', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
       txBuilder.source(defaultKeyPair.getAddress());
-      should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
+      txBuilder.counter('0');
+      txBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764');
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      should.throws(
+        () => txBuilder.type(TransactionType.WalletInitialization),
+        new RegExp('Transaction contains transfers and can only be labeled as Send'),
+      );
     });
   });
 });

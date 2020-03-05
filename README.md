@@ -8,7 +8,7 @@ Below is the list of coins supported by this library -- as well as those that ar
 |Coin|Mainnet Ticker|Testnet Ticker|Supported In Library|
 |---|---|---|---|
 |Tron|trx|ttrx|Yes|
-|Tezos|xtz|txtz|Not yet...|
+|Tezos|xtz|txtz|Yes|
 |Ethereum|eth|teth|Not yet...|
 |EOS|eos|teos|Not yet...|
 |Alogrand|algo|talgo|Not yet...|
@@ -50,7 +50,7 @@ const accountLib = require('@bitgo/account-lib');
 import * as accountLib from '@bitgo/account-lib';
 
 // Instantiate the Transaction Builder for Tron (testnet)
-const txBuilder = new accountLib.TransactionBuilder({'coinName': 'ttrx'});
+const txBuilder = accountLib.getBuilder('ttrx');
 ```
 
 ### Transaction Construction + Signing
@@ -86,8 +86,12 @@ txBuilder.from(unsignedBuildTransaction);
 txBuilder.sign({
   key: 'A81B2E0C55A7E2B2E837ZZC437A6397B316536196989A6F09EE49C19AD33590W'
 });
-const tx = txBuilder.build();
+const tx = await txBuilder.build();
 ```
+
+More examples:
+* [Tron transaction building examples](https://github.com/BitGo/bitgo-account-lib/blob/master/test/unit/coin/trx/transactionBuilder.ts)
+* [Tezos transaction building examples](https://github.com/BitGo/bitgo-account-lib/blob/master/test/unit/coin/xtz/transactionBuilder.ts)
 
 ## Developers
 If you'd like to contribute to this project, see the [developer guide](DEVELOPER.md) for contribution norms and expectations.

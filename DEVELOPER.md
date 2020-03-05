@@ -24,7 +24,7 @@ const accountLib = require('@bitgo/account-lib');
 
 // Instantiate a TransactionBuilder for the blockchain you wish to
 // build a transaction for (in this case, Tron - testnet)
-const txBuilder = new accountLib.TransactionBuilder({'coinName': 'ttrx'});
+const txBuilder = accountLib.getBuilder('ttrx');
 
 // Use the TransactionBuilder to build a transaction from JSON
 const unsignedJsonTx = {...coin specific tx json...};
@@ -32,7 +32,7 @@ const txBuilder = txBuilder.from(unsignedJsonTx);
 
 // Sign the transaction using the TransactionBuilder
 txBuilder.sign({ key: 'SOME-PRIVATE-KEY' });
-const tx = txBuilder.build();
+const tx = await txBuilder.build();
 
 // Save it to json to be used elsewhere (or broadcast)
 const signedTxJson = tx.toJson();

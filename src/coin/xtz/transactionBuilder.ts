@@ -12,10 +12,12 @@ import {
 import { Address } from './address';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { Fee, Operation } from './iface';
+import { Fee, Key, Operation } from './iface';
 import { isValidAddress, isValidBlockHash, DEFAULT_GAS_LIMIT, DEFAULT_STORAGE_LIMIT, DEFAULT_FEE } from './utils';
 import * as Utils from './utils';
 import { TransferBuilder } from './transferBuilder';
+
+const DEFAULT_M = 3;
 
 /**
  * Tezos transaction builder.
@@ -28,7 +30,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _revealSource;
   private _sourceAddress: string;
   private _sourceKeyPair?: KeyPair;
-  private _multisigSignerKeyPairs: KeyPair[];
+  private _multisigSignerKeyPairs: { key: KeyPair; index?: number }[];
   private _counter: BigNumber;
   private _initialBalance: string;
   private _blockHeader: string;
@@ -63,20 +65,34 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected signImplementation(key: BaseKey): Transaction {
+  protected signImplementation(key: Key): Transaction {
     const signer = new KeyPair({ prv: key.key });
     if (this._type === TransactionType.Send && this._transfers.length === 0) {
       throw new SigningError('Cannot sign an empty transaction');
     }
 
     if (!this._sourceAddress || this._sourceAddress != signer.getAddress()) {
-      if (this._type !== TransactionType.Send) {
-        throw new SigningError('Private key does not match the source account');
-      }
       // If the signer is not the source and it is a send transaction, add it to the list of
       // multisig wallet signers
-      // TODO: add an index field into BaseKey to allow different keys order
-      this._multisigSignerKeyPairs.push(signer);
+      if (this._type !== TransactionType.Send) {
+        throw new SigningError('Cannot sign multiple times a non send-type transaction');
+      }
+
+      // Make sure either all keys passed have a custom index or none of them have
+      // TODO: support a combination of keys with and without custom index
+      if (key.index && key.index >= DEFAULT_M) {
+        throw new BuildTransactionError(
+          'Custom index cannot be greater than the wallet total number of signers (owners)',
+        );
+      }
+      const shouldHaveCustomIndex = key.hasOwnProperty('index');
+      for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
+        if (shouldHaveCustomIndex !== (this._multisigSignerKeyPairs[i].index !== undefined)) {
+          throw new BuildTransactionError('Custom index has to be set for all multisig contract signing keys or none');
+        }
+      }
+      const multisigSignerKey = shouldHaveCustomIndex ? { key: signer, index: key.index } : { key: signer };
+      this._multisigSignerKeyPairs.push(multisigSignerKey);
     } else {
       this._sourceKeyPair = signer;
     }
@@ -213,6 +229,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (type === TransactionType.Send && this._owner.length > 0) {
       throw new BuildTransactionError('Transaction cannot be labeled as Send when owners have already been set');
     }
+    if (type !== TransactionType.Send && this._transfers.length > 0) {
+      throw new BuildTransactionError('Transaction contains transfers and can only be labeled as Send');
+    }
     this._type = type;
   }
 
@@ -309,7 +328,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   transfer(amount: string): TransferBuilder {
     if (this._type !== TransactionType.Send) {
-      throw new BuildTransactionError('Contract transfer can only be set for send transactions');
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
     let transferBuilder = new TransferBuilder();
     // If source was set, use it as default for
@@ -331,11 +350,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param {string} packedData The string in hexadecimal to sign
    * @returns {Promise<string[]>} List of signatures for packedData
    */
-  private async getSignatures(packedData: string): Promise<string[]> {
-    const signatures: string[] = [];
+  private async getSignatures(packedData: string): Promise<{ signature: string; index: number }[]> {
+    const signatures: { signature: string; index: number }[] = [];
+    // Generate the multisig contract signatures
     for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
-      const signature = await Utils.sign(this._multisigSignerKeyPairs[i], packedData, new Uint8Array());
-      signatures.push(signature.sig);
+      const signature = await Utils.sign(this._multisigSignerKeyPairs[i].key, packedData, new Uint8Array());
+      const index = this._multisigSignerKeyPairs[i].index || i;
+      signatures.push({ signature: signature.sig, index });
     }
     return signatures;
   }
