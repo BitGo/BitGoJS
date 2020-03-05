@@ -6,7 +6,7 @@ const DEFAULT_N = 2;
 const DEFAULT_M = 3;
 
 /**
- * The the entry values from a transaction operation on a generic multisig smart contract.
+ * Helper method to get the transfer details from a generic multisig transaction operation.
  *
  * @param {TransactionOp} operation A transaction operation JSON
  * @returns {TransferData} Information about the destination, token and transfer amount
@@ -74,7 +74,7 @@ export function getMultisigTransferDataFromOperation(operation: TransactionOp): 
  *        in the next transaction
  * @param {string[]} signatures signatures List of signatures authorizing the funds transfer form
  *        the multisig wallet
- * @param {number} m The number of owners for the multisig wallet being used. By default is 3
+ * @param {number} m The number of signers (owners) for the multisig wallet being used. Default is 3
  * @returns {TransactionOp} A Tezos transaction operation
  */
 export function transactionOperation(
@@ -102,6 +102,7 @@ export function transactionOperation(
       contractCounter,
       destination,
       signatures,
+      m,
     );
   }
   return {
@@ -120,17 +121,22 @@ export function transactionOperation(
  * Create a multisig wallet transaction operation.
  *
  * @see {@link transactionOperation}
- * @param counter
- * @param source
- * @param fee
- * @param gasLimit
- * @param storageLimit
- * @param amount
- * @param contractAddress
- * @param contractCounter
- * @param destinationAddress
- * @param signatures
- * @param m
+ * @param {string} counter Source account next counter
+ * @param {string} source The account that will pay for fees, and in singlesig transactions, where
+ *        the funds are taken from
+ * @param {string} fee Fees in mutez to pay by the source account
+ * @param {string} gasLimit Maximum amount in mutez to spend in gas fees
+ * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
+ * @param {string} amount The amount in mutez to be transferred
+ * @param {string} contractAddress If it is a multisig transfer, the smart contract address with the
+ *        funds to be transferred from
+ * @param {string} contractCounter If it is a multisig transfer, the smart contract counter to use
+ *        in the next transaction
+ * @param {string} destinationAddress An implicit or originated address to transfer fudns to
+ * @param {string[]} signatures signatures List of signatures authorizing the funds transfer form
+ *        the multisig wallet
+ * @param {number} m The number of signers (owners) for the multisig wallet being used. Default is 3
+ * @returns {TransactionOp} A Tezos operation with a generic multisig transfer
  */
 export function genericMultisigTransactionOperation(
   counter: string,
@@ -159,13 +165,13 @@ export function genericMultisigTransactionOperation(
 }
 
 /**
- * Build the parameters to call the generic multisig smart contract with.
+ * Helper function to build the parameters to call the generic multisig smart contract with.
  *
  * @param {string} destinationAddress An implicit or originated address
  * @param {number} amount Number of Mutez to be transferred
  * @param {string} contractCounter Multisig contract counter number
  * @param {string[]} signatures Multisig wallet signatures
- * @param {number} m The number of owners for the multisig wallet being used
+ * @param {number} m The multisig wallet total number of signers (owners)
  * @returns The parameters object
  */
 function genericMultisigTransferParams(
@@ -176,7 +182,7 @@ function genericMultisigTransferParams(
   m: number,
 ) {
   const transactionSignatures: any[] = [];
-  // Initialize the array wit empty signatures
+  // Initialize the array with empty signatures
   for (let i = 0; i < m; i++) {
     transactionSignatures.push({ prim: 'None' });
   }
@@ -384,13 +390,14 @@ export function revealOperation(
  * Create an origination operation for the generic multisg contract. It does not create a reveal
  * operation for the source account.
  *
- * @param {string} counter Source account next counter
+ * @param {string} counter Valid source account counter to use
  * @param {string} source Source account address
  * @param {string} fee Fees in mutez to pay by the source account
  * @param {string} gasLimit Maximum amount in mutez to spend in gas fees
  * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
  * @param {string} balance New multisig account initial balance taken from the source account
  * @param {string[]} pubKeys List of public keys of the multisig owner
+ * @param {number} threshold Minimum number of signatures required to authorize a multisig operation
  * @returns An origination operation
  */
 export function genericMultisigOriginationOperation(
@@ -401,6 +408,7 @@ export function genericMultisigOriginationOperation(
   storageLimit: string,
   balance: string,
   pubKeys: string[],
+  threshold: number = DEFAULT_N,
 ): OriginationOp {
   const walletPublicKeys: any[] = [];
   pubKeys.forEach(pk => walletPublicKeys.push({ string: pk }));
@@ -424,7 +432,7 @@ export function genericMultisigOriginationOperation(
             prim: 'Pair',
             args: [
               {
-                int: '2',
+                int: threshold.toString(),
               },
               walletPublicKeys,
             ],

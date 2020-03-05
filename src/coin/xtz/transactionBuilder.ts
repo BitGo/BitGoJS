@@ -75,13 +75,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       // If the signer is not the source and it is a send transaction, add it to the list of
       // multisig wallet signers
       if (this._type !== TransactionType.Send) {
-        throw new SigningError('Private key does not match the source account');
+        throw new SigningError('Cannot sign multiple times a non send-type transaction');
       }
 
       // Make sure either all keys passed have a custom index or none of them have
       // TODO: support a combination of keys with and without custom index
-      if (key.index && key.index > DEFAULT_M) {
-        throw new BuildTransactionError('Custom index cannot be greater than the wallet total number of owners');
+      if (key.index && key.index >= DEFAULT_M) {
+        throw new BuildTransactionError(
+          'Custom index cannot be greater than the wallet total number of signers (owners)',
+        );
       }
       const shouldHaveCustomIndex = key.hasOwnProperty('index');
       for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
@@ -227,6 +229,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (type === TransactionType.Send && this._owner.length > 0) {
       throw new BuildTransactionError('Transaction cannot be labeled as Send when owners have already been set');
     }
+    if (type !== TransactionType.Send && this._transfers.length > 0) {
+      throw new BuildTransactionError('Transaction contains transfers and can only be labeled as Send');
+    }
     this._type = type;
   }
 
@@ -323,7 +328,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   transfer(amount: string): TransferBuilder {
     if (this._type !== TransactionType.Send) {
-      throw new BuildTransactionError('Contract transfer can only be set for send transactions');
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
     let transferBuilder = new TransferBuilder();
     // If source was set, use it as default for

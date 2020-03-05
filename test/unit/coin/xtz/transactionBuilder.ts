@@ -3,7 +3,7 @@ import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import * as testData from '../../../resources/xtz/xtz';
 import { getBuilder, Xtz } from '../../../../src';
-import { KeyPair } from '../../../../src/coin/xtz';
+import { KeyPair, TransactionBuilder } from '../../../../src/coin/xtz';
 
 describe('Tezos Transaction builder', function() {
   const defaultKeyPair = new Xtz.KeyPair({
@@ -420,6 +420,24 @@ describe('Tezos Transaction builder', function() {
   });
 
   describe('should fail to sign', () => {
+    let genericTxBuilder: any;
+
+    beforeEach(() => {
+      genericTxBuilder = getBuilder('txtz');
+      genericTxBuilder.type(TransactionType.Send);
+      genericTxBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      genericTxBuilder.source(defaultKeyPair.getAddress());
+      genericTxBuilder.counter('0');
+      genericTxBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .gasLimit('33971')
+        .storageLimit('1292')
+        .dataToSign('00');
+    });
+
     it('a transaction with no source account', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.WalletInitialization);
@@ -434,51 +452,43 @@ describe('Tezos Transaction builder', function() {
     });
 
     it('a transaction with some keys with custom index', async () => {
-      const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.Send);
-      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
-      txBuilder.source(defaultKeyPair.getAddress());
-      txBuilder.counter('0');
-      txBuilder
-        .transfer('100')
-        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
-        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
-        .fee('4764')
-        .gasLimit('33971')
-        .storageLimit('1292')
-        .dataToSign('00');
-      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      genericTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       // Multisig keys
-      txBuilder.sign({ key: new KeyPair().getKeys().prv });
-      txBuilder.sign({ key: new KeyPair().getKeys().prv });
+      genericTxBuilder.sign({ key: new KeyPair().getKeys().prv });
+      genericTxBuilder.sign({ key: new KeyPair().getKeys().prv });
       should.throws(
-        () => txBuilder.sign({ key: new KeyPair().getKeys().prv, index: 2 }),
+        () => genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 2 }),
         new RegExp('Custom index has to be set for all multisig contract signing keys or none'),
       );
     });
 
     it('a transaction with some keys without custom index', async () => {
-      const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.Send);
-      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
-      txBuilder.source(defaultKeyPair.getAddress());
-      txBuilder.counter('0');
-      txBuilder
-        .transfer('100')
-        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
-        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
-        .fee('4764')
-        .gasLimit('33971')
-        .storageLimit('1292')
-        .dataToSign('00');
-      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      genericTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       // Multisig keys
-      txBuilder.sign({ key: new KeyPair().getKeys().prv, index: 0 });
-      txBuilder.sign({ key: new KeyPair().getKeys().prv, index: 1 });
+      genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 0 });
+      genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 1 });
       should.throws(
-        () => txBuilder.sign({ key: new KeyPair().getKeys().prv }),
+        () => genericTxBuilder.sign({ key: new KeyPair().getKeys().prv }),
         new RegExp('Custom index has to be set for all multisig contract signing keys or none'),
       );
+    });
+
+    it('a transaction with a key with invalid custom index', async () => {
+      genericTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      should.throws(
+        () => genericTxBuilder.sign({ key: new KeyPair().getKeys().prv, index: 3 }),
+        new RegExp('Custom index cannot be greater'),
+      );
+    });
+
+    it('a Send transaction with no transfers', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.Send);
+      txBuilder.fee({ fee: '4764' });
+      txBuilder.branch('BKnfiSVFTjixbhzsTbR1eDmit6yK7UBcgRJPhmgeWcZqiMHRZ6E');
+      txBuilder.counter('1');
+      txBuilder.source(defaultKeyPair.getAddress());
+      should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
     });
   });
 
@@ -511,14 +521,36 @@ describe('Tezos Transaction builder', function() {
       should.throws(() => txBuilder.initialBalance('100'));
     });
 
-    it('sign a transaction with no transfers', async () => {
+    it('build transfer for non send-type transaction', async () => {
       const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.Send);
-      txBuilder.fee({ fee: '4764' });
-      txBuilder.branch('BKnfiSVFTjixbhzsTbR1eDmit6yK7UBcgRJPhmgeWcZqiMHRZ6E');
-      txBuilder.counter('1');
+      txBuilder.type(TransactionType.WalletInitialization);
+      should.throws(() => txBuilder.transfer('100'), new RegExp('Transfers can only be set for send transactions'));
+    });
+
+    it('add a source to a reveal operation without a key pair', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.AddressInitialization);
+      should.throws(
+        () => txBuilder.source('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A'),
+        new RegExp('Reveal transaction requires the source KeyPair'),
+      );
+    });
+
+    it('change the transaction type from Send if it has transfers', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
       txBuilder.source(defaultKeyPair.getAddress());
-      should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
+      txBuilder.counter('0');
+      txBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764');
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      should.throws(
+        () => txBuilder.type(TransactionType.WalletInitialization),
+        new RegExp('Transaction contains transfers and can only be labeled as Send'),
+      );
     });
   });
 });
