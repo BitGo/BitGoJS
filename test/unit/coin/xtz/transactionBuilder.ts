@@ -200,7 +200,7 @@ describe('Tezos Transaction builder', function() {
       txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(32) }).getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('ooQkkZBUGCPq6C9RLMtV1dRXcY96qShMA9fvgJJL4VwvKyiQ5nX');
+      tx.id.should.equal('oohPCEvH4RvSW1fjHrTbqQrKN7YrxX1XUzVPHmcNCdanqFJQKhU');
       tx.type.should.equal(TransactionType.Send);
       should.equal(tx.inputs.length, 2);
       should.equal(tx.outputs.length, 1);
@@ -212,10 +212,10 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[0].value.should.equal('1000000');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigRiepkMBzriZEUfB8ujHscGZusQvEc4MjMhtTdAKHygZ1spGs7p4xGZb4itt4jESiktJmD2s5am37Q9fi5bPgCcivV32Yt',
+        'sigp4fNuaduyKz85erjQ4ycrNHapzThk5hEYy9qAFVfPRM8YCDUfTNwfWSKRiJV7pqPkEu5ETCUxWydAkeRzrhr9QCcrcdaP',
       );
       tx.toBroadcastFormat().should.equal(
-        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000c2070707070000050502000000430320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a0080897a034f034d031b020000006d050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b66523679727070590306030603061c835376daaac5ed0f0d1324f3f1b4568a1cb3e59b160caf2c633b5f415680fe1393772d8e8535b95630f733832a44283dcbd492f863e8ad36abb7b5c8cf8e64',
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000c0070707070000050502000000430320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a0080897a034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705903060306c74f2082f4be756ca41f5a89210bfc0fd9924540bab5a3f03f2790ad9814cfa050cb81bb4f3acceffc074bda07de82b832587531f0ccc4b02d1891e6da6f4fee',
       );
     });
 
@@ -242,7 +242,7 @@ describe('Tezos Transaction builder', function() {
       txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(32) }).getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('ooQBYHSL9Hh7PK4XSAtbar66WXbLrxisHUDSWXjt56ZKj7v9sW9');
+      tx.id.should.equal('ooSga4Rx815WHJmh8TZbMWddTrRmXqUKo6myYR2BrESTE7jBF43');
       tx.type.should.equal(TransactionType.Send);
       should.equal(tx.inputs.length, 2);
       should.equal(tx.outputs.length, 1);
@@ -254,10 +254,10 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[0].value.should.equal('100');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigbtRt6yYC598ZAFwfukKozXs5mA4geFEB8VdThBk7ogceobHMVcJG6pueuDCcNDETgMupibq5FVwRYPmuhi8BYfXxJUiJG',
+        'sigc9nhZtBDckvrN9Nen4ZGhMJt5Bx6ubEWgaDzDSGAeFG6ix6GGZVYxmNeuxeNkwN3JrXyQGimCKqzRRdh3xVqqsemNQDcY',
       );
       tx.toBroadcastFormat().should.equal(
-        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000dd0707070700000505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b020000006d050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b66523679727070590306030603066a3cc6c8bf85a1cdbb7bfabade33b6df7e3c73cf81172a12d605a3aece58078b583524e438fc8a620e77915091fca2446213f7eb8602f3b85d2205c752534520',
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000db0707070700000505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603066c42f1e015704fce715189cd094b67e9052b059bff39596dd7d5aa4c21fd72682dd7a651f09b7cd694647820103c106cccb8ae3d33d7590e298a4a8b3f0dc28e',
       );
     });
 
@@ -292,7 +292,7 @@ describe('Tezos Transaction builder', function() {
       txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(32) }).getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('ooWLYTmTf2RPGJiRSgoj3i4sp8UAQnNq1FkAhXAqJqoNAfrSVSR');
+      tx.id.should.equal('ooT43qkUXB5VHz83hYaTiUNd1LBqkbULqxoZaPmKhj8BkeHdQVD');
       tx.type.should.equal(TransactionType.Send);
       should.equal(tx.inputs.length, 4);
       should.equal(tx.outputs.length, 2);
@@ -310,10 +310,10 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[1].value.should.equal('100');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigre9FPMTUChGFtap1td7G9dfZp79jMFtkMSbYJRF3rZ6bWEmAhdhtAA71E9KSDkZx6JXK2xQhRZB5zwCYJHSk6kTTJzp9G',
+        'sigXmArEwQWVeKMPLSs6eqiCyFD4xtnMPxGZaxW9NwYa5j2iNpjxBLYfga2HFcptTFbbiDwYt5KtKMnAwvR7bGUMALZmdzkE',
       );
       tx.toBroadcastFormat().should.equal(
-        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000dd0707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b020000006d050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b66523679727070590306030603066c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2501e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000c1070707070002050502000000420320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a00a401034f034d031b020000006d050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603060306db0230658b288e6f06bd23bf33995d92a1f20873d8378c66950c044226215fe37dad0260ffb36fd04fabb4e53a002afba3f93f1a4a163bfe3b0f22ae84f434ea',
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000db0707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603066c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2501e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000bf070707070002050502000000420320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a00a401034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603064ab4d457fdd8a3077c66c02b05b166c541ce4e69aac3489a37d5f27cd1cb7ae50e529c16fff7041140a9809ad9e9884d5f740c14e7f9f28fe9e3f04a6a5a8c7c',
       );
     });
 
@@ -355,6 +355,68 @@ describe('Tezos Transaction builder', function() {
         '09f5686021aadcfc00063b0873055c2e7c841398fece3d7865a8ed2756708d4a6c01a1525e289aed93119c44fd3aa8e9df8522e0d80d9c25978717e85281026f00006b5ddaef3fb5d7c151cfb36fbe43a7a066777394006c01a1525e289aed93119c44fd3aa8e9df8522e0d80d9c25988717e85281026f0001faf711f98d3a978656651c30875138c086fa871100fcf189b364c021e4be1a032f3867445e0c62ca01047fb853fe02d038e62fcad02ffca1d05e4b5a4e4fdc3ce6fc11607c9ca8ceca6fd7335d3dab6439ce2dee11',
       );
     });
+
+    it('a multisig send transaction with the signatures in custom order', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.Send);
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter('0');
+      txBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .gasLimit('33971')
+        .storageLimit('1292')
+        .dataToSign('00');
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      // Multisig keys
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(18) }).getKeys().prv, index: 2 });
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv, index: 1 });
+      const tx = await txBuilder.build();
+      const signatures = tx.toJson().contents[0].parameters.value.args[1];
+      signatures[0].prim.should.equal('None');
+      signatures[1].prim.should.equal('Some');
+      signatures[1].args[0].string.should.equal(
+        'sigUxvCQSEWQvZrf3yS2VjSTBWycMPe3zBBo6EWva2d3tHV1DKZNUs8b5fmqQeXWvdSSXztx48UsPY5FmJiDofmPSZ6SUjZt',
+      );
+      signatures[2].prim.should.equal('Some');
+      signatures[2].args[0].string.should.equal(
+        'sigiC286gLc1SSWHwKydczwwdwTUPv7e9mkPeHzfE9wEG9PKZ6fUcmrMeYwcH7t9fWsnozB7Fay2uxkmi1u1X1bw3MgJUNpu',
+      );
+    });
+
+    it('a multisig send transaction with the signatures in default order', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.Send);
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter('0');
+      txBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .gasLimit('33971')
+        .storageLimit('1292')
+        .dataToSign('00');
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      // Multisig keys
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(18) }).getKeys().prv });
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv });
+      const tx = await txBuilder.build();
+      const signatures = tx.toJson().contents[0].parameters.value.args[1];
+      signatures[0].prim.should.equal('Some');
+      signatures[0].args[0].string.should.equal(
+        'sigiC286gLc1SSWHwKydczwwdwTUPv7e9mkPeHzfE9wEG9PKZ6fUcmrMeYwcH7t9fWsnozB7Fay2uxkmi1u1X1bw3MgJUNpu',
+      );
+      signatures[1].prim.should.equal('Some');
+      signatures[1].args[0].string.should.equal(
+        'sigUxvCQSEWQvZrf3yS2VjSTBWycMPe3zBBo6EWva2d3tHV1DKZNUs8b5fmqQeXWvdSSXztx48UsPY5FmJiDofmPSZ6SUjZt',
+      );
+      signatures[2].prim.should.equal('None');
+    });
   });
 
   describe('should fail to sign', () => {
@@ -369,6 +431,54 @@ describe('Tezos Transaction builder', function() {
       txBuilder.from(testData.emptyUnsignedSerializedOriginationTransaction);
       txBuilder.type(TransactionType.WalletInitialization);
       should.throws(() => txBuilder.sign({ key: new KeyPair().getKeys().prv }));
+    });
+
+    it('a transaction with some keys with custom index', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.Send);
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter('0');
+      txBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .gasLimit('33971')
+        .storageLimit('1292')
+        .dataToSign('00');
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      // Multisig keys
+      txBuilder.sign({ key: new KeyPair().getKeys().prv });
+      txBuilder.sign({ key: new KeyPair().getKeys().prv });
+      should.throws(
+        () => txBuilder.sign({ key: new KeyPair().getKeys().prv, index: 2 }),
+        new RegExp('Custom index has to be set for all multisig contract signing keys or none'),
+      );
+    });
+
+    it('a transaction with some keys without custom index', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.Send);
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter('0');
+      txBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .gasLimit('33971')
+        .storageLimit('1292')
+        .dataToSign('00');
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      // Multisig keys
+      txBuilder.sign({ key: new KeyPair().getKeys().prv, index: 0 });
+      txBuilder.sign({ key: new KeyPair().getKeys().prv, index: 1 });
+      should.throws(
+        () => txBuilder.sign({ key: new KeyPair().getKeys().prv }),
+        new RegExp('Custom index has to be set for all multisig contract signing keys or none'),
+      );
     });
   });
 

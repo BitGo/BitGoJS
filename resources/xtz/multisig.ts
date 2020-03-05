@@ -74,6 +74,7 @@ export function getMultisigTransferDataFromOperation(operation: TransactionOp): 
  *        in the next transaction
  * @param {string[]} signatures signatures List of signatures authorizing the funds transfer form
  *        the multisig wallet
+ * @param {number} m The number of owners for the multisig wallet being used. By default is 3
  * @returns {TransactionOp} A Tezos transaction operation
  */
 export function transactionOperation(
@@ -85,8 +86,9 @@ export function transactionOperation(
   amount: string,
   destination: string,
   contractAddress?: string,
-  contractCounter?: string,
-  signatures: string[] = [],
+  contractCounter = '0',
+  signatures: { signature: string; index: number }[] = [],
+  m: number = DEFAULT_M,
 ): TransactionOp {
   if (contractAddress) {
     return genericMultisigTransactionOperation(
@@ -97,7 +99,7 @@ export function transactionOperation(
       storageLimit,
       amount,
       contractAddress,
-      contractCounter || '0',
+      contractCounter,
       destination,
       signatures,
     );
@@ -117,7 +119,7 @@ export function transactionOperation(
 /**
  * Create a multisig wallet transaction operation.
  *
- * @see {@link genericMultisigTransactionOperation}
+ * @see {@link transactionOperation}
  * @param counter
  * @param source
  * @param fee
@@ -128,6 +130,7 @@ export function transactionOperation(
  * @param contractCounter
  * @param destinationAddress
  * @param signatures
+ * @param m
  */
 export function genericMultisigTransactionOperation(
   counter: string,
@@ -139,7 +142,8 @@ export function genericMultisigTransactionOperation(
   contractAddress: string,
   contractCounter: string,
   destinationAddress: string,
-  signatures: string[],
+  signatures: { signature: string; index: number }[],
+  m: number = DEFAULT_M,
 ): TransactionOp {
   return {
     kind: 'transaction',
@@ -150,7 +154,7 @@ export function genericMultisigTransactionOperation(
     storage_limit: storageLimit,
     amount: '0', // Don't transfer any funds from he source account to the contract in multisig txs
     destination: contractAddress,
-    parameters: genericMultisigTransferParams(destinationAddress, amount, contractCounter, signatures),
+    parameters: genericMultisigTransferParams(destinationAddress, amount, contractCounter, signatures, m),
   };
 }
 
@@ -168,16 +172,16 @@ function genericMultisigTransferParams(
   destinationAddress: string,
   amount: string,
   contractCounter: string,
-  signatures: string[],
-  m?: number,
+  signatures: { signature: string; index: number }[],
+  m: number,
 ) {
   const transactionSignatures: any[] = [];
-  signatures.forEach(s => transactionSignatures.push({ prim: 'Some', args: [{ string: s }] }));
-  // The script has to provide m signatures (from n-of-m)
-  const sigLength = DEFAULT_M - transactionSignatures.length;
-  for (let i = 0; i <= sigLength; i++) {
+  // Initialize the array wit empty signatures
+  for (let i = 0; i < m; i++) {
     transactionSignatures.push({ prim: 'None' });
   }
+  // Replace the empty signatures for the real ones based on the right index
+  signatures.forEach(s => (transactionSignatures[s.index] = { prim: 'Some', args: [{ string: s.signature }] }));
   return {
     entrypoint: 'main',
     value: {

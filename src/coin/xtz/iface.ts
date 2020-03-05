@@ -1,4 +1,4 @@
-import { BaseFee } from '../baseCoin/iface';
+import { BaseFee, BaseKey } from '../baseCoin/iface';
 /**
  * A Tezos private key with the spsk prefix or raw
  */
@@ -106,4 +106,11 @@ export interface SignResponse {
   sig: any;
   prefixSig: any;
   sbytes: string;
+}
+
+/**
+ * Tezos keys can have a specific order in the smart contracts, hence the need to add an index field
+ */
+export interface Key extends BaseKey {
+  index?: number;
 }
