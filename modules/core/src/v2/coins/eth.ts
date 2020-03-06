@@ -536,63 +536,72 @@ export class Eth extends BaseCoin {
    * @param params
    * - txPrebuild
    * - prv
-   * @returns {{txHex}}
+   * @param callback
+   * @returns {Bluebird<SignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions): SignedTransaction {
-    const txPrebuild = params.txPrebuild;
-    const userPrv = params.prv;
-    const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
+  signTransaction(
+    params: SignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    const self = this;
+    return co<SignedTransaction>(function*() {
+      const txPrebuild = params.txPrebuild;
+      const userPrv = params.prv;
+      const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
 
-    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+      if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+        if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+          throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+        }
+        throw new Error('missing txPrebuild parameter');
       }
-      throw new Error('missing txPrebuild parameter');
-    }
 
-    if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-      if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
-        throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+      if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+        if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
+          throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+        }
+        throw new Error('missing prv parameter to sign transaction');
       }
-      throw new Error('missing prv parameter to sign transaction');
-    }
 
-    params.recipients = txPrebuild.recipients || params.recipients;
+      params.recipients = txPrebuild.recipients || params.recipients;
 
-    // if no recipients in either params or txPrebuild, then throw an error
-    if (!params.recipients || !Array.isArray(params.recipients)) {
-      throw new Error('recipients missing or not array');
-    }
+      // if no recipients in either params or txPrebuild, then throw an error
+      if (!params.recipients || !Array.isArray(params.recipients)) {
+        throw new Error('recipients missing or not array');
+      }
 
-    // Normally the SDK provides the first signature for an ETH tx, but occasionally it provides the second and final one.
-    if (params.isLastSignature) {
-      // In this case when we're doing the second (final) signature, the logic is different.
-      return this.signFinal(params);
-    }
+      // Normally the SDK provides the first signature for an ETH tx, but occasionally it provides the second and final one.
+      if (params.isLastSignature) {
+        // In this case when we're doing the second (final) signature, the logic is different.
+        return self.signFinal(params);
+      }
 
-    const secondsSinceEpoch = Math.floor(new Date().getTime() / 1000);
-    const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
-    const sequenceId = txPrebuild.nextContractSequenceId;
+      const secondsSinceEpoch = Math.floor(new Date().getTime() / 1000);
+      const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
+      const sequenceId = txPrebuild.nextContractSequenceId;
 
-    if (_.isUndefined(sequenceId)) {
-      throw new Error('transaction prebuild missing required property nextContractSequenceId');
-    }
+      if (_.isUndefined(sequenceId)) {
+        throw new Error('transaction prebuild missing required property nextContractSequenceId');
+      }
 
-    const operationHash = this.getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, sequenceId);
-    const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+      const operationHash = self.getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, sequenceId);
+      const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
-    const txParams = {
-      recipients: params.recipients,
-      expireTime: expireTime,
-      contractSequenceId: sequenceId,
-      sequenceId: params.sequenceId,
-      operationHash: operationHash,
-      signature: signature,
-      gasLimit: params.gasLimit,
-      gasPrice: params.gasPrice,
-      hopTransaction: txPrebuild.hopTransaction,
-    };
-    return { halfSigned: txParams };
+      const txParams = {
+        recipients: params.recipients,
+        expireTime: expireTime,
+        contractSequenceId: sequenceId,
+        sequenceId: params.sequenceId,
+        operationHash: operationHash,
+        signature: signature,
+        gasLimit: params.gasLimit,
+        gasPrice: params.gasPrice,
+        hopTransaction: txPrebuild.hopTransaction,
+      };
+      return { halfSigned: txParams };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

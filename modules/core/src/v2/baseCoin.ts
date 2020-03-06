@@ -558,5 +558,5 @@ export abstract class BaseCoin {
   /**
    * Sign a transaction
    */
-  abstract signTransaction(params: SignTransactionOptions): SignedTransaction;
+  abstract signTransaction(params: SignTransactionOptions): Bluebird<SignedTransaction>;
 }

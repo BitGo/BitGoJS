@@ -103,10 +103,10 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/account-lib@1.0.0-alpha.1":
-  version "1.0.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-1.0.0-alpha.1.tgz#9e0287fb6da7be37f2d93dc042923adeda8f9bdd"
-  integrity sha512-mFGQ1/6oOAnAkV3tRd2giyy1TKy7C1UQ7WGdcT3HXJA0P2meNevGXFDP7+6n614SJMtRmViebjX87Os/L6ySRg==
+"@bitgo/account-lib@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-1.0.0.tgz#7f52128ca85d9d89c4fb01f74463d2d7dde21a41"
+  integrity sha512-3B27+pWz+x8j55qBdoYdFD3ieirifGCe3PPwytavPuKWEmiUHtYRoBH5OhYZMK0ShETXnVT76ehEEhBaJxohJA==
   dependencies:
     "@bitgo/statics" "^3.2.0-rc.0"
     "@taquito/local-forging" "^6.0.3-beta.0"

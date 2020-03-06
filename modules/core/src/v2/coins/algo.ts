@@ -366,44 +366,53 @@ export class Algo extends BaseCoin {
    * Assemble keychain and half-sign prebuilt transaction
    *
    * @param params
-   * @param params.txPrebuild {Object} prebuild object returned by platform
+   * @param params.txPrebuild {TransactionPrebuild} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
+   * @param callback
+   * @returns {Bluebird<SignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions): SignedTransaction {
-    const { txHex, addressVersion, keys, sk, isHalfSigned } = this.verifySignTransactionParams(params);
-    const encodedPublicKeys = _.map(keys, k => Address.decode(k).publicKey);
+  signTransaction(
+    params: SignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    const self = this;
+    return co<SignedTransaction>(function*() {
+      const { txHex, addressVersion, keys, sk, isHalfSigned } = self.verifySignTransactionParams(params);
+      const encodedPublicKeys = _.map(keys, k => Address.decode(k).publicKey);
 
-    // decode our unsigned/half-signed tx
-    let transaction;
-    let txToHex;
-    try {
-      txToHex = Buffer.from(txHex, 'base64');
-      const initialDecodedTx = Encoding.decode(txToHex);
+      // decode our unsigned/half-signed tx
+      let transaction;
+      let txToHex;
+      try {
+        txToHex = Buffer.from(txHex, 'base64');
+        const initialDecodedTx = Encoding.decode(txToHex);
 
-      // we need to scrub the txn of sigs for half-signed
-      const decodedTx = isHalfSigned ? initialDecodedTx.txn : initialDecodedTx;
+        // we need to scrub the txn of sigs for half-signed
+        const decodedTx = isHalfSigned ? initialDecodedTx.txn : initialDecodedTx;
 
-      transaction = Multisig.MultiSigTransaction.from_obj_for_encoding(decodedTx);
-    } catch (e) {
-      throw new Error('transaction needs to be a valid tx encoded as base64 string');
-    }
+        transaction = Multisig.MultiSigTransaction.from_obj_for_encoding(decodedTx);
+      } catch (e) {
+        throw new Error('transaction needs to be a valid tx encoded as base64 string');
+      }
 
-    // sign our tx
-    let signed = transaction.partialSignTxn({ version: addressVersion, threshold: 2, pks: encodedPublicKeys }, sk);
+      // sign our tx
+      let signed = transaction.partialSignTxn({ version: addressVersion, threshold: 2, pks: encodedPublicKeys }, sk);
 
-    // if we have already signed it, we'll have to merge that with our previous tx
-    if (isHalfSigned) {
-      signed = mergeMultisigTransactions([Buffer.from(signed), txToHex]);
-    }
+      // if we have already signed it, we'll have to merge that with our previous tx
+      if (isHalfSigned) {
+        signed = mergeMultisigTransactions([Buffer.from(signed), txToHex]);
+      }
 
-    const signedBase64 = Buffer.from(signed).toString('base64');
+      const signedBase64 = Buffer.from(signed).toString('base64');
 
-    if (isHalfSigned) {
-      return { txHex: signedBase64 };
-    } else {
-      return { halfSigned: { txHex: signedBase64 } };
-    }
+      if (isHalfSigned) {
+        return { txHex: signedBase64 };
+      } else {
+        return { halfSigned: { txHex: signedBase64 } };
+      }
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   parseTransaction(
