@@ -9,6 +9,7 @@ import * as nock from 'nock';
 import { TestBitGo } from '../../lib/test_bitgo';
 const recoveryNocks = require('../lib/recovery-nocks');
 import * as config from '../../../src/config';
+import moment = require('moment');
 
 nock.disableNetConnect();
 
@@ -615,6 +616,8 @@ describe('Recovery:', function() {
 
   describe('Recover EOS', function() {
     let baseCoin;
+    const expectedPackedTrx = '7122315d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000';
+    const expectedTxId = '99c6a4eedf5cff246314bdc0a053c12d75488df3aa09474bad4ceca88d8b2498';
     before(function() {
       baseCoin = bitgo.coin('teos');
     });
@@ -622,7 +625,7 @@ describe('Recovery:', function() {
       recoveryNocks.nockEosRecovery();
     });
 
-    it('should generate EOS recovery tx', co(function *() {
+    it('should generate EOS recovery tx with correct expiration date', co(function *() {
       const recoveryTx = yield baseCoin.recover({
         userKey: '{\"iv\":\"jRBZi43c7t4tvx7SgP8h0g==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"TgZqHtZrmLU=\",\"ct\":\"hRntzrbcH81dOzlyr49nbAIJdHWqEKKVJx0s55kNV+fqUjKKoEuWqVGF1dPfQkkTkcIjFTNvuHsiGicVGSRf5RI3Q0ZD6YtCqO2bWX6t7HgBio5yYMaPy+cNJHmp6jHBQFZ9cCjqwAam/V+1mRvpJpn2dSWPotw=\"}',
         backupKey: '{\"iv\":\"qE+D+C6KXaZKFXXTM/AF5w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"a/YD7/8gJFw=\",\"ct\":\"tc2c1PfSjDS9TshXEIKKlToDcdCeL45fpGUWEPIM2+6CrvIuaXZC6/Hx9bza7VIoEPhJWHmgvoeAouto4PUpnyKJUuz+T46RY09XJs2rcDvbfMKblRsh6lzUc8O7ubTzJRNgFOUqkZM6qGB22A0FtL8yNlFqc3c=\"}',
@@ -633,9 +636,20 @@ describe('Recovery:', function() {
 
       recoveryTx.should.have.property('transaction');
       recoveryTx.transaction.compression.should.equal('none');
-      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000');
+      recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
       recoveryTx.transaction.signatures.length.should.equal(2);
-      recoveryTx.txid.should.equal('60c2b010854a7f199648e5175df052f09d2da09d0d23a33f3c148c30a3099e8d');
+      recoveryTx.txid.should.equal(expectedTxId);
+
+      const deserializeTransactionParams = {
+        transaction: {
+          packed_trx: recoveryTx.transaction.packed_trx
+        }
+      };
+
+      const deserializedTx = yield baseCoin.deserializeTransaction(deserializeTransactionParams);
+      const mockedHeadBlockTime = '2019-07-18T17:52:49.000';
+      const hoursUntilExpiration = 8;
+      moment(deserializedTx.expiration).diff(mockedHeadBlockTime, 'hours').should.equal(hoursUntilExpiration);
     }));
 
     it('should generate EOS recovery tx with unencrypted keys', co(function *() {
@@ -648,9 +662,9 @@ describe('Recovery:', function() {
 
       recoveryTx.should.have.property('transaction');
       recoveryTx.transaction.compression.should.equal('none');
-      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000');
+      recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
       recoveryTx.transaction.signatures.length.should.equal(2);
-      recoveryTx.txid.should.equal('60c2b010854a7f199648e5175df052f09d2da09d0d23a33f3c148c30a3099e8d');
+      recoveryTx.txid.should.equal(expectedTxId);
     }));
 
     it('should generate an EOS unsigned sweep', co(function *() {
@@ -664,9 +678,9 @@ describe('Recovery:', function() {
 
       recoveryTx.should.have.property('transaction');
       recoveryTx.transaction.compression.should.equal('none');
-      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000');
+      recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
       recoveryTx.transaction.signatures.length.should.equal(0);
-      recoveryTx.txid.should.equal('60c2b010854a7f199648e5175df052f09d2da09d0d23a33f3c148c30a3099e8d');
+      recoveryTx.txid.should.equal(expectedTxId);
     }));
   });
 
