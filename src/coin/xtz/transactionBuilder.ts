@@ -6,18 +6,33 @@ import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import {
   genericMultisigOriginationOperation,
+  multisigTransactionOperation,
   revealOperation,
-  transactionOperation,
+  singlesigTransactionOperation,
 } from '../../../resources/xtz/multisig';
 import { Address } from './address';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { Fee, Key, Operation } from './iface';
-import { isValidAddress, isValidBlockHash, DEFAULT_GAS_LIMIT, DEFAULT_STORAGE_LIMIT, DEFAULT_FEE } from './utils';
+import { Fee, IndexedData, IndexedSignature, Key, Operation, OriginationOp, RevealOp, TransactionOp } from './iface';
+import {
+  isValidAddress,
+  isValidBlockHash,
+  DEFAULT_GAS_LIMIT,
+  DEFAULT_STORAGE_LIMIT,
+  isValidOriginatedAddress,
+} from './utils';
 import * as Utils from './utils';
 import { TransferBuilder } from './transferBuilder';
 
 const DEFAULT_M = 3;
+
+interface DataToSignOverride extends IndexedData {
+  dataToSign: string;
+}
+
+interface IndexedKeyPair extends IndexedData {
+  key: KeyPair;
+}
 
 /**
  * Tezos transaction builder.
@@ -25,19 +40,22 @@ const DEFAULT_M = 3;
 export class TransactionBuilder extends BaseTransactionBuilder {
   private _serializedTransaction: string;
   private _transaction: Transaction;
-  private _fee: Fee;
   private _type: TransactionType;
-  private _revealSource;
+  private _blockHeader: string;
+  private _counter: BigNumber;
+  private _fee: Fee;
+  private _revealSource: boolean;
   private _sourceAddress: string;
   private _sourceKeyPair?: KeyPair;
-  private _multisigSignerKeyPairs: { key: KeyPair; index?: number }[];
-  private _counter: BigNumber;
-  private _initialBalance: string;
-  private _blockHeader: string;
-  private _transfers: TransferBuilder[];
 
-  // Initialization transaction parameters
+  // Wallet initialization transaction parameters
+  private _initialBalance: string;
   private _owner: string[];
+
+  // Send transaction parameters
+  private _multisigSignerKeyPairs: IndexedKeyPair[];
+  private _dataToSignOverride: DataToSignOverride[];
+  private _transfers: TransferBuilder[];
 
   /**
    * Public constructor.
@@ -48,10 +66,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     super(_coinConfig);
     this._type = TransactionType.Send;
     this._revealSource = false;
-    this._multisigSignerKeyPairs = [];
     this._counter = new BigNumber(0);
     this._transfers = [];
     this._owner = [];
+    this._multisigSignerKeyPairs = [];
+    this._dataToSignOverride = [];
     this.transaction = new Transaction(_coinConfig);
   }
 
@@ -67,7 +86,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected signImplementation(key: Key): Transaction {
     const signer = new KeyPair({ prv: key.key });
-    if (this._type === TransactionType.Send && this._transfers.length === 0) {
+    if (
+      this._type === TransactionType.Send &&
+      this._transfers.length === 0 &&
+      this._serializedTransaction === undefined
+    ) {
       throw new SigningError('Cannot sign an empty transaction');
     }
 
@@ -78,13 +101,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         throw new SigningError('Cannot sign multiple times a non send-type transaction');
       }
 
-      // Make sure either all keys passed have a custom index or none of them have
       // TODO: support a combination of keys with and without custom index
       if (key.index && key.index >= DEFAULT_M) {
         throw new BuildTransactionError(
           'Custom index cannot be greater than the wallet total number of signers (owners)',
         );
       }
+      // Make sure either all keys passed have a custom index or none of them have
       const shouldHaveCustomIndex = key.hasOwnProperty('index');
       for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
         if (shouldHaveCustomIndex !== (this._multisigSignerKeyPairs[i].index !== undefined)) {
@@ -107,103 +130,50 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // If the from() method was called, use the serialized transaction as a base
     if (this._serializedTransaction) {
       await this.transaction.initFromSerializedTransaction(this._serializedTransaction);
+      for (let i = 0; i < this._dataToSignOverride.length; i++) {
+        const signatures = await this.getSignatures(this._dataToSignOverride[i].dataToSign);
+        await this.transaction.addTransferSignature(signatures, this._dataToSignOverride[i].index || i);
+      }
       // TODO: make changes to the transaction if any extra parameter has been set then sign it
-      return this.transaction;
-    }
-
-    const contents: Operation[] = [];
-    // TODO: cleanup (breakdown) this switch
-    switch (this._type) {
-      case TransactionType.AddressInitialization:
-        const revealOp = revealOperation(
-          this._counter.toString(),
-          this._sourceAddress,
-          DEFAULT_FEE.REVEAL.toString(),
-          DEFAULT_GAS_LIMIT.REVEAL.toString(),
-          DEFAULT_STORAGE_LIMIT.REVEAL.toString(),
-          this._sourceKeyPair!.getKeys().pub,
-        );
-        contents.push(revealOp);
-        this._counter = this._counter.plus(1);
-        break;
-      case TransactionType.WalletInitialization:
-        if (this._revealSource && this._sourceKeyPair) {
-          const revealOp = revealOperation(
-            this._counter.toString(),
-            this._sourceAddress,
-            DEFAULT_FEE.REVEAL.toString(),
-            DEFAULT_GAS_LIMIT.REVEAL.toString(),
-            DEFAULT_STORAGE_LIMIT.REVEAL.toString(),
-            this._sourceKeyPair!.getKeys().pub,
-          );
-          contents.push(revealOp);
-          this._counter = this._counter.plus(1);
-        }
-        const originationOp = genericMultisigOriginationOperation(
-          this._counter.toString(),
-          this._sourceAddress,
-          this._fee.fee,
-          this._fee.gasLimit || DEFAULT_GAS_LIMIT.ORIGINATION.toString(),
-          this._fee.storageLimit || DEFAULT_STORAGE_LIMIT.ORIGINATION.toString(),
-          this._initialBalance || '0',
-          this._owner,
-        );
-        contents.push(originationOp);
-        this._counter = this._counter.plus(1);
-        break;
-      case TransactionType.Send:
-        for (let i = 0; i < this._transfers.length; i++) {
-          const transfer = this._transfers[i].build();
-          let transactionOp;
-          if (transfer.dataToSign) {
-            const signatures = await this.getSignatures(transfer.dataToSign);
-            transactionOp = transactionOperation(
-              this._counter.toString(),
-              this._sourceAddress,
-              transfer.fee.fee,
-              transfer.fee.gasLimit || DEFAULT_GAS_LIMIT.TRANSFER.toString(),
-              transfer.fee.storageLimit || DEFAULT_STORAGE_LIMIT.TRANSFER.toString(),
-              transfer.amount,
-              transfer.to,
-              transfer.from,
-              transfer.counter,
-              signatures,
-            );
-          } else {
-            transactionOp = transactionOperation(
-              this._counter.toString(),
-              this._sourceAddress,
-              transfer.fee.fee,
-              transfer.fee.gasLimit || DEFAULT_GAS_LIMIT.TRANSFER.toString(),
-              transfer.fee.storageLimit || DEFAULT_STORAGE_LIMIT.TRANSFER.toString(),
-              transfer.amount,
-              transfer.to,
-            );
+    } else {
+      let contents: Operation[] = [];
+      switch (this._type) {
+        case TransactionType.AddressInitialization:
+          contents.push(this.buildAddressInitializationOperations());
+          break;
+        case TransactionType.WalletInitialization:
+          if (this._revealSource && this._sourceKeyPair) {
+            contents.push(this.buildAddressInitializationOperations());
           }
-          contents.push(transactionOp);
-          this._counter = this._counter.plus(1);
-        }
-        break;
-      default:
-        throw new BuildTransactionError('Unsupported transaction type');
-    }
-    if (contents.length === 0) {
-      throw new BuildTransactionError('Empty transaction');
-    }
-    const parsedTransaction = {
-      branch: this._blockHeader,
-      contents,
-    };
+          contents.push(this.buildWalletInitializationOperations());
+          break;
+        case TransactionType.Send:
+          if (this._revealSource && this._sourceKeyPair) {
+            contents.push(this.buildAddressInitializationOperations());
+          }
+          contents = contents.concat(await this.buildSendTransactionContent());
+          break;
+        default:
+          throw new BuildTransactionError('Unsupported transaction type');
+      }
+      if (contents.length === 0) {
+        throw new BuildTransactionError('Empty transaction');
+      }
+      const parsedTransaction = {
+        branch: this._blockHeader,
+        contents,
+      };
 
-    this.transaction = new Transaction(this._coinConfig);
-    // Build and sign a new transaction based on the latest changes
-    await this.transaction.initFromParsedTransaction(parsedTransaction);
+      this.transaction = new Transaction(this._coinConfig);
+      // Build and sign a new transaction based on the latest changes
+      await this.transaction.initFromParsedTransaction(parsedTransaction);
+    }
+
     if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
       // TODO: check if there are more signers than needed for a singlesig or multisig transaction
       await this.transaction.sign(this._sourceKeyPair);
     }
-
-    return Promise.resolve(this.transaction);
+    return this.transaction;
   }
   // endregion
 
@@ -305,7 +275,20 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
   // endregion
 
-  //region WalletInitialization builder methods
+  // region AddressInitialization builder methods
+  /**
+   * Build a reveal operation for the source account with default fees.
+   *
+   * @returns {RevealOp} A Tezos reveal operation
+   */
+  private buildAddressInitializationOperations(): RevealOp {
+    const revealOp = revealOperation(this._counter.toString(), this._sourceAddress, this._sourceKeyPair!.getKeys().pub);
+    this._counter = this._counter.plus(1);
+    return revealOp;
+  }
+  // endregion
+
+  // region WalletInitialization builder methods
   /**
    * Set one of the owners of the multisig wallet.
    *
@@ -317,9 +300,28 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     this._owner.push(publicKey);
   }
+
+  /**
+   * Build an origination operation for a generic multisig contract.
+   *
+   * @returns {Operation} A Tezos origination operation
+   */
+  private buildWalletInitializationOperations(): OriginationOp {
+    const originationOp = genericMultisigOriginationOperation(
+      this._counter.toString(),
+      this._sourceAddress,
+      this._fee.fee,
+      this._fee.gasLimit || DEFAULT_GAS_LIMIT.ORIGINATION.toString(),
+      this._fee.storageLimit || DEFAULT_STORAGE_LIMIT.ORIGINATION.toString(),
+      this._initialBalance || '0',
+      this._owner,
+    );
+    this._counter = this._counter.plus(1);
+    return originationOp;
+  }
   //endregion
 
-  //region Send builder methods
+  // region Send builder methods
   /**
    * Initialize a new TransferBuilder to for a singlesig or multisig transaction.
    *
@@ -350,7 +352,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param {string} packedData The string in hexadecimal to sign
    * @returns {Promise<string[]>} List of signatures for packedData
    */
-  private async getSignatures(packedData: string): Promise<{ signature: string; index: number }[]> {
+  private async getSignatures(packedData: string): Promise<IndexedSignature[]> {
     const signatures: { signature: string; index: number }[] = [];
     // Generate the multisig contract signatures
     for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
@@ -359,6 +361,61 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       signatures.push({ signature: signature.sig, index });
     }
     return signatures;
+  }
+
+  /**
+   * Override the data to sign for a specific transfer. Used for offline signing to pass the
+   * respective dataToSign for transfer at a particular index.
+   *
+   * @param {DataToSignOverride} data
+   */
+  overrideDataToSign(data: DataToSignOverride): void {
+    if (!data.index) {
+      data.index = this._dataToSignOverride.length;
+    }
+    this._dataToSignOverride.push(data);
+  }
+
+  /**
+   * Build a transaction operation for a generic multisig contract.
+   *
+   * @returns {Promise<TransactionOp[]>} A Tezos transaction operation
+   */
+  private async buildSendTransactionContent(): Promise<TransactionOp[]> {
+    const contents: TransactionOp[] = [];
+    for (let i = 0; i < this._transfers.length; i++) {
+      const transfer = this._transfers[i].build();
+      let transactionOp;
+      if (isValidOriginatedAddress(transfer.from)) {
+        // Offline transactions may not have the data to sign
+        const signatures = transfer.dataToSign ? await this.getSignatures(transfer.dataToSign) : [];
+        transactionOp = multisigTransactionOperation(
+          this._counter.toString(),
+          this._sourceAddress,
+          transfer.amount,
+          transfer.from,
+          transfer.counter || '0',
+          transfer.to,
+          signatures,
+          transfer.fee.fee,
+          transfer.fee.gasLimit,
+          transfer.fee.storageLimit,
+        );
+      } else {
+        transactionOp = singlesigTransactionOperation(
+          this._counter.toString(),
+          this._sourceAddress,
+          transfer.amount,
+          transfer.to,
+          transfer.fee.fee,
+          transfer.fee.gasLimit,
+          transfer.fee.storageLimit,
+        );
+      }
+      contents.push(transactionOp);
+      this._counter = this._counter.plus(1);
+    }
+    return contents;
   }
   //endregion
 

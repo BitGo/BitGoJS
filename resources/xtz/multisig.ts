@@ -1,5 +1,5 @@
-import { OriginationOp, RevealOp, TransactionOp, TransferData } from '../../src/coin/xtz/iface';
-import { hashTypes, isValidKey } from '../../src/coin/xtz/utils';
+import { IndexedSignature, OriginationOp, RevealOp, TransactionOp, TransferData } from '../../src/coin/xtz/iface';
+import { DEFAULT_FEE, DEFAULT_GAS_LIMIT, DEFAULT_STORAGE_LIMIT, hashTypes, isValidKey } from '../../src/coin/xtz/utils';
 
 // Default n of m for multisig wallets
 const DEFAULT_N = 2;
@@ -58,53 +58,27 @@ export function getMultisigTransferDataFromOperation(operation: TransactionOp): 
 }
 
 /**
- * Create a singlesig or multisig transaction.
+ * Helper method to build a singlesig transaction operation.
  *
  * @param {string} counter Source account next counter
  * @param {string} source The account that will pay for fees, and in singlesig transactions, where
  *        the funds are taken from
+ * @param {string} amount The amount in mutez to be transferred
+ * @param {string} destination The account address to send the funds to
  * @param {string} fee Fees in mutez to pay by the source account
  * @param {string} gasLimit Maximum amount in mutez to spend in gas fees
  * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
- * @param {string} amount The amount in mutez to be transferred
- * @param {string} destination The account address to send the funds to
- * @param {string} contractAddress If it is a multisig transfer, the smart contract address with the
- *        funds to be transferred from
- * @param {string} contractCounter If it is a multisig transfer, the smart contract counter to use
- *        in the next transaction
- * @param {string[]} signatures signatures List of signatures authorizing the funds transfer form
- *        the multisig wallet
- * @param {number} m The number of signers (owners) for the multisig wallet being used. Default is 3
- * @returns {TransactionOp} A Tezos transaction operation
+ * @returns {TransactionOp}A Tezos transaction operation
  */
-export function transactionOperation(
+export function singlesigTransactionOperation(
   counter: string,
   source: string,
-  fee: string,
-  gasLimit: string,
-  storageLimit: string,
   amount: string,
   destination: string,
-  contractAddress?: string,
-  contractCounter = '0',
-  signatures: { signature: string; index: number }[] = [],
-  m: number = DEFAULT_M,
+  fee: string = DEFAULT_FEE.TRANSFER.toString(),
+  gasLimit: string = DEFAULT_GAS_LIMIT.TRANSFER.toString(),
+  storageLimit: string = DEFAULT_STORAGE_LIMIT.TRANSFER.toString(),
 ): TransactionOp {
-  if (contractAddress) {
-    return genericMultisigTransactionOperation(
-      counter,
-      source,
-      fee,
-      gasLimit,
-      storageLimit,
-      amount,
-      contractAddress,
-      contractCounter,
-      destination,
-      signatures,
-      m,
-    );
-  }
   return {
     kind: 'transaction',
     source,
@@ -124,9 +98,6 @@ export function transactionOperation(
  * @param {string} counter Source account next counter
  * @param {string} source The account that will pay for fees, and in singlesig transactions, where
  *        the funds are taken from
- * @param {string} fee Fees in mutez to pay by the source account
- * @param {string} gasLimit Maximum amount in mutez to spend in gas fees
- * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
  * @param {string} amount The amount in mutez to be transferred
  * @param {string} contractAddress If it is a multisig transfer, the smart contract address with the
  *        funds to be transferred from
@@ -135,20 +106,23 @@ export function transactionOperation(
  * @param {string} destinationAddress An implicit or originated address to transfer fudns to
  * @param {string[]} signatures signatures List of signatures authorizing the funds transfer form
  *        the multisig wallet
+ * @param {string} fee Fees in mutez to pay by the source account
+ * @param {string} gasLimit Maximum amount in mutez to spend in gas fees
+ * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
  * @param {number} m The number of signers (owners) for the multisig wallet being used. Default is 3
  * @returns {TransactionOp} A Tezos operation with a generic multisig transfer
  */
-export function genericMultisigTransactionOperation(
+export function multisigTransactionOperation(
   counter: string,
   source: string,
-  fee: string,
-  gasLimit: string,
-  storageLimit: string,
   amount: string,
   contractAddress: string,
   contractCounter: string,
   destinationAddress: string,
   signatures: { signature: string; index: number }[],
+  fee: string = DEFAULT_FEE.TRANSFER.toString(),
+  gasLimit: string = DEFAULT_GAS_LIMIT.TRANSFER.toString(),
+  storageLimit: string = DEFAULT_STORAGE_LIMIT.TRANSFER.toString(),
   m: number = DEFAULT_M,
 ): TransactionOp {
   return {
@@ -170,7 +144,7 @@ export function genericMultisigTransactionOperation(
  * @param {string} destinationAddress An implicit or originated address
  * @param {number} amount Number of Mutez to be transferred
  * @param {string} contractCounter Multisig contract counter number
- * @param {string[]} signatures Multisig wallet signatures
+ * @param {IndexedSignature[]} signatures List of transactions and their order
  * @param {number} m The multisig wallet total number of signers (owners)
  * @returns The parameters object
  */
@@ -178,16 +152,10 @@ function genericMultisigTransferParams(
   destinationAddress: string,
   amount: string,
   contractCounter: string,
-  signatures: { signature: string; index: number }[],
+  signatures: IndexedSignature[],
   m: number,
 ) {
-  const transactionSignatures: any[] = [];
-  // Initialize the array with empty signatures
-  for (let i = 0; i < m; i++) {
-    transactionSignatures.push({ prim: 'None' });
-  }
-  // Replace the empty signatures for the real ones based on the right index
-  signatures.forEach(s => (transactionSignatures[s.index] = { prim: 'Some', args: [{ string: s.signature }] }));
+  const transactionSignatures: any[] = buildSignatures(signatures);
   return {
     entrypoint: 'main',
     value: {
@@ -201,6 +169,34 @@ function genericMultisigTransferParams(
       ],
     },
   };
+}
+
+/**
+ * Replace the signatures in a multisig transaction operation with new ones.
+ *
+ * @param {TransactionOp} transaction Transaction to mutate
+ * @param {IndexedSignature[]} signatures List of transactions and their order
+ */
+export function updateMultisigTransferSignatures(transaction: TransactionOp, signatures: IndexedSignature[]) {
+  transaction.parameters.value.args[1] = buildSignatures(signatures);
+}
+
+/**
+ * Build a list of ordered signatures, putting a None primitive for the missing indexes.
+ *
+ * @param {IndexedSignature[]} signatures List of transactions and their order
+ * @param {number} m Size of the signature list
+ * @returns {any[]} List of signatures in the right order
+ */
+function buildSignatures(signatures: IndexedSignature[], m: number = DEFAULT_M) {
+  const transactionSignatures: any[] = [];
+  // Initialize the array with empty signatures
+  for (let i = 0; i < m; i++) {
+    transactionSignatures.push({ prim: 'None' });
+  }
+  // Replace the empty signatures for the real ones based on the right index
+  signatures.forEach(s => (transactionSignatures[s.index] = { prim: 'Some', args: [{ string: s.signature }] }));
+  return transactionSignatures;
 }
 
 /**
@@ -361,19 +357,19 @@ function transferToOriginatedAccount(address: string, amount: string) {
  *
  * @param {string} counter Source account next counter
  * @param {string} source Source account address
+ * @param {string} pubKey The public key to reveal
  * @param {string} fee Fees in mutez to pay by the source account
  * @param {string} gasLimit Maximum amount in mutez to spend in gas fees
  * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
- * @param {string} pubKey The public key to reveal
  * @returns An origination operation
  */
 export function revealOperation(
   counter: string,
   source: string,
-  fee: string,
-  gasLimit: string,
-  storageLimit: string,
   pubKey: string,
+  fee: string = DEFAULT_FEE.REVEAL.toString(),
+  gasLimit: string = DEFAULT_GAS_LIMIT.REVEAL.toString(),
+  storageLimit: string = DEFAULT_STORAGE_LIMIT.REVEAL.toString(),
 ): RevealOp {
   return {
     kind: 'reveal',
