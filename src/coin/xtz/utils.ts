@@ -177,6 +177,20 @@ export function isValidSignature(hash: string): boolean {
 }
 
 /**
+ * Returns whether or not the string is a valid Tezos public key
+ *
+ * @param {string} publicKey The public key to validate
+ * @returns {boolean}
+ */
+export function isValidPublicKey(publicKey: string): boolean {
+  return (
+    isValidHash(publicKey, hashTypes.sppk) ||
+    isValidHash(publicKey, hashTypes.p2pk) ||
+    isValidHash(publicKey, hashTypes.edpk)
+  );
+}
+
+/**
  * Returns whether or not the string is a valid Tezos block hash
  *
  * @param {string} hash - the address to validate

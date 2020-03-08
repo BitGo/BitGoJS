@@ -3,7 +3,7 @@ import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import * as testData from '../../../resources/xtz/xtz';
 import { getBuilder, Xtz } from '../../../../src';
-import { KeyPair, TransactionBuilder } from '../../../../src/coin/xtz';
+import { KeyPair } from '../../../../src/coin/xtz';
 
 describe('Tezos Transaction builder', function() {
   const defaultKeyPair = new Xtz.KeyPair({
@@ -38,7 +38,7 @@ describe('Tezos Transaction builder', function() {
           'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
       };
       const sourceKeyPair = new Xtz.KeyPair(source);
-      txBuilder.source(sourceKeyPair);
+      txBuilder.source(sourceKeyPair.getAddress());
       txBuilder.initialBalance('1000000');
       txBuilder.counter('0');
       txBuilder.owner(
@@ -73,7 +73,8 @@ describe('Tezos Transaction builder', function() {
           'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
       };
       const keyPair = new Xtz.KeyPair(source);
-      txBuilder.source(keyPair);
+      txBuilder.source(keyPair.getAddress());
+      txBuilder.publicKey(keyPair.getKeys().pub);
       txBuilder.counter('0');
       txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
       const tx = await txBuilder.build();
@@ -130,7 +131,7 @@ describe('Tezos Transaction builder', function() {
         storageLimit: '1292',
       });
       txBuilder.source(defaultKeyPair.getAddress());
-      txBuilder.reveal();
+      txBuilder.publicKey(defaultKeyPair.getKeys().pub);
       txBuilder.initialBalance('1000000');
       txBuilder.counter('0');
       txBuilder.owner('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
@@ -159,7 +160,8 @@ describe('Tezos Transaction builder', function() {
     it('a reveal transaction', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.source(defaultKeyPair);
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.publicKey(defaultKeyPair.getKeys().pub);
       txBuilder.counter('0');
       txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
@@ -197,10 +199,10 @@ describe('Tezos Transaction builder', function() {
       txBuilder.sign({
         key: new KeyPair({ prv: 'spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL' }).getKeys().prv,
       });
-      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(32) }).getKeys().prv });
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('oohPCEvH4RvSW1fjHrTbqQrKN7YrxX1XUzVPHmcNCdanqFJQKhU');
+      tx.id.should.equal('oo8haKjuiZfjLJmpWgKDVF1kKbb2uEtygFyrSVzgoZNkc3nUMDd');
       tx.type.should.equal(TransactionType.Send);
       should.equal(tx.inputs.length, 2);
       should.equal(tx.outputs.length, 1);
@@ -212,10 +214,10 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[0].value.should.equal('1000000');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigp4fNuaduyKz85erjQ4ycrNHapzThk5hEYy9qAFVfPRM8YCDUfTNwfWSKRiJV7pqPkEu5ETCUxWydAkeRzrhr9QCcrcdaP',
+        'sigQLHLzWLNBWYDGfRcA36ZaMkapKJRKSjDB2WrDsou9FZLoz4Kp1ucW9AG7mey9wjAiNfRfCFrBV9yKsU8UZ4sEL21V7vWY',
       );
       tx.toBroadcastFormat().should.equal(
-        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000c0070707070000050502000000430320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a0080897a034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705903060306c74f2082f4be756ca41f5a89210bfc0fd9924540bab5a3f03f2790ad9814cfa050cb81bb4f3acceffc074bda07de82b832587531f0ccc4b02d1891e6da6f4fee',
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e00000125070707070000050502000000430320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a0080897a034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a4750030611ebda30dd150324737391705886840bfb99f8f51d6586b27408e84df93ce0f45dc6e8e6df000e602da19c3509190b37e7df7b11d552ccbc46e3dd34c05f3bf8',
       );
     });
 
@@ -239,10 +241,10 @@ describe('Tezos Transaction builder', function() {
       txBuilder.sign({
         key: new KeyPair({ prv: 'spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL' }).getKeys().prv,
       });
-      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(32) }).getKeys().prv });
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('ooSga4Rx815WHJmh8TZbMWddTrRmXqUKo6myYR2BrESTE7jBF43');
+      tx.id.should.equal('oobTNo72du9BFYfyZTo64kTXVhBfHNuJaJQXuNGVr6gYCDpYjDQ');
       tx.type.should.equal(TransactionType.Send);
       should.equal(tx.inputs.length, 2);
       should.equal(tx.outputs.length, 1);
@@ -254,10 +256,10 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[0].value.should.equal('100');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigc9nhZtBDckvrN9Nen4ZGhMJt5Bx6ubEWgaDzDSGAeFG6ix6GGZVYxmNeuxeNkwN3JrXyQGimCKqzRRdh3xVqqsemNQDcY',
+        'sigcM3xiQ9GN9tPXsVkckPHk66kAHDRMag6XCbHLWvMLPqH9KHgzAFepci2x53kcJGqVhFXaUSE3DhRCGdgj8ahkkWgiYZur',
       );
       tx.toBroadcastFormat().should.equal(
-        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000db0707070700000505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603066c42f1e015704fce715189cd094b67e9052b059bff39596dd7d5aa4c21fd72682dd7a651f09b7cd694647820103c106cccb8ae3d33d7590e298a4a8b3f0dc28e',
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000001400707070700000505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a475003066dbeee80de45847aeeb04f17dbb2e0774ae6942817d31e744c7e7772925c5f510b18523dafe54603c8753141f3e0989678f2252deb3bdaef93d6befa94399240',
       );
     });
 
@@ -289,10 +291,10 @@ describe('Tezos Transaction builder', function() {
       txBuilder.sign({
         key: new KeyPair({ prv: 'spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL' }).getKeys().prv,
       });
-      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(32) }).getKeys().prv });
+      txBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv });
       const tx = await txBuilder.build();
 
-      tx.id.should.equal('ooT43qkUXB5VHz83hYaTiUNd1LBqkbULqxoZaPmKhj8BkeHdQVD');
+      tx.id.should.equal('onyGaWs6z4bVVcfn3h9KbBrktEhuDyJLYEVB4aJRM6YNngjDxE4');
       tx.type.should.equal(TransactionType.Send);
       should.equal(tx.inputs.length, 4);
       should.equal(tx.outputs.length, 2);
@@ -310,10 +312,10 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[1].value.should.equal('100');
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
-        'sigXmArEwQWVeKMPLSs6eqiCyFD4xtnMPxGZaxW9NwYa5j2iNpjxBLYfga2HFcptTFbbiDwYt5KtKMnAwvR7bGUMALZmdzkE',
+        'sigdUpzCxmi9NWhdbFGfvqVyH8Xfr2UiPc2fkqNrQ4CHvrk19ZDksDksEc4DJsTbphenV8jCNZFqzL4sCVRzM93HnSSqgJz7',
       );
       tx.toBroadcastFormat().should.equal(
-        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000db0707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603066c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2501e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000bf070707070002050502000000420320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a00a401034f034d031b020000006b050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b6652367972707059030603064ab4d457fdd8a3077c66c02b05b166c541ce4e69aac3489a37d5f27cd1cb7ae50e529c16fff7041140a9809ad9e9884d5f740c14e7f9f28fe9e3f04a6a5a8c7c',
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000001400707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a475003066c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2501e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e00000124070707070002050502000000420320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a00a401034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a47500306766a0b1f6cb035bf537887ba9004c489bb458d8c8e72b5033b6cee8ad52f84ec27b719f5d0b98cdf2d0744b255301263688692645eafc9cdf1b48b5053c51dca',
       );
     });
 
@@ -490,6 +492,15 @@ describe('Tezos Transaction builder', function() {
       txBuilder.source(defaultKeyPair.getAddress());
       should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
     });
+
+    it('an address initialization transaction without public key', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.AddressInitialization);
+      should.throws(
+        () => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }),
+        new RegExp('Cannot sign an address initialization transaction without public keys'),
+      );
+    });
   });
 
   describe('should fail to', () => {
@@ -527,12 +538,58 @@ describe('Tezos Transaction builder', function() {
       should.throws(() => txBuilder.transfer('100'), new RegExp('Transfers can only be set for send transactions'));
     });
 
-    it('add a source to a reveal operation without a key pair', async () => {
+    it('add more owners than the multisig maximum', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.owner('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
+      txBuilder.owner('sppk7Zq9KPtwkzkgAsha4jU29C43McgP2skK56tjd7KJjhcmH6AZC1F');
+      txBuilder.owner('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf');
+      should.throws(
+        () => txBuilder.owner('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf'),
+        new RegExp('A maximum of 3 owners'),
+      );
+    });
+
+    it('add the same owner twice', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.owner('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf');
+      should.throws(
+        () => txBuilder.owner('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf'),
+        new RegExp('Repeated owner public key'),
+      );
+    });
+
+    it('add an invalid owner public key', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.WalletInitialization);
+      should.throws(() => txBuilder.owner('sppk'), new RegExp('Invalid public key'));
+    });
+
+    it('add an invalid public key to reveal', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.AddressInitialization);
+      should.throws(() => txBuilder.publicKey('sppk'), new RegExp('Invalid public key'));
+    });
+
+    it('add the same public key to reveal twice', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.publicKey(defaultKeyPair.getKeys().pub);
       should.throws(
-        () => txBuilder.source('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A'),
-        new RegExp('Reveal transaction requires the source KeyPair'),
+        () => txBuilder.publicKey(defaultKeyPair.getKeys().pub),
+        new RegExp('Public key to reveal already set'),
+      );
+    });
+
+    it('add the public key to reveal that does not belong to the source', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.source(defaultKeyPair.getAddress());
+      should.throws(
+        () => txBuilder.publicKey('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf'),
+        new RegExp('Public key does not match the source address'),
       );
     });
 
