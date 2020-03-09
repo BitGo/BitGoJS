@@ -5,9 +5,12 @@ import { BaseTransaction } from '../baseCoin';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
-import { getMultisigTransferDataFromOperation } from '../../../resources/xtz/multisig';
+import {
+  getMultisigTransferDataFromOperation,
+  updateMultisigTransferSignatures,
+} from '../../../resources/xtz/multisig';
 import { KeyPair } from './keyPair';
-import { Operation, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
+import { IndexedSignature, Operation, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
 import * as Utils from './utils';
 
 /**
@@ -58,6 +61,9 @@ export class Transaction extends BaseTransaction {
    * @param {string} transactionId The transaction id of the parsedTransaction if it is signed
    */
   async initFromParsedTransaction(parsedTransaction: ParsedTransaction, transactionId?: string): Promise<void> {
+    if (!this._encodedTransaction) {
+      this._encodedTransaction = await localForger.forge(parsedTransaction);
+    }
     if (transactionId) {
       // If the transaction id is passed, save it and clean up the entries since they will be
       // recalculated
@@ -69,7 +75,7 @@ export class Transaction extends BaseTransaction {
     }
     this._parsedTransaction = parsedTransaction;
     let operationIndex = 0;
-    parsedTransaction.contents.forEach(async operation => {
+    for (const operation of parsedTransaction.contents) {
       switch (operation.kind) {
         case CODEC.OP_ORIGINATION:
           await this.recordOriginationOpFields(operation as OriginationOp, operationIndex);
@@ -84,7 +90,7 @@ export class Transaction extends BaseTransaction {
         default:
           break;
       }
-    });
+    }
   }
 
   /**
@@ -176,6 +182,21 @@ export class Transaction extends BaseTransaction {
     await this.initFromParsedTransaction(this._parsedTransaction, this._id);
 
     this._signatures.push(signedTransaction.sig);
+  }
+
+  /**
+   * Update the list of signatures for a multisig transaction operation.
+   *
+   * @param {IndexedSignature[]} signatures List of signatures and the index they should be put on
+   *    in the multisig transfer
+   * @param {number} index The transfer index to add the signatures to
+   */
+  async addTransferSignature(signatures: IndexedSignature[], index: number): Promise<void> {
+    if (!this._parsedTransaction) {
+      throw new InvalidTransactionError('Empty transaction');
+    }
+    updateMultisigTransferSignatures(this._parsedTransaction.contents[index] as TransactionOp, signatures);
+    this._encodedTransaction = await localForger.forge(this._parsedTransaction);
   }
 
   /** @inheritdoc */

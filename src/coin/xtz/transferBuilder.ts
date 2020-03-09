@@ -66,9 +66,6 @@ export class TransferBuilder {
         'Missing transfer mandatory fields. Amount, from address, destination (to) address and fee are mandatory',
       );
     }
-    if (isValidOriginatedAddress(this._fromAddress) && !this._dataToSign) {
-      throw new BuildTransactionError('Missing data to sign for a multisig wallet transfer');
-    }
     return {
       amount: this._amount,
       coin: this._coin,

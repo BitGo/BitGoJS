@@ -90,14 +90,5 @@ describe('Tezos Transfer builder', function() {
         .to('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A');
       should.throws(() => builder.build(), new RegExp('Missing transfer mandatory fields'));
     });
-
-    it('build a transfer from a contract without data to sign', async () => {
-      const builder = new TransferBuilder()
-        .amount('10')
-        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
-        .to('tz1VRjRpVKnv16AVprFH1tkDn4TDfVqA893A')
-        .fee('20');
-      should.throws(() => builder.build(), new RegExp('Missing data to sign for a multisig wallet transfer'));
-    });
   });
 });

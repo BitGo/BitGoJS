@@ -108,9 +108,16 @@ export interface SignResponse {
   sbytes: string;
 }
 
+export interface IndexedData {
+  index?: number;
+}
+
 /**
  * Tezos keys can have a specific order in the smart contracts, hence the need to add an index field
  */
-export interface Key extends BaseKey {
-  index?: number;
+export interface Key extends BaseKey, IndexedData {}
+
+export interface IndexedSignature {
+  signature: string;
+  index: number;
 }
