@@ -33,6 +33,7 @@
     }
   },
   "resolutions": {
-    "handlebars": "^4.5.3"
+    "handlebars": "^4.5.3",
+    "kind-of": "^6.0.3"
   }
 }
