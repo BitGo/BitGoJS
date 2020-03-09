@@ -31,8 +31,5 @@
     "hooks": {
       "pre-commit": "lerna run --stream --parallel precommit"
     }
-  },
-  "resolutions": {
-    "handlebars": "^4.5.3"
   }
 }
