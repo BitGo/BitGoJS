@@ -390,7 +390,7 @@ export const coins = CoinMap.fromCoins([
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
   terc20('schz', 'SchnauzerCoin', 18, '0x050e25a2630b2aee94546589fd39785254de112c', UnderlyingAsset.SCHZ),
-  terc20('tcat', 'Test CAT-20 Token', 18, '0x63137319f3a14a985eb31547370e0e3bd39b03b8', UnderlyingAsset.TCAT),
+  terc20('tcat', 'Test CAT-20 Token', 18, '0x63137319f3a14a985eb31547370e0e3bd39b03b8', UnderlyingAsset.CAT),
   terc20('tfmf', 'Test Formosa Financial Token', 18, '0xd8463d2f8c5b3be9de95c63b73a0ae4c79423452', UnderlyingAsset.FMF),
   tstellarToken(
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',

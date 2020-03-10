@@ -413,7 +413,7 @@ export const enum UnderlyingAsset {
   // Kovan-only ERC20 tokens
   TEST = 'test',
   SCHZ = 'schz',
-  TCAT = 'tcat',
+  CAT = 'cat',
 
   // Stellar testnet tokens
   'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' = 'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
