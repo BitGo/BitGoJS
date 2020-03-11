@@ -98,6 +98,7 @@ export interface PrebuildTransactionOptions {
       expireTime?: string;
       pendingApprovalId?: string;
     };
+    offlineVerification?: boolean;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
@@ -1629,7 +1630,12 @@ export class Wallet {
       }
       const extraParams = yield self.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: self }));
       Object.assign(whitelistedParams, extraParams);
+      const queryParams = {
+        offlineVerification: params.offlineVerification ? true : undefined,
+      };
+
       const buildQuery = self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/tx/build'))
+        .query(queryParams)
         .send(whitelistedParams)
         .result();
       const utxoCoin = self.baseCoin as AbstractUtxoCoin;
