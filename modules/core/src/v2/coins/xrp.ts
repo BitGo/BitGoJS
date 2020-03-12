@@ -222,30 +222,35 @@ export class Xrp extends BaseCoin {
    * @param params
    * - txPrebuild
    * - prv
-   * @returns {{txHex}}
+   * @param callback
+   * @returns Bluebird<HalfSignedTransaction>
    */
-  public signTransaction({ txPrebuild, prv }: SignTransactionOptions): HalfSignedTransaction {
-    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+  public signTransaction({ txPrebuild, prv }: SignTransactionOptions, callback?: NodeCallback<HalfSignedTransaction>): Bluebird<HalfSignedTransaction> {
+    return co<HalfSignedTransaction>(function *() {
+      if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+        if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+          throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+        }
+        throw new Error('missing txPrebuild parameter');
       }
-      throw new Error('missing txPrebuild parameter');
-    }
 
-    if (_.isUndefined(prv) || !_.isString(prv)) {
-      if (!_.isUndefined(prv) && !_.isString(prv)) {
-        throw new Error(`prv must be a string, got type ${typeof prv}`);
+      if (_.isUndefined(prv) || !_.isString(prv)) {
+        if (!_.isUndefined(prv) && !_.isString(prv)) {
+          throw new Error(`prv must be a string, got type ${typeof prv}`);
+        }
+        throw new Error('missing prv parameter to sign transaction');
       }
-      throw new Error('missing prv parameter to sign transaction');
-    }
 
-    const userKey = HDNode.fromBase58(prv).getKey();
-    const userPrivateKey: Buffer = userKey.getPrivateKeyBuffer();
-    const userAddress = rippleKeypairs.deriveAddress(userKey.getPublicKeyBuffer().toString('hex'));
+      const userKey = HDNode.fromBase58(prv).getKey();
+      const userPrivateKey: Buffer = userKey.getPrivateKeyBuffer();
+      const userAddress = rippleKeypairs.deriveAddress(userKey.getPublicKeyBuffer().toString('hex'));
 
-    const rippleLib = ripple();
-    const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), { signAs: userAddress });
-    return { halfSigned: { txHex: halfSigned.signedTransaction } };
+      const rippleLib = ripple();
+      const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), { signAs: userAddress });
+      return { halfSigned: { txHex: halfSigned.signedTransaction } };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

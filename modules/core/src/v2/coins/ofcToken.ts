@@ -6,6 +6,10 @@ import { CoinConstructor } from '../coinFactory';
 import { Ofc } from './ofc';
 import { isString } from 'lodash';
 import { SignTransactionOptions as BaseSignTransactionOptions } from '../baseCoin';
+import { NodeCallback } from '../types';
+import { SignedTransaction } from './eth';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 
 export interface OfcTokenConfig {
   type: string;
@@ -83,13 +87,22 @@ export class OfcToken extends Ofc {
   /**
    * Assemble keychain and half-sign prebuilt transaction
    * @param params
+   * @param callback
+   * @returns {Bluebird<SignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions) {
-    const txPrebuild = params.txPrebuild;
-    const payload = txPrebuild.payload;
-    const signatureBuffer = this.signMessage(params, payload);
-    const signature: string = signatureBuffer.toString('hex');
-    return { halfSigned: { payload, signature } };
+  signTransaction(
+    params: SignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    return co<SignedTransaction>(function*() {
+      const txPrebuild = params.txPrebuild;
+      const payload = txPrebuild.payload;
+      const signatureBuffer = this.signMessage(params, payload);
+      const signature: string = signatureBuffer.toString('hex');
+      return { halfSigned: { payload, signature } };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
