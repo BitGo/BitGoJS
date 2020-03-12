@@ -1,7 +1,7 @@
 import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
 import { MethodNotImplementedError } from '../../errors';
-import { BaseCoin } from '../baseCoin';
+import { BaseCoin, SignedTransaction } from '../baseCoin';
 import {
   AbstractUtxoCoin, AddressInfo,
   ExplainTransactionOptions,
@@ -149,78 +149,84 @@ export class Rmg extends AbstractUtxoCoin {
    * @param params
    * - txPrebuild
    * - prv
-   * @returns {{txHex}}
+   * @param callback
+   * @returns {Bluebird<SignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions): { txHex: string } {
-    const txPrebuild = params.txPrebuild;
-    const userPrv = params.prv;
+  signTransaction(params: SignTransactionOptions, callback?: NodeCallback<SignedTransaction>): Bluebird<SignedTransaction> {
+    const self = this;
+    return co<SignedTransaction>(function *() {
+      const txPrebuild = params.txPrebuild;
+      const userPrv = params.prv;
 
-    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+      if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+        if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+          throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+        }
+        throw new Error('missing txPrebuild parameter');
       }
-      throw new Error('missing txPrebuild parameter');
-    }
 
-    let transaction = prova.Transaction.fromHex(txPrebuild.txHex);
+      let transaction = prova.Transaction.fromHex(txPrebuild.txHex);
 
-    if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
-      throw new Error('length of unspents array should equal to the number of transaction inputs');
-    }
-
-    if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-      if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
-        throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+      if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
+        throw new Error('length of unspents array should equal to the number of transaction inputs');
       }
-      throw new Error('missing prv parameter to sign transaction');
-    }
 
-    const keychain = prova.HDNode.fromBase58(userPrv, this.network);
+      if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+        if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
+          throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+        }
+        throw new Error('missing prv parameter to sign transaction');
+      }
 
-    const signatureIssues: any[] = [];
-    const keychainHdPath = hdPath(keychain);
+      const keychain = prova.HDNode.fromBase58(userPrv, self.network);
 
-    for (let index = 0; index < transaction.ins.length; ++index) {
-      const currentUnspent = txPrebuild.txInfo.unspents[index];
-      const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
-      const privKey = keychainHdPath.deriveKey(path);
+      const signatureIssues: any[] = [];
+      const keychainHdPath = hdPath(keychain);
 
-      const currentSignatureIssue: any = {
-        inputIndex: index,
-        unspent: currentUnspent,
-        path: path
+      for (let index = 0; index < transaction.ins.length; ++index) {
+        const currentUnspent = txPrebuild.txInfo.unspents[index];
+        const path = 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index;
+        const privKey = keychainHdPath.deriveKey(path);
+
+        const currentSignatureIssue: any = {
+          inputIndex: index,
+          unspent: currentUnspent,
+          path: path
+        };
+
+        const unspentAddress = prova.Address.fromBase58(currentUnspent.address);
+        const subscript = unspentAddress.toScript();
+        const txb = prova.TransactionBuilder.fromTransaction(transaction, self.network);
+        try {
+          txb.sign(index, privKey, subscript, currentUnspent.value);
+        } catch (e) {
+          currentSignatureIssue.error = e;
+          signatureIssues.push(currentSignatureIssue);
+          continue;
+        }
+
+        transaction = txb.buildIncomplete();
+        const isValidSignature = self.verifySignature(transaction, index, currentUnspent.value);
+        if (!isValidSignature) {
+          currentSignatureIssue.error = new Error('invalid signature');
+          signatureIssues.push(currentSignatureIssue);
+        }
+      }
+
+      if (signatureIssues.length > 0) {
+        const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
+        const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+        error.code = 'input_signature_failure';
+        error.signingErrors = signatureIssues;
+        throw error;
+      }
+
+      return {
+        txHex: transaction.toHex()
       };
-
-      const unspentAddress = prova.Address.fromBase58(currentUnspent.address);
-      const subscript = unspentAddress.toScript();
-      const txb = prova.TransactionBuilder.fromTransaction(transaction, this.network);
-      try {
-        txb.sign(index, privKey, subscript, currentUnspent.value);
-      } catch (e) {
-        currentSignatureIssue.error = e;
-        signatureIssues.push(currentSignatureIssue);
-        continue;
-      }
-
-      transaction = txb.buildIncomplete();
-      const isValidSignature = this.verifySignature(transaction, index, currentUnspent.value);
-      if (!isValidSignature) {
-        currentSignatureIssue.error = new Error('invalid signature');
-        signatureIssues.push(currentSignatureIssue);
-      }
-    }
-
-    if (signatureIssues.length > 0) {
-      const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
-      const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
-      error.code = 'input_signature_failure';
-      error.signingErrors = signatureIssues;
-      throw error;
-    }
-
-    return {
-      txHex: transaction.toHex()
-    };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

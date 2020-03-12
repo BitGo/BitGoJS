@@ -13,11 +13,10 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
+import { NodeCallback } from '../types';
 import * as Bluebird from 'bluebird';
 import * as crypto from 'crypto';
 import * as bitGoUtxoLib from 'bitgo-utxo-lib';
-import * as errors from '../../errors';
-import { NodeCallback } from '../types';
 
 export class Ofc extends BaseCoin {
   static createInstance(bitgo: BitGo): BaseCoin {
@@ -80,7 +79,7 @@ export class Ofc extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    throw new errors.MethodNotImplementedError();
+    throw new MethodNotImplementedError();
   }
 
   getBaseFactor(): number | string {
@@ -102,7 +101,10 @@ export class Ofc extends BaseCoin {
     return Bluebird.resolve(true).asCallback(callback);
   }
 
-  signTransaction(params: SignTransactionOptions): SignedTransaction {
-    throw new MethodNotImplementedError();
+  signTransaction(
+    params: SignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    return Bluebird.reject(new MethodNotImplementedError()).asCallback(callback);
   }
 }

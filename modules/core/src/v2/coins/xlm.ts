@@ -724,33 +724,39 @@ export class Xlm extends BaseCoin {
    * @param params
    * @param params.txPrebuild {Object} prebuild object returned by platform
    * @param params.prv {String} user prv
+   * @param callback
+   * @returns {Bluebird<HalfSignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions): HalfSignedTransaction {
-    const { txPrebuild, prv } = params;
+  signTransaction(params: SignTransactionOptions, callback?: NodeCallback<HalfSignedTransaction>): Bluebird<HalfSignedTransaction> {
+    return co<HalfSignedTransaction>(function *() {
+      const { txPrebuild, prv } = params;
 
-    if (_.isUndefined(txPrebuild)) {
-      throw new Error('missing txPrebuild parameter');
-    }
-    if (!_.isObject(txPrebuild)) {
-      throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
-    }
+      if (_.isUndefined(txPrebuild)) {
+        throw new Error('missing txPrebuild parameter');
+      }
+      if (!_.isObject(txPrebuild)) {
+        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+      }
 
-    if (_.isUndefined(prv)) {
-      throw new Error('missing prv parameter to sign transaction');
-    }
-    if (!_.isString(prv)) {
-      throw new Error(`prv must be a string, got type ${typeof prv}`);
-    }
+      if (_.isUndefined(prv)) {
+        throw new Error('missing prv parameter to sign transaction');
+      }
+      if (!_.isString(prv)) {
+        throw new Error(`prv must be a string, got type ${typeof prv}`);
+      }
 
-    const keyPair = stellar.Keypair.fromSecret(prv);
-    const tx = new stellar.Transaction(txPrebuild.txBase64);
-    tx.sign(keyPair);
+      const keyPair = stellar.Keypair.fromSecret(prv);
+      const tx = new stellar.Transaction(txPrebuild.txBase64);
+      tx.sign(keyPair);
 
-    return {
-      halfSigned: {
-        txBase64: Xlm.txToString(tx),
-      },
-    };
+      return {
+        halfSigned: {
+          txBase64: Xlm.txToString(tx),
+        },
+      };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

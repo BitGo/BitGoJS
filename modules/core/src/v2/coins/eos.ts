@@ -389,28 +389,37 @@ export class Eos extends BaseCoin {
    * @param params
    * @param params.txPrebuild {Object} prebuild object returned by platform
    * @param params.prv {String} user prv
+   * @param callback
+   * @returns {Bluebird<EosSignedTransaction>}
    */
-  signTransaction(params: EosSignTransactionParams): EosSignedTransaction {
-    const prv: string = params.prv;
-    const txHex: string = params.txPrebuild.txHex;
-    const transaction: EosTx = params.txPrebuild.transaction;
+  signTransaction(
+    params: EosSignTransactionParams,
+    callback?: NodeCallback<EosSignedTransaction>
+  ): Bluebird<EosSignedTransaction> {
+    return co<EosSignedTransaction>(function*() {
+      const prv: string = params.prv;
+      const txHex: string = params.txPrebuild.txHex;
+      const transaction: EosTx = params.txPrebuild.transaction;
 
-    const signBuffer: Buffer = Buffer.from(txHex, 'hex');
-    const privateKeyBuffer: Buffer = HDNode.fromBase58(prv)
-      .getKey()
-      .getPrivateKeyBuffer();
-    const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
+      const signBuffer: Buffer = Buffer.from(txHex, 'hex');
+      const privateKeyBuffer: Buffer = HDNode.fromBase58(prv)
+        .getKey()
+        .getPrivateKeyBuffer();
+      const signature: string = ecc.Signature.sign(signBuffer, privateKeyBuffer).toString();
 
-    transaction.signatures.push(signature);
+      transaction.signatures.push(signature);
 
-    const txParams = {
-      transaction,
-      txHex,
-      recipients: params.txPrebuild.recipients,
-      headers: params.txPrebuild.headers,
-      txid: params.txPrebuild.txid,
-    };
-    return { halfSigned: txParams };
+      const txParams = {
+        transaction,
+        txHex,
+        recipients: params.txPrebuild.recipients,
+        headers: params.txPrebuild.headers,
+        txid: params.txPrebuild.txid,
+      };
+      return { halfSigned: txParams };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   private deserializeStakeAction(eosClient: EosJs, serializedStakeAction: string): DeserializedStakeAction {

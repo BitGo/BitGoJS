@@ -1,5 +1,19 @@
 # BitGoJS Release Notes
 
+## 9.6.1 (03-10-2020)
+
+### Other Changes
+* Increase EOS recovery transaction expiration time from 1 hour to 8 hours.
+* Update `@bitgo/statics` to version 3.4.1
+
+## 9.6.0 (03-03-2020)
+
+### New Features
+* Add support for building consolidation transactions for account based coins via the new wallet methods `buildAccountConsolidation`, `sendAccountConsolidation`, and `sendAccountConsolidations` (for bulk consolidations).
+
+### Other Changes
+* Update `@bitgo/statics` to version 3.4.0
+
 ## 9.5.3 (02-14-2020)
 
 ### Other Changes
