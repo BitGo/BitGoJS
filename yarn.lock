@@ -103,7 +103,7 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/account-lib@1.0.0":
+"@bitgo/account-lib@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-1.0.0.tgz#7f52128ca85d9d89c4fb01f74463d2d7dde21a41"
   integrity sha512-3B27+pWz+x8j55qBdoYdFD3ieirifGCe3PPwytavPuKWEmiUHtYRoBH5OhYZMK0ShETXnVT76ehEEhBaJxohJA==
