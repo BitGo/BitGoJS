@@ -257,7 +257,6 @@ describe('BitGo Prototype Methods', function() {
       const sharingKey2 = bitgo.getECDHSecret({ eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex') });
       sharingKey1.should.equal(sharingKey2);
     });
-
   });
 
   describe('change password', function() {
@@ -496,5 +495,13 @@ describe('BitGo Prototype Methods', function() {
     after(function() {
       nock.pendingMocks().should.be.empty();
     });
+  });
+
+  describe('preprocessAuthenticationParams', () => {
+    const bitgo = new TestBitGo({ env: 'mock' });
+    it('should fail if passed non-string username or password', co(function *() {
+      (() => bitgo.preprocessAuthenticationParams({ username: 123 })).should.throw(/expected string username/);
+      (() => bitgo.preprocessAuthenticationParams({ username: 'abc', password: {} })).should.throw(/expected string password/);
+    }));
   });
 });
