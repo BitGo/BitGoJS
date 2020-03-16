@@ -170,7 +170,7 @@ export const krsProviders = {
   }
 };
 
-export const bitcoinAverageBaseUrl = 'https://apiv2.bitcoinaverage.com/indices/local/ticker/';
+export const coinGeckoBaseUrl = 'https://api.coingecko.com/api/v3/';
 
 // TODO: once server starts returning eth address keychains, remove bitgoEthAddress
 /**
