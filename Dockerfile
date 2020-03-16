@@ -2,6 +2,7 @@ FROM node:10 AS builder
 MAINTAINER Tyler Levine <tyler@bitgo.com>
 COPY --chown=node:node . /tmp/bitgo/
 WORKDIR /tmp/bitgo/modules/express
+RUN npm install npm@latest -g
 USER node
 RUN npm ci && npm prune --production
 FROM node:10-alpine
