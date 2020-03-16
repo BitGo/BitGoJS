@@ -715,6 +715,47 @@ describe('V2 Wallet:', function() {
   });
 
   describe('Transaction prebuilds', function() {
+    it('should pass offlineVerification=true query param if passed truthy value', co(function *() {
+      const params = { offlineVerification: true };
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+        .query(params)
+        .reply(200, {});
+      const blockHeight = 100;
+      const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
+      yield wallet.prebuildTransaction(params);
+      blockHeightStub.should.have.been.calledOnce();
+      postProcessStub.should.have.been.calledOnceWith({
+        blockHeight: 100,
+        wallet: wallet,
+        buildParams: { },
+      });
+      scope.done();
+      blockHeightStub.restore();
+      postProcessStub.restore();
+    }));
+
+    it('should not pass the offlineVerification query param if passed a falsey value', co(function *() {
+      const params = { offlineVerification: false };
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+        .query({})
+        .reply(200, {});
+      const blockHeight = 100;
+      const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
+      yield wallet.prebuildTransaction(params);
+      blockHeightStub.should.have.been.calledOnce();
+      postProcessStub.should.have.been.calledOnceWith({
+        blockHeight: 100,
+        wallet: wallet,
+        buildParams: { },
+      });
+      blockHeightStub.restore();
+      postProcessStub.restore();
+    }));
+
     it('prebuild should call build and getLatestBlockHeight for utxo coins', co(function *() {
       const params = {};
       nock(bgUrl)
@@ -731,6 +772,8 @@ describe('V2 Wallet:', function() {
         wallet: wallet,
         buildParams: { },
       });
+      blockHeightStub.restore();
+      postProcessStub.restore();
     }));
 
     it('prebuild should call build but not getLatestBlockHeight for account coins', co(function *() {
@@ -755,6 +798,7 @@ describe('V2 Wallet:', function() {
           wallet: accountWallet,
           buildParams: { },
         });
+        postProcessStub.restore();
       }));
     }));
 

@@ -476,7 +476,7 @@ export class CrossChainRecoveryTool {
       const prv: string = _.isString(params.prv) ? params.prv : yield self.getKeys(params.passphrase);
 
       const txPrebuild = { txHex: transactionHex, txInfo: self.txInfo };
-      self.halfSignedRecoveryTx = self.sourceCoin.signTransaction({ txPrebuild, prv });
+      self.halfSignedRecoveryTx = yield self.sourceCoin.signTransaction({ txPrebuild, prv });
 
       return self.halfSignedRecoveryTx;
     })

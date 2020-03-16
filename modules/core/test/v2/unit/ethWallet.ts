@@ -276,8 +276,8 @@ describe('Add final signature to ETH tx from offline vault', function() {
     coin = bitgo.coin('teth');
   });
 
-  it('should successfully fully sign a half-signed transaction from the offline vault', function() {
-    const response = coin.signTransaction(paramsFromVault);
+  it('should successfully fully sign a half-signed transaction from the offline vault', co(function *() {
+    const response = yield coin.signTransaction(paramsFromVault);
     const expectedTx = new EthTx(expectedResult.txHex);
     const actualTx = new EthTx(response.txHex);
     actualTx.nonce.should.deepEqual(expectedTx.nonce);
@@ -290,7 +290,7 @@ describe('Add final signature to ETH tx from offline vault', function() {
     actualTx.gasPrice.should.deepEqual(expectedTx.gasPrice);
     actualTx.gasLimit.should.deepEqual(expectedTx.gasLimit);
     response.txHex.should.equal(expectedResult.txHex);
-  });
+  }));
 });
 
 describe('prebuildTransaction', function() {

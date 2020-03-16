@@ -1,11 +1,23 @@
 # BitGo Express Release Notes
 
+## 9.6.3
+
+### Other Changes
+* Update to `bitgo@9.6.1`
+
+## 9.6.2
+
+### Other Changes
+* Update to `bitgo@9.6.0`
+
 ## 9.6.1
 
 ### Other Changes
 * Update to `bitgo@9.5.3`
 
 ## 9.6.0
+
+**Important**: Version numbers of `bitgo` and `bitgo-express` are no longer synchronized, so please expect to see drift in the versions. This is being done in order to stay more aligned with semver standards, and to avoid unnecessary major version bumps in express when the version of `bitgo` increments its major version.
 
 ### New Features
 * Unify all environment variable configuration options under the `BITGO_` prefix. This deprecates a few older forms of setting configuration options, but these will still work as expected, so any old code which sets these variables will still work correctly. The renamed variables are:
@@ -14,7 +26,7 @@
 ** `DISABLE_ENV_CHECK` is now `BITGO_DISABLE_ENV_CHECK`.
 
 ### Other Changes
-* Update to `bitgo@9.5.2`. Versions of `bitgo` and `bitgo-express` are no longer synchronized, so please expect to see drift in the versions. This is being done in order to stay more aligned with semver standards, and to avoid unnecessary major version bumps in express when the version of `bitgo` increments its major version.
+* Update to `bitgo@9.5.2`.
 
 ## 9.5.1
 

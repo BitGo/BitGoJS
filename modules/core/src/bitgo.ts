@@ -1275,14 +1275,15 @@ export class BitGo {
   }
 
   /**
-   *
+   * Process the username, password and otp into an object containing the username and hashed password, ready to
+   * send to bitgo for authentication.
    */
   preprocessAuthenticationParams({ username, password, otp, forceSMS, extensible, trust }: AuthenticateOptions): ProcessedAuthenticationOptions {
-    if (!_.isString('username')) {
+    if (!_.isString(username)) {
       throw new Error('expected string username');
     }
 
-    if (!_.isString('password')) {
+    if (!_.isString(password)) {
       throw new Error('expected string password');
     }
 

@@ -18,7 +18,7 @@ import {
   VerifyRecoveryTransactionOptions,
   VerifyTransactionOptions,
   TransactionParams as BaseTransactionParams,
-  TransactionPrebuild as BaseTransactionPrebuild, VerificationOptions, TransactionRecipient,
+  TransactionPrebuild as BaseTransactionPrebuild, VerificationOptions, TransactionRecipient, SignedTransaction,
 } from '../baseCoin';
 import { Keychain, KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
@@ -944,145 +944,152 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   /**
    * Assemble keychain and half-sign prebuilt transaction
+   * @param params
    * @param params.txPrebuild transaction prebuild from bitgo server
    * @param params.prv private key to be used for signing
    * @param params.isLastSignature True if `TransactionBuilder.build()` should be called and not `TransactionBuilder.buildIncomplete()`
-   * @returns {{txHex}}
+   * @param callback
+   * @returns {Bluebird<SignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions): { txHex: string } {
-    const txPrebuild = params.txPrebuild;
-    const userPrv = params.prv;
+  signTransaction(params: SignTransactionOptions, callback?: NodeCallback<SignedTransaction>): Bluebird<SignedTransaction> {
+    const self = this;
+    return co<SignedTransaction>(function *() {
+      const txPrebuild = params.txPrebuild;
+      const userPrv = params.prv;
 
-    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+      if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+        if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+          throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+        }
+        throw new Error('missing txPrebuild parameter');
       }
-      throw new Error('missing txPrebuild parameter');
-    }
-    let transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, this.network);
+      let transaction = bitcoin.Transaction.fromHex(txPrebuild.txHex, self.network);
 
-    if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
-      throw new Error('length of unspents array should equal to the number of transaction inputs');
-    }
-
-    let isLastSignature = false;
-    if (_.isBoolean(params.isLastSignature)) {
-      // if build is called instead of buildIncomplete, no signature placeholders are left in the sig script
-      isLastSignature = params.isLastSignature;
-    }
-
-    if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-      if (!_.isUndefined(userPrv)) {
-        throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+      if (transaction.ins.length !== txPrebuild.txInfo.unspents.length) {
+        throw new Error('length of unspents array should equal to the number of transaction inputs');
       }
-      throw new Error('missing prv parameter to sign transaction');
-    }
 
-    const keychain = bitcoin.HDNode.fromBase58(userPrv);
-    const keychainHdPath = hdPath(keychain);
-    const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, this.network);
-    this.prepareTransactionBuilder(txb);
+      let isLastSignature = false;
+      if (_.isBoolean(params.isLastSignature)) {
+        // if build is called instead of buildIncomplete, no signature placeholders are left in the sig script
+        isLastSignature = params.isLastSignature;
+      }
 
-    const getSignatureContext = (txPrebuild: TransactionPrebuild, index: number) => {
-      const currentUnspent = txPrebuild.txInfo.unspents[index];
-      return {
-        inputIndex: index,
-        unspent: currentUnspent,
-        path: 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index,
-        isP2wsh: !currentUnspent.redeemScript,
-        isBitGoTaintedUnspent: this.isBitGoTaintedUnspent(currentUnspent),
-        error: undefined as Error | undefined,
+      if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+        if (!_.isUndefined(userPrv)) {
+          throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+        }
+        throw new Error('missing prv parameter to sign transaction');
+      }
+
+      const keychain = bitcoin.HDNode.fromBase58(userPrv);
+      const keychainHdPath = hdPath(keychain);
+      const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, self.network);
+      self.prepareTransactionBuilder(txb);
+
+      const getSignatureContext = (txPrebuild: TransactionPrebuild, index: number) => {
+        const currentUnspent = txPrebuild.txInfo.unspents[index];
+        return {
+          inputIndex: index,
+          unspent: currentUnspent,
+          path: 'm/0/0/' + currentUnspent.chain + '/' + currentUnspent.index,
+          isP2wsh: !currentUnspent.redeemScript,
+          isBitGoTaintedUnspent: self.isBitGoTaintedUnspent(currentUnspent),
+          error: undefined as Error | undefined,
+        };
       };
-    };
 
-    const signatureIssues: ReturnType<typeof getSignatureContext>[] = [];
-    // Sign inputs
-    for (let index = 0; index < transaction.ins.length; ++index) {
-      debug('Signing input %d of %d', index + 1, transaction.ins.length);
-      const signatureContext = getSignatureContext(txPrebuild, index);
-      if (signatureContext.isBitGoTaintedUnspent) {
-        debug(
-          'Skipping input %d of %d (unspent from replay protection address which is platform signed only)',
-          index + 1, transaction.ins.length
-        );
-        continue;
-      }
-      const privKey = keychainHdPath.deriveKey(signatureContext.path);
-      privKey.network = this.network;
+      const signatureIssues: ReturnType<typeof getSignatureContext>[] = [];
+      // Sign inputs
+      for (let index = 0; index < transaction.ins.length; ++index) {
+        debug('Signing input %d of %d', index + 1, transaction.ins.length);
+        const signatureContext = getSignatureContext(txPrebuild, index);
+        if (signatureContext.isBitGoTaintedUnspent) {
+          debug(
+            'Skipping input %d of %d (unspent from replay protection address which is platform signed only)',
+            index + 1, transaction.ins.length
+          );
+          continue;
+        }
+        const privKey = keychainHdPath.deriveKey(signatureContext.path);
+        privKey.network = self.network;
 
-      debug('Input details: %O', signatureContext);
+        debug('Input details: %O', signatureContext);
 
-      const sigHashType = this.defaultSigHashType;
-      try {
-        if (signatureContext.isP2wsh) {
-          debug('Signing p2wsh input');
-          const witnessScript = Buffer.from(signatureContext.unspent.witnessScript, 'hex');
-          const witnessScriptHash = bitcoin.crypto.sha256(witnessScript);
-          const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
-          txb.sign(index, privKey, prevOutScript, sigHashType, signatureContext.unspent.value, witnessScript);
-        } else {
-          const subscript = new Buffer(signatureContext.unspent.redeemScript, 'hex');
-          const isP2shP2wsh = !!signatureContext.unspent.witnessScript;
-          if (isP2shP2wsh) {
-            debug('Signing p2shP2wsh input');
+        const sigHashType = self.defaultSigHashType;
+        try {
+          if (signatureContext.isP2wsh) {
+            debug('Signing p2wsh input');
             const witnessScript = Buffer.from(signatureContext.unspent.witnessScript, 'hex');
-            txb.sign(index, privKey, subscript, sigHashType, signatureContext.unspent.value, witnessScript);
+            const witnessScriptHash = bitcoin.crypto.sha256(witnessScript);
+            const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
+            txb.sign(index, privKey, prevOutScript, sigHashType, signatureContext.unspent.value, witnessScript);
           } else {
-            debug('Signing p2sh input');
-            txb.sign(index, privKey, subscript, sigHashType, signatureContext.unspent.value);
+            const subscript = new Buffer(signatureContext.unspent.redeemScript, 'hex');
+            const isP2shP2wsh = !!signatureContext.unspent.witnessScript;
+            if (isP2shP2wsh) {
+              debug('Signing p2shP2wsh input');
+              const witnessScript = Buffer.from(signatureContext.unspent.witnessScript, 'hex');
+              txb.sign(index, privKey, subscript, sigHashType, signatureContext.unspent.value, witnessScript);
+            } else {
+              debug('Signing p2sh input');
+              txb.sign(index, privKey, subscript, sigHashType, signatureContext.unspent.value);
+            }
           }
+
+        } catch (e) {
+          debug('Failed to sign input:', e);
+          signatureContext.error = e;
+          signatureIssues.push(signatureContext);
+          continue;
+        }
+        debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
+      }
+
+      if (isLastSignature) {
+        transaction = txb.build();
+      } else {
+        transaction = txb.buildIncomplete();
+      }
+
+      // Verify input signatures
+      for (let index = 0; index < transaction.ins.length; ++index) {
+        debug('Verifying input signature %d of %d', index + 1, transaction.ins.length);
+        const signatureContext = getSignatureContext(txPrebuild, index);
+        if (signatureContext.isBitGoTaintedUnspent) {
+          debug(
+            'Skipping input signature %d of %d (unspent from replay protection address which is platform signed only)',
+            index + 1, transaction.ins.length
+          );
+          continue;
         }
 
-      } catch (e) {
-        debug('Failed to sign input:', e);
-        signatureContext.error = e;
-        signatureIssues.push(signatureContext);
-        continue;
-      }
-      debug('Successfully signed input %d of %d', index + 1, transaction.ins.length);
-    }
+        if (signatureContext.isP2wsh) {
+          transaction.setInputScript(index, Buffer.alloc(0));
+        }
 
-    if (isLastSignature) {
-      transaction = txb.build();
-    } else {
-      transaction = txb.buildIncomplete();
-    }
-
-    // Verify input signatures
-    for (let index = 0; index < transaction.ins.length; ++index) {
-      debug('Verifying input signature %d of %d', index + 1, transaction.ins.length);
-      const signatureContext = getSignatureContext(txPrebuild, index);
-      if (signatureContext.isBitGoTaintedUnspent) {
-        debug(
-          'Skipping input signature %d of %d (unspent from replay protection address which is platform signed only)',
-          index + 1, transaction.ins.length
-        );
-        continue;
+        const isValidSignature = self.verifySignature(transaction, index, signatureContext.unspent.value);
+        if (!isValidSignature) {
+          debug('Invalid signature');
+          signatureContext.error = new Error('invalid signature');
+          signatureIssues.push(signatureContext);
+        }
       }
 
-      if (signatureContext.isP2wsh) {
-        transaction.setInputScript(index, Buffer.alloc(0));
+      if (signatureIssues.length > 0) {
+        const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
+        const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
+        error.code = 'input_signature_failure';
+        error.signingErrors = signatureIssues;
+        throw error;
       }
 
-      const isValidSignature = this.verifySignature(transaction, index, signatureContext.unspent.value);
-      if (!isValidSignature) {
-        debug('Invalid signature');
-        signatureContext.error = new Error('invalid signature');
-        signatureIssues.push(signatureContext);
-      }
-    }
-
-    if (signatureIssues.length > 0) {
-      const failedIndices = signatureIssues.map(currentIssue => currentIssue.inputIndex);
-      const error: any = new Error(`Failed to sign inputs at indices ${failedIndices.join(', ')}`);
-      error.code = 'input_signature_failure';
-      error.signingErrors = signatureIssues;
-      throw error;
-    }
-
-    return {
-      txHex: transaction.toBuffer().toString('hex'),
-    };
+      return {
+        txHex: transaction.toBuffer().toString('hex'),
+      };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -1749,7 +1756,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           krsFee = yield self.calculateFeeAmount({ provider: params.krsProvider, amount: recoveryAmount });
           recoveryAmount -= krsFee;
         } catch (err) {
-          // Don't let this error block the recovery - 
+          // Don't let this error block the recovery -
           console.dir(err);
         }
       }
