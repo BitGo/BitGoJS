@@ -27,6 +27,8 @@ export { Trmg } from './trmg';
 export { Trx } from './trx';
 export { Tsusd } from './tsusd';
 export { Ttrx } from './ttrx';
+export { Xtz } from './xtz';
+export { Txtz } from './txtz';
 export { Txlm } from './txlm';
 export { Txrp } from './txrp';
 export { Tzec } from './tzec';
