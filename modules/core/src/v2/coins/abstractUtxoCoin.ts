@@ -1525,14 +1525,33 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   getRecoveryMarketPrice(): Bluebird<string> {
     const self = this;
     return co<string>(function *getRecoveryMarketPrice() {
-      const bitcoinAverageUrl = config.bitcoinAverageBaseUrl + self.getFamily().toUpperCase() + 'USD';
-      const response = yield request.get(bitcoinAverageUrl).retry(2).result();
+      const familyNamesToCoinGeckoIds = new Map()
+        .set('BTC', 'bitcoin')
+        .set('LTC', 'litecoin')
+        .set('BCH', 'bitcoin-cash')
+        .set('ZEC', 'zcash')
+        .set('DASH', 'dash');
+      const coinGeckoId = familyNamesToCoinGeckoIds.get(self.getFamily().toUpperCase());
+      if (!coinGeckoId) {
+        throw new Error(`There is no CoinGecko id for family name ${self.getFamily().toUpperCase()}.`);
+      }
+      const coinGeckoUrl = config.coinGeckoBaseUrl + `simple/price?ids=${coinGeckoId}&vs_currencies=USD`;
+      const response = yield request.get(coinGeckoUrl).retry(2).result();
 
-      if (response === null || typeof response.last !== 'number') {
-        throw new Error('unable to reach BitcoinAverage for price data');
+      // An example of response
+      // {
+      //   "ethereum": {
+      //     "usd": 220.64
+      //   }
+      // }
+      if (!response) {
+        throw new Error('Unable to reach Coin Gecko API for price data');
+      }
+      if (!response[coinGeckoId]['usd'] || typeof response[coinGeckoId]['usd'] !== 'number') {
+        throw new Error('Unexpected response from Coin Gecko API for price data');
       }
 
-      return response.last;
+      return response[coinGeckoId]['usd'];
     }).call(this);
   }
 
