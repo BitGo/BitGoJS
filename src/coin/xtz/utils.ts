@@ -2,7 +2,7 @@ import * as base58check from 'bs58check';
 import sodium from 'libsodium-wrappers';
 import { InMemorySigner } from '@taquito/signer';
 import { SigningError } from '../baseCoin/errors';
-import { genericMultisigDataToSign } from '../../../resources/xtz/multisig';
+import { genericMultisigDataToSign } from './multisigUtils';
 import { HashType, SignResponse } from './iface';
 import { KeyPair } from './keyPair';
 

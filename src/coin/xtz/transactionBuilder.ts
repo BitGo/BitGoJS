@@ -9,7 +9,7 @@ import {
   multisigTransactionOperation,
   revealOperation,
   singlesigTransactionOperation,
-} from '../../../resources/xtz/multisig';
+} from './multisigUtils';
 import { Address } from './address';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';

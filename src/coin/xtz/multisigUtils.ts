@@ -1,5 +1,5 @@
-import { IndexedSignature, OriginationOp, RevealOp, TransactionOp, TransferData } from '../../src/coin/xtz/iface';
-import { DEFAULT_FEE, DEFAULT_GAS_LIMIT, DEFAULT_STORAGE_LIMIT, hashTypes, isValidKey } from '../../src/coin/xtz/utils';
+import { IndexedSignature, OriginationOp, RevealOp, TransactionOp, TransferData } from './iface';
+import { DEFAULT_FEE, DEFAULT_GAS_LIMIT, DEFAULT_STORAGE_LIMIT, hashTypes, isValidKey } from './utils';
 
 // Default n of m for multisig wallets
 const DEFAULT_N = 2;
