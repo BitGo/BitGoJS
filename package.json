@@ -32,7 +32,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@bitgo/statics": "^3.2.0-rc.0",
+    "@bitgo/statics": "^3.4.2",
     "@taquito/local-forging": "^6.0.3-beta.0",
     "@taquito/signer": "^6.0.3-beta.0",
     "bignumber.js": "^9.0.0",
@@ -40,7 +40,7 @@
     "blake2b": "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
     "bs58check": "^2.1.2",
     "libsodium-wrappers": "^0.7.6",
-    "protobufjs": "^6.8.8",
+    "protobufjs": "^6.8.9",
     "tronweb": "^2.7.2"
   },
   "devDependencies": {
@@ -48,8 +48,8 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.13.22",
     "@types/sinon": "^7.5.0",
-    "@typescript-eslint/eslint-plugin": "^2.10.0",
-    "@typescript-eslint/parser": "^2.10.0",
+    "@typescript-eslint/eslint-plugin": "^2.24.0",
+    "@typescript-eslint/parser": "^2.24.0",
     "awesome-typescript-loader": "^5.2.1",
     "browserify": "^16.2.3",
     "eslint": "^6.7.2",
@@ -62,7 +62,7 @@
     "lint-staged": "^8.1.4",
     "mocha": "^6.1.4",
     "mochawesome": "^4.1.0",
-    "nyc": "^14.0.0",
+    "nyc": "^15.0.0",
     "prettier": "^1.19.1",
     "should": "^13.1.3",
     "sinon": "^7.5.0",
