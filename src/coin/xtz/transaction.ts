@@ -5,10 +5,7 @@ import { BaseTransaction } from '../baseCoin';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
-import {
-  getMultisigTransferDataFromOperation,
-  updateMultisigTransferSignatures,
-} from '../../../resources/xtz/multisig';
+import { getMultisigTransferDataFromOperation, updateMultisigTransferSignatures } from './multisigUtils';
 import { KeyPair } from './keyPair';
 import { IndexedSignature, Operation, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
 import * as Utils from './utils';
