@@ -375,7 +375,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     const signatures: { signature: string; index: number }[] = [];
     // Generate the multisig contract signatures
     for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
-      const signature = await Utils.sign(this._multisigSignerKeyPairs[i].key, packedData, new Uint8Array());
+      const signature = await Utils.sign(this._multisigSignerKeyPairs[i].key, packedData, new Uint8Array(0));
       const index = this._multisigSignerKeyPairs[i].index || i;
       signatures.push({ signature: signature.sig, index });
     }

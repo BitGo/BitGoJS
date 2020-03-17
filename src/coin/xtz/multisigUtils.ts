@@ -178,7 +178,7 @@ function genericMultisigTransferParams(
  * @param {IndexedSignature[]} signatures List of transactions and their order
  */
 export function updateMultisigTransferSignatures(transaction: TransactionOp, signatures: IndexedSignature[]) {
-  transaction.parameters.value.args[1] = buildSignatures(signatures);
+  transaction.parameters.value.args[1] = buildSignatures(signatures, transaction.parameters.value.args[1]);
 }
 
 /**
@@ -186,12 +186,17 @@ export function updateMultisigTransferSignatures(transaction: TransactionOp, sig
  *
  * @param {IndexedSignature[]} signatures List of transactions and their order
  * @param {number} m Size of the signature list
+ * @param {any[]} existingSignatures List of existing signatures to merge with the generated ones
  * @returns {any[]} List of signatures in the right order
  */
-function buildSignatures(signatures: IndexedSignature[], m: number = DEFAULT_M) {
-  const transactionSignatures: any[] = [];
-  // Initialize the array with empty signatures
-  for (let i = 0; i < m; i++) {
+function buildSignatures(signatures: IndexedSignature[], existingSignatures = [], m: number = DEFAULT_M) {
+  // Initialize the array with the existing signatures and/or empty objects
+  const transactionSignatures: any[] = existingSignatures;
+  const size = existingSignatures.length;
+  if (size > m) {
+    throw new Error('Too many signatures. Expected less than ' + m + ' got ' + size);
+  }
+  for (let i = size; i < m; i++) {
     transactionSignatures.push({ prim: 'None' });
   }
   // Replace the empty signatures for the real ones based on the right index

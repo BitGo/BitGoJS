@@ -113,22 +113,38 @@ describe('Offline Tezos Transaction builder', function() {
         .fee('4764')
         .counter('2');
       const tx = await txBuilder.build();
+      tx.toBroadcastFormat().should.equal(
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000760707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b02000000060306030603066c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2501e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e0000005a070707070002050502000000420320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a00a401034f034d031b0200000006030603060306',
+      );
 
-      // Offline signing
-      const offlineTxBuilder: any = getBuilder('xtz');
-      offlineTxBuilder.from(tx.toBroadcastFormat());
-      offlineTxBuilder.source(defaultKeyPair.getAddress());
+      // Offline signing from location 1 with a transfer key
+      const offlineTxBuilder1: any = getBuilder('xtz');
+      offlineTxBuilder1.from(tx.toBroadcastFormat());
+      offlineTxBuilder1.source(defaultKeyPair.getAddress());
       // Since dataToSign cannot me calculated, it has to be passed to the new builder so we can
       // generate the signatures
-      offlineTxBuilder.overrideDataToSign({ dataToSign: testDataToSign, index: 0 });
-      offlineTxBuilder.overrideDataToSign({ dataToSign: testDataToSign, index: 1 });
-      offlineTxBuilder.source(defaultKeyPair.getAddress());
-      offlineTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-      offlineTxBuilder.sign({
+      offlineTxBuilder1.overrideDataToSign({ dataToSign: testDataToSign, index: 0 });
+      offlineTxBuilder1.overrideDataToSign({ dataToSign: testDataToSign, index: 1 });
+      offlineTxBuilder1.sign({
         key: new KeyPair({ prv: 'spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL' }).getKeys().prv,
       });
-      offlineTxBuilder.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv });
-      const signedTx = await offlineTxBuilder.build();
+      const signedTx1 = await offlineTxBuilder1.build();
+
+      // Offline signing from location 2 with another transfer key
+      const offlineTxBuilder2: any = getBuilder('xtz');
+      offlineTxBuilder2.from(signedTx1.toBroadcastFormat());
+      offlineTxBuilder2.source(defaultKeyPair.getAddress());
+      offlineTxBuilder2.overrideDataToSign({ dataToSign: testDataToSign, index: 0 });
+      offlineTxBuilder2.overrideDataToSign({ dataToSign: testDataToSign, index: 1 });
+      offlineTxBuilder2.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv, index: 1 });
+      const signedTx2 = await offlineTxBuilder2.build();
+
+      // Offline signing from location 3 with the fee key
+      const offlineTxBuilder3: any = getBuilder('xtz');
+      offlineTxBuilder3.from(signedTx2.toBroadcastFormat());
+      offlineTxBuilder3.source(defaultKeyPair.getAddress());
+      offlineTxBuilder3.sign({ key: defaultKeyPair.getKeys().prv });
+      const signedTx = await offlineTxBuilder3.build();
 
       signedTx.id.should.equal('onyGaWs6z4bVVcfn3h9KbBrktEhuDyJLYEVB4aJRM6YNngjDxE4');
       signedTx.type.should.equal(TransactionType.Send);
