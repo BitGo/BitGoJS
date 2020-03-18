@@ -92,6 +92,73 @@ describe('Offline Tezos Transaction builder', function() {
       );
     });
 
+    it('a send transaction to single destinations', async () => {
+      const testDataToSign =
+        '0507070a000000160196369c90625575ba44594b23794832a9337f7a2d0007070000050502000000320320053d036d0743035d0a00000015006b5ddaef3fb5d7c151cfb36fbe43a7a066777394031e0743036a0001034f034d031b';
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.Send);
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      txBuilder.counter('0');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder
+        .transfer('100')
+        .from('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL')
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .counter('1');
+      const tx = await txBuilder.build();
+      tx.toBroadcastFormat().should.equal(
+        'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000000760707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b0200000006030603060306',
+      );
+
+      // Offline signing from location 1 with a transfer key
+      const offlineTxBuilder1: any = getBuilder('xtz');
+      offlineTxBuilder1.from(tx.toBroadcastFormat());
+      offlineTxBuilder1.source(defaultKeyPair.getAddress());
+      // Since dataToSign cannot me calculated, it has to be passed to the new builder so we can
+      // generate the signatures
+      offlineTxBuilder1.overrideDataToSign({ dataToSign: testDataToSign });
+      offlineTxBuilder1.sign({
+        key: new KeyPair({ prv: 'spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL' }).getKeys().prv,
+      });
+      const signedTx1 = await offlineTxBuilder1.build();
+
+      // Offline signing from location 2 with another transfer key
+      const offlineTxBuilder2: any = getBuilder('xtz');
+      offlineTxBuilder2.from(signedTx1.toBroadcastFormat());
+      offlineTxBuilder2.source(defaultKeyPair.getAddress());
+      offlineTxBuilder2.overrideDataToSign({ dataToSign: testDataToSign });
+      offlineTxBuilder2.sign({ key: new KeyPair({ seed: Buffer.alloc(16) }).getKeys().prv });
+      const signedTx2 = await offlineTxBuilder2.build();
+
+      // Offline signing from location 3 with the fee key
+      const offlineTxBuilder3: any = getBuilder('xtz');
+      offlineTxBuilder3.from(signedTx2.toBroadcastFormat());
+      offlineTxBuilder3.source(defaultKeyPair.getAddress());
+      offlineTxBuilder3.sign({ key: defaultKeyPair.getKeys().prv });
+      const signedTx = await offlineTxBuilder3.build();
+
+      signedTx.id.should.equal('onkHwfuYJMrtxNdyL6eHeNEHuE1n5HPH75CXUNh91agjbQAxwzT');
+      signedTx.type.should.equal(TransactionType.Send);
+      should.equal(signedTx.inputs.length, 2);
+      should.equal(signedTx.outputs.length, 1);
+      signedTx.inputs[0].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
+      signedTx.inputs[0].value.should.equal('4764');
+      signedTx.inputs[1].address.should.equal('KT1NH2M23xovhw7uwWVuoGTYxykeCcVfSqhL');
+      signedTx.inputs[1].value.should.equal('100');
+      signedTx.outputs[0].address.should.equal('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8');
+      signedTx.outputs[0].value.should.equal('100');
+      signedTx.signature.length.should.equal(1);
+      signedTx.signature[0].should.equal(
+        'sigd8B36JUVyDqpCvV1GtbLpP398gpmwfxvGQM6eQ45JG5z4LgDRX55YPAPTMW2pAciwaA3jv8wgyxR9cnEjsCFs1QRPfQ9G',
+      );
+      signedTx
+        .toBroadcastFormat()
+        .should.equal(
+          'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000001400707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a4750030673b1393fbda4f24e07958136dc7951e0d020748e54bd29b847323ef2bc85c399657f4359fc10a13e5afe7b7068b584ea2e578736250881481e212e9793bfbf88',
+        );
+    });
+
     it('a send transaction to multiple destinations', async () => {
       const testDataToSign =
         '0507070a000000160196369c90625575ba44594b23794832a9337f7a2d0007070000050502000000320320053d036d0743035d0a00000015006b5ddaef3fb5d7c151cfb36fbe43a7a066777394031e0743036a0001034f034d031b';

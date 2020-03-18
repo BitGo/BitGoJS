@@ -117,7 +117,6 @@ export interface IndexedData {
  */
 export interface Key extends BaseKey, IndexedData {}
 
-export interface IndexedSignature {
+export interface IndexedSignature extends IndexedData {
   signature: string;
-  index: number;
 }
