@@ -372,12 +372,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {Promise<string[]>} List of signatures for packedData
    */
   private async getSignatures(packedData: string): Promise<IndexedSignature[]> {
-    const signatures: { signature: string; index: number }[] = [];
+    const signatures: IndexedSignature[] = [];
     // Generate the multisig contract signatures
     for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
       const signature = await Utils.sign(this._multisigSignerKeyPairs[i].key, packedData, new Uint8Array(0));
-      const index = this._multisigSignerKeyPairs[i].index || i;
-      signatures.push({ signature: signature.sig, index });
+      const index = this._multisigSignerKeyPairs[i].index;
+      signatures.push(index ? { signature: signature.sig, index } : { signature: signature.sig });
     }
     return signatures;
   }

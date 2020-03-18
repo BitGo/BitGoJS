@@ -119,7 +119,7 @@ export function multisigTransactionOperation(
   contractAddress: string,
   contractCounter: string,
   destinationAddress: string,
-  signatures: { signature: string; index: number }[],
+  signatures: IndexedSignature[],
   fee: string = DEFAULT_FEE.TRANSFER.toString(),
   gasLimit: string = DEFAULT_GAS_LIMIT.TRANSFER.toString(),
   storageLimit: string = DEFAULT_STORAGE_LIMIT.TRANSFER.toString(),
@@ -200,7 +200,19 @@ function buildSignatures(signatures: IndexedSignature[], existingSignatures = []
     transactionSignatures.push({ prim: 'None' });
   }
   // Replace the empty signatures for the real ones based on the right index
-  signatures.forEach(s => (transactionSignatures[s.index] = { prim: 'Some', args: [{ string: s.signature }] }));
+  signatures.forEach(s => {
+    if (s.index) {
+      transactionSignatures[s.index] = { prim: 'Some', args: [{ string: s.signature }] };
+    } else {
+      for (let i = 0; i < transactionSignatures.length; i++) {
+        // Search for the first "null" signature
+        if (transactionSignatures[i].prim === 'None') {
+          transactionSignatures[i] = { prim: 'Some', args: [{ string: s.signature }] };
+          break;
+        }
+      }
+    }
+  });
   return transactionSignatures;
 }
 
