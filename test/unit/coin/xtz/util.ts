@@ -7,7 +7,6 @@ import {
   signedSerializedOriginationTransaction,
   validDataToSign,
 } from '../../../resources/xtz/xtz';
-import { UnsignedBuildTransaction } from '../../../resources/trx';
 import { hashTypes } from '../../../../src/coin/xtz/utils';
 import { HashType } from '../../../../src/coin/xtz/iface';
 
@@ -137,6 +136,62 @@ describe('XTZ util library', function() {
       signatures.sig.should.equal(
         'sigVgnaU2S1L4jhtPaTX2SAxsGpP1dRS89VTSR9FrFuxxPvgA2G67QRuez6o6xP7ekagdZX4ELvh7pbMMdLoBSzvk2AVyQpk',
       );
+    });
+
+    it('should validate a signature belongs to a public key for a string message', async function() {
+      const message = 'helloworld';
+      const messageHex = new Buffer(message).toString('hex');
+      const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex, new Uint8Array(0));
+      const result = await Utils.verifySignature(
+        messageHex,
+        defaultKeyPairFromPub.getKeys().pub,
+        signatures.sig,
+        new Uint8Array(0),
+      );
+      result.should.be.true();
+    });
+
+    it('should validate a signature belongs to a public key for dataToSign', async function() {
+      const messageHex = new Buffer(defaultDataToSign).toString('hex');
+      const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex, new Uint8Array(0));
+      const result = await Utils.verifySignature(
+        messageHex,
+        defaultKeyPairFromPub.getKeys().pub,
+        signatures.sig,
+        new Uint8Array(0),
+      );
+      result.should.be.true();
+    });
+
+    it('should fail to validate a signature with the wrong watermark', async function() {
+      const messageHex = new Buffer(defaultDataToSign).toString('hex');
+      const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex);
+      const result = await Utils.verifySignature(
+        messageHex,
+        defaultKeyPairFromPub.getKeys().pub,
+        signatures.sig,
+        new Uint8Array(3),
+      );
+      result.should.be.false();
+    });
+
+    it('should fail to validate a signature with the wrong public key', async function() {
+      const messageHex = new Buffer(defaultDataToSign).toString('hex');
+      const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex);
+      const result = await Utils.verifySignature(
+        messageHex,
+        'sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf',
+        signatures.sig,
+      );
+      result.should.be.false();
+    });
+
+    it('should fail to validate a signature with the wrong message', async function() {
+      const messageHex = new Buffer(defaultDataToSign).toString('hex');
+      const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex);
+      const secondMessageHex = new Buffer('helloWorld').toString('hex');
+      const result = await Utils.verifySignature(secondMessageHex, defaultKeyPairFromPub.getKeys().pub, signatures.sig);
+      result.should.be.false();
     });
 
     it('should fail if the key pair does not have the private key', async function() {
