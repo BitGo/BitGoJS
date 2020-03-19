@@ -1,5 +1,25 @@
 # BitGoJS Release Notes
 
+## 10.0.0 (03-18-2020)
+
+### Breaking Changes
+* The `signTransaction` function on wallet objects has been made asynchronous. Callers of this function will have to update their code to correctly handle the returned promise.
+
+### New Features
+* A new parameter `offlineVerification` has been added to the `prebuildTransaction` function on wallet objects. When set to `true`, additional data useful for offline transaction verification will be fetched along with the unsigned transaction.
+
+### Bug Fixes
+* Replace bitcoin average with coingecko for retrieving market data in offline recovery scenarios.
+* Fix incorrect type check on `username` and `password` parameters in `preprocessAuthenticationParams`.
+
+### Other Changes
+* Update `@bitgo/statics` to version 4.0.1
+
+## 9.6.2 (03-12-2020)
+
+### Other Changes
+* Update `@bitgo/statics` to version 3.4.1
+
 ## 9.6.1 (03-10-2020)
 
 ### Other Changes

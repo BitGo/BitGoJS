@@ -1,5 +1,16 @@
 # BitGo Express Release Notes
 
+## 9.6.5
+
+### Other Changes
+* Update to `bitgo@10.0.0`
+* Update development dependencies `mocha` and `mochawesome`
+
+## 9.6.4
+
+### Other Changes
+* Update to `bitgo@9.6.1`
+
 ## 9.6.3
 
 ### Other Changes
