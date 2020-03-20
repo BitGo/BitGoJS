@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -39,11 +39,13 @@
     "bitgo-utxo-lib": "^1.6.0",
     "blake2b": "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
     "bs58check": "^2.1.2",
+    "elliptic": "^6.5.2",
     "libsodium-wrappers": "^0.7.6",
     "protobufjs": "^6.8.9",
     "tronweb": "^2.7.2"
   },
   "devDependencies": {
+    "@types/elliptic": "^6.4.12",
     "@types/libsodium-wrappers": "^0.7.7",
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.13.22",

@@ -1,10 +1,14 @@
 import * as base58check from 'bs58check';
 import sodium from 'libsodium-wrappers';
 import { InMemorySigner } from '@taquito/signer';
+import { ec as EC } from 'elliptic';
 import { SigningError } from '../baseCoin/errors';
 import { genericMultisigDataToSign } from './multisigUtils';
 import { HashType, SignResponse } from './iface';
 import { KeyPair } from './keyPair';
+
+// By default, use the transactions prefix
+export const DEFAULT_WATERMARK = new Uint8Array([3]);
 
 /**
  * Encode the payload to base58 with a specific Tezos prefix.
@@ -70,14 +74,48 @@ export async function calculateOriginatedAddress(transactionId: string, index: n
  * @param {Uint8Array} watermark Magic byte: 1 for block, 2 for endorsement, 3 for generic
  * @returns {Promise<SignResponse>}
  */
-export async function sign(keyPair: KeyPair, data: string, watermark?: Uint8Array): Promise<SignResponse> {
+export async function sign(
+  keyPair: KeyPair,
+  data: string,
+  watermark: Uint8Array = DEFAULT_WATERMARK,
+): Promise<SignResponse> {
   if (!keyPair.getKeys().prv) {
     throw new SigningError('Missing private key');
   }
   const signer = new InMemorySigner(keyPair.getKeys().prv!);
-  // TODO: remove after https://github.com/ecadlabs/taquito/issues/252 is closed
-  await signer.publicKeyHash();
-  return watermark ? signer.sign(data, watermark) : signer.sign(data, new Uint8Array([3]));
+  return signer.sign(data, watermark);
+}
+
+/**
+ * Verifies the signature produced for a given message belongs to a secp256k1 public key.
+ *
+ * @param {string} message Message in hex format to verify
+ * @param {string} publicKey secp256k1 public key with "sppk" prefix to verify the signature with
+ * @param {string} signature Tezos signature with "sig" prefix
+ * @param {Uint8Array} watermark Optional watermark used to generate the signature
+ * @returns {Promise<boolean>}
+ */
+export async function verifySignature(
+  message: string,
+  publicKey: string,
+  signature: string,
+  watermark: Uint8Array = DEFAULT_WATERMARK,
+): Promise<boolean> {
+  const rawPublicKey = decodeKey(publicKey, this.hashTypes.sppk);
+  const ec = new EC('secp256k1');
+  const key = ec.keyFromPublic(rawPublicKey);
+
+  const messageBuffer = Uint8Array.from(Buffer.from(message, 'hex'));
+  // Tezos signatures always have a watermark
+  const messageWithWatermark = new Uint8Array(watermark.length + messageBuffer.length);
+  messageWithWatermark.set(watermark);
+  messageWithWatermark.set(messageBuffer, watermark.length);
+
+  await sodium.ready;
+  const bytesHash = new Buffer(sodium.crypto_generichash(32, messageWithWatermark));
+
+  const rawSignature = decodeSignature(signature, this.hashTypes.sig);
+  return key.verify(bytesHash, { r: rawSignature.slice(0, 32), s: rawSignature.slice(32, 64) });
 }
 
 /**
@@ -233,6 +271,21 @@ export function decodeKey(hash: string, hashType: HashType): Buffer {
     throw new Error('Unsupported private key');
   }
   const decodedPrv = base58check.decode(hash);
+  return Buffer.from(decodedPrv.slice(hashType.prefix.length, decodedPrv.length));
+}
+
+/**
+ * Get the raw signature from a Tezos encoded one.
+ *
+ * @param {string} signature Tezos signatures prefixed with sig, edsig, p2sig or spsig
+ * @param {HashType} hashType The prefix of remove
+ * @returns {Buffer} The decoded signature without prefix
+ */
+export function decodeSignature(signature: string, hashType: HashType): Buffer {
+  if (!isValidSignature(signature)) {
+    throw new Error('Unsupported signature');
+  }
+  const decodedPrv = base58check.decode(signature);
   return Buffer.from(decodedPrv.slice(hashType.prefix.length, decodedPrv.length));
 }
 
