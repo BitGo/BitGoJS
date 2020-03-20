@@ -789,16 +789,22 @@ export class Xlm extends BaseCoin {
    *
    * @param key
    * @param message
+   * @param callback
    */
-  signMessage(key: KeyPair, message: string | Buffer): Buffer {
-    if (!this.isValidPrv(key.prv)) {
-      throw new Error(`invalid prv: ${key.prv}`);
-    }
-    if (!Buffer.isBuffer(message)) {
-      message = Buffer.from(message);
-    }
-    const keypair = stellar.Keypair.fromSecret(key.prv);
-    return keypair.sign(message);
+  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    const self = this;
+    return co<Buffer>(function* cosignMessage() {
+      if (!self.isValidPrv(key.prv)) {
+        throw new Error(`invalid prv: ${key.prv}`);
+      }
+      if (!Buffer.isBuffer(message)) {
+        message = Buffer.from(message);
+      }
+      const keypair = stellar.Keypair.fromSecret(key.prv);
+      return keypair.sign(message);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

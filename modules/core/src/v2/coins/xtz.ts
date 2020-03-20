@@ -24,6 +24,7 @@ import {
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import BigNumber from 'bignumber.js';
+import { MethodNotImplementedError } from '../../errors';
 
 export interface XtzSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -183,8 +184,14 @@ export class Xtz extends BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key: KeyPair, message: string | Buffer): Buffer {
-    throw new Error('Method not implemented');
+  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    return co<Buffer>(function* cosignMessage() {
+      const keyPair = new bitgoAccountLib.Xtz.KeyPair({ prv: key.prv });
+      const signatureData = yield bitgoAccountLib.Xtz.Utils.sign(keyPair, message as string);
+      return signatureData.sig;
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -197,7 +204,7 @@ export class Xtz extends BaseCoin {
    * @param callback
    */
   recover(params: any, callback?: NodeCallback<any>): Bluebird<any> {
-    throw new Error('Method not implemented');
+    throw new MethodNotImplementedError();
   }
 
   /**

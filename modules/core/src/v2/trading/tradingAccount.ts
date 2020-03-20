@@ -194,7 +194,7 @@ export class TradingAccount {
         password: params.walletPassphrase,
       });
       const payload = JSON.stringify(params.payload);
-      return self.wallet.baseCoin.signMessage({ prv }, payload).toString('hex');
+      return (yield self.wallet.baseCoin.signMessage({ prv }, payload)).toString('hex');
     })
       .call(this)
       .asCallback(callback);

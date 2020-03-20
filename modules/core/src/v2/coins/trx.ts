@@ -272,23 +272,29 @@ export class Trx extends BaseCoin {
    *
    * @param key
    * @param message
+   * @param callback
    */
-  signMessage(key: KeyPair, message: string | Buffer): Buffer {
-    const toSign = this.toHexString(message);
+  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    const self = this;
+    return co<Buffer>(function* cosignMessage() {
+      const toSign = self.toHexString(message);
 
-    let prv = key.prv;
-    if (this.isValidXprv(prv)) {
-      prv = HDNode.fromBase58(prv)
-        .getKey()
-        .getPrivateKeyBuffer();
-    }
+      let prv = key.prv;
+      if (self.isValidXprv(prv)) {
+        prv = HDNode.fromBase58(prv)
+          .getKey()
+          .getPrivateKeyBuffer();
+      }
 
-    let sig = bitgoAccountLib.Trx.Utils.signString(toSign, prv, true);
+      let sig = bitgoAccountLib.Trx.Utils.signString(toSign, prv, true);
 
-    // remove the preceding 0x
-    sig = sig.replace(/^0x/, '');
+      // remove the preceding 0x
+      sig = sig.replace(/^0x/, '');
 
-    return Buffer.from(sig, 'hex');
+      return Buffer.from(sig, 'hex');
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
