@@ -61,13 +61,13 @@ describe('ALGO:', function() {
     basecoin.isValidPrv('UMYEHZ2NNBYX43CU37LMINSHR362FT4GFVWL6V5IHPRCJVPZ46H6CBYLYX').should.equal(false);
   });
 
-  it('should sign message', function() {
+  it('should sign message', co(function *() {
     const keyPair = basecoin.generateKeyPair();
     const message = Buffer.from('message');
-    const signature = basecoin.signMessage(keyPair, message);
+    const signature = yield basecoin.signMessage(keyPair, message);
     const pub = algosdk.Address.decode(keyPair.pub).publicKey;
     algosdk.NaclWrapper.verify(message, signature, pub).should.equal(true);
-  });
+  }));
 
   it('should validate a stellar seed', function() {
     basecoin.isStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX').should.ok();

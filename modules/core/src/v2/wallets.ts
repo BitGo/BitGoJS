@@ -428,8 +428,8 @@ export class Wallets {
       const { prv } = userKeychain;
       if (_.isString(prv)) {
         walletParams.keySignatures = {
-          backup: self.baseCoin.signMessage({ prv }, backupKeychain.pub).toString('hex'),
-          bitgo: self.baseCoin.signMessage({ prv }, bitgoKeychain.pub).toString('hex'),
+          backup: (yield self.baseCoin.signMessage({ prv }, backupKeychain.pub)).toString('hex'),
+          bitgo: (yield self.baseCoin.signMessage({ prv }, bitgoKeychain.pub)).toString('hex'),
         };
       }
 
