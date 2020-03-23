@@ -310,13 +310,18 @@ export abstract class BaseCoin {
    *
    * @param key
    * @param message
+   * @param callback
    */
-  signMessage(key: { prv: string }, message: string): Buffer {
-    const privateKey = bitcoin.HDNode.fromBase58(key.prv).getKey();
-    const privateKeyBuffer = privateKey.d.toBuffer(32);
-    const isCompressed = privateKey.compressed;
-    const prefix = bitcoin.networks.bitcoin.messagePrefix;
-    return bitcoinMessage.sign(message, privateKeyBuffer, isCompressed, prefix);
+  signMessage(key: { prv: string }, message: string, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    return co<Buffer>(function* cosignMessage() {
+      const privateKey = bitcoin.HDNode.fromBase58(key.prv).getKey();
+      const privateKeyBuffer = privateKey.d.toBuffer(32);
+      const isCompressed = privateKey.compressed;
+      const prefix = bitcoin.networks.bitcoin.messagePrefix;
+      return bitcoinMessage.sign(message, privateKeyBuffer, isCompressed, prefix);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

@@ -30,6 +30,8 @@ import {
   Tsusd,
   Trx,
   Ttrx,
+  Xtz,
+  Txtz,
   Txlm,
   Txrp,
   Tzec,
@@ -128,6 +130,8 @@ GlobalCoinFactory.registerCoinConstructor('algo', Algo.createInstance);
 GlobalCoinFactory.registerCoinConstructor('talgo', Talgo.createInstance);
 GlobalCoinFactory.registerCoinConstructor('trx', Trx.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ttrx', Ttrx.createInstance);
+GlobalCoinFactory.registerCoinConstructor('xtz', Xtz.createInstance);
+GlobalCoinFactory.registerCoinConstructor('txtz', Txtz.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ofc', Ofc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('susd', Susd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsusd', Tsusd.createInstance);

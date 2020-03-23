@@ -185,27 +185,32 @@ export class Algo extends BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key: KeyPair, message: string | Buffer): Buffer {
-    // key.prv actually holds the encoded seed, but we use the prv name to avoid breaking the keypair schema.
-    // See jsdoc comment in isValidPrv
-    let seed = key.prv;
-    if (!this.isValidPrv(seed)) {
-      throw new Error(`invalid seed: ${seed}`);
-    }
-    if (typeof seed === 'string') {
-      try {
-        seed = Seed.decode(seed).seed;
-      } catch (e) {
-        throw new Error(`could not decode seed: ${seed}`);
+  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    const self = this;
+    return co<Buffer>(function* cosignMessage() {
+      // key.prv actually holds the encoded seed, but we use the prv name to avoid breaking the keypair schema.
+      // See jsdoc comment in isValidPrv
+      let seed = key.prv;
+      if (!self.isValidPrv(seed)) {
+        throw new Error(`invalid seed: ${seed}`);
       }
-    }
-    const keyPair = generateAccountFromSeed(seed);
+      if (typeof seed === 'string') {
+        try {
+          seed = Seed.decode(seed).seed;
+        } catch (e) {
+          throw new Error(`could not decode seed: ${seed}`);
+        }
+      }
+      const keyPair = generateAccountFromSeed(seed);
 
-    if (!Buffer.isBuffer(message)) {
-      message = Buffer.from(message);
-    }
+      if (!Buffer.isBuffer(message)) {
+        message = Buffer.from(message);
+      }
 
-    return Buffer.from(NaclWrapper.sign(message, keyPair.sk));
+      return Buffer.from(NaclWrapper.sign(message, keyPair.sk));
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
