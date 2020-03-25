@@ -4,27 +4,23 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import 'should';
-
+import BigNumber from 'bignumber.js';
 import * as Promise from 'bluebird';
-const co = Promise.coroutine;
-const BigNumber = require('bignumber.js');
 
-const TestBitGo = require('../lib/test_bitgo');
+const co = Promise.coroutine;
+
+import { TestBitGo } from '../../lib/test_bitgo';
 
 describe('Enterprise', function() {
 
   let bitgo;
-
   before(co(function *() {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     yield bitgo.authenticateEnterpriseCreatorTestUser(bitgo.testUserOTP());
-
   }));
 
   describe('Fetch Enterprise', function() {
-
     it('should fetch an enterprise', co(function *() {
       const enterprises = bitgo.coin('tltc').enterprises();
       const entList = yield enterprises.list();
@@ -34,7 +30,8 @@ describe('Enterprise', function() {
       enterprise1.name.should.equal('Test Enterprise');
     }));
 
-    it('should fetch the users of an enterprise', co(function *() {
+    // Test ported from v1 - these have not run for some time an the test is incorrect due to platform API changes
+    xit('should fetch the users of an enterprise', co(function *() {
       const enterprises = bitgo.coin('tltc').enterprises();
       const enterprise = (yield enterprises.list())[0];
       const users = yield enterprise.users();
@@ -63,7 +60,14 @@ describe('Enterprise', function() {
       const feeBalance = yield enterprise.getFeeAddressBalance();
       feeBalance.should.have.property('balance');
       const balance = new BigNumber(feeBalance.balance);
-      balance.greaterThan(1000).should.equal(true);
+      balance.isGreaterThan(1000).should.equal(true);
+    }));
+
+    it('should return the enterprise fee address', co(function *() {
+      const enterprises = bitgo.coin('teth').enterprises();
+      const enterprise = (yield enterprises.list())[0];
+      const feeAddress = enterprise.getFeeAddress();
+      feeAddress.should.eql('0xa196e1fcc55a1cfa5bb15f20e857b2fd9b4bd414');
     }));
   });
 
@@ -71,7 +75,8 @@ describe('Enterprise', function() {
   describe('Modify Enterprise', function() {
 
     // TODO: figure out how to approve the removal request from another user
-    it('should add and remove user from enterprise', co(function *() {
+    // Test ported from v1 - these have not run for some time an the test is incorrect due to platform API changes
+    xit('should add and remove user from enterprise', co(function *() {
       const enterprise = yield bitgo.coin('tltc').enterprises().create({ name: 'Test Enterprise' });
       const refetchedEnterprise = yield bitgo.coin('tltc').enterprises().get({ id: enterprise.id });
       const users0 = yield refetchedEnterprise.users();

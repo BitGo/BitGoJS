@@ -14,13 +14,20 @@ import { Affirmations } from './trading/affirmations';
 
 const co = Bluebird.coroutine;
 
+export interface EnterpriseData {
+  id: string;
+  name: string;
+  ethFeeAddress?: string;
+}
+
 export class Enterprise {
   private readonly bitgo: BitGo;
   private readonly baseCoin: BaseCoin;
+  private readonly _enterprise: EnterpriseData;
   readonly id: string;
   readonly name: string;
 
-  constructor(bitgo: BitGo, baseCoin: BaseCoin, enterpriseData: { id: string; name: string }) {
+  constructor(bitgo: BitGo, baseCoin: BaseCoin, enterpriseData: EnterpriseData) {
     this.bitgo = bitgo;
     this.baseCoin = baseCoin;
     if (!_.isObject(enterpriseData)) {
@@ -32,6 +39,7 @@ export class Enterprise {
     if (!_.isString(enterpriseData.name)) {
       throw new Error('enterprise name has to be a string');
     }
+    this._enterprise = enterpriseData;
     this.id = enterpriseData.id;
     this.name = enterpriseData.name;
   }
@@ -140,5 +148,14 @@ export class Enterprise {
    */
   affirmations(): Affirmations {
     return new Affirmations(this.bitgo, this.id);
+  }
+
+  /**
+   * Get the fee address for this enterprise. This is also known as the "Enterprise Gas Tank", which is a special
+   * account used to pay fees for transactions across the enterprise for certain coin types.
+   */
+  getFeeAddress(): string | undefined {
+    // TODO: will need updating once multiple fee addresses are supported per enterprise
+    return this._enterprise.ethFeeAddress;
   }
 }
