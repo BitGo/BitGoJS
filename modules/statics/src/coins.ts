@@ -5,8 +5,9 @@ import { Networks } from './networks';
 import { ofc, tofc, ofcerc20, tofcerc20 } from './ofc';
 import { utxo } from './utxo';
 
-const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
+const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
 const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
+const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES];
 
 export const coins = CoinMap.fromCoins([
   utxo('bch', 'Bitcoin Cash', Networks.main.bitcoinCash, UnderlyingAsset.BCH),
@@ -34,8 +35,8 @@ export const coins = CoinMap.fromCoins([
   account('txrp', 'Testnet Ripple', Networks.test.xrp, 6, UnderlyingAsset.XRP),
   account('xlm', 'Stellar', Networks.main.stellar, 7, UnderlyingAsset.XLM, XLM_FEATURES),
   account('txlm', 'Testnet Stellar', Networks.test.stellar, 7, UnderlyingAsset.XLM, XLM_FEATURES),
-  account('xtz', 'Tezos', Networks.main.xtz, 6, UnderlyingAsset.XTZ),
-  account('txtz', 'Testnet Tezos Babylonnet', Networks.test.xtz, 6, UnderlyingAsset.XTZ),
+  account('xtz', 'Tezos', Networks.main.xtz, 6, UnderlyingAsset.XTZ, XTZ_FEATURES),
+  account('txtz', 'Testnet Tezos Babylonnet', Networks.test.xtz, 6, UnderlyingAsset.XTZ, XTZ_FEATURES),
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD),
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
