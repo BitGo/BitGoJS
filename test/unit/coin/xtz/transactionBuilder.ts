@@ -74,7 +74,7 @@ describe('Tezos Transaction builder', function() {
       };
       const keyPair = new Xtz.KeyPair(source);
       txBuilder.source(keyPair.getAddress());
-      txBuilder.publicKey(keyPair.getKeys().pub);
+      txBuilder.publicKey(keyPair.getExtendedKeys().xpub);
       txBuilder.counter('0');
       txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
       const tx = await txBuilder.build();
@@ -569,7 +569,7 @@ describe('Tezos Transaction builder', function() {
     it('add an invalid public key to reveal', async () => {
       const txBuilder: any = getBuilder('xtz');
       txBuilder.type(TransactionType.AddressInitialization);
-      should.throws(() => txBuilder.publicKey('sppk'), new RegExp('Invalid public key'));
+      should.throws(() => txBuilder.publicKey('sppk'), new RegExp('Unsupported public key'));
     });
 
     it('add the same public key to reveal twice', async () => {
