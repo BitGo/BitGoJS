@@ -233,6 +233,27 @@ describe('Offline Tezos Transaction builder', function() {
       signedTx.signature[0].should.equal(
         'sigdUpzCxmi9NWhdbFGfvqVyH8Xfr2UiPc2fkqNrQ4CHvrk19ZDksDksEc4DJsTbphenV8jCNZFqzL4sCVRzM93HnSSqgJz7',
       );
+      const firstTransferSignatures = signedTx.getTransferSignature();
+      firstTransferSignatures.length.should.equal(2);
+      firstTransferSignatures[0].signature.should.equal(
+        'sigNjD64NuVnUK7oVB2c2SP32VYj7dTykbnRxyDoS9BGvgagvnMcT4hYccabbFGo9tdVQT4M46ezYJdL2pzYDSwkfR6yrppY',
+      );
+      firstTransferSignatures[0].index.should.equal(0);
+      firstTransferSignatures[1].signature.should.equal(
+        'sigYfVYJUaiKKZX4zszWZ7RF292nV2P6XM4nKek2YgWQ8BLS1r22u4a9SCvGMcb89BjTftTn2vgUzCTQGS2cJNvbYtuGQjGP',
+      );
+      firstTransferSignatures[1].index.should.equal(1);
+      // Note: Signatures are the same here because the data to sign used in the test is the same
+      const secondTransferSignatures = signedTx.getTransferSignature(1);
+      secondTransferSignatures.length.should.equal(2);
+      secondTransferSignatures[0].signature.should.equal(
+        'sigNjD64NuVnUK7oVB2c2SP32VYj7dTykbnRxyDoS9BGvgagvnMcT4hYccabbFGo9tdVQT4M46ezYJdL2pzYDSwkfR6yrppY',
+      );
+      secondTransferSignatures[0].index.should.equal(0);
+      secondTransferSignatures[1].signature.should.equal(
+        'sigYfVYJUaiKKZX4zszWZ7RF292nV2P6XM4nKek2YgWQ8BLS1r22u4a9SCvGMcb89BjTftTn2vgUzCTQGS2cJNvbYtuGQjGP',
+      );
+      secondTransferSignatures[1].index.should.equal(1);
       signedTx
         .toBroadcastFormat()
         .should.equal(
