@@ -20,6 +20,7 @@ import * as Utils from './utils';
 export class Transaction extends BaseTransaction {
   private _parsedTransaction?: ParsedTransaction; // transaction in JSON format
   private _encodedTransaction?: string; // transaction in hex format
+  private _source: string;
 
   /**
    * Public constructor.
@@ -77,6 +78,13 @@ export class Transaction extends BaseTransaction {
     this._parsedTransaction = parsedTransaction;
     let operationIndex = 0;
     for (const operation of parsedTransaction.contents) {
+      if (this._source && this._source != operation.source) {
+        throw new InvalidTransactionError(
+          'Source must be the same for every operation but it changed from ' + this._source + ' to ' + operation.source,
+        );
+      } else {
+        this._source = operation.source;
+      }
       switch (operation.kind) {
         case CODEC.OP_ORIGINATION:
           await this.recordOriginationOpFields(operation as OriginationOp, operationIndex);
@@ -223,13 +231,23 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
+   * Get the transaction source if it is available.
+   */
+  get source(): string {
+    if (!this._source) {
+      throw new InvalidTransactionError('Transaction not initialized');
+    }
+    return this._source;
+  }
+
+  /**
    * Get the signatures for the given multisig transfer,
    *
    * @param {number} transferIndex The transfer script index in the Tezos transaction
    * @returns {IndexedSignature[]} A list of signatures with their index inside the multisig transfer
    *      script
    */
-  getTransferSignature(transferIndex = 0): IndexedSignature[] {
+  getTransferSignatures(transferIndex = 0): IndexedSignature[] {
     if (!this._parsedTransaction) {
       return [];
     }
@@ -242,7 +260,7 @@ export class Transaction extends BaseTransaction {
    *
    * @returns {{[p: string]: number[]}} List of indexes where the key is the transaction kind
    */
-  getIndexByTransactionType(): { [kind: string]: number[] } {
+  getIndexesByTransactionType(): { [kind: string]: number[] } {
     if (!this._parsedTransaction) {
       return {};
     }

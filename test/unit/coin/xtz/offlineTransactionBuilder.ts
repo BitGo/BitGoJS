@@ -30,6 +30,7 @@ describe('Offline Tezos Transaction builder', function() {
 
       tx.id.should.equal('');
       tx.type.should.equal(TransactionType.WalletInitialization);
+      tx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(tx.inputs.length, 1);
       should.equal(tx.outputs.length, 1);
       tx.inputs[0].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
@@ -69,6 +70,7 @@ describe('Offline Tezos Transaction builder', function() {
 
       tx.id.should.equal('');
       tx.type.should.equal(TransactionType.AddressInitialization);
+      tx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(tx.inputs.length, 1);
       should.equal(tx.outputs.length, 0);
       tx.inputs[0].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
@@ -82,6 +84,7 @@ describe('Offline Tezos Transaction builder', function() {
 
       signedTx.id.should.equal('oomXs6PuWtmGwMKoXTNsu9XJHnGXtuRujcHMeYS9y37Xj6sXPHb');
       signedTx.type.should.equal(TransactionType.AddressInitialization);
+      signedTx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(signedTx.inputs.length, 1);
       should.equal(signedTx.outputs.length, 0);
       signedTx.inputs[0].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
@@ -215,6 +218,7 @@ describe('Offline Tezos Transaction builder', function() {
 
       signedTx.id.should.equal('onyGaWs6z4bVVcfn3h9KbBrktEhuDyJLYEVB4aJRM6YNngjDxE4');
       signedTx.type.should.equal(TransactionType.Send);
+      signedTx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(signedTx.inputs.length, 4);
       should.equal(signedTx.outputs.length, 2);
       signedTx.inputs[0].address.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
@@ -233,7 +237,7 @@ describe('Offline Tezos Transaction builder', function() {
       signedTx.signature[0].should.equal(
         'sigdUpzCxmi9NWhdbFGfvqVyH8Xfr2UiPc2fkqNrQ4CHvrk19ZDksDksEc4DJsTbphenV8jCNZFqzL4sCVRzM93HnSSqgJz7',
       );
-      const firstTransferSignatures = signedTx.getTransferSignature();
+      const firstTransferSignatures = signedTx.getTransferSignatures();
       firstTransferSignatures.length.should.equal(2);
       firstTransferSignatures[0].signature.should.equal(
         'sigNjD64NuVnUK7oVB2c2SP32VYj7dTykbnRxyDoS9BGvgagvnMcT4hYccabbFGo9tdVQT4M46ezYJdL2pzYDSwkfR6yrppY',
@@ -244,7 +248,7 @@ describe('Offline Tezos Transaction builder', function() {
       );
       firstTransferSignatures[1].index.should.equal(1);
       // Note: Signatures are the same here because the data to sign used in the test is the same
-      const secondTransferSignatures = signedTx.getTransferSignature(1);
+      const secondTransferSignatures = signedTx.getTransferSignatures(1);
       secondTransferSignatures.length.should.equal(2);
       secondTransferSignatures[0].signature.should.equal(
         'sigNjD64NuVnUK7oVB2c2SP32VYj7dTykbnRxyDoS9BGvgagvnMcT4hYccabbFGo9tdVQT4M46ezYJdL2pzYDSwkfR6yrppY',
