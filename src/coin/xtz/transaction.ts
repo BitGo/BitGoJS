@@ -2,10 +2,14 @@ import { localForger, CODEC } from '@taquito/local-forging';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction } from '../baseCoin';
-import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
-import { getMultisigTransferDataFromOperation, updateMultisigTransferSignatures } from './multisigUtils';
+import {
+  getMultisigTransferDataFromOperation,
+  getMultisigTransferSignatures,
+  updateMultisigTransferSignatures,
+} from './multisigUtils';
 import { KeyPair } from './keyPair';
 import { IndexedSignature, Operation, OriginationOp, ParsedTransaction, RevealOp, TransactionOp } from './iface';
 import * as Utils from './utils';
@@ -16,6 +20,7 @@ import * as Utils from './utils';
 export class Transaction extends BaseTransaction {
   private _parsedTransaction?: ParsedTransaction; // transaction in JSON format
   private _encodedTransaction?: string; // transaction in hex format
+  private _source: string;
 
   /**
    * Public constructor.
@@ -73,6 +78,13 @@ export class Transaction extends BaseTransaction {
     this._parsedTransaction = parsedTransaction;
     let operationIndex = 0;
     for (const operation of parsedTransaction.contents) {
+      if (this._source && this._source != operation.source) {
+        throw new InvalidTransactionError(
+          'Source must be the same for every operation but it changed from ' + this._source + ' to ' + operation.source,
+        );
+      } else {
+        this._source = operation.source;
+      }
       switch (operation.kind) {
         case CODEC.OP_ORIGINATION:
           await this.recordOriginationOpFields(operation as OriginationOp, operationIndex);
@@ -216,5 +228,47 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Missing encoded transaction');
     }
     return this._encodedTransaction;
+  }
+
+  /**
+   * Get the transaction source if it is available.
+   */
+  get source(): string {
+    if (!this._source) {
+      throw new InvalidTransactionError('Transaction not initialized');
+    }
+    return this._source;
+  }
+
+  /**
+   * Get the signatures for the given multisig transfer,
+   *
+   * @param {number} transferIndex The transfer script index in the Tezos transaction
+   * @returns {IndexedSignature[]} A list of signatures with their index inside the multisig transfer
+   *      script
+   */
+  getTransferSignatures(transferIndex = 0): IndexedSignature[] {
+    if (!this._parsedTransaction) {
+      return [];
+    }
+    return getMultisigTransferSignatures(this._parsedTransaction.contents[transferIndex] as TransactionOp);
+  }
+
+  /**
+   * Get the list of index per tezos transaction type. This is useful to locate specific operations
+   * within the transaction and verify or sign them.
+   *
+   * @returns {{[p: string]: number[]}} List of indexes where the key is the transaction kind
+   */
+  getIndexesByTransactionType(): { [kind: string]: number[] } {
+    if (!this._parsedTransaction) {
+      return {};
+    }
+    const indexes = {};
+    for (let i = 0; i < this._parsedTransaction.contents.length; i++) {
+      const kind = this._parsedTransaction.contents[i].kind;
+      indexes[kind] = indexes[kind] ? indexes[kind].concat([i]) : [i];
+    }
+    return indexes;
   }
 }

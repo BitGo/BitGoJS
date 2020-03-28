@@ -182,6 +182,29 @@ export function updateMultisigTransferSignatures(transaction: TransactionOp, sig
 }
 
 /**
+ * Ge the list if multisig signatures if any in a convenient format.
+ *
+ * @param {TransactionOp} transaction The transaction to search the signatures in
+ * @returns {IndexedSignature[]} A list of signatures and their order in teh transfer script
+ */
+export function getMultisigTransferSignatures(transaction: TransactionOp): IndexedSignature[] {
+  const signatures: IndexedSignature[] = [];
+  if (!transaction.parameters && !transaction.parameters.value && !transaction.parameters.value) {
+    return [];
+  }
+  const rawSignatures = transaction.parameters.value.args[1];
+  for (let i = 0; i < rawSignatures.length; i++) {
+    if (rawSignatures[i].prim === 'Some') {
+      signatures.push({
+        signature: rawSignatures[i].args[0].string,
+        index: i,
+      });
+    }
+  }
+  return signatures;
+}
+
+/**
  * Build a list of ordered signatures, putting a None primitive for the missing indexes.
  *
  * @param {IndexedSignature[]} signatures List of transactions and their order
