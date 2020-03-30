@@ -36,8 +36,13 @@ export interface UtxoNetwork extends BaseNetwork {
   wif: number;
 }
 
-export interface AccountNetwork extends BaseNetwork {}
+export interface AccountNetwork extends BaseNetwork {
+  // some chains pay fees via an enterprise gas task. The account explorer url
+  // is a url that can be used to look up the account for the gas tank on-chain.
+  readonly accountExplorerUrl?: string;
+}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface OfcNetwork extends BaseNetwork {}
 
 abstract class Mainnet extends BaseNetwork {
@@ -171,11 +176,13 @@ class DashTestnet extends BitcoinLikeTestnet {
 class Ethereum extends Mainnet implements AccountNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://etherscan.io/tx/';
+  accountExplorerUrl = 'https://etherscan.io/address/';
 }
 
 class Kovan extends Testnet implements AccountNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://kovan.etherscan.io/tx/';
+  accountExplorerUrl = 'https://kovan.etherscan.io/address/';
 }
 
 class Eos extends Mainnet implements AccountNetwork {
@@ -261,11 +268,13 @@ class XrpTestnet extends Testnet implements AccountNetwork {
 class Xtz extends Mainnet implements AccountNetwork {
   family = CoinFamily.XTZ;
   explorerUrl = 'https://tezblock.io/transaction/';
+  accountExplorerUrl = 'https://tezblock.io/account/';
 }
 
 class XtzTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.XTZ;
   explorerUrl = 'https://babylonnet.tezblock.io/transaction/';
+  accountExplorerUrl = 'https://babylonnet.tezblock.io/account/';
 }
 
 // https://github.com/zcash/zcash/blob/master/src/validation.cpp
