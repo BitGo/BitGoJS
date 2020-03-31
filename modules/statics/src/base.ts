@@ -112,6 +112,10 @@ export const enum CoinFeature {
    * For example, Ethereum's ERC 20 token standard means that it supports tokens, so it shall have this feature.
    */
   SUPPORTS_TOKENS = 'supports-tokens',
+  /*
+   * Are fees for transactions of this coin paid for by the Enterprise (eg, Enterprise gas tank)?
+   */
+  ENTERPRISE_PAYS_FEES = 'enterprise-pays-fees',
 }
 
 /**
