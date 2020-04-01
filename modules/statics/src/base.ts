@@ -363,6 +363,7 @@ export const enum UnderlyingAsset {
   TCAD = 'tcad',
   TEN = 'ten',
   TENX = 'tenx',
+  TERC20 = 'terc20',
   TGBP = 'tgbp',
   THKD = 'thkd',
   TIOX = 'tiox',
