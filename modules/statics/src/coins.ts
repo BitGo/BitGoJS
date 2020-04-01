@@ -283,6 +283,7 @@ export const coins = CoinMap.fromCoins([
   erc20('tcad', 'TrueCAD', 18, '0x00000100f2a2bd000715001920eb70d229700085', UnderlyingAsset.TCAD),
   erc20('ten', 'Tokenomy', 18, '0xdd16ec0f66e54d453e6756713e533355989040e4', UnderlyingAsset.TEN),
   erc20('tenx', 'TenX Token', 18, '0x515ba0a2e286af10115284f151cf398688a69170', UnderlyingAsset.TENX),
+  erc20('terc20', 'Test ERC20 Token', 18, '0x731a10897d267e19b34503ad902d0a29173ba4b1', UnderlyingAsset.TERC20),
   erc20('tgbp', 'TrueGBP', 18, '0x00000000441378008ea67f4284a57932b1c000a5', UnderlyingAsset.TGBP),
   erc20('thkd', 'TrueHKD', 18, '0x0000852600ceb001e08e00bc008be620d60031f2', UnderlyingAsset.THKD),
   erc20('tiox', 'Trade Token X', 18, '0xd947b0ceab2a8885866b9a04a06ae99de852a3d4', UnderlyingAsset.TIOX),
