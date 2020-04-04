@@ -292,7 +292,10 @@ describe('BitGo', function() {
         })
         .then(function(wallet3) {
           return wallet3.setLabel({ label: 'testLabel3', address: TestBitGo.TEST_WALLET3_ADDRESS2 });
-        });
+        })
+          .then(function(Res) {
+            console.log(Res);
+          });
       });
 
       it('success', function(done) {
