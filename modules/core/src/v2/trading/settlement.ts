@@ -1,10 +1,7 @@
 /**
  * @prettier
- * @hidden
  */
 
-/**
- */
 import { BitGo } from '../../bitgo';
 import { Trade } from './trade';
 import { Affirmation } from './affirmation';
@@ -17,6 +14,11 @@ export enum SettlementStatus {
   FAILED = 'failed',
 }
 
+export enum SettlementType {
+  DIRECT = 'direct',
+  AGENCY = 'agency',
+}
+
 export class Settlement {
   private readonly bitgo: BitGo;
   private readonly enterpriseId: string;
@@ -24,6 +26,7 @@ export class Settlement {
   public id: string;
   public requesterAccountId: string;
   public status: SettlementStatus;
+  public type: SettlementType;
   public affirmations: Affirmation[];
   public createdAt: Date;
   public expireAt: Date;
@@ -37,6 +40,7 @@ export class Settlement {
     this.id = settlementData.id;
     this.requesterAccountId = settlementData.requesterAccountId;
     this.status = settlementData.status;
+    this.type = settlementData.type;
     this.affirmations = settlementData.affirmations.map(
       affirmation => new Affirmation(affirmation, this.bitgo, this.enterpriseId)
     );

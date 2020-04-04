@@ -1,6 +1,5 @@
 /**
  * @prettier
- * @hidden
  */
 
 /**
@@ -16,14 +15,14 @@ import { TradingAccount } from './tradingAccount';
 
 const co = Bluebird.coroutine;
 
-interface CreateSettlementParams {
+export interface CreateSettlementParams {
   requesterAccountId: string;
   payload: Payload;
   signature: string;
   trades: Trade[];
 }
 
-interface GetOptions {
+export interface GetOptions {
   id: string;
   accountId: string;
 }
