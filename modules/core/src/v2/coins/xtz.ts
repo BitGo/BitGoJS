@@ -187,7 +187,8 @@ export class Xtz extends BaseCoin {
   signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
     return co<Buffer>(function* cosignMessage() {
       const keyPair = new bitgoAccountLib.Xtz.KeyPair({ prv: key.prv });
-      const signatureData = yield bitgoAccountLib.Xtz.Utils.sign(keyPair, message as string);
+      const messageHex = message instanceof Buffer ? message.toString('hex') : new Buffer(message).toString('hex');
+      const signatureData = yield bitgoAccountLib.Xtz.Utils.sign(keyPair, messageHex);
       return signatureData.sig;
     })
       .call(this)
