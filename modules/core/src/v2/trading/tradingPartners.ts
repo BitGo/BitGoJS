@@ -1,6 +1,5 @@
 /**
  * @prettier
- * @hidden
  */
 
 /**
@@ -10,16 +9,22 @@ import { BitGo } from '../../bitgo';
 
 import { NodeCallback } from '../types';
 import { TradingAccount } from './tradingAccount';
-import { TradingPartner } from './tradingPartner';
+import { TradingPartner, TradingPartnerType } from './tradingPartner';
 
 const co = Bluebird.coroutine;
 
-interface TradingPartnerReferralParameters {
-  institutionName: string;
-  contactName: string;
-  contactEmail: string;
-  contactPhoneNumber: string;
-  memo: string;
+// Side of the requester (if they should be considered the primary or the secondary)
+// Only important for agency partnerships
+// the primaryAccount is the agent, settling trades for the secondary account id
+export enum TradingReferralRequesterSide {
+  PRIMARY = 'primary', // if partnership is of type agency, primary is the agent
+  SECONDARY = 'secondary',
+}
+
+export interface TradingPartnerAddByCodeParameters {
+  referralCode: string;
+  type: TradingPartnerType;
+  requesterSide: TradingReferralRequesterSide;
 }
 
 export class TradingPartners {
@@ -55,27 +60,25 @@ export class TradingPartners {
   }
 
   /**
-   * Refer a new trading partner to join the BitGo network and become your partner.
+   * Add trading partner given the unique referralCode provided by trading partner.
    * @param params
-   * @param params.institutionName name of the institution to invite
-   * @param params.contactName full name of a member of the institution to contact
-   * @param params.contactEmail email address of the contact
-   * @param params.contactPhoneNumber phone number of the contact
-   * @param params.memo memo to send to the trading partner when sending the invite
+   * @param params.referralCode unique referral code provided by counterparty
+   * @param params.type type of trading partnership
+   * @param params.requesterSide side of the requester (primary or secondary) important for agency relationships
    * @param callback
    */
-  refer(params: TradingPartnerReferralParameters, callback?: NodeCallback<{}>): Bluebird<{}> {
+  addByCode(params: TradingPartnerAddByCodeParameters, callback?: NodeCallback<{}>): Bluebird<TradingPartner> {
     const self = this;
-    return co<{}>(function* refer() {
+    return co<TradingPartner>(function* refer() {
       const url = self.bitgo.microservicesUrl(
-        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners/referrals`
+        `/api/trade/v1/enterprise/${self.enterpriseId}/account/${self.account.id}/tradingpartners`
       );
-      yield self.bitgo
+      const response = yield self.bitgo
         .post(url)
         .send(params)
         .result();
 
-      return {}; // TODO: return result of referral
+      return response;
     })
       .call(this)
       .asCallback(callback);
