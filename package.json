@@ -42,7 +42,12 @@
     "elliptic": "^6.5.2",
     "libsodium-wrappers": "^0.7.6",
     "protobufjs": "^6.8.9",
-    "tronweb": "^2.7.2"
+    "tronweb": "^2.7.2",
+    "web3": "^1.2.6",
+    "keccak": "^1.0.2",
+    "rlp": "^2.0.0",
+    "keccak256": "^1.0.0",
+    "underscore": "^1.9.1"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",
