@@ -1,5 +1,6 @@
 import * as Promise from 'bluebird';
 import { Xtz } from '../../../../src/v2/coins/';
+import * as bitgoAccountLib from '@bitgo/account-lib';
 
 const co = Promise.coroutine;
 import { TestBitGo } from '../../../lib/test_bitgo';
@@ -132,5 +133,30 @@ describe('Tezos:', function() {
       keyPair.pub.should.equal('sppk7bJUTTikwyNHT5n8ehzgSjgCou53Wmm1z81p6JvNTQ5oUuWEW8o');
       keyPair.prv.should.equal('spsk1fKc5fEaM7ns4JkmozPU9QCkXUHHLj48Wyiap2PvewMo595e9X');
     });
+  });
+
+  describe('Sign message:', () => {
+    it('should sign and validate a string message', co(function *() {
+      const keyPair = basecoin.generateKeyPair();
+      const message = 'hello world';
+      const signature = yield basecoin.signMessage(keyPair, message);
+
+      const messageHex = new Buffer(message).toString('hex');
+      const publicKey = new bitgoAccountLib.Xtz.KeyPair({ pub: keyPair.pub });
+      const isValid = yield bitgoAccountLib.Xtz.Utils.verifySignature(messageHex, publicKey.getKeys().pub, signature);
+      isValid.should.equal(true);
+    }));
+
+    it('should fail to validate a string message with wrong public key', co(function *() {
+      const keyPair = basecoin.generateKeyPair();
+      const message = 'hello world';
+      const signature = yield basecoin.signMessage(keyPair, message);
+
+      const messageHex = new Buffer(message).toString('hex');
+
+      const publicKey = new bitgoAccountLib.Xtz.KeyPair();
+      const isValid = yield bitgoAccountLib.Xtz.Utils.verifySignature(messageHex, publicKey.getKeys().pub, signature);
+      isValid.should.equal(false);
+    }));
   });
 });

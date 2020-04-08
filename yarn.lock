@@ -103,10 +103,10 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/account-lib@^1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-1.0.2.tgz#b0422219a294f8f6fc632423050dc8920ea97af3"
-  integrity sha512-zvPUEsoypzNrXxrDNIjUOkjIBmdaQK8OoVxew0fHiNkGSjPSlr3Be144HOuWxBxyVuLmgXqaW/5Fyaizt1O3TA==
+"@bitgo/account-lib@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-1.0.3.tgz#dd4bfbcf3265b982253ac861acb89a69096b2d1e"
+  integrity sha512-nPOyIk7vTkAHuE+OBpld5lHuio0T23vbPwkJHkUaIKV3YkIdM7sKr+gQjjr37J4Dv4MgzjW/AX3WLRMBwusq5g==
   dependencies:
     "@bitgo/statics" "^3.4.2"
     "@taquito/local-forging" "^6.0.3-beta.0"
@@ -115,6 +115,7 @@
     bitgo-utxo-lib "^1.6.0"
     blake2b "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac"
     bs58check "^2.1.2"
+    elliptic "^6.5.2"
     libsodium-wrappers "^0.7.6"
     protobufjs "^6.8.9"
     tronweb "^2.7.2"
@@ -3907,7 +3908,7 @@ elliptic@^6.0.0, elliptic@^6.2.3, elliptic@^6.4.0, elliptic@^6.4.1:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
-elliptic@^6.5.1:
+elliptic@^6.5.1, elliptic@^6.5.2:
   version "6.5.2"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.2.tgz#05c5678d7173c049d8ca433552224a495d0e3762"
   integrity sha512-f4x70okzZbIQl/NSRLkI/+tteV/9WqL98zx+SQ69KbXxmVrmjwsNUPn/gYJJ0sHvEak24cZgHIPegRePAtA/xw==
