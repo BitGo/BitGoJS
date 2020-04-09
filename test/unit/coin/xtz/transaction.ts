@@ -1,6 +1,5 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-
 import { KeyPair, Transaction } from '../../../../src/coin/xtz';
 import {
   unsignedSerializedOriginationTransaction,
@@ -22,6 +21,7 @@ describe('Tezos transaction', function() {
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal('');
       tx.outputs[0].value.should.equal('1000000');
+      should.not.exist(tx.delegate);
       JSON.stringify(tx.toJson()).should.equal(JSON.stringify(parsedTransaction));
       tx.toBroadcastFormat().should.equal(unsignedSerializedOriginationTransaction);
     });
@@ -37,6 +37,7 @@ describe('Tezos transaction', function() {
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal('KT1LJvp55fbdNwbisJFign9wA4cPgq9T9oc4');
       tx.outputs[0].value.should.equal('1000000');
+      should.not.exist(tx.delegate);
       JSON.stringify(tx.toJson()).should.equal(JSON.stringify(parsedTransaction));
       tx.toBroadcastFormat().should.equal(signedSerializedOriginationTransaction);
     });
@@ -56,6 +57,7 @@ describe('Tezos transaction', function() {
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal('KT1Dh62qPZhJvMMtL4rAnDS2uASptT6GNLMy');
       tx.outputs[0].value.should.equal('1000000');
+      should.not.exist(tx.delegate);
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
         'sigu3cjQh8rf79aXG555fRxKzuTa2byZnvMJqkJENpdKjEwCri6SUM9fLywDC3w8e6dHRT8RRaJVQiijC9yzwqL6FSm2Jj9a',
@@ -75,6 +77,7 @@ describe('Tezos transaction', function() {
       tx.outputs.length.should.equal(1);
       tx.outputs[0].address.should.equal('KT1Dh62qPZhJvMMtL4rAnDS2uASptT6GNLMy');
       tx.outputs[0].value.should.equal('1000000');
+      should.not.exist(tx.delegate);
       tx.signature.length.should.equal(1);
       tx.signature[0].should.equal(
         'sigu3cjQh8rf79aXG555fRxKzuTa2byZnvMJqkJENpdKjEwCri6SUM9fLywDC3w8e6dHRT8RRaJVQiijC9yzwqL6FSm2Jj9a',

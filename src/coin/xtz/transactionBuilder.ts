@@ -53,6 +53,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   // Wallet initialization transaction parameters
   private _initialBalance: string;
+  private _initialDelegate: string;
   private _walletOwnerPublicKeys: string[];
 
   // Send transaction parameters
@@ -320,6 +321,20 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
+   * Set an initial delegate to initialize this wallet to. This is different than the delegation to
+   * set while doing a separate delegation transaction.
+   *
+   * @param {string} delegate The address to delegate the funds to
+   */
+  initialDelegate(delegate: string): void {
+    if (this._type !== TransactionType.WalletInitialization) {
+      throw new BuildTransactionError('Initial delegation can only be set for wallet initialization transactions');
+    }
+    this.validateAddress({ address: delegate });
+    this._initialDelegate = delegate;
+  }
+
+  /**
    * Build an origination operation for a generic multisig contract.
    *
    * @returns {Operation} A Tezos origination operation
@@ -333,6 +348,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       this._fee.storageLimit || DEFAULT_STORAGE_LIMIT.ORIGINATION.toString(),
       this._initialBalance || '0',
       this._walletOwnerPublicKeys,
+      this._initialDelegate,
     );
     this._counter = this._counter.plus(1);
     return originationOp;
