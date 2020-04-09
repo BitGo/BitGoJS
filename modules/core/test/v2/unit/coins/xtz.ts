@@ -142,8 +142,9 @@ describe('Tezos:', function() {
       const signature = yield basecoin.signMessage(keyPair, message);
 
       const messageHex = new Buffer(message).toString('hex');
+      const sig = Buffer.from(signature, 'hex').toString();
       const publicKey = new bitgoAccountLib.Xtz.KeyPair({ pub: keyPair.pub });
-      const isValid = yield bitgoAccountLib.Xtz.Utils.verifySignature(messageHex, publicKey.getKeys().pub, signature);
+      const isValid = yield bitgoAccountLib.Xtz.Utils.verifySignature(messageHex, publicKey.getKeys().pub, sig);
       isValid.should.equal(true);
     }));
 
@@ -154,8 +155,9 @@ describe('Tezos:', function() {
 
       const messageHex = new Buffer(message).toString('hex');
 
+      const sig = Buffer.from(signature, 'hex').toString();
       const publicKey = new bitgoAccountLib.Xtz.KeyPair();
-      const isValid = yield bitgoAccountLib.Xtz.Utils.verifySignature(messageHex, publicKey.getKeys().pub, signature);
+      const isValid = yield bitgoAccountLib.Xtz.Utils.verifySignature(messageHex, publicKey.getKeys().pub, sig);
       isValid.should.equal(false);
     }));
   });
