@@ -120,6 +120,11 @@
     protobufjs "^6.8.9"
     tronweb "^2.7.2"
 
+"@bitgo/statics@^3.4.2":
+  version "3.4.4"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-3.4.4.tgz#acc581980d30fa93e38460e2f9ea72beb60cfa91"
+  integrity sha512-rEXKec+K6ZuRCVQju/fH6/+7SOhvVtehyJZavEeytB0y5Ah9urL1lVXaXZGuKwPQaGqo4KGOjmOjGfxwkLRAMw==
+
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
