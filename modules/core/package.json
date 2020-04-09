@@ -47,7 +47,7 @@
     "gen-docs": "typedoc"
   },
   "dependencies": {
-    "@bitgo/account-lib": "^1.0.2",
+    "@bitgo/account-lib": "^1.0.3",
     "@bitgo/statics": "^3.5.0",
     "@bitgo/unspents": "^0.6.0",
     "@types/bluebird": "^3.5.25",
