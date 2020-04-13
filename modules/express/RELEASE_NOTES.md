@@ -1,5 +1,20 @@
 # BitGo Express Release Notes
 
+## 9.6.8
+
+### Other Changes
+* Update to `bitgo@11.0.2`
+
+## 9.6.7
+
+### Other Changes
+* Update to `bitgo@11.0.1`
+
+## 9.6.6
+
+### Other Changes
+* Update to `bitgo@11.0.0`
+
 ## 9.6.5
 
 ### Other Changes
