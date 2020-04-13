@@ -7,7 +7,7 @@ import { InvalidTransactionError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { TxData } from './iface';
 import { Utils } from './';
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 export class Transaction extends BaseTransaction {
   private _parsedTransaction?: TxData; // transaction in JSON format

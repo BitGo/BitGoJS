@@ -1,12 +1,12 @@
+import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import BigNumber from 'bignumber.js';
 import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { Transaction } from '../eth';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { Fee, TxData } from './iface';
-import { isValidAddress, getContractData } from './utils';
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import BigNumber from 'bignumber.js';
+import { getContractData, isValidEthAddress } from './utils';
 
 const DEFAULT_M = 3;
 
@@ -42,14 +42,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<BaseTransaction> {
-    if (this._type != TransactionType.WalletInitialization) {
-      throw new BuildTransactionError('Unsupported transaction type');
-    }
     let transactionData;
     switch (this._type) {
       case TransactionType.WalletInitialization:
         transactionData = this.buildWalletInitializationTransaction();
         break;
+      default:
+        throw new BuildTransactionError('Unsupported transaction type');
     }
     this.transaction.setTransactionType(this._type);
     this.transaction.setTransactionData(transactionData);
@@ -80,13 +79,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (this._sourceKeyPair) {
       throw new SigningError('Cannot sign multiple times a non send-type transaction');
     }
+    // Signing the transaction is an async operation, so save the source and leave the actual
+    // signing for the build step
     this._sourceKeyPair = signer;
     return this.transaction;
   }
 
   /** @inheritdoc */
   validateAddress(address: BaseAddress): void {
-    if (!isValidAddress(address.address)) {
+    if (!isValidEthAddress(address.address)) {
       throw new BuildTransactionError('Invalid address ' + address.address);
     }
   }
@@ -118,6 +119,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   chainId(chainId: number): void {
     this._chainId = chainId;
+    // TODO: Infer it from coinConfig
   }
 
   /**
@@ -168,7 +170,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Set one of the owners of the multisig wallet.
    *
-   * @param {string} address A Eth public key
+   * @param {string} address An Ethereum address
    */
   owner(address: string): void {
     if (this._type !== TransactionType.WalletInitialization) {
@@ -177,7 +179,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (this._walletOwnerAddresses.length >= DEFAULT_M) {
       throw new BuildTransactionError('A maximum of ' + DEFAULT_M + ' owners can be set for a multisig wallet');
     }
-    if (!isValidAddress(address)) {
+    if (!isValidEthAddress(address)) {
       throw new BuildTransactionError('Invalid address: ' + address);
     }
     if (this._walletOwnerAddresses.includes(address)) {
@@ -185,7 +187,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     this._walletOwnerAddresses.push(address);
   }
-  //endregion
 
   /**
    * Build a transaction for a generic multisig contract.
@@ -201,6 +202,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       data: getContractData(this._walletOwnerAddresses),
     };
   }
+  //endregion
 
   /** @inheritdoc */
   protected get transaction(): Transaction {
