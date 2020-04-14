@@ -64,6 +64,7 @@ export interface RevealOp extends Operation {
 export interface OriginationOp extends Operation {
   balance: string;
   script: any;
+  delegate?: string;
 }
 
 export interface TransactionOp extends Operation {

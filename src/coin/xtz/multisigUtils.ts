@@ -433,6 +433,7 @@ export function revealOperation(
  * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
  * @param {string} balance New multisig account initial balance taken from the source account
  * @param {string[]} pubKeys List of public keys of the multisig owner
+ * @param {string} delegate Optional implicit address to delegate the wallet funds to
  * @param {number} threshold Minimum number of signatures required to authorize a multisig operation
  * @returns An origination operation
  */
@@ -444,11 +445,12 @@ export function genericMultisigOriginationOperation(
   storageLimit: string,
   balance: string,
   pubKeys: string[],
+  delegate?: string,
   threshold: number = DEFAULT_N,
 ): OriginationOp {
   const walletPublicKeys: any[] = [];
   pubKeys.forEach(pk => walletPublicKeys.push({ string: pk }));
-  return {
+  const originationOp: OriginationOp = {
     kind: 'origination',
     counter,
     source,
@@ -477,6 +479,10 @@ export function genericMultisigOriginationOperation(
       },
     },
   };
+  if (delegate) {
+    originationOp.delegate = delegate;
+  }
+  return originationOp;
 }
 
 /**

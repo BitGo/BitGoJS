@@ -21,6 +21,7 @@ export class Transaction extends BaseTransaction {
   private _parsedTransaction?: ParsedTransaction; // transaction in JSON format
   private _encodedTransaction?: string; // transaction in hex format
   private _source: string;
+  private _delegate?: string;
 
   /**
    * Public constructor.
@@ -111,6 +112,7 @@ export class Transaction extends BaseTransaction {
    */
   private async recordOriginationOpFields(operation: OriginationOp, index: number): Promise<void> {
     this._type = TransactionType.WalletInitialization;
+    this._delegate = operation.delegate;
     this._outputs.push({
       // Kt addresses can only be calculated for signed transactions with an id
       address: this._id ? await Utils.calculateOriginatedAddress(this._id, index) : '',
@@ -238,6 +240,13 @@ export class Transaction extends BaseTransaction {
       throw new InvalidTransactionError('Transaction not initialized');
     }
     return this._source;
+  }
+
+  /**
+   * Get the transaction delegation address if it is available.
+   */
+  get delegate(): string | undefined {
+    return this._delegate;
   }
 
   /**
