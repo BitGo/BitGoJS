@@ -6,6 +6,7 @@ import { SigningError } from '../baseCoin/errors';
 import { genericMultisigDataToSign } from './multisigUtils';
 import { HashType, SignResponse } from './iface';
 import { KeyPair } from './keyPair';
+import * as Crypto from './../../utils/crypto';
 
 // By default, use the transactions prefix
 export const DEFAULT_WATERMARK = new Uint8Array([3]);
@@ -224,7 +225,23 @@ export function isValidPublicKey(publicKey: string): boolean {
   return (
     isValidHash(publicKey, hashTypes.sppk) ||
     isValidHash(publicKey, hashTypes.p2pk) ||
-    isValidHash(publicKey, hashTypes.edpk)
+    isValidHash(publicKey, hashTypes.edpk) ||
+    Crypto.isValidXpub(publicKey) // xpubs are valid too.
+  );
+}
+
+/**
+ * Returns whether or not the string is a valid Tezos private key
+ *
+ * @param {string} privateKey The private key to validate
+ * @returns {boolean}
+ */
+export function isValidPrivateKey(privateKey: string): boolean {
+  return (
+    isValidHash(privateKey, hashTypes.edesk) ||
+    isValidHash(privateKey, hashTypes.edsk) ||
+    isValidHash(privateKey, hashTypes.spsk) ||
+    isValidHash(privateKey, hashTypes.p2sk)
   );
 }
 
