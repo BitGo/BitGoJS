@@ -5,5 +5,7 @@ export { TransactionBuilder } from './transactionBuilder';
 
 import * as Interface from './iface';
 import * as Utils from './utils';
+import * as MultisigUtils from './multisigUtils';
+Object.assign(Utils, MultisigUtils);
 
 export { Interface, Utils };
