@@ -1,5 +1,28 @@
 # BitGoJS Release Notes
 
+## 11.0.2 (04-09-2020)
+
+### Other Changes
+* Remove `@hidden` annotation from trading documentation and update to latest payload version.
+* Update `@bitgo/statics` to version 3.5.0
+
+## 11.0.1 (03-31-2020)
+
+### Other Changes
+* Update `@bitgo/statics` to version 3.4.4
+
+## 11.0.0 (03-24-2020)
+
+### Breaking Changes
+* The `signMessage` function on coin objects has been made asynchronous. Callers of this function will have to update their code to correctly handle the returned promise.
+
+### New Features
+* Add preliminary XTZ signing support.
+
+### Other Changes
+* Update `@bitgo/account-lib` to version 1.0.2
+* Update `@bitgo/statics` to version 3.4.3
+
 ## 10.0.0 (03-18-2020)
 
 ### Breaking Changes
@@ -13,7 +36,7 @@
 * Fix incorrect type check on `username` and `password` parameters in `preprocessAuthenticationParams`.
 
 ### Other Changes
-* Update `@bitgo/statics` to version 4.0.1
+* Update `@bitgo/account-lib` to version 1.0.1
 
 ## 9.6.2 (03-12-2020)
 
