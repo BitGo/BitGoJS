@@ -252,7 +252,7 @@ class Trx extends Mainnet implements AccountNetwork {
 
 class TrxTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.TRX;
-  explorerUrl = 'https://shasta.tronscan.org/#/transaction/';
+  explorerUrl = 'https://nile.tronscan.org/#/transaction/';
 }
 
 class Xrp extends Mainnet implements AccountNetwork {
@@ -273,8 +273,8 @@ class Xtz extends Mainnet implements AccountNetwork {
 
 class XtzTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.XTZ;
-  explorerUrl = 'https://babylonnet.tezblock.io/transaction/';
-  accountExplorerUrl = 'https://babylonnet.tezblock.io/account/';
+  explorerUrl = 'https://carthagenet.tezblock.io/transaction/';
+  accountExplorerUrl = 'https://carthagenet.tezblock.io/account/';
 }
 
 // https://github.com/zcash/zcash/blob/master/src/validation.cpp
