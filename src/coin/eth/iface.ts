@@ -21,15 +21,3 @@ export interface FieldStruct {
   inputs?: any;
   type: string;
 }
-
-export interface Decoded {
-  data: Buffer | Buffer[];
-  remainder: Buffer;
-}
-
-export interface FieldData {
-  allowZero: boolean;
-  allowLess: boolean;
-  length: number;
-  name: string;
-}

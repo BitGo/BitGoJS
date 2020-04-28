@@ -67,6 +67,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     throw new BuildTransactionError('Not implemented fromImplementation'); //TODO: Implement fromImplementation and delete this
   }
 
+  /**@inheritdoc */
   protected signImplementation(key: BaseKey): BaseTransaction {
     const signer = new KeyPair({ prv: key.key });
     if (this._type != TransactionType.WalletInitialization) {

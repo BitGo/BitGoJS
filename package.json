@@ -43,7 +43,8 @@
     "libsodium-wrappers": "^0.7.6",
     "protobufjs": "^6.8.9",
     "tronweb": "^2.7.2",
-    "ethereumjs-tx": "2.1.2"
+    "ethereumjs-tx": "2.1.2",
+    "ethereumjs-abi": "0.6.0"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",

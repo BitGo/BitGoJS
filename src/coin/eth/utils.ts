@@ -1,12 +1,12 @@
 import { Buffer } from 'buffer';
 import { isValidAddress } from 'ethereumjs-util';
+import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import { Transaction } from 'ethereumjs-tx';
 import { SigningError } from '../baseCoin/errors';
 import { TxData } from './iface';
 import { KeyPair } from './keyPair';
 import { walletSimpleConstructor, walletSimpleByteCode } from './walletUtil';
-import { encodeParameters } from './abiCoder';
 
 /**
  * Signs the transaction using the Eth elliptic curve
@@ -58,19 +58,10 @@ function formatTransaction(transactionData: TxData): TxData {
  */
 export function getContractData(addresses: string[]): string {
   const params = [addresses];
-  const resultEncodedParameters = encodeParameters(walletSimpleConstructor, params).replace('0x', '');
+  const resultEncodedParameters = EthereumAbi.rawEncode(walletSimpleConstructor, params)
+    .toString('hex')
+    .replace('0x', '');
   return walletSimpleByteCode + resultEncodedParameters;
-}
-
-/**
- * Returns whether or not the string is a valid Eth block hash
- *
- * @param {string} hash - the tx hash to validate
- * @returns {boolean} - the validation result
- */
-export function isValidBlockHash(hash: string): boolean {
-  console.log('Not implemented isValidBlockHash ', hash);
-  return true;
 }
 
 /**
@@ -81,15 +72,4 @@ export function isValidBlockHash(hash: string): boolean {
  */
 export function isValidEthAddress(address: string): boolean {
   return isValidAddress(address);
-}
-
-/**
- * Returns whether or not the value is an object
- *
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is an object, else `false`.
- */
-export function isObject(value: any): boolean {
-  const type = typeof value;
-  return value != null && (type === 'object' || type === 'function');
 }
