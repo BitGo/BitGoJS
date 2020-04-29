@@ -1,9 +1,16 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import BigNumber from 'bignumber.js';
+import { RLP } from 'ethers/utils';
+import * as Crypto from '../../utils/crypto';
 import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { Transaction } from '../eth';
-import { BuildTransactionError, SigningError } from '../baseCoin/errors';
+import {
+  BuildTransactionError,
+  SigningError,
+  InvalidTransactionError,
+  ParseTransactionError,
+} from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { Fee, TxData } from './iface';
 import { getContractData, isValidEthAddress } from './utils';
@@ -62,9 +69,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    // Decoding the transaction is an async operation, so save it and leave the decoding for the
-    // build step
-    throw new BuildTransactionError('Not implemented fromImplementation'); //TODO: Implement fromImplementation and delete this
+    const tx = new Transaction(this._coinConfig);
+    if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
+      tx.setEncodedTransactionData(rawTransaction);
+    } else {
+      const txData = JSON.parse(rawTransaction);
+      tx.setTransactionData(txData);
+    }
+    return tx;
   }
 
   /**@inheritdoc */
@@ -93,16 +105,65 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /**@inheritdoc */
   validateKey(key: BaseKey): void {
-    console.log('Not implemented validateKey');
+    if (!(Crypto.isValidXprv(key.key) || Crypto.isValidPrv(key.key))) {
+      throw new BuildTransactionError('Invalid key');
+    }
   }
 
+  /**
+   * Validate the raw transaction is either a JSON or
+   * a hex encoded transaction
+   *
+   * @param {any} rawTransaction The raw transaction to be validated
+   */
   validateRawTransaction(rawTransaction: any): void {
-    console.log('Not implemented validateRawTransaction');
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Raw transaction is empty');
+    }
+    if (typeof rawTransaction === 'string') {
+      if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
+        try {
+          RLP.decode(rawTransaction);
+        } catch (e) {
+          throw new ParseTransactionError('There was error in decoding the hex string');
+        }
+      } else {
+        try {
+          JSON.parse(rawTransaction);
+        } catch (e) {
+          throw new ParseTransactionError('There was error in parsing the JSON string');
+        }
+      }
+    } else {
+      throw new InvalidTransactionError('Transaction is not a hex string or stringified json');
+    }
   }
 
+  /**@inheritdoc */
   validateTransaction(transaction: BaseTransaction): void {
-    console.log('Not implemented validateTransaction');
+    switch (this._type) {
+      case TransactionType.WalletInitialization: {
+        if (
+          this._fee &&
+          this._chainId &&
+          this._walletOwnerAddresses &&
+          this._walletOwnerAddresses.length == 3 &&
+          this._counter &&
+          this._sourceAddress
+        ) {
+          break;
+        } else {
+          throw new BuildTransactionError('Invalid transaction');
+        }
+      }
+      case TransactionType.Send:
+        //  TODO: validate when transaction type send be developed
+        throw new BuildTransactionError('Unsupported transaction type');
+      default:
+        throw new BuildTransactionError('Unsupported transaction type');
+    }
   }
 
   validateValue(value: BigNumber): void {

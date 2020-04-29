@@ -1,13 +1,13 @@
 /**
  * Ethereum transaction model
  */
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { TxData } from './iface';
 import { Utils } from './';
-import { BaseCoin as CoinConfig } from '@bitgo/statics';
 
 export class Transaction extends BaseTransaction {
   private _parsedTransaction?: TxData; // transaction in JSON format
@@ -31,6 +31,15 @@ export class Transaction extends BaseTransaction {
    */
   setTransactionData(transactionData: TxData): void {
     this._parsedTransaction = transactionData;
+  }
+
+  /**
+   * Set the encoded transaction data
+   *
+   * @param {string} encodedTransaction The encoded transaction data
+   */
+  setEncodedTransactionData(encodedTransaction: string): void {
+    this._encodedTransaction = encodedTransaction;
   }
 
   /**
