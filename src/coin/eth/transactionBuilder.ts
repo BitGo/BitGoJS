@@ -21,6 +21,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _chainId: number;
   private _counter: number;
   private _fee: Fee;
+  private _subCoin: string;
   private _sourceAddress: string;
 
   // Wallet initialization transaction parameters
@@ -37,6 +38,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._type = TransactionType.Send;
     this._counter = 0;
     this._walletOwnerAddresses = [];
+    this._subCoin = 'eth';
     this.transaction = new Transaction(this._coinConfig);
   }
 
@@ -52,6 +54,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     this.transaction.setTransactionType(this._type);
     this.transaction.setTransactionData(transactionData);
+    this.transaction.setSubCoin(this._subCoin);
 
     // Build and sign a new transaction based on the latest changes
     if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
@@ -110,6 +113,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Value cannot be below less than zero');
     }
     // TODO: validate the amount is not bigger than the max amount in each Eth family coin
+  }
+
+  /**
+   * Set the subcoin type to determine the base chain and chainId
+   *
+   * @param {string} type subcoin type
+   */
+  subCoin(type: string): void {
+    this._subCoin = type;
   }
 
   // region Common builder methods

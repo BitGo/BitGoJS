@@ -39,26 +39,31 @@ export const supportedCoins = Object.keys(coinBuilderMap);
  */
 export function getBuilder(coinName: string): BaseTransactionBuilder {
   const coin = tryMapToEthFamilyCoin(coinName.toLowerCase().trim());
-  const builderClass = coinBuilderMap[coin];
+  const builderClass = coinBuilderMap[coin[0]];
   if (!builderClass) {
     throw new BuildTransactionError(`Coin ${coinName} not supported`);
   }
-
-  return new builderClass(coins.get(coin));
+  const txBuilder = new builderClass(coins.get(coin[0]));
+  if (coin[0] != coin[1]) {
+    txBuilder.subCoin(coinName);
+  }
+  return txBuilder;
 }
 
 /**
- * Get a transaction builder for the given coin.
+ * Maps the coin to eth if compatible, returns the same coin
+ * if it isn't
  *
  * @param {string} coin The coin name
- * @returns {string} The same coin or eth if it's compatible
+ * @returns {[string, string]} The coin type and the subcoin type
  */
-function tryMapToEthFamilyCoin(coin: string): string {
+function tryMapToEthFamilyCoin(coin: string): [string, string] {
   switch (coin) {
     case 'rsk':
     case 'etc':
-      return 'eth';
+    case 'celo':
+      return ['eth', coin];
     default:
-      return coin;
+      return [coin, coin];
   }
 }
