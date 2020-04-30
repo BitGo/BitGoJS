@@ -20,7 +20,7 @@ export const enum CoinFamily {
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
-  CELO = 'celo',
+  CGLD = 'cgld', // Celo
   DASH = 'dash',
   ETH = 'eth',
   ETC = 'etc',
@@ -135,7 +135,7 @@ export const enum UnderlyingAsset {
   BTC = 'btc',
   BTG = 'btg',
   DASH = 'dash',
-  CELO = 'celo',
+  // CGLD = 'cgld', // both token and Celo main coin
   USD = 'usd',
   ETH = 'eth',
   ETC = 'etc',
@@ -199,7 +199,7 @@ export const enum UnderlyingAsset {
   CDT = 'cdt',
   CEL = 'cel',
   CETH = 'ceth',
-  CGLD = 'cgld',
+  CGLD = 'cgld', // both token and Celo main coin
   CHFX = 'chfx',
   CHSB = 'chsb',
   CIX100 = 'cix100',

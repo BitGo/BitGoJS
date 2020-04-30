@@ -173,13 +173,15 @@ class DashTestnet extends BitcoinLikeTestnet {
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
 class Celo extends Mainnet implements AccountNetwork {
-  family = CoinFamily.CELO;
+  family = CoinFamily.CGLD;
   explorerUrl = 'https://explorer.celo.org/tx/';
+  accountExplorerUrl = 'https://explorer.celo.org/address/';
 }
 
 class CeloTestnet extends Testnet implements AccountNetwork {
-  family = CoinFamily.CELO;
+  family = CoinFamily.CGLD;
   explorerUrl = 'https://alfajores-blockscout.celo-testnet.org/tx/';
+  accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
 }
 
 class Ethereum extends Mainnet implements AccountNetwork {
@@ -250,11 +252,13 @@ class OfcTestnet extends Testnet implements OfcNetwork {
 class Rbtc extends Mainnet implements AccountNetwork {
   family = CoinFamily.RBTC;
   explorerUrl = 'https://explorer.rsk.co/tx/';
+  accountExplorerUrl = 'https://explorer.rsk.co/address/';
 }
 
 class RbtcTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.RBTC;
   explorerUrl = 'https://explorer.testnet.rsk.co/tx/';
+  accountExplorerUrl = 'https://explorer.testnet.rsk.co/address/';
 }
 
 class Stellar extends Mainnet implements AccountNetwork {
