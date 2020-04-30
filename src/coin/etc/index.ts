@@ -3,6 +3,6 @@ export { Transaction } from './transaction';
 export { TransactionBuilder } from './transactionBuilder';
 
 import * as Interface from '../eth/iface';
-import * as Utils from '../eth/utils';
+import * as Utils from './utils';
 
 export { Interface, Utils };

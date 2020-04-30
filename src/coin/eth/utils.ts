@@ -1,11 +1,37 @@
 import { Buffer } from 'buffer';
 import { isValidAddress } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
+import EthereumCommon from 'ethereumjs-common';
 import { Transaction } from 'ethereumjs-tx';
 import { SigningError } from '../baseCoin/errors';
 import { TxData } from './iface';
 import { KeyPair } from './keyPair';
-import { walletSimpleConstructor, walletSimpleByteCode, customCommon } from './walletUtil';
+import { walletSimpleConstructor, walletSimpleByteCode } from './walletUtil';
+import { testnetCommon, mainnetCommon } from './resources';
+
+/**
+ * Signs the transaction using the appropriate algorithm
+ * and the provided common for the blockchain
+ *
+ * @param {TxData} transactionData the transaction data to sign
+ * @param {KeyPair} keyPair the signer's keypair
+ * @param {EthereumCommon} customCommon the network's custom common
+ * @returns {string} the transaction signed and encoded
+ */
+export async function signInternal(
+  transactionData: TxData,
+  keyPair: KeyPair,
+  customCommon: EthereumCommon,
+): Promise<string> {
+  if (!keyPair.getKeys().prv) {
+    throw new SigningError('Missing private key');
+  }
+  const ethTx = new Transaction(formatTransaction(transactionData), { common: customCommon });
+  const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
+  ethTx.sign(privateKey);
+  const encodedTransaction = ethTx.serialize().toString('hex');
+  return '0x' + encodedTransaction;
+}
 
 /**
  * Signs the transaction using the appropriate algorithm
@@ -15,14 +41,7 @@ import { walletSimpleConstructor, walletSimpleByteCode, customCommon } from './w
  * @returns {string} the transaction signed and encoded
  */
 export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<string> {
-  if (!keyPair.getKeys().prv) {
-    throw new SigningError('Missing private key');
-  }
-  const ethTx = new Transaction(formatTransaction(transactionData), { common: customCommon });
-  const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
-  ethTx.sign(privateKey);
-  const encodedTransaction = ethTx.serialize().toString('hex');
-  return '0x' + encodedTransaction;
+  return signInternal(transactionData, keyPair, testnetCommon);
 }
 
 /**

@@ -17,8 +17,11 @@ export { Xtz };
 import * as Eth from './coin/eth';
 export { Eth };
 
-import * as Rsk from './coin/rsk';
-export { Rsk };
+import * as Etc from './coin/etc';
+export { Etc };
+
+import * as Rbtc from './coin/rbtc';
+export { Rbtc };
 
 import * as Celo from './coin/celo';
 export { Celo };
@@ -28,10 +31,12 @@ const coinBuilderMap = {
   ttrx: Trx.TransactionBuilder,
   xtz: Xtz.TransactionBuilder,
   txtz: Xtz.TransactionBuilder,
+  etc: Etc.TransactionBuilder,
+  tetc: Etc.TransactionBuilder,
   eth: Eth.TransactionBuilder,
   teth: Eth.TransactionBuilder,
-  rsk: Rsk.TransactionBuilder,
-  trsk: Rsk.TransactionBuilder,
+  rbtc: Rbtc.TransactionBuilder,
+  trbtc: Rbtc.TransactionBuilder,
   celo: Celo.TransactionBuilder,
   tcelo: Celo.TransactionBuilder,
 };
