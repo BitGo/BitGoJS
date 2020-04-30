@@ -172,6 +172,15 @@ class DashTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.DASH;
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
+class Celo extends Mainnet implements AccountNetwork {
+  family = CoinFamily.CELO;
+  explorerUrl = 'https://explorer.celo.org/tx/';
+}
+
+class CeloTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.CELO;
+  explorerUrl = 'https://alfajores-blockscout.celo-testnet.org/tx/';
+}
 
 class Ethereum extends Mainnet implements AccountNetwork {
   family = CoinFamily.ETH;
@@ -224,6 +233,16 @@ class Ofc extends Mainnet implements OfcNetwork {
 class OfcTestnet extends Testnet implements OfcNetwork {
   family = CoinFamily.OFC;
   explorerUrl = undefined;
+}
+
+class Rbtc extends Mainnet implements AccountNetwork {
+  family = CoinFamily.RBTC;
+  explorerUrl = 'https://explorer.rsk.co/tx/';
+}
+
+class RbtcTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.RBTC;
+  explorerUrl = 'https://explorer.testnet.rsk.co/tx/';
 }
 
 class Stellar extends Mainnet implements AccountNetwork {
@@ -302,11 +321,13 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
+    celo: Object.freeze(new Celo()),
     dash: Object.freeze(new Dash()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
     litecoin: Object.freeze(new Litecoin()),
     ofc: Object.freeze(new Ofc()),
+    rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
     susd: Object.freeze(new SUSD()),
     trx: Object.freeze(new Trx()),
@@ -319,11 +340,13 @@ export const Networks = {
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
+    celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     kovan: Object.freeze(new Kovan()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
+    rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     trx: Object.freeze(new TrxTestnet()),
