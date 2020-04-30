@@ -10,9 +10,8 @@ import { TxData } from './iface';
 import { Utils } from './';
 
 export class Transaction extends BaseTransaction {
-  private _parsedTransaction?: TxData; // transaction in JSON format
-  private _encodedTransaction?: string; // transaction in hex format
-  private _subCoin: string;
+  protected _parsedTransaction?: TxData; // transaction in JSON format
+  protected _encodedTransaction?: string; // transaction in hex format
   private _source: string;
 
   /**
@@ -43,15 +42,6 @@ export class Transaction extends BaseTransaction {
     this._type = transactionType;
   }
 
-  /**
-   * Set the subcoin type to determine the base chain and chainId
-   *
-   * @param {string} type subcoin type
-   */
-  setSubCoin(type: string): void {
-    this._subCoin = type;
-  }
-
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     //TODO: implement this validation for the ethereum network
@@ -69,7 +59,7 @@ export class Transaction extends BaseTransaction {
     if (!this._parsedTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    this._encodedTransaction = await Utils.sign(this._parsedTransaction, this._subCoin, keyPair);
+    this._encodedTransaction = await Utils.sign(this._parsedTransaction, keyPair);
   }
 
   /** @inheritdoc */

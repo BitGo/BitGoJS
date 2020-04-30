@@ -17,6 +17,12 @@ export { Xtz };
 import * as Eth from './coin/eth';
 export { Eth };
 
+import * as Rsk from './coin/rsk';
+export { Rsk };
+
+import * as Celo from './coin/celo';
+export { Celo };
+
 const coinBuilderMap = {
   trx: Trx.TransactionBuilder,
   ttrx: Trx.TransactionBuilder,
@@ -24,6 +30,10 @@ const coinBuilderMap = {
   txtz: Xtz.TransactionBuilder,
   eth: Eth.TransactionBuilder,
   teth: Eth.TransactionBuilder,
+  rsk: Rsk.TransactionBuilder,
+  trsk: Rsk.TransactionBuilder,
+  celo: Celo.TransactionBuilder,
+  tcelo: Celo.TransactionBuilder,
 };
 
 /**
@@ -38,32 +48,10 @@ export const supportedCoins = Object.keys(coinBuilderMap);
  * @returns An instance of a {@code TransactionBuilder}
  */
 export function getBuilder(coinName: string): BaseTransactionBuilder {
-  const coin = tryMapToEthFamilyCoin(coinName.toLowerCase().trim());
-  const builderClass = coinBuilderMap[coin[0]];
+  const builderClass = coinBuilderMap[coinName];
   if (!builderClass) {
     throw new BuildTransactionError(`Coin ${coinName} not supported`);
   }
-  const txBuilder = new builderClass(coins.get(coin[0]));
-  if (coin[0] != coin[1]) {
-    txBuilder.subCoin(coinName);
-  }
-  return txBuilder;
-}
 
-/**
- * Maps the coin to eth if compatible, returns the same coin
- * if it isn't
- *
- * @param {string} coin The coin name
- * @returns {[string, string]} The coin type and the subcoin type
- */
-function tryMapToEthFamilyCoin(coin: string): [string, string] {
-  switch (coin) {
-    case 'rsk':
-    case 'etc':
-    case 'celo':
-      return ['eth', coin];
-    default:
-      return [coin, coin];
-  }
+  return new builderClass(coins.get(coinName));
 }
