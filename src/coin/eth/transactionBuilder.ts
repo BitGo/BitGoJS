@@ -69,12 +69,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
-    const tx = new Transaction(this._coinConfig);
+    let tx: Transaction;
     if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
-      tx.setEncodedTransactionData(rawTransaction);
+      tx = new Transaction(this._coinConfig, rawTransaction);
     } else {
       const txData = JSON.parse(rawTransaction);
-      tx.setTransactionData(txData);
+      tx = new Transaction(this._coinConfig, txData);
     }
     return tx;
   }
@@ -88,7 +88,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (this._type === TransactionType.WalletInitialization && this._walletOwnerAddresses.length === 0) {
       throw new SigningError('Cannot sign an wallet initialization transaction without owners');
     }
-
     if (this._sourceKeyPair) {
       throw new SigningError('Cannot sign multiple times a non send-type transaction');
     }
