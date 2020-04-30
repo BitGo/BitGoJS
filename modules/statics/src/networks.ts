@@ -194,6 +194,18 @@ class Kovan extends Testnet implements AccountNetwork {
   accountExplorerUrl = 'https://kovan.etherscan.io/address/';
 }
 
+class EthereumClassic extends Mainnet implements AccountNetwork {
+  family = CoinFamily.ETC;
+  explorerUrl = 'https://blockscout.com/etc/mainnet/tx/';
+  accountExplorerUrl = 'https://blockscout.com/etc/mainnet/address/';
+}
+
+class EthereumClassicTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.ETC;
+  explorerUrl = 'https://blockscout.com/etc/kotti/tx';
+  accountExplorerUrl = 'https://blockscout.com/etc/kotti/address/';
+}
+
 class Eos extends Mainnet implements AccountNetwork {
   family = CoinFamily.EOS;
   explorerUrl = 'https://bloks.io/transaction/';
@@ -325,6 +337,7 @@ export const Networks = {
     dash: Object.freeze(new Dash()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
+    ethereumClassic: Object.freeze(new EthereumClassic()),
     litecoin: Object.freeze(new Litecoin()),
     ofc: Object.freeze(new Ofc()),
     rbtc: Object.freeze(new Rbtc()),
@@ -343,6 +356,7 @@ export const Networks = {
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),
     eos: Object.freeze(new EosTestnet()),
+    ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     kovan: Object.freeze(new Kovan()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
