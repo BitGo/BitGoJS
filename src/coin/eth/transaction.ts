@@ -39,15 +39,6 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Set the encoded transaction data
-   *
-   * @param {string} encodedTransaction The encoded transaction data
-   */
-  setEncodedTransactionData(encodedTransaction: string): void {
-    this._encodedTransaction = encodedTransaction;
-  }
-
-  /**
    * Set the transaction type
    *
    * @param {TransactionType} transactionType The transaction type to be set
