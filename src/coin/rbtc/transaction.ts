@@ -1,7 +1,7 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Eth } from '../../index';
 import { InvalidTransactionError } from '../baseCoin/errors';
-import { KeyPair, Utils } from '.';
+import { KeyPair, Utils } from './';
 
 export class Transaction extends Eth.Transaction {
   constructor(_coinConfig: Readonly<CoinConfig>) {

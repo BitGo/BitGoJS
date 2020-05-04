@@ -1,4 +1,4 @@
-import { pubToAddress } from 'ethereumjs-util';
+import { pubToAddress, addHexPrefix } from 'ethereumjs-util';
 import { DefaultKeys } from '../baseCoin/iface';
 import { isPrivateKey, isPublicKey, KeyPairOptions } from '../baseCoin/iface';
 import { ExtendedKeyPair } from '../baseCoin/extendedKeyPair';
@@ -56,6 +56,6 @@ export class KeyPair extends ExtendedKeyPair {
    */
   getAddress(): string {
     const publicKey = Buffer.from(this.getKeys().pub.slice(2), 'hex'); //first two characters identify a public key
-    return '0x' + pubToAddress(publicKey).toString('hex');
+    return addHexPrefix(pubToAddress(publicKey).toString('hex'));
   }
 }

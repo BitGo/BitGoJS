@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { isValidAddress } from 'ethereumjs-util';
+import { isValidAddress, addHexPrefix } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import { Transaction } from 'ethereumjs-tx';
@@ -30,7 +30,7 @@ export async function signInternal(
   const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
   ethTx.sign(privateKey);
   const encodedTransaction = ethTx.serialize().toString('hex');
-  return '0x' + encodedTransaction;
+  return addHexPrefix(encodedTransaction);
 }
 
 /**
@@ -52,9 +52,9 @@ export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<s
  */
 function formatTransaction(transactionData: TxData): TxData {
   return {
-    gasLimit: '0x' + Number(transactionData.gasLimit).toString(16),
-    gasPrice: '0x' + Number(transactionData.gasPrice).toString(16),
-    nonce: '0x' + Number(transactionData.nonce).toString(16),
+    gasLimit: addHexPrefix(Number(transactionData.gasLimit).toString(16)),
+    gasPrice: addHexPrefix(Number(transactionData.gasPrice).toString(16)),
+    nonce: addHexPrefix(Number(transactionData.nonce).toString(16)),
     data: transactionData.data,
   };
 }

@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { Eth } from '../../index';
-import { Transaction } from './';
+import { Transaction } from './transaction';
 
 export class TransactionBuilder extends Eth.TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
