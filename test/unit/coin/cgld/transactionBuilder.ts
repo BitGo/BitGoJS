@@ -11,7 +11,7 @@ describe('Celo Transaction builder', function() {
 
   describe('should sign', () => {
     it('an init transaction', async () => {
-      const txBuilder: any = getBuilder('celo');
+      const txBuilder: any = getBuilder('cgld');
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.fee({
         fee: '1000000000',

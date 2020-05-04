@@ -15,7 +15,6 @@ export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<s
   if (!keyPair.getKeys().prv) {
     throw new SigningError('Missing private key');
   }
-  console.log('CELO SIGN');
   const privateKey = addHexPrefix(keyPair.getKeys().prv as string);
   const rawTransaction = await signTransaction(formatTx(transactionData), privateKey);
   return rawTransaction.raw;

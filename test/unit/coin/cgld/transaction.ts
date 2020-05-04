@@ -1,7 +1,7 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/celo/transaction';
-import { KeyPair } from '../../../../src/coin/celo';
+import { Transaction } from '../../../../src/coin/cgld/transaction';
+import { KeyPair } from '../../../../src/coin/cgld';
 
 const TXDATA = {
   nonce: 1,
@@ -16,7 +16,7 @@ const ENCODED_TRANSACTION =
 
 describe('Celo Transaction', function() {
   describe('should throw empty transaction', function() {
-    const tx = new Transaction(coins.get('celo'));
+    const tx = new Transaction(coins.get('cgld'));
     should.throws(() => {
       tx.toJson();
     });
@@ -26,7 +26,7 @@ describe('Celo Transaction', function() {
   });
 
   describe('should return valid transaction', function() {
-    const tx = new Transaction(coins.get('celo'));
+    const tx = new Transaction(coins.get('cgld'));
     tx.setTransactionData(TXDATA);
     should.equal(tx.toJson(), TXDATA);
     should.throws(() => {
@@ -36,11 +36,11 @@ describe('Celo Transaction', function() {
 
   describe('should sign', function() {
     it('invalid', function() {
-      const tx = new Transaction(coins.get('celo'));
+      const tx = new Transaction(coins.get('cgld'));
       return tx.sign(TEST_KEYPAIR).should.be.rejected();
     });
     it('valid', function() {
-      const tx = new Transaction(coins.get('celo'));
+      const tx = new Transaction(coins.get('cgld'));
       tx.setTransactionData(TXDATA);
       return tx.sign(TEST_KEYPAIR).should.be.fulfilled();
     });
@@ -48,7 +48,7 @@ describe('Celo Transaction', function() {
 
   describe('should return encoded tx', function() {
     it('valid sign', async function() {
-      const tx = new Transaction(coins.get('celo'));
+      const tx = new Transaction(coins.get('cgld'));
       tx.setTransactionData(TXDATA);
       await tx.sign(TEST_KEYPAIR);
       should.equal(tx.toBroadcastFormat(), ENCODED_TRANSACTION);
