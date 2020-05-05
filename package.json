@@ -33,8 +33,6 @@
     }
   },
   "resolutions": {
-    "handlebars": "^4.5.3",
-    "kind-of": "^6.0.3",
-    "minimist": "^1.2.2"
+    "yargs-parser": "15.0.1"
   }
 }
