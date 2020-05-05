@@ -135,13 +135,13 @@ export const enum UnderlyingAsset {
   BTC = 'btc',
   BTG = 'btg',
   DASH = 'dash',
-  // CGLD = 'cgld', // both token and Celo main coin
+  CGLD = 'cgld', // Celo main coin
   USD = 'usd',
   ETH = 'eth',
   ETC = 'etc',
   EOS = 'eos',
   LTC = 'ltc',
-  RBTC = 'rbtc',
+  RBTC = 'rbtc', // RSK main coin
   TRX = 'trx',
   XRP = 'xrp',
   XLM = 'xlm',
@@ -199,7 +199,6 @@ export const enum UnderlyingAsset {
   CDT = 'cdt',
   CEL = 'cel',
   CETH = 'ceth',
-  CGLD = 'cgld', // both token and Celo main coin
   CHFX = 'chfx',
   CHSB = 'chsb',
   CIX100 = 'cix100',
