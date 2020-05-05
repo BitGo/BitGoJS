@@ -18,10 +18,15 @@ export class Transaction extends BaseTransaction {
    * Public constructor.
    *
    * @param {Readonly<CoinConfig>} coinConfig
-   * @param {TxData} transactionData
+   * @param {TxData | string} txData The object transaction data or encoded transaction data
    */
-  constructor(coinConfig: Readonly<CoinConfig>) {
+  constructor(coinConfig: Readonly<CoinConfig>, txData?: TxData | string) {
     super(coinConfig);
+    if (typeof txData === 'string') {
+      this._encodedTransaction = txData;
+    } else {
+      this._parsedTransaction = txData;
+    }
   }
 
   /**
