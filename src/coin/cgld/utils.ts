@@ -1,5 +1,6 @@
 import { signTransaction } from '@celo/contractkit/lib/utils/signing-utils';
 import { addHexPrefix } from 'ethereumjs-util';
+import { BigNumber } from 'bignumber.js';
 import { TxData } from '../eth/iface';
 import { KeyPair } from '../eth/keyPair';
 import { SigningError } from '../baseCoin/errors';
@@ -31,7 +32,7 @@ function formatTx(transactionData: TxData): TxData {
     nonce: addHexPrefix(Number(transactionData.nonce).toString(16)),
     data: transactionData.data,
     gasLimit: addHexPrefix(Number(transactionData.gasLimit).toString(16)),
-    gasPrice: addHexPrefix(Number(transactionData.gasPrice).toString(16)),
+    gasPrice: addHexPrefix(new BigNumber(transactionData.gasPrice as string).toString(16)),
     chainId: addHexPrefix(Number(transactionData.chainId).toString(16)),
   };
 }

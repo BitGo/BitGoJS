@@ -3,6 +3,7 @@ import { isValidAddress, addHexPrefix } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import { Transaction } from 'ethereumjs-tx';
+import { BigNumber } from 'bignumber.js';
 import { SigningError } from '../baseCoin/errors';
 import { TxData } from './iface';
 import { KeyPair } from './keyPair';
@@ -53,7 +54,7 @@ export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<s
 function formatTransaction(transactionData: TxData): TxData {
   return {
     gasLimit: addHexPrefix(Number(transactionData.gasLimit).toString(16)),
-    gasPrice: addHexPrefix(Number(transactionData.gasPrice).toString(16)),
+    gasPrice: addHexPrefix(new BigNumber(transactionData.gasPrice as string).toString(16)),
     nonce: addHexPrefix(Number(transactionData.nonce).toString(16)),
     data: transactionData.data,
   };

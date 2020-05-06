@@ -19,7 +19,7 @@ export const testnetCommon = EthereumCommon.forCustomChain(
 export const mainnetCommon = EthereumCommon.forCustomChain(
   'mainnet',
   {
-    name: 'testnet',
+    name: 'mainnet',
     networkId: 1,
     chainId: 1,
   },
