@@ -44,7 +44,7 @@ steps:
 - name: audit
   image: node:10
   commands:
-  - npm audit
+  - npm audit --audit-level=moderate
 
 - name: install
   image: node:10
