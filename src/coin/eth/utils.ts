@@ -1,38 +1,48 @@
 import { Buffer } from 'buffer';
-import { isValidAddress } from 'ethereumjs-util';
+import { isValidAddress, addHexPrefix } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import { Transaction } from 'ethereumjs-tx';
+import { BigNumber } from 'bignumber.js';
 import { SigningError } from '../baseCoin/errors';
 import { TxData } from './iface';
 import { KeyPair } from './keyPair';
 import { walletSimpleConstructor, walletSimpleByteCode } from './walletUtil';
+import { testnetCommon, mainnetCommon } from './resources';
 
 /**
- * Signs the transaction using the Eth elliptic curve
+ * Signs the transaction using the appropriate algorithm
+ * and the provided common for the blockchain
+ *
+ * @param {TxData} transactionData the transaction data to sign
+ * @param {KeyPair} keyPair the signer's keypair
+ * @param {EthereumCommon} customCommon the network's custom common
+ * @returns {string} the transaction signed and encoded
+ */
+export async function signInternal(
+  transactionData: TxData,
+  keyPair: KeyPair,
+  customCommon: EthereumCommon,
+): Promise<string> {
+  if (!keyPair.getKeys().prv) {
+    throw new SigningError('Missing private key');
+  }
+  const ethTx = new Transaction(formatTransaction(transactionData), { common: customCommon });
+  const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
+  ethTx.sign(privateKey);
+  const encodedTransaction = ethTx.serialize().toString('hex');
+  return addHexPrefix(encodedTransaction);
+}
+
+/**
+ * Signs the transaction using the appropriate algorithm
  *
  * @param {TxData} transactionData the transaction data to sign
  * @param {KeyPair} keyPair the signer's keypair
  * @returns {string} the transaction signed and encoded
  */
 export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<string> {
-  if (!keyPair.getKeys().prv) {
-    throw new SigningError('Missing private key');
-  }
-  const customCommon = EthereumCommon.forCustomChain(
-    'ropsten',
-    {
-      name: 'testnet',
-      networkId: transactionData.chainId as number,
-      chainId: transactionData.chainId as number,
-    },
-    'petersburg',
-  );
-  const ethTx = new Transaction(formatTransaction(transactionData), { common: customCommon });
-  const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
-  ethTx.sign(privateKey);
-  const encodedTransaction = ethTx.serialize().toString('hex');
-  return encodedTransaction;
+  return signInternal(transactionData, keyPair, testnetCommon);
 }
 
 /**
@@ -43,9 +53,9 @@ export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<s
  */
 function formatTransaction(transactionData: TxData): TxData {
   return {
-    gasLimit: '0x' + Number(transactionData.gasLimit).toString(16),
-    gasPrice: '0x' + Number(transactionData.gasPrice).toString(16),
-    nonce: '0x' + Number(transactionData.nonce).toString(16),
+    gasLimit: addHexPrefix(Number(transactionData.gasLimit).toString(16)),
+    gasPrice: addHexPrefix(new BigNumber(transactionData.gasPrice as string).toString(16)),
+    nonce: addHexPrefix(Number(transactionData.nonce).toString(16)),
     data: transactionData.data,
   };
 }

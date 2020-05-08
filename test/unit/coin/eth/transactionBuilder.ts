@@ -5,7 +5,7 @@ import * as testData from '../../../resources/eth/eth';
 
 describe('Eth Transaction builder', function() {
   const defaultKeyPair = new Eth.KeyPair({
-    prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+    prv: 'FAC4D04AA0025ECF200D74BC9B5E4616E4B8338B69B61362AAAD49F76E68EF28',
   });
 
   describe('should build', () => {
@@ -16,9 +16,9 @@ describe('Eth Transaction builder', function() {
         fee: '10',
         gasLimit: '1000',
       });
-      txBuilder.chainId(31);
+      txBuilder.chainId(42);
       const source = {
-        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+        prv: 'FAC4D04AA0025ECF200D74BC9B5E4616E4B8338B69B61362AAAD49F76E68EF28',
       };
       const sourceKeyPair = new Eth.KeyPair(source);
       txBuilder.source(sourceKeyPair.getAddress());
@@ -43,7 +43,7 @@ describe('Eth Transaction builder', function() {
       txJson.gasLimit.should.equal('1000');
       txJson.gasPrice.should.equal('10');
       should.equal(txJson.nonce, 1);
-      should.equal(txJson.chainId, 31);
+      should.equal(txJson.chainId, 42);
     });
   });
 
@@ -63,16 +63,16 @@ describe('Eth Transaction builder', function() {
         fee: '10',
         gasLimit: '1000',
       });
-      txBuilder.chainId(31);
+      txBuilder.chainId(42);
       const source = {
-        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+        prv: 'FAC4D04AA0025ECF200D74BC9B5E4616E4B8338B69B61362AAAD49F76E68EF28',
       };
       const sourceKeyPair = new Eth.KeyPair(source);
       txBuilder.source(sourceKeyPair.getAddress());
       txBuilder.counter(1);
-      txBuilder.owner(sourceKeyPair.getAddress());
-      txBuilder.owner('0x7325A3F7d4f9E86AE62Cf742426078C3755730d5');
-      txBuilder.owner('0x603e077acd3F01e81b95fB92ce42FF60dFf3D4C7');
+      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
+      txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
+      txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const tx = await txBuilder.build(); //shoud build and sign
 
@@ -81,7 +81,7 @@ describe('Eth Transaction builder', function() {
       txJson.gasLimit.should.equal('1000');
       txJson.gasPrice.should.equal('10');
       should.equal(txJson.nonce, 1);
-      should.equal(txJson.chainId, 31);
+      should.equal(txJson.chainId, 42);
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
   });

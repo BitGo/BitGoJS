@@ -10,8 +10,8 @@ import { TxData } from './iface';
 import { Utils } from './';
 
 export class Transaction extends BaseTransaction {
-  private _parsedTransaction?: TxData; // transaction in JSON format
-  private _encodedTransaction?: string; // transaction in hex format
+  protected _parsedTransaction?: TxData; // transaction in JSON format
+  protected _encodedTransaction?: string; // transaction in hex format
   private _source: string;
 
   /**
@@ -72,7 +72,7 @@ export class Transaction extends BaseTransaction {
     if (!this._encodedTransaction) {
       throw new InvalidTransactionError('Missing encoded transaction');
     }
-    return '0x' + this._encodedTransaction;
+    return this._encodedTransaction;
   }
 
   /** @inheritdoc */
