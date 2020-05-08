@@ -140,36 +140,9 @@ describe('XRP:', function() {
       }
     };
 
-    it('Should supplement wallet generation with fees', co(function *() {
-      const fees = [{
-        open: '10',
-        median: '6000',
-        expected: '9000'
-      }, {
-        open: '7000',
-        median: '4000',
-        expected: '10500'
-      }];
-
-      for (const currentFees of fees) {
-        nock('https://test.bitgo.com/api/v2/txrp/public')
-        .get('/feeinfo')
-        .reply(200, {
-          date: '2017-10-18T18:28:13.083Z',
-          height: 3353255,
-          xrpBaseReserve: '20000000',
-          xrpIncReserve: '5000000',
-          xrpOpenLedgerFee: currentFees.open,
-          xrpMedianFee: currentFees.median
-        });
-        const details = yield nockBasecoin.supplementGenerateWallet({}, keychains);
-        const disableMasterKey = rippleBinaryCodec.decode(details.initializationTxs.disableMasterKey);
-        const forceDestinationTag = rippleBinaryCodec.decode(details.initializationTxs.forceDestinationTag);
-        const setMultisig = rippleBinaryCodec.decode(details.initializationTxs.setMultisig);
-        disableMasterKey.Fee.should.equal(currentFees.expected);
-        forceDestinationTag.Fee.should.equal(currentFees.expected);
-        setMultisig.Fee.should.equal(currentFees.expected);
-      }
+    it('Should supplement wallet generation', co(function *() {
+      const details = yield nockBasecoin.supplementGenerateWallet({});
+      details.should.have.property('rootPrivateKey');
     }));
 
     it('should validate pub key', () => {
