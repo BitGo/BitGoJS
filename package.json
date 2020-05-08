@@ -32,7 +32,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@bitgo/statics": "^3.4.2",
+    "@bitgo/statics": "http://s3-us-west-2.amazonaws.com/indexer-status.dev.bitgo.com/statics.tar.gz",
     "@taquito/local-forging": "^6.0.3-beta.0",
     "@taquito/signer": "^6.0.3-beta.0",
     "bignumber.js": "^9.0.0",
