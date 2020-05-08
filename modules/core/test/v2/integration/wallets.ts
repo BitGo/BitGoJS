@@ -61,7 +61,8 @@ describe('V2 Wallets:', function() {
       yield testWalletGeneration('tbch');
     }));
 
-    it(`should generate a txrp wallet`, co(function *() {
+    // TODO (BG-20879) - enable when initialization txs are built in platform
+    xit(`should generate a txrp wallet`, co(function *() {
       yield testWalletGeneration('txrp');
     }));
 

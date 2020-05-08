@@ -83,6 +83,10 @@ interface HalfSignedTransaction {
   }
 }
 
+interface SupplementGenerateWalletOptions {
+  rootPrivateKey?: string;
+}
+
 export class Xrp extends BaseCoin {
   protected constructor(bitgo: BitGo) {
     super(bitgo);
@@ -259,8 +263,8 @@ export class Xrp extends BaseCoin {
    * @param walletParams
    * - rootPrivateKey: optional hex-encoded Ripple private key
    */
-  supplementGenerateWallet(walletParams): Bluebird<any> {
-    return co(function *() {
+  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Bluebird<SupplementGenerateWalletOptions> {
+    return co<SupplementGenerateWalletOptions>(function *() {
       if (walletParams.rootPrivateKey) {
         if (walletParams.rootPrivateKey.length !== 64) {
           throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
