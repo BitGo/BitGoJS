@@ -140,7 +140,7 @@ describe('XRP:', function() {
       }
     };
 
-    it('Should supplement wallet generation with fees', co(function *() {
+    it('Should supplement wallet generation', co(function *() {
       const details = yield nockBasecoin.supplementGenerateWallet({});
       details.should.have.property('rootPrivateKey');
     }));

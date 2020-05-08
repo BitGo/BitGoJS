@@ -28,7 +28,7 @@ describe('XRP:', function() {
     nock.cleanAll();
   });
 
-  // TODO enable when initialization txs are built in platform
+  // TODO (BG-20879) - enable when initialization txs are built in platform
   xit('Should generate wallet with custom root address', function() {
     const hdNode = HDNode.fromSeedBuffer(crypto.randomBytes(32));
     const params = {
