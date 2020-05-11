@@ -292,7 +292,7 @@ export const coins = CoinMap.fromCoins([
   erc20('snc', 'SunContract', 18, '0xf4134146af2d511dd5ea8cdb1c4ac88c57d60404', UnderlyingAsset.SNC),
   erc20('snov', 'Snovio', 18, '0xbdc5bac39dbe132b1e030e898ae3830017d7d969', UnderlyingAsset.SNOV),
   erc20('snt', 'Status Network Token', 18, '0x744d70fdbe2ba4cf95131626614a1763df805b9e', UnderlyingAsset.SNT),
-  erc20('snx', 'Synthetix Network', 18, '0xc011a72400e58ecd99ee497cf89e3775d4bd732f', UnderlyingAsset.SNX),
+  erc20('snx', 'Synthetix Network', 18, '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F', UnderlyingAsset.SNX),
   erc20('soc', 'SODACoin', 18, '0xcad49c39b72c37b32cee8b14f33f316d3a8bc335', UnderlyingAsset.SOC),
   erc20('spo', 'Sparrow Options', 18, '0x89eafa06d99f0a4d816918245266800c9a0941e0', UnderlyingAsset.SPO),
   erc20('solve', 'Solve Token', 8, '0x446c9033e7516d820cc9a2ce2d0b7328b579406f', UnderlyingAsset.SOLVE),
