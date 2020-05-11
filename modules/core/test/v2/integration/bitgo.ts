@@ -469,8 +469,7 @@ describe('BitGo', function() {
         bitgoNoClientId.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function() {}).should.be.rejected();
       }));
 
-      // TODO(BG-20797): enable once oauth issue is fixed
-      xit('bad code', function(done) {
+      it('bad code', function(done) {
         bitgo.authenticateWithAuthCode({ authCode: 'BADCODE' }, function(err, response) {
           // Expect error
           assert.notEqual(err, null);
@@ -480,8 +479,7 @@ describe('BitGo', function() {
         });
       });
 
-      // TODO(BG-20797): enable once oauth issue is fixed
-      xit('use auth code to get me', function(done) {
+      it('use auth code to get me', function(done) {
         bitgo.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function(err, response) {
           // Expect no error
           assert.equal(err, null);
@@ -547,8 +545,7 @@ describe('BitGo', function() {
         yield bitgoNoClientId.refreshToken(TestBitGo.TEST_AUTHCODE, function() {}).should.be.rejected();
       }));
 
-      // TODO(BG-20797): enable once oauth issue is fixed
-      xit('bad token', function(done) {
+      it('bad token', function(done) {
         bitgo.refreshToken({ refreshToken: 'BADTOKEN' }, function(err, response) {
           // Expect error
           assert.notEqual(err, null);
@@ -558,8 +555,7 @@ describe('BitGo', function() {
         });
       });
 
-      // TODO(BG-20797): enable once oauth issue is fixed
-      xit('use refresh token to get access token to get me', function(done) {
+      it('use refresh token to get access token to get me', function(done) {
         bitgo.refreshToken({ refreshToken: refreshToken }, function(err, response) {
           // Expect no error
           assert.equal(err, null);
@@ -584,8 +580,7 @@ describe('BitGo', function() {
         });
       });
 
-      // TODO(BG-20797): enable once oauth issue is fixed
-      xit('login with auth code then refresh with no args', function(done) {
+      it('login with auth code then refresh with no args', function(done) {
 
         bitgo = new BitGoJS.BitGo({ clientId: TestBitGo.TEST_CLIENTID, clientSecret: TestBitGo.TEST_CLIENTSECRET });
         bitgo.authenticateWithAuthCode({ authCode: TestBitGo.TEST_AUTHCODE }, function(err, response) {
