@@ -172,6 +172,17 @@ class DashTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.DASH;
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
+class Celo extends Mainnet implements AccountNetwork {
+  family = CoinFamily.CGLD;
+  explorerUrl = 'https://explorer.celo.org/tx/';
+  accountExplorerUrl = 'https://explorer.celo.org/address/';
+}
+
+class CeloTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.CGLD;
+  explorerUrl = 'https://alfajores-blockscout.celo-testnet.org/tx/';
+  accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
+}
 
 class Ethereum extends Mainnet implements AccountNetwork {
   family = CoinFamily.ETH;
@@ -183,6 +194,18 @@ class Kovan extends Testnet implements AccountNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://kovan.etherscan.io/tx/';
   accountExplorerUrl = 'https://kovan.etherscan.io/address/';
+}
+
+class EthereumClassic extends Mainnet implements AccountNetwork {
+  family = CoinFamily.ETC;
+  explorerUrl = 'https://blockscout.com/etc/mainnet/tx/';
+  accountExplorerUrl = 'https://blockscout.com/etc/mainnet/address/';
+}
+
+class EthereumClassicTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.ETC;
+  explorerUrl = 'https://blockscout.com/etc/kotti/tx';
+  accountExplorerUrl = 'https://blockscout.com/etc/kotti/address/';
 }
 
 class Eos extends Mainnet implements AccountNetwork {
@@ -226,6 +249,18 @@ class OfcTestnet extends Testnet implements OfcNetwork {
   explorerUrl = undefined;
 }
 
+class Rbtc extends Mainnet implements AccountNetwork {
+  family = CoinFamily.RBTC;
+  explorerUrl = 'https://explorer.rsk.co/tx/';
+  accountExplorerUrl = 'https://explorer.rsk.co/address/';
+}
+
+class RbtcTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.RBTC;
+  explorerUrl = 'https://explorer.testnet.rsk.co/tx/';
+  accountExplorerUrl = 'https://explorer.testnet.rsk.co/address/';
+}
+
 class Stellar extends Mainnet implements AccountNetwork {
   family = CoinFamily.XLM;
   explorerUrl = 'https://stellar.expert/explorer/public/tx/';
@@ -252,7 +287,7 @@ class Trx extends Mainnet implements AccountNetwork {
 
 class TrxTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.TRX;
-  explorerUrl = 'https://shasta.tronscan.org/#/transaction/';
+  explorerUrl = 'https://nile.tronscan.org/#/transaction/';
 }
 
 class Xrp extends Mainnet implements AccountNetwork {
@@ -273,8 +308,8 @@ class Xtz extends Mainnet implements AccountNetwork {
 
 class XtzTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.XTZ;
-  explorerUrl = 'https://babylonnet.tezblock.io/transaction/';
-  accountExplorerUrl = 'https://babylonnet.tezblock.io/account/';
+  explorerUrl = 'https://carthagenet.tezblock.io/transaction/';
+  accountExplorerUrl = 'https://carthagenet.tezblock.io/account/';
 }
 
 // https://github.com/zcash/zcash/blob/master/src/validation.cpp
@@ -302,11 +337,14 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCash()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
+    celo: Object.freeze(new Celo()),
     dash: Object.freeze(new Dash()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
+    ethereumClassic: Object.freeze(new EthereumClassic()),
     litecoin: Object.freeze(new Litecoin()),
     ofc: Object.freeze(new Ofc()),
+    rbtc: Object.freeze(new Rbtc()),
     stellar: Object.freeze(new Stellar()),
     susd: Object.freeze(new SUSD()),
     trx: Object.freeze(new Trx()),
@@ -319,11 +357,14 @@ export const Networks = {
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
+    celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),
     eos: Object.freeze(new EosTestnet()),
+    ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     kovan: Object.freeze(new Kovan()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
+    rbtc: Object.freeze(new RbtcTestnet()),
     stellar: Object.freeze(new StellarTestnet()),
     susd: Object.freeze(new SUSDTestnet()),
     trx: Object.freeze(new TrxTestnet()),
