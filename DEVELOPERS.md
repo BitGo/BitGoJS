@@ -2,11 +2,22 @@
 
 ```bash
 $ yarn install
-$ yarn lerna bootstrap
 ```
 
 # Documentation
 API and SDK documentation can be found at: https://platform.bitgo.com/.
+
+# Pull Requests
+
+Pull requests from third parties are more than welcome! When creating a pull
+request, a BitGo engineer will be automatically added as a reviewer.
+
+If you notice that the integration test job never runs, don't worry - that's
+expected. The integration tests use a secret testing password, and so we can't
+run these tests on untrusted code (PRs from third parties) without reviewing
+first. Once your code is passing unit tests and has an initial review, a BitGo
+engineer will re-create your PR and sign your commits, and link back to the
+original PR.
 
 # Things to Avoid
 You should not be using the `tsc` command in terminal. Doing so WITHOUT a tsconfig file
