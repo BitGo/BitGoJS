@@ -1,4 +1,5 @@
-import { pubToAddress, addHexPrefix } from 'ethereumjs-util';
+import { HDNode } from 'bitgo-utxo-lib';
+import { addHexPrefix, pubToAddress } from 'ethereumjs-util';
 import { DefaultKeys } from '../baseCoin/iface';
 import { isPrivateKey, isPublicKey, KeyPairOptions } from '../baseCoin/iface';
 import { ExtendedKeyPair } from '../baseCoin/extendedKeyPair';
@@ -31,22 +32,36 @@ export class KeyPair extends ExtendedKeyPair {
   /**
    * Ethereum default keys format is raw private and uncompressed public key
    *
-   * @returns { DefaultKeys }The keys in the protocol default key format
+   * @returns { DefaultKeys } The keys in the protocol default key format
    */
   getKeys(): DefaultKeys {
-    const result: DefaultKeys = {
-      pub: this.keyPair.Q.getEncoded(false)
-        .toString('hex')
-        .toUpperCase(),
-    };
-
-    if (this.keyPair.d) {
-      result.prv = this.keyPair.d
-        .toBuffer(32)
-        .toString('hex')
-        .toUpperCase();
+    if (this.hdNode) {
+      const { xpub, xprv } = this.getExtendedKeys();
+      return {
+        pub: HDNode.fromBase58(xpub)
+          .getPublicKeyBuffer()
+          .toString('hex')
+          .toUpperCase(),
+        prv: xprv
+          ? HDNode.fromBase58(xprv)
+              .keyPair.getPrivateKeyBuffer()
+              .toString('hex')
+              .toUpperCase()
+          : undefined,
+      };
+    } else {
+      return {
+        pub: this.keyPair.Q.getEncoded(false)
+          .toString('hex')
+          .toUpperCase(),
+        prv: this.keyPair.d
+          ? this.keyPair.d
+              .toBuffer(32)
+              .toString('hex')
+              .toUpperCase()
+          : undefined,
+      };
     }
-    return result;
   }
 
   /**
@@ -55,7 +70,7 @@ export class KeyPair extends ExtendedKeyPair {
    * @returns {string} The address derived from the public key
    */
   getAddress(): string {
-    const publicKey = Buffer.from(this.getKeys().pub.slice(2), 'hex'); //first two characters identify a public key
-    return addHexPrefix(pubToAddress(publicKey).toString('hex'));
+    const publicKey = Buffer.from(this.getKeys().pub, 'hex'); // first two characters identify a public key
+    return addHexPrefix(pubToAddress(publicKey, true).toString('hex'));
   }
 }

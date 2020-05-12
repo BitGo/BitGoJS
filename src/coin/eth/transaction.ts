@@ -12,7 +12,6 @@ import { Utils } from './';
 export class Transaction extends BaseTransaction {
   protected _parsedTransaction?: TxData; // transaction in JSON format
   protected _encodedTransaction?: string; // transaction in hex format
-  private _source: string;
 
   /**
    * Public constructor.

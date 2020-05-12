@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer';
 import { isValidAddress, addHexPrefix } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
