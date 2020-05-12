@@ -1,10 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import BigNumber from 'bignumber.js';
 import { RLP } from 'ethers/utils';
+import { addHexPrefix } from 'ethereumjs-util';
 import * as Crypto from '../../utils/crypto';
 import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
-import { Transaction } from '../eth';
+import { Transaction, TransferBuilder } from '../eth';
 import {
   BuildTransactionError,
   SigningError,
@@ -12,7 +13,7 @@ import {
   ParseTransactionError,
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
-import { Fee, TxJson } from './iface';
+import { Fee, TxData } from './iface';
 import { getContractData, isValidEthAddress } from './utils';
 
 const DEFAULT_M = 3;
@@ -31,6 +32,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   // Wallet initialization transaction parameters
   private _walletOwnerAddresses: string[];
+
+  // Send transaction specific parameters
+  private _transfer: TransferBuilder;
+  private _contractAddress: string;
 
   /**
    * Public constructor.
@@ -51,6 +56,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     switch (this._type) {
       case TransactionType.WalletInitialization:
         transactionData = this.buildWalletInitializationTransaction();
+        break;
+      case TransactionType.Send:
+        transactionData = this.buildSendTransaction();
         break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
@@ -80,9 +88,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**@inheritdoc */
   protected signImplementation(key: BaseKey): BaseTransaction {
     const signer = new KeyPair({ prv: key.key });
-    if (this._type != TransactionType.WalletInitialization) {
-      throw new SigningError('Cannot sign an unsupported operation'); //TODO: Remove this when other transactions are supported
-    }
     if (this._type === TransactionType.WalletInitialization && this._walletOwnerAddresses.length === 0) {
       throw new SigningError('Cannot sign an wallet initialization transaction without owners');
     }
@@ -138,18 +143,27 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  protected validateBaseTransactionFields(): void {
+    if (this._fee === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing fee');
+    }
+    if (this._chainId === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing chain id');
+    }
+    if (this._counter === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing address counter');
+    }
+    if (!this._sourceAddress) {
+      throw new BuildTransactionError('Invalid transaction: missing source');
+    }
+  }
+
   /**@inheritdoc */
   validateTransaction(transaction: BaseTransaction): void {
     switch (this._type) {
       case TransactionType.WalletInitialization:
         // assume sanitization happened in the builder function, just check that all required fields are set
-        if (this._fee === undefined) {
-          throw new BuildTransactionError('Invalid transaction: missing fee');
-        }
-
-        if (this._chainId === undefined) {
-          throw new BuildTransactionError('Invalid transaction: missing chain id');
-        }
+        this.validateBaseTransactionFields();
 
         if (this._walletOwnerAddresses === undefined) {
           throw new BuildTransactionError('Invalid transaction: missing wallet owners');
@@ -161,19 +175,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
               `found: ${this._walletOwnerAddresses.length}`,
           );
         }
-
-        if (this._counter === undefined) {
-          throw new BuildTransactionError('Invalid transaction: missing address counter');
-        }
-
-        if (!this._sourceAddress) {
-          throw new BuildTransactionError('Invalid transaction: missing source');
-        }
-
         break;
       case TransactionType.Send:
-        //  TODO: validate when transaction type send be developed
-        throw new BuildTransactionError('Unsupported transaction type');
+        this.validateBaseTransactionFields();
+        if (this._contractAddress === undefined) {
+          throw new BuildTransactionError('Invalid transaction: missing contract address');
+        }
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -270,15 +278,49 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Build a transaction for a generic multisig contract.
    *
-   * @returns {TxJson} The Ethereum transaction data
+   * @returns {TxData} The Ethereum transaction data
    */
-  private buildWalletInitializationTransaction(): TxJson {
+  private buildWalletInitializationTransaction(): TxData {
     return {
-      gasLimit: this._fee.gasLimit,
-      gasPrice: this._fee.fee,
-      nonce: this._counter,
-      chainId: this._chainId,
+      gasLimit: addHexPrefix(new BigNumber(this._fee.gasLimit).toString(16)),
+      gasPrice: addHexPrefix(new BigNumber(this._fee.fee).toString(16)),
+      nonce: addHexPrefix(Number(this._counter).toString(16)),
       data: getContractData(this._walletOwnerAddresses),
+      chainId: addHexPrefix(Number(this._chainId).toString(16)),
+      value: '0',
+    };
+  }
+  //endregion
+
+  // region Send builder methods
+
+  contract(address: string): void {
+    if (isValidEthAddress(address)) this._contractAddress = address;
+    else throw new BuildTransactionError('Invalid address: ' + address);
+  }
+
+  transfer(amount: number): TransferBuilder {
+    if (this._type === TransactionType.Send) {
+      this._transfer = new TransferBuilder().amount(amount);
+      return this._transfer;
+    }
+    throw new BuildTransactionError('Transfers can only be set for send transactions');
+  }
+
+  private getSendData(): string {
+    if (this._transfer) return this._transfer.build();
+    throw new BuildTransactionError('Missing transfer information');
+  }
+
+  private buildSendTransaction(): TxData {
+    const sendData = this.getSendData();
+    return {
+      to: this._contractAddress,
+      gasLimit: addHexPrefix(new BigNumber(this._fee.gasLimit).toString(16)),
+      gasPrice: addHexPrefix(new BigNumber(this._fee.fee).toString(16)),
+      nonce: addHexPrefix(Number(this._counter).toString(16)),
+      chainId: addHexPrefix(Number(this._chainId).toString(16)),
+      data: sendData,
       value: '0',
     };
   }

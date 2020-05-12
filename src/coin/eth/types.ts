@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { Transaction as EthereumTx } from 'ethereumjs-tx';
 import { addHexPrefix, bufferToHex, bufferToInt } from 'ethereumjs-util';
-import { TxJson } from './iface';
+import { TxData } from './iface';
 
 /**
  * An Ethereum transaction with helpers for serialization and deserialization.
@@ -14,7 +14,7 @@ export class EthTransaction {
    *
    * @param tx The JSON representation of the transaction
    */
-  public static fromJson(tx: TxJson): EthTransaction {
+  public static fromJson(tx: TxData): EthTransaction {
     return new EthTransaction(
       new EthereumTx({
         nonce: tx.nonce,
@@ -24,7 +24,7 @@ export class EthTransaction {
         value: addHexPrefix(new BigNumber(tx.value).toString(16)),
         data: tx.data,
       }),
-      tx.chainId,
+      Number(tx.chainId),
     );
   }
 
@@ -40,8 +40,8 @@ export class EthTransaction {
   /**
    * Return the JSON representation of this transaction
    */
-  toJson(): TxJson {
-    const result: TxJson = {
+  toJson(): TxData {
+    const result: TxData = {
       nonce: bufferToInt(this.tx.nonce),
       gasPrice: new BigNumber(bufferToHex(this.tx.gasPrice), 16).toString(10),
       gasLimit: new BigNumber(bufferToHex(this.tx.gasLimit), 16).toString(10),

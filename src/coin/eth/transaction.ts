@@ -6,7 +6,7 @@ import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
-import { TxJson } from './iface';
+import { TxData } from './iface';
 import { EthTransaction } from './types';
 
 export class Transaction extends BaseTransaction {
@@ -27,9 +27,9 @@ export class Transaction extends BaseTransaction {
    * Public constructor.
    *
    * @param {Readonly<CoinConfig>} coinConfig
-   * @param {TxJson} txData The object transaction data or encoded transaction data
+   * @param {TxData} txData The object transaction data or encoded transaction data
    */
-  constructor(coinConfig: Readonly<CoinConfig>, txData?: TxJson) {
+  constructor(coinConfig: Readonly<CoinConfig>, txData?: TxData) {
     super(coinConfig);
     if (txData) {
       this._ethTransaction = EthTransaction.fromJson(txData);
@@ -39,9 +39,9 @@ export class Transaction extends BaseTransaction {
   /**
    * Set the transaction data
    *
-   * @param {TxJson} txData The transaction data to set
+   * @param {TxData} txData The transaction data to set
    */
-  setTransactionData(txData: TxJson): void {
+  setTransactionData(txData: TxData): void {
     this._ethTransaction = EthTransaction.fromJson(txData);
   }
 
@@ -79,17 +79,17 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    if (!this._ethTransaction) {
-      throw new InvalidTransactionError('No transaction data to format');
+    if (this._ethTransaction) {
+      return this._ethTransaction.toSerialized();
     }
-    return this._ethTransaction.toSerialized();
+    throw new InvalidTransactionError('No transaction data to format');
   }
 
   /** @inheritdoc */
-  toJson(): TxJson {
-    if (!this._ethTransaction) {
-      throw new InvalidTransactionError('Empty transaction');
+  toJson(): TxData {
+    if (this._ethTransaction) {
+      return this._ethTransaction.toJson();
     }
-    return this._ethTransaction.toJson();
+    throw new InvalidTransactionError('Empty transaction');
   }
 }

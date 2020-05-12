@@ -1,8 +1,9 @@
-import { isValidAddress, addHexPrefix } from 'ethereumjs-util';
+import { Buffer } from 'buffer';
+import { isValidAddress, addHexPrefix, toBuffer } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import { SigningError } from '../baseCoin/errors';
-import { TxJson } from './iface';
+import { TxData } from './iface';
 import { KeyPair } from './keyPair';
 import { walletSimpleConstructor, walletSimpleByteCode } from './walletUtil';
 import { testnetCommon } from './resources';
@@ -12,13 +13,13 @@ import { EthTransaction } from './types';
  * Signs the transaction using the appropriate algorithm
  * and the provided common for the blockchain
  *
- * @param {TxJson} transactionData the transaction data to sign
+ * @param {TxData} transactionData the transaction data to sign
  * @param {KeyPair} keyPair the signer's keypair
  * @param {EthereumCommon} customCommon the network's custom common
  * @returns {string} the transaction signed and encoded
  */
 export async function signInternal(
-  transactionData: TxJson,
+  transactionData: TxData,
   keyPair: KeyPair,
   customCommon: EthereumCommon,
 ): Promise<string> {
@@ -35,11 +36,11 @@ export async function signInternal(
 /**
  * Signs the transaction using the appropriate algorithm
  *
- * @param {TxJson} transactionData the transaction data to sign
+ * @param {TxData} transactionData the transaction data to sign
  * @param {KeyPair} keyPair the signer's keypair
  * @returns {string} the transaction signed and encoded
  */
-export async function sign(transactionData: TxJson, keyPair: KeyPair): Promise<string> {
+export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<string> {
   return signInternal(transactionData, keyPair, testnetCommon);
 }
 
@@ -55,6 +56,32 @@ export function getContractData(addresses: string[]): string {
     .toString('hex')
     .replace('0x', '');
   return walletSimpleByteCode + resultEncodedParameters;
+}
+
+/**
+ * Returns the contract method encoded data
+ *
+ * @param {string} to destination address
+ * @param {number} value Amount to tranfer
+ * @param {string} data aditional method call data
+ * @param {number} expireTime expiration time for the transaction in seconds
+ * @param {number} sequenceId sequence id
+ * @param {string} signature signature of the call
+ * @returns {string} -- the contract method encoded data
+ */
+export function sendMultiSigData(
+  to: string,
+  value: number,
+  data: string,
+  expireTime: number,
+  sequenceId: number,
+  signature: string,
+): string {
+  const params = [to, value, toBuffer(data), expireTime, sequenceId, toBuffer(signature)];
+  const types = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
+  const method = EthereumAbi.methodID('sendMultiSig', types);
+  const args = EthereumAbi.rawEncode(types, params);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
 }
 
 /**
