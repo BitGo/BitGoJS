@@ -21,7 +21,6 @@ const DEFAULT_M = 3;
  * Ethereum transaction builder.
  */
 export class TransactionBuilder extends BaseTransactionBuilder {
-  private _serializedTransaction: string;
   private _transaction: Transaction;
   private _sourceKeyPair: KeyPair;
   private _type: TransactionType;
@@ -31,7 +30,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _sourceAddress: string;
 
   // Wallet initialization transaction parameters
-  private _initialBalance: string;
   private _walletOwnerAddresses: string[];
 
   /**
@@ -143,20 +141,36 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**@inheritdoc */
   validateTransaction(transaction: BaseTransaction): void {
     switch (this._type) {
-      case TransactionType.WalletInitialization: {
-        if (
-          this._fee &&
-          this._chainId &&
-          this._walletOwnerAddresses &&
-          this._walletOwnerAddresses.length == 3 &&
-          this._counter &&
-          this._sourceAddress
-        ) {
-          break;
-        } else {
-          throw new BuildTransactionError('Invalid transaction');
+      case TransactionType.WalletInitialization:
+        // assume sanitization happened in the builder function, just check that all required fields are set
+        if (this._fee === undefined) {
+          throw new BuildTransactionError('Invalid transaction: missing fee');
         }
-      }
+
+        if (this._chainId === undefined) {
+          throw new BuildTransactionError('Invalid transaction: missing chain id');
+        }
+
+        if (this._walletOwnerAddresses === undefined) {
+          throw new BuildTransactionError('Invalid transaction: missing wallet owners');
+        }
+
+        if (this._walletOwnerAddresses.length !== 3) {
+          throw new BuildTransactionError(
+            `Invalid transaction: wrong number of owners -- required: 3, ` +
+              `found: ${this._walletOwnerAddresses.length}`,
+          );
+        }
+
+        if (this._counter === undefined) {
+          throw new BuildTransactionError('Invalid transaction: missing address counter');
+        }
+
+        if (!this._sourceAddress) {
+          throw new BuildTransactionError('Invalid transaction: missing source');
+        }
+
+        break;
       case TransactionType.Send:
         //  TODO: validate when transaction type send be developed
         throw new BuildTransactionError('Unsupported transaction type');
@@ -211,6 +225,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param {number} counter The counter to use
    */
   counter(counter: number): void {
+    if (counter < 0) {
+      throw new BuildTransactionError(`Invalid counter: ${counter}`);
+    }
+
     this._counter = counter;
   }
 
