@@ -1,4 +1,4 @@
-export interface CeloTxData {
+export interface TxData {
   nonce: string;
   data: string;
   gasLimit: string;

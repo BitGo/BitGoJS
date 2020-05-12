@@ -4,7 +4,7 @@ import { BigNumber } from 'bignumber.js';
 import { TxJson } from '../eth/iface';
 import { KeyPair } from '../eth/keyPair';
 import { SigningError } from '../baseCoin/errors';
-import { CeloTxData } from './iface';
+import { TxData as CeloTxData } from './iface';
 
 /**
  * Signs a Celo transaction using celo contract kit
@@ -26,7 +26,7 @@ export async function sign(transactionData: TxJson, keyPair: KeyPair): Promise<s
  * Format transaction to be signed
  *
  * @param {TxJson} transactionData the transaction data with base values
- * @returns {TxJson} the transaction data with hex values
+ * @returns {CeloTxData} the transaction data with hex values, ready for CELO signing library
  */
 function formatTx(transactionData: TxJson): CeloTxData {
   return {

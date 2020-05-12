@@ -7,10 +7,10 @@ import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { TxJson } from './iface';
-import { EthTx } from './types';
+import { EthTransaction } from './types';
 
 export class Transaction extends BaseTransaction {
-  protected _parsedTransaction?: EthTx;
+  protected _ethTransaction?: EthTransaction;
 
   /**
    * return a new Transaction initialized with the serialized tx string
@@ -20,7 +20,7 @@ export class Transaction extends BaseTransaction {
    * @returns a new transaction object
    */
   public static fromSerialized(coinConfig: Readonly<CoinConfig>, serializedTx: string): Transaction {
-    return new Transaction(coinConfig, EthTx.fromSerialized(serializedTx).toJson());
+    return new Transaction(coinConfig, EthTransaction.fromSerialized(serializedTx).toJson());
   }
 
   /**
@@ -32,7 +32,7 @@ export class Transaction extends BaseTransaction {
   constructor(coinConfig: Readonly<CoinConfig>, txData?: TxJson) {
     super(coinConfig);
     if (txData) {
-      this._parsedTransaction = EthTx.fromJson(txData);
+      this._ethTransaction = EthTransaction.fromJson(txData);
     }
   }
 
@@ -42,7 +42,7 @@ export class Transaction extends BaseTransaction {
    * @param {TxJson} txData The transaction data to set
    */
   setTransactionData(txData: TxJson): void {
-    this._parsedTransaction = EthTx.fromJson(txData);
+    this._ethTransaction = EthTransaction.fromJson(txData);
   }
 
   /**
@@ -67,29 +67,29 @@ export class Transaction extends BaseTransaction {
    * @param {KeyPair} keyPair The key to sign the transaction with
    */
   async sign(keyPair: KeyPair): Promise<void> {
-    if (!this._parsedTransaction) {
+    if (!this._ethTransaction) {
       throw new InvalidTransactionError('No transaction data to sign');
     }
     if (!keyPair.getKeys().prv) {
       throw new SigningError('Missing private key');
     }
     const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
-    this._parsedTransaction.tx.sign(privateKey);
+    this._ethTransaction.tx.sign(privateKey);
   }
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    if (!this._parsedTransaction) {
+    if (!this._ethTransaction) {
       throw new InvalidTransactionError('No transaction data to format');
     }
-    return this._parsedTransaction.toSerialized();
+    return this._ethTransaction.toSerialized();
   }
 
   /** @inheritdoc */
-  toJson(): any {
-    if (!this._parsedTransaction) {
+  toJson(): TxJson {
+    if (!this._ethTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    return this._parsedTransaction.toJson();
+    return this._ethTransaction.toJson();
   }
 }

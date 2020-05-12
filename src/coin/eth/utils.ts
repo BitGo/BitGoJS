@@ -6,7 +6,7 @@ import { TxJson } from './iface';
 import { KeyPair } from './keyPair';
 import { walletSimpleConstructor, walletSimpleByteCode } from './walletUtil';
 import { testnetCommon } from './resources';
-import { EthTx } from './types';
+import { EthTransaction } from './types';
 
 /**
  * Signs the transaction using the appropriate algorithm
@@ -25,7 +25,7 @@ export async function signInternal(
   if (!keyPair.getKeys().prv) {
     throw new SigningError('Missing private key');
   }
-  const ethTx = EthTx.fromJson(transactionData);
+  const ethTx = EthTransaction.fromJson(transactionData);
   const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
   ethTx.tx.sign(privateKey);
   const encodedTransaction = ethTx.tx.serialize().toString('hex');

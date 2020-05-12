@@ -4,9 +4,9 @@ import { addHexPrefix, bufferToHex, bufferToInt } from 'ethereumjs-util';
 import { TxJson } from './iface';
 
 /**
- * an Ethereum transaction with helpers for serialization and deserialization.
+ * An Ethereum transaction with helpers for serialization and deserialization.
  */
-export class EthTx {
+export class EthTransaction {
   constructor(public tx: EthereumTx, private chainId?: number) {}
 
   /**
@@ -14,8 +14,8 @@ export class EthTx {
    *
    * @param tx The JSON representation of the transaction
    */
-  public static fromJson(tx: TxJson): EthTx {
-    return new EthTx(
+  public static fromJson(tx: TxJson): EthTransaction {
+    return new EthTransaction(
       new EthereumTx({
         nonce: tx.nonce,
         to: tx.to,
@@ -33,8 +33,8 @@ export class EthTx {
    *
    * @param tx The string serialization of the ethereum transaction
    */
-  public static fromSerialized(tx: string): EthTx {
-    return new EthTx(new EthereumTx(tx));
+  public static fromSerialized(tx: string): EthTransaction {
+    return new EthTransaction(new EthereumTx(tx));
   }
 
   /**
