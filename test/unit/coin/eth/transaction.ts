@@ -12,8 +12,8 @@ describe('ETH Transaction', function() {
 
   describe('should return valid transaction', function() {
     const tx = new Transaction(coins.get('eth'), testData.TXDATA);
-    should.equal(tx.toJson(), testData.TXDATA);
-    should.throws(() => tx.toBroadcastFormat());
+    should.deepEqual(tx.toJson(), testData.TXDATA);
+    should.deepEqual(tx.toBroadcastFormat(), testData.UNSIGNED_TX);
   });
 
   describe('should sign', function() {

@@ -12,7 +12,7 @@ import {
   ParseTransactionError,
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
-import { Fee, TxData } from './iface';
+import { Fee, TxJson } from './iface';
 import { getContractData, isValidEthAddress } from './utils';
 
 const DEFAULT_M = 3;
@@ -69,7 +69,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected fromImplementation(rawTransaction: string): Transaction {
     let tx: Transaction;
     if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
-      tx = new Transaction(this._coinConfig, rawTransaction);
+      tx = Transaction.fromSerialized(this._coinConfig, rawTransaction);
     } else {
       const txData = JSON.parse(rawTransaction);
       tx = new Transaction(this._coinConfig, txData);
@@ -270,15 +270,16 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Build a transaction for a generic multisig contract.
    *
-   * @returns {TxData} The Ethereum transaction data
+   * @returns {TxJson} The Ethereum transaction data
    */
-  private buildWalletInitializationTransaction(): TxData {
+  private buildWalletInitializationTransaction(): TxJson {
     return {
       gasLimit: this._fee.gasLimit,
       gasPrice: this._fee.fee,
       nonce: this._counter,
       chainId: this._chainId,
       data: getContractData(this._walletOwnerAddresses),
+      value: '0',
     };
   }
   //endregion

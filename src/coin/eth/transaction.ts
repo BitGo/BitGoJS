@@ -4,37 +4,45 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
-import { TxData } from './iface';
-import { Utils } from './';
+import { TxJson } from './iface';
+import { EthTx } from './types';
 
 export class Transaction extends BaseTransaction {
-  protected _parsedTransaction?: TxData; // transaction in JSON format
-  protected _encodedTransaction?: string; // transaction in hex format
+  protected _parsedTransaction?: EthTx;
+
+  /**
+   * return a new Transaction initialized with the serialized tx string
+   *
+   * @param coinConfig The coin configuration object
+   * @param serializedTx The serialized tx string with which to initialize the transaction
+   * @returns a new transaction object
+   */
+  public static fromSerialized(coinConfig: Readonly<CoinConfig>, serializedTx: string): Transaction {
+    return new Transaction(coinConfig, EthTx.fromSerialized(serializedTx).toJson());
+  }
 
   /**
    * Public constructor.
    *
    * @param {Readonly<CoinConfig>} coinConfig
-   * @param {TxData | string} txData The object transaction data or encoded transaction data
+   * @param {TxJson} txData The object transaction data or encoded transaction data
    */
-  constructor(coinConfig: Readonly<CoinConfig>, txData?: TxData | string) {
+  constructor(coinConfig: Readonly<CoinConfig>, txData?: TxJson) {
     super(coinConfig);
-    if (typeof txData === 'string') {
-      this._encodedTransaction = txData;
-    } else {
-      this._parsedTransaction = txData;
+    if (txData) {
+      this._parsedTransaction = EthTx.fromJson(txData);
     }
   }
 
   /**
    * Set the transaction data
    *
-   * @param {TxData} transactionData The transaction data to set
+   * @param {TxJson} txData The transaction data to set
    */
-  setTransactionData(transactionData: TxData): void {
-    this._parsedTransaction = transactionData;
+  setTransactionData(txData: TxJson): void {
+    this._parsedTransaction = EthTx.fromJson(txData);
   }
 
   /**
@@ -59,19 +67,22 @@ export class Transaction extends BaseTransaction {
    * @param {KeyPair} keyPair The key to sign the transaction with
    */
   async sign(keyPair: KeyPair): Promise<void> {
-    // Check if there is a transaction to sign
     if (!this._parsedTransaction) {
-      throw new InvalidTransactionError('Empty transaction');
+      throw new InvalidTransactionError('No transaction data to sign');
     }
-    this._encodedTransaction = await Utils.sign(this._parsedTransaction, keyPair);
+    if (!keyPair.getKeys().prv) {
+      throw new SigningError('Missing private key');
+    }
+    const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
+    this._parsedTransaction.tx.sign(privateKey);
   }
 
   /** @inheritdoc */
-  toBroadcastFormat(): any {
-    if (!this._encodedTransaction) {
-      throw new InvalidTransactionError('Missing encoded transaction');
+  toBroadcastFormat(): string {
+    if (!this._parsedTransaction) {
+      throw new InvalidTransactionError('No transaction data to format');
     }
-    return this._encodedTransaction;
+    return this._parsedTransaction.toSerialized();
   }
 
   /** @inheritdoc */
@@ -79,6 +90,6 @@ export class Transaction extends BaseTransaction {
     if (!this._parsedTransaction) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    return this._parsedTransaction;
+    return this._parsedTransaction.toJson();
   }
 }
