@@ -17,10 +17,8 @@ describe('Rbtc Transaction', function() {
   describe('should return valid transaction', function() {
     const tx = new Transaction(coins.get('rbtc'));
     tx.setTransactionData(testData.TXDATA);
-    should.equal(tx.toJson(), testData.TXDATA);
-    should.throws(() => {
-      tx.toBroadcastFormat();
-    });
+    should.deepEqual(tx.toJson(), testData.TXDATA);
+    should.equal(tx.toBroadcastFormat(), testData.UNSIGNED_TX);
   });
 
   describe('should sign', function() {

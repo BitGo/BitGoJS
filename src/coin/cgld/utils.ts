@@ -1,18 +1,19 @@
 import { signTransaction } from '@celo/contractkit/lib/utils/signing-utils';
 import { addHexPrefix } from 'ethereumjs-util';
 import { BigNumber } from 'bignumber.js';
-import { TxData } from '../eth/iface';
+import { TxJson } from '../eth/iface';
 import { KeyPair } from '../eth/keyPair';
 import { SigningError } from '../baseCoin/errors';
+import { TxData as CeloTxData } from './iface';
 
 /**
  * Signs a Celo transaction using celo contract kit
  *
- * @param {TxData} transactionData the transaction data to sign
+ * @param {TxJson} transactionData json the transaction data to sign
  * @param {KeyPair} keyPair the signer's keypair
  * @returns {string} the transaction signed and encoded
  */
-export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<string> {
+export async function sign(transactionData: TxJson, keyPair: KeyPair): Promise<string> {
   if (!keyPair.getKeys().prv) {
     throw new SigningError('Missing private key');
   }
@@ -24,10 +25,10 @@ export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<s
 /**
  * Format transaction to be signed
  *
- * @param {TxData} transactionData the transaction data with base values
- * @returns {TxData} the transaction data with hex values
+ * @param {TxJson} transactionData the transaction data with base values
+ * @returns {CeloTxData} the transaction data with hex values, ready for CELO signing library
  */
-function formatTx(transactionData: TxData): TxData {
+function formatTx(transactionData: TxJson): CeloTxData {
   return {
     nonce: addHexPrefix(Number(transactionData.nonce).toString(16)),
     data: transactionData.data,
