@@ -1,5 +1,22 @@
 # BitGoJS Release Notes
 
+## 11.1.1 (05-12-2020)
+
+### Other Changes
+* Include full stack traces for `BitGoJSError` types and inheritors.
+* Update `@bitgo/statics` to version 4.0.0
+
+## 11.1.0 (05-08-2020)
+
+### Other Changes
+* Move creation of XRP wallet initialization transactions to server side in order to support the XRP DeleteableAccounts amendment.
+
+## 11.0.3 (04-13-2020)
+
+### Other Changes
+* Update `@bitgo/account-lib` to version 1.0.3
+* Fix message signing for XTZ
+
 ## 11.0.2 (04-09-2020)
 
 ### Other Changes
