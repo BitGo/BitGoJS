@@ -45,6 +45,7 @@
     "tronweb": "^2.7.2",
     "ethereumjs-tx": "2.1.2",
     "ethereumjs-abi": "0.6.0",
+    "ethereumjs-util": "5.2.0",
     "@celo/contractkit": "0.3.1"
   },
   "devDependencies": {

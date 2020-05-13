@@ -35,7 +35,7 @@ function filterTx(transactionData: TxData): TxData {
     chainId: transactionData.chainId,
     value: transactionData.value,
   };
-  if (transactionData.to) filtered.to = transactionData.to;
+  if (transactionData.to && transactionData.to !== '0x') filtered.to = transactionData.to;
 
   return filtered;
 }

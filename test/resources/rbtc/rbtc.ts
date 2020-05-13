@@ -1,15 +1,15 @@
 import { KeyPair } from '../../../src/coin/rbtc';
-import { TxJson } from '../../../src/coin/eth/iface';
+import { TxData } from '../../../src/coin/eth/iface';
 
 export const ENCODED_TRANSACTION =
   '0xf86e010a822ee09419645032c7f1533395d44a629462e751084d3e4c8301e2408c11111111111111111111111125a01d332c30b0e7212aa32d02382f1824205d2782aac56d479bc84cd65d5a27c5f1a0375d17268f2245031ce383318ff3e8564d5ab9d9ae1f5a98eef5802da85a0f59';
 
-export const TXDATA: TxJson = {
+export const TXDATA: TxData = {
   nonce: 1,
   data: '0x111111111111111111111111',
   gasLimit: '12000',
   gasPrice: '10',
-  chainId: 44786,
+  chainId: '0xaef2',
   value: '123456',
   to: '0x19645032c7f1533395d44a629462e751084d3e4c',
 };
