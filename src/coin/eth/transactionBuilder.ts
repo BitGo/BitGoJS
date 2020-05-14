@@ -159,11 +159,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /**@inheritdoc */
   validateTransaction(transaction: BaseTransaction): void {
+    this.validateBaseTransactionFields();
     switch (this._type) {
       case TransactionType.WalletInitialization:
         // assume sanitization happened in the builder function, just check that all required fields are set
-        this.validateBaseTransactionFields();
-
         if (this._walletOwnerAddresses === undefined) {
           throw new BuildTransactionError('Invalid transaction: missing wallet owners');
         }
@@ -176,7 +175,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         }
         break;
       case TransactionType.Send:
-        this.validateBaseTransactionFields();
         if (this._contractAddress === undefined) {
           throw new BuildTransactionError('Invalid transaction: missing contract address');
         }
@@ -302,7 +300,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     else throw new BuildTransactionError('Invalid address: ' + address);
   }
 
-  transfer(amount: number): TransferBuilder {
+  transfer(amount: string): TransferBuilder {
     if (this._type === TransactionType.Send) {
       this._transfer = new TransferBuilder().amount(amount);
       return this._transfer;

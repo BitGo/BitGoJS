@@ -47,7 +47,7 @@ describe('Celo Transaction builder', function() {
         .transfer(1000000000)
         .to('0x19645032c7f1533395d44a629462e751084d3e4c')
         .expirationTime(1590066728)
-        .sequenceId(5)
+        .contractSequenceId(5)
         .key(defaultKeyPair.getKeys().prv);
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const tx = await txBuilder.build(); //shoud build and sign

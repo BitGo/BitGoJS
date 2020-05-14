@@ -1,11 +1,12 @@
 import ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
-import { BuildTransactionError } from '../baseCoin/errors';
-import { sendMultiSigData } from './utils';
+import BigNumber from 'bignumber.js';
+import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
+import { isValidEthAddress, sendMultiSigData } from './utils';
 
 /** ETH transfer builder */
 export class TransferBuilder {
-  private _amount: number;
+  private _amount: string;
   private _toAddress: string;
   private _sequenceId: number;
   private _data: string;
@@ -18,17 +19,20 @@ export class TransferBuilder {
     this._data = '0x';
   }
 
-  amount(amount: number): TransferBuilder {
+  amount(amount: string): TransferBuilder {
     this._amount = amount;
     return this;
   }
 
   to(address: string): TransferBuilder {
-    this._toAddress = address;
-    return this;
+    if (isValidEthAddress(address)) {
+      this._toAddress = address;
+      return this;
+    }
+    throw new InvalidParameterValueError('Invalid address');
   }
 
-  sequenceId(counter: number): TransferBuilder {
+  contractSequenceId(counter: number): TransferBuilder {
     this._sequenceId = counter;
     return this;
   }
@@ -53,7 +57,7 @@ export class TransferBuilder {
       const signature = this.ethSignMsgHash();
       return sendMultiSigData(
         this._toAddress,
-        this._amount,
+        new BigNumber(this._amount).toNumber(),
         this._data,
         this._expirationTime,
         this._sequenceId,

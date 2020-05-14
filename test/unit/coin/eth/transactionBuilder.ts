@@ -130,9 +130,16 @@ describe('Eth Transaction builder', function() {
 
   describe('should fail to build', () => {
     it('an unsupported type of transaction', async () => {
-      const txBuilder: any = getBuilder('eth');
-      txBuilder.type(TransactionType.AddressInitialization);
-      await txBuilder.build().should.be.rejectedWith('Unsupported transaction type');
+      await buildTransaction({
+        type: TransactionType.AddressInitialization,
+        fee: {
+          fee: '10',
+          gasLimit: '10',
+        },
+        chainId: 42,
+        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
+        counter: 0,
+      }).should.be.rejectedWith('Unsupported transaction type');
     });
 
     it('a transaction without fee', async () => {
