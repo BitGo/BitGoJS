@@ -17,17 +17,17 @@ export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<s
     throw new SigningError('Missing private key');
   }
   const privateKey = addHexPrefix(keyPair.getKeys().prv as string);
-  const rawTransaction = await signTransaction(filterTx(transactionData), privateKey);
+  const rawTransaction = await signTransaction(removeEmptyFields(transactionData), privateKey);
   return rawTransaction.raw;
 }
 
 /**
- * Filters the unused fields of the tx to be used with @celo/contractkit
+ * removes the unused optional fields of the tx to be used with @celo/contractkit
  *
  * @param {TxData} transactionData the transaction data unfiltered
  * @returns {TxData} the transaction data filtered with the available values
  */
-function filterTx(transactionData: TxData): TxData {
+function removeEmptyFields(transactionData: TxData): TxData {
   const filtered: TxData = {
     nonce: transactionData.nonce,
     data: transactionData.data,
@@ -36,7 +36,21 @@ function filterTx(transactionData: TxData): TxData {
     chainId: transactionData.chainId,
     value: transactionData.value,
   };
-  if (transactionData.to && transactionData.to !== '0x') filtered.to = transactionData.to;
+  if (transactionData.to && transactionData.to !== '0x') {
+    filtered.to = transactionData.to;
+  }
+  if (transactionData.from && transactionData.from !== '0x') {
+    filtered.from = transactionData.from;
+  }
+  if (transactionData.r) {
+    filtered.r = transactionData.r;
+  }
+  if (transactionData.s) {
+    filtered.s = transactionData.s;
+  }
+  if (transactionData.v) {
+    filtered.v = transactionData.v;
+  }
 
   return filtered;
 }

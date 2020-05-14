@@ -48,7 +48,7 @@ export class TransferBuilder {
     return this;
   }
 
-  build(): string {
+  signAndBuild(): string {
     if (this.hasMandatoryFields()) {
       const signature = this.ethSignMsgHash();
       return sendMultiSigData(
@@ -74,8 +74,9 @@ export class TransferBuilder {
    * @returns {number} expiration time
    */
   private getExpirationTime(): number {
-    const currentTime = new Date().getTime() / 1000;
-    return currentTime + 3600;
+    const currentDate = new Date();
+    currentDate.setHours(currentDate.getHours() + 1);
+    return currentDate.getTime() / 1000;
   }
 
   private getSHA(): (string | Buffer)[][] {
