@@ -1,6 +1,7 @@
 import { signTransaction } from '@celo/contractkit/lib/utils/signing-utils';
 import { addHexPrefix } from 'ethereumjs-util';
 import { RLP } from 'ethers/utils';
+import BigNumber from 'bignumber.js';
 import { TxData } from '../eth/iface';
 import { KeyPair } from '../eth/keyPair';
 import { SigningError } from '../baseCoin/errors';
@@ -81,17 +82,16 @@ function toNumber(hex: string): number {
  */
 export function deserialize(serializedTx: string): TxData {
   const rawValues = RLP.decode(serializedTx);
-  const recovery = toNumber(rawValues[9]);
-  const chainId = fromNumber((recovery - 35) >> 1);
   const celoTx: TxData = {
     //TODO: use bignumber for gasPrice, gasLimit and value
     nonce: rawValues[0].toLowerCase() === '0x' ? 0 : parseInt(rawValues[0], 16),
-    gasPrice: rawValues[1].toLowerCase() === '0x' ? '0' : parseInt(rawValues[1], 16).toString(),
-    gasLimit: rawValues[2].toLowerCase() === '0x' ? '0' : parseInt(rawValues[2], 16).toString(),
-    value: rawValues[7].toLowerCase() === '0x' ? '0' : parseInt(rawValues[2], 16).toString(),
+    gasPrice: rawValues[1].toLowerCase() === '0x' ? '0' : new BigNumber(rawValues[1], 16).toString(),
+    gasLimit: rawValues[2].toLowerCase() === '0x' ? '0' : new BigNumber(rawValues[2], 16).toString(),
+    value: rawValues[7].toLowerCase() === '0x' ? '0' : new BigNumber(rawValues[2], 16).toString(),
     data: rawValues[8],
-    chainId: chainId,
+    chainId: rawValues[9],
   };
   if (rawValues[6] !== '0x') celoTx.to = rawValues[6];
+  console.log('Celo tx', celoTx);
   return celoTx;
 }
