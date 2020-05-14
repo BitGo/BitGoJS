@@ -10,11 +10,14 @@ import {
   Bsv,
   Btc,
   Btg,
+  Cgld,
   Dash,
   Eos,
+  Etc,
   Eth,
   Ltc,
   Ofc,
+  Rbtc,
   Rmg,
   Susd,
   Talgo,
@@ -22,10 +25,13 @@ import {
   Tbsv,
   Tbtc,
   Tbtg,
+  Tcgld,
   Tdash,
   Teos,
+  Tetc,
   Teth,
   Tltc,
+  Trbtc,
   Trmg,
   Tsusd,
   Trx,
@@ -116,6 +122,12 @@ GlobalCoinFactory.registerCoinConstructor('eos', Eos.createInstance);
 GlobalCoinFactory.registerCoinConstructor('teos', Teos.createInstance);
 GlobalCoinFactory.registerCoinConstructor('eth', Eth.createInstance);
 GlobalCoinFactory.registerCoinConstructor('teth', Teth.createInstance);
+GlobalCoinFactory.registerCoinConstructor('etc', Etc.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tetc', Tetc.createInstance);
+GlobalCoinFactory.registerCoinConstructor('rbtc', Rbtc.createInstance);
+GlobalCoinFactory.registerCoinConstructor('trbtc', Trbtc.createInstance);
+GlobalCoinFactory.registerCoinConstructor('cgld', Cgld.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tcgld', Tcgld.createInstance);
 GlobalCoinFactory.registerCoinConstructor('rmg', Rmg.createInstance);
 GlobalCoinFactory.registerCoinConstructor('trmg', Trmg.createInstance);
 GlobalCoinFactory.registerCoinConstructor('xrp', Xrp.createInstance);
