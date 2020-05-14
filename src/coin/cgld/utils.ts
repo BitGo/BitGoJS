@@ -1,5 +1,6 @@
 import { signTransaction } from '@celo/contractkit/lib/utils/signing-utils';
 import { addHexPrefix } from 'ethereumjs-util';
+import { RLP } from 'ethers/utils';
 import { TxData } from '../eth/iface';
 import { KeyPair } from '../eth/keyPair';
 import { SigningError } from '../baseCoin/errors';
@@ -38,4 +39,49 @@ function filterTx(transactionData: TxData): TxData {
   if (transactionData.to && transactionData.to !== '0x') filtered.to = transactionData.to;
 
   return filtered;
+}
+
+/**
+ *
+ * @param {number} num number to be converted to hex
+ * @returns {string} the hex number
+ */
+function fromNumber(num: number): string {
+  const hex = num.toString(16);
+  return hex.length % 2 === 0 ? '0x' + hex : '0x0' + hex;
+}
+
+/**
+ *
+ * @param {string} hex The hex string to be converted
+ * @returns {number} the resulting number
+ */
+function toNumber(hex: string): number {
+  return parseInt(hex.slice(2), 16);
+}
+
+export const fromNat = bn => (bn === '0x0' ? '0x' : bn.length % 2 === 0 ? bn : '0x0' + bn.slice(2));
+
+/**
+ *
+ * @param {string} serializedTx the serialized transaction
+ * @returns {TxData} the deserialized transaction
+ */
+export function deserialize(serializedTx: string): TxData {
+  //const x = recoverTransaction(serializedTx);
+  const rawValues = RLP.decode(serializedTx);
+  console.log('signing-utils@recoverTransaction: values are %s', rawValues);
+  const recovery = toNumber(rawValues[9]);
+  // tslint:disable-next-line:no-bitwise
+  const chainId = fromNumber((recovery - 35) >> 1);
+  const celoTx: TxData = {
+    nonce: rawValues[0].toLowerCase() === '0x' ? 0 : parseInt(rawValues[0], 16),
+    gasPrice: rawValues[1].toLowerCase() === '0x' ? '0' : parseInt(rawValues[1], 16).toString(),
+    gasLimit: rawValues[2].toLowerCase() === '0x' ? '0' : parseInt(rawValues[2], 16).toString(),
+    to: rawValues[6],
+    value: rawValues[7],
+    data: rawValues[8],
+    chainId: chainId,
+  };
+  return celoTx;
 }

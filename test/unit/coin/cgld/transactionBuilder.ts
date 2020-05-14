@@ -1,7 +1,11 @@
 import should from 'should';
+import { RLP } from 'ethers/utils';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import { getBuilder, Eth } from '../../../../src';
 import * as testData from '../../../resources/cgld/cgld';
+import { deserialize } from '../../../../src/coin/cgld/utils';
+import { getContractData } from '../../../../src/coin/eth/utils';
+import { fromNat } from '../../../../src/coin/cgld/utils';
 
 describe('Celo Transaction builder', function() {
   let txBuilder;
@@ -50,6 +54,37 @@ describe('Celo Transaction builder', function() {
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const tx = await txBuilder.build(); //shoud build and sign
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
+    });
+
+    it('decode serialized tx', () => {
+      const txBuilder: any = getBuilder('cgld');
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.owner(testData.ACCOUNT1);
+      txBuilder.owner(testData.ACCOUNT2);
+      txBuilder.owner(testData.ACCOUNT3);
+      const walletOwners = [testData.ACCOUNT1, testData.ACCOUNT2, testData.ACCOUNT3];
+      const txData = testData.TXDATA_EMPTY_DATA;
+      txData.data = getContractData(walletOwners);
+      const chainIdNumber = '0x' + Number(txData.chainId).toString(16);
+      console.log('chain id number', chainIdNumber);
+      const chainId = fromNat(chainIdNumber);
+      console.log('chain Id', chainId);
+      const encodedTxData = RLP.encode([
+        txData.nonce,
+        txData.gasPrice,
+        txData.gasLimit,
+        '0x',
+        '0x',
+        '0x',
+        '0x',
+        '0x',
+        txData.data,
+        chainId,
+        '0x',
+        '0x',
+      ]);
+      const decodedTx = deserialize(encodedTxData);
+      console.log('Decoded Tx ', decodedTx);
     });
   });
 });

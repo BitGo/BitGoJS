@@ -31,4 +31,11 @@ export class Transaction extends Eth.Transaction {
     }
     return this._encodedTransaction;
   }
+
+  /**@inheritdoc */
+  public static fromSerialized(coinConfig: Readonly<CoinConfig>, serializedTx: string): Transaction {
+    const tx = new Transaction(coinConfig);
+    tx.setTransactionData(Utils.deserialize(serializedTx));
+    return tx;
+  }
 }
