@@ -8,14 +8,13 @@ export interface Fee extends BaseFee {
  * A transaction's data.
  */
 export interface TxData {
-  //TODO: Define each field type
   gasLimit: string;
   gasPrice: string;
   to?: string;
-  nonce: string | number;
+  nonce: number;
   data: string;
-  value: string | number;
-  chainId?: string | number;
+  value: string;
+  chainId?: string;
   from?: string;
   /**
    * EC recovery ID.

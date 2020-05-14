@@ -1,7 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import BigNumber from 'bignumber.js';
 import { RLP } from 'ethers/utils';
-import { addHexPrefix } from 'ethereumjs-util';
 import * as Crypto from '../../utils/crypto';
 import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
@@ -258,7 +257,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       gasPrice: this._fee.fee,
       nonce: this._counter,
       data: data,
-      chainId: this._chainId,
+      chainId: this._chainId.toString(),
       value: '0',
     };
   }

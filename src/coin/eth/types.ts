@@ -7,7 +7,7 @@ import { TxData } from './iface';
  * An Ethereum transaction with helpers for serialization and deserialization.
  */
 export class EthTransaction {
-  constructor(public tx: EthereumTx, private chainId?: number) {}
+  constructor(public tx: EthereumTx, private chainId?: string) {}
 
   /**
    * Build an ethereum transaction from its JSON representation
