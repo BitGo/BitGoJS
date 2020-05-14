@@ -3,9 +3,7 @@ import { RLP } from 'ethers/utils';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import { getBuilder, Eth } from '../../../../src';
 import * as testData from '../../../resources/cgld/cgld';
-import { deserialize } from '../../../../src/coin/cgld/utils';
 import { getContractData } from '../../../../src/coin/eth/utils';
-import { fromNat } from '../../../../src/coin/cgld/utils';
 
 describe('Celo Transaction builder', function() {
   let txBuilder;
@@ -56,19 +54,10 @@ describe('Celo Transaction builder', function() {
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
     });
 
-    it('decode serialized tx', () => {
-      const txBuilder: any = getBuilder('cgld');
-      txBuilder.type(TransactionType.WalletInitialization);
-      txBuilder.owner(testData.ACCOUNT1);
-      txBuilder.owner(testData.ACCOUNT2);
-      txBuilder.owner(testData.ACCOUNT3);
+    it('decode serialized tx', async () => {
       const walletOwners = [testData.ACCOUNT1, testData.ACCOUNT2, testData.ACCOUNT3];
       const txData = testData.TXDATA_EMPTY_DATA;
       txData.data = getContractData(walletOwners);
-      const chainIdNumber = '0x' + Number(txData.chainId).toString(16);
-      console.log('chain id number', chainIdNumber);
-      const chainId = fromNat(chainIdNumber);
-      console.log('chain Id', chainId);
       const encodedTxData = RLP.encode([
         txData.nonce,
         txData.gasPrice,
@@ -79,12 +68,46 @@ describe('Celo Transaction builder', function() {
         '0x',
         '0x',
         txData.data,
-        chainId,
+        txData.chainId,
         '0x',
         '0x',
       ]);
-      const decodedTx = deserialize(encodedTxData);
-      console.log('Decoded Tx ', decodedTx);
+
+      const txBuilder: any = getBuilder('cgld');
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.owner(testData.ACCOUNT1); //TODO: remove these
+      txBuilder.owner(testData.ACCOUNT2);
+      txBuilder.owner(testData.ACCOUNT3);
+      txBuilder.from(encodedTxData);
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+
+      should.equal(txJson.nonce, testData.TXDATA_EMPTY_DATA.nonce);
+      should.equal(txJson.gasPrice, testData.TXDATA_EMPTY_DATA.gasPrice);
+      should.equal(txJson.gasLimit, testData.TXDATA_EMPTY_DATA.gasLimit);
+      should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
+    });
+
+    it('an init transaction from serialized', async () => {
+      const txBuilder: any = getBuilder('cgld');
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
+      txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
+      txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      const tx = await txBuilder.build();
+      const serialized = tx.toBroadcastFormat();
+
+      // now rebuild from the signed serialized tx and make sure it stays the same
+      const newTxBuilder: any = getBuilder('cgld');
+      newTxBuilder.from(serialized);
+      newTxBuilder.source(defaultKeyPair.getAddress());
+      const newTx = await newTxBuilder.build();
+      should.equal(newTx.toBroadcastFormat(), serialized);
     });
   });
 });

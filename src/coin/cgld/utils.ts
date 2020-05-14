@@ -74,28 +74,24 @@ function toNumber(hex: string): number {
   return parseInt(hex.slice(2), 16);
 }
 
-export const fromNat = bn => (bn === '0x0' ? '0x' : bn.length % 2 === 0 ? bn : '0x0' + bn.slice(2));
-
 /**
  *
  * @param {string} serializedTx the serialized transaction
  * @returns {TxData} the deserialized transaction
  */
 export function deserialize(serializedTx: string): TxData {
-  //const x = recoverTransaction(serializedTx);
   const rawValues = RLP.decode(serializedTx);
-  console.log('signing-utils@recoverTransaction: values are %s', rawValues);
   const recovery = toNumber(rawValues[9]);
-  // tslint:disable-next-line:no-bitwise
   const chainId = fromNumber((recovery - 35) >> 1);
   const celoTx: TxData = {
+    //TODO: use bignumber for gasPrice, gasLimit and value
     nonce: rawValues[0].toLowerCase() === '0x' ? 0 : parseInt(rawValues[0], 16),
     gasPrice: rawValues[1].toLowerCase() === '0x' ? '0' : parseInt(rawValues[1], 16).toString(),
     gasLimit: rawValues[2].toLowerCase() === '0x' ? '0' : parseInt(rawValues[2], 16).toString(),
-    to: rawValues[6],
-    value: rawValues[7],
+    value: rawValues[7].toLowerCase() === '0x' ? '0' : parseInt(rawValues[2], 16).toString(),
     data: rawValues[8],
     chainId: chainId,
   };
+  if (rawValues[6] !== '0x') celoTx.to = rawValues[6];
   return celoTx;
 }

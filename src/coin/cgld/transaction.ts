@@ -1,13 +1,16 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Eth } from '../../index';
 import { InvalidTransactionError } from '../baseCoin/errors';
+import { TxData } from '../eth/iface';
+import { EthTransaction } from '../eth/types';
 import { KeyPair, Utils } from './';
 
 export class Transaction extends Eth.Transaction {
   private _encodedTransaction?: string;
 
-  constructor(_coinConfig: Readonly<CoinConfig>) {
-    super(_coinConfig);
+  /** @inheritdoc */
+  constructor(_coinConfig: Readonly<CoinConfig>, txData?: TxData) {
+    super(_coinConfig, txData);
   }
 
   /**
@@ -34,8 +37,9 @@ export class Transaction extends Eth.Transaction {
 
   /**@inheritdoc */
   public static fromSerialized(coinConfig: Readonly<CoinConfig>, serializedTx: string): Transaction {
-    const tx = new Transaction(coinConfig);
-    tx.setTransactionData(Utils.deserialize(serializedTx));
+    const celoTx = Utils.deserialize(serializedTx);
+    console.log('fromJson', EthTransaction.fromJson(celoTx).toJson());
+    const tx = new Transaction(coinConfig, EthTransaction.fromJson(celoTx).toJson());
     return tx;
   }
 }
