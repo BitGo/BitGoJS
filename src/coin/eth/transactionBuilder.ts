@@ -103,6 +103,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           this.owner(element);
         });
         break;
+      default:
+        throw new BuildTransactionError('Unsupported transaction type');
       //TODO: Add other cases of deserialization
     }
   }

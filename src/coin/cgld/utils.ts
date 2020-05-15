@@ -6,6 +6,9 @@ import { ParseTransactionError } from '../baseCoin/errors';
 import { Utils } from '../eth';
 
 /**
+ * Celo transaction deserialization based on code
+ * from @celo/contractkit/lib/utils/signing-utils
+ * github: https://github.com/celo-org/celo-monorepo/tree/master/packages/contractkit
  *
  * @param {string} serializedTx the serialized transaction
  * @returns {TxData} the deserialized transaction
@@ -15,8 +18,8 @@ export function deserialize(serializedTx: string): TxData {
     const rawValues = RLP.decode(serializedTx);
     let chainId = rawValues[9];
     if (rawValues[10] !== '0x' && rawValues[11] !== '0x') {
-      const recovery = Utils.toNumber(chainId);
-      chainId = Utils.fromNumber((recovery - 35) >> 1);
+      const recovery = Utils.hexStringToNumber(chainId);
+      chainId = Utils.numberToHexString((recovery - 35) >> 1);
     }
     const celoTx: TxData = {
       nonce: rawValues[0].toLowerCase() === '0x' ? 0 : parseInt(rawValues[0], 16),

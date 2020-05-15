@@ -156,7 +156,7 @@ export function classifyTransaction(data: string): TransactionType {
  * @param {number} num number to be converted to hex
  * @returns {string} the hex number
  */
-export function fromNumber(num: number): string {
+export function numberToHexString(num: number): string {
   const hex = num.toString(16);
   return hex.length % 2 === 0 ? '0x' + hex : '0x0' + hex;
 }
@@ -166,6 +166,6 @@ export function fromNumber(num: number): string {
  * @param {string} hex The hex string to be converted
  * @returns {number} the resulting number
  */
-export function toNumber(hex: string): number {
+export function hexStringToNumber(hex: string): number {
   return parseInt(hex.slice(2), 16);
 }
