@@ -12,6 +12,7 @@ export class TransferBuilder {
   private _data: string;
   private _signKey: string;
   private _expirationTime: number;
+  private _signature: string;
 
   //initialize with default values for non mandatory fields
   constructor() {
@@ -54,14 +55,14 @@ export class TransferBuilder {
 
   signAndBuild(): string {
     if (this.hasMandatoryFields()) {
-      const signature = this.ethSignMsgHash();
+      this.ethSignMsgHash();
       return sendMultiSigData(
         this._toAddress,
         new BigNumber(this._amount).toNumber(),
         this._data,
         this._expirationTime,
         this._sequenceId,
-        signature,
+        this._signature,
       );
     }
     throw new BuildTransactionError(
@@ -102,7 +103,7 @@ export class TransferBuilder {
     ];
   }
 
-  private ethSignMsgHash(): string {
+  private ethSignMsgHash(): void {
     const data = ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...this.getSHA()));
     const signatureInParts = ethUtil.ecsign(
       new Buffer(ethUtil.stripHexPrefix(data), 'hex'),
@@ -115,6 +116,6 @@ export class TransferBuilder {
     const v = ethUtil.stripHexPrefix(ethUtil.intToHex(signatureInParts.v));
 
     // Concatenate the r, s and v parts to make the signature string
-    return ethUtil.addHexPrefix(r.concat(s, v));
+    this._signature = ethUtil.addHexPrefix(r.concat(s, v));
   }
 }
