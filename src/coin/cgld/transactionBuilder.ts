@@ -1,7 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { Eth } from '../../index';
-import { Utils } from '../eth';
-import { TransactionType } from '../baseCoin';
 import { Transaction } from './transaction';
 
 export class TransactionBuilder extends Eth.TransactionBuilder {

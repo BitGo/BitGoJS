@@ -3,25 +3,7 @@ import { RLP } from 'ethers/utils';
 import BigNumber from 'bignumber.js';
 import { TxData } from '../eth/iface';
 import { ParseTransactionError } from '../baseCoin/errors';
-
-/**
- *
- * @param {number} num number to be converted to hex
- * @returns {string} the hex number
- */
-function fromNumber(num: number): string {
-  const hex = num.toString(16);
-  return hex.length % 2 === 0 ? '0x' + hex : '0x0' + hex;
-}
-
-/**
- *
- * @param {string} hex The hex string to be converted
- * @returns {number} the resulting number
- */
-function toNumber(hex: string): number {
-  return parseInt(hex.slice(2), 16);
-}
+import { Utils } from '../eth';
 
 /**
  *
@@ -33,8 +15,8 @@ export function deserialize(serializedTx: string): TxData {
     const rawValues = RLP.decode(serializedTx);
     let chainId = rawValues[9];
     if (rawValues[10] !== '0x' && rawValues[11] !== '0x') {
-      const recovery = toNumber(chainId);
-      chainId = fromNumber((recovery - 35) >> 1);
+      const recovery = Utils.toNumber(chainId);
+      chainId = Utils.fromNumber((recovery - 35) >> 1);
     }
     const celoTx: TxData = {
       nonce: rawValues[0].toLowerCase() === '0x' ? 0 : parseInt(rawValues[0], 16),
