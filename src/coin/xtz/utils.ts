@@ -36,7 +36,7 @@ export async function calculateTransactionId(encodedTransaction: string): Promis
   await sodium.ready;
   const encodedTransactionBuffer = Uint8Array.from(Buffer.from(encodedTransaction, 'hex'));
   const operationHashPayload = sodium.crypto_generichash(32, encodedTransactionBuffer);
-  return base58encode(this.hashTypes.o.prefix, Buffer.from(operationHashPayload));
+  return base58encode(hashTypes.o.prefix, Buffer.from(operationHashPayload));
 }
 
 /**
@@ -48,7 +48,7 @@ export async function calculateTransactionId(encodedTransaction: string): Promis
  */
 export async function calculateOriginatedAddress(transactionId: string, index: number): Promise<string> {
   // From https://github.com/TezTech/eztz/blob/cfdc4fcfc891f4f4f077c3056f414476dde3610b/src/main.js#L768
-  const ob = base58check.decode(transactionId).slice(this.hashTypes.o.prefix.length);
+  const ob = base58check.decode(transactionId).slice(hashTypes.o.prefix.length);
 
   let tt: number[] = [];
   for (let i = 0; i < ob.length; i++) {
@@ -64,7 +64,7 @@ export async function calculateOriginatedAddress(transactionId: string, index: n
 
   await sodium.ready;
   const payload = sodium.crypto_generichash(20, new Uint8Array(tt));
-  return base58encode(this.hashTypes.KT.prefix, Buffer.from(payload));
+  return base58encode(hashTypes.KT.prefix, Buffer.from(payload));
 }
 
 /**
@@ -102,7 +102,7 @@ export async function verifySignature(
   signature: string,
   watermark: Uint8Array = DEFAULT_WATERMARK,
 ): Promise<boolean> {
-  const rawPublicKey = decodeKey(publicKey, this.hashTypes.sppk);
+  const rawPublicKey = decodeKey(publicKey, hashTypes.sppk);
   const ec = new EC('secp256k1');
   const key = ec.keyFromPublic(rawPublicKey);
 
@@ -115,7 +115,7 @@ export async function verifySignature(
   await sodium.ready;
   const bytesHash = new Buffer(sodium.crypto_generichash(32, messageWithWatermark));
 
-  const rawSignature = decodeSignature(signature, this.hashTypes.sig);
+  const rawSignature = decodeSignature(signature, hashTypes.sig);
   return key.verify(bytesHash, { r: rawSignature.slice(0, 32), s: rawSignature.slice(32, 64) });
 }
 
