@@ -70,7 +70,12 @@ export class TransferBuilder {
   }
 
   private hasMandatoryFields(): boolean {
-    return this._amount && this._toAddress && this._sequenceId && this._signKey ? true : false;
+    return (
+      this._amount !== undefined &&
+      this._toAddress !== undefined &&
+      this._sequenceId !== undefined &&
+      this._signKey !== undefined
+    );
   }
 
   /** Return an expiration time, in seconds, set to one hour from now

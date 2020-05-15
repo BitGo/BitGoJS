@@ -7,6 +7,11 @@ import { KeyPair } from '../eth';
 
 export class CeloTransaction extends EthereumTransaction {
   private _from: Buffer;
+  private _signatures: Buffer[];
+  private _feeCurrency: Buffer = toBuffer('0x');
+  private _gatewayFeeRecipient: Buffer = toBuffer('0x');
+  private _gatewayFee: Buffer = toBuffer('0x');
+
   constructor(tx: TxData) {
     super();
     this.nonce = toBuffer(tx.nonce);
@@ -29,7 +34,24 @@ export class CeloTransaction extends EthereumTransaction {
     if (tx.from) {
       this._from = toBuffer(tx.from);
     }
-    this.raw = [this.nonce, this.gasPrice, this.gasLimit, this.to, this.value, this.data, this.v, this.r, this.s];
+    this.initRaw();
+  }
+
+  private initRaw() {
+    this.raw = [
+      this.nonce,
+      this.gasPrice,
+      this.gasLimit,
+      this._feeCurrency,
+      this._gatewayFeeRecipient,
+      this._gatewayFee,
+      this.to,
+      this.value,
+      this.data,
+      this.v,
+      this.r,
+      this.s,
+    ];
   }
 
   //TODO: implement this method
@@ -43,7 +65,7 @@ export class CeloTransaction extends EthereumTransaction {
 
   //TODO: clean method
   sign(privateKey: Buffer): void {
-    this.raw.splice(3, 0, toBuffer('0x'), toBuffer('0x'), toBuffer('0x'));
+    this._signatures = [this.v, this.r, this.s, privateKey];
   }
 
   //TODO: implement method
