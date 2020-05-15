@@ -73,8 +73,7 @@ export class Transaction extends BaseTransaction {
     if (!keyPair.getKeys().prv) {
       throw new SigningError('Missing private key');
     }
-    const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
-    this._ethTransaction.tx.sign(privateKey);
+    this._ethTransaction.sign(keyPair);
   }
 
   /** @inheritdoc */
