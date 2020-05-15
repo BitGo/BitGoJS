@@ -371,8 +371,7 @@ describe('Eth Transaction builder', function() {
       should.doesNotThrow(() => txBuilder.validateKey({ key: testData.PRIVATE_KEY }));
     });
 
-    //implemented by BGA-10
-    it.skip('a raw transaction', async () => {
+    it('a raw transaction', async () => {
       const builder: any = getBuilder('eth');
       should.doesNotThrow(() => builder.from(testData.TX_BROADCAST));
       should.doesNotThrow(() => builder.from(testData.TX_JSON));
