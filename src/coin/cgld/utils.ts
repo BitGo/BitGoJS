@@ -31,8 +31,11 @@ function toNumber(hex: string): number {
 export function deserialize(serializedTx: string): TxData {
   try {
     const rawValues = RLP.decode(serializedTx);
-    const recovery = toNumber(rawValues[9]);
-    const chainId = fromNumber((recovery - 35) >> 1);
+    let chainId = rawValues[9];
+    if (rawValues[10] !== '0x' && rawValues[11] !== '0x') {
+      const recovery = toNumber(chainId);
+      chainId = fromNumber((recovery - 35) >> 1);
+    }
     const celoTx: TxData = {
       nonce: rawValues[0].toLowerCase() === '0x' ? 0 : parseInt(rawValues[0], 16),
       gasPrice: rawValues[1].toLowerCase() === '0x' ? '0' : new BigNumber(rawValues[1], 16).toString(),

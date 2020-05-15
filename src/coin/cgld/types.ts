@@ -41,6 +41,7 @@ export class CeloTransaction extends EthereumTransaction {
     return rlp.encode(this.raw);
   }
 
+  //TODO: clean method
   sign(privateKey: Buffer): void {
     this.raw.splice(3, 0, toBuffer('0x'), toBuffer('0x'), toBuffer('0x'));
   }
