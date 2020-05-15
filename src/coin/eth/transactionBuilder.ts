@@ -4,7 +4,7 @@ import { RLP } from 'ethers/utils';
 import * as Crypto from '../../utils/crypto';
 import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
-import { Transaction, TransferBuilder } from '../eth';
+import { Transaction, TransferBuilder, Utils } from '../eth';
 import {
   BuildTransactionError,
   SigningError,
@@ -77,6 +77,18 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     let tx: Transaction;
     if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
       tx = Transaction.fromSerialized(this._coinConfig, rawTransaction);
+      const transactionJson = tx.toJson();
+      const decodedType = Utils.classifyTransaction(transactionJson.data);
+      this.type(decodedType);
+      switch (decodedType) {
+        case TransactionType.WalletInitialization:
+          this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
+          this.counter(transactionJson.nonce);
+          this.chainId(Number(transactionJson.chainId));
+          this._walletOwnerAddresses = Utils.decodeWalletCreationData(transactionJson.data);
+          break;
+        //TODO: Add other cases of deserialization
+      }
     } else {
       const txData = JSON.parse(rawTransaction);
       tx = new Transaction(this._coinConfig, txData);

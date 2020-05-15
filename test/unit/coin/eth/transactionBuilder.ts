@@ -106,11 +106,41 @@ describe('Eth Transaction builder', function() {
       should.equal(txJson.chainId, 42);
     });
 
-    it('an init transaction from serialized', async () => {
-      const txBuilder: any = getBuilder('cgld');
+    it('an unsigned init transaction from serialized', async () => {
+      const txBuilder: any = getBuilder('eth');
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.source(defaultKeyPair.getAddress());
       txBuilder.counter(1);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      txBuilder.chainId(42);
+      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
+      txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
+      txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
+      txBuilder.source(defaultKeyPair.getAddress());
+      const tx = await txBuilder.build();
+      const serialized = tx.toBroadcastFormat();
+
+      // now rebuild from the signed serialized tx and make sure it stays the same
+      const newTxBuilder: any = getBuilder('eth');
+      newTxBuilder.from(serialized);
+      newTxBuilder.source(defaultKeyPair.getAddress());
+      const newTx = await newTxBuilder.build();
+      should.equal(newTx.toBroadcastFormat(), serialized);
+    });
+
+    it('a signed init transaction from serialized', async () => {
+      const txBuilder: any = getBuilder('eth');
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      txBuilder.chainId(42);
       txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
       txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
       txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
@@ -120,9 +150,10 @@ describe('Eth Transaction builder', function() {
       const serialized = tx.toBroadcastFormat();
 
       // now rebuild from the signed serialized tx and make sure it stays the same
-      const newTxBuilder: any = getBuilder('cgld');
+      const newTxBuilder: any = getBuilder('eth');
       newTxBuilder.from(serialized);
       newTxBuilder.source(defaultKeyPair.getAddress());
+      newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
     });

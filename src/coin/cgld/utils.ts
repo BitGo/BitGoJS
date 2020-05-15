@@ -58,32 +58,12 @@ function removeEmptyFields(transactionData: TxData): TxData {
 
 /**
  *
- * @param {number} num number to be converted to hex
- * @returns {string} the hex number
- */
-function fromNumber(num: number): string {
-  const hex = num.toString(16);
-  return hex.length % 2 === 0 ? '0x' + hex : '0x0' + hex;
-}
-
-/**
- *
- * @param {string} hex The hex string to be converted
- * @returns {number} the resulting number
- */
-function toNumber(hex: string): number {
-  return parseInt(hex.slice(2), 16);
-}
-
-/**
- *
  * @param {string} serializedTx the serialized transaction
  * @returns {TxData} the deserialized transaction
  */
 export function deserialize(serializedTx: string): TxData {
   const rawValues = RLP.decode(serializedTx);
   const celoTx: TxData = {
-    //TODO: use bignumber for gasPrice, gasLimit and value
     nonce: rawValues[0].toLowerCase() === '0x' ? 0 : parseInt(rawValues[0], 16),
     gasPrice: rawValues[1].toLowerCase() === '0x' ? '0' : new BigNumber(rawValues[1], 16).toString(),
     gasLimit: rawValues[2].toLowerCase() === '0x' ? '0' : new BigNumber(rawValues[2], 16).toString(),
@@ -92,6 +72,5 @@ export function deserialize(serializedTx: string): TxData {
     chainId: rawValues[9],
   };
   if (rawValues[6] !== '0x') celoTx.to = rawValues[6];
-  console.log('Celo tx', celoTx);
   return celoTx;
 }
