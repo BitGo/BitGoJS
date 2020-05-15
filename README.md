@@ -23,6 +23,17 @@ The `TranssactionBuilder` class guides a user through the construction of a tran
 ### Transaction
 `Transaction` objects are javascript representations of blockchain transactions that implement protocol specific validation rules. `Transactions` provide encoding mechanisms that allow them to be validly broadcast to their respective network.
 
+#### Transaction Types
+The `TransactionBuilder` supports 3 types types of transactions
+##### Send
+Transfers funds from a wallet
+##### Wallet Initialization
+Initializes a wallet's account on the network (e.g. Multi-sig contract deployment)
+##### Address Initialization
+Initializes a wallet's address on the network (e.g. Forwarder contract deployment)
+##### Account Update
+Updates an account on the network (e.g. Public key revelation operation for Tezos)
+
 ### Offline Availability
 The intention is that this library can be used in an offline environment, for offline signings.
 
