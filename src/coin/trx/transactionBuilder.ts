@@ -167,15 +167,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       .createHash('sha256')
       .update(hexBuffer)
       .digest('hex');
-    if (currTransaction.txID != currTxID) {
+    if (currTransaction.txID !== currTxID) {
       throw new InvalidTransactionError('Transaction has not have a valid id');
     }
     // Validate the expiration time from the raw-data-hex
-    if (currTransaction.raw_data.expiration != decodedRawDataHex.expiration) {
+    if (currTransaction.raw_data.expiration !== decodedRawDataHex.expiration) {
       throw new InvalidTransactionError('Transaction has not have a valid expiration');
     }
     // Validate the timestamp from the raw-data-hex
-    if (currTransaction.raw_data.timestamp != decodedRawDataHex.timestamp) {
+    if (currTransaction.raw_data.timestamp !== decodedRawDataHex.timestamp) {
       throw new InvalidTransactionError('Transaction has not have a valid timetamp');
     }
     // Transaction contract must exist
@@ -192,7 +192,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       .createHash('sha256')
       .update(hexBuffer)
       .digest('hex');
-    if (transaction.id != txId) {
+    if (transaction.id !== txId) {
       throw new InvalidTransactionError(transaction.id + ' is not a valid transaction id. Expecting: ' + txId);
     }
   }
