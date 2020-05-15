@@ -77,23 +77,34 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     let tx: Transaction;
     if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
       tx = Transaction.fromSerialized(this._coinConfig, rawTransaction);
-      const transactionJson = tx.toJson();
-      const decodedType = Utils.classifyTransaction(transactionJson.data);
-      this.type(decodedType);
-      switch (decodedType) {
-        case TransactionType.WalletInitialization:
-          this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
-          this.counter(transactionJson.nonce);
-          this.chainId(Number(transactionJson.chainId));
-          this._walletOwnerAddresses = Utils.decodeWalletCreationData(transactionJson.data);
-          break;
-        //TODO: Add other cases of deserialization
-      }
+      this.loadBuilderInput(tx.toJson());
     } else {
       const txData = JSON.parse(rawTransaction);
       tx = new Transaction(this._coinConfig, txData);
     }
     return tx;
+  }
+
+  /**
+   * Load the builder data using the deserialized transaction
+   *
+   * @param {TxData} transactionJson the deserialized transaction json
+   */
+  protected loadBuilderInput(transactionJson: TxData): void {
+    const decodedType = Utils.classifyTransaction(transactionJson.data);
+    this.type(decodedType);
+    switch (decodedType) {
+      case TransactionType.WalletInitialization:
+        this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
+        this.counter(transactionJson.nonce);
+        this.chainId(Number(transactionJson.chainId));
+        const owners = Utils.decodeWalletCreationData(transactionJson.data);
+        owners.forEach(element => {
+          this.owner(element);
+        });
+        break;
+      //TODO: Add other cases of deserialization
+    }
   }
 
   /**@inheritdoc */
