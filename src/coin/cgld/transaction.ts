@@ -2,12 +2,9 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Eth } from '../../index';
 import { TxData } from '../eth/iface';
 import { CgldTransaction } from './types';
-import { InvalidTransactionError } from '../baseCoin/errors';
-import { TxData } from '../eth/iface';
-import { KeyPair, Utils } from './';
+import * as Utils from './utils';
 
 export class Transaction extends Eth.Transaction {
-  /** @inheritdoc */
   constructor(_coinConfig: Readonly<CoinConfig>, txData?: TxData) {
     super(_coinConfig, txData);
   }

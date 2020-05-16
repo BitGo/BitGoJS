@@ -1,4 +1,3 @@
-import { recoverTransaction } from '@celo/contractkit/lib/utils/signing-utils';
 import { RLP } from 'ethers/utils';
 import BigNumber from 'bignumber.js';
 import { TxData } from '../eth/iface';

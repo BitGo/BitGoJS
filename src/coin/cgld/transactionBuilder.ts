@@ -16,7 +16,8 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
       super.loadBuilderInput(tx.toJson());
     } else {
       const txData = JSON.parse(rawTransaction);
-      tx = new Transaction(this._coinConfig, txData);
+      tx = new Transaction(this._coinConfig);
+      tx.setTransactionData(txData); //TODO: maybe create a constructor that takes 2 arguments
     }
     return tx;
   }
