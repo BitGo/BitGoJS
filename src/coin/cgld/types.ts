@@ -1,12 +1,23 @@
 import BigNumber from 'bignumber.js';
 import { signTransaction } from '@celo/contractkit/lib/utils/signing-utils';
-import { addHexPrefix, toBuffer, bufferToHex, bufferToInt, rlp } from 'ethereumjs-util';
+import {
+  addHexPrefix,
+  toBuffer,
+  bufferToHex,
+  bufferToInt,
+  rlp,
+  rlphash,
+  stripZeros,
+  ecrecover,
+  publicToAddress,
+} from 'ethereumjs-util';
 import { TxData } from '../eth/iface';
 import { EthereumTransaction, EthTransaction } from '../eth/types';
-import { KeyPair } from '../eth';
+import { KeyPair, Utils } from '../eth';
 
 export class CeloTransaction extends EthereumTransaction {
   private _from: Buffer;
+  private _senderPubKey?;
   private _signatures: Buffer[];
   private _feeCurrency: Buffer = toBuffer('0x');
   private _gatewayFeeRecipient: Buffer = toBuffer('0x');
@@ -54,27 +65,62 @@ export class CeloTransaction extends EthereumTransaction {
     ];
   }
 
-  //TODO: implement this method
+  hash(includeSignature?: boolean): Buffer {
+    let items;
+    if (includeSignature) {
+      items = this.raw;
+    } else {
+      items = this.raw
+        .slice(0, 9)
+        .concat([toBuffer(this.getChainId()), stripZeros(toBuffer(0)), stripZeros(toBuffer(0))]);
+    }
+
+    return rlphash(items);
+  }
+
   getSenderAddress(): Buffer {
-    return new Buffer('');
+    if (this._from) {
+      return this._from;
+    }
+    const pubKey = this.getSenderPublicKey();
+    this._from = publicToAddress(pubKey);
+    return this._from;
+  }
+
+  getSenderPublicKey() {
+    if (this.verifySignature()) {
+      // If the signature was verified successfully the _senderPubKey field is defined
+      return this._senderPubKey;
+    }
+    throw new Error('Invalid Signature');
   }
 
   serialize(): Buffer {
     return rlp.encode(this.raw);
   }
 
-  //TODO: clean method
   sign(privateKey: Buffer): void {
     this._signatures = [this.v, this.r, this.s, privateKey];
   }
 
-  //TODO: implement method
   verifySignature(): boolean {
-    return false;
+    const msgHash = this.hash(false);
+    try {
+      const chainId = this.getChainId();
+      const v = bufferToInt(this.v) - (2 * chainId + 35);
+      this._senderPubKey = ecrecover(msgHash, v + 27, this.r, this.s);
+    } catch (e) {
+      return false;
+    }
+    return !!this._senderPubKey;
   }
-  //TODO: implement method
+
   getChainId(): number {
-    return 0;
+    let chainId = bufferToInt(this.v);
+    if (this.r.length && this.s.length) {
+      chainId = (chainId - 35) >> 1;
+    }
+    return chainId;
   }
 }
 
@@ -109,6 +155,6 @@ export class CgldTransaction extends EthTransaction {
     rawTransaction.tx.data = data.data;
     rawTransaction.tx.gasLimit = rawTransaction.tx.gas;
     this.tx = new CeloTransaction(rawTransaction.tx);
-    this.tx.sign(toBuffer(this.chainId));
+    this.tx.sign(toBuffer(privateKey));
   }
 }
