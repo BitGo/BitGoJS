@@ -1,6 +1,7 @@
 import should from 'should';
-import { sign, getContractData, isValidEthAddress } from '../../../../src/coin/eth/utils';
+import { sign, getContractData, isValidEthAddress, getAddressInitializationData } from '../../../../src/coin/eth/utils';
 import * as testData from '../../../resources/eth/eth';
+import * as walletUtilConstants from '../../../../src/coin/eth/walletUtil';
 
 describe('ETH util library', function() {
   describe('sign operation', function() {
@@ -17,6 +18,10 @@ describe('ETH util library', function() {
   describe('Obtain contract data', function() {
     const CONTRACT_ADDRESSES = [testData.ACCOUNT_1, testData.ACCOUNT_2, testData.ACCOUNT_3];
     should.equal(getContractData(CONTRACT_ADDRESSES), testData.EXPECTED_CONTRACT_DATA);
+  });
+
+  describe('Should validate valid createForwareder Id', function() {
+    should.equal(getAddressInitializationData(), walletUtilConstants.createForwarderMethodId);
   });
 
   describe('shoud validate valid address', function() {
