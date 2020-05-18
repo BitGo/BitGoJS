@@ -55,10 +55,10 @@ export interface ExplainTransactionOptions {
   feeInfo: TransactionFee;
 }
 
-export class AbstractEthLikeCoin extends BaseCoin {
+export abstract class AbstractEthLikeCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
-  constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
+  protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
     super(bitgo);
 
     if (!staticsCoin) {
