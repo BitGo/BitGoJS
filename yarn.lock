@@ -120,6 +120,11 @@
     protobufjs "^6.8.9"
     tronweb "^2.7.2"
 
+"@bitgo/statics@^3.4.2":
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-3.5.0.tgz#1580dbd0ba5920acd649c6514012c9f3f2624112"
+  integrity sha512-t/KvJmaisndhrkT4HgdSrkaVDE21s2vzs9jFgt8xXfi1n7z6N0ScIBZuF1YO1BF8X9wL183Qj7Fy8yiz0pMeOw==
+
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
@@ -5510,10 +5515,10 @@ http-proxy-agent@^2.1.0:
     agent-base "4"
     debug "3.1.0"
 
-http-proxy@^1.17.0:
-  version "1.18.0"
-  resolved "https://registry.yarnpkg.com/http-proxy/-/http-proxy-1.18.0.tgz#dbe55f63e75a347db7f3d99974f2692a314a6a3a"
-  integrity sha512-84I2iJM/n1d4Hdgc6y2+qY5mDaz2PUVjlg9znE9byl+q0uC3DeByqBGReQu5tpLK0TAqTIXScRUV+dg7+bUPpQ==
+http-proxy@^1.18.1:
+  version "1.18.1"
+  resolved "https://registry.yarnpkg.com/http-proxy/-/http-proxy-1.18.1.tgz#401541f0534884bbf95260334e72f88ee3976549"
+  integrity sha512-7mz/721AbnJwIVbnaSv1Cz3Am0ZLT/UBwkC92VlxhXv/k/BBQfM2fXElQNC27BVGr0uwUpplYPQM9LnaBMR5NQ==
   dependencies:
     eventemitter3 "^4.0.0"
     follow-redirects "^1.0.0"
