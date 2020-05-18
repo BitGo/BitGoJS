@@ -92,6 +92,16 @@ export function sendMultiSigData(
 }
 
 /**
+ * Returns the create forwarder method calling data
+ *
+ * @returns {string} - the createForwarder method encoded
+ */
+export function getAddressInitializationData(): string {
+  const method = EthereumAbi.methodID('createForwarder', []);
+  return addHexPrefix(Buffer.from(method).toString('hex'));
+}
+
+/**
  * Returns whether or not the string is a valid Eth address
  *
  * @param {string} address - the tx hash to validate

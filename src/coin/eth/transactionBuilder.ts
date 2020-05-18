@@ -13,7 +13,7 @@ import {
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { Fee, TxData } from './iface';
-import { getContractData, isValidEthAddress } from './utils';
+import { getContractData, isValidEthAddress, getAddressInitializationData } from './utils';
 
 const DEFAULT_M = 3;
 
@@ -58,6 +58,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.Send:
         transactionData = this.buildSendTransaction();
+        break;
+      case TransactionType.AddressInitialization:
+        transactionData = this.buildAddressInitializationTransaction();
         break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
@@ -200,6 +203,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         }
         break;
       case TransactionType.Send:
+      case TransactionType.AddressInitialization:
         if (this._contractAddress === undefined) {
           throw new BuildTransactionError('Invalid transaction: missing contract address');
         }
@@ -341,6 +345,21 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private buildSendTransaction(): TxData {
     const sendData = this.getSendData();
     const tx: TxData = this.buildBase(sendData);
+    tx.to = this._contractAddress;
+    return tx;
+  }
+  //endregion
+
+  // region AddressInitialization builder methods
+
+  /**
+   * Build a transaction to create a forwarder.
+   *
+   * @returns {TxData} The Ethereum transaction data
+   */
+  private buildAddressInitializationTransaction(): TxData {
+    const addresInitData = getAddressInitializationData();
+    const tx: TxData = this.buildBase(addresInitData);
     tx.to = this._contractAddress;
     return tx;
   }

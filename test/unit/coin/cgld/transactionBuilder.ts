@@ -65,7 +65,6 @@ describe('Celo Transaction builder', function() {
       const tx = await txBuilder.build(); //shoud build and sign
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
     });
-
     it('an unsigned init transaction from serialized', async () => {
       //TODO: this is not working due to the encoding of the tx in toBroadcastFormat()
       txBuilder.type(TransactionType.WalletInitialization);
@@ -87,7 +86,6 @@ describe('Celo Transaction builder', function() {
       const signedTx = await newTxBuilder.build();
       //should.equal(signedTx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
-
     it('a signed init transaction from serialized', async () => {
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.source(defaultKeyPair.getAddress());
@@ -105,6 +103,32 @@ describe('Celo Transaction builder', function() {
       newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
+    });
+    it('an address creation transaction', async () => {
+      const txBuilder: any = getBuilder('cgld');
+      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      txBuilder.chainId(44786);
+      const source = {
+        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+      };
+      const sourceKeyPair = new Eth.KeyPair(source);
+      txBuilder.source(sourceKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.contract(testData.CONTRACT_ADDRESS);
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      const tx = await txBuilder.build(); //shoud build and sign
+
+      tx.type.should.equal(TransactionType.AddressInitialization);
+      const txJson = tx.toJson();
+      txJson.gasLimit.should.equal('2000000');
+      txJson.gasPrice.should.equal('10000000000');
+      should.equal(txJson.nonce, 1);
+      should.equal(txJson.chainId, 44786);
+      should.equal(tx.toBroadcastFormat(), testData.TX_ADDRESS_INIT);
     });
   });
 });

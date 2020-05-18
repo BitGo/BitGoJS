@@ -162,7 +162,7 @@ describe('Eth Transaction builder', function() {
   describe('should fail to build', () => {
     it('an unsupported type of transaction', async () => {
       await buildTransaction({
-        type: TransactionType.AddressInitialization,
+        type: 3,
         fee: {
           fee: '10',
           gasLimit: '10',
@@ -309,7 +309,7 @@ describe('Eth Transaction builder', function() {
   });
 
   describe('should fail to sign', () => {
-    it('a transaction without owners', () => {
+    it('a wallet initialization transaction without owners', () => {
       const txBuilder: any = getBuilder('eth');
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.fee({
@@ -326,7 +326,7 @@ describe('Eth Transaction builder', function() {
       should.throws(() => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }));
     });
 
-    it('a signed transaction', () => {
+    it('a signed wallet initialization transaction', () => {
       const txBuilder: any = getBuilder('eth');
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.fee({
