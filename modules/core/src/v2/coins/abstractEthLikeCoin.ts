@@ -84,10 +84,6 @@ export class AbstractEthLikeCoin extends BaseCoin {
     return Math.pow(10, this._staticsCoin.decimalPlaces);
   }
 
-  static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new AbstractEthLikeCoin(bitgo, staticsCoin);
-  }
-
   valuelessTransferAllowed(): boolean {
     return true;
   }

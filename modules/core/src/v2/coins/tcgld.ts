@@ -12,6 +12,6 @@ export class Tcgld extends AbstractEthLikeCoin {
   }
 
   static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new AbstractEthLikeCoin(bitgo, staticsCoin);
+    return new Tcgld(bitgo, staticsCoin);
   }
 }
