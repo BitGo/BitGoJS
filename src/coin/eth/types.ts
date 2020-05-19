@@ -1,40 +1,22 @@
 import BigNumber from 'bignumber.js';
 import { Transaction as EthereumTx } from 'ethereumjs-tx';
 import { addHexPrefix, bufferToHex, bufferToInt, toBuffer } from 'ethereumjs-util';
-import { TxData } from './iface';
+import { EthLikeTransactionData, TxData } from './iface';
 import { KeyPair } from './keyPair';
-
-export abstract class EthereumTransaction {
-  raw: Buffer[];
-  nonce: Buffer = toBuffer([]);
-  gasLimit: Buffer = toBuffer([]);
-  gasPrice: Buffer = toBuffer([]);
-  to: Buffer = toBuffer([]);
-  value: Buffer = toBuffer([]);
-  data: Buffer = toBuffer([]);
-  v: Buffer = toBuffer([]);
-  r: Buffer = toBuffer([]);
-  s: Buffer = toBuffer([]);
-  abstract verifySignature(): boolean;
-  abstract getSenderAddress(): Buffer;
-  abstract serialize(): Buffer;
-  abstract sign(privateKey?: Buffer): void;
-  abstract getChainId(): number;
-}
 
 /**
  * An Ethereum transaction with helpers for serialization and deserialization.
  */
-export class EthTransaction {
-  constructor(public tx: EthereumTransaction, protected chainId?: string) {}
+export class EthTransactionData implements EthLikeTransactionData {
+  constructor(private tx: EthereumTx, protected chainId?: string) {}
 
   /**
    * Build an ethereum transaction from its JSON representation
    *
    * @param tx The JSON representation of the transaction
    */
-  public static fromJson(tx: TxData): EthTransaction {
-    return new EthTransaction(
+  public static fromJson(tx: TxData): EthTransactionData {
+    return new EthTransactionData(
       new EthereumTx({
         nonce: addHexPrefix(new BigNumber(tx.nonce).toString(16)),
         to: tx.to,
@@ -52,8 +34,8 @@ export class EthTransaction {
    *
    * @param tx The string serialization of the ethereum transaction
    */
-  public static fromSerialized(tx: string): EthTransaction {
-    return new EthTransaction(new EthereumTx(tx));
+  public static fromSerialized(tx: string): EthTransactionData {
+    return new EthTransactionData(new EthereumTx(tx));
   }
 
   sign(keyPair: KeyPair) {
@@ -61,9 +43,7 @@ export class EthTransaction {
     this.tx.sign(privateKey);
   }
 
-  /**
-   * Return the JSON representation of this transaction
-   */
+  /** @inheritdoc */
   toJson(): TxData {
     const result: TxData = {
       nonce: bufferToInt(this.tx.nonce),
@@ -88,9 +68,7 @@ export class EthTransaction {
     return result;
   }
 
-  /**
-   * Return the hex string serialization of this transaction
-   */
+  /** @inheritdoc */
   toSerialized(): string {
     return addHexPrefix(this.tx.serialize().toString('hex'));
   }

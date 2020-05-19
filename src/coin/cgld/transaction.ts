@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { Eth } from '../../index';
 import { TxData } from '../eth/iface';
-import { CgldTransaction } from './types';
+import { CgldTransactionData } from './types';
 import * as Utils from './utils';
 
 export class Transaction extends Eth.Transaction {
@@ -10,7 +10,7 @@ export class Transaction extends Eth.Transaction {
   }
 
   setTransactionData(txData: TxData): void {
-    this._ethTransaction = CgldTransaction.fromJson(txData);
+    this._transactionData = CgldTransactionData.fromJson(txData);
   }
 
   /**@inheritdoc */

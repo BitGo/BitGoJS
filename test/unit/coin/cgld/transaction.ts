@@ -4,7 +4,7 @@ import { Transaction } from '../../../../src/coin/cgld/transaction';
 import * as testData from '../../../resources/cgld/cgld';
 
 describe('Celo Transaction', function() {
-  describe('should throw empty transaction', function() {
+  it('should throw empty transaction', function() {
     const tx = new Transaction(coins.get('cgld'));
     should.throws(() => {
       tx.toJson();
@@ -14,7 +14,7 @@ describe('Celo Transaction', function() {
     });
   });
 
-  describe('should return valid transaction', function() {
+  it('should return valid transaction', function() {
     const tx = new Transaction(coins.get('cgld'));
     tx.setTransactionData(testData.TXDATA);
     should.deepEqual(tx.toJson(), testData.TXDATA);

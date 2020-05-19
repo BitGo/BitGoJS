@@ -66,7 +66,6 @@ describe('Celo Transaction builder', function() {
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
     });
     it('an unsigned init transaction from serialized', async () => {
-      //TODO: this is not working due to the encoding of the tx in toBroadcastFormat()
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.owner('0x386Fe4E3D2b6Acce93CC13d06e92B00aa50F429c');
       txBuilder.owner('0xBa8eA9C3729686d7DB120efCfC81cD020C8DC1CB');
@@ -84,7 +83,7 @@ describe('Celo Transaction builder', function() {
 
       newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const signedTx = await newTxBuilder.build();
-      //should.equal(signedTx.toBroadcastFormat(), testData.TX_BROADCAST);
+      should.equal(signedTx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
     it('a signed init transaction from serialized', async () => {
       txBuilder.type(TransactionType.WalletInitialization);

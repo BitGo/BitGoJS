@@ -14,9 +14,10 @@ export const TXDATA: TxData = {
   data: '0x111111111111111111111111',
   gasLimit: '12000',
   gasPrice: '10',
-  chainId: '0xaef2',
+  chainId: '44786',
   to: '0x19645032c7f1533395d44a629462e751084d3e4c',
   value: '10000',
+  v: '0xaef2',
 };
 
 export const TXDATA_EMPTY_DATA = {
@@ -24,7 +25,7 @@ export const TXDATA_EMPTY_DATA = {
   data: '',
   gasLimit: '0xb8a1a0',
   gasPrice: '0x3b9aca00',
-  chainId: '0xaef2',
+  chainId: '44786',
 };
 
 export const KEYPAIR_PRV = new KeyPair({ prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C' });
