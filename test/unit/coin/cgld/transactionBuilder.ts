@@ -132,7 +132,7 @@ describe('Celo Transaction builder', function() {
     });
   });
 
-  describe('should create a new address based on an antique one', async () => {
+  describe('should create a forwarder address', async () => {
     const txBuilder: any = getBuilder('cgld');
 
     txBuilder.type(TransactionType.AddressInitialization);
@@ -155,7 +155,7 @@ describe('Celo Transaction builder', function() {
   });
 
   describe('should fail to build', async () => {
-    it('a transaction without fee', async () => {
+    it('an address initialization transaction without fee', async () => {
       const txBuilder: any = getBuilder('cgld');
 
       txBuilder.type(TransactionType.AddressInitialization);
@@ -167,9 +167,9 @@ describe('Celo Transaction builder', function() {
       txBuilder.source(sourceKeyPair.getAddress());
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_ADDRESS);
-      const tx = await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
-    it('a transaction without source', async () => {
+    it('an address initialization transaction without source', async () => {
       const txBuilder: any = getBuilder('cgld');
 
       txBuilder.type(TransactionType.AddressInitialization);
@@ -180,9 +180,9 @@ describe('Celo Transaction builder', function() {
       txBuilder.chainId(44786);
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_ADDRESS);
-      const tx = await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing source');
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing source');
     });
-    it('a transaction without chain id', async () => {
+    it('an address initialization transaction without chain id', async () => {
       const txBuilder: any = getBuilder('cgld');
 
       txBuilder.type(TransactionType.AddressInitialization);
@@ -197,7 +197,7 @@ describe('Celo Transaction builder', function() {
       txBuilder.source(sourceKeyPair.getAddress());
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_ADDRESS);
-      const tx = await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
     });
   });
 });
