@@ -186,9 +186,6 @@ export function hexStringToNumber(hex: string): number {
  * @returns {string} the calculated forwarder contract address
  */
 export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
-  const forwarderAddress = generateAddress(
-    Buffer.from(contractAddress, 'hex'),
-    Buffer.from(contractCounter.toString(), 'hex'),
-  );
-  return forwarderAddress.toString('hex');
+  const forwarderAddress = generateAddress(contractAddress, addHexPrefix(contractCounter.toString(16)));
+  return addHexPrefix(forwarderAddress.toString('hex'));
 }
