@@ -52,3 +52,12 @@ export class InvalidTransactionError extends ExtendableError {
     super(message);
   }
 }
+
+/**
+ * Error for an invalid value for a contract method parameter
+ */
+export class InvalidParameterValueError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}

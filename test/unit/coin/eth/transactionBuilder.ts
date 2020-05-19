@@ -22,11 +22,14 @@ describe('Eth Transaction builder', function() {
     counter?: number;
     source?: string;
     owners?: string[];
+    type?: TransactionType;
   }
 
-  const buildWalletInitialization = async function(details: WalletCreationDetails): Promise<Transaction> {
+  const buildTransaction = async function(details: WalletCreationDetails): Promise<Transaction> {
     const txBuilder: any = getBuilder('eth');
-    txBuilder.type(TransactionType.WalletInitialization);
+    if (details.type !== undefined) {
+      txBuilder.type(details.type);
+    }
     if (details.fee !== undefined) {
       txBuilder.fee(details.fee);
     }
@@ -54,7 +57,8 @@ describe('Eth Transaction builder', function() {
 
   describe('should build', () => {
     it('a wallet initialization transaction', async () => {
-      const tx = await buildWalletInitialization({
+      const tx = await buildTransaction({
+        type: TransactionType.WalletInitialization,
         fee: {
           fee: '10',
           gasLimit: '1000',
@@ -78,7 +82,8 @@ describe('Eth Transaction builder', function() {
     });
 
     it('a wallet initialization transaction with nonce 0', async () => {
-      const tx = await buildWalletInitialization({
+      const tx = await buildTransaction({
+        type: TransactionType.WalletInitialization,
         fee: {
           fee: '10',
           gasLimit: '1000',
@@ -100,62 +105,107 @@ describe('Eth Transaction builder', function() {
       should.equal(txJson.nonce, 0);
       should.equal(txJson.chainId, 42);
     });
+
+    it('an unsigned init transaction from serialized', async () => {
+      const txBuilder: any = getBuilder('eth');
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      txBuilder.chainId(42);
+      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
+      txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
+      txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
+      txBuilder.source(defaultKeyPair.getAddress());
+      const tx = await txBuilder.build();
+      const serialized = tx.toBroadcastFormat();
+
+      // now rebuild from the signed serialized tx and make sure it stays the same
+      const newTxBuilder: any = getBuilder('eth');
+      newTxBuilder.from(serialized);
+      newTxBuilder.source(defaultKeyPair.getAddress());
+      const newTx = await newTxBuilder.build();
+      should.equal(newTx.toBroadcastFormat(), serialized);
+    });
+
+    it('a signed init transaction from serialized', async () => {
+      const txBuilder: any = getBuilder('eth');
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      txBuilder.chainId(42);
+      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
+      txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
+      txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      const tx = await txBuilder.build();
+      const serialized = tx.toBroadcastFormat();
+
+      // now rebuild from the signed serialized tx and make sure it stays the same
+      const newTxBuilder: any = getBuilder('eth');
+      newTxBuilder.from(serialized);
+      newTxBuilder.source(defaultKeyPair.getAddress());
+      newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      const newTx = await newTxBuilder.build();
+      should.equal(newTx.toBroadcastFormat(), serialized);
+    });
   });
 
   describe('should fail to build', () => {
     it('an unsupported type of transaction', async () => {
-      const txBuilder: any = getBuilder('eth');
-      txBuilder.type(TransactionType.AddressInitialization);
-      await txBuilder.build().should.be.rejectedWith('Unsupported transaction type');
-    });
-
-    it('a wallet initialization without fee', async () => {
-      await buildWalletInitialization({
+      await buildTransaction({
+        type: TransactionType.AddressInitialization,
+        fee: {
+          fee: '10',
+          gasLimit: '10',
+        },
         chainId: 42,
         source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-        owners: [
-          new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-          new Eth.KeyPair({ pub: pub1 }).getAddress(),
-          new Eth.KeyPair({ pub: pub2 }).getAddress(),
-        ],
+        counter: 0,
+      }).should.be.rejectedWith('Unsupported transaction type');
+    });
+
+    it('a transaction without fee', async () => {
+      await buildTransaction({
+        chainId: 42,
+        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
         counter: 0,
       }).should.be.rejectedWith('Invalid transaction: missing fee');
     });
 
-    it('a wallet initialization without chain id', async () => {
-      await buildWalletInitialization({
+    it('a transaction without chain id', async () => {
+      await buildTransaction({
         fee: {
           fee: '10',
           gasLimit: '10',
         },
         source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-        owners: [
-          new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-          new Eth.KeyPair({ pub: pub1 }).getAddress(),
-          new Eth.KeyPair({ pub: pub2 }).getAddress(),
-        ],
         counter: 0,
       }).should.be.rejectedWith('Invalid transaction: missing chain id');
     });
 
-    it('a wallet initialization without source', async () => {
-      await buildWalletInitialization({
+    it('a transaction without source', async () => {
+      await buildTransaction({
         fee: {
           fee: '10',
           gasLimit: '10',
         },
         chainId: 42,
-        owners: [
-          new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-          new Eth.KeyPair({ pub: pub1 }).getAddress(),
-          new Eth.KeyPair({ pub: pub2 }).getAddress(),
-        ],
         counter: 0,
       }).should.be.rejectedWith('Invalid transaction: missing source');
     });
 
     it('a wallet initialization the wrong number of owners', async () => {
-      await buildWalletInitialization({
+      await buildTransaction({
+        type: TransactionType.WalletInitialization,
         fee: {
           fee: '10',
           gasLimit: '10',
@@ -166,7 +216,8 @@ describe('Eth Transaction builder', function() {
         counter: 0,
       }).should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 2');
 
-      await buildWalletInitialization({
+      await buildTransaction({
+        type: TransactionType.WalletInitialization,
         fee: {
           fee: '10',
           gasLimit: '10',
@@ -182,7 +233,8 @@ describe('Eth Transaction builder', function() {
         counter: 0,
       }).should.be.rejectedWith('Repeated owner address: ' + new Eth.KeyPair({ pub: pub1 }).getAddress());
 
-      await buildWalletInitialization({
+      await buildTransaction({
+        type: TransactionType.WalletInitialization,
         fee: {
           fee: '10',
           gasLimit: '10',
@@ -194,8 +246,8 @@ describe('Eth Transaction builder', function() {
       }).should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 0');
     });
 
-    it('a wallet initialization with invalid counter', async () => {
-      await buildWalletInitialization({
+    it('a transaction with invalid counter', async () => {
+      await buildTransaction({
         fee: {
           fee: '10',
           gasLimit: '10',
@@ -209,6 +261,19 @@ describe('Eth Transaction builder', function() {
           new Eth.KeyPair({ pub: pub2 }).getAddress(),
         ],
       }).should.be.rejectedWith('Invalid counter: -1');
+    });
+
+    it('a send transaction with out contract address', async () => {
+      await buildTransaction({
+        type: TransactionType.Send,
+        fee: {
+          fee: '10',
+          gasLimit: '1000',
+        },
+        chainId: 42,
+        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
+        counter: 0,
+      }).should.be.rejectedWith('Invalid transaction: missing contract address');
     });
   });
 
