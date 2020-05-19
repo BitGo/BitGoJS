@@ -3,7 +3,7 @@ import { RLP } from 'ethers/utils';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import { getBuilder, Eth } from '../../../../src';
 import * as testData from '../../../resources/cgld/cgld';
-import { getContractData } from '../../../../src/coin/eth/utils';
+import { getContractData, calculateForwarderAddress } from '../../../../src/coin/eth/utils';
 
 describe('Celo Transaction builder', function() {
   let txBuilder;
@@ -103,6 +103,7 @@ describe('Celo Transaction builder', function() {
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
     });
+
     it('an address creation transaction', async () => {
       const txBuilder: any = getBuilder('cgld');
       txBuilder.type(TransactionType.AddressInitialization);
@@ -128,6 +129,75 @@ describe('Celo Transaction builder', function() {
       should.equal(txJson.nonce, 1);
       should.equal(txJson.chainId, 44786);
       should.equal(tx.toBroadcastFormat(), testData.TX_ADDRESS_INIT);
+    });
+  });
+
+  describe('should create a new address based on an antique one', async () => {
+    const txBuilder: any = getBuilder('cgld');
+
+    txBuilder.type(TransactionType.AddressInitialization);
+    txBuilder.fee({
+      fee: '10000000000',
+      gasLimit: '2000000',
+    });
+    txBuilder.chainId(44786);
+    const source = {
+      prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+    };
+    const sourceKeyPair = new Eth.KeyPair(source);
+    txBuilder.source(sourceKeyPair.getAddress());
+    txBuilder.counter(1);
+    txBuilder.contract(testData.CONTRACT_ADDRESS);
+    const tx = await txBuilder.build();
+    const txJson = tx.toJson();
+    const newAddress = calculateForwarderAddress(txJson.to, txJson.nonce);
+    should.equal(newAddress, testData.TX_NEW_ADDRESS);
+  });
+
+  describe('should fail to build', async () => {
+    it('a transaction without fee', async () => {
+      const txBuilder: any = getBuilder('cgld');
+
+      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.chainId(44786);
+      const source = {
+        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+      };
+      const sourceKeyPair = new Eth.KeyPair(source);
+      txBuilder.source(sourceKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.contract(testData.CONTRACT_ADDRESS);
+      const tx = await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
+    });
+    it('a transaction without source', async () => {
+      const txBuilder: any = getBuilder('cgld');
+
+      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      txBuilder.chainId(44786);
+      txBuilder.counter(1);
+      txBuilder.contract(testData.CONTRACT_ADDRESS);
+      const tx = await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing source');
+    });
+    it('a transaction without chain id', async () => {
+      const txBuilder: any = getBuilder('cgld');
+
+      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      const source = {
+        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+      };
+      const sourceKeyPair = new Eth.KeyPair(source);
+      txBuilder.source(sourceKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.contract(testData.CONTRACT_ADDRESS);
+      const tx = await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
     });
   });
 });
