@@ -108,6 +108,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           this.owner(element);
         });
         break;
+      case TransactionType.Send:
+        this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
+        this.counter(transactionJson.nonce);
+        this.chainId(Number(transactionJson.chainId));
+        const decodedData = Utils.decodeTransferData(transactionJson.data);
+        //TODO Get decoded data and set transfer builder
+        if (transactionJson.to === undefined) {
+          throw new BuildTransactionError('Undefined recipient address');
+        } else this._contractAddress = transactionJson.to;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
       //TODO: Add other cases of deserialization
