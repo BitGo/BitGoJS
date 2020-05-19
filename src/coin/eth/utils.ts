@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { isValidAddress, addHexPrefix, toBuffer } from 'ethereumjs-util';
+import { isValidAddress, addHexPrefix, toBuffer, generateAddress } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
@@ -178,4 +178,19 @@ export function numberToHexString(num: number): string {
  */
 export function hexStringToNumber(hex: string): number {
   return parseInt(hex.slice(2), 16);
+}
+
+/**
+ * Generates an address of the forwarder address to be deployed
+ *
+ * @param {string} contractAddress the address which is creating this new address
+ * @param {number} contractCounter the nonce of the contract address
+ * @returns {string} the calculated forwarder contract address
+ */
+export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
+  const forwarderAddress = generateAddress(
+    Buffer.from(contractAddress, 'hex'),
+    Buffer.from(contractCounter.toString(), 'hex'),
+  );
+  return forwarderAddress.toString('hex');
 }
