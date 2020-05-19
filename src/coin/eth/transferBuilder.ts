@@ -89,8 +89,8 @@ export class TransferBuilder {
     return currentDate.getTime() / 1000;
   }
 
-  private getSHA(): (string | Buffer)[][] {
-    return [
+  private getOperationHash(): (string | Buffer)[][] {
+    const operationData = [
       ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
       [
         'ETHER',
@@ -101,10 +101,11 @@ export class TransferBuilder {
         this._sequenceId,
       ],
     ];
+    return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
   }
 
   private ethSignMsgHash(): void {
-    const data = ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...this.getSHA()));
+    const data = this.getOperationHash();
     const signatureInParts = ethUtil.ecsign(
       new Buffer(ethUtil.stripHexPrefix(data), 'hex'),
       new Buffer(this._signKey, 'hex'),

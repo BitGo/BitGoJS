@@ -6,11 +6,11 @@ import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
-import { TxData } from './iface';
-import { EthTransaction } from './types';
+import { EthLikeTransactionData, TxData } from './iface';
+import { EthTransactionData } from './types';
 
 export class Transaction extends BaseTransaction {
-  protected _ethTransaction?: EthTransaction;
+  protected _transactionData?: EthLikeTransactionData;
 
   /**
    * return a new Transaction initialized with the serialized tx string
@@ -20,7 +20,7 @@ export class Transaction extends BaseTransaction {
    * @returns a new transaction object
    */
   public static fromSerialized(coinConfig: Readonly<CoinConfig>, serializedTx: string): Transaction {
-    return new Transaction(coinConfig, EthTransaction.fromSerialized(serializedTx).toJson());
+    return new Transaction(coinConfig, EthTransactionData.fromSerialized(serializedTx).toJson());
   }
 
   /**
@@ -32,7 +32,7 @@ export class Transaction extends BaseTransaction {
   constructor(coinConfig: Readonly<CoinConfig>, txData?: TxData) {
     super(coinConfig);
     if (txData) {
-      this._ethTransaction = EthTransaction.fromJson(txData);
+      this._transactionData = EthTransactionData.fromJson(txData);
     }
   }
 
@@ -42,7 +42,7 @@ export class Transaction extends BaseTransaction {
    * @param {TxData} txData The transaction data to set
    */
   setTransactionData(txData: TxData): void {
-    this._ethTransaction = EthTransaction.fromJson(txData);
+    this._transactionData = EthTransactionData.fromJson(txData);
   }
 
   /**
@@ -67,27 +67,27 @@ export class Transaction extends BaseTransaction {
    * @param {KeyPair} keyPair The key to sign the transaction with
    */
   async sign(keyPair: KeyPair): Promise<void> {
-    if (!this._ethTransaction) {
+    if (!this._transactionData) {
       throw new InvalidTransactionError('No transaction data to sign');
     }
     if (!keyPair.getKeys().prv) {
       throw new SigningError('Missing private key');
     }
-    this._ethTransaction.sign(keyPair);
+    this._transactionData.sign(keyPair);
   }
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    if (this._ethTransaction) {
-      return this._ethTransaction.toSerialized();
+    if (this._transactionData) {
+      return this._transactionData.toSerialized();
     }
     throw new InvalidTransactionError('No transaction data to format');
   }
 
   /** @inheritdoc */
   toJson(): TxData {
-    if (this._ethTransaction) {
-      return this._ethTransaction.toJson();
+    if (this._transactionData) {
+      return this._transactionData.toJson();
     }
     throw new InvalidTransactionError('Empty transaction');
   }

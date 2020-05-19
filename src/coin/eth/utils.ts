@@ -14,7 +14,7 @@ import {
   sendMultisigMethodId,
 } from './walletUtil';
 import { testnetCommon } from './resources';
-import { EthTransaction } from './types';
+import { EthTransactionData } from './types';
 
 /**
  * Signs the transaction using the appropriate algorithm
@@ -33,11 +33,9 @@ export async function signInternal(
   if (!keyPair.getKeys().prv) {
     throw new SigningError('Missing private key');
   }
-  const ethTx = EthTransaction.fromJson(transactionData);
-  const privateKey = Buffer.from(keyPair.getKeys().prv as string, 'hex');
-  ethTx.tx.sign(privateKey);
-  const encodedTransaction = ethTx.tx.serialize().toString('hex');
-  return addHexPrefix(encodedTransaction);
+  const ethTx = EthTransactionData.fromJson(transactionData);
+  ethTx.sign(keyPair);
+  return ethTx.toSerialized();
 }
 
 /**
