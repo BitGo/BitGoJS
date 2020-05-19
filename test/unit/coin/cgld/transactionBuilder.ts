@@ -132,28 +132,6 @@ describe('Celo Transaction builder', function() {
     });
   });
 
-  describe('should create a forwarder address', async () => {
-    const txBuilder: any = getBuilder('cgld');
-
-    txBuilder.type(TransactionType.AddressInitialization);
-    txBuilder.fee({
-      fee: '10000000000',
-      gasLimit: '2000000',
-    });
-    txBuilder.chainId(44786);
-    const source = {
-      prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
-    };
-    const sourceKeyPair = new Eth.KeyPair(source);
-    txBuilder.source(sourceKeyPair.getAddress());
-    txBuilder.counter(1);
-    txBuilder.contract(testData.CONTRACT_ADDRESS);
-    const tx = await txBuilder.build();
-    const txJson = tx.toJson();
-    const newAddress = calculateForwarderAddress(txJson.to, txJson.nonce);
-    should.equal(newAddress, testData.TX_NEW_ADDRESS);
-  });
-
   describe('should fail to build', async () => {
     it('an address initialization transaction without fee', async () => {
       const txBuilder: any = getBuilder('cgld');
