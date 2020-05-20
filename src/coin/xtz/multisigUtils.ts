@@ -1,4 +1,5 @@
-import { IndexedSignature, OriginationOp, RevealOp, TransactionOp, TransferData } from './iface';
+import * as _ from 'lodash';
+import { IndexedSignature, OriginationData, OriginationOp, RevealOp, TransactionOp, TransferData } from './iface';
 import { DEFAULT_FEE, DEFAULT_GAS_LIMIT, DEFAULT_STORAGE_LIMIT, hashTypes, isValidKey } from './utils';
 
 // Default n of m for multisig wallets
@@ -57,6 +58,32 @@ export function getMultisigTransferDataFromOperation(operation: TransactionOp): 
   };
 }
 
+/**
+ *  Helper method to get the wallet or address initialization tx from an origination operation
+ *
+ * @param {OriginationOp} operation
+ * @returns {OriginationData} Information about the wallet contract creating a forwarder contract
+ */
+export function getOriginationDataFromOperation(operation: OriginationOp): OriginationData {
+  const fee = {
+    fee: operation.fee,
+    gasLimit: operation.gas_limit,
+    storageLimit: operation.storage_limit,
+  };
+
+  const { source: from, counter, balance } = operation;
+
+  // Transactions initializing a forwarder contract contain the address of the wallet contract
+  const forwarderDestination: string = _.get(operation, 'script.code[2].args[0][3].args[0][0].args[1].string');
+
+  return {
+    fee,
+    counter,
+    balance,
+    from,
+    forwarderDestination,
+  };
+}
 /**
  * Helper method to build a singlesig transaction operation.
  *
@@ -965,3 +992,221 @@ const genericMultisig = [
     ],
   },
 ];
+
+/**
+ * Add contract address to forwarder contract template and return contract Michelson code as JSON
+ *
+ * @param {string} contractAddress - multisig contractAddress that will receive forwarded funds
+ * @returns {object[]} Michelson code for the origination operation
+ */
+function createForwarder(contractAddress: string) {
+  return [
+    {
+      prim: 'parameter',
+      args: [
+        {
+          prim: 'or',
+          args: [
+            { prim: 'unit', annots: ['%default'] },
+            {
+              prim: 'pair',
+              args: [
+                { prim: 'nat' },
+                {
+                  prim: 'contract',
+                  args: [
+                    {
+                      prim: 'pair',
+                      args: [
+                        { prim: 'address', annots: [':from'] },
+                        {
+                          prim: 'pair',
+                          args: [
+                            { prim: 'address', annots: [':to'] },
+                            { prim: 'nat', annots: [':value'] },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              annots: ['%flush'],
+            },
+          ],
+        },
+      ],
+    },
+    { prim: 'storage', args: [{ prim: 'unit' }] },
+    {
+      prim: 'code',
+      args: [
+        [
+          {
+            prim: 'CAST',
+            args: [
+              {
+                prim: 'pair',
+                args: [
+                  {
+                    prim: 'or',
+                    args: [
+                      { prim: 'unit' },
+                      {
+                        prim: 'pair',
+                        args: [
+                          { prim: 'nat' },
+                          {
+                            prim: 'contract',
+                            args: [
+                              {
+                                prim: 'pair',
+                                args: [
+                                  { prim: 'address' },
+                                  { prim: 'pair', args: [{ prim: 'address' }, { prim: 'nat' }] },
+                                ],
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  { prim: 'unit' },
+                ],
+              },
+            ],
+          },
+          { prim: 'CAR' },
+          {
+            prim: 'IF_LEFT',
+            args: [
+              [
+                { prim: 'DROP' },
+                {
+                  prim: 'NONE',
+                  args: [
+                    {
+                      prim: 'pair',
+                      args: [
+                        { prim: 'nat' },
+                        {
+                          prim: 'contract',
+                          args: [
+                            {
+                              prim: 'pair',
+                              args: [
+                                { prim: 'address' },
+                                { prim: 'pair', args: [{ prim: 'address' }, { prim: 'nat' }] },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              [{ prim: 'SOME' }],
+            ],
+          },
+          { prim: 'DIP', args: [[{ prim: 'PUSH', args: [{ prim: 'address' }, { string: contractAddress }] }]] },
+          {
+            prim: 'IF_NONE',
+            args: [
+              [{ prim: 'NIL', args: [{ prim: 'operation' }] }],
+              [
+                { prim: 'DIP', args: [[{ prim: 'DUP' }]] },
+                { prim: 'DUP' },
+                { prim: 'CAR' },
+                { prim: 'DIP', args: [[{ prim: 'CDR' }]] },
+                { prim: 'DIG', args: [{ int: '2' }] },
+                { prim: 'PAIR' },
+                { prim: 'SELF' },
+                { prim: 'ADDRESS' },
+                { prim: 'PAIR' },
+                { prim: 'DIP', args: [[{ prim: 'PUSH', args: [{ prim: 'mutez' }, { int: '0' }] }]] },
+                { prim: 'TRANSFER_TOKENS' },
+                { prim: 'DIP', args: [[{ prim: 'NIL', args: [{ prim: 'operation' }] }]] },
+                { prim: 'CONS' },
+              ],
+            ],
+          },
+          { prim: 'BALANCE' },
+          { prim: 'PUSH', args: [{ prim: 'mutez' }, { int: '0' }] },
+          { prim: 'COMPARE' },
+          { prim: 'EQ' },
+          {
+            prim: 'IF',
+            args: [
+              [{ prim: 'DIP', args: [[{ prim: 'DROP' }]] }],
+              [
+                {
+                  prim: 'DIP',
+                  args: [
+                    [
+                      { prim: 'CONTRACT', args: [{ prim: 'unit' }] },
+                      {
+                        prim: 'IF_NONE',
+                        args: [
+                          [
+                            { prim: 'PUSH', args: [{ prim: 'string' }, { string: 'not a wallet' }] },
+                            { prim: 'FAILWITH' },
+                          ],
+                          [],
+                        ],
+                      },
+                      { prim: 'BALANCE' },
+                      { prim: 'UNIT' },
+                      { prim: 'TRANSFER_TOKENS' },
+                    ],
+                  ],
+                },
+                { prim: 'SWAP' },
+                { prim: 'CONS' },
+              ],
+            ],
+          },
+          { prim: 'DIP', args: [[{ prim: 'UNIT' }]] },
+          { prim: 'PAIR' },
+        ],
+      ],
+    },
+  ];
+}
+
+/**
+ * Create an origination operation for a forwarder contract
+ *
+ * @param {string} contractAddress originated multisig address to forward funds
+ * @param {string} counter Valid source account counter to use
+ * @param {string} source Source account address
+ * @param {string} fee Fees in mutez to pay by the source account
+ * @param {string} gasLimit Maximum amount in mutez to spend in gas fees
+ * @param {string} storageLimit Maximum amount in mutez to spend in storage fees
+ * @param {string} balance New multisig account initial balance taken from the source account
+ * @returns {OriginationOp} the operation
+ */
+export function forwarderOriginationOperation(
+  contractAddress: string,
+  counter: string,
+  source: string,
+  fee: string,
+  gasLimit: string,
+  storageLimit: string,
+  balance: string,
+): OriginationOp {
+  return {
+    kind: 'origination',
+    counter,
+    source,
+    fee,
+    gas_limit: gasLimit,
+    storage_limit: storageLimit,
+    balance,
+    script: {
+      code: createForwarder(contractAddress),
+      storage: { prim: 'storage', args: [{ prim: 'unit' }] },
+    },
+  };
+}

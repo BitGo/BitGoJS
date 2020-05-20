@@ -162,7 +162,7 @@ describe('Eth Transaction builder', function() {
   describe('should fail to build', () => {
     it('an unsupported type of transaction', async () => {
       await buildTransaction({
-        type: 3,
+        type: TransactionType.AccountUpdate,
         fee: {
           fee: '10',
           gasLimit: '10',
