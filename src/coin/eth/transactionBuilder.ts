@@ -117,6 +117,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         if (transactionJson.to === undefined) {
           throw new BuildTransactionError('Undefined recipient address');
         } else this._contractAddress = transactionJson.to;
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
       //TODO: Add other cases of deserialization
