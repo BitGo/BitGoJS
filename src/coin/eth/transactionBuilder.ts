@@ -4,7 +4,7 @@ import { RLP } from 'ethers/utils';
 import * as Crypto from '../../utils/crypto';
 import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
-import { Transaction, TransferBuilder, Utils } from '../eth';
+import { Transaction, TransferFundsBuilder, Utils, TransferTokenBuilder } from '../eth';
 import {
   BuildTransactionError,
   SigningError,
@@ -33,7 +33,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _walletOwnerAddresses: string[];
 
   // Send transaction specific parameters
-  private _transfer: TransferBuilder;
+  private _transfer: TransferFundsBuilder;
+  private _transferToken: TransferTokenBuilder;
   private _contractAddress: string;
 
   /**
@@ -59,6 +60,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.Send:
         transactionData = this.buildSendTransaction();
         break;
+      case TransactionType.SendToken:
+        transactionData = this.buildSendTokenTransaction();
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -318,6 +321,28 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
   //endregion
 
+  // region Send token builder methods
+
+  transferToken(amount: string): TransferTokenBuilder {
+    if (this._type === TransactionType.SendToken) {
+      this._transferToken = new TransferTokenBuilder().amount(amount) as TransferTokenBuilder;
+      return this._transferToken;
+    }
+    throw new BuildTransactionError('Token transfers can only be set for send token transactions');
+  }
+
+  private getSendTokenData(): string {
+    if (this._transferToken) return this._transferToken.signAndBuild();
+    throw new BuildTransactionError('Missing token transfer information');
+  }
+
+  private buildSendTokenTransaction(): TxData {
+    const sendData = this.getSendTokenData();
+    const tx: TxData = this.buildBase(sendData);
+    tx.to = this._contractAddress;
+    return tx;
+  }
+  // endregion
   // region Send builder methods
 
   contract(address: string): void {
@@ -325,9 +350,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     else throw new BuildTransactionError('Invalid address: ' + address);
   }
 
-  transfer(amount: string): TransferBuilder {
+  transfer(amount: string): TransferFundsBuilder {
     if (this._type === TransactionType.Send) {
-      this._transfer = new TransferBuilder().amount(amount);
+      this._transfer = new TransferFundsBuilder().amount(amount) as TransferFundsBuilder;
       return this._transfer;
     }
     throw new BuildTransactionError('Transfers can only be set for send transactions');

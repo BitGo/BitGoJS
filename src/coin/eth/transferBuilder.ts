@@ -1,23 +1,19 @@
 import ethUtil from 'ethereumjs-util';
-import EthereumAbi from 'ethereumjs-abi';
-import BigNumber from 'bignumber.js';
-import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
-import { isValidEthAddress, sendMultiSigData } from './utils';
+import { InvalidParameterValueError } from '../baseCoin/errors';
+import { isValidEthAddress } from './utils';
 
 /** ETH transfer builder */
-export class TransferBuilder {
-  private _amount: string;
-  private _toAddress: string;
-  private _sequenceId: number;
-  private _data: string;
-  private _signKey: string;
-  private _expirationTime: number;
-  private _signature: string;
+export abstract class TransferBuilder {
+  protected _amount: string;
+  protected _toAddress: string;
+  protected _sequenceId: number;
+  protected _signKey: string;
+  protected _expirationTime: number;
+  protected _signature: string;
 
   //initialize with default values for non mandatory fields
   constructor() {
     this._expirationTime = this.getExpirationTime();
-    this._data = '0x';
   }
 
   amount(amount: string): TransferBuilder {
@@ -38,11 +34,6 @@ export class TransferBuilder {
     return this;
   }
 
-  data(additionalData: string): TransferBuilder {
-    this._data = additionalData;
-    return this;
-  }
-
   key(signKey: string): TransferBuilder {
     this._signKey = signKey;
     return this;
@@ -53,31 +44,9 @@ export class TransferBuilder {
     return this;
   }
 
-  signAndBuild(): string {
-    if (this.hasMandatoryFields()) {
-      this.ethSignMsgHash();
-      return sendMultiSigData(
-        this._toAddress,
-        new BigNumber(this._amount).toNumber(),
-        this._data,
-        this._expirationTime,
-        this._sequenceId,
-        this._signature,
-      );
-    }
-    throw new BuildTransactionError(
-      'Missing transfer mandatory fields. Amount, destination (to) address, signing key and sequenceID are mandatory',
-    );
-  }
+  protected abstract signAndBuild(): string;
 
-  private hasMandatoryFields(): boolean {
-    return (
-      this._amount !== undefined &&
-      this._toAddress !== undefined &&
-      this._sequenceId !== undefined &&
-      this._signKey !== undefined
-    );
-  }
+  protected abstract hasMandatoryFields(): boolean;
 
   /** Return an expiration time, in seconds, set to one hour from now
    *
@@ -89,22 +58,9 @@ export class TransferBuilder {
     return currentDate.getTime() / 1000;
   }
 
-  private getOperationHash(): (string | Buffer)[][] {
-    const operationData = [
-      ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
-      [
-        'ETHER',
-        new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
-        this._amount,
-        new Buffer(ethUtil.stripHexPrefix(this._data) || '', 'hex'),
-        this._expirationTime,
-        this._sequenceId,
-      ],
-    ];
-    return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
-  }
+  protected abstract getOperationHash(): (string | Buffer)[][];
 
-  private ethSignMsgHash(): void {
+  protected ethSignMsgHash(): void {
     const data = this.getOperationHash();
     const signatureInParts = ethUtil.ecsign(
       new Buffer(ethUtil.stripHexPrefix(data), 'hex'),

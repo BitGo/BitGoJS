@@ -90,6 +90,32 @@ export function sendMultiSigData(
 }
 
 /**
+ * Returns the contract method encoded data
+ *
+ * @param {string} to destination address
+ * @param {number} value Amount to tranfer
+ * @param {string} tokenContractAddress the address of the erc20 token contract
+ * @param {number} expireTime expiration time for the transaction in seconds
+ * @param {number} sequenceId sequence id
+ * @param {string} signature signature of the call
+ * @returns {string} -- the contract method encoded data
+ */
+export function sendMultiSigTokenData(
+  to: string,
+  value: number,
+  tokenContractAddress: string,
+  expireTime: number,
+  sequenceId: number,
+  signature: string,
+): string {
+  const params = [to, value, tokenContractAddress, expireTime, sequenceId, toBuffer(signature)];
+  const types = ['address', 'uint', 'address', 'uint', 'uint', 'bytes'];
+  const method = EthereumAbi.methodID('sendMultiSigToken', types);
+  const args = EthereumAbi.rawEncode(types, params);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
  * Returns whether or not the string is a valid Eth address
  *
  * @param {string} address - the tx hash to validate

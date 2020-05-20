@@ -6,6 +6,7 @@ export enum TransactionType {
   WalletInitialization,
   // Initialize a singlesig address. i.e. in Tezos, addresses have to be revealed
   AddressInitialization,
+  SendToken,
 }
 
 /**
