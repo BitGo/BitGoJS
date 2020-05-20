@@ -210,6 +210,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.Send:
       case TransactionType.AddressInitialization:
+      case TransactionType.SendToken:
         if (this._contractAddress === undefined) {
           throw new BuildTransactionError('Invalid transaction: missing contract address');
         }
