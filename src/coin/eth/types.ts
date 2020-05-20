@@ -24,6 +24,9 @@ export class EthTransactionData implements EthLikeTransactionData {
         gasLimit: addHexPrefix(new BigNumber(tx.gasLimit).toString(16)),
         value: addHexPrefix(new BigNumber(tx.value).toString(16)),
         data: tx.data === '0x' ? '' : tx.data,
+        v: tx.v,
+        r: tx.r,
+        s: tx.s,
       }),
       addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16)),
     );
@@ -60,6 +63,9 @@ export class EthTransactionData implements EthLikeTransactionData {
 
     if (this.tx.verifySignature()) {
       result.from = bufferToHex(this.tx.getSenderAddress());
+      result.v = bufferToHex(this.tx.v);
+	    result.r = bufferToHex(this.tx.r);
+	    result.s = bufferToHex(this.tx.s);
     }
 
     if (this.chainId) {

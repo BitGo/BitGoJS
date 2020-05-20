@@ -8,7 +8,7 @@ import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { EthLikeTransactionData, TxData } from './iface';
 import { EthTransactionData } from './types';
-import { classifyTransaction, toStringSig } from './utils';
+import { classifyTransaction, hasSignature, toStringSig } from './utils';
 
 export class Transaction extends BaseTransaction {
 	protected _id: string; // The transaction id as seen in the blockchain
@@ -50,21 +50,31 @@ export class Transaction extends BaseTransaction {
    */
   setTransactionData(txData: TxData): void {
 	  this._transactionData = EthTransactionData.fromJson(txData);
-	  const txJson = this._transactionData.toJson();
+  }
 
-	  if (txJson.id) {
-		  this._id = txJson.id;
+	/**
+	 * Update the internal fields based on the currently set transaction data, if there is any
+	 */
+	protected updateFields(): void {
+  	if (!this._transactionData) {
+  		return;
 	  }
-	  this._type = classifyTransaction(txJson.data);
+
+  	const txData = this._transactionData.toJson();
+	  if (txData.id) {
+		  this._id = txData.id;
+	  }
+	  this._type = classifyTransaction(txData.data);
 
 	  // TODO: parse inputs and outputs from the transaction data
 	  this._inputs = [];
 	  this._outputs = [];
 	  this._signatures = [];
 
-	  if (txJson.v && txJson.r && txJson.s && txJson.v.length > 0) {
-		  this._signatures.push(toStringSig({ v: txJson.v, r: txJson.r, s: txJson.s }));
+	  if (hasSignature(txData)) {
+		  this._signatures.push(toStringSig({ v: txData.v!, r: txData.r!, s: txData.s! }));
 	  }
+
   }
 
   /**

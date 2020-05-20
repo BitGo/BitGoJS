@@ -153,10 +153,14 @@ describe('Eth Transaction builder', function() {
       const newTxBuilder: any = getBuilder('eth');
       newTxBuilder.from(serialized);
       newTxBuilder.source(defaultKeyPair.getAddress());
-      newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
-	    should.equal(newTx.id, '0x065882ff4ecc8b7e565da7afdffa111b34c953a4b95321af38667a187cea2a9f');
+	    should.equal(newTx.id, '0xc65f9802df3b559b297779ec06d3e71ba7f5b1b47cc961ad2efba54d82347bec');
+	    const txJson = newTx.toJson();
+	    should.exist(txJson.v);
+	    should.exist(txJson.r);
+	    should.exist(txJson.s);
+	    should.exist(txJson.from);
     });
   });
 
