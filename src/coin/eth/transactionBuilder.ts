@@ -10,10 +10,11 @@ import {
   SigningError,
   InvalidTransactionError,
   ParseTransactionError,
+  ForwarderAddressError,
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { Fee, TxData } from './iface';
-import { getContractData, isValidEthAddress } from './utils';
+import { getContractData, isValidEthAddress, getAddressInitializationData, calculateForwarderAddress } from './utils';
 
 const DEFAULT_M = 3;
 
@@ -32,9 +33,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   // Wallet initialization transaction parameters
   private _walletOwnerAddresses: string[];
 
-  // Send transaction specific parameters
+  // Address initialization and Send transaction specific parameters
   private _transfer: TransferBuilder;
   private _contractAddress: string;
+  private _contractCounter: number;
 
   /**
    * Public constructor.
@@ -58,6 +60,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.Send:
         transactionData = this.buildSendTransaction();
+        break;
+      case TransactionType.AddressInitialization:
+        transactionData = this.buildAddressInitializationTransaction();
         break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
@@ -200,6 +205,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         }
         break;
       case TransactionType.Send:
+      case TransactionType.AddressInitialization:
         if (this._contractAddress === undefined) {
           throw new BuildTransactionError('Invalid transaction: missing contract address');
         }
@@ -343,6 +349,53 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     const tx: TxData = this.buildBase(sendData);
     tx.to = this._contractAddress;
     return tx;
+  }
+  //endregion
+
+  // region AddressInitialization builder methods
+
+  /**
+   * Set the contract transaction nonce to calculate the forwarder address.
+   *
+   * @param {number} contractCounter The counter to use
+   */
+  contractCounter(contractCounter: number): void {
+    if (contractCounter < 0) {
+      throw new BuildTransactionError(`Invalid contract counter: ${contractCounter}`);
+    }
+
+    this._contractCounter = contractCounter;
+  }
+
+  /**
+   * Build a transaction to create a forwarder.
+   *
+   * @returns {TxData} The Ethereum transaction data
+   */
+  private buildAddressInitializationTransaction(): TxData {
+    const addressInitData = getAddressInitializationData();
+    const tx: TxData = this.buildBase(addressInitData);
+    tx.to = this._contractAddress;
+    return tx;
+  }
+
+  /**
+   * Obtain the inferred forwarder address for an Address initialization transaction
+   * determined by the contract address and the contract counter.
+   *
+   * @returns {string} the forwarder contract address
+   */
+  public getForwarderAddress(): string {
+    if (this._type !== TransactionType.AddressInitialization) {
+      throw new ForwarderAddressError('Wrong transaction type');
+    }
+    if (this._contractAddress === undefined) {
+      throw new ForwarderAddressError('Contract address was not defined');
+    }
+    if (this._contractCounter === undefined) {
+      throw new ForwarderAddressError('Contract nonce was not defined');
+    }
+    return calculateForwarderAddress(this._contractAddress, this._contractCounter);
   }
   //endregion
 

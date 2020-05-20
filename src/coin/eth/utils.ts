@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { isValidAddress, addHexPrefix, toBuffer } from 'ethereumjs-util';
+import { isValidAddress, addHexPrefix, toBuffer, generateAddress } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
@@ -90,6 +90,15 @@ export function sendMultiSigData(
 }
 
 /**
+ * Returns the create forwarder method calling data
+ *
+ * @returns {string} - the createForwarder method encoded
+ */
+export function getAddressInitializationData(): string {
+  return createForwarderMethodId;
+}
+
+/**
  * Returns whether or not the string is a valid Eth address
  *
  * @param {string} address - the tx hash to validate
@@ -166,4 +175,16 @@ export function numberToHexString(num: number): string {
  */
 export function hexStringToNumber(hex: string): number {
   return parseInt(hex.slice(2), 16);
+}
+
+/**
+ * Generates an address of the forwarder address to be deployed
+ *
+ * @param {string} contractAddress the address which is creating this new address
+ * @param {number} contractCounter the nonce of the contract address
+ * @returns {string} the calculated forwarder contract address
+ */
+export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
+  const forwarderAddress = generateAddress(contractAddress, addHexPrefix(contractCounter.toString(16)));
+  return addHexPrefix(forwarderAddress.toString('hex'));
 }

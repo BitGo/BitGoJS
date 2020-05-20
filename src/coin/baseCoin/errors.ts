@@ -61,3 +61,12 @@ export class InvalidParameterValueError extends ExtendableError {
     super(message);
   }
 }
+
+/**
+ * Error for an invalid forwarder address generation
+ */
+export class ForwarderAddressError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}
