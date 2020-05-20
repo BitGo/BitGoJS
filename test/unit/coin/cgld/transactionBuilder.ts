@@ -22,18 +22,6 @@ describe('Celo Transaction builder', function() {
   };
 
   describe('Non serialized transaction', () => {
-    describe('should validate', () => {
-      it('a raw transaction', async () => {
-        const builder: any = getBuilder('cgld');
-        should.doesNotThrow(() => builder.from(testData.TX_BROADCAST));
-        should.doesNotThrow(() => builder.from(testData.TX_JSON));
-        should.throws(() => builder.from('0x00001000'), 'There was error in decoding the hex string');
-        should.throws(() => builder.from(''), 'There was error in decoding the hex string');
-        should.throws(() => builder.from('pqrs'), 'There was error in parsing the JSON string');
-        should.throws(() => builder.from(1234), 'Transaction is not a hex string or stringified json');
-      });
-    });
-
     describe('should sign', () => {
       it('an init transaction', async () => {
         initTxBuilder();
@@ -67,10 +55,81 @@ describe('Celo Transaction builder', function() {
         const tx = await txBuilder.build(); //shoud build and sign
         should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
       });
+      it('an address creation transaction', async () => {
+        initTxBuilder();
+        txBuilder.type(TransactionType.AddressInitialization);
+        txBuilder.contract(testData.CONTRACT_ADDRESS);
+        txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+        const tx = await txBuilder.build(); //shoud build and sign
+
+        tx.type.should.equal(TransactionType.AddressInitialization);
+        const txJson = tx.toJson();
+        txJson.gasLimit.should.equal('12100000');
+        txJson.gasPrice.should.equal('1000000000');
+        should.equal(txJson.nonce, 2);
+        should.equal(txJson.chainId, 44786);
+        should.equal(tx.toBroadcastFormat(), testData.TX_ADDRESS_INIT);
+      });
+    });
+    describe('should fail to build', async () => {
+      it('an address initialization transaction without fee', async () => {
+        const txBuilder: any = getBuilder('cgld');
+
+        txBuilder.type(TransactionType.AddressInitialization);
+        txBuilder.chainId(44786);
+        const source = {
+          prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+        };
+        const sourceKeyPair = new Eth.KeyPair(source);
+        txBuilder.source(sourceKeyPair.getAddress());
+        txBuilder.counter(1);
+        txBuilder.contract(testData.CONTRACT_ADDRESS);
+        await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
+      });
+      it('an address initialization transaction without source', async () => {
+        const txBuilder: any = getBuilder('cgld');
+
+        txBuilder.type(TransactionType.AddressInitialization);
+        txBuilder.fee({
+          fee: '10000000000',
+          gasLimit: '2000000',
+        });
+        txBuilder.chainId(44786);
+        txBuilder.counter(1);
+        txBuilder.contract(testData.CONTRACT_ADDRESS);
+        await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing source');
+      });
+      it('an address initialization transaction without chain id', async () => {
+        const txBuilder: any = getBuilder('cgld');
+
+        txBuilder.type(TransactionType.AddressInitialization);
+        txBuilder.fee({
+          fee: '10000000000',
+          gasLimit: '2000000',
+        });
+        const source = {
+          prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+        };
+        const sourceKeyPair = new Eth.KeyPair(source);
+        txBuilder.source(sourceKeyPair.getAddress());
+        txBuilder.counter(1);
+        txBuilder.contract(testData.CONTRACT_ADDRESS);
+        await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
+      });
     });
   });
 
   describe('From serialized data', () => {
+    it('should validate a raw transaction', async () => {
+      const builder: any = getBuilder('cgld');
+      should.doesNotThrow(() => builder.from(testData.TX_BROADCAST));
+      should.doesNotThrow(() => builder.from(testData.TX_JSON));
+      should.throws(() => builder.from('0x00001000'), 'There was error in decoding the hex string');
+      should.throws(() => builder.from(''), 'There was error in decoding the hex string');
+      should.throws(() => builder.from('pqrs'), 'There was error in parsing the JSON string');
+      should.throws(() => builder.from(1234), 'Transaction is not a hex string or stringified json');
+    });
+
     describe('a wallet initialization transaction', () => {
       it('an unsigned init transaction from serialized', async () => {
         initTxBuilder();
@@ -115,8 +174,8 @@ describe('Celo Transaction builder', function() {
       });
     });
 
-    describe('From serialized data', () => {
-      it('should build a transaction whitout changes', async () => {
+    describe('A send transaction', () => {
+      it('should build a transaction without changes', async () => {
         const txBuilder: any = getBuilder('cgld');
         txBuilder.from(testData.SEND_TX_BROADCAST);
         txBuilder.source(defaultKeyPair.getAddress());
@@ -124,80 +183,6 @@ describe('Celo Transaction builder', function() {
         const signedTx = await txBuilder.build();
         should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
       });
-    });
-
-    it('an address creation transaction', async () => {
-      const txBuilder: any = getBuilder('cgld');
-      txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.fee({
-        fee: '10000000000',
-        gasLimit: '2000000',
-      });
-      txBuilder.chainId(44786);
-      const source = {
-        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
-      txBuilder.source(sourceKeyPair.getAddress());
-      txBuilder.counter(1);
-      txBuilder.contract(testData.CONTRACT_ADDRESS);
-      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-      const tx = await txBuilder.build(); //shoud build and sign
-
-      tx.type.should.equal(TransactionType.AddressInitialization);
-      const txJson = tx.toJson();
-      txJson.gasLimit.should.equal('2000000');
-      txJson.gasPrice.should.equal('10000000000');
-      should.equal(txJson.nonce, 1);
-      should.equal(txJson.chainId, 44786);
-      should.equal(tx.toBroadcastFormat(), testData.TX_ADDRESS_INIT);
-    });
-  });
-
-  describe('should fail to build', async () => {
-    it('an address initialization transaction without fee', async () => {
-      const txBuilder: any = getBuilder('cgld');
-
-      txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.chainId(44786);
-      const source = {
-        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
-      txBuilder.source(sourceKeyPair.getAddress());
-      txBuilder.counter(1);
-      txBuilder.contract(testData.CONTRACT_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
-    });
-    it('an address initialization transaction without source', async () => {
-      const txBuilder: any = getBuilder('cgld');
-
-      txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.fee({
-        fee: '10000000000',
-        gasLimit: '2000000',
-      });
-      txBuilder.chainId(44786);
-      txBuilder.counter(1);
-      txBuilder.contract(testData.CONTRACT_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing source');
-    });
-    it('an address initialization transaction without chain id', async () => {
-      const txBuilder: any = getBuilder('cgld');
-
-      txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.fee({
-        fee: '10000000000',
-        gasLimit: '2000000',
-      });
-      const source = {
-        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
-      txBuilder.source(sourceKeyPair.getAddress());
-      txBuilder.counter(1);
-      txBuilder.contract(testData.CONTRACT_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
     });
   });
 });
