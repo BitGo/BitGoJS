@@ -325,7 +325,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   transferToken(amount: string): TransferTokenBuilder {
     if (this._type === TransactionType.SendToken) {
-      this._transferToken = new TransferTokenBuilder().amount(amount) as TransferTokenBuilder;
+      this._transferToken = new TransferTokenBuilder().amount(amount);
       return this._transferToken;
     }
     throw new BuildTransactionError('Token transfers can only be set for send token transactions');
@@ -352,7 +352,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   transfer(amount: string): TransferFundsBuilder {
     if (this._type === TransactionType.Send) {
-      this._transfer = new TransferFundsBuilder().amount(amount) as TransferFundsBuilder;
+      this._transfer = new TransferFundsBuilder().amount(amount);
       return this._transfer;
     }
     throw new BuildTransactionError('Transfers can only be set for send transactions');

@@ -16,12 +16,12 @@ export abstract class TransferBuilder {
     this._expirationTime = this.getExpirationTime();
   }
 
-  amount(amount: string): TransferBuilder {
+  amount(amount: string): this {
     this._amount = amount;
     return this;
   }
 
-  to(address: string): TransferBuilder {
+  to(address: string): this {
     if (isValidEthAddress(address)) {
       this._toAddress = address;
       return this;
@@ -29,22 +29,22 @@ export abstract class TransferBuilder {
     throw new InvalidParameterValueError('Invalid address');
   }
 
-  contractSequenceId(counter: number): TransferBuilder {
+  contractSequenceId(counter: number): this {
     this._sequenceId = counter;
     return this;
   }
 
-  key(signKey: string): TransferBuilder {
+  key(signKey: string): this {
     this._signKey = signKey;
     return this;
   }
 
-  expirationTime(date: number): TransferBuilder {
+  expirationTime(date: number): this {
     this._expirationTime = date;
     return this;
   }
 
-  protected abstract signAndBuild(): string;
+  abstract signAndBuild(): string;
 
   protected abstract hasMandatoryFields(): boolean;
 
