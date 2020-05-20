@@ -31,6 +31,9 @@ export function deserialize(serializedTx: string): TxData {
       data: rawValues[8],
       chainId: chainId,
       from,
+      v: rawValues[9],
+      r: rawValues[10],
+      s: rawValues[11],
     };
 
     if (rawValues[6] !== '0x') {

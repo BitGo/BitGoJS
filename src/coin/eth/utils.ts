@@ -1,13 +1,13 @@
 import { Buffer } from 'buffer';
 import {
-	addHexPrefix,
-	bufferToHex,
-	bufferToInt,
-	fromRpcSig,
-	generateAddress,
-	isValidAddress,
-	setLengthLeft,
-	toBuffer,
+  addHexPrefix,
+  bufferToHex,
+  bufferToInt,
+  fromRpcSig,
+  generateAddress,
+  isValidAddress,
+  setLengthLeft,
+  toBuffer,
 } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
@@ -17,10 +17,10 @@ import { TransactionType } from '../baseCoin';
 import { SignatureParts, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import {
-	createForwarderMethodId,
-	sendMultisigMethodId,
-	walletSimpleByteCode,
-	walletSimpleConstructor,
+  createForwarderMethodId,
+  sendMultisigMethodId,
+  walletSimpleByteCode,
+  walletSimpleConstructor,
 } from './walletUtil';
 import { testnetCommon } from './resources';
 import { EthTransactionData } from './types';
@@ -161,7 +161,7 @@ export function classifyTransaction(data: string): TransactionType {
   } else if (data.startsWith(createForwarderMethodId)) {
     return TransactionType.AddressInitialization;
   } else if (data.startsWith(sendMultisigMethodId)) {
-	  return TransactionType.Send;
+    return TransactionType.Send;
   } else {
     throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
   }
@@ -198,14 +198,13 @@ export function calculateForwarderAddress(contractAddress: string, contractCount
   return addHexPrefix(forwarderAddress.toString('hex'));
 }
 
-
 /**
  * Convert the given signature parts to a string representation
  *
  * @param sig The signature to convert to string
  */
 export function toStringSig(sig: SignatureParts): string {
-	return bufferToHex(Buffer.concat([setLengthLeft(sig.r, 32), setLengthLeft(sig.s, 32), toBuffer(sig.v)]));
+  return bufferToHex(Buffer.concat([setLengthLeft(sig.r, 32), setLengthLeft(sig.s, 32), toBuffer(sig.v)]));
 }
 
 /**
@@ -214,20 +213,27 @@ export function toStringSig(sig: SignatureParts): string {
  * @param sig The signature to convert to string
  */
 export function fromStringSig(sig: string): SignatureParts {
-	const { v, r, s } = fromRpcSig(sig);
-	return {
-		v: bufferToHex(v),
-		r: bufferToHex(r),
-		s: bufferToHex(s),
-	};
+  const { v, r, s } = fromRpcSig(sig);
+  return {
+    v: bufferToHex(v),
+    r: bufferToHex(r),
+    s: bufferToHex(s),
+  };
 }
 
 /**
  * Return whether or not the given tx data has a signature
+ *
  * @param txData The transaction data to check for signature
- * @return true if the tx has a signature, else false
+ * @returns true if the tx has a signature, else false
  */
 export function hasSignature(txData: TxData): boolean {
-return txData.v !== undefined && txData.r !== undefined && txData.s !== undefined
-    && txData.v.length > 0 && txData.r.length > 0 && txData.s.length > 0;
+  return (
+    txData.v !== undefined &&
+    txData.r !== undefined &&
+    txData.s !== undefined &&
+    txData.v.length > 0 &&
+    txData.r.length > 0 &&
+    txData.s.length > 0
+  );
 }

@@ -11,11 +11,11 @@ import { EthTransactionData } from './types';
 import { classifyTransaction, hasSignature, toStringSig } from './utils';
 
 export class Transaction extends BaseTransaction {
-	protected _id: string; // The transaction id as seen in the blockchain
-	protected _inputs: Entry[];
-	protected _outputs: Entry[];
-	protected _type: TransactionType;
-	protected _signatures: string[];
+  protected _id: string; // The transaction id as seen in the blockchain
+  protected _inputs: Entry[];
+  protected _outputs: Entry[];
+  protected _type: TransactionType;
+  protected _signatures: string[];
 
   protected _transactionData?: EthLikeTransactionData;
 
@@ -49,32 +49,32 @@ export class Transaction extends BaseTransaction {
    * @param {TxData} txData The transaction data to set
    */
   setTransactionData(txData: TxData): void {
-	  this._transactionData = EthTransactionData.fromJson(txData);
+    this._transactionData = EthTransactionData.fromJson(txData);
+    this.updateFields();
   }
 
-	/**
-	 * Update the internal fields based on the currently set transaction data, if there is any
-	 */
-	protected updateFields(): void {
-  	if (!this._transactionData) {
-  		return;
-	  }
+  /**
+   * Update the internal fields based on the currently set transaction data, if there is any
+   */
+  protected updateFields(): void {
+    if (!this._transactionData) {
+      return;
+    }
 
-  	const txData = this._transactionData.toJson();
-	  if (txData.id) {
-		  this._id = txData.id;
-	  }
-	  this._type = classifyTransaction(txData.data);
+    const txData = this._transactionData.toJson();
+    if (txData.id) {
+      this._id = txData.id;
+    }
+    this._type = classifyTransaction(txData.data);
 
-	  // TODO: parse inputs and outputs from the transaction data
-	  this._inputs = [];
-	  this._outputs = [];
-	  this._signatures = [];
+    // TODO: parse inputs and outputs from the transaction data
+    this._inputs = [];
+    this._outputs = [];
+    this._signatures = [];
 
-	  if (hasSignature(txData)) {
-		  this._signatures.push(toStringSig({ v: txData.v!, r: txData.r!, s: txData.s! }));
-	  }
-
+    if (hasSignature(txData)) {
+      this._signatures.push(toStringSig({ v: txData.v!, r: txData.r!, s: txData.s! }));
+    }
   }
 
   /**

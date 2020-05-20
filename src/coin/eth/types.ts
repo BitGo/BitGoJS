@@ -64,8 +64,8 @@ export class EthTransactionData implements EthLikeTransactionData {
     if (this.tx.verifySignature()) {
       result.from = bufferToHex(this.tx.getSenderAddress());
       result.v = bufferToHex(this.tx.v);
-	    result.r = bufferToHex(this.tx.r);
-	    result.s = bufferToHex(this.tx.s);
+      result.r = bufferToHex(this.tx.r);
+      result.s = bufferToHex(this.tx.s);
     }
 
     if (this.chainId) {

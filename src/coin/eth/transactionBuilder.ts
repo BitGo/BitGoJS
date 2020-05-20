@@ -15,11 +15,11 @@ import {
 import { KeyPair } from './keyPair';
 import { Fee, SignatureParts, TxData } from './iface';
 import {
-	getContractData,
-	isValidEthAddress,
-	getAddressInitializationData,
-	calculateForwarderAddress,
-	hasSignature,
+  getContractData,
+  isValidEthAddress,
+  getAddressInitializationData,
+  calculateForwarderAddress,
+  hasSignature,
 } from './utils';
 
 const DEFAULT_M = 3;
@@ -78,7 +78,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     if (this._txSignature) {
-    	Object.assign(transactionData, this._txSignature);
+      Object.assign(transactionData, this._txSignature);
     }
 
     this.transaction.setTransactionType(this._type);
@@ -112,14 +112,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected loadBuilderInput(transactionJson: TxData): void {
     const decodedType = Utils.classifyTransaction(transactionJson.data);
     this.type(decodedType);
-	  this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
-	  this.counter(transactionJson.nonce);
-	  this.chainId(Number(transactionJson.chainId));
-	  if (hasSignature(transactionJson)) {
-		  this._txSignature = { v: transactionJson.v!, r: transactionJson.r!, s: transactionJson.s! };
-	  }
-	  if (transactionJson.from) {
-	    this.source(transactionJson.from);
+    this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
+    this.counter(transactionJson.nonce);
+    this.chainId(Number(transactionJson.chainId));
+    if (hasSignature(transactionJson)) {
+      this._txSignature = { v: transactionJson.v!, r: transactionJson.r!, s: transactionJson.s! };
+    }
+    if (transactionJson.from) {
+      this.source(transactionJson.from);
     }
     switch (decodedType) {
       case TransactionType.WalletInitialization:
