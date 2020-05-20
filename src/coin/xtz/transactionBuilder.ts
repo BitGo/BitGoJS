@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { SigningError, BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import {
@@ -9,20 +9,21 @@ import {
   multisigTransactionOperation,
   revealOperation,
   singlesigTransactionOperation,
+  forwarderOriginationOperation,
 } from './multisigUtils';
 import { Address } from './address';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Fee, IndexedData, IndexedSignature, Key, Operation, OriginationOp, RevealOp, TransactionOp } from './iface';
 import {
-  isValidAddress,
-  isValidBlockHash,
   DEFAULT_GAS_LIMIT,
   DEFAULT_STORAGE_LIMIT,
+  isValidAddress,
+  isValidBlockHash,
   isValidOriginatedAddress,
   isValidPublicKey,
+  sign,
 } from './utils';
-import * as Utils from './utils';
 import { TransferBuilder } from './transferBuilder';
 
 const DEFAULT_M = 3;
@@ -48,7 +49,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _sourceAddress: string;
   private _sourceKeyPair?: KeyPair;
 
-  // Address initialization transaction parameters
+  // Public key revelation transaction parameters
   private _publicKeyToReveal: string;
 
   // Wallet initialization transaction parameters
@@ -60,6 +61,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _multisigSignerKeyPairs: IndexedKeyPair[];
   private _dataToSignOverride: DataToSignOverride[];
   private _transfers: TransferBuilder[];
+
+  // Address initialization parameters
+  private _forwarderDestination: string;
 
   /**
    * Public constructor.
@@ -89,8 +93,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected signImplementation(key: Key): Transaction {
     const signer = new KeyPair({ prv: key.key });
-    if (this._type === TransactionType.AddressInitialization && !this._publicKeyToReveal) {
-      throw new SigningError('Cannot sign an address initialization transaction without public keys');
+    // Currently public key revelation is the only type of account update tx supported in Tezos
+    if (this._type === TransactionType.AccountUpdate && !this._publicKeyToReveal) {
+      throw new SigningError('Cannot sign a public key revelation transaction without public key');
     }
 
     if (this._type === TransactionType.WalletInitialization && this._walletOwnerPublicKeys.length === 0) {
@@ -149,20 +154,28 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     } else {
       let contents: Operation[] = [];
       switch (this._type) {
-        case TransactionType.AddressInitialization:
-          contents.push(this.buildAddressInitializationOperations());
+        case TransactionType.AccountUpdate:
+          if (this._publicKeyToReveal) {
+            contents.push(this.buildPublicKeyRevelationOperation());
+          }
           break;
         case TransactionType.WalletInitialization:
           if (this._publicKeyToReveal) {
-            contents.push(this.buildAddressInitializationOperations());
+            contents.push(this.buildPublicKeyRevelationOperation());
           }
           contents.push(this.buildWalletInitializationOperations());
           break;
         case TransactionType.Send:
           if (this._publicKeyToReveal) {
-            contents.push(this.buildAddressInitializationOperations());
+            contents.push(this.buildPublicKeyRevelationOperation());
           }
           contents = contents.concat(await this.buildSendTransactionContent());
+          break;
+        case TransactionType.AddressInitialization:
+          if (this._publicKeyToReveal) {
+            contents.push(this.buildPublicKeyRevelationOperation());
+          }
+          contents = contents.concat(this.buildForwarderDeploymentContent());
           break;
         default:
           throw new BuildTransactionError('Unsupported transaction type');
@@ -266,15 +279,32 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   counter(counter: string): void {
     this._counter = new BigNumber(counter);
   }
+
+  /**
+   * Set the destination address of a forwarder contract
+   * Used in forwarder contract deployment as destination address
+   *
+   * @param {string} contractAddress - contract address to use
+   */
+  forwarderDestination(contractAddress: string): void {
+    if (this._type !== TransactionType.AddressInitialization) {
+      throw new BuildTransactionError('Forwarder destination can only be set for address initialization transactions');
+    }
+    if (!isValidOriginatedAddress(contractAddress)) {
+      throw new BuildTransactionError('Forwarder destination can only be an originated address');
+    }
+    this._forwarderDestination = contractAddress;
+  }
+
   // endregion
 
-  // region AddressInitialization builder methods
+  // region PublicKeyRevelation builder methods
   /**
    * The public key to reveal.
    *
    * @param {string} publicKey A Tezos public key
    */
-  publicKey(publicKey: string): void {
+  publicKeyToReveal(publicKey: string): void {
     if (this._publicKeyToReveal) {
       throw new BuildTransactionError('Public key to reveal already set: ' + this._publicKeyToReveal);
     }
@@ -291,7 +321,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @returns {RevealOp} A Tezos reveal operation
    */
-  private buildAddressInitializationOperations(): RevealOp {
+  private buildPublicKeyRevelationOperation(): RevealOp {
     const operation = revealOperation(this._counter.toString(), this._sourceAddress, this._publicKeyToReveal);
     this._counter = this._counter.plus(1);
     return operation;
@@ -390,7 +420,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     const signatures: IndexedSignature[] = [];
     // Generate the multisig contract signatures
     for (let i = 0; i < this._multisigSignerKeyPairs.length; i++) {
-      const signature = await Utils.sign(this._multisigSignerKeyPairs[i].key, packedData, new Uint8Array(0));
+      const signature = await sign(this._multisigSignerKeyPairs[i].key, packedData, new Uint8Array(0));
       const index = this._multisigSignerKeyPairs[i].index;
       signatures.push(index ? { signature: signature.sig, index } : { signature: signature.sig });
     }
@@ -453,6 +483,27 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
   //endregion
 
+  //region ForwarderAddressDeployment
+  /**
+   * Build a transaction operation for a forwarder contract
+   *
+   * @returns {OriginationOp} a Tezos transaction operation
+   */
+  private buildForwarderDeploymentContent(): OriginationOp {
+    const operation = forwarderOriginationOperation(
+      this._forwarderDestination,
+      this._counter.toString(),
+      this._sourceAddress,
+      this._fee.fee,
+      this._fee.gasLimit || DEFAULT_GAS_LIMIT.ORIGINATION.toString(),
+      this._fee.storageLimit || DEFAULT_STORAGE_LIMIT.ORIGINATION.toString(),
+      this._initialBalance || '0',
+    );
+    this._counter = this._counter.plus(1);
+    return operation;
+  }
+  //endregion
+
   // region Validators
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
@@ -486,11 +537,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   validateTransaction(transaction: Transaction): void {
     // TODO: validate all required fields are present in the builder before buildImplementation
     switch (this._type) {
-      case TransactionType.AddressInitialization:
+      case TransactionType.AccountUpdate:
         break;
       case TransactionType.WalletInitialization:
         break;
       case TransactionType.Send:
+        break;
+      case TransactionType.AddressInitialization:
         break;
       default:
         throw new BuildTransactionError('Transaction type not supported');

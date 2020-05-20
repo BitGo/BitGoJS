@@ -3,10 +3,13 @@
  */
 export enum TransactionType {
   Send,
-  WalletInitialization,
-  // Initialize a singlesig address. i.e. in Tezos, addresses have to be revealed
-  AddressInitialization,
   SendToken,
+  // Initialize a wallet on-chain (e.g. Multi-sig contract deployment)
+  WalletInitialization,
+  // Initialize an address on-chain(e.g. Forwarder contract deployment)
+  AddressInitialization,
+  // Update an account on-chain (e.g. Public key revelation operation for Tezos)
+  AccountUpdate,
 }
 
 /**
