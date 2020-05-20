@@ -32,7 +32,7 @@ export class Transaction extends BaseTransaction {
   constructor(coinConfig: Readonly<CoinConfig>, txData?: TxData) {
     super(coinConfig);
     if (txData) {
-      this._transactionData = EthTransactionData.fromJson(txData);
+      this.setTransactionData(txData);
     }
   }
 

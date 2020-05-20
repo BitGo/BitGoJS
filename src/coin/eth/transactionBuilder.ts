@@ -112,8 +112,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
         this.counter(transactionJson.nonce);
         this.chainId(Number(transactionJson.chainId));
-        const decodedData = Utils.decodeTransferData(transactionJson.data);
-        //TODO Get decoded data and set transfer builder
+        this._transfer = new TransferBuilder(transactionJson.data);
         if (transactionJson.to === undefined) {
           throw new BuildTransactionError('Undefined recipient address');
         } else this._contractAddress = transactionJson.to;
@@ -341,16 +340,21 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     else throw new BuildTransactionError('Invalid address: ' + address);
   }
 
-  transfer(amount: string): TransferBuilder {
+  transfer(amount?: string): TransferBuilder {
     if (this._type === TransactionType.Send) {
-      this._transfer = new TransferBuilder().amount(amount);
+      this._transfer = this._transfer || new TransferBuilder();
+      if (amount) {
+        this._transfer.amount(amount);
+      }
       return this._transfer;
     }
     throw new BuildTransactionError('Transfers can only be set for send transactions');
   }
 
   private getSendData(): string {
-    if (this._transfer) return this._transfer.signAndBuild();
+    if (this._transfer) {
+      return this._transfer.signAndBuild();
+    }
     throw new BuildTransactionError('Missing transfer information');
   }
 

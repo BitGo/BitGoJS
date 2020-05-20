@@ -140,17 +140,6 @@ export function decodeWalletCreationData(data: string): string[] {
 }
 
 /**
- *
- * @param data
- */
-export function decodeTransferData(data: string): string[] {
-  if (!data.startsWith(sendMultisigMethodId)) {
-    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
-  }
-  return [''];
-}
-
-/**
  * Classify the given transaction data based as a transaction type.
  * ETH transactions are defined by the first 8 bytes of the transaction data, also known as the method id
  *
