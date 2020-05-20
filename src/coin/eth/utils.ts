@@ -1,11 +1,11 @@
 import { Buffer } from 'buffer';
-import { isValidAddress, addHexPrefix, toBuffer, generateAddress } from 'ethereumjs-util';
+import { fromRpcSig, setLengthLeft, bufferToHex, isValidAddress, addHexPrefix, toBuffer } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
 import { SigningError, BuildTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
-import { TxData } from './iface';
+import { SignatureParts, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import {
   walletSimpleConstructor,
@@ -90,15 +90,6 @@ export function sendMultiSigData(
 }
 
 /**
- * Returns the create forwarder method calling data
- *
- * @returns {string} - the createForwarder method encoded
- */
-export function getAddressInitializationData(): string {
-  return createForwarderMethodId;
-}
-
-/**
  * Returns whether or not the string is a valid Eth address
  *
  * @param {string} address - the tx hash to validate
@@ -178,13 +169,24 @@ export function hexStringToNumber(hex: string): number {
 }
 
 /**
- * Generates an address of the forwarder address to be deployed
+ * Convert the given signature parts to a string representation
  *
- * @param {string} contractAddress the address which is creating this new address
- * @param {number} contractCounter the nonce of the contract address
- * @returns {string} the calculated forwarder contract address
+ * @param sig The signature to convert to string
  */
-export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
-  const forwarderAddress = generateAddress(contractAddress, addHexPrefix(contractCounter.toString(16)));
-  return addHexPrefix(forwarderAddress.toString('hex'));
+export function toStringSig(sig: SignatureParts): string {
+  return bufferToHex(Buffer.concat([setLengthLeft(sig.r, 32), setLengthLeft(sig.s, 32), toBuffer(sig.v)]));
+}
+
+/**
+ * Convert the given signature parts to a string representation
+ *
+ * @param sig The signature to convert to string
+ */
+export function fromStringSig(sig: string): SignatureParts {
+  const { v, r, s } = fromRpcSig(sig);
+  return {
+    v: bufferToHex(v),
+    r: bufferToHex(r),
+    s: bufferToHex(s),
+  };
 }

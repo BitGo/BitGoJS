@@ -3,13 +3,20 @@
  */
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction, TransactionType } from '../baseCoin';
-import { BaseKey } from '../baseCoin/iface';
+import { BaseKey, Entry } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { EthLikeTransactionData, TxData } from './iface';
 import { EthTransactionData } from './types';
+import { classifyTransaction, toStringSig } from './utils';
 
 export class Transaction extends BaseTransaction {
+	protected _id: string; // The transaction id as seen in the blockchain
+	protected _inputs: Entry[];
+	protected _outputs: Entry[];
+	protected _type: TransactionType;
+	protected _signatures: string[];
+
   protected _transactionData?: EthLikeTransactionData;
 
   /**
@@ -32,7 +39,7 @@ export class Transaction extends BaseTransaction {
   constructor(coinConfig: Readonly<CoinConfig>, txData?: TxData) {
     super(coinConfig);
     if (txData) {
-      this._transactionData = EthTransactionData.fromJson(txData);
+      this.setTransactionData(txData);
     }
   }
 
@@ -42,7 +49,22 @@ export class Transaction extends BaseTransaction {
    * @param {TxData} txData The transaction data to set
    */
   setTransactionData(txData: TxData): void {
-    this._transactionData = EthTransactionData.fromJson(txData);
+	  this._transactionData = EthTransactionData.fromJson(txData);
+	  const txJson = this._transactionData.toJson();
+
+	  if (txJson.id) {
+		  this._id = txJson.id;
+	  }
+	  this._type = classifyTransaction(txJson.data);
+
+	  // TODO: parse inputs and outputs from the transaction data
+	  this._inputs = [];
+	  this._outputs = [];
+	  this._signatures = [];
+
+	  if (txJson.v && txJson.r && txJson.s && txJson.v.length > 0) {
+		  this._signatures.push(toStringSig({ v: txJson.v, r: txJson.r, s: txJson.s }));
+	  }
   }
 
   /**

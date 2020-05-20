@@ -156,6 +156,7 @@ describe('Eth Transaction builder', function() {
       newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
+	    should.equal(newTx.id, '0x065882ff4ecc8b7e565da7afdffa111b34c953a4b95321af38667a187cea2a9f');
     });
   });
 
