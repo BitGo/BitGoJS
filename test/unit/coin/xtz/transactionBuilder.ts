@@ -71,7 +71,7 @@ describe('Tezos Transaction builder', function() {
 
     it('an account reveal transaction', async () => {
       const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.type(TransactionType.AccountUpdate);
       txBuilder.fee({ fee: '10' });
       const source = {
         pub:
@@ -79,13 +79,13 @@ describe('Tezos Transaction builder', function() {
       };
       const keyPair = new Xtz.KeyPair(source);
       txBuilder.source(keyPair.getAddress());
-      txBuilder.publicKey(keyPair.getExtendedKeys().xpub);
+      txBuilder.publicKeyToReveal(keyPair.getExtendedKeys().xpub);
       txBuilder.counter('0');
       txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
       const tx = await txBuilder.build();
 
       tx.id.should.equal('');
-      tx.type.should.equal(TransactionType.AddressInitialization);
+      tx.type.should.equal(TransactionType.AccountUpdate);
       tx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(tx.inputs.length, 1);
       should.equal(tx.outputs.length, 0);
@@ -94,6 +94,28 @@ describe('Tezos Transaction builder', function() {
       should.not.exist(tx.delegate);
       tx.signature.length.should.equal(0);
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
+    });
+
+    it('a forwarder contract init transaction', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.AddressInitialization);
+      const forwarderDestination = 'KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8';
+      txBuilder.forwarderDestination(forwarderDestination);
+      txBuilder.fee({ fee: '10' });
+      const source = {
+        pub:
+          'xpub661MyMwAqRbcFhCvdhTAfpEEDV58oqDvv65YNHC686NNs4KbH8YZQJWVmrfbve7aAVHzxw8bKFxA7MLeDK6BbLfkE3bqkvHLPgaGHHtYGeY',
+      };
+      const keyPair = new Xtz.KeyPair(source);
+      txBuilder.source(keyPair.getAddress());
+      txBuilder.publicKeyToReveal(keyPair.getExtendedKeys().xpub);
+      txBuilder.counter('0');
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      const tx = await txBuilder.build();
+      tx.type.should.equal(TransactionType.AddressInitialization);
+      tx.source.should.equal(keyPair.getAddress());
+      tx.publicKeyToReveal.should.equal(keyPair.getKeys().pub);
+      tx.forwarderDestination.should.equal(forwarderDestination);
     });
   });
 
@@ -142,7 +164,7 @@ describe('Tezos Transaction builder', function() {
         storageLimit: '1292',
       });
       txBuilder.source(defaultKeyPair.getAddress());
-      txBuilder.publicKey(defaultKeyPair.getKeys().pub);
+      txBuilder.publicKeyToReveal(defaultKeyPair.getKeys().pub);
       txBuilder.initialBalance('1000000');
       txBuilder.counter('0');
       txBuilder.owner('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
@@ -179,16 +201,16 @@ describe('Tezos Transaction builder', function() {
 
     it('a reveal transaction', async () => {
       const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.type(TransactionType.AccountUpdate);
       txBuilder.source(defaultKeyPair.getAddress());
-      txBuilder.publicKey(defaultKeyPair.getKeys().pub);
+      txBuilder.publicKeyToReveal(defaultKeyPair.getKeys().pub);
       txBuilder.counter('0');
       txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const tx = await txBuilder.build();
 
       tx.id.should.equal('oomXs6PuWtmGwMKoXTNsu9XJHnGXtuRujcHMeYS9y37Xj6sXPHb');
-      tx.type.should.equal(TransactionType.AddressInitialization);
+      tx.type.should.equal(TransactionType.AccountUpdate);
       tx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(tx.inputs.length, 1);
       should.equal(tx.outputs.length, 0);
@@ -562,10 +584,10 @@ describe('Tezos Transaction builder', function() {
 
     it('an address initialization transaction without public key', async () => {
       const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.type(TransactionType.AccountUpdate);
       should.throws(
         () => txBuilder.sign({ key: defaultKeyPair.getKeys().prv }),
-        new RegExp('Cannot sign an address initialization transaction without public keys'),
+        new RegExp('Cannot sign a public key revelation transaction without public key'),
       );
     });
   });
@@ -635,27 +657,27 @@ describe('Tezos Transaction builder', function() {
 
     it('add an invalid public key to reveal', async () => {
       const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.AddressInitialization);
-      should.throws(() => txBuilder.publicKey('sppk'), new RegExp('Unsupported public key'));
+      txBuilder.type(TransactionType.AccountUpdate);
+      should.throws(() => txBuilder.publicKeyToReveal('sppk'), new RegExp('Unsupported public key'));
     });
 
     it('add the same public key to reveal twice', async () => {
       const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.type(TransactionType.AccountUpdate);
       txBuilder.source(defaultKeyPair.getAddress());
-      txBuilder.publicKey(defaultKeyPair.getKeys().pub);
+      txBuilder.publicKeyToReveal(defaultKeyPair.getKeys().pub);
       should.throws(
-        () => txBuilder.publicKey(defaultKeyPair.getKeys().pub),
+        () => txBuilder.publicKeyToReveal(defaultKeyPair.getKeys().pub),
         new RegExp('Public key to reveal already set'),
       );
     });
 
     it('add the public key to reveal that does not belong to the source', async () => {
       const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.type(TransactionType.AccountUpdate);
       txBuilder.source(defaultKeyPair.getAddress());
       should.throws(
-        () => txBuilder.publicKey('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf'),
+        () => txBuilder.publicKeyToReveal('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf'),
         new RegExp('Public key does not match the source address'),
       );
     });

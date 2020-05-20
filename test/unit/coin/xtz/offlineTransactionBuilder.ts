@@ -61,15 +61,15 @@ describe('Offline Tezos Transaction builder', function() {
 
     it('a reveal transaction', async () => {
       const txBuilder: any = getBuilder('xtz');
-      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.type(TransactionType.AccountUpdate);
       txBuilder.source(defaultKeyPair.getAddress());
       txBuilder.counter('0');
       txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
-      txBuilder.publicKey(defaultKeyPair.getKeys().pub);
+      txBuilder.publicKeyToReveal(defaultKeyPair.getKeys().pub);
       const tx = await txBuilder.build();
 
       tx.id.should.equal('');
-      tx.type.should.equal(TransactionType.AddressInitialization);
+      tx.type.should.equal(TransactionType.AccountUpdate);
       tx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(tx.inputs.length, 1);
       should.equal(tx.outputs.length, 0);
@@ -83,7 +83,7 @@ describe('Offline Tezos Transaction builder', function() {
       const signedTx = await offlineTxBuilder.build();
 
       signedTx.id.should.equal('oomXs6PuWtmGwMKoXTNsu9XJHnGXtuRujcHMeYS9y37Xj6sXPHb');
-      signedTx.type.should.equal(TransactionType.AddressInitialization);
+      signedTx.type.should.equal(TransactionType.AccountUpdate);
       signedTx.source.should.equal('tz2PtJ9zgEgFVTRqy6GXsst54tH3ksEnYvvS');
       should.equal(signedTx.inputs.length, 1);
       should.equal(signedTx.outputs.length, 0);

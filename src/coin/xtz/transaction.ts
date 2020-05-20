@@ -8,6 +8,7 @@ import { BaseKey } from '../baseCoin/iface';
 import {
   getMultisigTransferDataFromOperation,
   getMultisigTransferSignatures,
+  getOriginationDataFromOperation,
   updateMultisigTransferSignatures,
 } from './multisigUtils';
 import { KeyPair } from './keyPair';
@@ -22,6 +23,8 @@ export class Transaction extends BaseTransaction {
   private _encodedTransaction?: string; // transaction in hex format
   private _source: string;
   private _delegate?: string;
+  private _forwarderDestination?: string;
+  private _publicKeyToReveal?: string;
 
   /**
    * Public constructor.
@@ -111,7 +114,14 @@ export class Transaction extends BaseTransaction {
    *      originated address
    */
   private async recordOriginationOpFields(operation: OriginationOp, index: number): Promise<void> {
-    this._type = TransactionType.WalletInitialization;
+    const originationData = getOriginationDataFromOperation(operation);
+    if (originationData.forwarderDestination) {
+      this._type = TransactionType.AddressInitialization;
+      this._forwarderDestination = originationData.forwarderDestination;
+    } else {
+      this._type = TransactionType.WalletInitialization;
+    }
+
     this._delegate = operation.delegate;
     this._outputs.push({
       // Kt addresses can only be calculated for signed transactions with an id
@@ -132,7 +142,8 @@ export class Transaction extends BaseTransaction {
    * @param {RevealOp} operation A reveal operation object from a Tezos transaction
    */
   private recordRevealOpFields(operation: RevealOp): void {
-    this._type = TransactionType.AddressInitialization;
+    this._type = TransactionType.AccountUpdate;
+    this._publicKeyToReveal = operation.public_key;
     this._inputs.push({
       address: operation.source,
       // Balance + fees + max gas + max storage are paid by the source account
@@ -247,6 +258,20 @@ export class Transaction extends BaseTransaction {
    */
   get delegate(): string | undefined {
     return this._delegate;
+  }
+
+  /**
+   * Get the public key revealed by the transaction if it exists
+   */
+  get publicKeyToReveal(): string | undefined {
+    return this._publicKeyToReveal;
+  }
+
+  /**
+   * Get the destination of an address initialization transaction if it exists
+   */
+  get forwarderDestination(): string | undefined {
+    return this._forwarderDestination;
   }
 
   /**

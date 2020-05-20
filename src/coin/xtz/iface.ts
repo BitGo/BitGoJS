@@ -57,6 +57,16 @@ export interface TransferData {
 }
 
 /**
+ * Origination transaction information
+ */
+export interface OriginationData {
+  fee: Fee;
+  counter?: string;
+  balance?: string;
+  from?: string;
+  forwarderDestination?: string;
+}
+/**
  * Taquito return type for sign operations
  */
 export interface SignResponse {
