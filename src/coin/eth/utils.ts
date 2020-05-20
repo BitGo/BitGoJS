@@ -95,8 +95,7 @@ export function sendMultiSigData(
  * @returns {string} - the createForwarder method encoded
  */
 export function getAddressInitializationData(): string {
-  const method = EthereumAbi.methodID('createForwarder', []);
-  return addHexPrefix(Buffer.from(method).toString('hex'));
+  return createForwarderMethodId;
 }
 
 /**

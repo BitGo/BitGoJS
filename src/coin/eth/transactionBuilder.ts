@@ -373,8 +373,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TxData} The Ethereum transaction data
    */
   private buildAddressInitializationTransaction(): TxData {
-    const addresInitData = getAddressInitializationData();
-    const tx: TxData = this.buildBase(addresInitData);
+    const addressInitData = getAddressInitializationData();
+    const tx: TxData = this.buildBase(addressInitData);
     tx.to = this._contractAddress;
     return tx;
   }
@@ -386,7 +386,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {string} the forwarder contract address
    */
   public getForwarderAddress(): string {
-    if (this._type != TransactionType.AddressInitialization) {
+    if (this._type !== TransactionType.AddressInitialization) {
       throw new ForwarderAddressError('Wrong transaction type');
     }
     if (this._contractAddress === undefined) {
