@@ -32,12 +32,22 @@ export class CeloTransaction {
   r: Buffer = toBuffer([]);
   s: Buffer = toBuffer([]);
 
+  //TODO: validate if this needs to be moved to Utils class
+  private fromNat(bn) {
+    if (bn === '0x0') {
+      return '0x';
+    } else if (bn.length % 2 === 0) {
+      return bn;
+    }
+    return '0x0' + bn.slice(2);
+  }
+
   constructor(tx: TxData) {
-    this.nonce = toBuffer(tx.nonce);
-    this.gasLimit = toBuffer(tx.gasLimit);
-    this.gasPrice = toBuffer(tx.gasPrice);
+    this.nonce = toBuffer(this.fromNat(tx.nonce));
+    this.gasLimit = toBuffer(this.fromNat(tx.gasLimit));
+    this.gasPrice = toBuffer(this.fromNat(tx.gasPrice));
     this.data = toBuffer(tx.data);
-    this.value = toBuffer(tx.value !== '0x0' ? tx.value : '0x');
+    this.value = toBuffer(this.fromNat(tx.value));
     if (tx.to) {
       this.to = toBuffer(tx.to);
     }

@@ -41,6 +41,25 @@ describe('Celo Transaction builder', function() {
         should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
       });
 
+      it('an init transaction with nonce 0', async () => {
+        initTxBuilder();
+        txBuilder.counter(0);
+        txBuilder.type(TransactionType.WalletInitialization);
+        txBuilder.owner(defaultKeyPair.getAddress());
+        txBuilder.owner('0xBa8eA9C3729686d7DB120efCfC81cD020C8DC1CB');
+        txBuilder.owner('0x2fa96fca36dd9d646AC8a4e0C19b4D3a0Dc7e456');
+        txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+        const tx = await txBuilder.build(); // should build and sign
+
+        tx.type.should.equal(TransactionType.WalletInitialization);
+        const txJson = tx.toJson();
+        txJson.gasLimit.should.equal('12100000');
+        txJson.gasPrice.should.equal('1000000000');
+        should.equal(txJson.nonce, 0);
+        should.equal(txJson.chainId, 44786);
+        should.equal(txJson.from, defaultKeyPair.getAddress());
+      });
+
       it('a send transaction', async () => {
         initTxBuilder();
         txBuilder.type(TransactionType.Send);
