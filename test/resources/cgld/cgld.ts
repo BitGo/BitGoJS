@@ -19,7 +19,7 @@ export const TXDATA: TxData = {
   to: '0x19645032c7f1533395d44a629462e751084d3e4c',
   value: '10000',
   v: '0xaef2',
-	id: '0xc570a23d628200e4a7c4a56379d23d738059cc925135928655fc2f3c857dced6',
+  id: '0xc570a23d628200e4a7c4a56379d23d738059cc925135928655fc2f3c857dced6',
 };
 
 export const TXDATA_EMPTY_DATA = {

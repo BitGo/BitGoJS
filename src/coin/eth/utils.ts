@@ -201,31 +201,18 @@ export function calculateForwarderAddress(contractAddress: string, contractCount
 /**
  * Convert the given signature parts to a string representation
  *
- * @param sig The signature to convert to string
+ * @param {SignatureParts} sig The signature to convert to string
+ * @returns {string} String representation of the signature
  */
 export function toStringSig(sig: SignatureParts): string {
   return bufferToHex(Buffer.concat([setLengthLeft(sig.r, 32), setLengthLeft(sig.s, 32), toBuffer(sig.v)]));
 }
 
 /**
- * Convert the given signature parts to a string representation
- *
- * @param sig The signature to convert to string
- */
-export function fromStringSig(sig: string): SignatureParts {
-  const { v, r, s } = fromRpcSig(sig);
-  return {
-    v: bufferToHex(v),
-    r: bufferToHex(r),
-    s: bufferToHex(s),
-  };
-}
-
-/**
  * Return whether or not the given tx data has a signature
  *
- * @param txData The transaction data to check for signature
- * @returns true if the tx has a signature, else false
+ * @param {TxData} txData The transaction data to check for signature
+ * @returns {boolean} true if the tx has a signature, else false
  */
 export function hasSignature(txData: TxData): boolean {
   return (
