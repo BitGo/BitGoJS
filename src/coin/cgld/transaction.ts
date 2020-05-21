@@ -11,11 +11,11 @@ export class Transaction extends Eth.Transaction {
 
   setTransactionData(txData: TxData): void {
     this._transactionData = CgldTransactionData.fromJson(txData);
+    this.updateFields();
   }
 
   /**@inheritdoc */
   public static fromSerialized(coinConfig: Readonly<CoinConfig>, serializedTx: string): Transaction {
-    const tx = new Transaction(coinConfig, Utils.deserialize(serializedTx));
-    return tx;
+    return new Transaction(coinConfig, Utils.deserialize(serializedTx));
   }
 }

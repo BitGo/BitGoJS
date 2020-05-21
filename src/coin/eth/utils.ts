@@ -1,17 +1,26 @@
 import { Buffer } from 'buffer';
-import { isValidAddress, addHexPrefix, toBuffer, generateAddress } from 'ethereumjs-util';
+import {
+  addHexPrefix,
+  bufferToHex,
+  bufferToInt,
+  fromRpcSig,
+  generateAddress,
+  isValidAddress,
+  setLengthLeft,
+  toBuffer,
+} from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
-import { SigningError, BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
-import { TxData } from './iface';
+import { SignatureParts, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import {
-  walletSimpleConstructor,
-  walletSimpleByteCode,
   createForwarderMethodId,
   sendMultisigMethodId,
+  walletSimpleByteCode,
+  walletSimpleConstructor,
 } from './walletUtil';
 import { testnetCommon } from './resources';
 import { EthTransactionData } from './types';
@@ -187,4 +196,44 @@ export function hexStringToNumber(hex: string): number {
 export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
   const forwarderAddress = generateAddress(contractAddress, addHexPrefix(contractCounter.toString(16)));
   return addHexPrefix(forwarderAddress.toString('hex'));
+}
+
+/**
+ * Convert the given signature parts to a string representation
+ *
+ * @param sig The signature to convert to string
+ */
+export function toStringSig(sig: SignatureParts): string {
+  return bufferToHex(Buffer.concat([setLengthLeft(sig.r, 32), setLengthLeft(sig.s, 32), toBuffer(sig.v)]));
+}
+
+/**
+ * Convert the given signature parts to a string representation
+ *
+ * @param sig The signature to convert to string
+ */
+export function fromStringSig(sig: string): SignatureParts {
+  const { v, r, s } = fromRpcSig(sig);
+  return {
+    v: bufferToHex(v),
+    r: bufferToHex(r),
+    s: bufferToHex(s),
+  };
+}
+
+/**
+ * Return whether or not the given tx data has a signature
+ *
+ * @param txData The transaction data to check for signature
+ * @returns true if the tx has a signature, else false
+ */
+export function hasSignature(txData: TxData): boolean {
+  return (
+    txData.v !== undefined &&
+    txData.r !== undefined &&
+    txData.s !== undefined &&
+    txData.v.length > 0 &&
+    txData.r.length > 0 &&
+    txData.s.length > 0
+  );
 }

@@ -13,8 +13,14 @@ import {
   ForwarderAddressError,
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
-import { Fee, TxData } from './iface';
-import { getContractData, isValidEthAddress, getAddressInitializationData, calculateForwarderAddress } from './utils';
+import { Fee, SignatureParts, TxData } from './iface';
+import {
+  getContractData,
+  isValidEthAddress,
+  getAddressInitializationData,
+  calculateForwarderAddress,
+  hasSignature,
+} from './utils';
 
 const DEFAULT_M = 3;
 
@@ -29,6 +35,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _counter: number;
   private _fee: Fee;
   private _sourceAddress: string;
+
+  // the signature on the external ETH transaction
+  private _txSignature: SignatureParts;
 
   // Wallet initialization transaction parameters
   private _walletOwnerAddresses: string[];
@@ -67,6 +76,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
+
+    if (this._txSignature) {
+      Object.assign(transactionData, this._txSignature);
+    }
+
     this.transaction.setTransactionType(this._type);
     this.transaction.setTransactionData(transactionData);
 
@@ -98,11 +112,17 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected loadBuilderInput(transactionJson: TxData): void {
     const decodedType = Utils.classifyTransaction(transactionJson.data);
     this.type(decodedType);
+    this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
+    this.counter(transactionJson.nonce);
+    this.chainId(Number(transactionJson.chainId));
+    if (hasSignature(transactionJson)) {
+      this._txSignature = { v: transactionJson.v!, r: transactionJson.r!, s: transactionJson.s! };
+    }
+    if (transactionJson.from) {
+      this.source(transactionJson.from);
+    }
     switch (decodedType) {
       case TransactionType.WalletInitialization:
-        this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
-        this.counter(transactionJson.nonce);
-        this.chainId(Number(transactionJson.chainId));
         const owners = Utils.decodeWalletCreationData(transactionJson.data);
         owners.forEach(element => {
           this.owner(element);

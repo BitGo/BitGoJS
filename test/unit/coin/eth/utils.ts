@@ -26,7 +26,7 @@ describe('ETH util library', function() {
     should.equal(getContractData(CONTRACT_ADDRESSES), testData.EXPECTED_CONTRACT_DATA);
   });
 
-  describe('Should validate valid createForwareder Id', function() {
+  describe('Should validate valid createForwarer Id', function() {
     should.equal(getAddressInitializationData(), walletUtilConstants.createForwarderMethodId);
   });
 

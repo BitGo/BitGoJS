@@ -1,8 +1,9 @@
+import { recoverTransaction } from '@celo/contractkit/lib/utils/signing-utils';
 import { RLP } from 'ethers/utils';
+import { addHexPrefix, ecrecover } from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
 import { TxData } from '../eth/iface';
 import { ParseTransactionError } from '../baseCoin/errors';
-import { Utils } from '../eth';
 
 /**
  * Celo transaction deserialization based on code
@@ -16,9 +17,11 @@ export function deserialize(serializedTx: string): TxData {
   try {
     const rawValues = RLP.decode(serializedTx);
     let chainId = rawValues[9];
+    let from;
     if (rawValues[10] !== '0x' && rawValues[11] !== '0x') {
-      const recovery = Utils.hexStringToNumber(chainId);
-      chainId = Utils.numberToHexString((recovery - 35) >> 1);
+      const [tx, sender] = recoverTransaction(serializedTx);
+      from = sender;
+      chainId = tx.chainId;
     }
     const celoTx: TxData = {
       nonce: rawValues[0].toLowerCase() === '0x' ? 0 : parseInt(rawValues[0], 16),
@@ -27,8 +30,16 @@ export function deserialize(serializedTx: string): TxData {
       value: rawValues[7].toLowerCase() === '0x' ? '0' : new BigNumber(rawValues[7], 16).toString(),
       data: rawValues[8],
       chainId: chainId,
+      from,
+      v: rawValues[9],
+      r: rawValues[10],
+      s: rawValues[11],
     };
-    if (rawValues[6] !== '0x') celoTx.to = rawValues[6];
+
+    if (rawValues[6] !== '0x') {
+      celoTx.to = rawValues[6];
+    }
+
     return celoTx;
   } catch {
     throw new ParseTransactionError('Invalid serialized transaction');

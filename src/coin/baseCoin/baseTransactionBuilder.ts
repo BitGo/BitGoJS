@@ -31,7 +31,7 @@ export abstract class BaseTransactionBuilder {
    * Coin specific implementation of {@code from}.
    *
    * @see {@link from}
-   * @return the parsed coin specific transaction object
+   * @returns the parsed coin specific transaction object
    */
   protected abstract fromImplementation(rawTransaction: any): BaseTransaction;
 
@@ -52,7 +52,7 @@ export abstract class BaseTransactionBuilder {
    * Coin specific implementation of {@code sign}.
    *
    * @see {@link sign}
-   * @return coin specific transaction with signature data
+   * @returns coin specific transaction with signature data
    */
   protected abstract signImplementation(key: BaseKey): BaseTransaction;
 
@@ -60,7 +60,7 @@ export abstract class BaseTransactionBuilder {
    * Finalize the transaction by performing any extra step like calculating hashes, verifying
    * integrity, or adding default values.
    *
-   * @return valid coin specific transaction (signed or unsigned)
+   * @returns valid coin specific transaction (signed or unsigned)
    */
   async build(): Promise<BaseTransaction> {
     this.validateTransaction(this.transaction);
@@ -71,7 +71,7 @@ export abstract class BaseTransactionBuilder {
    * Coin specific implementation of {@code build}.
    *
    * @see {@link build}
-   * @return valid coin specific transaction (signed or unsigned)
+   * @returns valid coin specific transaction (signed or unsigned)
    */
   protected abstract async buildImplementation(): Promise<BaseTransaction>;
 

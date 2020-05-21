@@ -171,6 +171,13 @@ describe('Celo Transaction builder', function() {
         newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
         const newTx = await newTxBuilder.build();
         should.equal(newTx.toBroadcastFormat(), serialized);
+        should.equal(newTx.id, '0x4067864a61c93900abcb9a06adfd15d92d1d6e74aa9fe5b105af1824764cbc9f');
+        const txJson = newTx.toJson();
+        should.exist(txJson.from);
+        txJson.from.should.equal(defaultKeyPair.getAddress());
+        should.exist(txJson.v);
+        should.exist(txJson.r);
+        should.exist(txJson.s);
       });
     });
 
