@@ -3,6 +3,7 @@ import { RLP } from 'ethers/utils';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import { getBuilder, Eth } from '../../../../src';
 import * as testData from '../../../resources/cgld/cgld';
+import { getContractData, calculateForwarderAddress } from '../../../../src/coin/eth/utils';
 
 describe('Celo Transaction builder', function() {
   let txBuilder;
@@ -41,7 +42,7 @@ describe('Celo Transaction builder', function() {
       txBuilder.owner('0xBa8eA9C3729686d7DB120efCfC81cD020C8DC1CB');
       txBuilder.owner('0x2fa96fca36dd9d646AC8a4e0C19b4D3a0Dc7e456');
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-      const tx = await txBuilder.build(); //shoud build and sign
+      const tx = await txBuilder.build(); // should build and sign
 
       tx.type.should.equal(TransactionType.WalletInitialization);
       const txJson = tx.toJson();
@@ -51,6 +52,25 @@ describe('Celo Transaction builder', function() {
       should.equal(txJson.chainId, 44786);
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
+
+    it('an init transaction with nonce 0', async () => {
+      txBuilder.counter(0);
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.owner(defaultKeyPair.getAddress());
+      txBuilder.owner('0xBa8eA9C3729686d7DB120efCfC81cD020C8DC1CB');
+      txBuilder.owner('0x2fa96fca36dd9d646AC8a4e0C19b4D3a0Dc7e456');
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      const tx = await txBuilder.build(); // should build and sign
+
+      tx.type.should.equal(TransactionType.WalletInitialization);
+      const txJson = tx.toJson();
+      txJson.gasLimit.should.equal('12100000');
+      txJson.gasPrice.should.equal('1000000000');
+      should.equal(txJson.nonce, 0);
+      should.equal(txJson.chainId, 44786);
+      should.equal(txJson.from, defaultKeyPair.getAddress());
+    });
+
     it('an send transaction', async () => {
       txBuilder.type(TransactionType.Send);
       txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
@@ -61,9 +81,10 @@ describe('Celo Transaction builder', function() {
         .contractSequenceId(5)
         .key(defaultKeyPair.getKeys().prv);
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-      const tx = await txBuilder.build(); //shoud build and sign
+      const tx = await txBuilder.build(); // should build and sign
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
     });
+
     it('an unsigned init transaction from serialized', async () => {
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.owner('0x386Fe4E3D2b6Acce93CC13d06e92B00aa50F429c');
@@ -88,7 +109,7 @@ describe('Celo Transaction builder', function() {
     it('a signed init transaction from serialized', async () => {
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.source(defaultKeyPair.getAddress());
-      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
+      txBuilder.owner(defaultKeyPair.getAddress());
       txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
       txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
@@ -100,7 +121,7 @@ describe('Celo Transaction builder', function() {
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
-      should.equal(newTx.id, '0x4067864a61c93900abcb9a06adfd15d92d1d6e74aa9fe5b105af1824764cbc9f');
+      should.equal(newTx.id, '0xd819034b21e198ec093a552b4e4753c34762151b7067ef85b3eab5089081a355');
       const txJson = newTx.toJson();
       should.exist(txJson.from);
       txJson.from.should.equal(defaultKeyPair.getAddress());
