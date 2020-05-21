@@ -32,12 +32,28 @@ export class CeloTransaction {
   r: Buffer = toBuffer([]);
   s: Buffer = toBuffer([]);
 
+  //TODO: validate if this needs to be moved to Utils class
+  /**
+   * Clean hex formatted values ensuring they have an even length
+   *
+   * @param numberValue Hex formatted number value. Example '0x01'
+   * @returns sanitized value
+   */
+  private sanitizeHexString(numberValue) {
+    if (numberValue === '0x0') {
+      return '0x';
+    } else if (numberValue.length % 2 === 0) {
+      return numberValue;
+    }
+    return '0x0' + numberValue.slice(2);
+  }
+
   constructor(tx: TxData) {
-    this.nonce = toBuffer(tx.nonce);
-    this.gasLimit = toBuffer(tx.gasLimit);
-    this.gasPrice = toBuffer(tx.gasPrice);
+    this.nonce = toBuffer(this.sanitizeHexString(tx.nonce));
+    this.gasLimit = toBuffer(this.sanitizeHexString(tx.gasLimit));
+    this.gasPrice = toBuffer(this.sanitizeHexString(tx.gasPrice));
     this.data = toBuffer(tx.data);
-    this.value = toBuffer(tx.value !== '0x0' ? tx.value : '0x');
+    this.value = toBuffer(this.sanitizeHexString(tx.value));
     if (tx.to) {
       this.to = toBuffer(tx.to);
     }
