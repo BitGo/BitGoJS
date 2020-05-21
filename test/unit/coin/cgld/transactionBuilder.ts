@@ -3,7 +3,6 @@ import { RLP } from 'ethers/utils';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import { getBuilder, Eth } from '../../../../src';
 import * as testData from '../../../resources/cgld/cgld';
-import { getContractData, calculateForwarderAddress } from '../../../../src/coin/eth/utils';
 
 describe('Celo Transaction builder', function() {
   let txBuilder;
@@ -85,6 +84,7 @@ describe('Celo Transaction builder', function() {
       const signedTx = await newTxBuilder.build();
       should.equal(signedTx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
+
     it('a signed init transaction from serialized', async () => {
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.source(defaultKeyPair.getAddress());
@@ -98,10 +98,15 @@ describe('Celo Transaction builder', function() {
       // now rebuild from the signed serialized tx and make sure it stays the same
       const newTxBuilder: any = getBuilder('cgld');
       newTxBuilder.from(serialized);
-      newTxBuilder.source(defaultKeyPair.getAddress());
-      newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
+      should.equal(newTx.id, '0x4067864a61c93900abcb9a06adfd15d92d1d6e74aa9fe5b105af1824764cbc9f');
+      const txJson = newTx.toJson();
+      should.exist(txJson.from);
+      txJson.from.should.equal(defaultKeyPair.getAddress());
+      should.exist(txJson.v);
+      should.exist(txJson.r);
+      should.exist(txJson.s);
     });
 
     it('an address creation transaction', async () => {

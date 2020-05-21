@@ -2,8 +2,8 @@ import { HDNode, ECPair, networks } from 'bitgo-utxo-lib';
 import { ExtendedKeys } from '../coin/baseCoin/iface';
 
 /**
- * @param {String} xpub - a base-58 encoded extended public key (BIP32)
- * @return {String} the uncompressed public key in hexadecimal
+ * @param {string} xpub - a base-58 encoded extended public key (BIP32)
+ * @returns {string} the uncompressed public key in hexadecimal
  */
 export function xpubToUncompressedPub(xpub: string): string {
   if (!isValidXpub(xpub)) {
@@ -14,8 +14,8 @@ export function xpubToUncompressedPub(xpub: string): string {
 }
 
 /**
- * @param {String} xprv - base58-encoded extended private key (BIP32)
- * @return {String} the hex-encoded raw private key
+ * @param {string} xprv - base58-encoded extended private key (BIP32)
+ * @returns {string} the hex-encoded raw private key
  */
 export function xprvToRawPrv(xprv: string): string {
   if (!isValidXprv(xprv)) {
@@ -26,8 +26,8 @@ export function xprvToRawPrv(xprv: string): string {
 }
 
 /**
- * @param {String} prv - Private key in hex format to get the extended keys for
- * @return {ExtendedKeys} xprv and xpub in string format
+ * @param {string} prv - Private key in hex format to get the extended keys for
+ * @returns {ExtendedKeys} xprv and xpub in string format
  */
 export function rawPrvToExtendedKeys(prv: string): ExtendedKeys {
   const keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
@@ -40,6 +40,8 @@ export function rawPrvToExtendedKeys(prv: string): ExtendedKeys {
 
 /**
  * Whether the input is a valid BIP32 xpub or not
+ *
+ * @param xpub
  */
 export function isValidXpub(xpub: string): boolean {
   if (xpub.substr(0, 4) !== 'xpub') {
@@ -57,6 +59,8 @@ export function isValidXpub(xpub: string): boolean {
 
 /**
  * Whether the input is a valid BIP32 xprv or not
+ *
+ * @param xprv
  */
 export function isValidXprv(xprv: string): boolean {
   if (xprv.substr(0, 4) !== 'xprv') {
@@ -74,6 +78,8 @@ export function isValidXprv(xprv: string): boolean {
 
 /**
  * Whether the input is a valid secp256k1 public key
+ *
+ * @param pub
  */
 export function isValidPub(pub: string): boolean {
   try {
@@ -86,6 +92,8 @@ export function isValidPub(pub: string): boolean {
 
 /**
  * Whether the input is a valid secp256k1 private key
+ *
+ * @param prv
  */
 export function isValidPrv(prv: string): boolean {
   try {

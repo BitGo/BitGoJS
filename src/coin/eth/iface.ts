@@ -17,6 +17,7 @@ export interface TxData {
   value: string;
   chainId?: string;
   from?: string;
+  id?: string;
   /**
    * EC recovery ID.
    */
@@ -58,4 +59,10 @@ export interface FieldStruct {
   name: string;
   inputs?: any;
   type: string;
+}
+
+export interface SignatureParts {
+  v: string;
+  r: string;
+  s: string;
 }
