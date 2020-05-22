@@ -3,6 +3,7 @@ import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
 import { isValidEthAddress, sendMultiSigData } from './utils';
+import { sendMultisigMethodId } from './walletUtil';
 
 /** ETH transfer builder */
 export class TransferBuilder {
@@ -12,21 +13,29 @@ export class TransferBuilder {
   private _data: string;
   private _signKey: string;
   private _expirationTime: number;
-  private _signature: string;
+  private _signature?: string;
 
-  //initialize with default values for non mandatory fields
-  constructor() {
-    this._expirationTime = this.getExpirationTime();
-    this._data = '0x';
+  constructor();
+  constructor(serializedData: string);
+  constructor(serializedData?: string) {
+    if (serializedData) {
+      this.decodeTransferData(serializedData);
+    } else {
+      //initialize with default values for non mandatory fields
+      this._expirationTime = this.getExpirationTime();
+      this._data = '0x';
+    }
   }
 
   amount(amount: string): TransferBuilder {
+    this._signature = undefined;
     this._amount = amount;
     return this;
   }
 
   to(address: string): TransferBuilder {
     if (isValidEthAddress(address)) {
+      this._signature = undefined;
       this._toAddress = address;
       return this;
     }
@@ -34,35 +43,38 @@ export class TransferBuilder {
   }
 
   contractSequenceId(counter: number): TransferBuilder {
+    this._signature = undefined;
     this._sequenceId = counter;
     return this;
   }
 
   data(additionalData: string): TransferBuilder {
+    this._signature = undefined;
     this._data = additionalData;
     return this;
   }
 
   key(signKey: string): TransferBuilder {
+    this._signature = undefined;
     this._signKey = signKey;
     return this;
   }
 
   expirationTime(date: number): TransferBuilder {
+    this._signature = undefined;
     this._expirationTime = date;
     return this;
   }
 
   signAndBuild(): string {
     if (this.hasMandatoryFields()) {
-      this.ethSignMsgHash();
       return sendMultiSigData(
         this._toAddress,
         new BigNumber(this._amount).toNumber(),
         this._data,
         this._expirationTime,
         this._sequenceId,
-        this._signature,
+        this.getSignature(),
       );
     }
     throw new BuildTransactionError(
@@ -75,7 +87,7 @@ export class TransferBuilder {
       this._amount !== undefined &&
       this._toAddress !== undefined &&
       this._sequenceId !== undefined &&
-      this._signKey !== undefined
+      (this._signKey !== undefined || this._signature !== undefined)
     );
   }
 
@@ -104,7 +116,19 @@ export class TransferBuilder {
     return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
   }
 
-  private ethSignMsgHash(): void {
+  /**
+   * If a signing key is set for this builder, recalculates the signature
+   *
+   * @returns the signature value
+   */
+  private getSignature(): string {
+    if (this._signKey) {
+      this._signature = this.ethSignMsgHash();
+    }
+    return this._signature!; //should it fail if a signature has not being set?
+  }
+
+  private ethSignMsgHash(): string {
     const data = this.getOperationHash();
     const signatureInParts = ethUtil.ecsign(
       new Buffer(ethUtil.stripHexPrefix(data), 'hex'),
@@ -117,6 +141,24 @@ export class TransferBuilder {
     const v = ethUtil.stripHexPrefix(ethUtil.intToHex(signatureInParts.v));
 
     // Concatenate the r, s and v parts to make the signature string
-    this._signature = ethUtil.addHexPrefix(r.concat(s, v));
+    return ethUtil.addHexPrefix(r.concat(s, v));
+  }
+
+  private decodeTransferData(data: string): void {
+    if (!data.startsWith(sendMultisigMethodId)) {
+      throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+    }
+    const splitBytecode = data.split(sendMultisigMethodId);
+    if (splitBytecode.length !== 2) {
+      throw new BuildTransactionError(`Invalid send bytecode: ${data}`);
+    }
+    const serializedArgs = Buffer.from(splitBytecode[1], 'hex');
+    const decoded = EthereumAbi.rawDecode(['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'], serializedArgs);
+    this._toAddress = ethUtil.bufferToHex(decoded[0]);
+    this._amount = ethUtil.bufferToInt(decoded[1]).toString();
+    this._data = ethUtil.bufferToHex(decoded[2]);
+    this._expirationTime = ethUtil.bufferToInt(decoded[3]);
+    this._sequenceId = ethUtil.bufferToInt(decoded[4]);
+    this._signature = ethUtil.bufferToHex(decoded[5]);
   }
 }

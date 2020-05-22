@@ -128,6 +128,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           this.owner(element);
         });
         break;
+      case TransactionType.Send:
+        if (transactionJson.to === undefined) {
+          throw new BuildTransactionError('Undefined recipient address');
+        }
+        this._contractAddress = transactionJson.to;
+        this._transfer = new TransferBuilder(transactionJson.data);
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
       //TODO: Add other cases of deserialization
@@ -351,16 +358,25 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     else throw new BuildTransactionError('Invalid address: ' + address);
   }
 
-  transfer(amount: string): TransferBuilder {
-    if (this._type === TransactionType.Send) {
-      this._transfer = new TransferBuilder().amount(amount);
-      return this._transfer;
+  /**
+   * Gets the transfer builder if exist, or creates a new one for this transaction and returns it
+   *
+   * @returns {TransferBuilder} the transfer builder
+   */
+  transfer(): TransferBuilder {
+    if (this._type !== TransactionType.Send) {
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
-    throw new BuildTransactionError('Transfers can only be set for send transactions');
+    if (!this._transfer) {
+      this._transfer = new TransferBuilder();
+    }
+    return this._transfer;
   }
 
   private getSendData(): string {
-    if (this._transfer) return this._transfer.signAndBuild();
+    if (this._transfer) {
+      return this._transfer.signAndBuild();
+    }
     throw new BuildTransactionError('Missing transfer information');
   }
 
