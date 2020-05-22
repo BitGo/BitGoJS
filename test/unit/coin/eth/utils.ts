@@ -39,6 +39,6 @@ describe('ETH util library', function() {
   });
 
   it('should generate a proper address', function() {
-    should.equal(calculateForwarderAddress(testData.CONTRACT_ADDRESS, 1), '0x3f2aea5aab784dbc805c601d205115923f8b6911');
+    should.equal(calculateForwarderAddress(testData.CONTRACT_ADDRESS, 1), '0x016e4eee27f3f355bbb78d0e5eb813c4761822c9');
   });
 });
