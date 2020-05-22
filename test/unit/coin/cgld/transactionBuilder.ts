@@ -192,4 +192,68 @@ describe('Celo Transaction builder', function() {
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
     });
   });
+
+  describe('should fail to build', async () => {
+    it('a token transaction without fee', async () => {
+      const txBuilder: any = getBuilder('cgld');
+
+      txBuilder.type(TransactionType.SendToken);
+      txBuilder.chainId(44786);
+      const source = {
+        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+      };
+      const sourceKeyPair = new Eth.KeyPair(source);
+      txBuilder.source(sourceKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
+    });
+    it('a token transaction without source', async () => {
+      const txBuilder: any = getBuilder('cgld');
+
+      txBuilder.type(TransactionType.SendToken);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      txBuilder.chainId(44786);
+      txBuilder.counter(1);
+      txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing source');
+    });
+    it('a token transaction without chain id', async () => {
+      const txBuilder: any = getBuilder('cgld');
+
+      txBuilder.type(TransactionType.SendToken);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      const source = {
+        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+      };
+      const sourceKeyPair = new Eth.KeyPair(source);
+      txBuilder.source(sourceKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
+    });
+    it('a token transaction without nonce', async () => {
+      const txBuilder: any = getBuilder('cgld');
+
+      txBuilder.type(TransactionType.SendToken);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      const source = {
+        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+      };
+      const sourceKeyPair = new Eth.KeyPair(source);
+      txBuilder.source(sourceKeyPair.getAddress());
+      txBuilder.chainId(44786);
+      txBuilder.counter(1);
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
+    });
+  });
 });
