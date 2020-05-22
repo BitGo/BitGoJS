@@ -214,7 +214,7 @@ export function hexStringToNumber(hex: string): number {
  * @returns {string} the calculated forwarder contract address
  */
 export function calculateForwarderAddress(contractAddress: string, contractCounter: number): string {
-  const forwarderAddress = generateAddress(contractAddress, addHexPrefix(contractCounter.toString(16)));
+  const forwarderAddress = generateAddress(contractAddress, contractCounter);
   return addHexPrefix(forwarderAddress.toString('hex'));
 }
 
