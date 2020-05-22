@@ -13,7 +13,7 @@ import {
   ForwarderAddressError,
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
-import { Fee, TxData } from './iface';
+import { Fee, SignatureParts, TxData } from './iface';
 import { getContractData, isValidEthAddress, getAddressInitializationData, calculateForwarderAddress } from './utils';
 
 const DEFAULT_M = 3;
@@ -29,6 +29,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _counter: number;
   private _fee: Fee;
   private _sourceAddress: string;
+
+  // the signature on the external ETH transaction
+  private _txSignature: SignatureParts;
 
   // Wallet initialization transaction parameters
   private _walletOwnerAddresses: string[];
@@ -71,6 +74,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
+
+    if (this._txSignature) {
+      Object.assign(transactionData, this._txSignature);
+    }
+
     this.transaction.setTransactionType(this._type);
     this.transaction.setTransactionData(transactionData);
 
@@ -102,15 +110,28 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected loadBuilderInput(transactionJson: TxData): void {
     const decodedType = Utils.classifyTransaction(transactionJson.data);
     this.type(decodedType);
+    this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
+    this.counter(transactionJson.nonce);
+    this.chainId(Number(transactionJson.chainId));
+    if (hasSignature(transactionJson)) {
+      this._txSignature = { v: transactionJson.v!, r: transactionJson.r!, s: transactionJson.s! };
+    }
+    if (transactionJson.from) {
+      this.source(transactionJson.from);
+    }
     switch (decodedType) {
       case TransactionType.WalletInitialization:
-        this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
-        this.counter(transactionJson.nonce);
-        this.chainId(Number(transactionJson.chainId));
         const owners = Utils.decodeWalletCreationData(transactionJson.data);
         owners.forEach(element => {
           this.owner(element);
         });
+        break;
+      case TransactionType.Send:
+        if (transactionJson.to === undefined) {
+          throw new BuildTransactionError('Undefined recipient address');
+        }
+        this._contractAddress = transactionJson.to;
+        this._transfer = new TransferFundsBuilder(transactionJson.data);
         break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
@@ -358,16 +379,25 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     else throw new BuildTransactionError('Invalid address: ' + address);
   }
 
-  transfer(amount: string): TransferFundsBuilder {
-    if (this._type === TransactionType.Send) {
-      this._transfer = new TransferFundsBuilder().amount(amount);
-      return this._transfer;
+  /**
+   * Gets the transfer builder if exist, or creates a new one for this transaction and returns it
+   *
+   * @returns {TransferFundsBuilder} the transfer builder
+   */
+  transfer(): TransferFundsBuilder {
+    if (this._type !== TransactionType.Send) {
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
-    throw new BuildTransactionError('Transfers can only be set for send transactions');
+    if (!this._transfer) {
+      this._transfer = new TransferFundsBuilder();
+    }
+    return this._transfer;
   }
 
   private getSendData(): string {
-    if (this._transfer) return this._transfer.signAndBuild();
+    if (this._transfer) {
+      return this._transfer.signAndBuild();
+    }
     throw new BuildTransactionError('Missing transfer information');
   }
 

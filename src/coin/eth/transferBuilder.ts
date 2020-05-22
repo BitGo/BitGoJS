@@ -11,18 +11,27 @@ export abstract class TransferBuilder {
   protected _expirationTime: number;
   protected _signature: string;
 
-  //initialize with default values for non mandatory fields
-  constructor() {
-    this._expirationTime = this.getExpirationTime();
+  constructor();
+  constructor(serializedData: string);
+  constructor(serializedData?: string) {
+    if (serializedData) {
+      this.decodeTransferData(serializedData);
+    } else {
+      //initialize with default values for non mandatory fields
+      this._expirationTime = this.getExpirationTime();
+      this._data = '0x';
+    }
   }
 
   amount(amount: string): this {
+    this._signature = undefined;
     this._amount = amount;
     return this;
   }
 
   to(address: string): this {
     if (isValidEthAddress(address)) {
+      this._signature = undefined;
       this._toAddress = address;
       return this;
     }
@@ -30,6 +39,7 @@ export abstract class TransferBuilder {
   }
 
   contractSequenceId(counter: number): this {
+    this._signature = undefined;
     this._sequenceId = counter;
     return this;
   }
@@ -40,6 +50,7 @@ export abstract class TransferBuilder {
   }
 
   expirationTime(date: number): this {
+    this._signature = undefined;
     this._expirationTime = date;
     return this;
   }
@@ -60,7 +71,19 @@ export abstract class TransferBuilder {
 
   protected abstract getOperationHash(): (string | Buffer)[][];
 
-  protected ethSignMsgHash(): void {
+  /**
+   * If a signing key is set for this builder, recalculates the signature
+   *
+   * @returns the signature value
+   */
+  private getSignature(): string {
+    if (this._signKey) {
+      this._signature = this.ethSignMsgHash();
+    }
+    return this._signature!; //should it fail if a signature has not being set?
+  }
+
+  protected ethSignMsgHash(): string {
     const data = this.getOperationHash();
     const signatureInParts = ethUtil.ecsign(
       new Buffer(ethUtil.stripHexPrefix(data), 'hex'),
@@ -75,4 +98,6 @@ export abstract class TransferBuilder {
     // Concatenate the r, s and v parts to make the signature string
     this._signature = ethUtil.addHexPrefix(r.concat(s, v));
   }
+
+  protected abstract decodeTransferData(data: string): void;
 }

@@ -23,6 +23,9 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Public constructor.
+   *
+   * @param coinConfig
+   * @param rawTransaction
    */
   constructor(coinConfig: Readonly<CoinConfig>, rawTransaction?: TransactionReceipt) {
     super(coinConfig);
