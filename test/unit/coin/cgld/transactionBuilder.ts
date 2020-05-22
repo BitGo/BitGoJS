@@ -255,5 +255,30 @@ describe('Celo Transaction builder', function() {
       txBuilder.counter(1);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
     });
+    it('a send token transaction with wrong transaction type', async () => {
+      txBuilder.type(TransactionType.Send);
+      txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
+      should.throws(() => {
+        txBuilder.transferToken(1000000000);
+      }, 'Error: Token transfers can only be set for send token transactions');
+    });
+    it('a token transaction without token information', async () => {
+      const txBuilder: any = getBuilder('cgld');
+
+      txBuilder.type(TransactionType.SendToken);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      const source = {
+        prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+      };
+      const sourceKeyPair = new Eth.KeyPair(source);
+      txBuilder.source(sourceKeyPair.getAddress());
+      txBuilder.chainId(44786);
+      txBuilder.counter(1);
+      txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
+      await txBuilder.build().should.be.rejectedWith('Missing token transfer information');
+    });
   });
 });
