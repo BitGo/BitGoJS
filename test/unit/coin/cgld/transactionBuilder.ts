@@ -74,7 +74,7 @@ describe('Celo Transaction builder', function() {
         .expirationTime(1590066728)
         .contractSequenceId(5)
         .key(defaultKeyPair.getKeys().prv)
-        .tokenContractAddress('0x1234'); //TODO: Add a valid token contract address
+        .tokenContractAddress(testData.CONTRACT_TOKEN_CUSD_ADDRESS); //TODO: Add a valid token contract address
       txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
       const tx = await txBuilder.build(); //shoud build and sign
       should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
