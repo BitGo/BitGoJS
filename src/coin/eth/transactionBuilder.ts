@@ -361,16 +361,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Gets the transfer builder if exist, or creates a new one for this transaction and returns it
    *
-   * @param amount optional parameter, if it is provided then set this value on transfer builder
    * @returns {TransferBuilder} the transfer builder
    */
-  transfer(amount?: string): TransferBuilder {
+  transfer(): TransferBuilder {
     if (this._type !== TransactionType.Send) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
-    this._transfer = this._transfer || new TransferBuilder();
-    if (amount) {
-      this._transfer.amount(amount);
+    if (!this._transfer) {
+      this._transfer = new TransferBuilder();
     }
     return this._transfer;
   }
