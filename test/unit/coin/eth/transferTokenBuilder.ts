@@ -14,7 +14,7 @@ describe('Eth send token multi sig builder', function() {
         .to(toAddress)
         .contractSequenceId(2)
         .key(key)
-        .tokenContractAddress(testData.CONTRACT_TOKEN_CUSD_ADDRESS); //TODO: Add valid token contract address
+        .tokenContractAddress(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
       const result = builder.signAndBuild();
       should.equal(result, testData.SEND_TOKEN_DATA);
     });
