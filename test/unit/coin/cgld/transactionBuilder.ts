@@ -151,7 +151,7 @@ describe('Celo Transaction builder', function() {
     });
 
     describe('wallet initialization transaction', () => {
-      it('an unsigned init transaction from serialized', async () => {
+      it('sign an serialized init transaction', async () => {
         initTxBuilder();
         txBuilder.type(TransactionType.WalletInitialization);
         txBuilder.owner('0x386Fe4E3D2b6Acce93CC13d06e92B00aa50F429c');
@@ -165,32 +165,16 @@ describe('Celo Transaction builder', function() {
         const newTxBuilder: any = getBuilder('cgld');
         newTxBuilder.from(serialized);
         newTxBuilder.source(defaultKeyPair.getAddress());
-        const newTx = await newTxBuilder.build();
-        should.equal(newTx.toBroadcastFormat(), serialized);
-
         newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
         const signedTx = await newTxBuilder.build();
         should.equal(signedTx.toBroadcastFormat(), testData.TX_BROADCAST);
       });
 
       it('a signed init transaction from serialized', async () => {
-        initTxBuilder();
-        txBuilder.type(TransactionType.WalletInitialization);
-        txBuilder.source(defaultKeyPair.getAddress());
-        txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
-        txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
-        txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
-        txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-        const tx = await txBuilder.build();
-        const serialized = tx.toBroadcastFormat();
-
-        // now rebuild from the signed serialized tx and make sure it stays the same
         const newTxBuilder: any = getBuilder('cgld');
-        newTxBuilder.from(serialized);
-        newTxBuilder.source(defaultKeyPair.getAddress());
-        newTxBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+        newTxBuilder.from(testData.TX_BROADCAST);
         const newTx = await newTxBuilder.build();
-        should.equal(newTx.toBroadcastFormat(), serialized);
+        should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
       });
     });
 
@@ -198,8 +182,6 @@ describe('Celo Transaction builder', function() {
       it('should build a transaction without changes', async () => {
         const txBuilder: any = getBuilder('cgld');
         txBuilder.from(testData.SEND_TX_BROADCAST);
-        txBuilder.source(defaultKeyPair.getAddress());
-        txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
         const signedTx = await txBuilder.build();
         should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
       });

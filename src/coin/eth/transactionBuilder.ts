@@ -129,13 +129,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         });
         break;
       case TransactionType.Send:
-        this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
-        this.counter(transactionJson.nonce);
-        this.chainId(Number(transactionJson.chainId));
-        this._transfer = new TransferBuilder(transactionJson.data);
         if (transactionJson.to === undefined) {
           throw new BuildTransactionError('Undefined recipient address');
-        } else this._contractAddress = transactionJson.to;
+        }
+        this._contractAddress = transactionJson.to;
+        this._transfer = new TransferBuilder(transactionJson.data);
         break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
@@ -360,15 +358,21 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     else throw new BuildTransactionError('Invalid address: ' + address);
   }
 
+  /**
+   * Gets the transfer builder if exist, or creates a new one for this transaction and returns it
+   *
+   * @param amount optional parameter, if it is provided then set this value on transfer builder
+   * @returns {TransferBuilder} the transfer builder
+   */
   transfer(amount?: string): TransferBuilder {
-    if (this._type === TransactionType.Send) {
-      this._transfer = this._transfer || new TransferBuilder();
-      if (amount) {
-        this._transfer.amount(amount);
-      }
-      return this._transfer;
+    if (this._type !== TransactionType.Send) {
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
-    throw new BuildTransactionError('Transfers can only be set for send transactions');
+    this._transfer = this._transfer || new TransferBuilder();
+    if (amount) {
+      this._transfer.amount(amount);
+    }
+    return this._transfer;
   }
 
   private getSendData(): string {

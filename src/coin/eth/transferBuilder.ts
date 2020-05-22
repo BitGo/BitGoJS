@@ -15,11 +15,13 @@ export class TransferBuilder {
   private _expirationTime: number;
   private _signature?: string;
 
-  //initialize with default values for non mandatory fields
+  constructor();
+  constructor(serializedData: string);
   constructor(serializedData?: string) {
     if (serializedData) {
       this.decodeTransferData(serializedData);
     } else {
+      //initialize with default values for non mandatory fields
       this._expirationTime = this.getExpirationTime();
       this._data = '0x';
     }
@@ -72,7 +74,7 @@ export class TransferBuilder {
         this._data,
         this._expirationTime,
         this._sequenceId,
-        this._encodedSignature,
+        this.getSignature(),
       );
     }
     throw new BuildTransactionError(
@@ -114,11 +116,16 @@ export class TransferBuilder {
     return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
   }
 
-  private get _encodedSignature(): string {
+  /**
+   * If a signing key is set for this builder, recalculates the signature
+   *
+   * @returns the signature value
+   */
+  private getSignature(): string {
     if (this._signKey) {
       this._signature = this.ethSignMsgHash();
     }
-    return this._signature as string;
+    return this._signature!; //should it fail if a signature has not being set?
   }
 
   private ethSignMsgHash(): string {
