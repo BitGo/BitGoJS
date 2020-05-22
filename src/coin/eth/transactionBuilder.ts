@@ -358,12 +358,19 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   // region Send token builder methods
 
-  transferToken(amount: string): TransferTokenBuilder {
-    if (this._type === TransactionType.SendToken) {
-      this._transferToken = new TransferTokenBuilder().amount(amount);
-      return this._transferToken;
+  /**
+   * Gets the transfer token builder if exist, or creates a new one for this transaction and returns it
+   *
+   * @returns {TransferTokenBuilder} the transfer builder
+   */
+  transferToken(): TransferTokenBuilder {
+    if (this._type !== TransactionType.SendToken) {
+      throw new BuildTransactionError('Token transfers can only be set for send token transactions');
     }
-    throw new BuildTransactionError('Token transfers can only be set for send token transactions');
+    if (!this._transferToken) {
+      this._transferToken = new TransferTokenBuilder();
+    }
+    return this._transferToken;
   }
 
   private getSendTokenData(): string {
@@ -386,7 +393,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Gets the transfer builder if exist, or creates a new one for this transaction and returns it
+   * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
    *
    * @returns {TransferFundsBuilder} the transfer builder
    */

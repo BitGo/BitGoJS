@@ -11,8 +11,6 @@ export class TransferFundsBuilder extends TransferBuilder {
   private _data: string;
 
   //initialize with default values for non mandatory fields
-  constructor();
-  constructor(serializedData: string);
   constructor(serializedData?: string) {
     if (serializedData) {
       super(serializedData);

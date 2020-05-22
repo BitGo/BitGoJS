@@ -81,7 +81,8 @@ describe('Celo Transaction builder', function() {
         txBuilder.type(TransactionType.SendToken);
         txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
         txBuilder
-          .transferToken(1000000000)
+          .transferToken()
+          .amount(1000000000)
           .to('0x19645032c7f1533395d44a629462e751084d3e4c')
           .expirationTime(1590066728)
           .contractSequenceId(5)
