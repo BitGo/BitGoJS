@@ -14,7 +14,13 @@ import {
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { Fee, SignatureParts, TxData } from './iface';
-import { getContractData, isValidEthAddress, getAddressInitializationData, calculateForwarderAddress } from './utils';
+import {
+  getContractData,
+  isValidEthAddress,
+  getAddressInitializationData,
+  calculateForwarderAddress,
+  hasSignature,
+} from './utils';
 
 const DEFAULT_M = 3;
 

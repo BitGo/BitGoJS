@@ -1,14 +1,5 @@
 import { Buffer } from 'buffer';
-import {
-  addHexPrefix,
-  bufferToHex,
-  bufferToInt,
-  fromRpcSig,
-  generateAddress,
-  isValidAddress,
-  setLengthLeft,
-  toBuffer,
-} from 'ethereumjs-util';
+import { addHexPrefix, bufferToHex, generateAddress, isValidAddress, setLengthLeft, toBuffer } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
@@ -19,6 +10,7 @@ import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
   sendMultisigMethodId,
+  sendMultisigTokenMethodId,
   walletSimpleByteCode,
   walletSimpleConstructor,
 } from './walletUtil';
@@ -188,6 +180,8 @@ export function classifyTransaction(data: string): TransactionType {
     return TransactionType.AddressInitialization;
   } else if (data.startsWith(sendMultisigMethodId)) {
     return TransactionType.Send;
+  } else if (data.startsWith(sendMultisigTokenMethodId)) {
+    return TransactionType.SendToken;
   } else {
     throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
   }

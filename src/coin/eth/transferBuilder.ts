@@ -9,7 +9,7 @@ export abstract class TransferBuilder {
   protected _sequenceId: number;
   protected _signKey: string;
   protected _expirationTime: number;
-  protected _signature: string;
+  protected _signature?: string;
 
   constructor();
   constructor(serializedData: string);
@@ -19,7 +19,6 @@ export abstract class TransferBuilder {
     } else {
       //initialize with default values for non mandatory fields
       this._expirationTime = this.getExpirationTime();
-      this._data = '0x';
     }
   }
 
@@ -76,7 +75,7 @@ export abstract class TransferBuilder {
    *
    * @returns the signature value
    */
-  private getSignature(): string {
+  protected getSignature(): string {
     if (this._signKey) {
       this._signature = this.ethSignMsgHash();
     }
@@ -96,7 +95,7 @@ export abstract class TransferBuilder {
     const v = ethUtil.stripHexPrefix(ethUtil.intToHex(signatureInParts.v));
 
     // Concatenate the r, s and v parts to make the signature string
-    this._signature = ethUtil.addHexPrefix(r.concat(s, v));
+    return ethUtil.addHexPrefix(r.concat(s, v));
   }
 
   protected abstract decodeTransferData(data: string): void;

@@ -10,6 +10,7 @@ export class TransferTokenBuilder extends TransferBuilder {
   private _tokenContractAddress: string;
 
   tokenContractAddress(tokenContractAddress: string): TransferTokenBuilder {
+    this._signature = undefined;
     this._tokenContractAddress = tokenContractAddress;
     return this;
   }
@@ -23,7 +24,7 @@ export class TransferTokenBuilder extends TransferBuilder {
         this._tokenContractAddress,
         this._expirationTime,
         this._sequenceId,
-        this._signature,
+        this.getSignature(),
       );
     }
     throw new BuildTransactionError(
@@ -54,5 +55,9 @@ export class TransferTokenBuilder extends TransferBuilder {
       ],
     ];
     return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
+  }
+
+  protected decodeTransferData(data: string): void {
+    throw new Error('Method not implemented.');
   }
 }
