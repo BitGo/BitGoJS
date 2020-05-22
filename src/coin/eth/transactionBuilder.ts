@@ -407,11 +407,16 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return this._transfer;
   }
 
+  /**
+   * Returns the serialized sendMultiSig contract method data
+   *
+   * @returns {string} serialized sendMultiSig data
+   */
   private getSendData(): string {
-    if (this._transfer) {
-      return this._transfer.signAndBuild();
+    if (!this._transfer) {
+      throw new BuildTransactionError('Missing transfer information');
     }
-    throw new BuildTransactionError('Missing transfer information');
+    return this._transfer.signAndBuild();
   }
 
   private buildSendTransaction(): TxData {
