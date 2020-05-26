@@ -590,6 +590,42 @@ describe('V2 Wallet:', function() {
     }));
   });
 
+  describe('maxNumInputsToUse verification', function() {
+    const address = '5b34252f1bf349930e34020a';
+    const maxNumInputsToUse = 2;
+    let basecoin;
+    let wallet;
+
+    before(co(function* () {
+      basecoin = bitgo.coin('tbtc');
+      const walletData = {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: [
+          '5b3424f91bf349930e340175'
+        ]
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    }));
+
+
+    it('should pass maxNumInputsToUse parameter when calling fanout unspents', co(function* () {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
+      const response = nock(bgUrl)
+          .post(path, _.matches({ maxNumInputsToUse })) // use _.matches to do a partial match on request body object instead of strict matching
+          .reply(200);
+
+      try {
+        yield wallet.fanoutUnspents({address, maxNumInputsToUse});
+      } catch (e) {
+        // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
+        // we only care about /fanoutUnspents and whether maxNumInputsToUse is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    }));
+  });
+
   describe('maxFeeRate verification', function() {
     const address = '5b34252f1bf349930e34020a';
     const recipients = [{
