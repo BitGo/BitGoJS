@@ -4,7 +4,7 @@ import BigNumber from 'bignumber.js';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { sendMultiSigData } from './utils';
 import { sendMultisigMethodId } from './walletUtil';
-import { TransferBuilder } from './';
+import { TransferBuilder } from './transferBuilder';
 
 /** ETH transfer builder */
 export class TransferFundsBuilder extends TransferBuilder {

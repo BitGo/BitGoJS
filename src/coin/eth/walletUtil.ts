@@ -142,3 +142,7 @@ export const walletSimpleAbi = [
     type: 'event',
   },
 ];
+
+export const sendMultiSigTypes = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
+
+export const sendMultiSigTokenTypes = ['address', 'uint', 'address', 'uint', 'uint', 'bytes'];

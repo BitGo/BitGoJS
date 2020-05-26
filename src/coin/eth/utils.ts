@@ -13,6 +13,8 @@ import {
   sendMultisigTokenMethodId,
   walletSimpleByteCode,
   walletSimpleConstructor,
+  sendMultiSigTypes,
+  sendMultiSigTokenTypes,
 } from './walletUtil';
 import { testnetCommon } from './resources';
 import { EthTransactionData } from './types';
@@ -84,9 +86,8 @@ export function sendMultiSigData(
   signature: string,
 ): string {
   const params = [to, value, toBuffer(data), expireTime, sequenceId, toBuffer(signature)];
-  const types = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
-  const method = EthereumAbi.methodID('sendMultiSig', types);
-  const args = EthereumAbi.rawEncode(types, params);
+  const method = EthereumAbi.methodID('sendMultiSig', sendMultiSigTypes);
+  const args = EthereumAbi.rawEncode(sendMultiSigTypes, params);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
 }
 
@@ -110,9 +111,8 @@ export function sendMultiSigTokenData(
   signature: string,
 ): string {
   const params = [to, value, tokenContractAddress, expireTime, sequenceId, toBuffer(signature)];
-  const types = ['address', 'uint', 'address', 'uint', 'uint', 'bytes'];
-  const method = EthereumAbi.methodID('sendMultiSigToken', types);
-  const args = EthereumAbi.rawEncode(types, params);
+  const method = EthereumAbi.methodID('sendMultiSigToken', sendMultiSigTokenTypes);
+  const args = EthereumAbi.rawEncode(sendMultiSigTokenTypes, params);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
 }
 

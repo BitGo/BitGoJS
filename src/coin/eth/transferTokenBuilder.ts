@@ -3,7 +3,7 @@ import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { sendMultiSigTokenData } from './utils';
-import { TransferBuilder } from './';
+import { TransferBuilder } from './transferBuilder';
 
 /** ETH transfer token builder */
 export class TransferTokenBuilder extends TransferBuilder {
