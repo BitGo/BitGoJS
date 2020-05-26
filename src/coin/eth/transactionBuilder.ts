@@ -138,6 +138,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         this._contractAddress = transactionJson.to;
         this._transfer = new TransferBuilder(transactionJson.data);
         break;
+      case TransactionType.SendToken:
+        if (transactionJson.to === undefined) {
+          throw new BuildTransactionError('Undefined contract address');
+        }
+        this._contractAddress = transactionJson.to;
+        this._transferToken = new TransferTokenBuilder(transactionJson.data);
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
       //TODO: Add other cases of deserialization
