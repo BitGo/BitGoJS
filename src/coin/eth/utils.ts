@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer';
 import {
   addHexPrefix,
+  stripHexPrefix,
   bufferToHex,
   bufferToInt,
   fromRpcSig,
@@ -145,7 +146,11 @@ export function decodeWalletCreationData(data: string): string[] {
     throw new BuildTransactionError(`invalid number of addresses in parsed constructor: ${addresses}`);
   }
 
-  return addresses.map(address => addHexPrefix(address.toString('hex')));
+  // sometimes ethereumjs-abi removes 0 padding at the start of addresses,
+  // so we should pad until they are the standard 20 bytes
+  const paddedAddresses = addresses.map(address => stripHexPrefix(address.toString('hex')).padStart(40, '0'));
+
+  return paddedAddresses.map(address => addHexPrefix(address));
 }
 
 /**
