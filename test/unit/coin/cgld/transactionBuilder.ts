@@ -284,11 +284,17 @@ describe('Celo Transaction builder', function() {
     });
 
     describe('send transaction', () => {
-      it('should build a transaction without changes', async () => {
+      it('should build a send found transaction without changes', async () => {
         const txBuilder: any = getBuilder('cgld');
         txBuilder.from(testData.SEND_TX_BROADCAST);
         const signedTx = await txBuilder.build();
         should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
+      });
+      it('should build a send token transactions whitout changes', async () => {
+        const txBuilder: any = getBuilder('cgld');
+        txBuilder.from(testData.SEND_TOKEN_TX_BROADCAST);
+        const tx = await txBuilder.build();
+        should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
       });
     });
   });
