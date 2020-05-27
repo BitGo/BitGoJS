@@ -13,6 +13,7 @@ import {
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
+import BigNumber from 'bignumber.js';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { SignatureParts, TxData } from './iface';
@@ -86,7 +87,7 @@ export function getContractData(addresses: string[]): string {
  */
 export function sendMultiSigData(
   to: string,
-  value: number,
+  value: string,
   data: string,
   expireTime: number,
   sequenceId: number,
@@ -116,6 +117,16 @@ export function getAddressInitializationData(): string {
  */
 export function isValidEthAddress(address: string): boolean {
   return isValidAddress(address);
+}
+
+/**
+ * Returns whether or not the string is a valid amount number
+ *
+ * @param {string} amount - the string to validate
+ * @returns {boolean} - the validation result
+ */
+export function isValidAmount(amount: string): boolean {
+  return new BigNumber(amount).isInteger();
 }
 
 /**
