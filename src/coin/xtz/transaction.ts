@@ -2,13 +2,14 @@ import { localForger, CODEC } from '@taquito/local-forging';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction } from '../baseCoin';
-import { BuildTransactionError, InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
+import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
 import {
   getMultisigTransferDataFromOperation,
   getMultisigTransferSignatures,
   getOriginationDataFromOperation,
+  getOwnersPublicKeys,
   updateMultisigTransferSignatures,
 } from './multisigUtils';
 import { KeyPair } from './keyPair';
@@ -25,6 +26,7 @@ export class Transaction extends BaseTransaction {
   private _delegate?: string;
   private _forwarderDestination?: string;
   private _publicKeyToReveal?: string;
+  private _owners: string[];
 
   /**
    * Public constructor.
@@ -33,6 +35,7 @@ export class Transaction extends BaseTransaction {
    */
   constructor(coinConfig: Readonly<CoinConfig>) {
     super(coinConfig);
+    this._owners = [];
   }
 
   /**
@@ -120,6 +123,7 @@ export class Transaction extends BaseTransaction {
       this._forwarderDestination = originationData.forwarderDestination;
     } else {
       this._type = TransactionType.WalletInitialization;
+      this._owners = getOwnersPublicKeys(operation);
     }
 
     this._delegate = operation.delegate;
@@ -272,6 +276,10 @@ export class Transaction extends BaseTransaction {
    */
   get forwarderDestination(): string | undefined {
     return this._forwarderDestination;
+  }
+
+  get owners(): string[] {
+    return this._owners;
   }
 
   /**

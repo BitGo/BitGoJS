@@ -513,6 +513,20 @@ export function genericMultisigOriginationOperation(
 }
 
 /**
+ * Get the public key of each owner of an multisig wallet origination contract.
+ *
+ * @param {OriginationOp} operation An operation with the generic multisig wallet origination
+ * @returns {string[]} List of all the owners set in the origination transaction
+ */
+export function getOwnersPublicKeys(operation: OriginationOp): string[] {
+  const ownersArgs = _.get(operation, 'script.storage.args[1].args[1]');
+  if (!ownersArgs) {
+    return [];
+  }
+  return ownersArgs.map(o => o.string);
+}
+
+/**
  * Generic Multisig contract from https://github.com/murbard/smart-contracts/blob/master/multisig/michelson/generic.tz
  */
 const genericMultisig = [
