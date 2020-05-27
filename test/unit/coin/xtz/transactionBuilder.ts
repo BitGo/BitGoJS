@@ -28,6 +28,10 @@ describe('Tezos Transaction builder', function() {
       should.not.exist(tx.delegate);
       tx.signature.length.should.equal(0);
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
+      tx.owners.length.should.equal(3);
+      tx.owners[0].should.equal('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
+      tx.owners[1].should.equal('sppk7Zq9KPtwkzkgAsha4jU29C43McgP2skK56tjd7KJjhcmH6AZC1F');
+      tx.owners[2].should.equal('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf');
     });
   });
 
@@ -67,6 +71,10 @@ describe('Tezos Transaction builder', function() {
       tx.outputs[0].value.should.equal('1000000');
       tx.signature.length.should.equal(0);
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
+      tx.owners.length.should.equal(3);
+      tx.owners[0].should.equal('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
+      tx.owners[1].should.equal('sppk7Zq9KPtwkzkgAsha4jU29C43McgP2skK56tjd7KJjhcmH6AZC1F');
+      tx.owners[2].should.equal('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf');
     });
 
     it('an account reveal transaction', async () => {
@@ -94,6 +102,7 @@ describe('Tezos Transaction builder', function() {
       should.not.exist(tx.delegate);
       tx.signature.length.should.equal(0);
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
+      tx.owners.length.should.equal(0);
     });
 
     it('a forwarder contract init transaction', async () => {
@@ -116,6 +125,7 @@ describe('Tezos Transaction builder', function() {
       tx.source.should.equal(keyPair.getAddress());
       tx.publicKeyToReveal.should.equal(keyPair.getKeys().pub);
       tx.forwarderDestination.should.equal(forwarderDestination);
+      tx.owners.length.should.equal(0);
     });
   });
 
@@ -153,6 +163,10 @@ describe('Tezos Transaction builder', function() {
         'sigVD57haAMCobHrCwH9ABfbFvdmyR9ZspZC3Zihb9tEPfhtzCKS1F8fLoVpodvor3PUoo7ry4j46xYETEzELmtnrNTaTPX4',
       );
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
+      tx.owners.length.should.equal(3);
+      tx.owners[0].should.equal('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
+      tx.owners[1].should.equal('sppk7Zq9KPtwkzkgAsha4jU29C43McgP2skK56tjd7KJjhcmH6AZC1F');
+      tx.owners[2].should.equal('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf');
     });
 
     it('a wallet init transaction with delegation and reveal the source', async () => {
@@ -197,6 +211,10 @@ describe('Tezos Transaction builder', function() {
       indexesByTransactionType.reveal[0].should.equal(0);
       indexesByTransactionType.origination.length.should.equal(1);
       indexesByTransactionType.origination[0].should.equal(1);
+      tx.owners.length.should.equal(3);
+      tx.owners[0].should.equal('sppk7ZWB8diU2TWehxdkWCV2DTFvn1hPz4qLjiD3nJQozKnoSEnSC8b');
+      tx.owners[1].should.equal('sppk7Zq9KPtwkzkgAsha4jU29C43McgP2skK56tjd7KJjhcmH6AZC1F');
+      tx.owners[2].should.equal('sppk7d2ztzbrLdBaTB7yzaWRkPfcWGsrNQNJdkBE9bCTSSzekLNzpvf');
     });
 
     it('a reveal transaction', async () => {
@@ -225,6 +243,7 @@ describe('Tezos Transaction builder', function() {
       indexesByTransactionType.reveal.length.should.equal(1);
       indexesByTransactionType.reveal[0].should.equal(0);
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
+      tx.owners.length.should.equal(0);
     });
 
     it('a multisig send transaction to an implicit account', async () => {
@@ -273,6 +292,7 @@ describe('Tezos Transaction builder', function() {
       Object.keys(indexesByTransactionType).length.should.equal(1);
       indexesByTransactionType.transaction.length.should.equal(1);
       indexesByTransactionType.transaction[0].should.equal(0);
+      tx.owners.length.should.equal(0);
     });
 
     it('a send transaction to an originated account (other contract)', async () => {
@@ -318,6 +338,7 @@ describe('Tezos Transaction builder', function() {
         'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500b389028c0a000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000001400707070700000505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a475003066dbeee80de45847aeeb04f17dbb2e0774ae6942817d31e744c7e7772925c5f510b18523dafe54603c8753141f3e0989678f2252deb3bdaef93d6befa94399240',
       );
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
+      tx.owners.length.should.equal(0);
     });
 
     it('a send transaction to multiple destinations', async () => {
@@ -376,6 +397,7 @@ describe('Tezos Transaction builder', function() {
       tx.toBroadcastFormat().should.equal(
         'ba7a04fab1a3f77eda96b551947dd343e165d1b91b6f9f806648b63e57c88cc86c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2500e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e000001400707070700010505020000005e0320053d036d0743036e01000000244b543148557274366b66765979444559434a3247536a7654505a364b6d5266784c4255380555036c0200000015072f02000000090200000004034f032702000000000743036a00a401034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a475003066c01aaca87bdbcdc4e6117b667e29f9b504362c831bb9c2501e8528102000196369c90625575ba44594b23794832a9337f7a2d00ffff046d61696e00000124070707070002050502000000420320053d036d0743035d0100000024747a3156526a5270564b6e76313641567072464831746b446e3454446656714138393341031e0743036a00a401034f034d031b02000000d0050901000000607369674e6a4436344e75566e554b376f56423263325350333256596a376454796b626e527879446f5339424776676167766e4d6354346859636361626246476f397464565154344d3436657a594a644c32707a594453776b665236797270705905090100000060736967596656594a5561694b4b5a58347a737a575a3752463239326e56325036584d346e4b656b325967575138424c533172323275346139534376474d63623839426a546674546e327667557a435451475332634a4e766259747547516a47500306766a0b1f6cb035bf537887ba9004c489bb458d8c8e72b5033b6cee8ad52f84ec27b719f5d0b98cdf2d0744b255301263688692645eafc9cdf1b48b5053c51dca',
       );
+      tx.owners.length.should.equal(0);
       const indexesByTransactionType = tx.getIndexesByTransactionType();
       Object.keys(indexesByTransactionType).length.should.equal(1);
       console.log(indexesByTransactionType);
@@ -444,6 +466,7 @@ describe('Tezos Transaction builder', function() {
         '09f5686021aadcfc00063b0873055c2e7c841398fece3d7865a8ed2756708d4a6c01a1525e289aed93119c44fd3aa8e9df8522e0d80d9c25978717e85281026f00006b5ddaef3fb5d7c151cfb36fbe43a7a066777394006c01a1525e289aed93119c44fd3aa8e9df8522e0d80d9c25988717e85281026f0001faf711f98d3a978656651c30875138c086fa871100fcf189b364c021e4be1a032f3867445e0c62ca01047fb853fe02d038e62fcad02ffca1d05e4b5a4e4fdc3ce6fc11607c9ca8ceca6fd7335d3dab6439ce2dee11',
       );
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
+      tx.owners.length.should.equal(0);
     });
 
     it('a multisig send transaction with the signatures in custom order', async () => {
@@ -475,6 +498,7 @@ describe('Tezos Transaction builder', function() {
       signatures[2].args[0].string.should.equal(
         'sigiC286gLc1SSWHwKydczwwdwTUPv7e9mkPeHzfE9wEG9PKZ6fUcmrMeYwcH7t9fWsnozB7Fay2uxkmi1u1X1bw3MgJUNpu',
       );
+      tx.owners.length.should.equal(0);
     });
 
     it('a multisig send transaction with the signatures in default order', async () => {

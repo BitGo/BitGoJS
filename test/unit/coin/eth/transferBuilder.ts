@@ -6,7 +6,7 @@ describe('Eth send multi sig builder', function() {
   describe('should build', () => {
     const toAddress = '0x7325A3F7d4f9E86AE62Cf742426078C3755730d5';
     const key = '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C';
-    const amount = '0.01';
+    const amount = '100000000000000000'; // equivalent to 0.1 ether
     it('should succeed', async () => {
       const builder = new TransferBuilder()
         .expirationTime(1590078260)

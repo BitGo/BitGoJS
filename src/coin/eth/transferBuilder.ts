@@ -11,7 +11,7 @@ import {
   sendMultiSigTokenTypes,
   sendMultisigTokenMethodId,
 } from './walletUtil';
-import { isValidEthAddress } from './utils';
+import { isValidEthAddress, isValidAmount } from './utils';
 
 /** ETH transfer builder */
 export class TransferBuilder {
@@ -58,8 +58,10 @@ export class TransferBuilder {
     this._data = additionalData;
     return this;
   }
-
-  amount(amount: string): TransferBuilder {
+  amount(amount: string): this {
+    if (!isValidAmount(amount)) {
+      throw new InvalidParameterValueError('Invalid amount');
+    }
     this._signature = undefined;
     this._amount = amount;
     return this;
@@ -96,7 +98,7 @@ export class TransferBuilder {
       if (this._tokenContractAddress !== undefined) {
         return sendMultiSigTokenData(
           this._toAddress,
-          new BigNumber(this._amount).toNumber(),
+          this._amount,
           this._tokenContractAddress,
           this._expirationTime,
           this._sequenceId,
@@ -105,7 +107,7 @@ export class TransferBuilder {
       } else {
         return sendMultiSigData(
           this._toAddress,
-          new BigNumber(this._amount).toNumber(),
+          this._amount,
           this._data,
           this._expirationTime,
           this._sequenceId,
@@ -213,7 +215,7 @@ export class TransferBuilder {
       this._data = ethUtil.bufferToHex(decoded[2]);
     }
     this._toAddress = ethUtil.bufferToHex(decoded[0]);
-    this._amount = ethUtil.bufferToInt(decoded[1]).toString();
+    this._amount = new BigNumber(ethUtil.bufferToHex(decoded[1])).toFixed();
     this._data = ethUtil.bufferToHex(decoded[2]);
     this._expirationTime = ethUtil.bufferToInt(decoded[3]);
     this._sequenceId = ethUtil.bufferToInt(decoded[4]);

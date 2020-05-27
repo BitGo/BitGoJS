@@ -106,6 +106,31 @@ describe('Eth Transaction builder', function() {
       should.equal(txJson.chainId, 42);
     });
 
+    it('an unsigned init transaction from serialized with 0-prefixed address', async () => {
+      const txBuilder: any = getBuilder('eth');
+      txBuilder.type(TransactionType.WalletInitialization);
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter(1);
+      txBuilder.fee({
+        fee: '10000000000',
+        gasLimit: '2000000',
+      });
+      txBuilder.chainId(42);
+      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
+      txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
+      txBuilder.owner('0x07ee8b845b8bf0e807e096d6b1599b121b82cbe1');
+      txBuilder.source(defaultKeyPair.getAddress());
+      const tx = await txBuilder.build();
+      const serialized = tx.toBroadcastFormat();
+
+      // now rebuild from the signed serialized tx and make sure it stays the same
+      const newTxBuilder: any = getBuilder('eth');
+      newTxBuilder.from(serialized);
+      newTxBuilder.source(defaultKeyPair.getAddress());
+      const newTx = await newTxBuilder.build();
+      should.equal(newTx.toBroadcastFormat(), serialized);
+    });
+
     it('an unsigned init transaction from serialized', async () => {
       const txBuilder: any = getBuilder('eth');
       txBuilder.type(TransactionType.WalletInitialization);

@@ -1,8 +1,19 @@
 import { Buffer } from 'buffer';
-import { addHexPrefix, bufferToHex, generateAddress, isValidAddress, setLengthLeft, toBuffer } from 'ethereumjs-util';
+import {
+  addHexPrefix,
+  stripHexPrefix,
+  bufferToHex,
+  bufferToInt,
+  fromRpcSig,
+  generateAddress,
+  isValidAddress,
+  setLengthLeft,
+  toBuffer,
+} from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
+import BigNumber from 'bignumber.js';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { SignatureParts, TxData } from './iface';
@@ -79,7 +90,7 @@ export function getContractData(addresses: string[]): string {
  */
 export function sendMultiSigData(
   to: string,
-  value: number,
+  value: string,
   data: string,
   expireTime: number,
   sequenceId: number,
@@ -104,7 +115,7 @@ export function sendMultiSigData(
  */
 export function sendMultiSigTokenData(
   to: string,
-  value: number,
+  value: string,
   tokenContractAddress: string,
   expireTime: number,
   sequenceId: number,
@@ -136,6 +147,16 @@ export function isValidEthAddress(address: string): boolean {
 }
 
 /**
+ * Returns whether or not the string is a valid amount number
+ *
+ * @param {string} amount - the string to validate
+ * @returns {boolean} - the validation result
+ */
+export function isValidAmount(amount: string): boolean {
+  return new BigNumber(amount).isInteger();
+}
+
+/**
  * Returns the smart contract encoded data
  *
  * @param {string} data The wallet creation data to decode
@@ -163,7 +184,11 @@ export function decodeWalletCreationData(data: string): string[] {
     throw new BuildTransactionError(`invalid number of addresses in parsed constructor: ${addresses}`);
   }
 
-  return addresses.map(address => addHexPrefix(address.toString('hex')));
+  // sometimes ethereumjs-abi removes 0 padding at the start of addresses,
+  // so we should pad until they are the standard 20 bytes
+  const paddedAddresses = addresses.map(address => stripHexPrefix(address.toString('hex')).padStart(40, '0'));
+
+  return paddedAddresses.map(address => addHexPrefix(address));
 }
 
 /**
