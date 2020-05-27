@@ -1,5 +1,5 @@
 import should from 'should';
-import { TransferFundsBuilder, TransferTokenBuilder } from '../../../../src/coin/eth';
+import { TransferBuilder } from '../../../../src/coin/eth';
 import * as testData from '../../../resources/eth/eth';
 
 describe('Eth send token multi sig builder', function() {
@@ -8,47 +8,44 @@ describe('Eth send token multi sig builder', function() {
     const key = '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C';
     const amount = '0.01';
     it('should succeed', async () => {
-      const builder = new TransferTokenBuilder()
+      const builder = new TransferBuilder()
+        .coin('tcusd')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
         .contractSequenceId(2)
-        .key(key)
-        .tokenContractAddress(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
+        .key(key);
       const result = builder.signAndBuild();
       should.equal(result, testData.SEND_TOKEN_DATA);
     });
-    it('should fail if the token contract address param is missing', () => {
-      const builder = new TransferTokenBuilder()
-        .amount(amount)
-        .to(toAddress)
-        .contractSequenceId(2)
-        .key(key);
-      should.throws(() => builder.signAndBuild());
+    it('should fail if a coin is not an ERC20 instance', () => {
+      should.throws(() => {
+        new TransferBuilder().coin('eth');
+      }, 'There was an error using that coin as a transfer currency');
     });
     it('should fail if a key param is missing', () => {
-      const builder = new TransferTokenBuilder()
+      const builder = new TransferBuilder()
         .amount(amount)
         .to(toAddress)
         .contractSequenceId(2);
       should.throws(() => builder.signAndBuild());
     });
     it('should fail if a sequenceId param is missing', () => {
-      const builder = new TransferTokenBuilder()
+      const builder = new TransferBuilder()
         .amount(amount)
         .to(toAddress)
         .key(key);
       should.throws(() => builder.signAndBuild());
     });
     it('should fail if a destination param is missing', () => {
-      const builder = new TransferTokenBuilder()
+      const builder = new TransferBuilder()
         .amount(amount)
         .contractSequenceId(2)
         .key(key);
       should.throws(() => builder.signAndBuild());
     });
     it('should fail if a amount param is missing', () => {
-      const builder = new TransferFundsBuilder()
+      const builder = new TransferBuilder()
         .to(toAddress)
         .contractSequenceId(2)
         .key(key);
