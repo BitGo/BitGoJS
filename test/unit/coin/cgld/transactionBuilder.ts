@@ -78,7 +78,7 @@ describe('Celo Transaction builder', function() {
 
       it('an send token transaction', async () => {
         initTxBuilder();
-        txBuilder.type(TransactionType.SendToken);
+        txBuilder.type(TransactionType.Send);
         txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
         txBuilder
           .transfer()
@@ -114,7 +114,7 @@ describe('Celo Transaction builder', function() {
       it('a token transaction without fee', async () => {
         const txBuilder: any = getBuilder('cgld');
 
-        txBuilder.type(TransactionType.SendToken);
+        txBuilder.type(TransactionType.Send);
         txBuilder.chainId(44786);
         const source = {
           prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
@@ -128,7 +128,7 @@ describe('Celo Transaction builder', function() {
       it('a token transaction without source', async () => {
         const txBuilder: any = getBuilder('cgld');
 
-        txBuilder.type(TransactionType.SendToken);
+        txBuilder.type(TransactionType.Send);
         txBuilder.fee({
           fee: '10000000000',
           gasLimit: '2000000',
@@ -141,7 +141,7 @@ describe('Celo Transaction builder', function() {
       it('a token transaction without chain id', async () => {
         const txBuilder: any = getBuilder('cgld');
 
-        txBuilder.type(TransactionType.SendToken);
+        txBuilder.type(TransactionType.Send);
         txBuilder.fee({
           fee: '10000000000',
           gasLimit: '2000000',
@@ -158,7 +158,7 @@ describe('Celo Transaction builder', function() {
       it('a token transaction without nonce', async () => {
         const txBuilder: any = getBuilder('cgld');
 
-        txBuilder.type(TransactionType.SendToken);
+        txBuilder.type(TransactionType.Send);
         txBuilder.fee({
           fee: '10000000000',
           gasLimit: '2000000',
@@ -182,7 +182,7 @@ describe('Celo Transaction builder', function() {
       it('a token transaction without token information', async () => {
         const txBuilder: any = getBuilder('cgld');
 
-        txBuilder.type(TransactionType.SendToken);
+        txBuilder.type(TransactionType.Send);
         txBuilder.fee({
           fee: '10000000000',
           gasLimit: '2000000',
@@ -284,11 +284,17 @@ describe('Celo Transaction builder', function() {
     });
 
     describe('send transaction', () => {
-      it('should build a transaction without changes', async () => {
+      it('should build a send found transaction without changes', async () => {
         const txBuilder: any = getBuilder('cgld');
         txBuilder.from(testData.SEND_TX_BROADCAST);
         const signedTx = await txBuilder.build();
         should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
+      });
+      it('should build a send token transactions whitout changes', async () => {
+        const txBuilder: any = getBuilder('cgld');
+        txBuilder.from(testData.SEND_TOKEN_TX_BROADCAST);
+        const tx = await txBuilder.build();
+        should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
       });
     });
   });

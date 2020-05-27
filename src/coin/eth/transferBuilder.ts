@@ -5,7 +5,12 @@ import { coins, Erc20Coin } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { InvalidParameterValueError } from '../baseCoin/errors';
 import { sendMultiSigData, sendMultiSigTokenData } from './utils';
-import { sendMultisigMethodId, sendMultiSigTypes, sendMultiSigTokenTypes } from './walletUtil';
+import {
+  sendMultisigMethodId,
+  sendMultiSigTypes,
+  sendMultiSigTokenTypes,
+  sendMultisigTokenMethodId,
+} from './walletUtil';
 import { isValidEthAddress } from './utils';
 
 /** ETH transfer builder */
@@ -195,21 +200,39 @@ export class TransferBuilder {
     return ethUtil.addHexPrefix(r.concat(s, v));
   }
 
-  decodeTransferData(data: string): void {
-    if (!data.startsWith(sendMultisigMethodId)) {
+  private decodeTransferData(data: string): void {
+    if (!(data.startsWith(sendMultisigMethodId) || data.startsWith(sendMultisigTokenMethodId))) {
       throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
     }
-    const splitBytecode = data.split(sendMultisigMethodId);
-    if (splitBytecode.length !== 2) {
-      throw new BuildTransactionError(`Invalid send bytecode: ${data}`);
+    let decoded;
+    if (this.isTokenTransfer(data)) {
+      decoded = this.getRawDecoded(sendMultiSigTokenTypes, this.getBufferedByteCode(sendMultisigTokenMethodId, data));
+      this._tokenContractAddress = ethUtil.bufferToHex(decoded[2]);
+    } else {
+      decoded = this.getRawDecoded(sendMultiSigTypes, this.getBufferedByteCode(sendMultisigMethodId, data));
+      this._data = ethUtil.bufferToHex(decoded[2]);
     }
-    const serializedArgs = Buffer.from(splitBytecode[1], 'hex');
-    const decoded = EthereumAbi.rawDecode(['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'], serializedArgs);
     this._toAddress = ethUtil.bufferToHex(decoded[0]);
     this._amount = ethUtil.bufferToInt(decoded[1]).toString();
     this._data = ethUtil.bufferToHex(decoded[2]);
     this._expirationTime = ethUtil.bufferToInt(decoded[3]);
     this._sequenceId = ethUtil.bufferToInt(decoded[4]);
     this._signature = ethUtil.bufferToHex(decoded[5]);
+  }
+
+  private isTokenTransfer(data: string): boolean {
+    return data.startsWith(sendMultisigTokenMethodId);
+  }
+
+  private getBufferedByteCode(methodId: string, rawData: string): Buffer {
+    const splitBytecode = rawData.split(methodId);
+    if (splitBytecode.length !== 2) {
+      throw new BuildTransactionError(`Invalid send bytecode: ${rawData}`);
+    }
+    return Buffer.from(splitBytecode[1], 'hex');
+  }
+
+  private getRawDecoded(types: string[], serializedArgs: Buffer): Buffer[] {
+    return EthereumAbi.rawDecode(types, serializedArgs);
   }
 }

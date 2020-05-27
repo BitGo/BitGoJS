@@ -42,7 +42,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   // Wallet initialization transaction parameters
   private _walletOwnerAddresses: string[];
 
-  // Send, SendToken and AddressInitialization transaction specific parameters
+  // Send and AddressInitialization transaction specific parameters
   private _transfer: TransferBuilder;
   private _contractAddress: string;
   private _contractCounter: number;
@@ -68,9 +68,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         transactionData = this.buildWalletInitializationTransaction();
         break;
       case TransactionType.Send:
-        transactionData = this.buildSendTransaction();
-        break;
-      case TransactionType.SendToken:
         transactionData = this.buildSendTransaction();
         break;
       case TransactionType.AddressInitialization:
@@ -236,7 +233,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.Send:
       case TransactionType.AddressInitialization:
-      case TransactionType.SendToken:
         if (this._contractAddress === undefined) {
           throw new BuildTransactionError('Invalid transaction: missing contract address');
         }
@@ -368,7 +364,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransferBuilder} the transfer builder
    */
   transfer(): TransferBuilder {
-    if (this._type !== TransactionType.Send && this._type !== TransactionType.SendToken) {
+    if (this._type !== TransactionType.Send) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
     if (!this._transfer) {
