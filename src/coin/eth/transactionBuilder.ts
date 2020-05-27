@@ -68,8 +68,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         transactionData = this.buildWalletInitializationTransaction();
         break;
       case TransactionType.Send:
-        transactionData = this.buildSendTransaction();
-        break;
       case TransactionType.SendToken:
         transactionData = this.buildSendTransaction();
         break;
@@ -132,15 +130,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         });
         break;
       case TransactionType.Send:
-        if (transactionJson.to === undefined) {
-          throw new BuildTransactionError('Undefined recipient address');
-        }
-        this._contractAddress = transactionJson.to;
-        this._transfer = new TransferBuilder(transactionJson.data);
-        break;
       case TransactionType.SendToken:
         if (transactionJson.to === undefined) {
-          throw new BuildTransactionError('Undefined contract address');
+          throw new BuildTransactionError('Undefined recipient address');
         }
         this._contractAddress = transactionJson.to;
         this._transfer = new TransferBuilder(transactionJson.data);
