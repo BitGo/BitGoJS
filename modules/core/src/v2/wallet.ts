@@ -2337,7 +2337,9 @@ export class Wallet {
   /**
    * Builds and sends a set of consolidation transactions for a wallet.
    * @param params
-   *     fromAddresses - these are the on-chain receive addresses we want to pick a consolidation amount from
+   *     prebuildTx   - this is the pre-build consolidation tx. this is a normally built tx with
+   *                    an additional parameter of consolidateId.
+   *     verification - normal keychains, etc. for verification
    */
   sendAccountConsolidation(params: PrebuildAndSignTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
