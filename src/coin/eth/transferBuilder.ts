@@ -2,7 +2,7 @@ import ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
-import { isValidEthAddress, sendMultiSigData } from './utils';
+import { isValidEthAddress, sendMultiSigData, isValidAmount } from './utils';
 import { sendMultisigMethodId } from './walletUtil';
 
 /** ETH transfer builder */
@@ -27,7 +27,10 @@ export class TransferBuilder {
     }
   }
 
-  amount(amount: string): TransferBuilder {
+  amount(amount: string): this {
+    if (!isValidAmount(amount)) {
+      throw new InvalidParameterValueError('Invalid amount');
+    }
     this._signature = undefined;
     this._amount = amount;
     return this;
@@ -70,7 +73,7 @@ export class TransferBuilder {
     if (this.hasMandatoryFields()) {
       return sendMultiSigData(
         this._toAddress,
-        new BigNumber(this._amount).toNumber(),
+        this._amount,
         this._data,
         this._expirationTime,
         this._sequenceId,
