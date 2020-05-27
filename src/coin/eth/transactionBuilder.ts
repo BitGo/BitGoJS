@@ -365,10 +365,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
    *
-   * @param {string} coin the coin type (ERC20) that should be transferred
    * @returns {TransferBuilder} the transfer builder
    */
-  transfer(coin?: string): TransferBuilder {
+  transfer(): TransferBuilder {
     if (this._type !== TransactionType.Send && this._type !== TransactionType.SendToken) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     }

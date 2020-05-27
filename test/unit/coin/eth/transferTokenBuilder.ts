@@ -9,7 +9,7 @@ describe('Eth send token multi sig builder', function() {
     const amount = '0.01';
     it('should succeed', async () => {
       const builder = new TransferBuilder()
-        .coin('terc')
+        .coin('tcusd')
         .expirationTime(1590078260)
         .amount(amount)
         .to(toAddress)
@@ -18,13 +18,10 @@ describe('Eth send token multi sig builder', function() {
       const result = builder.signAndBuild();
       should.equal(result, testData.SEND_TOKEN_DATA);
     });
-    it('should fail if the token contract address param is missing', () => {
-      const builder = new TransferBuilder()
-        .amount(amount)
-        .to(toAddress)
-        .contractSequenceId(2)
-        .key(key);
-      should.throws(() => builder.signAndBuild());
+    it('should fail if a coin is not an ERC20 instance', () => {
+      should.throws(() => {
+        new TransferBuilder().coin('eth');
+      }, 'There was an error using that coin as a transfer currency');
     });
     it('should fail if a key param is missing', () => {
       const builder = new TransferBuilder()

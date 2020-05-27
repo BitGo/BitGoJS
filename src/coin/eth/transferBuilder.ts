@@ -31,14 +31,20 @@ export class TransferBuilder {
     }
   }
 
+  /**
+   * A method to set the ERC20 token to be transferred.
+   * This ERC20 token may not be compatible with the network.
+   *
+   * @param {string} coin the ERC20 coin to be set
+   * @returns {TransferBuilder} the transfer builder instance modified
+   */
   coin(coin: string): TransferBuilder {
     const coinType = coins.get(coin);
-    if (coinType instanceof Erc20Coin) {
-      console.log('token contract address is ', coinType.contractAddress);
-      this._tokenContractAddress = coinType.contractAddress.toString();
-    } else {
+    if (!(coinType instanceof Erc20Coin)) {
       throw new BuildTransactionError('There was an error using that coin as a transfer currency');
     }
+    this._tokenContractAddress = coinType.contractAddress.toString();
+
     return this;
   }
 
