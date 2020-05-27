@@ -178,10 +178,8 @@ export function classifyTransaction(data: string): TransactionType {
     return TransactionType.WalletInitialization;
   } else if (data.startsWith(createForwarderMethodId)) {
     return TransactionType.AddressInitialization;
-  } else if (data.startsWith(sendMultisigMethodId)) {
+  } else if (data.startsWith(sendMultisigMethodId) || data.startsWith(sendMultisigTokenMethodId)) {
     return TransactionType.Send;
-  } else if (data.startsWith(sendMultisigTokenMethodId)) {
-    return TransactionType.SendToken;
   } else {
     throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
   }
