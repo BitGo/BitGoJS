@@ -158,7 +158,7 @@ export class TransferBuilder {
     const serializedArgs = Buffer.from(splitBytecode[1], 'hex');
     const decoded = EthereumAbi.rawDecode(['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'], serializedArgs);
     this._toAddress = ethUtil.bufferToHex(decoded[0]);
-    this._amount = new BigNumber(ethUtil.bufferToHex(decoded[1])).toString();
+    this._amount = new BigNumber(ethUtil.bufferToHex(decoded[1])).toFixed();
     this._data = ethUtil.bufferToHex(decoded[2]);
     this._expirationTime = ethUtil.bufferToInt(decoded[3]);
     this._sequenceId = ethUtil.bufferToInt(decoded[4]);
