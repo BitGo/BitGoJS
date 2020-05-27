@@ -4,22 +4,27 @@
  * receive addresses.
  */
 import { BitGo, Wallet } from 'bitgo';
+import { WalletCoinSpecific } from '../../src/v2/wallet';
+
+// change this to env: 'production' when you are ready for production
 const bitgo = new BitGo({ env: 'test' });
 
-const accessToken = ''; // TODO: you'll have to set this here
+// this can be retrieved by logging into app.bitgo-test.com (app.bitgo.com for production)
+// and going to: User > User Settings > Access Tokens > (+ icon)
+// the token will need Spender permission for ALGO
+const accessToken = 'insert access token string here';
 
-// TODO: put the new policy on the wallet with this id
-const id = '';
-
+// change this to 'algo' when you are ready for production
 const coin = 'talgo';
 
 // this can be found on test.bitgo.com in the URL after clicking on a wallet
 // https://test.bitgo.com/enterprise/XXXXXXXXX/coin/talgo/YYYYY/transactions
-// YYYYY would be your wallet id in this case minus the last 8 characters
 const walletId = 'your wallet id';
 
 // this is your wallet passphrase, which could be different than your login credentials
 const walletPassphrase = 'set your wallet passphrase here';
+
+// this will need to be a real OTP code on production
 const otp = '000000';
 
 async function main() {
@@ -33,14 +38,21 @@ async function main() {
     throw new Error('Failed to retrieve wallet');
   }
 
-  // this is your wallet's address
-  console.log('Root Address:', wallet.coinSpecific().rootAddress);
+  const coinSpecific = wallet.coinSpecific() as WalletCoinSpecific;
+  if (!coinSpecific) {
+    throw new Error('Coin specific area not found - aborting.');
+  }
 
-  // your balance or confirmed balance will be the amount across all addresses and your wallet
+  // this is your wallet's root address - this is where spendable funds come from
+  console.log('Root Address:', coinSpecific.rootAddress);
+
+  // your balance or confirmed balance will be sum of the amounts
+  // across all addresses and your wallet's root address
   console.log('Balance:', wallet.balanceString());
   console.log('Confirmed Balance:', wallet.confirmedBalanceString());
 
-  // your spendable balance will be the balance on the wallet address and should differ from your confirmed balance
+  // your spendable balance will be the balance on the wallet root address
+  // and should differ from your confirmed balance
   console.log('Spendable Balance:', wallet.spendableBalanceString());
 
   // we have to unlock this session since we're sending funds
@@ -53,7 +65,7 @@ async function main() {
   // you can also specify which receive address by passing fromAddresses here:
   // e.g. { walletPassphrase, fromAddresses: ['onchainReceiveAddress'] }
   const sendConsolidations = await wallet.sendAccountConsolidations({ walletPassphrase });
-  console.log(sendConsolidations);
+  console.dir(sendConsolidations, { depth: 6 });
 }
 
 main().catch((e) => console.error(e));
