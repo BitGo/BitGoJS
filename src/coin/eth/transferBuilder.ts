@@ -125,7 +125,7 @@ export class TransferBuilder {
     let operationData;
     if (this._tokenContractAddress !== undefined) {
       operationData = [
-        sendMultiSigTokenTypes,
+        ['string', 'address', 'uint', 'address', 'uint', 'uint'],
         [
           'ERC20',
           new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
@@ -137,7 +137,7 @@ export class TransferBuilder {
       ];
     } else {
       operationData = [
-        sendMultiSigTypes,
+        ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
         [
           'ETHER',
           new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
