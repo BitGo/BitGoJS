@@ -79,9 +79,12 @@ export class TransferBuilder {
   }
 
   contractSequenceId(counter: number): TransferBuilder {
-    this._signature = undefined;
-    this._sequenceId = counter;
-    return this;
+    if (counter > 0) {
+      this._signature = undefined;
+      this._sequenceId = counter;
+      return this;
+    }
+    throw new InvalidParameterValueError('Invalid contract sequence id');
   }
 
   key(signKey: string): TransferBuilder {
@@ -90,9 +93,12 @@ export class TransferBuilder {
   }
 
   expirationTime(date: number): TransferBuilder {
-    this._signature = undefined;
-    this._expirationTime = date;
-    return this;
+    if (date > 0) {
+      this._signature = undefined;
+      this._expirationTime = date;
+      return this;
+    }
+    throw new InvalidParameterValueError('Invalid expiration time');
   }
 
   signAndBuild(): string {
