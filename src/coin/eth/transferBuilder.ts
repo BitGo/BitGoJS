@@ -1,7 +1,7 @@
 import ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
-import { coins, Erc20Coin } from '@bitgo/statics';
+import { coins, Erc20Coin, BaseCoin } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { InvalidParameterValueError } from '../baseCoin/errors';
 import { sendMultiSigData, sendMultiSigTokenData } from './utils';
@@ -23,6 +23,7 @@ export class TransferBuilder {
   protected _signature?: string;
   private _data: string;
   private _tokenContractAddress?: string;
+  private _coin: Readonly<BaseCoin>;
 
   constructor();
   constructor(serializedData: string);
@@ -44,11 +45,11 @@ export class TransferBuilder {
    * @returns {TransferBuilder} the transfer builder instance modified
    */
   coin(coin: string): TransferBuilder {
-    const coinType = coins.get(coin);
-    if (!(coinType instanceof Erc20Coin)) {
+    this._coin = coins.get(coin);
+    if (!(this._coin instanceof Erc20Coin)) {
       throw new BuildTransactionError('There was an error using that coin as a transfer currency');
     }
-    this._tokenContractAddress = coinType.contractAddress.toString();
+    this._tokenContractAddress = this._coin.contractAddress.toString();
 
     return this;
   }
@@ -58,6 +59,7 @@ export class TransferBuilder {
     this._data = additionalData;
     return this;
   }
+
   amount(amount: string): this {
     if (!isValidAmount(amount)) {
       throw new InvalidParameterValueError('Invalid amount');
@@ -129,12 +131,18 @@ export class TransferBuilder {
     );
   }
 
-  protected getOperationHash(): (string | Buffer)[][] {
+  /**
+   * Obtains the proper operation hash to sign either a sendMultiSig data
+   * or a sendMultiSigToken data
+   *
+   * @returns {string} the operation hash
+   */
+  private getOperationHash(): string {
     const operationData = this.getOperationData();
     return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
   }
 
-  private getOperationData(): any[][] {
+  private getOperationData(): (string | Buffer)[][] {
     let operationData;
     if (this._tokenContractAddress !== undefined) {
       operationData = [
@@ -177,7 +185,7 @@ export class TransferBuilder {
   /**
    * If a signing key is set for this builder, recalculates the signature
    *
-   * @returns the signature value
+   * @returns {string} the signature value
    */
   protected getSignature(): string {
     if (this._signKey) {
