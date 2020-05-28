@@ -135,7 +135,7 @@ export const coins = CoinMap.fromCoins([
   erc20('crpt', 'Crypterium', 18, '0x80a7e048f37a50500351c204cb407766fa3bae7f', UnderlyingAsset.CRPT),
   erc20('cslv', 'Coineru Silver', 8, '0x6dc05497f0b087c7692816e6acaa8bdda73907fc', UnderlyingAsset.CSLV),
   erc20('csp', 'Caspian Token', 18, '0xa6446d655a0c34bc4f05042ee88170d056cbaf45', UnderlyingAsset.CSP),
-  erc20('cusd', 'Celo USD', 18, '0x765de816845861e75a25fca122bb6898b8b1282a', UnderlyingAsset.CUSD),
+  erc20('cusd', 'Celo USD', 18, '0x765de816845861e75a25fca122bb6898b8b1282a', UnderlyingAsset.CUSD, AccountCoin.DEFAULT_FEATURES, '', 'CUSD', Networks.main.celo),
   erc20('cusdc', 'Compound USDC', 8, '0x39aa39c021dfbae8fac545936693ac917d5e7563', UnderlyingAsset.CUSDC),
   erc20('cwbtc', 'Compound WBTC', 8, '0xc11b1268c1a384e55c48c2391d8d480264a3a7f4', UnderlyingAsset.CWBTC),
   erc20('cvc', 'Civic', 8, '0x41e5560054824ea6b0732e656e3ad64e20e94e45', UnderlyingAsset.CVC),
@@ -413,7 +413,7 @@ export const coins = CoinMap.fromCoins([
     'WXT'
   ),
   terc20('terc', 'ERC Test Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.ERC),
-  terc20('tcusd', 'Test Celo USD Token', 18, '0xa561131a1c8ac25925fb848bca45a74af61e5a38', UnderlyingAsset.CUSD),
+  terc20('tcusd', 'Test Celo USD Token', 18, '0xa561131a1c8ac25925fb848bca45a74af61e5a38', UnderlyingAsset.CUSD, AccountCoin.DEFAULT_FEATURES, '', 'TCUSD', Networks.test.celo),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
   terc20('schz', 'SchnauzerCoin', 18, '0x050e25a2630b2aee94546589fd39785254de112c', UnderlyingAsset.SCHZ),
