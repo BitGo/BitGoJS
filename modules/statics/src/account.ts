@@ -93,6 +93,26 @@ export class Erc20Coin extends AccountCoinToken {
 }
 
 /**
+ * The CELO blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
+ */
+export class CeloCoin extends AccountCoinToken {
+  public contractAddress: ContractAddress;
+
+  constructor(options: Erc20ConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    // valid ERC 20 contract addresses are "0x" followed by 40 lowercase hex characters
+    if (!options.contractAddress.match(/^0x[a-f0-9]{40}$/)) {
+      throw new InvalidContractAddressError(options.name, options.contractAddress);
+    }
+
+    this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
+  }
+}
+
+/**
  * The Stellar network supports tokens (non-native assets)
  * XLM is also known as the native asset.
  * Stellar tokens work similar to XLM, but the token name is determined by the chain,
@@ -219,6 +239,73 @@ export function terc20(
   network: AccountNetwork = Networks.test.kovan
 ) {
   return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for celo token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to CELO main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ */
+export function celoToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.celo
+) {
+  return Object.freeze(
+    new CeloCoin({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet celo token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the testnet CELO network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ */
+export function tceloToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.celo
+) {
+  return celoToken(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
 }
 
 /**

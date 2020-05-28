@@ -214,6 +214,7 @@ export const enum UnderlyingAsset {
   CRPT = 'crpt',
   CSLV = 'cslv',
   CSP = 'csp',
+  CUSD = 'cusd',
   CUSDC = 'cusdc',
   CWBTC = 'cwbtc',
   CVC = 'cvc',
