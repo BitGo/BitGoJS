@@ -3,7 +3,7 @@
   "private": true,
   "devDependencies": {
     "husky": "^3.0.0",
-    "lerna": "^3.20.2"
+    "lerna": "^3.13.4"
   },
   "workspaces": [
     "modules/*"
