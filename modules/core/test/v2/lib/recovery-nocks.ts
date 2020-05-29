@@ -1247,8 +1247,8 @@ module.exports.nockXrpRecovery = function nockXrpRecovery() {
 
 module.exports.nockWrongChainRecoveries = function(bitgo) {
   const env = Environments[bitgo.getEnv()] as Environment;
-  nock(`${env.uri}/api/v2`)
-    .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e')
+  nock(env.uri)
+    .get('/api/v2/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e')
     .times(2)
     .reply(200, {
       id: '5abacebe28d72fbd07e0b8cbba0ff39e',
@@ -1307,7 +1307,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       },
       pendingApprovals: [],
     })
-    .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf')
+    .get('/api/v2/tbtc/wallet/5abace103cddfbb607d8239d806671bf')
     .times(3)
     .reply(200, {
       id: '5abace103cddfbb607d8239d806671bf',
@@ -1366,7 +1366,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       },
       pendingApprovals: [],
     })
-    .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
+    .get('/api/v2/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
     .times(4)
     .reply(200, {
       id: '5abacebe28d72fbd07e0b8cf3d571ba8',
@@ -1387,10 +1387,10 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         totalSent: 60000000,
       },
     })
-    .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/QjpwWvj3Y82e3WChS3pcGkRYEBbniifdpn')
+    .get('/api/v2/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/QjpwWvj3Y82e3WChS3pcGkRYEBbniifdpn')
     .times(2)
     .reply(404)
-    .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
+    .get('/api/v2/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
     .times(4)
     .reply(200, {
       id: '5abacebe28d72fbd07e0b8cf3d571ba8',
@@ -1411,10 +1411,10 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         totalSent: 60000000,
       },
     })
-    .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2N9jq7k8cvFhuucVhhbb8BdWTeEjYxKmSfy')
+    .get('/api/v2/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2N9jq7k8cvFhuucVhhbb8BdWTeEjYxKmSfy')
     .times(7)
     .reply(404)
-    .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
+    .get('/api/v2/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
     .times(7)
     .reply(200, {
       id: '5abace113cddfbb607d823a192372c88',
@@ -1435,7 +1435,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         totalSent: 65000000,
       },
     })
-    .get('/tltc/key/5abaceb63cddfbb607d8306521ddf445')
+    .get('/api/v2/tltc/key/5abaceb63cddfbb607d8306521ddf445')
     .reply(200, {
       id: '5abaceb63cddfbb607d8306521ddf445',
       users: ['543c11ed356d00cb7600000b98794503'],
@@ -1445,7 +1445,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       encryptedPrv:
         '{"iv":"JmWw8SBtiQ80KNGvjHvknA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"+V24Zb2ZpiE=","ct":"JUDBx3xDRuWnlV7LH7Wbt+eUixifofSYjA3kVNUZwRXh+7JIrBfQeCWCvvWopTJi7YgWaM+aLjbXB8mZrrE+14xmFw4evg34De4Omd7vnnbbk2uxe/r+bL7hL3tCz+b6uv9wd/tMQmLyu5PJuIrj5n8gv8SmNn4="}',
     })
-    .get('/tbtc/key/5abacdffae0ec7c107c7d9cf6d60a886')
+    .get('/api/v2/tbtc/key/5abacdffae0ec7c107c7d9cf6d60a886')
     .times(4)
     .reply(200, {
       id: '5abacdffae0ec7c107c7d9cf6d60a886',
@@ -1458,8 +1458,8 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
     });
 
   // Nock explorer info
-  nock('https://test.bitgo.com/api/v2')
-    .get('/tbtc/public/tx/41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6')
+  nock(env.uri)
+    .get('/api/v2/tbtc/public/tx/41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6')
     .times(2)
     .reply(200, {
       id: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
@@ -1528,7 +1528,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         },
       ],
     })
-    .get('/tbtc/public/addressUnspents/2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx')
+    .get('/api/v2/tbtc/public/addressUnspents/2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx')
     .times(4)
     .reply(200, [
       {
@@ -1548,7 +1548,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         date: '2018-03-27T23:29:42.799Z',
       },
     ])
-    .get('/tltc/public/tx/fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39')
+    .get('/api/v2/tltc/public/tx/fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39')
     .reply(200, {
       id: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
       normalizedTxHash: '1e3a0abd9bae70e9ca9021311076e6bbf7244dc0bc5ac8ac5ab6437cafa6a93a',
@@ -1610,7 +1610,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         },
       ],
     })
-    .get('/tltc/public/addressUnspents/QiSTRzBCS5UxVvdMiYVGfNn1wYkC9JrpmP')
+    .get('/api/v2/tltc/public/addressUnspents/QiSTRzBCS5UxVvdMiYVGfNn1wYkC9JrpmP')
     .reply(200, [
       {
         id: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39:1',
@@ -1621,7 +1621,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         date: '2018-03-27T23:33:10.713Z',
       },
     ])
-    .get('/tbch/public/tx/94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26')
+    .get('/api/v2/tbch/public/tx/94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26')
     .reply(200, {
       id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
       normalizedTxHash: '6346359162b9c42018b8e852e9e5a52ced224bf0c1d55393554472645e2c2dbe',
@@ -1683,7 +1683,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         },
       ],
     })
-    .get('/tbsv/public/tx/94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26')
+    .get('/api/v2/tbsv/public/tx/94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26')
     .reply(200, {
       id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
       normalizedTxHash: '6346359162b9c42018b8e852e9e5a52ced224bf0c1d55393554472645e2c2dbe',
@@ -1745,7 +1745,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         },
       ],
     })
-    .get('/tbch/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
+    .get('/api/v2/tbch/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
     .reply(200, [
       {
         id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26:0',
@@ -1756,7 +1756,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         date: '2018-03-27T23:34:33.819Z',
       },
     ])
-    .get('/tbsv/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
+    .get('/api/v2/tbsv/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
     .reply(200, [
       {
         id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26:0',
