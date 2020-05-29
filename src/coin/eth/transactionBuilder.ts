@@ -62,7 +62,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<BaseTransaction> {
-    let transactionData;
+    let transactionData: TxData;
     switch (this._type) {
       case TransactionType.WalletInitialization:
         transactionData = this.buildWalletInitializationTransaction();
@@ -417,6 +417,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     const addressInitData = getAddressInitializationData();
     const tx: TxData = this.buildBase(addressInitData);
     tx.to = this._contractAddress;
+    tx.deployedAddress = this.getForwarderAddress();
     return tx;
   }
 

@@ -97,6 +97,7 @@ describe('Celo Transaction builder', function() {
         initTxBuilder();
         txBuilder.type(TransactionType.AddressInitialization);
         txBuilder.contract(testData.CONTRACT_ADDRESS);
+        txBuilder.contractCounter(1);
         txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
         const tx = await txBuilder.build(); //should build and sign
 
