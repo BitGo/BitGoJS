@@ -16,10 +16,9 @@ import shamir = require('secrets.js-grempe');
 import sjcl = require('./vendor/sjcl.min.js');
 import bs58 = require('bs58');
 import * as common from './common';
-import { EnvironmentName } from './v2/environments';
-import { NodeCallback, V1Network } from './v2/types';
-import { RequestTracer, Util } from './v2/internal/util';
-import { RequestTracer as IRequestTracer } from './v2/types';
+import { EnvironmentName, AliasEnvironments } from './v2/environments';
+import { NodeCallback, RequestTracer as IRequestTracer, V1Network } from './v2/types';
+import { Util } from './v2/internal/util';
 import * as Bluebird from 'bluebird';
 import co = Bluebird.coroutine;
 import pjson = require('../package.json');
@@ -470,8 +469,9 @@ export class BitGo {
       env = params.env || process.env.BITGO_ENV as EnvironmentName;
     }
 
-    if (env as string === 'production') {
-      env = 'prod'; // make life easier
+    // if this env is an alias, swap it out with the equivalent supported environment
+    if (env in AliasEnvironments) {
+      env = AliasEnvironments[env];
     }
 
     if (env === 'custom' && _.isUndefined(common.Environments[env].uri)) {
@@ -482,7 +482,7 @@ export class BitGo {
       if (common.Environments[env]) {
         this._baseUrl = common.Environments[env].uri;
       } else {
-        throw new Error('invalid environment ' + env + '. Supported environments: test, prod');
+        throw new Error('invalid environment ' + env + '. Supported environments: prod, test, dev, latest');
       }
     } else {
       env = 'test';
