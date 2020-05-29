@@ -62,17 +62,24 @@ export type EnvironmentName =
   | 'local'
   | 'localNonSecure'
   | 'mock'
-  | 'msProd'
-  | 'msTest'
-  | 'msDev'
-  | 'msLatest'
   | 'adminProd'
   | 'adminTest'
   | 'adminDev'
   | 'adminLatest'
   | 'custom';
 
+export type AliasEnvironmentName = 'production' | 'msProd' | 'msTest' | 'msDev' | 'msLatest';
+
 export type Environments = { [k in EnvironmentName]: Environment };
+
+// alias environments are environment names which are aliases of a supported environment
+export const AliasEnvironments: { [k in AliasEnvironmentName]: EnvironmentName } = {
+  production: 'prod',
+  msProd: 'prod',
+  msTest: 'test',
+  msDev: 'dev',
+  msLatest: 'latest',
+};
 
 const mainnetBase: EnvironmentTemplate = {
   networks: {
@@ -129,24 +136,24 @@ const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
 
 export const Environments: Environments = {
   prod: Object.assign({}, mainnetBase, {
-    uri: 'https://www.bitgo.com',
-    stellarFederationServerUrl: 'https://www.bitgo.com/api/v2/xlm/federation',
+    uri: 'https://app.bitgo.com',
+    stellarFederationServerUrl: 'https://app.bitgo.com/api/v2/xlm/federation',
+  }),
+  test: Object.assign({}, testnetBase, {
+    uri: 'https://app.bitgo-test.com',
+    stellarFederationServerUrl: 'https://app.bitgo-test.com/api/v2/txlm/federation',
+  }),
+  dev: Object.assign({}, devBase, {
+    uri: 'https://app.bitgo-dev.com',
+    stellarFederationServerUrl: 'https://app.bitgo-dev.com/api/v2/txlm/federation',
+  }),
+  latest: Object.assign({}, devBase, {
+    uri: 'https://app.bitgo-latest.com',
+    stellarFederationServerUrl: 'https://app.bitgo-latest.com/api/v2/xlm/federation',
   }),
   staging: Object.assign({}, mainnetBase, {
     uri: 'https://staging.bitgo.com',
     stellarFederationServerUrl: 'https://staging.bitgo.com/api/v2/xlm/federation',
-  }),
-  test: Object.assign({}, testnetBase, {
-    uri: 'https://test.bitgo.com',
-    stellarFederationServerUrl: 'https://test.bitgo.com/api/v2/txlm/federation',
-  }),
-  dev: Object.assign({}, devBase, {
-    uri: 'https://webdev.bitgo.com',
-    stellarFederationServerUrl: 'https://webdev.bitgo.com/api/v2/txlm/federation',
-  }),
-  latest: Object.assign({}, devBase, {
-    uri: 'https://latest.bitgo.com',
-    stellarFederationServerUrl: 'https://latest.bitgo.com/api/v2/txlm/federation',
   }),
   local: Object.assign({}, devBase, {
     uri: 'https://localhost:3000',
@@ -165,22 +172,6 @@ export const Environments: Environments = {
     ltcExplorerBaseUrl: 'http://explorer.litecointools.fakeurl/api',
     zecExplorerBaseUrl: 'https://explorer.testnet.z.fakeurl/api',
     dashExplorerBaseUrl: 'https://testnet-insight.dashevo.fakeurl/insight-api',
-  }),
-  msProd: Object.assign({}, mainnetBase, {
-    uri: 'https://app.bitgo.com',
-    stellarFederationServerUrl: 'https://app.bitgo.com/api/v2/xlm/federation',
-  }),
-  msTest: Object.assign({}, testnetBase, {
-    uri: 'https://app.bitgo-test.com',
-    stellarFederationServerUrl: 'https://app.bitgo-test.com/api/v2/txlm/federation',
-  }),
-  msDev: Object.assign({}, devBase, {
-    uri: 'https://app.bitgo-dev.com',
-    stellarFederationServerUrl: 'https://app.bitgo-dev.com/api/v2/txlm/federation',
-  }),
-  msLatest: Object.assign({}, devBase, {
-    uri: 'https://app.bitgo-latest.com',
-    stellarFederationServerUrl: 'https://app.bitgo-latest.com/api/v2/xlm/federation',
   }),
   adminProd: Object.assign({}, mainnetBase, {
     uri: 'https://admin.bitgo.com',
