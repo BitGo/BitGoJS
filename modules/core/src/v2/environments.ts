@@ -55,20 +55,13 @@ export const hardcodedPublicKeys = Object.freeze({
 
 export type EnvironmentName =
   | 'prod'
-  | 'rmgProd'
   | 'staging'
-  | 'rmgStaging'
   | 'test'
-  | 'rmgTest'
   | 'dev'
   | 'latest'
-  | 'rmgLatest'
-  | 'rmgDev'
   | 'local'
   | 'localNonSecure'
   | 'mock'
-  | 'rmgLocal'
-  | 'rmglocalNonSecure'
   | 'msProd'
   | 'msTest'
   | 'msDev'
@@ -139,25 +132,13 @@ export const Environments: Environments = {
     uri: 'https://www.bitgo.com',
     stellarFederationServerUrl: 'https://www.bitgo.com/api/v2/xlm/federation',
   }),
-  rmgProd: Object.assign({}, mainnetBase, {
-    uri: 'https://rmg.bitgo.com',
-    stellarFederationServerUrl: 'https://rmg.bitgo.com/api/v2/xlm/federation',
-  }),
   staging: Object.assign({}, mainnetBase, {
     uri: 'https://staging.bitgo.com',
     stellarFederationServerUrl: 'https://staging.bitgo.com/api/v2/xlm/federation',
   }),
-  rmgStaging: Object.assign({}, mainnetBase, {
-    uri: 'https://rmgstaging.bitgo.com',
-    stellarFederationServerUrl: 'https://rmgstaging.bitgo.com/api/v2/xlm/federation',
-  }),
   test: Object.assign({}, testnetBase, {
     uri: 'https://test.bitgo.com',
     stellarFederationServerUrl: 'https://test.bitgo.com/api/v2/txlm/federation',
-  }),
-  rmgTest: Object.assign({}, testnetBase, {
-    uri: 'https://rmgtest.bitgo.com',
-    stellarFederationServerUrl: 'https://rmgtest.bitgo.com/api/v2/txlm/federation',
   }),
   dev: Object.assign({}, devBase, {
     uri: 'https://webdev.bitgo.com',
@@ -166,14 +147,6 @@ export const Environments: Environments = {
   latest: Object.assign({}, devBase, {
     uri: 'https://latest.bitgo.com',
     stellarFederationServerUrl: 'https://latest.bitgo.com/api/v2/txlm/federation',
-  }),
-  rmgLatest: Object.assign({}, devBase, {
-    uri: 'https://rmglatest.bitgo.com',
-    stellarFederationServerUrl: 'https://rmglatest.bitgo.com/api/v2/txlm/federation',
-  }),
-  rmgDev: Object.assign({}, devBase, {
-    uri: 'https://rmgwebdev.bitgo.com',
-    stellarFederationServerUrl: 'https://rmgwebdev.bitgo.com/api/v2/txlm/federation',
   }),
   local: Object.assign({}, devBase, {
     uri: 'https://localhost:3000',
@@ -192,14 +165,6 @@ export const Environments: Environments = {
     ltcExplorerBaseUrl: 'http://explorer.litecointools.fakeurl/api',
     zecExplorerBaseUrl: 'https://explorer.testnet.z.fakeurl/api',
     dashExplorerBaseUrl: 'https://testnet-insight.dashevo.fakeurl/insight-api',
-  }),
-  rmgLocal: Object.assign({}, devBase, {
-    uri: 'https://rmglocalhost:3000',
-    stellarFederationServerUrl: 'https://rmglocalhost:3000/api/v2/txlm/federation',
-  }),
-  rmglocalNonSecure: Object.assign({}, devBase, {
-    uri: 'http://rmglocalhost:3000',
-    stellarFederationServerUrl: 'http://rmglocalhost:3000/api/v2/txlm/federation',
   }),
   msProd: Object.assign({}, mainnetBase, {
     uri: 'https://app.bitgo.com',
