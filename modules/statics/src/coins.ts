@@ -1,4 +1,4 @@
-import { account, AccountCoin, erc20, terc20, stellarToken, tstellarToken } from './account';
+import { account, AccountCoin, celoToken, tceloToken, erc20, terc20, stellarToken, tstellarToken } from './account';
 import { CoinFeature, CoinKind, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
 import { Networks } from './networks';
@@ -351,6 +351,7 @@ export const coins = CoinMap.fromCoins([
   erc20('zmt', 'Zipmex Token', 18, '0xaa602de53347579f86b996d2add74bb6f79462b2', UnderlyingAsset.ZMT),
   erc20('zoom', 'CoinZoom', 18, '0x69cf3091c91eb72db05e45c76e58225177dea742', UnderlyingAsset.ZOOM),
   erc20('zrx', '0x Token', 18, '0xe41d2489571d322189246dafa5ebde1f4699f498', UnderlyingAsset.ZRX),
+  celoToken('cusd', 'Celo USD', 18, '0x765de816845861e75a25fca122bb6898b8b1282a', UnderlyingAsset.CUSD),
   stellarToken(
     'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
     'BitGo Shield Token',
@@ -418,6 +419,7 @@ export const coins = CoinMap.fromCoins([
   terc20('tcat', 'Test CAT-20 Token', 18, '0x63137319f3a14a985eb31547370e0e3bd39b03b8', UnderlyingAsset.CAT),
   terc20('tfmf', 'Test Formosa Financial Token', 18, '0xd8463d2f8c5b3be9de95c63b73a0ae4c79423452', UnderlyingAsset.FMF),
   terc20('terc20', 'Test ERC20 Token', 18, '0x731a10897d267e19b34503ad902d0a29173ba4b1', UnderlyingAsset.TERC20),
+  tceloToken('tcusd', 'Test Celo USD Token', 18, '0xa561131a1c8ac25925fb848bca45a74af61e5a38', UnderlyingAsset.CUSD),
   tstellarToken(
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
     'BitGo Shield Token',
