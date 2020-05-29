@@ -149,7 +149,7 @@ export class CeloTransaction {
 }
 
 export class CgldTransactionData implements EthLikeTransactionData {
-  constructor(private tx: CeloTransaction) {}
+  constructor(private tx: CeloTransaction, private deployedAddress?: string) {}
 
   public static fromJson(tx: TxData): CgldTransactionData {
     const chainId = addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16));
@@ -166,6 +166,7 @@ export class CgldTransactionData implements EthLikeTransactionData {
         r: tx.r,
         v: tx.v || chainId,
       }),
+      tx.deployedAddress,
     );
   }
 
@@ -201,6 +202,10 @@ export class CgldTransactionData implements EthLikeTransactionData {
     const chainId = this.tx.getChainId();
     if (chainId) {
       result.chainId = chainId.toString();
+    }
+
+    if (this.deployedAddress) {
+      result.deployedAddress = this.deployedAddress;
     }
 
     if (this.tx.v && this.tx.v.length) {

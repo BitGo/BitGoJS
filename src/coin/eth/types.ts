@@ -8,7 +8,7 @@ import { KeyPair } from './keyPair';
  * An Ethereum transaction with helpers for serialization and deserialization.
  */
 export class EthTransactionData implements EthLikeTransactionData {
-  constructor(private tx: EthereumTx, protected chainId?: string, protected deployedAddress?: string) {}
+  constructor(private tx: EthereumTx, protected deployedAddress?: string, protected chainId?: string) {}
 
   /**
    * Build an ethereum transaction from its JSON representation
@@ -28,7 +28,8 @@ export class EthTransactionData implements EthLikeTransactionData {
         r: tx.r,
         s: tx.s,
       }),
-      addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16), tx.deployedAddress),
+      tx.deployedAddress,
+      addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16)),
     );
   }
 
