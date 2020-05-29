@@ -76,7 +76,7 @@ describe('Celo Transaction builder', function() {
         should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
       });
 
-      it('an send token transaction', async () => {
+      it('a send token transaction', async () => {
         initTxBuilder();
         txBuilder.type(TransactionType.Send);
         txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
