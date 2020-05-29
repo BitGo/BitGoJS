@@ -1,5 +1,12 @@
 # BitGoJS Release Notes
 
+## 11.1.2 (05-20-2020)
+
+This release fixes an build issue with bitgo@11.1.1 which caused an older version of statics to be inadvertently included in the built package available on npm.
+
+### Other Changes
+* Update `@bitgo/statics` to version 4.0.1
+
 ## 11.1.1 (05-12-2020)
 
 ### Other Changes
