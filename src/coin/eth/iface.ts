@@ -67,3 +67,9 @@ export interface SignatureParts {
   r: string;
   s: string;
 }
+
+export interface ContractMethodConfig {
+  contractAddress: string;
+  methodId: string;
+  types: string[];
+}

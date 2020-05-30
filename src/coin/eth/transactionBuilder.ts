@@ -7,18 +7,18 @@ import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { Transaction, TransferBuilder, Utils } from '../eth';
 import {
   BuildTransactionError,
-  SigningError,
   InvalidTransactionError,
   ParseTransactionError,
+  SigningError,
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { Fee, SignatureParts, TxData } from './iface';
 import {
-  getContractData,
-  isValidEthAddress,
-  getAddressInitializationData,
   calculateForwarderAddress,
+  getAddressInitializationData,
+  getContractData,
   hasSignature,
+  isValidEthAddress,
 } from './utils';
 
 const DEFAULT_M = 3;
@@ -27,9 +27,9 @@ const DEFAULT_M = 3;
  * Ethereum transaction builder.
  */
 export class TransactionBuilder extends BaseTransactionBuilder {
+  protected _type: TransactionType;
   private _transaction: Transaction;
   private _sourceKeyPair: KeyPair;
-  private _type: TransactionType;
   private _chainId: number;
   private _counter: number;
   private _fee: Fee;
@@ -61,20 +61,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<BaseTransaction> {
-    let transactionData: TxData;
-    switch (this._type) {
-      case TransactionType.WalletInitialization:
-        transactionData = this.buildWalletInitializationTransaction();
-        break;
-      case TransactionType.Send:
-        transactionData = this.buildSendTransaction();
-        break;
-      case TransactionType.AddressInitialization:
-        transactionData = this.buildAddressInitializationTransaction();
-        break;
-      default:
-        throw new BuildTransactionError('Unsupported transaction type');
-    }
+    const transactionData = this.getTransactionData();
 
     if (this._txSignature) {
       Object.assign(transactionData, this._txSignature);
@@ -88,6 +75,19 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       await this.transaction.sign(this._sourceKeyPair);
     }
     return this.transaction;
+  }
+
+  protected getTransactionData(): TxData {
+    switch (this._type) {
+      case TransactionType.WalletInitialization:
+        return this.buildWalletInitializationTransaction();
+      case TransactionType.Send:
+        return this.buildSendTransaction();
+      case TransactionType.AddressInitialization:
+        return this.buildAddressInitializationTransaction();
+      default:
+        throw new BuildTransactionError('Unsupported transaction type');
+    }
   }
 
   /** @inheritdoc */
@@ -120,6 +120,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (transactionJson.from) {
       this.source(transactionJson.from);
     }
+    this.setTransactionTypeFields(decodedType, transactionJson);
+  }
+
+  protected setTransactionTypeFields(decodedType: TransactionType, transactionJson: TxData): void {
     switch (decodedType) {
       case TransactionType.WalletInitialization:
         const owners = Utils.decodeWalletCreationData(transactionJson.data);
@@ -244,6 +248,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           throw new BuildTransactionError('Invalid transaction: missing contract counter');
         }
         break;
+      case TransactionType.StakingLock:
+      case TransactionType.StakingVote:
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -314,7 +321,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._sourceAddress = source;
   }
 
-  private buildBase(data: string): TxData {
+  protected buildBase(data: string): TxData {
     return {
       gasLimit: this._fee.gasLimit,
       gasPrice: this._fee.fee,

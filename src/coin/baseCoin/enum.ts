@@ -9,6 +9,10 @@ export enum TransactionType {
   AddressInitialization,
   // Update an account on-chain (e.g. Public key revelation operation for Tezos)
   AccountUpdate,
+  //Lock
+  StakingLock,
+  //Vote
+  StakingVote,
 }
 
 /**
@@ -17,4 +21,9 @@ export enum TransactionType {
 export enum AddressFormat {
   hex = 'hex',
   base58 = 'base58',
+}
+
+export enum StakingOperationTypes {
+  LOCK,
+  VOTE,
 }
