@@ -42,7 +42,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   // Wallet initialization transaction parameters
   private _walletOwnerAddresses: string[];
 
-  // Address initialization and Send transaction specific parameters
+  // Send and AddressInitialization transaction specific parameters
   private _transfer: TransferBuilder;
   private _contractAddress: string;
   private _contractCounter: number;
@@ -359,7 +359,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Gets the transfer builder if exist, or creates a new one for this transaction and returns it
+   * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
    *
    * @returns {TransferBuilder} the transfer builder
    */
@@ -373,11 +373,16 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return this._transfer;
   }
 
+  /**
+   * Returns the serialized sendMultiSig contract method data
+   *
+   * @returns {string} serialized sendMultiSig data
+   */
   private getSendData(): string {
-    if (this._transfer) {
-      return this._transfer.signAndBuild();
+    if (!this._transfer) {
+      throw new BuildTransactionError('Missing transfer information');
     }
-    throw new BuildTransactionError('Missing transfer information');
+    return this._transfer.signAndBuild();
   }
 
   private buildSendTransaction(): TxData {

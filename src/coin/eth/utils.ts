@@ -21,8 +21,11 @@ import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
   sendMultisigMethodId,
+  sendMultisigTokenMethodId,
   walletSimpleByteCode,
   walletSimpleConstructor,
+  sendMultiSigTypes,
+  sendMultiSigTokenTypes,
 } from './walletUtil';
 import { testnetCommon } from './resources';
 import { EthTransactionData } from './types';
@@ -94,9 +97,33 @@ export function sendMultiSigData(
   signature: string,
 ): string {
   const params = [to, value, toBuffer(data), expireTime, sequenceId, toBuffer(signature)];
-  const types = ['address', 'uint', 'bytes', 'uint', 'uint', 'bytes'];
-  const method = EthereumAbi.methodID('sendMultiSig', types);
-  const args = EthereumAbi.rawEncode(types, params);
+  const method = EthereumAbi.methodID('sendMultiSig', sendMultiSigTypes);
+  const args = EthereumAbi.rawEncode(sendMultiSigTypes, params);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Returns the contract method encoded data
+ *
+ * @param {string} to destination address
+ * @param {number} value Amount to tranfer
+ * @param {string} tokenContractAddress the address of the erc20 token contract
+ * @param {number} expireTime expiration time for the transaction in seconds
+ * @param {number} sequenceId sequence id
+ * @param {string} signature signature of the call
+ * @returns {string} -- the contract method encoded data
+ */
+export function sendMultiSigTokenData(
+  to: string,
+  value: string,
+  tokenContractAddress: string,
+  expireTime: number,
+  sequenceId: number,
+  signature: string,
+): string {
+  const params = [to, value, tokenContractAddress, expireTime, sequenceId, toBuffer(signature)];
+  const method = EthereumAbi.methodID('sendMultiSigToken', sendMultiSigTokenTypes);
+  const args = EthereumAbi.rawEncode(sendMultiSigTokenTypes, params);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
 }
 
@@ -126,7 +153,8 @@ export function isValidEthAddress(address: string): boolean {
  * @returns {boolean} - the validation result
  */
 export function isValidAmount(amount: string): boolean {
-  return new BigNumber(amount).isInteger();
+  const bigNumberAmount = new BigNumber(amount);
+  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThan(0);
 }
 
 /**
@@ -176,7 +204,7 @@ export function classifyTransaction(data: string): TransactionType {
     return TransactionType.WalletInitialization;
   } else if (data.startsWith(createForwarderMethodId)) {
     return TransactionType.AddressInitialization;
-  } else if (data.startsWith(sendMultisigMethodId)) {
+  } else if (data.startsWith(sendMultisigMethodId) || data.startsWith(sendMultisigTokenMethodId)) {
     return TransactionType.Send;
   } else {
     throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
