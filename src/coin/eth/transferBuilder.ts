@@ -1,8 +1,7 @@
 import ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
-import { coins, BaseCoin } from '@bitgo/statics';
-import { CeloCoin } from '@bitgo/statics/dist/src/account';
+import { coins, BaseCoin, CeloCoin } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { InvalidParameterValueError } from '../baseCoin/errors';
 import { sendMultiSigData, sendMultiSigTokenData } from './utils';
