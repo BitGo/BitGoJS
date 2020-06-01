@@ -11,7 +11,8 @@
     "fmt": "prettier --write 'src/**/*.ts'",
     "check-fmt": "prettier --check 'src/**/*.ts'",
     "clean": "rm -r ./dist",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "prepare": "npm run build"
   },
   "author": "Tyler Levine <tyler@bitgo.com>",
   "license": "Apache-2.0",
