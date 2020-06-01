@@ -5,6 +5,7 @@
 import * as should from 'should';
 import * as nock from 'nock';
 import * as Bluebird from 'bluebird';
+import { Environments } from '../../src/index';
 const co = Bluebird.coroutine;
 
 import * as BitGoJS from '../../src/index';
@@ -79,7 +80,6 @@ describe('BitGo Prototype Methods', function() {
   describe('Authenticate in Microservices', () => {
     let bitgo;
     const microservicesUri = 'https://microservices.uri';
-    const uri = 'https://test.bitgo.com';
     const authenticateRequest = {
       username: 'test@bitgo.com',
       password: 'password',
@@ -90,7 +90,7 @@ describe('BitGo Prototype Methods', function() {
     };
 
     it('goes to microservices', co(function *() {
-      bitgo = new TestBitGo({ env: 'custom', microservicesUri });
+      bitgo = new TestBitGo({ env: 'mock', microservicesUri });
       const scope = nock(microservicesUri)
         .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
@@ -100,8 +100,8 @@ describe('BitGo Prototype Methods', function() {
     }));
 
     it('goes to normal uri', co(function *() {
-      bitgo = new TestBitGo();
-      const scope = nock(uri)
+      bitgo = new TestBitGo({ env: 'mock' });
+      const scope = nock(Environments[bitgo.getEnv()].uri)
         .post('/api/v1/user/login')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
