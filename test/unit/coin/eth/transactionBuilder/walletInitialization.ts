@@ -5,7 +5,7 @@ import * as testData from '../../../../resources/eth/eth';
 import { Transaction } from '../../../../../src/coin/eth';
 import { Fee } from '../../../../../src/coin/eth/iface';
 
-describe('Eth Transaction builder', function() {
+describe('Eth Transaction builder wallet initialization', function() {
   const sourcePrv =
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
   const pub1 =
@@ -341,7 +341,10 @@ describe('Eth Transaction builder', function() {
     it('an address', async () => {
       const txBuilder: any = getBuilder('eth');
       txBuilder.validateAddress(testData.VALID_ADDRESS);
-      should.throws(() => txBuilder.validateAddress(testData.INVALID_ADDRESS));
+      should.throws(
+        () => txBuilder.validateAddress(testData.INVALID_ADDRESS),
+        'Invalid address ' + testData.INVALID_ADDRESS,
+      );
     });
 
     it('value should be greater than zero', () => {
@@ -369,27 +372,28 @@ describe('Eth Transaction builder', function() {
 
     it('a transaction to build', async () => {
       const txBuilder: any = getBuilder('eth');
+      txBuilder.counter(undefined);
       txBuilder.type(TransactionType.WalletInitialization);
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing fee');
       txBuilder.fee({
         fee: '10',
         gasLimit: '1000',
       });
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing chain id');
       txBuilder.chainId(31);
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing source');
       const source = {
         prv: sourcePrv,
       };
       const sourceKeyPair = new Eth.KeyPair(source);
       txBuilder.source(sourceKeyPair.getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing address counter');
       txBuilder.counter(1);
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 0');
       txBuilder.owner(sourceKeyPair.getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 1');
       txBuilder.owner(new Eth.KeyPair({ pub: pub1 }).getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 2');
       txBuilder.owner(new Eth.KeyPair({ pub: pub2 }).getAddress());
       should.doesNotThrow(() => txBuilder.validateTransaction());
     });

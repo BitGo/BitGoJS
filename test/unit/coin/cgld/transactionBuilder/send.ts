@@ -19,21 +19,6 @@ describe('Send transaction', function() {
   const key = testData.KEYPAIR_PRV.getKeys().prv as string;
 
   describe('should sign and build', () => {
-    it('a send found transaction', async () => {
-      initTxBuilder();
-      txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
-      txBuilder
-        .transfer()
-        .amount('1000000000')
-        .to('0x19645032c7f1533395d44a629462e751084d3e4c')
-        .expirationTime(1590066728)
-        .contractSequenceId(5)
-        .key(key);
-      txBuilder.sign({ key: testData.PRIVATE_KEY });
-      const tx = await txBuilder.build();
-      should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
-    });
-
     it('a send token transaction', async () => {
       initTxBuilder();
       txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
@@ -50,13 +35,6 @@ describe('Send transaction', function() {
       should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
     });
 
-    it('a send found transaction from serialized', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
-      txBuilder.from(testData.SEND_TX_BROADCAST);
-      const signedTx = await txBuilder.build();
-      should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
-    });
-
     it('a send token transactions from serialized', async () => {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
       txBuilder.from(testData.SEND_TOKEN_TX_BROADCAST);
@@ -66,7 +44,7 @@ describe('Send transaction', function() {
   });
 
   describe('should fail to build', async () => {
-    it('a token transaction without fee', async () => {
+    it('a send token transaction without fee', async () => {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.chainId(44786);
@@ -76,7 +54,7 @@ describe('Send transaction', function() {
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
 
-    it('a token transaction without source', async () => {
+    it('a send token transaction without source', async () => {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
@@ -89,7 +67,7 @@ describe('Send transaction', function() {
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing source');
     });
 
-    it('a token transaction without chain id', async () => {
+    it('a send token transaction without chain id', async () => {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
@@ -102,7 +80,7 @@ describe('Send transaction', function() {
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
     });
 
-    it('a token transaction without nonce', async () => {
+    it('a send token transaction without nonce', async () => {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
@@ -124,7 +102,7 @@ describe('Send transaction', function() {
       }, 'Error: Token transfers can only be set for send token transactions');
     });
 
-    it('a token transaction without token information', async () => {
+    it('a send token transaction without token information', async () => {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
