@@ -153,7 +153,8 @@ export function isValidEthAddress(address: string): boolean {
  * @returns {boolean} - the validation result
  */
 export function isValidAmount(amount: string): boolean {
-  return new BigNumber(amount).isInteger();
+  const bigNumberAmount = new BigNumber(amount);
+  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThan(0);
 }
 
 /**
