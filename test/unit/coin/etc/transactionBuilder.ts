@@ -1,6 +1,6 @@
 import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin';
-import { getBuilder, Eth } from '../../../../src';
+import { getBuilder, Eth, Etc } from '../../../../src';
 import * as testData from '../../../resources/etc/etc';
 
 describe('Etc Transaction builder', function() {
@@ -10,7 +10,7 @@ describe('Etc Transaction builder', function() {
 
   describe('should sign', () => {
     it('an init transaction', async () => {
-      const txBuilder: any = getBuilder('etc');
+      const txBuilder = getBuilder('etc') as Etc.TransactionBuilder;
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.fee({
         fee: '10000000000',

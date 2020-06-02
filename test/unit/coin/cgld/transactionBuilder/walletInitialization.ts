@@ -3,7 +3,7 @@ import { TransactionType } from '../../../../../src/coin/baseCoin/';
 import { getBuilder, Cgld } from '../../../../../src';
 import * as testData from '../../../../resources/cgld/cgld';
 
-describe('Celo Transaction builder for wallet initialization', function() {
+describe('Celo Transaction builder for wallet initialization', () => {
   let txBuilder: Cgld.TransactionBuilder;
   const initTxBuilder = (): void => {
     txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;

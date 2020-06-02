@@ -16,6 +16,7 @@ describe('Send transaction', function() {
     txBuilder.counter(2);
     txBuilder.type(TransactionType.Send);
   };
+  const key = testData.KEYPAIR_PRV.getKeys().prv as string;
 
   describe('should sign and build', () => {
     it('a send found transaction', async () => {
@@ -27,7 +28,7 @@ describe('Send transaction', function() {
         .to('0x19645032c7f1533395d44a629462e751084d3e4c')
         .expirationTime(1590066728)
         .contractSequenceId(5)
-        .key(testData.PRIVATE_KEY);
+        .key(key);
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
       should.equal(tx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
@@ -43,7 +44,7 @@ describe('Send transaction', function() {
         .to('0x19645032c7f1533395d44a629462e751084d3e4c')
         .expirationTime(1590066728)
         .contractSequenceId(5)
-        .key(testData.PRIVATE_KEY);
+        .key(key);
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
       should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);

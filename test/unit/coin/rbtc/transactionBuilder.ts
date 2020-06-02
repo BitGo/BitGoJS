@@ -10,7 +10,7 @@ describe('Rbtc Transaction builder', function() {
 
   describe('should sign', () => {
     it('an init transaction', async () => {
-      const txBuilder: any = getBuilder('rbtc');
+      const txBuilder = getBuilder('rbtc') as Eth.TransactionBuilder;
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.fee({
         fee: '10000000000',
