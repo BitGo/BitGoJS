@@ -1,8 +1,12 @@
 /**
  * @prettier
  */
-import * as Bluebird from 'bluebird';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
+import { Eth, getBuilder } from '@bitgo/account-lib';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
+import * as bitgoUtxoLib from 'bitgo-utxo-lib';
+import * as crypto from 'crypto';
 
 import {
   BaseCoin,
@@ -21,7 +25,8 @@ import {
 
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
-import { MethodNotImplementedError } from '../../errors';
+import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
+import BigNumber from 'bignumber.js';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -89,11 +94,23 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    throw new MethodNotImplementedError();
+    if (!address) {
+      return false;
+    }
+    return Eth.Utils.isValidEthAddress(address);
   }
 
   generateKeyPair(seed?: Buffer): KeyPair {
-    throw new MethodNotImplementedError();
+    if (!seed) {
+      seed = crypto.randomBytes(512 / 8);
+    }
+    const extendedKey = bitgoUtxoLib.HDNode.fromSeedBuffer(seed);
+    const xpub = extendedKey.neutered().toBase58();
+
+    return {
+      pub: xpub,
+      prv: extendedKey.toBase58(),
+    };
   }
 
   parseTransaction(
@@ -103,8 +120,11 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     throw new MethodNotImplementedError();
   }
 
-  verifyAddress(params: VerifyAddressOptions): boolean {
-    throw new MethodNotImplementedError();
+  verifyAddress({ address }: VerifyAddressOptions): boolean {
+    if (!this.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${address}`);
+    }
+    return true;
   }
 
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
@@ -123,7 +143,13 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   }
 
   isValidPub(pub: string): boolean {
-    throw new MethodNotImplementedError();
+    let valid = true;
+    try {
+      new Eth.KeyPair({ pub });
+    } catch (e) {
+      valid = false;
+    }
+    return valid;
   }
 
   /**
