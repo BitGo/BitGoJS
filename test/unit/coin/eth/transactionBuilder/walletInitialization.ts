@@ -1,11 +1,11 @@
 import should from 'should';
-import { TransactionType } from '../../../../src/coin/baseCoin/';
-import { getBuilder, Eth } from '../../../../src';
-import * as testData from '../../../resources/eth/eth';
-import { Transaction } from '../../../../src/coin/eth';
-import { Fee } from '../../../../src/coin/eth/iface';
+import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { getBuilder, Eth } from '../../../../../src';
+import * as testData from '../../../../resources/eth/eth';
+import { Transaction } from '../../../../../src/coin/eth';
+import { Fee } from '../../../../../src/coin/eth/iface';
 
-describe('Eth Transaction builder', function() {
+describe('Eth Transaction builder wallet initialization', function() {
   const sourcePrv =
     'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
   const pub1 =
@@ -292,50 +292,6 @@ describe('Eth Transaction builder', function() {
         ],
       }).should.be.rejectedWith('Invalid counter: -1');
     });
-
-    it('a send transaction with out contract address', async () => {
-      await buildTransaction({
-        type: TransactionType.Send,
-        fee: {
-          fee: '10',
-          gasLimit: '1000',
-        },
-        chainId: 42,
-        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-        counter: 0,
-      }).should.be.rejectedWith('Invalid transaction: missing contract address');
-    });
-  });
-
-  describe('should sign', () => {
-    it('an init transaction', async () => {
-      const txBuilder: any = getBuilder('eth');
-      txBuilder.type(TransactionType.WalletInitialization);
-      txBuilder.fee({
-        fee: '10',
-        gasLimit: '1000',
-      });
-      txBuilder.chainId(42);
-      const source = {
-        prv: 'FAC4D04AA0025ECF200D74BC9B5E4616E4B8338B69B61362AAAD49F76E68EF28',
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
-      txBuilder.source(sourceKeyPair.getAddress());
-      txBuilder.counter(1);
-      txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
-      txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
-      txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
-      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
-      const tx = await txBuilder.build(); //shoud build and sign
-
-      tx.type.should.equal(TransactionType.WalletInitialization);
-      const txJson = tx.toJson();
-      txJson.gasLimit.should.equal('1000');
-      txJson.gasPrice.should.equal('10');
-      should.equal(txJson.nonce, 1);
-      should.equal(txJson.chainId, 42);
-      should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
-    });
   });
 
   describe('should fail to sign', () => {
@@ -385,7 +341,10 @@ describe('Eth Transaction builder', function() {
     it('an address', async () => {
       const txBuilder: any = getBuilder('eth');
       txBuilder.validateAddress(testData.VALID_ADDRESS);
-      should.throws(() => txBuilder.validateAddress(testData.INVALID_ADDRESS));
+      should.throws(
+        () => txBuilder.validateAddress(testData.INVALID_ADDRESS),
+        'Invalid address ' + testData.INVALID_ADDRESS,
+      );
     });
 
     it('value should be greater than zero', () => {
@@ -413,27 +372,28 @@ describe('Eth Transaction builder', function() {
 
     it('a transaction to build', async () => {
       const txBuilder: any = getBuilder('eth');
+      txBuilder.counter(undefined);
       txBuilder.type(TransactionType.WalletInitialization);
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing fee');
       txBuilder.fee({
         fee: '10',
         gasLimit: '1000',
       });
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing chain id');
       txBuilder.chainId(31);
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing source');
       const source = {
         prv: sourcePrv,
       };
       const sourceKeyPair = new Eth.KeyPair(source);
       txBuilder.source(sourceKeyPair.getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing address counter');
       txBuilder.counter(1);
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 0');
       txBuilder.owner(sourceKeyPair.getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 1');
       txBuilder.owner(new Eth.KeyPair({ pub: pub1 }).getAddress());
-      should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction');
+      should.throws(() => txBuilder.validateTransaction(), 'wrong number of owners -- required: 3, found: 2');
       txBuilder.owner(new Eth.KeyPair({ pub: pub2 }).getAddress());
       should.doesNotThrow(() => txBuilder.validateTransaction());
     });
@@ -482,82 +442,6 @@ describe('Eth Transaction builder', function() {
       txBuilder.source(sourceKeyPair.getAddress());
       txBuilder.counter(1);
       should.throws(() => txBuilder.owner('0x7325A3F7d4f9E86AE62C'), 'Invalid address');
-    });
-
-    it('should be different 3 owners', () => {
-      const txBuilder: any = getBuilder('eth');
-      txBuilder.type(TransactionType.WalletInitialization);
-      txBuilder.fee({
-        fee: '10',
-        gasLimit: '1000',
-      });
-      txBuilder.chainId(31);
-      const sourceKeyPair = new Eth.KeyPair({ prv: sourcePrv });
-      txBuilder.source(sourceKeyPair.getAddress());
-      txBuilder.counter(1);
-      txBuilder.owner(sourceKeyPair.getAddress());
-      txBuilder.owner('0x603e077acd3F01e81b95fB92ce42FF60dFf3D4C7');
-      should.throws(
-        () => txBuilder.owner('0x603e077acd3F01e81b95fB92ce42FF60dFf3D4C7'),
-        'Repeated owner address: 0x603e077acd3F01e81b95fB92ce42FF60dFf3D4C7',
-      );
-    });
-  });
-
-  describe('generate an address initialization', () => {
-    it('should fail if there is no contract address', async () => {
-      const txBuilder: any = getBuilder('eth');
-      txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.fee({
-        fee: '10',
-        gasLimit: '1000',
-      });
-      txBuilder.chainId(31);
-      const source = {
-        prv: sourcePrv,
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
-      txBuilder.source(sourceKeyPair.getAddress());
-      txBuilder.counter(1);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
-    });
-    it('should fail if there is no contract counter', async () => {
-      const txBuilder: any = getBuilder('eth');
-      txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.fee({
-        fee: '10',
-        gasLimit: '1000',
-      });
-      txBuilder.chainId(31);
-      const source = {
-        prv: sourcePrv,
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
-      txBuilder.source(sourceKeyPair.getAddress());
-      txBuilder.counter(1);
-      txBuilder.contract(testData.CONTRACT_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract counter');
-    });
-    it('should build properly and return a correct address', async () => {
-      const txBuilder: any = getBuilder('eth');
-      txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.fee({
-        fee: '10',
-        gasLimit: '1000',
-      });
-      txBuilder.chainId(31);
-      const source = {
-        prv: sourcePrv,
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
-      txBuilder.source(sourceKeyPair.getAddress());
-      txBuilder.counter(1);
-      txBuilder.contract(testData.CONTRACT_ADDRESS);
-      txBuilder.contractCounter(2);
-      const tx = await txBuilder.build();
-      const txJson = tx.toJson();
-      should.equal(txJson.deployedAddress, '0x858c7a9c3bda553f4d0f15e5e33231dd863cb9d4');
-      should.equal(txJson.to, testData.CONTRACT_ADDRESS);
     });
   });
 });

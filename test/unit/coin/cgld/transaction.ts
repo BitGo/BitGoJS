@@ -26,6 +26,7 @@ describe('Celo Transaction', function() {
       const tx = new Transaction(coins.get('cgld'));
       return tx.sign(testData.KEYPAIR_PRV).should.be.rejected();
     });
+
     it('valid', function() {
       const tx = new Transaction(coins.get('cgld'));
       tx.setTransactionData(testData.TXDATA);
