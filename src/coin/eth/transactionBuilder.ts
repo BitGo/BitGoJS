@@ -10,7 +10,6 @@ import {
   SigningError,
   InvalidTransactionError,
   ParseTransactionError,
-  ForwarderAddressError,
 } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { Fee, SignatureParts, TxData } from './iface';
@@ -62,7 +61,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<BaseTransaction> {
-    let transactionData;
+    let transactionData: TxData;
     switch (this._type) {
       case TransactionType.WalletInitialization:
         transactionData = this.buildWalletInitializationTransaction();
@@ -232,9 +231,17 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         }
         break;
       case TransactionType.Send:
+        if (this._contractAddress === undefined) {
+          throw new BuildTransactionError('Invalid transaction: missing contract address');
+        }
+        break;
       case TransactionType.AddressInitialization:
         if (this._contractAddress === undefined) {
           throw new BuildTransactionError('Invalid transaction: missing contract address');
+        }
+
+        if (this._contractCounter === undefined) {
+          throw new BuildTransactionError('Invalid transaction: missing contract counter');
         }
         break;
       default:
@@ -417,26 +424,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     const addressInitData = getAddressInitializationData();
     const tx: TxData = this.buildBase(addressInitData);
     tx.to = this._contractAddress;
+    tx.deployedAddress = calculateForwarderAddress(this._contractAddress, this._contractCounter);
     return tx;
-  }
-
-  /**
-   * Obtain the inferred forwarder address for an Address initialization transaction
-   * determined by the contract address and the contract counter.
-   *
-   * @returns {string} the forwarder contract address
-   */
-  public getForwarderAddress(): string {
-    if (this._type !== TransactionType.AddressInitialization) {
-      throw new ForwarderAddressError('Wrong transaction type');
-    }
-    if (this._contractAddress === undefined) {
-      throw new ForwarderAddressError('Contract address was not defined');
-    }
-    if (this._contractCounter === undefined) {
-      throw new ForwarderAddressError('Contract nonce was not defined');
-    }
-    return calculateForwarderAddress(this._contractAddress, this._contractCounter);
   }
   //endregion
 

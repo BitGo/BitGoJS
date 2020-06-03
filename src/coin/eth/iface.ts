@@ -16,6 +16,7 @@ export interface TxData {
   data: string;
   value: string;
   chainId?: string;
+  deployedAddress?: string;
   from?: string;
   id?: string;
   /**
