@@ -11,7 +11,7 @@
   "scripts": {
     "postinstall": "lerna run build --stream",
     "generate-drone": "drone jsonnet --stream",
-    "audit": "yarn audit",
+    "audit": "yarn audit ; test $? -lt 8",
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
     "unit-test-changed": "lerna run unit-test --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --parallel",

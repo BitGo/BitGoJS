@@ -2,9 +2,8 @@
  * @prettier
  */
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Eth, getBuilder } from '@bitgo/account-lib';
+import { Eth } from '@bitgo/account-lib';
 import * as Bluebird from 'bluebird';
-const co = Bluebird.coroutine;
 import * as bitgoUtxoLib from 'bitgo-utxo-lib';
 import * as crypto from 'crypto';
 
@@ -26,7 +25,6 @@ import {
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
-import BigNumber from 'bignumber.js';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
