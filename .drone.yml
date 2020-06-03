@@ -18,7 +18,7 @@ steps:
 - name: install
   image: node:10
   commands:
-  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
   - yarn install
 
 - name: audit
@@ -79,7 +79,7 @@ steps:
 trigger:
   branch:
   - master
-  - "rel/*"
+  - rel/*
   - prod/production
 
 ---
@@ -102,8 +102,8 @@ steps:
 - name: install
   image: node:8
   commands:
-  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
-  - yarn install
+  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
+  - yarn install --ignore-engines
 
 - name: unit-test-changed
   image: node:8
@@ -135,7 +135,7 @@ trigger:
   branch:
     exclude:
     - master
-    - "rel/*"
+    - rel/*
     - prod/production
 
 ---
@@ -158,7 +158,7 @@ steps:
 - name: install
   image: node:10
   commands:
-  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
   - yarn install
 
 - name: unit-test-changed
@@ -191,7 +191,7 @@ trigger:
   branch:
     exclude:
     - master
-    - "rel/*"
+    - rel/*
     - prod/production
 
 ---
@@ -214,7 +214,7 @@ steps:
 - name: install
   image: node:10
   commands:
-  - "git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true"
+  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
   - yarn install
 
 - name: integration-test
@@ -246,7 +246,7 @@ steps:
 trigger:
   branch:
   - master
-  - "rel/*"
+  - rel/*
   - prod/production
 
 ...
