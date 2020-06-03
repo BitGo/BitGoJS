@@ -97,6 +97,7 @@ describe('Celo Transaction builder', function() {
         initTxBuilder();
         txBuilder.type(TransactionType.AddressInitialization);
         txBuilder.contract(testData.CONTRACT_ADDRESS);
+        txBuilder.contractCounter(1);
         txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
         const tx = await txBuilder.build(); //should build and sign
 
@@ -107,6 +108,7 @@ describe('Celo Transaction builder', function() {
         should.equal(txJson.nonce, 2);
         should.equal(txJson.chainId, 44786);
         should.equal(tx.toBroadcastFormat(), testData.TX_ADDRESS_INIT);
+        should.equal(txJson.deployedAddress, '0x016e4eee27f3f355bbb78d0e5eb813c4761822c9');
       });
     });
 
