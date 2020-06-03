@@ -1,5 +1,8 @@
 # BitGoJS Release Notes
 
+## next
+* Fix bug in fanout endpoint that causes `maxNumInputsToUse` to be ignored.
+
 ## 11.1.2 (05-20-2020)
 
 This release fixes an build issue with bitgo@11.1.1 which caused an older version of statics to be inadvertently included in the built package available on npm.

@@ -33,7 +33,6 @@ export class AccountCoin extends BaseCoin {
 
   constructor(options: AccountConstructorOptions) {
     super({
-      isToken: false,
       ...options,
       kind: CoinKind.CRYPTO,
     });

@@ -5,6 +5,7 @@ import { BitGo } from '../bitgo';
 import { validateParams } from '../common';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+import { RequestTracer } from './internal/util';
 
 import { NodeCallback } from './types';
 import { Wallet } from './wallet';
@@ -15,7 +16,7 @@ const co = Bluebird.coroutine;
 export interface PendingApprovalInfo {
   type: Type;
   transactionRequest?: {
-    coinSpecific: any;
+    coinSpecific: { [key: string]: any };
     recipients: any;
     buildParams: any;
     sourceWallet?: string;
@@ -232,6 +233,8 @@ export class PendingApproval {
         canRecreateTransaction = false;
       }
 
+      const reqId = new RequestTracer();
+
       /*
        * Internal helper function to get the serialized transaction which is being approved
        */
@@ -261,6 +264,7 @@ export class PendingApproval {
               return transaction;
             }
 
+            self.bitgo.setRequestTracer(reqId);
             yield self.populateWallet();
             return yield self.recreateAndSignTransaction(params);
           }
@@ -277,6 +281,7 @@ export class PendingApproval {
             // if the transaction already has a half signed property, we take that directly
             approvalParams.halfSigned = transaction.halfSigned || transaction;
           }
+          self.bitgo.setRequestTracer(reqId);
           return self.bitgo
             .put(self.url())
             .send(approvalParams)
@@ -287,6 +292,7 @@ export class PendingApproval {
 
       try {
         const approvalTransaction = yield getApprovalTransaction();
+        self.bitgo.setRequestTracer(reqId);
         return yield sendApproval(approvalTransaction);
       } catch (e) {
         if (
@@ -352,6 +358,15 @@ export class PendingApproval {
 
       if (!_.isUndefined(originalPrebuild.hopTransaction)) {
         prebuildParams.hop = true;
+      }
+
+      if (!recipients.length) {
+        // no recipients - this is a consolidation transaction
+        prebuildParams.prebuildTx = yield self.bitgo
+          .post(self.wallet.url(`/consolidateUnspents`))
+          .send(params)
+          .result();
+        delete prebuildParams.recipients;
       }
 
       const signedTransaction = yield self.wallet.prebuildAndSignTransaction(prebuildParams);

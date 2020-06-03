@@ -883,7 +883,7 @@ export class Wallet {
    * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
    * @param {Boolean} params.enforceMinConfirmsForChange - if true, minConfirms also applies to change outputs
    * @param {Number} params.limit                for routeName === 'consolidate'
-   *                 params.maxNumUnspentsToUse  for routeName === 'fanout'
+   *                 params.maxNumInputsToUse    for routeName === 'fanout'
    *                  - maximum number of unspents you want to use in the transaction
    * Output parameters:
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
@@ -908,7 +908,7 @@ export class Wallet {
         'minConfirms',
         'enforceMinConfirmsForChange',
 
-        routeName === 'consolidate' ? 'limit' : 'maxNumUnspentsToUse',
+        routeName === 'consolidate' ? 'limit' : 'maxNumInputsToUse',
         'numUnspentsToMake',
       ]);
       self.bitgo.setRequestTracer(reqId);
@@ -945,7 +945,7 @@ export class Wallet {
    * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
    * @param {Boolean} params.enforceMinConfirmsForChange - if true, minConfirms also applies to change outputs
    * @param {Number} params.limit                for routeName === 'consolidate'
-   *                 params.maxNumUnspentsToUse  for routeName === 'fanout'
+   *                 params.maxNumInputsToUse    for routeName === 'fanout'
    *                  - maximum number of unspents you want to use in the transaction
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
    * @param callback
