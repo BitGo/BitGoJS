@@ -16,7 +16,7 @@ const co = Bluebird.coroutine;
 export interface PendingApprovalInfo {
   type: Type;
   transactionRequest?: {
-    coinSpecific: any;
+    coinSpecific: { [key: string]: any };
     recipients: any;
     buildParams: any;
     sourceWallet?: string;
