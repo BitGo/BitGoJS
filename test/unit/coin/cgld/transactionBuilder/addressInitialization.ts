@@ -15,6 +15,7 @@ describe('An address initialization', () => {
       txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.counter(2);
       txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.contractCounter(1);
       txBuilder.contract(testData.CONTRACT_ADDRESS);
       txBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
       const tx = await txBuilder.build();
@@ -25,6 +26,7 @@ describe('An address initialization', () => {
       should.equal(txJson.nonce, 2);
       should.equal(txJson.chainId, 44786);
       should.equal(tx.toBroadcastFormat(), testData.TX_ADDRESS_INIT);
+      should.equal(txJson.deployedAddress, '0x016e4eee27f3f355bbb78d0e5eb813c4761822c9');
     });
   });
 
