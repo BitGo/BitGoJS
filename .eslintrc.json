@@ -71,7 +71,7 @@
     "no-fallthrough": "error",
     "no-octal": "error",
     "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 1 }],
-    "space-before-function-paren": ["error", "never"],
+    "space-before-function-paren": ["error", { "named": "never", "anonymous": "never", "asyncArrow": "always" }],
     "no-mixed-spaces-and-tabs": "error",
     "no-dupe-keys": "error",
     "no-redeclare": ["error", { "builtinGlobals": true }],
