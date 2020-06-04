@@ -21,7 +21,7 @@ export class TransferBuilder {
   protected _sequenceId: number;
   protected _signKey: string;
   protected _expirationTime: number;
-  protected _signature?: string;
+  protected _signature: string;
   private _data: string;
   private _tokenContractAddress?: string;
   private _coin: Readonly<BaseCoin>;
@@ -35,6 +35,7 @@ export class TransferBuilder {
       //initialize with default values for non mandatory fields
       this._expirationTime = this.getExpirationTime();
       this._data = '0x';
+      this._signature = '0x';
     }
   }
 
@@ -56,7 +57,7 @@ export class TransferBuilder {
   }
 
   data(additionalData: string): TransferBuilder {
-    this._signature = undefined;
+    this._signature = '0x';
     this._data = additionalData;
     return this;
   }
@@ -65,14 +66,14 @@ export class TransferBuilder {
     if (!isValidAmount(amount)) {
       throw new InvalidParameterValueError('Invalid amount');
     }
-    this._signature = undefined;
+    this._signature = '0x';
     this._amount = amount;
     return this;
   }
 
   to(address: string): TransferBuilder {
     if (isValidEthAddress(address)) {
-      this._signature = undefined;
+      this._signature = '0x';
       this._toAddress = address;
       return this;
     }
@@ -81,7 +82,7 @@ export class TransferBuilder {
 
   contractSequenceId(counter: number): TransferBuilder {
     if (counter > 0) {
-      this._signature = undefined;
+      this._signature = '0x';
       this._sequenceId = counter;
       return this;
     }
@@ -95,7 +96,7 @@ export class TransferBuilder {
 
   expirationTime(date: number): TransferBuilder {
     if (date > 0) {
-      this._signature = undefined;
+      this._signature = '0x';
       this._expirationTime = date;
       return this;
     }
@@ -125,17 +126,12 @@ export class TransferBuilder {
       }
     }
     throw new BuildTransactionError(
-      'Missing transfer mandatory fields. Amount, destination (to) address, signing key and sequenceID are mandatory',
+      'Missing transfer mandatory fields. Amount, destination (to) address and sequenceID are mandatory',
     );
   }
 
   private hasMandatoryFields(): boolean {
-    return (
-      this._amount !== undefined &&
-      this._toAddress !== undefined &&
-      this._sequenceId !== undefined &&
-      (this._signKey !== undefined || this._signature !== undefined)
-    );
+    return this._amount !== undefined && this._toAddress !== undefined && this._sequenceId !== undefined;
   }
 
   /**
@@ -198,7 +194,7 @@ export class TransferBuilder {
     if (this._signKey) {
       this._signature = this.ethSignMsgHash();
     }
-    return this._signature!; //should it fail if a signature has not being set?
+    return this._signature!;
   }
 
   protected ethSignMsgHash(): string {
