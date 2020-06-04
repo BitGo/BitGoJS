@@ -16,6 +16,7 @@ import { TransferFieldsIndex } from './enum';
 
 /** ETH transfer builder */
 export class TransferBuilder {
+  private readonly _EMPTY_HEX_VALUE = '0x';
   protected _amount: string;
   protected _toAddress: string;
   protected _sequenceId: number;
@@ -34,8 +35,8 @@ export class TransferBuilder {
     } else {
       //initialize with default values for non mandatory fields
       this._expirationTime = this.getExpirationTime();
-      this._data = '0x';
-      this._signature = '0x';
+      this._data = this._EMPTY_HEX_VALUE;
+      this._signature = this._EMPTY_HEX_VALUE;
     }
   }
 
@@ -57,7 +58,7 @@ export class TransferBuilder {
   }
 
   data(additionalData: string): TransferBuilder {
-    this._signature = '0x';
+    this._signature = this._EMPTY_HEX_VALUE;
     this._data = additionalData;
     return this;
   }
@@ -66,14 +67,14 @@ export class TransferBuilder {
     if (!isValidAmount(amount)) {
       throw new InvalidParameterValueError('Invalid amount');
     }
-    this._signature = '0x';
+    this._signature = this._EMPTY_HEX_VALUE;
     this._amount = amount;
     return this;
   }
 
   to(address: string): TransferBuilder {
     if (isValidEthAddress(address)) {
-      this._signature = '0x';
+      this._signature = this._EMPTY_HEX_VALUE;
       this._toAddress = address;
       return this;
     }
@@ -82,7 +83,7 @@ export class TransferBuilder {
 
   contractSequenceId(counter: number): TransferBuilder {
     if (counter > 0) {
-      this._signature = '0x';
+      this._signature = this._EMPTY_HEX_VALUE;
       this._sequenceId = counter;
       return this;
     }
@@ -96,7 +97,7 @@ export class TransferBuilder {
 
   expirationTime(date: number): TransferBuilder {
     if (date > 0) {
-      this._signature = '0x';
+      this._signature = this._EMPTY_HEX_VALUE;
       this._expirationTime = date;
       return this;
     }

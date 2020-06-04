@@ -43,11 +43,11 @@ describe('Eth send multi sig builder', function() {
         .contractSequenceId(2)
         .data('0x');
       const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_FOUNDS_NO_KEY_DATA);
+      should.equal(result, testData.SEND_FUNDS_NO_KEY_DATA);
     });
 
     it('should build from a non signed serialized data', () => {
-      const builder = new TransferBuilder(testData.SEND_FOUNDS_NO_KEY_DATA);
+      const builder = new TransferBuilder(testData.SEND_FUNDS_NO_KEY_DATA);
       builder.key(key);
       const result = builder.signAndBuild();
       should.equal(result, testData.SEND_FUNDS_DATA);
