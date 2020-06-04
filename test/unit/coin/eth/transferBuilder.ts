@@ -34,6 +34,24 @@ describe('Eth send multi sig builder', function() {
       const result = builder.signAndBuild();
       should.equal(result, testData.SEND_TOKEN_DATA);
     });
+
+    it('should build without a signature set', () => {
+      const builder = new TransferBuilder()
+        .expirationTime(1590078260)
+        .amount(amount)
+        .to(toAddress)
+        .contractSequenceId(2)
+        .data('0x');
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_FUNDS_NO_KEY_DATA);
+    });
+
+    it('should build from a non signed serialized data', () => {
+      const builder = new TransferBuilder(testData.SEND_FUNDS_NO_KEY_DATA);
+      builder.key(key);
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_FUNDS_DATA);
+    });
   });
 
   describe('should fail', () => {
@@ -95,14 +113,6 @@ describe('Eth send multi sig builder', function() {
       should.throws(() => {
         new TransferBuilder().coin('eth');
       }, 'There was an error using that coin as a transfer currency');
-    });
-
-    it('should fail if a key param is missing', () => {
-      const builder = new TransferBuilder()
-        .amount(amount)
-        .to(toAddress)
-        .contractSequenceId(2);
-      should.throws(() => builder.signAndBuild());
     });
 
     it('should fail if a sequenceId param is missing', () => {
