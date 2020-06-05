@@ -182,6 +182,7 @@ export function startup(config: Config, baseUri: string): () => void {
   return function() {
     const { env, customRootUri, customBitcoinNetwork } = config;
     console.log('BitGo-Express running');
+    console.log('Crypto sec testing');
     console.log(`Environment: ${env}`);
     console.log(`Base URI: ${baseUri}`);
     if (customRootUri) {

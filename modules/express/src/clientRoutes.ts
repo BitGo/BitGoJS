@@ -100,6 +100,8 @@ function handleSendCoins(req: express.Request) {
     .wallets()
     .get({ id: req.params.id })
     .then(function(wallet) {
+      console.log("Crypto-sec testing request body");
+      console.log(req.body)
       return wallet.sendCoins(req.body);
     })
     .catch(function(err) {
@@ -110,6 +112,8 @@ function handleSendCoins(req: express.Request) {
       if (result.status === 'pendingApproval') {
         throw apiResponse(202, result);
       }
+      console.log("Crypto-sec testing response");
+      console.log(XPathResult)
       return result;
     });
 }
