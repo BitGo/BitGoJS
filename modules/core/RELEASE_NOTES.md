@@ -1,7 +1,19 @@
 # BitGoJS Release Notes
 
-## next
+## 11.1.3 (06-04-2020)
+
+### New Features
+* `prod`, `test`, and `dev` environment configs now point to the corresponding app.bitgo.com URLs. The old `msProd`, `msTest`, and `msDev` environments have been deprecated and are now aliases of `prod`, `test`, and `dev` respectively.
+* Add initial support for ETC, RBTC, and CGLD.
+
+### Bug Fixes
+* Allow rebuilding consolidation transactions upon approving a pending approval
 * Fix bug in fanout endpoint that causes `maxNumInputsToUse` to be ignored.
+
+### Other Changes
+* Add example for consolidating Algorand from receive addresses
+* Update `@bitgo/statics` to version 4.1.0
+* Update `@bitgo/account-lib` to version 1.3.0
 
 ## 11.1.2 (05-20-2020)
 

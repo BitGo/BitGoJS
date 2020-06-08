@@ -1,6 +1,14 @@
 # BitGo Express Release Notes
 
+## 9.6.13
+
+### Other Changes
+* Update to `bitgo@11.1.3`
+* Update to `http-proxy@1.18.1`
+
 ## 9.6.12
+
+### Other Changes
 * Update to `bitgo@11.1.2`
 
 ## 9.6.11
