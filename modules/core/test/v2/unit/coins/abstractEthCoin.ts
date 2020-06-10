@@ -5,6 +5,7 @@
 import * as _ from 'lodash';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as bitgoUtxoLib from 'bitgo-utxo-lib';
+import * as bitcoinMessage from 'bitcoinjs-message';
 
 describe('ETH-like coins', () => {
   _.forEach(['tetc', 'tcgld', 'trbtc'], coinName => {
@@ -73,6 +74,27 @@ describe('ETH-like coins', () => {
           basecoin.isValidPub(pub).should.equal(true);
           const bitgoKey = bitgoUtxoLib.HDNode.fromBase58(prv);
           basecoin.isValidPub(bitgoKey.neutered().toBase58()).should.equal(true);
+        });
+      });
+
+      describe('Sign message:', () => {
+        it('should sign and validate a string message', async function() {
+          const keyPair = basecoin.generateKeyPair();
+          const message = 'hello world';
+          const signature = await basecoin.signMessage(keyPair, message);
+          const hdNode = bitgoUtxoLib.HDNode.fromBase58(keyPair.pub);
+
+          bitcoinMessage.verify(message, hdNode.keyPair.getAddress(), signature).should.equal(true);
+        });
+
+        it('should fail to validate a string message with wrong public key', async function() {
+          const keyPair = basecoin.generateKeyPair();
+          const message = 'hello world';
+          const signature = await basecoin.signMessage(keyPair, message);
+
+          const otherKeyPair = basecoin.generateKeyPair();
+          const hdNode = bitgoUtxoLib.HDNode.fromBase58(otherKeyPair.pub);
+          bitcoinMessage.verify(message, hdNode.keyPair.getAddress(), signature).should.equal(false);
         });
       });
     });
