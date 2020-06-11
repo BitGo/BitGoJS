@@ -11,7 +11,7 @@ import {
   sendMultiSigTokenTypes,
   sendMultisigTokenMethodId,
 } from './walletUtil';
-import { isValidEthAddress, isValidAmount } from './utils';
+import { isValidEthAddress, isValidAmount, getRawDecoded, getBufferedByteCode } from './utils';
 import { TransferFieldsIndex } from './enum';
 
 /** ETH transfer builder */
@@ -220,10 +220,10 @@ export class TransferBuilder {
     }
     let decoded;
     if (this.isTokenTransfer(data)) {
-      decoded = this.getRawDecoded(sendMultiSigTokenTypes, this.getBufferedByteCode(sendMultisigTokenMethodId, data));
+      decoded = getRawDecoded(sendMultiSigTokenTypes, getBufferedByteCode(sendMultisigTokenMethodId, data));
       this._tokenContractAddress = ethUtil.bufferToHex(decoded[TransferFieldsIndex.DataOrTokenAddressIndex]);
     } else {
-      decoded = this.getRawDecoded(sendMultiSigTypes, this.getBufferedByteCode(sendMultisigMethodId, data));
+      decoded = getRawDecoded(sendMultiSigTypes, getBufferedByteCode(sendMultisigMethodId, data));
       this._data = ethUtil.bufferToHex(decoded[TransferFieldsIndex.DataOrTokenAddressIndex]);
     }
     this._toAddress = ethUtil.bufferToHex(decoded[TransferFieldsIndex.DestinationAddressIndex]);
@@ -236,17 +236,5 @@ export class TransferBuilder {
 
   private isTokenTransfer(data: string): boolean {
     return data.startsWith(sendMultisigTokenMethodId);
-  }
-
-  private getBufferedByteCode(methodId: string, rawData: string): Buffer {
-    const splitBytecode = rawData.split(methodId);
-    if (splitBytecode.length !== 2) {
-      throw new BuildTransactionError(`Invalid send bytecode: ${rawData}`);
-    }
-    return Buffer.from(splitBytecode[1], 'hex');
-  }
-
-  private getRawDecoded(types: string[], serializedArgs: Buffer): Buffer[] {
-    return EthereumAbi.rawDecode(types, serializedArgs);
   }
 }

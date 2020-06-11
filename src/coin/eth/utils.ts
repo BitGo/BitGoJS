@@ -1,13 +1,11 @@
 import { Buffer } from 'buffer';
 import {
   addHexPrefix,
-  stripHexPrefix,
   bufferToHex,
-  bufferToInt,
-  fromRpcSig,
   generateAddress,
   isValidAddress,
   setLengthLeft,
+  stripHexPrefix,
   toBuffer,
 } from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
@@ -16,16 +14,17 @@ import * as BN from 'bn.js';
 import BigNumber from 'bignumber.js';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
+import { LockMethodId, VoteMethodId } from '../cgld/stakingUtils';
 import { SignatureParts, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
   sendMultisigMethodId,
   sendMultisigTokenMethodId,
+  sendMultiSigTokenTypes,
+  sendMultiSigTypes,
   walletSimpleByteCode,
   walletSimpleConstructor,
-  sendMultiSigTypes,
-  sendMultiSigTokenTypes,
 } from './walletUtil';
 import { testnetCommon } from './resources';
 import { EthTransactionData } from './types';
@@ -206,6 +205,10 @@ export function classifyTransaction(data: string): TransactionType {
     return TransactionType.AddressInitialization;
   } else if (data.startsWith(sendMultisigMethodId) || data.startsWith(sendMultisigTokenMethodId)) {
     return TransactionType.Send;
+  } else if (data.startsWith(LockMethodId)) {
+    return TransactionType.StakingLock;
+  } else if (data.startsWith(VoteMethodId)) {
+    return TransactionType.StakingVote;
   } else {
     throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
   }
@@ -267,4 +270,30 @@ export function hasSignature(txData: TxData): boolean {
     txData.r.length > 0 &&
     txData.s.length > 0
   );
+}
+
+/**
+ * Get the raw data decoded for some types
+ *
+ * @param {string[]} types ABI types definition
+ * @param {Buffer} serializedArgs encoded args
+ * @returns {Buffer[]} the decoded raw
+ */
+export function getRawDecoded(types: string[], serializedArgs: Buffer): Buffer[] {
+  return EthereumAbi.rawDecode(types, serializedArgs);
+}
+
+/**
+ * Get the buffered bytecode from rawData using a methodId as delimiter
+ *
+ * @param {string} methodId the hex encoded method Id
+ * @param {string} rawData the hex encoded raw data
+ * @returns {Buffer} data buffered bytecode
+ */
+export function getBufferedByteCode(methodId: string, rawData: string): Buffer {
+  const splitBytecode = rawData.split(methodId);
+  if (splitBytecode.length !== 2) {
+    throw new BuildTransactionError(`Invalid send bytecode: ${rawData}`);
+  }
+  return Buffer.from(splitBytecode[1], 'hex');
 }
