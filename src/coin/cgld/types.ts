@@ -188,7 +188,7 @@ export class CgldTransactionData implements EthLikeTransactionData {
       gasLimit: new BigNumber(bufferToHex(this.tx.gasLimit), 16).toString(10),
       value: this.tx.value.length === 0 ? '0' : new BigNumber(bufferToHex(this.tx.value), 16).toString(10),
       data: bufferToHex(this.tx.data),
-      id: addHexPrefix(bufferToHex(this.tx.hash())),
+      id: addHexPrefix(bufferToHex(this.tx.hash(true))),
     };
 
     if (this.tx.to && this.tx.to.length) {
