@@ -153,7 +153,7 @@ export function isValidEthAddress(address: string): boolean {
  */
 export function isValidAmount(amount: string): boolean {
   const bigNumberAmount = new BigNumber(amount);
-  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThan(0);
+  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThanOrEqualTo(0);
 }
 
 /**
