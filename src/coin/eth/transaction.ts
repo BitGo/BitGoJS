@@ -8,7 +8,9 @@ import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { EthLikeTransactionData, TxData } from './iface';
 import { EthTransactionData } from './types';
-import { classifyTransaction, hasSignature, toStringSig } from './utils';
+import { classifyTransaction, decodeTransferData, getToken, hasSignature, toStringSig } from './utils';
+
+const UNSUPPORTED_COIN_NAME = 'unsupported';
 
 export class Transaction extends BaseTransaction {
   protected _id: string; // The transaction id as seen in the blockchain
@@ -67,13 +69,39 @@ export class Transaction extends BaseTransaction {
     }
     this._type = classifyTransaction(txData.data);
 
-    // TODO: parse inputs and outputs from the transaction data
+    // reset arrays to empty to ensure that they are only set with one set of fresh values
     this._inputs = [];
     this._outputs = [];
     this._signatures = [];
 
     if (hasSignature(txData)) {
       this._signatures.push(toStringSig({ v: txData.v!, r: txData.r!, s: txData.s! }));
+    }
+
+    // only send transactions have inputs / outputs / signatures to parse
+    if (this._type === TransactionType.Send) {
+      const { to, amount, tokenContractAddress, signature } = decodeTransferData(txData.data);
+      let coinName: string;
+      if (tokenContractAddress) {
+        const token = getToken(tokenContractAddress);
+        coinName = token ? token.name : UNSUPPORTED_COIN_NAME;
+      } else {
+        coinName = this._coinConfig.name;
+      }
+
+      this.outputs.push({
+        address: to,
+        value: amount,
+        coin: coinName,
+      });
+
+      this.inputs.push({
+        address: txData.to!, // the sending wallet contract is the recipient of the outer transaction
+        value: amount,
+        coin: coinName,
+      });
+
+      this._signatures.push(signature);
     }
   }
 
@@ -105,7 +133,9 @@ export class Transaction extends BaseTransaction {
     if (!keyPair.getKeys().prv) {
       throw new SigningError('Missing private key');
     }
-    this._transactionData.sign(keyPair);
+    await this._transactionData.sign(keyPair);
+    const txData = this._transactionData.toJson();
+    this._signatures.push(toStringSig({ v: txData.v!, r: txData.r!, s: txData.s! }));
   }
 
   /** @inheritdoc */
