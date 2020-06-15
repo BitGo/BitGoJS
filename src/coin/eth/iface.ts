@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { BaseFee } from '../baseCoin/iface';
 import { KeyPair } from './keyPair';
 
@@ -72,4 +73,22 @@ export interface ContractMethodConfig {
   contractAddress: string;
   methodId: string;
   types: string[];
+}
+
+export interface TransferData {
+  to: string;
+  amount: string;
+  expireTime: number;
+  sequenceId: number;
+  signature: string;
+  tokenContractAddress?: string;
+  data?: string;
+}
+
+export interface TokenTransferData extends TransferData {
+  tokenContractAddress: string;
+}
+
+export interface NativeTransferData extends TransferData {
+  data: string;
 }

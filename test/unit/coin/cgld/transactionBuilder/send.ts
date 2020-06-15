@@ -20,19 +20,32 @@ describe('Send transaction', function() {
 
   describe('should sign and build', () => {
     it('a send token transaction', async () => {
+      const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+      const contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
+      const amount = '1000000000';
       initTxBuilder();
-      txBuilder.contract('0x8f977e912ef500548a0c3be6ddde9899f1199b81');
+      txBuilder.contract(contractAddress);
       txBuilder
         .transfer()
         .coin('tcusd')
-        .amount('1000000000')
-        .to('0x19645032c7f1533395d44a629462e751084d3e4c')
+        .amount(amount)
+        .to(recipient)
         .expirationTime(1590066728)
         .contractSequenceId(5)
         .key(key);
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
       should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
+      should.equal(tx.signature.length, 2);
+      should.equal(tx.inputs.length, 1);
+      should.equal(tx.inputs[0].address, contractAddress);
+      should.equal(tx.inputs[0].value, amount);
+      should.equal(tx.inputs[0].coin, 'tcusd');
+
+      should.equal(tx.outputs.length, 1);
+      should.equal(tx.outputs[0].address, recipient);
+      should.equal(tx.outputs[0].value, amount);
+      should.equal(tx.outputs[0].coin, 'tcusd');
     });
 
     it('a send token transactions from serialized', async () => {

@@ -1,18 +1,10 @@
 import ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
-import BigNumber from 'bignumber.js';
 import { coins, BaseCoin, CeloCoin } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { InvalidParameterValueError } from '../baseCoin/errors';
-import { sendMultiSigData, sendMultiSigTokenData } from './utils';
-import {
-  sendMultisigMethodId,
-  sendMultiSigTypes,
-  sendMultiSigTokenTypes,
-  sendMultisigTokenMethodId,
-} from './walletUtil';
-import { isValidEthAddress, isValidAmount, getRawDecoded, getBufferedByteCode } from './utils';
-import { TransferFieldsIndex } from './enum';
+import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData } from './utils';
+import { isValidEthAddress, isValidAmount } from './utils';
 
 /** ETH transfer builder */
 export class TransferBuilder {
@@ -215,26 +207,20 @@ export class TransferBuilder {
   }
 
   private decodeTransferData(data: string): void {
-    if (!(data.startsWith(sendMultisigMethodId) || data.startsWith(sendMultisigTokenMethodId))) {
-      throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
-    }
-    let decoded;
-    if (this.isTokenTransfer(data)) {
-      decoded = getRawDecoded(sendMultiSigTokenTypes, getBufferedByteCode(sendMultisigTokenMethodId, data));
-      this._tokenContractAddress = ethUtil.bufferToHex(decoded[TransferFieldsIndex.DataOrTokenAddressIndex]);
-    } else {
-      decoded = getRawDecoded(sendMultiSigTypes, getBufferedByteCode(sendMultisigMethodId, data));
-      this._data = ethUtil.bufferToHex(decoded[TransferFieldsIndex.DataOrTokenAddressIndex]);
-    }
-    this._toAddress = ethUtil.bufferToHex(decoded[TransferFieldsIndex.DestinationAddressIndex]);
-    this._amount = new BigNumber(ethUtil.bufferToHex(decoded[TransferFieldsIndex.AmountIndex])).toFixed();
-    this._data = ethUtil.bufferToHex(decoded[TransferFieldsIndex.DataOrTokenAddressIndex]);
-    this._expirationTime = ethUtil.bufferToInt(decoded[TransferFieldsIndex.ExpirationTimeIndex]);
-    this._sequenceId = ethUtil.bufferToInt(decoded[TransferFieldsIndex.SequenceIdIndex]);
-    this._signature = ethUtil.bufferToHex(decoded[TransferFieldsIndex.SignatureIndex]);
-  }
+    const transferData = decodeTransferData(data);
 
-  private isTokenTransfer(data: string): boolean {
-    return data.startsWith(sendMultisigTokenMethodId);
+    this._toAddress = transferData.to;
+    this._amount = transferData.amount;
+    this._expirationTime = transferData.expireTime;
+    this._sequenceId = transferData.sequenceId;
+    this._signature = transferData.signature;
+
+    if (transferData.data) {
+      this._data = transferData.data;
+    }
+
+    if (transferData.tokenContractAddress) {
+      this._tokenContractAddress = transferData.tokenContractAddress;
+    }
   }
 }

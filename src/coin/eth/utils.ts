@@ -2,12 +2,14 @@ import { Buffer } from 'buffer';
 import {
   addHexPrefix,
   bufferToHex,
+  bufferToInt,
   generateAddress,
   isValidAddress,
   setLengthLeft,
   stripHexPrefix,
   toBuffer,
 } from 'ethereumjs-util';
+import { coins, BaseCoin, Erc20Coin, CeloCoin } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
@@ -15,7 +17,7 @@ import BigNumber from 'bignumber.js';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { LockMethodId, VoteMethodId } from '../cgld/stakingUtils';
-import { SignatureParts, TxData } from './iface';
+import { NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
@@ -28,6 +30,7 @@ import {
 } from './walletUtil';
 import { testnetCommon } from './resources';
 import { EthTransactionData } from './types';
+import assert = require('assert');
 
 /**
  * Signs the transaction using the appropriate algorithm
@@ -192,6 +195,74 @@ export function decodeWalletCreationData(data: string): string[] {
 }
 
 /**
+ * Decode the given ABI-encoded transfer data and return parsed fields
+ *
+ * @param data The data to decode
+ * @returns parsed transfer data
+ */
+export function decodeTransferData(data: string): TransferData {
+  if (data.startsWith(sendMultisigMethodId)) {
+    return decodeNativeTransferData(data);
+  } else if (data.startsWith(sendMultisigTokenMethodId)) {
+    return decodeTokenTransferData(data);
+  } else {
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+  }
+}
+
+/**
+ * Decode the given ABI-encoded transfer data for the sendMultisigToken function and return parsed fields
+ *
+ * @param data The data to decode
+ * @returns parsed token transfer data
+ */
+export function decodeTokenTransferData(data: string): TokenTransferData {
+  if (!data.startsWith(sendMultisigTokenMethodId)) {
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+  }
+
+  const [to, amount, tokenContractAddress, expireTime, sequenceId, signature] = getRawDecoded(
+    sendMultiSigTokenTypes,
+    getBufferedByteCode(sendMultisigTokenMethodId, data),
+  );
+
+  return {
+    to: bufferToHex(to),
+    amount: new BigNumber(bufferToHex(amount)).toFixed(),
+    expireTime: bufferToInt(expireTime),
+    sequenceId: bufferToInt(sequenceId),
+    signature: bufferToHex(signature),
+    tokenContractAddress: bufferToHex(tokenContractAddress),
+  };
+}
+
+/**
+ * Decode the given ABI-encoded transfer data for the sendMultisig function and return parsed fields
+ *
+ * @param data The data to decode
+ * @returns parsed transfer data
+ */
+export function decodeNativeTransferData(data: string): NativeTransferData {
+  if (!data.startsWith(sendMultisigMethodId)) {
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+  }
+
+  const [to, amount, internalData, expireTime, sequenceId, signature] = getRawDecoded(
+    sendMultiSigTypes,
+    getBufferedByteCode(sendMultisigMethodId, data),
+  );
+
+  return {
+    to: bufferToHex(to),
+    amount: new BigNumber(bufferToHex(amount)).toFixed(),
+    expireTime: bufferToInt(expireTime),
+    sequenceId: bufferToInt(sequenceId),
+    signature: bufferToHex(signature),
+    data: bufferToHex(internalData),
+  };
+}
+
+/**
  * Classify the given transaction data based as a transaction type.
  * ETH transactions are defined by the first 8 bytes of the transaction data, also known as the method id
  *
@@ -296,4 +367,29 @@ export function getBufferedByteCode(methodId: string, rawData: string): Buffer {
     throw new BuildTransactionError(`Invalid send bytecode: ${rawData}`);
   }
   return Buffer.from(splitBytecode[1], 'hex');
+}
+
+/**
+ * Get the statics coin object matching a given contract address if it exists
+ *
+ * @param tokenContractAddress The contract address to match against
+ * @returns statics BaseCoin object for the matching token
+ */
+export function getToken(tokenContractAddress: string): Readonly<BaseCoin> | undefined {
+  const tokens = coins.filter(coin => {
+    if (coin instanceof Erc20Coin || coin instanceof CeloCoin) {
+      return coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase();
+    }
+    return false;
+  });
+
+  // if length of tokens is 1, return the first, else return undefined
+  // Can't directly index into tokens, or call `length`, so we use map to get an array
+  const tokensArray = tokens.map(token => token);
+  if (tokensArray.length >= 1) {
+    // there should never be two tokens with the same contract address, so we assert that here
+    assert(tokensArray.length === 1);
+    return tokensArray[0];
+  }
+  return undefined;
 }
