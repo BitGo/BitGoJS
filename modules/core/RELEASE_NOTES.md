@@ -1,5 +1,15 @@
 # BitGoJS Release Notes
 
+## 11.2.0 (06-15-2020)
+
+### New Features
+* Add support for new ERC20 tokens (ABT, BSX, INF, JFIN, NIAX, USG)
+* Add support for `signMessage` to ETH-like coins.
+
+### Other Changes
+* Add example showing how to create a basic local backup key for BTC.
+* Update `@bitgo/statics` to version 4.2.0
+
 ## 11.1.3 (06-04-2020)
 
 ### New Features
