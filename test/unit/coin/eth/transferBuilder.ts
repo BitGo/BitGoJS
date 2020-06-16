@@ -36,6 +36,18 @@ describe('Eth send multi sig builder', function() {
       should.equal(result, testData.SEND_FUNDS_DATA);
     });
 
+    it('native coin transfer with sequenceId zero should succeed', async () => {
+      const builder = new TransferBuilder()
+        .expirationTime(1590078260)
+        .amount(amount)
+        .to(toAddress)
+        .contractSequenceId(0)
+        .key(key)
+        .data('0x');
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_FUNDS_SEQUENCE_ZERO_DATA);
+    });
+
     it('native coin transfer with amount 0 should succeed', async () => {
       const builder = new TransferBuilder()
         .expirationTime(1590078260)
@@ -69,7 +81,19 @@ describe('Eth send multi sig builder', function() {
         .contractSequenceId(2)
         .key(key);
       const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_TERC_DATA);
+      should.equal(result, testData.SEND_TERC_DATA);    
+    });
+
+    it('erc20 transfer should succeed', async () => {
+      const builder = new TransferBuilder()
+        .coin('tcusd')
+        .expirationTime(1590078260)
+        .amount(amount)
+        .to(toAddress)
+        .contractSequenceId(0)
+        .key(key);
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_TOKEN_SEQUENCE_ZERO_DATA);
     });
 
     it('erc20 transfer with amount 0 should succeed', async () => {
