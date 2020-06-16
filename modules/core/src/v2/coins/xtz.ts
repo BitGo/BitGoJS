@@ -120,9 +120,14 @@ export class Xtz extends BaseCoin {
   generateKeyPair(seed?: Buffer): KeyPair {
     const keyPair = seed ? new bitgoAccountLib.Xtz.KeyPair({ seed }) : new bitgoAccountLib.Xtz.KeyPair();
     const keys = keyPair.getExtendedKeys();
+
+    if (!keys.xprv) {
+      throw new Error('Missing xprv in key generation.');
+    }
+
     return {
       pub: keys.xpub,
-      prv: keys.xprv!,
+      prv: keys.xprv,
     };
   }
 
