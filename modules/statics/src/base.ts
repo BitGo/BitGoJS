@@ -14,7 +14,7 @@ export const enum CoinKind {
  *
  * For example, the coins `btc` and `tbtc` both belong to the same family, `btc`.
  */
-export const enum CoinFamily {
+export enum CoinFamily {
   ALGO = 'algo',
   BCH = 'bch',
   BSV = 'bsv',
@@ -456,6 +456,14 @@ export const enum UnderlyingAsset {
   'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L' = 'txlm:TST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
 }
 
+/**
+ * This is the curve BitGo signs against with the user, backup and BitGo key.
+ */
+export const enum KeyCurve {
+  Secp256k1 = 'secp256k1',
+  Ed25519 = 'ed25519',
+}
+
 export interface BaseCoinConstructorOptions {
   fullName: string; // full, human readable name of this coin. Eg, "Bitcoin Cash" for bch
   name: string; // unique identifier for this coin, usually the lowercase ticker or symbol. Eg, "btc" for bitcoin
@@ -467,6 +475,7 @@ export interface BaseCoinConstructorOptions {
   decimalPlaces: number;
   asset: UnderlyingAsset;
   network: BaseNetwork;
+  primaryKeyCurve: KeyCurve;
 }
 
 export abstract class BaseCoin {
@@ -496,6 +505,11 @@ export abstract class BaseCoin {
    */
   public readonly decimalPlaces: number;
   public readonly asset: UnderlyingAsset;
+
+  /**
+   * The primary elliptic curve BitGo signs and generates keys against.
+   */
+  public readonly primaryKeyCurve: KeyCurve;
 
   /**
    * Set of features which are required by a coin subclass
@@ -559,5 +573,6 @@ export abstract class BaseCoin {
     this.decimalPlaces = options.decimalPlaces;
     this.asset = options.asset;
     this.network = options.network;
+    this.primaryKeyCurve = options.primaryKeyCurve;
   }
 }

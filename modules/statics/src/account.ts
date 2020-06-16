@@ -1,4 +1,4 @@
-import { BaseCoin, CoinFeature, CoinKind, UnderlyingAsset } from './base';
+import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, Networks } from './networks';
 
@@ -12,6 +12,7 @@ export interface AccountConstructorOptions {
   isToken: boolean;
   prefix?: string;
   suffix?: string;
+  primaryKeyCurve: KeyCurve;
 }
 
 /**
@@ -146,6 +147,7 @@ export class StellarCoin extends AccountCoinToken {
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function account(
   name: string,
@@ -154,6 +156,7 @@ export function account(
   decimalPlaces: number,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   isToken: boolean = false
@@ -169,6 +172,7 @@ export function account(
       decimalPlaces,
       isToken,
       asset,
+      primaryKeyCurve,
     })
   );
 }
@@ -185,6 +189,7 @@ export function account(
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Ethereum main network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function erc20(
   name: string,
@@ -195,7 +200,8 @@ export function erc20(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.ethereum
+  network: AccountNetwork = Networks.main.ethereum,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
     new Erc20Coin({
@@ -209,6 +215,7 @@ export function erc20(
       decimalPlaces,
       asset,
       isToken: true,
+      primaryKeyCurve,
     })
   );
 }
@@ -252,6 +259,7 @@ export function terc20(
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to CELO main network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function celoToken(
   name: string,
@@ -262,7 +270,8 @@ export function celoToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.celo
+  network: AccountNetwork = Networks.main.celo,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
     new CeloCoin({
@@ -276,6 +285,7 @@ export function celoToken(
       decimalPlaces,
       asset,
       isToken: true,
+      primaryKeyCurve,
     })
   );
 }
@@ -320,6 +330,7 @@ export function tceloToken(
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Stellar mainnet.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function stellarToken(
   name: string,
@@ -330,7 +341,8 @@ export function stellarToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.stellar
+  network: AccountNetwork = Networks.main.stellar,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
   return Object.freeze(
     new StellarCoin({
@@ -344,6 +356,7 @@ export function stellarToken(
       suffix,
       network,
       isToken: true,
+      primaryKeyCurve,
     })
   );
 }

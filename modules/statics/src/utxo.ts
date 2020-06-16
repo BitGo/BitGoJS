@@ -1,4 +1,4 @@
-import { BaseCoin, CoinFeature, CoinKind, UnderlyingAsset } from './base';
+import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { UtxoNetwork } from './networks';
 
 export interface UtxoConstructorOptions {
@@ -9,6 +9,7 @@ export interface UtxoConstructorOptions {
   asset: UnderlyingAsset;
   prefix?: string;
   suffix?: string;
+  primaryKeyCurve: KeyCurve;
 }
 
 export class UtxoCoin extends BaseCoin {
@@ -54,6 +55,7 @@ export class UtxoCoin extends BaseCoin {
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `UtxoCoin`
  * @param prefix? Optional coin prefix. Defaults to empty string
  * @param suffix? Optional coin suffix. Defaults to coin name.
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function utxo(
   name: string,
@@ -62,7 +64,9 @@ export function utxo(
   asset: UnderlyingAsset,
   features: CoinFeature[] = UtxoCoin.DEFAULT_FEATURES,
   prefix: string = '',
-  suffix: string = name.toUpperCase()
+  suffix: string = name.toUpperCase(),
+  /** All UTXOs BitGo supports are SECP256K1 **/
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
     new UtxoCoin({
@@ -73,6 +77,7 @@ export function utxo(
       suffix,
       features,
       asset,
+      primaryKeyCurve,
     })
   );
 }

@@ -1,8 +1,8 @@
-import { account, AccountCoin, celoToken, tceloToken, erc20, terc20, stellarToken, tstellarToken } from './account';
-import { CoinFeature, CoinKind, UnderlyingAsset } from './base';
+import { account, AccountCoin, celoToken, erc20, stellarToken, tceloToken, terc20, tstellarToken } from './account';
+import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
 import { Networks } from './networks';
-import { ofc, tofc, ofcerc20, tofcerc20 } from './ofc';
+import { ofc, ofcerc20, tofc, tofcerc20 } from './ofc';
 import { utxo } from './utxo';
 
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
@@ -23,8 +23,8 @@ export const coins = CoinMap.fromCoins([
   utxo('tdash', 'Testnet Dash', Networks.test.dash, UnderlyingAsset.DASH),
   utxo('zec', 'ZCash', Networks.main.zCash, UnderlyingAsset.ZEC),
   utxo('tzec', 'Testnet ZCash', Networks.test.zCash, UnderlyingAsset.ZEC),
-  account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO),
-  account('talgo', 'Testnet Algorand', Networks.test.algorand, 6, UnderlyingAsset.ALGO),
+  account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
+  account('talgo', 'Testnet Algorand', Networks.test.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
   account('cgld', 'Celo Gold', Networks.main.celo, 18, UnderlyingAsset.CGLD, ETH_FEATURES),
   account('tcgld', 'Testnet Celo Gold', Networks.test.celo, 18, UnderlyingAsset.CGLD, ETH_FEATURES),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
@@ -39,8 +39,8 @@ export const coins = CoinMap.fromCoins([
   account('ttrx', 'Testnet Tron', Networks.test.trx, 6, UnderlyingAsset.TRX),
   account('xrp', 'Ripple', Networks.main.xrp, 6, UnderlyingAsset.XRP),
   account('txrp', 'Testnet Ripple', Networks.test.xrp, 6, UnderlyingAsset.XRP),
-  account('xlm', 'Stellar', Networks.main.stellar, 7, UnderlyingAsset.XLM, XLM_FEATURES),
-  account('txlm', 'Testnet Stellar', Networks.test.stellar, 7, UnderlyingAsset.XLM, XLM_FEATURES),
+  account('xlm', 'Stellar', Networks.main.stellar, 7, UnderlyingAsset.XLM, XLM_FEATURES, KeyCurve.Ed25519),
+  account('txlm', 'Testnet Stellar', Networks.test.stellar, 7, UnderlyingAsset.XLM, XLM_FEATURES, KeyCurve.Ed25519),
   account('xtz', 'Tezos', Networks.main.xtz, 6, UnderlyingAsset.XTZ, XTZ_FEATURES),
   account('txtz', 'Testnet Tezos', Networks.test.xtz, 6, UnderlyingAsset.XTZ, XTZ_FEATURES),
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD),
