@@ -1105,6 +1105,9 @@ export class Eth extends BaseCoin {
   recoveryBlockchainExplorerQuery(query: any, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
+      if (common.Environments[self.bitgo.getEnv()].etherscanApiToken) {
+        query.apikey = common.Environments[self.bitgo.getEnv()].etherscanApiToken;
+      }
       const response = yield request
         .get(common.Environments[self.bitgo.getEnv()].etherscanBaseUrl + '/api')
         .query(query);
