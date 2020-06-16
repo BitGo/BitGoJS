@@ -20,6 +20,7 @@ interface EnvironmentTemplate {
   bsvExplorerBaseUrl?: string;
   btgExplorerBaseUrl?: string;
   etherscanBaseUrl: string;
+  etherscanApiToken?: string;
   ltcExplorerBaseUrl: string;
   zecExplorerBaseUrl: string;
   dashExplorerBaseUrl: string;
@@ -94,6 +95,7 @@ const mainnetBase: EnvironmentTemplate = {
   bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
   btgExplorerBaseUrl: 'https://btgexplorer.com/api',
   etherscanBaseUrl: 'https://api.etherscan.io',
+  etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
   zecExplorerBaseUrl: 'https://zcashnetwork.info/api',
   dashExplorerBaseUrl: 'https://insight.dash.org/insight-api',
@@ -116,6 +118,7 @@ const testnetBase: EnvironmentTemplate = {
   smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
   bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
   etherscanBaseUrl: 'https://kovan.etherscan.io',
+  etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
   zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
   dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api',
@@ -169,6 +172,7 @@ export const Environments: Environments = {
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.fakeurl/api',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
     etherscanBaseUrl: 'https://kovan.etherscan.fakeurl',
+    etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
     ltcExplorerBaseUrl: 'http://explorer.litecointools.fakeurl/api',
     zecExplorerBaseUrl: 'https://explorer.testnet.z.fakeurl/api',
     dashExplorerBaseUrl: 'https://testnet-insight.dashevo.fakeurl/insight-api',
