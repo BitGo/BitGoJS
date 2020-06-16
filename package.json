@@ -32,7 +32,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@bitgo/statics": "^4.1.0-rc.2",
+    "@bitgo/statics": "^4.3.0-rc.2",
     "@taquito/local-forging": "^6.0.3-beta.0",
     "@taquito/signer": "^6.0.3-beta.0",
     "@types/lodash": "^4.14.151",

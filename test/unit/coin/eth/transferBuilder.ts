@@ -23,6 +23,19 @@ describe('Eth send multi sig builder', function() {
       should.equal(result, testData.SEND_FUNDS_DATA);
     });
 
+    it('native coin transfer with coin explicitly set should succeed', async () => {
+      const builder = new TransferBuilder()
+        .expirationTime(1590078260)
+        .coin('eth')
+        .amount(amount)
+        .to(toAddress)
+        .contractSequenceId(2)
+        .key(key)
+        .data('0x');
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_FUNDS_DATA);
+    });
+
     it('native coin transfer with amount 0 should succeed', async () => {
       const builder = new TransferBuilder()
         .expirationTime(1590078260)
@@ -35,7 +48,7 @@ describe('Eth send multi sig builder', function() {
       should.equal(result, testData.SEND_FUNDS_AMOUNT_ZERO_DATA);
     });
 
-    it('erc20 transfer should succeed', async () => {
+    it('celo token transfer should succeed', async () => {
       const builder = new TransferBuilder()
         .coin('tcusd')
         .expirationTime(1590078260)
@@ -45,6 +58,18 @@ describe('Eth send multi sig builder', function() {
         .key(key);
       const result = builder.signAndBuild();
       should.equal(result, testData.SEND_TOKEN_DATA);
+    });
+
+    it('ERC20 token transfer should succeed', async () => {
+      const builder = new TransferBuilder()
+        .coin('terc')
+        .expirationTime(1590078260)
+        .amount(amount)
+        .to(toAddress)
+        .contractSequenceId(2)
+        .key(key);
+      const result = builder.signAndBuild();
+      should.equal(result, testData.SEND_TERC_DATA);
     });
 
     it('erc20 transfer with amount 0 should succeed', async () => {
@@ -83,12 +108,6 @@ describe('Eth send multi sig builder', function() {
       should(() => {
         new TransferBuilder().coin('inexistentcoin');
       }).throw();
-    });
-
-    it('should fail if a coin is a token but not an ERC20 token', () => {
-      should.throws(() => {
-        new TransferBuilder().coin('xlm:ETH-GBVOL67TMUQBGL4TZYNMY3ZQ5WGQYFPFD5VJRWXR72VA33VFNL225PL5');
-      }, 'There was an error using that coin as a transfer currency');
     });
 
     it('should fail with an invalid key', () => {
@@ -131,12 +150,6 @@ describe('Eth send multi sig builder', function() {
       should(() => {
         new TransferBuilder().expirationTime(-1);
       }).throw('Invalid expiration time');
-    });
-
-    it('should fail if a coin is not an ERC20 instance', () => {
-      should.throws(() => {
-        new TransferBuilder().coin('eth');
-      }, 'There was an error using that coin as a transfer currency');
     });
 
     it('should fail if a sequenceId param is missing', () => {
