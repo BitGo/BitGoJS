@@ -249,7 +249,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         }
         break;
       case TransactionType.StakingLock:
+      case TransactionType.StakingUnlock:
       case TransactionType.StakingVote:
+      case TransactionType.StakingUnvote:
+      case TransactionType.StakingActivate:
+      case TransactionType.StakingWithdraw:
         break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');

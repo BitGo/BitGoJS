@@ -26,8 +26,12 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
     switch (this._type) {
       case TransactionType.StakingLock:
         return this.buildLockStakeTransaction();
+      case TransactionType.StakingUnlock:
       case TransactionType.StakingVote:
-        return this.buildVoteStakingTransaction();
+      case TransactionType.StakingUnvote:
+      case TransactionType.StakingActivate:
+      case TransactionType.StakingWithdraw:
+        return this.buildStakingTransaction();
     }
     return super.getTransactionData();
   }
@@ -53,7 +57,11 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
           .type(StakingOperationTypes.LOCK)
           .amount(transactionJson.value);
         break;
+      case TransactionType.StakingUnlock:
       case TransactionType.StakingVote:
+      case TransactionType.StakingUnvote:
+      case TransactionType.StakingActivate:
+      case TransactionType.StakingWithdraw:
         this._stakingBuilder = new StakingBuilder(this._coinConfig, transactionJson.data);
         break;
       default:
@@ -63,13 +71,102 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
   }
 
   //region Stake methods
+
+  /**
+   * Gets the staking lock builder if exist, or creates a new one for this transaction and returns it
+   * requires: amount
+   *
+   * @returns {StakingBuilder} the staking builder
+   */
   lock(): StakingBuilder {
     if (this._type !== TransactionType.StakingLock) {
       throw new BuildTransactionError('Lock can only be set for Staking Lock transactions type');
     }
-    if (!this._stakingBuilder) {
-      this._stakingBuilder = new StakingBuilder(this._coinConfig).type(StakingOperationTypes.LOCK);
+
+    return this.getBuilder(StakingOperationTypes.LOCK);
+  }
+
+  /**
+   * Gets the staking vote builder if exist, or creates a new one for this transaction and returns it
+   * requires: group, lesser, greater, amount
+   *
+   * @returns {StakingBuilder} the staking builder
+   */
+  vote(): StakingBuilder {
+    if (this._type !== TransactionType.StakingVote) {
+      throw new BuildTransactionError('Votes can only be set for a staking transaction');
     }
+
+    return this.getBuilder(StakingOperationTypes.VOTE);
+  }
+
+  /**
+   * Gets the staking activate builder if exist, or creates a new one for this transaction and returns it
+   * requires: group
+   *
+   * @returns {StakingBuilder} the staking builder
+   */
+  activate(): StakingBuilder {
+    if (this._type !== TransactionType.StakingActivate) {
+      throw new BuildTransactionError('Activation can only be set for a staking transaction');
+    }
+
+    return this.getBuilder(StakingOperationTypes.ACTIVATE);
+  }
+
+  /**
+   * Gets the staking unlock builder if exist, or creates a new one for this transaction and returns it
+   * requires: amount
+   *
+   * @returns {StakingBuilder} the staking builder
+   */
+  unlock(): StakingBuilder {
+    if (this._type !== TransactionType.StakingUnlock) {
+      throw new BuildTransactionError('Unlock can only be set for Staking Unlock transactions type');
+    }
+
+    return this.getBuilder(StakingOperationTypes.UNLOCK);
+  }
+
+  /**
+   * Gets the staking unvote builder if exist, or creates a new one for this transaction and returns it
+   * requires: group, lesser, greater, amount, index
+   *
+   * @returns {StakingBuilder} the staking builder
+   */
+  unvote(): StakingBuilder {
+    if (this._type !== TransactionType.StakingUnvote) {
+      throw new BuildTransactionError('Unvote can only be set for a staking transaction');
+    }
+
+    return this.getBuilder(StakingOperationTypes.UNVOTE);
+  }
+
+  /**
+   * Gets the staking withdraw builder if exist, or creates a new one for this transaction and returns it
+   * requires: index (unlock list)
+   *
+   * @returns {StakingBuilder} the staking builder
+   */
+  withdraw(): StakingBuilder {
+    if (this._type !== TransactionType.StakingWithdraw) {
+      throw new BuildTransactionError('Withdraw can only be set for a staking transaction');
+    }
+
+    return this.getBuilder(StakingOperationTypes.WITHDRAW);
+  }
+
+  /**
+   * Get the appropriate builder for the selected type
+   *
+   * @param {StakingOperationTypes} type the selected type for the staking builder
+   * @returns {StakingBuilder} the staking builder for the selected type
+   */
+  private getBuilder(type: StakingOperationTypes): StakingBuilder {
+    if (!this._stakingBuilder) {
+      this._stakingBuilder = new StakingBuilder(this._coinConfig).type(type);
+    }
+
     return this._stakingBuilder;
   }
 
@@ -85,27 +182,11 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
     const data = this.buildBase(stake.serialize());
     data.to = stake.address;
     data.value = stake.amount;
+
     return data;
   }
 
-  /**
-   * Gets the staking vote builder if exist, or creates a new one for this transaction and returns it
-   *
-   * @returns {StakingBuilder} the staking builder
-   */
-  vote(): StakingBuilder {
-    if (this._type !== TransactionType.StakingVote) {
-      throw new BuildTransactionError('Votes can only be set for a staking transaction');
-    }
-
-    if (!this._stakingBuilder) {
-      this._stakingBuilder = new StakingBuilder(this._coinConfig).type(StakingOperationTypes.VOTE);
-    }
-
-    return this._stakingBuilder;
-  }
-
-  private buildVoteStakingTransaction(): TxData {
+  private buildStakingTransaction(): TxData {
     const stake = this.getStaking();
     const data = this.buildBase(stake.serialize());
     data.to = stake.address;
