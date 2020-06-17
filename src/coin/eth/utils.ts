@@ -16,7 +16,14 @@ import * as BN from 'bn.js';
 import BigNumber from 'bignumber.js';
 import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
-import { LockMethodId, VoteMethodId } from '../cgld/stakingUtils';
+import {
+  LockMethodId,
+  VoteMethodId,
+  UnlockMethodId,
+  ActivateMethodId,
+  WithdrawMethodId,
+  UnvoteMethodId,
+} from '../cgld/stakingUtils';
 import { NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import {
@@ -278,8 +285,16 @@ export function classifyTransaction(data: string): TransactionType {
     return TransactionType.Send;
   } else if (data.startsWith(LockMethodId)) {
     return TransactionType.StakingLock;
+  } else if (data.startsWith(UnlockMethodId)) {
+    return TransactionType.StakingUnlock;
   } else if (data.startsWith(VoteMethodId)) {
     return TransactionType.StakingVote;
+  } else if (data.startsWith(UnvoteMethodId)) {
+    return TransactionType.StakingUnvote;
+  } else if (data.startsWith(ActivateMethodId)) {
+    return TransactionType.StakingActivate;
+  } else if (data.startsWith(WithdrawMethodId)) {
+    return TransactionType.StakingWithdraw;
   } else {
     throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
   }
