@@ -9,7 +9,7 @@ import * as common from '../../../src/common';
 import * as _ from 'lodash';
 import * as sinon from 'sinon';
 import {TestBitGo} from '../../lib/test_bitgo';
-import {CoinKind, coins, SupportedKeyCurve, CoinFamily, UnderlyingAsset} from '@bitgo/statics';
+import {CoinKind, coins, KeyCurve, CoinFamily, UnderlyingAsset} from '@bitgo/statics';
 
 const co = Promise.coroutine;
 
@@ -50,7 +50,7 @@ describe('V2 Keychains', function v2keychains() {
   describe('Key generation enforcement for SECP256K1', function() {
     // iterate over non-fiat crypto secp coins
     const coinFamilyValues = Object.keys(CoinFamily).map(n => n.toLowerCase());
-    const cryptoSecpCoins = coins.filter(n => n.primaryKeyCurve === SupportedKeyCurve.Secp256k1
+    const cryptoSecpCoins = coins.filter(n => n.primaryKeyCurve === KeyCurve.Secp256k1
       && n.kind === CoinKind.CRYPTO
       && n.asset !== UnderlyingAsset.USD
       && coinFamilyValues.includes(n.name));
