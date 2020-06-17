@@ -72,10 +72,10 @@ export class AccountCoinToken extends AccountCoin {
 }
 
 /**
- * ERC 20 is a token standard for the Ethereum blockchain. They are similar to other account coins, but have a
- * contract address property which identifies the smart contract which defines the token.
+ * Some blockchains support tokens which are defined by an address at which they have a smart contract deployed.
+ * Examples are ERC20 tokens, and the equivalent on other chains.
  */
-export class Erc20Coin extends AccountCoinToken {
+export class ContractAddressDefinedToken extends AccountCoinToken {
   public contractAddress: ContractAddress;
 
   constructor(options: Erc20ConstructorOptions) {
@@ -93,24 +93,20 @@ export class Erc20Coin extends AccountCoinToken {
 }
 
 /**
+ * ERC 20 is a token standard for the Ethereum blockchain. They are similar to other account coins, but have a
+ * contract address property which identifies the smart contract which defines the token.
+ */
+export class Erc20Coin extends ContractAddressDefinedToken {}
+
+/**
+ * Some blockchains have native coins which also support the ERC20 interface such as CGLD.
+ */
+export class Erc20CompatibleAccountCoin extends ContractAddressDefinedToken {}
+
+/**
  * The CELO blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
  */
-export class CeloCoin extends AccountCoinToken {
-  public contractAddress: ContractAddress;
-
-  constructor(options: Erc20ConstructorOptions) {
-    super({
-      ...options,
-    });
-
-    // valid ERC 20 contract addresses are "0x" followed by 40 lowercase hex characters
-    if (!options.contractAddress.match(/^0x[a-f0-9]{40}$/)) {
-      throw new InvalidContractAddressError(options.name, options.contractAddress);
-    }
-
-    this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
-  }
-}
+export class CeloCoin extends ContractAddressDefinedToken {}
 
 /**
  * The Stellar network supports tokens (non-native assets)
@@ -245,6 +241,49 @@ export function terc20(
   network: AccountNetwork = Networks.test.kovan
 ) {
   return erc20(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for ERC20-compatible account coin instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function erc20CompatibleAccountCoin(
+  name: string,
+  fullName: string,
+  network: AccountNetwork,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new Erc20CompatibleAccountCoin({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
 }
 
 /**

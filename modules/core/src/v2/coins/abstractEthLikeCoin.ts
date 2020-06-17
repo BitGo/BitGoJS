@@ -2,7 +2,7 @@
  * @prettier
  */
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
-import { Eth } from '@bitgo/account-lib';
+import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as Bluebird from 'bluebird';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import * as bitgoUtxoLib from 'bitgo-utxo-lib';
@@ -26,6 +26,7 @@ import {
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, MethodNotImplementedError } from '../../errors';
+import BigNumber from 'bignumber.js';
 
 export interface EthSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -58,6 +59,8 @@ export interface ExplainTransactionOptions {
   };
   feeInfo: TransactionFee;
 }
+
+const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export abstract class AbstractEthLikeCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -116,7 +119,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     params: ParseTransactionOptions,
     callback?: NodeCallback<ParsedTransaction>
   ): Bluebird<ParsedTransaction> {
-    throw new MethodNotImplementedError();
+    return Bluebird.resolve({}).asCallback(callback);
   }
 
   verifyAddress({ address }: VerifyAddressOptions): boolean {
@@ -127,14 +130,23 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   }
 
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
-    throw new MethodNotImplementedError();
+    return Bluebird.resolve(true).asCallback(callback);
   }
 
-  signTransaction(
+  async signTransaction(
     params: EthSignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
-    throw new MethodNotImplementedError();
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(params.txPrebuild.txHex);
+    txBuilder.transfer().key(params.prv);
+    const transaction = await txBuilder.build();
+
+    return {
+      halfSigned: {
+        txHex: transaction.toBroadcastFormat(),
+      },
+    };
   }
 
   async signMessage(key: { prv: string }, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
@@ -173,10 +185,51 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * @param params The options with which to explain the transaction
    * @param callback Callback for the result of this operation
    */
-  explainTransaction(
+  async explainTransaction(
     params: ExplainTransactionOptions,
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
-    throw new MethodNotImplementedError();
+    const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+    if (!txHex || !params.feeInfo) {
+      throw new Error('missing explain tx parameters');
+    }
+    const txBuilder = this.getTransactionBuilder();
+    txBuilder.from(txHex);
+    const tx = await txBuilder.build();
+    const outputs = tx.outputs.map(output => {
+      return {
+        address: output.address,
+        amount: output.value,
+      };
+    });
+
+    const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'];
+
+    return {
+      displayOrder,
+      id: tx.id,
+      outputs: outputs,
+      outputAmount: outputs
+        .reduce((accumulator, output) => accumulator.plus(output.amount), new BigNumber('0'))
+        .toFixed(0),
+      changeOutputs: [], // account based does not use change outputs
+      changeAmount: '0', // account base does not make change
+      fee: params.feeInfo,
+    };
+  }
+
+  /**
+   * Create a new transaction builder for the current chain
+   * @return a new transaction builder
+   */
+  private getTransactionBuilder(): Eth.TransactionBuilder {
+    const txBuilder: Eth.TransactionBuilder = getBuilder(this.getChain()) as Eth.TransactionBuilder;
+
+    // @bitgo/account-lib requires something to be set here,
+    // though it doesn't do anything except when signing the external transaction
+    // TODO: Remove when bug in account lib requiring this field is fixed
+    txBuilder.source(NULL_ADDRESS);
+
+    return txBuilder;
   }
 }

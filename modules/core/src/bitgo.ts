@@ -156,6 +156,7 @@ export interface BitGoOptions {
   refreshToken?: string;
   validate?: boolean;
   proxy?: string;
+  etherscanApiToken?: string;
 }
 
 export interface User {
@@ -493,6 +494,10 @@ export class BitGo {
       this._baseUrl = common.Environments[env].uri;
     }
     this._env = this.env = env;
+
+    if (params.etherscanApiToken) {
+      common.Environments[env].etherscanApiToken = params.etherscanApiToken;
+    }
 
     common.setNetwork(common.Environments[env].network);
     common.setRmgNetwork(common.Environments[env].rmgNetwork);
