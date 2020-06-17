@@ -3,7 +3,11 @@
  */
 
 import * as _ from 'lodash';
+import * as should from 'should';
 import { TestBitGo } from '../../../lib/test_bitgo';
+import { getBuilder, BaseCoin, Eth } from '@bitgo/account-lib';
+import * as ethAbi from 'ethereumjs-abi';
+import * as ethUtil from 'ethereumjs-util';
 import * as bitgoUtxoLib from 'bitgo-utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 
@@ -12,6 +16,68 @@ describe('ETH-like coins', () => {
     describe(`${coinName}`, () => {
       let bitgo;
       let basecoin;
+
+      const sendMultisigTypes = ['address', 'uint256', 'bytes', 'uint256', 'uint256', 'bytes'];
+
+      /**
+       * Recover the signing address of a signature
+       * @param signature The signature to recover the signer from
+       * @param address The recipient address of the tx the signature signed
+       * @param amount The amount of the tx the signature signed
+       * @param expireTime The expire time of the tx the signature signed
+       * @param sequenceId The contract sequence id of the tx the signature signed
+       * @return The eth address of the signer
+       */
+      const recoverSigner = function({ signature, address, amount, expireTime, sequenceId }) {
+        const { v, r, s } = ethUtil.fromRpcSig(signature);
+        const teth = bitgo.coin('teth');
+        const operationHash = teth.getOperationSha3ForExecuteAndConfirm([{ address, amount }], expireTime, sequenceId);
+        const pubKeyBuffer = ethUtil.ecrecover(Buffer.from(ethUtil.stripHexPrefix(operationHash), 'hex'), v, r, s);
+        return ethUtil.bufferToHex(ethUtil.pubToAddress(ethUtil.importPublic(pubKeyBuffer)));
+      };
+
+      /**
+       * Build an unsigned account-lib multi-signature send transactino
+       * @param destination The destination address of the transaction
+       * @param source The sending address of the transactino
+       * @param contractAddress The address of the smart contract processing the transaction
+       * @param contractSequenceId The sequence id of the contract
+       * @param nonce The nonce of the sending address
+       * @param expireTime The expire time of the transaction
+       * @param amount The amount to send to the recipient
+       * @param gasPrice The gas price of the transaction
+       * @param gasLimit The gas limit of the transaction
+       */
+      const buildUnsignedTransaction = async function({
+        destination,
+        source,
+        contractAddress,
+        contractSequenceId = 1,
+        nonce = 0,
+        expireTime = Math.floor(new Date().getTime() / 1000),
+        amount = '100000',
+        gasPrice = '10000',
+        gasLimit = '20000',
+      }) {
+        const txBuilder: Eth.TransactionBuilder = getBuilder(coinName) as Eth.TransactionBuilder;
+        txBuilder.type(BaseCoin.TransactionType.Send);
+        txBuilder.chainId(1);
+        txBuilder.fee({
+          fee: gasPrice,
+          gasLimit: gasLimit,
+        });
+        txBuilder.source(source);
+        txBuilder.counter(nonce);
+        txBuilder.contract(contractAddress);
+        txBuilder
+          .transfer()
+          .expirationTime(expireTime)
+          .amount(amount)
+          .to(destination)
+          .contractSequenceId(contractSequenceId);
+
+        return await txBuilder.build();
+      };
 
       before(function() {
         bitgo = new TestBitGo({ env: 'mock' });
@@ -95,6 +161,135 @@ describe('ETH-like coins', () => {
           const otherKeyPair = basecoin.generateKeyPair();
           const hdNode = bitgoUtxoLib.HDNode.fromBase58(otherKeyPair.pub);
           bitcoinMessage.verify(message, hdNode.keyPair.getAddress(), signature).should.equal(false);
+        });
+      });
+
+      describe('Sign transaction:', () => {
+        const xprv =
+          'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
+
+        it('should sign transaction internally', async function() {
+          const key = new Eth.KeyPair({ prv: xprv });
+          const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
+          const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
+          const amount = '100000';
+          const inputExpireTime = Math.floor(new Date().getTime() / 1000);
+          const inputSequenceId = 1;
+
+          const unsignedTransaction = await buildUnsignedTransaction({
+            destination,
+            contractAddress,
+            amount,
+            expireTime: inputExpireTime,
+            contractSequenceId: inputSequenceId,
+            source: key.getAddress(),
+          });
+
+          const tx = await basecoin.signTransaction({
+            prv: key.getKeys().prv,
+            txPrebuild: {
+              txHex: unsignedTransaction.toBroadcastFormat(),
+            },
+          });
+
+          const txBuilder = basecoin.getTransactionBuilder();
+          txBuilder.from(tx.halfSigned.txHex);
+          const transaction = await txBuilder.build();
+          const txJson = transaction.toJson();
+          txJson.to.should.equal(contractAddress);
+
+          const [recipient, value, data, expireTime, sequenceId, signature] = ethAbi.rawDecode(
+            sendMultisigTypes,
+            Buffer.from(txJson.data.slice(10), 'hex')
+          );
+          ethUtil.addHexPrefix(recipient).should.equal(destination);
+          value.toString(10).should.equal(amount);
+          inputExpireTime.should.equal(parseInt(expireTime.toString('hex'), 16));
+          inputSequenceId.should.equal(parseInt(sequenceId.toString('hex'), 16));
+          data.length.should.equal(0);
+
+          const recoveredAddress = recoverSigner({
+            signature,
+            address: destination,
+            sequenceId: inputSequenceId,
+            expireTime: inputExpireTime,
+            amount,
+          });
+          recoveredAddress.should.equal(key.getAddress());
+        });
+
+        it('should fail to sign transaction with invalid tx hex', async function() {
+          const key = new Eth.KeyPair({ prv: xprv });
+          await basecoin
+            .signTransaction({
+              prv: key.getKeys().prv,
+              txPrebuild: {
+                txHex: '0xinvalid',
+              },
+            })
+            .should.be.rejected();
+        });
+      });
+
+      describe('Explain transaction:', () => {
+        const xprv =
+          'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2';
+
+        it('should fail if the params object is missing parameters', async function() {
+          const explainParams = {
+            feeInfo: { fee: 1 },
+            txHex: null,
+          };
+          await basecoin.explainTransaction(explainParams).should.be.rejectedWith('missing explain tx parameters');
+        });
+
+        it('explain an unsigned transfer transaction', async function() {
+          const key = new Eth.KeyPair({ prv: xprv });
+          const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
+          const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
+
+          const unsignedTransaction = await buildUnsignedTransaction({
+            destination,
+            contractAddress,
+            source: key.getAddress(),
+          });
+
+          const explainParams = {
+            halfSigned: {
+              txHex: unsignedTransaction.toBroadcastFormat(),
+            },
+            feeInfo: { fee: 1 },
+          };
+          const explanation = await basecoin.explainTransaction(explainParams);
+          should.exist(explanation.id);
+          // TODO check other fields once account-lib properly explains transaction
+        });
+
+        it('explain a signed transfer transaction', async function() {
+          const key = new Eth.KeyPair({ prv: xprv });
+          const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
+          const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
+
+          const unsignedTransaction = await buildUnsignedTransaction({
+            destination,
+            contractAddress,
+            source: key.getAddress(),
+          });
+
+          const signedTx = await basecoin.signTransaction({
+            prv: key.getKeys().prv,
+            txPrebuild: {
+              txHex: unsignedTransaction.toBroadcastFormat(),
+            },
+          });
+
+          const explainParams = {
+            txHex: signedTx.halfSigned.txHex,
+            feeInfo: { fee: 1 },
+          };
+          const explanation = await basecoin.explainTransaction(explainParams);
+          should.exist(explanation.id);
+          // TODO check other fields once account-lib properly explains transaction
         });
       });
     });
