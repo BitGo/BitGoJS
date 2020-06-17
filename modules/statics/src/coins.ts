@@ -1,4 +1,14 @@
-import { account, AccountCoin, celoToken, erc20, stellarToken, tceloToken, terc20, tstellarToken } from './account';
+import {
+  account,
+  AccountCoin,
+  celoToken,
+  tceloToken,
+  erc20,
+  terc20,
+  stellarToken,
+  tstellarToken,
+  erc20CompatibleAccountCoin,
+} from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
 import { Networks } from './networks';
@@ -25,8 +35,6 @@ export const coins = CoinMap.fromCoins([
   utxo('tzec', 'Testnet ZCash', Networks.test.zCash, UnderlyingAsset.ZEC),
   account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
   account('talgo', 'Testnet Algorand', Networks.test.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
-  account('cgld', 'Celo Gold', Networks.main.celo, 18, UnderlyingAsset.CGLD, ETH_FEATURES),
-  account('tcgld', 'Testnet Celo Gold', Networks.test.celo, 18, UnderlyingAsset.CGLD, ETH_FEATURES),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('etc', 'Ethereum Classic', Networks.main.ethereum, 18, UnderlyingAsset.ETC, ETH_FEATURES),
@@ -45,6 +53,22 @@ export const coins = CoinMap.fromCoins([
   account('txtz', 'Testnet Tezos', Networks.test.xtz, 6, UnderlyingAsset.XTZ, XTZ_FEATURES),
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD),
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
+  erc20CompatibleAccountCoin(
+    'cgld',
+    'Celo Gold',
+    Networks.main.celo,
+    18,
+    '0x471ece3750da237f93b8e339c536989b8978a438',
+    UnderlyingAsset.CGLD
+  ),
+  erc20CompatibleAccountCoin(
+    'tcgld',
+    'Testnet Celo Gold',
+    Networks.test.celo,
+    18,
+    '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9',
+    UnderlyingAsset.CGLD
+  ),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('ofcbtc', 'Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
   ofc('ofceth', 'Ether', 18, UnderlyingAsset.ETH, CoinKind.CRYPTO),
