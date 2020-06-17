@@ -15,6 +15,7 @@ import 'should';
 import 'should-http';
 
 import * as nock from 'nock';
+import * as common from '../../src/common';
 nock.enableNetConnect();
 
 try {
@@ -430,16 +431,21 @@ BitGo.prototype.nockEthWallet = function() {
     encryptedPrv: '{"iv":"15FsbDVI1zG9OggD8YX+Hg==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"hHbNH3Sz/aU=","ct":"WoNVKz7afiRxXI2w/YkzMdMyoQg/B15u1Q8aQgi96jJZ9wk6TIaSEc6bXFH3AHzD9MdJCWJQUpRhoQc/rgytcn69scPTjKeeyVMElGCxZdFVS/psQcNE+lue3//2Zlxj+6t1NkvYO+8yAezSMRBK5OdftXEjNQI="}'
   });
 
-  // Nock tokens stuck on the wallet
-  nock('https://kovan.etherscan.io')
-  .get('/api')
-  .query({
+  const params: any = {
     module: 'account',
     action: 'tokenbalance',
     contractaddress: BitGo.V2.TEST_ERC20_TOKEN_ADDRESS,
     address: BitGo.V2.TEST_ETH_WALLET_FIRST_ADDRESS,
-    tag: 'latest'
-  })
+    tag: 'latest',
+  };
+  if (common.Environments[this.getEnv()].etherscanApiToken) {
+    params.apikey = common.Environments[this.getEnv()].etherscanApiToken;
+  }
+
+  // Nock tokens stuck on the wallet
+  nock('https://kovan.etherscan.io')
+  .get('/api')
+  .query(params)
   .reply(200, { status: '1', message: 'OK', result: '2400' });
 
   return wallet;

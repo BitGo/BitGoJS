@@ -831,7 +831,7 @@ describe('Recovery:', function() {
 
   describe('Recover Ethereum', function() {
     it('should construct a recovery transaction without BitGo', co(function *() {
-      recoveryNocks.nockEthRecovery();
+      recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
       const recovery = yield basecoin.recover({
@@ -855,7 +855,7 @@ describe('Recovery:', function() {
     }));
 
     it('should construct a recovery transaction without BitGo and with KRS', co(function *() {
-      recoveryNocks.nockEthRecovery();
+      recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
       const recovery = yield basecoin.recover({
@@ -877,7 +877,7 @@ describe('Recovery:', function() {
     }));
 
     it('should error when the backup key is unfunded (cannot pay gas)', co(function *() {
-      recoveryNocks.nockEthRecovery();
+      recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
       const error = yield bitgo.getAsyncError(basecoin.recover({
