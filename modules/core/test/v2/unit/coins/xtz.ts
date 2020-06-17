@@ -130,8 +130,8 @@ describe('Tezos:', function() {
       const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
-      keyPair.pub.should.equal('sppk7bJUTTikwyNHT5n8ehzgSjgCou53Wmm1z81p6JvNTQ5oUuWEW8o');
-      keyPair.prv.should.equal('spsk1fKc5fEaM7ns4JkmozPU9QCkXUHHLj48Wyiap2PvewMo595e9X');
+      keyPair.pub.should.equal('xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws');
+      keyPair.prv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
     });
   });
 

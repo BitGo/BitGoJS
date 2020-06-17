@@ -112,17 +112,22 @@ export class Xtz extends BaseCoin {
   }
 
   /**
-   * Generate Tezos key pair
+   * Generate Tezos key pair - BitGo xpub format
    *
    * @param seed
-   * @returns {Object} object with generated pub, prv
+   * @returns {Object} object with generated xpub, xprv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
     const keyPair = seed ? new bitgoAccountLib.Xtz.KeyPair({ seed }) : new bitgoAccountLib.Xtz.KeyPair();
-    const keys = keyPair.getKeys();
+    const keys = keyPair.getExtendedKeys();
+
+    if (!keys.xprv) {
+      throw new Error('Missing xprv in key generation.');
+    }
+
     return {
-      pub: keys.pub,
-      prv: keys.prv!,
+      pub: keys.xpub,
+      prv: keys.xprv,
     };
   }
 
