@@ -222,31 +222,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this.validateBaseTransactionFields();
     switch (this._type) {
       case TransactionType.WalletInitialization:
-        // assume sanitization happened in the builder function, just check that all required fields are set
-        if (this._walletOwnerAddresses === undefined) {
-          throw new BuildTransactionError('Invalid transaction: missing wallet owners');
-        }
-
-        if (this._walletOwnerAddresses.length !== 3) {
-          throw new BuildTransactionError(
-            `Invalid transaction: wrong number of owners -- required: 3, ` +
-              `found: ${this._walletOwnerAddresses.length}`,
-          );
-        }
+        this.validateWalletInitializationFields();
         break;
       case TransactionType.Send:
-        if (this._contractAddress === undefined) {
-          throw new BuildTransactionError('Invalid transaction: missing contract address');
-        }
+        this.validateContractAddress();
         break;
       case TransactionType.AddressInitialization:
-        if (this._contractAddress === undefined) {
-          throw new BuildTransactionError('Invalid transaction: missing contract address');
-        }
-
-        if (this._contractCounter === undefined) {
-          throw new BuildTransactionError('Invalid transaction: missing contract counter');
-        }
+        this.validateContractAddress();
+        this.validateContractCounter();
         break;
       case TransactionType.StakingLock:
       case TransactionType.StakingUnlock:
@@ -257,6 +240,30 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
+    }
+  }
+
+  private validateWalletInitializationFields(): void {
+    if (this._walletOwnerAddresses === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing wallet owners');
+    }
+
+    if (this._walletOwnerAddresses.length !== 3) {
+      throw new BuildTransactionError(
+        `Invalid transaction: wrong number of owners -- required: 3, ` + `found: ${this._walletOwnerAddresses.length}`,
+      );
+    }
+  }
+
+  private validateContractAddress(): void {
+    if (this._contractAddress === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing contract address');
+    }
+  }
+
+  private validateContractCounter(): void {
+    if (this._contractCounter === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing contract counter');
     }
   }
 
