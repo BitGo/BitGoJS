@@ -72,6 +72,13 @@ describe('Celo Transaction builder for wallet initialization', () => {
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
+
+    it('correct transaction id', async () => {
+      const newTxBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+      newTxBuilder.from(testData.TEST_WALLET_CREATION);
+      const newTx = await newTxBuilder.build();
+      should.equal(newTx.toJson().id, '0x9575af450d92763ea7c44e4a3930b2de4ec27bea3d81487dc6820ee4be042f58');
+    });
   });
 
   describe('Should validate ', () => {
