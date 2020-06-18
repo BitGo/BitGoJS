@@ -1,6 +1,6 @@
 import ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
-import { coins, BaseCoin, CeloCoin } from '@bitgo/statics';
+import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { InvalidParameterValueError } from '../baseCoin/errors';
 import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData } from './utils';
@@ -41,10 +41,10 @@ export class TransferBuilder {
    */
   coin(coin: string): TransferBuilder {
     this._coin = coins.get(coin);
-    if (!(this._coin instanceof CeloCoin)) {
-      throw new BuildTransactionError('There was an error using that coin as a transfer currency');
+
+    if (this._coin instanceof ContractAddressDefinedToken) {
+      this._tokenContractAddress = this._coin.contractAddress.toString();
     }
-    this._tokenContractAddress = this._coin.contractAddress.toString();
 
     return this;
   }
