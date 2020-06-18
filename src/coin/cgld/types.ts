@@ -208,6 +208,12 @@ export class CgldTransactionData implements EthLikeTransactionData {
       result.deployedAddress = this.deployedAddress;
     }
 
+    this.setSignatureFields(result);
+
+    return result;
+  }
+
+  private setSignatureFields(result: TxData): void {
     if (this.tx.v && this.tx.v.length) {
       result.v = bufferToHex(this.tx.v);
     }
@@ -219,8 +225,6 @@ export class CgldTransactionData implements EthLikeTransactionData {
     if (this.tx.s && this.tx.s.length) {
       result.s = bufferToHex(this.tx.s);
     }
-
-    return result;
   }
 
   /** @inheritdoc */

@@ -1,4 +1,5 @@
 import { Buffer } from 'buffer';
+import assert = require('assert');
 import {
   addHexPrefix,
   bufferToHex,
@@ -37,7 +38,6 @@ import {
 } from './walletUtil';
 import { testnetCommon } from './resources';
 import { EthTransactionData } from './types';
-import assert = require('assert');
 
 /**
  * Signs the transaction using the appropriate algorithm
@@ -273,32 +273,36 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
  * Classify the given transaction data based as a transaction type.
  * ETH transactions are defined by the first 8 bytes of the transaction data, also known as the method id
  *
- * @param {string} data The data to classify the transactino with
+ * @param {string} data The data to classify the transaction with
  * @returns {TransactionType} The classified transaction type
  */
 export function classifyTransaction(data: string): TransactionType {
   if (data.startsWith(walletSimpleByteCode)) {
     return TransactionType.WalletInitialization;
-  } else if (data.startsWith(createForwarderMethodId)) {
-    return TransactionType.AddressInitialization;
-  } else if (data.startsWith(sendMultisigMethodId) || data.startsWith(sendMultisigTokenMethodId)) {
-    return TransactionType.Send;
-  } else if (data.startsWith(LockMethodId)) {
-    return TransactionType.StakingLock;
-  } else if (data.startsWith(UnlockMethodId)) {
-    return TransactionType.StakingUnlock;
-  } else if (data.startsWith(VoteMethodId)) {
-    return TransactionType.StakingVote;
-  } else if (data.startsWith(UnvoteMethodId)) {
-    return TransactionType.StakingUnvote;
-  } else if (data.startsWith(ActivateMethodId)) {
-    return TransactionType.StakingActivate;
-  } else if (data.startsWith(WithdrawMethodId)) {
-    return TransactionType.StakingWithdraw;
-  } else {
+  }
+
+  const transactionType = transactionTypesMap[data.slice(0, 10).toLowerCase()];
+  if (transactionType === undefined) {
     throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
   }
+
+  return transactionType;
 }
+
+/**
+ * A transaction types map according to the starting part of the encoded data
+ */
+const transactionTypesMap = {
+  [createForwarderMethodId]: TransactionType.AddressInitialization,
+  [sendMultisigMethodId]: TransactionType.Send,
+  [sendMultisigTokenMethodId]: TransactionType.Send,
+  [LockMethodId]: TransactionType.StakingLock,
+  [VoteMethodId]: TransactionType.StakingVote,
+  [ActivateMethodId]: TransactionType.StakingActivate,
+  [UnvoteMethodId]: TransactionType.StakingUnvote,
+  [UnlockMethodId]: TransactionType.StakingUnlock,
+  [WithdrawMethodId]: TransactionType.StakingWithdraw,
+};
 
 /**
  *
