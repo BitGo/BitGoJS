@@ -55,6 +55,27 @@ describe('Send transaction', function() {
     });
   });
 
+  describe('Should build without sign', () => {
+    it('a send token transaction without from', async () => {
+      const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+      const contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
+      const amount = '1000000000';
+      initTxBuilder();
+      txBuilder.contract(contractAddress);
+      txBuilder
+        .transfer()
+        .coin('tcusd')
+        .amount(amount)
+        .to(recipient)
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.from, undefined);
+    });
+  });
+
   describe('should fail to build', async () => {
     it('a send token transaction without fee', async () => {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;

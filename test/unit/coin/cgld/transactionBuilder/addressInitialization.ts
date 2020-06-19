@@ -30,6 +30,24 @@ describe('An address initialization', () => {
     });
   });
 
+  describe('Should build without sign', () => {
+    it('an address initialization transaction without from', async () => {
+      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+      txBuilder.fee({
+        fee: '1000000000',
+        gasLimit: '12100000',
+      });
+      txBuilder.chainId(44786);
+      txBuilder.counter(2);
+      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.contractCounter(1);
+      txBuilder.contract(testData.CONTRACT_ADDRESS);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.from, undefined);
+    });
+  });
+
   describe('Should fail to build', () => {
     it('an address initialization transaction without fee', async () => {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
