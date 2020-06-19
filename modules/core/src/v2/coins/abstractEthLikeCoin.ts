@@ -139,7 +139,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   ): Bluebird<SignedTransaction> {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
-    txBuilder.transfer().key(params.prv);
+    txBuilder.transfer().key(new Eth.KeyPair({ prv: params.prv }).getKeys().prv!);
     const transaction = await txBuilder.build();
 
     return {
