@@ -12,7 +12,6 @@ describe('Send transaction', function() {
       gasLimit: '12100000',
     });
     txBuilder.chainId(44786);
-    txBuilder.source(testData.KEYPAIR_PRV.getAddress());
     txBuilder.counter(2);
     txBuilder.type(TransactionType.Send);
   };
@@ -61,23 +60,9 @@ describe('Send transaction', function() {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.chainId(44786);
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
-    });
-
-    it('a send token transaction without source', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
-      txBuilder.type(TransactionType.Send);
-      txBuilder.fee({
-        fee: '10000000000',
-        gasLimit: '2000000',
-      });
-      txBuilder.chainId(44786);
-      txBuilder.counter(1);
-      txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing source');
     });
 
     it('a send token transaction without chain id', async () => {
@@ -87,7 +72,6 @@ describe('Send transaction', function() {
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
@@ -100,7 +84,6 @@ describe('Send transaction', function() {
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.chainId(44786);
       txBuilder.counter(1);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
@@ -122,7 +105,6 @@ describe('Send transaction', function() {
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.chainId(44786);
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);

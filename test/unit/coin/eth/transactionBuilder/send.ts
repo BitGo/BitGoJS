@@ -18,8 +18,6 @@ describe('Eth transaction builder send', () => {
     should.throws(() => txBuilder.validateTransaction(tx), 'Invalid transaction: missing chain id');
     txBuilder.chainId(31);
     should.throws(() => txBuilder.validateTransaction(tx), 'Invalid transaction: missing source');
-    txBuilder.source(testData.KEYPAIR_PRV.getAddress());
-    should.throws(() => txBuilder.validateTransaction(tx), 'Invalid transaction: missing contract address');
   });
 
   describe('should sign and build', () => {
@@ -36,7 +34,6 @@ describe('Eth transaction builder send', () => {
         gasLimit: '12100000',
       });
       txBuilder.chainId(42);
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.counter(2);
       txBuilder.type(TransactionType.Send);
       txBuilder.contract(contractAddress);

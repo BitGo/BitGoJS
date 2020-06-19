@@ -15,7 +15,6 @@ describe('Celo staking transaction builder', () => {
       gasLimit: '12100000',
     });
     txBuilder.chainId(44786);
-    txBuilder.source(testData.KEYPAIR_PRV.getAddress());
     txBuilder.counter(1);
   });
 
@@ -48,7 +47,6 @@ describe('Celo staking transaction builder', () => {
     it('should sign and build a lock transaction from serialized', async function() {
       const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       builder.from(testData.LOCK_SERIALIZED);
-      builder.source(testData.KEYPAIR_PRV.getAddress());
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -100,7 +98,6 @@ describe('Celo staking transaction builder', () => {
     it('should sign and build a vote transaction from serialized', async function() {
       const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       builder.from(testData.VOTE_BROADCAST_TX);
-      builder.source(testData.KEYPAIR_PRV.getAddress());
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -140,7 +137,6 @@ describe('Celo staking transaction builder', () => {
     it('should sign and build an activate transaction from serialized', async function() {
       const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       builder.from(testData.ACTIVATE_BROADCAST_TX);
-      builder.source(testData.KEYPAIR_PRV.getAddress());
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -194,7 +190,6 @@ describe('Celo staking transaction builder', () => {
     it('should sign and build a unvote transaction from serialized', async function() {
       const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       builder.from(testData.UNVOTE_BROADCAST_TX);
-      builder.source(testData.KEYPAIR_PRV.getAddress());
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -229,7 +224,6 @@ describe('Celo staking transaction builder', () => {
       const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       builder.type(TransactionType.StakingLock);
       builder.from(testData.UNLOCK_BROADCAST_TX);
-      builder.source(testData.KEYPAIR_PRV.getAddress());
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
       const txJson = tx.toJson();
@@ -264,6 +258,7 @@ describe('Celo staking transaction builder', () => {
       should.equal(txJson.to, WithdrawOperation.contractAddress);
       txJson.data.should.startWith(WithdrawOperation.methodId);
       should.equal(txJson.data, testData.WITHDRAW_DATA);
+      should.equal(txJson.from, testData.KEYPAIR_PRV.getAddress());
       should.equal(tx.toBroadcastFormat(), testData.WITHDRAW_BROADCAST_TX);
     });
 
@@ -271,12 +266,12 @@ describe('Celo staking transaction builder', () => {
       const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       builder.type(TransactionType.StakingWithdraw);
       builder.from(testData.WITHDRAW_BROADCAST_TX);
-      builder.source(testData.KEYPAIR_PRV.getAddress());
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.equal(txJson.to, WithdrawOperation.contractAddress);
       txJson.data.should.startWith(WithdrawOperation.methodId);
+      should.equal(txJson.from, testData.KEYPAIR_PRV.getAddress());
       should.equal(txJson.from, testData.ACCOUNT1);
       should.equal(tx.toBroadcastFormat(), testData.WITHDRAW_BROADCAST_TX);
     });
