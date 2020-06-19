@@ -12,7 +12,6 @@ describe('Eth address initialization', () => {
       gasLimit: '1000',
     });
     txBuilder.chainId(31);
-    txBuilder.source(testData.KEYPAIR_PRV.getAddress());
     txBuilder.counter(1);
     await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
   });
@@ -25,7 +24,6 @@ describe('Eth address initialization', () => {
       gasLimit: '1000',
     });
     txBuilder.chainId(31);
-    txBuilder.source(testData.KEYPAIR_PRV.getAddress());
     txBuilder.counter(1);
     txBuilder.contract(testData.CONTRACT_ADDRESS);
     await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract counter');
@@ -39,7 +37,6 @@ describe('Eth address initialization', () => {
       gasLimit: '1000',
     });
     txBuilder.chainId(31);
-    txBuilder.source(testData.KEYPAIR_PRV.getAddress());
     txBuilder.counter(1);
     txBuilder.contract(testData.CONTRACT_ADDRESS);
     txBuilder.contractCounter(2);

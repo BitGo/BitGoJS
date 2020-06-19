@@ -33,7 +33,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _chainId: number;
   private _counter: number;
   private _fee: Fee;
-  private _sourceAddress: string;
 
   // the signature on the external ETH transaction
   private _txSignature: SignatureParts;
@@ -68,6 +67,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     this.transaction.setTransactionType(this._type);
+    transactionData.from = this._sourceKeyPair ? this._sourceKeyPair.getAddress() : undefined;
     this.transaction.setTransactionData(transactionData);
 
     // Build and sign a new transaction based on the latest changes
@@ -116,9 +116,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this.chainId(Number(transactionJson.chainId));
     if (hasSignature(transactionJson)) {
       this._txSignature = { v: transactionJson.v!, r: transactionJson.r!, s: transactionJson.s! };
-    }
-    if (transactionJson.from) {
-      this.source(transactionJson.from);
     }
     this.setTransactionTypeFields(decodedType, transactionJson);
   }
@@ -211,9 +208,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     if (this._counter === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing address counter');
-    }
-    if (!this._sourceAddress) {
-      throw new BuildTransactionError('Invalid transaction: missing source');
     }
   }
 
@@ -311,18 +305,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
 
     this._counter = counter;
-  }
-
-  /**
-   * Set the transaction initiator. This account will pay for the transaction fees, but it will not
-   * be added as an owner of a wallet in a init transaction, unless manually set as one of the
-   * owners.
-   *
-   * @param {string} source An Ethereum compatible address
-   */
-  source(source: string): void {
-    this.validateAddress({ address: source });
-    this._sourceAddress = source;
   }
 
   protected buildBase(data: string): TxData {

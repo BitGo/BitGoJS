@@ -21,7 +21,6 @@ describe('Etc Transaction builder', function() {
         prv: '3D527F1CB33BB3DECB06F982AABB51B60D8B91209684E1B0938716BAEDC1A2A0',
       };
       const sourceKeyPair = new Eth.KeyPair(source);
-      txBuilder.source(sourceKeyPair.getAddress());
       txBuilder.counter(1);
       txBuilder.owner('0x674DC405677A2E307F69d6E22565506A7776Defa');
       txBuilder.owner('0x7CE9A19bFEbD549059DcB7390C6d302B71546a0d');
@@ -35,6 +34,7 @@ describe('Etc Transaction builder', function() {
       txJson.gasPrice.should.equal('10000000000');
       should.equal(txJson.nonce, 1);
       should.equal(txJson.chainId, 63);
+      should.equal(txJson.from, sourceKeyPair.getAddress());
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
   });

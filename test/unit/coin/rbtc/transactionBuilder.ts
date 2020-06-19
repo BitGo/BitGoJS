@@ -17,11 +17,6 @@ describe('Rbtc Transaction builder', function() {
         gasLimit: '6800000',
       });
       txBuilder.chainId(31);
-      const source = {
-        prv: '63951AF5D5CF06ADE2E8EC0283055548CABCEEB9E9405D00077EC7403BA7A122',
-      };
-      const sourceKeyPair = new Eth.KeyPair(source);
-      txBuilder.source(sourceKeyPair.getAddress());
       txBuilder.counter(1);
       txBuilder.owner('0xa43f0BDd451E39C7AF20426f43589DEFAd4335E6');
       txBuilder.owner('0x2fa96fca36dd9d646AC8a4e0C19b4D3a0Dc7e456');

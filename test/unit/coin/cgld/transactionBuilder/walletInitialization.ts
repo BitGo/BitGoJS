@@ -12,7 +12,6 @@ describe('Celo Transaction builder for wallet initialization', () => {
       gasLimit: '12100000',
     });
     txBuilder.chainId(44786);
-    txBuilder.source(testData.KEYPAIR_PRV.getAddress());
     txBuilder.counter(2);
     txBuilder.type(TransactionType.WalletInitialization);
     txBuilder.owner(testData.KEYPAIR_PRV.getAddress());
@@ -53,14 +52,12 @@ describe('Celo Transaction builder for wallet initialization', () => {
 
     it('an init transaction from an unsigned serialized one', async () => {
       initTxBuilder();
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       const tx = await txBuilder.build();
       const serialized = tx.toBroadcastFormat();
 
       // now rebuild from the signed serialized tx and make sure it stays the same
       const newTxBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
       newTxBuilder.from(serialized);
-      newTxBuilder.source(testData.KEYPAIR_PRV.getAddress());
       newTxBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
       const signedTx = await newTxBuilder.build();
       should.equal(signedTx.toBroadcastFormat(), testData.TX_BROADCAST);

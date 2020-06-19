@@ -12,7 +12,6 @@ describe('Send transaction', function() {
       gasLimit: '12100000',
     });
     txBuilder.chainId(44786);
-    txBuilder.source(testData.KEYPAIR_PRV.getAddress());
     txBuilder.counter(2);
     txBuilder.type(TransactionType.Send);
   };
@@ -56,28 +55,35 @@ describe('Send transaction', function() {
     });
   });
 
+  describe('Should build without sign', () => {
+    it('a send token transaction without from', async () => {
+      const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+      const contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
+      const amount = '1000000000';
+      initTxBuilder();
+      txBuilder.contract(contractAddress);
+      txBuilder
+        .transfer()
+        .coin('tcusd')
+        .amount(amount)
+        .to(recipient)
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.from, undefined);
+    });
+  });
+
   describe('should fail to build', async () => {
     it('a send token transaction without fee', async () => {
       const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.chainId(44786);
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
-    });
-
-    it('a send token transaction without source', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
-      txBuilder.type(TransactionType.Send);
-      txBuilder.fee({
-        fee: '10000000000',
-        gasLimit: '2000000',
-      });
-      txBuilder.chainId(44786);
-      txBuilder.counter(1);
-      txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing source');
     });
 
     it('a send token transaction without chain id', async () => {
@@ -87,7 +93,6 @@ describe('Send transaction', function() {
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
@@ -100,7 +105,6 @@ describe('Send transaction', function() {
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.chainId(44786);
       txBuilder.counter(1);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
@@ -122,7 +126,6 @@ describe('Send transaction', function() {
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.source(testData.KEYPAIR_PRV.getAddress());
       txBuilder.chainId(44786);
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
