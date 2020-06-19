@@ -187,6 +187,13 @@ describe('Eth Transaction builder wallet initialization', function() {
       should.exist(txJson.s);
       should.exist(txJson.from);
     });
+
+    it('correct transaction id', async () => {
+      const newTxBuilder = getBuilder('eth') as Eth.TransactionBuilder;
+      newTxBuilder.from(testData.WALLET_INITIALIZATION);
+      const newTx = await newTxBuilder.build();
+      should.equal(newTx.toJson().id, '0xc65f9802df3b559b297779ec06d3e71ba7f5b1b47cc961ad2efba54d82347bec');
+    });
   });
 
   describe('should fail to build', () => {
