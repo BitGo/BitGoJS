@@ -14,7 +14,7 @@ const walletId = 'hidden'; //TODO
 // TODO: set your passphrase here
 const walletPassphrase = 'hidden';
 
-async function main() { // this is a duplicate transaction example
+async function main() {
   bitgo.authenticateWithAccessToken({ accessToken });
 
   const walletInstance = await basecoin.wallets().get({ id: walletId });
@@ -34,10 +34,13 @@ async function main() { // this is a duplicate transaction example
   console.log('New Transaction:', JSON.stringify(transaction1, null, 4));
   console.log('Transaction Explanation:', JSON.stringify(explanation1, null, 4));
 
-  const txHex = transaction1.tx;
-  const transaction2 = await walletInstance.submitTransaction(txHex);
+  // double spend transaction since address is new
+  const transaction2 = await walletInstance.send({
+    amount: '0', // a sweep of 2.5020 TBTC 
+    address: newReceiveAddress2.address,
+    walletPassphrase: walletPassphrase,
+  });
   const explanation2 = await basecoin.explainTransaction({ txHex: transaction2.tx });
-  // we expext this transaction2 to lead to a duplicate transaction error
 
   console.log('Wallet ID:', walletInstance.id());
   console.log('Current Receive Address:', walletInstance.receiveAddress());
