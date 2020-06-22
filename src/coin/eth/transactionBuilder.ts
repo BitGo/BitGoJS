@@ -243,6 +243,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
+  /**
+   * Check wallet owner addresses for wallet initialization transactions are valid or throw.
+   */
   private validateWalletInitializationFields(): void {
     if (this._walletOwnerAddresses === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing wallet owners');
@@ -250,17 +253,23 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
     if (this._walletOwnerAddresses.length !== 3) {
       throw new BuildTransactionError(
-        `Invalid transaction: wrong number of owners -- required: 3, ` + `found: ${this._walletOwnerAddresses.length}`,
+        `Invalid transaction: wrong number of owners -- required: 3, found: ${this._walletOwnerAddresses.length}`,
       );
     }
   }
 
+  /**
+   * Check if a contract address for the wallet was defined or throw.
+   */
   private validateContractAddress(): void {
     if (this._contractAddress === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing contract address');
     }
   }
 
+  /**
+   * Check if the contract nonce or countar was defined or throw.
+   */
   private validateContractCounter(): void {
     if (this._contractCounter === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing contract counter');
