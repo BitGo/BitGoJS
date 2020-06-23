@@ -1,7 +1,7 @@
 import { ConflictingCoinFeaturesError, DisallowedCoinFeatureError, MissingRequiredCoinFeatureError } from './errors';
 import { BaseNetwork } from './networks';
 
-export const enum CoinKind {
+export enum CoinKind {
   CRYPTO = 'crypto',
   FIAT = 'fiat',
 }
@@ -45,7 +45,7 @@ export enum CoinFamily {
  * before executing some coin-specific logic, and instead allows one to check if a
  * coin supports the coin-specific feature that the logic implements.
  */
-export const enum CoinFeature {
+export enum CoinFeature {
   /*
    * The valueless transfer feature indicates that it is valid to send a transaction which moves zero units of the coin.
    *
@@ -128,7 +128,7 @@ export const enum CoinFeature {
  * For these coins, the `UnderlyingAsset` provides a link to the actual
  * asset for which the coin is a unit of account.
  */
-export const enum UnderlyingAsset {
+export enum UnderlyingAsset {
   ALGO = 'algo',
   BCH = 'bch',
   BSV = 'bsv',
@@ -459,7 +459,7 @@ export const enum UnderlyingAsset {
 /**
  * This is the curve BitGo signs against with the user, backup and BitGo key.
  */
-export const enum KeyCurve {
+export enum KeyCurve {
   Secp256k1 = 'secp256k1',
   Ed25519 = 'ed25519',
 }
