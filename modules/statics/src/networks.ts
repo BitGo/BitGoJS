@@ -1,6 +1,6 @@
 import { CoinFamily } from './base';
 
-export const enum NetworkType {
+export enum NetworkType {
   MAINNET = 'mainnet',
   TESTNET = 'testnet',
 }

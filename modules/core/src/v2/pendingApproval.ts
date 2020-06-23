@@ -33,12 +33,12 @@ export interface PendingApprovalData {
   approvalsRequired?: number;
 }
 
-export const enum OwnerType {
+export enum OwnerType {
   WALLET = 'wallet',
   ENTERPRISE = 'enterprise',
 }
 
-export const enum State {
+export enum State {
   PENDING = 'pending',
   AWAITING_SIGNATURE = 'awaitingSignature',
   PENDING_BITGO_ADMIN_APPROVAL = 'pendingBitGoAdminApproval',
@@ -50,7 +50,7 @@ export const enum State {
   REJECTED = 'rejected',
 }
 
-export const enum Type {
+export enum Type {
   USER_CHANGE_REQUEST = 'userChangeRequest',
   TRANSACTION_REQUEST = 'transactionRequest',
   POLICY_RULE_REQUEST = 'policyRuleRequest',
