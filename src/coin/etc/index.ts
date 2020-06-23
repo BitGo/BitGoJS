@@ -1,5 +1,5 @@
 export { KeyPair } from '../eth/keyPair';
-export { Transaction } from './transaction';
+export { Transaction } from '../eth/transaction';
 export { TransactionBuilder } from './transactionBuilder';
 
 import * as Interface from '../eth/iface';

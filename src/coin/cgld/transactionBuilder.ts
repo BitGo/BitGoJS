@@ -1,11 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { Eth } from '../../index';
+import * as Eth from '../eth';
 import { TransactionType, StakingOperationTypes } from '../baseCoin';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TxData } from '../eth/iface';
 import { Transaction } from './transaction';
 import { StakingBuilder } from './stakingBuilder';
 import { StakingCall } from './stakingCall';
+import { getCommon } from './utils';
 
 export class TransactionBuilder extends Eth.TransactionBuilder {
   // Staking specific parameters
@@ -13,7 +14,8 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this.transaction = new Transaction(this._coinConfig);
+    this._common = getCommon(this._coinConfig.network.type);
+    this.transaction = new Transaction(this._coinConfig, this._common);
   }
 
   /** @inheritdoc */
@@ -40,12 +42,11 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
   protected fromImplementation(rawTransaction: string): Transaction {
     let tx: Transaction;
     if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
-      tx = Transaction.fromSerialized(this._coinConfig, rawTransaction);
+      tx = Transaction.fromSerialized(this._coinConfig, this._common, rawTransaction);
       super.loadBuilderInput(tx.toJson());
     } else {
       const txData = JSON.parse(rawTransaction);
-      tx = new Transaction(this._coinConfig);
-      tx.setTransactionData(txData); //TODO: maybe create a constructor that takes 2 arguments
+      tx = new Transaction(this._coinConfig, this._common, txData);
     }
     return tx;
   }

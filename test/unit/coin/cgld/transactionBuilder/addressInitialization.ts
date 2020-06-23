@@ -6,12 +6,11 @@ import * as testData from '../../../../resources/cgld/cgld';
 describe('An address initialization', () => {
   describe('Should sign and build', () => {
     it('an address initialization transaction', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       txBuilder.fee({
         fee: '1000000000',
         gasLimit: '12100000',
       });
-      txBuilder.chainId(44786);
       txBuilder.counter(2);
       txBuilder.type(TransactionType.AddressInitialization);
       txBuilder.contractCounter(1);
@@ -37,7 +36,6 @@ describe('An address initialization', () => {
         fee: '1000000000',
         gasLimit: '12100000',
       });
-      txBuilder.chainId(44786);
       txBuilder.counter(2);
       txBuilder.type(TransactionType.AddressInitialization);
       txBuilder.contractCounter(1);
@@ -50,16 +48,15 @@ describe('An address initialization', () => {
 
   describe('Should fail to build', () => {
     it('an address initialization transaction without fee', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.chainId(44786);
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_ADDRESS);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
 
-    it('an address initialization transaction without chain id', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+    it('an address initialization transaction without contract counter', async () => {
+      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.AddressInitialization);
       txBuilder.fee({
         fee: '10000000000',
@@ -67,7 +64,7 @@ describe('An address initialization', () => {
       });
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract counter');
     });
   });
 });

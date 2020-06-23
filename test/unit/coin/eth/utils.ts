@@ -13,7 +13,7 @@ describe('ETH util library', function() {
   describe('sign operation', function() {
     it('should return a correct signed transaction', async () => {
       const SIGNATURE = await sign(testData.TXDATA, testData.KEYPAIR_PRV);
-      should.equal(SIGNATURE, testData.SIGNED_TX);
+      should.equal(SIGNATURE, testData.ENCODED_TRANSACTION);
     });
 
     it('should fail with missing prv key', function() {

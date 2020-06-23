@@ -5,38 +5,35 @@ import * as testData from '../../../../resources/eth/eth';
 
 describe('Eth address initialization', () => {
   it('should fail if there is no contract address', async () => {
-    const txBuilder = getBuilder('eth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
     txBuilder.type(TransactionType.AddressInitialization);
     txBuilder.fee({
       fee: '10',
       gasLimit: '1000',
     });
-    txBuilder.chainId(31);
     txBuilder.counter(1);
     await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
   });
 
   it('should fail if there is no contract counter', async () => {
-    const txBuilder = getBuilder('eth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
     txBuilder.type(TransactionType.AddressInitialization);
     txBuilder.fee({
       fee: '10',
       gasLimit: '1000',
     });
-    txBuilder.chainId(31);
     txBuilder.counter(1);
     txBuilder.contract(testData.CONTRACT_ADDRESS);
     await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract counter');
   });
 
   it('should build properly and return a correct address', async () => {
-    const txBuilder = getBuilder('eth') as Eth.TransactionBuilder;
+    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
     txBuilder.type(TransactionType.AddressInitialization);
     txBuilder.fee({
       fee: '10',
       gasLimit: '1000',
     });
-    txBuilder.chainId(31);
     txBuilder.counter(1);
     txBuilder.contract(testData.CONTRACT_ADDRESS);
     txBuilder.contractCounter(2);

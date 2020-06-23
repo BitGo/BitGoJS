@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import assert = require('assert');
+import assert from 'assert';
 import {
   addHexPrefix,
   bufferToHex,
@@ -10,12 +10,12 @@ import {
   stripHexPrefix,
   toBuffer,
 } from 'ethereumjs-util';
-import { coins, BaseCoin, Erc20Coin, CeloCoin } from '@bitgo/statics';
+import { coins, BaseCoin, Erc20Coin, CeloCoin, NetworkType } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
 import BigNumber from 'bignumber.js';
-import { BuildTransactionError, SigningError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import {
   LockMethodId,
@@ -36,8 +36,24 @@ import {
   walletSimpleByteCode,
   walletSimpleConstructor,
 } from './walletUtil';
-import { testnetCommon } from './resources';
+import { testnetCommon, mainnetCommon } from './resources';
 import { EthTransactionData } from './types';
+
+const commons: Map<NetworkType, EthereumCommon> = new Map<NetworkType, EthereumCommon>([
+  [NetworkType.MAINNET, mainnetCommon],
+  [NetworkType.TESTNET, testnetCommon],
+]);
+
+/**
+ * @param network
+ */
+export function getCommon(network: NetworkType): EthereumCommon {
+  const common = commons.get(network);
+  if (!common) {
+    throw new InvalidTransactionError('Missing network common configuration');
+  }
+  return common;
+}
 
 /**
  * Signs the transaction using the appropriate algorithm
@@ -56,7 +72,7 @@ export async function signInternal(
   if (!keyPair.getKeys().prv) {
     throw new SigningError('Missing private key');
   }
-  const ethTx = EthTransactionData.fromJson(transactionData);
+  const ethTx = EthTransactionData.fromJson(transactionData, customCommon);
   ethTx.sign(keyPair);
   return ethTx.toSerialized();
 }

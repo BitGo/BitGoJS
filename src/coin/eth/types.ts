@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { Transaction as EthereumTx } from 'ethereumjs-tx';
+import EthereumCommon from 'ethereumjs-common';
 import { addHexPrefix, bufferToHex, bufferToInt, toBuffer } from 'ethereumjs-util';
 import { EthLikeTransactionData, TxData } from './iface';
 import { KeyPair } from './keyPair';
@@ -14,20 +15,24 @@ export class EthTransactionData implements EthLikeTransactionData {
    * Build an ethereum transaction from its JSON representation
    *
    * @param tx The JSON representation of the transaction
+   * @param common
    */
-  public static fromJson(tx: TxData): EthTransactionData {
+  public static fromJson(tx: TxData, common: EthereumCommon): EthTransactionData {
     return new EthTransactionData(
-      new EthereumTx({
-        nonce: addHexPrefix(new BigNumber(tx.nonce).toString(16)),
-        to: tx.to,
-        gasPrice: addHexPrefix(new BigNumber(tx.gasPrice).toString(16)),
-        gasLimit: addHexPrefix(new BigNumber(tx.gasLimit).toString(16)),
-        value: addHexPrefix(new BigNumber(tx.value).toString(16)),
-        data: tx.data === '0x' ? '' : tx.data,
-        v: tx.v,
-        r: tx.r,
-        s: tx.s,
-      }),
+      new EthereumTx(
+        {
+          nonce: addHexPrefix(new BigNumber(tx.nonce).toString(16)),
+          to: tx.to,
+          gasPrice: addHexPrefix(new BigNumber(tx.gasPrice).toString(16)),
+          gasLimit: addHexPrefix(new BigNumber(tx.gasLimit).toString(16)),
+          value: addHexPrefix(new BigNumber(tx.value).toString(16)),
+          data: tx.data === '0x' ? '' : tx.data,
+          v: tx.v,
+          r: tx.r,
+          s: tx.s,
+        },
+        { common: common },
+      ),
       { deployedAddress: tx.deployedAddress, chainId: addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16)) },
     );
   }
@@ -36,9 +41,10 @@ export class EthTransactionData implements EthLikeTransactionData {
    * Build an ethereum transaction from its string serialization
    *
    * @param tx The string serialization of the ethereum transaction
+   * @param common
    */
-  public static fromSerialized(tx: string): EthTransactionData {
-    return new EthTransactionData(new EthereumTx(tx));
+  public static fromSerialized(tx: string, common: EthereumCommon): EthTransactionData {
+    return new EthTransactionData(new EthereumTx(tx, { common: common }));
   }
 
   sign(keyPair: KeyPair) {
@@ -67,15 +73,10 @@ export class EthTransactionData implements EthLikeTransactionData {
       result.r = bufferToHex(this.tx.r);
       result.s = bufferToHex(this.tx.s);
     }
+    result.chainId = addHexPrefix(this.tx.getChainId().toString(16));
 
-    if (this.args) {
-      if (this.args.chainId) {
-        result.chainId = this.args.chainId;
-      }
-
-      if (this.args.deployedAddress) {
-        result.deployedAddress = this.args.deployedAddress;
-      }
+    if (this.args && this.args.deployedAddress) {
+      result.deployedAddress = this.args.deployedAddress;
     }
 
     return result;

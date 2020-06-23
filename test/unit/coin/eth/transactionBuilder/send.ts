@@ -3,11 +3,14 @@ import { coins } from '@bitgo/statics';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Eth } from '../../../../../src';
 import * as testData from '../../../../resources/eth/eth';
+import { getCommon } from '../../../../../src/coin/eth/utils';
 
 describe('Eth transaction builder send', () => {
   it('should validate a send type transaction', () => {
-    const txBuilder = getBuilder('eth') as Eth.TransactionBuilder;
-    const tx = new Eth.Transaction(coins.get('eth'));
+    const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
+    const coinConfig = coins.get('eth');
+    const common = getCommon(coinConfig.network.type);
+    const tx = new Eth.Transaction(coinConfig, common);
     txBuilder.counter(1);
     txBuilder.type(TransactionType.Send);
     should.throws(() => txBuilder.validateTransaction(tx), 'Invalid transaction: missing fee');
@@ -16,7 +19,6 @@ describe('Eth transaction builder send', () => {
       gasLimit: '1000',
     });
     should.throws(() => txBuilder.validateTransaction(tx), 'Invalid transaction: missing chain id');
-    txBuilder.chainId(31);
     should.throws(() => txBuilder.validateTransaction(tx), 'Invalid transaction: missing source');
   });
 
@@ -27,13 +29,12 @@ describe('Eth transaction builder send', () => {
 
     beforeEach(() => {
       contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
-      txBuilder = getBuilder('cgld') as Eth.TransactionBuilder;
+      txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
       key = testData.KEYPAIR_PRV.getKeys().prv as string;
       txBuilder.fee({
         fee: '1000000000',
         gasLimit: '12100000',
       });
-      txBuilder.chainId(42);
       txBuilder.counter(2);
       txBuilder.type(TransactionType.Send);
       txBuilder.contract(contractAddress);
@@ -78,14 +79,14 @@ describe('Eth transaction builder send', () => {
 
   describe('should sign and build from serialized', () => {
     it('a send funds transaction from serialized', async () => {
-      const txBuilder = getBuilder('cgld') as Eth.TransactionBuilder;
+      const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
       txBuilder.from(testData.SEND_TX_BROADCAST);
       const signedTx = await txBuilder.build();
       should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_BROADCAST);
     });
 
     it('a send funds transaction with amount 0 from serialized', async () => {
-      const txBuilder = getBuilder('cgld') as Eth.TransactionBuilder;
+      const txBuilder = getBuilder('teth') as Eth.TransactionBuilder;
       txBuilder.from(testData.SEND_TX_AMOUNT_ZERO_BROADCAST);
       const signedTx = await txBuilder.build();
       should.equal(signedTx.toBroadcastFormat(), testData.SEND_TX_AMOUNT_ZERO_BROADCAST);

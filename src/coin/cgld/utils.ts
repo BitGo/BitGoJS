@@ -1,8 +1,11 @@
+import { NetworkType } from '@bitgo/statics';
+import EthereumCommon from 'ethereumjs-common';
 import { recoverTransaction } from '@celo/contractkit/lib/utils/signing-utils';
 import { RLP } from 'ethers/utils';
 import BigNumber from 'bignumber.js';
 import { TxData } from '../eth/iface';
-import { ParseTransactionError } from '../baseCoin/errors';
+import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
+import { mainnetCommon, testnetCommon } from './resources';
 
 /**
  * Celo transaction deserialization based on code
@@ -45,4 +48,20 @@ export function deserialize(serializedTx: string): TxData {
   } catch {
     throw new ParseTransactionError('Invalid serialized transaction');
   }
+}
+
+const commons: Map<NetworkType, EthereumCommon> = new Map<NetworkType, EthereumCommon>([
+  [NetworkType.MAINNET, mainnetCommon],
+  [NetworkType.TESTNET, testnetCommon],
+]);
+
+/**
+ * @param network
+ */
+export function getCommon(network: NetworkType): EthereumCommon {
+  const common = commons.get(network);
+  if (!common) {
+    throw new InvalidTransactionError('Missing network common configuration');
+  }
+  return common;
 }

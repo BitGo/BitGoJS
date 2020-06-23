@@ -1,21 +1,22 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { Eth } from '../../index';
+import EthereumCommon from 'ethereumjs-common';
+import * as Eth from '../eth';
 import { TxData } from '../eth/iface';
 import { CgldTransactionData } from './types';
 import * as Utils from './utils';
 
 export class Transaction extends Eth.Transaction {
-  constructor(_coinConfig: Readonly<CoinConfig>, txData?: TxData) {
-    super(_coinConfig, txData);
-  }
-
   setTransactionData(txData: TxData): void {
     this._transactionData = CgldTransactionData.fromJson(txData);
     this.updateFields();
   }
 
   /**@inheritdoc */
-  public static fromSerialized(coinConfig: Readonly<CoinConfig>, serializedTx: string): Transaction {
-    return new Transaction(coinConfig, Utils.deserialize(serializedTx));
+  public static fromSerialized(
+    coinConfig: Readonly<CoinConfig>,
+    common: EthereumCommon,
+    serializedTx: string,
+  ): Transaction {
+    return new Transaction(coinConfig, common, Utils.deserialize(serializedTx));
   }
 }

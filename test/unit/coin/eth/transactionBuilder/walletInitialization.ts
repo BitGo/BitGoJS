@@ -26,16 +26,12 @@ describe('Eth Transaction builder wallet initialization', function() {
   }
 
   const buildTransaction = async function(details: WalletCreationDetails): Promise<Transaction> {
-    const txBuilder: any = getBuilder('eth');
+    const txBuilder: any = getBuilder('teth');
     if (details.type !== undefined) {
       txBuilder.type(details.type);
     }
     if (details.fee !== undefined) {
       txBuilder.fee(details.fee);
-    }
-
-    if (details.chainId !== undefined) {
-      txBuilder.chainId(details.chainId);
     }
 
     if (details.counter !== undefined) {
@@ -59,7 +55,6 @@ describe('Eth Transaction builder wallet initialization', function() {
           fee: '10',
           gasLimit: '1000',
         },
-        chainId: 42,
         source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
         owners: [
           new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
@@ -84,7 +79,6 @@ describe('Eth Transaction builder wallet initialization', function() {
           fee: '10',
           gasLimit: '1000',
         },
-        chainId: 42,
         owners: [
           new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
           new Eth.KeyPair({ pub: pub1 }).getAddress(),
@@ -109,7 +103,6 @@ describe('Eth Transaction builder wallet initialization', function() {
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.chainId(42);
       txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
       txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
       txBuilder.owner('0x07ee8b845b8bf0e807e096d6b1599b121b82cbe1');
@@ -131,7 +124,6 @@ describe('Eth Transaction builder wallet initialization', function() {
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.chainId(42);
       txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
       txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
       txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
@@ -146,14 +138,13 @@ describe('Eth Transaction builder wallet initialization', function() {
     });
 
     it('a signed init transaction from serialized', async () => {
-      const txBuilder: any = getBuilder('eth');
+      const txBuilder: any = getBuilder('teth');
       txBuilder.type(TransactionType.WalletInitialization);
       txBuilder.counter(1);
       txBuilder.fee({
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.chainId(42);
       txBuilder.owner('0x6461EC4E9dB87CFE2aeEc7d9b02Aa264edFbf41f');
       txBuilder.owner('0xf10C8f42BD63D0AeD3338A6B2b661BC6D9fa7C44');
       txBuilder.owner('0xa4b5666FB4fFEA84Dd848845E1114b84146de4b3');
@@ -162,11 +153,11 @@ describe('Eth Transaction builder wallet initialization', function() {
       const serialized = tx.toBroadcastFormat();
 
       // now rebuild from the signed serialized tx and make sure it stays the same
-      const newTxBuilder: any = getBuilder('eth');
+      const newTxBuilder: any = getBuilder('teth');
       newTxBuilder.from(serialized);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), serialized);
-      should.equal(newTx.id, '0xc65f9802df3b559b297779ec06d3e71ba7f5b1b47cc961ad2efba54d82347bec');
+      should.equal(newTx.id, '0xef04334f21ba844100b9aee6485f14afe177e88308ad2b8c1b0878576a31d47b');
       const txJson = newTx.toJson();
       should.exist(txJson.v);
       should.exist(txJson.r);
@@ -190,7 +181,6 @@ describe('Eth Transaction builder wallet initialization', function() {
           fee: '10',
           gasLimit: '10',
         },
-        chainId: 42,
         source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
         counter: 0,
       }).should.be.rejectedWith('Unsupported transaction type');
@@ -198,21 +188,9 @@ describe('Eth Transaction builder wallet initialization', function() {
 
     it('a transaction without fee', async () => {
       await buildTransaction({
-        chainId: 42,
         source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
         counter: 0,
       }).should.be.rejectedWith('Invalid transaction: missing fee');
-    });
-
-    it('a transaction without chain id', async () => {
-      await buildTransaction({
-        fee: {
-          fee: '10',
-          gasLimit: '10',
-        },
-        source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
-        counter: 0,
-      }).should.be.rejectedWith('Invalid transaction: missing chain id');
     });
 
     it('a wallet initialization the wrong number of owners', async () => {
@@ -222,7 +200,6 @@ describe('Eth Transaction builder wallet initialization', function() {
           fee: '10',
           gasLimit: '10',
         },
-        chainId: 42,
         source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
         owners: [new Eth.KeyPair({ pub: pub1 }).getAddress(), new Eth.KeyPair({ pub: pub2 }).getAddress()],
         counter: 0,
@@ -234,7 +211,6 @@ describe('Eth Transaction builder wallet initialization', function() {
           fee: '10',
           gasLimit: '10',
         },
-        chainId: 42,
         source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
         owners: [
           new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
@@ -251,7 +227,6 @@ describe('Eth Transaction builder wallet initialization', function() {
           fee: '10',
           gasLimit: '10',
         },
-        chainId: 42,
         source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
         owners: [],
         counter: 0,
@@ -264,7 +239,6 @@ describe('Eth Transaction builder wallet initialization', function() {
           fee: '10',
           gasLimit: '10',
         },
-        chainId: 42,
         source: new Eth.KeyPair({ prv: sourcePrv }).getAddress(),
         counter: -1,
         owners: [
@@ -284,7 +258,6 @@ describe('Eth Transaction builder wallet initialization', function() {
         fee: '10',
         gasLimit: '1000',
       });
-      txBuilder.chainId(31);
       const source = {
         prv: sourcePrv,
       };
@@ -300,7 +273,6 @@ describe('Eth Transaction builder wallet initialization', function() {
         fee: '10',
         gasLimit: '1000',
       });
-      txBuilder.chainId(31);
       const source = {
         prv: sourcePrv,
       };
@@ -360,7 +332,6 @@ describe('Eth Transaction builder wallet initialization', function() {
         gasLimit: '1000',
       });
       should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing chain id');
-      txBuilder.chainId(31);
       should.throws(() => txBuilder.validateTransaction(), 'Invalid transaction: missing source');
       const source = {
         prv: sourcePrv,
@@ -396,7 +367,6 @@ describe('Eth Transaction builder wallet initialization', function() {
         fee: '10',
         gasLimit: '1000',
       });
-      txBuilder.chainId(31);
       const sourceKeyPair = new Eth.KeyPair({ prv: sourcePrv });
       txBuilder.counter(1);
       txBuilder.owner(sourceKeyPair.getAddress());
@@ -415,7 +385,6 @@ describe('Eth Transaction builder wallet initialization', function() {
         fee: '10',
         gasLimit: '1000',
       });
-      txBuilder.chainId(31);
       txBuilder.counter(1);
       should.throws(() => txBuilder.owner('0x7325A3F7d4f9E86AE62C'), 'Invalid address');
     });
