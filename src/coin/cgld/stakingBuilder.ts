@@ -247,9 +247,7 @@ export class StakingBuilder {
     const decoded = getRawDecoded(operation.types, getBufferedByteCode(operation.methodId, data));
     switch (this._type) {
       case StakingOperationTypes.VOTE:
-        if (decoded.length !== 4) {
-          throw new BuildTransactionError(`Invalid vote decoded data: ${data}`);
-        }
+        this.validateDecodedDataLength(decoded.length, 4, data);
         const [groupToVote, amount, lesser, greater] = decoded;
         this._amount = ethUtil.bufferToHex(amount);
         this._validatorGroup = ethUtil.bufferToHex(groupToVote);
@@ -257,9 +255,7 @@ export class StakingBuilder {
         this._greater = ethUtil.bufferToHex(greater);
         break;
       case StakingOperationTypes.UNVOTE:
-        if (decoded.length !== 5) {
-          throw new BuildTransactionError(`Invalid unvote decoded data: ${data}`);
-        }
+        this.validateDecodedDataLength(decoded.length, 5, data);
         const [groupToUnvote, amountUnvote, lesserUnvote, greaterUnvote, indexUnvote] = decoded;
         this._validatorGroup = ethUtil.bufferToHex(groupToUnvote);
         this._amount = ethUtil.bufferToHex(amountUnvote);
@@ -268,9 +264,7 @@ export class StakingBuilder {
         this._index = hexStringToNumber(ethUtil.bufferToHex(indexUnvote));
         break;
       case StakingOperationTypes.ACTIVATE:
-        if (decoded.length !== 1) {
-          throw new BuildTransactionError(`Invalid activate decoded data: ${data}`);
-        }
+        this.validateDecodedDataLength(decoded.length, 1, data);
         const [groupToActivate] = decoded;
         this._validatorGroup = ethUtil.bufferToHex(groupToActivate);
         break;
@@ -282,14 +276,18 @@ export class StakingBuilder {
         this._amount = ethUtil.bufferToHex(decodedAmount);
         break;
       case StakingOperationTypes.WITHDRAW:
-        if (decoded.length !== 1) {
-          throw new BuildTransactionError(`Invalid withdraw decoded data: ${data}`);
-        }
+        this.validateDecodedDataLength(decoded.length, 1, data);
         const [index] = decoded;
         this._index = hexStringToNumber(ethUtil.bufferToHex(index));
         break;
       default:
         throw new BuildTransactionError(`Invalid staking data: ${this._type}`);
+    }
+  }
+
+  private validateDecodedDataLength(actual: number, expected: number, data: string): void {
+    if (actual !== expected) {
+      throw new BuildTransactionError(`Invalid staking decoded data: ${data}`);
     }
   }
 
