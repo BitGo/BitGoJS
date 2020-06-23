@@ -137,6 +137,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         this._contractAddress = transactionJson.to;
         this._transfer = new TransferBuilder(transactionJson.data);
         break;
+      case TransactionType.AddressInitialization:
+        if (transactionJson.to === undefined) {
+          throw new BuildTransactionError('Undefined recipient address');
+        }
+        this._contractAddress = transactionJson.to;
+        break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
       //TODO: Add other cases of deserialization
@@ -225,7 +231,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.AddressInitialization:
         this.validateContractAddress();
-        this.validateContractCounter();
         break;
       case TransactionType.StakingLock:
       case TransactionType.StakingUnlock:
@@ -260,15 +265,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private validateContractAddress(): void {
     if (this._contractAddress === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing contract address');
-    }
-  }
-
-  /**
-   * Check if the contract nonce or countar was defined or throw.
-   */
-  private validateContractCounter(): void {
-    if (this._contractCounter === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing contract counter');
     }
   }
 
@@ -426,7 +422,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     const addressInitData = getAddressInitializationData();
     const tx: TxData = this.buildBase(addressInitData);
     tx.to = this._contractAddress;
-    tx.deployedAddress = calculateForwarderAddress(this._contractAddress, this._contractCounter);
+    if (this._contractCounter) {
+      tx.deployedAddress = calculateForwarderAddress(this._contractAddress, this._contractCounter);
+    }
     return tx;
   }
   //endregion

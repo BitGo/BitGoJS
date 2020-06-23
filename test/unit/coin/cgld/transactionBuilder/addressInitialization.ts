@@ -44,16 +44,6 @@ describe('An address initialization', () => {
       const txJson = tx.toJson();
       should.equal(txJson.from, undefined);
     });
-  });
-
-  describe('Should fail to build', () => {
-    it('an address initialization transaction without fee', async () => {
-      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
-      txBuilder.type(TransactionType.AddressInitialization);
-      txBuilder.counter(1);
-      txBuilder.contract(testData.CONTRACT_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
-    });
 
     it('an address initialization transaction without contract counter', async () => {
       const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
@@ -64,7 +54,19 @@ describe('An address initialization', () => {
       });
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract counter');
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.from, undefined);
+    });
+  });
+
+  describe('Should fail to build', () => {
+    it('an address initialization transaction without fee', async () => {
+      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      txBuilder.type(TransactionType.AddressInitialization);
+      txBuilder.counter(1);
+      txBuilder.contract(testData.CONTRACT_ADDRESS);
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
   });
 });
