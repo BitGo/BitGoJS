@@ -459,7 +459,7 @@ export const enum UnderlyingAsset {
 /**
  * This is the curve BitGo signs against with the user, backup and BitGo key.
  */
-export const enum KeyCurve {
+export enum KeyCurve {
   Secp256k1 = 'secp256k1',
   Ed25519 = 'ed25519',
 }
