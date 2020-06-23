@@ -14,7 +14,6 @@ describe('Celo staking transaction builder', () => {
       fee: '1000000000',
       gasLimit: '12100000',
     });
-    txBuilder.chainId(44786);
     txBuilder.counter(1);
   });
 

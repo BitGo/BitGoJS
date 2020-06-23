@@ -1,12 +1,23 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/etc/transaction';
+import { Transaction } from '../../../../src/coin/eth/transaction';
 import * as testData from '../../../resources/etc/etc';
+import { getCommon } from '../../../../src/coin/etc/utils';
 
 describe('Etc Transaction', () => {
+  const coinConfig = coins.get('etc');
+  const common = getCommon(coinConfig.network.type);
+
+  /**
+   *
+   */
+  function getTransaction(): Transaction {
+    return new Transaction(coinConfig, common);
+  }
+
   describe('should throw ', () => {
     it('an empty transaction', () => {
-      const tx = new Transaction(coins.get('etc'));
+      const tx = getTransaction();
       should.throws(() => {
         tx.toJson();
       });
@@ -18,7 +29,7 @@ describe('Etc Transaction', () => {
 
   describe('should return', () => {
     it('a valid transaction', () => {
-      const tx = new Transaction(coins.get('etc'));
+      const tx = getTransaction();
       tx.setTransactionData(testData.TXDATA);
       should.deepEqual(tx.toJson(), testData.TXDATA);
       should.equal(tx.toBroadcastFormat(), testData.UNSIGNED_TX);
@@ -27,12 +38,12 @@ describe('Etc Transaction', () => {
 
   describe('should sign', () => {
     it('invalid', () => {
-      const tx = new Transaction(coins.get('etc'));
+      const tx = getTransaction();
       return tx.sign(testData.KEYPAIR_PRV).should.be.rejected();
     });
 
     it('valid', () => {
-      const tx = new Transaction(coins.get('etc'));
+      const tx = getTransaction();
       tx.setTransactionData(testData.TXDATA);
       return tx.sign(testData.KEYPAIR_PRV).should.be.fulfilled();
     });
@@ -40,7 +51,7 @@ describe('Etc Transaction', () => {
 
   describe('should return encoded tx', () => {
     it('valid sign', async () => {
-      const tx = new Transaction(coins.get('etc'));
+      const tx = getTransaction();
       tx.setTransactionData(testData.TXDATA);
       await tx.sign(testData.KEYPAIR_PRV);
       should.equal(tx.toBroadcastFormat(), testData.ENCODED_TRANSACTION);

@@ -1,7 +1,8 @@
 /**
- * Ethereum transaction model
+ * Ethereum transaction model. This is the base model for all ethereum based coins (Celo, ETC, RSK, ETH)
  */
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import EthereumCommon from 'ethereumjs-common';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey, Entry } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
@@ -16,8 +17,9 @@ export class Transaction extends BaseTransaction {
   protected _id: string; // The transaction id as seen in the blockchain
   protected _inputs: Entry[];
   protected _outputs: Entry[];
-  protected _type: TransactionType;
   protected _signatures: string[];
+  protected _type: TransactionType;
+  protected _common: EthereumCommon;
 
   protected _transactionData?: EthLikeTransactionData;
 
@@ -25,21 +27,28 @@ export class Transaction extends BaseTransaction {
    * return a new Transaction initialized with the serialized tx string
    *
    * @param coinConfig The coin configuration object
+   * @param common network commons
    * @param serializedTx The serialized tx string with which to initialize the transaction
    * @returns a new transaction object
    */
-  public static fromSerialized(coinConfig: Readonly<CoinConfig>, serializedTx: string): Transaction {
-    return new Transaction(coinConfig, EthTransactionData.fromSerialized(serializedTx).toJson());
+  public static fromSerialized(
+    coinConfig: Readonly<CoinConfig>,
+    common: EthereumCommon,
+    serializedTx: string,
+  ): Transaction {
+    return new Transaction(coinConfig, common, EthTransactionData.fromSerialized(serializedTx, common).toJson());
   }
 
   /**
    * Public constructor.
    *
    * @param {Readonly<CoinConfig>} coinConfig
+   * @param common the network commons
    * @param {TxData} txData The object transaction data or encoded transaction data
    */
-  constructor(coinConfig: Readonly<CoinConfig>, txData?: TxData) {
+  constructor(coinConfig: Readonly<CoinConfig>, common: EthereumCommon, txData?: TxData) {
     super(coinConfig);
+    this._common = common;
     if (txData) {
       this.setTransactionData(txData);
     }
@@ -51,7 +60,7 @@ export class Transaction extends BaseTransaction {
    * @param {TxData} txData The transaction data to set
    */
   setTransactionData(txData: TxData): void {
-    this._transactionData = EthTransactionData.fromJson(txData);
+    this._transactionData = EthTransactionData.fromJson(txData, this._common);
     this.updateFields();
   }
 

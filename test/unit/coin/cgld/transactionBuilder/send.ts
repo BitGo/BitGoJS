@@ -6,12 +6,11 @@ import * as testData from '../../../../resources/cgld/cgld';
 describe('Send transaction', function() {
   let txBuilder: Cgld.TransactionBuilder;
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+    txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
     });
-    txBuilder.chainId(44786);
     txBuilder.counter(2);
     txBuilder.type(TransactionType.Send);
   };
@@ -48,7 +47,7 @@ describe('Send transaction', function() {
     });
 
     it('a send token transactions from serialized', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       txBuilder.from(testData.SEND_TOKEN_TX_BROADCAST);
       const tx = await txBuilder.build();
       should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
@@ -78,16 +77,15 @@ describe('Send transaction', function() {
 
   describe('should fail to build', async () => {
     it('a send token transaction without fee', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
-      txBuilder.chainId(44786);
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
 
-    it('a send token transaction without chain id', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+    it('a send token transaction without transfer information', async () => {
+      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
         fee: '10000000000',
@@ -95,17 +93,16 @@ describe('Send transaction', function() {
       });
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
-      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing chain id');
+      await txBuilder.build().should.be.rejectedWith('Missing transfer information');
     });
 
     it('a send token transaction without nonce', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.chainId(44786);
       txBuilder.counter(1);
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing contract address');
     });
@@ -120,13 +117,12 @@ describe('Send transaction', function() {
     });
 
     it('a send token transaction without token information', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
         fee: '10000000000',
         gasLimit: '2000000',
       });
-      txBuilder.chainId(44786);
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
       await txBuilder.build().should.be.rejectedWith('Missing transfer information');
