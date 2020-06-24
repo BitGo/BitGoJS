@@ -39,7 +39,6 @@ describe('ETH-like coins', () => {
       /**
        * Build an unsigned account-lib multi-signature send transactino
        * @param destination The destination address of the transaction
-       * @param source The sending address of the transactino
        * @param contractAddress The address of the smart contract processing the transaction
        * @param contractSequenceId The sequence id of the contract
        * @param nonce The nonce of the sending address
@@ -50,7 +49,6 @@ describe('ETH-like coins', () => {
        */
       const buildUnsignedTransaction = async function({
         destination,
-        source,
         contractAddress,
         contractSequenceId = 1,
         nonce = 0,
@@ -61,12 +59,10 @@ describe('ETH-like coins', () => {
       }) {
         const txBuilder: Eth.TransactionBuilder = getBuilder(coinName) as Eth.TransactionBuilder;
         txBuilder.type(BaseCoin.TransactionType.Send);
-        txBuilder.chainId(1);
         txBuilder.fee({
           fee: gasPrice,
           gasLimit: gasLimit,
         });
-        txBuilder.source(source);
         txBuilder.counter(nonce);
         txBuilder.contract(contractAddress);
         txBuilder
@@ -182,7 +178,6 @@ describe('ETH-like coins', () => {
             amount,
             expireTime: inputExpireTime,
             contractSequenceId: inputSequenceId,
-            source: key.getAddress(),
           });
 
           const tx = await basecoin.signTransaction({
@@ -232,7 +227,6 @@ describe('ETH-like coins', () => {
             amount,
             expireTime: inputExpireTime,
             contractSequenceId: inputSequenceId,
-            source: key.getAddress(),
           });
 
           const tx = await basecoin.signTransaction({
@@ -301,7 +295,6 @@ describe('ETH-like coins', () => {
           const unsignedTransaction = await buildUnsignedTransaction({
             destination,
             contractAddress,
-            source: key.getAddress(),
           });
 
           const explainParams = {
@@ -323,7 +316,6 @@ describe('ETH-like coins', () => {
           const unsignedTransaction = await buildUnsignedTransaction({
             destination,
             contractAddress,
-            source: key.getAddress(),
           });
 
           const signedTx = await basecoin.signTransaction({
