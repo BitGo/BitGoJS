@@ -60,8 +60,6 @@ export interface ExplainTransactionOptions {
   feeInfo: TransactionFee;
 }
 
-const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
-
 export abstract class AbstractEthLikeCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
@@ -223,13 +221,6 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * @return a new transaction builder
    */
   private getTransactionBuilder(): Eth.TransactionBuilder {
-    const txBuilder: Eth.TransactionBuilder = getBuilder(this.getChain()) as Eth.TransactionBuilder;
-
-    // @bitgo/account-lib requires something to be set here,
-    // though it doesn't do anything except when signing the external transaction
-    // TODO: Remove when bug in account lib requiring this field is fixed
-    txBuilder.source(NULL_ADDRESS);
-
-    return txBuilder;
+    return getBuilder(this.getChain()) as Eth.TransactionBuilder;
   }
 }
