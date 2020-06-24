@@ -7,3 +7,4 @@ mochawesome-report/
 .DS_STORE
 package/
 .idea/
+coverage.lcov
