@@ -1,0 +1,7 @@
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+coverage:
+  status:
+    project: off
+    patch: off

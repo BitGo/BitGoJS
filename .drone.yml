@@ -63,7 +63,7 @@ steps:
   - npm run test
 
 - name: upload artifacts
-  image: bitgosdk/upload-tools:latest
+  image: bitgosdk/upload-tools:0.2
   commands:
   - npm run coverage -F unit
   environment:
