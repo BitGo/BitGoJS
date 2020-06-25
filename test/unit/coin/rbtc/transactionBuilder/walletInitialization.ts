@@ -38,7 +38,7 @@ describe('Rbtc wallet initialization', function() {
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
-      should.equal(newTx.id, '0x8fd1d476347258fdb9034d61275d68c17aa9762e0b48dad4ba5df6915dfbb8e5');
+      should.equal(newTx.id, '0x5f6e46eff8e9d61a0b2fc6e798a7ed6c6ceb08b60af2b6b06df461d6cb4aa927');
       const txJson = newTx.toJson();
       should.exist(txJson.v);
       should.exist(txJson.r);

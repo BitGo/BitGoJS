@@ -33,6 +33,7 @@ import {
   sendMultisigTokenMethodId,
   sendMultiSigTokenTypes,
   sendMultiSigTypes,
+  walletInitializationFirstBytes,
   walletSimpleByteCode,
   walletSimpleConstructor,
 } from './walletUtil';
@@ -86,20 +87,6 @@ export async function signInternal(
  */
 export async function sign(transactionData: TxData, keyPair: KeyPair): Promise<string> {
   return signInternal(transactionData, keyPair, testnetCommon);
-}
-
-/**
- * Returns the smart contract encoded data
- *
- * @param {string[]} addresses - the contract signers
- * @returns {string} - the smart contract encoded data
- */
-export function getContractData(addresses: string[]): string {
-  const params = [addresses];
-  const resultEncodedParameters = EthereumAbi.rawEncode(walletSimpleConstructor, params)
-    .toString('hex')
-    .replace('0x', '');
-  return walletSimpleByteCode + resultEncodedParameters;
 }
 
 /**
@@ -189,16 +176,14 @@ export function isValidAmount(amount: string): boolean {
  * @returns {string[]} - The list of signer addresses
  */
 export function decodeWalletCreationData(data: string): string[] {
-  if (!data.startsWith(walletSimpleByteCode)) {
+  if (!data.startsWith(walletInitializationFirstBytes)) {
     throw new BuildTransactionError(`Invalid wallet bytecode: ${data}`);
   }
 
-  const splitBytecode = data.split(walletSimpleByteCode);
-  if (splitBytecode.length !== 2) {
-    throw new BuildTransactionError(`Invalid wallet bytecode: ${data}`);
-  }
+  const dataBuffer = Buffer.from(data.slice(2), 'hex');
 
-  const serializedSigners = Buffer.from(splitBytecode[1], 'hex');
+  // the last 160 bytes contain the serialized address array
+  const serializedSigners = dataBuffer.slice(-160);
 
   const resultEncodedParameters = EthereumAbi.rawDecode(walletSimpleConstructor, serializedSigners);
   if (resultEncodedParameters.length !== 1) {
@@ -293,10 +278,6 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
  * @returns {TransactionType} The classified transaction type
  */
 export function classifyTransaction(data: string): TransactionType {
-  if (data.startsWith(walletSimpleByteCode)) {
-    return TransactionType.WalletInitialization;
-  }
-
   const transactionType = transactionTypesMap[data.slice(0, 10).toLowerCase()];
   if (transactionType === undefined) {
     throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
@@ -309,6 +290,7 @@ export function classifyTransaction(data: string): TransactionType {
  * A transaction types map according to the starting part of the encoded data
  */
 const transactionTypesMap = {
+  [walletInitializationFirstBytes]: TransactionType.WalletInitialization,
   [createForwarderMethodId]: TransactionType.AddressInitialization,
   [sendMultisigMethodId]: TransactionType.Send,
   [sendMultisigTokenMethodId]: TransactionType.Send,
