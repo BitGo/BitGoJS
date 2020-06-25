@@ -1,7 +1,6 @@
 import should from 'should';
 import {
   sign,
-  getContractData,
   isValidEthAddress,
   getAddressInitializationData,
   calculateForwarderAddress,
@@ -19,11 +18,6 @@ describe('ETH util library', function() {
     it('should fail with missing prv key', function() {
       sign(testData.TXDATA, testData.KEYPAIR_PUB).should.be.rejectedWith(new RegExp('Missing private key'));
     });
-  });
-
-  it('Obtain contract data', function() {
-    const CONTRACT_ADDRESSES = [testData.ACCOUNT_1, testData.ACCOUNT_2, testData.ACCOUNT_3];
-    should.equal(getContractData(CONTRACT_ADDRESSES), testData.EXPECTED_CONTRACT_DATA);
   });
 
   it('Should validate valid createForwarder Id', function() {

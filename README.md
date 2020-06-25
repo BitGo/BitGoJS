@@ -9,7 +9,10 @@ Below is the list of coins supported by this library -- as well as those that ar
 |---|---|---|---|
 |Tron|trx|ttrx|Yes|
 |Tezos|xtz|txtz|Yes|
-|Ethereum|eth|teth|Not yet...|
+|Ethereum|eth|teth|Yes|
+|CELO|cgld|tcgld|Yes|
+|Ethereum Classic|etc|tetc|Yes|
+|RSK|rbtc|trbtc|Yes|
 |EOS|eos|teos|Not yet...|
 |Alogrand|algo|talgo|Not yet...|
 |Ripple|xrp|txrp|Not yet...|

@@ -1,16 +1,20 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import EthereumAbi from 'ethereumjs-abi';
 import * as Eth from '../eth';
 import { TransactionType, StakingOperationTypes } from '../baseCoin';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TxData } from '../eth/iface';
+import { walletSimpleConstructor } from '../eth/walletUtil';
 import { Transaction } from './transaction';
 import { StakingBuilder } from './stakingBuilder';
 import { StakingCall } from './stakingCall';
-import { getCommon } from './utils';
+import { getCommon, walletSimpleByteCode } from './utils';
+import { TransferBuilder } from './transferBuilder';
 
 export class TransactionBuilder extends Eth.TransactionBuilder {
   // Staking specific parameters
   private _stakingBuilder?: StakingBuilder;
+  protected _transfer: TransferBuilder;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -69,6 +73,20 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
         super.setTransactionTypeFields(decodedType, transactionJson);
         break;
     }
+  }
+
+  /**
+   * Returns the smart contract encoded data
+   *
+   * @param {string[]} addresses - the contract signers
+   * @returns {string} - the smart contract encoded data
+   */
+  protected getContractData(addresses: string[]): string {
+    const params = [addresses];
+    const resultEncodedParameters = EthereumAbi.rawEncode(walletSimpleConstructor, params)
+      .toString('hex')
+      .replace('0x', '');
+    return walletSimpleByteCode + resultEncodedParameters;
   }
 
   //region Stake methods
@@ -155,6 +173,17 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
     }
 
     return this.getBuilder(StakingOperationTypes.WITHDRAW);
+  }
+
+  /** @inheritdoc */
+  transfer(): TransferBuilder {
+    if (this._type !== TransactionType.Send) {
+      throw new BuildTransactionError('Transfers can only be set for send transactions');
+    }
+    if (!this._transfer) {
+      this._transfer = new TransferBuilder();
+    }
+    return this._transfer;
   }
 
   /**

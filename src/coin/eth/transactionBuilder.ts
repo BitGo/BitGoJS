@@ -1,5 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import EthereumCommon from 'ethereumjs-common';
+import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 import { RLP } from 'ethers/utils';
 import * as Crypto from '../../utils/crypto';
@@ -18,10 +19,10 @@ import {
   calculateForwarderAddress,
   getAddressInitializationData,
   getCommon,
-  getContractData,
   hasSignature,
   isValidEthAddress,
 } from './utils';
+import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
 
 const DEFAULT_M = 3;
 
@@ -43,7 +44,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _walletOwnerAddresses: string[];
 
   // Send and AddressInitialization transaction specific parameters
-  private _transfer: TransferBuilder;
+  protected _transfer: TransferBuilder;
   private _contractAddress: string;
   private _contractCounter: number;
 
@@ -351,8 +352,22 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @returns {TxData} The Ethereum transaction data
    */
-  private buildWalletInitializationTransaction(): TxData {
-    return this.buildBase(getContractData(this._walletOwnerAddresses));
+  protected buildWalletInitializationTransaction(): TxData {
+    return this.buildBase(this.getContractData(this._walletOwnerAddresses));
+  }
+
+  /**
+   * Returns the smart contract encoded data
+   *
+   * @param {string[]} addresses - the contract signers
+   * @returns {string} - the smart contract encoded data
+   */
+  protected getContractData(addresses: string[]): string {
+    const params = [addresses];
+    const resultEncodedParameters = EthereumAbi.rawEncode(walletSimpleConstructor, params)
+      .toString('hex')
+      .replace('0x', '');
+    return walletSimpleByteCode + resultEncodedParameters;
   }
   //endregion
 

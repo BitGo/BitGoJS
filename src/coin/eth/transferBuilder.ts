@@ -138,13 +138,13 @@ export class TransferBuilder {
     return ethUtil.bufferToHex(EthereumAbi.soliditySHA3(...operationData));
   }
 
-  private getOperationData(): (string | Buffer)[][] {
+  protected getOperationData(): (string | Buffer)[][] {
     let operationData;
     if (this._tokenContractAddress !== undefined) {
       operationData = [
         ['string', 'address', 'uint', 'address', 'uint', 'uint'],
         [
-          'ERC20',
+          this.getTokenOperationHashPrefix(),
           new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
           new ethUtil.BN(ethUtil.stripHexPrefix(this._tokenContractAddress), 16),
@@ -156,7 +156,7 @@ export class TransferBuilder {
       operationData = [
         ['string', 'address', 'uint', 'bytes', 'uint', 'uint'],
         [
-          'ETHER',
+          this.getNativeOperationHashPrefix(),
           new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
           new Buffer(ethUtil.stripHexPrefix(this._data) || '', 'hex'),
@@ -166,6 +166,24 @@ export class TransferBuilder {
       ];
     }
     return operationData;
+  }
+
+  /**
+   * Get the prefix used in generating an operation hash for sending tokens
+   *
+   * @returns the string prefix
+   */
+  protected getTokenOperationHashPrefix(): string {
+    return 'ERC20';
+  }
+
+  /**
+   * Get the prefix used in generating an operation hash for sending native coins
+   *
+   * @returns the string prefix
+   */
+  protected getNativeOperationHashPrefix(): string {
+    return 'ETHER';
   }
 
   /** Return an expiration time, in seconds, set to one hour from now

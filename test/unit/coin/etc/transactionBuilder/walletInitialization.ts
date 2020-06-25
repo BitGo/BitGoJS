@@ -38,7 +38,7 @@ describe('Etc wallet initialization', function() {
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
-      should.equal(newTx.id, '0x30857e73870c8e07c63356c3236fa71214e8028307765cae1213e24961ce8f18');
+      should.equal(newTx.id, '0xc04ba4accc640fc9202a519aeec983ea99a100471312496ce7ac440d565c11b2');
       const txJson = newTx.toJson();
       should.exist(txJson.v);
       should.exist(txJson.r);
