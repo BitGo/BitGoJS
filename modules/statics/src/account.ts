@@ -66,7 +66,6 @@ export class AccountCoinToken extends AccountCoin {
   constructor(options: AccountConstructorOptions) {
     super({
       ...options,
-      isToken: true,
     });
   }
 }
@@ -101,7 +100,15 @@ export class Erc20Coin extends ContractAddressDefinedToken {}
 /**
  * Some blockchains have native coins which also support the ERC20 interface such as CGLD.
  */
-export class Erc20CompatibleAccountCoin extends ContractAddressDefinedToken {}
+export class Erc20CompatibleAccountCoin extends ContractAddressDefinedToken {
+  constructor(options: Erc20ConstructorOptions) {
+    super({
+      ...options,
+      // These coins should not be classified as tokens as they are not children of other coins
+      isToken: false,
+    });
+  }
+}
 
 /**
  * The CELO blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
@@ -280,7 +287,7 @@ export function erc20CompatibleAccountCoin(
       features,
       decimalPlaces,
       asset,
-      isToken: true,
+      isToken: false,
       primaryKeyCurve,
     })
   );
