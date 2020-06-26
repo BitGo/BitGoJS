@@ -74,7 +74,7 @@ export class TransferBuilder {
   }
 
   contractSequenceId(counter: number): TransferBuilder {
-    if (counter > 0) {
+    if (counter >= 0) {
       this._signature = this._EMPTY_HEX_VALUE;
       this._sequenceId = counter;
       return this;

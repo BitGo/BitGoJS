@@ -63,6 +63,5 @@ describe('Eth address initialization', () => {
     const txJson = tx.toJson();
     should.equal(txJson.deployedAddress, '0x858c7a9c3bda553f4d0f15e5e33231dd863cb9d4');
     should.equal(txJson.to, testData.CONTRACT_ADDRESS);
-    console.log(tx.toBroadcastFormat());
   });
 });
