@@ -1220,7 +1220,7 @@ export function forwarderOriginationOperation(
     balance,
     script: {
       code: createForwarder(contractAddress),
-      storage: { prim: 'storage', args: [{ prim: 'unit' }] },
+      storage: { prim: 'Unit' },
     },
   };
 }
