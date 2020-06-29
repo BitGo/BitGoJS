@@ -15,7 +15,7 @@ import {
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import * as Bluebird from 'bluebird';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as bitGoUtxoLib from 'bitgo-utxo-lib';
 
 export class Ofc extends BaseCoin {
@@ -38,7 +38,7 @@ export class Ofc extends BaseCoin {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the
       // maximum entropy and gives us maximum security against cracking.
-      seed = crypto.randomBytes(512 / 8);
+      seed = randomBytes(512 / 8);
     }
     const extendedKey = bitGoUtxoLib.HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();

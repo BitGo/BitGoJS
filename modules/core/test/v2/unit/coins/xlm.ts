@@ -1,5 +1,5 @@
 import * as should from 'should';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as stellar from 'stellar-sdk';
 import * as Bluebird from 'bluebird';
 import { Environments } from '../../../../src';
@@ -714,7 +714,7 @@ describe('XLM:', function() {
     });
 
     it('should generate a keypair from seed', function() {
-      const seed = crypto.randomBytes(32);
+      const seed = randomBytes(32);
       const keyPair = basecoin.generateKeyPair(seed);
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');

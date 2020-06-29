@@ -8,7 +8,7 @@
 import * as bitcoin from 'bitgo-utxo-lib';
 import * as Big from 'big.js';
 import * as _ from 'lodash';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import { EthereumLibraryUnavailableError } from '../../errors';
 import { RequestTracer as IRequestTracer } from '../types';
@@ -37,7 +37,7 @@ export class RequestTracer implements IRequestTracer {
   private _seq = 0;
   private readonly _seed: Buffer;
   constructor() {
-    this._seed = crypto.randomBytes(10);
+    this._seed = randomBytes(10);
   }
 
   inc() {

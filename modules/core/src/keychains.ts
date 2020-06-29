@@ -11,7 +11,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as common from './common';
 import { Util } from './v2/internal/util';
 import * as bitcoin from 'bitgo-utxo-lib';
@@ -82,7 +82,7 @@ Keychains.prototype.create = function(params) {
     // An extended private key has both a normal 256 bit private key and a 256
     // bit chain code, both of which must be random. 512 bits is therefore the
     // maximum entropy and gives us maximum security against cracking.
-    seed = crypto.randomBytes(512 / 8);
+    seed = randomBytes(512 / 8);
   } else {
     seed = params.seed;
   }
