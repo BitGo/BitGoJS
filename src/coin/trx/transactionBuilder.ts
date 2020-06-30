@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { createHash } from 'crypto';
 import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
@@ -163,8 +163,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     //Validate the transaction ID from the raw data hex
     const hexBuffer = Buffer.from(currTransaction.raw_data_hex, 'hex');
-    const currTxID = crypto
-      .createHash('sha256')
+    const currTxID = createHash('sha256')
       .update(hexBuffer)
       .digest('hex');
     if (currTransaction.txID !== currTxID) {
@@ -188,8 +187,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   // Specifically, checks hex underlying transaction hashes to correct transaction ID.
   validateTransaction(transaction: Transaction): void {
     const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
-    const txId = crypto
-      .createHash('sha256')
+    const txId = createHash('sha256')
       .update(hexBuffer)
       .digest('hex');
     if (transaction.id !== txId) {

@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import { HDNode } from 'bitgo-utxo-lib';
 import { DefaultKeys } from '../baseCoin/iface';
 import { AddressFormat } from '../baseCoin/enum';
@@ -21,7 +21,7 @@ export class KeyPair extends ExtendedKeyPair {
   constructor(source?: KeyPairOptions) {
     super(source);
     if (!source) {
-      const seed = crypto.randomBytes(DEFAULT_SEED_SIZE_BYTES);
+      const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
       this.hdNode = HDNode.fromSeedBuffer(seed);
     } else if (isSeed(source)) {
       this.hdNode = HDNode.fromSeedBuffer(source.seed);

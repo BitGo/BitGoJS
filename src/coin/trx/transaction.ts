@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { createHash } from 'crypto';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { BaseTransaction } from '../baseCoin';
@@ -94,8 +94,7 @@ export class Transaction extends BaseTransaction {
       throw new ParseTransactionError('Empty transaction');
     }
     const hexBuffer = Buffer.from(this._transaction.raw_data_hex, 'hex');
-    const newTxid = crypto
-      .createHash('sha256')
+    const newTxid = createHash('sha256')
       .update(hexBuffer)
       .digest('hex');
     this._transaction.txID = newTxid;
