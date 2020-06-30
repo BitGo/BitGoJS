@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import blake2b from 'blake2b';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
 import { DefaultKeys } from '../baseCoin/iface';
@@ -22,7 +22,7 @@ export class KeyPair extends ExtendedKeyPair {
   constructor(source?: KeyPairOptions) {
     super(source);
     if (!source) {
-      const seed = crypto.randomBytes(DEFAULT_SEED_SIZE_BYTES);
+      const seed = randomBytes(DEFAULT_SEED_SIZE_BYTES);
       this.hdNode = HDNode.fromSeedBuffer(seed);
     } else if (isSeed(source)) {
       this.hdNode = HDNode.fromSeedBuffer(source.seed);
