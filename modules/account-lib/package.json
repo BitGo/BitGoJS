@@ -1,0 +1,102 @@
+{
+  "name": "@bitgo/account-lib",
+  "version": "1.7.1",
+  "description": "BitGo's account library functions",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "webpack-dev": "webpack --progress --colors --env.dev",
+    "webpack-test": "webpack --progress --colors --env.test",
+    "webpack-prod": "webpack --progress --colors --env.prod",
+    "build": "npm run gen-protobuf && npm run gen-protobufts && tsc && cp -r ./resources ./dist",
+    "clean": "rm -rf dist/* && rm -rf node_modules/*",
+    "compile": "npm run browserify && npm run webpack-prod",
+    "compile-dev": "npm run browserify && npm run webpack-dev",
+    "compile-test": "npm run browserify && npm run webpack-test",
+    "coverage": "npm run gen-coverage && npm run upload-coverage",
+    "upload-coverage": "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\"",
+    "gen-coverage": "./node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov",
+    "gen-protobuf": "node node_modules/protobufjs/cli/bin/pbjs -t static-module -w commonjs -o ./resources/trx/protobuf/tron.js ./resources/trx/protobuf/Discover.proto ./resources/trx/protobuf/Contract.proto ./resources/trx/protobuf/tron.proto",
+    "gen-protobufts": "node node_modules/protobufjs/cli/bin/pbts -o ./resources/trx/protobuf/tron.d.ts ./resources/trx/protobuf/tron.js",
+    "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' && eslint 'resources/xtz/**/*.ts' || true",
+    "lint-fix": "eslint 'src/**/*.ts' --fix && eslint 'test/**/*.ts' --fix || true",
+    "prepublishOnly": "npm run compile",
+    "prepare": "npm run build",
+    "browserify": "mkdir -p ./dist/browserify && browserify ./dist/src/index.js -s bitgo-account-lib -o ./dist/browserify/bitgo-account-lib.browserify.js",
+    "test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/bitgo-account-lib.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@bitgo/statics": "^4.3.0-rc.2",
+    "@taquito/local-forging": "^6.0.3-beta.0",
+    "@taquito/signer": "^6.0.3-beta.0",
+    "@types/lodash": "^4.14.151",
+    "bignumber.js": "^9.0.0",
+    "bitgo-utxo-lib": "^1.6.0",
+    "blake2b": "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
+    "bs58check": "^2.1.2",
+    "elliptic": "^6.5.2",
+    "libsodium-wrappers": "^0.7.6",
+    "lodash": "^4.17.15",
+    "protobufjs": "^6.8.9",
+    "tronweb": "^2.7.2",
+    "ethereumjs-tx": "2.1.2",
+    "ethereumjs-abi": "0.6.0",
+    "ethereumjs-util": "5.2.0",
+    "@celo/contractkit": "0.3.1"
+  },
+  "devDependencies": {
+    "@types/elliptic": "^6.4.12",
+    "@types/libsodium-wrappers": "^0.7.7",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.13.22",
+    "@types/sinon": "^7.5.0",
+    "@typescript-eslint/eslint-plugin": "^2.24.0",
+    "@typescript-eslint/parser": "^2.24.0",
+    "awesome-typescript-loader": "^5.2.1",
+    "browserify": "^16.2.3",
+    "eslint": "^6.7.2",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-jsdoc": "^21.0.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "glob": "^7.1.3",
+    "husky": "^1.3.1",
+    "lint-staged": "^8.1.4",
+    "mocha": "^6.1.4",
+    "mochawesome": "^4.1.0",
+    "nyc": "^15.0.0",
+    "prettier": "^1.19.1",
+    "should": "^13.1.3",
+    "sinon": "^7.5.0",
+    "terser-webpack-plugin": "^1.2.3",
+    "ts-node": "^8.3.0",
+    "typescript": "~3.5.3",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.2.3"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ]
+  }
+}
