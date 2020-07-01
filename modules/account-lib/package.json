@@ -8,7 +8,7 @@
     "webpack-dev": "webpack --progress --colors --env.dev",
     "webpack-test": "webpack --progress --colors --env.test",
     "webpack-prod": "webpack --progress --colors --env.prod",
-    "build": "tsc && cp -r ./resources ./dist",
+    "build": "npm run prepare",
     "clean": "rm -rf dist/*",
     "compile": "npm run browserify && npm run webpack-prod",
     "compile-dev": "npm run browserify && npm run webpack-dev",
@@ -19,7 +19,7 @@
     "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' && eslint 'resources/xtz/**/*.ts' || true",
     "lint-fix": "eslint 'src/**/*.ts' --fix && eslint 'test/**/*.ts' --fix || true",
     "prepublishOnly": "npm run compile",
-    "prepare": "npm run gen-protobuf && npm run gen-protobufts && npm run build",
+    "prepare": "npm run gen-protobuf && npm run gen-protobufts && tsc && cp -r ./resources ./dist",
     "browserify": "mkdir -p ./dist/browserify && browserify ./dist/src/index.js -s bitgo-account-lib -o ./dist/browserify/bitgo-account-lib.browserify.js",
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
     "test": "npm run unit-test"
