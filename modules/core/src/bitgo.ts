@@ -27,7 +27,7 @@ import * as _ from 'lodash';
 import * as url from 'url';
 import * as querystring from 'querystring';
 import * as config from './config';
-import * as crypto from 'crypto';
+import { createHmac, randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import { bytesToWord } from './v2/internal/internal';
 
@@ -733,7 +733,7 @@ export class BitGo {
    * @returns {*} - the result of the HMAC operation
    */
   calculateHMAC(key: string, message: string): string {
-    return crypto.createHmac('sha256', key).update(message).digest('hex');
+    return createHmac('sha256', key).update(message).digest('hex');
   }
 
   /**
@@ -895,8 +895,8 @@ export class BitGo {
   encrypt(params: EncryptOptions = {}): string {
     common.validateParams(params, ['input', 'password'], []);
 
-    const randomSalt = crypto.randomBytes(8);
-    const randomIV = crypto.randomBytes(16);
+    const randomSalt = randomBytes(8);
+    const randomIV = randomBytes(16);
     const encryptOptions = {
       iter: 10000,
       ks: 256,

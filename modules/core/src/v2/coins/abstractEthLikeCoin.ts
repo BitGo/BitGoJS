@@ -6,7 +6,7 @@ import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as Bluebird from 'bluebird';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import * as bitgoUtxoLib from 'bitgo-utxo-lib';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 
 import {
   BaseCoin,
@@ -102,7 +102,7 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
 
   generateKeyPair(seed?: Buffer): KeyPair {
     if (!seed) {
-      seed = crypto.randomBytes(512 / 8);
+      seed = randomBytes(512 / 8);
     }
     const extendedKey = bitgoUtxoLib.HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();

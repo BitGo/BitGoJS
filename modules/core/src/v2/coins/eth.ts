@@ -4,7 +4,7 @@
 import { BigNumber } from 'bignumber.js';
 import * as utxoLib from 'bitgo-utxo-lib';
 import * as Bluebird from 'bluebird';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as Keccak from 'keccak';
 import * as _ from 'lodash';
@@ -1390,7 +1390,7 @@ export class Eth extends BaseCoin {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the
       // maximum entropy and gives us maximum security against cracking.
-      seed = crypto.randomBytes(512 / 8);
+      seed = randomBytes(512 / 8);
     }
     const extendedKey = utxoLib.HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();
