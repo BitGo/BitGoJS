@@ -1,21 +1,10 @@
 coverage:
   status:
-    core:
-      target: auto
-      paths:
-        - modules/core
-    statics:
-      target: auto
-      paths:
-        - modules/statics
-    account-lib:
-      target: auto
-      paths:
-        - modules/account-lib
-    express:
-      target: auto
-      paths:
-        - modules/express
+    project: off
+    patch: off
+comment:
+  layout: "diff, flags, files"
+  require_changes: true
 flags:
   bitgo:
     paths:
