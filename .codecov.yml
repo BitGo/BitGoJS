@@ -3,32 +3,32 @@ coverage:
     project:
       default:
         target: auto
-    @bitgo/statics:
+    '@bitgo/statics':
       target: auto
       flags:
-        - @bitgo/statics
-    @bitgo/account-lib:
+        - '@bitgo/statics'
+    '@bitgo/account-lib':
       target: auto
       flags:
-        - @bitgo/account-lib
+        - '@bitgo/account-lib'
     bitgo:
       target: auto
       flags:
         - bitgo
-    @bitgo/express:
+    '@bitgo/express':
       target: auto
       flags:
-        - @bitgo/express
+        - '@bitgo/express'
 flags:
   bitgo:
     paths:
       - modules/core/*
-  @bitgo/account-lib:
+  '@bitgo/account-lib':
     paths:
       - modules/account-lib/*
-  @bitgo/statics:
+  '@bitgo/statics':
     paths:
       - modules/statics/*
-  @bitgo/express:
+  '@bitgo/express':
     paths:
       - modules/express/*
