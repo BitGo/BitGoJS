@@ -1,4 +1,34 @@
 coverage:
   status:
-    project: off
-    patch: off
+    project:
+      default:
+        target: auto
+    statics:
+      target: auto
+      flags:
+        - statics
+    account-lib:
+      target: auto
+      flags:
+        - account-lib
+    core:
+      target: auto
+      flags:
+        - core
+    express:
+      target: auto
+      flags:
+        - express
+flags:
+  core:
+    paths:
+      - modules/core/*
+  account-lib:
+    paths:
+      - modules/account-lib/*
+  statics:
+    paths:
+      - modules/statics/*
+  express:
+    paths:
+      - modules/express/*
