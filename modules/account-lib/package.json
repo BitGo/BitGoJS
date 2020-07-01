@@ -14,8 +14,6 @@
     "compile-dev": "npm run browserify && npm run webpack-dev",
     "compile-test": "npm run browserify && npm run webpack-test",
     "coverage": "npm run gen-coverage && npm run upload-coverage",
-    "upload-coverage": "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F \"$npm_package_name\"",
-    "gen-coverage": "[ -d .nyc_output ] && nyc report --reporter=text-lcov > coverage.lcov || echo No coverage report found",
     "gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/trx/protobuf/tron.js ./resources/trx/protobuf/Discover.proto ./resources/trx/protobuf/Contract.proto ./resources/trx/protobuf/tron.proto",
     "gen-protobufts": "pbts -o ./resources/trx/protobuf/tron.d.ts ./resources/trx/protobuf/tron.js",
     "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' && eslint 'resources/xtz/**/*.ts' || true",

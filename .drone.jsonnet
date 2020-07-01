@@ -103,13 +103,14 @@ local UploadArtifacts(version, tag="untagged", only_changed=false) = {
   image: "bitgosdk/upload-tools:latest",
   environment: {
     CODECOV_TOKEN: { from_secret: "codecov" },
+    CODECOV_FLAG: tag,
     reports_s3_akid: { from_secret: "reports_s3_akid" },
     reports_s3_sak: { from_secret: "reports_s3_sak" },
   },
   commands: [
     "yarn run artifacts",
     "yarn run gen-coverage" + (if only_changed then "-changed" else ""),
-    "yarn run coverage -F " + tag,
+    "yarn run coverage",
   ],
   when: {
     status: ["success", "failure"]
