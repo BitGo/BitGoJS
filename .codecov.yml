@@ -1,34 +1,31 @@
 coverage:
   status:
-    project:
-      default:
-        target: auto
-    '@bitgo/statics':
+    core:
       target: auto
-      flags:
-        - '@bitgo/statics'
-    '@bitgo/account-lib':
+      paths:
+        - modules/core
+    statics:
       target: auto
-      flags:
-        - '@bitgo/account-lib'
-    bitgo:
+      paths:
+        - modules/statics
+    account-lib:
       target: auto
-      flags:
-        - bitgo
-    '@bitgo/express':
+      paths:
+        - modules/account-lib
+    express:
       target: auto
-      flags:
-        - '@bitgo/express'
+      paths:
+        - modules/express
 flags:
   bitgo:
     paths:
-      - modules/core/
-  '@bitgo/account-lib':
+      - modules/core
+  account-lib:
     paths:
-      - modules/account-lib/
-  '@bitgo/statics':
+      - modules/account-lib
+  statics:
     paths:
-      - modules/statics/
-  '@bitgo/express':
+      - modules/statics
+  express:
     paths:
-      - modules/express/
+      - modules/express
