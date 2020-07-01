@@ -24,6 +24,9 @@
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
     "test": "npm run unit-test"
   },
+  "files": [
+    "dist/"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/BitGo/bitgo-account-lib.git"
