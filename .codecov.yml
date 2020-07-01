@@ -22,13 +22,13 @@ coverage:
 flags:
   bitgo:
     paths:
-      - modules/core/*
+      - modules/core/
   '@bitgo/account-lib':
     paths:
-      - modules/account-lib/*
+      - modules/account-lib/
   '@bitgo/statics':
     paths:
-      - modules/statics/*
+      - modules/statics/
   '@bitgo/express':
     paths:
-      - modules/express/*
+      - modules/express/
