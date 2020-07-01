@@ -6,7 +6,13 @@
     "outDir": "./dist",
     "rootDir": ".",
     "esModuleInterop": true,
-    "strictPropertyInitialization": false
+    "strictPropertyInitialization": false,
+    "typeRoots": [
+      "./types",
+      "../../types",
+      "./node_modules/@types",
+      "../../node_modules/@types"
+    ]
   },
   "include": [
     "src/**/*",
