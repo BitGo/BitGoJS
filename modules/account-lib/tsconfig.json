@@ -1,23 +1,12 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
     "outDir": "./dist",
     "rootDir": ".",
-    "lib": [
-      "dom",
-      "es2016"
-    ],
-    "sourceMap": true,
-    "declaration": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strictNullChecks": true,
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "strictPropertyInitialization": false
   },
   "include": [
     "src/**/*",
