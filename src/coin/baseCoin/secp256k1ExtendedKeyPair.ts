@@ -1,12 +1,9 @@
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
 import * as Crypto from '../../utils/crypto';
 import { KeyPairOptions, ExtendedKeys } from './iface';
-import { AddressFormat } from './enum';
+import { BaseKeyPair } from "./baseKeyPair";
 
-/**
- * Base keys and address management.
- */
-export abstract class ExtendedKeyPair {
+export abstract class Secp256k1ExtendedKeyPair extends BaseKeyPair {
   // Implementation of the HD protocol (BIP32). Only available when creating a KeyPair from a seed,
   // or extended keys
   protected hdNode?: HDNode;
@@ -18,7 +15,9 @@ export abstract class ExtendedKeyPair {
    * @param {KeyPairOptions} source Either a master seed, a private key (extended or raw), or a public key
    *     (extended, compressed, or uncompressed)
    */
-  protected constructor(protected source?: KeyPairOptions) {}
+  protected constructor(protected source?: KeyPairOptions) {
+    super();
+  }
 
   /**
    * Build a Hierarchical Deterministic node or an ECPair from a private key.
@@ -71,14 +70,4 @@ export abstract class ExtendedKeyPair {
     }
     return result;
   }
-
-  /**
-   * Returns the keys in the protocol default key format
-   */
-  abstract getKeys(): any;
-
-  /**
-   * Returns the address in the protocol default format
-   */
-  abstract getAddress(format?: AddressFormat): string;
 }

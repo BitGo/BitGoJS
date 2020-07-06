@@ -4,7 +4,7 @@ import { HDNode, ECPair } from 'bitgo-utxo-lib';
 import { DefaultKeys } from '../baseCoin/iface';
 import * as CryptoUtils from '../../utils/crypto';
 import { isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
-import { ExtendedKeyPair } from '../baseCoin/extendedKeyPair';
+import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import * as Utils from './utils';
 
 const DEFAULT_SEED_SIZE_BYTES = 16;
@@ -12,7 +12,7 @@ const DEFAULT_SEED_SIZE_BYTES = 16;
 /**
  * Tezos keys and address management.
  */
-export class KeyPair extends ExtendedKeyPair {
+export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
    *
