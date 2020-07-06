@@ -18,7 +18,7 @@ We recommend using `nvm`, the [Node Version Manager](https://github.com/creation
 
 # Full Documentation
 
-Please see our [SDK Documentation](https://bitgo-sdk-docs.s3.amazonaws.com/core/8.2.0/index.html) for detailed information about the Typescript SDK and functionality.
+Please see our [SDK Documentation](https://bitgo-sdk-docs.s3.amazonaws.com/core/11.3.0/index.html) for detailed information about the Typescript SDK and functionality.
 
 For more general information about the BitGo API, please see our [REST API Documentation](https://www.bitgo.com/api/v2).
 
