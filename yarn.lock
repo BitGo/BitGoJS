@@ -108,12 +108,12 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/account-lib@^1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-1.7.0.tgz#7378add541464bcd4398003a1f3a5199e692d3df"
-  integrity sha512-GoW1NfcJGNZLj5LP65p2afJ61TkeuXjyIvEGjbItV5YvlnUrnDmXUmW3cI+D6IU7GDYGKdMG7uvooPyAVxs1XQ==
+"@bitgo/account-lib@^2.0.0-rc.0":
+  version "2.0.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-2.0.0-rc.0.tgz#24166913066e17823b78bae9ab83ff5b34637a41"
+  integrity sha512-P4Fq/VWwHR2iFT6j9QnK7rYJ6ezi6crmTYwfJTq87e3hRIe7/nFVkLTiR80HUoySEEXspqIEkifPRiUawHs6gQ==
   dependencies:
-    "@bitgo/statics" "^4.3.0-rc.2"
+    "@bitgo/statics" "^5.0.0-rc.0"
     "@celo/contractkit" "0.3.1"
     "@taquito/local-forging" "^6.0.3-beta.0"
     "@taquito/signer" "^6.0.3-beta.0"
@@ -130,6 +130,11 @@
     lodash "^4.17.15"
     protobufjs "^6.8.9"
     tronweb "^2.7.2"
+
+"@bitgo/statics@^5.0.0-rc.0":
+  version "5.0.0-rc.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-5.0.0-rc.0.tgz#b1a56f8d96b8541cba1e27c03fb0dec41594b9a3"
+  integrity sha512-e13YeueiZiLw4UJhhAX3wm0nrdtE7vSR2u/mwSVsYhRnxW4bxIcd1BYlyey1vNE0DXCFgEbSGX0Qk43k+ng+rg==
 
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"

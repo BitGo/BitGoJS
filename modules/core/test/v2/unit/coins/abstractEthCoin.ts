@@ -57,10 +57,6 @@ describe('ETH-like coins', () => {
         gasPrice = '10000',
         gasLimit = '20000',
       }) {
-        // TODO : Remove this when account lib has changed celo to cgld
-        if (coinName === 'tcelo') {
-          coinName = 'tcgld';
-        }
         const txBuilder: Eth.TransactionBuilder = getBuilder(coinName) as Eth.TransactionBuilder;
         txBuilder.type(BaseCoin.TransactionType.Send);
         txBuilder.fee({
