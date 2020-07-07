@@ -45,7 +45,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    *
    * @param {string} prv An extended or raw private key
    */
-  protected recordKeysFromPrivateKey(prv: string): void {
+  recordKeysFromPrivateKey(prv: string): void {
     if (CryptoUtils.isValidXprv(prv)) {
       this.hdNode = HDNode.fromBase58(prv);
     } else if (CryptoUtils.isValidPrv(prv)) {
@@ -64,7 +64,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    *
    * @param {string} pub - An extended, compressed, or uncompressed public key
    */
-  protected recordKeysFromPublicKey(pub: string): void {
+  recordKeysFromPublicKey(pub: string): void {
     if (CryptoUtils.isValidXpub(pub)) {
       this.hdNode = HDNode.fromBase58(pub);
     } else if (CryptoUtils.isValidPub(pub)) {

@@ -1,9 +1,14 @@
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
 import * as Crypto from '../../utils/crypto';
 import { KeyPairOptions, ExtendedKeys } from './iface';
-import { BaseKeyPair } from "./baseKeyPair";
+import { BaseKeyPair } from './baseKeyPair';
+import { AddressFormat } from './enum';
+import { NotImplementedError } from './errors';
 
-export abstract class Secp256k1ExtendedKeyPair extends BaseKeyPair {
+/**
+ * Base class for SECP256K1 extended keypairs.
+ */
+export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
   // Implementation of the HD protocol (BIP32). Only available when creating a KeyPair from a seed,
   // or extended keys
   protected hdNode?: HDNode;
@@ -15,16 +20,14 @@ export abstract class Secp256k1ExtendedKeyPair extends BaseKeyPair {
    * @param {KeyPairOptions} source Either a master seed, a private key (extended or raw), or a public key
    *     (extended, compressed, or uncompressed)
    */
-  protected constructor(protected source?: KeyPairOptions) {
-    super();
-  }
+  protected constructor(protected source?: KeyPairOptions) {}
 
   /**
    * Build a Hierarchical Deterministic node or an ECPair from a private key.
    *
    * @param {string} prv An extended or raw private key
    */
-  protected recordKeysFromPrivateKey(prv: string): void {
+  recordKeysFromPrivateKey(prv: string): void {
     if (Crypto.isValidXprv(prv)) {
       this.hdNode = HDNode.fromBase58(prv);
     } else if (Crypto.isValidPrv(prv)) {
@@ -40,7 +43,7 @@ export abstract class Secp256k1ExtendedKeyPair extends BaseKeyPair {
    *
    * @param {string} pub - An extended, compressed, or uncompressed public key
    */
-  protected recordKeysFromPublicKey(pub: string): void {
+  recordKeysFromPublicKey(pub: string): void {
     if (Crypto.isValidXpub(pub)) {
       this.hdNode = HDNode.fromBase58(pub);
     } else if (Crypto.isValidPub(pub)) {
@@ -69,5 +72,13 @@ export abstract class Secp256k1ExtendedKeyPair extends BaseKeyPair {
       result.xprv = this.hdNode.toBase58();
     }
     return result;
+  }
+
+  getAddress(format?: AddressFormat): string {
+    throw new NotImplementedError('getAddress not implemented');
+  }
+
+  getKeys(): any {
+    throw new NotImplementedError('getKeys not implemented');
   }
 }

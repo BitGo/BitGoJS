@@ -61,3 +61,12 @@ export class InvalidParameterValueError extends ExtendableError {
     super(message);
   }
 }
+
+/**
+ * Error for an method that needs to be implemented
+ */
+export class NotImplementedError extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}
