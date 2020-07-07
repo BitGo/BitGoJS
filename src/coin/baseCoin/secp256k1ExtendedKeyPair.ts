@@ -1,12 +1,14 @@
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
 import * as Crypto from '../../utils/crypto';
 import { KeyPairOptions, ExtendedKeys } from './iface';
+import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
+import { NotImplementedError } from './errors';
 
 /**
- * Base keys and address management.
+ * Base class for SECP256K1 extended keypairs.
  */
-export abstract class ExtendedKeyPair {
+export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
   // Implementation of the HD protocol (BIP32). Only available when creating a KeyPair from a seed,
   // or extended keys
   protected hdNode?: HDNode;
@@ -25,7 +27,7 @@ export abstract class ExtendedKeyPair {
    *
    * @param {string} prv An extended or raw private key
    */
-  protected recordKeysFromPrivateKey(prv: string): void {
+  recordKeysFromPrivateKey(prv: string): void {
     if (Crypto.isValidXprv(prv)) {
       this.hdNode = HDNode.fromBase58(prv);
     } else if (Crypto.isValidPrv(prv)) {
@@ -41,7 +43,7 @@ export abstract class ExtendedKeyPair {
    *
    * @param {string} pub - An extended, compressed, or uncompressed public key
    */
-  protected recordKeysFromPublicKey(pub: string): void {
+  recordKeysFromPublicKey(pub: string): void {
     if (Crypto.isValidXpub(pub)) {
       this.hdNode = HDNode.fromBase58(pub);
     } else if (Crypto.isValidPub(pub)) {
@@ -72,13 +74,11 @@ export abstract class ExtendedKeyPair {
     return result;
   }
 
-  /**
-   * Returns the keys in the protocol default key format
-   */
-  abstract getKeys(): any;
+  getAddress(format?: AddressFormat): string {
+    throw new NotImplementedError('getAddress not implemented');
+  }
 
-  /**
-   * Returns the address in the protocol default format
-   */
-  abstract getAddress(format?: AddressFormat): string;
+  getKeys(): any {
+    throw new NotImplementedError('getKeys not implemented');
+  }
 }
