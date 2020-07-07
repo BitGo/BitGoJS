@@ -147,6 +147,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         if (transactionJson.to === undefined) {
           throw new BuildTransactionError('Undefined recipient address');
         }
+        // the address of the wallet contract that we are calling "flushForwarderTokens" on
         this._contractAddress = transactionJson.to;
         const { forwarderAddress, tokenAddress } = Utils.decodeFlushTokensData(transactionJson.data);
         this._forwarderAddress = forwarderAddress;
@@ -503,7 +504,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Set the token address to flush
+   * Set the address of the ERC20 token contract that we are flushing tokens for
    *
    * @param {string} address the contract address of the token to flush
    */
