@@ -5,7 +5,7 @@ import { BaseCoin } from '../baseCoin';
 import { BitGo } from '../../bitgo';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { AbstractEthLikeCoin } from './abstractEthLikeCoin';
-import { Cgld as CgldAccountLib } from '@bitgo/account-lib';
+import { Celo as CeloAccountLib } from '@bitgo/account-lib';
 
 export class Celo extends AbstractEthLikeCoin {
   protected constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -19,7 +19,7 @@ export class Celo extends AbstractEthLikeCoin {
   isValidPub(pub: string): boolean {
     let valid = true;
     try {
-      new CgldAccountLib.KeyPair({ pub });
+      new CeloAccountLib.KeyPair({ pub });
     } catch (e) {
       valid = false;
     }
