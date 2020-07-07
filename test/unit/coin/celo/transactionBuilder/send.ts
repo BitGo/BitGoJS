@@ -1,12 +1,12 @@
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
-import { getBuilder, Cgld } from '../../../../../src';
-import * as testData from '../../../../resources/cgld/cgld';
+import { getBuilder, Celo } from '../../../../../src';
+import * as testData from '../../../../resources/celo/celo';
 
 describe('Send transaction', function() {
-  let txBuilder: Cgld.TransactionBuilder;
+  let txBuilder: Celo.TransactionBuilder;
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+    txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -47,7 +47,7 @@ describe('Send transaction', function() {
     });
 
     it('a send token transactions from serialized', async () => {
-      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       txBuilder.from(testData.SEND_TOKEN_TX_BROADCAST);
       const tx = await txBuilder.build();
       should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
@@ -77,7 +77,7 @@ describe('Send transaction', function() {
 
   describe('should fail to build', async () => {
     it('a send token transaction without fee', async () => {
-      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_TOKEN_CUSD_ADDRESS);
@@ -85,7 +85,7 @@ describe('Send transaction', function() {
     });
 
     it('a send token transaction without transfer information', async () => {
-      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
         fee: '10000000000',
@@ -97,7 +97,7 @@ describe('Send transaction', function() {
     });
 
     it('a send token transaction without nonce', async () => {
-      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
         fee: '10000000000',
@@ -117,7 +117,7 @@ describe('Send transaction', function() {
     });
 
     it('a send token transaction without token information', async () => {
-      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       txBuilder.type(TransactionType.Send);
       txBuilder.fee({
         fee: '10000000000',

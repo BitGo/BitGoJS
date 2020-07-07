@@ -81,7 +81,7 @@ describe('Eth send multi sig builder', function() {
         .contractSequenceId(2)
         .key(key);
       const result = builder.signAndBuild();
-      should.equal(result, testData.SEND_TERC_DATA);    
+      should.equal(result, testData.SEND_TERC_DATA);
     });
 
     it('erc20 transfer should succeed', async () => {

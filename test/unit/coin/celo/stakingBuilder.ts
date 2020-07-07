@@ -1,12 +1,12 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { StakingBuilder } from '../../../../src/coin/cgld/stakingBuilder';
-import { getOperationConfig } from '../../../../src/coin/cgld/stakingUtils';
+import { StakingBuilder } from '../../../../src/coin/celo/stakingBuilder';
+import { getOperationConfig } from '../../../../src/coin/celo/stakingUtils';
 import { StakingOperationTypes } from '../../../../src/coin/baseCoin';
-import * as testData from '../../../resources/cgld/cgld';
+import * as testData from '../../../resources/celo/celo';
 
 describe('Celo staking operations builder', function() {
-  const coin = coins.get('tcgld');
+  const coin = coins.get('tcelo');
   let builder: StakingBuilder;
   beforeEach(() => {
     builder = new StakingBuilder(coin);
