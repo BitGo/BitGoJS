@@ -173,13 +173,13 @@ class DashTestnet extends BitcoinLikeTestnet {
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
 class Celo extends Mainnet implements AccountNetwork {
-  family = CoinFamily.CGLD;
+  family = CoinFamily.CELO;
   explorerUrl = 'https://explorer.celo.org/tx/';
   accountExplorerUrl = 'https://explorer.celo.org/address/';
 }
 
 class CeloTestnet extends Testnet implements AccountNetwork {
-  family = CoinFamily.CGLD;
+  family = CoinFamily.CELO;
   explorerUrl = 'https://alfajores-blockscout.celo-testnet.org/tx/';
   accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
 }

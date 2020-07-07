@@ -98,7 +98,7 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
 export class Erc20Coin extends ContractAddressDefinedToken {}
 
 /**
- * Some blockchains have native coins which also support the ERC20 interface such as CGLD.
+ * Some blockchains have native coins which also support the ERC20 interface such as CELO.
  */
 export class Erc20CompatibleAccountCoin extends ContractAddressDefinedToken {
   constructor(options: Erc20ConstructorOptions) {

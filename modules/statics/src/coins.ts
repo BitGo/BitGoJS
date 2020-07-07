@@ -54,20 +54,20 @@ export const coins = CoinMap.fromCoins([
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD),
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
   erc20CompatibleAccountCoin(
-    'cgld',
+    'celo',
     'Celo Gold',
     Networks.main.celo,
     18,
     '0x471ece3750da237f93b8e339c536989b8978a438',
-    UnderlyingAsset.CGLD
+    UnderlyingAsset.CELO
   ),
   erc20CompatibleAccountCoin(
-    'tcgld',
+    'tcelo',
     'Testnet Celo Gold',
     Networks.test.celo,
     18,
     '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9',
-    UnderlyingAsset.CGLD
+    UnderlyingAsset.CELO
   ),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('ofcbtc', 'Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
