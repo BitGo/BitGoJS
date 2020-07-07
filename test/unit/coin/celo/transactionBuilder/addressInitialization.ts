@@ -1,12 +1,12 @@
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
-import { getBuilder, Cgld } from '../../../../../src';
-import * as testData from '../../../../resources/cgld/cgld';
+import { getBuilder, Celo } from '../../../../../src';
+import * as testData from '../../../../resources/celo/celo';
 
 describe('An address initialization', () => {
   describe('Should sign and build', () => {
     it('an address initialization transaction', async () => {
-      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       txBuilder.fee({
         fee: '1000000000',
         gasLimit: '12100000',
@@ -31,7 +31,7 @@ describe('An address initialization', () => {
 
   describe('Should build without sign', () => {
     it('an address initialization transaction without from', async () => {
-      const txBuilder = getBuilder('cgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('celo') as Celo.TransactionBuilder;
       txBuilder.fee({
         fee: '1000000000',
         gasLimit: '12100000',
@@ -46,7 +46,7 @@ describe('An address initialization', () => {
     });
 
     it('an address initialization transaction without contract counter', async () => {
-      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       txBuilder.type(TransactionType.AddressInitialization);
       txBuilder.fee({
         fee: '10000000000',
@@ -62,7 +62,7 @@ describe('An address initialization', () => {
 
   describe('Should fail to build', () => {
     it('an address initialization transaction without fee', async () => {
-      const txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       txBuilder.type(TransactionType.AddressInitialization);
       txBuilder.counter(1);
       txBuilder.contract(testData.CONTRACT_ADDRESS);

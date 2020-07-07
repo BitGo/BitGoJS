@@ -148,12 +148,12 @@ export class CeloTransaction {
   }
 }
 
-export class CgldTransactionData implements EthLikeTransactionData {
+export class CeloTransactionData implements EthLikeTransactionData {
   constructor(private tx: CeloTransaction, private deployedAddress?: string) {}
 
-  public static fromJson(tx: TxData): CgldTransactionData {
+  public static fromJson(tx: TxData): CeloTransactionData {
     const chainId = addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16));
-    return new CgldTransactionData(
+    return new CeloTransactionData(
       new CeloTransaction({
         nonce: addHexPrefix(new BigNumber(tx.nonce).toString(16)),
         to: tx.to,

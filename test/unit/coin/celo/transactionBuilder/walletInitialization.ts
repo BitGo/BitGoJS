@@ -1,12 +1,12 @@
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin/';
-import { getBuilder, Cgld } from '../../../../../src';
-import * as testData from '../../../../resources/cgld/cgld';
+import { getBuilder, Celo } from '../../../../../src';
+import * as testData from '../../../../resources/celo/celo';
 
 describe('Celo Transaction builder for wallet initialization', () => {
-  let txBuilder: Cgld.TransactionBuilder;
+  let txBuilder: Celo.TransactionBuilder;
   const initTxBuilder = (): void => {
-    txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+    txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
     txBuilder.fee({
       fee: '1000000000',
       gasLimit: '12100000',
@@ -55,7 +55,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
       const serialized = tx.toBroadcastFormat();
 
       // now rebuild from the signed serialized tx and make sure it stays the same
-      const newTxBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const newTxBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       newTxBuilder.from(serialized);
       newTxBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
       const signedTx = await newTxBuilder.build();
@@ -63,14 +63,14 @@ describe('Celo Transaction builder for wallet initialization', () => {
     });
 
     it('a signed init transaction from serialized', async () => {
-      const newTxBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const newTxBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       newTxBuilder.from(testData.TX_BROADCAST);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
 
     it('correct transaction id', async () => {
-      const newTxBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const newTxBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       newTxBuilder.from(testData.TEST_WALLET_CREATION);
       const newTx = await newTxBuilder.build();
       should.equal(newTx.toJson().id, '0xc35ef12951bad60c37453a8bbabd50765c5426f4568e4afa3cbcd00b1505a946');
@@ -79,7 +79,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
 
   describe('Should validate ', () => {
     it('a raw transaction', async () => {
-      const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       should.doesNotThrow(() => builder.from(testData.TX_BROADCAST));
       should.doesNotThrow(() => builder.from(testData.TX_JSON));
       should.throws(() => builder.from('0x00001000'), 'There was error in decoding the hex string');

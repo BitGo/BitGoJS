@@ -1,11 +1,11 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Transaction } from '../../../../src/coin/cgld';
-import * as testData from '../../../resources/cgld/cgld';
-import { getCommon } from '../../../../src/coin/cgld/utils';
+import { Transaction } from '../../../../src/coin/celo';
+import * as testData from '../../../resources/celo/celo';
+import { getCommon } from '../../../../src/coin/celo/utils';
 
 describe('Celo Transaction', function() {
-  const coin = coins.get('cgld');
+  const coin = coins.get('celo');
   const common = getCommon(coin.network.type);
 
   /**

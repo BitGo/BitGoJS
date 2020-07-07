@@ -24,7 +24,7 @@ import {
   ActivateMethodId,
   WithdrawMethodId,
   UnvoteMethodId,
-} from '../cgld/stakingUtils';
+} from '../celo/stakingUtils';
 import { NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import {

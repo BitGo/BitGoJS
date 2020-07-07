@@ -1,14 +1,14 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { Cgld, getBuilder } from '../../../../../src';
+import { Celo, getBuilder } from '../../../../../src';
 import { StakingOperationTypes, TransactionType } from '../../../../../src/coin/baseCoin';
-import * as testData from '../../../../resources/cgld/cgld';
-import { getOperationConfig } from '../../../../../src/coin/cgld/stakingUtils';
+import * as testData from '../../../../resources/celo/celo';
+import { getOperationConfig } from '../../../../../src/coin/celo/stakingUtils';
 
 describe('Celo staking transaction builder', () => {
   let txBuilder;
   beforeEach(() => {
-    txBuilder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+    txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
     txBuilder.type(TransactionType.StakingLock);
     txBuilder.fee({
       fee: '1000000000',
@@ -17,7 +17,7 @@ describe('Celo staking transaction builder', () => {
     txBuilder.counter(1);
   });
 
-  const coin = coins.get('tcgld');
+  const coin = coins.get('tcelo');
   const LockOperation = getOperationConfig(StakingOperationTypes.LOCK, coin.network.type);
   const UnlockOperation = getOperationConfig(StakingOperationTypes.UNLOCK, coin.network.type);
   const WithdrawOperation = getOperationConfig(StakingOperationTypes.WITHDRAW, coin.network.type);
@@ -44,7 +44,7 @@ describe('Celo staking transaction builder', () => {
     });
 
     it('should sign and build a lock transaction from serialized', async function() {
-      const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.from(testData.LOCK_SERIALIZED);
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
@@ -95,7 +95,7 @@ describe('Celo staking transaction builder', () => {
     });
 
     it('should sign and build a vote transaction from serialized', async function() {
-      const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.from(testData.VOTE_BROADCAST_TX);
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
@@ -134,7 +134,7 @@ describe('Celo staking transaction builder', () => {
     });
 
     it('should sign and build an activate transaction from serialized', async function() {
-      const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.from(testData.ACTIVATE_BROADCAST_TX);
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
@@ -187,7 +187,7 @@ describe('Celo staking transaction builder', () => {
     });
 
     it('should sign and build a unvote transaction from serialized', async function() {
-      const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.from(testData.UNVOTE_BROADCAST_TX);
       builder.sign({ key: testData.PRIVATE_KEY });
       const tx = await builder.build();
@@ -220,7 +220,7 @@ describe('Celo staking transaction builder', () => {
     });
 
     it('should sign and build an unlock transaction from serialized', async function() {
-      const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.type(TransactionType.StakingLock);
       builder.from(testData.UNLOCK_BROADCAST_TX);
       builder.sign({ key: testData.PRIVATE_KEY });
@@ -262,7 +262,7 @@ describe('Celo staking transaction builder', () => {
     });
 
     it('should sign and build a withdraw transaction from serialized', async function() {
-      const builder = getBuilder('tcgld') as Cgld.TransactionBuilder;
+      const builder = getBuilder('tcelo') as Celo.TransactionBuilder;
       builder.type(TransactionType.StakingWithdraw);
       builder.from(testData.WITHDRAW_BROADCAST_TX);
       builder.sign({ key: testData.PRIVATE_KEY });
