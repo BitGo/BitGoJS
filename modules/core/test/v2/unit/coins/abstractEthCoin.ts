@@ -12,7 +12,7 @@ import * as bitgoUtxoLib from 'bitgo-utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 
 describe('ETH-like coins', () => {
-  _.forEach(['tetc', 'tcgld', 'trbtc'], coinName => {
+  _.forEach(['tetc', 'tcelo', 'trbtc'], coinName => {
     describe(`${coinName}`, () => {
       let bitgo;
       let basecoin;
@@ -57,6 +57,10 @@ describe('ETH-like coins', () => {
         gasPrice = '10000',
         gasLimit = '20000',
       }) {
+        // TODO : Remove this when account lib has changed celo to cgld
+        if (coinName === 'tcelo') {
+          coinName = 'tcgld';
+        }
         const txBuilder: Eth.TransactionBuilder = getBuilder(coinName) as Eth.TransactionBuilder;
         txBuilder.type(BaseCoin.TransactionType.Send);
         txBuilder.fee({
