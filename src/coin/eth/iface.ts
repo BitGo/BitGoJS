@@ -89,6 +89,11 @@ export interface TokenTransferData extends TransferData {
   tokenContractAddress: string;
 }
 
+export interface FlushTokensData {
+  forwarderAddress: string;
+  tokenAddress: string;
+}
+
 export interface NativeTransferData extends TransferData {
   data: string;
 }

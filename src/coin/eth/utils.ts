@@ -25,10 +25,12 @@ import {
   WithdrawMethodId,
   UnvoteMethodId,
 } from '../celo/stakingUtils';
-import { NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
+import { FlushTokensData, NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
 import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
+  flushForwarderTokensMethodId,
+  flushTokensTypes,
   sendMultisigMethodId,
   sendMultisigTokenMethodId,
   sendMultiSigTokenTypes,
@@ -136,6 +138,19 @@ export function sendMultiSigTokenData(
   const params = [to, value, tokenContractAddress, expireTime, sequenceId, toBuffer(signature)];
   const method = EthereumAbi.methodID('sendMultiSigToken', sendMultiSigTokenTypes);
   const args = EthereumAbi.rawEncode(sendMultiSigTokenTypes, params);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Get the data required to make a flush tokens contract call
+ *
+ * @param forwarderAddress The forwarder address to flush
+ * @param tokenAddress The token address to flush from
+ */
+export function flushTokensData(forwarderAddress, tokenAddress): string {
+  const params = [forwarderAddress, tokenAddress];
+  const method = EthereumAbi.methodID('flushForwarderTokens', flushTokensTypes);
+  const args = EthereumAbi.rawEncode(flushTokensTypes, params);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
 }
 
@@ -271,6 +286,28 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
 }
 
 /**
+ * Decode the given ABI-encoded flush tokens data and return parsed fields
+ *
+ * @param data The data to decode
+ * @returns parsed transfer data
+ */
+export function decodeFlushTokensData(data: string): FlushTokensData {
+  if (!data.startsWith(flushForwarderTokensMethodId)) {
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+  }
+
+  const [forwarderAddress, tokenAddress] = getRawDecoded(
+    flushTokensTypes,
+    getBufferedByteCode(flushForwarderTokensMethodId, data),
+  );
+
+  return {
+    forwarderAddress: bufferToHex(forwarderAddress),
+    tokenAddress: bufferToHex(tokenAddress),
+  };
+}
+
+/**
  * Classify the given transaction data based as a transaction type.
  * ETH transactions are defined by the first 8 bytes of the transaction data, also known as the method id
  *
@@ -293,6 +330,7 @@ const transactionTypesMap = {
   [walletInitializationFirstBytes]: TransactionType.WalletInitialization,
   [createForwarderMethodId]: TransactionType.AddressInitialization,
   [sendMultisigMethodId]: TransactionType.Send,
+  [flushForwarderTokensMethodId]: TransactionType.FlushTokens,
   [sendMultisigTokenMethodId]: TransactionType.Send,
   [LockMethodId]: TransactionType.StakingLock,
   [VoteMethodId]: TransactionType.StakingVote,

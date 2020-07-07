@@ -17,12 +17,18 @@ import { KeyPair } from './keyPair';
 import { Fee, SignatureParts, TxData } from './iface';
 import {
   calculateForwarderAddress,
+  flushTokensData,
   getAddressInitializationData,
   getCommon,
   hasSignature,
   isValidEthAddress,
 } from './utils';
-import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
+import {
+  flushForwarderTokensMethodId,
+  flushTokensTypes,
+  walletSimpleByteCode,
+  walletSimpleConstructor,
+} from './walletUtil';
 
 const DEFAULT_M = 3;
 
@@ -42,6 +48,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   // Wallet initialization transaction parameters
   private _walletOwnerAddresses: string[];
+
+  // flush tokens parameters
+  private _forwarderAddress: string;
+  private _tokenAddress: string;
 
   // Send and AddressInitialization transaction specific parameters
   protected _transfer: TransferBuilder;
@@ -89,6 +99,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         return this.buildSendTransaction();
       case TransactionType.AddressInitialization:
         return this.buildAddressInitializationTransaction();
+      case TransactionType.FlushTokens:
+        return this.buildFlushTokensTransaction();
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -130,6 +142,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         owners.forEach(element => {
           this.owner(element);
         });
+        break;
+      case TransactionType.FlushTokens:
+        if (transactionJson.to === undefined) {
+          throw new BuildTransactionError('Undefined recipient address');
+        }
+        this._contractAddress = transactionJson.to;
+        const { forwarderAddress, tokenAddress } = Utils.decodeFlushTokensData(transactionJson.data);
+        this._forwarderAddress = forwarderAddress;
+        this._tokenAddress = tokenAddress;
         break;
       case TransactionType.Send:
         if (transactionJson.to === undefined) {
@@ -233,6 +254,11 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.AddressInitialization:
         this.validateContractAddress();
         break;
+      case TransactionType.FlushTokens:
+        this.validateContractAddress();
+        this.validateForwarderAddress();
+        this.validateTokenAddress();
+        break;
       case TransactionType.StakingLock:
       case TransactionType.StakingUnlock:
       case TransactionType.StakingVote:
@@ -257,6 +283,24 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError(
         `Invalid transaction: wrong number of owners -- required: 3, found: ${this._walletOwnerAddresses.length}`,
       );
+    }
+  }
+
+  /**
+   * Check if a token address for the tx was defined or throw.
+   */
+  private validateTokenAddress(): void {
+    if (this._tokenAddress === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing token address');
+    }
+  }
+
+  /**
+   * Check if a forwarder address for the tx was defined or throw.
+   */
+  private validateForwarderAddress(): void {
+    if (this._forwarderAddress === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing forwarder address');
     }
   }
 
@@ -321,6 +365,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       data: data,
       chainId: this._common.chainId().toString(),
       value: '0',
+      to: this._contractAddress,
     };
   }
   // endregion
@@ -441,6 +486,41 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       tx.deployedAddress = calculateForwarderAddress(this._contractAddress, this._contractCounter);
     }
     return tx;
+  }
+  //endregion
+
+  //region flush methods
+  /**
+   * Set the forwarder address to flush
+   *
+   * @param {string} address The address to flush
+   */
+  forwarderAddress(address: string): void {
+    if (!isValidEthAddress(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    this._forwarderAddress = address;
+  }
+
+  /**
+   * Set the token address to flush
+   *
+   * @param {string} address the contract address of the token to flush
+   */
+  tokenAddress(address: string): void {
+    if (!isValidEthAddress(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    this._tokenAddress = address;
+  }
+
+  /**
+   * Build a transaction to flush tokens from a forwarder.
+   *
+   * @returns {TxData} The Ethereum transaction data
+   */
+  private buildFlushTokensTransaction(): TxData {
+    return this.buildBase(flushTokensData(this._forwarderAddress, this._tokenAddress));
   }
   //endregion
 
