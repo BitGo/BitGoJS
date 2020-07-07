@@ -10,6 +10,8 @@ steps:
 - name: build information
   image: node:10
   commands:
+  - df -h
+  - free
   - node --version
   - npm --version
   - yarn --version
