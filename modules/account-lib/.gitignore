@@ -1,0 +1,10 @@
+node_modules/
+npm-debug.log
+dist/
+.nyc_output/
+browser/
+mochawesome-report/
+.DS_STORE
+package/
+.idea/
+coverage.lcov

@@ -118,8 +118,9 @@ steps:
   commands:
   - yarn run artifacts
   - yarn run gen-coverage-changed
-  - yarn run coverage -F unit
+  - yarn run coverage
   environment:
+    CODECOV_FLAG: unit
     CODECOV_TOKEN:
       from_secret: codecov
     reports_s3_akid:
@@ -174,8 +175,9 @@ steps:
   commands:
   - yarn run artifacts
   - yarn run gen-coverage-changed
-  - yarn run coverage -F unit
+  - yarn run coverage
   environment:
+    CODECOV_FLAG: unit
     CODECOV_TOKEN:
       from_secret: codecov
     reports_s3_akid:
@@ -230,8 +232,9 @@ steps:
   commands:
   - yarn run artifacts
   - yarn run gen-coverage
-  - yarn run coverage -F integration
+  - yarn run coverage
   environment:
+    CODECOV_FLAG: integration
     CODECOV_TOKEN:
       from_secret: codecov
     reports_s3_akid:

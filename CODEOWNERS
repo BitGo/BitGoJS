@@ -2,39 +2,44 @@
 # Each line is a file pattern followed by one or more owners.
 
 # These owners and first officers will be the default owners for everything in the repo.
-*   tyler@bitgo.com danny@bitgo.com
+*   tyler@bitgo.com
 
 # Order is important. The last matching pattern has the most precedence.
 
 # Recovery
-modules/core/src/v2/recovery.ts danny@bitgo.com tyler@bitgo.com
+modules/core/src/v2/recovery.ts tyler@bitgo.com
 
 # Coin Support
-modules/core/src/v2/coins/*btc.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/*bch.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/*btg.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/*bsv.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/*ltc.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/*dash.ts dawid@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/*xlm.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/*xrp.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/*eth.ts mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/token.ts mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/core/src/v2/coins/*zec.ts jorge@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/core/src/v2/coins/*btc.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*bch.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*btg.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*bsv.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*ltc.ts mark@bitgo.com paddy@bitgo.com otto@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*dash.ts dawid@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*xlm.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*xrp.ts luis@bitgo.com jorge@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*eth.ts mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/token.ts mtoda@bitgo.com barath@bitgo.com ttaylor@bitgo.com tyler@bitgo.com
+modules/core/src/v2/coins/*zec.ts jorge@bitgo.com tyler@bitgo.com
 
 # Trading accounts
-modules/core/src/v2/trading/*.ts davidcruz@bitgo.com tyler@bitgo.com
+modules/core/src/v2/trading/*.ts irene@bitgo.com tyler@bitgo.com
 
 # Express
-modules/express/* tyler@bitgo.com danny@bitgo.com
+modules/express/* tyler@bitgo.com
 
 # Statics
 modules/statics/* tyler@bitgo.com elle@bitgo.com
 
 # Package Configuration Files
-modules/*/package*.json james@bitgo.com perry@bitgo.com tyler@bitgo.com danny@bitgo.com
+modules/*/package*.json tyler@bitgo.com
+
+modules/account-lib/* @argjv @twtaylorbitgo @CapnMigraine @marktoda @BitGo/git-admins
 
 # Lock files
-yarn.lock james@bitgo.com perry@bitgo.com tyler@bitgo.com danny@bitgo.com
-modules/express/package-lock.json james@bitgo.com perry@bitgo.com tyler@bitgo.com danny@bitgo.com
+yarn.lock tyler@bitgo.com
+modules/express/package-lock.json tyler@bitgo.com
+
+# NOTHING BELOW THIS LINE
+CODEOWNERS @BitGo/git-admins @argjv @twtaylorbitgo @CapnMigraine @tylerlevine @marktoda
 
