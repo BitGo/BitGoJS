@@ -2,12 +2,12 @@ import { HDNode } from 'bitgo-utxo-lib';
 import { addHexPrefix, pubToAddress } from 'ethereumjs-util';
 import { DefaultKeys } from '../baseCoin/iface';
 import { isPrivateKey, isPublicKey, KeyPairOptions } from '../baseCoin/iface';
-import { ExtendedKeyPair } from '../baseCoin/extendedKeyPair';
+import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 
 /**
  * Ethereum keys and address management.
  */
-export class KeyPair extends ExtendedKeyPair {
+export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
    *

@@ -23,8 +23,8 @@ export { Etc };
 import * as Rbtc from './coin/rbtc';
 export { Rbtc };
 
-import * as Cgld from './coin/cgld';
-export { Cgld };
+import * as Celo from './coin/celo';
+export { Celo };
 
 const coinBuilderMap = {
   trx: Trx.TransactionBuilder,
@@ -37,8 +37,8 @@ const coinBuilderMap = {
   teth: Eth.TransactionBuilder,
   rbtc: Rbtc.TransactionBuilder,
   trbtc: Rbtc.TransactionBuilder,
-  cgld: Cgld.TransactionBuilder,
-  tcgld: Cgld.TransactionBuilder,
+  celo: Celo.TransactionBuilder,
+  tcelo: Celo.TransactionBuilder,
 };
 
 /**

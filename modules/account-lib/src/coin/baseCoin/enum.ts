@@ -7,6 +7,8 @@ export enum TransactionType {
   WalletInitialization,
   // Initialize an address on-chain(e.g. Forwarder contract deployment)
   AddressInitialization,
+  // Flush tokens from a forwarder address to its base address
+  FlushTokens,
   // Update an account on-chain (e.g. Public key revelation operation for Tezos)
   AccountUpdate,
   // Lock
