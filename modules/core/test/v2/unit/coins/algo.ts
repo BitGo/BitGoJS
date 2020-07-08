@@ -1,5 +1,5 @@
 import * as Promise from 'bluebird';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as algosdk from 'algosdk';
 import 'should';
 
@@ -30,7 +30,7 @@ describe('ALGO:', function() {
   });
 
   it('should generate a keypair from seed', function() {
-    const seed = crypto.randomBytes(32);
+    const seed = randomBytes(32);
     const keyPair = basecoin.generateKeyPair(seed);
     keyPair.should.have.property('pub');
     keyPair.should.have.property('prv');

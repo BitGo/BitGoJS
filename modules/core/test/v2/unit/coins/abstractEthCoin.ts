@@ -12,7 +12,7 @@ import * as bitgoUtxoLib from 'bitgo-utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 
 describe('ETH-like coins', () => {
-  _.forEach(['tetc', 'tcgld', 'trbtc'], coinName => {
+  _.forEach(['tetc', 'tcelo', 'trbtc'], coinName => {
     describe(`${coinName}`, () => {
       let bitgo;
       let basecoin;

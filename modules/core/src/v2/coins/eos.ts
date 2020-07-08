@@ -15,7 +15,7 @@ import {
 } from '../baseCoin';
 import { NodeCallback } from '../types';
 import { BigNumber } from 'bignumber.js';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import { HDNode } from 'bitgo-utxo-lib';
 import * as EosJs from 'eosjs';
 import * as ecc from 'eosjs-ecc';
@@ -194,7 +194,7 @@ export class Eos extends BaseCoin {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the
       // maximum entropy and gives us maximum security against cracking.
-      seed = crypto.randomBytes(512 / 8);
+      seed = randomBytes(512 / 8);
     }
     const extendedKey = HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();

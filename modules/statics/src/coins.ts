@@ -54,20 +54,20 @@ export const coins = CoinMap.fromCoins([
   account('susd', 'Silvergate USD', Networks.main.susd, 2, UnderlyingAsset.USD),
   account('tsusd', 'Testnet Silvergate USD', Networks.test.susd, 2, UnderlyingAsset.USD),
   erc20CompatibleAccountCoin(
-    'cgld',
+    'celo',
     'Celo Gold',
     Networks.main.celo,
     18,
     '0x471ece3750da237f93b8e339c536989b8978a438',
-    UnderlyingAsset.CGLD
+    UnderlyingAsset.CELO
   ),
   erc20CompatibleAccountCoin(
-    'tcgld',
+    'tcelo',
     'Testnet Celo Gold',
     Networks.test.celo,
     18,
     '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9',
-    UnderlyingAsset.CGLD
+    UnderlyingAsset.CELO
   ),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('ofcbtc', 'Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
@@ -449,6 +449,7 @@ export const coins = CoinMap.fromCoins([
   terc20('tcat', 'Test CAT-20 Token', 18, '0x63137319f3a14a985eb31547370e0e3bd39b03b8', UnderlyingAsset.CAT),
   terc20('tfmf', 'Test Formosa Financial Token', 18, '0xd8463d2f8c5b3be9de95c63b73a0ae4c79423452', UnderlyingAsset.FMF),
   terc20('terc20', 'Test ERC20 Token', 18, '0x731a10897d267e19b34503ad902d0a29173ba4b1', UnderlyingAsset.TERC20),
+  terc20('tdai', 'Test DAI', 18, '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', UnderlyingAsset.TERC20),
   tceloToken('tcusd', 'Test Celo USD Token', 18, '0xa561131a1c8ac25925fb848bca45a74af61e5a38', UnderlyingAsset.CUSD),
   tstellarToken(
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',

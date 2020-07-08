@@ -43,11 +43,10 @@ this package to run on newer, non-LTS, versions of Node.  Furthermore, we will
 attempt to ensure our own changes work on the latest version of Node. To help
 in that commitment, our continuous integration setup runs the full test suite
 on the latest release of the following versions of node:
-* `6`
-* `8`
+
 * `10`
-* `11`
-* `lts`
+
+**Note:** We intend to support the current `lts` (node 12), but it is not currently running due to compability issues with dependencies)
 
 JavaScript package managers should allow you to install this package with any
 version of Node, with, at most, a warning if your version of Node does not fall

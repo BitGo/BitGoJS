@@ -1,5 +1,16 @@
 # BitGoJS Release Notes
 
+## 11.3.0 (06-30-2020)
+
+### New Features
+* Add ability to use a custom API token when using the Etherscan API
+* Implement `signTransaction`, `explainTransaction` and other functions needed for signing and recovery to `AbstractEthLikeCoin`, which unifies the logic for Ethereum forks and chains with compatible characteristics.
+
+### Other Changes
+* Update `@bitgo/account-lib` to version 1.7.0
+* Update `@bitgo/account-lib` to version 4.3.0
+* Change exported enums to be non-const
+
 ## 11.2.0 (06-15-2020)
 
 ### New Features
