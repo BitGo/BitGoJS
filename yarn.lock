@@ -283,6 +283,29 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
+"@bitgo/account-lib@^2.0.0-rc.1":
+  version "2.0.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-2.0.0-rc.1.tgz#39d4a32df002951392a956e73157c33da35d481d"
+  integrity sha512-nlXGCa4Ub6tNlJaFm9GlURq+GCZD2Vm/pQwByQEFcNc6xrLLnI3hTg92ISuvzwhtgtmeUECbYoh5Fp0z9EB9vw==
+  dependencies:
+    "@bitgo/statics" "^5.0.0-rc.0"
+    "@celo/contractkit" "0.3.1"
+    "@taquito/local-forging" "^6.0.3-beta.0"
+    "@taquito/signer" "^6.0.3-beta.0"
+    "@types/lodash" "^4.14.151"
+    bignumber.js "^9.0.0"
+    bitgo-utxo-lib "^1.6.0"
+    blake2b "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac"
+    bs58check "^2.1.2"
+    elliptic "^6.5.2"
+    ethereumjs-abi "0.6.0"
+    ethereumjs-tx "2.1.2"
+    ethereumjs-util "5.2.0"
+    libsodium-wrappers "^0.7.6"
+    lodash "^4.17.15"
+    protobufjs "^6.8.9"
+    tronweb "^2.7.2"
+
 "@bitgo/statics@^5.0.0-rc.0":
   version "5.0.0-rc.1"
   resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-5.0.0-rc.1.tgz#a1b96408fbe95b5a543b50b58d7084e921ba58ca"

@@ -19,8 +19,6 @@ export class TransferBuilder {
   private _tokenContractAddress?: string;
   private _coin: Readonly<BaseCoin>;
 
-  constructor();
-  constructor(serializedData: string);
   constructor(serializedData?: string) {
     if (serializedData) {
       this.decodeTransferData(serializedData);

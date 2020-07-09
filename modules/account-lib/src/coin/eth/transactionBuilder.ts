@@ -158,7 +158,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           throw new BuildTransactionError('Undefined recipient address');
         }
         this._contractAddress = transactionJson.to;
-        this._transfer = new TransferBuilder(transactionJson.data);
+        this._transfer = this.transfer(transactionJson.data);
         break;
       case TransactionType.AddressInitialization:
         if (transactionJson.to === undefined) {
@@ -427,14 +427,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
    *
+   * @param [data] transfer data to initialize the transfer builder with, empty if none given
    * @returns {TransferBuilder} the transfer builder
    */
-  transfer(): TransferBuilder {
+  transfer(data?: string): TransferBuilder {
     if (this._type !== TransactionType.Send) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
     if (!this._transfer) {
-      this._transfer = new TransferBuilder();
+      this._transfer = new TransferBuilder(data);
     }
     return this._transfer;
   }

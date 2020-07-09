@@ -10,29 +10,79 @@ import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';
 import * as bitgoUtxoLib from 'bitgo-utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
+import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
 
 describe('ETH-like coins', () => {
   _.forEach(['tetc', 'tcelo', 'trbtc'], coinName => {
     describe(`${coinName}`, () => {
       let bitgo;
       let basecoin;
+      let coin;
 
       const sendMultisigTypes = ['address', 'uint256', 'bytes', 'uint256', 'uint256', 'bytes'];
+      const sendMultisigTokenTypes = ['address', 'uint256', 'address', 'uint256', 'uint256', 'bytes'];
+      const signatureSaltMap = {
+        native: {
+          tetc: 'ETC',
+          tcelo: 'CELO',
+          trbtc: 'RSK',
+        },
+        token: {
+          tetc: 'ETC-ERC20',
+          tcelo: 'CELO-ERC20',
+          trbtc: 'RSK-ERC20',
+        },
+      };
+
+      /**
+       * Get the operation hash that the user key signed
+       * @param tx The transaction to calculate operatino hash from
+       * @return The operation hash
+       */
+      const getOperationHash = (tx: BaseCoin.BaseTransaction): string => {
+        const { data } = tx.toJson();
+        const { tokenContractAddress, expireTime, sequenceId, amount, to } = Eth.Utils.decodeTransferData(data);
+
+        if (coin instanceof ContractAddressDefinedToken) {
+          return ethAbi.soliditySHA3(
+            ...[
+              ['string', 'address', 'uint', 'address', 'uint', 'uint'],
+              [
+                signatureSaltMap.token[coinName],
+                new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
+                amount,
+                new ethUtil.BN(ethUtil.stripHexPrefix(tokenContractAddress), 16),
+                expireTime,
+                sequenceId,
+              ],
+            ]
+          );
+        } else {
+          return ethAbi.soliditySHA3(
+            ...[
+              ['string', 'address', 'uint', 'uint', 'uint'],
+              [
+                signatureSaltMap.native[coinName],
+                new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
+                amount,
+                expireTime,
+                sequenceId,
+              ],
+            ]
+          );
+        }
+      };
 
       /**
        * Recover the signing address of a signature
-       * @param signature The signature to recover the signer from
-       * @param address The recipient address of the tx the signature signed
-       * @param amount The amount of the tx the signature signed
-       * @param expireTime The expire time of the tx the signature signed
-       * @param sequenceId The contract sequence id of the tx the signature signed
+       * @param tx The transaction to recover a signer from
        * @return The eth address of the signer
        */
-      const recoverSigner = function({ signature, address, amount, expireTime, sequenceId }) {
+      const recoverSigner = function(tx: BaseCoin.BaseTransaction) {
+        const { signature } = Eth.Utils.decodeTransferData(tx.toJson().data);
         const { v, r, s } = ethUtil.fromRpcSig(signature);
-        const teth = bitgo.coin('teth');
-        const operationHash = teth.getOperationSha3ForExecuteAndConfirm([{ address, amount }], expireTime, sequenceId);
-        const pubKeyBuffer = ethUtil.ecrecover(Buffer.from(ethUtil.stripHexPrefix(operationHash), 'hex'), v, r, s);
+        const operationHash = getOperationHash(tx);
+        const pubKeyBuffer = ethUtil.ecrecover(operationHash, v, r, s);
         return ethUtil.bufferToHex(ethUtil.pubToAddress(ethUtil.importPublic(pubKeyBuffer)));
       };
 
@@ -67,6 +117,7 @@ describe('ETH-like coins', () => {
         txBuilder.contract(contractAddress);
         txBuilder
           .transfer()
+          .coin(coinName)
           .expirationTime(expireTime)
           .amount(amount)
           .to(destination)
@@ -79,6 +130,7 @@ describe('ETH-like coins', () => {
         bitgo = new TestBitGo({ env: 'mock' });
         bitgo.initializeTestVars();
         basecoin = bitgo.coin(coinName);
+        coin = coins.get(coinName);
       });
 
       describe('Is valid address', () => {
@@ -193,23 +245,28 @@ describe('ETH-like coins', () => {
           const txJson = transaction.toJson();
           txJson.to.should.equal(contractAddress);
 
-          const [recipient, value, data, expireTime, sequenceId, signature] = ethAbi.rawDecode(
-            sendMultisigTypes,
-            Buffer.from(txJson.data.slice(10), 'hex')
-          );
+          let decodedData;
+          let recipient;
+          let value;
+          let data;
+          let expireTime;
+          let sequenceId;
+          let tokenContractAddress;
+          if (coin instanceof ContractAddressDefinedToken) {
+            decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
+            [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
+            data = new Buffer('');
+          } else {
+            decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
+            [recipient, value, data, expireTime, sequenceId] = decodedData;
+          }
           ethUtil.addHexPrefix(recipient).should.equal(destination);
           value.toString(10).should.equal(amount);
           inputExpireTime.should.equal(parseInt(expireTime.toString('hex'), 16));
           inputSequenceId.should.equal(parseInt(sequenceId.toString('hex'), 16));
           data.length.should.equal(0);
 
-          const recoveredAddress = recoverSigner({
-            signature,
-            address: destination,
-            sequenceId: inputSequenceId,
-            expireTime: inputExpireTime,
-            amount,
-          });
+          const recoveredAddress = recoverSigner(transaction);
           recoveredAddress.should.equal(key.getAddress());
         });
 
@@ -242,23 +299,29 @@ describe('ETH-like coins', () => {
           const txJson = transaction.toJson();
           txJson.to.should.equal(contractAddress);
 
-          const [recipient, value, data, expireTime, sequenceId, signature] = ethAbi.rawDecode(
-            sendMultisigTypes,
-            Buffer.from(txJson.data.slice(10), 'hex')
-          );
+          let decodedData;
+          let recipient;
+          let value;
+          let data;
+          let expireTime;
+          let sequenceId;
+          let tokenContractAddress;
+          if (coin instanceof ContractAddressDefinedToken) {
+            decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
+            [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
+            data = new Buffer('');
+          } else {
+            decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
+            [recipient, value, data, expireTime, sequenceId] = decodedData;
+          }
+
           ethUtil.addHexPrefix(recipient).should.equal(destination);
           value.toString(10).should.equal(amount);
           inputExpireTime.should.equal(parseInt(expireTime.toString('hex'), 16));
           inputSequenceId.should.equal(parseInt(sequenceId.toString('hex'), 16));
           data.length.should.equal(0);
 
-          const recoveredAddress = recoverSigner({
-            signature,
-            address: destination,
-            sequenceId: inputSequenceId,
-            expireTime: inputExpireTime,
-            amount,
-          });
+          const recoveredAddress = recoverSigner(transaction);
           recoveredAddress.should.equal(key.getAddress());
         });
 
