@@ -31,12 +31,12 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
   }
 
   /** @inheritdoc */
-  transfer(): TransferBuilder {
+  transfer(data?: string): TransferBuilder {
     if (this._type !== TransactionType.Send) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
     if (!this._transfer) {
-      this._transfer = new TransferBuilder();
+      this._transfer = new TransferBuilder(data);
     }
     return this._transfer;
   }
