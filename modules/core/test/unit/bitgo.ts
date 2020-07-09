@@ -459,11 +459,8 @@ describe('BitGo Prototype Methods', function() {
     it('Should return a non-empty list of tokens before the server responds', co(function *coTokenDefinitionsIt() {
       const bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
-      const tokens = bitgo.getConstants().eth.tokens;
-
-      // currently seven tokens are defined for non-production environments
-      should.exist(tokens);
-      tokens.length.should.equal(7);
+      const constants = bitgo.getConstants();
+      constants.should.have.propertyByPath('eth', 'tokens', 'length').greaterThan(0);
     }));
 
     after(function tokenDefinitionsAfter() {

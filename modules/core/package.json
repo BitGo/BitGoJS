@@ -19,8 +19,6 @@
     "npm": ">=3.10.10"
   },
   "scripts": {
-    "gen-coverage": "./node_modules/.bin/nyc report --reporter=text-lcov > coverage.lcov",
-    "upload-coverage": "codecov -f coverage.lcov -t \"$CODECOV_TOKEN\" -F \"$npm_package_name\"",
     "babelify": "mkdir -p browser && ./node_modules/.bin/browserify ./dist/src/index.js --exclude superagent-proxy --exclude morgan -t babelify -s BitGoJS -o browser/BitGoJS-babelify.js",
     "browserify": "mkdir -p ./dist/browserify && browserify ./dist/src/index.js --exclude **/superagent-proxy --exclude morgan -s BitGoJS -o ./dist/browserify/BitGoJS.browserify.js",
     "compile": "npm run browserify && npm run webpack-prod",
@@ -47,7 +45,7 @@
     "gen-docs": "typedoc"
   },
   "dependencies": {
-    "@bitgo/account-lib": "^2.0.0-rc.0",
+    "@bitgo/account-lib": "^2.0.0-rc.1",
     "@bitgo/statics": "^5.0.0-rc.1",
     "@bitgo/unspents": "^0.6.0",
     "@types/bluebird": "^3.5.25",
