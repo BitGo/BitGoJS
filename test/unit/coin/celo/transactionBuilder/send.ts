@@ -1,7 +1,10 @@
 import should from 'should';
-import { TransactionType } from '../../../../../src/coin/baseCoin';
+import * as ethUtil from 'ethereumjs-util';
+import EthereumAbi from 'ethereumjs-abi';
+import { BaseTransaction, TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Celo } from '../../../../../src';
 import * as testData from '../../../../resources/celo/celo';
+import { decodeTransferData } from '../../../../../src/coin/eth/utils';
 
 describe('Send transaction', function() {
   let txBuilder: Celo.TransactionBuilder;
@@ -16,7 +19,61 @@ describe('Send transaction', function() {
   };
   const key = testData.KEYPAIR_PRV.getKeys().prv as string;
 
+  const getOperationHash = function(tx: BaseTransaction): string {
+    const { data } = tx.toJson();
+    const { tokenContractAddress, expireTime, sequenceId, amount, to } = decodeTransferData(data);
+    const operationParams = [
+      ['string', 'address', 'uint', 'address', 'uint', 'uint'],
+      [
+        'CELO-ERC20',
+        new ethUtil.BN(ethUtil.stripHexPrefix(to), 16),
+        amount,
+        new ethUtil.BN(ethUtil.stripHexPrefix(tokenContractAddress), 16),
+        expireTime,
+        sequenceId,
+      ],
+    ];
+    return EthereumAbi.soliditySHA3(...operationParams);
+  };
+
   describe('should sign and build', () => {
+    it('a send celo transaction', async () => {
+      const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
+      const contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
+      const amount = '1000000000';
+      initTxBuilder();
+      txBuilder.contract(contractAddress);
+      txBuilder
+        .transfer()
+        .coin('tcelo')
+        .amount(amount)
+        .to(recipient)
+        .expirationTime(1590066728)
+        .contractSequenceId(5)
+        .key(key);
+      txBuilder.sign({ key: testData.PRIVATE_KEY });
+      const tx = await txBuilder.build();
+      should.equal(tx.signature.length, 2);
+      should.equal(tx.inputs.length, 1);
+      should.equal(tx.inputs[0].address, contractAddress);
+      should.equal(tx.inputs[0].value, amount);
+      should.equal(tx.inputs[0].coin, 'tcelo');
+
+      should.equal(tx.outputs.length, 1);
+      should.equal(tx.outputs[0].address, recipient);
+      should.equal(tx.outputs[0].value, amount);
+      should.equal(tx.outputs[0].coin, 'tcelo');
+
+      const { signature } = decodeTransferData(tx.toJson().data);
+      const operationHash = getOperationHash(tx);
+
+      const { v, r, s } = ethUtil.fromRpcSig(signature);
+      const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
+      const senderAddress = ethUtil.pubToAddress(senderPubKey);
+      const senderKey = new Celo.KeyPair({ prv: testData.PRIVATE_KEY });
+      ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
+    });
+
     it('a send token transaction', async () => {
       const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
       const contractAddress = '0x8f977e912ef500548a0c3be6ddde9899f1199b81';
@@ -44,6 +101,15 @@ describe('Send transaction', function() {
       should.equal(tx.outputs[0].address, recipient);
       should.equal(tx.outputs[0].value, amount);
       should.equal(tx.outputs[0].coin, 'tcusd');
+
+      const { signature } = decodeTransferData(tx.toJson().data);
+      const operationHash = getOperationHash(tx);
+
+      const { v, r, s } = ethUtil.fromRpcSig(signature);
+      const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
+      const senderAddress = ethUtil.pubToAddress(senderPubKey);
+      const senderKey = new Celo.KeyPair({ prv: testData.PRIVATE_KEY });
+      ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
     });
 
     it('a send token transactions from serialized', async () => {
@@ -51,6 +117,31 @@ describe('Send transaction', function() {
       txBuilder.from(testData.SEND_TOKEN_TX_BROADCAST);
       const tx = await txBuilder.build();
       should.equal(tx.toBroadcastFormat(), testData.SEND_TOKEN_TX_BROADCAST);
+
+      const { signature } = decodeTransferData(tx.toJson().data);
+      const operationHash = getOperationHash(tx);
+
+      const { v, r, s } = ethUtil.fromRpcSig(signature);
+      const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
+      const senderAddress = ethUtil.pubToAddress(senderPubKey);
+      const senderKey = new Celo.KeyPair({ prv: testData.PRIVATE_KEY });
+      ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
+    });
+
+    it('a half signed transaction', async () => {
+      const txBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
+      txBuilder.from(testData.HALF_SIGNED_TX_SEND);
+      txBuilder.transfer().key(key);
+      const tx = await txBuilder.build();
+
+      const { signature } = decodeTransferData(tx.toJson().data);
+      const operationHash = getOperationHash(tx);
+
+      const { v, r, s } = ethUtil.fromRpcSig(signature);
+      const senderPubKey = ethUtil.ecrecover(operationHash, v, r, s);
+      const senderAddress = ethUtil.pubToAddress(senderPubKey);
+      const senderKey = new Celo.KeyPair({ prv: testData.PRIVATE_KEY });
+      ethUtil.bufferToHex(senderAddress).should.equal(senderKey.getAddress());
     });
   });
 

@@ -10,7 +10,7 @@ import {
   stripHexPrefix,
   toBuffer,
 } from 'ethereumjs-util';
-import { coins, BaseCoin, Erc20Coin, CeloCoin, NetworkType } from '@bitgo/statics';
+import { coins, BaseCoin, Erc20Coin, CeloCoin, NetworkType, ContractAddressDefinedToken } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
@@ -432,7 +432,7 @@ export function getBufferedByteCode(methodId: string, rawData: string): Buffer {
  */
 export function getToken(tokenContractAddress: string): Readonly<BaseCoin> | undefined {
   const tokens = coins.filter(coin => {
-    if (coin instanceof Erc20Coin || coin instanceof CeloCoin) {
+    if (coin instanceof ContractAddressDefinedToken) {
       return coin.contractAddress.toLowerCase() === tokenContractAddress.toLowerCase();
     }
     return false;
