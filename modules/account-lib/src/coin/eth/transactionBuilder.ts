@@ -23,12 +23,7 @@ import {
   hasSignature,
   isValidEthAddress,
 } from './utils';
-import {
-  flushForwarderTokensMethodId,
-  flushTokensTypes,
-  walletSimpleByteCode,
-  walletSimpleConstructor,
-} from './walletUtil';
+import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
 
 const DEFAULT_M = 3;
 
@@ -42,6 +37,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private _sourceKeyPair: KeyPair;
   private _counter: number;
   private _fee: Fee;
+  private _value: string;
 
   // the signature on the external ETH transaction
   private _txSignature: SignatureParts;
@@ -68,6 +64,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._common = getCommon(this._coinConfig.network.type);
     this._type = TransactionType.Send;
     this._counter = 0;
+    this._value = '0';
     this._walletOwnerAddresses = [];
     this.transaction = new Transaction(this._coinConfig, this._common);
   }
@@ -101,6 +98,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         return this.buildAddressInitializationTransaction();
       case TransactionType.FlushTokens:
         return this.buildFlushTokensTransaction();
+      case TransactionType.SingleSigSend:
+        return this.buildBase('0x');
       default:
         throw new BuildTransactionError('Unsupported transaction type');
     }
@@ -129,6 +128,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this.type(decodedType);
     this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
     this.counter(transactionJson.nonce);
+    this.value(transactionJson.value);
     if (hasSignature(transactionJson)) {
       this._txSignature = { v: transactionJson.v!, r: transactionJson.r!, s: transactionJson.s! };
     }
@@ -148,31 +148,37 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           throw new BuildTransactionError('Undefined recipient address');
         }
         // the address of the wallet contract that we are calling "flushForwarderTokens" on
-        this._contractAddress = transactionJson.to;
+        this.contract(transactionJson.to);
         const { forwarderAddress, tokenAddress } = Utils.decodeFlushTokensData(transactionJson.data);
-        this._forwarderAddress = forwarderAddress;
-        this._tokenAddress = tokenAddress;
+        this.forwarderAddress(forwarderAddress);
+        this.tokenAddress(tokenAddress);
         break;
       case TransactionType.Send:
         if (transactionJson.to === undefined) {
           throw new BuildTransactionError('Undefined recipient address');
         }
-        this._contractAddress = transactionJson.to;
+        this.contract(transactionJson.to);
         this._transfer = this.transfer(transactionJson.data);
         break;
       case TransactionType.AddressInitialization:
         if (transactionJson.to === undefined) {
           throw new BuildTransactionError('Undefined recipient address');
         }
-        this._contractAddress = transactionJson.to;
+        this.contract(transactionJson.to);
+        break;
+      case TransactionType.SingleSigSend:
+        if (transactionJson.to === undefined) {
+          throw new BuildTransactionError('Undefined recipient address');
+        }
+        this.contract(transactionJson.to);
         break;
       default:
         throw new BuildTransactionError('Unsupported transaction type');
-      //TODO: Add other cases of deserialization
+      // TODO: Add other cases of deserialization
     }
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   protected signImplementation(key: BaseKey): BaseTransaction {
     const signer = new KeyPair({ prv: key.key });
     if (this._type === TransactionType.WalletInitialization && this._walletOwnerAddresses.length === 0) {
@@ -194,7 +200,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   validateKey(key: BaseKey): void {
     if (!(Crypto.isValidXprv(key.key) || Crypto.isValidPrv(key.key))) {
       throw new BuildTransactionError('Invalid key');
@@ -242,7 +248,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   validateTransaction(transaction: BaseTransaction): void {
     this.validateBaseTransactionFields();
     switch (this._type) {
@@ -259,6 +265,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         this.validateContractAddress();
         this.validateForwarderAddress();
         this.validateTokenAddress();
+        break;
+      case TransactionType.SingleSigSend:
+        // for single sig sends, the contract address is actually the recipient
+        this.validateContractAddress();
         break;
       case TransactionType.StakingLock:
       case TransactionType.StakingUnlock:
@@ -358,6 +368,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = counter;
   }
 
+  /**
+   * The value to send along with this transaction. 0 by default
+   *
+   * @param {string} value The value to send along with this transaction
+   */
+  value(value: string): void {
+    this._value = value;
+  }
+
   protected buildBase(data: string): TxData {
     return {
       gasLimit: this._fee.gasLimit,
@@ -365,7 +384,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       nonce: this._counter,
       data: data,
       chainId: this._common.chainId().toString(),
-      value: '0',
+      value: this._value,
       to: this._contractAddress,
     };
   }
@@ -491,7 +510,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
   //endregion
 
-  //region flush methods
+  // region flush methods
   /**
    * Set the forwarder address to flush
    *

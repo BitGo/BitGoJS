@@ -26,7 +26,7 @@ export class EthTransactionData implements EthLikeTransactionData {
           gasPrice: addHexPrefix(new BigNumber(tx.gasPrice).toString(16)),
           gasLimit: addHexPrefix(new BigNumber(tx.gasLimit).toString(16)),
           value: addHexPrefix(new BigNumber(tx.value).toString(16)),
-          data: tx.data === '0x' ? '' : tx.data,
+          data: tx.data,
           v: tx.v,
           r: tx.r,
           s: tx.s,

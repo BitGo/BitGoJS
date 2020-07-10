@@ -315,6 +315,12 @@ export function decodeFlushTokensData(data: string): FlushTokensData {
  * @returns {TransactionType} The classified transaction type
  */
 export function classifyTransaction(data: string): TransactionType {
+  if (data.length < 10) {
+    // contract calls must have at least 4 bytes (method id) and '0x'
+    // if it doesn't have enough data to be a contract call it must be a single sig send
+    return TransactionType.SingleSigSend;
+  }
+
   const transactionType = transactionTypesMap[data.slice(0, 10).toLowerCase()];
   if (transactionType === undefined) {
     throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
