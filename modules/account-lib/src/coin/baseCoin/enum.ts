@@ -9,6 +9,8 @@ export enum TransactionType {
   AddressInitialization,
   // Flush tokens from a forwarder address to its base address
   FlushTokens,
+  // Send a raw single-sig transaction
+  SingleSigSend,
   // Update an account on-chain (e.g. Public key revelation operation for Tezos)
   AccountUpdate,
   // Lock
