@@ -10,7 +10,7 @@ import { AddressGenerationError } from '../errors';
 import {
   BaseCoin,
   SignedTransaction, TransactionPrebuild,
-  VerificationOptions,
+  VerificationOptions, VerifyAddressOptions,
 } from './baseCoin';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Eth } from './coins';
@@ -1262,13 +1262,16 @@ export class Wallet {
         }
 
         newAddress.keychains = keychains;
-        const verificationData = _.merge({}, newAddress, { rootAddress });
+        const verificationData: VerifyAddressOptions = _.merge({}, newAddress, { rootAddress });
 
         if (verificationData.error) {
           throw new AddressGenerationError(verificationData.error);
         }
 
-        self.baseCoin.verifyAddress(verificationData);
+        if (verificationData.coinSpecific && !verificationData.coinSpecific.pendingChainInitialization) {
+          // can't verify addresses which are pending chain initialization, as the address is hidden
+          self.baseCoin.verifyAddress(verificationData);
+        }
 
         return newAddress;
       }).bind(this));
