@@ -493,7 +493,7 @@ export function hederaCoin(
       prefix,
       suffix,
       network,
-      isToken: true,
+      isToken: false,
       primaryKeyCurve,
     })
   );
