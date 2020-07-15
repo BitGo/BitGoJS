@@ -25,6 +25,7 @@ export enum CoinFamily {
   ETH = 'eth',
   ETC = 'etc',
   EOS = 'eos',
+  HBAR = 'hbar',
   LTC = 'ltc',
   OFC = 'ofc',
   RMG = 'rmg',
@@ -140,6 +141,7 @@ export enum UnderlyingAsset {
   ETH = 'eth',
   ETC = 'etc',
   EOS = 'eos',
+  HBAR = 'hbar', // Hedera main coin
   LTC = 'ltc',
   RBTC = 'rbtc', // RSK main coin
   TRX = 'trx',

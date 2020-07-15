@@ -58,6 +58,10 @@ export interface StellarCoinConstructorOptions extends AccountConstructorOptions
   domain: string;
 }
 
+export interface HederaCoinConstructorOptions extends AccountConstructorOptions {
+  nodeAccountId: string;
+}
+
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -135,6 +139,23 @@ export class StellarCoin extends AccountCoinToken {
     }
 
     this.domain = options.domain as string;
+  }
+}
+
+/**
+ * The Hedera coin needs a client set with the node account Id.
+ * It's an account based coin that needs the node account ID
+ * where the transaction will be sent.
+ */
+export class HederaCoin extends AccountCoinToken {
+  public nodeAccountId: string;
+
+  constructor(options: HederaCoinConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.nodeAccountId = options.nodeAccountId;
   }
 }
 
@@ -433,4 +454,47 @@ export function tstellarToken(
   network: AccountNetwork = Networks.test.stellar
 ) {
   return stellarToken(name, fullName, decimalPlaces, asset, domain, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for Hedera coin instances
+ *
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param nodeAccountId node account Id from which the transaction will be sent
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Hedera mainnet.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function hederaCoin(
+  name: string,
+  fullName: string,
+  network: AccountNetwork,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  nodeAccountId: string = '0.0.3',
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new HederaCoin({
+      name,
+      fullName,
+      decimalPlaces,
+      asset,
+      nodeAccountId,
+      features,
+      prefix,
+      suffix,
+      network,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
 }
