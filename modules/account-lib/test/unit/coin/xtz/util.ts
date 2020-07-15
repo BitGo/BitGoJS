@@ -7,7 +7,6 @@ import {
   signedSerializedOriginationTransaction,
   validDataToSign,
 } from '../../../resources/xtz/xtz';
-import { hashTypes } from '../../../../src/coin/xtz/utils';
 import { HashType } from '../../../../src/coin/xtz/iface';
 
 describe('XTZ util library', function() {
@@ -263,7 +262,7 @@ describe('XTZ util library', function() {
 
   describe('decodeKey', function() {
     it('should decode the key', function() {
-      const validKeys = [['spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL', hashTypes.spsk]];
+      const validKeys = [['spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL', Utils.hashTypes.spsk]];
 
       for (const data of validKeys) {
         Utils.decodeKey(data[0] as string, data[1] as HashType)
@@ -276,9 +275,9 @@ describe('XTZ util library', function() {
       const invalidKeys = [
         [
           'sigVgnaU2S1L4jhtPaTX2SAxsGpP1dRS89VTSR9FrFuxxPvgA2G67QRuez6o6xP7ekagdZX4ELvh7pbMMdLoBSzvk2AVyQpk',
-          hashTypes.tz1,
+          Utils.hashTypes.tz1,
         ],
-        ['sppk', hashTypes.sppk],
+        ['sppk', Utils.hashTypes.sppk],
       ];
 
       for (const data of invalidKeys) {

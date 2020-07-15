@@ -9,12 +9,15 @@ import { SigningError } from './errors';
  * Provide a set of default steps (i.e. from, sign, build) and enforces mandatory validations.
  */
 export abstract class BaseTransactionBuilder {
+  protected _coinConfig: Readonly<CoinConfig>;
   /**
    * Base constructor.
    *
    * @param _coinConfig BaseCoin from statics library
    */
-  protected constructor(protected _coinConfig: Readonly<CoinConfig>) {}
+  protected constructor(_coinConfig: Readonly<CoinConfig>) {
+    this._coinConfig = _coinConfig;
+  }
 
   /**
    * Parse a transaction based on existing data. The input format is determined by the coin

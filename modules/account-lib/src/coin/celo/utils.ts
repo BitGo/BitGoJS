@@ -18,7 +18,7 @@ import { mainnetCommon, testnetCommon } from './resources';
 export function deserialize(serializedTx: string): TxData {
   try {
     const decodedTx = RLP.decode(serializedTx);
-    decodedTx.splice(3, 3); //remove unused feeCurrency, gatewayFeeRecipient and gatewayFee
+    decodedTx.splice(3, 3); // remove unused feeCurrency, gatewayFeeRecipient and gatewayFee
     const [nonce, gasPrice, gasLimit, to, value, data, v, r, s] = decodedTx;
     let chainId = v;
     let from;

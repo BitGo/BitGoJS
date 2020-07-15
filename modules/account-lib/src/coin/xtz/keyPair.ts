@@ -1,9 +1,8 @@
 import { randomBytes } from 'crypto';
 import blake2b from 'blake2b';
 import { HDNode, ECPair } from 'bitgo-utxo-lib';
-import { DefaultKeys } from '../baseCoin/iface';
 import * as CryptoUtils from '../../utils/crypto';
-import { isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
+import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 import * as Utils from './utils';
 
