@@ -4,7 +4,7 @@ import EthereumCommon from 'ethereumjs-common';
  * A Common object defining the chain and the hardfork for ETC Testnet
  */
 export const testnetCommon = EthereumCommon.forCustomChain(
-  'kovan', //actual name is mordor, but ethereumjs-common does not recognize that name
+  'kovan', // actual name is mordor, but ethereumjs-common does not recognize that name
   {
     name: 'testnet',
     networkId: 7,

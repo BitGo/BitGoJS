@@ -1,10 +1,8 @@
 import ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { coins, BaseCoin, ContractAddressDefinedToken } from '@bitgo/statics';
-import { BuildTransactionError } from '../baseCoin/errors';
-import { InvalidParameterValueError } from '../baseCoin/errors';
-import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData } from './utils';
-import { isValidEthAddress, isValidAmount } from './utils';
+import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
+import { decodeTransferData, sendMultiSigData, sendMultiSigTokenData, isValidEthAddress, isValidAmount } from './utils';
 
 /** ETH transfer builder */
 export class TransferBuilder {
@@ -23,7 +21,7 @@ export class TransferBuilder {
     if (serializedData) {
       this.decodeTransferData(serializedData);
     } else {
-      //initialize with default values for non mandatory fields
+      // initialize with default values for non mandatory fields
       this._expirationTime = this.getExpirationTime();
       this._data = this._EMPTY_HEX_VALUE;
       this._signature = this._EMPTY_HEX_VALUE;

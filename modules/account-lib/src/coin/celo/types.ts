@@ -12,7 +12,7 @@ import {
   publicToAddress,
 } from 'ethereumjs-util';
 import { EthLikeTransactionData, TxData } from '../eth/iface';
-import { KeyPair, Utils } from '../eth';
+import { KeyPair } from '../eth';
 
 export class CeloTransaction {
   private raw: Buffer[];
@@ -32,7 +32,7 @@ export class CeloTransaction {
   r: Buffer = toBuffer([]);
   s: Buffer = toBuffer([]);
 
-  //TODO: validate if this needs to be moved to Utils class
+  // TODO: validate if this needs to be moved to Utils class
   /**
    * Clean hex formatted values ensuring they have an even length
    *
@@ -149,7 +149,13 @@ export class CeloTransaction {
 }
 
 export class CeloTransactionData implements EthLikeTransactionData {
-  constructor(private tx: CeloTransaction, private deployedAddress?: string) {}
+  private tx: CeloTransaction;
+  private deployedAddress?: string;
+
+  constructor(tx: CeloTransaction, deployedAddress?: string) {
+    this.tx = tx;
+    this.deployedAddress = deployedAddress;
+  }
 
   public static fromJson(tx: TxData): CeloTransactionData {
     const chainId = addHexPrefix(new BigNumber(Number(tx.chainId)).toString(16));

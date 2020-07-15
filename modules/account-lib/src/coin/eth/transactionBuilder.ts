@@ -434,7 +434,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       .replace('0x', '');
     return walletSimpleByteCode + resultEncodedParameters;
   }
-  //endregion
+  // endregion
 
   // region Send builder methods
 
@@ -477,7 +477,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     tx.to = this._contractAddress;
     return tx;
   }
-  //endregion
+  // endregion
 
   // region AddressInitialization builder methods
 
@@ -508,7 +508,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     return tx;
   }
-  //endregion
+  // endregion
 
   // region flush methods
   /**
@@ -543,7 +543,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private buildFlushTokensTransaction(): TxData {
     return this.buildBase(flushTokensData(this._forwarderAddress, this._tokenAddress));
   }
-  //endregion
+  // endregion
 
   /** @inheritdoc */
   protected get transaction(): Transaction {
