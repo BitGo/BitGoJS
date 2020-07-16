@@ -30,7 +30,7 @@ export class StakingBuilder {
     }
   }
 
-  // region Staking properties
+  //region Staking properties
 
   type(type: StakingOperationTypes): this {
     this._type = type;
@@ -77,9 +77,9 @@ export class StakingBuilder {
     return this;
   }
 
-  // endregion
+  //endregion
 
-  // region Staking building
+  //region Staking building
 
   build(): StakingCall {
     this.validateMandatoryFields();
@@ -196,9 +196,9 @@ export class StakingBuilder {
     return new StakingCall('0', operation.contractAddress, operation.methodId, operation.types, params);
   }
 
-  // endregion
+  //endregion
 
-  // region Validation methods
+  //region Validation methods
 
   private validateMandatoryFields(): void {
     if (!(this._type !== undefined && this._coinConfig)) {
@@ -237,9 +237,9 @@ export class StakingBuilder {
     }
   }
 
-  // endregion
+  //endregion
 
-  // region Deserialization methods
+  //region Deserialization methods
   private decodeStakingData(data: string): void {
     this.classifyStakingType(data);
 
@@ -307,5 +307,5 @@ export class StakingBuilder {
     }
   }
 
-  // endregion
+  //endregion
 }

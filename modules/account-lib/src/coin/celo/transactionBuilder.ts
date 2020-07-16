@@ -89,7 +89,7 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
     return walletSimpleByteCode + resultEncodedParameters;
   }
 
-  // region Stake methods
+  //region Stake methods
 
   /**
    * Gets the staking lock builder if exist, or creates a new one for this transaction and returns it
@@ -224,5 +224,5 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
     return data;
   }
 
-  // endregion
+  //endregion
 }

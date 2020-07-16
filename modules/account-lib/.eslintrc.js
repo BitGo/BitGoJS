@@ -22,6 +22,7 @@ module.exports =  {
     '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-member-accessibility': 'off',
+    'spaced-comment': ['error', 'always', { 'markers': ['region', 'endregion'] }],
     'import/no-unresolved': ['error', {commonjs: true, amd: true}],
     'import/named': 'error',
     'import/namespace': 'error',

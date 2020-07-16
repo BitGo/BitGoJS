@@ -331,7 +331,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     // TODO: validate the amount is not bigger than the max amount in each Eth family coin
   }
 
-  // region Common builder methods
+  //region Common builder methods
 
   /**
    * The type of transaction being built.
@@ -388,9 +388,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       to: this._contractAddress,
     };
   }
-  // endregion
+  //endregion
 
-  // region WalletInitialization builder methods
+  //region WalletInitialization builder methods
   /**
    * Set one of the owners of the multisig wallet.
    *
@@ -434,9 +434,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       .replace('0x', '');
     return walletSimpleByteCode + resultEncodedParameters;
   }
-  // endregion
+  //endregion
 
-  // region Send builder methods
+  //region Send builder methods
 
   contract(address: string): void {
     if (isValidEthAddress(address)) this._contractAddress = address;
@@ -477,9 +477,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     tx.to = this._contractAddress;
     return tx;
   }
-  // endregion
+  //endregion
 
-  // region AddressInitialization builder methods
+  //region AddressInitialization builder methods
 
   /**
    * Set the contract transaction nonce to calculate the forwarder address.
@@ -508,9 +508,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     return tx;
   }
-  // endregion
+  //endregion
 
-  // region flush methods
+  //region flush methods
   /**
    * Set the forwarder address to flush
    *
@@ -543,7 +543,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private buildFlushTokensTransaction(): TxData {
     return this.buildBase(flushTokensData(this._forwarderAddress, this._tokenAddress));
   }
-  // endregion
+  //endregion
 
   /** @inheritdoc */
   protected get transaction(): Transaction {
