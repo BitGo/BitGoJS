@@ -5,7 +5,7 @@
 /**
  */
 import * as common from './common';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { V1Network } from './v2/types';
 const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');

@@ -5,7 +5,7 @@
 
 /**
  */
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import * as Big from 'big.js';
 import * as _ from 'lodash';
 import { randomBytes } from 'crypto';

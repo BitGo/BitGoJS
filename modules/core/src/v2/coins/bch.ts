@@ -1,4 +1,4 @@
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const cashaddress = require('cashaddress');
 import * as _ from 'lodash';

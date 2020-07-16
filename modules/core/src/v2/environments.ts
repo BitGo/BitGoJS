@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { V1Network, V1RmgNetwork } from './types';
 
 interface EnvironmentTemplate {

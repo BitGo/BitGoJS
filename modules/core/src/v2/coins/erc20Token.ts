@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import { HDNode } from 'bitgo-utxo-lib';
+import { HDNode } from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { BitGo } from '../../bitgo';

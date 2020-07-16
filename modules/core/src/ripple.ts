@@ -6,7 +6,7 @@
  */
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as ripple from 'ripple-lib';
-import { ECPair } from 'bitgo-utxo-lib';
+import { ECPair } from '@bitgo/utxo-lib';
 
 import * as binary from 'ripple-binary-codec';
 import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';

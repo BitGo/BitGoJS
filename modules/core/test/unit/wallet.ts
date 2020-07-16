@@ -10,7 +10,7 @@ import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as common from '../../src/common';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as sinon from 'sinon';

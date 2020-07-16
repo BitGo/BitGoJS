@@ -1,4 +1,4 @@
-import { HDNode, ECPair } from 'bitgo-utxo-lib';
+import { HDNode, ECPair } from '@bitgo/utxo-lib';
 import * as Crypto from '../../utils/crypto';
 import { KeyPairOptions, ExtendedKeys } from './iface';
 import { BaseKeyPair } from './baseKeyPair';

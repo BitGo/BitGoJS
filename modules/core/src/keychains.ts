@@ -14,7 +14,7 @@
 import { randomBytes } from 'crypto';
 import * as common from './common';
 import { Util } from './v2/internal/util';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { hdPath } from './bitcoin';
 const _ = require('lodash');
 let ethereumUtil;

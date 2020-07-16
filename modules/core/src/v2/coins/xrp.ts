@@ -1,5 +1,5 @@
 import { BigNumber } from 'bignumber.js';
-import { HDNode, ECPair } from 'bitgo-utxo-lib';
+import { HDNode, ECPair } from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as _ from 'lodash';

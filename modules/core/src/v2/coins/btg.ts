@@ -1,7 +1,7 @@
 import { BitGo } from '../../bitgo';
 import {BaseCoin, VerifyRecoveryTransactionOptions} from '../baseCoin';
 import { Btc } from './btc';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as common from '../../common';

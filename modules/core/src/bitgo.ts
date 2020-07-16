@@ -5,7 +5,7 @@
 //
 
 import * as superagent from 'superagent';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { makeRandomKey, hdPath } from './bitcoin';
 import bitcoinMessage = require('bitcoinjs-message');
 import sanitizeHtml = require('sanitize-html');

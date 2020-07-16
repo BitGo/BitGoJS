@@ -5,7 +5,7 @@ import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 import { getBuilder, Eth } from '@bitgo/account-lib';
 import * as Bluebird from 'bluebird';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import * as bitgoUtxoLib from 'bitgo-utxo-lib';
+import * as bitgoUtxoLib from '@bitgo/utxo-lib';
 import { randomBytes } from 'crypto';
 
 import {

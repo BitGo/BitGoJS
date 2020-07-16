@@ -10,7 +10,7 @@
 // Copyright 2015, BitGo, Inc.  All Rights Reserved.
 //
 import * as common from './common';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';

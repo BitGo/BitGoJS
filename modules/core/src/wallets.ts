@@ -11,7 +11,7 @@
 // Copyright 2014, BitGo, Inc.  All Rights Reserved.
 //
 
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { makeRandomKey, hdPath, getNetwork } from './bitcoin';
 import * as common from './common';
 import * as _ from 'lodash';

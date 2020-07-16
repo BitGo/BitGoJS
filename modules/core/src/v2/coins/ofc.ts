@@ -16,7 +16,7 @@ import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
-import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 
 export class Ofc extends BaseCoin {
   static createInstance(bitgo: BitGo): BaseCoin {

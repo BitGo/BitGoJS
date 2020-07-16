@@ -17,7 +17,7 @@ const prova = require('../../prova');
 
 export class Rmg extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?) {
-    // TODO: move to bitgo-utxo-lib (BG-6821)
+    // TODO: move to @bitgo/utxo-lib (BG-6821)
     prova.networks.rmg.coin = 'rmg';
     super(bitgo, network || prova.networks.rmg);
   }

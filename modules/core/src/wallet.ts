@@ -14,7 +14,7 @@
 import { Codes, VirtualSizes } from '@bitgo/unspents';
 
 const TransactionBuilder = require('./transactionBuilder');
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 // TODO: switch to bitcoinjs-lib eventually once we upgrade it to version 3.x.x
 const PendingApproval = require('./pendingapproval');
 
