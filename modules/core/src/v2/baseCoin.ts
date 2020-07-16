@@ -54,6 +54,7 @@ export interface VerifyAddressOptions {
   keychains?: {
     pub: string;
   }[];
+  error?: string;
   coinSpecific?: AddressCoinSpecific;
 }
 
@@ -159,6 +160,7 @@ export interface AddressCoinSpecific {
   redeemScript?: string;
   witnessScript?: string;
   baseAddress?: string;
+  pendingChainInitialization?: boolean;
 }
 
 export interface FullySignedTransaction {
