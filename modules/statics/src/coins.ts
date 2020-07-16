@@ -8,6 +8,7 @@ import {
   stellarToken,
   tstellarToken,
   erc20CompatibleAccountCoin,
+  hederaCoin,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -68,6 +69,24 @@ export const coins = CoinMap.fromCoins([
     18,
     '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9',
     UnderlyingAsset.CELO
+  ),
+  hederaCoin(
+    'hbar',
+    'Mainnet Hedera HBAR',
+    Networks.main.hedera,
+    8,
+    UnderlyingAsset.HBAR,
+    '0.0.3',
+    AccountCoin.DEFAULT_FEATURES
+  ),
+  hederaCoin(
+    'thbar',
+    'Testnet Hedera HBAR',
+    Networks.test.hedera,
+    8,
+    UnderlyingAsset.HBAR,
+    '0.0.3',
+    AccountCoin.DEFAULT_FEATURES
   ),
   ofc('ofcusd', 'USD', 2, UnderlyingAsset.USD, CoinKind.FIAT),
   ofc('ofcbtc', 'Bitcoin', 8, UnderlyingAsset.BTC, CoinKind.CRYPTO),
