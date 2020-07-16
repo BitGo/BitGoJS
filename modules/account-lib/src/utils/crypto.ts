@@ -1,4 +1,6 @@
 import { HDNode, ECPair, networks } from '@bitgo/utxo-lib';
+import { Seed } from 'algosdk';
+import * as stellar from 'stellar-sdk';
 import { ExtendedKeys } from '../coin/baseCoin/iface';
 
 /**
@@ -102,4 +104,38 @@ export function isValidPrv(prv: string): boolean {
     return false;
   }
   return true;
+}
+
+/**
+ * Returns whether or not the string is a valid ed25519 key
+ *
+ * @param {string} key the key to be validated
+ * @returns {boolean} the validation result
+ */
+export function isValidEd25519Key(key: string): boolean {
+  return /^[0-9a-fA-F]+$/.test(key) && key.length === 64;
+}
+
+/**
+ * Returns a stellar seed converted or null if it isn't a stellar seed
+ *
+ * @param {string} seed a seed string
+ * @returns {string | null} the encoded seed or null
+ */
+export function convertFromStellarSeed(seed: string): string | null {
+  // assume this is a trust custodial seed if its a valid ed25519 prv
+  if (!isStellarSeed(seed)) {
+    return null;
+  }
+  return Seed.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
+}
+
+/**
+ * Returns wether or not a seed is a stellar valid seed
+ *
+ * @param {string} seed a seed string
+ * @returns {boolean}
+ */
+export function isStellarSeed(seed: string): boolean {
+  return stellar.StrKey.isValidEd25519SecretSeed(seed);
 }
