@@ -6,7 +6,7 @@ const recoveryNocks = require('../../lib/recovery-nocks');
 const fixtures = require('../../fixtures/coins/abstractUtxoCoin');
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
-const utxoLib = require('bitgo-utxo-lib');
+const utxoLib = require('@bitgo/utxo-lib');
 import * as errors from '../../../../src/errors';
 
 describe('Abstract UTXO Coin:', () => {

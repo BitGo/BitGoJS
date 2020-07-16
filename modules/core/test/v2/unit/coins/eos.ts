@@ -2,7 +2,7 @@ import * as should from 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as ecc from 'eosjs-ecc';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 

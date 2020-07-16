@@ -6,7 +6,7 @@ import { randomBytes } from 'crypto';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
-import { HDNode, networks } from 'bitgo-utxo-lib';
+import { HDNode, networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import * as common from '../../common';
 

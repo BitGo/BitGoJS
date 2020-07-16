@@ -5,7 +5,7 @@ const co = Promise.coroutine;
 import * as _ from 'lodash';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
-const bitGoUtxoLib = require('bitgo-utxo-lib');
+const bitGoUtxoLib = require('@bitgo/utxo-lib');
 
 describe('ZEC:', function() {
   let bitgo;

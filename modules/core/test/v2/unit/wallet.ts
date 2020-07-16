@@ -8,7 +8,7 @@ require('should-sinon');
 import '../lib/asserts';
 import * as nock from 'nock';
 import * as _ from 'lodash';
-const bitcoin = require('bitgo-utxo-lib');
+const bitcoin = require('@bitgo/utxo-lib');
 import { Wallet } from '../../../src/v2/wallet';
 import * as common from '../../../src/common';
 

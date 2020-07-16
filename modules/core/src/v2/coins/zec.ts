@@ -1,4 +1,4 @@
-import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as request from 'superagent';
 import { BitGo } from '../../bitgo';

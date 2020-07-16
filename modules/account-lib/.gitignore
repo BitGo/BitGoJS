@@ -8,3 +8,5 @@ mochawesome-report/
 package/
 .idea/
 coverage.lcov
+resources/trx/protobuf/*.d.ts
+resources/trx/protobuf/*.js

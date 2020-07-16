@@ -8,7 +8,7 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import { getBuilder, BaseCoin, Eth } from '@bitgo/account-lib';
 import * as ethAbi from 'ethereumjs-abi';
 import * as ethUtil from 'ethereumjs-util';
-import * as bitgoUtxoLib from 'bitgo-utxo-lib';
+import * as bitgoUtxoLib from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import { coins, ContractAddressDefinedToken } from '@bitgo/statics';
 

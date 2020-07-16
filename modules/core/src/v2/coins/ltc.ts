@@ -9,7 +9,7 @@ const co = Bluebird.coroutine;
 
 export class Ltc extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?) {
-    // TODO: move to bitgo-utxo-lib (BG-6821)
+    // TODO: move to @bitgo/utxo-lib (BG-6821)
     super(bitgo, network || {
       messagePrefix: '\x19Litecoin Signed Message:\n',
       bip32: {

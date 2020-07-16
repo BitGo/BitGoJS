@@ -9,7 +9,7 @@ import * as common from '../../common';
 
 export class Dash extends AbstractUtxoCoin {
   constructor(bitgo: BitGo, network?) {
-    // TODO: move to bitgo-utxo-lib (BG-6821)
+    // TODO: move to @bitgo/utxo-lib (BG-6821)
     // https://github.com/dashpay/dash/blob/master/src/chainparams.cpp#L152
     super(bitgo, network || {
       messagePrefix: '\x19Dash Signed Message:\n',
