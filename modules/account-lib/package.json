@@ -32,12 +32,12 @@
   "license": "ISC",
   "dependencies": {
     "@bitgo/statics": "^5.0.0-rc.0",
+    "@bitgo/utxo-lib": "^1.7.1",
     "@celo/contractkit": "0.3.1",
     "@taquito/local-forging": "^6.0.3-beta.0",
     "@taquito/signer": "^6.0.3-beta.0",
     "@types/lodash": "^4.14.151",
     "bignumber.js": "^9.0.0",
-    "bitgo-utxo-lib": "^1.6.0",
     "blake2b": "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
     "bs58check": "^2.1.2",
     "elliptic": "^6.5.2",

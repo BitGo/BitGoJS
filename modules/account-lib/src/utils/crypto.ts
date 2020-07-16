@@ -1,4 +1,4 @@
-import { HDNode, ECPair, networks } from 'bitgo-utxo-lib';
+import { HDNode, ECPair, networks } from '@bitgo/utxo-lib';
 import { ExtendedKeys } from '../coin/baseCoin/iface';
 
 /**

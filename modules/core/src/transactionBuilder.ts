@@ -12,7 +12,7 @@
 //
 
 import * as Bluebird from 'bluebird';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import * as _ from 'lodash';
 import { VirtualSizes } from '@bitgo/unspents';
 import { getNetwork, hdPath } from './bitcoin';

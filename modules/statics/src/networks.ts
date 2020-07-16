@@ -218,6 +218,16 @@ class EosTestnet extends Testnet implements AccountNetwork {
   explorerUrl = 'https://jungle.bloks.io/transaction/';
 }
 
+class Hedera extends Mainnet implements AccountNetwork {
+  family = CoinFamily.HBAR;
+  explorerUrl = 'https://explorer.kabuto.sh/mainnet';
+}
+
+class HederaTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.HBAR;
+  explorerUrl = 'https://explorer.kabuto.sh/testnet';
+}
+
 // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
 // https://github.com/litecoin-project/litecoin/blob/master/src/chainparams.cpp
 class Litecoin extends BitcoinLikeMainnet {
@@ -342,6 +352,7 @@ export const Networks = {
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
     ethereumClassic: Object.freeze(new EthereumClassic()),
+    hedera: Object.freeze(new Hedera()),
     litecoin: Object.freeze(new Litecoin()),
     ofc: Object.freeze(new Ofc()),
     rbtc: Object.freeze(new Rbtc()),
@@ -361,6 +372,7 @@ export const Networks = {
     dash: Object.freeze(new DashTestnet()),
     eos: Object.freeze(new EosTestnet()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
+    hedera: Object.freeze(new HederaTestnet()),
     kovan: Object.freeze(new Kovan()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     ofc: Object.freeze(new OfcTestnet()),

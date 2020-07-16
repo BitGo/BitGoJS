@@ -8,7 +8,7 @@ import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
 import { BitGo } from '../bitgo';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Ltc } from './coins/ltc';
 import { Wallet } from './wallet';

@@ -1,7 +1,7 @@
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Zec, ZecTransactionBuilder } from './zec';
-import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 
 export class Tzec extends Zec {
   constructor(bitgo: BitGo) {

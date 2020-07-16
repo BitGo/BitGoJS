@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { hdPath } from '../bitcoin';
 const bitcoinMessage = require('bitcoinjs-message');
 import * as Bluebird from 'bluebird';

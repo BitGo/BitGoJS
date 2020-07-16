@@ -5,7 +5,7 @@
 //
 
 import 'should';
-import { HDNode } from 'bitgo-utxo-lib';
+import { HDNode } from '@bitgo/utxo-lib';
 import { hdPath } from '../../src/bitcoin';
 
 describe('HDNode', function() {

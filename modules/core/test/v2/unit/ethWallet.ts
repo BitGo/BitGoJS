@@ -2,7 +2,7 @@ import * as Bluebird from 'bluebird';
 import * as should from 'should';
 import * as secp256k1 from 'secp256k1';
 import * as nock from 'nock';
-import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 import * as sinon from 'sinon';
 import { Util } from '../../../src/v2/internal/util';
 import * as common from '../../../src/common';

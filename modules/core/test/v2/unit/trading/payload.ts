@@ -6,7 +6,7 @@ import { coroutine as co } from 'bluebird';
 import * as should from 'should';
 import * as nock from 'nock';
 import * as bitcoinMessage from 'bitcoinjs-message';
-import { HDNode } from 'bitgo-utxo-lib';
+import { HDNode } from '@bitgo/utxo-lib';
 
 import fixtures from '../../fixtures/trading/payload';
 

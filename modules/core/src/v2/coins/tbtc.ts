@@ -4,7 +4,7 @@
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Btc } from './btc';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 
 export class Tbtc extends Btc {
   constructor(bitgo) {

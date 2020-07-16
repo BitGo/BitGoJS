@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import * as utxoLib from 'bitgo-utxo-lib';
+import * as utxoLib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';

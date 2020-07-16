@@ -2,7 +2,7 @@ import * as should from 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as _ from 'lodash';
-const bitcoin = require('bitgo-utxo-lib');
+const bitcoin = require('@bitgo/utxo-lib');
 const prova = require('prova-lib');
 const { Codes } = require('@bitgo/unspents');
 import { TestBitGo } from '../../../lib/test_bitgo';
