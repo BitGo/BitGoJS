@@ -8,3 +8,6 @@ mochawesome-report/
 package/
 .idea/
 coverage.lcov
+/package-lock.json
+/resources/trx/protobuf/tron.d.ts
+/resources/trx/protobuf/tron.js

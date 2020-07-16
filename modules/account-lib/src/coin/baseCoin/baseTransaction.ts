@@ -11,13 +11,14 @@ export abstract class BaseTransaction {
   protected _outputs: Entry[];
   protected _type: TransactionType;
   protected _signatures: string[];
-
+  protected _coinConfig: Readonly<CoinConfig>;
   /**
    * Base constructor.
    *
    * @param _coinConfig BaseCoin from statics library
    */
-  protected constructor(protected _coinConfig: Readonly<CoinConfig>) {
+  protected constructor(_coinConfig: Readonly<CoinConfig>) {
+    this._coinConfig = _coinConfig;
     this._inputs = [];
     this._outputs = [];
     this._signatures = [];

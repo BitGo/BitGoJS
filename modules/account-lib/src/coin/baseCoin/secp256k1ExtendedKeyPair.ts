@@ -13,14 +13,16 @@ export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
   // or extended keys
   protected hdNode?: HDNode;
   protected keyPair: ECPair;
-
+  protected source?: KeyPairOptions;
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
    *
    * @param {KeyPairOptions} source Either a master seed, a private key (extended or raw), or a public key
    *     (extended, compressed, or uncompressed)
    */
-  protected constructor(protected source?: KeyPairOptions) {}
+  protected constructor(source?: KeyPairOptions) {
+    this.source = source;
+  }
 
   /**
    * Build a Hierarchical Deterministic node or an ECPair from a private key.

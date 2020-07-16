@@ -1,7 +1,6 @@
 import { HDNode } from 'bitgo-utxo-lib';
 import { addHexPrefix, pubToAddress } from 'ethereumjs-util';
-import { DefaultKeys } from '../baseCoin/iface';
-import { isPrivateKey, isPublicKey, KeyPairOptions } from '../baseCoin/iface';
+import { DefaultKeys, isPrivateKey, isPublicKey, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
 
 /**

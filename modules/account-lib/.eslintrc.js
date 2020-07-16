@@ -20,6 +20,8 @@ module.exports =  {
     'object-curly-spacing': ['error', 'always'],
     '@typescript-eslint/camelcase': 'warn',
     '@typescript-eslint/no-use-before-define': 'off',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    "@typescript-eslint/explicit-member-accessibility": "off",
     'import/no-unresolved': ['error', {commonjs: true, amd: true}],
     'import/named': 'error',
     'import/namespace': 'error',

@@ -201,7 +201,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
   // endregion
 
-  //region Common builder methods
+  // region Common builder methods
   /**
    * Set the transaction branch id.
    *
@@ -383,7 +383,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = this._counter.plus(1);
     return originationOp;
   }
-  //endregion
+  // endregion
 
   // region Send builder methods
   /**
@@ -481,9 +481,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     return contents;
   }
-  //endregion
+  // endregion
 
-  //region ForwarderAddressDeployment
+  // region ForwarderAddressDeployment
   /**
    * Build a transaction operation for a forwarder contract
    *
@@ -502,7 +502,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = this._counter.plus(1);
     return operation;
   }
-  //endregion
+  // endregion
 
   // region Validators
   /** @inheritdoc */

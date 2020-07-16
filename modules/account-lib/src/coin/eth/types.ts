@@ -9,7 +9,13 @@ import { KeyPair } from './keyPair';
  * An Ethereum transaction with helpers for serialization and deserialization.
  */
 export class EthTransactionData implements EthLikeTransactionData {
-  constructor(private tx: EthereumTx, protected args?: { deployedAddress?: string; chainId?: string }) {}
+  private tx: EthereumTx;
+  protected args?: { deployedAddress?: string; chainId?: string };
+
+  constructor(tx: EthereumTx, args?: { deployedAddress?: string; chainId?: string }) {
+    this.tx = tx;
+    this.args = args;
+  }
 
   /**
    * Build an ethereum transaction from its JSON representation
