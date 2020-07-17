@@ -10,6 +10,8 @@ describe('Wallet initialization', () => {
     builder.source({ address: '0.0.75861' });
     const tx = await builder.build();
     const raw = tx.toBroadcastFormat();
+    const txData = tx.toJson();
+    console.log(txData);
     console.log(Uint8Array.from(raw).toString());
   });
 });

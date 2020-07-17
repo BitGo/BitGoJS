@@ -40,8 +40,8 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   }
 
   private buildTxId(): proto.TransactionID {
-    const parts = this._source.address.split('.').pop();
-    const acc = +new BigNumber(parts!);
+    const accString = this._source.address.split('.').pop();
+    const acc = +new BigNumber(accString!);
     return new proto.TransactionID({
       transactionValidStart: { seconds: new Date().getTime() / 1000, nanos: 0 },
       accountID: { accountNum: acc },
