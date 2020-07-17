@@ -1,10 +1,13 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import BigNumber from 'bignumber.js';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
+import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { isValidPublicKey } from './utils';
 import { KeyPair } from './';
 
+const DEFAULT_M = 3;
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: string[] = [];
   private _txBody: proto.TransactionBody;
@@ -21,6 +24,15 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   }
 
   owner(address: string): this {
+    if (this._owners.length >= DEFAULT_M) {
+      throw new BuildTransactionError('A maximum of ' + DEFAULT_M + ' owners can be set for a multisig wallet');
+    }
+    if (!isValidPublicKey(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    if (this._owners.includes(address)) {
+      throw new BuildTransactionError('Repeated owner address: ' + address);
+    }
     this._owners.push(address);
     return this;
   }
