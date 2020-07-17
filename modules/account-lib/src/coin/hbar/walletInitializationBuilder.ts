@@ -1,0 +1,61 @@
+import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import BigNumber from 'bignumber.js';
+import { proto } from '../../../resources/hbar/protobuf/hedera';
+import { TransactionBuilder } from './transactionBuilder';
+import { Transaction } from './transaction';
+import { KeyPair } from './';
+
+export class WalletInitializationBuilder extends TransactionBuilder {
+  private _owners: string[] = [];
+  private _txBody: proto.TransactionBody;
+  private _txBodyData: proto.CryptoCreateTransactionBody;
+  private readonly _duration: proto.Duration = new proto.Duration({ seconds: 120 });
+
+  constructor(_coinConfig: Readonly<CoinConfig>) {
+    super(_coinConfig);
+    this._txBody = new proto.TransactionBody();
+    this._txBody.transactionValidDuration = this._duration;
+    this._txBodyData = new proto.CryptoCreateTransactionBody();
+    this._txBody.cryptoCreateAccount = this._txBodyData;
+    this._txBodyData.autoRenewPeriod = new proto.Duration({ seconds: 7890000 });
+  }
+
+  owner(address: string): this {
+    this._owners.push(address);
+    return this;
+  }
+
+  protected async buildImplementation(): Promise<Transaction> {
+    this._txBodyData.key = { thresholdKey: this.buildOwnersKeys() };
+    this._txBodyData.initialBalance = 0;
+    this._txBody.transactionFee = +new BigNumber(this._fee.fee); // validate
+    this._txBody.transactionID = this.buildTxId();
+    this._txBody.nodeAccountID = new proto.AccountID({ accountNum: 4 });
+    const hTransaction = new proto.Transaction();
+    hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
+
+    const transaction = new Transaction(this._coinConfig);
+    transaction.body(hTransaction);
+    return transaction;
+  }
+
+  private buildTxId(): proto.TransactionID {
+    const parts = this._source.address.split('.').pop();
+    const acc = +new BigNumber(parts!);
+    return new proto.TransactionID({
+      transactionValidStart: { seconds: new Date().getTime() / 1000, nanos: 0 },
+      accountID: { accountNum: acc },
+    });
+  }
+
+  private buildOwnersKeys(): proto.ThresholdKey {
+    return this._owners.reduce((tKeys, key) => {
+      if (tKeys.keys && tKeys.keys.keys) {
+        tKeys.keys.keys.push({
+          ed25519: new KeyPair({ pub: key }).getKeys().pub,
+        });
+      }
+      return tKeys;
+    }, new proto.ThresholdKey({ threshold: 2, keys: { keys: [] } }));
+  }
+}

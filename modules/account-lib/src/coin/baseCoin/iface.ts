@@ -55,6 +55,14 @@ export type DefaultKeys = {
 };
 
 /**
+ * Key pair in Uint8Array format.
+ */
+export type ByteKeys = {
+  prv?: Uint8Array;
+  pub: Uint8Array;
+};
+
+/**
  * Key pair in extended format. Used for coins supporting secp256k1 elliptic curve.
  */
 export type ExtendedKeys = {

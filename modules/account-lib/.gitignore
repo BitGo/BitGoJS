@@ -8,6 +8,8 @@ mochawesome-report/
 package/
 .idea/
 coverage.lcov
+/package-lock.json
 resources/trx/protobuf/*.d.ts
 resources/trx/protobuf/*.js
-/package-lock.json
+/resources/hbar/protobuf/hedera.d.ts
+/resources/hbar/protobuf/hedera.js

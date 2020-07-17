@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { HDNode } from 'bitgo-utxo-lib';
+import { HDNode } from '@bitgo/utxo-lib';
 import { AddressFormat } from '../baseCoin/enum';
 import { DefaultKeys, isPrivateKey, isPublicKey, isSeed, KeyPairOptions } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
