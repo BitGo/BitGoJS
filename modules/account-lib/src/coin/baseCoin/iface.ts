@@ -1,3 +1,6 @@
+import { BaseTransactionBuilder } from './baseTransactionBuilder';
+import { BaseTransactionBuilderFactory } from './baseTransactionBuilderFactory';
+
 export interface BaseKey {
   key: any;
 }
@@ -5,25 +8,27 @@ export interface BaseKey {
 /**
  * A private key in extended or raw format
  */
-export type PrivateKey = {
+export interface PrivateKey {
   prv: string;
-};
+}
 
 /**
  * A public key in extended, compressed, or uncompressed format
  */
-export type PublicKey = {
+export interface PublicKey {
   pub: string;
-};
+}
 
 /**
  * A seed to create key pairs. Must be between 16 and 64 Bytes long
  */
-export type Seed = {
+export interface Seed {
   seed: Buffer;
-};
+}
 
 export type KeyPairOptions = Seed | PrivateKey | PublicKey;
+
+export type BaseBuilder = BaseTransactionBuilder | BaseTransactionBuilderFactory;
 
 /**
  * @param source
@@ -49,26 +54,26 @@ export function isPublicKey(source: KeyPairOptions): source is PublicKey {
 /**
  * Key pair in the protocol default format.
  */
-export type DefaultKeys = {
+export interface DefaultKeys {
   prv?: string;
   pub: string;
-};
+}
 
 /**
  * Key pair in Uint8Array format.
  */
-export type ByteKeys = {
+export interface ByteKeys {
   prv?: Uint8Array;
   pub: Uint8Array;
-};
+}
 
 /**
  * Key pair in extended format. Used for coins supporting secp256k1 elliptic curve.
  */
-export type ExtendedKeys = {
+export interface ExtendedKeys {
   xprv?: string;
   xpub: string;
-};
+}
 
 export interface BaseAddress {
   address: string;

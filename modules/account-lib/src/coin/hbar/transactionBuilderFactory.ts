@@ -1,11 +1,8 @@
-import { coins } from '@bitgo/statics';
+import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 
-export class TransactionBuilderFactory {
-  // TODO: Add Hedera coin config
-  private static _coinConfig = coins.get('eth');
-
-  static getWalletInitializationBuilder(): WalletInitializationBuilder {
+export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
+  getWalletInitializationBuilder(): WalletInitializationBuilder {
     return new WalletInitializationBuilder(this._coinConfig);
   }
 }
