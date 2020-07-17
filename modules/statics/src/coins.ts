@@ -60,7 +60,8 @@ export const coins = CoinMap.fromCoins([
     Networks.main.celo,
     18,
     '0x471ece3750da237f93b8e339c536989b8978a438',
-    UnderlyingAsset.CELO
+    UnderlyingAsset.CELO,
+    ETH_FEATURES
   ),
   erc20CompatibleAccountCoin(
     'tcelo',
@@ -68,7 +69,8 @@ export const coins = CoinMap.fromCoins([
     Networks.test.celo,
     18,
     '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9',
-    UnderlyingAsset.CELO
+    UnderlyingAsset.CELO,
+    ETH_FEATURES
   ),
   hederaCoin(
     'hbar',
