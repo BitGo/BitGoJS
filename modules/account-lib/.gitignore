@@ -10,4 +10,3 @@ package/
 coverage.lcov
 resources/trx/protobuf/*.d.ts
 resources/trx/protobuf/*.js
-/package-lock.json
