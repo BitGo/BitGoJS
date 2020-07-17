@@ -23,6 +23,12 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     this._txBodyData.autoRenewPeriod = new proto.Duration({ seconds: 7890000 });
   }
 
+  /**
+   * Set one of the owners of the multisig wallet.
+   *
+   * @param {string} address The public key of the owner's account
+   * @returns {WalletInitializationBuilder} This wallet initialization builder
+   */
   owner(address: string): this {
     if (this._owners.length >= DEFAULT_M) {
       throw new BuildTransactionError('A maximum of ' + DEFAULT_M + ' owners can be set for a multisig wallet');
@@ -37,6 +43,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     return this;
   }
 
+  /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this._txBodyData.key = { thresholdKey: this.buildOwnersKeys() };
     this._txBodyData.initialBalance = 0;

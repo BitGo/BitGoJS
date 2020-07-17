@@ -1,9 +1,9 @@
-import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import BigNumber from 'bignumber.js';
+import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
-import {TxData} from './ifaces';
-import BigNumber from 'bignumber.js';
+import { TxData } from './ifaces';
 
 export class Transaction extends BaseTransaction {
   private _hederaTx: proto.Transaction;
@@ -18,12 +18,17 @@ export class Transaction extends BaseTransaction {
     this._hederaTx = tx;
   }
 
+  /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     return true;
   }
 
-  /** @inheritdoc */
-  toBroadcastFormat(): any {
+  /**
+   * Return the transaction in a format it can be broadcasted to the blockchain.
+   *
+   *  @returns {Uint8Array} The encoded transaction
+   */
+  toBroadcastFormat(): Uint8Array {
     return proto.Transaction.encode(this._hederaTx).finish();
   }
 

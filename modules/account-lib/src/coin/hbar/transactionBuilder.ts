@@ -15,53 +15,76 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     super(_coinConfig);
   }
 
+  /**
+   * Set the transaction fees
+   *
+   * @param {BaseFee} fee The maximum gas to pay
+   * @returns {TransactionBuilder} This transaction builder
+   */
   fee(fee: BaseFee): this {
     this.validateValue(new BigNumber(fee.fee));
     this._fee = fee;
     return this;
   }
 
+  /**
+   * Set the transaction source
+   *
+   * @param {BaseAddress} address The source account
+   * @returns {TransactionBuilder} This transaction builder
+   */
   source(address: BaseAddress): this {
     this.validateAddress(address);
     this._source = address;
     return this;
   }
 
+  /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     throw new Error('unimplemented');
   }
 
+  /** @inheritdoc */
   protected fromImplementation(rawTransaction: any): Transaction {
     throw new Error('unimplemented');
   }
 
+  /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     throw new Error('unimplemented');
   }
 
+  /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
   }
 
+  /** @inheritdoc */
   validateAddress(address: BaseAddress, addressFormat?: string): void {
     if (!isValidAccount(address.address)) {
       throw new BuildTransactionError('Invalid address ' + address.address);
     }
   }
 
+  /** @inheritdoc */
   validateKey(key: BaseKey): void {
     console.log('To be implemented');
   }
 
+  /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
     console.log('To be implemented');
   }
 
+  /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
     console.log('To be implemented');
   }
 
+  /** @inheritdoc */
   validateValue(value: BigNumber): void {
-    console.log('To be implemented');
+    if (value.isLessThan(0)) {
+      throw new BuildTransactionError('Value cannot be less than zero');
+    }
   }
 }
