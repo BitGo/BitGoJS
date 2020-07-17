@@ -39,19 +39,11 @@ local CommandWithSecrets(command, version) =
   },
 };
 
-local LernaCommand(command, version="lts", with_secrets=false) = {
-  kind: "pipeline",
-  name: command + " (node:" + version + ")",
-  steps: [
-    BuildInfo(version),
-    Install(version),
-  ] + (
-    if with_secrets then [
-      CommandWithSecrets(command, version)
-    ] else [
-      Command(command, version)
-    ]
-  ),
+local OnUpdateBranch(pipeline, branch="master") = pipeline + {
+  trigger: {
+    branch: branch,
+    event: "push",
+  },
 };
 
 local IncludeBranches(pipeline, included_branches=branches()) = pipeline + {
@@ -68,6 +60,18 @@ local ExcludeBranches(pipeline, excluded_branches=branches()) = pipeline + {
       exclude: excluded_branches
     },
   },
+};
+
+local LernaPublish(version) =  {
+  name: "lerna publish",
+  image: "node:" + version,
+  environment: {
+    NPM_CONFIG_TOKEN: { from_secret: "npm_config_token" },
+  },
+  commands: [
+    "npm config set unsafe-perm true",
+    "yarn run internal-publish",
+  ],
 };
 
 local GenerateDocs(version) = {
@@ -168,12 +172,23 @@ local CheckPreconditions(version) = {
   ]
 };
 
+local InternalPublish(version) = {
+  kind: "pipeline",
+  name: "internal publish (node:" + version + ")",
+  steps: [
+    BuildInfo(version),
+    Install(version),
+    LernaPublish(version),
+  ]
+};
+
 local UnitVersions = ["8", "10"];
 local IntegrationVersions = ["10"];
 
 [
   CheckPreconditions("10"),
   IncludeBranches(MeasureSizeAndTiming("10")),
+  OnUpdateBranch(InternalPublish("10"), "master")
 ] + [
   ExcludeBranches(UnitTest(version))
   for version in UnitVersions
@@ -181,3 +196,4 @@ local IntegrationVersions = ["10"];
   IncludeBranches(IntegrationTest(version))
   for version in IntegrationVersions
 ]
+

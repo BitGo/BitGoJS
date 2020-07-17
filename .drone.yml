@@ -84,6 +84,44 @@ trigger:
 
 ---
 kind: pipeline
+name: internal publish (node:10)
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:10
+  commands:
+  - node --version
+  - npm --version
+  - yarn --version
+  - git --version
+
+- name: install
+  image: node:10
+  commands:
+  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
+  - yarn install
+
+- name: lerna publish
+  image: node:10
+  commands:
+  - npm config set unsafe-perm true
+  - yarn run internal-publish
+  environment:
+    NPM_CONFIG_TOKEN:
+      from_secret: npm_config_token
+
+trigger:
+  branch:
+  - master
+  event:
+  - push
+
+---
+kind: pipeline
 name: unit tests (node:8)
 
 platform:
