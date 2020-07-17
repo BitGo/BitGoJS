@@ -22,7 +22,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
     it('an init transaction', async () => {
       initTxBuilder();
       txBuilder.sign({ key: testData.KEYPAIR_PRV.getKeys().prv });
-      const tx = await txBuilder.build(); //should build and sign
+      const tx = await txBuilder.build(); // should build and sign
 
       tx.type.should.equal(TransactionType.WalletInitialization);
       const txJson = tx.toJson();

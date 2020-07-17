@@ -1,6 +1,5 @@
 import { coins } from '@bitgo/statics';
 import { BuildTransactionError } from './coin/baseCoin/errors';
-import { BaseTransactionBuilder } from './coin/baseCoin';
 
 import * as crypto from './utils/crypto';
 export { crypto };
@@ -52,7 +51,7 @@ export const supportedCoins = Object.keys(coinBuilderMap);
  * @param coinName One of the {@code supportedCoins}
  * @returns An instance of a {@code TransactionBuilder}
  */
-export function getBuilder(coinName: string): BaseTransactionBuilder {
+export function getBuilder(coinName: string): BaseCoin.BaseTransactionBuilder {
   const builderClass = coinBuilderMap[coinName];
   if (!builderClass) {
     throw new BuildTransactionError(`Coin ${coinName} not supported`);
