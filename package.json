@@ -1,5 +1,5 @@
 {
-  "name": "bitgo-utxo-lib",
+  "name": "@bitgo/utxo-lib",
   "version": "1.9.1",
   "description": "Client-side Bitcoin JavaScript library",
   "main": "./src/index.js",
