@@ -311,6 +311,11 @@
   resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-5.0.0-rc.1.tgz#a1b96408fbe95b5a543b50b58d7084e921ba58ca"
   integrity sha512-qWPubg57zMvZ7zjndqsRo2zd+IJp2XnMHtmm6SpuNxULJnvkJ7zrKQ/7BdEsV/sUEGVSZzVWRPPLiCnuQ1IhkA==
 
+"@bitgo/statics@^5.0.0-rc.2":
+  version "5.0.0-rc.2"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-5.0.0-rc.2.tgz#0be61397e6fb03c86d229b03f8174e3b81fd5af4"
+  integrity sha512-v//1CpFZjVITv+SxxqLf4eT5kj1NOLBDBlx8KJycBEWaJj43nLIdX4AiSpOaOgilMhN3Me92vxcu6PWfqLhEIA==
+
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
