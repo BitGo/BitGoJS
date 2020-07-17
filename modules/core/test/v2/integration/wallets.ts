@@ -328,6 +328,19 @@ describe('V2 Wallets:', function() {
   });
 
   describe('Get Wallet', function() {
+    const webhookUrl = 'https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d';
+    before(async () => {
+      // try to remove any stale webhooks from prior test runs
+      const wallet = await wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET1_ID });
+      try {
+        await wallet.removeWebhook({
+          url: webhookUrl,
+          type: 'transfer',
+        });
+      } catch (e) {
+        // failure is fine, webhook may have already been deleted
+      }
+    });
     it('should get wallet', function() {
       return wallets.getWallet({ id: TestBitGo.V2.TEST_WALLET1_ID })
       .then(function(wallet) {
@@ -379,7 +392,7 @@ describe('V2 Wallets:', function() {
         webhooks.should.have.property('webhooks');
         count = webhooks.webhooks.length;
         return wallet.addWebhook({
-          url: 'https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d',
+          url: webhookUrl,
           type: 'transfer'
         });
       })
@@ -402,12 +415,12 @@ describe('V2 Wallets:', function() {
       }).then(function(simulation) {
         simulation.should.have.property('webhookNotifications');
         const notification = simulation.webhookNotifications[0];
-        notification.url.should.equal('https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d');
+        notification.url.should.equal(webhookUrl);
         notification.hash.should.equal('96b2376fb0ccfdbcc9472489ca3ec75df1487b08a0ea8d9d82c55da19d8cceea');
         notification.type.should.equal('transfer');
         notification.coin.should.equal('tbtc');
         return wallet.removeWebhook({
-          url: 'https://mockbin.org/bin/dbd0a0cd-060a-4a64-8cd8-f3113b36cb7d',
+          url: webhookUrl,
           type: 'transfer'
         });
       })
