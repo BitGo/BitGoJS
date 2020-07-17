@@ -25,6 +25,9 @@ export { Rbtc };
 import * as Celo from './coin/celo';
 export { Celo };
 
+import * as Hbar from './coin/hbar';
+export { Hbar };
+
 const coinBuilderMap = {
   trx: Trx.TransactionBuilder,
   ttrx: Trx.TransactionBuilder,
@@ -51,11 +54,26 @@ export const supportedCoins = Object.keys(coinBuilderMap);
  * @param coinName One of the {@code supportedCoins}
  * @returns An instance of a {@code TransactionBuilder}
  */
-export function getBuilder(coinName: string): BaseCoin.BaseTransactionBuilder {
+export function getBuilder(coinName: string): BaseCoin.Interface.BaseBuilder {
   const builderClass = coinBuilderMap[coinName];
   if (!builderClass) {
     throw new BuildTransactionError(`Coin ${coinName} not supported`);
   }
 
   return new builderClass(coins.get(coinName));
+}
+
+/**
+ * Register a new coin instance with its builder factory
+ *
+ * @param {string} coinName coin name as it was registered in @bitgo/statics
+ * @param {any} builderFactory the builder factory class for that coin
+ * @returns {any} the factory instance for the registered coin
+ */
+export function register(coinName: string, builderFactory) {
+  const coinConfig = coins.get(coinName);
+  const factory = new builderFactory(coinConfig);
+  // coinBuilderMap[coinName] = factory;
+  coinBuilderMap[coinName] = builderFactory; // For now register the constructor function until reimplement getBuilder method
+  return factory;
 }

@@ -1,8 +1,10 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { BaseTransactionBuilder } from '../baseCoin';
+import { BuildTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
+import { isValidAccount } from './utils';
 
 export class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
@@ -42,7 +44,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   validateAddress(address: BaseAddress, addressFormat?: string): void {
-    console.log('To be implemented');
+    if (!isValidAccount(address.address)) {
+      throw new BuildTransactionError('Invalid address ' + address.address);
+    }
   }
 
   validateKey(key: BaseKey): void {
