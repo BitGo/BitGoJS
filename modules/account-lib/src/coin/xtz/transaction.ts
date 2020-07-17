@@ -1,9 +1,8 @@
-import { localForger, CODEC } from '@taquito/local-forging';
+import { CODEC, localForger } from '@taquito/local-forging';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
-import { BaseTransaction } from '../baseCoin';
+import { BaseTransaction, TransactionType } from '../baseCoin';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
-import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
 import {
   getMultisigTransferDataFromOperation,
@@ -85,7 +84,7 @@ export class Transaction extends BaseTransaction {
     this._parsedTransaction = parsedTransaction;
     let operationIndex = 0;
     for (const operation of parsedTransaction.contents) {
-      if (this._source && this._source != operation.source) {
+      if (this._source && this._source !== operation.source) {
         throw new InvalidTransactionError(
           'Source must be the same for every operation but it changed from ' + this._source + ' to ' + operation.source,
         );
@@ -161,7 +160,11 @@ export class Transaction extends BaseTransaction {
    * @param {TransactionOp} operation A transaction object from a Tezos operation
    */
   private recordTransactionOpFields(operation: TransactionOp): void {
-    this._type = TransactionType.Send;
+    if (operation.parameters) {
+      this._type = TransactionType.Send;
+    } else {
+      this._type = TransactionType.SingleSigSend;
+    }
     const transferData = getMultisigTransferDataFromOperation(operation);
     // Fees are paid by the source account, along with the amount in the transaction
     this._inputs.push({
@@ -249,6 +252,8 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Get the transaction source if it is available.
+   *
+   * @returns {string} Source of the transaction
    */
   get source(): string {
     if (!this._source) {
@@ -259,6 +264,8 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Get the transaction delegation address if it is available.
+   *
+   * @returns {string} transaction delegation address
    */
   get delegate(): string | undefined {
     return this._delegate;
@@ -266,6 +273,8 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Get the public key revealed by the transaction if it exists
+   *
+   * @returns {string} public key
    */
   get publicKeyToReveal(): string | undefined {
     return this._publicKeyToReveal;
@@ -273,6 +282,8 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Get the destination of an address initialization transaction if it exists
+   *
+   * @returns {string} forwarder destination
    */
   get forwarderDestination(): string | undefined {
     return this._forwarderDestination;

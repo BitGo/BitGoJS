@@ -5,11 +5,11 @@ import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import {
+  forwarderOriginationOperation,
   genericMultisigOriginationOperation,
   multisigTransactionOperation,
   revealOperation,
   singlesigTransactionOperation,
-  forwarderOriginationOperation,
 } from './multisigUtils';
 import { Address } from './address';
 import { Transaction } from './transaction';
@@ -68,7 +68,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Public constructor.
    *
-   * @param _coinConfig
+   * @param {CoinConfig} _coinConfig - coin configuration
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -110,7 +110,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       throw new SigningError('Cannot sign an empty send transaction');
     }
 
-    if (this._type === TransactionType.Send && (!this._sourceAddress || this._sourceAddress != signer.getAddress())) {
+    if (this._type === TransactionType.Send && (!this._sourceAddress || this._sourceAddress !== signer.getAddress())) {
       // If the signer is not the source and it is a send transaction, add it to the list of
       // multisig wallet signers
 
@@ -177,6 +177,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
           }
           contents = contents.concat(this.buildForwarderDeploymentContent());
           break;
+        case TransactionType.SingleSigSend:
+          // No support for revelation txns as primary use case is to send from fee address
+          contents = contents.concat(await this.buildSendTransactionContent());
+          break;
         default:
           throw new BuildTransactionError('Unsupported transaction type');
       }
@@ -201,7 +205,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
   //endregion
 
-  //region Common builder methods
+  // region Common builder methods
   /**
    * Set the transaction branch id.
    *
@@ -217,7 +221,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * The type of transaction being built.
    *
-   * @param {TransactionType} type
+   * @param {TransactionType} type - type of the transaction
    */
   type(type: TransactionType): void {
     if (type === TransactionType.Send && this._walletOwnerPublicKeys.length > 0) {
@@ -383,7 +387,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = this._counter.plus(1);
     return originationOp;
   }
-  //endregion
+  // endregion
 
   //region Send builder methods
   /**
@@ -393,7 +397,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransferBuilder} A transfer builder
    */
   transfer(amount: string): TransferBuilder {
-    if (this._type !== TransactionType.Send) {
+    if (this._type !== TransactionType.Send && this._type !== TransactionType.SingleSigSend) {
       throw new BuildTransactionError('Transfers can only be set for send transactions');
     }
     let transferBuilder = new TransferBuilder();
@@ -431,7 +435,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * Override the data to sign for a specific transfer. Used for offline signing to pass the
    * respective dataToSign for transfer at a particular index.
    *
-   * @param {DataToSignOverride} data
+   * @param {DataToSignOverride} data - data to override
    */
   overrideDataToSign(data: DataToSignOverride): void {
     if (!data.index) {
@@ -481,9 +485,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     return contents;
   }
-  //endregion
+  // endregion
 
-  //region ForwarderAddressDeployment
+  // region ForwarderAddressDeployment
   /**
    * Build a transaction operation for a forwarder contract
    *
@@ -502,7 +506,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = this._counter.plus(1);
     return operation;
   }
-  //endregion
+  // endregion
 
   //region Validators
   /** @inheritdoc */
@@ -544,6 +548,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       case TransactionType.Send:
         break;
       case TransactionType.AddressInitialization:
+        break;
+      case TransactionType.SingleSigSend:
         break;
       default:
         throw new BuildTransactionError('Transaction type not supported');
