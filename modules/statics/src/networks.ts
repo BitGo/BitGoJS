@@ -109,13 +109,13 @@ class AlgorandTestnet extends Testnet implements AccountNetwork {
 
 class Bitcoin extends BitcoinLikeMainnet {
   family = CoinFamily.BTC;
-  explorerUrl = 'https://smartbit.com.au/tx/';
+  explorerUrl = 'https://blockstream.info/tx/';
   bech32 = 'bc';
 }
 
 class BitcoinTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.BTC;
-  explorerUrl = 'https://testnet.smartbit.com.au/tx/';
+  explorerUrl = 'https://blockstream.info/testnet/tx/';
   bech32 = 'tb';
 }
 
