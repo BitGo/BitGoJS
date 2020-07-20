@@ -85,4 +85,17 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       return tKeys;
     }, new proto.ThresholdKey({ threshold: 2, keys: { keys: [] } }));
   }
+
+  validateMandatoryFields(): void {
+    if (this._owners === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing wallet owners');
+    }
+
+    if (this._owners.length !== DEFAULT_M) {
+      throw new BuildTransactionError(
+        `Invalid transaction: wrong number of owners -- required: ${DEFAULT_M}, found: ${this._owners.length}`,
+      );
+    }
+    super.validateMandatoryFields();
+  }
 }

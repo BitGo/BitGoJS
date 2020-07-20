@@ -121,13 +121,22 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateTransaction(transaction: Transaction): void {
-    console.log('To be implemented');
+    this.validateMandatoryFields();
   }
 
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
     if (value.isLessThan(0)) {
       throw new BuildTransactionError('Value cannot be less than zero');
+    }
+  }
+
+  validateMandatoryFields(): void {
+    if (this._fee === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing fee');
+    }
+    if (this._source === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing source');
     }
   }
 }
