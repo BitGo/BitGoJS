@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { BaseTransactionBuilder } from '../baseCoin';
-import { BuildTransactionError } from '../baseCoin/errors';
+import {BuildTransactionError, ParseTransactionError} from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
@@ -64,7 +64,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: any): Transaction {
+  protected fromImplementation(rawTransaction: Uint8Array): Transaction {
     const tx = new Transaction(this._coinConfig);
     tx.bodyBytes(rawTransaction);
     this.initBuilder(tx);
@@ -111,12 +111,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
+    // TODO: implements once KeyPar implements this validation
     console.log('To be implemented');
   }
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
-    console.log('To be implemented');
+    if (!(Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))) {
+      throw new ParseTransactionError('Invalid raw transaction');
+    }
   }
 
   /** @inheritdoc */
