@@ -15,5 +15,5 @@ export function isValidAccount(account: string): boolean {
  * @returns {boolean} - the validation result
  */
 export function isValidPublicKey(key: string): boolean {
-  return /^[0-9a-f]{1,}$/.test(key) && key.length === 64;
+  return /^([0-9a-f]|[0-9A-F]){1,}$/.test(key) && key.length === 64;
 }

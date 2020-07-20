@@ -18,6 +18,10 @@ export class Transaction extends BaseTransaction {
     this._hederaTx = tx;
   }
 
+  bodyBytes(bytes: Uint8Array) {
+    this.body(proto.Transaction.decode(bytes));
+  }
+
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     return true;
@@ -39,9 +43,14 @@ export class Transaction extends BaseTransaction {
       id: acc + '@' + time,
       // TODO: add tx hash
       data: Uint8Array.from(this._hederaTx.bodyBytes).toString(),
-      fee: +new BigNumber(this._txBody.transactionFee.toString()),
+      fee: +new BigNumber(this._txBody.transactionFee!.toString()),
       from: acc,
+      startTime: time,
     };
+  }
+
+  get txBody(): proto.TransactionBody {
+    return this._txBody;
   }
 
   private getTxIdParts(): [string, string] {

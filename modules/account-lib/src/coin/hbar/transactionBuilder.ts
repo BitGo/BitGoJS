@@ -3,6 +3,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { BaseTransactionBuilder } from '../baseCoin';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
+import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
 import { isValidAccount } from './utils';
 
@@ -10,6 +11,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
   protected _transaction: Transaction;
   protected _source: BaseAddress;
+  protected _startTime: proto.ITimestamp;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -39,14 +41,34 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
+  startTime(time: Date | string): this {
+    if (typeof time === 'string') {
+      const timeParts = time.split('.').map(v => +new BigNumber(v));
+      this._startTime = { seconds: timeParts[0], nanos: timeParts[1] };
+    } else {
+      this._startTime = { seconds: time.getTime() / 1000, nanos: 0 };
+    }
+    return this;
+  }
+
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     throw new Error('unimplemented');
   }
 
+  protected initBuilder(tx: Transaction) {
+    const txData = tx.toJson();
+    this.fee({ fee: txData.fee.toString() });
+    this.source({ address: txData.from });
+    this.startTime(txData.startTime);
+  }
+
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: any): Transaction {
-    throw new Error('unimplemented');
+    const tx = new Transaction(this._coinConfig);
+    tx.bodyBytes(rawTransaction);
+    this.initBuilder(tx);
+    return this.transaction;
   }
 
   /** @inheritdoc */
@@ -54,9 +76,30 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     throw new Error('unimplemented');
   }
 
+  protected buildTxId(): proto.TransactionID {
+    const accString = this._source.address.split('.').pop();
+    const acc = +new BigNumber(accString!);
+    return new proto.TransactionID({
+      transactionValidStart: this.validStart,
+      accountID: { accountNum: acc },
+    });
+  }
+
+  private get validStart(): proto.ITimestamp {
+    if (!this._startTime) {
+      this.startTime(new Date());
+    }
+    return this._startTime;
+  }
+
   /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
+  }
+
+  /** @inheritdoc */
+  protected set transaction(transaction: Transaction) {
+    this._transaction = transaction;
   }
 
   /** @inheritdoc */

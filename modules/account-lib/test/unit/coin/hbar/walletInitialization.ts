@@ -1,3 +1,4 @@
+import should from 'should';
 import { register } from '../../../../src/index';
 import { TransactionBuilderFactory } from '../../../../src/coin/hbar';
 
@@ -12,8 +13,10 @@ describe('Wallet initialization', () => {
     builder.source({ address: '0.0.75861' });
     const tx = await builder.build();
     const raw = tx.toBroadcastFormat();
-    const txData = tx.toJson();
-    console.log(txData);
-    console.log(Uint8Array.from(raw).toString());
+    const builder2 = factory.getWalletInitializationBuilder();
+    builder2.from(raw);
+    const tx2 = await builder2.build();
+    should.deepEqual(tx.toJson(), tx2.toJson())
+    should.deepEqual(raw, tx2.toBroadcastFormat())
   });
 });
