@@ -174,7 +174,7 @@ BitGo Express is able to take configuration options from either command line arg
 | -e              | --env                  | `BITGO_ENV`                              | test          | BitGo environment to interact with.                                                                                     |
 | -t              | --timeout              | `BITGO_TIMEOUT`                          | 305000        | Number of milliseconds to wait before requests made by `bitgo-express` time out.
 | -d              | --debug                | N/A, use `BITGO_DEBUG_NAMESPACE` instead | N/A           | Enable debug output for bitgo-express. This is equivalent to passing `--debugnamespace bitgo:express`.                  |
-| -D              | --debugnamespace       | `BITGO_DEBUG_NAMESPACE`                  | N/A           | Enable debug output for a particular debug namespace. Multiple debug namespaces can be given as a comma separated list. |
+| -D              | --debugnamespace       | `BITGO_DEBUG_NAMESPACE`                  | N/A           | Enable debug output for a particular debug namespace. Multiple debug namespaces can be given as a comma separated list. See the [`bitgo` package README](https://github.com/BitGo/BitGoJS/blob/master/modules/core/README.md#available-debug-namespaces) for a complete list of recognized options, in addition to those listed in the table below. |
 | -k              | --keypath              | `BITGO_KEYPATH`                          | N/A           | Path to SSL .key file (required if running against production environment).                                             |
 | -c              | --crtpath              | `BITGO_CRTPATH`                          | N/A           | Path to SSL .crt file (required if running against production environment).                                             |
 | -u              | --customrooturi        | `BITGO_CUSTOM_ROOT_URI`                  | N/A           | Force a custom BitGo URI.                                                                                               |
@@ -193,6 +193,20 @@ BitGo Express is able to take configuration options from either command line arg
   * `DISABLE_PROXY`
 * Disable Environment Check
   * `DISABLE_ENV_CHECK`
+  
+## Enabling Additional Debug Output
+
+In addition to the debug namespaces defined in the [`bitgo` package README](https://github.com/BitGo/BitGoJS/blob/master/modules/core/README.md#available-debug-namespaces) there is a special BitGo Express specific debug namespaces which can be enabled:
+
+| Namespace | Description |
+| --- | --- |
+| `bitgo:express` | Additional debug information specific to BitGo Express operations. |
+
+### Example
+
+To enable the `bitgo:v2:utxo` and `bitgo:express` debug namespaces, start BitGo Express with `--debug-namespace bitgo:v2:utxo,bitgo:express`.
+
+Wildcards using `*` are also supported. For example, all bitgo debug namespaces can be enabled with `--debug-namespace bitgo:*`, but beware, this can be very noisy.
 
 # Release Notes
 
