@@ -1,8 +1,8 @@
 import should from 'should';
-import { TransferContract, AccountPermissionUpdateContract } from '../../../../src/coin/trx/iface';
+import { AccountPermissionUpdateContract, TransferContract } from '../../../../src/coin/trx/iface';
 import { Utils } from '../../../../src/coin/trx/index';
 
-import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
+import { SignedAccountPermissionUpdateContractTx, UnsignedTransferContractTx } from '../../../resources/trx';
 
 describe('Util library should', function() {
   // arbitrary text

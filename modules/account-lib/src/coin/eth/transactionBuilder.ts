@@ -292,7 +292,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
     if (this._walletOwnerAddresses.length !== 3) {
       throw new BuildTransactionError(
-        `Invalid transaction: wrong number of owners -- required: 3, found: ${this._walletOwnerAddresses.length}`,
+        `Invalid transaction: wrong number of owners -- required: 3, found: ${ this._walletOwnerAddresses.length }`,
       );
     }
   }
@@ -362,7 +362,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   counter(counter: number): void {
     if (counter < 0) {
-      throw new BuildTransactionError(`Invalid counter: ${counter}`);
+      throw new BuildTransactionError(`Invalid counter: ${ counter }`);
     }
 
     this._counter = counter;
@@ -388,6 +388,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       to: this._contractAddress,
     };
   }
+
   //endregion
 
   //region WalletInitialization builder methods
@@ -434,6 +435,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       .replace('0x', '');
     return walletSimpleByteCode + resultEncodedParameters;
   }
+
   //endregion
 
   //region Send builder methods
@@ -477,6 +479,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     tx.to = this._contractAddress;
     return tx;
   }
+
   //endregion
 
   //region AddressInitialization builder methods
@@ -488,7 +491,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   contractCounter(contractCounter: number): void {
     if (contractCounter < 0) {
-      throw new BuildTransactionError(`Invalid contract counter: ${contractCounter}`);
+      throw new BuildTransactionError(`Invalid contract counter: ${ contractCounter }`);
     }
 
     this._contractCounter = contractCounter;
@@ -508,6 +511,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     return tx;
   }
+
   //endregion
 
   //region flush methods
@@ -543,6 +547,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   private buildFlushTokensTransaction(): TxData {
     return this.buildBase(flushTokensData(this._forwarderAddress, this._tokenAddress));
   }
+
   //endregion
 
   /** @inheritdoc */

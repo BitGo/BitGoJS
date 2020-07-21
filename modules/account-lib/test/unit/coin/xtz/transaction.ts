@@ -2,9 +2,9 @@ import should from 'should';
 import { coins } from '@bitgo/statics';
 import { KeyPair, Transaction } from '../../../../src/coin/xtz';
 import {
-  unsignedSerializedOriginationTransaction,
-  signedSerializedOriginationTransaction,
   parsedTransaction,
+  signedSerializedOriginationTransaction,
+  unsignedSerializedOriginationTransaction,
 } from '../../../resources/xtz/xtz';
 import { ParsedTransaction } from '../../../../src/coin/xtz/iface';
 

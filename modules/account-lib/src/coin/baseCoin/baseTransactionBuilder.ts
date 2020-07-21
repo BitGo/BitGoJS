@@ -10,6 +10,7 @@ import { SigningError } from './errors';
  */
 export abstract class BaseTransactionBuilder {
   protected _coinConfig: Readonly<CoinConfig>;
+
   /**
    * Base constructor.
    *

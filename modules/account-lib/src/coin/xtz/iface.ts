@@ -66,6 +66,7 @@ export interface OriginationData {
   from?: string;
   forwarderDestination?: string;
 }
+
 /**
  * Taquito return type for sign operations
  */
@@ -83,7 +84,8 @@ export interface IndexedData {
 /**
  * Tezos keys can have a specific order in the smart contracts, hence the need to add an index field
  */
-export interface Key extends BaseKey, IndexedData {}
+export interface Key extends BaseKey, IndexedData {
+}
 
 export interface IndexedSignature extends IndexedData {
   signature: string;

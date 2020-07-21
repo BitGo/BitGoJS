@@ -10,7 +10,7 @@ import {
   stripHexPrefix,
   toBuffer,
 } from 'ethereumjs-util';
-import { coins, BaseCoin, Erc20Coin, CeloCoin, NetworkType, ContractAddressDefinedToken } from '@bitgo/statics';
+import { BaseCoin, coins, ContractAddressDefinedToken, NetworkType } from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
@@ -18,12 +18,12 @@ import BigNumber from 'bignumber.js';
 import { BuildTransactionError, InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import {
-  LockMethodId,
-  VoteMethodId,
-  UnlockMethodId,
   ActivateMethodId,
-  WithdrawMethodId,
+  LockMethodId,
+  UnlockMethodId,
   UnvoteMethodId,
+  VoteMethodId,
+  WithdrawMethodId,
 } from '../celo/stakingUtils';
 import { FlushTokensData, NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
 import { KeyPair } from './keyPair';
@@ -36,10 +36,9 @@ import {
   sendMultiSigTokenTypes,
   sendMultiSigTypes,
   walletInitializationFirstBytes,
-  walletSimpleByteCode,
   walletSimpleConstructor,
 } from './walletUtil';
-import { testnetCommon, mainnetCommon } from './resources';
+import { mainnetCommon, testnetCommon } from './resources';
 import { EthTransactionData } from './types';
 
 const commons: Map<NetworkType, EthereumCommon> = new Map<NetworkType, EthereumCommon>([
@@ -192,7 +191,7 @@ export function isValidAmount(amount: string): boolean {
  */
 export function decodeWalletCreationData(data: string): string[] {
   if (!data.startsWith(walletInitializationFirstBytes)) {
-    throw new BuildTransactionError(`Invalid wallet bytecode: ${data}`);
+    throw new BuildTransactionError(`Invalid wallet bytecode: ${ data }`);
   }
 
   const dataBuffer = Buffer.from(data.slice(2), 'hex');
@@ -202,12 +201,12 @@ export function decodeWalletCreationData(data: string): string[] {
 
   const resultEncodedParameters = EthereumAbi.rawDecode(walletSimpleConstructor, serializedSigners);
   if (resultEncodedParameters.length !== 1) {
-    throw new BuildTransactionError(`Could not decode wallet constructor bytecode: ${resultEncodedParameters}`);
+    throw new BuildTransactionError(`Could not decode wallet constructor bytecode: ${ resultEncodedParameters }`);
   }
 
   const addresses: BN[] = resultEncodedParameters[0];
   if (addresses.length !== 3) {
-    throw new BuildTransactionError(`invalid number of addresses in parsed constructor: ${addresses}`);
+    throw new BuildTransactionError(`invalid number of addresses in parsed constructor: ${ addresses }`);
   }
 
   // sometimes ethereumjs-abi removes 0 padding at the start of addresses,
@@ -229,7 +228,7 @@ export function decodeTransferData(data: string): TransferData {
   } else if (data.startsWith(sendMultisigTokenMethodId)) {
     return decodeTokenTransferData(data);
   } else {
-    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${ data }`);
   }
 }
 
@@ -241,7 +240,7 @@ export function decodeTransferData(data: string): TransferData {
  */
 export function decodeTokenTransferData(data: string): TokenTransferData {
   if (!data.startsWith(sendMultisigTokenMethodId)) {
-    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${ data }`);
   }
 
   const [to, amount, tokenContractAddress, expireTime, sequenceId, signature] = getRawDecoded(
@@ -267,7 +266,7 @@ export function decodeTokenTransferData(data: string): TokenTransferData {
  */
 export function decodeNativeTransferData(data: string): NativeTransferData {
   if (!data.startsWith(sendMultisigMethodId)) {
-    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${ data }`);
   }
 
   const [to, amount, internalData, expireTime, sequenceId, signature] = getRawDecoded(
@@ -293,7 +292,7 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
  */
 export function decodeFlushTokensData(data: string): FlushTokensData {
   if (!data.startsWith(flushForwarderTokensMethodId)) {
-    throw new BuildTransactionError(`Invalid transfer bytecode: ${data}`);
+    throw new BuildTransactionError(`Invalid transfer bytecode: ${ data }`);
   }
 
   const [forwarderAddress, tokenAddress] = getRawDecoded(
@@ -323,7 +322,7 @@ export function classifyTransaction(data: string): TransactionType {
 
   const transactionType = transactionTypesMap[data.slice(0, 10).toLowerCase()];
   if (transactionType === undefined) {
-    throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
+    throw new BuildTransactionError(`Unrecognized transaction type: ${ data }`);
   }
 
   return transactionType;
@@ -425,7 +424,7 @@ export function getRawDecoded(types: string[], serializedArgs: Buffer): Buffer[]
 export function getBufferedByteCode(methodId: string, rawData: string): Buffer {
   const splitBytecode = rawData.split(methodId);
   if (splitBytecode.length !== 2) {
-    throw new BuildTransactionError(`Invalid send bytecode: ${rawData}`);
+    throw new BuildTransactionError(`Invalid send bytecode: ${ rawData }`);
   }
   return Buffer.from(splitBytecode[1], 'hex');
 }

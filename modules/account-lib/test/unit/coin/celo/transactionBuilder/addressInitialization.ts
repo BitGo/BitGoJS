@@ -1,6 +1,6 @@
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
-import { getBuilder, Celo } from '../../../../../src';
+import { Celo, getBuilder } from '../../../../../src';
 import * as testData from '../../../../resources/celo/celo';
 
 describe('An address initialization', () => {

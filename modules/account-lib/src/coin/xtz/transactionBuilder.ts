@@ -5,11 +5,11 @@ import { BuildTransactionError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import {
+  forwarderOriginationOperation,
   genericMultisigOriginationOperation,
   multisigTransactionOperation,
   revealOperation,
   singlesigTransactionOperation,
-  forwarderOriginationOperation,
 } from './multisigUtils';
 import { Address } from './address';
 import { Transaction } from './transaction';
@@ -199,6 +199,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     return this.transaction;
   }
+
   //endregion
 
   //region Common builder methods
@@ -326,6 +327,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = this._counter.plus(1);
     return operation;
   }
+
   //endregion
 
   //region WalletInitialization builder methods
@@ -383,6 +385,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = this._counter.plus(1);
     return originationOp;
   }
+
   //endregion
 
   //region Send builder methods
@@ -481,6 +484,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     return contents;
   }
+
   //endregion
 
   //region ForwarderAddressDeployment
@@ -502,6 +506,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = this._counter.plus(1);
     return operation;
   }
+
   //endregion
 
   //region Validators
@@ -549,6 +554,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         throw new BuildTransactionError('Transaction type not supported');
     }
   }
+
   //endregion
 
   /** @inheritdoc */

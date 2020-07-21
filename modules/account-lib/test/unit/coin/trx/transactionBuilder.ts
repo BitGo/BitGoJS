@@ -1,18 +1,18 @@
 import should from 'should';
 import { TransactionType } from '../../../../src/coin/baseCoin/';
 import {
-  UnsignedBuildTransaction,
-  FirstSigOnBuildTransaction,
-  FirstPrivateKey,
-  SecondSigOnBuildTransaction,
-  SecondPrivateKey,
-  UnsignedAccountPermissionUpdateContractTx,
   AccountPermissionUpdateContractPriv,
+  FirstPrivateKey,
+  FirstSigOnBuildTransaction,
   InvalidIDTransaction,
-  UnsignedBuildInvalidIDTransaction,
-  UnsignedInvalidExpirationBuildTransaction,
-  UnsignedInvalidContractBuildTransaction,
+  SecondPrivateKey,
+  SecondSigOnBuildTransaction,
+  UnsignedAccountPermissionUpdateContractTx,
   UnsignedBuildEmptyIDTransaction,
+  UnsignedBuildInvalidIDTransaction,
+  UnsignedBuildTransaction,
+  UnsignedInvalidContractBuildTransaction,
+  UnsignedInvalidExpirationBuildTransaction,
   UnsignedInvalidTimeStampBuildTransaction,
 } from '../../../resources/trx';
 import { getBuilder } from '../../../../src';

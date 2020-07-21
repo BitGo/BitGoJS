@@ -1,9 +1,9 @@
 import should from 'should';
 import {
-  sign,
-  isValidEthAddress,
-  getAddressInitializationData,
   calculateForwarderAddress,
+  getAddressInitializationData,
+  isValidEthAddress,
+  sign,
 } from '../../../../src/coin/eth/utils';
 import * as testData from '../../../resources/eth/eth';
 import * as walletUtilConstants from '../../../../src/coin/eth/walletUtil';

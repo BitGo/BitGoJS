@@ -1,7 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import EthereumAbi from 'ethereumjs-abi';
 import * as Eth from '../eth';
-import { TransactionType, StakingOperationTypes } from '../baseCoin';
+import { StakingOperationTypes, TransactionType } from '../baseCoin';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TxData } from '../eth/iface';
 import { walletSimpleConstructor } from '../eth/walletUtil';

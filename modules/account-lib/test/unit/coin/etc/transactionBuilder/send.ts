@@ -1,6 +1,6 @@
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
-import { getBuilder, Etc } from '../../../../../src';
+import { Etc, getBuilder } from '../../../../../src';
 import * as testData from '../../../../resources/etc/etc';
 
 describe('Etc send transaction', function() {

@@ -3,7 +3,7 @@ import * as tronweb from 'tronweb';
 import { protocol } from '../../../resources/trx/protobuf/tron';
 
 import { UtilsError } from '../baseCoin/errors';
-import { TransferContract, RawData, AccountPermissionUpdateContract, TransactionReceipt, Permission } from './iface';
+import { AccountPermissionUpdateContract, Permission, RawData, TransactionReceipt, TransferContract } from './iface';
 import { ContractType, PermissionType } from './enum';
 
 /**

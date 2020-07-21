@@ -2,14 +2,14 @@ import BigNumber from 'bignumber.js';
 import { LocalWallet } from '@celo/contractkit/lib/wallets/local-wallet';
 import {
   addHexPrefix,
-  toBuffer,
   bufferToHex,
   bufferToInt,
+  ecrecover,
+  publicToAddress,
   rlp,
   rlphash,
   stripZeros,
-  ecrecover,
-  publicToAddress,
+  toBuffer,
 } from 'ethereumjs-util';
 import { EthLikeTransactionData, TxData } from '../eth/iface';
 import { KeyPair } from '../eth';

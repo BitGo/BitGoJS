@@ -2,27 +2,28 @@ import { coins, BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BuildTransactionError } from './coin/baseCoin/errors';
 
 import * as crypto from './utils/crypto';
-export { crypto };
 // coins
 import * as BaseCoin from './coin/baseCoin';
+import * as Trx from './coin/trx';
+import * as Xtz from './coin/xtz';
+import * as Eth from './coin/eth';
+import * as Etc from './coin/etc';
+import * as Rbtc from './coin/rbtc';
+import * as Celo from './coin/celo';
+
+export { crypto };
 export { BaseCoin };
 
-import * as Trx from './coin/trx';
 export { Trx };
 
-import * as Xtz from './coin/xtz';
 export { Xtz };
 
-import * as Eth from './coin/eth';
 export { Eth };
 
-import * as Etc from './coin/etc';
 export { Etc };
 
-import * as Rbtc from './coin/rbtc';
 export { Rbtc };
 
-import * as Celo from './coin/celo';
 export { Celo };
 
 import * as Hbar from './coin/hbar';

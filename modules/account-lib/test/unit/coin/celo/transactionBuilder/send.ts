@@ -2,7 +2,7 @@ import should from 'should';
 import * as ethUtil from 'ethereumjs-util';
 import EthereumAbi from 'ethereumjs-abi';
 import { BaseTransaction, TransactionType } from '../../../../../src/coin/baseCoin';
-import { getBuilder, Celo } from '../../../../../src';
+import { Celo, getBuilder } from '../../../../../src';
 import * as testData from '../../../../resources/celo/celo';
 import { decodeTransferData } from '../../../../../src/coin/eth/utils';
 

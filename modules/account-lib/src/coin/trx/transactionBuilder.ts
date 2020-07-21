@@ -3,16 +3,16 @@ import * as _ from 'lodash';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import {
-  SigningError,
   BuildTransactionError,
   InvalidTransactionError,
   ParseTransactionError,
+  SigningError,
 } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder } from '../baseCoin';
 import { TransactionReceipt } from './iface';
 import { Address } from './address';
-import { signTransaction, isBase58Address, decodeTransaction } from './utils';
+import { decodeTransaction, isBase58Address, signTransaction } from './utils';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 
@@ -22,6 +22,7 @@ import { KeyPair } from './keyPair';
 export class TransactionBuilder extends BaseTransactionBuilder {
   // transaction being built
   private _transaction: Transaction;
+
   /**
    * Public constructor.
    *

@@ -1,6 +1,6 @@
 import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
-import { getBuilder, Eth } from '../../../../../src';
+import { Eth, getBuilder } from '../../../../../src';
 import * as testData from '../../../../resources/eth/eth';
 import { Transaction } from '../../../../../src/coin/eth';
 import { Fee } from '../../../../../src/coin/eth/iface';

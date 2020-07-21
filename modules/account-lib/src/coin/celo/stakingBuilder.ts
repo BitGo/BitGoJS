@@ -1,15 +1,15 @@
 import ethUtil from 'ethereumjs-util';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { isValidAmount, isValidEthAddress, getRawDecoded, getBufferedByteCode, hexStringToNumber } from '../eth/utils';
+import { getBufferedByteCode, getRawDecoded, hexStringToNumber, isValidAmount, isValidEthAddress } from '../eth/utils';
 import { BuildTransactionError, InvalidParameterValueError, InvalidTransactionError } from '../baseCoin/errors';
 import { StakingOperationTypes } from '../baseCoin';
 import { StakingCall } from './stakingCall';
 import {
-  getOperationConfig,
-  VoteMethodId,
-  UnvoteMethodId,
   ActivateMethodId,
+  getOperationConfig,
   UnlockMethodId,
+  UnvoteMethodId,
+  VoteMethodId,
   WithdrawMethodId,
 } from './stakingUtils';
 
@@ -270,7 +270,7 @@ export class StakingBuilder {
         break;
       case StakingOperationTypes.UNLOCK:
         if (decoded.length !== 1) {
-          throw new BuildTransactionError(`Invalid unlock decoded data: ${data}`);
+          throw new BuildTransactionError(`Invalid unlock decoded data: ${ data }`);
         }
         const [decodedAmount] = decoded;
         this._amount = ethUtil.bufferToHex(decodedAmount);
@@ -281,13 +281,13 @@ export class StakingBuilder {
         this._index = hexStringToNumber(ethUtil.bufferToHex(index));
         break;
       default:
-        throw new BuildTransactionError(`Invalid staking data: ${this._type}`);
+        throw new BuildTransactionError(`Invalid staking data: ${ this._type }`);
     }
   }
 
   private validateDecodedDataLength(actual: number, expected: number, data: string): void {
     if (actual !== expected) {
-      throw new BuildTransactionError(`Invalid staking decoded data: ${data}`);
+      throw new BuildTransactionError(`Invalid staking decoded data: ${ data }`);
     }
   }
 
@@ -303,7 +303,7 @@ export class StakingBuilder {
     } else if (data.startsWith(WithdrawMethodId)) {
       this._type = StakingOperationTypes.WITHDRAW;
     } else {
-      throw new BuildTransactionError(`Invalid staking bytecode: ${data}`);
+      throw new BuildTransactionError(`Invalid staking bytecode: ${ data }`);
     }
   }
 

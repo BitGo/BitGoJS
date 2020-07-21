@@ -43,9 +43,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
           .toUpperCase(),
         prv: xprv
           ? HDNode.fromBase58(xprv)
-              .keyPair.getPrivateKeyBuffer()
-              .toString('hex')
-              .toUpperCase()
+            .keyPair.getPrivateKeyBuffer()
+            .toString('hex')
+            .toUpperCase()
           : undefined,
       };
     } else {
@@ -55,9 +55,9 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
           .toUpperCase(),
         prv: this.keyPair.d
           ? this.keyPair.d
-              .toBuffer(32)
-              .toString('hex')
-              .toUpperCase()
+            .toBuffer(32)
+            .toString('hex')
+            .toUpperCase()
           : undefined,
       };
     }

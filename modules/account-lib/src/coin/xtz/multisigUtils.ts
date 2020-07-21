@@ -84,6 +84,7 @@ export function getOriginationDataFromOperation(operation: OriginationOp): Origi
     forwarderDestination,
   };
 }
+
 /**
  * Helper method to build a singlesig transaction operation.
  *

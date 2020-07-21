@@ -1,4 +1,4 @@
-import { localForger, CODEC } from '@taquito/local-forging';
+import { CODEC, localForger } from '@taquito/local-forging';
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransaction } from '../baseCoin';

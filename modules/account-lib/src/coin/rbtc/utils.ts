@@ -1,9 +1,9 @@
 import EthereumCommon from 'ethereumjs-common';
 import { NetworkType } from '@bitgo/statics';
-import { Utils, KeyPair } from '../eth';
+import { KeyPair, Utils } from '../eth';
 import { TxData } from '../eth/iface';
 import { InvalidTransactionError } from '../baseCoin/errors';
-import { testnetCommon, mainnetCommon } from './resources';
+import { mainnetCommon, testnetCommon } from './resources';
 
 /**
  * Signs the transaction using the appropriate algorithm

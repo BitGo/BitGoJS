@@ -1,6 +1,6 @@
-import { HDNode, ECPair } from '@bitgo/utxo-lib';
+import { ECPair, HDNode } from '@bitgo/utxo-lib';
 import * as Crypto from '../../utils/crypto';
-import { KeyPairOptions, ExtendedKeys } from './iface';
+import { ExtendedKeys, KeyPairOptions } from './iface';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { NotImplementedError } from './errors';
@@ -14,6 +14,7 @@ export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
   protected hdNode?: HDNode;
   protected keyPair: ECPair;
   protected source?: KeyPairOptions;
+
   /**
    * Public constructor. By default, creates a key pair with a random master seed.
    *

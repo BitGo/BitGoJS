@@ -1,5 +1,4 @@
 import { BuildTransactionError } from '../baseCoin/errors';
-import { isValidOriginatedAddress } from './utils';
 import { TransferData } from './iface';
 
 /** Tezos transfer builder. */

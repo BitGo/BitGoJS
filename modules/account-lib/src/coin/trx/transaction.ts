@@ -3,7 +3,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import BigNumber from 'bignumber.js';
 import { BaseTransaction } from '../baseCoin';
 import { protocol } from '../../../resources/trx/protobuf/tron';
-import { ParseTransactionError, ExtendTransactionError } from '../baseCoin/errors';
+import { ExtendTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
 import { ContractType } from './enum';

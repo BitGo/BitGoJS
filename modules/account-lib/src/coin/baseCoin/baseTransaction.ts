@@ -12,6 +12,7 @@ export abstract class BaseTransaction {
   protected _type: TransactionType;
   protected _signatures: string[];
   protected _coinConfig: Readonly<CoinConfig>;
+
   /**
    * Base constructor.
    *
