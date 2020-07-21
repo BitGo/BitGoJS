@@ -71,6 +71,39 @@ console.dir(result);
 ## More examples
 Further demos and examples in both Javascript and Typescript can be found in the [example](example) directory.
 
+# Enabling additional debugging output
+
+`bitgo` uses the `debug` package to emit extra information, which can be useful when debugging issues with BitGoJS or BitGo Express.
+
+When using the `bitgo` npm package, the easiest way to enable debug output is by setting the `DEBUG` environment variable to one or more of the debug namespaces in the table below. Multiple debug namespaces can be enabled by giving a comma-separated list or by using `*` as a wildcard. See the [debug package documentation](https://github.com/visionmedia/debug#readme) for more details.
+
+## Available Debug Namespaces
+| Namespace | Description |
+| --- | --- |
+| `bitgo:index` | Core BitGo object. Currently only constant fetch failures and HMAC response failures will emit debug information for this namespace. |
+| `bitgo:v1:txb` | Version 1 (legacy) transaction builder |
+| `bitgo:v2:pendingapprovals` | Pending approval operations. Currently only wallet fetch errors will emit debug information for this namespace. |
+| `bitgo:v2:wallet` | Wallet operations including transaction prebuild, sendMany calls and consolidation transactions |
+| `bitgo:v2:utxo` | Low level operations for UTXO coins, including transaction parsing, verification, signing and explanations |
+| `bitgo:v2:eth` | Ethereum specific output. Currently only failures to require the optional Ethereum libraries are reported |
+| `bitgo:v2:util` | SDK utilities specific output. Currently only failures to require the optional Ethereum libraries are reported |
+
+Another debug namespace which is not provided by BitGoJS but is helpful nonetheless is the `superagent` namespace, which will output all HTTP requests and responses (only the URL, not bodies).
+
+## Example
+
+To run an SDK script with debug output enabled, export the DEBUG environment variable before running.
+```shell script
+export DEBUG='bitgo:*' # enable all bitgo debug namespaces
+node myScript.js
+```
+
+To set debug namespaces in the browser, you should set `localStorage.debug` property instead of the `DEBUG` environment variable using your browser's development tools console.
+
+```js
+localStorage.debug = 'bitgo:*'; // enable all bitgo debug namespaces
+```
+
 # Using with Typescript
 
 `bitgo` is not yet compatible with the `noImplicitAny` compiler option. If you want to use this option in your project (and we recommend that you do), you must set the `skipLibCheck` option to supress errors about missing type definitions for dependencies of `bitgo`.
