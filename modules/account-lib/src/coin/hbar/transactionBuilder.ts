@@ -1,21 +1,17 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { BaseTransactionBuilder } from '../baseCoin';
-import {BuildTransactionError, ParseTransactionError} from '../baseCoin/errors';
+import { BuildTransactionError, NotImplementedError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
-import { isValidAccount } from './utils';
+import { isValidAccount, toUint8Array } from './utils';
 
-export class TransactionBuilder extends BaseTransactionBuilder {
+export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
   protected _transaction: Transaction;
   protected _source: BaseAddress;
   protected _startTime: proto.ITimestamp;
-
-  constructor(_coinConfig: Readonly<CoinConfig>) {
-    super(_coinConfig);
-  }
 
   /**
    * Set the transaction fees
@@ -51,11 +47,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return this;
   }
 
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    throw new Error('unimplemented');
-  }
-
   protected initBuilder(tx: Transaction) {
     const txData = tx.toJson();
     this.fee({ fee: txData.fee.toString() });
@@ -64,16 +55,22 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: Uint8Array): Transaction {
+  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
     const tx = new Transaction(this._coinConfig);
-    tx.bodyBytes(rawTransaction);
+    let buffer;
+    if (typeof rawTransaction === 'string') {
+      buffer = toUint8Array(rawTransaction);
+    } else {
+      buffer = rawTransaction;
+    }
+    tx.bodyBytes(buffer);
     this.initBuilder(tx);
     return this.transaction;
   }
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
-    throw new Error('unimplemented');
+    throw new NotImplementedError('unimplemented');
   }
 
   protected buildTxId(): proto.TransactionID {

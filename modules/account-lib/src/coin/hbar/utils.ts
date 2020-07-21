@@ -17,3 +17,11 @@ export function isValidAccount(account: string): boolean {
 export function isValidPublicKey(key: string): boolean {
   return /^([0-9a-f]|[0-9A-F]){1,}$/.test(key) && key.length === 64;
 }
+
+export function toHex(buffer: Buffer | Uint8Array): string {
+  return buffer.toString('hex');
+}
+
+export function toUint8Array(hex: string): Uint8Array {
+  return Uint8Array.from(Buffer.from(hex, 'hex'));
+}

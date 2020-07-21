@@ -4,6 +4,7 @@ import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { TxData } from './ifaces';
+import {toHex} from './utils';
 
 export class Transaction extends BaseTransaction {
   private _hederaTx: proto.Transaction;
@@ -32,8 +33,8 @@ export class Transaction extends BaseTransaction {
    *
    *  @returns {Uint8Array} The encoded transaction
    */
-  toBroadcastFormat(): Uint8Array {
-    return proto.Transaction.encode(this._hederaTx).finish();
+  toBroadcastFormat(): string {
+    return toHex(proto.Transaction.encode(this._hederaTx).finish());
   }
 
   /** @inheritdoc */
