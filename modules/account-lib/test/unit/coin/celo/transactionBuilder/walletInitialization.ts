@@ -69,6 +69,13 @@ describe('Celo Transaction builder for wallet initialization', () => {
       should.equal(newTx.toBroadcastFormat(), testData.TX_BROADCAST);
     });
 
+    it('a signed init transaction from serialized with tough signature validation', async () => {
+      const newTxBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
+      newTxBuilder.from(testData.WALLET_CREATION_TX_CHECK_SIGNATURE_VALIDATION);
+      const newTx = await newTxBuilder.build();
+      should.equal(newTx.toBroadcastFormat(), testData.WALLET_CREATION_TX_CHECK_SIGNATURE_VALIDATION);
+    });
+
     it('correct transaction id', async () => {
       const newTxBuilder = getBuilder('tcelo') as Celo.TransactionBuilder;
       newTxBuilder.from(testData.TEST_WALLET_CREATION);
