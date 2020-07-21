@@ -117,7 +117,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
-    if (!(Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))) {
+    if (
+      !(
+        (typeof rawTransaction === 'string' && /^[0-9a-fA-F]+$/.test(rawTransaction)) ||
+        (Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))
+      )
+    ) {
       throw new ParseTransactionError('Invalid raw transaction');
     }
   }

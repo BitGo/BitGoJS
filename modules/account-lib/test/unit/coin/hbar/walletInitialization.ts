@@ -111,14 +111,14 @@ describe('Wallet initialization', () => {
       should.doesNotThrow(() => txBuilder.validateKey({ key: testData.PRIVATE_KEY }));
     });
 
-    it.skip('a raw transaction', async () => {
+    it('a raw transaction', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
       // should.doesNotThrow(() => txBuilder.from(testData.TX_BROADCAST));
-      should.doesNotThrow(() => txBuilder.from(testData.TX_JSON));
-      should.throws(() => txBuilder.from('0x00001000'), 'There was error in decoding the hex string');
-      should.throws(() => txBuilder.from(''), 'There was error in decoding the hex string');
-      should.throws(() => txBuilder.from('pqrs'), 'There was error in parsing the JSON string');
-      should.throws(() => txBuilder.from(1234), 'Transaction is not a hex string or stringified json');
+      should.doesNotThrow(() => txBuilder.validateRawTransaction(testData.sourcePrv));
+      should.throws(() => txBuilder.validateRawTransaction('0x00001000'));
+      should.throws(() => txBuilder.validateRawTransaction(''));
+      should.throws(() => txBuilder.validateRawTransaction('pqrs'));
+      should.throws(() => txBuilder.validateRawTransaction(1234));
     });
 
     it('a transaction to build', async () => {
