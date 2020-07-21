@@ -81,7 +81,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction = new Transaction(_coinConfig);
   }
 
-  // region Base Builder
+  //region Base Builder
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: string): Transaction {
     // Decoding the transaction is an async operation, so save it and leave the decoding for the
@@ -199,7 +199,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     }
     return this.transaction;
   }
-  // endregion
+  //endregion
 
   //region Common builder methods
   /**
@@ -296,9 +296,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._forwarderDestination = contractAddress;
   }
 
-  // endregion
+  //endregion
 
-  // region PublicKeyRevelation builder methods
+  //region PublicKeyRevelation builder methods
   /**
    * The public key to reveal.
    *
@@ -326,9 +326,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._counter = this._counter.plus(1);
     return operation;
   }
-  // endregion
+  //endregion
 
-  // region WalletInitialization builder methods
+  //region WalletInitialization builder methods
   /**
    * Set one of the owners of the multisig wallet.
    *
@@ -385,7 +385,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
   //endregion
 
-  // region Send builder methods
+  //region Send builder methods
   /**
    * Initialize a new TransferBuilder to for a singlesig or multisig transaction.
    *
@@ -504,7 +504,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
   //endregion
 
-  // region Validators
+  //region Validators
   /** @inheritdoc */
   validateValue(value: BigNumber): void {
     if (value.isLessThan(0)) {
@@ -549,7 +549,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         throw new BuildTransactionError('Transaction type not supported');
     }
   }
-  // endregion
+  //endregion
 
   /** @inheritdoc */
   displayName(): string {

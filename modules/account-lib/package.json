@@ -16,7 +16,7 @@
     "coverage": "npm run gen-coverage && npm run upload-coverage",
     "gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/trx/protobuf/tron.js ./resources/trx/protobuf/Discover.proto ./resources/trx/protobuf/Contract.proto ./resources/trx/protobuf/tron.proto",
     "gen-protobufts": "pbts -o ./resources/trx/protobuf/tron.d.ts ./resources/trx/protobuf/tron.js",
-    "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' && eslint 'resources/xtz/**/*.ts' || true",
+    "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' || true",
     "lint-fix": "eslint 'src/**/*.ts' --fix && eslint 'test/**/*.ts' --fix || true",
     "prepublishOnly": "npm run compile",
     "prepare": "npm run gen-protobuf && npm run gen-protobufts && tsc && cp -r ./resources ./dist",
@@ -33,7 +33,7 @@
   "dependencies": {
     "@bitgo/statics": "^5.0.0-rc.2",
     "@bitgo/utxo-lib": "^1.7.1",
-    "@celo/contractkit": "0.3.1",
+    "@celo/contractkit": "0.4.9",
     "@taquito/local-forging": "^6.0.3-beta.0",
     "@taquito/signer": "^6.0.3-beta.0",
     "@types/lodash": "^4.14.151",

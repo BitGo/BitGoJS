@@ -139,7 +139,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @param {TransactionReceipt | string} rawTransaction The raw transaction to be validated
    */
   validateRawTransaction(rawTransaction: TransactionReceipt | string): void {
-    //TODO: Validation of signature
+    // TODO: Validation of signature
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
@@ -161,7 +161,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (!currTransaction.txID) {
       throw new InvalidTransactionError('Transaction ID is empty');
     }
-    //Validate the transaction ID from the raw data hex
+    // Validate the transaction ID from the raw data hex
     const hexBuffer = Buffer.from(currTransaction.raw_data_hex, 'hex');
     const currTxID = createHash('sha256')
       .update(hexBuffer)

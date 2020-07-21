@@ -11,7 +11,7 @@ export class Transaction extends Eth.Transaction {
     this.updateFields();
   }
 
-  /**@inheritdoc */
+  /** @inheritdoc */
   public static fromSerialized(
     coinConfig: Readonly<CoinConfig>,
     common: EthereumCommon,

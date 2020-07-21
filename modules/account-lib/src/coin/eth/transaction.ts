@@ -125,7 +125,7 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
-    //TODO: implement this validation for the ethereum network
+    // TODO: implement this validation for the ethereum network
     return true;
   }
 

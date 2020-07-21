@@ -4,7 +4,7 @@ import EthereumCommon from 'ethereumjs-common';
  * A Common object defining the chain and the hardfork for CELO Testnet
  */
 export const testnetCommon = EthereumCommon.forCustomChain(
-  'mainnet', //It's a test net based on the main ethereum net
+  'mainnet', // It's a test net based on the main ethereum net
   {
     name: 'alfajores',
     networkId: 44786,

@@ -224,5 +224,5 @@ export class TransactionBuilder extends Eth.TransactionBuilder {
     return data;
   }
 
-  // endregion
+  //endregion
 }

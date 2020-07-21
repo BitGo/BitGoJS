@@ -60,7 +60,8 @@ export const coins = CoinMap.fromCoins([
     Networks.main.celo,
     18,
     '0x471ece3750da237f93b8e339c536989b8978a438',
-    UnderlyingAsset.CELO
+    UnderlyingAsset.CELO,
+    ETH_FEATURES
   ),
   erc20CompatibleAccountCoin(
     'tcelo',
@@ -68,7 +69,8 @@ export const coins = CoinMap.fromCoins([
     Networks.test.celo,
     18,
     '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9',
-    UnderlyingAsset.CELO
+    UnderlyingAsset.CELO,
+    ETH_FEATURES
   ),
   hederaCoin(
     'hbar',
@@ -209,6 +211,7 @@ export const coins = CoinMap.fromCoins([
   erc20('exe', 'EXE Token', 8, '0x0d9a653f681168f410d14d19b7743c041eafc58a', UnderlyingAsset.EXE),
   erc20('fet', 'Fetch', 18, '0x1d287cc25dad7ccaf76a26bc660c5f7c8e2a05bd', UnderlyingAsset.FET),
   erc20('ff1', 'Two Prime FF1', 18, '0x59af0356cdebd1fa23ae5dadff9170bbfc31278c', UnderlyingAsset.FF1),
+  erc20('fft', 'Fight to Fame Token', 18, '0xdea05e09f5b0e102616bb145a0e4772a9b5ab193', UnderlyingAsset.FFT),
   erc20('fmf', 'Formosa Financial', 18, '0xb4d0fdfc8497aef97d3c2892ae682ee06064a2bc', UnderlyingAsset.FMF),
   erc20('ftm', 'Fantom Token', 18, '0x4e15361fd6b4bb609fa63c81a2be19d873717870', UnderlyingAsset.FTM),
   erc20('ftt', 'FTX Token', 18, '0x50d1c9771902476076ecfc8b2a83ad6b9355a4c9', UnderlyingAsset.FTT),
@@ -243,6 +246,7 @@ export const coins = CoinMap.fromCoins([
   erc20('inf', 'Infinitus Token', 18, '0x00e150d741eda1d49d341189cae4c08a73a49c95', UnderlyingAsset.INF),
   erc20('inx', 'INX Token', 18, '0xbbc7f7a6aadac103769c66cbc69ab720f7f9eae3', UnderlyingAsset.INX),
   erc20('isr', 'Insureum', 18, '0xd4a293ae8bb9e0be12e99eb19d48239e8c83a136', UnderlyingAsset.ISR),
+  erc20('ivo', 'INVAO Token', 18, '0xe03df9fda489a405f5db8a919adbc9a1b931a19f', UnderlyingAsset.IVO),
   erc20('ivy', 'Ivy Koin', 18, '0xa4ea687a2a7f29cf2dc66b39c68e4411c0d00c49', UnderlyingAsset.IVY),
   erc20('jbc', 'Japan Brand Coin', 18, '0x3635e381c67252405c1c0e550973155832d5e490', UnderlyingAsset.JBC),
   erc20('jfin', 'JFIN Coin', 18, '0x940bdcb99a0ee5fb008a606778ae87ed9789f257', UnderlyingAsset.JFIN),
@@ -253,6 +257,7 @@ export const coins = CoinMap.fromCoins([
   erc20('koz', 'KOZJIN Token', 18, '0xd95e7d16000cbeb66acbf70b4a843d4346ff4555', UnderlyingAsset.KOZ),
   erc20('kze', 'Almeela', 18, '0x8de67d55c58540807601dbf1259537bc2dffc84d', UnderlyingAsset.KZE),
   erc20('lba', 'Cred', 18, '0xfe5f141bf94fe84bc28ded0ab966c16b17490657', UnderlyingAsset.LBA),
+  erc20('lend', 'EthLend', 18, '0x80fb784b7ed66730e8b1dbd9820afd29931aab03', UnderlyingAsset.LEND),
   erc20('leo', 'Bitfinex LEO', 18, '0x2af5d2ad76741191d15dfe7bf6ac92d4bd912ca3', UnderlyingAsset.LEO),
   erc20('lgo', 'LGO Exchange', 8, '0x0a50c93c762fdd6e56d86215c24aaad43ab629aa', UnderlyingAsset.LGO),
   erc20('link', 'ChainLink', 18, '0x514910771af9ca656af840dff83e8264ecf986ca', UnderlyingAsset.LINK),
@@ -362,6 +367,7 @@ export const coins = CoinMap.fromCoins([
   erc20('tryb', 'Bilira Token', 6, '0x2c537e5624e4af88a7ae4060c022609376c8d0eb', UnderlyingAsset.TRYB),
   erc20('tryx', 'eToro Turkish Lira', 18, '0x6faff971d9248e7d398a98fdbe6a81f6d7489568', UnderlyingAsset.TRYX),
   erc20('tusd', 'TrueUSD', 18, '0x0000000000085d4780b73119b644ae5ecd22b376', UnderlyingAsset.TUSD),
+  erc20('uco', 'UnirisToken', 18, '0x8a3d77e9d6968b780564936d15b09805827c21fa', UnderlyingAsset.UCO),
   erc20('ukg', 'UnikoinGold', 18, '0x24692791bc444c5cd0b81e3cbcaba4b04acd1f3b', UnderlyingAsset.UKG),
   erc20('up', 'UpToken', 8, '0x6ba460ab75cd2c56343b3517ffeba60748654d26', UnderlyingAsset.UP),
   erc20('upbtc', 'Universal Bitcoin', 8, '0xc7461b398005e50bcc43c8e636378c6722e76c01', UnderlyingAsset.UPBTC),
@@ -388,7 +394,9 @@ export const coins = CoinMap.fromCoins([
   erc20('wpx', 'WalletPlusX', 18, '0x4bb0a085db8cedf43344bd2fbec83c2c79c4e76b', UnderlyingAsset.WPX),
   erc20('wtc', 'Walton Token', 18, '0xb7cb1c96db6b22b0d3d9536e0108d062bd488f74', UnderlyingAsset.WTC),
   erc20('wxrp', 'Wrapped XRP', 6, '0xda7e5a3841550a5ba271dcc76a885af902142dfc', UnderlyingAsset.WXRP),
+  erc20('xbgold', 'XBullion Token', 8, '0x670f9d9a26d3d42030794ff035d35a67aa092ead', UnderlyingAsset.XBGOLD),
   erc20('xcd', 'CapdaxToken', 18, '0xca00bc15f67ebea4b20dfaaa847cace113cc5501', UnderlyingAsset.XCD),
+  erc20('xex', 'Cross Exchange Token', 18, '0xbf68b3756f82b522588511da682dfd7e3bf34dee', UnderlyingAsset.XEX),
   erc20('xrl', 'Rialto', 9, '0xb24754be79281553dc1adc160ddf5cd9b74361a4', UnderlyingAsset.XRL),
   erc20('xtp', 'Tap', 18, '0x6368e1e18c4c419ddfc608a0bed1ccb87b9250fc', UnderlyingAsset.XTP),
   erc20('yng', 'Young Token', 18, '0xa26cbb76156090f4b40a1799a220fc4c946afb3c', UnderlyingAsset.YNG),
