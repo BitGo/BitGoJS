@@ -48,7 +48,9 @@
     "libsodium-wrappers": "^0.7.6",
     "lodash": "^4.17.15",
     "protobufjs": "^6.8.9",
-    "tronweb": "^2.7.2"
+    "tronweb": "^2.7.2",
+    "@stablelib/hex": "^1.0.0",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",

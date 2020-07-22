@@ -18,8 +18,7 @@
     "prettier/@typescript-eslint"
   ],
   "parserOptions": {
-    "ecmaVersion": 6,
-    "project": "./tsconfig.json"
+    "ecmaVersion": 6
   },
   "rules": {
     "indent": ["warn", 2, {"SwitchCase": 1, "MemberExpression": 1}],
