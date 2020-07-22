@@ -34,6 +34,7 @@
     "@bitgo/statics": "^5.0.0-rc.0",
     "@bitgo/utxo-lib": "^1.7.1",
     "@celo/contractkit": "0.4.9",
+    "@hashgraph/sdk": "^1.2.1",
     "@taquito/local-forging": "^6.0.3-beta.0",
     "@taquito/signer": "^6.0.3-beta.0",
     "@types/lodash": "^4.14.151",
