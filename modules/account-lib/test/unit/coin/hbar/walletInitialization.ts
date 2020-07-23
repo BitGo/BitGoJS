@@ -95,10 +95,10 @@ describe('Wallet initialization', () => {
       should.doesNotThrow(() => txBuilder.fee({ fee: '10' }));
     });
 
-    it.skip('a private key', () => {
+    it('a private key', () => {
       const txBuilder = factory.getWalletInitializationBuilder();
       should.throws(() => txBuilder.validateKey({ key: 'abc' }), 'Invalid key');
-      should.doesNotThrow(() => txBuilder.validateKey({ key: testData.PRIVATE_KEY }));
+      should.doesNotThrow(() => txBuilder.validateKey({ key: testData.ACCOUNT_1.privateKey }));
     });
 
     it('a raw transaction', async () => {

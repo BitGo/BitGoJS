@@ -10,6 +10,7 @@ import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
 import { getCurrentTime, isValidAddress, toUint8Array } from './utils';
+import { KeyPair } from './keyPair';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
@@ -117,8 +118,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    // TODO: implements once KeyPar implements this validation
-    console.log('To be implemented');
+    if (!new KeyPair({ prv: key.key })) {
+      throw new BuildTransactionError('Invalid key');
+    }
   }
 
   /** @inheritdoc */
