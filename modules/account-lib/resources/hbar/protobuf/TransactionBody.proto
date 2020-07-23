@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package proto;
+
+import "CryptoCreate.proto";
+import "CryptoTransfer.proto";
+import "Duration.proto";
+import "BasicTypes.proto";
+
+
+/* A single transaction. All transaction types are possible here. */
+message TransactionBody {
+  TransactionID transactionID = 1; // The ID for this transaction, which includes the payer's account (the account paying the transaction fee). If two transactions have the same transactionID, they won't both have an effect
+  AccountID nodeAccountID = 2; // The account of the node that submits the client's transaction to the network
+  uint64 transactionFee = 3 [ jstype = JS_STRING ]; // The maximum transaction fee the client is willing to pay, which is split between the network and the node
+  Duration transactionValidDuration = 4; //The transaction is invalid if consensusTimestamp > transactionID.transactionValidStart + transactionValidDuration
+  bool generateRecord = 5 [deprecated = true]; // Should a record of this transaction be generated? (A receipt is always generated, but the record is optional)
+  string memo = 6; // Any notes or descriptions that should be put into the record (max length 100)
+  oneof data {
+   
+    CryptoCreateTransactionBody cryptoCreateAccount = 11; // Create a new cryptocurrency account
+    CryptoTransferTransactionBody cryptoTransfer = 14; // Transfer amount between accounts
+
+  }
+}

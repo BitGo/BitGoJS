@@ -1,3 +1,6 @@
+import { BaseTransactionBuilder } from './baseTransactionBuilder';
+import { BaseTransactionBuilderFactory } from './baseTransactionBuilderFactory';
+
 export interface BaseKey {
   key: any;
 }
@@ -24,6 +27,8 @@ export type Seed = {
 };
 
 export type KeyPairOptions = Seed | PrivateKey | PublicKey;
+
+export type BaseBuilder = BaseTransactionBuilder | BaseTransactionBuilderFactory;
 
 /**
  * @param source
