@@ -25,6 +25,9 @@ export { Rbtc };
 import * as Celo from './coin/celo';
 export { Celo };
 
+import * as Hbar from './coin/hbar';
+export { Hbar };
+
 const coinBuilderMap = {
   trx: Trx.TransactionBuilder,
   ttrx: Trx.TransactionBuilder,

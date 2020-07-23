@@ -39,7 +39,7 @@ describe('HBAR util library', function() {
       ];
 
       for (const hash of validHashes) {
-        Utils.isValidTransactionHash(hash).should.be.true();
+        Utils.isValidTransactionId(hash).should.be.true();
       }
     });
 
@@ -51,7 +51,7 @@ describe('HBAR util library', function() {
       ];
 
       for (const hash of invalidHashes) {
-        Utils.isValidTransactionHash(hash).should.be.false();
+        Utils.isValidTransactionId(hash).should.be.false();
       }
     });
   });
