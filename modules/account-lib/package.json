@@ -34,6 +34,7 @@
     "@bitgo/statics": "^5.0.0",
     "@bitgo/utxo-lib": "^1.7.1",
     "@celo/contractkit": "0.4.9",
+    "@hashgraph/sdk": "^1.2.1",
     "@taquito/local-forging": "^6.0.3-beta.0",
     "@taquito/signer": "^6.0.3-beta.0",
     "@types/lodash": "^4.14.151",
@@ -47,7 +48,9 @@
     "libsodium-wrappers": "^0.7.6",
     "lodash": "^4.17.15",
     "protobufjs": "^6.8.9",
-    "tronweb": "^2.7.2"
+    "tronweb": "^2.7.2",
+    "@stablelib/hex": "^1.0.0",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",
