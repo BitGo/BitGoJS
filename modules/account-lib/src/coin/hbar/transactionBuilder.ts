@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js';
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { BaseTransactionBuilder } from '../baseCoin';
 import {
   BuildTransactionError,
@@ -10,7 +9,7 @@ import {
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
-import {getCurrentTime, isValidAddress, toUint8Array} from './utils';
+import { getCurrentTime, isValidAddress, toUint8Array } from './utils';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;

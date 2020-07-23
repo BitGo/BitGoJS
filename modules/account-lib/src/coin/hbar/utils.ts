@@ -1,5 +1,4 @@
 import * as _ from 'lodash';
-
 import { AccountId } from '@hashgraph/sdk/lib/account/AccountId';
 import { TransactionId } from '@hashgraph/sdk';
 
