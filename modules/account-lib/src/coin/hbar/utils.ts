@@ -8,7 +8,7 @@ import { TransactionId } from '@hashgraph/sdk';
  *
  * In any form, `shard` and `realm` are assumed to be 0 if not provided.
  *
- * @param {string} address - the  address to be validated
+ * @param {string} address - the address to be validated
  * @returns {boolean} - the validation result
  */
 export function isValidAddress(address: string): boolean {
@@ -24,12 +24,12 @@ export function isValidAddress(address: string): boolean {
 }
 
 /**
- * Returns whether or not the string is a valid Hedera transaction id or not
+ * Returns whether or not the string is a valid Hedera transaction id or not.
  *
  * @param {string} txId - the transaction id to be validated
  * @returns {boolean} - the validation result
  */
-export function isValidTransactionHash(txId: string): boolean {
+export function isValidTransactionId(txId: string): boolean {
   if (_.isEmpty(txId)) {
     return false;
   }
