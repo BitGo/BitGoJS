@@ -52,6 +52,9 @@ export const TXDATA = 'not defined';
 export const UNSIGNED_TX = 'not defined';
 
 export const ENCODED_TRANSACTION = 'not defined';
+export const errorMessageFailedToParse = `Failed to parse correct key`;
+export const errorMessageNotPossibleToDeriveAddress = `It's not possible to derive Hedera addresses from a keypair.`;
+
 export const privateKeyBytes = Uint8Array.of(
   98,
   176,

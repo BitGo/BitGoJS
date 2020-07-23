@@ -32,6 +32,12 @@ describe('Hedera Key Pair', () => {
       should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
     });
 
+    it.skip('from a private key + public key', () => {
+      const keyPair = new KeyPair({ prv: prv + pub });
+      should.equal(Buffer.from(keyPair.getKeys().prv!).toString('hex'), prv);
+      should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
+    });
+
     it('from seed', () => {
       const seed = nacl.randomBytes(32);
       const keyPair = new KeyPair({ seed: Buffer.from(seed) });
@@ -61,15 +67,25 @@ describe('Hedera Key Pair', () => {
       const source = { pub: '01D63D' };
       should.throws(
         () => new KeyPair(source),
-        e => e.message === 'Failed to parse correct key',
+        e => e.message === testData.errorMessageFailedToParse,
       );
     });
 
     it('from an invalid private key', () => {
-      const source = { prv: '82A34E' };
+      const shorterPrv = { prv: '82A34E' };
+      const longerPrv = { prv: prv + '1' };
+      const prvWithPrefix = { prv: ed25519PrivKeyPrefix + prv + '1' };
       should.throws(
-        () => new KeyPair(source),
-        e => e.message === 'Failed to parse correct key',
+        () => new KeyPair(shorterPrv),
+        e => e.message === testData.errorMessageFailedToParse,
+      );
+      should.throws(
+        () => new KeyPair(longerPrv),
+        e => e.message === testData.errorMessageFailedToParse,
+      );
+      should.throws(
+        () => new KeyPair(prvWithPrefix),
+        e => e.message === testData.errorMessageFailedToParse,
       );
     });
   });
@@ -79,7 +95,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ prv: prv });
       should.throws(
         () => keyPair.getAddress(),
-        e => e.message === 'Address derivation is not supported in Hedera',
+        e => e.message === testData.errorMessageNotPossibleToDeriveAddress,
       );
     });
 
@@ -87,7 +103,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ pub: pub });
       should.throws(
         () => keyPair.getAddress(),
-        e => e.message === 'Address derivation is not supported in Hedera',
+        e => e.message === testData.errorMessageNotPossibleToDeriveAddress,
       );
     });
   });
