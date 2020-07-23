@@ -7,7 +7,6 @@ const pub = testData.ACCOUNT_1.publicKey.slice(24);
 const prv = testData.ACCOUNT_1.privateKey.slice(32);
 export const ed25519PrivKeyPrefix = '302e020100300506032b657004220420';
 export const ed25519PubKeyPrefix = '302a300506032b6570032100';
-// TODO: Add tests sending prv with prefix, pub with prefix, prv + pub combined
 
 describe('Hedera Key Pair', () => {
   describe('should create a valid KeyPair', () => {
@@ -16,8 +15,19 @@ describe('Hedera Key Pair', () => {
       should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
     });
 
+    it('from a public key with pefix', () => {
+      const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
+      should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
+    });
+
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: prv });
+      should.equal(Buffer.from(keyPair.getKeys().prv!).toString('hex'), prv);
+      should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
+    });
+
+    it('from a private key with prefix', () => {
+      const keyPair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
       should.equal(Buffer.from(keyPair.getKeys().prv!).toString('hex'), prv);
       should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
     });
@@ -33,6 +43,16 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair();
       keyPair.getKeys().should.have.property('pub');
       keyPair.getKeys().should.have.property('prv');
+    });
+
+    it('from a byte array private key', () => {
+      const keyPair = new KeyPair({ prv: Buffer.from(testData.privateKeyBytes).toString('hex') });
+      should.equal(Buffer.from(keyPair.getKeys().prv!).toString('hex'), prv);
+    });
+
+    it('from a byte array public key', () => {
+      const keyPair = new KeyPair({ pub: Buffer.from(testData.publicKeyBytes).toString('hex') });
+      should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
     });
   });
 
