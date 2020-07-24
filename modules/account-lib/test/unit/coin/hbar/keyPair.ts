@@ -13,7 +13,7 @@ describe('Hedera Key Pair', () => {
       should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
     });
 
-    it('from a public key with pefix', () => {
+    it('from a public key with prefix', () => {
       const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
       should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
     });
