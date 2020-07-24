@@ -15,6 +15,7 @@ import {
   Eos,
   Etc,
   Eth,
+  Hbar,
   Ltc,
   Ofc,
   Rbtc,
@@ -30,6 +31,7 @@ import {
   Teos,
   Tetc,
   Teth,
+  Thbar,
   Tltc,
   Trbtc,
   Trmg,
@@ -144,6 +146,8 @@ GlobalCoinFactory.registerCoinConstructor('trx', Trx.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ttrx', Ttrx.createInstance);
 GlobalCoinFactory.registerCoinConstructor('xtz', Xtz.createInstance);
 GlobalCoinFactory.registerCoinConstructor('txtz', Txtz.createInstance);
+GlobalCoinFactory.registerCoinConstructor('hbar', Hbar.createInstance);
+GlobalCoinFactory.registerCoinConstructor('thbar', Thbar.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ofc', Ofc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('susd', Susd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsusd', Tsusd.createInstance);
