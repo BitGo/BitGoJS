@@ -30,8 +30,6 @@ export const WALLET_INITIALIZATION =
 export const sourcePrv =
   '0a410c8fe4912e3652b61dd222b1b4d7773261537d7ebad59df6cd33622a693e0a410c8fe4912e3652b61dd222b1b4d7773261537d7ebad59df6cd33622a693e';
 
-//export const KEYPAIR_PRV = new KeyPair({ prv: sourcePrv });
-
 export const sourcePub = '0a410c8fe4912e3652b61dd222b1b4d7773261537d7ebad59df6cd33622a693e';
 
 export const KEYPAIR_PUB = new KeyPair({ pub: sourcePub });
@@ -46,14 +44,13 @@ export const KEYPAIR_PUB2 = new KeyPair({ pub: sourcePub2 });
 
 export const PRIVATE_KEY = '422042088b5af9484cef4b0aab6e0ba1002313fdfdfacfdf23d6d0957dc5f2c24fc3b81';
 
-// see if on hbar/transaction.ts test is needed
 export const TXDATA = 'not defined';
 
 export const UNSIGNED_TX = 'not defined';
 
 export const ENCODED_TRANSACTION = 'not defined';
-export const errorMessageFailedToParse = `Failed to parse correct key`;
-export const errorMessageNotPossibleToDeriveAddress = `It's not possible to derive Hedera addresses from a keypair.`;
+export const errorMessageFailedToParse = 'Failed to parse correct key';
+export const errorMessageNotPossibleToDeriveAddress = 'Address derivation is not supported in Hedera';
 
 export const privateKeyBytes = Uint8Array.of(
   98,
