@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
-
 import { AccountId } from '@hashgraph/sdk/lib/account/AccountId';
-import { TransactionId } from '@hashgraph/sdk';
+import { Ed25519PublicKey, TransactionId } from '@hashgraph/sdk';
 
 /**
  * Returns whether or not the string is a valid Hedera account.
@@ -39,4 +38,55 @@ export function isValidTransactionId(txId: string): boolean {
   } catch (e) {
     return false;
   }
+}
+
+/**
+ * Returns whether or not the string is a valid Hedera public key
+ *
+ * @param {string} key - the  public key to be validated
+ * @returns {boolean} - the validation result
+ */
+export function isValidPublicKey(key: string): boolean {
+  if (_.isEmpty(key)) {
+    return false;
+  }
+  try {
+    const pubKey = Ed25519PublicKey.fromString(key);
+    return !_.isNaN(pubKey.toString());
+  } catch (e) {
+    return false;
+  }
+}
+
+export function toHex(buffer: Buffer | Uint8Array): string {
+  return Buffer.from(buffer).toString('hex');
+}
+
+export function toUint8Array(hex: string): Uint8Array {
+  return Uint8Array.from(Buffer.from(hex, 'hex'));
+}
+
+export function isNodeEnvironment(): boolean {
+  return typeof process !== 'undefined' && typeof process.versions.node !== 'undefined';
+}
+
+export function getCurrentTime(): string {
+  if (isNodeEnvironment()) {
+    const nanos = process.hrtime()[1];
+    const seconds = (Date.now() * 1000000 + nanos) / 1000000000;
+    return seconds.toFixed(9);
+  } else {
+    return (performance.timeOrigin + performance.now()).toFixed(9);
+  }
+}
+
+/**
+ * Returns whether or not the string is a valid timestamp. Nanoseconds are optional and can be passed after a dot, for
+ * example: 1595374723.356981689
+ *
+ * @param {string} time - the timestamp to be validated
+ * @returns {boolean} the validation result
+ */
+export function isValidTimeString(time: string) {
+  return /^[0-9]+(\.[0-9]+)?$/.test(time);
 }

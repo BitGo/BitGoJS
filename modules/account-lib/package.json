@@ -16,10 +16,12 @@
     "coverage": "npm run gen-coverage && npm run upload-coverage",
     "gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/trx/protobuf/tron.js ./resources/trx/protobuf/Discover.proto ./resources/trx/protobuf/Contract.proto ./resources/trx/protobuf/tron.proto",
     "gen-protobufts": "pbts -o ./resources/trx/protobuf/tron.d.ts ./resources/trx/protobuf/tron.js",
+    "hedera-gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/hbar/protobuf/hedera.js ./resources/hbar/protobuf/Timestamp.proto ./resources/hbar/protobuf/BasicTypes.proto ./resources/hbar/protobuf/Duration.proto ./resources/hbar/protobuf/CryptoCreate.proto ./resources/hbar/protobuf/CryptoTransfer.proto ./resources/hbar/protobuf/TransactionBody.proto ./resources/hbar/protobuf/Transaction.proto",
+    "hedera-gen-protobufts": "pbts -o ./resources/hbar/protobuf/hedera.d.ts ./resources/hbar/protobuf/hedera.js",
     "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' || true",
     "lint-fix": "eslint 'src/**/*.ts' --fix && eslint 'test/**/*.ts' --fix || true",
     "prepublishOnly": "npm run compile",
-    "prepare": "npm run gen-protobuf && npm run gen-protobufts && tsc && cp -r ./resources ./dist",
+    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
     "browserify": "mkdir -p ./dist/browserify && browserify ./dist/src/index.js -s bitgo-account-lib -o ./dist/browserify/bitgo-account-lib.browserify.js",
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
     "test": "npm run unit-test"

@@ -1,8 +1,8 @@
-import * as hex from '@stablelib/hex';
 import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
 import { KeyPairOptions, ByteKeys } from '../baseCoin/iface';
-import { NotImplementedError } from '../baseCoin/errors';
+import { NotSupported } from '../baseCoin/errors';
+import { toHex } from './utils';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -21,11 +21,11 @@ export class KeyPair extends Ed25519KeyPair {
    */
   getKeys(): ByteKeys {
     const result: ByteKeys = {
-      pub: hex.decode(this.keyPair.pub),
+      pub: Uint8Array.from(Buffer.from(this.keyPair.pub, 'hex')),
     };
 
     if (this.keyPair.prv) {
-      result.prv = hex.decode(this.keyPair.prv);
+      result.prv = Uint8Array.from(Buffer.from(this.keyPair.prv, 'hex'));
     }
 
     return result;
@@ -33,18 +33,18 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   getAddress(format?: string): string {
-    throw new NotImplementedError("It's not possible to derive Hedera addresses from a keypair.");
+    throw new NotSupported('Address derivation is not supported in Hedera');
   }
 
   /** @inheritdoc */
   recordKeysFromPublicKey(pub: string): void {
-    const hederaPub = Ed25519PublicKey.fromString(pub).toString(true);
+    const hederaPub = toHex(Ed25519PublicKey.fromString(pub).toBytes());
     this.keyPair = { pub: hederaPub };
   }
 
   /** @inheritdoc */
   recordKeysFromPrivateKey(prv: string): void {
-    const hederaPrv = Ed25519PrivateKey.fromString(prv).toString(true);
+    const hederaPrv = toHex(Ed25519PrivateKey.fromString(prv).toBytes());
     super.recordKeysFromPrivateKey(hederaPrv);
   }
 }
