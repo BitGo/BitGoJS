@@ -18,11 +18,6 @@ describe('Hedera Key Pair', () => {
       should.equal(keyPair.getKeys().pub, pub);
     });
 
-    it('from a public key with pefix', () => {
-      const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
-      should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
-    });
-
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: prv });
       should.equal(keyPair.getKeys().prv!, prv);
@@ -39,18 +34,6 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ prv: prv + pub });
       should.equal(keyPair.getKeys().prv!, prv);
       should.equal(keyPair.getKeys().pub, pub);
-    });
-
-    it('from a private key with prefix', () => {
-      const keyPair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
-      should.equal(Buffer.from(keyPair.getKeys().prv!).toString('hex'), prv);
-      should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
-    });
-
-    it('from a private key + public key', () => {
-      const keyPair = new KeyPair({ prv: prv + pub });
-      should.equal(Buffer.from(keyPair.getKeys().prv!).toString('hex'), prv);
-      should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
     });
 
     it('from seed', () => {
