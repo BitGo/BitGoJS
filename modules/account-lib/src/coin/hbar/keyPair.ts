@@ -2,7 +2,7 @@ import * as hex from '@stablelib/hex';
 import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
 import { KeyPairOptions, ByteKeys } from '../baseCoin/iface';
-import { NotImplementedError } from '../baseCoin/errors';
+import { NotSupported} from '../baseCoin/errors';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -33,7 +33,7 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   getAddress(format?: string): string {
-    throw new NotImplementedError("It's not possible to derive Hedera addresses from a keypair.");
+    throw new NotSupported('Address derivation is not supported in Hedera');
   }
 
   /** @inheritdoc */

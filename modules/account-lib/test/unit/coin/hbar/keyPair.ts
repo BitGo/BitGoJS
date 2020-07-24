@@ -1,6 +1,6 @@
 import should from 'should';
 import * as nacl from 'tweetnacl';
-import { KeyPair } from '../../../../src/coin/hbar/keyPair';
+import { KeyPair } from '../../../../src/coin/hbar';
 import * as testData from '../../../resources/hbar/hbar';
 
 const pub = testData.ACCOUNT_1.publicKey.slice(24);
@@ -41,7 +41,7 @@ describe('Hedera Key Pair', () => {
       const source = { pub: '01D63D' };
       should.throws(
         () => new KeyPair(source),
-        e => e.message === `Failed to parse correct key`,
+        e => e.message === 'Failed to parse correct key',
       );
     });
 
@@ -49,7 +49,7 @@ describe('Hedera Key Pair', () => {
       const source = { prv: '82A34E' };
       should.throws(
         () => new KeyPair(source),
-        e => e.message === `Failed to parse correct key`,
+        e => e.message === 'Failed to parse correct key',
       );
     });
   });
@@ -59,7 +59,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ prv: prv });
       should.throws(
         () => keyPair.getAddress(),
-        e => e.message === `It's not possible to derive Hedera addresses from a keypair.`,
+        e => e.message === 'Address derivation is not supported in Hedera',
       );
     });
 
@@ -67,7 +67,7 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair({ pub: pub });
       should.throws(
         () => keyPair.getAddress(),
-        e => e.message === `It's not possible to derive Hedera addresses from a keypair.`,
+        e => e.message === 'Address derivation is not supported in Hedera',
       );
     });
   });

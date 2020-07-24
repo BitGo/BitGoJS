@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { AccountId } from '@hashgraph/sdk/lib/account/AccountId';
-import { TransactionId } from '@hashgraph/sdk';
+import { Ed25519PublicKey, TransactionId } from '@hashgraph/sdk';
 
 /**
  * Returns whether or not the string is a valid Hedera account.
@@ -47,7 +47,15 @@ export function isValidTransactionId(txId: string): boolean {
  * @returns {boolean} - the validation result
  */
 export function isValidPublicKey(key: string): boolean {
-  return /^([0-9a-f]|[0-9A-F]){1,}$/.test(key) && key.length === 64;
+  if (_.isEmpty(key)) {
+    return false;
+  }
+  try {
+    const pubKey = Ed25519PublicKey.fromString(key);
+    return !_.isNaN(pubKey.toString());
+  } catch (e) {
+    return false;
+  }
 }
 
 export function toHex(buffer: Buffer | Uint8Array): string {
@@ -70,4 +78,15 @@ export function getCurrentTime(): string {
   } else {
     return (performance.timeOrigin + performance.now()).toFixed(9);
   }
+}
+
+/**
+ * Returns whether or not the string is a valid timestamp. Nanoseconds are optional and can be passed after a dot, for
+ * example: 1595374723.356981689
+ *
+ * @param {string} time - the timestamp to be validated
+ * @returns {boolean} the validation result
+ */
+export function isValidTimeString(time: string) {
+  return /^[0-9]+(\.[0-9]+)?$/.test(time);
 }

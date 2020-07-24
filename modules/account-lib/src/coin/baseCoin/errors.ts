@@ -70,3 +70,12 @@ export class NotImplementedError extends ExtendableError {
     super(message);
   }
 }
+
+/**
+ * Error for not supported features
+ */
+export class NotSupported extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}
