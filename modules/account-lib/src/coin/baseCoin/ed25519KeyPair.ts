@@ -1,5 +1,4 @@
 import * as nacl from 'tweetnacl';
-import * as hex from '@stablelib/hex';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { isPrivateKey, isPublicKey, isSeed, DefaultKeys, KeyPairOptions } from './iface';
@@ -36,14 +35,13 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
 
   private setKeyPair(naclKeyPair: nacl.SignKeyPair): void {
     this.keyPair = {
-      prv: hex.encode(naclKeyPair.secretKey).slice(0, 64),
-      pub: hex.encode(naclKeyPair.publicKey),
+      prv: Buffer.from(naclKeyPair.secretKey.slice(0, 32)).toString('hex'),
+      pub: Buffer.from(naclKeyPair.publicKey).toString('hex'),
     };
   }
 
   recordKeysFromPrivateKey(prv: string): void {
-    const decodedPrv = hex.decode(prv);
-    // fromSeed takes the private key bytes and calculates the public key
+    const decodedPrv = Uint8Array.from(Buffer.from(prv, 'hex'));
     const naclKeyPair = nacl.sign.keyPair.fromSeed(decodedPrv);
     this.setKeyPair(naclKeyPair);
   }

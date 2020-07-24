@@ -32,7 +32,7 @@ describe('Hedera Key Pair', () => {
       should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);
     });
 
-    it.skip('from a private key + public key', () => {
+    it('from a private key + public key', () => {
       const keyPair = new KeyPair({ prv: prv + pub });
       should.equal(Buffer.from(keyPair.getKeys().prv!).toString('hex'), prv);
       should.equal(Buffer.from(keyPair.getKeys().pub).toString('hex'), pub);

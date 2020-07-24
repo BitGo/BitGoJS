@@ -1,4 +1,3 @@
-import * as hex from '@stablelib/hex';
 import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
 import { KeyPairOptions, ByteKeys } from '../baseCoin/iface';
@@ -21,11 +20,11 @@ export class KeyPair extends Ed25519KeyPair {
    */
   getKeys(): ByteKeys {
     const result: ByteKeys = {
-      pub: hex.decode(this.keyPair.pub),
+      pub: Uint8Array.from(Buffer.from(this.keyPair.pub, 'hex')),
     };
 
     if (this.keyPair.prv) {
-      result.prv = hex.decode(this.keyPair.prv);
+      result.prv = Uint8Array.from(Buffer.from(this.keyPair.prv, 'hex'));
     }
 
     return result;
@@ -38,13 +37,13 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   recordKeysFromPublicKey(pub: string): void {
-    const hederaPub = Ed25519PublicKey.fromString(pub).toString(true);
+    const hederaPub = Buffer.from(Ed25519PublicKey.fromString(pub).toBytes()).toString('hex');
     this.keyPair = { pub: hederaPub };
   }
 
   /** @inheritdoc */
   recordKeysFromPrivateKey(prv: string): void {
-    const hederaPrv = Ed25519PrivateKey.fromString(prv).toString(true);
+    const hederaPrv = Buffer.from(Ed25519PrivateKey.fromString(prv).toBytes()).toString('hex');
     super.recordKeysFromPrivateKey(hederaPrv);
   }
 }
