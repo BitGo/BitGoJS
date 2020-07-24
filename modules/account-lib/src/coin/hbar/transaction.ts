@@ -14,11 +14,21 @@ export class Transaction extends BaseTransaction {
     super(_coinConfig);
   }
 
+  /**
+   * Sets this transaction body components
+   *
+   * @param {proto.Transaction} tx body transaction
+   */
   body(tx: proto.Transaction) {
     this._txBody = proto.TransactionBody.decode(tx.bodyBytes);
     this._hederaTx = tx;
   }
 
+  /**
+   * Sets this transaction body components
+   *
+   * @param {Uint8Array} bytes encoded body transaction
+   */
   bodyBytes(bytes: Uint8Array) {
     this.body(proto.Transaction.decode(bytes));
   }
@@ -28,11 +38,7 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  /**
-   * Return the transaction in a format it can be broadcasted to the blockchain.
-   *
-   *  @returns {Uint8Array} The encoded transaction
-   */
+  /** @inheritdoc */
   toBroadcastFormat(): string {
     return toHex(proto.Transaction.encode(this._hederaTx).finish());
   }
@@ -43,7 +49,7 @@ export class Transaction extends BaseTransaction {
     return {
       id: acc + '@' + time,
       data: Uint8Array.from(this._hederaTx.bodyBytes).toString(),
-      fee: +new BigNumber(this._txBody.transactionFee!.toString()),
+      fee: new BigNumber(this._txBody.transactionFee!.toString()).toNumber(),
       from: acc,
       startTime: time,
     };

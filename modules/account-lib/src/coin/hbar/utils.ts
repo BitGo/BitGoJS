@@ -58,18 +58,40 @@ export function isValidPublicKey(key: string): boolean {
   }
 }
 
+/**
+ * Returns an hex string of the given buffer
+ *
+ * @param {Buffer | Uint8Array} buffer - the buffer to be converted to hex
+ * @returns {string} - the hex value
+ */
 export function toHex(buffer: Buffer | Uint8Array): string {
   return Buffer.from(buffer).toString('hex');
 }
 
+/**
+ * Returns a Uint8Array of the given hex string
+ *
+ * @param {string} hex - the hex string to be converted
+ * @returns {string} - the Uint8Array value
+ */
 export function toUint8Array(hex: string): Uint8Array {
   return Uint8Array.from(Buffer.from(hex, 'hex'));
 }
 
+/**
+ * Checks whether nodeJS.process exist and if a node version is defined to determine if this is an nodeJS environment
+ *
+ * @returns {boolean} - the validation result
+ */
 export function isNodeEnvironment(): boolean {
   return typeof process !== 'undefined' && typeof process.versions.node !== 'undefined';
 }
 
+/**
+ * Calculate the current time with nanoseconds precision
+ *
+ * @returns {string} the current time in seconds
+ */
 export function getCurrentTime(): string {
   if (isNodeEnvironment()) {
     const nanos = process.hrtime()[1];

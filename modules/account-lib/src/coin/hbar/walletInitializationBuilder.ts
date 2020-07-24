@@ -29,7 +29,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this._txBodyData.key = { thresholdKey: this.buildOwnersKeys() };
     this._txBodyData.initialBalance = 0;
-    this._txBody.transactionFee = +new BigNumber(this._fee.fee); // validate
+    this._txBody.transactionFee = new BigNumber(this._fee.fee).toNumber(); // validate
     this._txBody.transactionID = this.buildTxId();
     this._txBody.nodeAccountID = new proto.AccountID({ accountNum: 4 });
     const hTransaction = new proto.Transaction();
