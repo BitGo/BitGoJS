@@ -1,4 +1,5 @@
 import * as nacl from 'tweetnacl';
+import { toHex, toUint8Array } from '../hbar/utils';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { isPrivateKey, isPublicKey, isSeed, DefaultKeys, KeyPairOptions } from './iface';
@@ -22,7 +23,7 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
       naclKeyPair = nacl.sign.keyPair.fromSeed(seed);
       this.setKeyPair(naclKeyPair);
     } else if (isSeed(source)) {
-      naclKeyPair = nacl.sign.keyPair.fromSeed(new Uint8Array(source.seed));
+      naclKeyPair = nacl.sign.keyPair.fromSeed(source.seed);
       this.setKeyPair(naclKeyPair);
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
@@ -35,13 +36,13 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
 
   private setKeyPair(naclKeyPair: nacl.SignKeyPair): void {
     this.keyPair = {
-      prv: Buffer.from(naclKeyPair.secretKey.slice(0, 32)).toString('hex'),
-      pub: Buffer.from(naclKeyPair.publicKey).toString('hex'),
+      prv: toHex(naclKeyPair.secretKey.slice(0, 32)),
+      pub: toHex(naclKeyPair.publicKey),
     };
   }
 
   recordKeysFromPrivateKey(prv: string): void {
-    const decodedPrv = Uint8Array.from(Buffer.from(prv, 'hex'));
+    const decodedPrv = toUint8Array(prv);
     const naclKeyPair = nacl.sign.keyPair.fromSeed(decodedPrv);
     this.setKeyPair(naclKeyPair);
   }

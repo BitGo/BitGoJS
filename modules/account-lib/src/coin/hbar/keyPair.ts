@@ -2,6 +2,7 @@ import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
 import { KeyPairOptions, ByteKeys } from '../baseCoin/iface';
 import { NotSupported } from '../baseCoin/errors';
+import { toHex } from './utils';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -37,13 +38,13 @@ export class KeyPair extends Ed25519KeyPair {
 
   /** @inheritdoc */
   recordKeysFromPublicKey(pub: string): void {
-    const hederaPub = Buffer.from(Ed25519PublicKey.fromString(pub).toBytes()).toString('hex');
+    const hederaPub = toHex(Ed25519PublicKey.fromString(pub).toBytes());
     this.keyPair = { pub: hederaPub };
   }
 
   /** @inheritdoc */
   recordKeysFromPrivateKey(prv: string): void {
-    const hederaPrv = Buffer.from(Ed25519PrivateKey.fromString(prv).toBytes()).toString('hex');
+    const hederaPrv = toHex(Ed25519PrivateKey.fromString(prv).toBytes());
     super.recordKeysFromPrivateKey(hederaPrv);
   }
 }
