@@ -15,5 +15,8 @@ export abstract class BaseTransactionBuilderFactory {
     this._coinConfig = _coinConfig;
   }
 
+  /**
+   * Returns an specific builder to create a wallet initialization transaction
+   */
   public abstract getWalletInitializationBuilder();
 }
