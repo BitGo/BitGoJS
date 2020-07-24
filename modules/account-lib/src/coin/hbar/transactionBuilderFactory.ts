@@ -7,6 +7,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     super(_coinConfig);
   }
 
+  /** @inheritdoc */
   getWalletInitializationBuilder(): WalletInitializationBuilder {
     return new WalletInitializationBuilder(this._coinConfig);
   }

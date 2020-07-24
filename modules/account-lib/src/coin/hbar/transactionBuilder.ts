@@ -45,9 +45,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.startTime(txData.startTime);
   }
 
+  /**
+   * Creates an Hedera TransactionID
+   *
+   * @returns {proto.TransactionID} - created TransactionID
+   */
   protected buildTxId(): proto.TransactionID {
     const accString = this._source.address.split('.').pop();
-    const acc = +new BigNumber(accString!);
+    const acc = new BigNumber(accString!).toNumber();
     return new proto.TransactionID({
       transactionValidStart: this.validStart,
       accountID: { accountNum: acc },
@@ -90,7 +95,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (!isValidTimeString(time)) {
       throw new InvalidParameterValueError('invalid value for time parameter');
     }
-    const timeParts = time.split('.').map(v => +new BigNumber(v));
+    const timeParts = time.split('.').map(v => new BigNumber(v).toNumber());
     this._startTime = { seconds: timeParts[0], nanos: timeParts[1] };
     return this;
   }

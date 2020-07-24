@@ -13,7 +13,7 @@ describe('Hedera Key Pair', () => {
       should.equal(keyPair.getKeys().pub, pub);
     });
 
-    it('from a public key with pefix', () => {
+    it('from a public key with prefix', () => {
       const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
       should.equal(keyPair.getKeys().pub, pub);
     });
