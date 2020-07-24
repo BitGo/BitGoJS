@@ -24,42 +24,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     this._txBodyData.autoRenewPeriod = new proto.Duration({ seconds: 7890000 });
   }
 
-  /**
-   * Set one of the owners of the multisig wallet.
-   *
-   * @param {string} address The public key of the owner's account
-   * @returns {WalletInitializationBuilder} This wallet initialization builder
-   */
-  owner(address: string): this {
-    if (this._owners.length >= DEFAULT_M) {
-      throw new BuildTransactionError('A maximum of ' + DEFAULT_M + ' owners can be set for a multisig wallet');
-    }
-    if (!isValidPublicKey(address)) {
-      throw new BuildTransactionError('Invalid address: ' + address);
-    }
-    if (this._owners.includes(address)) {
-      throw new BuildTransactionError('Repeated owner address: ' + address);
-    }
-    this._owners.push(address);
-    return this;
-  }
-
-  protected initBuilder(tx: Transaction) {
-    super.initBuilder(tx);
-    const createAcc = tx.txBody.cryptoCreateAccount;
-    if (createAcc && createAcc.key && createAcc.key.thresholdKey) {
-      this.initOwners(createAcc.key.thresholdKey as proto.ThresholdKey);
-    }
-  }
-
-  private initOwners(keys: proto.ThresholdKey) {
-    if (keys.keys && keys.keys.keys) {
-      keys.keys.keys.forEach(key => {
-        this.owner(hex.encode(key.ed25519!));
-      });
-    }
-  }
-
+  // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this._txBodyData.key = { thresholdKey: this.buildOwnersKeys() };
@@ -86,6 +51,47 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     }, new proto.ThresholdKey({ threshold: 2, keys: { keys: [] } }));
   }
 
+  /** @inheritdoc */
+  protected initBuilder(tx: Transaction) {
+    super.initBuilder(tx);
+    const createAcc = tx.txBody.cryptoCreateAccount;
+    if (createAcc && createAcc.key && createAcc.key.thresholdKey) {
+      this.initOwners(createAcc.key.thresholdKey as proto.ThresholdKey);
+    }
+  }
+
+  private initOwners(keys: proto.ThresholdKey) {
+    if (keys.keys && keys.keys.keys) {
+      keys.keys.keys.forEach(key => {
+        this.owner(hex.encode(key.ed25519!));
+      });
+    }
+  }
+  // endregion
+
+  // region Common builder methods
+  /**
+   * Set one of the owners of the multisig wallet.
+   *
+   * @param {string} address The public key of the owner's account
+   * @returns {WalletInitializationBuilder} This wallet initialization builder
+   */
+  owner(address: string): this {
+    if (this._owners.length >= DEFAULT_M) {
+      throw new BuildTransactionError('A maximum of ' + DEFAULT_M + ' owners can be set for a multisig wallet');
+    }
+    if (!isValidPublicKey(address)) {
+      throw new BuildTransactionError('Invalid address: ' + address);
+    }
+    if (this._owners.includes(address)) {
+      throw new BuildTransactionError('Repeated owner address: ' + address);
+    }
+    this._owners.push(address);
+    return this;
+  }
+  // endregion
+
+  // region Validators
   validateMandatoryFields(): void {
     if (this._owners === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing wallet owners');
@@ -98,4 +104,5 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     }
     super.validateMandatoryFields();
   }
+  // endregion
 }

@@ -4,12 +4,12 @@ import {
   BuildTransactionError,
   InvalidParameterValueError,
   NotImplementedError,
-  ParseTransactionError
+  ParseTransactionError,
 } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
-import { getCurrentTime, isValidAddress, toUint8Array } from './utils';
+import { getCurrentTime, isValidAddress, isValidTimeString, toUint8Array } from './utils';
 import { KeyPair } from './keyPair';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
@@ -18,6 +18,44 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _source: BaseAddress;
   protected _startTime: proto.ITimestamp;
 
+  // region Base Builder
+  /** @inheritdoc */
+  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
+    const tx = new Transaction(this._coinConfig);
+    let buffer;
+    if (typeof rawTransaction === 'string') {
+      buffer = toUint8Array(rawTransaction);
+    } else {
+      buffer = rawTransaction;
+    }
+    tx.bodyBytes(buffer);
+    this.initBuilder(tx);
+    return this.transaction;
+  }
+
+  /** @inheritdoc */
+  protected signImplementation(key: BaseKey): Transaction {
+    throw new NotImplementedError('Method not implemented');
+  }
+
+  protected initBuilder(tx: Transaction) {
+    const txData = tx.toJson();
+    this.fee({ fee: txData.fee.toString() });
+    this.source({ address: txData.from });
+    this.startTime(txData.startTime);
+  }
+
+  protected buildTxId(): proto.TransactionID {
+    const accString = this._source.address.split('.').pop();
+    const acc = +new BigNumber(accString!);
+    return new proto.TransactionID({
+      transactionValidStart: this.validStart,
+      accountID: { accountNum: acc },
+    });
+  }
+  // endregion
+
+  // region Common builder methods
   /**
    * Set the transaction fees
    *
@@ -49,49 +87,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} this
    */
   startTime(time: string): this {
-    if (!this.isValidTimeString(time)) {
+    if (!isValidTimeString(time)) {
       throw new InvalidParameterValueError('invalid value for time parameter');
     }
     const timeParts = time.split('.').map(v => +new BigNumber(v));
     this._startTime = { seconds: timeParts[0], nanos: timeParts[1] };
     return this;
   }
+  // endregion
 
-  protected initBuilder(tx: Transaction) {
-    const txData = tx.toJson();
-    this.fee({ fee: txData.fee.toString() });
-    this.source({ address: txData.from });
-    this.startTime(txData.startTime);
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
-    const tx = new Transaction(this._coinConfig);
-    let buffer;
-    if (typeof rawTransaction === 'string') {
-      buffer = toUint8Array(rawTransaction);
-    } else {
-      buffer = rawTransaction;
-    }
-    tx.bodyBytes(buffer);
-    this.initBuilder(tx);
-    return this.transaction;
-  }
-
-  /** @inheritdoc */
-  protected signImplementation(key: BaseKey): Transaction {
-    throw new NotImplementedError('unimplemented');
-  }
-
-  protected buildTxId(): proto.TransactionID {
-    const accString = this._source.address.split('.').pop();
-    const acc = +new BigNumber(accString!);
-    return new proto.TransactionID({
-      transactionValidStart: this.validStart,
-      accountID: { accountNum: acc },
-    });
-  }
-
+  // region Getters and Setters
   private get validStart(): proto.ITimestamp {
     if (!this._startTime) {
       this.startTime(getCurrentTime());
@@ -108,7 +113,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
   }
+  // endregion
 
+  // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress, addressFormat?: string): void {
     if (!isValidAddress(address.address)) {
@@ -155,8 +162,5 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('Invalid transaction: missing source');
     }
   }
-
-  private isValidTimeString(time: string) {
-    return /^[0-9]+\.[0-9]+$/.test(time);
-  }
+  // endregion
 }
