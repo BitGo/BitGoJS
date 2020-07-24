@@ -19,4 +19,9 @@ export abstract class BaseTransactionBuilderFactory {
    * Returns an specific builder to create a wallet initialization transaction
    */
   public abstract getWalletInitializationBuilder();
+
+  /**
+   * Returns a specific builder to create a funds transfer transaction
+   */
+  public abstract getTransferBuilder();
 }

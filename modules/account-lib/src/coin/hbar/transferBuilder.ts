@@ -19,7 +19,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected buildImplementation(): Promise<import('../baseCoin').BaseTransaction> {
+  protected buildImplementation(): Promise<Transaction> {
     throw new NotImplementedError('buildImplementation not implemented');
   }
 
