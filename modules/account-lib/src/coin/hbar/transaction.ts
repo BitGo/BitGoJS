@@ -14,25 +14,6 @@ export class Transaction extends BaseTransaction {
     super(_coinConfig);
   }
 
-  /**
-   * Sets this transaction body components
-   *
-   * @param {proto.Transaction} tx body transaction
-   */
-  body(tx: proto.Transaction) {
-    this._txBody = proto.TransactionBody.decode(tx.bodyBytes);
-    this._hederaTx = tx;
-  }
-
-  /**
-   * Sets this transaction body components
-   *
-   * @param {Uint8Array} bytes encoded body transaction
-   */
-  bodyBytes(bytes: Uint8Array) {
-    this.body(proto.Transaction.decode(bytes));
-  }
-
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     return true;
@@ -55,10 +36,37 @@ export class Transaction extends BaseTransaction {
     };
   }
 
+  //region getters & setters
   get txBody(): proto.TransactionBody {
     return this._txBody;
   }
 
+  /**
+   * Sets this transaction body components
+   *
+   * @param {proto.Transaction} tx body transaction
+   */
+  body(tx: proto.Transaction) {
+    this._txBody = proto.TransactionBody.decode(tx.bodyBytes);
+    this._hederaTx = tx;
+  }
+
+  /**
+   * Sets this transaction body components
+   *
+   * @param {Uint8Array} bytes encoded body transaction
+   */
+  bodyBytes(bytes: Uint8Array) {
+    this.body(proto.Transaction.decode(bytes));
+  }
+  //endregion
+
+  //region helpers
+  /**
+   * Returns this hedera transaction id components in a readable format
+   *
+   * @returns {[string, string]} - transaction id parts [<account id>, <startTime in seconds>]
+   */
   private getTxIdParts(): [string, string] {
     if (
       this._txBody &&
@@ -74,11 +82,24 @@ export class Transaction extends BaseTransaction {
     throw new Error('Missing transaction id information');
   }
 
+  /**
+   * Returns a string representation of an {proto.IAccountID} object
+   *
+   * @param {proto.IAccountID} - account id to be cast to string
+   * @returns {string} - the string representation of the {proto.IAccountID}
+   */
   private stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAccountID): string {
     return `${shardNum || 0}.${realmNum || 0}.${accountNum}`;
   }
 
+  /**
+   * Returns a string representation of an {proto.ITimestamp} object
+   *
+   * @param {proto.ITimestamp} - timestamp to be cast to string
+   * @returns {string} - the string representation of the {proto.ITimestamp}
+   */
   private stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
     return `${seconds}.${nanos}`;
   }
+  //endregion
 }

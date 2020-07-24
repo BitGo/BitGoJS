@@ -52,7 +52,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   protected buildTxId(): proto.TransactionID {
     const accString = this._source.address.split('.').pop();
-    const acc = +new BigNumber(accString!);
+    const acc = new BigNumber(accString!).toNumber();
     return new proto.TransactionID({
       transactionValidStart: this.validStart,
       accountID: { accountNum: acc },
