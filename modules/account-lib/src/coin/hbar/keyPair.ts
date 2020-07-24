@@ -1,6 +1,6 @@
 import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
-import { KeyPairOptions, ByteKeys } from '../baseCoin/iface';
+import { KeyPairOptions, DefaultKeys } from '../baseCoin/iface';
 import { NotSupported } from '../baseCoin/errors';
 import { toHex } from './utils';
 
@@ -17,17 +17,16 @@ export class KeyPair extends Ed25519KeyPair {
   /**
    * Hedera default keys format is a pair of Uint8Array keys
    *
-   * @returns { ByteKeys } The keys in the protocol default key format
+   * @returns { DefaultKeys } The keys in the protocol default format
    */
-  getKeys(): ByteKeys {
-    const result: ByteKeys = {
-      pub: Uint8Array.from(Buffer.from(this.keyPair.pub, 'hex')),
+  getKeys(): DefaultKeys {
+    const result: DefaultKeys = {
+      pub: this.keyPair.pub,
     };
 
     if (this.keyPair.prv) {
-      result.prv = Uint8Array.from(Buffer.from(this.keyPair.prv, 'hex'));
+      result.prv = this.keyPair.prv;
     }
-
     return result;
   }
 

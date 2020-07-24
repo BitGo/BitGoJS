@@ -5,7 +5,7 @@ import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidPublicKey } from './utils';
+import { isValidPublicKey, toUint8Array } from './utils';
 import { KeyPair } from './';
 
 const DEFAULT_M = 3;
@@ -44,7 +44,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     return this._owners.reduce((tKeys, key) => {
       if (tKeys.keys && tKeys.keys.keys) {
         tKeys.keys.keys.push({
-          ed25519: new KeyPair({ pub: key }).getKeys().pub,
+          ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys().pub),
         });
       }
       return tKeys;
