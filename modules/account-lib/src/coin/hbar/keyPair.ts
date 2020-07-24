@@ -1,7 +1,7 @@
 import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
 import { KeyPairOptions, ByteKeys } from '../baseCoin/iface';
-import { NotSupported} from '../baseCoin/errors';
+import { NotSupported } from '../baseCoin/errors';
 
 export class KeyPair extends Ed25519KeyPair {
   /**

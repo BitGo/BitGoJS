@@ -1,5 +1,3 @@
-import { KeyPair } from '../../../src/coin/hbar/keyPair';
-
 export const ACCOUNT_1 = {
   accountId: '0.0.81320',
   publicKey: '302a300506032b65700321005a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9',
@@ -29,18 +27,6 @@ export const WALLET_INITIALIZATION =
 
 export const sourcePrv =
   '0a410c8fe4912e3652b61dd222b1b4d7773261537d7ebad59df6cd33622a693e0a410c8fe4912e3652b61dd222b1b4d7773261537d7ebad59df6cd33622a693e';
-
-export const sourcePub = '0a410c8fe4912e3652b61dd222b1b4d7773261537d7ebad59df6cd33622a693e';
-
-export const KEYPAIR_PUB = new KeyPair({ pub: sourcePub });
-
-export const sourcePub1 = '5a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9';
-
-export const KEYPAIR_PUB1 = new KeyPair({ pub: sourcePub1 });
-
-export const sourcePub2 = '592a4fbb7263c59d450e651df96620dc9208ee7c7d9d6f2fdcb91c53f8831261';
-
-export const KEYPAIR_PUB2 = new KeyPair({ pub: sourcePub2 });
 
 export const PRIVATE_KEY = '422042088b5af9484cef4b0aab6e0ba1002313fdfdfacfdf23d6d0957dc5f2c24fc3b81';
 
@@ -121,3 +107,6 @@ export const publicKeyBytes = Uint8Array.of(
   140,
   249,
 );
+
+export const ed25519PrivKeyPrefix = '302e020100300506032b657004220420';
+export const ed25519PubKeyPrefix = '302a300506032b6570032100';

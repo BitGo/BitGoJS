@@ -5,8 +5,6 @@ import * as testData from '../../../resources/hbar/hbar';
 
 const pub = testData.ACCOUNT_1.publicKey.slice(24);
 const prv = testData.ACCOUNT_1.privateKey.slice(32);
-export const ed25519PrivKeyPrefix = '302e020100300506032b657004220420';
-export const ed25519PubKeyPrefix = '302a300506032b6570032100';
 
 describe('Hedera Key Pair', () => {
   describe('should create a valid KeyPair', () => {
@@ -74,7 +72,7 @@ describe('Hedera Key Pair', () => {
     it('from an invalid private key', () => {
       const shorterPrv = { prv: '82A34E' };
       const longerPrv = { prv: prv + '1' };
-      const prvWithPrefix = { prv: ed25519PrivKeyPrefix + prv + '1' };
+      const prvWithPrefix = { prv: testData.ed25519PrivKeyPrefix + prv + '1' };
       should.throws(
         () => new KeyPair(shorterPrv),
         e => e.message === testData.errorMessageFailedToParse,
