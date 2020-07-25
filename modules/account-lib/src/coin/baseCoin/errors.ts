@@ -79,3 +79,12 @@ export class NotSupported extends ExtendableError {
     super(message);
   }
 }
+
+/**
+ * Error for invalid seed, public, or private keys
+ */
+export class InvalidKey extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}

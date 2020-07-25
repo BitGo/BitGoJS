@@ -1,8 +1,7 @@
 import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
 import { KeyPairOptions, DefaultKeys } from '../baseCoin/iface';
-import { NotSupported } from '../baseCoin/errors';
-import { toHex } from './utils';
+import { InvalidKey, NotSupported } from '../baseCoin/errors';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -21,11 +20,11 @@ export class KeyPair extends Ed25519KeyPair {
    */
   getKeys(): DefaultKeys {
     const result: DefaultKeys = {
-      pub: this.keyPair.pub,
+      pub: Ed25519PublicKey.fromString(this.keyPair.pub).toString(),
     };
 
     if (this.keyPair.prv) {
-      result.prv = this.keyPair.prv;
+      result.prv = Ed25519PrivateKey.fromString(this.keyPair.prv).toString();
     }
     return result;
   }
@@ -36,14 +35,28 @@ export class KeyPair extends Ed25519KeyPair {
   }
 
   /** @inheritdoc */
-  recordKeysFromPublicKey(pub: string): void {
-    const hederaPub = toHex(Ed25519PublicKey.fromString(pub).toBytes());
-    this.keyPair = { pub: hederaPub };
+  recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
+    try {
+      const hederaPub = Ed25519PublicKey.fromString(pub.toLowerCase()).toString();
+      const ed25519Pub = hederaPub.slice(24);
+      return { pub: ed25519Pub };
+    } catch (e) {
+      throw new InvalidKey('Invalid public key: ' + pub);
+    }
   }
 
   /** @inheritdoc */
-  recordKeysFromPrivateKey(prv: string): void {
-    const hederaPrv = toHex(Ed25519PrivateKey.fromString(prv).toBytes());
-    super.recordKeysFromPrivateKey(hederaPrv);
+  recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
+    try {
+      const hederaPrv = Ed25519PrivateKey.fromString(prv);
+      const ed25519Prv = hederaPrv.toString().slice(32);
+      const ed25519Pub = hederaPrv.publicKey.toString().slice(24);
+      return {
+        prv: ed25519Prv,
+        pub: ed25519Pub,
+      };
+    } catch (e) {
+      throw new InvalidKey('Invalid private key');
+    }
   }
 }

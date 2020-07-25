@@ -3,8 +3,8 @@ import * as nacl from 'tweetnacl';
 import { KeyPair } from '../../../../src/coin/hbar';
 import * as testData from '../../../resources/hbar/hbar';
 
-const pub = testData.ACCOUNT_1.publicKey.slice(24);
-const prv = testData.ACCOUNT_1.privateKey.slice(32);
+const pub = testData.ACCOUNT_1.publicKey;
+const prv = testData.ACCOUNT_1.privateKey;
 
 describe('Hedera Key Pair', () => {
   describe('should create a valid KeyPair', () => {
@@ -26,12 +26,6 @@ describe('Hedera Key Pair', () => {
 
     it('from a private key with prefix', () => {
       const keyPair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
-      should.equal(keyPair.getKeys().prv!, prv);
-      should.equal(keyPair.getKeys().pub, pub);
-    });
-
-    it('from a private key + public key', () => {
-      const keyPair = new KeyPair({ prv: prv + pub });
       should.equal(keyPair.getKeys().prv!, prv);
       should.equal(keyPair.getKeys().pub, pub);
     });
@@ -65,7 +59,7 @@ describe('Hedera Key Pair', () => {
       const source = { pub: '01D63D' };
       should.throws(
         () => new KeyPair(source),
-        e => e.message === testData.errorMessageFailedToParse,
+        e => e.message.includes(testData.errorMessageInvalidPublicKey),
       );
     });
 
@@ -75,15 +69,19 @@ describe('Hedera Key Pair', () => {
       const prvWithPrefix = { prv: testData.ed25519PrivKeyPrefix + prv + '1' };
       should.throws(
         () => new KeyPair(shorterPrv),
-        e => e.message === testData.errorMessageFailedToParse,
+        e => e.message === testData.errorMessageInvalidPrivateKey,
       );
       should.throws(
         () => new KeyPair(longerPrv),
-        e => e.message === testData.errorMessageFailedToParse,
+        e => e.message === testData.errorMessageInvalidPrivateKey,
       );
       should.throws(
         () => new KeyPair(prvWithPrefix),
-        e => e.message === testData.errorMessageFailedToParse,
+        e => e.message === testData.errorMessageInvalidPrivateKey,
+      );
+      should.throws(
+        () => new KeyPair({ prv: prv + pub }),
+        e => e.message === testData.errorMessageInvalidPrivateKey,
       );
     });
   });
