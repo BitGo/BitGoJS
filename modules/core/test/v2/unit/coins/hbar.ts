@@ -42,8 +42,8 @@ describe('Hedera Hashgraph:', function() {
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
 
-      keyPair.pub.should.equal('9cc402b5c75214269c2826e3c6119377cab6c367601338661c87a4e07c6e0333');
       keyPair.prv.should.equal('80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f');
+      keyPair.pub.should.equal('9cc402b5c75214269c2826e3c6119377cab6c367601338661c87a4e07c6e0333');
     });
   });
 });

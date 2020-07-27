@@ -400,7 +400,6 @@ describe('Tezos Transaction builder', function() {
       tx.owners.length.should.equal(0);
       const indexesByTransactionType = tx.getIndexesByTransactionType();
       Object.keys(indexesByTransactionType).length.should.equal(1);
-      console.log(indexesByTransactionType);
       indexesByTransactionType.transaction.length.should.equal(2);
       indexesByTransactionType.transaction[0].should.equal(0);
       indexesByTransactionType.transaction[1].should.equal(1);

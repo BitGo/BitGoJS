@@ -1,6 +1,7 @@
 import * as _ from 'lodash';
 import { AccountId } from '@hashgraph/sdk/lib/account/AccountId';
 import { Ed25519PublicKey, TransactionId } from '@hashgraph/sdk';
+import * as hex from '@stablelib/hex';
 
 /**
  * Returns whether or not the string is a valid Hedera account.
@@ -51,7 +52,7 @@ export function isValidPublicKey(key: string): boolean {
     return false;
   }
   try {
-    const pubKey = Ed25519PublicKey.fromString(key);
+    const pubKey = Ed25519PublicKey.fromString(key.toLowerCase());
     return !_.isNaN(pubKey.toString());
   } catch (e) {
     return false;
@@ -65,17 +66,17 @@ export function isValidPublicKey(key: string): boolean {
  * @returns {string} - the hex value
  */
 export function toHex(buffer: Buffer | Uint8Array): string {
-  return Buffer.from(buffer).toString('hex');
+  return hex.encode(buffer, true);
 }
 
 /**
  * Returns a Uint8Array of the given hex string
  *
- * @param {string} hex - the hex string to be converted
+ * @param {string} str - the hex string to be converted
  * @returns {string} - the Uint8Array value
  */
-export function toUint8Array(hex: string): Uint8Array {
-  return Uint8Array.from(Buffer.from(hex, 'hex'));
+export function toUint8Array(str: string): Uint8Array {
+  return hex.decode(str);
 }
 
 /**

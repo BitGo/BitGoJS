@@ -35,7 +35,8 @@ export const TXDATA = 'not defined';
 export const UNSIGNED_TX = 'not defined';
 
 export const ENCODED_TRANSACTION = 'not defined';
-export const errorMessageFailedToParse = 'Failed to parse correct key';
+export const errorMessageInvalidPrivateKey = 'Invalid private key';
+export const errorMessageInvalidPublicKey = 'Invalid public key:';
 export const errorMessageNotPossibleToDeriveAddress = 'Address derivation is not supported in Hedera';
 
 export const privateKeyBytes = Uint8Array.of(
