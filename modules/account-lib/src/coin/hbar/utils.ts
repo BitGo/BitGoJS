@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import { AccountId } from '@hashgraph/sdk/lib/account/AccountId';
 import { Ed25519PublicKey, TransactionId } from '@hashgraph/sdk';
 import * as hex from '@stablelib/hex';
+import BigNumber from 'bignumber.js';
 
 /**
  * Returns whether or not the string is a valid Hedera account.
@@ -112,4 +113,15 @@ export function getCurrentTime(): string {
  */
 export function isValidTimeString(time: string) {
   return /^[0-9]+(\.[0-9]+)?$/.test(time);
+}
+
+/**
+ * Returns whether or not the string is a valid amount number
+ *
+ * @param {string} amount - the string to validate
+ * @returns {boolean} - the validation result
+ */
+export function isValidAmount(amount: string): boolean {
+  const bigNumberAmount = new BigNumber(amount);
+  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThanOrEqualTo(0);
 }
