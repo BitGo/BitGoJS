@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { BaseFee } from '../baseCoin/iface';
 import { KeyPair } from './keyPair';
 

@@ -23,11 +23,9 @@ import {
 
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
-import BigNumber from 'bignumber.js';
 import { MethodNotImplementedError } from '../../errors';
-import { BaseTransactionBuilder } from '@bitgo/account-lib/dist/src/coin/baseCoin';
 
-export interface XtzSignTransactionOptions extends SignTransactionOptions {
+export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
   prv: string;
 }
@@ -41,15 +39,8 @@ export interface TxInfo {
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txHex: string;
   txInfo: TxInfo;
-  feeInfo: XtzTransactionFee;
+  feeInfo: TransactionFee;
   source: string;
-  dataToSign: string;
-}
-
-export interface XtzTransactionFee {
-  fee: string;
-  gasLimit?: string;
-  storageLimit?: string;
 }
 
 export interface ExplainTransactionOptions {
@@ -60,7 +51,7 @@ export interface ExplainTransactionOptions {
   feeInfo: TransactionFee;
 }
 
-export class Xtz extends BaseCoin {
+export class Hbar extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
   constructor(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>) {
@@ -90,7 +81,7 @@ export class Xtz extends BaseCoin {
   }
 
   static createInstance(bitgo: BitGo, staticsCoin?: Readonly<StaticsBaseCoin>): BaseCoin {
-    return new Xtz(bitgo, staticsCoin);
+    return new Hbar(bitgo, staticsCoin);
   }
 
   /**
@@ -98,7 +89,7 @@ export class Xtz extends BaseCoin {
    * @returns {boolean} True if okay to send 0 value, false otherwise
    */
   valuelessTransferAllowed(): boolean {
-    return true;
+    return false;
   }
 
   /**
@@ -109,26 +100,26 @@ export class Xtz extends BaseCoin {
     if (!address) {
       return false;
     }
-    return bitgoAccountLib.Xtz.Utils.isValidAddress(address);
+    return bitgoAccountLib.Hbar.Utils.isValidAddress(address);
   }
 
   /**
-   * Generate Tezos key pair - BitGo xpub format
+   * Generate Hedera Hashgraph key pair
    *
    * @param seed
-   * @returns {Object} object with generated xpub, xprv
+   * @returns {Object} object with generated pub, prv
    */
   generateKeyPair(seed?: Buffer): KeyPair {
-    const keyPair = seed ? new bitgoAccountLib.Xtz.KeyPair({ seed }) : new bitgoAccountLib.Xtz.KeyPair();
-    const keys = keyPair.getExtendedKeys();
+    const keyPair = seed ? new bitgoAccountLib.Hbar.KeyPair({ seed }) : new bitgoAccountLib.Hbar.KeyPair();
+    const keys = keyPair.getKeys();
 
-    if (!keys.xprv) {
-      throw new Error('Missing xprv in key generation.');
+    if (!keys.prv) {
+      throw new Error('Keypair generation failed to generate a prv');
     }
 
     return {
-      pub: keys.xpub,
-      prv: keys.xprv,
+      pub: Buffer.from(keys.pub).toString('hex'),
+      prv: Buffer.from(keys.prv).toString('hex'),
     };
   }
 
@@ -158,7 +149,7 @@ export class Xtz extends BaseCoin {
    * @returns Bluebird<SignedTransaction>
    */
   signTransaction(
-    params: XtzSignTransactionOptions,
+    params: HbarSignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
   ): Bluebird<SignedTransaction> {
     const self = this;
@@ -166,9 +157,6 @@ export class Xtz extends BaseCoin {
       const txBuilder: any = bitgoAccountLib.getBuilder(self.getChain());
       txBuilder.from(params.txPrebuild.txHex);
       txBuilder.source(params.txPrebuild.source);
-      if (params.txPrebuild.dataToSign) {
-        txBuilder.overrideDataToSign({ dataToSign: params.txPrebuild.dataToSign });
-      }
       txBuilder.sign({ key: params.prv });
 
       const transaction: any = yield txBuilder.build();
@@ -192,10 +180,7 @@ export class Xtz extends BaseCoin {
    */
   signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
     return co<Buffer>(function* cosignMessage() {
-      const keyPair = new bitgoAccountLib.Xtz.KeyPair({ prv: key.prv });
-      const messageHex = message instanceof Buffer ? message.toString('hex') : new Buffer(message).toString('hex');
-      const signatureData = yield bitgoAccountLib.Xtz.Utils.sign(keyPair, messageHex);
-      return Buffer.from(signatureData.sig).toString('hex');
+      throw new MethodNotImplementedError();
     })
       .call(this)
       .asCallback(callback);
@@ -223,39 +208,14 @@ export class Xtz extends BaseCoin {
     params: ExplainTransactionOptions,
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
-    const self = this;
     return co<TransactionExplanation>(function*() {
-      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
-      if (!txHex || !params.feeInfo) {
-        throw new Error('missing explain tx parameters');
-      }
-      const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
-      // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
-      if (!(txBuilder instanceof BaseTransactionBuilder)) {
-        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
-      }
-      txBuilder.from(txHex);
-      const tx: any = yield txBuilder.build();
-
-      const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'];
-
-      return {
-        displayOrder,
-        id: tx.id,
-        outputs: tx.outputs,
-        outputAmount: tx.outputs
-          .reduce((accumulator, output) => accumulator.plus(output.value), new BigNumber('0'))
-          .toFixed(0),
-        changeOutputs: [], // account based does not use change outputs
-        changeAmount: '0', // account base does not make change
-        fee: params.feeInfo,
-      };
+      throw new MethodNotImplementedError();
     })
       .call(this)
       .asCallback(callback);
   }
 
   isValidPub(pub: string): boolean {
-    return bitgoAccountLib.Xtz.Utils.isValidPublicKey(pub);
+    throw new MethodNotImplementedError();
   }
 }

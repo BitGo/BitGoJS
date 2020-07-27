@@ -1,9 +1,9 @@
 import * as nacl from 'tweetnacl';
-import * as hex from '@stablelib/hex';
+import { toHex, toUint8Array } from '../hbar/utils';
+import { isValidEd25519PublicKey, isValidEd25519SecretKey, isValidEd25519Seed } from '../../utils/crypto';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { isPrivateKey, isPublicKey, isSeed, DefaultKeys, KeyPairOptions } from './iface';
-import { NotImplementedError } from './errors';
 
 const DEFAULT_SEED_SIZE_BYTES = 32;
 
@@ -23,7 +23,7 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
       naclKeyPair = nacl.sign.keyPair.fromSeed(seed);
       this.setKeyPair(naclKeyPair);
     } else if (isSeed(source)) {
-      naclKeyPair = nacl.sign.keyPair.fromSeed(new Uint8Array(source.seed));
+      naclKeyPair = nacl.sign.keyPair.fromSeed(source.seed);
       this.setKeyPair(naclKeyPair);
     } else if (isPrivateKey(source)) {
       this.recordKeysFromPrivateKey(source.prv);
@@ -36,23 +36,42 @@ export abstract class Ed25519KeyPair implements BaseKeyPair {
 
   private setKeyPair(naclKeyPair: nacl.SignKeyPair): void {
     this.keyPair = {
-      prv: hex.encode(naclKeyPair.secretKey).slice(0, 64),
-      pub: hex.encode(naclKeyPair.publicKey),
+      prv: toHex(naclKeyPair.secretKey.slice(0, 32)),
+      pub: toHex(naclKeyPair.publicKey),
     };
   }
 
+  /** @inheritdoc */
   recordKeysFromPrivateKey(prv: string): void {
-    const decodedPrv = hex.decode(prv);
-    // fromSeed takes the private key bytes and calculates the public key
-    const naclKeyPair = nacl.sign.keyPair.fromSeed(decodedPrv);
-    this.setKeyPair(naclKeyPair);
+    if (isValidEd25519Seed(prv)) {
+      const decodedPrv = toUint8Array(prv);
+      const naclKeyPair = nacl.sign.keyPair.fromSeed(decodedPrv);
+      this.setKeyPair(naclKeyPair);
+    } else if (isValidEd25519SecretKey(prv)) {
+      const decodedPrv = toUint8Array(prv);
+      const naclKeyPair = nacl.sign.keyPair.fromSecretKey(decodedPrv);
+      this.setKeyPair(naclKeyPair);
+    } else {
+      this.keyPair = this.recordKeysFromPrivateKeyInProtocolFormat(prv);
+    }
   }
 
+  /** @inheritdoc */
   recordKeysFromPublicKey(pub: string): void {
-    throw new NotImplementedError("recordKeysFromPublicKey not implemented since it's protocol dependent");
+    if (isValidEd25519PublicKey(pub)) {
+      this.keyPair = { pub };
+    } else {
+      this.keyPair = this.recordKeysFromPublicKeyInProtocolFormat(pub);
+    }
   }
 
+  abstract recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys;
+
+  abstract recordKeysFromPublicKeyInProtocolFormat(prv: string): DefaultKeys;
+
+  /** @inheritdoc */
   abstract getAddress(format?: AddressFormat): string;
 
+  /** @inheritdoc */
   abstract getKeys(): any;
 }

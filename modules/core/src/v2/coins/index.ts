@@ -33,6 +33,8 @@ export { Trmg } from './trmg';
 export { Trx } from './trx';
 export { Tsusd } from './tsusd';
 export { Ttrx } from './ttrx';
+export { Hbar } from './hbar';
+export { Thbar } from './thbar';
 export { Xtz } from './xtz';
 export { Txtz } from './txtz';
 export { Txlm } from './txlm';

@@ -70,3 +70,21 @@ export class NotImplementedError extends ExtendableError {
     super(message);
   }
 }
+
+/**
+ * Error for not supported features
+ */
+export class NotSupported extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+/**
+ * Error for invalid seed, public, or private keys
+ */
+export class InvalidKey extends ExtendableError {
+  constructor(message: string) {
+    super(message);
+  }
+}

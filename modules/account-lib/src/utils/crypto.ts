@@ -1,5 +1,7 @@
 import { HDNode, ECPair, networks } from '@bitgo/utxo-lib';
+import * as nacl from 'tweetnacl';
 import { ExtendedKeys } from '../coin/baseCoin/iface';
+import { toUint8Array } from '../coin/hbar/utils';
 
 /**
  * @param {string} xpub - a base-58 encoded extended public key (BIP32)
@@ -102,4 +104,49 @@ export function isValidPrv(prv: string): boolean {
     return false;
   }
   return true;
+}
+
+/**
+ * Whether the input is a valid ed25519 private key
+ *
+ * @param {string} prv A hexadecimal private key to validate
+ * @returns {boolean} Whether the input is a valid public key or not
+ */
+export function isValidEd25519Seed(prv: string): boolean {
+  try {
+    const decodedPrv = toUint8Array(prv);
+    return decodedPrv.length === nacl.sign.seedLength;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Whether the input is a valid ed25519 private key
+ *
+ * @param {string} prv A hexadecimal private key to validate
+ * @returns {boolean} Whether the input is a valid public key or not
+ */
+export function isValidEd25519SecretKey(prv: string): boolean {
+  try {
+    const decodedPrv = toUint8Array(prv);
+    return decodedPrv.length === nacl.sign.secretKeyLength;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Whether the input is a valid ed25519 public key
+ *
+ * @param {string} pub A hexadecimal public key to validate
+ * @returns {boolean} Whether the input is a valid public key or not
+ */
+export function isValidEd25519PublicKey(pub: string): boolean {
+  try {
+    const decodedPub = toUint8Array(pub);
+    return decodedPub.length === nacl.sign.publicKeyLength;
+  } catch (e) {
+    return false;
+  }
 }
