@@ -12,7 +12,7 @@ describe('Wallet initialization', () => {
     txBuilder.owner(testData.OWNER1);
     txBuilder.owner(testData.OWNER2);
     txBuilder.owner(testData.OWNER3);
-    txBuilder.source({ address: testData.ACCOUNT1 });
+    txBuilder.source({ address: testData.ACCOUNT_2.accountId });
     return txBuilder;
   };
 
@@ -33,7 +33,7 @@ describe('Wallet initialization', () => {
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
       txJson.fee.should.equal(1000000000);
-      should.equal(txJson.from, testData.ACCOUNT1);
+      should.equal(txJson.from, testData.ACCOUNT_2.accountId);
     });
   });
 
@@ -43,7 +43,7 @@ describe('Wallet initialization', () => {
       txBuilder.owner(testData.OWNER1);
       txBuilder.owner(testData.OWNER2);
       txBuilder.owner(testData.OWNER3);
-      txBuilder.source({ address: testData.ACCOUNT1 });
+      txBuilder.source({ address: testData.ACCOUNT_2.accountId });
       // TODO sign
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
@@ -53,7 +53,7 @@ describe('Wallet initialization', () => {
       txBuilder.fee({ fee: '1000000000' });
       txBuilder.owner(testData.OWNER1);
       txBuilder.owner(testData.OWNER2);
-      txBuilder.source({ address: testData.ACCOUNT1 });
+      txBuilder.source({ address: testData.ACCOUNT_2.accountId });
       await txBuilder
         .build()
         .should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 2');
@@ -62,7 +62,7 @@ describe('Wallet initialization', () => {
 
       const newTxBuilder = factory.getWalletInitializationBuilder();
       newTxBuilder.fee({ fee: '1000000000' });
-      newTxBuilder.source({ address: testData.ACCOUNT1 });
+      newTxBuilder.source({ address: testData.ACCOUNT_2.accountId });
       await newTxBuilder
         .build()
         .should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 0');
@@ -103,7 +103,6 @@ describe('Wallet initialization', () => {
 
     it('a raw transaction', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      // should.doesNotThrow(() => txBuilder.from(testData.TX_BROADCAST));
       should.doesNotThrow(() => txBuilder.validateRawTransaction(testData.WALLET_INITIALIZATION));
       should.throws(() => txBuilder.validateRawTransaction('0x00001000'));
       should.throws(() => txBuilder.validateRawTransaction(''));

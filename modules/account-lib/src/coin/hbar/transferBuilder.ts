@@ -88,8 +88,13 @@ export class TransferBuilder extends TransactionBuilder {
   //endregion
   //region Validators
   validateMandatoryFields(): void {
-    throw new NotImplementedError('signImplementation not implemented');
-    // TODO: Implement validations and add super.validateMandatoryFields()
+    if (this._toAddress === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing to');
+    }
+    if (this._amount === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing amount');
+    }
+    super.validateMandatoryFields();
   }
   //endregion
 }
