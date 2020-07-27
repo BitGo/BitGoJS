@@ -1,6 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import * as hex from '@stablelib/hex';
-import BigNumber from 'bignumber.js';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
@@ -11,9 +10,7 @@ import { KeyPair } from './';
 const DEFAULT_M = 3;
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: string[] = [];
-  private _txBody: proto.TransactionBody;
   private _txBodyData: proto.CryptoCreateTransactionBody;
-  private readonly _duration: proto.Duration = new proto.Duration({ seconds: 120 });
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -29,15 +26,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this._txBodyData.key = { thresholdKey: this.buildOwnersKeys() };
     this._txBodyData.initialBalance = 0;
-    this._txBody.transactionFee = new BigNumber(this._fee.fee).toNumber(); // validate
-    this._txBody.transactionID = this.buildTxId();
-    this._txBody.nodeAccountID = new proto.AccountID({ accountNum: 4 });
-    const hTransaction = new proto.Transaction();
-    hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
-
-    const transaction = new Transaction(this._coinConfig);
-    transaction.body(hTransaction);
-    return transaction;
+    return super.buildImplementation();
   }
 
   private buildOwnersKeys(): proto.ThresholdKey {
