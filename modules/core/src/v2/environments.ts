@@ -15,7 +15,7 @@ interface EnvironmentTemplate {
   signingAddress: string;
   serverXpub: string;
   hsmXpub: string;
-  smartBitApiBaseUrl: string;
+  btcExplorerBaseUrl: string;
   bchExplorerBaseUrl: string;
   bsvExplorerBaseUrl?: string;
   btgExplorerBaseUrl?: string;
@@ -91,7 +91,7 @@ const mainnetBase: EnvironmentTemplate = {
   signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
   serverXpub: hardcodedPublicKeys.serverXpub.prod,
   hsmXpub: hardcodedPublicKeys.hsmXpub.prod,
-  smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1',
+  btcExplorerBaseUrl: 'https://blockstream.info/api',
   bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
   btgExplorerBaseUrl: 'https://btgexplorer.com/api',
   etherscanBaseUrl: 'https://api.etherscan.io',
@@ -115,7 +115,7 @@ const testnetBase: EnvironmentTemplate = {
   signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
-  smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
+  btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
   bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
   etherscanBaseUrl: 'https://kovan.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
@@ -168,7 +168,7 @@ export const Environments: Environments = {
   }),
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
-    smartBitApiBaseUrl: 'https://testnet-api.smartbit.fakeurl/v1',
+    btcExplorerBaseUrl: 'https://blockstream.fakeurl/testnet/api',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.fakeurl/api',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
     etherscanBaseUrl: 'https://kovan.etherscan.fakeurl',
@@ -203,10 +203,10 @@ export const Environments: Environments = {
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network,
     rmgNetwork: process.env.BITGO_CUSTOM_RMG_NETWORK as V1RmgNetwork,
     hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
-    smartBitApiBaseUrl:
+    btcExplorerBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
-        ? 'https://testnet-api.smartbit.com.au/v1'
-        : 'https://api.smartbit.com.au/v1',
+        ? 'https://blockstream.info/testnet/api'
+        : 'https://blockstream.info/api',
     bchExplorerBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://test-bch-insight.bitpay.com/api'
