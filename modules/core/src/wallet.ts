@@ -1369,7 +1369,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
     const result = await request.get(`${explorerBaseUrl}/tx/${parentTxId}/hex`);
 
     if (!result.text || !/([a-f0-9]{2})+/.test(result.text)) {
-      throw new Error('Did not successfully receive parent tx hex');
+      throw new Error(`Did not successfully receive parent tx hex. Received '${_.truncate(result.text, { length: 100 })}' instead.`);
     }
 
     return result.text;
