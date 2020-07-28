@@ -4,6 +4,8 @@ import { Ed25519PublicKey, TransactionId } from '@hashgraph/sdk';
 import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
 
+const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
+
 /**
  * Returns whether or not the string is a valid Hedera account.
  *
@@ -123,5 +125,9 @@ export function isValidTimeString(time: string) {
  */
 export function isValidAmount(amount: string): boolean {
   const bigNumberAmount = new BigNumber(amount);
-  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThanOrEqualTo(0);
+  return (
+    bigNumberAmount.isInteger() &&
+    bigNumberAmount.isGreaterThanOrEqualTo(0) &&
+    bigNumberAmount.isLessThanOrEqualTo(MAX_TINYBARS_AMOUNT)
+  );
 }

@@ -1,10 +1,9 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import * as hex from '@stablelib/hex';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidPublicKey, toUint8Array } from './utils';
+import { isValidPublicKey, toUint8Array, toHex } from './utils';
 import { KeyPair } from './';
 
 const DEFAULT_M = 3;
@@ -14,8 +13,6 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._txBody = new proto.TransactionBody();
-    this._txBody.transactionValidDuration = this._duration;
     this._txBodyData = new proto.CryptoCreateTransactionBody();
     this._txBody.cryptoCreateAccount = this._txBodyData;
     this._txBodyData.autoRenewPeriod = new proto.Duration({ seconds: 7890000 });
@@ -52,7 +49,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   private initOwners(keys: proto.ThresholdKey) {
     if (keys.keys && keys.keys.keys) {
       keys.keys.keys.forEach(key => {
-        this.owner(hex.encode(key.ed25519!));
+        this.owner(toHex(key.ed25519!));
       });
     }
   }

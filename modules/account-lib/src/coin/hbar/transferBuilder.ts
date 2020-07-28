@@ -2,21 +2,21 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import Long from 'long';
 import { AccountId } from '@hashgraph/sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
-import { NotImplementedError, BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidAddress, isValidAmount } from './utils';
+import { KeyPair } from './';
 
 export class TransferBuilder extends TransactionBuilder {
   private _txBodyData: proto.CryptoTransferTransactionBody;
   private _toAddress: string;
+  private _sourceKeyPair: KeyPair;
   private _amount: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._txBody = new proto.TransactionBody();
-    this._txBody.transactionValidDuration = this._duration;
     this._txBodyData = new proto.CryptoTransferTransactionBody();
     this._txBody.cryptoTransfer = this._txBodyData;
   }
@@ -24,16 +24,25 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this._txBodyData.transfers = this.buildTransferData();
-    // TODO: Add signature to the tx body
-    return super.buildImplementation();
+    const transaction = await super.buildImplementation();
+    // Signing has to be done after all the transaction body is set
+    if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
+      await transaction.sign(this._sourceKeyPair);
+    }
+    return transaction;
   }
 
   private buildTransferData(): proto.ITransferList {
-    return { accountAmounts: [{ accountID: this.buildRecipientData(), amount: Long.fromString(this._amount) }] };
+    return {
+      accountAmounts: [
+        { accountID: this.buildAccountData(this._source.address), amount: Long.fromString(this._amount).negate() }, // sender
+        { accountID: this.buildAccountData(this._toAddress), amount: Long.fromString(this._amount) }, // recipient
+      ],
+    };
   }
 
-  private buildRecipientData(): proto.AccountID {
-    const accountData = new AccountId(this._toAddress);
+  private buildAccountData(address: string): proto.AccountID {
+    const accountData = new AccountId(address);
     return new proto.AccountID({
       accountNum: accountData.account,
       realmNum: accountData.realm,
@@ -43,7 +52,12 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
-    throw new NotImplementedError('signImplementation not implemented');
+    const signer = new KeyPair({ prv: key.key });
+
+    // Signing the transaction is an operation that relies on all the data being set,
+    // so we set the source here and leave the actual signing for the build step
+    this._sourceKeyPair = signer;
+    return this.transaction;
   }
 
   //region Transfer fields
@@ -65,7 +79,7 @@ export class TransferBuilder extends TransactionBuilder {
   /**
    * Set the amount to be transferred
    *
-   * @param {string} amount amount to transfer in tinyBars
+   * @param {string} amount amount to transfer in tinyBars (there are 100,000,000 tinyBars in one Hbar)
    * @returns {TransferBuilder} the builder with the new parameter set
    */
   amount(amount: string): this {

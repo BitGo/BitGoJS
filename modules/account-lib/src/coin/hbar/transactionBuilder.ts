@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { AccountId } from '@hashgraph/sdk';
 import { BaseTransactionBuilder } from '../baseCoin';
 import {
@@ -23,6 +24,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _txBody: proto.TransactionBody;
   protected _node: HederaNode = { nodeId: '0.0.4' };
   protected _duration: proto.Duration = new proto.Duration({ seconds: 120 });
+
+  constructor(_coinConfig: Readonly<CoinConfig>) {
+    super(_coinConfig);
+    this._txBody = new proto.TransactionBody();
+    this._txBody.transactionValidDuration = this._duration;
+  }
 
   // region Base Builder
   /** @inheritdoc */
@@ -153,7 +160,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   startTime(time: string): this {
     if (!isValidTimeString(time)) {
-      throw new InvalidParameterValueError('invalid value for time parameter');
+      throw new InvalidParameterValueError('Invalid value for time parameter');
     }
     const timeParts = time.split('.').map(v => new BigNumber(v).toNumber());
     this._startTime = { seconds: timeParts[0], nanos: timeParts[1] };
