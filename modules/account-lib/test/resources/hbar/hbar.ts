@@ -55,3 +55,8 @@ export const errorMessageInvalidPrivateKey = 'Invalid private key';
 export const errorMessageInvalidPublicKey = 'Invalid public key:';
 export const errorMessageNotPossibleToDeriveAddress = 'Address derivation is not supported in Hedera';
 export const errorMessageFailedToParse = 'Failed to parse correct key';
+
+export const UNSIGNED_TRASNFER_TRANSACTION =
+  '22360a140a0c08f2b1fcf80510fdcd93dd02120418a8fb0412021804188094ebdc032202087872100a0e0a0c0a080800100018d5d0041014';
+
+export const SIGNED_TRASNFER_TRANSACTION = '';
