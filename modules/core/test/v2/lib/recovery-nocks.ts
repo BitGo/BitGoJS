@@ -7,6 +7,11 @@ import * as nock from 'nock';
 import { Environment, Environments } from '../../../src/v2/environments';
 
 export function nockBtcRecovery(bitgo, isKrsRecovery) {
+  throw new Error('TODO: BG-23161 - replace smartbit block explorer which is now permanently down');
+}
+
+// TODO: BG-23161 - replace smartbit block explorer which is now permanently down
+export function smartBitNockBtcRecovery(bitgo, isKrsRecovery) {
   nock('https://bitcoinfees.earn.com')
     .get('/api/v1/fees/recommended')
     .reply(200, {
@@ -103,7 +108,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
         },
       };
 
-  const env = Environments[bitgo.getEnv()] as Environment;
+  const env = Environments[bitgo.getEnv()] as any;
   const smartbitBaseUrl = `${env.smartBitApiBaseUrl}/blockchain`;
   nock(smartbitBaseUrl)
     .get('/address/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg')
@@ -2820,7 +2825,13 @@ module.exports.nockEosRecovery = function() {
 };
 
 module.exports.nockBtcSegwitRecovery = function(bitgo) {
-  const env = Environments[bitgo.getEnv()] as Environment;
+  throw new Error('TODO: BG-23161 - replace smartbit block explorer which is now permanently down');
+};
+
+// TODO: BG-23161 - replace smartbit block explorer which is now permanently down
+// eslint-disable-next-line no-unused-vars
+const smartBitNockBtcSegwitRecovery = function(bitgo) {
+  const env = Environments[bitgo.getEnv()] as any;
   // Nock all the external api calls that gather info about the wallet
   // We have lots of empty addresses, because the code queries for possible addresses in the wallet one by one
   const emptyAddrs = [
@@ -2881,7 +2892,13 @@ module.exports.nockBtcSegwitRecovery = function(bitgo) {
 };
 
 module.exports.nockBtcUnsignedRecovery = function(bitgo) {
-  const env = Environments[bitgo.getEnv()] as Environment;
+  throw new Error('TODO: BG-23161 - replace smartbit block explorer which is now permanently down');
+};
+
+// TODO: BG-23161 - replace smartbit block explorer which is now permanently down
+// eslint-disable-next-line no-unused-vars
+const smartBitNockBtcUnsignedRecovery = function(bitgo) {
+  const env = Environments[bitgo.getEnv()] as any;
   // Nock all the external api calls that gather info about the wallet
   // We have lots of empty addresses, because the code queries for possible addresses in the wallet one by one
   const emptyAddrs = [
