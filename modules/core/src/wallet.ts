@@ -1357,7 +1357,7 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
   /**
    * Helper function to get a full copy (including witness data) of an arbitrary tx using only the tx id.
    *
-   * We have to use an external service for this (currently smartbit.com.au), since
+   * We have to use an external service for this (currently blockstream.info), since
    * the v1 indexer service (based on bitcoinj) does not have segwit support and
    * does not return any segwit related fields in the tx hex.
    *
