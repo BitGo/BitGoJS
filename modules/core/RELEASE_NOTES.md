@@ -1,5 +1,16 @@
 # BitGoJS Release Notes
 
+## 11.4.0 (07-21-2020)
+
+### New Features
+* Add support for new ERC20 tokens (FFT, IVO, LEND, UCO, XBGOLD, XEX)
+
+### Other Changes
+* Rename coin `cgld` to `celo`
+* Update `@bitgo/account-lib` to version 2.0.0
+* Update `@bitgo/statics` to version 5.0.0
+* Use renamed `@bitgo/utxo-lib` package and update to version 1.7.1
+
 ## 11.3.0 (06-30-2020)
 
 ### New Features
@@ -8,7 +19,7 @@
 
 ### Other Changes
 * Update `@bitgo/account-lib` to version 1.7.0
-* Update `@bitgo/account-lib` to version 4.3.0
+* Update `@bitgo/statics` to version 4.3.0
 * Change exported enums to be non-const
 
 ## 11.2.0 (06-15-2020)
