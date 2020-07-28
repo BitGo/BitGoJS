@@ -411,12 +411,12 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/account-lib@^2.0.1-rc.1":
-  version "2.0.1-rc.1"
-  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-2.0.1-rc.1.tgz#f8bae8f0957f47a7c474d0d37176b902c9248c39"
-  integrity sha512-FDi1GBOjlGRc2jF/7jLta33YeZWK2XfKWOjVdyTOLSosCE4wJSD4PifOS5pcKVukZAzC2hiEWChwAxbW4hvCRA==
+"@bitgo/account-lib@^2.0.1-rc.2":
+  version "2.0.1-rc.2"
+  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-2.0.1-rc.2.tgz#a8d103d89303a3379d79a2e0f6b57d78d342ee2a"
+  integrity sha512-AF2xohXKU4aiEOqSuaVt8ZQBKe7QnoLgF37BBUcJ37kT03Ufl2xuYB4Wjz1MfNs/bKk6cyZmbJNh4Apa0Uk/iA==
   dependencies:
-    "@bitgo/statics" "^5.0.0"
+    "@bitgo/statics" "^5.0.0-rc.2"
     "@bitgo/utxo-lib" "^1.7.1"
     "@celo/contractkit" "0.4.9"
     "@hashgraph/sdk" "^1.2.1"
@@ -437,7 +437,7 @@
     tronweb "^2.7.2"
     tweetnacl "^1.0.3"
 
-"@bitgo/statics@^5.0.0", "@bitgo/statics@^5.0.0-rc.2":
+"@bitgo/statics@^5.0.0-rc.2":
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-5.0.0.tgz#cb55f4742e194babb880718e5051471d25a1ca6c"
   integrity sha512-CNGWZue5soDmAPj20CY1WTTymOECrTISBvB+kAhWF87gUg0PCMPwp9+r+YlCnVCPVQbDYFuIWr6ZUeHr+voaXw==

@@ -45,7 +45,7 @@
     "gen-docs": "typedoc"
   },
   "dependencies": {
-    "@bitgo/account-lib": "^2.0.1-rc.1",
+    "@bitgo/account-lib": "^2.0.1-rc.2",
     "@bitgo/statics": "^5.0.0-rc.2",
     "@bitgo/unspents": "^0.6.0",
     "@bitgo/utxo-lib": "^1.7.1",
