@@ -118,8 +118,8 @@ export class Hbar extends BaseCoin {
     }
 
     return {
-      pub: Buffer.from(keys.pub).toString('hex'),
-      prv: Buffer.from(keys.prv).toString('hex'),
+      pub: keys.pub,
+      prv: keys.prv,
     };
   }
 
