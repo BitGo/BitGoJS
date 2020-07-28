@@ -411,37 +411,6 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/account-lib@^2.0.1-rc.2":
-  version "2.0.1-rc.2"
-  resolved "https://registry.yarnpkg.com/@bitgo/account-lib/-/account-lib-2.0.1-rc.2.tgz#a8d103d89303a3379d79a2e0f6b57d78d342ee2a"
-  integrity sha512-AF2xohXKU4aiEOqSuaVt8ZQBKe7QnoLgF37BBUcJ37kT03Ufl2xuYB4Wjz1MfNs/bKk6cyZmbJNh4Apa0Uk/iA==
-  dependencies:
-    "@bitgo/statics" "^5.0.0-rc.2"
-    "@bitgo/utxo-lib" "^1.7.1"
-    "@celo/contractkit" "0.4.9"
-    "@hashgraph/sdk" "^1.2.1"
-    "@stablelib/hex" "^1.0.0"
-    "@taquito/local-forging" "^6.0.3-beta.0"
-    "@taquito/signer" "^6.0.3-beta.0"
-    "@types/lodash" "^4.14.151"
-    bignumber.js "^9.0.0"
-    blake2b "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac"
-    bs58check "^2.1.2"
-    elliptic "^6.5.2"
-    ethereumjs-abi "0.6.0"
-    ethereumjs-tx "2.1.2"
-    ethereumjs-util "5.2.0"
-    libsodium-wrappers "^0.7.6"
-    lodash "^4.17.15"
-    protobufjs "^6.8.9"
-    tronweb "^2.7.2"
-    tweetnacl "^1.0.3"
-
-"@bitgo/statics@^5.0.0-rc.2":
-  version "5.0.0"
-  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-5.0.0.tgz#cb55f4742e194babb880718e5051471d25a1ca6c"
-  integrity sha512-CNGWZue5soDmAPj20CY1WTTymOECrTISBvB+kAhWF87gUg0PCMPwp9+r+YlCnVCPVQbDYFuIWr6ZUeHr+voaXw==
-
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"

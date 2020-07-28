@@ -1,6 +1,6 @@
 {
   "name": "bitgo",
-  "version": "11.3.0",
+  "version": "11.4.1-rc.3",
   "description": "BitGo Javascript SDK",
   "main": "./dist/src/index.js",
   "types": "./dist/types/src/index.d.ts",
@@ -132,5 +132,6 @@
     "extension": [
       ".ts"
     ]
-  }
+  },
+  "gitHead": "3161f5c3cd8ccbd89eca4a12d3970bacbf184259"
 }
