@@ -67,7 +67,8 @@ export class Btc extends AbstractUtxoCoin {
   }
 
   recoveryBlockchainExplorerUrl(url: string): string {
-    return common.Environments[this.bitgo.getEnv()].smartBitApiBaseUrl + '/blockchain' + url;
+    // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
+    throw new Error('btc recovery under maintenance');
   }
 
   getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
