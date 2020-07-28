@@ -87,6 +87,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   memo(memo: string): this {
+    // strings are UTF-16, max 100 bytes
+    if (memo.length * 2 > 100) {
+      throw new InvalidParameterValueError('Memo must not be longer than 100 bytes');
+    }
     this._memo = memo;
     return this;
   }

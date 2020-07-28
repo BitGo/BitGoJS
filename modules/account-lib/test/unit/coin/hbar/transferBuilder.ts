@@ -116,7 +116,7 @@ describe('Transfer Builder', () => {
       );
     });
 
-    it.skip('a transfer transaction with an invalid destination memo', () => {
+    it('a transfer transaction with an invalid destination memo', () => {
       const txBuilder = factory.getTransferBuilder();
       should.throws(
         () => txBuilder.memo('This sentence has more than 100 bytes allowed for the memo'),
