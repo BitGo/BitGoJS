@@ -4,7 +4,7 @@ import { AccountId } from '@hashgraph/sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
-import { TransactionBuilder } from './transactionBuilder';
+import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidAddress, isValidAmount } from './utils';
 import { KeyPair } from './';
@@ -12,7 +12,6 @@ import { KeyPair } from './';
 export class TransferBuilder extends TransactionBuilder {
   private _txBodyData: proto.CryptoTransferTransactionBody;
   private _toAddress: string;
-  private _sourceKeyPair: KeyPair;
   private _amount: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -25,10 +24,12 @@ export class TransferBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this._txBodyData.transfers = this.buildTransferData();
     const transaction = await super.buildImplementation();
-    // Signing has to be done after all the transaction body is set
-    if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
-      await transaction.sign(this._sourceKeyPair);
-    }
+    // Build and sign a new transaction based on the latest changes
+    this._multiSignerKeyPairs.forEach(async _sourceKeyPair => {
+      if (_sourceKeyPair && _sourceKeyPair.getKeys().prv) {
+        await transaction.sign(_sourceKeyPair);
+      }
+    });
     return transaction;
   }
 
@@ -52,11 +53,14 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
+    // TODO: Check if the key already exists in the array
     const signer = new KeyPair({ prv: key.key });
 
     // Signing the transaction is an operation that relies on all the data being set,
     // so we set the source here and leave the actual signing for the build step
-    this._sourceKeyPair = signer;
+    if (this._multiSignerKeyPairs.length <= DEFAULT_M) {
+      this._multiSignerKeyPairs.push(signer);
+    }
     return this.transaction;
   }
 

@@ -15,6 +15,7 @@ import { getCurrentTime, isValidAddress, isValidTimeString, toUint8Array } from 
 import { KeyPair } from './keyPair';
 import { HederaNode } from './ifaces';
 
+export const DEFAULT_M = 3;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
   protected _transaction: Transaction;
@@ -24,11 +25,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _txBody: proto.TransactionBody;
   protected _node: HederaNode = { nodeId: '0.0.4' };
   protected _duration: proto.Duration = new proto.Duration({ seconds: 120 });
+  protected _multiSignerKeyPairs: KeyPair[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._txBody = new proto.TransactionBody();
     this._txBody.transactionValidDuration = this._duration;
+    this._multiSignerKeyPairs = [];
   }
 
   // region Base Builder
