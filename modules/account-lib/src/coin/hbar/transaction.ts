@@ -69,7 +69,7 @@ export class Transaction extends BaseTransaction {
     this._txBody.cryptoTransfer!.transfers!.accountAmounts!.forEach(transfer => {
       const amount = Long.fromValue(transfer.amount!);
       if (amount.isPositive()) {
-        transferData = [transfer.accountID, amount.toString()];
+        transferData = [this.stringifyAccountId(transfer.accountID!), amount.toString()];
       }
     });
 
