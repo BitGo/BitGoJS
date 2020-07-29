@@ -20,11 +20,11 @@ describe('Transfer Builder', () => {
       const builder = initTxBuilder();
       builder.validDuration(1000000);
       builder.node({ nodeId: '0.0.2345' });
-      // TODO sign
+      builder.sign({ key: testData.ACCOUNT_2.privateKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
-      // should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-      // should.deepEqual(txJson.amount, 10);
+      should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
+      should.deepEqual(txJson.amount, '10');
       should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
       should.deepEqual(txJson.fee.toString(), testData.FEE);
     });
@@ -34,9 +34,8 @@ describe('Transfer Builder', () => {
       builder.amount('0');
       const tx = await builder.build();
       const txJson = tx.toJson();
-      // Uncomment this lines when toJson is completed
-      // should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-      // should.deepEqual(txJson.amount, 0);
+      should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
+      should.deepEqual(txJson.amount, '0');
       should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
       should.deepEqual(txJson.fee.toString(), testData.FEE);
     });
@@ -46,20 +45,19 @@ describe('Transfer Builder', () => {
       builder.memo('This is an example');
       const tx = await builder.build();
       const txJson = tx.toJson();
-      // Uncomment this lines when toJson is completed
-      // should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-      // should.deepEqual(txJson.amount, 0);
-      // should.deepEqual(txJson.memo, 'This is an example');
+      should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
+      should.deepEqual(txJson.amount, '10');
+      should.deepEqual(txJson.memo, 'This is an example');
       should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
       should.deepEqual(txJson.fee.toString(), testData.FEE);
     });
 
-    it.skip('a non signed transfer transaction', async () => {
+    it('a non signed transfer transaction', async () => {
       const builder = initTxBuilder();
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-      should.deepEqual(txJson.amount, 10);
+      should.deepEqual(txJson.amount, '10');
       should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
       should.deepEqual(txJson.fee.toString(), testData.FEE);
     });
@@ -87,9 +85,12 @@ describe('Transfer Builder', () => {
   });
 
   describe('should fail', () => {
-    it.skip('a transfer transaction with an invalid key', () => {
+    it('a transfer transaction with an invalid key', () => {
       const builder = initTxBuilder();
-      // TODO test the signature key
+      should.throws(
+        () => builder.sign({ key: 'invalidKey' }),
+        e => e.message === 'Invalid private key',
+      );
     });
 
     it('a transfer transaction with an invalid destination address', () => {
