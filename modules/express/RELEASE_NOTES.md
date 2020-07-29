@@ -1,5 +1,13 @@
 # BitGo Express Release Notes
 
+## 9.7.0
+
+### New Features
+* Support for the ZCash Heartwood fork
+
+### Other Changes
+* Update to `bitgo@11.4.0`
+
 ## 9.6.15
 
 ### Other Changes
