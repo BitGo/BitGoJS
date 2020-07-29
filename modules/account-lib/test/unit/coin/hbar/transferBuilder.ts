@@ -93,6 +93,28 @@ describe('Transfer Builder', () => {
       );
     });
 
+    it('a transfer transaction with more signature than allowed', () => {
+      const builder = initTxBuilder();
+      builder.sign({ key: testData.ACCOUNT_2.privateKey });
+      builder.sign({ key: testData.ACCOUNT_1.privateKey });
+      builder.sign({ key: testData.ACCOUNT_3.privateKey });
+      should.throws(
+        () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90' }),
+        e => e.message === 'A maximum of 3 can sign the transaction.',
+      );
+    });
+
+    it('a transfer transaction with repeated sign', () => {
+      const builder = initTxBuilder();
+      builder.sign({ key: testData.ACCOUNT_1.privateKey });
+      should.throws(
+        () => builder.sign({ key: testData.ACCOUNT_1.privateKey }),
+        e =>
+          e.message ===
+          'Repeated sign: 302e020100300506032b65700422042062b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01',
+      );
+    });
+
     it('a transfer transaction with an invalid destination address', () => {
       const txBuilder = factory.getTransferBuilder();
       should.throws(

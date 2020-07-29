@@ -2,7 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import Long from 'long';
 import { AccountId } from '@hashgraph/sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
-import { BuildTransactionError, InvalidParameterValueError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
@@ -53,14 +53,20 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
-    // TODO: Check if the key already exists in the array
+    if (this._multiSignerKeyPairs.length >= DEFAULT_M) {
+      throw new SigningError('A maximum of ' + DEFAULT_M + ' can sign the transaction.');
+    }
+
+    this._multiSignerKeyPairs.forEach(_sourceKeyPair => {
+      if (_sourceKeyPair.getKeys().prv === key.key) {
+        throw new SigningError('Repeated sign: ' + key.key);
+      }
+    });
     const signer = new KeyPair({ prv: key.key });
 
     // Signing the transaction is an operation that relies on all the data being set,
     // so we set the source here and leave the actual signing for the build step
-    if (this._multiSignerKeyPairs.length <= DEFAULT_M) {
-      this._multiSignerKeyPairs.push(signer);
-    }
+    this._multiSignerKeyPairs.push(signer);
     return this.transaction;
   }
 
