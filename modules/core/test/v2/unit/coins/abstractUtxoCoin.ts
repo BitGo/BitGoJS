@@ -114,7 +114,8 @@ describe('Abstract UTXO Coin:', () => {
     }));
   });
 
-  describe('Recover Wallet:', () => {
+  // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
+  xdescribe('Recover Wallet:', () => {
 
     let coin, bitgo;
 

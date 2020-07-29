@@ -1230,6 +1230,7 @@ Wallet.prototype.sendMany = function(params, callback) {
  */
 Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, callback) {
 
+  const self = this;
   /**
    * Helper function to estimate a transactions size in virtual bytes.
    * Actual transactions may be slightly fewer virtual bytes, due to
@@ -1356,26 +1357,23 @@ Wallet.prototype.accelerateTransaction = function accelerateTransaction(params, 
   /**
    * Helper function to get a full copy (including witness data) of an arbitrary tx using only the tx id.
    *
-   * We have to use an external service for this (currently smartbit.com.au), since
+   * We have to use an external service for this (currently blockstream.info), since
    * the v1 indexer service (based on bitcoinj) does not have segwit support and
    * does not return any segwit related fields in the tx hex.
    *
    * @param parentTxId The ID of the transaction to get the full hex of
    * @returns {Bluebird<any>} The full hex for the specified transaction
    */
-  const getParentTxHex = ({ parentTxId }) => {
-    return co(function *coGetParentTxHex() {
-      const smartBitApiUrl = common.Environments[this.bitgo.getEnv()].smartBitApiBaseUrl + '/blockchain/tx/';
-      const txUrl = smartBitApiUrl + parentTxId + '/hex';
-      const result = yield request.get(txUrl);
+  async function getParentTxHex({ parentTxId }: { parentTxId: string }): Promise<string> {
+    const explorerBaseUrl = common.Environments[self.bitgo.getEnv()].btcExplorerBaseUrl;
+    const result = await request.get(`${explorerBaseUrl}/tx/${parentTxId}/hex`);
 
-      if (!_.isBoolean(result.body.success) || !result.body.success) {
-        throw new Error('Did not successfully receive parent tx hex');
-      }
+    if (!result.text || !/([a-f0-9]{2})+/.test(result.text)) {
+      throw new Error(`Did not successfully receive parent tx hex. Received '${_.truncate(result.text, { length: 100 })}' instead.`);
+    }
 
-      return result.body.hex[0].hex;
-    }).call(this);
-  };
+    return result.text;
+  }
 
   /**
    * Helper function to get the chain from an unspent or tx output.
