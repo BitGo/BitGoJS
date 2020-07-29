@@ -2,6 +2,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import BigNumber from 'bignumber.js';
 import * as nacl from 'tweetnacl';
 import { SignatureMap } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
+import Long from 'long';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
@@ -46,13 +47,32 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   toJson(): TxData {
     const [acc, time] = this.getTxIdParts();
-    return {
+    const result: TxData = {
       id: acc + '@' + time,
       data: Uint8Array.from(this._hederaTx.bodyBytes).toString(),
       fee: new BigNumber(this._txBody.transactionFee!.toString()).toNumber(),
       from: acc,
       startTime: time,
     };
+
+    if (this._txBody.data === 'cryptoTransfer') {
+      const [recipient, amount] = this.getTransferData();
+      result.amount = amount;
+      result.to = recipient;
+    }
+    return result;
+  }
+
+  private getTransferData(): [string, string] {
+    let transferData;
+    this._txBody.cryptoTransfer!.transfers!.accountAmounts!.forEach(transfer => {
+      const amount = Long.fromValue(transfer.amount!);
+      if (amount.isPositive()) {
+        transferData = [transfer.accountID, amount.toString()];
+      }
+    });
+
+    return transferData;
   }
 
   //region getters & setters

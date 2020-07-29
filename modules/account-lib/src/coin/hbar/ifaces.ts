@@ -5,6 +5,8 @@ export interface TxData {
   data: string;
   fee: number;
   startTime: string;
+  to?: string;
+  amount?: string;
 }
 
 export interface HederaNode {

@@ -32,6 +32,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._txBody = new proto.TransactionBody();
     this._txBody.transactionValidDuration = this._duration;
     this._multiSignerKeyPairs = [];
+    this._transaction = new Transaction(this._coinConfig);
   }
 
   // region Base Builder
@@ -43,9 +44,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._txBody.nodeAccountID = new proto.AccountID({ accountNum: new AccountId(this._node.nodeId).account });
     const hTransaction = new proto.Transaction();
     hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
-    const transaction = new Transaction(this._coinConfig);
-    transaction.body(hTransaction);
-    return transaction;
+    this._transaction.body(hTransaction);
+    return this._transaction;
   }
 
   /** @inheritdoc */
