@@ -16,15 +16,16 @@ export class KeyPair extends Ed25519KeyPair {
   /**
    * Hedera default keys format is a pair of Uint8Array keys
    *
+   * @param {boolean} raw defines if the key is returned in raw or protocol default format
    * @returns { DefaultKeys } The keys in the protocol default format
    */
-  getKeys(): DefaultKeys {
+  getKeys(raw = false): DefaultKeys {
     const result: DefaultKeys = {
-      pub: Ed25519PublicKey.fromString(this.keyPair.pub).toString(),
+      pub: Ed25519PublicKey.fromString(this.keyPair.pub).toString(raw),
     };
 
     if (this.keyPair.prv) {
-      result.prv = Ed25519PrivateKey.fromString(this.keyPair.prv).toString();
+      result.prv = Ed25519PrivateKey.fromString(this.keyPair.prv).toString(raw);
     }
     return result;
   }

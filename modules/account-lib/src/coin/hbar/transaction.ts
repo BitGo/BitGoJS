@@ -1,7 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import BigNumber from 'bignumber.js';
 import * as nacl from 'tweetnacl';
-import { SignatureMap } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
 import Long from 'long';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction } from '../baseCoin';
@@ -25,16 +24,17 @@ export class Transaction extends BaseTransaction {
   }
 
   async sign(keyPair: KeyPair): Promise<void> {
-    const keys = keyPair.getKeys();
+    const keys = keyPair.getKeys(true);
     if (!keys.prv) {
       throw new SigningError('Missing private key');
     }
-    const signature = nacl.sign.detached(this._hederaTx.bodyBytes, toUint8Array(keys.prv));
+    const secretKey = toUint8Array(keys.prv + keys.pub);
+    const signature = nacl.sign.detached(this._hederaTx.bodyBytes, secretKey);
     const sigPair = new proto.SignaturePair();
     sigPair.pubKeyPrefix = toUint8Array(keys.pub);
     sigPair.ed25519 = signature;
 
-    const sigMap = this._hederaTx.sigMap! || new SignatureMap();
+    const sigMap = this._hederaTx.sigMap || new proto.SignatureMap();
     sigMap.sigPair!.push(sigPair);
     this._hederaTx.sigMap = sigMap;
   }
