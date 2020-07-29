@@ -53,6 +53,7 @@ export class Transaction extends BaseTransaction {
       fee: new BigNumber(this._txBody.transactionFee!.toString()).toNumber(),
       from: acc,
       startTime: time,
+      memo: this._hederaTx.body!.memo!,
     };
 
     if (this._txBody.data === 'cryptoTransfer') {
