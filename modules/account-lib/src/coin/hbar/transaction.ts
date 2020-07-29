@@ -1,5 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
+import { Writer } from 'protobufjs';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
@@ -26,9 +28,11 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toJson(): TxData {
+    this.printHashes();
     const [acc, time] = this.getTxIdParts();
     return {
       id: acc + '@' + time,
+      hash: this.getTxHash(),
       data: Uint8Array.from(this._hederaTx.bodyBytes).toString(),
       fee: new BigNumber(this._txBody.transactionFee!.toString()).toNumber(),
       from: acc,
@@ -100,6 +104,45 @@ export class Transaction extends BaseTransaction {
    */
   private stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
     return `${seconds}.${nanos}`;
+  }
+
+  private getTxHash(): string {
+    if (this._txBody.data) {
+      return this.getHashOf(this._txBody[this._txBody.data]);
+    }
+    throw new Error('Missing txBody data');
+  }
+
+  private printHashes(): void {
+    console.log('Hash using entire transaction:', this.getHashOf(this._hederaTx));
+    console.log('Hash using transaction body:', this.getHashOf(this._txBody));
+    console.log(
+      'Hash using tx body data (CryptoCreateAccount | CryptoTransfer):',
+      this.getHashOf(this._txBody[this._txBody.data!]),
+    );
+    if (this._txBody.cryptoCreateAccount) {
+      console.log('Hash using txBody.cryptoCreateAccount key:', this.getHashOf(this._txBody.cryptoCreateAccount.key));
+      console.log(
+        'Hash using txBody.cryptoCreateAccount.key thresholdKey:',
+        this.getHashOf(this._txBody.cryptoCreateAccount.key!.thresholdKey),
+      );
+    }
+    console.log();
+  }
+
+  private encode<T extends { constructor: Function }>(obj: T, encoder?: { encode(arg: T): Writer }): Uint8Array {
+    if (encoder) {
+      return encoder.encode(obj).finish();
+    }
+    return this.encode(obj, proto[obj.constructor.name]);
+  }
+
+  private sha(bytes: Uint8Array): string {
+    return toHex(hash(bytes));
+  }
+
+  private getHashOf<T>(obj: T): string {
+    return this.sha(this.encode(obj));
   }
   //endregion
 }
