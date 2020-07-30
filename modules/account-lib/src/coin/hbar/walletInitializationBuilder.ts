@@ -29,7 +29,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     return this._owners.reduce((tKeys, key) => {
       if (tKeys.keys && tKeys.keys.keys) {
         tKeys.keys.keys.push({
-          ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys().pub),
+          ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys(true).pub),
         });
       }
       return tKeys;
