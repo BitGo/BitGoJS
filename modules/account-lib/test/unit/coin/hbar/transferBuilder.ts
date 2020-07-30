@@ -16,20 +16,22 @@ describe('Transfer Builder', () => {
   };
 
   describe('should build ', () => {
-    it('a transfer transaction', async () => {
+    it('a signed transfer transaction', async () => {
       const builder = initTxBuilder();
       builder.validDuration(1000000);
       builder.node({ nodeId: '0.0.2345' });
-      builder.sign({ key: testData.ACCOUNT_2.privateKey });
+      builder.startTime('1596110493.372646570');
+      builder.sign({ key: testData.ACCOUNT_1.privateKey });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
       should.deepEqual(txJson.amount, '10');
       should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
       should.deepEqual(txJson.fee.toString(), testData.FEE);
+      should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRASNFER_TRANSACTION);
     });
 
-    it('a transfer with amount 0', async () => {
+    it('a transfer transaction with amount 0', async () => {
       const builder = initTxBuilder();
       builder.amount('0');
       const tx = await builder.build();
@@ -40,7 +42,7 @@ describe('Transfer Builder', () => {
       should.deepEqual(txJson.fee.toString(), testData.FEE);
     });
 
-    it('a transfer with memo', async () => {
+    it('a transfer transaction with memo', async () => {
       const builder = initTxBuilder();
       builder.memo('This is an example');
       const tx = await builder.build();
@@ -54,12 +56,14 @@ describe('Transfer Builder', () => {
 
     it('a non signed transfer transaction', async () => {
       const builder = initTxBuilder();
+      builder.startTime('1596110493.372646570');
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
       should.deepEqual(txJson.amount, '10');
       should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
       should.deepEqual(txJson.fee.toString(), testData.FEE);
+      should.deepEqual(tx.toBroadcastFormat(), testData.NON_SIGNED_TRASNFER_TRANSACTION);
     });
 
     it('a non signed transaction from serialized', async () => {
@@ -93,7 +97,7 @@ describe('Transfer Builder', () => {
       );
     });
 
-    it('a transfer transaction with more signature than allowed', () => {
+    it('a transfer transaction with more signatures than allowed', () => {
       const builder = initTxBuilder();
       builder.sign({ key: testData.ACCOUNT_2.privateKey });
       builder.sign({ key: testData.ACCOUNT_1.privateKey });
