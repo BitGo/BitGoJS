@@ -191,6 +191,7 @@ export interface ConsolidateUnspentsOptions {
   maxFeePercentage?: number;
   comment?: string;
   otp?: string;
+  targetAddress?: string;
 }
 
 export interface FanoutUnspentsOptions {
@@ -209,6 +210,7 @@ export interface FanoutUnspentsOptions {
   feeTxConfirmTarget?: number;
   comment?: string;
   otp?: string;
+  targetAddress?: string;
 }
 
 export interface SweepOptions {
@@ -909,6 +911,7 @@ export class Wallet {
         'minHeight',
         'minConfirms',
         'enforceMinConfirmsForChange',
+        'targetAddress',
 
         routeName === 'consolidate' ? 'limit' : 'maxNumInputsToUse',
         'numUnspentsToMake',
