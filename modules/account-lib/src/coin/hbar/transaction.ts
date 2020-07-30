@@ -7,7 +7,7 @@ import { BaseTransaction } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { SigningError } from '../baseCoin/errors';
 import { TxData } from './ifaces';
-import { toHex, toUint8Array } from './utils';
+import { stringifyAccountId, stringifyTxTime, toHex, toUint8Array } from './utils';
 import { KeyPair } from './';
 
 export class Transaction extends BaseTransaction {
@@ -53,6 +53,8 @@ export class Transaction extends BaseTransaction {
       fee: new BigNumber(this._txBody.transactionFee!.toString()).toNumber(),
       from: acc,
       startTime: time,
+      validDuration: new BigNumber(this._txBody.transactionValidDuration!.seconds!.toString()).toNumber(),
+      node: stringifyAccountId(this._txBody.nodeAccountID!),
       memo: this._txBody.memo,
     };
 
@@ -69,7 +71,7 @@ export class Transaction extends BaseTransaction {
     this._txBody.cryptoTransfer!.transfers!.accountAmounts!.forEach(transfer => {
       const amount = Long.fromValue(transfer.amount!);
       if (amount.isPositive()) {
-        transferData = [this.stringifyAccountId(transfer.accountID!), amount.toString()];
+        transferData = [stringifyAccountId(transfer.accountID!), amount.toString()];
       }
     });
 
@@ -79,6 +81,10 @@ export class Transaction extends BaseTransaction {
   //region getters & setters
   get txBody(): proto.TransactionBody {
     return this._txBody;
+  }
+
+  get hederaTx(): proto.Transaction {
+    return this._hederaTx;
   }
 
   /**
@@ -115,31 +121,11 @@ export class Transaction extends BaseTransaction {
       this._txBody.transactionID.transactionValidStart
     ) {
       return [
-        this.stringifyAccountId(this._txBody.transactionID.accountID),
-        this.stringifyTxTime(this._txBody.transactionID.transactionValidStart),
+        stringifyAccountId(this._txBody.transactionID.accountID),
+        stringifyTxTime(this._txBody.transactionID.transactionValidStart),
       ];
     }
     throw new Error('Missing transaction id information');
-  }
-
-  /**
-   * Returns a string representation of an {proto.IAccountID} object
-   *
-   * @param {proto.IAccountID} - account id to be cast to string
-   * @returns {string} - the string representation of the {proto.IAccountID}
-   */
-  private stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAccountID): string {
-    return `${shardNum || 0}.${realmNum || 0}.${accountNum}`;
-  }
-
-  /**
-   * Returns a string representation of an {proto.ITimestamp} object
-   *
-   * @param {proto.ITimestamp} - timestamp to be cast to string
-   * @returns {string} - the string representation of the {proto.ITimestamp}
-   */
-  private stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
-    return `${seconds}.${nanos}`;
   }
   //endregion
 }

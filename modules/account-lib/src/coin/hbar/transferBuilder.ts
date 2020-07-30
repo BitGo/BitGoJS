@@ -6,7 +6,7 @@ import { BuildTransactionError, InvalidParameterValueError, SigningError } from 
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidAddress, isValidAmount } from './utils';
+import { isValidAddress, isValidAmount, stringifyAccountId } from './utils';
 import { KeyPair } from './';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -48,6 +48,25 @@ export class TransferBuilder extends TransactionBuilder {
       accountNum: accountData.account,
       realmNum: accountData.realm,
       shardNum: accountData.shard,
+    });
+  }
+
+  /** @inheritdoc */
+  protected initBuilder(tx: Transaction): void {
+    super.initBuilder(tx);
+    const transferData = tx.txBody.cryptoTransfer;
+    if (transferData && transferData.transfers && transferData.transfers.accountAmounts) {
+      this.initTransfers(transferData.transfers.accountAmounts);
+    }
+  }
+
+  protected initTransfers(transfers: proto.IAccountAmount[]): void {
+    transfers.forEach(transferData => {
+      const amount = Long.fromValue(transferData.amount!);
+      if (amount.isPositive()) {
+        this.to(stringifyAccountId(transferData.accountID!));
+        this.amount(amount.toString());
+      }
     });
   }
 

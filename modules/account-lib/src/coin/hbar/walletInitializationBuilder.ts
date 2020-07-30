@@ -37,7 +37,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected initBuilder(tx: Transaction) {
+  protected initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     const createAcc = tx.txBody.cryptoCreateAccount;
     if (createAcc && createAcc.key && createAcc.key.thresholdKey) {

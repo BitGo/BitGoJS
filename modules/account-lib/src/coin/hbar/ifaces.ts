@@ -5,6 +5,8 @@ export interface TxData {
   data: string;
   fee: number;
   startTime: string;
+  validDuration: number;
+  node: string;
   memo?: string;
   to?: string;
   amount?: string;

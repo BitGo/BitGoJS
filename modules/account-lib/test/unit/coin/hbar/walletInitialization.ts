@@ -3,7 +3,7 @@ import { register } from '../../../../src/index';
 import { TransactionBuilderFactory } from '../../../../src/coin/hbar';
 import * as testData from '../../../resources/hbar/hbar';
 
-describe('Wallet initialization', () => {
+describe('HBAR Wallet initialization', () => {
   const factory = register('thbar', TransactionBuilderFactory);
 
   const initTxBuilder = () => {
@@ -44,7 +44,6 @@ describe('Wallet initialization', () => {
       txBuilder.owner(testData.OWNER2);
       txBuilder.owner(testData.OWNER3);
       txBuilder.source({ address: testData.ACCOUNT_2.accountId });
-      // TODO sign
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
 

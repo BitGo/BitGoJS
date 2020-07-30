@@ -18,7 +18,7 @@ import { HederaNode } from './ifaces';
 export const DEFAULT_M = 3;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
-  protected _transaction: Transaction;
+  private _transaction: Transaction;
   protected _source: BaseAddress;
   protected _startTime: proto.ITimestamp;
   protected _memo: string;
@@ -32,7 +32,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._txBody = new proto.TransactionBody();
     this._txBody.transactionValidDuration = this._duration;
     this._multiSignerKeyPairs = [];
-    this._transaction = new Transaction(this._coinConfig);
+    this.transaction = new Transaction(this._coinConfig);
   }
 
   // region Base Builder
@@ -43,22 +43,26 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._txBody.memo = this._memo;
     this._txBody.nodeAccountID = new proto.AccountID({ accountNum: new AccountId(this._node.nodeId).account });
     const hTransaction = new proto.Transaction();
+    const previousTransaction = this.transaction.hederaTx;
+    if (previousTransaction) {
+      hTransaction.sigMap = previousTransaction.sigMap;
+    }
     hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
-    this._transaction.body(hTransaction);
-    return this._transaction;
+    this.transaction.body(hTransaction);
+    return this.transaction;
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
-    const tx = new Transaction(this._coinConfig);
+    this.transaction = new Transaction(this._coinConfig);
     let buffer;
     if (typeof rawTransaction === 'string') {
       buffer = toUint8Array(rawTransaction);
     } else {
       buffer = rawTransaction;
     }
-    tx.bodyBytes(buffer);
-    this.initBuilder(tx);
+    this.transaction.bodyBytes(buffer);
+    this.initBuilder(this.transaction);
     return this.transaction;
   }
 
@@ -67,11 +71,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     throw new NotImplementedError('Method not implemented');
   }
 
-  protected initBuilder(tx: Transaction) {
+  /**
+   * Initialize the transaction builder fields using the decoded transaction data
+   *
+   * @param {Transaction} tx the transaction data
+   */
+  protected initBuilder(tx: Transaction): void {
     const txData = tx.toJson();
     this.fee({ fee: txData.fee.toString() });
     this.source({ address: txData.from });
     this.startTime(txData.startTime);
+    this.node({ nodeId: txData.node });
+    this.validDuration(txData.validDuration);
   }
 
   /**

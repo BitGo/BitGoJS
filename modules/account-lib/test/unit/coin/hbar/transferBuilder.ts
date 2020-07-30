@@ -3,7 +3,7 @@ import { register } from '../../../../src/index';
 import { TransactionBuilderFactory } from '../../../../src/coin/hbar';
 import * as testData from '../../../resources/hbar/hbar';
 
-describe('Transfer Builder', () => {
+describe('HBAR Transfer Builder', () => {
   const factory = register('thbar', TransactionBuilderFactory);
 
   const initTxBuilder = () => {
@@ -28,7 +28,7 @@ describe('Transfer Builder', () => {
       should.deepEqual(txJson.amount, '10');
       should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
       should.deepEqual(txJson.fee.toString(), testData.FEE);
-      should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRASNFER_TRANSACTION);
+      should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
     });
 
     it('a transfer transaction with amount 0', async () => {
@@ -63,7 +63,7 @@ describe('Transfer Builder', () => {
       should.deepEqual(txJson.amount, '10');
       should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
       should.deepEqual(txJson.fee.toString(), testData.FEE);
-      should.deepEqual(tx.toBroadcastFormat(), testData.NON_SIGNED_TRASNFER_TRANSACTION);
+      should.deepEqual(tx.toBroadcastFormat(), testData.NON_SIGNED_TRANSFER_TRANSACTION);
     });
 
     it('a non signed transaction from serialized', async () => {
@@ -81,10 +81,11 @@ describe('Transfer Builder', () => {
       should.deepEqual(raw, tx2.toBroadcastFormat());
     });
 
-    it.skip('a signed serialized transaction', async () => {
+    it('a signed serialized transaction', async () => {
       const txBuilder = factory.getTransferBuilder();
-      txBuilder.from(testData.SIGNED_TRASNFER_TRANSACTION);
-      // TODO complete when from implementation is implemented
+      txBuilder.from(testData.SIGNED_TRANSFER_TRANSACTION);
+      const tx = await txBuilder.build();
+      should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
     });
   });
 

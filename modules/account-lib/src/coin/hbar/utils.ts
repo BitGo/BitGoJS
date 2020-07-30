@@ -3,6 +3,7 @@ import { AccountId } from '@hashgraph/sdk/lib/account/AccountId';
 import { Ed25519PublicKey, TransactionId } from '@hashgraph/sdk';
 import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
+import { proto } from '../../../resources/hbar/protobuf/hedera';
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
 
@@ -130,4 +131,24 @@ export function isValidAmount(amount: string): boolean {
     bigNumberAmount.isGreaterThanOrEqualTo(0) &&
     bigNumberAmount.isLessThanOrEqualTo(MAX_TINYBARS_AMOUNT)
   );
+}
+
+/**
+ * Returns a string representation of an {proto.IAccountID} object
+ *
+ * @param {proto.IAccountID} - account id to be cast to string
+ * @returns {string} - the string representation of the {proto.IAccountID}
+ */
+export function stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAccountID): string {
+  return `${shardNum || 0}.${realmNum || 0}.${accountNum}`;
+}
+
+/**
+ * Returns a string representation of an {proto.ITimestamp} object
+ *
+ * @param {proto.ITimestamp} - timestamp to be cast to string
+ * @returns {string} - the string representation of the {proto.ITimestamp}
+ */
+export function stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
+  return `${seconds}.${nanos}`;
 }
