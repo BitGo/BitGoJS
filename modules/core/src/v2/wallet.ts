@@ -477,11 +477,11 @@ export class Wallet {
 
   prebuildWhitelistedParams(): string[] {
     return [
-      'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
-      'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
-      'ledgerSequenceDelta', 'gasPrice', 'gasLimit', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
-      'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy',
-      'validFromBlock', 'validToBlock', 'type', 'trustlines', 'reservation',
+      'addressType', 'changeAddress', 'cpfpFeeRate', 'cpfpTxIds', 'enforceMinConfirmsForChange', 'feeRate', 'gasLimit',
+      'gasPrice', 'idfSignedTimestamp', 'idfUserId', 'idfVersion', 'instant', 'lastLedgerSequence',
+      'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'message', 'minConfirms', 'minValue',
+      'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy', 'targetWalletUnspents',
+      'trustlines', 'type', 'unspents', 'validFromBlock', 'validToBlock',
     ];
   }
 
@@ -834,8 +834,8 @@ export class Wallet {
     const self = this;
     return co<MaximumSpendable>(function *() {
       const filteredParams = _.pick(params, [
-        'minValue', 'maxValue', 'minHeight', 'target', 'plainTarget', 'limit', 'minConfirms',
-        'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'recipientAddress'
+        'enforceMinConfirmsForChange', 'feeRate', 'limit', 'maxFeeRate', 'maxValue', 'minConfirms', 'minHeight',
+        'minValue', 'plainTarget', 'recipientAddress', 'target',
       ]);
 
       return self.bitgo.get(self.url('/maximumSpendable'))
@@ -851,7 +851,9 @@ export class Wallet {
    * @returns {*}
    */
   unspents(params: UnspentsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const query = _.pick(params, ['prevId', 'limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'segwit', 'chains']);
+    const query = _.pick(params, [
+        'chains', 'limit', 'maxValue', 'minConfirms', 'minHeight', 'minValue', 'prevId', 'segwit', 'target',
+    ]);
 
     return this.bitgo.get(this.url('/unspents'))
       .query(query)
