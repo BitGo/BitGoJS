@@ -23,17 +23,16 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    return toHex(proto.Transaction.encode(this._hederaTx).finish());
+    return toHex(this.encode(this._hederaTx));
   }
 
   /** @inheritdoc */
   toJson(): TxData {
-    this.printHashes();
     const [acc, time] = this.getTxIdParts();
     return {
       id: acc + '@' + time,
       hash: this.getTxHash(),
-      data: Uint8Array.from(this._hederaTx.bodyBytes).toString(),
+      data: toHex(this._hederaTx.bodyBytes),
       fee: new BigNumber(this._txBody.transactionFee!.toString()).toNumber(),
       from: acc,
       startTime: time,
@@ -106,30 +105,22 @@ export class Transaction extends BaseTransaction {
     return `${seconds}.${nanos}`;
   }
 
+  /**
+   * Returns this transaction hash
+   *
+   * @returns {string} - The transaction hash
+   */
   private getTxHash(): string {
-    if (this._txBody.data) {
-      return this.getHashOf(this._txBody[this._txBody.data]);
-    }
-    throw new Error('Missing txBody data');
+    return this.getHashOf(this._hederaTx);
   }
 
-  private printHashes(): void {
-    console.log('Hash using entire transaction:', this.getHashOf(this._hederaTx));
-    console.log('Hash using transaction body:', this.getHashOf(this._txBody));
-    console.log(
-      'Hash using tx body data (CryptoCreateAccount | CryptoTransfer):',
-      this.getHashOf(this._txBody[this._txBody.data!]),
-    );
-    if (this._txBody.cryptoCreateAccount) {
-      console.log('Hash using txBody.cryptoCreateAccount key:', this.getHashOf(this._txBody.cryptoCreateAccount.key));
-      console.log(
-        'Hash using txBody.cryptoCreateAccount.key thresholdKey:',
-        this.getHashOf(this._txBody.cryptoCreateAccount.key!.thresholdKey),
-      );
-    }
-    console.log();
-  }
-
+  /**
+   * Encode an object using the given encoder class
+   *
+   * @param obj - the object to be encoded, it must be an proto namespace object
+   * @param encoder - Object encoder
+   * @returns {Uint8Array} - encoded object byte array
+   */
   private encode<T extends { constructor: Function }>(obj: T, encoder?: { encode(arg: T): Writer }): Uint8Array {
     if (encoder) {
       return encoder.encode(obj).finish();
@@ -137,10 +128,22 @@ export class Transaction extends BaseTransaction {
     return this.encode(obj, proto[obj.constructor.name]);
   }
 
+  /**
+   * Returns an sha-384 hash
+   *
+   * @param {Uint8Array} bytes - bytes to be hashed
+   * @returns {string} - the resulting hash string
+   */
   private sha(bytes: Uint8Array): string {
     return toHex(hash(bytes));
   }
 
+  /**
+   * Returns a hash of the given proto object.
+   *
+   * @param obj - The object to be hashed, it must be an proto namespace object
+   * @returns {string} - the resulting hash string
+   */
   private getHashOf<T>(obj: T): string {
     return this.sha(this.encode(obj));
   }
