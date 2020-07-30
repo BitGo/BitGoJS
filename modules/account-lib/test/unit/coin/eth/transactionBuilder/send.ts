@@ -3,7 +3,7 @@ import { coins } from '@bitgo/statics';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Eth } from '../../../../../src';
 import * as testData from '../../../../resources/eth/eth';
-import { getCommon } from '../../../../../src/coin/eth/utils';
+import { decodeTransferData, getCommon } from '../../../../../src/coin/eth/utils';
 
 describe('Eth transaction builder send', () => {
   it('should validate a send type transaction', () => {
@@ -43,12 +43,14 @@ describe('Eth transaction builder send', () => {
     it('a send funds transaction', async () => {
       const recipient = '0x19645032c7f1533395d44a629462e751084d3e4c';
       const amount = '1000000000';
+      const expireTime = 1590066728;
+      const sequenceId = 5;
       txBuilder
         .transfer()
         .amount(amount)
         .to(recipient)
-        .expirationTime(1590066728)
-        .contractSequenceId(5)
+        .expirationTime(expireTime)
+        .contractSequenceId(sequenceId)
         .key(key);
       txBuilder.sign({ key: testData.PRIVATE_KEY });
       const tx = await txBuilder.build();
@@ -61,6 +63,14 @@ describe('Eth transaction builder send', () => {
       should.equal(tx.outputs.length, 1);
       should.equal(tx.outputs[0].address, recipient);
       should.equal(tx.outputs[0].value, amount);
+
+
+      const data = tx.toJson().data;
+      const { to, amount: parsedAmount, expireTime: parsedExpireTime, sequenceId: parsedSequenceId } = decodeTransferData(data);
+      should.equal(to, recipient);
+      should.equal(parsedAmount, amount);
+      should.equal(parsedExpireTime, expireTime);
+      should.equal(parsedSequenceId, sequenceId);
     });
 
     it('a send funds with amount 0 transaction', async () => {
