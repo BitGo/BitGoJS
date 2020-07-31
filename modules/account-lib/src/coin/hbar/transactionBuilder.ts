@@ -42,11 +42,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._txBody.transactionID = this.buildTxId();
     this._txBody.memo = this._memo;
     this._txBody.nodeAccountID = new proto.AccountID({ accountNum: new AccountId(this._node.nodeId).account });
-    const hTransaction = new proto.Transaction();
-    const previousTransaction = this.transaction.hederaTx;
-    if (previousTransaction) {
-      hTransaction.sigMap = previousTransaction.sigMap;
-    }
+    const hTransaction = this.transaction.hederaTx || new proto.Transaction();
     hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
     this.transaction.body(hTransaction);
     return this.transaction;
