@@ -4,6 +4,7 @@ import { TransactionType } from '../../../../src/coin/baseCoin/';
 import * as testData from '../../../resources/xtz/xtz';
 import { getBuilder, Xtz } from '../../../../src';
 import { KeyPair } from '../../../../src/coin/xtz';
+import BigNumber from 'bignumber.js';
 
 describe('Tezos Transaction builder', function() {
   const defaultKeyPair = new Xtz.KeyPair({
@@ -440,7 +441,7 @@ describe('Tezos Transaction builder', function() {
       const tx = await txBuilder.build();
 
       tx.id.should.equal('oo7mpTB22Qu1d7EVc5b4eAdMgEzvdKRsHGjZWoEjQwYk6BJ1NTq');
-      tx.type.should.equal(TransactionType.Send);
+      tx.type.should.equal(TransactionType.SingleSigSend);
       tx.source.should.equal('tz2P2E8EgHaLA6A17rH3pE9T2tx6DA7D4siW');
       should.equal(tx.inputs.length, 4);
       should.equal(tx.outputs.length, 2);
@@ -530,6 +531,28 @@ describe('Tezos Transaction builder', function() {
       );
       signatures[2].prim.should.equal('None');
       Object.keys(tx.getIndexesByTransactionType()).length.should.equal(1);
+    });
+
+    it('a singleSig transaction', async () => {
+      const txBuilder: any = getBuilder('xtz');
+      txBuilder.type(TransactionType.SingleSigSend);
+      txBuilder.branch('BM8QdZ92VyaH1s5nwAF9rUXjiPZ3g3Nsn6oYbdKqj2RgHxvWXVS');
+      txBuilder.source(defaultKeyPair.getAddress());
+      txBuilder.counter('0');
+      txBuilder.transfer(new BigNumber(10).toFixed(0))
+        .from(defaultKeyPair.getAddress())
+        .to('KT1HUrt6kfvYyDEYCJ2GSjvTPZ6KmRfxLBU8')
+        .fee('4764')
+        .gasLimit('100971')
+        .storageLimit('1292')
+      txBuilder.sign({ key: defaultKeyPair.getKeys().prv });
+      const tx = await txBuilder.build();
+      tx.type.should.equal(TransactionType.SingleSigSend);
+      const txJson = tx.toJson();
+      txJson.contents[0].gas_limit.should.equal('100971');
+      txJson.contents[0].storage_limit.should.equal('1292');
+      txJson.contents[0].amount.should.equal('10');
+      txJson.contents[0].counter.should.equal('0');
     });
   });
 
