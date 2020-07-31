@@ -6,6 +6,11 @@ export const ACCOUNT_1 = {
 
 export const ACCOUNT1 = '0.0.75861';
 
+export const OPERATOR = {
+  accountId: '0.0.75861',
+  privateKey: '302e020100300506032b65700422042088b5af9484cef4b0aab6e0ba1002313fdfdfacfdf23d6d0957dc5f2c24fc3b81',
+};
+
 export const OWNER1 = '1c5b8332673e2bdd7d677970e549e05157ea6a94f41a5da5020903c1c391f8ef';
 
 export const OWNER2 = '265f7cc91c0330ef27a626ff8688da761ab0543d33ba63c8315e2c91b6c595af';

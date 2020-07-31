@@ -32,11 +32,14 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     this._txBody.transactionFee = new BigNumber(this._fee.fee).toNumber(); // validate
     this._txBody.transactionID = this.buildTxId();
     this._txBody.nodeAccountID = new proto.AccountID({ accountNum: 4 });
-    const hTransaction = new proto.Transaction();
+    const hTransaction = this._transaction.hederaTx || new proto.Transaction();
     hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
 
     const transaction = new Transaction(this._coinConfig);
     transaction.body(hTransaction);
+    for (const kp of this._multiSignerKeyPairs) {
+      await transaction.sign(kp);
+    }
     return transaction;
   }
 

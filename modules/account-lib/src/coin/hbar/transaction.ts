@@ -1,10 +1,13 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import BigNumber from 'bignumber.js';
+import * as nacl from 'tweetnacl';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
+import { SigningError } from '../baseCoin/errors';
 import { TxData } from './ifaces';
-import { toHex } from './utils';
+import { toHex, toUint8Array } from './utils';
+import { KeyPair } from './';
 
 export class Transaction extends BaseTransaction {
   private _hederaTx: proto.Transaction;
@@ -17,6 +20,22 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     return true;
+  }
+
+  async sign(keyPair: KeyPair): Promise<void> {
+    const keys = keyPair.getKeys(true);
+    if (!keys.prv) {
+      throw new SigningError('Missing private key');
+    }
+    const secretKey = toUint8Array(keys.prv + keys.pub);
+    const signature = nacl.sign.detached(this._hederaTx.bodyBytes, secretKey);
+    const sigPair = new proto.SignaturePair();
+    sigPair.pubKeyPrefix = toUint8Array(keys.pub);
+    sigPair.ed25519 = signature;
+
+    const sigMap = this._hederaTx.sigMap || new proto.SignatureMap();
+    sigMap.sigPair!.push(sigPair);
+    this._hederaTx.sigMap = sigMap;
   }
 
   /** @inheritdoc */
@@ -39,6 +58,10 @@ export class Transaction extends BaseTransaction {
   //region getters & setters
   get txBody(): proto.TransactionBody {
     return this._txBody;
+  }
+
+  get hederaTx(): proto.Transaction {
+    return this._hederaTx;
   }
 
   /**

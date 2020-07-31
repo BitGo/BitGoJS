@@ -1,10 +1,11 @@
+import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import BigNumber from 'bignumber.js';
 import { BaseTransactionBuilder } from '../baseCoin';
 import {
   BuildTransactionError,
   InvalidParameterValueError,
-  NotImplementedError,
   ParseTransactionError,
+  SigningError,
 } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
@@ -17,25 +18,38 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _transaction: Transaction;
   protected _source: BaseAddress;
   protected _startTime: proto.ITimestamp;
+  protected _multiSignerKeyPairs: KeyPair[];
+
+  constructor(_coinConfig: Readonly<CoinConfig>) {
+    super(_coinConfig);
+    this._transaction = new Transaction(_coinConfig);
+    this._multiSignerKeyPairs = [];
+  }
 
   // region Base Builder
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
-    const tx = new Transaction(this._coinConfig);
+    this.transaction = new Transaction(this._coinConfig);
     let buffer;
     if (typeof rawTransaction === 'string') {
       buffer = toUint8Array(rawTransaction);
     } else {
       buffer = rawTransaction;
     }
-    tx.bodyBytes(buffer);
-    this.initBuilder(tx);
+    this.transaction.bodyBytes(buffer);
+    this.initBuilder(this.transaction);
     return this.transaction;
   }
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
-    throw new NotImplementedError('Method not implemented');
+    this.checkDuplicatedKeys(key);
+    const signer = new KeyPair({ prv: key.key });
+
+    // Signing the transaction is an operation that relies on all the data being set,
+    // so we set the source here and leave the actual signing for the build step
+    this._multiSignerKeyPairs.push(signer);
+    return this.transaction;
   }
 
   protected initBuilder(tx: Transaction) {
@@ -148,7 +162,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction: Transaction): void {
+  validateTransaction(transaction?: Transaction): void {
     this.validateMandatoryFields();
   }
 
@@ -166,6 +180,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._source === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing source');
     }
+  }
+
+  /**
+   * Validates that the given key is not already in this._multiSignerKeyPairs
+   *
+   * @param {BaseKey} key - The key to check
+   */
+  private checkDuplicatedKeys(key: BaseKey) {
+    this._multiSignerKeyPairs.forEach(_sourceKeyPair => {
+      if (_sourceKeyPair.getKeys().prv === key.key) {
+        throw new SigningError('Repeated sign: ' + key.key);
+      }
+    });
   }
   // endregion
 }

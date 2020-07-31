@@ -12,7 +12,8 @@ describe('Wallet initialization', () => {
     txBuilder.owner(testData.OWNER1);
     txBuilder.owner(testData.OWNER2);
     txBuilder.owner(testData.OWNER3);
-    txBuilder.source({ address: testData.ACCOUNT1 });
+    txBuilder.source({ address: testData.OPERATOR.accountId });
+    txBuilder.sign({ key: testData.OPERATOR.privateKey });
     return txBuilder;
   };
 
@@ -44,7 +45,6 @@ describe('Wallet initialization', () => {
       txBuilder.owner(testData.OWNER2);
       txBuilder.owner(testData.OWNER3);
       txBuilder.source({ address: testData.ACCOUNT1 });
-      // TODO sign
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
 

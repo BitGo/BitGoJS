@@ -70,10 +70,10 @@ export function getBuilder(coinName: string): BaseCoin.Interface.BaseBuilder {
  * @param {any} builderFactory the builder factory class for that coin
  * @returns {any} the factory instance for the registered coin
  */
-export function register(
+export function register<T extends BaseCoin.BaseTransactionBuilderFactory>(
   coinName: string,
-  builderFactory: { new (_coinConfig: Readonly<CoinConfig>): BaseCoin.BaseTransactionBuilderFactory },
-) {
+  builderFactory: { new (_coinConfig: Readonly<CoinConfig>): T },
+): T {
   const coinConfig = coins.get(coinName);
   const factory = new builderFactory(coinConfig);
   // coinBuilderMap[coinName] = factory;
