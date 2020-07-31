@@ -479,20 +479,20 @@ export class Wallet {
 
   prebuildWhitelistedParams(): string[] {
     return [
-      'addressType', 'changeAddress', 'cpfpFeeRate', 'cpfpTxIds', 'enforceMinConfirmsForChange', 'feeRate', 'gasLimit',
-      'gasPrice', 'idfSignedTimestamp', 'idfUserId', 'idfVersion', 'instant', 'lastLedgerSequence',
-      'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'message', 'minConfirms', 'minValue',
-      'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy', 'targetWalletUnspents',
-      'trustlines', 'type', 'unspents', 'validFromBlock', 'validToBlock',
+      'addressType', 'changeAddress', 'consolidateAddresses', 'cpfpFeeRate', 'cpfpTxIds', 'enforceMinConfirmsForChange',
+      'feeRate', 'gasLimit', 'gasPrice', 'idfSignedTimestamp', 'idfUserId', 'idfVersion', 'instant',
+      'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'message', 'minConfirms',
+      'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
+      'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'validFromBlock', 'validToBlock',
     ];
   }
 
   /**
-   * This is a strict sub-set of prebuildWhitelistedParams.
+   * This is a strict sub-set of prebuildWhitelistedParams
    */
-  prebuildConsolidateTransactionParams(): string[] {
+  prebuildConsolidateAccountParams(): string[] {
     return [
-      'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock',
+      'consolidateAddresses', 'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock',
     ];
   }
 
@@ -2310,7 +2310,7 @@ export class Wallet {
       }
 
       // Whitelist params to build tx
-      const whitelistedParams = _.pick(params, self.prebuildConsolidateTransactionParams());
+      const whitelistedParams = _.pick(params, self.prebuildConsolidateAccountParams());
       debug('prebuilding consolidation transaction: %O', whitelistedParams);
 
       if (params.reqId) {
