@@ -113,7 +113,7 @@ export abstract class BaseTransactionBuilder {
    *
    * @param {BaseTransaction} transaction
    */
-  abstract validateTransaction(transaction: BaseTransaction): void;
+  abstract validateTransaction(transaction?: BaseTransaction): void;
 
   /**
    * Get the underlying coin full name as specified in the statics library.
