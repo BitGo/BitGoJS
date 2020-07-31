@@ -7,6 +7,15 @@ export interface TxData {
   data: string;
   fee: number;
   startTime: string;
+  validDuration: string;
+  node: string;
+  memo?: string;
+  to?: string;
+  amount?: string;
+}
+
+export interface HederaNode {
+  nodeId: string;
 }
 
 export interface SignatureData {

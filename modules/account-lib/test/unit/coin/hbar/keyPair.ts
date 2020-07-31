@@ -44,12 +44,12 @@ describe('Hedera Key Pair', () => {
     });
 
     it('from a byte array private key', () => {
-      const keyPair = new KeyPair({ prv: Buffer.from(testData.privateKeyBytes).toString('hex') });
+      const keyPair = new KeyPair({ prv: Buffer.from(testData.ACCOUNT_1.privateKeyBytes).toString('hex') });
       should.equal(keyPair.getKeys().prv!, prv);
     });
 
     it('from a byte array public key', () => {
-      const keyPair = new KeyPair({ pub: Buffer.from(testData.publicKeyBytes).toString('hex') });
+      const keyPair = new KeyPair({ pub: Buffer.from(testData.ACCOUNT_1.publicKeyBytes).toString('hex') });
       should.equal(keyPair.getKeys().pub, pub);
     });
   });

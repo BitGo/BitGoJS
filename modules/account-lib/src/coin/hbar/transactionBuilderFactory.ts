@@ -1,6 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
+import { TransferBuilder } from './transferBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -10,5 +11,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getWalletInitializationBuilder(): WalletInitializationBuilder {
     return new WalletInitializationBuilder(this._coinConfig);
+  }
+
+  /** @inheritDoc */
+  getTransferBuilder(): TransferBuilder {
+    return new TransferBuilder(this._coinConfig);
   }
 }
