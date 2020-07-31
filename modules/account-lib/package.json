@@ -45,7 +45,7 @@
     "blake2b": "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
     "bs58check": "^2.1.2",
     "elliptic": "^6.5.2",
-    "ethereumjs-abi": "0.6.0",
+    "ethereumjs-abi": "^0.6.5",
     "ethereumjs-tx": "2.1.2",
     "ethereumjs-util": "5.2.0",
     "libsodium-wrappers": "^0.7.6",

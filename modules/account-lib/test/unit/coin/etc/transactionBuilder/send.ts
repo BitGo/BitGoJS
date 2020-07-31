@@ -2,6 +2,7 @@ import should from 'should';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
 import { getBuilder, Etc } from '../../../../../src';
 import * as testData from '../../../../resources/etc/etc';
+import { decodeTransferData } from '../../../../../src/coin/eth/utils';
 
 describe('Etc send transaction', function() {
   let txBuilder: Etc.TransactionBuilder;
@@ -22,12 +23,14 @@ describe('Etc send transaction', function() {
     initTxBuilder();
     const recipient = testData.ACCOUNT_2;
     const amount = '1000000000';
+    const expireTime = 1590066728;
+    const sequenceId = 5;
     txBuilder
       .transfer()
       .amount(amount)
       .to(recipient)
       .expirationTime(1590066728)
-      .contractSequenceId(5)
+      .contractSequenceId(sequenceId)
       .key(key);
     txBuilder.sign({ key: testData.PRIVATE_KEY_1 });
     const tx = await txBuilder.build();
@@ -40,6 +43,13 @@ describe('Etc send transaction', function() {
     should.equal(tx.outputs.length, 1);
     should.equal(tx.outputs[0].address, recipient);
     should.equal(tx.outputs[0].value, amount);
+
+    const data = tx.toJson().data;
+    const { to, amount: parsedAmount, expireTime: parsedExpireTime, sequenceId: parsedSequenceId } = decodeTransferData(data);
+    should.equal(to, recipient);
+    should.equal(parsedAmount, amount);
+    should.equal(parsedExpireTime, expireTime);
+    should.equal(parsedSequenceId, sequenceId);
   });
 
   it('a send funds with amount 0 transaction', async () => {

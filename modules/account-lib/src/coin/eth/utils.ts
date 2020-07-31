@@ -250,12 +250,12 @@ export function decodeTokenTransferData(data: string): TokenTransferData {
   );
 
   return {
-    to: bufferToHex(to),
+    to: addHexPrefix(to),
     amount: new BigNumber(bufferToHex(amount)).toFixed(),
     expireTime: bufferToInt(expireTime),
     sequenceId: bufferToInt(sequenceId),
     signature: bufferToHex(signature),
-    tokenContractAddress: bufferToHex(tokenContractAddress),
+    tokenContractAddress: addHexPrefix(tokenContractAddress),
   };
 }
 
@@ -276,7 +276,7 @@ export function decodeNativeTransferData(data: string): NativeTransferData {
   );
 
   return {
-    to: bufferToHex(to),
+    to: addHexPrefix(to),
     amount: new BigNumber(bufferToHex(amount)).toFixed(),
     expireTime: bufferToInt(expireTime),
     sequenceId: bufferToInt(sequenceId),
@@ -302,8 +302,8 @@ export function decodeFlushTokensData(data: string): FlushTokensData {
   );
 
   return {
-    forwarderAddress: bufferToHex(forwarderAddress),
-    tokenAddress: bufferToHex(tokenAddress),
+    forwarderAddress: addHexPrefix(forwarderAddress),
+    tokenAddress: addHexPrefix(tokenAddress),
   };
 }
 
