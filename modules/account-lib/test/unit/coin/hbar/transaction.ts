@@ -7,9 +7,6 @@ import { KeyPair } from '../../../../src/coin/hbar/keyPair';
 describe('Hbar Transaction', () => {
   const coin = coins.get('thbar');
 
-  /**
-   *
-   */
   function getTransaction(): Transaction {
     return new Transaction(coin);
   }
