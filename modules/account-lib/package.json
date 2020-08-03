@@ -52,7 +52,8 @@
     "lodash": "^4.17.15",
     "protobufjs": "^6.8.9",
     "tronweb": "^2.7.2",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "@stablelib/sha384": "^1.0.0"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",
