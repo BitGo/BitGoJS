@@ -7,6 +7,9 @@ import { KeyPair } from '../../../../src/coin/hbar/keyPair';
 describe('Hbar Transaction', () => {
   const coin = coins.get('thbar');
 
+  /**
+   *
+   */
   function getTransaction(): Transaction {
     return new Transaction(coin);
   }
@@ -21,7 +24,7 @@ describe('Hbar Transaction', () => {
     });
   });
 
-  describe('should sign', () => {
+  describe('should sign if transaction is', () => {
     it('invalid', function() {
       const tx = getTransaction();
       return tx.sign(testData.INVALID_KEYPAIR_PRV).should.be.rejected();
@@ -58,7 +61,6 @@ describe('Hbar Transaction', () => {
         testData.OPERATOR.publicKey.slice(24),
       );
     });
-
   });
 
   describe('should return encoded tx', function() {
