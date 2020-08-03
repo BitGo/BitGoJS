@@ -1,5 +1,7 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
+import { Writer } from 'protobufjs';
 import * as nacl from 'tweetnacl';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction } from '../baseCoin';
@@ -40,7 +42,7 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    return toHex(proto.Transaction.encode(this._hederaTx).finish());
+    return toHex(this.encode(this._hederaTx));
   }
 
   /** @inheritdoc */
@@ -48,7 +50,8 @@ export class Transaction extends BaseTransaction {
     const [acc, time] = this.getTxIdParts();
     return {
       id: acc + '@' + time,
-      data: Uint8Array.from(this._hederaTx.bodyBytes).toString(),
+      hash: this.getTxHash(), // TODO: Update once hedera-sdk release this functionality BGA-284
+      data: toHex(this._hederaTx.bodyBytes),
       fee: new BigNumber(this._txBody.transactionFee!.toString()).toNumber(),
       from: acc,
       startTime: time,
@@ -123,6 +126,52 @@ export class Transaction extends BaseTransaction {
    */
   private stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
     return `${seconds}.${nanos}`;
+  }
+
+  /**
+   * Returns this transaction hash
+   *
+   * @returns {string} - The transaction hash
+   */
+  private getTxHash(): string {
+    if (!this._txBody.nodeAccountID) {
+      throw new Error('Missing transaction node id');
+    }
+    return this.getHashOf(this._hederaTx);
+  }
+
+  /**
+   * Encode an object using the given encoder class
+   *
+   * @param obj - the object to be encoded, it must be an proto namespace object
+   * @param encoder - Object encoder
+   * @returns {Uint8Array} - encoded object byte array
+   */
+  private encode<T extends { constructor: Function }>(obj: T, encoder?: { encode(arg: T): Writer }): Uint8Array {
+    if (encoder) {
+      return encoder.encode(obj).finish();
+    }
+    return this.encode(obj, proto[obj.constructor.name]);
+  }
+
+  /**
+   * Returns an sha-384 hash
+   *
+   * @param {Uint8Array} bytes - bytes to be hashed
+   * @returns {string} - the resulting hash string
+   */
+  private sha(bytes: Uint8Array): string {
+    return toHex(hash(bytes));
+  }
+
+  /**
+   * Returns a hash of the given proto object.
+   *
+   * @param obj - The object to be hashed, it must be an proto namespace object
+   * @returns {string} - the resulting hash string
+   */
+  private getHashOf<T>(obj: T): string {
+    return this.sha(this.encode(obj));
   }
   //endregion
 }
