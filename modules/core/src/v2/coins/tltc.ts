@@ -41,4 +41,8 @@ export class Tltc extends Ltc {
   getFullName() {
     return 'Testnet Litecoin';
   }
+
+  defaultsToP2wshChange(): boolean {
+    return this.supportsP2wsh();
+  }
 }

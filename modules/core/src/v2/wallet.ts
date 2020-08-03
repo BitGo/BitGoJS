@@ -1619,7 +1619,7 @@ export class Wallet {
    * @param {Number} params.validToBlock - (Algorand) The maximum round this will run on
    * @param {Boolean} params.instant - Build this transaction to conform with instant sending coin-specific method (if available)
    * @param {{value: String, type: String}} params.memo - Memo to use in transaction (supported by Stellar)
-   * @param {String} params.addressType - The type of address to create for change. One of `p2sh`, `p2shP2wsh`, and `p2wsh`. Case-sensitive.
+   * @param {String} params.addressType - The type of address to create for change. One of `p2sh`, `p2shP2wsh`, and `p2wsh`. Case-sensitive. Defaults to `p2wsh` on some coins.
    * @param {Boolean} params.hop - Build this as an Ethereum hop transaction
    * @param {Object} params.reservation - Object to reserve the unspents that this tx build uses. Format is reservation = { expireTime: ISODateString, pendingApprovalId: String }
    * @param {String} params.walletPassphrase The passphrase to the wallet user key, to sign commitment data for Ethereum hop transactions
@@ -1630,8 +1630,15 @@ export class Wallet {
     const self = this;
     return co<PrebuildTransactionResult>(function *() {
       // Whitelist params to build tx
-      const whitelistedParams = _.pick(params, self.prebuildWhitelistedParams());
+      let whitelistedParams = _.pick(params, self.prebuildWhitelistedParams());
       debug('prebuilding transaction: %O', whitelistedParams);
+
+      const utxoCoin = self.baseCoin as AbstractUtxoCoin;
+      const supportsP2wsh = _.isFunction(utxoCoin.defaultsToP2wshChange) ? utxoCoin.defaultsToP2wshChange() : false;
+      if (supportsP2wsh) {
+        // Default to native segwit change addresses
+        whitelistedParams = Object.assign({ addressType: `p2wsh` }, whitelistedParams);
+      }
 
       if (params.reqId) {
         self.bitgo.setRequestTracer(params.reqId);
@@ -1646,7 +1653,6 @@ export class Wallet {
         .query(queryParams)
         .send(whitelistedParams)
         .result();
-      const utxoCoin = self.baseCoin as AbstractUtxoCoin;
       const blockHeightQuery = _.isFunction(utxoCoin.getLatestBlockHeight) ?
         utxoCoin.getLatestBlockHeight(params.reqId) :
         Promise.resolve(undefined);

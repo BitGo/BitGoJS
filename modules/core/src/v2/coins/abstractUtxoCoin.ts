@@ -846,6 +846,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+   * Indicates whether a coin defaults to native segwit change outputs
+   * @returns {boolean}
+   */
+  defaultsToP2wshChange() {
+    return false;
+  }
+
+  /**
    * TODO(BG-11487): Remove addressType, segwit, and bech32 params in SDKv6
    * Generate an address for a wallet based on a set of configurations
    * @param params.addressType {string}   Deprecated

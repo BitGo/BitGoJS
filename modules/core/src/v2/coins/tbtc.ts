@@ -22,4 +22,8 @@ export class Tbtc extends Btc {
   getFullName() {
     return 'Testnet Bitcoin';
   }
+
+  defaultsToP2wshChange(): boolean {
+    return this.supportsP2wsh();
+  }
 }
