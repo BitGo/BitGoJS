@@ -41,6 +41,8 @@ const coinBuilderMap = {
   trbtc: Rbtc.TransactionBuilder,
   celo: Celo.TransactionBuilder,
   tcelo: Celo.TransactionBuilder,
+  hbar: Hbar.TransactionBuilderFactory,
+  thbar: Hbar.TransactionBuilderFactory,
 };
 
 /**
