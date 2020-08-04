@@ -40,6 +40,10 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     for (const kp of this._multiSignerKeyPairs) {
       await transaction.sign(kp);
     }
+
+    for (const { signature, keyPair } of this._signatures) {
+      await transaction.addSignature(signature, keyPair);
+    }
     return transaction;
   }
 
