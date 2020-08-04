@@ -1,3 +1,5 @@
+import { KeyPair } from '.';
+
 export interface TxData {
   id: string;
   hash?: string;
@@ -5,4 +7,9 @@ export interface TxData {
   data: string;
   fee: number;
   startTime: string;
+}
+
+export interface SignatureData {
+  signature: string;
+  keyPair: KeyPair;
 }
