@@ -51,6 +51,23 @@ describe('Wallet initialization', () => {
       const txJson = tx.toJson();
       should.equal(txJson.from, testData.ACCOUNT1);
     });
+
+    it('an init transaction with external signature included twice', async () => {
+      const txBuilder = factory.getWalletInitializationBuilder();
+      txBuilder.fee({ fee: '1000000000' });
+      txBuilder.owner(testData.OWNER1);
+      txBuilder.owner(testData.OWNER2);
+      txBuilder.owner(testData.OWNER3);
+      txBuilder.source({ address: testData.OPERATOR.accountId });
+      txBuilder.signature('20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
+        'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09', new KeyPair({ pub: testData.ACCOUNT_1.publicKey }));
+      txBuilder.signature('20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
+        'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09', new KeyPair({ pub: testData.ACCOUNT_1.publicKey }));
+
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.from, testData.ACCOUNT1);
+    });
   });
 
   describe('should fail to build', () => {

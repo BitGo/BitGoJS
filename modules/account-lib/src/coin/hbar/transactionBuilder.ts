@@ -110,6 +110,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns This transaction builder
    */
   signature(signature: string, keyPair: KeyPair): this {
+    // if we already have a signature for this key pair, just update it
+    for (const oldSignature of this._signatures) {
+      if (oldSignature.keyPair.getKeys().pub === keyPair.getKeys().pub) {
+        oldSignature.signature = signature;
+        return this;
+      }
+    }
+
+    // otherwise add the new signature
     this._signatures.push({ signature, keyPair });
     return this;
   }
