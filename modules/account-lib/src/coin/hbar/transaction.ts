@@ -93,7 +93,7 @@ export class Transaction extends BaseTransaction {
    *
    * @returns {[string, string]} - transaction id parts [<account id>, <startTime in seconds>]
    */
-  private getTxIdParts(): [string, string] {
+  getTxIdParts(): [string, string] {
     if (
       this._txBody &&
       this._txBody.transactionID &&
@@ -133,7 +133,7 @@ export class Transaction extends BaseTransaction {
    *
    * @returns {string} - The transaction hash
    */
-  private getTxHash(): string {
+  getTxHash(): string {
     if (!this._txBody.nodeAccountID) {
       throw new Error('Missing transaction node id');
     }
@@ -160,7 +160,7 @@ export class Transaction extends BaseTransaction {
    * @param {Uint8Array} bytes - bytes to be hashed
    * @returns {string} - the resulting hash string
    */
-  private sha(bytes: Uint8Array): string {
+  sha(bytes: Uint8Array): string {
     return toHex(hash(bytes));
   }
 
