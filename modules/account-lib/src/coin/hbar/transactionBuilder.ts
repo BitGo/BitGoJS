@@ -12,6 +12,7 @@ import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
 import { getCurrentTime, isValidAddress, isValidTimeString, toUint8Array } from './utils';
 import { KeyPair } from './keyPair';
+import { SignatureData } from './ifaces';
 
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
@@ -19,11 +20,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _source: BaseAddress;
   protected _startTime: proto.ITimestamp;
   protected _multiSignerKeyPairs: KeyPair[];
+  protected _signatures: SignatureData[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new Transaction(_coinConfig);
     this._multiSignerKeyPairs = [];
+    this._signatures = [];
   }
 
   // region Base Builder
@@ -96,6 +99,27 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   source(address: BaseAddress): this {
     this.validateAddress(address);
     this._source = address;
+    return this;
+  }
+
+  /**
+   * Set an external transaction signature
+   *
+   * @param signature Hex encoded signature string
+   * @param keyPair The public key keypair that was used to create the signature
+   * @returns This transaction builder
+   */
+  signature(signature: string, keyPair: KeyPair): this {
+    // if we already have a signature for this key pair, just update it
+    for (const oldSignature of this._signatures) {
+      if (oldSignature.keyPair.getKeys().pub === keyPair.getKeys().pub) {
+        oldSignature.signature = signature;
+        return this;
+      }
+    }
+
+    // otherwise add the new signature
+    this._signatures.push({ signature, keyPair });
     return this;
   }
 

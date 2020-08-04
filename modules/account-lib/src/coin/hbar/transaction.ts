@@ -31,14 +31,24 @@ export class Transaction extends BaseTransaction {
     }
     const secretKey = toUint8Array(keys.prv + keys.pub);
     const signature = nacl.sign.detached(this._hederaTx.bodyBytes, secretKey);
+    this.addSignature(toHex(signature), keyPair);
+  }
+
+  /**
+   * Add a signature to this transaction
+   * @param signature The signature to add, in string hex format
+   * @param key The key of the key that created the signature
+   */
+  addSignature(signature: string, key: KeyPair): void {
     const sigPair = new proto.SignaturePair();
-    sigPair.pubKeyPrefix = toUint8Array(keys.pub);
-    sigPair.ed25519 = signature;
+    sigPair.pubKeyPrefix = toUint8Array(key.getKeys(true).pub);
+    sigPair.ed25519 = toUint8Array(signature);
 
     const sigMap = this._hederaTx.sigMap || new proto.SignatureMap();
     sigMap.sigPair!.push(sigPair);
     this._hederaTx.sigMap = sigMap;
   }
+
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
@@ -93,7 +103,7 @@ export class Transaction extends BaseTransaction {
    *
    * @returns {[string, string]} - transaction id parts [<account id>, <startTime in seconds>]
    */
-  private getTxIdParts(): [string, string] {
+  getTxIdParts(): [string, string] {
     if (
       this._txBody &&
       this._txBody.transactionID &&
@@ -133,7 +143,7 @@ export class Transaction extends BaseTransaction {
    *
    * @returns {string} - The transaction hash
    */
-  private getTxHash(): string {
+  getTxHash(): string {
     if (!this._txBody.nodeAccountID) {
       throw new Error('Missing transaction node id');
     }
@@ -160,7 +170,7 @@ export class Transaction extends BaseTransaction {
    * @param {Uint8Array} bytes - bytes to be hashed
    * @returns {string} - the resulting hash string
    */
-  private sha(bytes: Uint8Array): string {
+  sha(bytes: Uint8Array): string {
     return toHex(hash(bytes));
   }
 
