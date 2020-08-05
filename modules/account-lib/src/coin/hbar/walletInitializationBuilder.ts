@@ -1,24 +1,17 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import * as hex from '@stablelib/hex';
-import BigNumber from 'bignumber.js';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BuildTransactionError } from '../baseCoin/errors';
-import { TransactionBuilder } from './transactionBuilder';
+import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidPublicKey, toUint8Array } from './utils';
+import { isValidPublicKey, toUint8Array, toHex } from './utils';
 import { KeyPair } from './';
 
-const DEFAULT_M = 3;
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: string[] = [];
-  private _txBody: proto.TransactionBody;
   private _txBodyData: proto.CryptoCreateTransactionBody;
-  private readonly _duration: proto.Duration = new proto.Duration({ seconds: 120 });
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._txBody = new proto.TransactionBody();
-    this._txBody.transactionValidDuration = this._duration;
     this._txBodyData = new proto.CryptoCreateTransactionBody();
     this._txBody.cryptoCreateAccount = this._txBodyData;
     this._txBodyData.autoRenewPeriod = new proto.Duration({ seconds: 7890000 });
@@ -29,29 +22,19 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this._txBodyData.key = { thresholdKey: this.buildOwnersKeys() };
     this._txBodyData.initialBalance = 0;
-    this._txBody.transactionFee = new BigNumber(this._fee.fee).toNumber(); // validate
-    this._txBody.transactionID = this.buildTxId();
-    this._txBody.nodeAccountID = new proto.AccountID({ accountNum: 4 });
-    const hTransaction = this._transaction.hederaTx || new proto.Transaction();
-    hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
-
-    const transaction = new Transaction(this._coinConfig);
-    transaction.body(hTransaction);
-    for (const kp of this._multiSignerKeyPairs) {
-      await transaction.sign(kp);
-    }
-
-    for (const { signature, keyPair } of this._signatures) {
-      await transaction.addSignature(signature, keyPair);
-    }
-    return transaction;
+    return super.buildImplementation();
   }
 
-  private buildOwnersKeys(): proto.ThresholdKey {
+  /**
+   *
+   * @param {boolean} rawKeys defines if the owners keys are obtained in raw or protocol default format
+   * @returns {proto.ThresholdKey} the wallet threshold keys
+   */
+  private buildOwnersKeys(rawKeys = true): proto.ThresholdKey {
     return this._owners.reduce((tKeys, key) => {
       if (tKeys.keys && tKeys.keys.keys) {
         tKeys.keys.keys.push({
-          ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys().pub),
+          ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys(rawKeys).pub),
         });
       }
       return tKeys;
@@ -59,7 +42,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected initBuilder(tx: Transaction) {
+  protected initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     const createAcc = tx.txBody.cryptoCreateAccount;
     if (createAcc && createAcc.key && createAcc.key.thresholdKey) {
@@ -70,7 +53,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   private initOwners(keys: proto.ThresholdKey) {
     if (keys.keys && keys.keys.keys) {
       keys.keys.keys.forEach(key => {
-        this.owner(hex.encode(key.ed25519!));
+        this.owner(toHex(key.ed25519!));
       });
     }
   }

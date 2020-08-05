@@ -1,9 +1,9 @@
 import should from 'should';
-import { register } from '../../../../src/index';
-import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/hbar';
-import * as testData from '../../../resources/hbar/hbar';
+import { register } from '../../../../../src/index';
+import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/hbar';
+import * as testData from '../../../../resources/hbar/hbar';
 
-describe('Wallet initialization', () => {
+describe('HBAR Wallet initialization', () => {
   const factory = register('thbar', TransactionBuilderFactory);
 
   const initTxBuilder = () => {
@@ -25,6 +25,7 @@ describe('Wallet initialization', () => {
       const builder2 = factory.getWalletInitializationBuilder();
       builder2.from(raw);
       const tx2 = await builder2.build();
+      should.deepEqual(tx.signature.length, 1);
       should.deepEqual(tx.toJson(), tx2.toJson());
       should.deepEqual(raw, tx2.toBroadcastFormat());
     });
@@ -34,7 +35,8 @@ describe('Wallet initialization', () => {
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
       txJson.fee.should.equal(1000000000);
-      should.equal(txJson.from, testData.ACCOUNT1);
+      should.deepEqual(tx.signature.length, 1);
+      should.equal(txJson.from, testData.OPERATOR.accountId);
     });
 
     it('an init transaction with external signature', async () => {
@@ -44,12 +46,15 @@ describe('Wallet initialization', () => {
       txBuilder.owner(testData.OWNER2);
       txBuilder.owner(testData.OWNER3);
       txBuilder.source({ address: testData.OPERATOR.accountId });
-      txBuilder.signature('20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
-        'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09', new KeyPair({ pub: testData.ACCOUNT_1.publicKey }));
+      txBuilder.signature(
+        '20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
+          'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09',
+        new KeyPair({ pub: testData.ACCOUNT_1.publicKey }),
+      );
 
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from, testData.ACCOUNT1);
+      should.equal(txJson.from, testData.OPERATOR.accountId);
     });
 
     it('an init transaction with external signature included twice', async () => {
@@ -59,14 +64,20 @@ describe('Wallet initialization', () => {
       txBuilder.owner(testData.OWNER2);
       txBuilder.owner(testData.OWNER3);
       txBuilder.source({ address: testData.OPERATOR.accountId });
-      txBuilder.signature('20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
-        'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09', new KeyPair({ pub: testData.ACCOUNT_1.publicKey }));
-      txBuilder.signature('20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
-        'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09', new KeyPair({ pub: testData.ACCOUNT_1.publicKey }));
+      txBuilder.signature(
+        '20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
+          'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09',
+        new KeyPair({ pub: testData.ACCOUNT_1.publicKey }),
+      );
+      txBuilder.signature(
+        '20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
+          'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09',
+        new KeyPair({ pub: testData.ACCOUNT_1.publicKey }),
+      );
 
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from, testData.ACCOUNT1);
+      should.equal(txJson.from, testData.OPERATOR.accountId);
     });
   });
 
@@ -76,7 +87,7 @@ describe('Wallet initialization', () => {
       txBuilder.owner(testData.OWNER1);
       txBuilder.owner(testData.OWNER2);
       txBuilder.owner(testData.OWNER3);
-      txBuilder.source({ address: testData.ACCOUNT1 });
+      txBuilder.source({ address: testData.OPERATOR.accountId });
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
 
@@ -85,7 +96,7 @@ describe('Wallet initialization', () => {
       txBuilder.fee({ fee: '1000000000' });
       txBuilder.owner(testData.OWNER1);
       txBuilder.owner(testData.OWNER2);
-      txBuilder.source({ address: testData.ACCOUNT1 });
+      txBuilder.source({ address: testData.OPERATOR.accountId });
       await txBuilder
         .build()
         .should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 2');
@@ -94,7 +105,7 @@ describe('Wallet initialization', () => {
 
       const newTxBuilder = factory.getWalletInitializationBuilder();
       newTxBuilder.fee({ fee: '1000000000' });
-      newTxBuilder.source({ address: testData.ACCOUNT1 });
+      newTxBuilder.source({ address: testData.OPERATOR.accountId });
       await newTxBuilder
         .build()
         .should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 0');
@@ -135,7 +146,6 @@ describe('Wallet initialization', () => {
 
     it('a raw transaction', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
-      // should.doesNotThrow(() => txBuilder.from(testData.TX_BROADCAST));
       should.doesNotThrow(() => txBuilder.validateRawTransaction(testData.WALLET_INITIALIZATION));
       should.throws(() => txBuilder.validateRawTransaction('0x00001000'));
       should.throws(() => txBuilder.validateRawTransaction(''));
