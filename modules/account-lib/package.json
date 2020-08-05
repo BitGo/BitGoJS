@@ -35,7 +35,7 @@
   "dependencies": {
     "@bitgo/statics": "^5.0.1-rc.1",
     "@bitgo/utxo-lib": "^1.7.1",
-    "@celo/contractkit": "0.4.9",
+    "@celo/contractkit": "0.4.11",
     "@hashgraph/sdk": "^1.2.1",
     "@stablelib/hex": "^1.0.0",
     "@stablelib/sha384": "^1.0.0",
