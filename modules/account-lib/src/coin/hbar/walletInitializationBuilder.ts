@@ -47,11 +47,16 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     return transaction;
   }
 
-  private buildOwnersKeys(): proto.ThresholdKey {
+  /**
+   *
+   * @param {boolean} rawKeys defines if the owners keys are obtained in raw or protocol default format
+   * @returns {proto.ThresholdKey} the wallet threshold keys
+   */
+  private buildOwnersKeys(rawKeys = true): proto.ThresholdKey {
     return this._owners.reduce((tKeys, key) => {
       if (tKeys.keys && tKeys.keys.keys) {
         tKeys.keys.keys.push({
-          ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys().pub),
+          ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys(rawKeys).pub),
         });
       }
       return tKeys;

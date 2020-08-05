@@ -1,3 +1,5 @@
+import { KeyPair } from '../../../src/coin/hbar/keyPair';
+
 export const ACCOUNT_1 = {
   accountId: '0.0.81320',
   publicKey: '302a300506032b65700321005a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9',
@@ -8,6 +10,7 @@ export const ACCOUNT1 = '0.0.75861';
 
 export const OPERATOR = {
   accountId: '0.0.75861',
+  publicKey: '302a300506032b6570032100d32b7b1eb103c10a6c8f6ec575b8002816e9725d95485b3d5509aa8c89b4528b',
   privateKey: '302e020100300506032b65700422042088b5af9484cef4b0aab6e0ba1002313fdfdfacfdf23d6d0957dc5f2c24fc3b81',
 };
 
@@ -34,10 +37,6 @@ export const sourcePrv =
   '0a410c8fe4912e3652b61dd222b1b4d7773261537d7ebad59df6cd33622a693e0a410c8fe4912e3652b61dd222b1b4d7773261537d7ebad59df6cd33622a693e';
 
 export const PRIVATE_KEY = '422042088b5af9484cef4b0aab6e0ba1002313fdfdfacfdf23d6d0957dc5f2c24fc3b81';
-
-export const TXDATA = 'not defined';
-
-export const UNSIGNED_TX = 'not defined';
 
 export const ENCODED_TRANSACTION = 'not defined';
 export const errorMessageInvalidPrivateKey = 'Invalid private key';
@@ -116,3 +115,21 @@ export const publicKeyBytes = Uint8Array.of(
 
 export const ed25519PrivKeyPrefix = '302e020100300506032b657004220420';
 export const ed25519PubKeyPrefix = '302a300506032b6570032100';
+export const errorMessageFailedToParse = 'Failed to parse correct key';
+
+export const INVALID_KEYPAIR_PRV = new KeyPair({
+  prv: '8CAA00AE63638B0542A304823D66D96FF317A576F692663DB2F85E60FAB2590C',
+});
+
+export const KEYPAIR_PRV = new KeyPair({
+  prv: '302e020100300506032b65700422042062b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01',
+});
+
+export const WALLET_TXDATA = Uint8Array.from(
+  Buffer.from(
+    '22a3010a140a0c0883aa91f9051080feab9b01120418d5d00412021804188094ebdc03220208785a7d0a722a700802126c0a2212205a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf90a221220592a4fbb7263c59d450e651df96620dc9208ee7c7d9d6f2fdcb91c53f88312610a221220fa344793601cef71348f994f30a168c2dd55f357426a180a5a724d7e03585e9110004a0508d0c8e103',
+    'hex',
+  ),
+);
+export const WALLET_SIGNED_TRANSACTION =
+  '1a660a640a205a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf91a40ff00c43d4da6d33abf90b2de7d36db8cea62248a6b8ef35be7741c43e762f1208fe5224ac79cd53e59df48913418e976320f789a091cf67a23278a12781b490d22a3010a140a0c0883aa91f9051080feab9b01120418d5d00412021804188094ebdc03220208785a7d0a722a700802126c0a2212205a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf90a221220592a4fbb7263c59d450e651df96620dc9208ee7c7d9d6f2fdcb91c53f88312610a221220fa344793601cef71348f994f30a168c2dd55f357426a180a5a724d7e03585e9110004a0508d0c8e103';
