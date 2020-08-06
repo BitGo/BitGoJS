@@ -1634,10 +1634,13 @@ export class Wallet {
       debug('prebuilding transaction: %O', whitelistedParams);
 
       const utxoCoin = self.baseCoin as AbstractUtxoCoin;
-      const supportsP2wsh = _.isFunction(utxoCoin.defaultsToP2wshChange) ? utxoCoin.defaultsToP2wshChange() : false;
-      if (supportsP2wsh) {
-        // Default to native segwit change addresses
-        whitelistedParams = Object.assign({ addressType: `p2wsh` }, whitelistedParams);
+      if (_.isFunction(utxoCoin.defaultChangeAddressType) && utxoCoin.defaultChangeAddressType() === `p2wsh`) {
+        /**
+         * During native segwit rollout phase, only send `addressType` on coins that default to native segwit change
+         * addresses. Can be removed after native segwit rollout is complete and default address is generally set to
+         * native segwit. For non-segwit coins, leave change address format up to wallet platform.
+         */
+        whitelistedParams = Object.assign({ addressType: utxoCoin.defaultChangeAddressType() }, whitelistedParams);
       }
 
       if (params.reqId) {

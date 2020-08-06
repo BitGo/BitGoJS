@@ -846,11 +846,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
-   * Indicates whether a coin defaults to native segwit change outputs
-   * @returns {boolean}
+   * Set a default address format for change addresses, which overrides the default address format for that coin
+   * @returns {string}
    */
-  defaultsToP2wshChange() {
-    return false;
+  defaultChangeAddressType(): string {
+    return this.supportsP2shP2wsh() ? `p2shP2wsh` : `p2sh`;
   }
 
   /**

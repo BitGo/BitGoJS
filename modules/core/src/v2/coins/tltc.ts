@@ -42,7 +42,7 @@ export class Tltc extends Ltc {
     return 'Testnet Litecoin';
   }
 
-  defaultsToP2wshChange(): boolean {
-    return this.supportsP2wsh();
+  defaultChangeAddressType() {
+    return this.supportsP2wsh() ? `p2wsh` : this.supportsP2shP2wsh() ? `p2shP2wsh` : `p2sh`;
   }
 }
