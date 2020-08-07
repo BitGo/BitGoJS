@@ -133,7 +133,7 @@ export function isValidAmount(amount: string): boolean {
 }
 
 /**
- * Returns whether the provided raw transaction has a valid format and type
+ * Returns whether the provided raw transaction accommodates to bitgo's preferred format
  *
  * @param {any} rawTransaction - The raw transaction to be checked
  * @returns {boolean} the validation result

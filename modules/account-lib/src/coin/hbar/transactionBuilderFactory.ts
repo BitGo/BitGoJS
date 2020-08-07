@@ -32,7 +32,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       case 'cryptoCreateAccount':
         return this.getWalletInitializationBuilder(tx);
       default:
-        throw new InvalidTransactionError('Invalid transaction');
+        throw new InvalidTransactionError('Invalid transaction ' + tx.txBody.data);
     }
   }
 
