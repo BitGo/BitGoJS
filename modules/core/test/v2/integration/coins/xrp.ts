@@ -28,8 +28,7 @@ describe('XRP:', function() {
     nock.cleanAll();
   });
 
-  // TODO (BG-20879) - enable when initialization txs are built in platform
-  xit('Should generate wallet with custom root address', function() {
+  it('Should generate wallet with custom root address', function() {
     const hdNode = HDNode.fromSeedBuffer(crypto.randomBytes(32));
     const params = {
       passphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
