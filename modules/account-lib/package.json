@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "2.0.1-rc.2",
+  "version": "2.0.2-rc.2",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -33,11 +33,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@bitgo/statics": "^5.0.0-rc.2",
+    "@bitgo/statics": "^5.0.1-rc.1",
     "@bitgo/utxo-lib": "^1.7.1",
     "@celo/contractkit": "0.4.11",
     "@hashgraph/sdk": "^1.2.1",
     "@stablelib/hex": "^1.0.0",
+    "@stablelib/sha384": "^1.0.0",
     "@taquito/local-forging": "^6.0.3-beta.0",
     "@taquito/signer": "^6.0.3-beta.0",
     "@types/lodash": "^4.14.151",
@@ -52,8 +53,7 @@
     "lodash": "^4.17.15",
     "protobufjs": "^6.8.9",
     "tronweb": "^2.7.2",
-    "tweetnacl": "^1.0.3",
-    "@stablelib/sha384": "^1.0.0"
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",
@@ -104,5 +104,5 @@
       "git add"
     ]
   },
-  "gitHead": "3161f5c3cd8ccbd89eca4a12d3970bacbf184259"
+  "gitHead": "12ae0e8312aab8c4056ee6d9dba9fac7ff05f1f7"
 }
