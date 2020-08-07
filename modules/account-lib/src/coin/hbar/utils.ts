@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
-import { AccountId } from '@hashgraph/sdk/lib/account/AccountId';
-import { Ed25519PublicKey, TransactionId } from '@hashgraph/sdk';
+import { Ed25519PublicKey, TransactionId, AccountId } from '@hashgraph/sdk';
 import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
 import { proto } from '../../../resources/hbar/protobuf/hedera';

@@ -58,16 +58,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
-    this.transaction = new Transaction(this._coinConfig);
+    const tx = new Transaction(this._coinConfig);
     let buffer;
     if (typeof rawTransaction === 'string') {
       buffer = toUint8Array(rawTransaction);
     } else {
       buffer = rawTransaction;
     }
-    this.transaction.bodyBytes(buffer);
-    this.initBuilder(this.transaction);
-    this.transaction.loadPreviousSignatures();
+    tx.bodyBytes(buffer);
+    this.initBuilder(tx);
     return this.transaction;
   }
 
@@ -87,7 +86,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    *
    * @param {Transaction} tx the transaction data
    */
-  protected initBuilder(tx: Transaction): void {
+  initBuilder(tx: Transaction): void {
+    this.transaction = tx;
+    this.transaction.loadPreviousSignatures();
     const txData = tx.toJson();
     this.fee({ fee: txData.fee.toString() });
     this.source({ address: txData.from });

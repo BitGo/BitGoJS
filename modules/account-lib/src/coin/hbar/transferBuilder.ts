@@ -45,7 +45,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected initBuilder(tx: Transaction): void {
+  initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     const transferData = tx.txBody.cryptoTransfer;
     if (transferData && transferData.transfers && transferData.transfers.accountAmounts) {
