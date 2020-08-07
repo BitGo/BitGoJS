@@ -1,11 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { toUint8Array } from './utils';
+import { isValidRawTransactionFormat, toUint8Array } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -24,6 +24,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
   /** @inheritDoc */
   from(raw: Uint8Array | string): TransactionBuilder {
+    this.validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);
     switch (tx.txBody.data) {
       case 'cryptoTransfer':
@@ -35,13 +36,26 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
   }
 
-  private initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T) {
+  /**
+   * Initialize the builder with the given transaction
+   *
+   * @param {Transaction | undefined} tx - the transaction used to initialize the builder
+   * @param {TransactionBuilder} builder - the builder to be initialized
+   * @returns {TransactionBuilder} the builder initialized
+   */
+  private initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
     if (tx) {
       builder.initBuilder(tx);
     }
     return builder;
   }
 
+  /**
+   * Returns a transaction instance from the encoded value
+   *
+   * @param {Uint8Array | string} rawTransaction - encoded transaction
+   * @returns {Transaction} the parsed transaction instance
+   */
   private parseTransaction(rawTransaction: Uint8Array | string): Transaction {
     const tx = new Transaction(this._coinConfig);
     let buffer;
@@ -52,5 +66,16 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     }
     tx.bodyBytes(buffer);
     return tx;
+  }
+
+  /**
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   *
+   * @param {any} rawTransaction - Transaction in any format
+   */
+  private validateRawTransaction(rawTransaction: any) {
+    if (!isValidRawTransactionFormat(rawTransaction)) {
+      throw new ParseTransactionError('Invalid raw transaction');
+    }
   }
 }

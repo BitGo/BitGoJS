@@ -133,6 +133,22 @@ export function isValidAmount(amount: string): boolean {
 }
 
 /**
+ * Returns whether the provided raw transaction has a valid format and type
+ *
+ * @param {any} rawTransaction - The raw transaction to be checked
+ * @returns {boolean} the validation result
+ */
+export function isValidRawTransactionFormat(rawTransaction: any): boolean {
+  if (
+    (typeof rawTransaction === 'string' && /^[0-9a-fA-F]+$/.test(rawTransaction)) ||
+    (Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
  * Returns a string representation of an {proto.IAccountID} object
  *
  * @param {proto.IAccountID} - account id to be cast to string

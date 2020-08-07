@@ -11,7 +11,7 @@ import {
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
-import { getCurrentTime, isValidAddress, isValidTimeString, toUint8Array } from './utils';
+import { getCurrentTime, isValidAddress, isValidRawTransactionFormat, isValidTimeString, toUint8Array } from './utils';
 import { KeyPair } from './keyPair';
 import { SignatureData, HederaNode } from './ifaces';
 
@@ -253,12 +253,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
-    if (
-      !(
-        (typeof rawTransaction === 'string' && /^[0-9a-fA-F]+$/.test(rawTransaction)) ||
-        (Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))
-      )
-    ) {
+    if (!isValidRawTransactionFormat(rawTransaction)) {
       throw new ParseTransactionError('Invalid raw transaction');
     }
   }
