@@ -22,8 +22,7 @@ describe('HBAR Wallet initialization', () => {
       const builder = initTxBuilder();
       const tx = await builder.build();
       const raw = tx.toBroadcastFormat();
-      const builder2 = factory.getWalletInitializationBuilder();
-      builder2.from(raw);
+      const builder2 = factory.from(raw);
       const tx2 = await builder2.build();
       should.deepEqual(tx.signature.length, 1);
       should.deepEqual(tx.toJson(), tx2.toJson());

@@ -24,4 +24,11 @@ export abstract class BaseTransactionBuilderFactory {
    * Returns a specific builder to create a funds transfer transaction
    */
   public abstract getTransferBuilder();
+
+  /**
+   * Returns a proper builder for the given encoded transaction
+   *
+   * @param {Uint8Array | string} raw - Encoded transaction in hex string or Uint8Array format
+   */
+  public abstract from(raw: Uint8Array | string);
 }

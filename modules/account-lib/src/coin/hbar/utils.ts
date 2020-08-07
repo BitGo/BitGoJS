@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
-import { AccountId } from '@hashgraph/sdk/lib/account/AccountId';
-import { Ed25519PublicKey, TransactionId } from '@hashgraph/sdk';
+import { Ed25519PublicKey, TransactionId, AccountId } from '@hashgraph/sdk';
 import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
@@ -131,6 +130,22 @@ export function isValidAmount(amount: string): boolean {
     bigNumberAmount.isGreaterThanOrEqualTo(0) &&
     bigNumberAmount.isLessThanOrEqualTo(MAX_TINYBARS_AMOUNT)
   );
+}
+
+/**
+ * Returns whether the provided raw transaction accommodates to bitgo's preferred format
+ *
+ * @param {any} rawTransaction - The raw transaction to be checked
+ * @returns {boolean} the validation result
+ */
+export function isValidRawTransactionFormat(rawTransaction: any): boolean {
+  if (
+    (typeof rawTransaction === 'string' && /^[0-9a-fA-F]+$/.test(rawTransaction)) ||
+    (Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))
+  ) {
+    return true;
+  }
+  return false;
 }
 
 /**

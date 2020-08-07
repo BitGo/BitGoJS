@@ -97,16 +97,14 @@ describe('HBAR Transfer Builder', () => {
 
     describe('serialized transactions', () => {
       it('a non signed transfer transaction from serialized', async () => {
-        const builder = initTxBuilder();
-        builder.from(testData.NON_SIGNED_TRANSFER_TRANSACTION);
+        const builder = factory.from(testData.NON_SIGNED_TRANSFER_TRANSACTION);
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
         const tx2 = await builder.build();
         should.deepEqual(tx2.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
       });
 
       it('a signed transfer transaction from serilaized', async () => {
-        const txBuilder = factory.getTransferBuilder();
-        txBuilder.from(testData.SIGNED_TRANSFER_TRANSACTION);
+        const txBuilder = factory.from(testData.SIGNED_TRANSFER_TRANSACTION);
         const tx = await txBuilder.build();
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
       });
@@ -118,14 +116,12 @@ describe('HBAR Transfer Builder', () => {
         const tx = await builder.build();
         should.deepEqual(tx.signature.length, 1);
 
-        const builder2 = factory.getTransferBuilder();
-        builder2.from(tx.toBroadcastFormat());
+        const builder2 = factory.from(tx.toBroadcastFormat());
         builder2.sign({ key: testData.ACCOUNT_2.privateKey });
         const tx2 = await builder2.build();
         should.deepEqual(tx2.signature.length, 2);
 
-        const builder3 = factory.getTransferBuilder();
-        builder3.from(tx2.toBroadcastFormat());
+        const builder3 = factory.from(tx2.toBroadcastFormat());
         builder3.sign({ key: testData.ACCOUNT_3.privateKey });
         const tx3 = await builder3.build();
         should.deepEqual(tx3.signature.length, 3);
