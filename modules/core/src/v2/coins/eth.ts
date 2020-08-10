@@ -493,7 +493,6 @@ export class Eth extends BaseCoin {
    */
   signFinal(params: SignFinalOptions): FullySignedTransaction {
     const txPrebuild = params.txPrebuild;
-
     if (!_.isNumber(params.signingKeyNonce)) {
       throw new Error('must have signingKeyNonce as a parameter, and it must be a number');
     }

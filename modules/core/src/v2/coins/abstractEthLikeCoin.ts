@@ -10,6 +10,7 @@ import { randomBytes } from 'crypto';
 
 import {
   BaseCoin,
+  FullySignedTransaction,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -45,6 +46,8 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
   feeInfo: EthTransactionFee;
   source: string;
   dataToSign: string;
+  nextContractSequenceId?: string;
+  expireTime?: number;
 }
 
 export interface EthTransactionFee {
@@ -59,6 +62,20 @@ export interface ExplainTransactionOptions {
   };
   feeInfo: TransactionFee;
 }
+
+export interface HalfSignedEthLikeTransaction {
+  halfSigned?: {
+    txHex?: string;
+    payload?: string;
+    txBase64?: string;
+    operationHash?: string;
+    signatures?: string[];
+    recipients?: Recipient[];
+    expiration?: number;
+  };
+}
+
+export type SignedEthLikeTransaction = HalfSignedEthLikeTransaction | FullySignedTransaction;
 
 export abstract class AbstractEthLikeCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -134,15 +151,35 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   async signTransaction(
     params: EthSignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
+  ): Bluebird<SignedEthLikeTransaction> {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.transfer().key(new Eth.KeyPair({ prv: params.prv }).getKeys().prv!);
     const transaction = await txBuilder.build();
 
+    if (params.isLastSignature) {
+      // In this case when we're doing the second (final) signature
+      return {
+        txHex: transaction.toBroadcastFormat(),
+      };
+    }
+
+    const outputEntry = transaction.outputs[0];
+    const recipients = [
+      {
+        address: outputEntry.address,
+        amount: outputEntry.value,
+      },
+    ];
+
+    const signatures = transaction.signature;
+
     return {
       halfSigned: {
         txHex: transaction.toBroadcastFormat(),
+        signatures: signatures,
+        recipients: recipients,
+        expiration: params.txPrebuild.expireTime,
       },
     };
   }
