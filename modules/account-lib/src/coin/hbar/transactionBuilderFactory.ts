@@ -26,13 +26,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   from(raw: Uint8Array | string): TransactionBuilder {
     this.validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);
-    switch (tx.txBody.data) {
-      case 'cryptoTransfer':
-        return this.getTransferBuilder(tx);
-      case 'cryptoCreateAccount':
-        return this.getWalletInitializationBuilder(tx);
-      default:
-        throw new InvalidTransactionError('Invalid transaction ' + tx.txBody.data);
+    if (tx.txBody.hasCryptotransfer()) {
+      return this.getTransferBuilder(tx);
+    } else if (tx.txBody.hasCryptocreateaccount()) {
+      return this.getWalletInitializationBuilder(tx);
+    } else {
+      throw new InvalidTransactionError('Invalid transaction');
     }
   }
 
