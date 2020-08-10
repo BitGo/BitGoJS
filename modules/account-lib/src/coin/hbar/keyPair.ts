@@ -6,6 +6,7 @@ import { removePrefix } from './utils';
 
 const PUBLIC_KEY_PREFIX = '302a300506032b6570032100';
 const PRIVATE_KEY_PREFIX = '302e020100300506032b657004220420';
+import { SDKKeyPair } from './ifaces';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -30,6 +31,22 @@ export class KeyPair extends Ed25519KeyPair {
 
     if (this.keyPair.prv) {
       result.prv = Ed25519PrivateKey.fromString(this.keyPair.prv).toString(raw);
+    }
+    return result;
+  }
+
+  /**
+   * Hedera keypair in the SDK supported format
+   *
+   * @returns { SDKKeyPair } the keys in SDK format
+   */
+  getSDKKeys(): SDKKeyPair {
+    const result: SDKKeyPair = {
+      pub: Ed25519PublicKey.fromString(this.keyPair.pub),
+    };
+
+    if (this.keyPair.prv) {
+      result.prv = Ed25519PrivateKey.fromString(this.keyPair.prv);
     }
     return result;
   }
