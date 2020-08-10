@@ -28,3 +28,8 @@ export interface SDKKeyPair {
   pub: Ed25519PublicKey;
   prv?: Ed25519PrivateKey;
 }
+
+export interface Timestamp {
+  seconds: number;
+  nanos: number;
+}

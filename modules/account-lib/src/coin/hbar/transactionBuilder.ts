@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { AccountId } from '@hashgraph/sdk';
+import { AccountId, TransactionId } from '@hashgraph/sdk';
+import { TransactionBuilder as SDKTransactionBuilder } from '@hashgraph/sdk/lib/TransactionBuilder';
 import { BaseTransactionBuilder } from '../baseCoin';
 import {
   BuildTransactionError,
@@ -9,29 +10,26 @@ import {
   SigningError,
 } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
-import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
 import { getCurrentTime, isValidAddress, isValidRawTransactionFormat, isValidTimeString, toUint8Array } from './utils';
 import { KeyPair } from './keyPair';
-import { SignatureData, HederaNode } from './ifaces';
+import { SignatureData, HederaNode, Timestamp } from './ifaces';
 
 export const DEFAULT_M = 3;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
   private _transaction: Transaction;
   protected _source: BaseAddress;
-  protected _startTime: proto.ITimestamp;
+  protected _startTime: Timestamp;
   protected _memo: string;
-  protected _txBody: proto.TransactionBody;
   protected _node: HederaNode = { nodeId: '0.0.4' };
-  protected _duration: proto.Duration = new proto.Duration({ seconds: 120 });
+  protected _duration = 120;
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
+  protected _sdkTransactionBuilder: SDKTransactionBuilder;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._txBody = new proto.TransactionBody();
-    this._txBody.transactionValidDuration = this._duration;
     this._multiSignerKeyPairs = [];
     this._signatures = [];
     this.transaction = new Transaction(_coinConfig);
@@ -40,13 +38,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this._txBody.transactionFee = new BigNumber(this._fee.fee).toNumber();
-    this._txBody.transactionID = this.buildTxId();
-    this._txBody.memo = this._memo;
-    this._txBody.nodeAccountID = new proto.AccountID({ accountNum: new AccountId(this._node.nodeId).account });
-    const hTransaction = this.transaction.hederaTx || new proto.Transaction();
+    this._sdkTransactionBuilder
+      .setMaxTransactionFee(new BigNumber(this._fee.fee).toNumber())
+      .setTransactionId(this.buildTxId())
+      .setTransactionMemo(this._memo)
+      .setNodeAccountId(new AccountId(this._node.nodeId))
+      .setTransactionValidDuration(this._duration);
+    /* const hTransaction = this.transaction.hederaTx || new proto.Transaction();
     hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
-    this.transaction.body(hTransaction);
+    this.transaction.body(hTransaction);*/
+    // TODO: Add a way to recover previous inner signature in the tx proto
+    this.transaction.body(this._sdkTransactionBuilder.build());
     for (const kp of this._multiSignerKeyPairs) {
       await this.transaction.sign(kp);
     }
@@ -103,14 +105,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /**
    * Creates an Hedera TransactionID
    *
-   * @returns {proto.TransactionID} - created TransactionID
+   * @returns {TransactionId} - created TransactionID
    */
-  protected buildTxId(): proto.TransactionID {
-    const accString = this._source.address.split('.').pop();
-    const acc = new BigNumber(accString!).toNumber();
-    return new proto.TransactionID({
-      transactionValidStart: this.validStart,
-      accountID: { accountNum: acc },
+  protected buildTxId(): TransactionId {
+    const validStart = this.validStart;
+    return new TransactionId({
+      validStartNanos: validStart.nanos,
+      validStartSeconds: validStart.seconds,
+      account: new AccountId(this._source.address),
     });
   }
   // endregion
@@ -152,7 +154,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   validDuration(validDuration: number): this {
     this.validateValue(new BigNumber(validDuration));
-    this._duration = new proto.Duration({ seconds: validDuration });
+    this._duration = validDuration;
     return this;
   }
 
@@ -218,7 +220,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // endregion
 
   // region Getters and Setters
-  private get validStart(): proto.ITimestamp {
+  private get validStart(): Timestamp {
     if (!this._startTime) {
       this.startTime(getCurrentTime());
     }
