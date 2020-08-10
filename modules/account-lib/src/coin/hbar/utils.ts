@@ -5,7 +5,6 @@ import { Timestamp } from '@hashgraph/sdk/lib/generated/Timestamp_pb';
 
 import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
-import { proto } from '../../../resources/hbar/protobuf/hedera';
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
 
@@ -157,10 +156,10 @@ export function isValidRawTransactionFormat(rawTransaction: any): boolean {
  * @param {AccountID} accountId - account id to be cast to string
  * @returns {object} - the string representation of the AccountID
  */
-export function stringifyAccountId(accountId: AccountID): string {
-  const shardnum = accountId.getShardnum();
-  const realmnum = accountId.getRealmnum();
-  const accountnum = accountId.getAccountnum();
+export function stringifyAccountId({ shardnum, realmnum, accountnum }: AccountID.AsObject): string {
+  // const shardnum = accountId.getShardnum();
+  // const realmnum = accountId.getRealmnum();
+  // const accountnum = accountId.getAccountnum();
   return `${shardnum || 0}.${realmnum || 0}.${accountnum}`;
 }
 
@@ -170,9 +169,9 @@ export function stringifyAccountId(accountId: AccountID): string {
  * @param {Timestamp} timestamp - timestamp to be cast to string
  * @returns {object} - the string representation of the Timestamp
  */
-export function stringifyTxTime(timestamp: Timestamp) {
-  const seconds = timestamp.getSeconds();
-  const nanos = timestamp.getNanos();
+export function stringifyTxTime({ seconds, nanos }: Timestamp.AsObject) {
+  // const seconds = timestamp.getSeconds();
+  // const nanos = timestamp.getNanos();
   return `${seconds}.${nanos}`;
 }
 
