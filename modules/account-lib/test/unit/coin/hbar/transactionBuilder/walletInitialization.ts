@@ -2,6 +2,7 @@ import should from 'should';
 import { register } from '../../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
+import { WalletInitializationBuilder } from '../../../../../src/coin/hbar/walletInitializationBuilder';
 
 describe('HBAR Wallet initialization', () => {
   const factory = register('thbar', TransactionBuilderFactory);
@@ -36,6 +37,41 @@ describe('HBAR Wallet initialization', () => {
       txJson.fee.should.equal(1000000000);
       should.deepEqual(tx.signature.length, 1);
       should.equal(txJson.from, testData.OPERATOR.accountId);
+    });
+
+    it('offline signing init transaction', async () => {
+      const txBuilder1 = factory.getWalletInitializationBuilder();
+      txBuilder1.startTime('1596110493.372646570');
+      txBuilder1.fee({ fee: '1000000000' });
+      txBuilder1.owner(testData.OWNER1);
+      txBuilder1.owner(testData.OWNER2);
+      txBuilder1.owner(testData.OWNER3);
+      txBuilder1.source({ address: testData.OPERATOR.accountId });
+      const tx1 = await txBuilder1.build();
+      const factory2 = register('thbar', TransactionBuilderFactory);
+      const txBuilder2 = factory2.from(tx1.toBroadcastFormat());
+      txBuilder2.sign({ key: testData.OPERATOR.privateKey });
+      const tx2 = await txBuilder2.build();
+
+      const factory3 = register('thbar', TransactionBuilderFactory);
+      const txBuilder3 = factory3.from(tx2.toBroadcastFormat());
+      txBuilder3.sign({ key: testData.ACCOUNT_1.privateKey });
+      const tx3 = await txBuilder3.build();
+
+      should.deepEqual(tx2.signature.length, 1);
+      should.deepEqual(tx3.signature.length, 2);
+      should.deepEqual(tx2.toBroadcastFormat(), testData.WALLET_BUILDER_SIGNED_TRANSACTION);
+      should.deepEqual(tx3.toBroadcastFormat(), testData.WALLET_BUILDER_SIGNED_TWICE_TRANSACTION);
+    });
+
+    it('initialize from invalid tx adding new fields', async () => {
+      const txBuilder = factory.from(testData.WALLET_INIT_2_OWNERS) as WalletInitializationBuilder;
+      txBuilder.owner(testData.OWNER3);
+      txBuilder.sign({ key: testData.OPERATOR.privateKey });
+      const tx = await txBuilder.build();
+
+      should.deepEqual(tx.signature.length, 1);
+      should.deepEqual(tx.toBroadcastFormat(), testData.WALLET_BUILDER_SIGNED_TRANSACTION);
     });
 
     it('an init transaction with external signature', async () => {
