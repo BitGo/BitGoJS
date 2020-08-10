@@ -3,6 +3,9 @@ import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
 import { Writer } from 'protobufjs';
 import * as nacl from 'tweetnacl';
+import { Transaction as SDKTransaction } from '@hashgraph/sdk';
+import { TransactionBody } from '@hashgraph/sdk/lib/generated/TransactionBody_pb';
+import { SignatureMap, SignaturePair } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
 import Long from 'long';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction, TransactionType } from '../baseCoin';
@@ -13,8 +16,8 @@ import { stringifyAccountId, stringifyTxTime, toHex, toUint8Array } from './util
 import { KeyPair } from './';
 
 export class Transaction extends BaseTransaction {
-  private _hederaTx: proto.Transaction;
-  private _txBody: proto.TransactionBody;
+  private _hederaTx: SDKTransaction;
+  private _txBody: TransactionBody;
   protected _type: TransactionType;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -32,26 +35,26 @@ export class Transaction extends BaseTransaction {
       throw new SigningError('Missing private key');
     }
     const secretKey = toUint8Array(keys.prv + keys.pub);
-    const signature = nacl.sign.detached(this._hederaTx.bodyBytes, secretKey);
+    const signature = nacl.sign.detached(this._hederaTx._toProto().getBodybytes_asU8(), secretKey);
     this.addSignature(toHex(signature), keyPair);
   }
 
   /**
    * Add a signature to this transaction
+   *
    * @param signature The signature to add, in string hex format
    * @param key The key of the key that created the signature
    */
   addSignature(signature: string, key: KeyPair): void {
-    const sigPair = new proto.SignaturePair();
-    sigPair.pubKeyPrefix = toUint8Array(key.getKeys(true).pub);
-    sigPair.ed25519 = toUint8Array(signature);
+    const sigPair = new SignaturePair();
+    sigPair.setPubkeyprefix(toUint8Array(key.getKeys(true).pub));
+    sigPair.setEd25519(toUint8Array(signature));
 
-    const sigMap = this._hederaTx.sigMap || new proto.SignatureMap();
-    sigMap.sigPair!.push(sigPair);
-    this._hederaTx.sigMap = sigMap;
+    const sigMap = this._hederaTx._toProto().getSigmap() || new SignatureMap();
+    sigMap.getSigpairList()!.push(sigPair);
+    this._hederaTx._toProto().setSigmap(sigMap);
     this._signatures.push(signature);
   }
-
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
@@ -64,16 +67,20 @@ export class Transaction extends BaseTransaction {
     const result: TxData = {
       id: acc + '@' + time,
       hash: this.getTxHash(), // TODO: Update once hedera-sdk release this functionality BGA-284
-      data: toHex(this._hederaTx.bodyBytes),
-      fee: new BigNumber(this._txBody.transactionFee!.toString()).toNumber(),
+      data: toHex(this._hederaTx._toProto().getBodybytes_asU8()),
+      fee: new BigNumber(this._txBody.getTransactionfee().toString()).toNumber(),
       from: acc,
       startTime: time,
-      validDuration: this._txBody.transactionValidDuration!.seconds!.toString(),
-      node: stringifyAccountId(this._txBody.nodeAccountID!),
-      memo: this._txBody.memo,
+      validDuration: this._txBody
+        .getTransactionvalidduration()!
+        .getSeconds()
+        .toString(),
+      node: stringifyAccountId(this._txBody.getNodeaccountid()!),
+      memo: this._txBody.getMemo(),
     };
 
-    if (this._txBody.data === 'cryptoTransfer') {
+    // if (this._txBody.data === 'cryptoTransfer') {
+    if (this._txBody.hasCryptotransfer()) {
       const [recipient, amount] = this.getTransferData();
       result.amount = amount;
       result.to = recipient;
@@ -89,32 +96,36 @@ export class Transaction extends BaseTransaction {
    */
   private getTransferData(): [string, string] {
     let transferData;
-    this._txBody.cryptoTransfer!.transfers!.accountAmounts!.forEach(transfer => {
-      const amount = Long.fromValue(transfer.amount!);
-      if (amount.isPositive()) {
-        transferData = [stringifyAccountId(transfer.accountID!), amount.toString()];
-      }
-    });
+    this._txBody
+      .getCryptotransfer()!
+      .getTransfers()!
+      .getAccountamountsList()
+      .forEach(transfer => {
+        const amount = Long.fromValue(transfer.getAmount());
+        if (amount.isPositive()) {
+          transferData = [stringifyAccountId(transfer.getAccountid()!), amount.toString()];
+        }
+      });
 
     return transferData;
   }
 
   //region getters & setters
-  get txBody(): proto.TransactionBody {
+  get txBody(): TransactionBody {
     return this._txBody;
   }
 
-  get hederaTx(): proto.Transaction {
+  get hederaTx(): SDKTransaction {
     return this._hederaTx;
   }
 
   /**
    * Sets this transaction body components
    *
-   * @param {proto.Transaction} tx body transaction
+   * @param {SDKTransaction} tx body transaction
    */
-  body(tx: proto.Transaction) {
-    this._txBody = proto.TransactionBody.decode(tx.bodyBytes);
+  body(tx: SDKTransaction) {
+    this._txBody = TransactionBody.deserializeBinary(tx._toProto().getBodybytes_asU8());
     this._hederaTx = tx;
     // this.loadPreviousSignatures();
     this.loadInputsAndOutputs();
@@ -134,10 +145,20 @@ export class Transaction extends BaseTransaction {
    * and save them into the base transaction signature list.
    */
   loadPreviousSignatures(): void {
-    if (this._hederaTx.sigMap && this._hederaTx.sigMap.sigPair) {
-      const sigPairs = this._hederaTx.sigMap.sigPair;
+    if (
+      this._hederaTx._toProto().getSigmap() &&
+      this._hederaTx
+        ._toProto()
+        .getSigmap()!
+        .getSigpairList()
+    ) {
+      const sigPairs = this._hederaTx
+        ._toProto()
+        .getSigmap()!
+        .getSigpairList();
       sigPairs.forEach(sigPair => {
-        const signature = sigPair.ed25519;
+        // const signature = sigPair.ed25519;
+        const signature = sigPair.getEd25519_asU8();
         if (signature) {
           this._signatures.push(toHex(signature));
         }
@@ -173,7 +194,7 @@ export class Transaction extends BaseTransaction {
    * @param {Uint8Array} bytes encoded body transaction
    */
   bodyBytes(bytes: Uint8Array) {
-    this.body(proto.Transaction.decode(bytes));
+    this.body(SDKTransaction.fromBytes(bytes));
   }
   //endregion
 
@@ -186,13 +207,13 @@ export class Transaction extends BaseTransaction {
   getTxIdParts(): [string, string] {
     if (
       this._txBody &&
-      this._txBody.transactionID &&
-      this._txBody.transactionID.accountID &&
-      this._txBody.transactionID.transactionValidStart
+      this._txBody.getTransactionid() &&
+      this._txBody.getTransactionid()!.getAccountid() &&
+      this._txBody.getTransactionid()!.getTransactionvalidstart()
     ) {
       return [
-        stringifyAccountId(this._txBody.transactionID.accountID),
-        stringifyTxTime(this._txBody.transactionID.transactionValidStart),
+        stringifyAccountId(this._txBody.getTransactionid()!.getAccountid()!),
+        stringifyTxTime(this._txBody.getTransactionid()!.getTransactionvalidstart()!),
       ];
     }
     throw new Error('Missing transaction id information');
@@ -204,7 +225,7 @@ export class Transaction extends BaseTransaction {
    * @returns {string} - The transaction hash
    */
   getTxHash(): string {
-    if (!this._txBody.nodeAccountID) {
+    if (!this._txBody.getNodeaccountid()) {
       throw new Error('Missing transaction node id');
     }
     return this.getHashOf(this._hederaTx);
