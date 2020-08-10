@@ -1,46 +1,36 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { AccountCreateTransaction, ThresholdKey, Ed25519PublicKey } from '@hashgraph/sdk';
-import { proto } from '../../../resources/hbar/protobuf/hedera';
+import { AccountCreateTransaction, ThresholdKey } from '@hashgraph/sdk';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidPublicKey, toUint8Array, toHex } from './utils';
+import { isValidPublicKey, toHex } from './utils';
 import { KeyPair } from './';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: string[] = [];
-  private _txBodyData: proto.CryptoCreateTransactionBody;
   private _cryptoBuilder: AccountCreateTransaction;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._txBodyData = new proto.CryptoCreateTransactionBody();
-    this._txBody.cryptoCreateAccount = this._txBodyData;
-    this._txBodyData.autoRenewPeriod = new proto.Duration({ seconds: 7890000 });
   }
 
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this._cryptoBuilder.setInitialBalance(0).setKey(this.buildOwnersKeys());
+    this._cryptoBuilder
+      .setInitialBalance(0)
+      .setKey(this.buildOwnersKeys())
+      .setAutoRenewPeriod(7890000);
     this._sdkTransactionBuilder = this._cryptoBuilder;
     return super.buildImplementation();
   }
 
   /**
+   * Build the owner keys on its threshold object
    *
-   * @param {boolean} rawKeys defines if the owners keys are obtained in raw or protocol default format
    * @returns {ThresholdKey} the wallet threshold keys
    */
-  private buildOwnersKeys(rawKeys = true): ThresholdKey {
-    /* return this._owners.reduce((tKeys, key) => {
-      if (tKeys.keys && tKeys.keys.keys) {
-        tKeys.keys.keys.push({
-          ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys(rawKeys).pub),
-        });
-      }
-      return tKeys;
-    }, new proto.ThresholdKey({ threshold: 2, keys: { keys: [] } })); */
+  private buildOwnersKeys(): ThresholdKey {
     const threshold = new ThresholdKey(2);
     this._owners.forEach(owner => {
       const pub = new KeyPair({ pub: owner }).getSDKKeys().pub;
@@ -53,18 +43,19 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    // TODO: Add initialization for owners
-    /* const createAcc = tx.txBody.cryptoCreateAccount;
-    if (createAcc && createAcc.key && createAcc.key.thresholdKey) {
-      this.initOwners(createAcc.key.thresholdKey as proto.ThresholdKey);
-    } */
-  }
-
-  private initOwners(keys: proto.ThresholdKey) {
-    if (keys.keys && keys.keys.keys) {
-      keys.keys.keys.forEach(key => {
-        this.owner(toHex(key.ed25519!));
-      });
+    const createAcc = tx.hederaTx
+      ._toProto()
+      .getBody()!
+      .getCryptocreateaccount();
+    if (createAcc && createAcc.getKey() && createAcc.getKey()!.getThresholdkey()) {
+      createAcc
+        .getKey()!
+        .getThresholdkey()!
+        .getKeys()!
+        .getKeysList()
+        .forEach(key => {
+          this.owner(toHex(key.getEd25519()!));
+        });
     }
   }
   // endregion
