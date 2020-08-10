@@ -1,4 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { AccountCreateTransaction, ThresholdKey, Ed25519PublicKey } from '@hashgraph/sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
@@ -10,6 +11,7 @@ import { TransactionType } from '../baseCoin';
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: string[] = [];
   private _txBodyData: proto.CryptoCreateTransactionBody;
+  private _cryptoBuilder: AccountCreateTransaction;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -21,36 +23,44 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this._txBodyData.key = { thresholdKey: this.buildOwnersKeys() };
-    this._txBodyData.initialBalance = 0;
+    this._cryptoBuilder.setInitialBalance(0).setKey(this.buildOwnersKeys());
+    this._sdkTransactionBuilder = this._cryptoBuilder;
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
-    return await super.buildImplementation();
+    return super.buildImplementation();
   }
 
   /**
    *
    * @param {boolean} rawKeys defines if the owners keys are obtained in raw or protocol default format
-   * @returns {proto.ThresholdKey} the wallet threshold keys
+   * @returns {ThresholdKey} the wallet threshold keys
    */
-  private buildOwnersKeys(rawKeys = true): proto.ThresholdKey {
-    return this._owners.reduce((tKeys, key) => {
+  private buildOwnersKeys(rawKeys = true): ThresholdKey {
+    /* return this._owners.reduce((tKeys, key) => {
       if (tKeys.keys && tKeys.keys.keys) {
         tKeys.keys.keys.push({
           ed25519: toUint8Array(new KeyPair({ pub: key }).getKeys(rawKeys).pub),
         });
       }
       return tKeys;
-    }, new proto.ThresholdKey({ threshold: 2, keys: { keys: [] } }));
+    }, new proto.ThresholdKey({ threshold: 2, keys: { keys: [] } })); */
+    const threshold = new ThresholdKey(2);
+    this._owners.forEach(owner => {
+      const pub = new KeyPair({ pub: owner }).getSDKKeys().pub;
+      threshold.add(pub);
+    });
+
+    return threshold;
   }
 
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
-    const createAcc = tx.txBody.cryptoCreateAccount;
+    // TODO: Add initialization for owners
+    /* const createAcc = tx.txBody.cryptoCreateAccount;
     if (createAcc && createAcc.key && createAcc.key.thresholdKey) {
       this.initOwners(createAcc.key.thresholdKey as proto.ThresholdKey);
-    }
+    } */
   }
 
   private initOwners(keys: proto.ThresholdKey) {
