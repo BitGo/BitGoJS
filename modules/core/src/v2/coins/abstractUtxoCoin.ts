@@ -10,6 +10,7 @@ import { UnspentType } from '@bitgo/unspents/dist/codes';
 
 import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
+import { InvalidAddressError } from '../../errors';
 import {
   BaseCoin, AddressCoinSpecific,
   ExtraPrebuildParamsOptions, KeychainsTriplet,
@@ -203,6 +204,9 @@ export interface AddressInfo {
 
 export interface UnspentInfo {
   address: string;
+  amount: number;
+  txid: string;
+  n: number;
 }
 
 export interface RecoverParams {
@@ -214,6 +218,14 @@ export interface RecoverParams {
   ignoreAddressTypes: string[];
   bitgoKey: string;
   walletPassphrase?: string;
+}
+
+export interface UTXOBlockExplorer {
+  baseUrl: string;
+  getAddressUnspent(string): Bluebird<UnspentInfo[]>;
+  //getTxInfo: (string)=>string; // get the full copy of tx with an id
+  // getAddressInfo(addressBase58: string): AddrInfo;
+  //decodeTx: (string)=>string;
 }
 
 export abstract class AbstractUtxoCoin extends BaseCoin {
@@ -233,6 +245,34 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return this._network;
   }
 
+  static blockExplorer: UTXOBlockExplorer = {
+    baseUrl: "https://api.blockchair.com",
+
+    async getAddressUnspent (addressBase58: string): Bluebird<UnspentInfo[]> {
+      // make a call to blockchair apis
+      const url = `${AbstractUtxoCoin.blockExplorer.baseUrl}/${this.getFullName()}/outputs?addresses=${addressBase58}`;
+      try {
+        const res = await request.get(url);
+        if (res.hasOwnProperty('data')) {
+          const unspentInfos: UnspentInfo[] = res.data.map(function processUnspent(unspent) {
+            return {
+              address: addressBase58,
+              amount: unspent.output_total,
+              txid: unspent.hash,
+              n: unspent.index,
+            }
+          });
+          return unspentInfos;
+        }
+      } catch (e) {
+
+      }
+
+
+      // TODO throw this error after confirming the old error message
+      throw new Error(`something unexpected happened while getting unspents for address ${addressBase58}`);   // TODO make this 400 and an api error
+    },
+  }
   static get validAddressTypes(): UnspentType[] {
     const validAddressTypes: UnspentType[] = [];
     // best way I could find to loop over enum values
@@ -1520,6 +1560,17 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   /**
+   * The full name of the coin we should use while making quries to blockchair
+   * Blockchair uses slightly different naming conventions for some of the utxo coins
+   * Hence, some utxo coins should override this function and output the accurate
+   * string
+   * @returns stringg
+   */
+  getBlockchairCoinName(): string {
+    return this.getFullName();
+  }
+
+  /**
    * Get the current market price from a third party to be used for recovery
    */
   getRecoveryMarketPrice(): Bluebird<string> {
@@ -1581,7 +1632,9 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   }
 
   protected abstract getAddressInfoFromExplorer(address: string): Bluebird<AddressInfo>;
-  protected abstract getUnspentInfoFromExplorer(address: string): Bluebird<UnspentInfo[]>;
+  protected getUnspentInfoFromExplorer(address: string): Bluebird<UnspentInfo[]> {
+    return AbstractUtxoCoin.blockExplorer.getAddressUnspent(address);
+  }
 
   /**
    * Builds a funds recovery transaction without BitGo
@@ -1634,7 +1687,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
                 // Try to find unspents on it.
                 const addressUnspents: UnspentInfo[] = yield self.getUnspentInfoFromExplorer(address.address);
-
                 addressUnspents.forEach(function addAddressToUnspent(unspent) {
                   unspent.address = address.address;
                   walletUnspents.push(unspent);
@@ -1758,7 +1810,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       txInfo.inputs = unspents.map(function addInputForUnspent(unspent) {
         const address = addressesById[unspent.address];
 
-        transactionBuilder.addInput(unspent.txid, unspent.n, 0xffffffff, address.outputScript);
+        transactionBuilder.addInput(unspent.txid, unspent.n, 0xffffffff, address.outputScript);    // txHash, vout, sequence, prevOutScript
 
         return {
           chainPath: address.chainPath,
