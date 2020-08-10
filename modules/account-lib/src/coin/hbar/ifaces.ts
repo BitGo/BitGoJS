@@ -1,3 +1,4 @@
+import { Ed25519PublicKey, Ed25519PrivateKey } from '@hashgraph/sdk';
 import { KeyPair } from '.';
 
 export interface TxData {
@@ -21,4 +22,9 @@ export interface HederaNode {
 export interface SignatureData {
   signature: string;
   keyPair: KeyPair;
+}
+
+export interface SDKKeyPair {
+  pub: Ed25519PublicKey;
+  prv?: Ed25519PrivateKey;
 }
