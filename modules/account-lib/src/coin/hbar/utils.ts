@@ -1,5 +1,8 @@
 import * as _ from 'lodash';
 import { Ed25519PublicKey, TransactionId, AccountId } from '@hashgraph/sdk';
+import { AccountID } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
+import { Timestamp } from '@hashgraph/sdk/lib/generated/Timestamp_pb';
+
 import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
@@ -149,22 +152,27 @@ export function isValidRawTransactionFormat(rawTransaction: any): boolean {
 }
 
 /**
- * Returns a string representation of an {proto.IAccountID} object
+ * Returns a string representation of an AccountID object
  *
- * @param {proto.IAccountID} - account id to be cast to string
- * @returns {string} - the string representation of the {proto.IAccountID}
+ * @param {AccountID} accountId - account id to be cast to string
+ * @returns {object} - the string representation of the AccountID
  */
-export function stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAccountID): string {
-  return `${shardNum || 0}.${realmNum || 0}.${accountNum}`;
+export function stringifyAccountId(accountId: AccountID): string {
+  const shardnum = accountId.getShardnum();
+  const realmnum = accountId.getRealmnum();
+  const accountnum = accountId.getAccountnum();
+  return `${shardnum || 0}.${realmnum || 0}.${accountnum}`;
 }
 
 /**
- * Returns a string representation of an {proto.ITimestamp} object
+ * Returns a string representation of an Timestamp object
  *
- * @param {proto.ITimestamp} - timestamp to be cast to string
- * @returns {string} - the string representation of the {proto.ITimestamp}
+ * @param {Timestamp} timestamp - timestamp to be cast to string
+ * @returns {object} - the string representation of the Timestamp
  */
-export function stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
+export function stringifyTxTime(timestamp: Timestamp) {
+  const seconds = timestamp.getSeconds();
+  const nanos = timestamp.getNanos();
   return `${seconds}.${nanos}`;
 }
 
