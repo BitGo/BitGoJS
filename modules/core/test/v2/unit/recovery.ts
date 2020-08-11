@@ -36,16 +36,23 @@ describe('Recovery:', function() {
   });
 
   xdescribe('Recover Bitcoin', function() {
+    const btcEncryptedUserKey = '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}';
+    const btcUserPriv1 = 'xprv9s21ZrQH143K44auQTYjyFpU8aGEpbsbcU5yGjbwfyKpbBpvHPhUHEu3QR6G74rLPyM9ucop7oyXtKYDrjNkU8YeSryQbKU476ijp2qWcBm';
+    const btcBackUpPriv1 = 'xprv9s21ZrQH143K2cvHDcdruLPTQBUJBDd1XAVbAzFMBFGjcMSH2DgR7T37Dy6YwcRwkh24UkXQKcFAhmkb6g9PXJNqPvfDBAe1eaUK2kJ9stv';
+    const btcBackUpPub = 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK';
+    const btcEncryptedBackupPriv = '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}
+    const btcBitGoPub = 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst'
+    const btcRecoveryDestination = '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw';
     it('should generate BTC recovery tx', co(function *() {
       recoveryNocks.nockBtcRecovery(bitgo, false);
 
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
-        userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
-        backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
-        bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
+        userKey: btcEncryptedUserKey,
+        backupKey: btcEncryptedBackupPriv,
+        bitgoKey: btcBitGoPub,
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
-        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        recoveryDestination: btcRecoveryDestination,
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       });
@@ -65,7 +72,7 @@ describe('Recovery:', function() {
       recovery.tx.Vout[0].ScriptPubKey.Type.should.equal('scripthash');
       recovery.tx.Vout[0].ScriptPubKey.ReqSigs.should.equal(1);
       recovery.tx.Vout[0].ScriptPubKey.Addresses.length.should.equal(1);
-      recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
+      recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal(btcRecoveryDestination);
     }));
 
     it('should generate BTC recovery tx with unencrypted keys', co(function *() {
@@ -73,10 +80,10 @@ describe('Recovery:', function() {
 
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
-        userKey: 'xprv9s21ZrQH143K44auQTYjyFpU8aGEpbsbcU5yGjbwfyKpbBpvHPhUHEu3QR6G74rLPyM9ucop7oyXtKYDrjNkU8YeSryQbKU476ijp2qWcBm',
-        backupKey: 'xprv9s21ZrQH143K2cvHDcdruLPTQBUJBDd1XAVbAzFMBFGjcMSH2DgR7T37Dy6YwcRwkh24UkXQKcFAhmkb6g9PXJNqPvfDBAe1eaUK2kJ9stv',
-        bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
-        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        userKey: btcUserPriv1,
+        backupKey: btcBackUpPriv1,
+        bitgoKey: btcBitGoPub,
+        recoveryDestination: btcRecoveryDestination,
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       });
@@ -96,7 +103,7 @@ describe('Recovery:', function() {
       recovery.tx.Vout[0].ScriptPubKey.Type.should.equal('scripthash');
       recovery.tx.Vout[0].ScriptPubKey.ReqSigs.should.equal(1);
       recovery.tx.Vout[0].ScriptPubKey.Addresses.length.should.equal(1);
-      recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
+      recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal(btcRecoveryDestination);
     }));
 
     it('should generate BTC recovery tx with KRS', co(function *() {
@@ -104,11 +111,11 @@ describe('Recovery:', function() {
 
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
-        userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
-        backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
-        bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
+        userKey: btcEncryptedUserKey,
+        backupKey: btcBackUpPub,
+        bitgoKey: btcBitGoPub,
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
-        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        recoveryDestination: btcRecoveryDestination,
         krsProvider: 'keyternal',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
@@ -129,7 +136,7 @@ describe('Recovery:', function() {
       recovery.tx.Vout[0].ScriptPubKey.Type.should.equal('scripthash');
       recovery.tx.Vout[0].ScriptPubKey.ReqSigs.should.equal(1);
       recovery.tx.Vout[0].ScriptPubKey.Addresses.length.should.equal(1);
-      recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
+      recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal(btcRecoveryDestination);
       recovery.tx.Vout[1].N.should.equal(1);
       recovery.tx.Vout[1].Value.should.equal(0.0099);
       recovery.tx.Vout[1].ScriptPubKey.Asm.should.equal('OP_HASH160 1b60c33def13c3eda4cf4835e11a633e4b3302ec OP_EQUAL');
@@ -148,11 +155,11 @@ describe('Recovery:', function() {
 
       const basecoin = bitgo.coin('tbtc');
       yield basecoin.recover({
-        userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
-        backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
-        bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
+        userKey: btcEncryptedUserKey,
+        backupKey: btcBackUpPub,
+        bitgoKey: btcBitGoPub,
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
-        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        recoveryDestination: btcRecoveryDestination,
         krsProvider: 'keyternal',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
@@ -169,11 +176,11 @@ describe('Recovery:', function() {
 
       const basecoin = bitgo.coin('tbtc');
       yield basecoin.recover({
-        userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
-        backupKey: 'xpub661MyMwAqRbcF6zkKeAsGULBxDJnagLrtPRByNexjaoiV9mRZkzffFMb5FR6CHez3UfZPPGvZoZnw5V5J1CNdFpuv7Dz6TBjABeB7c1QtfK',
-        bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
+        userKey: btcEncryptedUserKey,
+        backupKey: btcBackUpPub,
+        bitgoKey: btcBitGoPub,
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
-        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        recoveryDestination: btcRecoveryDestination,
         krsProvider: 'keyternal',
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
