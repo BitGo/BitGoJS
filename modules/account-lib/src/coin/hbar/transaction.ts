@@ -1,18 +1,14 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
-import { Writer } from 'protobufjs';
-// import * as nacl from 'tweetnacl';
 import { Transaction as SDKTransaction } from '@hashgraph/sdk';
 import { TransactionBody } from '@hashgraph/sdk/lib/generated/TransactionBody_pb';
-// import { SignatureMap, SignaturePair } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
-import Long from 'long';
-// import { proto } from '../../../resources/hbar/protobuf/hedera';
+import { SignatureMap, SignaturePair } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
+
 import { BaseTransaction } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { SigningError } from '../baseCoin/errors';
 import { TxData } from './ifaces';
-import { stringifyAccountId, stringifyTxTime, toHex } from './utils';
+import { stringifyAccountId, stringifyTxTime, toHex, toUint8Array } from './utils';
 import { KeyPair } from './';
 
 export class Transaction extends BaseTransaction {
@@ -34,13 +30,30 @@ export class Transaction extends BaseTransaction {
       throw new SigningError('Missing private key');
     }
     this.hederaTx.sign(keys.prv);
-    this.addSignature();
+    this.replaceSignatures();
+  }
+
+  /**
+   * Add a signature to this transaction
+   *
+   * @param signature The signature to add, in string hex format
+   * @param key The key of the key that created the signature
+   */
+  addSignature(signature: string, key: KeyPair): void {
+    const sigPair = new SignaturePair();
+    sigPair.setPubkeyprefix(toUint8Array(key.getKeys(true).pub));
+    sigPair.setEd25519(toUint8Array(signature));
+
+    const sigMap = this._hederaTx._toProto().getSigmap() || new SignatureMap();
+
+    sigMap.getSigpairList().push(sigPair);
+    this._hederaTx._toProto().setSigmap(sigMap);
   }
 
   /**
    * Add a signature to this transaction
    */
-  addSignature(): void {
+  replaceSignatures(): void {
     this._signatures = this.hederaTx
       ._toProto()
       .getSigmap()!

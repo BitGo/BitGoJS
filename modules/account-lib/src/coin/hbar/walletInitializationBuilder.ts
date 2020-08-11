@@ -54,7 +54,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
         .getKeys()!
         .getKeysList()
         .forEach(key => {
-          this.owner(toHex(key.getEd25519()!));
+          this.owner(toHex(key.getEd25519_asU8()!));
         });
     }
   }
