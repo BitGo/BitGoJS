@@ -164,13 +164,14 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
       };
     }
 
-    const outputEntry = transaction.outputs[0];
-    const recipients = [
-      {
-        address: outputEntry.address,
-        amount: outputEntry.value,
-      },
-    ];
+    const recipients: Recipient[] = [];
+    let output;
+    for (output of transaction.outputs) {
+      recipients.push({
+        address: output.address,
+        amount: output.value,
+      });
+    }
 
     const signatures = transaction.signature;
 

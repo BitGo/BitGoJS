@@ -99,6 +99,7 @@ export interface PrebuildTransactionOptions {
       pendingApprovalId?: string;
     };
     offlineVerification?: boolean;
+    walletBaseAddress?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
@@ -479,11 +480,11 @@ export class Wallet {
 
   prebuildWhitelistedParams(): string[] {
     return [
-      'addressType', 'changeAddress', 'cpfpFeeRate', 'cpfpTxIds', 'enforceMinConfirmsForChange', 'feeRate', 'gasLimit',
-      'gasPrice', 'idfSignedTimestamp', 'idfUserId', 'idfVersion', 'instant', 'lastLedgerSequence',
-      'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'message', 'minConfirms', 'minValue',
-      'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy', 'targetWalletUnspents',
-      'trustlines', 'type', 'unspents', 'validFromBlock', 'validToBlock',
+      'addressType', 'changeAddress', 'consolidateAddresses', 'cpfpFeeRate', 'cpfpTxIds', 'enforceMinConfirmsForChange',
+      'feeRate', 'gasLimit', 'gasPrice', 'idfSignedTimestamp', 'idfUserId', 'idfVersion', 'instant',
+      'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'message', 'minConfirms',
+      'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
+      'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'validFromBlock', 'validToBlock', 'walletBaseAddress',
     ];
   }
 
@@ -492,7 +493,7 @@ export class Wallet {
    */
   prebuildConsolidateTransactionParams(): string[] {
     return [
-      'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock',
+      'consolidateAddresses', 'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock',
     ];
   }
 
@@ -1662,6 +1663,9 @@ export class Wallet {
       delete prebuild.wallet;
       delete prebuild.buildParams;
       prebuild = _.extend({}, prebuild, { walletId: self.id() });
+      if (self._wallet && self._wallet.coinSpecific) {
+        prebuild = _.extend({}, prebuild, { walletBaseAddress: self._wallet.coinSpecific.baseAddress });
+      }
       debug('final transaction prebuild: %O', prebuild);
       return prebuild as PrebuildTransactionResult;
     }).call(this).asCallback(callback);

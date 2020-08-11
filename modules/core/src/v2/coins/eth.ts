@@ -152,6 +152,7 @@ interface OfflineVaultTxInfo {
   gasLimit: number;
   recipients: Recipient[];
   walletContractAddress: string;
+  walletBaseAddress?: string;
   amount: string;
   backupKeyNonce: number;
 }
