@@ -66,7 +66,6 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    // return toHex(this.encode(this._hederaTx));
     return toHex(this.hederaTx.toBytes());
   }
 

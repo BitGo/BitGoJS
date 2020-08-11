@@ -11,7 +11,14 @@ import {
 } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
-import { getCurrentTime, isValidAddress, isValidRawTransactionFormat, isValidTimeString, toUint8Array } from './utils';
+import {
+  getCurrentTime,
+  isValidAddress,
+  isValidRawTransactionFormat,
+  isValidTimeString,
+  toUint8Array,
+  toHex,
+} from './utils';
 import { KeyPair } from './keyPair';
 import { SignatureData, HederaNode, Timestamp } from './ifaces';
 
@@ -44,11 +51,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       .setTransactionMemo(this._memo)
       .setNodeAccountId(new AccountId(this._node.nodeId))
       .setTransactionValidDuration(this._duration);
-    /* const hTransaction = this.transaction.hederaTx || new proto.Transaction();
-    hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
-    this.transaction.body(hTransaction);*/
-    // TODO: Add a way to recover previous inner signature in the tx proto
+    const previousSignatures = this.transaction.hederaTx
+      ._toProto()!
+      .getSigmap()!
+      .getSigpairList();
     this.transaction.body(this._sdkTransactionBuilder.build());
+
+    for (const sigPair of previousSignatures) {
+      this.transaction.addSignature(
+        toHex(sigPair.getEd25519_asU8()),
+        new KeyPair({ pub: toHex(sigPair.getPubkeyprefix_asU8()) }),
+      );
+    }
     for (const kp of this._multiSignerKeyPairs) {
       await this.transaction.sign(kp);
     }
@@ -90,7 +104,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     this.transaction = tx;
-    this.transaction.loadPreviousSignatures();
     const txData = tx.toJson();
     this.fee({ fee: txData.fee.toString() });
     this.source({ address: txData.from });
