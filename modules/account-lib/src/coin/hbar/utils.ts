@@ -167,3 +167,17 @@ export function stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAc
 export function stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
   return `${seconds}.${nanos}`;
 }
+
+/**
+ * Returns a key without prefix
+ *
+ * @param {string} prefix The prefix to be removed
+ * @param {string} key The private or public key string
+ * @returns {string} The key without prefix
+ */
+export function removePrefix(prefix: string, key: string): string {
+  if (key.startsWith(prefix)) {
+    return key.slice(prefix.length);
+  }
+  return key;
+}

@@ -21,7 +21,7 @@ export const OPERATOR = {
 export const ACCOUNT_2 = {
   accountId: '0.0.75861',
   privateKey: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d9a',
-  publicKey: '302a300506032b6570032100592a4fbb7263c59d450e651df96620dc9208ee7c7d9d6f2fdcb91c53f8831261',
+  publicKey: '592a4fbb7263c59d450e651df96620dc9208ee7c7d9d6f2fdcb91c53f8831261',
 };
 
 export const ACCOUNT_3 = {

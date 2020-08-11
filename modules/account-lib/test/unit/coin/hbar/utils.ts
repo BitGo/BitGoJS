@@ -1,5 +1,6 @@
 import should from 'should';
 import * as Utils from '../../../../src/coin/hbar/utils';
+import * as testData from '../../../resources/hbar/hbar';
 
 describe('HBAR util library', function() {
   describe('address', function() {
@@ -54,6 +55,42 @@ describe('HBAR util library', function() {
       for (const timestamp of invalidTimestamp) {
         Utils.isValidTimeString(timestamp).should.be.false();
       }
+    });
+  });
+
+  describe('should remove prefix', function() {
+    it('from a private key', function() {
+      const rawPrivateKey = Utils.removePrefix(testData.ed25519PrivKeyPrefix, testData.ACCOUNT_1.privateKey);
+      should.deepEqual(rawPrivateKey, '62b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01');
+    });
+
+    it('from a public key', function() {
+      const rawPublicKey = Utils.removePrefix(testData.ed25519PubKeyPrefix, testData.ACCOUNT_1.publicKey);
+      should.deepEqual(rawPublicKey, '5a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9');
+    });
+  });
+
+  describe('should return the same key', function() {
+    it('from a private key without the prefix', function() {
+      const rawPrivateKey = Utils.removePrefix(testData.ed25519PrivKeyPrefix, testData.ACCOUNT_2.privateKey);
+      should.deepEqual(rawPrivateKey, testData.ACCOUNT_2.privateKey);
+    });
+
+    it('from a public key without the prefix', function() {
+      const rawPublicKey = Utils.removePrefix(testData.ed25519PubKeyPrefix, testData.ACCOUNT_2.publicKey);
+      should.deepEqual(rawPublicKey, testData.ACCOUNT_2.publicKey);
+    });
+
+    it('from a public key with chars of prefix in the middle', function() {
+      const publicKey = '592a4fbb7263c59d450e651d' + testData.ed25519PubKeyPrefix + 'f96620dc9208ee7c';
+      const rawPublicKey = Utils.removePrefix(testData.ed25519PubKeyPrefix, publicKey);
+      should.deepEqual(rawPublicKey, publicKey);
+    });
+
+    it('from a private key with chars of prefix in the middle', function() {
+      const privateKey = '5bb72603f237c099' + testData.ed25519PrivKeyPrefix + '3f7973d37fdade3c';
+      const rawPrivateKey = Utils.removePrefix(testData.ed25519PrivKeyPrefix, privateKey);
+      should.deepEqual(rawPrivateKey, privateKey);
     });
   });
 });
