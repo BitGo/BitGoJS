@@ -65,7 +65,6 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    // return toHex(this.encode(this._hederaTx));
     return toHex(this.hederaTx.toBytes());
   }
 
@@ -115,32 +114,6 @@ export class Transaction extends BaseTransaction {
     this._txBody = tx._toProto().getBody()!;
     this._hederaTx = tx;
     // this.loadPreviousSignatures();
-  }
-
-  /**
-   * Decode previous signatures from the inner hedera transaction
-   * and save them into the base transaction signature list.
-   */
-  loadPreviousSignatures(): void {
-    if (
-      this._hederaTx._toProto().getSigmap() &&
-      this._hederaTx
-        ._toProto()
-        .getSigmap()!
-        .getSigpairList()
-    ) {
-      const sigPairs = this._hederaTx
-        ._toProto()
-        .getSigmap()!
-        .getSigpairList();
-      sigPairs.forEach(sigPair => {
-        // const signature = sigPair.ed25519;
-        const signature = sigPair.getEd25519_asU8();
-        if (signature) {
-          this._signatures.push(toHex(signature));
-        }
-      });
-    }
   }
 
   /**
