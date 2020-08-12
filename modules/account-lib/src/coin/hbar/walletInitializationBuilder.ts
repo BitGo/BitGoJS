@@ -13,6 +13,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._cryptoBuilder = new AccountCreateTransaction();
   }
 
   // region Base Builder
