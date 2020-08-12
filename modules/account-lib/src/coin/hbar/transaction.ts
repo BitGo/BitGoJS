@@ -13,7 +13,6 @@ import { KeyPair } from './';
 
 export class Transaction extends BaseTransaction {
   private _hederaTx: SDKTransaction;
-  private _txBody: TransactionBody;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -71,13 +70,13 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   toJson(): TxData {
     const txData = this.hederaTx._toProto().toObject();
-    const txBody = txData.body!;
+    const txBody = this.txBody.toObject();
 
     const acc = stringifyAccountId(txBody.transactionid!.accountid!);
     const time = stringifyTxTime(txBody.transactionid!.transactionvalidstart!);
     const result: TxData = {
       id: acc + '@' + time,
-      hash: toHex(this.hederaTx.hash()),
+      hash: txData.sigmap ? toHex(this.hederaTx.hash()) : '',
       data: toHex(this.hederaTx._toProto().getBodybytes_asU8()),
       fee: new BigNumber(txBody.transactionfee).toNumber(),
       from: acc,
@@ -87,8 +86,8 @@ export class Transaction extends BaseTransaction {
       memo: txBody.memo,
     };
 
-    if (this._txBody.hasCryptotransfer()) {
-      const transfers = txBody.cryptotransfer!.transfers!.accountamountsList[0];
+    if (txBody.cryptotransfer) {
+      const transfers = txBody.cryptotransfer!.transfers!.accountamountsList[1];
       result.amount = transfers.amount;
       result.to = stringifyAccountId(transfers.accountid!);
     }
@@ -97,7 +96,7 @@ export class Transaction extends BaseTransaction {
 
   //region getters & setters
   get txBody(): TransactionBody {
-    return this._txBody;
+    return TransactionBody.deserializeBinary(this._hederaTx._toProto().getBodybytes_asU8());
   }
 
   get hederaTx(): SDKTransaction {
@@ -110,10 +109,7 @@ export class Transaction extends BaseTransaction {
    * @param {SDKTransaction} tx body transaction
    */
   body(tx: SDKTransaction) {
-    // this._txBody = TransactionBody.deserializeBinary(tx._toProto().getBodybytes_asU8());
-    this._txBody = tx._toProto().getBody()!;
     this._hederaTx = tx;
-    // this.loadPreviousSignatures();
   }
 
   /**
