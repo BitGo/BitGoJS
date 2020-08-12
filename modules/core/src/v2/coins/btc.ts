@@ -67,17 +67,19 @@ export class Btc extends AbstractUtxoCoin {
   }
 
   recoveryBlockchainExplorerUrl(url: string): string {
-    // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
-    throw new Error('btc recovery under maintenance');
+    return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl + url;
   }
 
+  // using blockchair api: https://blockchair.com/api/docs#link_300
+  // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
   getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
     const self = this;
     return co(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/address/${addressBase58}`)).result();
-
-      addrInfo.txCount = addrInfo.address.total.transaction_count;
-      addrInfo.totalBalance = addrInfo.address.total.balance_int;
+      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`)).result();
+      // addrInfo.txCount = addrInfo.address.total.transaction_count;
+      // addrInfo.totalBalance = addrInfo.address.total.balance_int;
+      addrInfo.txCount = addrInfo.data[addressBase58].address.transaction_count;
+      addrInfo.totalBalance = addrInfo.data[addressBase58].address.balance;
 
       return addrInfo;
     }).call(this);
