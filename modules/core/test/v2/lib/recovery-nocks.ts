@@ -7,7 +7,6 @@ import * as nock from 'nock';
 import { Environment, Environments } from '../../../src/v2/environments';
 
 export function nockBtcRecovery(bitgo, isKrsRecovery) {
-  //throw new Error('TODO: BG-23161 - replace smartbit block explorer which is now permanently down');
   const env = Environments[bitgo.getEnv()] as any;
   const blockchairURL = `${env.blockchairBaseUrl}`;
   nock('https://bitcoinfees.earn.com')
