@@ -11,6 +11,7 @@ import { randomBytes } from 'crypto';
 import {
   BaseCoin,
   FullySignedTransaction,
+  HalfSignedTransaction,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -63,14 +64,10 @@ export interface ExplainTransactionOptions {
   feeInfo: TransactionFee;
 }
 
-export interface HalfSignedEthLikeTransaction {
+export interface HalfSignedEthLikeTransaction extends HalfSignedTransaction {
   halfSigned?: {
-    txHex?: string;
-    payload?: string;
-    txBase64?: string;
-    operationHash?: string;
-    signatures?: string[];
-    recipients?: Recipient[];
+    txHex?: never;
+    recipients: Recipient[];
     expiration?: number;
   };
 }
@@ -157,28 +154,11 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     txBuilder.transfer().key(new Eth.KeyPair({ prv: params.prv }).getKeys().prv!);
     const transaction = await txBuilder.build();
 
-    if (params.isLastSignature) {
-      // In this case when we're doing the second (final) signature
-      return {
-        txHex: transaction.toBroadcastFormat(),
-      };
-    }
-
-    const recipients: Recipient[] = [];
-    let output;
-    for (output of transaction.outputs) {
-      recipients.push({
-        address: output.address,
-        amount: output.value,
-      });
-    }
-
-    const signatures = transaction.signature;
+    const recipients = transaction.outputs.map(output => ({ address: output.address, amount: output.value }));
 
     return {
       halfSigned: {
         txHex: transaction.toBroadcastFormat(),
-        signatures: signatures,
         recipients: recipients,
         expiration: params.txPrebuild.expireTime,
       },
