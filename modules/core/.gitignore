@@ -21,3 +21,4 @@ coverage.lcov
 dist/
 docs/
 bitgo-*.tgz
+!test/browser

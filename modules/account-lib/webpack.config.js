@@ -69,7 +69,7 @@ module.exports = function setupWebpack(env) {
       extensions: ['.js']
     },
     // Main project entry point
-    entry: path.join(__dirname, 'dist', 'browserify', 'bitgo-account-lib.browserify.js'),
+    entry: path.join(__dirname, 'dist', 'src', 'index.js'),
 
     // Output directory and filename
     output: {
@@ -102,6 +102,11 @@ module.exports = function setupWebpack(env) {
 
     // Create a source map for the bundled code (dev and test only)
     devtool: !env.prod && 'source-map',
-    mode: env.prod ? 'production' : 'development'
+    mode: env.prod ? 'production' : 'development',
+    target: 'web',
+    node: {
+      util: true,
+      child_process: 'empty',
+    },
   };
 };
