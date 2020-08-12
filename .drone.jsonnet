@@ -143,6 +143,17 @@ local IntegrationTest(version) = {
   ],
 };
 
+local BrowserTest(version) = {
+  kind: "pipeline",
+  name: "Browser Tests",
+  steps: [
+     BuildInfo(version),
+    Install(version),
+    CommandWithSecrets("ubrowser-tests", version),
+    UploadArtifacts(version, "unit", true),
+  ]
+}
+
 local MeasureSizeAndTiming(version) = {
   kind: "pipeline",
   name: "size and timing (node:" + version + ")",
