@@ -169,11 +169,11 @@ export function stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
 }
 
 /**
- * Returns a key without prefix
+ * Remove the specified prefix from a string only if it starts with that prefix
  *
  * @param {string} prefix The prefix to be removed
- * @param {string} key The private or public key string
- * @returns {string} The key without prefix
+ * @param {string} key The original string, usually a private or public key
+ * @returns {string} The string without prefix
  */
 export function removePrefix(prefix: string, key: string): string {
   if (key.startsWith(prefix)) {
