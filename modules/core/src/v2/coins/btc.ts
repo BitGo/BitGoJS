@@ -1,4 +1,5 @@
 import { BitGo } from '../../bitgo';
+import { BlockExplorerUnavailable } from '../../errors';
 import { BaseCoin } from '../baseCoin';
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import * as common from '../../common';
@@ -108,23 +109,44 @@ export class Btc extends AbstractUtxoCoin {
     }).call(this);
   }
 
+  /**
+   * Verify that the txhex user signs correspond to the correct tx they intended
+   * by 1) getting back the decoded transaction based on the txhex
+   * and then 2) compute the txid (hash), h1 of the decoded transaction 3) compare h1
+   * to the txid (hash) of the transaction (including unspent info) we constructed
+   * @param {TransactionInfo} txInfo
+   * @returns {Bluebird<any>}
+   */
   public verifyRecoveryTransaction(txInfo: TransactionInfo): Bluebird<any> {
     const self = this;
     return co(function *verifyRecoveryTransaction() {
       const smartbitURL = common.Environments[this.bitgo.getEnv()].smartbitBaseUrl + '/blockchain/decodetx';
-      const decodedTx = yield request.post(smartbitURL)
+      const res = yield request.post(smartbitURL)
       .send({ hex: txInfo.transactionHex })
       .result();
 
-      const transactionDetails = decodedTx.transaction;
+      if (!res) {
+        throw new BlockExplorerUnavailable();
+      }
+
+      /**
+       * Smartbit's response when something goes wrong
+       * {"success":false,"error":{"code":"REQ_ERROR","message":"TX decode failed"}}
+       * we should process the error message here
+       * interpret the res from smartbit
+       */
+      if (!res.success) {
+        throw new Error(res.error.message);
+      }
+
+      const transactionDetails = res.transaction;
 
       const tx = bitcoin.Transaction.fromHex(txInfo.transactionHex, this.network);
       if (transactionDetails.TxId !== tx.getId()) {
-        console.log(transactionDetails.TxId);
-        console.log(tx.getId());
+        console.log('txhash/txid returned by blockexplorer: ', transactionDetails.TxId);
+        console.log('txhash/txid of the transaction bitgo constructed', tx.getId());
         throw new Error('inconsistent recovery transaction id');
       }
-
       return transactionDetails;
     }).call(this);
   }

@@ -105,6 +105,13 @@ export class MethodNotImplementedError extends BitGoJsError {
   }
 }
 
+export class BlockExplorerUnavailable extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'third-party blockexplorer not responding');
+    Object.setPrototypeOf(this, BlockExplorerUnavailable.prototype);
+  }
+}
+
 export class InvalidMemoIdError extends InvalidAddressError {
   public constructor(message?: string) {
     super(message || 'invalid memo id');
