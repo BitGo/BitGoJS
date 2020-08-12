@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { AccountId, TransactionId } from '@hashgraph/sdk';
 import { TransactionBuilder as SDKTransactionBuilder } from '@hashgraph/sdk/lib/TransactionBuilder';
+import { SignaturePair } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
 import { BaseTransactionBuilder } from '../baseCoin';
 import {
   BuildTransactionError,
@@ -51,17 +52,23 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       .setTransactionMemo(this._memo)
       .setNodeAccountId(new AccountId(this._node.nodeId))
       .setTransactionValidDuration(this._duration);
-    const previousSignatures = this.transaction.hederaTx
-      ._toProto()!
-      .getSigmap()!
-      .getSigpairList();
+    // TODO: refactor this previous signature
+    let previousSignatures: SignaturePair[] = [];
+    if (this.transaction.hederaTx) {
+      previousSignatures = this.transaction.hederaTx
+        ._toProto()!
+        .getSigmap()!
+        .getSigpairList();
+    }
     this.transaction.body(this._sdkTransactionBuilder.build());
 
-    for (const sigPair of previousSignatures) {
-      this.transaction.addSignature(
-        toHex(sigPair.getEd25519_asU8()),
-        new KeyPair({ pub: toHex(sigPair.getPubkeyprefix_asU8()) }),
-      );
+    if (previousSignatures.length > 0) {
+      for (const sigPair of previousSignatures) {
+        this.transaction.addSignature(
+          toHex(sigPair.getEd25519_asU8()),
+          new KeyPair({ pub: toHex(sigPair.getPubkeyprefix_asU8()) }),
+        );
+      }
     }
     for (const kp of this._multiSignerKeyPairs) {
       await this.transaction.sign(kp);
