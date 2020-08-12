@@ -111,7 +111,8 @@ export class Btc extends AbstractUtxoCoin {
   public verifyRecoveryTransaction(txInfo: TransactionInfo): Bluebird<any> {
     const self = this;
     return co(function *verifyRecoveryTransaction() {
-      const decodedTx = yield request.post(self.recoveryBlockchainExplorerUrl(`/decodetx`))
+      const smartbitURL = common.Environments[this.bitgo.getEnv()].smartbitBaseUrl + '/blockchain/decodetx';
+      const decodedTx = yield request.post(smartbitURL)
       .send({ hex: txInfo.transactionHex })
       .result();
 

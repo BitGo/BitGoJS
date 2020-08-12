@@ -35,7 +35,7 @@ describe('Recovery:', function() {
     nock.cleanAll();
   });
 
-  xdescribe('Recover Bitcoin', function() {
+  describe('Recover Bitcoin', function() {
     it('should generate BTC recovery tx', co(function *() {
       recoveryNocks.nockBtcRecovery(bitgo, false);
 
