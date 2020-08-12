@@ -44,16 +44,20 @@ export class Transaction extends BaseTransaction {
     sigPair.setPubkeyprefix(toUint8Array(key.getKeys(true).pub));
     sigPair.setEd25519(toUint8Array(signature));
 
-    const sigMap = this._hederaTx._toProto().getSigmap() || new SignatureMap();
+    const sigMap = this.hederaTx._toProto().getSigmap() || new SignatureMap();
 
+    const innerTx = this.hederaTx._toProto();
     sigMap.getSigpairList().push(sigPair);
-    this._hederaTx._toProto().setSigmap(sigMap);
+    innerTx.setSigmap(sigMap);
+    this.bodyBytes(innerTx.serializeBinary());
+    this._signatures.push(signature);
   }
 
   /**
    * Add a signature to this transaction
    */
   replaceSignatures(): void {
+    // TODO: edit jsdoc
     this._signatures = this.hederaTx
       ._toProto()
       .getSigmap()!
@@ -177,6 +181,7 @@ export class Transaction extends BaseTransaction {
    * @param {Uint8Array} bytes encoded body transaction
    */
   bodyBytes(bytes: Uint8Array) {
+    // TODO: change naming for body and bodybytes
     this.body(SDKTransaction.fromBytes(bytes));
   }
   //endregion
