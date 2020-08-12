@@ -15,6 +15,7 @@ interface EnvironmentTemplate {
   signingAddress: string;
   serverXpub: string;
   hsmXpub: string;
+  blockchairBaseUrl: string;
   btcExplorerBaseUrl: string;
   bchExplorerBaseUrl: string;
   bsvExplorerBaseUrl?: string;
@@ -91,6 +92,7 @@ const mainnetBase: EnvironmentTemplate = {
   signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
   serverXpub: hardcodedPublicKeys.serverXpub.prod,
   hsmXpub: hardcodedPublicKeys.hsmXpub.prod,
+  blockchairBaseUrl: 'https://api.blockchair.com/bitcoin',
   btcExplorerBaseUrl: 'https://blockstream.info/api',
   bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
   btgExplorerBaseUrl: 'https://btgexplorer.com/api',
@@ -115,6 +117,7 @@ const testnetBase: EnvironmentTemplate = {
   signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
+  blockchairBaseUrl: 'https://api.blockchair.com/bitcoin/testnet',
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
   bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
   etherscanBaseUrl: 'https://kovan.etherscan.io',
@@ -168,6 +171,7 @@ export const Environments: Environments = {
   }),
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
+    blockchairBaseUrl: 'https://api.blockchair.fakeurl/bitcoin/testnet',
     btcExplorerBaseUrl: 'https://blockstream.fakeurl/testnet/api',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.fakeurl/api',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
@@ -203,6 +207,10 @@ export const Environments: Environments = {
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network,
     rmgNetwork: process.env.BITGO_CUSTOM_RMG_NETWORK as V1RmgNetwork,
     hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
+    blockchairBaseUrl:
+      process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
+        ? 'https://api.blockchair.com/bitcoin/testnet'
+        : 'https://api.blockchair.com/bitcoin',
     btcExplorerBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://blockstream.info/testnet/api'
