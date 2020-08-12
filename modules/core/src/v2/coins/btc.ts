@@ -85,18 +85,26 @@ export class Btc extends AbstractUtxoCoin {
     }).call(this);
   }
 
+  // using blockchair api: https://blockchair.com/api/docs#link_300
+  // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
+  // example utxo from response:
+  // {"block_id":-1,"transaction_hash":"cf5bcd42c688cb7c55b5811645e7f0d2a000a85564ca3d6b9fc20f57e14b30bb","index":1,"value":558},
   getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
     const self = this;
     return co(function *getUnspentInfoFromExplorer() {
-      const unspentInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/address/${addressBase58}/unspent`)).result();
+      const unspentInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`)).result();
 
-      const unspents = unspentInfo.unspent;
+      const unspents = unspentInfo.data[addressBase58].utxo;
 
-      unspents.forEach(function processUnspent(unspent) {
-        unspent.amount = unspent.value_int;
+      const unspentInfos = unspents.map(unspent => {
+        return {
+          amount: unspent.value,
+          n: unspent.index,
+          txid: unspent.transaction_hash,
+          address: addressBase58
+        }
       });
-
-      return unspents;
+      return unspentInfos;
     }).call(this);
   }
 
