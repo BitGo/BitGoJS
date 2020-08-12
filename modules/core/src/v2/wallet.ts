@@ -489,9 +489,9 @@ export class Wallet {
   }
 
   /**
-   * This is a strict sub-set of prebuildWhitelistedParams.
+   * This is a strict sub-set of prebuildWhitelistedParams
    */
-  prebuildConsolidateTransactionParams(): string[] {
+  prebuildConsolidateAccountParams(): string[] {
     return [
       'consolidateAddresses', 'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock',
     ];
@@ -2314,7 +2314,7 @@ export class Wallet {
       }
 
       // Whitelist params to build tx
-      const whitelistedParams = _.pick(params, self.prebuildConsolidateTransactionParams());
+      const whitelistedParams = _.pick(params, self.prebuildConsolidateAccountParams());
       debug('prebuilding consolidation transaction: %O', whitelistedParams);
 
       if (params.reqId) {

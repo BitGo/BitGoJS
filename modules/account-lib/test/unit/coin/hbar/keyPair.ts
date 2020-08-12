@@ -2,12 +2,29 @@ import should from 'should';
 import * as nacl from 'tweetnacl';
 import { KeyPair } from '../../../../src/coin/hbar';
 import * as testData from '../../../resources/hbar/hbar';
+import { toUint8Array } from '../../../../src/coin/hbar/utils';
 
 const pub = testData.ACCOUNT_1.publicKey;
 const prv = testData.ACCOUNT_1.privateKey;
 
 describe('Hedera Key Pair', () => {
   describe('should create a valid KeyPair', () => {
+    it('from an empty value', () => {
+      const keyPair = new KeyPair();
+      should.exists(keyPair.getKeys().prv);
+      should.exists(keyPair.getKeys().pub);
+      should.equal(keyPair.getKeys(true).prv!.length, 64);
+      should.equal(keyPair.getKeys(true).pub.length, 64);
+      should.equal(keyPair.getKeys().prv!.slice(0, 32), testData.ed25519PrivKeyPrefix);
+      should.equal(keyPair.getKeys().pub.slice(0, 24), testData.ed25519PubKeyPrefix);
+    });
+
+    it('from a seed', () => {
+      const keyPair = new KeyPair({ seed: new Buffer(toUint8Array(testData.ACCOUNT_1.privateKey.slice(32))) });
+      should.equal(keyPair.getKeys().prv!, testData.ACCOUNT_1.privateKey);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_1.publicKey);
+    });
+
     it('from a public key', () => {
       const keyPair = new KeyPair({ pub: pub });
       should.equal(keyPair.getKeys().pub, pub);
