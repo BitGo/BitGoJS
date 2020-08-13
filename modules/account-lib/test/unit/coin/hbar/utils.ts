@@ -60,12 +60,12 @@ describe('HBAR util library', function() {
 
   describe('should remove prefix', function() {
     it('from a private key', function() {
-      const rawPrivateKey = Utils.removePrefix(testData.ed25519PrivKeyPrefix, testData.ACCOUNT_1.privateKey);
+      const rawPrivateKey = Utils.removePrefix(testData.ed25519PrivKeyPrefix, testData.ACCOUNT_1.prvKeyWithPrefix);
       should.deepEqual(rawPrivateKey, '62b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01');
     });
 
     it('from a public key', function() {
-      const rawPublicKey = Utils.removePrefix(testData.ed25519PubKeyPrefix, testData.ACCOUNT_1.publicKey);
+      const rawPublicKey = Utils.removePrefix(testData.ed25519PubKeyPrefix, testData.ACCOUNT_1.pubKeyWithPrefix);
       should.deepEqual(rawPublicKey, '5a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9');
     });
   });

@@ -7,6 +7,9 @@ import { KeyPair } from '../../../../src/coin/hbar/keyPair';
 describe('Hbar Transaction', () => {
   const coin = coins.get('thbar');
 
+  /**
+   *
+   */
   function getTransaction(): Transaction {
     return new Transaction(coin);
   }
@@ -30,28 +33,28 @@ describe('Hbar Transaction', () => {
     it('valid', async () => {
       const tx = getTransaction();
       tx.bodyBytes(testData.WALLET_TXDATA);
-      const keypair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
+      const keypair = new KeyPair({ prv: testData.ACCOUNT_1.prvKeyWithPrefix });
       await tx.sign(keypair).should.be.fulfilled();
       should.equal(
         new Buffer(tx.hederaTx.sigMap!.sigPair![0].pubKeyPrefix!).toString('hex'),
-        testData.ACCOUNT_1.publicKey.slice(24),
+        testData.ACCOUNT_1.pubKeyWithPrefix.slice(24),
       );
     });
 
     it('multiple valid', async () => {
       const tx = getTransaction();
       tx.bodyBytes(testData.WALLET_TXDATA);
-      const keypair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
+      const keypair = new KeyPair({ prv: testData.ACCOUNT_1.prvKeyWithPrefix });
       const keypair2 = new KeyPair({ prv: testData.OPERATOR.privateKey });
       await tx.sign(keypair).should.be.fulfilled();
       should.equal(
         new Buffer(tx.hederaTx.sigMap!.sigPair![0].pubKeyPrefix!).toString('hex'),
-        testData.ACCOUNT_1.publicKey.slice(24),
+        testData.ACCOUNT_1.pubKeyWithPrefix.slice(24),
       );
       await tx.sign(keypair2).should.be.fulfilled();
       should.equal(
         new Buffer(tx.hederaTx.sigMap!.sigPair![0].pubKeyPrefix!).toString('hex'),
-        testData.ACCOUNT_1.publicKey.slice(24),
+        testData.ACCOUNT_1.pubKeyWithPrefix.slice(24),
       );
       should.equal(
         new Buffer(tx.hederaTx.sigMap!.sigPair![1].pubKeyPrefix!).toString('hex'),

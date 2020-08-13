@@ -4,8 +4,8 @@ import { KeyPair } from '../../../../src/coin/hbar';
 import * as testData from '../../../resources/hbar/hbar';
 import { toUint8Array } from '../../../../src/coin/hbar/utils';
 
-const pub = testData.ACCOUNT_1.publicKey;
-const prv = testData.ACCOUNT_1.privateKey;
+const pub = testData.ACCOUNT_1.pubKeyWithPrefix;
+const prv = testData.ACCOUNT_1.prvKeyWithPrefix;
 
 describe('Hedera Key Pair', () => {
   describe('should create a valid KeyPair', () => {
@@ -20,9 +20,9 @@ describe('Hedera Key Pair', () => {
     });
 
     it('from a seed', () => {
-      const keyPair = new KeyPair({ seed: new Buffer(toUint8Array(testData.ACCOUNT_1.privateKey.slice(32))) });
-      should.equal(keyPair.getKeys().prv!, testData.ACCOUNT_1.privateKey);
-      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_1.publicKey);
+      const keyPair = new KeyPair({ seed: new Buffer(toUint8Array(testData.ACCOUNT_1.prvKeyWithPrefix.slice(32))) });
+      should.equal(keyPair.getKeys().prv!, testData.ACCOUNT_1.prvKeyWithPrefix);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_1.pubKeyWithPrefix);
     });
 
     it('from a public key', () => {
@@ -31,7 +31,7 @@ describe('Hedera Key Pair', () => {
     });
 
     it('from a public key with prefix', () => {
-      const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
+      const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix });
       should.equal(keyPair.getKeys().pub, pub);
     });
 
@@ -42,7 +42,7 @@ describe('Hedera Key Pair', () => {
     });
 
     it('from a private key with prefix', () => {
-      const keyPair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
+      const keyPair = new KeyPair({ prv: testData.ACCOUNT_1.prvKeyWithPrefix });
       should.equal(keyPair.getKeys().prv!, prv);
       should.equal(keyPair.getKeys().pub, pub);
     });
