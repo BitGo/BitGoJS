@@ -3693,8 +3693,213 @@ module.exports.nockEosRecovery = function() {
     });
 };
 
+module.exports.nockEmptyAddressInfo = function(emptyAddrs: Array<string>, env: any) {
+  emptyAddrs.forEach(function(addr) {
+    const data = {};
+    data[addr] = {
+      address: {
+        type: null,
+        script_hex: '',
+        balance: 0,
+        balance_usd: 0,
+        received: 0,
+        received_usd: 0,
+        spent: 0,
+        spent_usd: 0,
+        output_count: 0,
+        unspent_output_count: 0,
+        first_seen_receiving: null,
+        last_seen_receiving: null,
+        first_seen_spending: null,
+        last_seen_spending: null,
+        scripthash_type: null,
+        transaction_count: 0,
+      },
+      transactions: [],
+      utxo: [],
+    };
+    nock(env.blockchairBaseUrl)
+      .get('/dashboards/address/' + addr)
+      .reply(200, {
+        data: data,
+        context: {
+          code: 200,
+          source: 'D',
+          limit: '100,100',
+          offset: '0,0',
+          results: 0,
+          state: 643413,
+          cache: {
+            live: true,
+            duration: 30,
+            since: '2020-08-12 20:14:18',
+            until: '2020-08-12 20:14:48',
+            time: null,
+          },
+          api: {
+            version: '2.0.64',
+            last_major_update: '2020-07-19 00:00:00',
+            next_major_update: null,
+            documentation: 'https://blockchair.com/api/docs',
+            notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
+          },
+          time: 0.2732658386230469,
+          render_time: 0.01644611358642578,
+          full_time: 0.28971195220947266,
+          request_cost: 1,
+        },
+      });
+  });
+};
+
 module.exports.nockBtcSegwitRecovery = function(bitgo) {
-  throw new Error('TODO: BG-23161 - replace smartbit block explorer which is now permanently down');
+  const env = Environments[bitgo.getEnv()] as any;
+  const emptyAddrs = [
+    '2N42muVaEhvcyMRr7pmFPnrmprdmWCUvhy7',
+    '2N2b2yNryWVbMjvXFq7RbaQ2xbGhmAuBQM7',
+    '2NBs5i2APw3XSvfch7rHirYC6AxehYizCU9',
+    '2NEFHeSYnHVt4t2KqwKz1AZqhpcx2yGoe38',
+    '2N4iR1AweHV8wmc7VPBb3tRnweQs1fSW3dB',
+    '2N1ir7htudeFEWGhyfXGL7LNKzoFrDS62bQ',
+    '2NBpZak1Tz1cpLhg6ZapeTSHkhq91GwMYFo',
+    '2N93AW6R6eLan8rfB715oCse9P6pexfK3Tn',
+    '2NEZiLrBnTSrwNuVuKCXcAi9AL6YSr1FYqY',
+  ];
+  this.nockEmptyAddressInfo(emptyAddrs, env);
+  nock(env.blockchairBaseUrl)
+    .get('/dashboards/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws') // unspent
+    .times(2)
+    .reply(200, {
+      data: {
+        '2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9149f13f940a9461ac6e5393859faca8c513f93cd6e87',
+            balance: 20000,
+            balance_usd: 0,
+            received: 20000,
+            received_usd: 0,
+            spent: 20000,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 0,
+            first_seen_receiving: '2019-01-16 23:52:45',
+            last_seen_receiving: '2019-01-16 23:52:45',
+            first_seen_spending: '2019-01-17 02:27:18',
+            last_seen_spending: '2019-01-17 02:27:18',
+            scripthash_type: 'multisig_2_of_3',
+            transaction_count: 2,
+          },
+          transactions: [
+            '0f58644f28726159e833c2b4dbf7a46be2c0eb7f8d36c244bca765b05113880a',
+            '9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0',
+          ],
+          utxo: [
+            {
+              block_id: 643436,
+              transaction_hash: '9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0',
+              index: 0,
+              value: 20000,
+            },
+          ],
+        },
+      },
+      context: {
+        code: 200,
+        source: 'D',
+        limit: '100,100',
+        offset: '0,0',
+        results: 1,
+        state: 0,
+        cache: {
+          live: true,
+          duration: 10,
+          since: '2020-08-12 20:26:11',
+          until: '2020-08-12 20:26:21',
+          time: null,
+        },
+        api: {
+          version: '2.0.64',
+          last_major_update: '2020-07-19 00:00:00',
+          next_major_update: null,
+          documentation: 'https://blockchair.com/api/docs',
+          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
+        },
+        time: 0.09797501564025879,
+        render_time: 0.011780977249145508,
+        full_time: 0.1097559928894043,
+        request_cost: 1,
+      },
+    })
+    .get('/dashboards/address/2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp') // unspent
+    .times(2)
+    .reply(200, {
+      data: {
+        '2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a914334ea8adc3423478229444603ab27f02de2550ef87',
+            balance: 20000,
+            balance_usd: 0,
+            received: 41000,
+            received_usd: 0,
+            spent: 41000,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 0,
+            first_seen_receiving: '2019-01-16 23:52:45',
+            last_seen_receiving: '2019-01-16 23:52:45',
+            first_seen_spending: '2019-01-17 02:27:18',
+            last_seen_spending: '2019-01-17 02:27:18',
+            scripthash_type: 'multisig_2_of_3',
+            transaction_count: 2,
+          },
+          transactions: [
+            '0f58644f28726159e833c2b4dbf7a46be2c0eb7f8d36c244bca765b05113880a',
+            '8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387',
+          ],
+          utxo: [
+            // I added this
+            {
+              block_id: -1, // TODO, this is not a real value but probably doesnt matter
+              transaction_hash: '8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387',
+              index: 1,
+              value: 41000,
+            },
+          ],
+        },
+      },
+      context: {
+        code: 200,
+        source: 'D',
+        limit: '100,100',
+        offset: '0,0',
+        results: 1,
+        state: 0,
+        cache: {
+          live: true,
+          duration: 10,
+          since: '2020-08-12 20:28:46',
+          until: '2020-08-12 20:28:56',
+          time: null,
+        },
+        api: {
+          version: '2.0.64',
+          last_major_update: '2020-07-19 00:00:00',
+          next_major_update: null,
+          documentation: 'https://blockchair.com/api/docs',
+          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
+        },
+        time: 0.08202385902404785,
+        render_time: 0.011471986770629883,
+        full_time: 0.09349584579467773,
+        request_cost: 1,
+      },
+    });
+
+  nock('https://bitcoinfees.earn.com')
+    .get('/api/v1/fees/recommended')
+    .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
 };
 
 // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
