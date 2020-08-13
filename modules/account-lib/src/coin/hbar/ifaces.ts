@@ -33,6 +33,7 @@ export interface Timestamp {
   seconds: number;
   nanos: number;
 }
+
 export interface AccountID {
   shardnum: number;
   realmnum: number;

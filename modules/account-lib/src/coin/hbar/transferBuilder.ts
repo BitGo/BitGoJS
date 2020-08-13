@@ -36,7 +36,7 @@ export class TransferBuilder extends TransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
-    const transferData = tx.txBody.getCryptotransfer();
+    const transferData = tx.txBody().getCryptotransfer();
     if (transferData && transferData.getTransfers() && transferData.getTransfers()!.getAccountamountsList()) {
       transferData
         .getTransfers()!
