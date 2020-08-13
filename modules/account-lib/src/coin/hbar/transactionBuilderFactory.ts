@@ -63,7 +63,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     } else {
       buffer = rawTransaction;
     }
-    tx.bodyBytes(buffer);
+    tx.fromBytes(buffer);
     return tx;
   }
 

@@ -2,6 +2,7 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { AccountId, TransactionId } from '@hashgraph/sdk';
 import { TransactionBuilder as SDKTransactionBuilder } from '@hashgraph/sdk/lib/TransactionBuilder';
+import { SignaturePair } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
 import { BaseTransactionBuilder } from '../baseCoin';
 import {
   BuildTransactionError,
@@ -51,28 +52,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       .setTransactionMemo(this._memo)
       .setNodeAccountId(new AccountId(this._node.nodeId))
       .setTransactionValidDuration(this._duration);
-    // TODO: move retrieval of previous signature or move signing process elsewhere
-    const previousSignatures =
-      this.transaction.hederaTx && this.transaction.hederaTx._toProto().getSigmap()
-        ? this.transaction.hederaTx
-            ._toProto()!
-            .getSigmap()!
-            .getSigpairList()
-        : [];
-    this.transaction.body(this._sdkTransactionBuilder.build());
+    const previousSignatures = this.retrievePreviousSignatures();
+    this.transaction.innerTransaction(this._sdkTransactionBuilder.build());
+    await this.signSteps(previousSignatures);
 
-    for (const sigPair of previousSignatures) {
-      this.transaction.addSignature(
-        toHex(sigPair.getEd25519_asU8()),
-        new KeyPair({ pub: toHex(sigPair.getPubkeyprefix_asU8()) }),
-      );
-    }
-    for (const kp of this._multiSignerKeyPairs) {
-      await this.transaction.sign(kp);
-    }
-    for (const { signature, keyPair } of this._signatures) {
-      this.transaction.addSignature(signature, keyPair);
-    }
     return this.transaction;
   }
 
@@ -85,7 +68,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     } else {
       buffer = rawTransaction;
     }
-    tx.bodyBytes(buffer);
+    tx.fromBytes(buffer);
     this.initBuilder(tx);
     return this.transaction;
   }
@@ -99,6 +82,44 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     // so we set the source here and leave the actual signing for the build step
     this._multiSignerKeyPairs.push(signer);
     return this.transaction;
+  }
+
+  /**
+   * Signing steps for a Hedera transaction, it involves
+   * signing with the previous included signatures,
+   * signing with the added keys through the sign function and
+   * signing with the precalculated signatures added through the signature function
+   *
+   * @param {SignaturePair[]} previousSignatures the signatures from a previous decoded transaction
+   */
+  private async signSteps(previousSignatures: SignaturePair[]) {
+    for (const sigPair of previousSignatures) {
+      this.transaction.addSignature(
+        toHex(sigPair.getEd25519_asU8()),
+        new KeyPair({ pub: toHex(sigPair.getPubkeyprefix_asU8()) }),
+      );
+    }
+    for (const kp of this._multiSignerKeyPairs) {
+      await this.transaction.sign(kp);
+    }
+    for (const { signature, keyPair } of this._signatures) {
+      this.transaction.addSignature(signature, keyPair);
+    }
+  }
+
+  /**
+   * Retrieve the signatures contained if there was a
+   * deserialized transaction
+   *
+   * @returns {SignaturePair[]} A list of the previous signatures
+   */
+  private retrievePreviousSignatures(): SignaturePair[] {
+    return this.transaction.hederaTx && this.transaction.hederaTx._toProto().getSigmap()
+      ? this.transaction.hederaTx
+          ._toProto()!
+          .getSigmap()!
+          .getSigpairList()
+      : [];
   }
 
   /**

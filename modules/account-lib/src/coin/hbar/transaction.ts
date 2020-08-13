@@ -35,8 +35,8 @@ export class Transaction extends BaseTransaction {
   /**
    * Add a signature to this transaction
    *
-   * @param signature The signature to add, in string hex format
-   * @param key The key of the key that created the signature
+   * @param {string} signature The signature to add, in string hex format
+   * @param {KeyPair} key The key of the key that created the signature
    */
   addSignature(signature: string, key: KeyPair): void {
     const sigPair = new SignaturePair();
@@ -48,15 +48,17 @@ export class Transaction extends BaseTransaction {
     const innerTx = this.hederaTx._toProto();
     sigMap.getSigpairList().push(sigPair);
     innerTx.setSigmap(sigMap);
-    this.bodyBytes(innerTx.serializeBinary());
+    // The inner transaction must be replaced with the new signed transaction
+    this.fromBytes(innerTx.serializeBinary());
+    // Previous signatures are kept so we just add the new signature to the list
     this._signatures.push(signature);
   }
 
   /**
-   * Add a signature to this transaction
+   * Replace transaction signatures with the ones from
+   * the inner SDK transaction
    */
-  replaceSignatures(): void {
-    // TODO: edit jsdoc
+  private replaceSignatures(): void {
     this._signatures = this.hederaTx
       ._toProto()
       .getSigmap()!
@@ -80,7 +82,7 @@ export class Transaction extends BaseTransaction {
     const time = stringifyTxTime(txBody.transactionid!.transactionvalidstart!);
     const result: TxData = {
       id: acc + '@' + time,
-      hash: txData.sigmap ? toHex(this.hederaTx.hash()) : '',
+      hash: txData.sigmap ? toHex(this.hederaTx.hash()) : '', // Hash is returned if the transaction was signed
       data: toHex(this.hederaTx._toProto().getBodybytes_asU8()),
       fee: new BigNumber(txBody.transactionfee).toNumber(),
       from: acc,
@@ -108,22 +110,21 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Sets this transaction body components
+   * Set the inner SDK transaction
    *
-   * @param {SDKTransaction} tx body transaction
+   * @param {SDKTransaction} tx SDK transaction
    */
-  body(tx: SDKTransaction) {
+  innerTransaction(tx: SDKTransaction) {
     this._hederaTx = tx;
   }
 
   /**
-   * Sets this transaction body components
+   * Set the inner SDK transaction as bytes
    *
-   * @param {Uint8Array} bytes encoded body transaction
+   * @param {Uint8Array} bytes encoded SDK transaction
    */
-  bodyBytes(bytes: Uint8Array) {
-    // TODO: change naming for body and bodybytes
-    this.body(SDKTransaction.fromBytes(bytes));
+  fromBytes(bytes: Uint8Array) {
+    this.innerTransaction(SDKTransaction.fromBytes(bytes));
   }
   //endregion
 }
