@@ -10,6 +10,8 @@ import { randomBytes } from 'crypto';
 
 import {
   BaseCoin,
+  FullySignedTransaction,
+  HalfSignedTransaction,
   KeyPair,
   ParsedTransaction,
   ParseTransactionOptions,
@@ -45,6 +47,8 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
   feeInfo: EthTransactionFee;
   source: string;
   dataToSign: string;
+  nextContractSequenceId?: string;
+  expireTime?: number;
 }
 
 export interface EthTransactionFee {
@@ -59,6 +63,16 @@ export interface ExplainTransactionOptions {
   };
   feeInfo: TransactionFee;
 }
+
+export interface HalfSignedEthLikeTransaction extends HalfSignedTransaction {
+  halfSigned?: {
+    txHex?: never;
+    recipients: Recipient[];
+    expiration?: number;
+  };
+}
+
+export type SignedEthLikeTransaction = HalfSignedEthLikeTransaction | FullySignedTransaction;
 
 export abstract class AbstractEthLikeCoin extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
@@ -134,15 +148,19 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
   async signTransaction(
     params: EthSignTransactionOptions,
     callback?: NodeCallback<SignedTransaction>
-  ): Bluebird<SignedTransaction> {
+  ): Bluebird<SignedEthLikeTransaction> {
     const txBuilder = this.getTransactionBuilder();
     txBuilder.from(params.txPrebuild.txHex);
     txBuilder.transfer().key(new Eth.KeyPair({ prv: params.prv }).getKeys().prv!);
     const transaction = await txBuilder.build();
 
+    const recipients = transaction.outputs.map(output => ({ address: output.address, amount: output.value }));
+
     return {
       halfSigned: {
         txHex: transaction.toBroadcastFormat(),
+        recipients: recipients,
+        expiration: params.txPrebuild.expireTime,
       },
     };
   }
