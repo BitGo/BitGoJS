@@ -77,6 +77,7 @@ export interface AddWalletOptions {
   rootPrivateKey?: string;
   initializationTxs?: any;
   disableTransactionNotifications?: boolean;
+  gasPrice?: number;
 }
 
 export interface ListWalletOptions extends PaginationOptions {
@@ -185,6 +186,10 @@ export class Wallets {
         }
       }
 
+      if (params.gasPrice && !_.isNumber(params.gasPrice)) {
+        throw new Error('invalid argument for gasPrice - number expected');
+      }
+
       if (params.tags && Array.isArray(params.tags) === false) {
         throw new Error('invalid argument for tags - array expected');
       }
@@ -222,6 +227,7 @@ export class Wallets {
         'type',
         'address',
         'signingKeyId',
+        'gasPrice',
       ]);
 
       // Additional params needed for xrp
