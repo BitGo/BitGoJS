@@ -167,3 +167,17 @@ export function stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAc
 export function stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
   return `${seconds}.${nanos}`;
 }
+
+/**
+ * Remove the specified prefix from a string only if it starts with that prefix
+ *
+ * @param {string} prefix The prefix to be removed
+ * @param {string} key The original string, usually a private or public key
+ * @returns {string} The string without prefix
+ */
+export function removePrefix(prefix: string, key: string): string {
+  if (key.startsWith(prefix)) {
+    return key.slice(prefix.length);
+  }
+  return key;
+}

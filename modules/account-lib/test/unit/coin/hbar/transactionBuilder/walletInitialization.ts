@@ -84,7 +84,7 @@ describe('HBAR Wallet initialization', () => {
       txBuilder.signature(
         '20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
           'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09',
-        new KeyPair({ pub: testData.ACCOUNT_1.publicKey }),
+        new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix }),
       );
 
       const tx = await txBuilder.build();
@@ -102,12 +102,12 @@ describe('HBAR Wallet initialization', () => {
       txBuilder.signature(
         '20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
           'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09',
-        new KeyPair({ pub: testData.ACCOUNT_1.publicKey }),
+        new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix }),
       );
       txBuilder.signature(
         '20bc01a6da677b99974b17204de5ff6f34f8e5904f58d6df1ceb39b473e7295dccf60fcedaf4f' +
           'dc3f6bef93edcfbe2a7ec33cc94c893906a063383c27b014f09',
-        new KeyPair({ pub: testData.ACCOUNT_1.publicKey }),
+        new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix }),
       );
 
       const tx = await txBuilder.build();
@@ -176,7 +176,7 @@ describe('HBAR Wallet initialization', () => {
     it('a private key', () => {
       const txBuilder = factory.getWalletInitializationBuilder();
       should.throws(() => txBuilder.validateKey({ key: 'abc' }), 'Invalid key');
-      should.doesNotThrow(() => txBuilder.validateKey({ key: testData.ACCOUNT_1.privateKey }));
+      should.doesNotThrow(() => txBuilder.validateKey({ key: testData.ACCOUNT_1.prvKeyWithPrefix }));
     });
 
     it('a raw transaction', async () => {
