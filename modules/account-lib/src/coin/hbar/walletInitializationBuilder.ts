@@ -47,7 +47,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
-    const createAcc = tx.txBody.getCryptocreateaccount();
+    const createAcc = tx.txBody().getCryptocreateaccount();
     if (createAcc && createAcc.getKey() && createAcc.getKey()!.getThresholdkey()) {
       createAcc
         .getKey()!

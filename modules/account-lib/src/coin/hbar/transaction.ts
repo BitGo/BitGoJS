@@ -4,6 +4,7 @@ import { Transaction as SDKTransaction } from '@hashgraph/sdk';
 import { TransactionBody } from '@hashgraph/sdk/lib/generated/TransactionBody_pb';
 import { SignatureMap, SignaturePair } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
 
+import Long from 'long';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { SigningError } from '../baseCoin/errors';
@@ -69,6 +70,16 @@ export class Transaction extends BaseTransaction {
       });
   }
 
+  /**
+   * Get the inner transaction body deserialized in the SDK
+   * proto default format
+   *
+   * @returns {TransactionBody} a transaction body object
+   */
+  txBody(): TransactionBody {
+    return TransactionBody.deserializeBinary(this._hederaTx._toProto().getBodybytes_asU8());
+  }
+
   /** @inheritdoc */
   toBroadcastFormat(): string {
     return toHex(this.hederaTx.toBytes());
@@ -77,7 +88,7 @@ export class Transaction extends BaseTransaction {
   /** @inheritdoc */
   toJson(): TxData {
     const txData = this.hederaTx._toProto().toObject();
-    const txBody = this.txBody.toObject();
+    const txBody = this.txBody().toObject();
 
     const acc = stringifyAccountId(txBody.transactionid!.accountid!);
     const time = stringifyTxTime(txBody.transactionid!.transactionvalidstart!);
@@ -94,17 +105,17 @@ export class Transaction extends BaseTransaction {
     };
 
     if (txBody.cryptotransfer) {
-      const transfers = txBody.cryptotransfer!.transfers!.accountamountsList[1];
-      result.amount = transfers.amount;
-      result.to = stringifyAccountId(transfers.accountid!);
+      txBody.cryptotransfer!.transfers!.accountamountsList.forEach(transfer => {
+        if (Long.fromValue(transfer.amount).isPositive()) {
+          result.amount = transfer.amount;
+          result.to = stringifyAccountId(transfer.accountid!);
+        }
+      });
     }
     return result;
   }
 
   //region getters & setters
-  get txBody(): TransactionBody {
-    return TransactionBody.deserializeBinary(this._hederaTx._toProto().getBodybytes_asU8());
-  }
 
   get hederaTx(): SDKTransaction {
     return this._hederaTx;
