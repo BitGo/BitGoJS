@@ -38,11 +38,14 @@ export class TransferBuilder extends TransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+<<<<<<< HEAD
     this.transaction.setTransactionType(TransactionType.Send);
     // const transferData = tx.hederaTx
     //   ._toProto()
     //   .getBody()!
     //   .getCryptotransfer();
+=======
+>>>>>>> Removed proto, proto scripts, minor cleanup
     const transferData = tx.txBody.getCryptotransfer();
     if (transferData && transferData.getTransfers() && transferData.getTransfers()!.getAccountamountsList()) {
       transferData

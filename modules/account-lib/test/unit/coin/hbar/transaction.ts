@@ -32,7 +32,7 @@ describe('Hbar Transaction', () => {
 
     it('valid', async () => {
       const tx = getTransaction();
-      tx.bodyBytes(testData.WALLET_TXDATA);
+      tx.fromBytes(testData.WALLET_TXDATA);
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.prvKeyWithPrefix });
       await tx.sign(keypair).should.be.fulfilled();
       should.equal(
@@ -49,7 +49,7 @@ describe('Hbar Transaction', () => {
 
     it('multiple valid', async () => {
       const tx = getTransaction();
-      tx.bodyBytes(testData.WALLET_TXDATA);
+      tx.fromBytes(testData.WALLET_TXDATA);
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.prvKeyWithPrefix });
       const keypair2 = new KeyPair({ prv: testData.OPERATOR.privateKey });
       await tx.sign(keypair).should.be.fulfilled();
@@ -90,7 +90,7 @@ describe('Hbar Transaction', () => {
   describe('should return encoded tx', function() {
     it('valid sign', async function() {
       const tx = getTransaction();
-      tx.bodyBytes(testData.WALLET_TXDATA);
+      tx.fromBytes(testData.WALLET_TXDATA);
       await tx.sign(testData.KEYPAIR_PRV);
       should.equal(tx.toBroadcastFormat(), testData.WALLET_SIGNED_TRANSACTION);
     });
