@@ -4,10 +4,10 @@
 
 # These owners and first officers will be the default owners for everything in
 # the repo.
-*  otto@bitgo.com mark@bitgo.com jorge@bitgo.com
+*  otto@bitgo.com jorge@bitgo.com
 
 # Order is important. The last matching pattern has the most precedence.  So if
 # a pull request only touches files in one specific dir, only these owners will
 # be requested to review.
 
-/CODEOWNERS otto@bitgo.com mark@bitgo.com jorge@bitgo.com
+/CODEOWNERS otto@bitgo.com jorge@bitgo.com
