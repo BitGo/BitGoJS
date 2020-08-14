@@ -24,7 +24,7 @@ export interface SignatureData {
   keyPair: KeyPair;
 }
 
-export interface SDKKeyPair {
+export interface HbarKeyPair {
   pub: Ed25519PublicKey;
   prv?: Ed25519PrivateKey;
 }

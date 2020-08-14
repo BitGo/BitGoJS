@@ -35,11 +35,11 @@ export class Transaction extends BaseTransaction {
   }
 
   async sign(keyPair: KeyPair): Promise<void> {
-    const keys = keyPair.getSDKKeys();
+    const keys = keyPair.getKeys();
     if (!keys.prv) {
       throw new SigningError('Missing private key');
     }
-    this.hederaTx.sign(keys.prv);
+    this._hederaTx.sign(keys.prv);
     this.replaceSignatures();
   }
 
@@ -51,12 +51,12 @@ export class Transaction extends BaseTransaction {
    */
   addSignature(signature: string, key: KeyPair): void {
     const sigPair = new SignaturePair();
-    sigPair.setPubkeyprefix(toUint8Array(key.getKeys(true).pub));
+    sigPair.setPubkeyprefix(toUint8Array(key.getKeys().pub.toString(true)));
     sigPair.setEd25519(toUint8Array(signature));
 
-    const sigMap = this.hederaTx._toProto().getSigmap() || new SignatureMap();
+    const sigMap = this._hederaTx._toProto().getSigmap() || new SignatureMap();
 
-    const innerTx = this.hederaTx._toProto();
+    const innerTx = this._hederaTx._toProto();
     sigMap.getSigpairList().push(sigPair);
     innerTx.setSigmap(sigMap);
     // The inner transaction must be replaced with the new signed transaction
@@ -72,13 +72,27 @@ export class Transaction extends BaseTransaction {
    * the inner SDK transaction
    */
   private replaceSignatures(): void {
-    this._signatures = this.hederaTx
+    this._signatures = this._hederaTx
       ._toProto()
       .getSigmap()!
       .getSigpairList()
       .map(sigPair => {
         return toHex(sigPair.getEd25519_asU8());
       });
+  }
+
+  /**
+   * Retrieve the signatures from the inner transaction
+   *
+   * @returns {SignaturePair[]} A list of signature pairs
+   */
+  retrieveSignatures(): SignaturePair[] {
+    return this._hederaTx && this._hederaTx._toProto().getSigmap()
+      ? this._hederaTx
+          ._toProto()!
+          .getSigmap()!
+          .getSigpairList()
+      : [];
   }
 
   /**
@@ -93,20 +107,20 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    return toHex(this.hederaTx.toBytes());
+    return toHex(this._hederaTx.toBytes());
   }
 
   /** @inheritdoc */
   toJson(): TxData {
-    const txData = this.hederaTx._toProto().toObject();
+    const txData = this._hederaTx._toProto().toObject();
     const txBody = this.txBody().toObject();
 
     const acc = stringifyAccountId(txBody.transactionid!.accountid!);
     const time = stringifyTxTime(txBody.transactionid!.transactionvalidstart!);
     const result: TxData = {
       id: acc + '@' + time,
-      hash: txData.sigmap ? toHex(this.hederaTx.hash()) : '', // Hash is returned if the transaction was signed
-      data: toHex(this.hederaTx._toProto().getBodybytes_asU8()),
+      hash: txData.sigmap ? toHex(this._hederaTx.hash()) : '', // Hash is returned if the transaction was signed
+      data: toHex(this._hederaTx._toProto().getBodybytes_asU8()),
       fee: new BigNumber(txBody.transactionfee).toNumber(),
       from: acc,
       startTime: time,
@@ -127,11 +141,6 @@ export class Transaction extends BaseTransaction {
   }
 
   //region getters & setters
-
-  get hederaTx(): SDKTransaction {
-    return this._hederaTx;
-  }
-
   /**
    * Set the inner SDK transaction
    *

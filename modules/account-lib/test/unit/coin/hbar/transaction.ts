@@ -35,13 +35,7 @@ describe('Hbar Transaction', () => {
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.prvKeyWithPrefix });
       await tx.sign(keypair).should.be.fulfilled();
       should.equal(
-        new Buffer(
-          tx.hederaTx
-            ._toProto()!
-            .getSigmap()!
-            .getSigpairList()![0]
-            .getPubkeyprefix_asU8()!,
-        ).toString('hex'),
+        new Buffer(tx.retrieveSignatures()[0].getPubkeyprefix_asU8()!).toString('hex'),
         testData.ACCOUNT_1.pubKeyWithPrefix.slice(24),
       );
     });
@@ -52,34 +46,16 @@ describe('Hbar Transaction', () => {
       const keypair2 = new KeyPair({ prv: testData.OPERATOR.privateKey });
       await tx.sign(keypair).should.be.fulfilled();
       should.equal(
-        new Buffer(
-          tx.hederaTx
-            ._toProto()!
-            .getSigmap()!
-            .getSigpairList()![0]
-            .getPubkeyprefix_asU8()!,
-        ).toString('hex'),
+        new Buffer(tx.retrieveSignatures()[0].getPubkeyprefix_asU8()!).toString('hex'),
         testData.ACCOUNT_1.pubKeyWithPrefix.slice(24),
       );
       await tx.sign(keypair2).should.be.fulfilled();
       should.equal(
-        new Buffer(
-          tx.hederaTx
-            ._toProto()!
-            .getSigmap()!
-            .getSigpairList()![0]
-            .getPubkeyprefix_asU8()!,
-        ).toString('hex'),
+        new Buffer(tx.retrieveSignatures()[0].getPubkeyprefix_asU8()!).toString('hex'),
         testData.ACCOUNT_1.pubKeyWithPrefix.slice(24),
       );
       should.equal(
-        new Buffer(
-          tx.hederaTx
-            ._toProto()!
-            .getSigmap()!
-            .getSigpairList()![1]
-            .getPubkeyprefix_asU8()!,
-        ).toString('hex'),
+        new Buffer(tx.retrieveSignatures()[1].getPubkeyprefix_asU8()!).toString('hex'),
         testData.OPERATOR.publicKey.slice(24),
       );
     });

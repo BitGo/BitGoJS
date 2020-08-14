@@ -36,7 +36,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   private buildOwnersKeys(): ThresholdKey {
     const threshold = new ThresholdKey(2);
     this._owners.forEach(owner => {
-      const pub = new KeyPair({ pub: owner }).getSDKKeys().pub;
+      const pub = new KeyPair({ pub: owner }).getKeys().pub;
       threshold.add(pub);
     });
 

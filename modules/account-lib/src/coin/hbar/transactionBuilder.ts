@@ -54,7 +54,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       .setTransactionMemo(this._memo)
       .setNodeAccountId(new AccountId(this._node.nodeId))
       .setTransactionValidDuration(this._duration);
-    const previousSignatures = this.retrievePreviousSignatures();
+    const previousSignatures = this.transaction.retrieveSignatures();
     this.transaction.innerTransaction(this._sdkTransactionBuilder.build());
     await this.signSteps(previousSignatures);
 
@@ -106,21 +106,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     for (const { signature, keyPair } of this._signatures) {
       this.transaction.addSignature(signature, keyPair);
     }
-  }
-
-  /**
-   * Retrieve the signatures contained if there was a
-   * deserialized transaction
-   *
-   * @returns {SignaturePair[]} A list of the previous signatures
-   */
-  private retrievePreviousSignatures(): SignaturePair[] {
-    return this.transaction.hederaTx && this.transaction.hederaTx._toProto().getSigmap()
-      ? this.transaction.hederaTx
-          ._toProto()!
-          .getSigmap()!
-          .getSigpairList()
-      : [];
   }
 
   /**
@@ -328,7 +313,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   private checkDuplicatedKeys(key: BaseKey) {
     this._multiSignerKeyPairs.forEach(_sourceKeyPair => {
-      if (_sourceKeyPair.getKeys().prv === key.key) {
+      if (_sourceKeyPair.getKeys().prv!.toString() === key.key) {
         throw new SigningError('Repeated sign: ' + key.key);
       }
     });
