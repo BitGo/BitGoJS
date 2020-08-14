@@ -92,4 +92,12 @@ describe('Hbar Transaction', () => {
       should.equal(tx.toBroadcastFormat(), testData.WALLET_SIGNED_TRANSACTION);
     });
   });
+
+  describe('should fail to sign ', () => {
+    it('with an invalid key pair ', async () => {
+      const tx = getTransaction(testData.WALLET_TXDATA);
+      const keypair = new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix });
+      await tx.sign(keypair).should.be.rejectedWith('Missing private key');
+    });
+  });
 });

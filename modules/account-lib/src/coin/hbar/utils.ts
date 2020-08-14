@@ -141,6 +141,7 @@ export function isValidAmount(amount: string): boolean {
 export function isValidRawTransactionFormat(rawTransaction: any): boolean {
   if (
     (typeof rawTransaction === 'string' && /^[0-9a-fA-F]+$/.test(rawTransaction)) ||
+    rawTransaction.constructor === Uint8Array ||
     (Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))
   ) {
     return true;

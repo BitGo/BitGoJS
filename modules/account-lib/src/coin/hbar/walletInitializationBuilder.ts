@@ -85,7 +85,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   // region Validators
   validateMandatoryFields(): void {
-    if (this._owners === undefined) {
+    if (this._owners.length === 0) {
       throw new BuildTransactionError('Invalid transaction: missing wallet owners');
     }
 

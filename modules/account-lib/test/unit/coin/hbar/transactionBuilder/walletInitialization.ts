@@ -1,6 +1,6 @@
 import should from 'should';
 import { register } from '../../../../../src/index';
-import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/hbar';
+import { KeyPair, TransactionBuilderFactory, Utils } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
 import { WalletInitializationBuilder } from '../../../../../src/coin/hbar/walletInitializationBuilder';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
@@ -118,6 +118,31 @@ describe('HBAR Wallet initialization', () => {
       const txJson = tx.toJson();
       should.equal(txJson.from, testData.OPERATOR.accountId);
     });
+
+    describe('deserialized transactions from transaction builder', () => {
+      it('an init signed transaction ', async () => {
+        const builder = factory.getWalletInitializationBuilder();
+        builder.from(testData.WALLET_BUILDER_SIGNED_TRANSACTION);
+        const tx = await builder.build();
+        should.deepEqual(tx.toBroadcastFormat(), testData.WALLET_BUILDER_SIGNED_TRANSACTION);
+      });
+
+      it('an init transaction from a Buffer', async () => {
+        const builder = factory.getWalletInitializationBuilder();
+        const rawTransaction = Buffer.from(Utils.toUint8Array(testData.WALLET_BUILDER_SIGNED_TRANSACTION));
+        builder.from(rawTransaction);
+        const tx = await builder.build();
+        should.deepEqual(tx.toBroadcastFormat(), testData.WALLET_BUILDER_SIGNED_TRANSACTION);
+      });
+
+      it('an init transaction from a byte array', async () => {
+        const builder = factory.getWalletInitializationBuilder();
+        const rawTransaction = Utils.toUint8Array(testData.WALLET_BUILDER_SIGNED_TRANSACTION);
+        builder.from(rawTransaction);
+        const tx = await builder.build();
+        should.deepEqual(tx.toBroadcastFormat(), testData.WALLET_BUILDER_SIGNED_TRANSACTION);
+      });
+    });
   });
 
   describe('should fail to build', () => {
@@ -130,24 +155,37 @@ describe('HBAR Wallet initialization', () => {
       await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing fee');
     });
 
+    it('a transaction without owners', async () => {
+      const txBuilder = factory.getWalletInitializationBuilder();
+      txBuilder.fee({ fee: '1000000000' });
+      txBuilder.source({ address: testData.OPERATOR.accountId });
+      txBuilder.sign({ key: testData.OPERATOR.privateKey });
+      await txBuilder.build().should.be.rejectedWith('Invalid transaction: missing wallet owners');
+    });
+
     it('a wallet initialization the wrong number of owners', async () => {
       const txBuilder = factory.getWalletInitializationBuilder();
       txBuilder.fee({ fee: '1000000000' });
       txBuilder.owner(testData.OWNER1);
-      txBuilder.owner(testData.OWNER2);
       txBuilder.source({ address: testData.OPERATOR.accountId });
       await txBuilder
         .build()
-        .should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 2');
+        .should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 1');
 
       should.throws(() => txBuilder.owner(testData.OWNER1), 'Repeated owner address: ' + testData.OWNER1);
 
       const newTxBuilder = factory.getWalletInitializationBuilder();
       newTxBuilder.fee({ fee: '1000000000' });
+      newTxBuilder.owner(testData.OWNER1);
+      newTxBuilder.owner(testData.OWNER2);
       newTxBuilder.source({ address: testData.OPERATOR.accountId });
       await newTxBuilder
         .build()
-        .should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 0');
+        .should.be.rejectedWith('Invalid transaction: wrong number of owners -- required: 3, found: 2');
+
+      newTxBuilder.owner(testData.OWNER3);
+      const newOwner = '1c5b8332673e2bdd7d677970e549e05157ea6a94f41a5da5020903c1c391f8ef';
+      should.throws(() => newTxBuilder.owner(newOwner), 'A maximum of 3 owners can be set for a multisig wallet');
     });
 
     it('a transaction with invalid source', async () => {
