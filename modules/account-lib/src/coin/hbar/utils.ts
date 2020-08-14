@@ -1,8 +1,9 @@
 import * as _ from 'lodash';
-import { Ed25519PublicKey, TransactionId, AccountId } from '@hashgraph/sdk';
+import { Ed25519PublicKey, TransactionId, AccountId, Transaction as SDKTransaction } from '@hashgraph/sdk';
 import BigNumber from 'bignumber.js';
 import * as hex from '@stablelib/hex';
 import { AccountID, Timestamp } from './ifaces';
+import { KeyPair } from './keyPair';
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
 
@@ -181,4 +182,36 @@ export function removePrefix(prefix: string, key: string): string {
     return key.slice(prefix.length);
   }
   return key;
+}
+
+/**
+ * Validate if a hedera encoded transaction was signed by a certain
+ * signer and if the signature is the same
+ *
+ * @param {string} encodedTx a hedera encoded transaction
+ * @param {KeyPair} key the signer's keypair
+ * @param {string} signature the signature to be compared
+ * @returns {boolean} the result of the validation
+ */
+export function validate(encodedTx: string, key: KeyPair, signature: string): boolean {
+  let wasSigned = false;
+  const signer = key.getKeys(true).pub;
+  const transaction = SDKTransaction.fromBytes(toUint8Array(encodedTx));
+  const transactionData = transaction._toProto();
+
+  if (transactionData.getSigmap()) {
+    transactionData
+      .getSigmap()!
+      .getSigpairList()
+      .forEach(sigPair => {
+        if (
+          _.isEqual(toHex(sigPair.getPubkeyprefix_asU8()), signer) &&
+          _.isEqual(toHex(sigPair.getEd25519_asU8()), signature)
+        ) {
+          wasSigned = true;
+        }
+      });
+  }
+
+  return wasSigned;
 }
