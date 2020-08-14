@@ -16,8 +16,17 @@ export class Transaction extends BaseTransaction {
   private _hederaTx: SDKTransaction;
   protected _type: TransactionType;
 
-  constructor(_coinConfig: Readonly<CoinConfig>) {
+  /**
+   * Public constructor.
+   *
+   * @param {Readonly<CoinConfig>} _coinConfig
+   * @param {Uint8Array} bytes encoded SDK transaction
+   */
+  constructor(_coinConfig: Readonly<CoinConfig>, bytes?: Uint8Array) {
     super(_coinConfig);
+    if (bytes) {
+      this.innerTransaction(SDKTransaction.fromBytes(bytes));
+    }
   }
 
   /** @inheritdoc */
@@ -51,7 +60,9 @@ export class Transaction extends BaseTransaction {
     sigMap.getSigpairList().push(sigPair);
     innerTx.setSigmap(sigMap);
     // The inner transaction must be replaced with the new signed transaction
-    this.fromBytes(innerTx.serializeBinary());
+
+    this.innerTransaction(SDKTransaction.fromBytes(innerTx.serializeBinary()));
+
     // Previous signatures are kept so we just add the new signature to the list
     this._signatures.push(signature);
   }
@@ -162,13 +173,5 @@ export class Transaction extends BaseTransaction {
     }
   }
 
-  /**
-   * Set the inner SDK transaction as bytes
-   *
-   * @param {Uint8Array} bytes encoded SDK transaction
-   */
-  fromBytes(bytes: Uint8Array) {
-    this.innerTransaction(SDKTransaction.fromBytes(bytes));
-  }
   //endregion
 }

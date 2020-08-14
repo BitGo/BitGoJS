@@ -56,14 +56,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @returns {Transaction} the parsed transaction instance
    */
   private parseTransaction(rawTransaction: Uint8Array | string): Transaction {
-    const tx = new Transaction(this._coinConfig);
     let buffer;
     if (typeof rawTransaction === 'string') {
       buffer = toUint8Array(rawTransaction);
     } else {
       buffer = rawTransaction;
     }
-    tx.fromBytes(buffer);
+    const tx = new Transaction(this._coinConfig, buffer);
     return tx;
   }
 

@@ -63,14 +63,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
-    const tx = new Transaction(this._coinConfig);
     let buffer;
     if (typeof rawTransaction === 'string') {
       buffer = toUint8Array(rawTransaction);
     } else {
       buffer = rawTransaction;
     }
-    tx.fromBytes(buffer);
+    const tx = new Transaction(this._coinConfig, buffer);
     this.initBuilder(tx);
     return this.transaction;
   }
