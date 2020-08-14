@@ -5,38 +5,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import * as nock from 'nock';
 import { Environment, Environments } from '../../../src/v2/environments';
-
-/**
- * The invariant in every nock - some metadata that blockchair usually responds with
- */
-const blockchairContext = {
-  context: {
-    code: 200,
-    source: 'D',
-    limit: '100,100',
-    offset: '0,0',
-    results: 1,
-    state: 0,
-    cache: {
-      live: true,
-      duration: 10,
-      since: '2020-08-13 19:04:38',
-      until: '2020-08-13 19:04:48',
-      time: null,
-    },
-    api: {
-      version: '2.0.64',
-      last_major_update: '2020-07-19 00:00:00',
-      next_major_update: null,
-      documentation: 'https://blockchair.com/api/docs',
-      notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-    },
-    time: 0.08114314079284668,
-    render_time: 0.014548063278198242,
-    full_time: 0.09569120407104492,
-    request_cost: 1,
-  },
-};
+const fixtures = require('../../../test/v2/fixtures/coins/recovery');
+const blockchairContext = fixtures.blockchairContext;
+const btcKrsRecoveryDecodedTx = fixtures.btcKrsRecoveryDecodedTx;
+const btcNonKrsRecoveryDecodedTx = fixtures.btcNonKrsRecoveryDecodedTx;
+const emptyBlockchairBtcAddressData = fixtures.emptyBlockchairBtcAddressData;
 
 export function nockBtcRecovery(bitgo, isKrsRecovery) {
   const env = Environments[bitgo.getEnv()] as any;
@@ -52,90 +25,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
     ? '010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000b500483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0230456c000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787301b0f000000000017a9141b60c33def13c3eda4cf4835e11a633e4b3302ec8700000000'
     : '010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000';
 
-  const decodedTx = isKrsRecovery
-    ? {
-        success: true,
-        transaction: {
-          Version: '1',
-          LockTime: '0',
-          Vin: [
-            {
-              TxId: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
-              Vout: '0',
-              ScriptSig: {
-                Asm:
-                  '0 3045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
-                Hex:
-                  '00483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
-              },
-              CoinBase: null,
-              TxInWitness: null,
-              Sequence: '4294967295',
-            },
-          ],
-          Vout: [
-            {
-              Value: 0.070956,
-              N: 0,
-              ScriptPubKey: {
-                Asm: 'OP_HASH160 c39dcc27823a8bd42cd3318a1dac8c25789b7ac7 OP_EQUAL',
-                Hex: 'a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787',
-                ReqSigs: 1,
-                Type: 'scripthash',
-                Addresses: ['2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw'],
-              },
-            },
-            {
-              Value: 0.0099,
-              N: 1,
-              ScriptPubKey: {
-                Asm: 'OP_HASH160 1b60c33def13c3eda4cf4835e11a633e4b3302ec OP_EQUAL',
-                Hex: 'a9141b60c33def13c3eda4cf4835e11a633e4b3302ec87',
-                ReqSigs: 1,
-                Type: 'scripthash',
-                Addresses: ['2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN'],
-              },
-            },
-          ],
-          TxId: '946dbefaefa5452daba373c0e0e3ada7d74bc4cf2a27518c9fcc581f19b0cb2b',
-        },
-      }
-    : {
-        success: true,
-        transaction: {
-          Version: '1',
-          LockTime: '0',
-          Vin: [
-            {
-              TxId: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
-              Vout: '0',
-              ScriptSig: {
-                Asm:
-                  '0 30440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf4747[ALL] 3045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613[ALL] 522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
-                Hex:
-                  '004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53ae',
-              },
-              CoinBase: null,
-              TxInWitness: null,
-              Sequence: '4294967295',
-            },
-          ],
-          Vout: [
-            {
-              Value: 0.080899,
-              N: 0,
-              ScriptPubKey: {
-                Asm: 'OP_HASH160 c39dcc27823a8bd42cd3318a1dac8c25789b7ac7 OP_EQUAL',
-                Hex: 'a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787',
-                ReqSigs: 1,
-                Type: 'scripthash',
-                Addresses: ['2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw'],
-              },
-            },
-          ],
-          TxId: '7cf7dc9e9abcb0bc4303332b128af4200b6b3730461a3bb579143b002739f51f',
-        },
-      };
+  const decodedTx = isKrsRecovery ? btcKrsRecoveryDecodedTx : btcNonKrsRecoveryDecodedTx;
 
   if (isKrsRecovery) {
     // unnecessary market data removed
@@ -150,85 +40,18 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
   nock(blockchairURL)
     .get('/dashboards/address/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg')
     .reply(200, {
-      data: {
-        '2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
-      },
+      data: { '2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg': emptyBlockchairBtcAddressData },
       blockchairContext,
     })
     .get('/dashboards/address/2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr')
     .reply(200, {
-      data: {
-        '2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
-      },
+      data: { '2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr': emptyBlockchairBtcAddressData },
       blockchairContext,
     })
     .get('/dashboards/address/2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj')
     .reply(200, {
       data: {
-        '2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })
@@ -270,252 +93,63 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
     .get('/dashboards/address/2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z')
     .reply(200, {
       data: {
-        '2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })
     .get('/dashboards/address/2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA')
     .reply(200, {
       data: {
-        '2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })
     .get('/dashboards/address/2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch')
     .reply(200, {
       data: {
-        '2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })
     .get('/dashboards/address/2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC')
     .reply(200, {
       data: {
-        '2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })
     .get('/dashboards/address/2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P')
     .reply(200, {
       data: {
-        '2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })
     .get('/dashboards/address/2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT')
     .reply(200, {
       data: {
-        '2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })
     .get('/dashboards/address/2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X')
     .reply(200, {
       data: {
-        '2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })
     .get('/dashboards/address/2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym')
     .reply(200, {
       data: {
-        '2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })
     .get('/dashboards/address/2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba')
     .reply(200, {
       data: {
-        '2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba': {
-          address: {
-            type: null,
-            script_hex: '',
-            balance: 0,
-            balance_usd: 0,
-            received: 0,
-            received_usd: 0,
-            spent: 0,
-            spent_usd: 0,
-            output_count: 0,
-            unspent_output_count: 0,
-            first_seen_receiving: null,
-            last_seen_receiving: null,
-            first_seen_spending: null,
-            last_seen_spending: null,
-            scripthash_type: null,
-            transaction_count: 0,
-          },
-          transactions: [],
-          utxo: [],
-        },
+        '2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba': emptyBlockchairBtcAddressData,
       },
       blockchairContext,
     })

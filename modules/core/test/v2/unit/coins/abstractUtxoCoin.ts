@@ -3,7 +3,7 @@ import { coroutine as co } from 'bluebird';
 import * as sinon from 'sinon';
 import { Wallet } from '../../../../src/v2/wallet';
 const recoveryNocks = require('../../lib/recovery-nocks');
-const fixtures = require('../../fixtures/coins/abstractUtxoCoin');
+const fixtures = require('../../fixtures/coins/recovery');
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
 const utxoLib = require('@bitgo/utxo-lib');
