@@ -27,7 +27,6 @@ import {
 
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
-import { BaseTransactionBuilder } from '@bitgo/account-lib/dist/src/coin/baseCoin';
 
 export const MINIMUM_TRON_MSIG_TRANSACTION_FEE = 1e6;
 
@@ -221,7 +220,7 @@ export class Trx extends BaseCoin {
     return co<SignedTransaction>(function*() {
       const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
       // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
-      if (!(txBuilder instanceof BaseTransactionBuilder)) {
+      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
         throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
       }
       txBuilder.from(params.txPrebuild.txHex);
@@ -493,7 +492,7 @@ export class Trx extends BaseCoin {
       // construct our tx
       const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
       // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
-      if (!(txBuilder instanceof BaseTransactionBuilder)) {
+      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
         throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
       }
       txBuilder.from(buildTx);
@@ -544,7 +543,7 @@ export class Trx extends BaseCoin {
       }
       const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
       // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
-      if (!(txBuilder instanceof BaseTransactionBuilder)) {
+      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
         throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
       }
       txBuilder.from(txHex);

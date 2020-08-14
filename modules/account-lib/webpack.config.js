@@ -101,11 +101,12 @@ module.exports = function setupWebpack(env) {
     },
 
     // Create a source map for the bundled code (dev and test only)
-    devtool: !env.prod && 'source-map',
+    devtool: env.prod ? undefined : 'source-map',
     mode: env.prod ? 'production' : 'development',
     target: 'web',
     node: {
       util: true,
+      global: true,
       child_process: 'empty',
     },
   };

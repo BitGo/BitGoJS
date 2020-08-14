@@ -55,7 +55,7 @@ describe('HBAR Wallet initialization', () => {
 
       const factory3 = register('thbar', TransactionBuilderFactory);
       const txBuilder3 = factory3.from(tx2.toBroadcastFormat());
-      txBuilder3.sign({ key: testData.ACCOUNT_1.privateKey });
+      txBuilder3.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
       const tx3 = await txBuilder3.build();
 
       should.deepEqual(tx2.signature.length, 1);
