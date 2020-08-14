@@ -24,14 +24,16 @@ import { KeyPair } from './keyPair';
 import { SignatureData, HederaNode, Timestamp } from './ifaces';
 
 export const DEFAULT_M = 3;
+export const DEFAULT_DURATION = 120;
+export const DEFAULT_NODE_ID = { nodeId: '0.0.4' };
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
   private _transaction: Transaction;
   protected _source: BaseAddress;
   protected _startTime: Timestamp;
   protected _memo: string;
-  protected _node: HederaNode = { nodeId: '0.0.4' };
-  protected _duration = 120;
+  protected _node: HederaNode = DEFAULT_NODE_ID;
+  protected _duration = DEFAULT_DURATION;
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
   protected _sdkTransactionBuilder: SDKTransactionBuilder;
