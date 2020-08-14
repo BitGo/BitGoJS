@@ -119,12 +119,15 @@ export class Btc extends AbstractUtxoCoin {
     const self = this;
     return co(function *verifyRecoveryTransaction() {
       const smartbitURL = common.Environments[this.bitgo.getEnv()].smartbitBaseUrl + '/blockchain/decodetx';
-      const res = yield request.post(smartbitURL)
-      .send({ hex: txInfo.transactionHex })
-      .result();
-
-      if (!res) {
-        throw new BlockExplorerUnavailable();
+      let res;
+      try {
+        res = yield request.post(smartbitURL)
+          .send({ hex: txInfo.transactionHex })
+          .result();
+      } catch (e) {
+        if ( e || !res) { // if smartbit fails to respond
+          throw new BlockExplorerUnavailable(e);
+        }
       }
 
       /**

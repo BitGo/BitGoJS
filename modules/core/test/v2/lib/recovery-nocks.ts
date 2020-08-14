@@ -11,7 +11,22 @@ const btcKrsRecoveryDecodedTx = fixtures.btcKrsRecoveryDecodedTx;
 const btcNonKrsRecoveryDecodedTx = fixtures.btcNonKrsRecoveryDecodedTx;
 const emptyBlockchairBtcAddressData = fixtures.emptyBlockchairBtcAddressData;
 
-export function nockBtcRecovery(bitgo, isKrsRecovery) {
+export function nockSmartbitDecodeTx(txHex, env, isKrsRecovery, smartbitOnline = true) {
+  const decodedTx = isKrsRecovery ? btcKrsRecoveryDecodedTx : btcNonKrsRecoveryDecodedTx;
+  const smartbitBaseUrl = `${env.smartbitBaseUrl}/blockchain`;
+  if (smartbitOnline) {
+    nock(smartbitBaseUrl)
+      .post('/decodetx', { hex: txHex })
+      .reply(200, decodedTx);
+  } else {
+    nock(smartbitBaseUrl)
+      .post('/decodetx', { hex: txHex })
+      .socketDelay(10000)
+      .replyWithError(503); // "server unavailable"
+  }
+}
+
+export function nockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
   const env = Environments[bitgo.getEnv()] as any;
   const blockchairURL = `${env.blockchairBaseUrl}`;
   nock('https://bitcoinfees.earn.com')
@@ -24,8 +39,6 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
   const txHex = isKrsRecovery
     ? '010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000b500483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0230456c000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787301b0f000000000017a9141b60c33def13c3eda4cf4835e11a633e4b3302ec8700000000'
     : '010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000';
-
-  const decodedTx = isKrsRecovery ? btcKrsRecoveryDecodedTx : btcNonKrsRecoveryDecodedTx;
 
   if (isKrsRecovery) {
     // unnecessary market data removed
@@ -189,10 +202,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
       blockchairContext,
     });
 
-  const smartbitBaseUrl = `${env.smartbitBaseUrl}/blockchain`;
-  nock(smartbitBaseUrl)
-    .post('/decodetx', { hex: txHex })
-    .reply(200, decodedTx);
+  nockSmartbitDecodeTx(txHex, env, isKrsRecovery, smartbitOnline);
 }
 
 // TODO: BG-23161 - replace smartbit block explorer which is now permanently down

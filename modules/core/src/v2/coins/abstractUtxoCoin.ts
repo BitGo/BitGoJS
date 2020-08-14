@@ -1809,6 +1809,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           // some coins don't have a reliable third party verification endpoint, or sometimes the third party endpoint
           // could be unavailable due to service outage, so we continue without verification for those coins, but we will
           // let users know that they should verify their own
+          // this message should be piped to WRW and displayed on the UI
           if (e instanceof errors.MethodNotImplementedError || e instanceof errors.BlockExplorerUnavailable) {
             console.log('Please verify your transaction by decoding the tx hex using a third-party api of your choice');
           } else {
