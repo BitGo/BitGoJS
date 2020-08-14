@@ -6,6 +6,38 @@
 import * as nock from 'nock';
 import { Environment, Environments } from '../../../src/v2/environments';
 
+/**
+ * The invariant in every nock - some metadata that blockchair usually responds with
+ */
+const blockchairContext = {
+  context: {
+    code: 200,
+    source: 'D',
+    limit: '100,100',
+    offset: '0,0',
+    results: 1,
+    state: 0,
+    cache: {
+      live: true,
+      duration: 10,
+      since: '2020-08-13 19:04:38',
+      until: '2020-08-13 19:04:48',
+      time: null,
+    },
+    api: {
+      version: '2.0.64',
+      last_major_update: '2020-07-19 00:00:00',
+      next_major_update: null,
+      documentation: 'https://blockchair.com/api/docs',
+      notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
+    },
+    time: 0.08114314079284668,
+    render_time: 0.014548063278198242,
+    full_time: 0.09569120407104492,
+    request_cost: 1,
+  },
+};
+
 export function nockBtcRecovery(bitgo, isKrsRecovery) {
   const env = Environments[bitgo.getEnv()] as any;
   const blockchairURL = `${env.blockchairBaseUrl}`;
@@ -142,32 +174,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: false,
-          duration: 10,
-          since: '2020-08-12 01:26:40',
-          until: '2020-08-12 01:26:50',
-          time: 0.00000286102294921875,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.07646894454956055,
-        render_time: 0.006234169006347656,
-        full_time: 0.006237030029296875,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr')
     .reply(200, {
@@ -195,32 +202,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:29:43',
-          until: '2020-08-12 01:29:53',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.06786704063415527,
-        render_time: 0.013226985931396484,
-        full_time: 0.08109402656555176,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj')
     .reply(200, {
@@ -248,32 +230,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:33:12',
-          until: '2020-08-12 01:33:22',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.1018669605255127,
-        render_time: 0.011661052703857422,
-        full_time: 0.11352801322937012,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
     .reply(200, {
@@ -308,32 +265,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           ],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 1,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:33:30',
-          until: '2020-08-12 01:33:40',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.08116602897644043,
-        render_time: 0.012969970703125,
-        full_time: 0.09413599967956543,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z')
     .reply(200, {
@@ -361,32 +293,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:34:03',
-          until: '2020-08-12 01:34:13',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.07155084609985352,
-        render_time: 0.041748046875,
-        full_time: 0.11329889297485352,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA')
     .reply(200, {
@@ -414,32 +321,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:35:47',
-          until: '2020-08-12 01:35:57',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.08051800727844238,
-        render_time: 0.010480880737304688,
-        full_time: 0.09099888801574707,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch')
     .reply(200, {
@@ -467,32 +349,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:37:37',
-          until: '2020-08-12 01:37:47',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.06849789619445801,
-        render_time: 0.013341188430786133,
-        full_time: 0.08183908462524414,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC')
     .reply(200, {
@@ -520,32 +377,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:38:00',
-          until: '2020-08-12 01:38:10',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.06896710395812988,
-        render_time: 0.009294748306274414,
-        full_time: 0.0782618522644043,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P')
     .reply(200, {
@@ -573,32 +405,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:38:14',
-          until: '2020-08-12 01:38:24',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.07126116752624512,
-        render_time: 0.009653806686401367,
-        full_time: 0.08091497421264648,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT')
     .reply(200, {
@@ -626,32 +433,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:41:30',
-          until: '2020-08-12 01:41:40',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.07257890701293945,
-        render_time: 0.011079072952270508,
-        full_time: 0.08365797996520996,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X')
     .reply(200, {
@@ -679,32 +461,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:43:12',
-          until: '2020-08-12 01:43:22',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.06835794448852539,
-        render_time: 0.011714935302734375,
-        full_time: 0.08007287979125977,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym')
     .reply(200, {
@@ -732,32 +489,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:43:30',
-          until: '2020-08-12 01:43:40',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.09876012802124023,
-        render_time: 0.011132955551147461,
-        full_time: 0.1098930835723877,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba')
     .reply(200, {
@@ -785,32 +517,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           utxo: [],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 0,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:44:00',
-          until: '2020-08-12 01:44:10',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.06959891319274902,
-        render_time: 0.011512041091918945,
-        full_time: 0.08111095428466797,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
     .reply(200, {
@@ -845,32 +552,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
           ],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 1,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 01:33:30',
-          until: '2020-08-12 01:33:40',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.08116602897644043,
-        render_time: 0.012969970703125,
-        full_time: 0.09413599967956543,
-        request_cost: 1,
-      },
+      blockchairContext,
     });
 
   const smartbitBaseUrl = `${env.smartbitBaseUrl}/blockchain`;
@@ -3722,32 +3404,7 @@ module.exports.nockEmptyAddressInfo = function(emptyAddrs: Array<string>, env: a
       .get('/dashboards/address/' + addr)
       .reply(200, {
         data: data,
-        context: {
-          code: 200,
-          source: 'D',
-          limit: '100,100',
-          offset: '0,0',
-          results: 0,
-          state: 643413,
-          cache: {
-            live: true,
-            duration: 30,
-            since: '2020-08-12 20:14:18',
-            until: '2020-08-12 20:14:48',
-            time: null,
-          },
-          api: {
-            version: '2.0.64',
-            last_major_update: '2020-07-19 00:00:00',
-            next_major_update: null,
-            documentation: 'https://blockchair.com/api/docs',
-            notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-          },
-          time: 0.2732658386230469,
-          render_time: 0.01644611358642578,
-          full_time: 0.28971195220947266,
-          request_cost: 1,
-        },
+        blockchairContext,
       });
   });
 };
@@ -3804,32 +3461,7 @@ module.exports.nockBtcSegwitRecovery = function(bitgo) {
           ],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 1,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 20:26:11',
-          until: '2020-08-12 20:26:21',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.09797501564025879,
-        render_time: 0.011780977249145508,
-        full_time: 0.1097559928894043,
-        request_cost: 1,
-      },
+      blockchairContext,
     })
     .get('/dashboards/address/2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp') // unspent
     .times(2)
@@ -3869,32 +3501,7 @@ module.exports.nockBtcSegwitRecovery = function(bitgo) {
           ],
         },
       },
-      context: {
-        code: 200,
-        source: 'D',
-        limit: '100,100',
-        offset: '0,0',
-        results: 1,
-        state: 0,
-        cache: {
-          live: true,
-          duration: 10,
-          since: '2020-08-12 20:28:46',
-          until: '2020-08-12 20:28:56',
-          time: null,
-        },
-        api: {
-          version: '2.0.64',
-          last_major_update: '2020-07-19 00:00:00',
-          next_major_update: null,
-          documentation: 'https://blockchair.com/api/docs',
-          notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-        },
-        time: 0.08202385902404785,
-        render_time: 0.011471986770629883,
-        full_time: 0.09349584579467773,
-        request_cost: 1,
-      },
+      blockchairContext,
     });
 
   nock('https://bitcoinfees.earn.com')
@@ -3963,38 +3570,6 @@ const smartBitNockBtcSegwitRecovery = function(bitgo) {
   nock('https://bitcoinfees.earn.com')
     .get('/api/v1/fees/recommended')
     .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
-};
-
-/**
- * The invariant in every nock - some metadata that blockchair usually responds with
- */
-const blockchairContext = {
-  context: {
-    code: 200,
-    source: 'D',
-    limit: '100,100',
-    offset: '0,0',
-    results: 1,
-    state: 0,
-    cache: {
-      live: true,
-      duration: 10,
-      since: '2020-08-13 19:04:38',
-      until: '2020-08-13 19:04:48',
-      time: null,
-    },
-    api: {
-      version: '2.0.64',
-      last_major_update: '2020-07-19 00:00:00',
-      next_major_update: null,
-      documentation: 'https://blockchair.com/api/docs',
-      notice: 'Beginning July 19th, 2020 we start enforcing request cost formulas, see the changelog for details',
-    },
-    time: 0.08114314079284668,
-    render_time: 0.014548063278198242,
-    full_time: 0.09569120407104492,
-    request_cost: 1,
-  },
 };
 
 module.exports.nockBtcUnsignedRecovery = function(bitgo) {
