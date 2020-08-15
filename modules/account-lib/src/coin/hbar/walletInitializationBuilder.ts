@@ -5,6 +5,7 @@ import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidPublicKey, toUint8Array, toHex } from './utils';
 import { KeyPair } from './';
+import { TransactionType } from '../baseCoin';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: string[] = [];
@@ -22,7 +23,8 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     this._txBodyData.key = { thresholdKey: this.buildOwnersKeys() };
     this._txBodyData.initialBalance = 0;
-    return super.buildImplementation();
+    this.transaction.setTransactionType(TransactionType.WalletInitialization);
+    return await super.buildImplementation();
   }
 
   /**
@@ -44,6 +46,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.transaction.setTransactionType(TransactionType.WalletInitialization);
     const createAcc = tx.txBody.cryptoCreateAccount;
     if (createAcc && createAcc.key && createAcc.key.thresholdKey) {
       this.initOwners(createAcc.key.thresholdKey as proto.ThresholdKey);

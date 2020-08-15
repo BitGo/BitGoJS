@@ -5,7 +5,7 @@ import { Writer } from 'protobufjs';
 import * as nacl from 'tweetnacl';
 import Long from 'long';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
-import { BaseTransaction } from '../baseCoin';
+import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { SigningError } from '../baseCoin/errors';
 import { TxData } from './ifaces';
@@ -15,6 +15,7 @@ import { KeyPair } from './';
 export class Transaction extends BaseTransaction {
   private _hederaTx: proto.Transaction;
   private _txBody: proto.TransactionBody;
+  protected _type: TransactionType;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -116,6 +117,15 @@ export class Transaction extends BaseTransaction {
     this._txBody = proto.TransactionBody.decode(tx.bodyBytes);
     this._hederaTx = tx;
     // this.loadPreviousSignatures();
+  }
+
+  /**
+   * Set the transaction type
+   *
+   * @param {TransactionType} transactionType The transaction type to be set
+   */
+  setTransactionType(transactionType: TransactionType): void {
+    this._type = transactionType;
   }
 
   /**

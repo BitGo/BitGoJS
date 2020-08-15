@@ -3,6 +3,7 @@ import { register } from '../../../../../src/index';
 import { TransactionBuilderFactory } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
 import { Transaction } from '../../../../../src/coin/hbar/transaction';
+import { TransactionType } from '../../../../../src/coin/baseCoin';
 
 describe('HBAR Transfer Builder', () => {
   const factory = register('thbar', TransactionBuilderFactory);
@@ -32,6 +33,7 @@ describe('HBAR Transfer Builder', () => {
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        tx.type.should.equal(TransactionType.Send);
       });
 
       it('a transfer transaction signed multiple times', async () => {
@@ -101,12 +103,14 @@ describe('HBAR Transfer Builder', () => {
         builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
         const tx2 = await builder.build();
         should.deepEqual(tx2.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        tx2.type.should.equal(TransactionType.Send);
       });
 
       it('a signed transfer transaction from serilaized', async () => {
         const txBuilder = factory.from(testData.SIGNED_TRANSFER_TRANSACTION);
         const tx = await txBuilder.build();
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        tx.type.should.equal(TransactionType.Send);
       });
 
       it('an offline multisig transfer transaction', async () => {
