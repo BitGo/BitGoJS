@@ -3,6 +3,7 @@ import { register } from '../../../../../src/index';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
 import { WalletInitializationBuilder } from '../../../../../src/coin/hbar/walletInitializationBuilder';
+import { TransactionType } from '../../../../../src/coin/baseCoin';
 
 describe('HBAR Wallet initialization', () => {
   const factory = register('thbar', TransactionBuilderFactory);
@@ -28,6 +29,8 @@ describe('HBAR Wallet initialization', () => {
       should.deepEqual(tx.signature.length, 1);
       should.deepEqual(tx.toJson(), tx2.toJson());
       should.deepEqual(raw, tx2.toBroadcastFormat());
+      tx.type.should.equal(TransactionType.WalletInitialization);
+      tx2.type.should.equal(TransactionType.WalletInitialization);
     });
 
     it('an init transaction', async () => {
@@ -37,6 +40,7 @@ describe('HBAR Wallet initialization', () => {
       txJson.fee.should.equal(1000000000);
       should.deepEqual(tx.signature.length, 1);
       should.equal(txJson.from, testData.OPERATOR.accountId);
+      tx.type.should.equal(TransactionType.WalletInitialization);
     });
 
     it('offline signing init transaction', async () => {
