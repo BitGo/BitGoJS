@@ -7,6 +7,7 @@ import { BaseKey } from '../baseCoin/iface';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidAddress, isValidAmount, stringifyAccountId } from './utils';
+import { TransactionType } from '../baseCoin';
 
 export class TransferBuilder extends TransactionBuilder {
   private _txBodyData: proto.CryptoTransferTransactionBody;
@@ -22,8 +23,8 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     this._txBodyData.transfers = this.buildTransferData();
-    this.transaction = await super.buildImplementation();
-    return this.transaction;
+    this.transaction.setTransactionType(TransactionType.Send);
+    return await super.buildImplementation();
   }
 
   private buildTransferData(): proto.ITransferList {
@@ -47,6 +48,7 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
+    this.transaction.setTransactionType(TransactionType.Send);
     const transferData = tx.txBody.cryptoTransfer;
     if (transferData && transferData.transfers && transferData.transfers.accountAmounts) {
       this.initTransfers(transferData.transfers.accountAmounts);

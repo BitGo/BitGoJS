@@ -339,6 +339,72 @@ describe('ETH-like coins', () => {
           recoveredAddress.should.equal(key.getAddress());
         });
 
+        it('should sign a half signed transaction', async function() {
+          const key = new Eth.KeyPair({ prv: xprv });
+          const destination = '0xfaa8f14f46a99eb439c50e0c3b835cc21dad51b4';
+          const contractAddress = '0x9e2c5712ab4caf402a98c4bf58c79a0dfe718ad1';
+          const amount = '100000';
+          const inputExpireTime = Math.floor(new Date().getTime() / 1000);
+          const inputSequenceId = 1;
+
+          const unsignedTransaction = await buildUnsignedTransaction({
+            destination,
+            contractAddress,
+            amount,
+            expireTime: inputExpireTime,
+            contractSequenceId: inputSequenceId,
+          });
+
+          const tx = await basecoin.signTransaction({
+            prv: key.getKeys().prv,
+            txPrebuild: {
+              txHex: unsignedTransaction.toBroadcastFormat(),
+            },
+          });
+
+          const fullySignedTx = await basecoin.signTransaction({
+            prv: key.getKeys().prv,
+            txPrebuild: {
+              txHex: tx.halfSigned.txHex,
+            },
+          });
+
+          fullySignedTx.halfSigned.recipients.length.should.equal(1);
+          fullySignedTx.halfSigned.recipients[0].address.should.equal(destination);
+          fullySignedTx.halfSigned.recipients[0].amount.should.equal(amount);
+
+          const txBuilder = basecoin.getTransactionBuilder();
+          txBuilder.from(fullySignedTx.halfSigned.txHex);
+          const transaction = await txBuilder.build();
+          const txJson = transaction.toJson();
+          txJson.to.should.equal(contractAddress);
+
+          let decodedData;
+          let recipient;
+          let value;
+          let data;
+          let expireTime;
+          let sequenceId;
+          let tokenContractAddress;
+          if (coin instanceof ContractAddressDefinedToken) {
+            decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
+            [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
+            data = new Buffer('');
+          } else {
+            decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
+            [recipient, value, data, expireTime, sequenceId] = decodedData;
+          }
+
+          ethUtil.addHexPrefix(recipient).should.equal(destination);
+          value.toString(10).should.equal(amount);
+          inputExpireTime.should.equal(parseInt(expireTime.toString('hex'), 16));
+          inputSequenceId.should.equal(parseInt(sequenceId.toString('hex'), 16));
+          data.length.should.equal(0);
+
+          const recoveredAddress = recoverSigner(transaction);
+          recoveredAddress.should.equal(key.getAddress());
+        });
+
         it('should fail to sign transaction with invalid tx hex', async function() {
           const key = new Eth.KeyPair({ prv: xprv });
           await basecoin

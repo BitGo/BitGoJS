@@ -2,6 +2,10 @@ import { Ed25519PrivateKey, Ed25519PublicKey } from '@hashgraph/sdk';
 import { Ed25519KeyPair } from '../baseCoin/ed25519KeyPair';
 import { KeyPairOptions, DefaultKeys } from '../baseCoin/iface';
 import { InvalidKey, NotSupported } from '../baseCoin/errors';
+import { removePrefix } from './utils';
+
+const PUBLIC_KEY_PREFIX = '302a300506032b6570032100';
+const PRIVATE_KEY_PREFIX = '302e020100300506032b657004220420';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -39,7 +43,7 @@ export class KeyPair extends Ed25519KeyPair {
   recordKeysFromPublicKeyInProtocolFormat(pub: string): DefaultKeys {
     try {
       const hederaPub = Ed25519PublicKey.fromString(pub.toLowerCase()).toString();
-      const ed25519Pub = hederaPub.slice(24);
+      const ed25519Pub = removePrefix(PUBLIC_KEY_PREFIX, hederaPub);
       return { pub: ed25519Pub };
     } catch (e) {
       throw new InvalidKey('Invalid public key: ' + pub);
@@ -50,8 +54,8 @@ export class KeyPair extends Ed25519KeyPair {
   recordKeysFromPrivateKeyInProtocolFormat(prv: string): DefaultKeys {
     try {
       const hederaPrv = Ed25519PrivateKey.fromString(prv);
-      const ed25519Prv = hederaPrv.toString().slice(32);
-      const ed25519Pub = hederaPrv.publicKey.toString().slice(24);
+      const ed25519Prv = removePrefix(PRIVATE_KEY_PREFIX, hederaPrv.toString());
+      const ed25519Pub = removePrefix(PUBLIC_KEY_PREFIX, hederaPrv.publicKey.toString());
       return {
         prv: ed25519Prv,
         pub: ed25519Pub,

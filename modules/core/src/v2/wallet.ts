@@ -99,6 +99,7 @@ export interface PrebuildTransactionOptions {
       pendingApprovalId?: string;
     };
     offlineVerification?: boolean;
+    walletContractAddress?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
@@ -1623,6 +1624,7 @@ export class Wallet {
    * @param {Boolean} params.hop - Build this as an Ethereum hop transaction
    * @param {Object} params.reservation - Object to reserve the unspents that this tx build uses. Format is reservation = { expireTime: ISODateString, pendingApprovalId: String }
    * @param {String} params.walletPassphrase The passphrase to the wallet user key, to sign commitment data for Ethereum hop transactions
+   * @param {String} params.walletContractAddress - The contract address used as the "to" field of a transaction
    * @param callback
    * @returns {*}
    */
@@ -1662,6 +1664,9 @@ export class Wallet {
       delete prebuild.wallet;
       delete prebuild.buildParams;
       prebuild = _.extend({}, prebuild, { walletId: self.id() });
+      if (self._wallet && self._wallet.coinSpecific && !params.walletContractAddress) {
+        prebuild = _.extend({}, prebuild, { walletContractAddress: self._wallet.coinSpecific.baseAddress });
+      }
       debug('final transaction prebuild: %O', prebuild);
       return prebuild as PrebuildTransactionResult;
     }).call(this).asCallback(callback);

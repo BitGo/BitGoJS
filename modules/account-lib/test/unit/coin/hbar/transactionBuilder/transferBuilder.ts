@@ -3,6 +3,7 @@ import { register } from '../../../../../src/index';
 import { TransactionBuilderFactory } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
 import { Transaction } from '../../../../../src/coin/hbar/transaction';
+import { TransactionType } from '../../../../../src/coin/baseCoin';
 
 describe('HBAR Transfer Builder', () => {
   const factory = register('thbar', TransactionBuilderFactory);
@@ -23,7 +24,7 @@ describe('HBAR Transfer Builder', () => {
         builder.validDuration(1000000);
         builder.node({ nodeId: '0.0.2345' });
         builder.startTime('1596110493.372646570');
-        builder.sign({ key: testData.ACCOUNT_1.privateKey });
+        builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
         const tx = await builder.build();
         const txJson = tx.toJson();
         should.deepEqual(tx.signature.length, 1);
@@ -32,12 +33,13 @@ describe('HBAR Transfer Builder', () => {
         should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
         should.deepEqual(txJson.fee.toString(), testData.FEE);
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        tx.type.should.equal(TransactionType.Send);
       });
 
       it('a transfer transaction signed multiple times', async () => {
         const builder = initTxBuilder();
         builder.startTime('1596110493.372646570');
-        builder.sign({ key: testData.ACCOUNT_1.privateKey });
+        builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
         builder.sign({ key: testData.ACCOUNT_2.privateKey });
         builder.sign({ key: testData.ACCOUNT_3.privateKey });
         const tx = await builder.build();
@@ -87,7 +89,7 @@ describe('HBAR Transfer Builder', () => {
       it('a multisig transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.startTime('1596110493.372646570');
-        builder.sign({ key: testData.ACCOUNT_1.privateKey });
+        builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
         builder.sign({ key: testData.ACCOUNT_2.privateKey });
         builder.sign({ key: testData.ACCOUNT_3.privateKey });
         const tx = await builder.build();
@@ -98,21 +100,23 @@ describe('HBAR Transfer Builder', () => {
     describe('serialized transactions', () => {
       it('a non signed transfer transaction from serialized', async () => {
         const builder = factory.from(testData.NON_SIGNED_TRANSFER_TRANSACTION);
-        builder.sign({ key: testData.ACCOUNT_1.privateKey });
+        builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
         const tx2 = await builder.build();
         should.deepEqual(tx2.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        tx2.type.should.equal(TransactionType.Send);
       });
 
       it('a signed transfer transaction from serilaized', async () => {
         const txBuilder = factory.from(testData.SIGNED_TRANSFER_TRANSACTION);
         const tx = await txBuilder.build();
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        tx.type.should.equal(TransactionType.Send);
       });
 
       it('an offline multisig transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.startTime('1596110493.372646570');
-        builder.sign({ key: testData.ACCOUNT_1.privateKey });
+        builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
         const tx = await builder.build();
         should.deepEqual(tx.signature.length, 1);
 
@@ -143,7 +147,7 @@ describe('HBAR Transfer Builder', () => {
     it('a transfer transaction with more signatures than allowed', () => {
       const builder = initTxBuilder();
       builder.sign({ key: testData.ACCOUNT_2.privateKey });
-      builder.sign({ key: testData.ACCOUNT_1.privateKey });
+      builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
       builder.sign({ key: testData.ACCOUNT_3.privateKey });
       should.throws(
         () => builder.sign({ key: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d90' }),
@@ -153,9 +157,9 @@ describe('HBAR Transfer Builder', () => {
 
     it('a transfer transaction with repeated sign', () => {
       const builder = initTxBuilder();
-      builder.sign({ key: testData.ACCOUNT_1.privateKey });
+      builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
       should.throws(
-        () => builder.sign({ key: testData.ACCOUNT_1.privateKey }),
+        () => builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix }),
         e =>
           e.message ===
           'Repeated sign: 302e020100300506032b65700422042062b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01',

@@ -1,9 +1,10 @@
 import { KeyPair } from '../../../src/coin/hbar/keyPair';
 
+// ACCOUNT_1 has public and private keys with prefix
 export const ACCOUNT_1 = {
   accountId: '0.0.81320',
-  privateKey: '302e020100300506032b65700422042062b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01',
-  publicKey: '302a300506032b65700321005a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9',
+  prvKeyWithPrefix: '302e020100300506032b65700422042062b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01',
+  pubKeyWithPrefix: '302a300506032b65700321005a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9',
   privateKeyBytes: Uint8Array.from(
     Buffer.from('62b0b669de0ab5e91b4328e1431859a5ca47e7426e701019272f5c2d52825b01', 'hex'),
   ),
@@ -18,23 +19,25 @@ export const OPERATOR = {
   privateKey: '302e020100300506032b65700422042088b5af9484cef4b0aab6e0ba1002313fdfdfacfdf23d6d0957dc5f2c24fc3b81',
 };
 
+// ACCOUNT_2 has public and private keys without prefix
 export const ACCOUNT_2 = {
   accountId: '0.0.75861',
   privateKey: '5bb72603f237c0993f7973d37fdade32c71aa94aee686aa79d260acba1882d9a',
-  publicKey: '302a300506032b6570032100592a4fbb7263c59d450e651df96620dc9208ee7c7d9d6f2fdcb91c53f8831261',
+  publicKey: '592a4fbb7263c59d450e651df96620dc9208ee7c7d9d6f2fdcb91c53f8831261',
 };
 
+// ACCOUNT_3 has public and private keys without prefix
 export const ACCOUNT_3 = {
   accountId: '0.0.78963',
   privateKey: '310a775bcc36016275d64cb8e4508e19437708852e42a3948a641b664be800a9',
-  publicKey: '302a300506032b6570032100fa344793601cef71348f994f30a168c2dd55f357426a180a5a724d7e03585e91',
+  publicKey: 'fa344793601cef71348f994f30a168c2dd55f357426a180a5a724d7e03585e91',
 };
 
 export const ed25519PrivKeyPrefix = '302e020100300506032b657004220420';
 
 export const ed25519PubKeyPrefix = '302a300506032b6570032100';
 
-export const OWNER1 = ACCOUNT_1.publicKey;
+export const OWNER1 = ACCOUNT_1.pubKeyWithPrefix;
 
 export const OWNER2 = ACCOUNT_2.publicKey;
 
