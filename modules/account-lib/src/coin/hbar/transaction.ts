@@ -117,6 +117,7 @@ export class Transaction extends BaseTransaction {
     this._txBody = proto.TransactionBody.decode(tx.bodyBytes);
     this._hederaTx = tx;
     // this.loadPreviousSignatures();
+    this.loadInputsAndOutputs();
   }
 
   /**
@@ -141,6 +142,28 @@ export class Transaction extends BaseTransaction {
           this._signatures.push(toHex(signature));
         }
       });
+    }
+  }
+
+  /**
+   * Load the input and output data on this transaction using the transaction json
+   * if there are outputs. For transactions without outputs (e.g. wallet initializations),
+   * this function will not do anything
+   */
+  loadInputsAndOutputs(): void {
+    const txJson = this.toJson();
+    if (txJson.to && txJson.amount) {
+      this._outputs = [{
+        address: txJson.to,
+        value: txJson.amount,
+        coin: this._coinConfig.name,
+      }];
+
+      this._inputs = [{
+        address: txJson.from,
+        value: txJson.amount,
+        coin: this._coinConfig.name,
+      }];
     }
   }
 
