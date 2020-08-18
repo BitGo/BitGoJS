@@ -25,7 +25,6 @@ import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import BigNumber from 'bignumber.js';
 import { MethodNotImplementedError } from '../../errors';
-import { BaseTransactionBuilder } from '@bitgo/account-lib/dist/src/coin/baseCoin';
 
 export interface XtzSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -231,7 +230,7 @@ export class Xtz extends BaseCoin {
       }
       const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
       // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
-      if (!(txBuilder instanceof BaseTransactionBuilder)) {
+      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
         throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
       }
       txBuilder.from(txHex);

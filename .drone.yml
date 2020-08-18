@@ -268,8 +268,9 @@ steps:
 
 - name: integration-test
   image: node:10
-  commands:
-  - yarn run integration-test
+  # https://bitgoinc.atlassian.net/browse/BG-23925 - reenable integration tests when testnet is stable
+  # commands:  
+  # - yarn run integration-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
