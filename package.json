@@ -19,7 +19,7 @@
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
     "unit-test-changed": "lerna run unit-test --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --parallel",
-    "browser-tests": "lerna run --scope bitgo compile && lerna run --scope bitgo browser-test",
+    "browser-tests": "lerna run --scope @bitgo/account-lib compile && lerna run --scope bitgo compile && lerna run --scope bitgo browser-test",
     "gen-coverage-changed": "lerna run gen-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --parallel",
     "coverage-changed": "lerna run upload-coverage --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --parallel --",
     "unit-test": "lerna run unit-test --stream --parallel",
