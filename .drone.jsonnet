@@ -252,9 +252,10 @@ local IntegrationVersions = ["10"];
 ] + [
   UnitTest(version)
   for version in UnitVersions
-] + [
-  IncludeBranches(IntegrationTest(version))
-  for version in IntegrationVersions
+# BG-23925 - reenable integration tests when testnet is stable
+# ] + [
+#  IncludeBranches(IntegrationTest(version))
+#  for version in IntegrationVersions
 ] + [
   IncludeBranches(BrowserTest("10"))
 ]
