@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "postinstall": "lerna run build --stream",
-    "generate-drone": "drone jsonnet --stream",
+    "generate-drone": "chmod 0666 .drone.yml && drone jsonnet --stream && chmod 0444 .drone.yml",
     "audit": "yarn audit ; test $? -lt 8",
     "lint": "lerna run lint --stream",
     "lint-changed": "lerna run lint --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream",
