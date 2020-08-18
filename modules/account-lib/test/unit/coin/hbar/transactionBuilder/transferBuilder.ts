@@ -34,6 +34,13 @@ describe('HBAR Transfer Builder', () => {
         should.deepEqual(txJson.fee.toString(), testData.FEE);
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
         tx.type.should.equal(TransactionType.Send);
+
+        tx.outputs.length.should.equal(1);
+        tx.outputs[0].address.should.equal(testData.ACCOUNT_2.accountId);
+        tx.outputs[0].value.should.equal('10');
+        tx.inputs.length.should.equal(1);
+        tx.inputs[0].address.should.equal(testData.ACCOUNT_1.accountId);
+        tx.inputs[0].value.should.equal('10');
       });
 
       it('a transfer transaction signed multiple times', async () => {
