@@ -170,13 +170,6 @@ steps:
     - success
     - failure
 
-trigger:
-  branch:
-    exclude:
-    - master
-    - rel/*
-    - prod/production
-
 ---
 kind: pipeline
 name: unit tests (node:10)
@@ -208,15 +201,6 @@ steps:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
 
-- name: browser-tests
-  image: node:10
-  commands:
-  - apt-get update && apt-get install -y gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
-  - yarn run browser-tests
-  environment:
-    BITGOJS_TEST_PASSWORD:
-      from_secret: password
-
 - name: upload artifacts
   image: bitgosdk/upload-tools:latest
   commands:
@@ -235,13 +219,6 @@ steps:
     status:
     - success
     - failure
-
-trigger:
-  branch:
-    exclude:
-    - master
-    - rel/*
-    - prod/production
 
 ---
 kind: pipeline
@@ -268,9 +245,8 @@ steps:
 
 - name: integration-test
   image: node:10
-  # https://bitgoinc.atlassian.net/browse/BG-23925 - reenable integration tests when testnet is stable
-  # commands:  
-  # - yarn run integration-test
+  commands:
+  - yarn run integration-test
   environment:
     BITGOJS_TEST_PASSWORD:
       from_secret: password
@@ -283,6 +259,64 @@ steps:
   - yarn run coverage
   environment:
     CODECOV_FLAG: integration
+    CODECOV_TOKEN:
+      from_secret: codecov
+    reports_s3_akid:
+      from_secret: reports_s3_akid
+    reports_s3_sak:
+      from_secret: reports_s3_sak
+  when:
+    status:
+    - success
+    - failure
+
+trigger:
+  branch:
+  - master
+  - rel/*
+  - prod/production
+
+---
+kind: pipeline
+name: Browser Tests
+
+platform:
+  os: linux
+  arch: amd64
+
+steps:
+- name: build information
+  image: node:10
+  commands:
+  - node --version
+  - npm --version
+  - yarn --version
+  - git --version
+
+- name: install
+  image: node:10
+  commands:
+  - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
+  - yarn install
+
+- name: browser-tests
+  image: node:10
+  commands:
+  - apt-get update
+  - apt-get install -y gconf-service libasound2 libatk1.0-0 libatk-bridge2.0-0 libc6 libcairo2 libcups2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libpango-1.0-0 libpangocairo-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxcursor1 libxdamage1 libxext6 libxfixes3 libxi6 libxrandr2 libxrender1 libxss1 libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget
+  - yarn run browser-tests
+  environment:
+    BITGOJS_TEST_PASSWORD:
+      from_secret: password
+
+- name: upload artifacts
+  image: bitgosdk/upload-tools:latest
+  commands:
+  - yarn run artifacts
+  - yarn run gen-coverage-changed
+  - yarn run coverage
+  environment:
+    CODECOV_FLAG: unit
     CODECOV_TOKEN:
       from_secret: codecov
     reports_s3_akid:
