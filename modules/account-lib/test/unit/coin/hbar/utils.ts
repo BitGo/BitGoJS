@@ -45,6 +45,40 @@ describe('HBAR util library', function() {
     });
   });
 
+  describe('verify sign', function() {
+    it('should validate if signature is valid', function() {
+      const encodedTx = testData.TRANSFER_ENCODED_TX;
+      const keypair = testData.KEYPAIR_PRV_TEST_TRANSFER;
+      const signature = testData.SIGNATURE;
+
+      Utils.validate(encodedTx, keypair, signature).should.be.equal(true);
+    });
+
+    it('should validate and receive false if signature is not part of keypair', function() {
+      const encodedTx = testData.TRANSFER_ENCODED_TX;
+      const keypair = testData.KEYPAIR_PRV_TEST_TRANSFER;
+      const signature = testData.SIGNATURE2;
+
+      Utils.validate(encodedTx, keypair, signature).should.be.equal(false);
+    });
+
+    it('should validate and receive false if encoded data does not have sign ', function() {
+      const encodedTx = testData.TRANSFER_ENCODED_TX_WITHOUT_SIGN;
+      const keypair = testData.KEYPAIR_PRV_TEST_TRANSFER;
+      const signature = testData.SIGNATURE2;
+
+      Utils.validate(encodedTx, keypair, signature).should.be.equal(false);
+    });
+
+    it('should validate and receive true if second signature is in encoded transaction', function() {
+      const encodedTx = testData.TRANSFER_ENCODED_TX_SECOND_SIGN;
+      const keypair = testData.KEYPAIR_PRV_TEST_TRANSFER_MULTI_SIG;
+      const signature = testData.SECOND_SIGNATURE;
+
+      Utils.validate(encodedTx, keypair, signature).should.be.equal(true);
+    });
+  });
+
   describe('transaction timestamp', function() {
     it('should validate tx timestamps', function() {
       const validTimestamps = ['1595374723.356981689', '1595374723'];
