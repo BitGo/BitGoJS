@@ -39,11 +39,11 @@ local CommandWithSecrets(command, version) =
   },
 };
 
-local OnUpdateBranch(pipeline, branch="master") = pipeline + {
-  trigger: {
-    branch: branch,
-    event: "push",
-  },
+local WithExtraAptPackages(step, packages) = step + {
+  commands: [
+    "apt-get update",
+    "apt-get install -y " + std.join(" ", packages),
+  ] + super.commands,
 };
 
 local IncludeBranches(pipeline, included_branches=branches()) = pipeline + {
@@ -143,16 +143,58 @@ local IntegrationTest(version) = {
   ],
 };
 
+local BrowserTestAptPackages = [
+  "gconf-service",
+  "libasound2",
+  "libatk1.0-0",
+  "libatk-bridge2.0-0",
+  "libc6",
+  "libcairo2",
+  "libcups2",
+  "libdbus-1-3",
+  "libexpat1",
+  "libfontconfig1",
+  "libgcc1",
+  "libgconf-2-4",
+  "libgdk-pixbuf2.0-0",
+  "libglib2.0-0",
+  "libgtk-3-0",
+  "libnspr4",
+  "libpango-1.0-0",
+  "libpangocairo-1.0-0",
+  "libstdc++6",
+  "libx11-6",
+  "libx11-xcb1",
+  "libxcb1",
+  "libxcomposite1",
+  "libxcursor1",
+  "libxdamage1",
+  "libxext6",
+  "libxfixes3",
+  "libxi6",
+  "libxrandr2",
+  "libxrender1",
+  "libxss1",
+  "libxtst6",
+  "ca-certificates",
+  "fonts-liberation",
+  "libappindicator1",
+  "libnss3",
+  "lsb-release",
+  "xdg-utils",
+  "wget",
+];
+
 local BrowserTest(version) = {
   kind: "pipeline",
   name: "Browser Tests",
   steps: [
-     BuildInfo(version),
+    BuildInfo(version),
     Install(version),
-    CommandWithSecrets("ubrowser-tests", version),
+    WithExtraAptPackages(CommandWithSecrets("browser-tests", version), BrowserTestAptPackages),
     UploadArtifacts(version, "unit", true),
-  ]
-}
+  ],
+};
 
 local MeasureSizeAndTiming(version) = {
   kind: "pipeline",
@@ -183,28 +225,20 @@ local CheckPreconditions(version) = {
   ]
 };
 
-local InternalPublish(version) = {
-  kind: "pipeline",
-  name: "internal publish (node:" + version + ")",
-  steps: [
-    BuildInfo(version),
-    Install(version),
-    LernaPublish(version),
-  ]
-};
-
 local UnitVersions = ["8", "10"];
 local IntegrationVersions = ["10"];
 
 [
   CheckPreconditions("10"),
   IncludeBranches(MeasureSizeAndTiming("10")),
-  OnUpdateBranch(InternalPublish("10"), "master")
 ] + [
-  ExcludeBranches(UnitTest(version))
+  UnitTest(version)
   for version in UnitVersions
+# BG-23925 - reenable integration tests when testnet is stable
+# ] + [
+#  IncludeBranches(IntegrationTest(version))
+#  for version in IntegrationVersions
 ] + [
-  IncludeBranches(IntegrationTest(version))
-  for version in IntegrationVersions
+  IncludeBranches(BrowserTest("10"))
 ]
 
