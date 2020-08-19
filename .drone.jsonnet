@@ -46,13 +46,6 @@ local WithExtraAptPackages(step, packages) = step + {
   ] + super.commands,
 };
 
-local OnUpdateBranch(pipeline, branch="master") = pipeline + {
-  trigger: {
-    branch: branch,
-    event: "push",
-  },
-};
-
 local IncludeBranches(pipeline, included_branches=branches()) = pipeline + {
   trigger: {
     branch: {
@@ -232,23 +225,12 @@ local CheckPreconditions(version) = {
   ]
 };
 
-local InternalPublish(version) = {
-  kind: "pipeline",
-  name: "internal publish (node:" + version + ")",
-  steps: [
-    BuildInfo(version),
-    Install(version),
-    LernaPublish(version),
-  ]
-};
-
 local UnitVersions = ["8", "10"];
 local IntegrationVersions = ["10"];
 
 [
   CheckPreconditions("10"),
   IncludeBranches(MeasureSizeAndTiming("10")),
-  OnUpdateBranch(InternalPublish("10"), "master")
 ] + [
   UnitTest(version)
   for version in UnitVersions
