@@ -1,11 +1,11 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { AccountCreateTransaction, ThresholdKey } from '@hashgraph/sdk';
 import { BuildTransactionError } from '../baseCoin/errors';
-import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
+import { TransactionType } from '../baseCoin';
+import { TransactionBuilder, DEFAULT_M, DEFAULT_N, AUTO_RENEW_PERIOD } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidPublicKey, toHex } from './utils';
 import { KeyPair } from './';
-import { TransactionType } from '../baseCoin';
 
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: string[] = [];
@@ -22,7 +22,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     this._cryptoBuilder
       .setInitialBalance(0)
       .setKey(this.buildOwnersKeys())
-      .setAutoRenewPeriod(7890000);
+      .setAutoRenewPeriod(AUTO_RENEW_PERIOD);
     this._sdkTransactionBuilder = this._cryptoBuilder;
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
     return super.buildImplementation();
@@ -34,7 +34,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
    * @returns {ThresholdKey} the wallet threshold keys
    */
   private buildOwnersKeys(): ThresholdKey {
-    const threshold = new ThresholdKey(2);
+    const threshold = new ThresholdKey(DEFAULT_N);
     this._owners.forEach(owner => {
       const pub = new KeyPair({ pub: owner }).getKeys().pub;
       threshold.add(pub);

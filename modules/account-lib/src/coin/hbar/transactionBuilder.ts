@@ -23,9 +23,11 @@ import {
 import { KeyPair } from './keyPair';
 import { SignatureData, HederaNode, Timestamp } from './ifaces';
 
+export const DEFAULT_N = 2;
 export const DEFAULT_M = 3;
 export const DEFAULT_DURATION = 120;
 export const DEFAULT_NODE_ID = { nodeId: '0.0.4' };
+export const AUTO_RENEW_PERIOD = 7890000; // 3 months
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
   private _transaction: Transaction;
