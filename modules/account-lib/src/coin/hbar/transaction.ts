@@ -56,8 +56,9 @@ export class Transaction extends BaseTransaction {
 
     const sigMap = this._hederaTx._toProto().getSigmap() || new SignatureMap();
 
-    const innerTx = this._hederaTx._toProto();
+    this.checkDuplicatedSignature(sigMap, sigPair);
     sigMap.getSigpairList().push(sigPair);
+    const innerTx = this._hederaTx._toProto();
     innerTx.setSigmap(sigMap);
     // The inner transaction must be replaced with the new signed transaction
 
@@ -65,6 +66,24 @@ export class Transaction extends BaseTransaction {
 
     // Previous signatures are kept so we just add the new signature to the list
     this._signatures.push(signature);
+  }
+
+  /**
+   * Check if the signature was already loaded to a signature map
+   * with the same public key
+   *
+   * @param {SignatureMap} sigMap the current signature map
+   * @param {SignaturePair} sigPair the signature pair to add
+   */
+  private checkDuplicatedSignature(sigMap: SignatureMap, sigPair: SignaturePair) {
+    sigMap.getSigpairList().forEach(currentSigPair => {
+      if (
+        currentSigPair.getEd25519_asU8() === sigPair.getEd25519_asU8() &&
+        currentSigPair.getPubkeyprefix_asU8() === sigPair.getPubkeyprefix_asU8()
+      ) {
+        throw new SigningError('Duplicated signature with the same public key');
+      }
+    });
   }
 
   /**
@@ -168,17 +187,21 @@ export class Transaction extends BaseTransaction {
   loadInputsAndOutputs(): void {
     const txJson = this.toJson();
     if (txJson.to && txJson.amount) {
-      this._outputs = [{
-        address: txJson.to,
-        value: txJson.amount,
-        coin: this._coinConfig.name,
-      }];
+      this._outputs = [
+        {
+          address: txJson.to,
+          value: txJson.amount,
+          coin: this._coinConfig.name,
+        },
+      ];
 
-      this._inputs = [{
-        address: txJson.from,
-        value: txJson.amount,
-        coin: this._coinConfig.name,
-      }];
+      this._inputs = [
+        {
+          address: txJson.from,
+          value: txJson.amount,
+          coin: this._coinConfig.name,
+        },
+      ];
     }
   }
 
