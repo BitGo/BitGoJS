@@ -21,7 +21,11 @@ describe('Abstract UTXO Coin:', () => {
      */
     const verification = {
       disableNetworking: true,
-      keychains: {}
+      keychains: {
+        user: {},
+        backup: {},
+        bitgo: {},
+      },
     };
 
     const wallet = sinon.createStubInstance(Wallet, {

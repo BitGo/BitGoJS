@@ -20,7 +20,7 @@ import {
   TransactionParams as BaseTransactionParams,
   TransactionPrebuild as BaseTransactionPrebuild, VerificationOptions, TransactionRecipient, SignedTransaction,
 } from '../baseCoin';
-import { parseOutput } from '../internal/parseOutput';
+import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
 import { Keychain, KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
 import * as config from '../../config';
@@ -42,6 +42,7 @@ export interface Output {
   address: string;
   amount: string | number;
   external?: boolean;
+  needsCustomChangeKeySignatureVerification?: boolean;
 }
 
 export interface TransactionFee {
@@ -119,6 +120,7 @@ export interface ParsedTransaction {
   changeOutputs: Output[];
   explicitExternalSpendAmount: number;
   implicitExternalSpendAmount: number;
+  needsCustomChangeKeySignatureVerification: boolean;
 }
 
 export interface GenerateAddressOptions {
@@ -217,6 +219,18 @@ export interface RecoverParams {
   bitgoKey: string;
   walletPassphrase?: string;
   apiKey?: string;
+}
+
+export interface VerifyKeySignaturesOptions {
+  userKeychain: Keychain;
+  keychainToVerify: Keychain;
+  keySignature: string;
+}
+
+export interface VerifyUserPublicKeyOptions {
+  userKeychain: Keychain;
+  disableNetworking: boolean;
+  txParams: TransactionParams;
 }
 
 interface Keychains {
@@ -497,13 +511,45 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const expectedOutputs = _.get(txParams, 'recipients', [] as TransactionRecipient[]);
       const missingOutputs = AbstractUtxoCoin.findMissingOutputs(expectedOutputs, allOutputs);
 
+      // get the keychains from the custom change wallet if needed
+      let customChange: CustomChangeOptions | undefined;
+      const { customChangeWalletId = undefined } = wallet.coinSpecific() || {};
+      debugger;
+      if (customChangeWalletId) {
+        // fetch keychains from custom change wallet for deriving addresses.
+        // These keychains should be signed and this should be verified in verifyTransaction
+        const customChangeKeySignatures = _.get(wallet, '_wallet.customChangeKeySignatures');
+        const customChangeWallet = yield self.wallets().get({ id: customChangeWalletId });
+        const customChangeKeys = yield fetchKeychains(customChangeWallet);
+        const customChangeKeychains: [Keychain, Keychain, Keychain] = [customChangeKeys.user, customChangeKeys.backup, customChangeKeys.bitgo];
+
+        if (customChangeKeychains && customChangeWallet) {
+          customChange = {
+            keys: customChangeKeychains,
+            signatures: [customChangeKeySignatures.user, customChangeKeySignatures.backup, customChangeKeySignatures.bitgo],
+          };
+        }
+      }
+
       /**
        * Loop through all the outputs and classify each of them as either internal spends
        * or external spends by setting the "external" property to true or false on the output object.
        */
       const allOutputDetails: Output[] = yield Bluebird.map(allOutputs, (currentOutput) => {
-        return parseOutput(currentOutput, self, txPrebuild, verification, keychainArray, wallet, txParams, reqId);
+        return parseOutput({
+          currentOutput,
+          coin: self,
+          txPrebuild,
+          verification,
+          keychainArray,
+          wallet,
+          txParams,
+          customChange,
+          reqId,
+        });
       });
+
+      const needsCustomChangeKeySignatureVerification = allOutputDetails.some((output) => output.needsCustomChangeKeySignatureVerification);
 
       const changeOutputs = _.filter(allOutputDetails, { external: false });
 
@@ -542,9 +588,76 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         changeOutputs,
         explicitExternalSpendAmount,
         implicitExternalSpendAmount,
+        needsCustomChangeKeySignatureVerification,
       };
       return result;
     }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Decrypt the wallet's user private key and verify that the claimed public key matches
+   * @param {VerifyUserPublicKeyOptions} params
+   * @return {boolean}
+   * @protected
+   */
+  protected verifyUserPublicKey(params: VerifyUserPublicKeyOptions): boolean {
+    const { userKeychain, txParams, disableNetworking } = params;
+    const userPub = userKeychain.pub;
+
+    // decrypt the user private key so we can verify that the claimed public key is a match
+    let userPrv = userKeychain.prv;
+    if (_.isEmpty(userPrv)) {
+      const encryptedPrv = userKeychain.encryptedPrv;
+      if (!_.isEmpty(encryptedPrv)) {
+        // if the decryption fails, it will throw an error
+        userPrv = this.bitgo.decrypt({
+          input: encryptedPrv,
+          password: txParams.walletPassphrase,
+        });
+      }
+    }
+
+    if (_.isEmpty(userPrv)) {
+      const errorMessage = 'user private key unavailable for verification';
+      if (disableNetworking) {
+        console.log(errorMessage);
+        return false;
+      } else {
+        throw new Error(errorMessage);
+      }
+    } else {
+      const userPrivateKey = bitcoin.HDNode.fromBase58(userPrv);
+      if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
+        throw new Error('user private key is only public');
+      }
+      if (userPrivateKey.neutered().toBase58() !== userPub) {
+        throw new Error('user private key does not match public key');
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Verify signatures produced by the user key over the backup and bitgo keys.
+   *
+   * If set, these signatures ensure that the wallet keys cannot be changed after the wallet has been created.
+   * @param {VerifyKeySignaturesOptions} params
+   * @return {{backup: boolean, bitgo: boolean}}
+   */
+  protected verifyKeySignature(params: VerifyKeySignaturesOptions): boolean {
+    // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
+    const { userKeychain, keychainToVerify, keySignature } = params;
+    if (!userKeychain) {
+      throw new Error('user keychain is required');
+    }
+
+    // verify the signature against the user public key
+    const signingAddress = bitcoin.HDNode.fromBase58(userKeychain.pub).keyPair.getAddress();
+
+    // BG-5703: use BTC mainnet prefix for all key signature operations
+    // (this means do not pass a prefix parameter, and let it use the default prefix instead)
+    return bitcoinMessage.verify(keychainToVerify.pub, signingAddress, Buffer.from(keySignature, 'hex'));
   }
 
   /**
@@ -574,49 +687,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // let's verify these keychains
       const keySignatures = parsedTransaction.keySignatures;
       if (!_.isEmpty(keySignatures)) {
-        // first, let's verify the integrity of the user key, whose public key is used for subsequent verifications
-        const userPub = keychains.user.pub;
-        const userKey = bitcoin.HDNode.fromBase58(userPub);
-        let userPrv = keychains.user.prv;
-        if (_.isEmpty(userPrv)) {
-          const encryptedPrv = keychains.user.encryptedPrv;
-          if (!_.isEmpty(encryptedPrv)) {
-            // if the decryption fails, it will throw an error
-            userPrv = self.bitgo.decrypt({
-              input: encryptedPrv,
-              password: txParams.walletPassphrase,
-            });
-          }
-        }
-        if (_.isEmpty(userPrv)) {
-          const errorMessage = 'user private key unavailable for verification';
-          if (disableNetworking) {
-            console.log(errorMessage);
-          } else {
-            throw new Error(errorMessage);
-          }
-        } else {
-          const userPrivateKey = bitcoin.HDNode.fromBase58(userPrv);
-          if (userPrivateKey.toBase58() === userPrivateKey.neutered().toBase58()) {
-            throw new Error('user private key is only public');
-          }
-          if (userPrivateKey.neutered().toBase58() !== userPub) {
-            throw new Error('user private key does not match public key');
-          }
-        }
+        // verify the user public key matches the private key - this will throw if there is no match
+        self.verifyUserPublicKey({ userKeychain: keychains.user, disableNetworking, txParams });
 
-        const backupPubSignature = keySignatures.backupPub;
-        const bitgoPubSignature = keySignatures.bitgoPub;
-
-        // verify the signatures against the user public key
-        const signingAddress = userKey.keyPair.getAddress();
-
-        // BG-5703: use BTC mainnet prefix for all key signature operations
-        // (this means do not pass a prefix parameter, and let it use the default prefix instead)
-        const isValidBackupSignature = bitcoinMessage.verify(keychains.backup.pub, signingAddress, Buffer.from(backupPubSignature, 'hex'));
-        const isValidBitgoSignature = bitcoinMessage.verify(keychains.bitgo.pub, signingAddress, Buffer.from(bitgoPubSignature, 'hex'));
-
-        if (!isValidBackupSignature || !isValidBitgoSignature) {
+        const isBackupKeySignatureValid = self.verifyKeySignature({ userKeychain: keychains.user, keychainToVerify: keychains.backup, keySignature: keySignatures.backupPub });
+        const isBitgoKeySignatureValid = self.verifyKeySignature({ userKeychain: keychains.user, keychainToVerify: keychains.bitgo, keySignature: keySignatures.bitgoPub });
+        if (!isBackupKeySignatureValid || !isBitgoKeySignatureValid) {
           throw new Error('secondary public key signatures invalid');
         }
       } else if (!disableNetworking) {
@@ -647,6 +723,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // make sure that all the extra addresses are change addresses
       // get all the additional external outputs the server added and calculate their values
       const nonChangeAmount = parsedTransaction.implicitExternalSpendAmount;
+
+      debug('Intended spend is %s, Non-change amount is %s, paygo limit is %s', intendedExternalSpend, nonChangeAmount, payAsYouGoLimit);
 
       // the additional external outputs can only be BitGo's pay-as-you-go fee, but we cannot verify the wallet address
       if (nonChangeAmount > payAsYouGoLimit) {

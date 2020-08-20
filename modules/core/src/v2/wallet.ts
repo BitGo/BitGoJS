@@ -133,6 +133,7 @@ export interface WalletCoinSpecific {
   addressVersion?: number;
   baseAddress?: string;
   rootAddress?: string;
+  customChangeWalletId: string;
 }
 
 export interface PaginationOptions {
@@ -383,6 +384,11 @@ interface WalletData {
   coinSpecific: WalletCoinSpecific;
   pendingApprovals: PendingApprovalData[];
   enterprise: string;
+  customChangeKeySignatures?: {
+    user?: string;
+    backup?: string;
+    bitgo?: string;
+  };
 }
 
 export interface RecoverTokenOptions {
