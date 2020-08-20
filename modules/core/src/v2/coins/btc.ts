@@ -1,4 +1,5 @@
 import { BitGo } from '../../bitgo';
+import { BlockExplorerUnavailable } from '../../errors';
 import { BaseCoin } from '../baseCoin';
 import { AbstractUtxoCoin, UtxoNetwork } from './abstractUtxoCoin';
 import * as common from '../../common';
@@ -67,17 +68,17 @@ export class Btc extends AbstractUtxoCoin {
   }
 
   recoveryBlockchainExplorerUrl(url: string): string {
-    // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
-    throw new Error('btc recovery under maintenance');
+    return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl + url;
   }
 
   getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
     const self = this;
     return co(function *getAddressInfoFromExplorer() {
-      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/address/${addressBase58}`)).result();
-
-      addrInfo.txCount = addrInfo.address.total.transaction_count;
-      addrInfo.totalBalance = addrInfo.address.total.balance_int;
+      // we are using blockchair api: https://blockchair.com/api/docs#link_300
+      // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
+      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`)).result();
+      addrInfo.txCount = addrInfo.data[addressBase58].address.transaction_count;
+      addrInfo.totalBalance = addrInfo.data[addressBase58].address.balance;
 
       return addrInfo;
     }).call(this);
@@ -86,34 +87,67 @@ export class Btc extends AbstractUtxoCoin {
   getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
     const self = this;
     return co(function *getUnspentInfoFromExplorer() {
-      const unspentInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/address/${addressBase58}/unspent`)).result();
+      // using blockchair api: https://blockchair.com/api/docs#link_300
+      // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
+      // example utxo from response:
+      // {"block_id":-1,"transaction_hash":"cf5bcd42c688cb7c55b5811645e7f0d2a000a85564ca3d6b9fc20f57e14b30bb","index":1,"value":558},
+      const unspentInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`)).result();
 
-      const unspents = unspentInfo.unspent;
+      const unspents = unspentInfo.data[addressBase58].utxo;
 
-      unspents.forEach(function processUnspent(unspent) {
-        unspent.amount = unspent.value_int;
+      const unspentInfos = unspents.map(unspent => {
+        return {
+          amount: unspent.value,
+          n: unspent.index,
+          txid: unspent.transaction_hash,
+          address: addressBase58
+        }
       });
-
-      return unspents;
+      return unspentInfos;
     }).call(this);
   }
 
+  /**
+   * Verify that the txhex user signs correspond to the correct tx they intended
+   * by 1) getting back the decoded transaction based on the txhex
+   * and then 2) compute the txid (hash), h1 of the decoded transaction 3) compare h1
+   * to the txid (hash) of the transaction (including unspent info) we constructed
+   * @param {TransactionInfo} txInfo
+   * @returns {Bluebird<any>}
+   */
   public verifyRecoveryTransaction(txInfo: TransactionInfo): Bluebird<any> {
     const self = this;
     return co(function *verifyRecoveryTransaction() {
-      const decodedTx = yield request.post(self.recoveryBlockchainExplorerUrl(`/decodetx`))
-      .send({ hex: txInfo.transactionHex })
-      .result();
+      const smartbitURL = common.Environments[this.bitgo.getEnv()].smartbitBaseUrl + '/blockchain/decodetx';
+      let res;
+      try {
+        res = yield request.post(smartbitURL)
+          .send({ hex: txInfo.transactionHex })
+          .result();
+      } catch (e) {
+        if ( e || !res) { // if smartbit fails to respond
+          throw new BlockExplorerUnavailable(e);
+        }
+      }
 
-      const transactionDetails = decodedTx.transaction;
+      /**
+       * Smartbit's response when something goes wrong
+       * {"success":false,"error":{"code":"REQ_ERROR","message":"TX decode failed"}}
+       * we should process the error message here
+       * interpret the res from smartbit
+       */
+      if (!res.success) {
+        throw new Error(res.error.message);
+      }
+
+      const transactionDetails = res.transaction;
 
       const tx = bitcoin.Transaction.fromHex(txInfo.transactionHex, this.network);
       if (transactionDetails.TxId !== tx.getId()) {
-        console.log(transactionDetails.TxId);
-        console.log(tx.getId());
+        console.log('txhash/txid returned by blockexplorer: ', transactionDetails.TxId);
+        console.log('txhash/txid of the transaction bitgo constructed', tx.getId());
         throw new Error('inconsistent recovery transaction id');
       }
-
       return transactionDetails;
     }).call(this);
   }
