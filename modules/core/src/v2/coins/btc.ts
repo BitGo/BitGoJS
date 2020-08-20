@@ -71,12 +71,30 @@ export class Btc extends AbstractUtxoCoin {
     return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
+  /**
+   * Sanitize api key, decorate it so it is ready to be appended to an URL of an explorer
+   * @param {string} apiKey
+   * @returns {string}
+   */
+  transformExplorersApiKey(apiKey?: string): string { // TODO: make this works with multiple explorers
+    if (!apiKey) {
+      return '';
+    }
+    if (!_.isString(apiKey)) {
+      throw new Error('api key must be a valid string')
+    }
+
+    const key = `?key=${apiKey}`;
+    return key;
+  }
+
+  getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<any> {
     const self = this;
     return co(function *getAddressInfoFromExplorer() {
       // we are using blockchair api: https://blockchair.com/api/docs#link_300
       // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
-      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`)).result();
+      const key = self.transformExplorersApiKey(apiKey);
+      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`) + key).result();
       addrInfo.txCount = addrInfo.data[addressBase58].address.transaction_count;
       addrInfo.totalBalance = addrInfo.data[addressBase58].address.balance;
 
@@ -84,14 +102,15 @@ export class Btc extends AbstractUtxoCoin {
     }).call(this);
   }
 
-  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
+  getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<any> {
     const self = this;
     return co(function *getUnspentInfoFromExplorer() {
       // using blockchair api: https://blockchair.com/api/docs#link_300
       // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
       // example utxo from response:
       // {"block_id":-1,"transaction_hash":"cf5bcd42c688cb7c55b5811645e7f0d2a000a85564ca3d6b9fc20f57e14b30bb","index":1,"value":558},
-      const unspentInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`)).result();
+      const key = self.transformExplorersApiKey(apiKey);
+      const unspentInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`) + key).result();
 
       const unspents = unspentInfo.data[addressBase58].utxo;
 
