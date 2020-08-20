@@ -194,6 +194,19 @@ describe('HBAR Transfer Builder', () => {
 
           should.deepEqual(tx3.toBroadcastFormat(), testData.THREE_TIMES_SIGNED_TRANSACTION);
         });
+
+        it('a transfer transaction with amount 0', async () => {
+          const builder = initTxBuilder();
+          builder.amount('0');
+          const tx = await builder.build();
+          const newBuilder = factory.from(tx.toBroadcastFormat());
+          const newTx = await newBuilder.build();
+          const txJson = newTx.toJson();
+          should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
+          should.deepEqual(txJson.amount, '0');
+          should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
+          should.deepEqual(txJson.fee.toString(), testData.FEE);
+        });
       });
 
       describe('deserialized from transaction builder', () => {

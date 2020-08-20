@@ -3,10 +3,10 @@ import Long from 'long';
 import { CryptoTransferTransaction } from '@hashgraph/sdk';
 import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
+import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isValidAddress, isValidAmount, stringifyAccountId } from './utils';
-import { TransactionType } from '../baseCoin';
 
 export class TransferBuilder extends TransactionBuilder {
   private _cryptoTransferBuilder: CryptoTransferTransaction;
@@ -41,13 +41,15 @@ export class TransferBuilder extends TransactionBuilder {
     this.transaction.setTransactionType(TransactionType.Send);
     const transferData = tx.txBody().getCryptotransfer();
     if (transferData && transferData.getTransfers() && transferData.getTransfers()!.getAccountamountsList()) {
+      const txData = tx.toJson();
       transferData
         .getTransfers()!
         .getAccountamountsList()
         .forEach(transferData => {
           const amount = Long.fromValue(transferData.getAmount());
-          if (amount.isPositive()) {
-            this.to(stringifyAccountId(transferData.getAccountid()!.toObject()));
+          const account = stringifyAccountId(transferData.getAccountid()!.toObject());
+          if (txData.from !== account) {
+            this.to(account);
             this.amount(amount.toString());
           }
         });
