@@ -195,7 +195,7 @@ export function removePrefix(prefix: string, key: string): string {
  */
 export function validate(encodedTx: string, key: KeyPair, signature: string): boolean {
   let wasSigned = false;
-  const signer = key.getKeys(true).pub;
+  const signer = key.getKeys().pub.toString(true);
   const transaction = SDKTransaction.fromBytes(toUint8Array(encodedTx));
   const transactionData = transaction._toProto();
 

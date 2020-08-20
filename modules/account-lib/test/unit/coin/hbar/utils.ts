@@ -45,8 +45,8 @@ describe('HBAR util library', function() {
     });
   });
 
-  describe('verify sign', function() {
-    it('should validate if signature is valid', function() {
+  describe('should validate a signature', function() {
+    it('a valid signature', function() {
       const encodedTx = testData.TRANSFER_ENCODED_TX;
       const keypair = testData.KEYPAIR_PRV_TEST_TRANSFER;
       const signature = testData.SIGNATURE;
@@ -54,7 +54,7 @@ describe('HBAR util library', function() {
       Utils.validate(encodedTx, keypair, signature).should.be.equal(true);
     });
 
-    it('should validate and receive false if signature is not part of keypair', function() {
+    it('a valid keypair and invalid signature', function() {
       const encodedTx = testData.TRANSFER_ENCODED_TX;
       const keypair = testData.KEYPAIR_PRV_TEST_TRANSFER;
       const signature = testData.SIGNATURE2;
@@ -62,7 +62,15 @@ describe('HBAR util library', function() {
       Utils.validate(encodedTx, keypair, signature).should.be.equal(false);
     });
 
-    it('should validate and receive false if encoded data does not have sign ', function() {
+    it('a invalid keypair and valid signature', function() {
+      const encodedTx = testData.TRANSFER_ENCODED_TX;
+      const keypair = testData.KEYPAIR_PRV_TEST_TRANSFER_MULTI_SIG;
+      const signature = testData.SIGNATURE;
+
+      Utils.validate(encodedTx, keypair, signature).should.be.equal(false);
+    });
+
+    it('a invalid encoded transaction', function() {
       const encodedTx = testData.TRANSFER_ENCODED_TX_WITHOUT_SIGN;
       const keypair = testData.KEYPAIR_PRV_TEST_TRANSFER;
       const signature = testData.SIGNATURE2;
@@ -70,7 +78,7 @@ describe('HBAR util library', function() {
       Utils.validate(encodedTx, keypair, signature).should.be.equal(false);
     });
 
-    it('should validate and receive true if second signature is in encoded transaction', function() {
+    it('a valid signature on second position', function() {
       const encodedTx = testData.TRANSFER_ENCODED_TX_SECOND_SIGN;
       const keypair = testData.KEYPAIR_PRV_TEST_TRANSFER_MULTI_SIG;
       const signature = testData.SECOND_SIGNATURE;
