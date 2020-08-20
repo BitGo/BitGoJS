@@ -150,7 +150,7 @@ export class Transaction extends BaseTransaction {
 
     if (txBody.cryptotransfer) {
       txBody.cryptotransfer!.transfers!.accountamountsList.forEach(transfer => {
-        if (Long.fromValue(transfer.amount).isPositive()) {
+        if (result.from !== stringifyAccountId(transfer.accountid!)) {
           result.amount = transfer.amount;
           result.to = stringifyAccountId(transfer.accountid!);
         }
