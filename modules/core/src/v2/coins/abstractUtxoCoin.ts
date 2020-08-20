@@ -1,32 +1,41 @@
+import { Codes, VirtualSizes } from '@bitgo/unspents';
+import { UnspentType } from '@bitgo/unspents/dist/codes';
 import * as bitcoin from '@bitgo/utxo-lib';
 import * as bitcoinMessage from 'bitcoinjs-message';
 import * as Bluebird from 'bluebird';
 import { randomBytes } from 'crypto';
-import * as request from 'superagent';
-import * as _ from 'lodash';
 import * as debugLib from 'debug';
-import { Codes, VirtualSizes } from '@bitgo/unspents';
-import { UnspentType } from '@bitgo/unspents/dist/codes';
+import * as _ from 'lodash';
+import * as request from 'superagent';
 
 import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
+import * as config from '../../config';
+import * as errors from '../../errors';
+
 import {
-  BaseCoin, AddressCoinSpecific,
-  ExtraPrebuildParamsOptions, KeychainsTriplet,
-  PrecreateBitGoOptions, PresignTransactionOptions, SupplementGenerateWalletOptions,
+  AddressCoinSpecific,
+  BaseCoin,
+  ExtraPrebuildParamsOptions,
+  KeychainsTriplet,
+  PrecreateBitGoOptions,
+  PresignTransactionOptions,
+  SignedTransaction,
+  SupplementGenerateWalletOptions,
+  TransactionParams as BaseTransactionParams,
+  TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionRecipient,
+  VerificationOptions,
   VerifyAddressOptions as BaseVerifyAddressOptions,
   VerifyRecoveryTransactionOptions,
   VerifyTransactionOptions,
-  TransactionParams as BaseTransactionParams,
-  TransactionPrebuild as BaseTransactionPrebuild, VerificationOptions, TransactionRecipient, SignedTransaction,
 } from '../baseCoin';
 import { CustomChangeOptions, parseOutput } from '../internal/parseOutput';
-import { Keychain, KeyIndices } from '../keychains';
-import { NodeCallback } from '../types';
-import * as config from '../../config';
-import { CrossChainRecoveryTool } from '../recovery';
-import * as errors from '../../errors';
 import { RequestTracer } from '../internal/util';
+import { Keychain, KeyIndices } from '../keychains';
+import { promiseProps } from '../promise-utils';
+import { CrossChainRecoveryTool } from '../recovery';
+import { NodeCallback } from '../types';
 import { Wallet } from '../wallet';
 import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
 
@@ -108,11 +117,14 @@ export interface ParseTransactionOptions {
 
 export interface ParsedTransaction {
   keychains: {
-    user?: Keychain,
-    backup?: Keychain,
-    bitgo?: Keychain,
+    user?: Keychain;
+    backup?: Keychain;
+    bitgo?: Keychain;
   };
-  keySignatures: any[];
+  keySignatures: {
+    backupPub: string;
+    bitgoPub: string;
+  };
   outputs: Output[];
   missingOutputs: Output[];
   explicitExternalOutputs: Output[];
@@ -121,6 +133,7 @@ export interface ParsedTransaction {
   explicitExternalSpendAmount: number;
   implicitExternalSpendAmount: number;
   needsCustomChangeKeySignatureVerification: boolean;
+  customChange?: CustomChangeOptions;
 }
 
 export interface GenerateAddressOptions {
@@ -222,21 +235,15 @@ export interface RecoverParams {
 }
 
 export interface VerifyKeySignaturesOptions {
-  userKeychain: Keychain;
-  keychainToVerify: Keychain;
-  keySignature: string;
+  userKeychain?: Keychain;
+  keychainToVerify?: Keychain;
+  keySignature?: string;
 }
 
 export interface VerifyUserPublicKeyOptions {
-  userKeychain: Keychain;
+  userKeychain?: Keychain;
   disableNetworking: boolean;
   txParams: TransactionParams;
-}
-
-interface Keychains {
-  user?: Keychain,
-  backup?: Keychain,
-  bitgo?: Keychain,
 }
 
 export abstract class AbstractUtxoCoin extends BaseCoin {
@@ -471,8 +478,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
       const disableNetworking = verification.disableNetworking;
 
-      async function fetchKeychains(wallet: Wallet): Promise<Keychains> {
-        return Bluebird.props({
+      async function fetchKeychains(wallet: Wallet): Promise<VerificationOptions['keychains']> {
+        return promiseProps({
           user: self.keychains().get({ id: wallet.keyIds()[KeyIndices.USER], reqId }),
           backup: self.keychains().get({ id: wallet.keyIds()[KeyIndices.BACKUP], reqId }),
           bitgo: self.keychains().get({ id: wallet.keyIds()[KeyIndices.BITGO], reqId }),
@@ -480,7 +487,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       // obtain the keychains and key signatures
-      let keychains: Keychains | undefined = verification.keychains;
+      let keychains: VerificationOptions['keychains'] | undefined = verification.keychains;
       if (!keychains) {
         if (disableNetworking) {
           throw new Error('cannot fetch keychains without networking');
@@ -514,13 +521,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // get the keychains from the custom change wallet if needed
       let customChange: CustomChangeOptions | undefined;
       const { customChangeWalletId = undefined } = wallet.coinSpecific() || {};
-      debugger;
       if (customChangeWalletId) {
         // fetch keychains from custom change wallet for deriving addresses.
         // These keychains should be signed and this should be verified in verifyTransaction
-        const customChangeKeySignatures = _.get(wallet, '_wallet.customChangeKeySignatures');
-        const customChangeWallet = yield self.wallets().get({ id: customChangeWalletId });
+        const customChangeKeySignatures = _.get(wallet, '_wallet.customChangeKeySignatures', {});
+        const customChangeWallet: Wallet = yield self.wallets().get({ id: customChangeWalletId });
         const customChangeKeys = yield fetchKeychains(customChangeWallet);
+
+        if (!customChangeKeys) {
+          throw new Error('failed to fetch keychains for custom change wallet');
+        }
         const customChangeKeychains: [Keychain, Keychain, Keychain] = [customChangeKeys.user, customChangeKeys.backup, customChangeKeys.bitgo];
 
         if (customChangeKeychains && customChangeWallet) {
@@ -589,6 +599,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         explicitExternalSpendAmount,
         implicitExternalSpendAmount,
         needsCustomChangeKeySignatureVerification,
+        customChange,
       };
       return result;
     }).call(this).asCallback(callback);
@@ -602,6 +613,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
    */
   protected verifyUserPublicKey(params: VerifyUserPublicKeyOptions): boolean {
     const { userKeychain, txParams, disableNetworking } = params;
+    if (!userKeychain) {
+      throw new Error('user keychain is required');
+    }
+
     const userPub = userKeychain.pub;
 
     // decrypt the user private key so we can verify that the claimed public key is a match
@@ -652,12 +667,59 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       throw new Error('user keychain is required');
     }
 
+    if (!keychainToVerify) {
+      throw new Error('keychain to verify is required');
+    }
+
+    if (!keySignature) {
+      throw new Error('key signature is required');
+    }
+
     // verify the signature against the user public key
     const signingAddress = bitcoin.HDNode.fromBase58(userKeychain.pub).keyPair.getAddress();
 
     // BG-5703: use BTC mainnet prefix for all key signature operations
     // (this means do not pass a prefix parameter, and let it use the default prefix instead)
-    return bitcoinMessage.verify(keychainToVerify.pub, signingAddress, Buffer.from(keySignature, 'hex'));
+    try {
+      return bitcoinMessage.verify(keychainToVerify.pub, signingAddress, Buffer.from(keySignature, 'hex'));
+    } catch (e) {
+      debug('error thrown from bitcoinmessage while verifying key signature', e);
+      return false;
+    }
+  }
+
+  /**
+   * Verify signatures against the user private key over the change wallet extended keys
+   * @param {ParsedTransaction} tx
+   * @param {Keychain} userKeychain
+   * @return {boolean}
+   * @protected
+   */
+  protected verifyCustomChangeKeySignatures(tx: ParsedTransaction, userKeychain: Keychain): boolean {
+    if (!tx.customChange) {
+      throw new Error('parsed transaction is missing required custom change verification data');
+    }
+
+    if (!Array.isArray(tx.customChange.keys) || !Array.isArray(tx.customChange.signatures)) {
+      throw new Error('customChange property is missing keys or signatures');
+    }
+
+    for (const keyIndex of [KeyIndices.USER, KeyIndices.BACKUP, KeyIndices.BITGO]) {
+      const keychainToVerify = tx.customChange.keys[keyIndex];
+      const keySignature = tx.customChange.signatures[keyIndex];
+      if (!keychainToVerify) {
+        throw new Error(`missing required custom change ${KeyIndices[keyIndex].toLowerCase()} keychain public key`);
+      }
+      if (!keySignature) {
+        throw new Error(`missing required custom change ${KeyIndices[keyIndex].toLowerCase()} keychain signature`);
+      }
+      if (!this.verifyKeySignature({ userKeychain, keychainToVerify, keySignature })) {
+        debug('failed to verify custom change %s key signature!', KeyIndices[keyIndex].toLowerCase());
+        return false;
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -680,25 +742,44 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return co<boolean>(function *() {
       const { txParams, txPrebuild, wallet, verification = {}, reqId } = params;
       const disableNetworking = !!verification.disableNetworking;
-      const parsedTransaction = yield self.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
+      const parsedTransaction: ParsedTransaction = yield self.parseTransaction({ txParams, txPrebuild, wallet, verification, reqId });
 
       const keychains = parsedTransaction.keychains;
+
+      // verify that the claimed user public key corresponds to the wallet's user private key
+      let userPublicKeyVerified = false;
+      try {
+        // verify the user public key matches the private key - this will throw if there is no match
+        userPublicKeyVerified = self.verifyUserPublicKey({ userKeychain: keychains.user, disableNetworking, txParams });
+      } catch (e) {
+        debug('failed to verify user public key!', e);
+      }
 
       // let's verify these keychains
       const keySignatures = parsedTransaction.keySignatures;
       if (!_.isEmpty(keySignatures)) {
-        // verify the user public key matches the private key - this will throw if there is no match
-        self.verifyUserPublicKey({ userKeychain: keychains.user, disableNetworking, txParams });
-
-        const isBackupKeySignatureValid = self.verifyKeySignature({ userKeychain: keychains.user, keychainToVerify: keychains.backup, keySignature: keySignatures.backupPub });
-        const isBitgoKeySignatureValid = self.verifyKeySignature({ userKeychain: keychains.user, keychainToVerify: keychains.bitgo, keySignature: keySignatures.bitgoPub });
+        const verify = (key, pub) => self.verifyKeySignature({ userKeychain: keychains.user, keychainToVerify: key, keySignature: pub });
+        const isBackupKeySignatureValid = verify(keychains.backup, keySignatures.backupPub);
+        const isBitgoKeySignatureValid = verify(keychains.bitgo, keySignatures.bitgoPub);
         if (!isBackupKeySignatureValid || !isBitgoKeySignatureValid) {
           throw new Error('secondary public key signatures invalid');
         }
+        debug('successfully verified backup and bitgo key signatures');
       } else if (!disableNetworking) {
         // these keys were obtained online and their signatures were not verified
         // this could be dangerous
         console.log('unsigned keys obtained online are being used for address verification');
+      }
+
+      if (parsedTransaction.needsCustomChangeKeySignatureVerification) {
+        if (!keychains.user || !userPublicKeyVerified) {
+          throw new Error('transaction requires verification of user public key, but it was unable to be verified');
+        }
+        const customChangeKeySignaturesVerified = self.verifyCustomChangeKeySignatures(parsedTransaction, keychains.user);
+        if (!customChangeKeySignaturesVerified) {
+          throw new Error('transaction requires verification of custom change key signatures, but they were unable to be verified');
+        }
+        debug('successfully verified user public key and custom change key signatures');
       }
 
       const missingOutputs = parsedTransaction.missingOutputs;

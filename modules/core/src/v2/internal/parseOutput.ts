@@ -5,7 +5,7 @@
 import * as debugLib from 'debug';
 import * as _ from 'lodash';
 import * as errors from '../../errors';
-import { TransactionPrebuild, VerificationOptions } from '../baseCoin';
+import { AddressVerificationData, TransactionPrebuild, VerificationOptions } from '../baseCoin';
 import { AbstractUtxoCoin, Output, TransactionParams } from '../coins/abstractUtxoCoin';
 import { Keychain } from '../keychains';
 import { Wallet } from '../wallet';
@@ -113,7 +113,6 @@ function handleVerifyAddressError({
       }
 
       debug('Address %s was found on wallet but could not be reconstructed', currentAddress);
-      debugger;
 
       // attempt to verify address using custom change address keys if the wallet has that feature enabled
       if (
@@ -204,7 +203,7 @@ export async function parseOutput({
   // attempt to grab the address details from either the prebuilt tx, or the verification params.
   // If both of these are empty, then we will try to get the address details from bitgo instead
   const addressDetailsPrebuild = _.get(txPrebuild, `txInfo.walletAddressDetails.${currentAddress}`, {});
-  const addressDetailsVerification = _.get(verification, `addresses.${currentAddress}`, {});
+  const addressDetailsVerification: AddressVerificationData = _.get(verification, `addresses.${currentAddress}`, {});
   debug('Parsing address details for %s', currentAddress);
   let currentAddressDetails = undefined;
   let currentAddressType: string | undefined = undefined;
