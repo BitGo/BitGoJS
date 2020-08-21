@@ -11,6 +11,7 @@ describe('HBAR Transfer Builder', () => {
   const initTxBuilder = () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({ fee: testData.FEE });
+    txBuilder.node({ nodeId: '0.0.4' });
     txBuilder.source({ address: testData.ACCOUNT_1.accountId });
     txBuilder.to(testData.ACCOUNT_2.accountId);
     txBuilder.amount('10');

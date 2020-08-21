@@ -2,9 +2,40 @@ import * as _ from 'lodash';
 import { Ed25519PublicKey, TransactionId, AccountId } from '@hashgraph/sdk';
 import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
+import { NetworkType } from '@bitgo/statics';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
+
+const mainnetNodes: string[] = [
+  '0.0.3',
+  '0.0.4',
+  '0.0.5',
+  '0.0.6',
+  '0.0.7',
+  '0.0.8',
+  '0.0.9',
+  '0.0.10',
+  '0.0.11',
+  '0.0.12',
+];
+
+const testnetNodes: string[] = ['0.0.3', '0.0.4', '0.0.5', '0.0.6'];
+
+/**
+ * Get a random node depending on whether the transaction
+ * is destined to testnet or mainnet.
+ *
+ * @param {NetworkType} networkType network type to determine nodes to use
+ * @returns {object} An object with a nodeId
+ */
+export function getRandomNode(networkType: NetworkType): { nodeId: string } {
+  if (networkType === NetworkType.TESTNET) {
+    return { nodeId: testnetNodes[Math.floor(Math.random() * testnetNodes.length)] };
+  } else {
+    return { nodeId: mainnetNodes[Math.floor(Math.random() * mainnetNodes.length)] };
+  }
+}
 
 /**
  * Returns whether or not the string is a valid Hedera account.

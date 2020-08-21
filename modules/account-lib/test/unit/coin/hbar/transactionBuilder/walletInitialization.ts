@@ -14,6 +14,7 @@ describe('HBAR Wallet initialization', () => {
     txBuilder.owner(testData.OWNER1);
     txBuilder.owner(testData.OWNER2);
     txBuilder.owner(testData.OWNER3);
+    txBuilder.node({ nodeId: '0.0.4' });
     txBuilder.source({ address: testData.OPERATOR.accountId });
     txBuilder.sign({ key: testData.OPERATOR.privateKey });
     return txBuilder;
@@ -47,6 +48,7 @@ describe('HBAR Wallet initialization', () => {
       const txBuilder1 = factory.getWalletInitializationBuilder();
       txBuilder1.startTime('1596110493.372646570');
       txBuilder1.fee({ fee: '1000000000' });
+      txBuilder1.node({ nodeId: '0.0.4' });
       txBuilder1.owner(testData.OWNER1);
       txBuilder1.owner(testData.OWNER2);
       txBuilder1.owner(testData.OWNER3);

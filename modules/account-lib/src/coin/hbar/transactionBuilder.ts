@@ -11,7 +11,7 @@ import {
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
-import { getCurrentTime, isValidAddress, isValidRawTransactionFormat, isValidTimeString, toUint8Array } from './utils';
+import { getCurrentTime, getRandomNode, isValidAddress, isValidRawTransactionFormat, isValidTimeString, toUint8Array } from './utils';
 import { KeyPair } from './keyPair';
 import { SignatureData, HederaNode } from './ifaces';
 
@@ -23,7 +23,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _startTime: proto.ITimestamp;
   protected _memo: string;
   protected _txBody: proto.TransactionBody;
-  protected _node: HederaNode = { nodeId: '0.0.4' };
+  protected _node: HederaNode;
   protected _duration: proto.Duration = new proto.Duration({ seconds: 120 });
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
@@ -34,6 +34,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._txBody.transactionValidDuration = this._duration;
     this._multiSignerKeyPairs = [];
     this._signatures = [];
+    this._node = getRandomNode(_coinConfig.network.type);
     this.transaction = new Transaction(_coinConfig);
   }
 
