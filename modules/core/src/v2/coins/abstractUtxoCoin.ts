@@ -1627,6 +1627,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
               numSequentialAddressesWithoutTxs = 0;
 
               if (addrInfo.totalBalance > 0) {
+                console.log(`Found an address with balance: ${address.address} with balance ${addrInfo.totalBalance}`)
                 // This address has a balance.
                 address.chainPath = basePath + '/' + addrIndex;
                 address.userKey = derivedKeys[0];
@@ -1644,7 +1645,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             }
 
             if (numSequentialAddressesWithoutTxs >= MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS) {
-              // stop searching for addresses with unspents in them, we've found 5 in a row with none
+              // stop searching for addresses with unspents in them, we've found ${MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS} in a row with none
               // we are done
               return;
             }
@@ -1782,7 +1783,10 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       if (recoveryAmount < 0) {
-        throw new Error('this wallet\'s balance is too low to pay the fees specified by the KRS provider');
+        throw new Error(`this wallet\'s balance is too low to pay the fees specified by the KRS provider. 
+          Existing balance on wallet: ${totalInputAmount}. Estimated network fee for the recovery transaction
+          : ${approximateFee}, KRS fee to pay: ${krsFee}. After deducting fees, your total recoverable balance
+          is ${recoveryAmount}`);
       }
 
       transactionBuilder.addOutput(params.recoveryDestination, recoveryAmount);
