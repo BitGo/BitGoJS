@@ -5,6 +5,7 @@ import * as Bluebird from 'bluebird';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
+import { generateAccountFromSeed, NaclWrapper, Seed } from 'algosdk';
 
 import {
   BaseCoin,
@@ -154,15 +155,16 @@ export class Hbar extends BaseCoin {
   ): Bluebird<SignedTransaction> {
     const self = this;
     return co<SignedTransaction>(function*() {
-      const txBuilder: any = bitgoAccountLib.getBuilder(self.getChain());
-      txBuilder.from(params.txPrebuild.txHex);
-      txBuilder.source(params.txPrebuild.source);
+      const factory = bitgoAccountLib.register(self.getChain(), bitgoAccountLib.Hbar.TransactionBuilderFactory);
+      const txBuilder = factory.from(params.txPrebuild.txHex);
       txBuilder.sign({ key: params.prv });
 
       const transaction: any = yield txBuilder.build();
+
       if (!transaction) {
         throw new Error('Invalid messaged passed to signMessage');
       }
+
       const response = {
         txHex: transaction.toBroadcastFormat(),
       };
@@ -177,6 +179,7 @@ export class Hbar extends BaseCoin {
    *
    * @param key
    * @param message
+   * @return {Buffer} A signature over the given message using the given key
    */
   signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
     return co<Buffer>(function* cosignMessage() {

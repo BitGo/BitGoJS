@@ -10,6 +10,7 @@ import { UnspentType } from '@bitgo/unspents/dist/codes';
 
 import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
+import { BlockExplorerUnavailable } from '../../errors';
 import {
   BaseCoin, AddressCoinSpecific,
   ExtraPrebuildParamsOptions, KeychainsTriplet,
@@ -1805,10 +1806,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         try {
           txInfo.tx = yield self.verifyRecoveryTransaction(txInfo);
         } catch (e) {
-
-          if (!(e instanceof errors.MethodNotImplementedError)) {
-            // some coins don't have a reliable third party verification endpoint, so we continue without verification for those coins
-            throw new Error('could not verify recovery transaction');
+          // some coins don't have a reliable third party verification endpoint, or sometimes the third party endpoint
+          // could be unavailable due to service outage, so we continue without verification for those coins, but we will
+          // let users know that they should verify their own
+          // this message should be piped to WRW and displayed on the UI
+          if (e instanceof errors.MethodNotImplementedError || e instanceof errors.BlockExplorerUnavailable) {
+            console.log('Please verify your transaction by decoding the tx hex using a third-party api of your choice');
+          } else {
+            throw e;
           }
         }
       }
