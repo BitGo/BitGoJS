@@ -84,7 +84,7 @@ describe('Hedera Hashgraph:', function() {
       });
 
       const tx = await basecoin.signTransaction({
-        prv: key.getKeys().prv,
+        prv: key.getKeys().prv.toString(),
         txPrebuild: {
           txHex: unsignedTransaction.toBroadcastFormat(),
         },
