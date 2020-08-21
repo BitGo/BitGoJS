@@ -67,6 +67,8 @@ export const errorMessageInvalidPrivateKey = 'Invalid private key';
 
 export const errorMessageInvalidPublicKey = 'Invalid public key:';
 
+export const errorMessageMissingPrivateKey = 'Missing private key';
+
 export const errorMessageNotPossibleToDeriveAddress = 'Address derivation is not supported in Hedera';
 
 export const errorMessageFailedToParse = 'Failed to parse correct key';

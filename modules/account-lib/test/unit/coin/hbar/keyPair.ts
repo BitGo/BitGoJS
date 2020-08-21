@@ -120,4 +120,41 @@ describe('Hedera Key Pair', () => {
       );
     });
   });
+
+  describe('should succeed to sign and verify ', () => {
+    it('a random message', () => {
+      const message = 'Hello World!';
+      const keyPair = new KeyPair({ prv: prv });
+      const signature = keyPair.signMessage(message);
+      const isValid = keyPair.verifySignature(message, signature);
+      isValid.should.be.true();
+    });
+
+    it('a public key in hex format', () => {
+      const keyPair = new KeyPair({ prv: prv });
+      const message = keyPair.getKeys().pub;
+      const signature = keyPair.signMessage(message);
+      const isValid = keyPair.verifySignature(message, signature);
+      isValid.should.be.true();
+    });
+
+    it('an empty message', () => {
+      const message = '';
+      const keyPair = new KeyPair({ prv: prv });
+      const signature = keyPair.signMessage(message);
+      const isValid = keyPair.verifySignature(message, signature);
+      isValid.should.be.true();
+    });
+  });
+
+  describe('should fail sign ', () => {
+    it('a message without a private key', () => {
+      const message = 'Hello World!';
+      const keyPair = new KeyPair({ pub: pub });
+      should.throws(
+        () => keyPair.signMessage(message),
+        e => e.message === testData.errorMessageMissingPrivateKey,
+      );
+    });
+  });
 });
