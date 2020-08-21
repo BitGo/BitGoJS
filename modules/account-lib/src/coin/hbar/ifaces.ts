@@ -1,18 +1,14 @@
 import { Ed25519PublicKey, Ed25519PrivateKey } from '@hashgraph/sdk';
+import { TransactionBody } from '@hashgraph/sdk/lib/generated/TransactionBody_pb';
+import { SignatureList, SignatureMap } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
 import { KeyPair } from '.';
 
 export interface TxData {
-  id: string;
+  sigs?: SignatureList.AsObject;
+  sigmap?: SignatureMap.AsObject;
+  body?: TransactionBody.AsObject;
+  bodybytes: Uint8Array | string;
   hash?: string;
-  from: string;
-  data: string;
-  fee: number;
-  startTime: string;
-  validDuration: string;
-  node: string;
-  memo?: string;
-  to?: string;
-  amount?: string;
 }
 
 export interface HederaNode {

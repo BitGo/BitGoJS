@@ -4,6 +4,7 @@ import { KeyPair, TransactionBuilderFactory, Utils } from '../../../../../src/co
 import * as testData from '../../../../resources/hbar/hbar';
 import { WalletInitializationBuilder } from '../../../../../src/coin/hbar/walletInitializationBuilder';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { stringifyAccountId } from '../../../../../src/coin/hbar/utils';
 
 describe('HBAR Wallet initialization', () => {
   const factory = register('thbar', TransactionBuilderFactory);
@@ -35,11 +36,11 @@ describe('HBAR Wallet initialization', () => {
 
     it('an init transaction', async () => {
       const txBuilder = initTxBuilder();
+      txBuilder.startTime('1596110493.372646570');
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      txJson.fee.should.equal(1000000000);
       should.deepEqual(tx.signature.length, 1);
-      should.equal(txJson.from, testData.OPERATOR.accountId);
+      should.deepEqual(txJson, testData.WALLET_INIT_TRANSACTION_DATA);
       tx.type.should.equal(TransactionType.WalletInitialization);
     });
 
@@ -93,7 +94,7 @@ describe('HBAR Wallet initialization', () => {
 
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from, testData.OPERATOR.accountId);
+      should.equal(stringifyAccountId(txJson.body.transactionid.accountid), testData.OPERATOR.accountId);
     });
 
     it('an init transaction with external signature included twice', async () => {
@@ -116,7 +117,7 @@ describe('HBAR Wallet initialization', () => {
 
       const tx = await txBuilder.build();
       const txJson = tx.toJson();
-      should.equal(txJson.from, testData.OPERATOR.accountId);
+      should.equal(stringifyAccountId(txJson.body.transactionid.accountid), testData.OPERATOR.accountId);
     });
 
     describe('deserialized transactions from transaction builder', () => {
