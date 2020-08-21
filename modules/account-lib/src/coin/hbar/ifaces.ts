@@ -1,3 +1,4 @@
+import { Ed25519PublicKey, Ed25519PrivateKey } from '@hashgraph/sdk';
 import { KeyPair } from '.';
 
 export interface TxData {
@@ -21,4 +22,20 @@ export interface HederaNode {
 export interface SignatureData {
   signature: string;
   keyPair: KeyPair;
+}
+
+export interface HbarKeyPair {
+  pub: Ed25519PublicKey;
+  prv?: Ed25519PrivateKey;
+}
+
+export interface Timestamp {
+  seconds: number;
+  nanos: number;
+}
+
+export interface AccountID {
+  shardnum: number;
+  realmnum: number;
+  accountnum: number;
 }
