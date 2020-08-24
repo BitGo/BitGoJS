@@ -10,7 +10,6 @@ import { UnspentType } from '@bitgo/unspents/dist/codes';
 
 import { hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
-import { BlockExplorerUnavailable } from '../../errors';
 import {
   BaseCoin, AddressCoinSpecific,
   ExtraPrebuildParamsOptions, KeychainsTriplet,
@@ -28,6 +27,7 @@ import { CrossChainRecoveryTool } from '../recovery';
 import * as errors from '../../errors';
 import { RequestTracer } from '../internal/util';
 import { Wallet } from '../wallet';
+import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
 
 const debug = debugLib('bitgo:v2:utxo');
 const co = Bluebird.coroutine;
