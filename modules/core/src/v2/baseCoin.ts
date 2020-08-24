@@ -64,12 +64,20 @@ export interface TransactionParams {
   type?: string;
 }
 
+export interface AddressVerificationData {
+  coinSpecific?: AddressCoinSpecific;
+  chain?: number;
+  index?: number;
+}
+
 export interface VerificationOptions {
   disableNetworking?: boolean;
   keychains?: {
     user?: Keychain;
     backup?: Keychain;
+    bitgo?: Keychain;
   };
+  addresses?: { [address: string]: AddressVerificationData };
 }
 
 export interface VerifyTransactionOptions {

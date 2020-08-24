@@ -5,12 +5,11 @@ import * as bitcoin from '@bitgo/utxo-lib';
 import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
-import { NodeCallback } from './types';
+import { NodeCallback, RequestTracer as IRequestTracer } from './types';
 import { PaginationOptions, Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { hdPath } from '../bitcoin';
-import { RequestTracer as IRequestTracer } from './types';
 import { RequestTracer } from './internal/util';
 
 const co = Bluebird.coroutine;

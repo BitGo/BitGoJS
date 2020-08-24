@@ -7,6 +7,8 @@ import * as bitcoin from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
+import { BlockchairApi } from '../recovery/blockchairApi';
+import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
 const co = Bluebird.coroutine;
 
 export interface TransactionInfo {
@@ -71,40 +73,16 @@ export class Btc extends AbstractUtxoCoin {
     return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
-    const self = this;
-    return co(function *getAddressInfoFromExplorer() {
-      // we are using blockchair api: https://blockchair.com/api/docs#link_300
-      // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
-      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`)).result();
-      addrInfo.txCount = addrInfo.data[addressBase58].address.transaction_count;
-      addrInfo.totalBalance = addrInfo.data[addressBase58].address.balance;
-
-      return addrInfo;
-    }).call(this);
+  getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<RecoveryAccountData> {
+    // TODO: allow users to choose the API to use
+    const api = new BlockchairApi(this.bitgo, apiKey);
+    return Bluebird.resolve(api.getAccountInfo(addressBase58));
   }
 
-  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
-    const self = this;
-    return co(function *getUnspentInfoFromExplorer() {
-      // using blockchair api: https://blockchair.com/api/docs#link_300
-      // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
-      // example utxo from response:
-      // {"block_id":-1,"transaction_hash":"cf5bcd42c688cb7c55b5811645e7f0d2a000a85564ca3d6b9fc20f57e14b30bb","index":1,"value":558},
-      const unspentInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/dashboards/address/${addressBase58}`)).result();
-
-      const unspents = unspentInfo.data[addressBase58].utxo;
-
-      const unspentInfos = unspents.map(unspent => {
-        return {
-          amount: unspent.value,
-          n: unspent.index,
-          txid: unspent.transaction_hash,
-          address: addressBase58
-        }
-      });
-      return unspentInfos;
-    }).call(this);
+  getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<RecoveryUnspent[]> {
+    // TODO: allow users to choose the API to use
+    const api = new BlockchairApi(this.bitgo, apiKey);
+    return Bluebird.resolve(api.getUnspents(addressBase58));
   }
 
   /**
