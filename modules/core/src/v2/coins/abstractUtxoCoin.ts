@@ -215,6 +215,7 @@ export interface RecoverParams {
   ignoreAddressTypes: string[];
   bitgoKey: string;
   walletPassphrase?: string;
+  apiKey?: string;
 }
 
 export abstract class AbstractUtxoCoin extends BaseCoin {
@@ -1581,8 +1582,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     return response;
   }
 
-  protected abstract getAddressInfoFromExplorer(address: string): Bluebird<AddressInfo>;
-  protected abstract getUnspentInfoFromExplorer(address: string): Bluebird<UnspentInfo[]>;
+  protected abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Bluebird<AddressInfo>;
+  protected abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Bluebird<UnspentInfo[]>;
 
   /**
    * Builds a funds recovery transaction without BitGo
@@ -1619,7 +1620,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             const keys = derivedKeys.map(k => k.getPublicKeyBuffer());
             const address: any = self.createMultiSigAddress(Codes.typeForCode(chain), 2, keys);
 
-            const addrInfo: AddressInfo = yield self.getAddressInfoFromExplorer(address.address);
+            const addrInfo: AddressInfo = yield self.getAddressInfoFromExplorer(address.address, params.apiKey);
 
             if (addrInfo.txCount === 0) {
               numSequentialAddressesWithoutTxs++;
@@ -1635,7 +1636,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
                 addressesById[address.address] = address;
 
                 // Try to find unspents on it.
-                const addressUnspents: UnspentInfo[] = yield self.getUnspentInfoFromExplorer(address.address);
+                const addressUnspents: UnspentInfo[] = yield self.getUnspentInfoFromExplorer(address.address, params.apiKey);
 
                 addressUnspents.forEach(function addAddressToUnspent(unspent) {
                   unspent.address = address.address;

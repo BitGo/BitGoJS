@@ -51,6 +51,11 @@ export function nockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
       });
   }
   nock(blockchairURL)
+    .get('/dashboards/address/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg?key=my_______SecretApiKey')
+    .reply(200, {
+      data: { '2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg': emptyBlockchairBtcAddressData },
+      blockchairContext,
+    })
     .get('/dashboards/address/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg')
     .reply(200, {
       data: { '2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg': emptyBlockchairBtcAddressData },
@@ -61,7 +66,19 @@ export function nockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
       data: { '2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr': emptyBlockchairBtcAddressData },
       blockchairContext,
     })
+    .get('/dashboards/address/2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr?key=my_______SecretApiKey')
+    .reply(200, {
+      data: { '2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr': emptyBlockchairBtcAddressData },
+      blockchairContext,
+    })
     .get('/dashboards/address/2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj')
+    .reply(200, {
+      data: {
+        '2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj?key=my_______SecretApiKey')
     .reply(200, {
       data: {
         '2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj': emptyBlockchairBtcAddressData,
@@ -103,7 +120,49 @@ export function nockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
       },
       blockchairContext,
     })
+    .get('/dashboards/address/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9144db7dbb57102a2e13e4474dbe38058431012e74587',
+            balance: 8125000,
+            balance_usd: 0,
+            received: 8125000,
+            received_usd: 0,
+            spent: 0,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 1,
+            first_seen_receiving: '2017-06-12 23:17:43',
+            last_seen_receiving: '2017-06-12 23:17:43',
+            first_seen_spending: null,
+            last_seen_spending: null,
+            scripthash_type: null,
+            transaction_count: 1,
+          },
+          transactions: ['e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74'],
+          utxo: [
+            {
+              block_id: 1128383,
+              transaction_hash: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
+              index: 0,
+              value: 8125000,
+            },
+          ],
+        },
+      },
+      blockchairContext,
+    })
     .get('/dashboards/address/2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z')
+    .reply(200, {
+      data: {
+        '2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z?key=my_______SecretApiKey')
     .reply(200, {
       data: {
         '2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z': emptyBlockchairBtcAddressData,
@@ -117,7 +176,28 @@ export function nockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
       },
       blockchairContext,
     })
+    .get('/dashboards/address/2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
     .get('/dashboards/address/2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch')
+    .reply(200, {
+      data: {
+        '2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch?key=my_______SecretApiKey')
     .reply(200, {
       data: {
         '2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch': emptyBlockchairBtcAddressData,
@@ -131,7 +211,21 @@ export function nockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
       },
       blockchairContext,
     })
+    .get('/dashboards/address/2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
     .get('/dashboards/address/2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P')
+    .reply(200, {
+      data: {
+        '2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P?key=my_______SecretApiKey')
     .reply(200, {
       data: {
         '2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P': emptyBlockchairBtcAddressData,
@@ -145,7 +239,21 @@ export function nockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
       },
       blockchairContext,
     })
+    .get('/dashboards/address/2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
     .get('/dashboards/address/2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X')
+    .reply(200, {
+      data: {
+        '2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X?key=my_______SecretApiKey')
     .reply(200, {
       data: {
         '2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X': emptyBlockchairBtcAddressData,
@@ -159,10 +267,59 @@ export function nockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
       },
       blockchairContext,
     })
+    .get('/dashboards/address/2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
     .get('/dashboards/address/2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba')
     .reply(200, {
       data: {
         '2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9144db7dbb57102a2e13e4474dbe38058431012e74587',
+            balance: 8125000,
+            balance_usd: 0,
+            received: 8125000,
+            received_usd: 0,
+            spent: 0,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 1,
+            first_seen_receiving: '2017-06-12 23:17:43',
+            last_seen_receiving: '2017-06-12 23:17:43',
+            first_seen_spending: null,
+            last_seen_spending: null,
+            scripthash_type: null,
+            transaction_count: 1,
+          },
+          transactions: ['e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74'],
+          utxo: [
+            {
+              block_id: 1128383,
+              transaction_hash: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
+              index: 0,
+              value: 8125000,
+            },
+          ],
+        },
       },
       blockchairContext,
     })
