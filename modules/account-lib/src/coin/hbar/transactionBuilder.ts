@@ -19,6 +19,8 @@ import {
   isValidTimeString,
   toUint8Array,
   toHex,
+  stringifyAccountId,
+  stringifyTxTime,
 } from './utils';
 import { KeyPair } from './keyPair';
 import { SignatureData, HederaNode, Timestamp } from './ifaces';
@@ -118,13 +120,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   initBuilder(tx: Transaction): void {
     this.transaction = tx;
     const txData = tx.toJson();
-    this.fee({ fee: txData.fee.toString() });
-    this.source({ address: txData.from });
-    this.startTime(txData.startTime);
-    this.node({ nodeId: txData.node });
-    this.validDuration(new BigNumber(txData.validDuration).toNumber());
-    if (txData.memo) {
-      this.memo(txData.memo);
+    this.fee({ fee: txData.body.transactionfee });
+    this.source({ address: stringifyAccountId(txData.body.transactionid!.accountid!) });
+    this.startTime(stringifyTxTime(txData.body.transactionid!.transactionvalidstart!));
+    this.node({ nodeId: stringifyAccountId(txData.body.nodeaccountid!) });
+    this.validDuration(txData.body.transactionvalidduration!.seconds);
+    if (txData.body.memo) {
+      this.memo(txData.body.memo);
     }
   }
 
