@@ -37,8 +37,7 @@ describe('Recovery:', function() {
 
   describe('Recover Bitcoin', function() {
     it('should generate BTC recovery tx', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, false);
-
+      recoveryNocks.blockchairNockBtcRecovery(bitgo, false);
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
@@ -68,8 +67,8 @@ describe('Recovery:', function() {
       recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
     }));
 
-    it('should generate BTC recovery tx with unencrypted keys', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, false);
+    it('should generate BTC recovery tx with unencrypted keys', co(function *() { // TODO this is a test on the key derivation part
+      recoveryNocks.blockchairNockBtcRecovery(bitgo, false);
 
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
@@ -100,7 +99,8 @@ describe('Recovery:', function() {
     }));
 
     it('should generate BTC recovery tx with KRS', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, true);
+      //sinon.stub(object, 'getAddressInfoFromExplorer',)
+      recoveryNocks.blockchairNockBtcRecovery(bitgo, true);
 
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
@@ -141,7 +141,7 @@ describe('Recovery:', function() {
     }));
 
     it('should fail to generate a recovery tx if the KRS provider does not support the coin', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, true);
+      recoveryNocks.blockchairNockBtcRecovery(bitgo, true);
 
       const oldSupportedCoins = config.krsProviders.keyternal.supportedCoins;
       config.krsProviders.keyternal.supportedCoins = [];
@@ -162,8 +162,7 @@ describe('Recovery:', function() {
     }));
 
     it('should fail to generate a recovery tx if the fee address is not specified', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, true);
-
+      recoveryNocks.blockchairNockBtcRecovery(bitgo, true);
       const oldAddress = (config.krsProviders.keyternal.feeAddresses as any).tbtc;
       delete (config.krsProviders.keyternal.feeAddresses as any).tbtc;
 
@@ -183,7 +182,7 @@ describe('Recovery:', function() {
     }));
 
     it('should not throw if smartbit fails to response to request to verifyreoverytransaction', co (function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, false, false);
+      recoveryNocks.blockchairNockBtcRecovery(bitgo, false, false);
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
@@ -198,7 +197,7 @@ describe('Recovery:', function() {
     }));
 
     it('should allow the provision of an API key while doing recovery', co (function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, false, false);
+      recoveryNocks.blockchairNockBtcRecovery(bitgo, false, false);
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
