@@ -81,13 +81,13 @@ describe('Blockstream API:', function() {
     it('to get an account information for an invalid address', async () => {
       const api = new BlockstreamApi(bitgo);
       await api.getAccountInfo('invalidAddress')
-        .should.be.rejectedWith('Failed to get account information from https://blockstream.info/testnet/api - 400: Invalid Bitcoin address');
+        .should.be.rejectedWith('Failed to get address information for invalidAddress from https://blockstream.info/testnet/api - 400: Invalid Bitcoin address');
     });
 
     it('to get an account unspents for an invalid address', async () => {
       const api = new BlockstreamApi(bitgo, 'randomKey');
       await api.getUnspents('invalidAddress')
-        .should.be.rejectedWith('Failed to get unspents information from https://blockstream.info/testnet/api - 400: Invalid Bitcoin address');
+        .should.be.rejectedWith('Failed to get unspents information for invalidAddress from https://blockstream.info/testnet/api - 400: Invalid Bitcoin address');
     });
   });
 });

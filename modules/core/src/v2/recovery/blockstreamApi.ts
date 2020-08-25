@@ -50,7 +50,7 @@ export class BlockstreamApi implements RecoveryProvider {
         totalBalance,
       };
     } catch (e) {
-      let errorMessage = `Failed to get account information from ${this.getExplorerUrl('')}`;
+      let errorMessage = `Failed to get address information for ${address} from ${this.getExplorerUrl('')}`;
       errorMessage += (e.response.status) ? ` - ${e.response.status}` : '';
       errorMessage += (e.response.text) ? `: ${e.response.text}` : '';
       throw new BlockExplorerUnavailable(errorMessage);
@@ -87,7 +87,7 @@ export class BlockstreamApi implements RecoveryProvider {
         };
       });
     } catch (e) {
-      let errorMessage = `Failed to get unspents information from ${this.getExplorerUrl('')}`;
+      let errorMessage = `Failed to get unspents information for ${address} from ${this.getExplorerUrl('')}`;
       errorMessage += (e.response.status) ? ` - ${e.response.status}` : '';
       errorMessage += (e.response.text) ? `: ${e.response.text}` : '';
       throw new BlockExplorerUnavailable(errorMessage);
