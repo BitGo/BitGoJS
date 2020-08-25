@@ -6,7 +6,7 @@ import { KeyPair } from '.';
 export interface TxData {
   sigs?: SignatureList.AsObject;
   sigmap?: SignatureMap.AsObject;
-  body?: TransactionBody.AsObject;
+  body: TransactionBody.AsObject;
   bodybytes: Uint8Array | string;
   hash?: string;
 }

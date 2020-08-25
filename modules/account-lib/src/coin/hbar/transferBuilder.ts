@@ -41,7 +41,7 @@ export class TransferBuilder extends TransactionBuilder {
     this.transaction.setTransactionType(TransactionType.Send);
     const transferData = tx.txBody().getCryptotransfer();
     if (transferData && transferData.getTransfers() && transferData.getTransfers()!.getAccountamountsList()) {
-      const sender = stringifyAccountId(tx.toJson().body!.transactionid!.accountid!);
+      const sender = stringifyAccountId(tx.toJson().body.transactionid!.accountid!);
       transferData
         .getTransfers()!
         .getAccountamountsList()
