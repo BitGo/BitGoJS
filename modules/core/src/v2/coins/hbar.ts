@@ -52,6 +52,11 @@ export interface ExplainTransactionOptions {
   feeInfo: TransactionFee;
 }
 
+interface AddressDetails {
+  address: string;
+  memoId?: string;
+}
+
 export class Hbar extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
@@ -216,6 +221,19 @@ export class Hbar extends BaseCoin {
     })
       .call(this)
       .asCallback(callback);
+  }
+
+  /**
+   * Process address into address and memo id
+   *
+   * @param address the address
+   * @returns object containing address and memo id
+   */
+  getAddressDetails(address: string): AddressDetails {
+    return {
+      address,
+      memoId: '',
+    };
   }
 
   isValidPub(pub: string): boolean {
