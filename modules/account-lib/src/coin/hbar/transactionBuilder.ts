@@ -1,8 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { AccountId, TransactionId } from '@hashgraph/sdk';
-import { TransactionBuilder as SDKTransactionBuilder } from '@hashgraph/sdk/lib/TransactionBuilder';
-import { SignaturePair } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
+import { AccountId } from '@hashgraph/sdk';
 import { BaseTransactionBuilder } from '../baseCoin';
 import {
   BuildTransactionError,
@@ -11,39 +9,29 @@ import {
   SigningError,
 } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
+import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { Transaction } from './transaction';
-import {
-  getCurrentTime,
-  isValidAddress,
-  isValidRawTransactionFormat,
-  isValidTimeString,
-  toUint8Array,
-  toHex,
-  stringifyAccountId,
-  stringifyTxTime,
-} from './utils';
+import { getCurrentTime, isValidAddress, isValidRawTransactionFormat, isValidTimeString, toUint8Array } from './utils';
 import { KeyPair } from './keyPair';
-import { SignatureData, HederaNode, Timestamp } from './ifaces';
+import { SignatureData, HederaNode } from './ifaces';
 
-export const DEFAULT_N = 2;
 export const DEFAULT_M = 3;
-export const DEFAULT_DURATION = 120;
-export const DEFAULT_NODE_ID = { nodeId: '0.0.4' };
-export const AUTO_RENEW_PERIOD = 7890000; // 3 months
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: BaseFee;
   private _transaction: Transaction;
   protected _source: BaseAddress;
-  protected _startTime: Timestamp;
+  protected _startTime: proto.ITimestamp;
   protected _memo: string;
-  protected _node: HederaNode = DEFAULT_NODE_ID;
-  protected _duration = DEFAULT_DURATION;
+  protected _txBody: proto.TransactionBody;
+  protected _node: HederaNode = { nodeId: '0.0.4' };
+  protected _duration: proto.Duration = new proto.Duration({ seconds: 120 });
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
-  protected _sdkTransactionBuilder: SDKTransactionBuilder;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._txBody = new proto.TransactionBody();
+    this._txBody.transactionValidDuration = this._duration;
     this._multiSignerKeyPairs = [];
     this._signatures = [];
     this.transaction = new Transaction(_coinConfig);
@@ -52,28 +40,32 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this._sdkTransactionBuilder
-      .setMaxTransactionFee(new BigNumber(this._fee.fee).toNumber())
-      .setTransactionId(this.buildTxId())
-      .setTransactionMemo(this._memo)
-      .setNodeAccountId(new AccountId(this._node.nodeId))
-      .setTransactionValidDuration(this._duration);
-    const previousSignatures = this.transaction.retrieveSignatures();
-    this.transaction.innerTransaction(this._sdkTransactionBuilder.build());
-    await this.signSteps(previousSignatures);
-
+    this._txBody.transactionFee = new BigNumber(this._fee.fee).toNumber();
+    this._txBody.transactionID = this.buildTxId();
+    this._txBody.memo = this._memo;
+    this._txBody.nodeAccountID = new proto.AccountID({ accountNum: new AccountId(this._node.nodeId).account });
+    const hTransaction = this.transaction.hederaTx || new proto.Transaction();
+    hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
+    this.transaction.body(hTransaction);
+    for (const kp of this._multiSignerKeyPairs) {
+      await this.transaction.sign(kp);
+    }
+    for (const { signature, keyPair } of this._signatures) {
+      this.transaction.addSignature(signature, keyPair);
+    }
     return this.transaction;
   }
 
   /** @inheritdoc */
   protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
+    const tx = new Transaction(this._coinConfig);
     let buffer;
     if (typeof rawTransaction === 'string') {
       buffer = toUint8Array(rawTransaction);
     } else {
       buffer = rawTransaction;
     }
-    const tx = new Transaction(this._coinConfig, buffer);
+    tx.bodyBytes(buffer);
     this.initBuilder(tx);
     return this.transaction;
   }
@@ -90,57 +82,35 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Signing steps for a Hedera transaction, it involves
-   * signing with the previous included signatures,
-   * signing with the added keys through the sign function and
-   * signing with the precalculated signatures added through the signature function
-   *
-   * @param {SignaturePair[]} previousSignatures the signatures from a previous decoded transaction
-   */
-  private async signSteps(previousSignatures: SignaturePair[]) {
-    for (const sigPair of previousSignatures) {
-      this.transaction.addSignature(
-        toHex(sigPair.getEd25519_asU8()),
-        new KeyPair({ pub: toHex(sigPair.getPubkeyprefix_asU8()) }),
-      );
-    }
-    for (const kp of this._multiSignerKeyPairs) {
-      await this.transaction.sign(kp);
-    }
-    for (const { signature, keyPair } of this._signatures) {
-      this.transaction.addSignature(signature, keyPair);
-    }
-  }
-
-  /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
    * @param {Transaction} tx the transaction data
    */
   initBuilder(tx: Transaction): void {
     this.transaction = tx;
+    this.transaction.loadPreviousSignatures();
     const txData = tx.toJson();
-    this.fee({ fee: txData.body.transactionfee });
-    this.source({ address: stringifyAccountId(txData.body.transactionid!.accountid!) });
-    this.startTime(stringifyTxTime(txData.body.transactionid!.transactionvalidstart!));
-    this.node({ nodeId: stringifyAccountId(txData.body.nodeaccountid!) });
-    this.validDuration(txData.body.transactionvalidduration!.seconds);
-    if (txData.body.memo) {
-      this.memo(txData.body.memo);
+    this.fee({ fee: txData.fee.toString() });
+    this.source({ address: txData.from });
+    this.startTime(txData.startTime);
+    this.node({ nodeId: txData.node });
+    this.validDuration(new BigNumber(txData.validDuration).toNumber());
+    if (txData.memo) {
+      this.memo(txData.memo);
     }
   }
 
   /**
    * Creates an Hedera TransactionID
    *
-   * @returns {TransactionId} - created TransactionID
+   * @returns {proto.TransactionID} - created TransactionID
    */
-  protected buildTxId(): TransactionId {
-    const validStart = this.validStart;
-    return new TransactionId({
-      validStartNanos: validStart.nanos,
-      validStartSeconds: validStart.seconds,
-      account: new AccountId(this._source.address),
+  protected buildTxId(): proto.TransactionID {
+    const accString = this._source.address.split('.').pop();
+    const acc = new BigNumber(accString!).toNumber();
+    return new proto.TransactionID({
+      transactionValidStart: this.validStart,
+      accountID: { accountNum: acc },
     });
   }
   // endregion
@@ -153,8 +123,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {TransactionBuilder} This transaction builder
    */
   memo(memo: string): this {
-    // Assume that strings are UTF-16 in a worst-case scenario
-    if (memo.length * 2 > 100) {
+    if (Buffer.from(memo).length > 100) {
       throw new InvalidParameterValueError('Memo must not be longer than 100 bytes');
     }
     this._memo = memo;
@@ -183,7 +152,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   validDuration(validDuration: number): this {
     this.validateValue(new BigNumber(validDuration));
-    this._duration = validDuration;
+    this._duration = new proto.Duration({ seconds: validDuration });
     return this;
   }
 
@@ -249,7 +218,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // endregion
 
   // region Getters and Setters
-  private get validStart(): Timestamp {
+  private get validStart(): proto.ITimestamp {
     if (!this._startTime) {
       this.startTime(getCurrentTime());
     }
@@ -317,7 +286,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   private checkDuplicatedKeys(key: BaseKey) {
     this._multiSignerKeyPairs.forEach(_sourceKeyPair => {
-      if (_sourceKeyPair.getKeys().prv!.toString() === key.key) {
+      if (_sourceKeyPair.getKeys().prv === key.key) {
         throw new SigningError('Repeated sign: ' + key.key);
       }
     });

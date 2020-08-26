@@ -124,8 +124,8 @@ export class Hbar extends BaseCoin {
     }
 
     return {
-      pub: keys.pub.toString(),
-      prv: keys.prv.toString(),
+      pub: keys.pub,
+      prv: keys.prv,
     };
   }
 
