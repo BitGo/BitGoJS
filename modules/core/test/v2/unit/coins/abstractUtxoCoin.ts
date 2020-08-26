@@ -11,6 +11,8 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
 const utxoLib = require('@bitgo/utxo-lib');
 import * as errors from '../../../../src/errors';
+const { Btc } = require('../../../../src/v2/coins/btc');
+const { emptyAddressInfo, addressUnspents, addressInfos } = fixtures;
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
@@ -395,18 +397,30 @@ describe('Abstract UTXO Coin:', () => {
     });
   });
 
-  // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
   describe('Recover Wallet:', () => {
-
-    let coin, bitgo;
-
+    let coin, bitgo, sandbox;
     before(() => {
       bitgo = new TestBitGo({ env: 'mock' });
       coin = bitgo.coin('tbtc');
-      sinon.stub(coin, 'verifyRecoveryTransaction').resolvesArg(0);
+    });
+    beforeEach(()=>{
+      sandbox = sinon.createSandbox();
+      recoveryNocks.nockbitcoinFees(20, 20, 6);
+    })
+
+    afterEach(() => {
+      sandbox.restore();
     });
 
     it('should construct a recovery transaction with segwit unspents', co(function *() {
+      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
+      callBack1.returns(Promise.resolve(emptyAddressInfo));
+      callBack1.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').returns(Promise.resolve(addressInfos['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']));
+      callBack1.withArgs('2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp').returns(Promise.resolve(addressInfos['2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp']));
+      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
+      callBack2.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').returns(Promise.resolve([addressUnspents['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']]));
+      callBack2.withArgs('2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp').returns(Promise.resolve([addressUnspents['2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp']]));
+      callBack2.returns(Promise.resolve([]));
       const { params, expectedTxHex } = fixtures.recoverBtcSegwitFixtures();
       recoveryNocks.nockBtcSegwitRecovery(bitgo);
       const tx = yield coin.recover(params);
@@ -418,6 +432,18 @@ describe('Abstract UTXO Coin:', () => {
     }));
 
     it('should construct an unsigned recovery transaction for the offline vault', co(function *() {
+      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
+      callBack1.returns(Promise.resolve(emptyAddressInfo));
+      callBack1.withArgs('2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx').returns(Promise.resolve({txCount: 2, totalBalance: 0}));
+      callBack1.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').returns(Promise.resolve({txCount: 2, totalBalance: 100000}));
+      callBack1.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').returns(Promise.resolve({txCount: 2, totalBalance: 0}))
+      callBack1.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').returns(Promise.resolve({txCount: 2, totalBalance: 120000}))
+
+      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
+      callBack2.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').returns(Promise.resolve([addressUnspents['2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49']]));
+      callBack2.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').returns(Promise.resolve([addressUnspents['2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR']]));
+      callBack2.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').returns(Promise.resolve([addressUnspents['2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z']]));
+      callBack2.returns(Promise.resolve([]));
       const { params, expectedTxHex } = fixtures.recoverBtcUnsignedFixtures();
       recoveryNocks.nockBtcUnsignedRecovery(bitgo);
       const txPrebuild = yield coin.recover(params);
@@ -429,7 +455,6 @@ describe('Abstract UTXO Coin:', () => {
 
     after(function() {
       nock.cleanAll();
-      coin.verifyRecoveryTransaction.restore();
     });
 
   });

@@ -8,6 +8,7 @@ import * as request from 'superagent';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import { BlockchairApi } from '../recovery/blockchairApi';
+import { BlockstreamApi } from '../recovery/blockstreamApi';
 import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
 const co = Bluebird.coroutine;
 
@@ -75,13 +76,13 @@ export class Btc extends AbstractUtxoCoin {
 
   getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<RecoveryAccountData> {
     // TODO: allow users to choose the API to use
-    const api = new BlockchairApi(this.bitgo, apiKey);
+    const api = new BlockstreamApi(this.bitgo, apiKey);
     return Bluebird.resolve(api.getAccountInfo(addressBase58));
   }
 
   getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<RecoveryUnspent[]> {
     // TODO: allow users to choose the API to use
-    const api = new BlockchairApi(this.bitgo, apiKey);
+    const api = new BlockstreamApi(this.bitgo, apiKey);
     return Bluebird.resolve(api.getUnspents(addressBase58));
   }
 

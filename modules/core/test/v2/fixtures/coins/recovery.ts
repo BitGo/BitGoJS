@@ -165,3 +165,70 @@ module.exports.emptyBlockchairBtcAddressData = {
     transactions: [],
       utxo: [],
 }
+
+module.exports.emptyAddressInfo = {
+  txCount: 0,
+  totalBalance: 0,
+};
+
+module.exports.addressUnspents = {
+  "2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp": {
+    amount: 41000,
+    n: 1,
+    txid: "8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387",
+    address: "2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp",
+  },
+
+  "2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49": {
+    amount: 100000,
+    n: 0,
+    txid: "4bf4a792816cb4e25f0a4faea6ecb42ffd360bde293bfd8a4b6d2c255aa379f9",
+    address: "2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49",
+  },
+
+  "2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR": {
+    amount: 100000,
+    n: 0,
+    txid: "4bf4a792816cb4e25f0a4faea6ecb42ffd360bde293bfd8a4b6d2c255aa379f9",
+    address: "2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR",
+  },
+
+   "2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z": {
+     amount: 120000,
+     n: 1,
+     txid: "a9192dea1de9c79f4b6d4a4eeaf70542bd4eaec37206aab799b893d61c76552e",
+     address: "2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z",
+   },
+
+  '2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws': {
+    amount: 20000,
+    n: 0,
+    txid: "9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0",
+    address: "2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws",
+  },
+
+  '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw': {
+    amount: 8125000,
+    n: 0,
+    txid: "e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74",
+    address: "2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw",
+  },
+
+};
+
+module.exports.addressInfos = {
+  '2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws': {
+    txCount: 2,
+    totalBalance: 20000,
+  },
+
+  '2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp': {
+     txCount: 2,
+     totalBalance: 20000,
+  },
+
+  '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw': {
+    txCount: 1,
+    totalBalance: 8125000,
+  }
+};
