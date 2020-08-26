@@ -335,6 +335,7 @@ export const coins = CoinMap.fromCoins([
   erc20('rebl', 'Rebellious', 18, '0x5f53f7a8075614b699baad0bc2c899f4bad8fbbf', UnderlyingAsset.REBL),
   erc20('rep', 'Augur', 18, '0x1985365e9f78359a9b6ad760e32412f4a445e862', UnderlyingAsset.REP),
   erc20('rfr', 'Refereum', 4, '0xd0929d411954c47438dc1d871dd6081f5c5e149c', UnderlyingAsset.RFR),
+  erc20('rif', 'RIF Token', 18, '0x2acc95758f8b5f583470ba265eb685a8f45fc9d5', UnderlyingAsset.RIF),
   erc20('ringx', 'Ringx Token', 18, '0x7f86c782ec802ac402e0369d2e6d500256f7abc5', UnderlyingAsset.RINGX),
   erc20('rlc', 'Iexec Rlc', 9, '0x607f4c5bb672230e8672085532f7e901544a7375', UnderlyingAsset.RLC),
   erc20('ronc', 'RONCoin', 18, '0xf1b819fdb689f43afc161db789800ed799f18388', UnderlyingAsset.RONC),
@@ -485,6 +486,7 @@ export const coins = CoinMap.fromCoins([
   terc20('tfmf', 'Test Formosa Financial Token', 18, '0xd8463d2f8c5b3be9de95c63b73a0ae4c79423452', UnderlyingAsset.FMF),
   terc20('terc20', 'Test ERC20 Token', 18, '0x731a10897d267e19b34503ad902d0a29173ba4b1', UnderlyingAsset.TERC20),
   terc20('tdai', 'Test DAI', 18, '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', UnderlyingAsset.TERC20),
+  terc20('trif', 'Test RIF Token', 18, '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe', UnderlyingAsset.RIF),
   tceloToken('tcusd', 'Test Celo USD Token', 18, '0xa561131a1c8ac25925fb848bca45a74af61e5a38', UnderlyingAsset.CUSD),
   tstellarToken(
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
