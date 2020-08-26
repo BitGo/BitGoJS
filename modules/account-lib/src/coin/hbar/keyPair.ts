@@ -6,7 +6,6 @@ import { removePrefix } from './utils';
 
 const PUBLIC_KEY_PREFIX = '302a300506032b6570032100';
 const PRIVATE_KEY_PREFIX = '302e020100300506032b657004220420';
-import { HbarKeyPair } from './ifaces';
 
 export class KeyPair extends Ed25519KeyPair {
   /**
@@ -19,17 +18,18 @@ export class KeyPair extends Ed25519KeyPair {
   }
 
   /**
-   * Hedera default key format is a pair of objects from @hashgraph/sdk
+   * Hedera default keys format is a pair of Uint8Array keys
    *
-   * @returns { HbarKeyPair } the keys in protocol default format
+   * @param {boolean} raw defines if the key is returned in raw or protocol default format
+   * @returns { DefaultKeys } The keys in the defined format
    */
-  getKeys(): HbarKeyPair {
-    const result: HbarKeyPair = {
-      pub: Ed25519PublicKey.fromString(this.keyPair.pub),
+  getKeys(raw = false): DefaultKeys {
+    const result: DefaultKeys = {
+      pub: Ed25519PublicKey.fromString(this.keyPair.pub).toString(raw),
     };
 
     if (this.keyPair.prv) {
-      result.prv = Ed25519PrivateKey.fromString(this.keyPair.prv);
+      result.prv = Ed25519PrivateKey.fromString(this.keyPair.prv).toString(raw);
     }
     return result;
   }
