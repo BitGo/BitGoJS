@@ -129,12 +129,34 @@ export class Transaction extends BaseTransaction {
     return toHex(this._hederaTx.toBytes());
   }
 
+  /** @inheritdoc */
   toJson(): TxData {
-    const txData = JSON.parse(this._hederaTx.toString());
-    if (txData.sigmap) {
-      txData.hash = toHex(this._hederaTx.hash()); // Hash is returned if the transaction was signed
+    const txData = this._hederaTx._toProto().toObject();
+    const txBody = this.txBody().toObject();
+
+    const acc = stringifyAccountId(txBody.transactionid!.accountid!);
+    const time = stringifyTxTime(txBody.transactionid!.transactionvalidstart!);
+    const result: TxData = {
+      id: acc + '@' + time,
+      hash: txData.sigmap ? toHex(this._hederaTx.hash()) : '', // Hash is returned if the transaction was signed
+      data: toHex(this._hederaTx._toProto().getBodybytes_asU8()),
+      fee: new BigNumber(txBody.transactionfee).toNumber(),
+      from: acc,
+      startTime: time,
+      validDuration: txBody.transactionvalidduration!.seconds.toString(),
+      node: stringifyAccountId(txBody.nodeaccountid!),
+      memo: txBody.memo,
+    };
+
+    if (txBody.cryptotransfer) {
+      txBody.cryptotransfer!.transfers!.accountamountsList.forEach(transfer => {
+        if (result.from !== stringifyAccountId(transfer.accountid!)) {
+          result.amount = transfer.amount;
+          result.to = stringifyAccountId(transfer.accountid!);
+        }
+      });
     }
-    return txData;
+    return result;
   }
 
   //region getters & setters
@@ -164,33 +186,22 @@ export class Transaction extends BaseTransaction {
    */
   loadInputsAndOutputs(): void {
     const txJson = this.toJson();
-    if (txJson.body!.cryptotransfer) {
-      const accountAmountList = txJson.body!.cryptotransfer.transfers!.accountamountsList!;
-      accountAmountList.forEach(accountAmount => {
-        const account = stringifyAccountId(accountAmount.accountid!);
-        const amount = accountAmount.amount;
-        if (
-          stringifyAccountId(accountAmount.accountid!) === stringifyAccountId(txJson.body!.transactionid!.accountid!)
-        ) {
-          this._inputs = [
-            {
-              address: account,
-              value: Long.fromString(amount)
-                .negate()
-                .toString(),
-              coin: this._coinConfig.name,
-            },
-          ];
-        } else {
-          this._outputs = [
-            {
-              address: account,
-              value: amount,
-              coin: this._coinConfig.name,
-            },
-          ];
-        }
-      });
+    if (txJson.to && txJson.amount) {
+      this._outputs = [
+        {
+          address: txJson.to,
+          value: txJson.amount,
+          coin: this._coinConfig.name,
+        },
+      ];
+
+      this._inputs = [
+        {
+          address: txJson.from,
+          value: txJson.amount,
+          coin: this._coinConfig.name,
+        },
+      ];
     }
   }
 

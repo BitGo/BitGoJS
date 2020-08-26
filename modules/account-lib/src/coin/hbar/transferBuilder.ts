@@ -31,8 +31,8 @@ export class TransferBuilder extends TransactionBuilder {
 
   /**
    * Initialize the transfer specific data, getting the recipient account
-   * represented by the element that is different from the sender/source account.
-   * The source account is initialized on the base builder.
+   * represented by the element with a positive amount on the transfer element.
+   * The negative amount represents the source account so it's ignored.
    *
    * @param {Transaction} tx - the transaction data
    */
@@ -41,14 +41,14 @@ export class TransferBuilder extends TransactionBuilder {
     this.transaction.setTransactionType(TransactionType.Send);
     const transferData = tx.txBody().getCryptotransfer();
     if (transferData && transferData.getTransfers() && transferData.getTransfers()!.getAccountamountsList()) {
-      const sender = stringifyAccountId(tx.toJson().body!.transactionid!.accountid!);
+      const txData = tx.toJson();
       transferData
         .getTransfers()!
         .getAccountamountsList()
         .forEach(transferData => {
           const amount = Long.fromValue(transferData.getAmount());
           const account = stringifyAccountId(transferData.getAccountid()!.toObject());
-          if (account !== sender) {
+          if (txData.from !== account) {
             this.to(account);
             this.amount(amount.toString());
           }
