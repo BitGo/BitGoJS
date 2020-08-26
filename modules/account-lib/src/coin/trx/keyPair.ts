@@ -100,7 +100,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
    *
    * @param {string} message signed
    * @param {Buffer} signature to verify
-   * @returns True if the message was signed with the current key pair
+   * @returns {boolean} True if the message was signed with the current key pair
    */
   verifySignature(message: string, signature: Buffer): boolean {
     const messageToVerify = Buffer.from(message).toString('hex');

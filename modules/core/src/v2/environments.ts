@@ -16,6 +16,7 @@ interface EnvironmentTemplate {
   serverXpub: string;
   hsmXpub: string;
   blockchairBaseUrl: string;
+  blockstreamBaseUrl: string;
   smartbitBaseUrl: string;
   btcExplorerBaseUrl: string;
   bchExplorerBaseUrl: string;
@@ -94,6 +95,7 @@ const mainnetBase: EnvironmentTemplate = {
   serverXpub: hardcodedPublicKeys.serverXpub.prod,
   hsmXpub: hardcodedPublicKeys.hsmXpub.prod,
   blockchairBaseUrl: 'https://api.blockchair.com/bitcoin',
+  blockstreamBaseUrl: 'https://blockstream.info/api',
   smartbitBaseUrl: 'https://api.smartbit.com.au/v1',
   btcExplorerBaseUrl: 'https://blockstream.info/api',
   bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
@@ -120,6 +122,7 @@ const testnetBase: EnvironmentTemplate = {
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
   blockchairBaseUrl: 'https://api.blockchair.com/bitcoin/testnet',
+  blockstreamBaseUrl: 'https://blockstream.info/testnet/api',
   smartbitBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
   bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
@@ -175,6 +178,7 @@ export const Environments: Environments = {
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
     blockchairBaseUrl: 'https://api.blockchair.fakeurl/bitcoin/testnet',
+    blockstreamBaseUrl: 'https://blockstream.info.fakeurl/testnet/api',
     smartbitBaseUrl: 'https://testnet-api.smartbit.fakeurl/v1',
     btcExplorerBaseUrl: 'https://blockstream.fakeurl/testnet/api',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.fakeurl/api',
@@ -219,6 +223,10 @@ export const Environments: Environments = {
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://api.blockchair.com/bitcoin/testnet'
         : 'https://api.blockchair.com/bitcoin',
+    blockstreamBaseUrl:
+      process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
+        ? 'https://blockstream.info/testnet/api'
+        : 'https://blockstream.info/api',
     btcExplorerBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://blockstream.info/testnet/api'

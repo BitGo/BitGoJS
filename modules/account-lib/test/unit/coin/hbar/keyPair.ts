@@ -13,50 +13,38 @@ describe('Hedera Key Pair', () => {
       const keyPair = new KeyPair();
       should.exists(keyPair.getKeys().prv);
       should.exists(keyPair.getKeys().pub);
-      should.equal(keyPair.getKeys().prv!.toString(true).length, 64);
-      should.equal(keyPair.getKeys().pub.toString(true).length, 64);
-      should.equal(
-        keyPair
-          .getKeys()
-          .prv!.toString()
-          .slice(0, 32),
-        testData.ed25519PrivKeyPrefix,
-      );
-      should.equal(
-        keyPair
-          .getKeys()
-          .pub.toString()
-          .slice(0, 24),
-        testData.ed25519PubKeyPrefix,
-      );
+      should.equal(keyPair.getKeys(true).prv!.length, 64);
+      should.equal(keyPair.getKeys(true).pub.length, 64);
+      should.equal(keyPair.getKeys().prv!.slice(0, 32), testData.ed25519PrivKeyPrefix);
+      should.equal(keyPair.getKeys().pub.slice(0, 24), testData.ed25519PubKeyPrefix);
     });
 
     it('from a seed', () => {
       const keyPair = new KeyPair({ seed: new Buffer(toUint8Array(testData.ACCOUNT_1.prvKeyWithPrefix.slice(32))) });
-      should.equal(keyPair.getKeys().prv!.toString(), testData.ACCOUNT_1.prvKeyWithPrefix);
-      should.equal(keyPair.getKeys().pub.toString(), testData.ACCOUNT_1.pubKeyWithPrefix);
+      should.equal(keyPair.getKeys().prv!, testData.ACCOUNT_1.prvKeyWithPrefix);
+      should.equal(keyPair.getKeys().pub, testData.ACCOUNT_1.pubKeyWithPrefix);
     });
 
     it('from a public key', () => {
       const keyPair = new KeyPair({ pub: pub });
-      should.equal(keyPair.getKeys().pub.toString(), pub);
+      should.equal(keyPair.getKeys().pub, pub);
     });
 
     it('from a public key with prefix', () => {
       const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix });
-      should.equal(keyPair.getKeys().pub.toString(), pub);
+      should.equal(keyPair.getKeys().pub, pub);
     });
 
     it('from a private key', () => {
       const keyPair = new KeyPair({ prv: prv });
-      should.equal(keyPair.getKeys().prv!.toString(), prv);
-      should.equal(keyPair.getKeys().pub.toString(), pub);
+      should.equal(keyPair.getKeys().prv!, prv);
+      should.equal(keyPair.getKeys().pub, pub);
     });
 
     it('from a private key with prefix', () => {
       const keyPair = new KeyPair({ prv: testData.ACCOUNT_1.prvKeyWithPrefix });
-      should.equal(keyPair.getKeys().prv!.toString(), prv);
-      should.equal(keyPair.getKeys().pub.toString(), pub);
+      should.equal(keyPair.getKeys().prv!, prv);
+      should.equal(keyPair.getKeys().pub, pub);
     });
 
     it('from seed', () => {
@@ -74,12 +62,12 @@ describe('Hedera Key Pair', () => {
 
     it('from a byte array private key', () => {
       const keyPair = new KeyPair({ prv: Buffer.from(testData.ACCOUNT_1.privateKeyBytes).toString('hex') });
-      should.equal(keyPair.getKeys().prv!.toString(), prv);
+      should.equal(keyPair.getKeys().prv!, prv);
     });
 
     it('from a byte array public key', () => {
       const keyPair = new KeyPair({ pub: Buffer.from(testData.ACCOUNT_1.publicKeyBytes).toString('hex') });
-      should.equal(keyPair.getKeys().pub.toString(), pub);
+      should.equal(keyPair.getKeys().pub, pub);
     });
   });
 
@@ -129,6 +117,43 @@ describe('Hedera Key Pair', () => {
       should.throws(
         () => keyPair.getAddress(),
         e => e.message === testData.errorMessageNotPossibleToDeriveAddress,
+      );
+    });
+  });
+
+  describe('should succeed to sign and verify ', () => {
+    it('a random message', () => {
+      const message = 'Hello World!';
+      const keyPair = new KeyPair({ prv: prv });
+      const signature = keyPair.signMessage(message);
+      const isValid = keyPair.verifySignature(message, signature);
+      isValid.should.be.true();
+    });
+
+    it('a public key in hex format', () => {
+      const keyPair = new KeyPair({ prv: prv });
+      const message = keyPair.getKeys().pub;
+      const signature = keyPair.signMessage(message);
+      const isValid = keyPair.verifySignature(message, signature);
+      isValid.should.be.true();
+    });
+
+    it('an empty message', () => {
+      const message = '';
+      const keyPair = new KeyPair({ prv: prv });
+      const signature = keyPair.signMessage(message);
+      const isValid = keyPair.verifySignature(message, signature);
+      isValid.should.be.true();
+    });
+  });
+
+  describe('should fail sign ', () => {
+    it('a message without a private key', () => {
+      const message = 'Hello World!';
+      const keyPair = new KeyPair({ pub: pub });
+      should.throws(
+        () => keyPair.signMessage(message),
+        e => e.message === testData.errorMessageMissingPrivateKey,
       );
     });
   });

@@ -1738,8 +1738,6 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       },
       balance: {
         updated: '2018-03-27T23:33:10.713Z',
-        numTx: 2,
-        numUnspents: 0,
         totalReceived: 60000000,
         totalSent: 60000000,
       },
@@ -1786,8 +1784,6 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       },
       balance: {
         updated: '2018-03-27T23:29:42.799Z',
-        numTx: 2,
-        numUnspents: 0,
         totalReceived: 65000000,
         totalSent: 65000000,
       },

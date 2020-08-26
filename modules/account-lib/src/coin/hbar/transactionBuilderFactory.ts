@@ -5,7 +5,7 @@ import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidRawTransactionFormat, toUint8Array, toHex } from './utils';
+import { isValidRawTransactionFormat, toUint8Array } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -26,12 +26,13 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   from(raw: Uint8Array | string): TransactionBuilder {
     this.validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);
-    if (tx.txBody().hasCryptotransfer()) {
-      return this.getTransferBuilder(tx);
-    } else if (tx.txBody().hasCryptocreateaccount()) {
-      return this.getWalletInitializationBuilder(tx);
-    } else {
-      throw new InvalidTransactionError('Invalid transaction' + toHex(tx.txBody().serializeBinary()));
+    switch (tx.txBody.data) {
+      case 'cryptoTransfer':
+        return this.getTransferBuilder(tx);
+      case 'cryptoCreateAccount':
+        return this.getWalletInitializationBuilder(tx);
+      default:
+        throw new InvalidTransactionError('Invalid transaction ' + tx.txBody.data);
     }
   }
 
@@ -56,13 +57,14 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @returns {Transaction} the parsed transaction instance
    */
   private parseTransaction(rawTransaction: Uint8Array | string): Transaction {
+    const tx = new Transaction(this._coinConfig);
     let buffer;
     if (typeof rawTransaction === 'string') {
       buffer = toUint8Array(rawTransaction);
     } else {
       buffer = rawTransaction;
     }
-    const tx = new Transaction(this._coinConfig, buffer);
+    tx.bodyBytes(buffer);
     return tx;
   }
 

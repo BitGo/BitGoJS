@@ -38,11 +38,6 @@ describe('HBAR util library', function() {
         Utils.isValidTransactionId(hash).should.be.false();
       }
     });
-
-    it('should return an account in string format', function() {
-      const accountIdObject = { shardnum: 0, realmnum: 0, accountnum: 14621 };
-      Utils.stringifyAccountId(accountIdObject).should.be.equal('0.0.14621');
-    });
   });
 
   describe('transaction timestamp', function() {
@@ -60,11 +55,6 @@ describe('HBAR util library', function() {
       for (const timestamp of invalidTimestamp) {
         Utils.isValidTimeString(timestamp).should.be.false();
       }
-    });
-
-    it('should return a timestamp in string format', function() {
-      const timestampObject = { seconds: 1595374723, nanos: 356981689 };
-      Utils.stringifyTxTime(timestampObject).should.be.equal('1595374723.356981689');
     });
   });
 
