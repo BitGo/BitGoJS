@@ -220,12 +220,12 @@ class EosTestnet extends Testnet implements AccountNetwork {
 
 class Hedera extends Mainnet implements AccountNetwork {
   family = CoinFamily.HBAR;
-  explorerUrl = 'https://explorer.kabuto.sh/mainnet';
+  explorerUrl = 'https://explorer.kabuto.sh/mainnet/transaction/';
 }
 
 class HederaTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.HBAR;
-  explorerUrl = 'https://explorer.kabuto.sh/testnet';
+  explorerUrl = 'https://explorer.kabuto.sh/testnet/transaction/';
 }
 
 // https://github.com/litecoin-project/litecoin/blob/master/src/validation.cpp
