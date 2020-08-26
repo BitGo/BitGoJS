@@ -7,6 +7,7 @@ import { proto } from '../../../resources/hbar/protobuf/hedera';
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
 
+// Mainnet nodes pulled from @hashgraph/sdk/lib/index-node
 const mainnetNodes: string[] = [
   '0.0.3',
   '0.0.4',
@@ -20,6 +21,7 @@ const mainnetNodes: string[] = [
   '0.0.12',
 ];
 
+// Testnet nodes pulled from @hashgraph/sdk/lib/index-node
 const testnetNodes: string[] = ['0.0.3', '0.0.4', '0.0.5', '0.0.6'];
 
 /**
