@@ -11,16 +11,15 @@ import { TestBitGo } from '../../lib/test_bitgo';
 const recoveryNocks = require('../lib/recovery-nocks');
 import * as config from '../../../src/config';
 import moment = require('moment');
-import sinon = require('sinon');
-const { Btc } = require('../../../src/v2/coins/btc');
-const fixtures = require('../fixtures/coins/recovery');
-const {
+import * as sinon from 'sinon';
+import { Btc } from '../../../src/v2/coins/btc';
+import { 
   addressInfos,
   addressUnspents,
   btcKrsRecoveryDecodedTx,
   btcNonKrsRecoveryDecodedTx,
-  emptyAddressInfo,
-} = fixtures;
+  emptyAddressInfo, 
+} from '../fixtures/coins/recovery';
 
 nock.disableNetConnect();
 
@@ -53,11 +52,11 @@ describe('Recovery:', function() {
       sandbox = sinon.createSandbox();
       recoveryNocks.nockbitcoinFees(600, 600, 100);
       const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
-      callBack1.returns(Promise.resolve(emptyAddressInfo));
-      callBack1.withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw').returns(Promise.resolve(addressInfos['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']));
+      callBack1.resolves(emptyAddressInfo);
+      callBack1.withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw').resolves(addressInfos['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']);
       const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
-      callBack2.withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw').returns(Promise.resolve([addressUnspents['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']]));
-      callBack2.returns(Promise.resolve([]));
+      callBack2.withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw').resolves([addressUnspents['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']]);
+      callBack2.resolves([]);
 
     });
 
@@ -66,7 +65,7 @@ describe('Recovery:', function() {
     });
 
     it('should generate BTC recovery tx', co(function *() {
-      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').returns(Promise.resolve(btcNonKrsRecoveryDecodedTx.transaction));
+      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
@@ -96,7 +95,7 @@ describe('Recovery:', function() {
     }));
 
     it('should generate BTC recovery tx with unencrypted keys', co(function *() { // TODO this is a test on the key derivation part
-      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').returns(Promise.resolve(btcNonKrsRecoveryDecodedTx.transaction));
+      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
         userKey: 'xprv9s21ZrQH143K44auQTYjyFpU8aGEpbsbcU5yGjbwfyKpbBpvHPhUHEu3QR6G74rLPyM9ucop7oyXtKYDrjNkU8YeSryQbKU476ijp2qWcBm',
@@ -127,7 +126,7 @@ describe('Recovery:', function() {
 
     it('should generate BTC recovery tx with KRS', co(function *() {
       recoveryNocks.nockCoingecko(10000, 'bitcoin');
-      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').returns(Promise.resolve(btcKrsRecoveryDecodedTx.transaction));
+      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',

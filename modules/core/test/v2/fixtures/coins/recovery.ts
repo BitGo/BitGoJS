@@ -1,4 +1,4 @@
-module.exports.recoverBtcSegwitFixtures = function() {
+export const recoverBtcSegwitFixtures = function() {
   const userKey = '{"iv":"OVZx6VlJtv74kyE9gi5c0A==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"gY6e6MieSZ4=","ct":"O64y1HhJWxbST1 /KfiRXpSDBl3/d+Grphpq9IhWrXKI2m/V0H1fxRQPj4KCoCV0veEUAvvgSfi49vksEZ0PdXI66umlqWnTahqyQgddBiT05E8yB3HWzVBvwIoMfkL9acQhnL7phjwupZRy73EzeGEX9burWx3w="}';
   const backupKey = '{"iv":"sFkDFraiYrF6L+FNkN7gAQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"SIQYthT9wnw=","ct":"szZdOYRaeaDmHir1f21lC37z2taPNFCNYTUVURBOj19j3KGgMZY8VhWt+StS9U9qZN+kl4LshuQ1IP9oIbL0zyVC/mgfEcgOemgeC/PBACzTtcUy/qyDvv1TXGeqJWXVIuPlpLugTUAYm8B3C2lKloOawfhbWd4="}';
   const walletPassphrase = 'bitconnectisthefutureofmonee';
@@ -12,7 +12,7 @@ module.exports.recoverBtcSegwitFixtures = function() {
   };
 };
 
-module.exports.recoverBtcUnsignedFixtures = function() {
+export const recoverBtcUnsignedFixtures = function() {
   const userKey = 'xpub661MyMwAqRbcEc56gSK9UBdYL6FggedPtK7HGjDgmn9Hr8NdoED6q8YxJ5CCwdN6MtmRL8DsXiFrMoEEBJn8uNSkH4jgZGrWhWUVS4k4m51';
   const backupKey = 'xpub661MyMwAqRbcGyxYz3v8K7PiqYCpyJvrJW6u3fCTi8KKNJPEFkEuzx2vfX4JZpjdLP7uvuWAT9ESEAH2C9y7TduF7LsLvSGnefrgjXXPiZS';
   const recoveryDestination = '2N1KrBvGLcz8DjivbUjqq7N9eH7km6a8FtT';
@@ -29,7 +29,7 @@ module.exports.recoverBtcUnsignedFixtures = function() {
 /**
  * The invariant in every nock - some metadata that blockchair usually responds with
  */
-module.exports.blockchairContext = {
+export const blockchairContext = {
   context: {
     code: 200,
     source: 'D',
@@ -58,7 +58,7 @@ module.exports.blockchairContext = {
   },
 };
 
-module.exports.btcKrsRecoveryDecodedTx = {
+export const btcKrsRecoveryDecodedTx = {
   success: true,
   transaction: {
     Version: '1',
@@ -104,9 +104,9 @@ module.exports.btcKrsRecoveryDecodedTx = {
     ],
     TxId: '946dbefaefa5452daba373c0e0e3ada7d74bc4cf2a27518c9fcc581f19b0cb2b',
   },
-}
+};
 
-module.exports.btcNonKrsRecoveryDecodedTx =  {
+export const btcNonKrsRecoveryDecodedTx =  {
   success: true,
   transaction: {
     Version: '1',
@@ -141,9 +141,9 @@ module.exports.btcNonKrsRecoveryDecodedTx =  {
     ],
     TxId: '7cf7dc9e9abcb0bc4303332b128af4200b6b3730461a3bb579143b002739f51f',
   },
-}
+};
 
-module.exports.emptyBlockchairBtcAddressData = {
+export const emptyBlockchairBtcAddressData = {
     address: {
       type: null,
         script_hex: '',
@@ -164,59 +164,60 @@ module.exports.emptyBlockchairBtcAddressData = {
     },
     transactions: [],
       utxo: [],
-}
+};
 
-module.exports.emptyAddressInfo = {
+export const emptyAddressInfo = {
   txCount: 0,
   totalBalance: 0,
 };
 
-module.exports.addressUnspents = {
-  "2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp": {
+export const addressUnspents = {
+  '2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp': {
     amount: 41000,
     n: 1,
-    txid: "8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387",
-    address: "2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp",
+    txid: '8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387',
+    address: '2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp',
   },
 
-  "2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49": {
+  '2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49': {
     amount: 100000,
     n: 0,
-    txid: "4bf4a792816cb4e25f0a4faea6ecb42ffd360bde293bfd8a4b6d2c255aa379f9",
-    address: "2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49",
+    txid: '4bf4a792816cb4e25f0a4faea6ecb42ffd360bde293bfd8a4b6d2c255aa379f9',
+    address: '2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49',
   },
 
-  "2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR": {
+  '2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR': {
     amount: 100000,
     n: 0,
-    txid: "4bf4a792816cb4e25f0a4faea6ecb42ffd360bde293bfd8a4b6d2c255aa379f9",
-    address: "2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR",
+    txid: '4bf4a792816cb4e25f0a4faea6ecb42ffd360bde293bfd8a4b6d2c255aa379f9',
+    address: '2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR',
   },
 
-   "2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z": {
+   '2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z': {
      amount: 120000,
      n: 1,
-     txid: "a9192dea1de9c79f4b6d4a4eeaf70542bd4eaec37206aab799b893d61c76552e",
-     address: "2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z",
+     txid: 'a9192dea1de9c79f4b6d4a4eeaf70542bd4eaec37206aab799b893d61c76552e',
+     address: '2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z',
    },
 
   '2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws': {
     amount: 20000,
     n: 0,
-    txid: "9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0",
-    address: "2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws",
+    txid: '9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0',
+    address: '2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws',
   },
 
   '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw': {
     amount: 8125000,
     n: 0,
-    txid: "e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74",
-    address: "2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw",
+    txid: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
+    address: '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw',
   },
 
 };
 
-module.exports.addressInfos = {
+
+export const addressInfos = {
   '2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws': {
     txCount: 2,
     totalBalance: 20000,

@@ -7,7 +7,6 @@ import * as bitcoin from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
-import { BlockchairApi } from '../recovery/blockchairApi';
 import { BlockstreamApi } from '../recovery/blockstreamApi';
 import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
 const co = Bluebird.coroutine;
