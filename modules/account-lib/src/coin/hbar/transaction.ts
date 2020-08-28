@@ -164,13 +164,13 @@ export class Transaction extends BaseTransaction {
    */
   loadInputsAndOutputs(): void {
     const txJson = this.toJson();
-    if (txJson.body!.cryptotransfer) {
-      const accountAmountList = txJson.body!.cryptotransfer.transfers!.accountamountsList!;
+    if (txJson.body.cryptotransfer) {
+      const accountAmountList = txJson.body.cryptotransfer.transfers!.accountamountsList!;
       accountAmountList.forEach(accountAmount => {
         const account = stringifyAccountId(accountAmount.accountid!);
         const amount = accountAmount.amount;
         if (
-          stringifyAccountId(accountAmount.accountid!) === stringifyAccountId(txJson.body!.transactionid!.accountid!)
+          stringifyAccountId(accountAmount.accountid!) === stringifyAccountId(txJson.body.transactionid!.accountid!)
         ) {
           this._inputs = [
             {
