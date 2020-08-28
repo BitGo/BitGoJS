@@ -6,11 +6,18 @@ import { BitGo, VerificationOptions } from '../../../../src';
 import { Wallet } from '../../../../src/v2';
 import { AbstractUtxoCoin } from '../../../../src/v2/coins';
 const recoveryNocks = require('../../lib/recovery-nocks');
-const fixtures = require('../../fixtures/coins/recovery');
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
 const utxoLib = require('@bitgo/utxo-lib');
 import * as errors from '../../../../src/errors';
+import { Btc } from '../../../../src/v2/coins/btc';
+import { 
+  addressUnspents, 
+  addressInfos, 
+  emptyAddressInfo, 
+  recoverBtcUnsignedFixtures, 
+  recoverBtcSegwitFixtures 
+} from '../../fixtures/coins/recovery';
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
@@ -395,19 +402,31 @@ describe('Abstract UTXO Coin:', () => {
     });
   });
 
-  // TODO: BG-23161 - replace smartbit block explorer which is now permanently down
   describe('Recover Wallet:', () => {
-
-    let coin, bitgo;
-
+    let coin, bitgo, sandbox;
     before(() => {
       bitgo = new TestBitGo({ env: 'mock' });
       coin = bitgo.coin('tbtc');
-      sinon.stub(coin, 'verifyRecoveryTransaction').resolvesArg(0);
+    });
+    beforeEach(()=>{
+      sandbox = sinon.createSandbox();
+      recoveryNocks.nockbitcoinFees(20, 20, 6);
+    })
+
+    afterEach(() => {
+      sandbox.restore();
     });
 
     it('should construct a recovery transaction with segwit unspents', co(function *() {
-      const { params, expectedTxHex } = fixtures.recoverBtcSegwitFixtures();
+      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
+      callBack1.resolves(emptyAddressInfo);
+      callBack1.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').resolves(addressInfos['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']);
+      callBack1.withArgs('2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp').resolves(addressInfos['2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp']);
+      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
+      callBack2.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').resolves([addressUnspents['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']]);
+      callBack2.withArgs('2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp').resolves([addressUnspents['2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp']]);
+      callBack2.resolves([]);
+      const { params, expectedTxHex } = recoverBtcSegwitFixtures();
       recoveryNocks.nockBtcSegwitRecovery(bitgo);
       const tx = yield coin.recover(params);
       const transaction = utxoLib.Transaction.fromHex(tx.transactionHex);
@@ -418,7 +437,19 @@ describe('Abstract UTXO Coin:', () => {
     }));
 
     it('should construct an unsigned recovery transaction for the offline vault', co(function *() {
-      const { params, expectedTxHex } = fixtures.recoverBtcUnsignedFixtures();
+      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
+      callBack1.resolves(emptyAddressInfo);
+      callBack1.withArgs('2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx').resolves({txCount: 2, totalBalance: 0});
+      callBack1.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').resolves({txCount: 2, totalBalance: 100000});
+      callBack1.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').resolves({txCount: 2, totalBalance: 0});
+      callBack1.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').resolves({txCount: 2, totalBalance: 120000});
+
+      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
+      callBack2.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').resolves([addressUnspents['2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49']]);
+      callBack2.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').resolves([addressUnspents['2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR']]);
+      callBack2.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').resolves([addressUnspents['2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z']]);
+      callBack2.resolves([]);
+      const { params, expectedTxHex } = recoverBtcUnsignedFixtures();
       recoveryNocks.nockBtcUnsignedRecovery(bitgo);
       const txPrebuild = yield coin.recover(params);
       txPrebuild.txHex.should.equal(expectedTxHex);
@@ -429,7 +460,6 @@ describe('Abstract UTXO Coin:', () => {
 
     after(function() {
       nock.cleanAll();
-      coin.verifyRecoveryTransaction.restore();
     });
 
   });
