@@ -102,3 +102,160 @@ export const WALLET_INIT_2_OWNERS =
 
 export const TRANSFER_TRANSACTION_WITH_MEMO =
   '22500a140a0c089ded8af90510aac5d8b101120418a8fb0412021804188094ebdc032202087832125468697320697320616e206578616d706c6572160a140a080a0418a8fb0410130a080a0418d5d0041014';
+
+export const SINGLE_SIG_TRANSFER_DATA = {
+  sigmap: {
+    sigpairList: [
+      {
+        pubkeyprefix: 'WpERteaIH/ILkkOkKsGppn+hbNTwHli6swwf5hHqjPk=',
+        contract: '',
+        ed25519: 'NtbnBpLQ6hRN6Fj9gTDOJ8Ddln+d9CwXBlgwJmFhIZCO8Cyr4F3xtSYjtIA9KhdnXniN+eX6gVk5Ekm1TYolBw==',
+        rsa3072: '',
+        ecdsa384: '',
+      },
+    ],
+  },
+  body: {
+    transactionid: {
+      transactionvalidstart: { seconds: 1596110493, nanos: 372646570 },
+      accountid: { shardnum: 0, realmnum: 0, accountnum: 81320 },
+    },
+    nodeaccountid: { shardnum: 0, realmnum: 0, accountnum: 2345 },
+    transactionfee: '1000000000',
+    transactionvalidduration: { seconds: 120 },
+    generaterecord: false,
+    memo: '',
+    cryptotransfer: {
+      transfers: {
+        accountamountsList: [
+          { accountid: { shardnum: 0, realmnum: 0, accountnum: 81320 }, amount: '-10' },
+          { accountid: { shardnum: 0, realmnum: 0, accountnum: 75861 }, amount: '10' },
+        ],
+      },
+    },
+  },
+  bodybytes: 'ChQKDAid7Yr5BRCqxdixARIEGKj7BBIDGKkSGICU69wDIgIIeHIWChQKCAoEGKj7BBATCggKBBjV0AQQFA==',
+  hash: '8ee195bcbd6a8bcd9fc39c7ccaec54a2c8620f0059ea571c0f842d203afc424dd72c3ecd64396a1fe9dcda60d3b17092',
+};
+
+export const THREE_TIMES_SIG_TRANSFER_DATA = {
+  sigmap: {
+    sigpairList: [
+      {
+        pubkeyprefix: 'WpERteaIH/ILkkOkKsGppn+hbNTwHli6swwf5hHqjPk=',
+        contract: '',
+        ed25519: 'a9ZVgEpk48A7enchZyelfd2/SFQF6w6TAPuDcw7B0sHn6l1lZszLZRarmC315hgLR1wOql1l8s3bCKgSW1l1AQ==',
+        rsa3072: '',
+        ecdsa384: '',
+      },
+      {
+        pubkeyprefix: 'WSpPu3JjxZ1FDmUd+WYg3JII7nx9nW8v3LkcU/iDEmE=',
+        contract: '',
+        ed25519: 'fmRNQmIka4/mqJGBoBtUYupCxkslI6op8tvieRZcMz4wMhMlXSwrNq2qcf+8R3m7uU9bsO4NSckDof24PZ5/BQ==',
+        rsa3072: '',
+        ecdsa384: '',
+      },
+      {
+        pubkeyprefix: '+jRHk2Ac73E0j5lPMKFowt1V81dCahgKWnJNfgNYXpE=',
+        contract: '',
+        ed25519: 'YhVAEYjKD0DCLSGzyfLuyXHrSrDye6SQaDeSThZLODZ1XqYh0u86ORsiiq3qs+h9t8AW0i4zKDCQsbZdNP9KDg==',
+        rsa3072: '',
+        ecdsa384: '',
+      },
+    ],
+  },
+  body: {
+    transactionid: {
+      transactionvalidstart: { seconds: 1596110493, nanos: 372646570 },
+      accountid: { shardnum: 0, realmnum: 0, accountnum: 81320 },
+    },
+    nodeaccountid: { shardnum: 0, realmnum: 0, accountnum: 4 },
+    transactionfee: '1000000000',
+    transactionvalidduration: { seconds: 120 },
+    generaterecord: false,
+    memo: '',
+    cryptotransfer: {
+      transfers: {
+        accountamountsList: [
+          { accountid: { shardnum: 0, realmnum: 0, accountnum: 81320 }, amount: '-10' },
+          { accountid: { shardnum: 0, realmnum: 0, accountnum: 75861 }, amount: '10' },
+        ],
+      },
+    },
+  },
+  bodybytes: 'ChQKDAid7Yr5BRCqxdixARIEGKj7BBICGAQYgJTr3AMiAgh4chYKFAoICgQYqPsEEBMKCAoEGNXQBBAU',
+  hash: '56ba44a112c7ac70cd5ddbb41c9acc7442dab3a214f696ded81e2f72c7ec0e3cab35fe6e193148b890d3c885005102ba',
+};
+
+export const NON_SIGNED_TRANSFER_DATA = {
+  body: {
+    transactionid: {
+      transactionvalidstart: { seconds: 1596110493, nanos: 372646570 },
+      accountid: { shardnum: 0, realmnum: 0, accountnum: 81320 },
+    },
+    nodeaccountid: { shardnum: 0, realmnum: 0, accountnum: 2345 },
+    transactionfee: '1000000000',
+    transactionvalidduration: { seconds: 120 },
+    generaterecord: false,
+    memo: '',
+    cryptotransfer: {
+      transfers: {
+        accountamountsList: [
+          { accountid: { shardnum: 0, realmnum: 0, accountnum: 81320 }, amount: '-10' },
+          { accountid: { shardnum: 0, realmnum: 0, accountnum: 75861 }, amount: '10' },
+        ],
+      },
+    },
+  },
+  bodybytes: 'ChQKDAid7Yr5BRCqxdixARIEGKj7BBIDGKkSGICU69wDIgIIeHIWChQKCAoEGKj7BBATCggKBBjV0AQQFA==',
+};
+
+export const WALLET_INIT_TRANSACTION_DATA = {
+  sigmap: {
+    sigpairList: [
+      {
+        pubkeyprefix: '0yt7HrEDwQpsj27FdbgAKBbpcl2VSFs9VQmqjIm0Uos=',
+        contract: '',
+        ed25519: 'k/wtMz/TOC0GMDfxcdR8IUHsTVe82j1B+cjH8o1liNzyFPoMRUIGIC4FT3Y1J4jJdR/7mkg3DGeptiC8sUAQCA==',
+        rsa3072: '',
+        ecdsa384: '',
+      },
+    ],
+  },
+  body: {
+    transactionid: {
+      transactionvalidstart: { seconds: 1596110493, nanos: 372646570 },
+      accountid: { shardnum: 0, realmnum: 0, accountnum: 75861 },
+    },
+    nodeaccountid: { shardnum: 0, realmnum: 0, accountnum: 4 },
+    transactionfee: '1000000000',
+    transactionvalidduration: { seconds: 120 },
+    generaterecord: false,
+    memo: '',
+    cryptocreateaccount: {
+      key: {
+        ed25519: '',
+        rsa3072: '',
+        ecdsa384: '',
+        thresholdkey: {
+          threshold: 2,
+          keys: {
+            keysList: [
+              { ed25519: 'WpERteaIH/ILkkOkKsGppn+hbNTwHli6swwf5hHqjPk=', rsa3072: '', ecdsa384: '' },
+              { ed25519: 'WSpPu3JjxZ1FDmUd+WYg3JII7nx9nW8v3LkcU/iDEmE=', rsa3072: '', ecdsa384: '' },
+              { ed25519: '+jRHk2Ac73E0j5lPMKFowt1V81dCahgKWnJNfgNYXpE=', rsa3072: '', ecdsa384: '' },
+            ],
+          },
+        },
+      },
+      initialbalance: '0',
+      sendrecordthreshold: '9223372036854775807',
+      receiverecordthreshold: '9223372036854775807',
+      receiversigrequired: false,
+      autorenewperiod: { seconds: 7890000 },
+    },
+  },
+  bodybytes:
+    'ChQKDAid7Yr5BRCqxdixARIEGNXQBBICGAQYgJTr3AMiAgh4Wo8BCnIqcAgCEmwKIhIgWpERteaIH/ILkkOkKsGppn+hbNTwHli6swwf5hHqjPkKIhIgWSpPu3JjxZ1FDmUd+WYg3JII7nx9nW8v3LkcU/iDEmEKIhIg+jRHk2Ac73E0j5lPMKFowt1V81dCahgKWnJNfgNYXpEw//////////9/OP//////////f0oFCNDI4QM=',
+  hash: '9c973cf8cd54d57c169007ecaee3c8390557472aafe7ffd98956a880458a21ac483002f147abe02c5fd2935b9ed0bc0b',
+};
