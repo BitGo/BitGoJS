@@ -144,7 +144,7 @@ describe('Hedera Key Pair', () => {
 
     it('a public key in hex format', () => {
       const keyPair = new KeyPair({ prv: prv });
-      const message = keyPair.getKeys().pub;
+      const message = keyPair.getKeys().pub.toString();
       const signature = keyPair.signMessage(message);
       const isValid = keyPair.verifySignature(message, signature);
       isValid.should.be.true();
