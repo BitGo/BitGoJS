@@ -181,3 +181,15 @@ export function removePrefix(prefix: string, key: string): string {
   }
   return key;
 }
+
+/**
+ * Check if this is a valid memo or not.
+ *
+ * @param memo
+ */
+export function isValidMemo(memo: string): boolean {
+  if (Buffer.from(memo).length > 100) {
+    return false;
+  }
+  return true;
+}

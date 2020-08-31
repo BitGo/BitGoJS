@@ -5,7 +5,6 @@ import * as Bluebird from 'bluebird';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
-import { generateAccountFromSeed, NaclWrapper, Seed } from 'algosdk';
 
 import {
   BaseCoin,
@@ -24,7 +23,10 @@ import {
 
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
-import { MethodNotImplementedError } from '../../errors';
+import { InvalidAddressError, InvalidMemoIdError, MethodNotImplementedError } from '../../errors';
+import * as url from 'url';
+import * as querystring from 'querystring';
+import * as _ from 'lodash';
 
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -103,10 +105,16 @@ export class Hbar extends BaseCoin {
    * @param address
    */
   isValidAddress(address: string): boolean {
-    if (!address) {
+    try {
+      const addressDetails = this.getAddressDetails(address);
+      if (typeof addressDetails.memoId === 'undefined' || addressDetails.memoId === '') {
+        // we want addresses to normalize without a memoId
+        address = address.replace('?memoId=', '');
+      }
+      return address === this.normalizeAddress(addressDetails);
+    } catch (e) {
       return false;
     }
-    return bitgoAccountLib.Hbar.Utils.isValidAddress(address);
   }
 
   /**
@@ -229,11 +237,57 @@ export class Hbar extends BaseCoin {
    * @param address the address
    * @returns object containing address and memo id
    */
-  getAddressDetails(address: string): AddressDetails {
-    return {
-      address,
-      memoId: '',
-    };
+  getAddressDetails(rawAddress: string): AddressDetails {
+    let memoId: string | undefined = undefined;
+    let address = rawAddress;
+
+    if (rawAddress.includes('?memoId=')) {
+      address = rawAddress.substr(0, rawAddress.indexOf('?'));
+    }
+
+    // failed to parse OR bad address
+    if (!address || !bitgoAccountLib.Hbar.Utils.isValidAddress(address)) {
+      throw new InvalidAddressError(`invalid address: ${rawAddress}`);
+    }
+
+    // address doesn't have a memo id - this is ok
+    if (rawAddress === address) {
+      return { address, memoId };
+    }
+
+    memoId = rawAddress.substr(rawAddress.indexOf('?memoId=') + 8);
+    // undefined is valid as in has not been specified
+    if (typeof memoId !== 'undefined' && !this.isValidMemoId(memoId)) {
+      throw new InvalidMemoIdError(`invalid address: '${address}', memoId is not valid`);
+    }
+
+    return { address, memoId };
+  }
+
+  /**
+   * Validate and return address with appended memo id
+   *
+   * @param address
+   * @param memoId
+   */
+  normalizeAddress({ address, memoId }: AddressDetails): string {
+    if (memoId && this.isValidMemoId(memoId)) {
+      return `${address}?memoId=${memoId}`;
+    }
+    return address;
+  }
+
+  /**
+   * Validates whether a memo is potentially correct in hedera.
+   *
+   * @param memoId
+   */
+  isValidMemoId(memoId: string) {
+    // TODO: change this to account-lib helper once its published
+    if (typeof memoId !== 'undefined' && Buffer.from(memoId).length > 100) {
+      return false;
+    }
+    return true;
   }
 
   isValidPub(pub: string): boolean {
