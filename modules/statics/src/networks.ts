@@ -215,7 +215,7 @@ class Eos extends Mainnet implements AccountNetwork {
 
 class EosTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.EOS;
-  explorerUrl = 'https://jungle.bloks.io/transaction/';
+  explorerUrl = 'https://jungle3.bloks.io/transaction/';
 }
 
 class Hedera extends Mainnet implements AccountNetwork {
