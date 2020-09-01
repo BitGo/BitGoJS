@@ -19,11 +19,39 @@ describe('Hedera Hashgraph:', function() {
   });
 
   it('should check valid addresses', async function () {
-    const badAddresses = ['', '0.0', 'YZ09fd-', '0.0.0.a', 'sadasdfggg', '0.2.a.b'];
-    const goodAddresses = ['0', '0.0.0', '0.0.41098'];
+    const badAddresses = ['', '0.0', 'YZ09fd-', '0.0.0.a', 'sadasdfggg', '0.2.a.b', '0.0.100?=sksjd'];
+    const goodAddresses = ['0', '0.0.0', '0.0.41098', '0.0.0?memoId=84', '0.0.41098',
+      '0.0.41098?memoId=2aaaaa', '0.0.41098?memoId=1', '0.0.41098?memoId=',
+    ];
 
     badAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(false); });
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
+  });
+
+  it('should get memoId and address', async function () {
+    const addr = '0.0.41098?memoId=23233';
+    const details = basecoin.getAddressDetails(addr);
+
+    details.address.should.equal('0.0.41098');
+    details.memoId.should.equal('23233');
+  });
+
+  it('should get memoId and address when memoId=null', async function () {
+    const addr = '0.0.41098?memoId=';
+    const details = basecoin.getAddressDetails(addr);
+
+    details.address.should.equal('0.0.41098');
+    details.memoId.should.equal('');
+  });
+
+  it('should build without a memoId if its missing for an address', async function () {
+    const address = '0.0.41098';
+    let memoId: string | undefined = undefined;
+    let norm = basecoin.normalizeAddress({ address, memoId });
+    norm.should.equal('0.0.41098');
+    memoId = '';
+    norm = basecoin.normalizeAddress({ address, memoId });
+    norm.should.equal('0.0.41098');
   });
 
   describe('Keypairs:', () => {

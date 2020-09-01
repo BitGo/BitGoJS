@@ -1724,35 +1724,35 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@taquito/local-forging@^6.0.3-beta.0":
-  version "6.0.3-beta.1"
-  resolved "https://registry.yarnpkg.com/@taquito/local-forging/-/local-forging-6.0.3-beta.1.tgz#7922b03baa650b2641e9f4091fb1e3ec0b040790"
-  integrity sha512-G1OjOCAyQLkEDO/7r6c1+BseNOm+kvSivG50LEI0+57YmfvbsZih/7O7Zafc6ns0TQy5rPnBwOoRbxYWTomwJQ==
+"@taquito/local-forging@6.3.5-beta.0":
+  version "6.3.5-beta.0"
+  resolved "https://registry.yarnpkg.com/@taquito/local-forging/-/local-forging-6.3.5-beta.0.tgz#61026d2467eea71993f4ed024b1f7049803f0df9"
+  integrity sha512-p0E3Ww3kg+YQYPmp/XK4YKZpWdKqtIg1ZlDtptLn66nbDA3ivzbiFHe3LxceJsYnaCcoWTXl/sRf34VKTkMK3Q==
   dependencies:
-    "@taquito/utils" "^6.0.3-beta.1"
+    "@taquito/utils" "^6.3.5-beta.0"
     bignumber.js "^9.0.0"
 
-"@taquito/signer@^6.0.3-beta.0":
-  version "6.0.3-beta.1"
-  resolved "https://registry.yarnpkg.com/@taquito/signer/-/signer-6.0.3-beta.1.tgz#18a8cae6121d0a0dc322fc6e45b80daf2f8b9e39"
-  integrity sha512-bEn15cvZmocxgN+APk50hNGorc+Uy4Jkq01WbW0KnXupzY+2wkIFuI2wy4rUe2MUnpO0zus8UexOqFOYBIWrrA==
+"@taquito/signer@6.3.5-beta.0":
+  version "6.3.5-beta.0"
+  resolved "https://registry.yarnpkg.com/@taquito/signer/-/signer-6.3.5-beta.0.tgz#d2a0b66aad57d3c35ce72acde78e526f04eeb717"
+  integrity sha512-8f2XPXw8XveGuJGCiqj9vyAiATBepz+s/J6asYil4HGwjgAXZ2unBemuqNk7oQ9xSz9fCCbFxc4ZER1GtJ8Auw==
   dependencies:
-    "@taquito/utils" "^6.0.3-beta.1"
+    "@taquito/utils" "^6.3.5-beta.0"
     bignumber.js "^9.0.0"
     bip39 "^3.0.2"
-    elliptic "^6.5.1"
-    libsodium-wrappers "^0.7.5"
+    elliptic "^6.5.2"
+    libsodium-wrappers "^0.7.6"
     pbkdf2 "^3.0.17"
     typedarray-to-buffer "^3.1.5"
 
-"@taquito/utils@^6.0.3-beta.1":
-  version "6.0.3-beta.1"
-  resolved "https://registry.yarnpkg.com/@taquito/utils/-/utils-6.0.3-beta.1.tgz#61311a7ff6aca1a81c0e01386357d6fb8aa3456b"
-  integrity sha512-P4ddjsVSKCgkM77ewHI/Xo5bJmKMU9kCUAO6febu/IrBxYr31UcBv7YjQK5UCVQKE2ZXUG7OwhhGKifezd+AMQ==
+"@taquito/utils@^6.3.5-beta.0":
+  version "6.3.5-beta.0"
+  resolved "https://registry.yarnpkg.com/@taquito/utils/-/utils-6.3.5-beta.0.tgz#a4101d384ccc966591b38db77456cb2a36a13963"
+  integrity sha512-EFzDnTXMctbIEnt3yfgqPmogwxR2jTYnAZqxGOgfycYlZQWGNAfvgW5KFMlhYPAfYEAU/2euvE5BYMgnexBIOA==
   dependencies:
     blakejs "^1.1.0"
     bs58check "^2.1.2"
-    buffer "^5.2.1"
+    buffer "^5.6.0"
 
 "@types/argparse@^1.0.36":
   version "1.0.38"
@@ -3441,7 +3441,7 @@ buffer@^4.3.0:
     ieee754 "^1.1.4"
     isarray "^1.0.0"
 
-buffer@^5.0.5, buffer@^5.1.0, buffer@^5.2.1, buffer@^5.4.3:
+buffer@^5.0.5, buffer@^5.1.0, buffer@^5.2.1, buffer@^5.4.3, buffer@^5.6.0:
   version "5.6.0"
   resolved "https://registry.yarnpkg.com/buffer/-/buffer-5.6.0.tgz#a31749dc7d81d84db08abf937b6b8c4033f62786"
   integrity sha512-/gDYp/UtU0eA1ys8bOs9J6a+E/KWIY+DZ+Q2WESNUA0jFRsJOc0SNUO6xJ5SGA1xueg3NL65W6s+NY5l9cunuw==
@@ -5054,7 +5054,7 @@ elegant-spinner@^1.0.1:
   resolved "https://registry.yarnpkg.com/elegant-spinner/-/elegant-spinner-1.0.1.tgz#db043521c95d7e303fd8f345bedc3349cfb0729e"
   integrity sha1-2wQ1IcldfjA/2PNFvtwzSc+wcp4=
 
-elliptic@6.3.3, elliptic@6.5.2, elliptic@6.5.3, elliptic@^6.0.0, elliptic@^6.2.3, elliptic@^6.4.0, elliptic@^6.4.1, elliptic@^6.5.1, elliptic@^6.5.2, elliptic@^6.5.3:
+elliptic@6.3.3, elliptic@6.5.2, elliptic@6.5.3, elliptic@^6.0.0, elliptic@^6.2.3, elliptic@^6.4.0, elliptic@^6.4.1, elliptic@^6.5.2, elliptic@^6.5.3:
   version "6.5.3"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.3.tgz#cb59eb2efdaf73a0bd78ccd7015a62ad6e0f93d6"
   integrity sha512-IMqzv5wNQf+E6aHeIqATs0tOLeOTwj1QKbRcS3jBbYkl5oLAserA8yJTT7/VyHUYG91PRmPyeQDObKLPpeS4dw==
@@ -8358,7 +8358,7 @@ levn@^0.3.0, levn@~0.3.0:
     prelude-ls "~1.1.2"
     type-check "~0.3.2"
 
-libsodium-wrappers@^0.7.5, libsodium-wrappers@^0.7.6:
+libsodium-wrappers@^0.7.6:
   version "0.7.6"
   resolved "https://registry.yarnpkg.com/libsodium-wrappers/-/libsodium-wrappers-0.7.6.tgz#baed4c16d4bf9610104875ad8a8e164d259d48fb"
   integrity sha512-OUO2CWW5bHdLr6hkKLHIKI4raEkZrf3QHkhXsJ1yCh6MZ3JDA7jFD3kCATNquuGSG6MjjPHQIQms0y0gBDzjQg==
