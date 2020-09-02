@@ -36,6 +36,12 @@ export function nockbitcoinFees(fastestFee: number, halfHourFee: number, hourFee
     });
 }
 
+export function nockbitcoinFeesOffline(fastestFee: number, halfHourFee: number, hourFee: number) {
+  nock('https://bitcoinfees.earn.com')
+    .get('/api/v1/fees/recommended')
+    .replyWithError('please wait while predictions are being generated');
+}
+
 export function nockCoingecko(usd: number, coin: string) {
   nock('https://api.coingecko.com')
     .get('/api/v3/simple/price?ids=bitcoin&vs_currencies=USD')
