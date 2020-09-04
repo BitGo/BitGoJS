@@ -1,10 +1,10 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { hash } from '@stablelib/sha384';
 import BigNumber from 'bignumber.js';
-import { Writer } from 'protobufjs';
-import * as nacl from 'tweetnacl';
+import { Transaction as SDKTransaction } from '@hashgraph/sdk';
+import { TransactionBody } from '@hashgraph/sdk/lib/generated/TransactionBody_pb';
+import { SignatureMap, SignaturePair } from '@hashgraph/sdk/lib/generated/BasicTypes_pb';
+
 import Long from 'long';
-import { proto } from '../../../resources/hbar/protobuf/hedera';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { SigningError } from '../baseCoin/errors';
@@ -13,12 +13,20 @@ import { stringifyAccountId, stringifyTxTime, toHex, toUint8Array } from './util
 import { KeyPair } from './';
 
 export class Transaction extends BaseTransaction {
-  private _hederaTx: proto.Transaction;
-  private _txBody: proto.TransactionBody;
+  private _hederaTx: SDKTransaction;
   protected _type: TransactionType;
 
-  constructor(_coinConfig: Readonly<CoinConfig>) {
+  /**
+   * Public constructor.
+   *
+   * @param {Readonly<CoinConfig>} _coinConfig
+   * @param {Uint8Array} bytes encoded SDK transaction
+   */
+  constructor(_coinConfig: Readonly<CoinConfig>, bytes?: Uint8Array) {
     super(_coinConfig);
+    if (bytes) {
+      this.innerTransaction(SDKTransaction.fromBytes(bytes));
+    }
   }
 
   /** @inheritdoc */
@@ -27,96 +35,116 @@ export class Transaction extends BaseTransaction {
   }
 
   async sign(keyPair: KeyPair): Promise<void> {
-    const keys = keyPair.getKeys(true);
+    const keys = keyPair.getKeys();
     if (!keys.prv) {
       throw new SigningError('Missing private key');
     }
-    const secretKey = toUint8Array(keys.prv + keys.pub);
-    const signature = nacl.sign.detached(this._hederaTx.bodyBytes, secretKey);
-    this.addSignature(toHex(signature), keyPair);
+    this._hederaTx.sign(keys.prv);
+    this.replaceSignatures();
   }
 
   /**
    * Add a signature to this transaction
-   * @param signature The signature to add, in string hex format
-   * @param key The key of the key that created the signature
+   *
+   * @param {string} signature The signature to add, in string hex format
+   * @param {KeyPair} key The key of the key that created the signature
    */
   addSignature(signature: string, key: KeyPair): void {
-    const sigPair = new proto.SignaturePair();
-    sigPair.pubKeyPrefix = toUint8Array(key.getKeys(true).pub);
-    sigPair.ed25519 = toUint8Array(signature);
+    const sigPair = new SignaturePair();
+    sigPair.setPubkeyprefix(toUint8Array(key.getKeys().pub.toString(true)));
+    sigPair.setEd25519(toUint8Array(signature));
 
-    const sigMap = this._hederaTx.sigMap || new proto.SignatureMap();
-    sigMap.sigPair!.push(sigPair);
-    this._hederaTx.sigMap = sigMap;
+    const sigMap = this._hederaTx._toProto().getSigmap() || new SignatureMap();
+
+    this.checkDuplicatedSignature(sigMap, sigPair);
+    sigMap.getSigpairList().push(sigPair);
+    const innerTx = this._hederaTx._toProto();
+    innerTx.setSigmap(sigMap);
+    // The inner transaction must be replaced with the new signed transaction
+
+    this.innerTransaction(SDKTransaction.fromBytes(innerTx.serializeBinary()));
+
+    // Previous signatures are kept so we just add the new signature to the list
     this._signatures.push(signature);
   }
 
+  /**
+   * Check if the signature was already loaded to a signature map
+   * with the same public key
+   *
+   * @param {SignatureMap} sigMap the current signature map
+   * @param {SignaturePair} sigPair the signature pair to add
+   */
+  private checkDuplicatedSignature(sigMap: SignatureMap, sigPair: SignaturePair) {
+    sigMap.getSigpairList().forEach(currentSigPair => {
+      if (
+        currentSigPair.getEd25519_asU8() === sigPair.getEd25519_asU8() &&
+        currentSigPair.getPubkeyprefix_asU8() === sigPair.getPubkeyprefix_asU8()
+      ) {
+        throw new SigningError('Duplicated signature with the same public key');
+      }
+    });
+  }
+
+  /**
+   * Replace transaction signatures with the ones from
+   * the inner SDK transaction
+   */
+  private replaceSignatures(): void {
+    this._signatures = this._hederaTx
+      ._toProto()
+      .getSigmap()!
+      .getSigpairList()
+      .map(sigPair => {
+        return toHex(sigPair.getEd25519_asU8());
+      });
+  }
+
+  /**
+   * Retrieve the signatures from the inner transaction
+   *
+   * @returns {SignaturePair[]} A list of signature pairs
+   */
+  retrieveSignatures(): SignaturePair[] {
+    return this._hederaTx && this._hederaTx._toProto().getSigmap()
+      ? this._hederaTx
+          ._toProto()!
+          .getSigmap()!
+          .getSigpairList()
+      : [];
+  }
+
+  /**
+   * Get the inner transaction body deserialized in the SDK
+   * proto default format
+   *
+   * @returns {TransactionBody} a transaction body object
+   */
+  txBody(): TransactionBody {
+    return TransactionBody.deserializeBinary(this._hederaTx._toProto().getBodybytes_asU8());
+  }
 
   /** @inheritdoc */
   toBroadcastFormat(): string {
-    return toHex(this.encode(this._hederaTx));
+    return toHex(this._hederaTx.toBytes());
   }
 
-  /** @inheritdoc */
   toJson(): TxData {
-    const [acc, time] = this.getTxIdParts();
-    const result: TxData = {
-      id: acc + '@' + time,
-      hash: this.getTxHash(), // TODO: Update once hedera-sdk release this functionality BGA-284
-      data: toHex(this._hederaTx.bodyBytes),
-      fee: new BigNumber(this._txBody.transactionFee!.toString()).toNumber(),
-      from: acc,
-      startTime: time,
-      validDuration: this._txBody.transactionValidDuration!.seconds!.toString(),
-      node: stringifyAccountId(this._txBody.nodeAccountID!),
-      memo: this._txBody.memo,
-    };
-
-    if (this._txBody.data === 'cryptoTransfer') {
-      const [recipient, amount] = this.getTransferData();
-      result.amount = amount;
-      result.to = recipient;
+    const txData = JSON.parse(this._hederaTx.toString());
+    if (txData.sigmap) {
+      txData.hash = toHex(this._hederaTx.hash()); // Hash is returned if the transaction was signed
     }
-    return result;
-  }
-
-  /**
-   * Get the recipient account and the amount
-   * transferred on this transaction
-   *
-   * @returns {[string, string]} first element is the recipient, second element is the amount
-   */
-  private getTransferData(): [string, string] {
-    let transferData;
-    this._txBody.cryptoTransfer!.transfers!.accountAmounts!.forEach(transfer => {
-      const amount = Long.fromValue(transfer.amount!);
-      if (amount.isPositive()) {
-        transferData = [stringifyAccountId(transfer.accountID!), amount.toString()];
-      }
-    });
-
-    return transferData;
+    return txData;
   }
 
   //region getters & setters
-  get txBody(): proto.TransactionBody {
-    return this._txBody;
-  }
-
-  get hederaTx(): proto.Transaction {
-    return this._hederaTx;
-  }
-
   /**
-   * Sets this transaction body components
+   * Set the inner SDK transaction
    *
-   * @param {proto.Transaction} tx body transaction
+   * @param {SDKTransaction} tx SDK transaction
    */
-  body(tx: proto.Transaction) {
-    this._txBody = proto.TransactionBody.decode(tx.bodyBytes);
+  innerTransaction(tx: SDKTransaction) {
     this._hederaTx = tx;
-    // this.loadPreviousSignatures();
     this.loadInputsAndOutputs();
   }
 
@@ -130,118 +158,41 @@ export class Transaction extends BaseTransaction {
   }
 
   /**
-   * Decode previous signatures from the inner hedera transaction
-   * and save them into the base transaction signature list.
-   */
-  loadPreviousSignatures(): void {
-    if (this._hederaTx.sigMap && this._hederaTx.sigMap.sigPair) {
-      const sigPairs = this._hederaTx.sigMap.sigPair;
-      sigPairs.forEach(sigPair => {
-        const signature = sigPair.ed25519;
-        if (signature) {
-          this._signatures.push(toHex(signature));
-        }
-      });
-    }
-  }
-
-  /**
    * Load the input and output data on this transaction using the transaction json
    * if there are outputs. For transactions without outputs (e.g. wallet initializations),
    * this function will not do anything
    */
   loadInputsAndOutputs(): void {
     const txJson = this.toJson();
-    if (txJson.to && txJson.amount) {
-      this._outputs = [{
-        address: txJson.to,
-        value: txJson.amount,
-        coin: this._coinConfig.name,
-      }];
-
-      this._inputs = [{
-        address: txJson.from,
-        value: txJson.amount,
-        coin: this._coinConfig.name,
-      }];
+    if (txJson.body.cryptotransfer) {
+      const accountAmountList = txJson.body.cryptotransfer.transfers!.accountamountsList!;
+      accountAmountList.forEach(accountAmount => {
+        const account = stringifyAccountId(accountAmount.accountid!);
+        const amount = accountAmount.amount;
+        if (
+          stringifyAccountId(accountAmount.accountid!) === stringifyAccountId(txJson.body.transactionid!.accountid!)
+        ) {
+          this._inputs = [
+            {
+              address: account,
+              value: Long.fromString(amount)
+                .negate()
+                .toString(),
+              coin: this._coinConfig.name,
+            },
+          ];
+        } else {
+          this._outputs = [
+            {
+              address: account,
+              value: amount,
+              coin: this._coinConfig.name,
+            },
+          ];
+        }
+      });
     }
   }
 
-  /**
-   * Sets this transaction body components
-   *
-   * @param {Uint8Array} bytes encoded body transaction
-   */
-  bodyBytes(bytes: Uint8Array) {
-    this.body(proto.Transaction.decode(bytes));
-  }
-  //endregion
-
-  //region helpers
-  /**
-   * Returns this hedera transaction id components in a readable format
-   *
-   * @returns {[string, string]} - transaction id parts [<account id>, <startTime in seconds>]
-   */
-  getTxIdParts(): [string, string] {
-    if (
-      this._txBody &&
-      this._txBody.transactionID &&
-      this._txBody.transactionID.accountID &&
-      this._txBody.transactionID.transactionValidStart
-    ) {
-      return [
-        stringifyAccountId(this._txBody.transactionID.accountID),
-        stringifyTxTime(this._txBody.transactionID.transactionValidStart),
-      ];
-    }
-    throw new Error('Missing transaction id information');
-  }
-
-  /**
-   * Returns this transaction hash
-   *
-   * @returns {string} - The transaction hash
-   */
-  getTxHash(): string {
-    if (!this._txBody.nodeAccountID) {
-      throw new Error('Missing transaction node id');
-    }
-    return this.getHashOf(this._hederaTx);
-  }
-
-  /**
-   * Encode an object using the given encoder class
-   *
-   * @param obj - the object to be encoded, it must be an proto namespace object
-   * @param encoder - Object encoder
-   * @returns {Uint8Array} - encoded object byte array
-   */
-  private encode<T extends { constructor: Function }>(obj: T, encoder?: { encode(arg: T): Writer }): Uint8Array {
-    if (encoder) {
-      return encoder.encode(obj).finish();
-    }
-    return this.encode(obj, proto[obj.constructor.name]);
-  }
-
-  /**
-   * Returns an sha-384 hash
-   *
-   * @param {Uint8Array} bytes - bytes to be hashed
-   * @returns {string} - the resulting hash string
-   */
-  sha(bytes: Uint8Array): string {
-    return toHex(hash(bytes));
-  }
-
-  /**
-   * Returns a hash of the given proto object.
-   *
-   * @param obj - The object to be hashed, it must be an proto namespace object
-   * @returns {string} - the resulting hash string
-   */
-  private getHashOf<T>(obj: T): string {
-    return this.sha(this.encode(obj));
-  }
   //endregion
 }

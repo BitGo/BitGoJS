@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
 import { Ed25519PublicKey, TransactionId, AccountId } from '@hashgraph/sdk';
-import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
-import { proto } from '../../../resources/hbar/protobuf/hedera';
+import * as hex from '@stablelib/hex';
+import { AccountID, Timestamp } from './ifaces';
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
 
@@ -141,6 +141,7 @@ export function isValidAmount(amount: string): boolean {
 export function isValidRawTransactionFormat(rawTransaction: any): boolean {
   if (
     (typeof rawTransaction === 'string' && /^[0-9a-fA-F]+$/.test(rawTransaction)) ||
+    rawTransaction.constructor === Uint8Array ||
     (Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))
   ) {
     return true;
@@ -149,22 +150,22 @@ export function isValidRawTransactionFormat(rawTransaction: any): boolean {
 }
 
 /**
- * Returns a string representation of an {proto.IAccountID} object
+ * Returns a string representation of an AccountID object
  *
- * @param {proto.IAccountID} - account id to be cast to string
- * @returns {string} - the string representation of the {proto.IAccountID}
+ * @param {AccountID} accountId - account id to be cast to string
+ * @returns {object} - the string representation of the AccountID
  */
-export function stringifyAccountId({ shardNum, realmNum, accountNum }: proto.IAccountID): string {
-  return `${shardNum || 0}.${realmNum || 0}.${accountNum}`;
+export function stringifyAccountId({ shardnum, realmnum, accountnum }: AccountID): string {
+  return `${shardnum || 0}.${realmnum || 0}.${accountnum}`;
 }
 
 /**
- * Returns a string representation of an {proto.ITimestamp} object
+ * Returns a string representation of an Timestamp object
  *
- * @param {proto.ITimestamp} - timestamp to be cast to string
- * @returns {string} - the string representation of the {proto.ITimestamp}
+ * @param {Timestamp} timestamp - timestamp to be cast to string
+ * @returns {object} - the string representation of the Timestamp
  */
-export function stringifyTxTime({ seconds, nanos }: proto.ITimestamp) {
+export function stringifyTxTime({ seconds, nanos }: Timestamp) {
   return `${seconds}.${nanos}`;
 }
 
@@ -188,7 +189,8 @@ export function removePrefix(prefix: string, key: string): string {
  * @param memo
  */
 export function isValidMemo(memo: string): boolean {
-  if (Buffer.from(memo).length > 100) {
+  // Assume that strings are UTF-16 in a worst-case scenario
+  if (memo.length * 2 > 100) {
     return false;
   }
   return true;
