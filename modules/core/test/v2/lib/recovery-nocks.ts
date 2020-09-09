@@ -54,7 +54,7 @@ export function nockCoingecko(usd: number, coin: string) {
 
 export function blockchairNockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
   const env = Environments[bitgo.getEnv()] as any;
-  const blockchairURL = `${env.blockchairBaseUrl}`;
+  const blockchairURL = `${env.blockchairBaseUrl('bitcoin')}`;
   nockbitcoinFees(600, 600, 100);
   const txHex = isKrsRecovery
     ? '010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000b500483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0230456c000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787301b0f000000000017a9141b60c33def13c3eda4cf4835e11a633e4b3302ec8700000000'
@@ -3211,7 +3211,7 @@ module.exports.nockEmptyAddressInfo = function(emptyAddrs: Array<string>, env: a
       transactions: [],
       utxo: [],
     };
-    nock(env.blockchairBaseUrl)
+    nock(env.blockchairBaseUrl('bitcoin'))
       .get('/dashboards/address/' + addr)
       .reply(200, {
         data: data,
@@ -3234,7 +3234,7 @@ module.exports.nockBtcSegwitRecovery = function(bitgo) {
     '2NEZiLrBnTSrwNuVuKCXcAi9AL6YSr1FYqY',
   ];
   this.nockEmptyAddressInfo(emptyAddrs, env);
-  nock(env.blockchairBaseUrl)
+  nock(env.blockchairBaseUrl('bitcoin'))
     .get('/dashboards/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws') // unspent
     .times(2)
     .reply(200, {
@@ -3398,7 +3398,7 @@ module.exports.nockBtcUnsignedRecovery = function(bitgo) {
   ];
   this.nockEmptyAddressInfo(emptyAddrs, env);
 
-  nock(env.blockchairBaseUrl)
+  nock(env.blockchairBaseUrl('bitcoin'))
     .get('/dashboards/address/2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx')
     .reply(200, {
       data: {

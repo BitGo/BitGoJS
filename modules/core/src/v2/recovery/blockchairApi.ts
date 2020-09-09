@@ -6,18 +6,24 @@ import { BitGo } from '../../bitgo';
 export class BlockchairApi implements RecoveryProvider {
   protected readonly bitgo: BitGo;
   protected readonly apiToken?: string;
+  protected readonly coin: string;
 
-  constructor(bitgo: BitGo, apiToken?: string) {
+  constructor(bitgo: BitGo, apiToken?: string, coin?: string) {
     this.bitgo = bitgo;
     this.apiToken = apiToken;
+    if (!coin) {
+      this.coin = 'bitcoin';
+    } else {
+      this.coin = coin;
+    }
   }
 
   /** @inheritDoc */
   getExplorerUrl(query: string): string {
     if (this.apiToken) {
-      return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl + query + `?key=${this.apiToken}` ;
+      return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl(this.coin) + query + `?key=${this.apiToken}` ;
     }
-    return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl + query;
+    return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl(this.coin) + query;
   }
 
   /** @inheritDoc */

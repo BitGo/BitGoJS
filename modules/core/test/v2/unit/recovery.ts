@@ -13,12 +13,12 @@ import * as config from '../../../src/config';
 import moment = require('moment');
 import * as sinon from 'sinon';
 import { Btc } from '../../../src/v2/coins/btc';
-import { 
+import {
   addressInfos,
   addressUnspents,
   btcKrsRecoveryDecodedTx,
   btcNonKrsRecoveryDecodedTx,
-  emptyAddressInfo, 
+  emptyAddressInfo,
 } from '../fixtures/coins/recovery';
 
 nock.disableNetConnect();
