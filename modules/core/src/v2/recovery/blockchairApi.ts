@@ -21,7 +21,7 @@ export class BlockchairApi implements RecoveryProvider {
   /** @inheritDoc */
   getExplorerUrl(query: string): string {
     if (this.apiToken) {
-      return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl(this.coin) + query + `?key=${this.apiToken}` ;
+      return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl(this.coin) + query + `?key=${this.apiToken}`;
     }
     return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl(this.coin) + query;
   }
@@ -30,6 +30,9 @@ export class BlockchairApi implements RecoveryProvider {
   async getAccountInfo(address: string): Promise<RecoveryAccountData> {
     // we are using blockchair api: https://blockchair.com/api/docs#link_300
     // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
+    if(!address || address.length === 0) {
+      throw new Error('invalid address');
+    }
     const response = await request.get(this.getExplorerUrl(`/dashboards/address/${address}`));
     return {
       txCount: response.body.data[address].address.transaction_count,
@@ -43,6 +46,9 @@ export class BlockchairApi implements RecoveryProvider {
     // https://api.blockchair.com/{:btc_chain}/dashboards/address/{:address}₀
     // example utxo from response:
     // {block_id":-1,"transaction_hash":"cf5bcd42c688cb7c55b5811645e7f0d2a000a85564ca3d6b9fc20f57e14b30bb","index":1,"value":558},
+    if(!address || address.length === 0) {
+      throw new Error('invalid address');
+    }
     const response = await request.get(this.getExplorerUrl(`/dashboards/address/${address}`));
 
     const rawUnspents = response.body.data[address].utxo;

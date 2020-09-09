@@ -52,7 +52,7 @@ export function nockCoingecko(usd: number, coin: string) {
     });
 }
 
-export function blockchairNockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true) {
+export function blockchairNockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true, coin = 'bitcoin') {
   const env = Environments[bitgo.getEnv()] as any;
   const blockchairURL = `${env.blockchairBaseUrl('bitcoin')}`;
   nockbitcoinFees(600, 600, 100);
