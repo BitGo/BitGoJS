@@ -1699,7 +1699,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             const address: any = self.createMultiSigAddress(Codes.typeForCode(chain), 2, keys);
 
             const addrInfo: AddressInfo = yield self.getAddressInfoFromExplorer(address.address, params.apiKey);
-
+            // we use txCount here because it implies usage - having tx'es means the addr was generated and used
             if (addrInfo.txCount === 0) {
               numSequentialAddressesWithoutTxs++;
             } else {
