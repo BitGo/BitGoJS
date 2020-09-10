@@ -20,7 +20,7 @@ describe('Hedera Key Pair', () => {
     });
 
     it('from a seed', () => {
-      const keyPair = new KeyPair({ seed: new Buffer(toUint8Array(testData.ACCOUNT_1.prvKeyWithPrefix.slice(32))) });
+      const keyPair = new KeyPair({ seed: Buffer.from(toUint8Array(testData.ACCOUNT_1.prvKeyWithPrefix.slice(32))) });
       should.equal(keyPair.getKeys().prv!, testData.ACCOUNT_1.prvKeyWithPrefix);
       should.equal(keyPair.getKeys().pub, testData.ACCOUNT_1.pubKeyWithPrefix);
     });

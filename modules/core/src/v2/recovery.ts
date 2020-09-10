@@ -317,8 +317,8 @@ export class CrossChainRecoveryTool {
 
         const [txHash, index] = unspent.id.split(':');
         const inputIndex = parseInt(index, 10);
-        let hash = new Buffer(txHash, 'hex');
-        hash = new Buffer(Array.prototype.reverse.call(hash));
+        let hash = Buffer.from(txHash, 'hex');
+        hash = Buffer.from(Array.prototype.reverse.call(hash));
 
         try {
           self.recoveryTx.addInput(hash, inputIndex);
