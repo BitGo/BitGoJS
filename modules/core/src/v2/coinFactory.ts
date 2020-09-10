@@ -46,6 +46,7 @@ import {
   Xlm,
   Xrp,
   Erc20Token,
+  CeloToken,
   StellarToken,
   OfcToken,
   Zec,
@@ -166,4 +167,10 @@ for (const token of [...tokens.bitcoin.xlm.tokens, ...tokens.testnet.xlm.tokens]
 for (const ofcToken of [...tokens.bitcoin.ofc.tokens, ...tokens.testnet.ofc.tokens]) {
   const tokenConstructor = OfcToken.createTokenConstructor(ofcToken);
   GlobalCoinFactory.registerCoinConstructor(ofcToken.type, tokenConstructor);
+}
+
+for (const token of [...tokens.bitcoin.celo.tokens, ...tokens.testnet.celo.tokens]) {
+  const tokenConstructor = CeloToken.createTokenConstructor(token);
+  GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
+  GlobalCoinFactory.registerCoinConstructor(token.tokenContractAddress, tokenConstructor);
 }

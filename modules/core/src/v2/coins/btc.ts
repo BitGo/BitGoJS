@@ -55,13 +55,18 @@ export class Btc extends AbstractUtxoCoin {
 
       const publicFeeDataReq = request.get(recoveryFeeUrl);
       publicFeeDataReq.forceV1Auth = true;
-      const publicFeeData = yield publicFeeDataReq.result();
-
-      if (_.isInteger(publicFeeData.hourFee)) {
-        return publicFeeData.hourFee;
-      } else {
-        return 100;
+      let publicFeeData;
+      try {
+        publicFeeData = yield publicFeeDataReq.result();
+        if (publicFeeData && publicFeeData.hourFee && _.isInteger(publicFeeData.hourFee)) {
+          return publicFeeData.hourFee;
+        }
+      } catch (e) {
+        // if bitcoinfees does not respond, we would resort to the default fee value, 100
+        // but we don't want to block the recovery process
+        console.dir(e);
       }
+      return 100;
     }).call(this);
   }
 

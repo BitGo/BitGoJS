@@ -2,10 +2,10 @@ describe('BitGoJS in the browser', () => {
     it('Should work', () => {
         const BitGoJS = window['BitGoJS'];
         expect(BitGoJS).toBeTruthy();
-    });    
+    });
 });
 
-describe('Coins', () => {           
+describe('Coins', () => {
     it('Should work for all coins', () => {
         const BitGoJS = window['BitGoJS'];
         const bitgo = new BitGoJS.BitGo({ env: 'test' });
@@ -15,6 +15,7 @@ describe('Coins', () => {
             'Erc20Token': 1,
             'OfcToken': 1,
             'StellarToken': 1,
+            'CeloToken': 1,
         };
         Object.keys(BitGoJS.Coin)
         .filter((coinName) => !excludedKeys[coinName])
