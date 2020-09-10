@@ -48,13 +48,13 @@ export class Bsv extends Bch {
     return common.Environments[this.bitgo.getEnv()].bsvExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<any> {
-    const explorer = new BlockchairApi(this.bitgo, apiKey, 'bitcoin-sv');
-    return Bluebird.resolve(explorer.getAccountInfo(addressBase58));
+  async getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<any> {
+    const explorer = new BlockchairApi(this.bitgo, 'bitcoin-sv', apiKey);
+    return explorer.getAccountInfo(addressBase58);
   }
 
-  getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<any> {
-    const explorer = new BlockchairApi(this.bitgo, apiKey, 'bitcoin-sv');
-    return Bluebird.resolve(explorer.getUnspents(addressBase58));
+  async getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<any> {
+    const explorer = new BlockchairApi(this.bitgo, 'bitcoin-sv', apiKey);
+    return explorer.getUnspents(addressBase58);
   }
 }

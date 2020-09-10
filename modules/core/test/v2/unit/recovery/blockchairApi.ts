@@ -8,7 +8,6 @@ const coinNames = ['bitcoin', 'bitcoin-sv'];
 
 function nockBlockchair(env, coinName) {
   const baseUrl = env.blockchairBaseUrl(coinName);
-  console.log('baseUrl', baseUrl)
   nock(baseUrl)
     .get('/dashboards/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws?key=my____ApiKey') // unspent
     .reply(200, {
@@ -61,17 +60,17 @@ describe('blockchair api', function() {
     }
   );
   for (const coinName of coinNames) {
-    describe('should succeed', function() {
-      it('should get address information from blockchair', async() => {
+    describe(`${coinName} should succeed`, function() {
+      it('should get address information from blockchair', async function() {
         nockBlockchair(env, coinName);
-        const blockchair = new BlockchairApi(bitgo, apiKey, coinName);
+        const blockchair = new BlockchairApi(bitgo, coinName, apiKey);
         const address = await blockchair.getAccountInfo('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws');
         address.txCount.should.equal(2);
         address.totalBalance.should.equal(20000);
       });
-      it('should get utxo information from blockchair', async() => {
+      it('should get utxo information from blockchair', async function() {
         nockBlockchair(env, coinName);
-        const blockchair = new BlockchairApi(bitgo, apiKey, coinName);
+        const blockchair = new BlockchairApi(bitgo, coinName, apiKey);
         const response = await blockchair.getUnspents('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws');
         response.length.should.equal(1);
         response[0].amount.should.equal(20000);
@@ -80,9 +79,9 @@ describe('blockchair api', function() {
         response[0].address.should.equal('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws');
       });
     });
-    describe('should fail', function() {
-      it('should throw if the address value is an empty string', async() => {
-        const blockchair = new BlockchairApi(bitgo, undefined, coinName);
+    describe(`${coinName} should fail`,  function() {
+      it('should throw if the address value is an empty string', async function() {
+        const blockchair = new BlockchairApi(bitgo, coinName);
         let error;
         try {
           error = await blockchair.getUnspents('');

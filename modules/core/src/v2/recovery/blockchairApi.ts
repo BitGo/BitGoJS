@@ -8,14 +8,10 @@ export class BlockchairApi implements RecoveryProvider {
   protected readonly apiToken?: string;
   protected readonly coin: string;
 
-  constructor(bitgo: BitGo, apiToken?: string, coin?: string) {
+  constructor(bitgo: BitGo, coin: string, apiToken?: string ) {
     this.bitgo = bitgo;
+    this.coin = coin;
     this.apiToken = apiToken;
-    if (!coin) {
-      this.coin = 'bitcoin';
-    } else {
-      this.coin = coin;
-    }
   }
 
   /** @inheritDoc */
