@@ -42,14 +42,12 @@ export function nockbitcoinFeesOffline(fastestFee: number, halfHourFee: number, 
     .replyWithError('please wait while predictions are being generated');
 }
 
-export function nockCoingecko(usd: number, coin: string) {
+export function nockCoingecko(usd: number, coinGeckoName: string) {
+  const body = {};
+  body[coinGeckoName] = { usd };
   nock('https://api.coingecko.com')
-    .get('/api/v3/simple/price?ids=bitcoin&vs_currencies=USD')
-    .reply(200, {
-      bitcoin: {
-        usd,
-      },
-    });
+    .get(`/api/v3/simple/price?ids=${coinGeckoName}&vs_currencies=USD`)
+    .reply(200, body);
 }
 
 export function blockchairNockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true, coin = 'bitcoin') {
