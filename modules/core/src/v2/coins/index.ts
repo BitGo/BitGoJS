@@ -5,6 +5,7 @@ export { Bsv } from './bsv';
 export { Btc } from './btc';
 export { Btg } from './btg';
 export { Celo } from './celo';
+export { CeloToken } from './celoToken';
 export { Dash } from './dash';
 export { Eos } from './eos';
 export { Erc20Token } from './erc20Token';
