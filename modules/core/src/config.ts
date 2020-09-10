@@ -3,7 +3,8 @@ import { Environments, EnvironmentName } from './v2/environments';
 import { OfcTokenConfig } from './v2/coins/ofcToken';
 import { Erc20TokenConfig } from './v2/coins/erc20Token';
 import { StellarTokenConfig } from './v2/coins/stellarToken';
-import { coins, Erc20Coin, StellarCoin, OfcCoin, CoinKind, NetworkType } from '@bitgo/statics';
+import { CeloTokenConfig } from './v2/coins/celoToken';
+import { coins, Erc20Coin, StellarCoin, OfcCoin, CeloCoin, CoinKind, NetworkType } from '@bitgo/statics';
 
 export interface Tokens {
   bitcoin: {
@@ -16,6 +17,9 @@ export interface Tokens {
     ofc: {
       tokens: OfcTokenConfig[];
     };
+    celo: {
+      tokens: CeloTokenConfig[];
+    };
   };
   testnet: {
     eth: {
@@ -26,6 +30,9 @@ export interface Tokens {
     };
     ofc: {
       tokens: OfcTokenConfig[];
+    };
+    celo: {
+      tokens: CeloTokenConfig[];
     };
   };
 }
@@ -74,6 +81,20 @@ const formattedOfcCoins = coins.reduce((acc: OfcTokenConfig[], coin) => {
   return acc;
 }, []);
 
+const formattedCeloTokens = coins.reduce((acc: CeloTokenConfig[], coin) => {
+  if (coin instanceof CeloCoin) {
+    acc.push({
+      type: coin.name,
+      coin: coin.network.type === NetworkType.MAINNET ? 'celo' : 'tcelo',
+      network: coin.network.type === NetworkType.MAINNET ? 'Mainnet' : 'Testnet',
+      name: coin.fullName,
+      tokenContractAddress: coin.contractAddress.toString().toLowerCase(),
+      decimalPlaces: coin.decimalPlaces,
+    });
+  }
+  return acc;
+}, []);
+
 export const tokens: Tokens = {
   // network name for production environments
   bitcoin: {
@@ -86,6 +107,9 @@ export const tokens: Tokens = {
     ofc: {
       tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.MAINNET),
     },
+    celo: {
+      tokens: formattedCeloTokens.filter(token => token.network === 'Mainnet'),
+    },
   },
   // network name for test environments
   testnet: {
@@ -97,6 +121,9 @@ export const tokens: Tokens = {
     },
     ofc: {
       tokens: formattedOfcCoins.filter(token => coins.get(token.type).network.type === NetworkType.TESTNET),
+    },
+    celo: {
+      tokens: formattedCeloTokens.filter(token => token.network === 'Testnet'),
     },
   },
 };
