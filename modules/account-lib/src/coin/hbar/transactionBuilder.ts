@@ -43,7 +43,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._txBody.transactionFee = new BigNumber(this._fee.fee).toNumber();
     this._txBody.transactionID = this.buildTxId();
     this._txBody.memo = this._memo;
-    this._txBody.nodeAccountID = new proto.AccountID({ accountNum: new AccountId(this._node.nodeId).account });
+    const accountId = AccountId.fromString(this._node.nodeId);
+    this._txBody.nodeAccountID = new proto.AccountID({
+      shardNum: accountId.shard,
+      realmNum: accountId.realm,
+      accountNum: accountId.account,
+    });
     const hTransaction = this.transaction.hederaTx || new proto.Transaction();
     hTransaction.bodyBytes = proto.TransactionBody.encode(this._txBody).finish();
     this.transaction.body(hTransaction);
@@ -106,11 +111,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {proto.TransactionID} - created TransactionID
    */
   protected buildTxId(): proto.TransactionID {
-    const accString = this._source.address.split('.').pop();
-    const acc = new BigNumber(accString!).toNumber();
+    const accountId = AccountId.fromString(this._source.address);
     return new proto.TransactionID({
       transactionValidStart: this.validStart,
-      accountID: { accountNum: acc },
+      accountID: { shardNum: accountId.shard, realmNum: accountId.realm, accountNum: accountId.account },
     });
   }
   // endregion
