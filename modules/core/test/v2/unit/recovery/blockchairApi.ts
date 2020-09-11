@@ -7,7 +7,7 @@ import { BlockchairApi } from '../../../../src/v2/recovery/blockchairApi';
 const coinNames = ['bitcoin', 'bitcoin-sv'];
 
 function nockBlockchair(env, coinName) {
-  const baseUrl = env.blockchairBaseUrl(coinName);
+  const baseUrl = BlockchairApi.getBaseUrl(env, coinName);
   nock(baseUrl)
     .get('/dashboards/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws?key=my____ApiKey') // unspent
     .reply(200, {
@@ -56,7 +56,7 @@ describe('blockchair api', function() {
   before(() => {
     apiKey = 'my____ApiKey';
     bitgo = new TestBitGo({env: 'test'});
-    env = Environments[bitgo.getEnv()] as any;
+    env = bitgo.getEnv() as string;
     }
   );
   for (const coinName of coinNames) {

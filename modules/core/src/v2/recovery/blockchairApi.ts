@@ -27,24 +27,29 @@ export class BlockchairApi implements RecoveryProvider {
     this.apiToken = apiToken;
   }
 
-  /** @inheritDoc */
-  getExplorerUrl(query: string): string {
-    const env = this.bitgo.getEnv();
+   static getBaseUrl(env: string, coin: string): string {
     let url;
     if (mainnetBase.includes(env)) {
       url = 'https://api.blockchair.com/';
     } else if (testnetBase.includes(env) || devBase.includes((env))) {
-      url = `https://api.blockchair.com/${this.coin}/testnet`;
+      url = `https://api.blockchair.com/${coin}/testnet`;
     } else if (env === 'mock') {
       url = 'https://api.blockchair.fakeurl/${coin}/testnet';
     } else {
       throw new Error(`Environment ${env} unsupported`);
     }
+    return url;
+  }
+
+  /** @inheritdoc */
+  getExplorerUrl(query: string): string {
+    const env = this.bitgo.getEnv();
+    const baseUrl = BlockchairApi.getBaseUrl(env, this.coin);
 
     if (this.apiToken) {
-      return url + query + `?key=${this.apiToken}`;
+      return baseUrl + query + `?key=${this.apiToken}`;
     }
-    return url + query;
+    return baseUrl + query;
   }
 
   /** @inheritDoc */

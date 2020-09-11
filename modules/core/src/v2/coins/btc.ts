@@ -8,6 +8,7 @@ import * as request from 'superagent';
 import * as _ from 'lodash';
 import * as Bluebird from 'bluebird';
 import { BlockstreamApi } from '../recovery/blockstreamApi';
+import { BlockchairApi } from '../recovery/blockchairApi';
 import { RecoveryAccountData, RecoveryUnspent } from '../recovery/types';
 const co = Bluebird.coroutine;
 
@@ -75,7 +76,7 @@ export class Btc extends AbstractUtxoCoin {
   }
 
   recoveryBlockchainExplorerUrl(url: string): string {
-    return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl + url;
+    return BlockchairApi.getBaseUrl(this.bitgo.getEnv(), 'bitcoin');
   }
 
   getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<RecoveryAccountData> {
