@@ -3,12 +3,25 @@ import * as common from '../../common';
 import * as request from 'superagent';
 import { BitGo } from '../../bitgo';
 
+const BlockchairCoin = [
+  'bitcoin',
+  'bitcoin-sv'
+];
+
+const devBase = ['dev', 'latest', 'local', 'localNonSecure', 'adminDev', 'adminLatest'];
+const testnetBase = ['test', 'adminTest'];
+const mainnetBase = ['prod', 'staging', 'adminProd'];
+
 export class BlockchairApi implements RecoveryProvider {
   protected readonly bitgo: BitGo;
   protected readonly apiToken?: string;
   protected readonly coin: string;
 
+
   constructor(bitgo: BitGo, coin: string, apiToken?: string ) {
+    if (!BlockchairCoin.includes(coin)) {
+      throw new Error(`coin ${coin} not supported by blockchair`);
+    }
     this.bitgo = bitgo;
     this.coin = coin;
     this.apiToken = apiToken;
@@ -16,10 +29,22 @@ export class BlockchairApi implements RecoveryProvider {
 
   /** @inheritDoc */
   getExplorerUrl(query: string): string {
-    if (this.apiToken) {
-      return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl(this.coin) + query + `?key=${this.apiToken}`;
+    const env = this.bitgo.getEnv();
+    let url;
+    if (mainnetBase.includes(env)) {
+      url = 'https://api.blockchair.com/';
+    } else if (testnetBase.includes(env) || devBase.includes((env))) {
+      url = `https://api.blockchair.com/${this.coin}/testnet`;
+    } else if (env === 'mock') {
+      url = 'https://api.blockchair.fakeurl/${coin}/testnet';
+    } else {
+      throw new Error(`Environment ${env} unsupported`);
     }
-    return common.Environments[this.bitgo.getEnv()].blockchairBaseUrl(this.coin) + query;
+
+    if (this.apiToken) {
+      return url + query + `?key=${this.apiToken}`;
+    }
+    return url + query;
   }
 
   /** @inheritDoc */
