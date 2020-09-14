@@ -102,6 +102,34 @@ describe('HBAR Transfer Builder', () => {
         const tx = await builder.build();
         should.deepEqual(tx.toBroadcastFormat(), testData.THREE_TIMES_SIGNED_TRANSACTION);
       });
+
+      it('a transaction between accounts with realm and shard non zero', async () => {
+        const builder = factory.getTransferBuilder();
+        builder.fee({ fee: testData.FEE });
+        builder.source({ address: '2.3.456' });
+        builder.to('3.4.567');
+        builder.amount('10');
+        builder.node({ nodeId: '5.2.2345' });
+        const tx = await builder.build();
+        const txJson = tx.toJson();
+        should.deepEqual(txJson.to, '3.4.567');
+        should.deepEqual(txJson.node, '5.2.2345');
+        should.deepEqual(txJson.from, '2.3.456');
+      });
+
+      it('a transaction between accounts without realm and shard', async () => {
+        const builder = factory.getTransferBuilder();
+        builder.fee({ fee: testData.FEE });
+        builder.source({ address: '456' });
+        builder.to('567');
+        builder.amount('10');
+        builder.node({ nodeId: '2345' });
+        const tx = await builder.build();
+        const txJson = tx.toJson();
+        should.deepEqual(txJson.to, '0.0.567');
+        should.deepEqual(txJson.node, '0.0.2345');
+        should.deepEqual(txJson.from, '0.0.456');
+      });
     });
 
     describe('serialized transactions', () => {
