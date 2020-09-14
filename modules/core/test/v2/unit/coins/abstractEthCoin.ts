@@ -269,7 +269,7 @@ describe('ETH-like coins', () => {
           if (coin instanceof ContractAddressDefinedToken) {
             decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
             [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
-            data = new Buffer('');
+            data = Buffer.from('');
           } else {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
             [recipient, value, data, expireTime, sequenceId] = decodedData;
@@ -323,7 +323,7 @@ describe('ETH-like coins', () => {
           if (coin instanceof ContractAddressDefinedToken) {
             decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
             [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
-            data = new Buffer('');
+            data = Buffer.from('');
           } else {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
             [recipient, value, data, expireTime, sequenceId] = decodedData;
@@ -389,7 +389,7 @@ describe('ETH-like coins', () => {
           if (coin instanceof ContractAddressDefinedToken) {
             decodedData = ethAbi.rawDecode(sendMultisigTokenTypes, Buffer.from(txJson.data.slice(10), 'hex'));
             [recipient, value, tokenContractAddress, expireTime, sequenceId] = decodedData;
-            data = new Buffer('');
+            data = Buffer.from('');
           } else {
             decodedData = ethAbi.rawDecode(sendMultisigTypes, Buffer.from(txJson.data.slice(10), 'hex'));
             [recipient, value, data, expireTime, sequenceId] = decodedData;
