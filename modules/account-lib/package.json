@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "2.0.2-rc.11",
+  "version": "2.0.2-rc.12",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
