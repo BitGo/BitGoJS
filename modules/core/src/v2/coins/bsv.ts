@@ -7,7 +7,7 @@ import * as bitcoin from '@bitgo/utxo-lib';
 const request = require('superagent');
 import * as Bluebird from 'bluebird';
 import { BaseCoin } from '../baseCoin';
-import { UtxoNetwork } from './abstractUtxoCoin';
+import { AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
 const co = Bluebird.coroutine;
 import * as common from '../../common';
 import * as errors from '../../errors';
@@ -48,13 +48,13 @@ export class Bsv extends Bch {
     return common.Environments[this.bitgo.getEnv()].bsvExplorerBaseUrl + url;
   }
 
-  async getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<any> {
+  getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<AddressInfo> {
     const explorer = new BlockchairApi(this.bitgo, 'bitcoin-sv', apiKey);
-    return explorer.getAccountInfo(addressBase58);
+    return Bluebird.resolve(explorer.getAccountInfo(addressBase58));
   }
 
-  async getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<any> {
+  getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<UnspentInfo[]> {
     const explorer = new BlockchairApi(this.bitgo, 'bitcoin-sv', apiKey);
-    return explorer.getUnspents(addressBase58);
+    return Bluebird.resolve(explorer.getUnspents(addressBase58));
   }
 }

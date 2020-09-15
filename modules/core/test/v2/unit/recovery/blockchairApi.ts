@@ -49,16 +49,9 @@ function nockBlockchair(env, coinName) {
 }
 
 describe('blockchair api', function() {
-  let bitgo;
-  let env;
-  let apiKey;
-
-  before(() => {
-    apiKey = 'my____ApiKey';
-    bitgo = new TestBitGo({env: 'test'});
-    env = bitgo.getEnv() as string;
-    }
-  );
+  const apiKey = 'my____ApiKey';
+  const bitgo = new TestBitGo({env: 'test'});
+  const env = bitgo.getEnv() as string;
   for (const coinName of coinNames) {
     describe(`${coinName} should succeed`, function() {
       it('should get address information from blockchair', async function() {
@@ -82,14 +75,8 @@ describe('blockchair api', function() {
     describe(`${coinName} should fail`,  function() {
       it('should throw if the address value is an empty string', async function() {
         const blockchair = new BlockchairApi(bitgo, coinName);
-        let error;
-        try {
-          error = await blockchair.getUnspents('');
-        } catch (e) {
-          e.message.should.equal('invalid address');
-        }
+        await blockchair.getUnspents('').should.be.rejectedWith('invalid address');
       });
-
     });
   }
 
