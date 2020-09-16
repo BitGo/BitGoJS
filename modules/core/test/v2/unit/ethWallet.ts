@@ -10,7 +10,7 @@ import * as common from '../../../src/common';
 import { TestBitGo } from '../../lib/test_bitgo';
 const fixtures = require('../fixtures/coins/eth');
 const EthTx = require('ethereumjs-tx');
-
+import { SignTransactionOptions } from '../../../src/v2/coins/eth';
 const co = Bluebird.coroutine;
 
 describe('Sign ETH Transaction', co(function *() {
@@ -342,3 +342,53 @@ describe('prebuildTransaction', function() {
     error.message.should.equal(`Hop transactions are not enabled for ERC-20 tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`);
   }));
 });
+
+describe('final-sign transaction from WRW', async function() {
+  const bitgo = new TestBitGo({ env: 'test' });
+  const basecoin = bitgo.coin('teth');
+  const gasPrice = 200000000000;
+  const gasLimit =  500000;
+  const prv = 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2'; // placeholder test prv
+  const wrwUnsignedSweepTx = {
+    "tx": "f9012b808504a817c8008307a12094fd12f1d563650fbdd9314dce06992159778f634380b9010439125215000000000000000000000000a98fdfc2c711260cd665a3884b509b4a5ad6f4e80000000000000000000000000000000000000000000000003782dace9d90000000000000000000000000000000000000000000000000000000000000000000c0000000000000000000000000000000000000000000000000000000005f6a471c000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001c8080",
+    "userKey": "xpub661MyMwAqRbcFcNDKt46HgPAJTfNyQUS6M7i8jUwZKHz9wZGaK1XdQuT8XU5PkFfbrfoGXc1C4QD9PDJ7zhpu52rLzzynovwgcXh7NtDbH9",
+    "backupKey": "xpub661MyMwAqRbcGUJYcAgycBqG5HrQoUJAvBv7PEbvjGGffdtMP8hx3DX9AwzaY4vA7ynqHfxzRTRLwS2E9DH1HRPG8u7kWXd4JMCNgonGGnk",
+    "coin": "teth",
+    "gasPrice": "20000000000",
+    "gasLimit": "500000",
+    "recipients": [
+        {
+            "address": "0xa98fdfc2c711260cd665a3884b509b4a5ad6f4e8",
+            "amount": "4000000000000000000"
+        }
+    ],
+    "walletContractAddress": "0xfd12f1d563650fbdd9314dce06992159778f6343",
+    "amount": "4000000000000000000",
+    "backupKeyNonce": 0,
+    "recipient": {
+        "address": "0x0d43c88a5fec6e5a898eb23f1f0e9124f5acd5ca",
+        "amount": "4000000000000000000"
+    },
+    "expireTime": 1600800540,
+    "contractSequenceId": 1,
+    "nextContractSequenceId": 1
+  };
+  const tx = {
+    txPrebuild: wrwUnsignedSweepTx,
+    prv,
+  }
+  ​
+  const halfSigned = await basecoin.signTransaction(tx);
+
+  const wrapper = {} as SignTransactionOptions;
+   wrapper.txPrebuild = halfSigned;
+   wrapper.txPrebuild.recipients = halfSigned.halfSigned.recipients;
+   wrapper.txPrebuild.gasPrice = gasPrice.toString();
+   wrapper.txPrebuild.gasLimit = gasLimit.toString();
+   wrapper.isLastSignature = true;
+   wrapper.walletContractAddress = wrwUnsignedSweepTx.walletContractAddress;
+   wrapper.prv = prv;
+  
+  const finalSignedTx = await basecoin.signTransaction(wrapper);
+  finalSignedTx.should.have.property('txHex');
+})
