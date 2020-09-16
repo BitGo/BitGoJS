@@ -42,7 +42,7 @@ describe('Keychains', function() {
     it('create', function() {
       // must use seed of at least 128 bits
       // standard test vector taken from bip32 spec
-      const seed = new Buffer('000102030405060708090a0b0c0d0e0f', 'hex');
+      const seed = Buffer.from('000102030405060708090a0b0c0d0e0f', 'hex');
       assert.equal(keychains.create({ seed: seed }).xprv, 'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi');
 
       // two keys created one after the other with no seed should have

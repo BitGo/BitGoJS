@@ -933,7 +933,7 @@ exports.signTransaction = function(params) {
     // subscript is the part of the output script after the OP_CODESEPARATOR.
     // Since we are only ever signing p2sh outputs, which do not have
     // OP_CODESEPARATORS, it is always the output script.
-    const subscript = new Buffer(currentUnspent.redeemScript, 'hex');
+    const subscript = Buffer.from(currentUnspent.redeemScript, 'hex');
     currentUnspent.validationScript = subscript;
 
     // In order to sign with bitcoinjs-lib, we must use its transaction
@@ -947,7 +947,7 @@ exports.signTransaction = function(params) {
           throw new Error('BCH does not support segwit inputs');
         }
         let signatures = _.cloneDeep(txb.inputs[index].signatures);
-        const witnessScript = new Buffer(currentUnspent.witnessScript, 'hex');
+        const witnessScript = Buffer.from(currentUnspent.witnessScript, 'hex');
         currentUnspent.validationScript = witnessScript;
 
         debug('Current unspent value: %d', currentUnspent.value);

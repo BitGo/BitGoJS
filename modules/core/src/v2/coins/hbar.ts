@@ -132,8 +132,8 @@ export class Hbar extends BaseCoin {
     }
 
     return {
-      pub: keys.pub,
-      prv: keys.prv,
+      pub: keys.pub.toString(),
+      prv: keys.prv.toString(),
     };
   }
 
@@ -284,7 +284,7 @@ export class Hbar extends BaseCoin {
    */
   isValidMemoId(memoId: string) {
     // TODO: change this to account-lib helper once its published
-    if (typeof memoId !== 'undefined' && Buffer.from(memoId).length > 100) {
+    if (typeof memoId !== 'undefined' && memoId.length * 2 > 100) {
       return false;
     }
     return true;

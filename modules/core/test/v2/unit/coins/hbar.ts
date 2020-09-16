@@ -121,9 +121,12 @@ describe('Hedera Hashgraph:', function() {
       const txBuilder = factory.from(tx.halfSigned.txHex);
       const signedTx = await txBuilder.build();
       const txJson = signedTx.toJson();
-      txJson.to.should.equal(destination);
-      txJson.from.should.equal(source);
-      txJson.amount.should.equal(amount);
+      const txTo = accountLib.Hbar.Utils.stringifyAccountId(txJson.body.cryptotransfer.transfers.accountamountsList[1].accountid);
+      const txFrom = accountLib.Hbar.Utils.stringifyAccountId(txJson.body.cryptotransfer.transfers.accountamountsList[0].accountid);
+      const txAmount = txJson.body.cryptotransfer.transfers.accountamountsList[1].amount;
+      txTo.should.equal(destination);
+      txFrom.should.equal(source);
+      txAmount.should.equal(amount);
       signedTx.signature.length.should.equal(1);
     });
   });

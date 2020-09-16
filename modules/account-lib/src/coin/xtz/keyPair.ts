@@ -49,7 +49,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
       this.hdNode = HDNode.fromBase58(prv);
     } else if (CryptoUtils.isValidPrv(prv)) {
       // Cannot create the HD node without the chain code, so create a regular Key Chain
-      this.keyPair = ECPair.fromPrivateKeyBuffer(new Buffer(prv, 'hex'));
+      this.keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
     } else if (Utils.isValidKey(prv, Utils.hashTypes.spsk)) {
       this.keyPair = ECPair.fromPrivateKeyBuffer(Utils.decodeKey(prv, Utils.hashTypes.spsk));
     } else {
@@ -68,7 +68,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
       this.hdNode = HDNode.fromBase58(pub);
     } else if (CryptoUtils.isValidPub(pub)) {
       // Cannot create an HD node without the chain code, so create a regular Key Chain
-      this.keyPair = ECPair.fromPublicKeyBuffer(new Buffer(pub, 'hex'));
+      this.keyPair = ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
     } else if (Utils.isValidKey(pub, Utils.hashTypes.sppk)) {
       this.keyPair = ECPair.fromPublicKeyBuffer(Utils.decodeKey(pub, Utils.hashTypes.sppk));
     } else {

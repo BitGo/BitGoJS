@@ -34,7 +34,7 @@ export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
       this.hdNode = HDNode.fromBase58(prv);
     } else if (Crypto.isValidPrv(prv)) {
       // Cannot create the HD node without the chain code, so create a regular Key Chain
-      this.keyPair = ECPair.fromPrivateKeyBuffer(new Buffer(prv, 'hex'));
+      this.keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
     } else {
       throw new Error('Unsupported private key');
     }
@@ -50,7 +50,7 @@ export abstract class Secp256k1ExtendedKeyPair implements BaseKeyPair {
       this.hdNode = HDNode.fromBase58(pub);
     } else if (Crypto.isValidPub(pub)) {
       // Cannot create an HD node without the chain code, so create a regular Key Chain
-      this.keyPair = ECPair.fromPublicKeyBuffer(new Buffer(pub, 'hex'));
+      this.keyPair = ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
     } else {
       throw new Error('Unsupported public key: ' + pub);
     }

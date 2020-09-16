@@ -1105,7 +1105,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             const prevOutScript = bitcoin.script.witnessScriptHash.output.encode(witnessScriptHash);
             txb.sign(index, privKey, prevOutScript, sigHashType, signatureContext.unspent.value, witnessScript);
           } else {
-            const subscript = new Buffer(signatureContext.unspent.redeemScript, 'hex');
+            const subscript = Buffer.from(signatureContext.unspent.redeemScript, 'hex');
             const isP2shP2wsh = !!signatureContext.unspent.witnessScript;
             if (isP2shP2wsh) {
               debug('Signing p2shP2wsh input');

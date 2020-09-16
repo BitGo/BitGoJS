@@ -155,7 +155,7 @@ export class TransferBuilder {
           this.getNativeOperationHashPrefix(),
           new ethUtil.BN(ethUtil.stripHexPrefix(this._toAddress), 16),
           this._amount,
-          new Buffer(ethUtil.stripHexPrefix(this._data) || '', 'hex'),
+          Buffer.from(ethUtil.stripHexPrefix(this._data) || '', 'hex'),
           this._expirationTime,
           this._sequenceId,
         ],
@@ -207,8 +207,8 @@ export class TransferBuilder {
   protected ethSignMsgHash(): string {
     const data = this.getOperationHash();
     const signatureInParts = ethUtil.ecsign(
-      new Buffer(ethUtil.stripHexPrefix(data), 'hex'),
-      new Buffer(this._signKey, 'hex'),
+      Buffer.from(ethUtil.stripHexPrefix(data), 'hex'),
+      Buffer.from(this._signKey, 'hex'),
     );
 
     // Assemble strings from r, s and v
