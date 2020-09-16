@@ -2,8 +2,8 @@ import should from 'should';
 import { register } from '../../../../../src/index';
 import { TransactionBuilderFactory } from '../../../../../src/coin/hbar';
 import * as testData from '../../../../resources/hbar/hbar';
-import { Transaction } from '../../../../../src/coin/hbar/transaction';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
+import { toUint8Array, stringifyAccountId } from '../../../../../src/coin/hbar/utils';
 
 describe('HBAR Transfer Builder', () => {
   const factory = register('thbar', TransactionBuilderFactory);
@@ -28,10 +28,7 @@ describe('HBAR Transfer Builder', () => {
         const tx = await builder.build();
         const txJson = tx.toJson();
         should.deepEqual(tx.signature.length, 1);
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '10');
-        should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
-        should.deepEqual(txJson.fee.toString(), testData.FEE);
+        should.deepEqual(txJson, testData.SINGLE_SIG_TRANSFER_DATA);
         should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
         tx.type.should.equal(TransactionType.Send);
 
@@ -52,7 +49,7 @@ describe('HBAR Transfer Builder', () => {
         const tx = await builder.build();
         const txJson = tx.toJson();
         should.deepEqual(tx.signature.length, 3);
-        should.deepEqual(txJson.fee.toString(), testData.FEE);
+        should.deepEqual(txJson, testData.THREE_TIMES_SIG_TRANSFER_DATA);
         should.deepEqual(tx.toBroadcastFormat(), testData.THREE_TIMES_SIGNED_TRANSACTION);
       });
 
@@ -61,22 +58,18 @@ describe('HBAR Transfer Builder', () => {
         builder.amount('0');
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '0');
-        should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
-        should.deepEqual(txJson.fee.toString(), testData.FEE);
+        should.equal(txJson.body.cryptotransfer.transfers.accountamountsList[0].amount, '0');
+        should.equal(txJson.body.cryptotransfer.transfers.accountamountsList[1].amount, '0');
       });
 
       it('a transfer transaction with memo', async () => {
         const builder = initTxBuilder();
+        builder.startTime('1596110493.372646570');
         builder.memo('This is an example');
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '10');
-        should.deepEqual(txJson.memo, 'This is an example');
-        should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
-        should.deepEqual(txJson.fee.toString(), testData.FEE);
+        should.deepEqual(txJson.body.memo, 'This is an example');
+        should.deepEqual(tx.toBroadcastFormat(), testData.TRANSFER_TRANSACTION_WITH_MEMO);
       });
 
       it('a non signed transfer transaction', async () => {
@@ -86,10 +79,7 @@ describe('HBAR Transfer Builder', () => {
         builder.node({ nodeId: '0.0.2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, testData.ACCOUNT_2.accountId);
-        should.deepEqual(txJson.amount, '10');
-        should.deepEqual(txJson.from, testData.ACCOUNT_1.accountId);
-        should.deepEqual(txJson.fee.toString(), testData.FEE);
+        should.deepEqual(txJson, testData.NON_SIGNED_TRANSFER_DATA);
         should.deepEqual(tx.toBroadcastFormat(), testData.NON_SIGNED_TRANSFER_TRANSACTION);
       });
 
@@ -100,6 +90,7 @@ describe('HBAR Transfer Builder', () => {
         builder.sign({ key: testData.ACCOUNT_2.privateKey });
         builder.sign({ key: testData.ACCOUNT_3.privateKey });
         const tx = await builder.build();
+        should.deepEqual(tx.toJson(), testData.THREE_TIMES_SIG_TRANSFER_DATA);
         should.deepEqual(tx.toBroadcastFormat(), testData.THREE_TIMES_SIGNED_TRANSACTION);
       });
 
@@ -109,63 +100,135 @@ describe('HBAR Transfer Builder', () => {
         builder.source({ address: '2.3.456' });
         builder.to('3.4.567');
         builder.amount('10');
-        builder.node({ nodeId: '5.2.2345' });
+        builder.node({ nodeId: '0.0.2345' });
         const tx = await builder.build();
         const txJson = tx.toJson();
-        should.deepEqual(txJson.to, '3.4.567');
-        should.deepEqual(txJson.node, '5.2.2345');
-        should.deepEqual(txJson.from, '2.3.456');
-      });
-
-      it('a transaction between accounts without realm and shard', async () => {
-        const builder = factory.getTransferBuilder();
-        builder.fee({ fee: testData.FEE });
-        builder.source({ address: '456' });
-        builder.to('567');
-        builder.amount('10');
-        builder.node({ nodeId: '2345' });
-        const tx = await builder.build();
-        const txJson = tx.toJson();
-        should.deepEqual(txJson.to, '0.0.567');
-        should.deepEqual(txJson.node, '0.0.2345');
-        should.deepEqual(txJson.from, '0.0.456');
+        should.deepEqual(
+          stringifyAccountId(txJson.body.cryptotransfer.transfers.accountamountsList[0].accountid),
+          '2.3.456',
+        );
+        should.deepEqual(
+          stringifyAccountId(txJson.body.cryptotransfer.transfers.accountamountsList[1].accountid),
+          '3.4.567',
+        );
       });
     });
 
     describe('serialized transactions', () => {
-      it('a non signed transfer transaction from serialized', async () => {
-        const builder = factory.from(testData.NON_SIGNED_TRANSFER_TRANSACTION);
-        builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
-        const tx2 = await builder.build();
-        should.deepEqual(tx2.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
-        tx2.type.should.equal(TransactionType.Send);
+      describe('deserialized from factory', () => {
+        it('a non signed transfer transaction', async () => {
+          const builder = factory.from(testData.NON_SIGNED_TRANSFER_TRANSACTION);
+          builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
+          const tx = await builder.build();
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+          tx.type.should.equal(TransactionType.Send);
+        });
+
+        it('a signed transfer transaction', async () => {
+          const txBuilder = factory.from(testData.SIGNED_TRANSFER_TRANSACTION);
+          const tx = await txBuilder.build();
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+          tx.type.should.equal(TransactionType.Send);
+        });
+
+        it('a transfer transaction with memo', async () => {
+          const txBuilder = factory.from(testData.TRANSFER_TRANSACTION_WITH_MEMO);
+          const tx = await txBuilder.build();
+          const txJson = tx.toJson();
+          should.deepEqual(txJson.body.memo, 'This is an example');
+          should.deepEqual(tx.toBroadcastFormat(), testData.TRANSFER_TRANSACTION_WITH_MEMO);
+          tx.type.should.equal(TransactionType.Send);
+        });
+
+        it('a transfer transaction from a byte array', async () => {
+          const rawTransaction = toUint8Array(testData.SIGNED_TRANSFER_TRANSACTION);
+          const txBuilder = factory.from(rawTransaction);
+          const tx = await txBuilder.build();
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+          tx.type.should.equal(TransactionType.Send);
+        });
+
+        it('a transfer transaction from a Buffer', async () => {
+          const rawTransaction = Buffer.from(toUint8Array(testData.SIGNED_TRANSFER_TRANSACTION));
+          const txBuilder = factory.from(rawTransaction);
+          const tx = await txBuilder.build();
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+          tx.type.should.equal(TransactionType.Send);
+        });
+
+        it('a transaction between accounts with realm and shard non zero from serialized', async () => {
+          const builder = initTxBuilder();
+          builder.source({ address: '2.3.456' });
+          builder.to('3.4.567');
+          const tx = await builder.build();
+          const newBuilder = factory.from(tx.toBroadcastFormat());
+          const newTx = await newBuilder.build();
+          const txJson = newTx.toJson();
+          should.deepEqual(
+            stringifyAccountId(txJson.body.cryptotransfer.transfers.accountamountsList[0].accountid),
+            '2.3.456',
+          );
+          should.deepEqual(
+            stringifyAccountId(txJson.body.cryptotransfer.transfers.accountamountsList[1].accountid),
+            '3.4.567',
+          );
+        });
+
+        it('an offline multisig transfer transaction', async () => {
+          const builder = initTxBuilder();
+          builder.startTime('1596110493.372646570');
+          builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
+          const tx = await builder.build();
+          should.deepEqual(tx.signature.length, 1);
+
+          const builder2 = factory.from(tx.toBroadcastFormat());
+          builder2.sign({ key: testData.ACCOUNT_2.privateKey });
+          const tx2 = await builder2.build();
+          should.deepEqual(tx2.signature.length, 2);
+
+          const builder3 = factory.from(tx2.toBroadcastFormat());
+          builder3.sign({ key: testData.ACCOUNT_3.privateKey });
+          const tx3 = await builder3.build();
+          should.deepEqual(tx3.signature.length, 3);
+
+          should.deepEqual(tx3.toBroadcastFormat(), testData.THREE_TIMES_SIGNED_TRANSACTION);
+        });
+
+        it('a transfer transaction with amount 0', async () => {
+          const builder = initTxBuilder();
+          builder.amount('0');
+          const tx = await builder.build();
+          const newBuilder = factory.from(tx.toBroadcastFormat());
+          const newTx = await newBuilder.build();
+          const txJson = newTx.toJson();
+          should.equal(txJson.body.cryptotransfer.transfers.accountamountsList[0].amount, '0');
+          should.equal(txJson.body.cryptotransfer.transfers.accountamountsList[1].amount, '0');
+        });
       });
 
-      it('a signed transfer transaction from serilaized', async () => {
-        const txBuilder = factory.from(testData.SIGNED_TRANSFER_TRANSACTION);
-        const tx = await txBuilder.build();
-        should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
-        tx.type.should.equal(TransactionType.Send);
-      });
+      describe('deserialized from transaction builder', () => {
+        it('a signed transfer transaction', async () => {
+          const builder = factory.getTransferBuilder();
+          builder.from(testData.SIGNED_TRANSFER_TRANSACTION);
+          const tx = await builder.build();
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        });
 
-      it('an offline multisig transfer transaction', async () => {
-        const builder = initTxBuilder();
-        builder.startTime('1596110493.372646570');
-        builder.sign({ key: testData.ACCOUNT_1.prvKeyWithPrefix });
-        const tx = await builder.build();
-        should.deepEqual(tx.signature.length, 1);
+        it('a transfer transaction from a byte array', async () => {
+          const builder = factory.getTransferBuilder();
+          const rawTransaction = toUint8Array(testData.SIGNED_TRANSFER_TRANSACTION);
+          builder.from(rawTransaction);
+          const tx = await builder.build();
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        });
 
-        const builder2 = factory.from(tx.toBroadcastFormat());
-        builder2.sign({ key: testData.ACCOUNT_2.privateKey });
-        const tx2 = await builder2.build();
-        should.deepEqual(tx2.signature.length, 2);
-
-        const builder3 = factory.from(tx2.toBroadcastFormat());
-        builder3.sign({ key: testData.ACCOUNT_3.privateKey });
-        const tx3 = await builder3.build();
-        should.deepEqual(tx3.signature.length, 3);
-
-        should.deepEqual(tx3.toBroadcastFormat(), testData.THREE_TIMES_SIGNED_TRANSACTION);
+        it('a transfer transaction from a Buffer', async () => {
+          const builder = factory.getTransferBuilder();
+          const rawTransaction = Buffer.from(toUint8Array(testData.SIGNED_TRANSFER_TRANSACTION));
+          builder.from(rawTransaction);
+          const tx = await builder.build();
+          should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        });
       });
     });
   });
