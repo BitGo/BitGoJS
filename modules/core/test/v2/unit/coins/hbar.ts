@@ -60,8 +60,7 @@ describe('Hedera Hashgraph:', function() {
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
 
-      // TODO: add back when validation of the pub is live
-      // basecoin.isValidPub(keyPair.pub).should.equal(true);
+      basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
     it('should generate a keypair from a seed', function() {

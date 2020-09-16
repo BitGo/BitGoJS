@@ -291,6 +291,6 @@ export class Hbar extends BaseCoin {
   }
 
   isValidPub(pub: string): boolean {
-    throw new MethodNotImplementedError();
+    return bitgoAccountLib.Hbar.Utils.isValidPublicKey(pub);
   }
 }
