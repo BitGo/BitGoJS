@@ -411,11 +411,6 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@bitgo/statics@5.0.1-rc.5":
-  version "5.0.1-rc.5"
-  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-5.0.1-rc.5.tgz#4775f8c8389f193bb015147e3dbe9b6647821e26"
-  integrity sha512-R1IflFooU3Np4pqtmyeXVJsHSjG3VH/nQbuMOOWWtD3HCo7R3/fSM2l2iRa2WpLKwSaQAxnS76ii2FevZKtyOQ==
-
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
