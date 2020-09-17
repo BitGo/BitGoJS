@@ -30,7 +30,7 @@ export class BlockchairApi implements RecoveryProvider {
    static getBaseUrl(env: string, coin: string): string {
     let url;
     if (mainnetBase.includes(env)) {
-      url = 'https://api.blockchair.com/';
+      url = `https://api.blockchair.com/${coin}`;
     } else if (testnetBase.includes(env) || devBase.includes((env))) {
       url = `https://api.blockchair.com/${coin}/testnet`;
     } else if (env === 'mock') {
