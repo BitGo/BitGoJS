@@ -391,6 +391,7 @@ export const coins = CoinMap.fromCoins([
   erc20('uco', 'UnirisToken', 18, '0x8a3d77e9d6968b780564936d15b09805827c21fa', UnderlyingAsset.UCO),
   erc20('ukg', 'UnikoinGold', 18, '0x24692791bc444c5cd0b81e3cbcaba4b04acd1f3b', UnderlyingAsset.UKG),
   erc20('uma', 'UMA Voting Token V1', 18, '0x04fa0d235c4abf4bcf4787af4cf447de572ef828', UnderlyingAsset.UMA),
+  erc20('uni', 'Uniswap Token', 18, '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', UnderlyingAsset.UNI),
   erc20('up', 'UpToken', 8, '0x6ba460ab75cd2c56343b3517ffeba60748654d26', UnderlyingAsset.UP),
   erc20('upbtc', 'Universal Bitcoin', 8, '0xc7461b398005e50bcc43c8e636378c6722e76c01', UnderlyingAsset.UPBTC),
   erc20('upp', 'Sentinel Protocol', 18, '0xc86d054809623432210c107af2e3f619dcfbf652', UnderlyingAsset.UPP),

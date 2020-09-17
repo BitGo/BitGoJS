@@ -430,6 +430,7 @@ export enum UnderlyingAsset {
   UCO = 'uco',
   UKG = 'ukg',
   UMA = 'uma',
+  UNI = 'uni',
   UP = 'up',
   UPBTC = 'upbtc',
   UPP = 'upp',
