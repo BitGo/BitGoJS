@@ -1610,7 +1610,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         .set('LTC', 'litecoin')
         .set('BCH', 'bitcoin-cash')
         .set('ZEC', 'zcash')
-        .set('DASH', 'dash');
+        .set('DASH', 'dash')
+        .set('BSV', 'bitcoin-sv');
       const coinGeckoId = familyNamesToCoinGeckoIds.get(self.getFamily().toUpperCase());
       if (!coinGeckoId) {
         throw new Error(`There is no CoinGecko id for family name ${self.getFamily().toUpperCase()}.`);
@@ -1699,7 +1700,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
             const address: any = self.createMultiSigAddress(Codes.typeForCode(chain), 2, keys);
 
             const addrInfo: AddressInfo = yield self.getAddressInfoFromExplorer(address.address, params.apiKey);
-
+            // we use txCount here because it implies usage - having tx'es means the addr was generated and used
             if (addrInfo.txCount === 0) {
               numSequentialAddressesWithoutTxs++;
             } else {
