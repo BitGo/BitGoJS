@@ -1,0 +1,9 @@
+ 
+syntax = "proto3";
+
+package proto;
+
+/* A length of time in seconds. */
+message Duration {
+    int64 seconds = 1; // The number of seconds
+}
