@@ -2,6 +2,7 @@ import { Hbar } from '../../../../src/v2/coins/';
 import * as accountLib from '@bitgo/account-lib';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
+import { rawTransactionForExplain } from '../../fixtures/coins/hbar';
 
 describe('Hedera Hashgraph:', function() {
   let bitgo;
@@ -52,6 +53,21 @@ describe('Hedera Hashgraph:', function() {
     memoId = '';
     norm = basecoin.normalizeAddress({ address, memoId });
     norm.should.equal('0.0.41098');
+  });
+
+  it('should explain a transaction', async function() {
+    const tx = JSON.parse(rawTransactionForExplain);
+    const explain = await basecoin.explainTransaction(tx);
+
+    explain.id.should.equal('0.0.43285@1600529800.643093586');
+    explain.outputAmount.should.equal('2200000000');
+    explain.timestamp.should.equal('1600529800.643093586');
+    explain.expiration.should.equal('120');
+    explain.outputs[0].amount.should.equal('2200000000');
+    explain.outputs[0].address.should.equal('0.0.43283');
+    explain.outputs[0].memo.should.equal('1');
+    explain.fee.fee.should.equal(1160407);
+    explain.changeAmount.should.equal('0');
   });
 
   describe('Keypairs:', () => {
