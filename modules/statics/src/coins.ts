@@ -293,6 +293,7 @@ export const coins = CoinMap.fromCoins([
   erc20('mpay', 'MenaPay', 18, '0x3810a4ddf41e586fa0dba1463a7951b748cecfca', UnderlyingAsset.MPAY),
   erc20('mtcn', 'Multiven', 18, '0xf6117cc92d7247f605f11d4c942f0feda3399cb5', UnderlyingAsset.MTCN),
   erc20('mtl', 'Metal', 8, '0xf433089366899d83a9f26a773d59ec7ecf30355e', UnderlyingAsset.MTL),
+  erc20('musd', 'mStable USD', 18, '0xe2f2a5c287993345a840db3b0845fbc70f5935a5', UnderlyingAsset.MUSD),
   erc20('mvl', 'Mass Vehicle Ledger', 18, '0xa849eaae994fb86afa73382e9bd88c2b6b18dc71', UnderlyingAsset.MVL),
   erc20('nas', 'Nebulas', 18, '0x5d65d971895edc438f465c17db6992698a52318d', UnderlyingAsset.NAS),
   erc20('neu', 'Neumark', 18, '0xa823e6722006afe99e91c30ff5295052fe6b8e32', UnderlyingAsset.NEU),
