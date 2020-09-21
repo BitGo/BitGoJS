@@ -101,11 +101,12 @@ interface SignFinalOptions {
     halfSigned: {
       expireTime: number;
       contractSequenceId: number;
-      backupKeyNonce: number;
+      backupKeyNonce?: number;
       signature: string;
     };
     nextContractSequenceId?: number;
     hopTransaction?: string;
+    backupKeyNonce?: number;
   };
   signingKeyNonce: number;
   walletContractAddress: string;
@@ -600,6 +601,7 @@ export class Eth extends BaseCoin {
         gasLimit: params.gasLimit,
         gasPrice: params.gasPrice,
         hopTransaction: txPrebuild.hopTransaction,
+        backupKeyNonce: txPrebuild.backupKeyNonce,
       };
       return { halfSigned: txParams };
     })
