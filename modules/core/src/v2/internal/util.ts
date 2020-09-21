@@ -156,8 +156,8 @@ export class Util {
       throw new EthereumLibraryUnavailableError(ethImport);
     }
     const signatureInParts = ethUtil.ecsign(
-      new Buffer(ethUtil.stripHexPrefix(msgHash), 'hex'),
-      new Buffer(privKey, 'hex')
+      Buffer.from(ethUtil.stripHexPrefix(msgHash), 'hex'),
+      Buffer.from(privKey, 'hex')
     );
 
     // Assemble strings from r, s and v
@@ -202,10 +202,10 @@ export class Util {
     signature = ethUtil.stripHexPrefix(signature);
 
     const v = parseInt(signature.slice(128, 130), 16);
-    const r = new Buffer(signature.slice(0, 64), 'hex');
-    const s = new Buffer(signature.slice(64, 128), 'hex');
+    const r = Buffer.from(signature.slice(0, 64), 'hex');
+    const s = Buffer.from(signature.slice(64, 128), 'hex');
 
-    const pubKey = ethUtil.ecrecover(new Buffer(msgHash, 'hex'), v, r, s);
+    const pubKey = ethUtil.ecrecover(Buffer.from(msgHash, 'hex'), v, r, s);
     return ethUtil.bufferToHex(ethUtil.pubToAddress(pubKey));
   }
 }

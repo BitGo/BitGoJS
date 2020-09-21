@@ -139,7 +139,7 @@ describe('XTZ util library', function() {
 
     it('should validate a signature belongs to a public key for a string message', async function() {
       const message = 'helloworld';
-      const messageHex = new Buffer(message).toString('hex');
+      const messageHex = Buffer.from(message).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex, new Uint8Array(0));
       const result = await Utils.verifySignature(
         messageHex,
@@ -151,7 +151,7 @@ describe('XTZ util library', function() {
     });
 
     it('should validate a signature belongs to a public key for dataToSign', async function() {
-      const messageHex = new Buffer(defaultDataToSign).toString('hex');
+      const messageHex = Buffer.from(defaultDataToSign).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex, new Uint8Array(0));
       const result = await Utils.verifySignature(
         messageHex,
@@ -163,7 +163,7 @@ describe('XTZ util library', function() {
     });
 
     it('should fail to validate a signature with the wrong watermark', async function() {
-      const messageHex = new Buffer(defaultDataToSign).toString('hex');
+      const messageHex = Buffer.from(defaultDataToSign).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex);
       const result = await Utils.verifySignature(
         messageHex,
@@ -175,7 +175,7 @@ describe('XTZ util library', function() {
     });
 
     it('should fail to validate a signature with the wrong public key', async function() {
-      const messageHex = new Buffer(defaultDataToSign).toString('hex');
+      const messageHex = Buffer.from(defaultDataToSign).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex);
       const result = await Utils.verifySignature(
         messageHex,
@@ -186,9 +186,9 @@ describe('XTZ util library', function() {
     });
 
     it('should fail to validate a signature with the wrong message', async function() {
-      const messageHex = new Buffer(defaultDataToSign).toString('hex');
+      const messageHex = Buffer.from(defaultDataToSign).toString('hex');
       const signatures = await Utils.sign(defaultKeyPairFromPrv, messageHex);
-      const secondMessageHex = new Buffer('helloWorld').toString('hex');
+      const secondMessageHex = Buffer.from('helloWorld').toString('hex');
       const result = await Utils.verifySignature(secondMessageHex, defaultKeyPairFromPub.getKeys().pub, signatures.sig);
       result.should.be.false();
     });

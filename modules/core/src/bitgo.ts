@@ -1090,10 +1090,10 @@ export class BitGo {
       throw new Error('eckey object required');
     }
 
-    const otherKeyPub = bitcoin.ECPair.fromPublicKeyBuffer(new Buffer(otherPubKeyHex, 'hex'));
+    const otherKeyPub = bitcoin.ECPair.fromPublicKeyBuffer(Buffer.from(otherPubKeyHex, 'hex'));
     const secretPoint = otherKeyPub.Q.multiply((eckey as bitcoin.ECPair).d);
     const secret = Util.bnToByteArrayUnsigned(secretPoint.affineX);
-    return new Buffer(secret).toString('hex');
+    return Buffer.from(secret).toString('hex');
   }
 
   /**
@@ -2064,7 +2064,7 @@ export class BitGo {
         throw new Error('no signature found in guarantee response body');
       }
       const signingAddress = common.Environments[self.getEnv()].signingAddress;
-      const signatureBuffer = new Buffer(body.signature, 'hex');
+      const signatureBuffer = Buffer.from(body.signature, 'hex');
       const prefix = bitcoin.networks[common.Environments[self.getEnv()].network].messagePrefix;
       const isValidSignature = bitcoinMessage.verify(body.guarantee, signingAddress, signatureBuffer, prefix);
       if (!isValidSignature) {

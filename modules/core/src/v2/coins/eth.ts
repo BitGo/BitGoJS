@@ -397,7 +397,7 @@ export class Eth extends BaseCoin {
         'ETHER',
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        new Buffer(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
+        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
         expireTime,
         contractSequenceId,
       ],

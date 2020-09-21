@@ -23,6 +23,7 @@ import { Enterprises } from './enterprises';
 export interface TransactionRecipient {
   address: string;
   amount: string | number;
+  memo?: string;
 }
 
 export interface TransactionFee {

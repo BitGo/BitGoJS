@@ -171,7 +171,7 @@ describe('XLM:', function() {
   it('isValidMemoId should work', function() {
     basecoin.isValidMemo({ value: '1', type: 'id' }).should.equal(true);
     basecoin.isValidMemo({ value: 'uno', type: 'text' }).should.equal(true);
-    const buffer = new Buffer(32).fill(10);
+    const buffer = Buffer.alloc(32).fill(10);
     basecoin.isValidMemo({ value: buffer, type: 'hash' }).should.equal(true);
     basecoin.isValidMemo({ value: buffer.toString('hex'), type: 'hash' }).should.equal(true);
     basecoin.isValidMemo({ value: 1, type: 'id' }).should.equal(false);

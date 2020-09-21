@@ -85,7 +85,7 @@ export function isValidXprv(xprv: string): boolean {
  */
 export function isValidPub(pub: string): boolean {
   try {
-    ECPair.fromPublicKeyBuffer(new Buffer(pub, 'hex'));
+    ECPair.fromPublicKeyBuffer(Buffer.from(pub, 'hex'));
   } catch (e) {
     return false;
   }
@@ -99,7 +99,7 @@ export function isValidPub(pub: string): boolean {
  */
 export function isValidPrv(prv: string): boolean {
   try {
-    ECPair.fromPrivateKeyBuffer(new Buffer(prv, 'hex'));
+    ECPair.fromPrivateKeyBuffer(Buffer.from(prv, 'hex'));
   } catch (e) {
     return false;
   }

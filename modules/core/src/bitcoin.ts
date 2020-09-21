@@ -61,7 +61,7 @@ function deriveFast(hdnode: bitcoin.HDNode, index: number): bitcoin.HDNode {
     throw new Error('cannot derive hardened key from public key');
   }
 
-  const indexBuffer = new Buffer(4);
+  const indexBuffer = Buffer.alloc(4);
   indexBuffer.writeUInt32BE(index, 0);
 
   // data = serP(point(kpar)) || ser32(index)
