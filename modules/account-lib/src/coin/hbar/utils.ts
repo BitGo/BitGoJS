@@ -193,3 +193,11 @@ export function isValidMemo(memo: string): boolean {
   }
   return true;
 }
+
+/**
+ * @param buffer
+ * @param raw
+ */
+export function fromEd25519PublicKeyBuffer(buffer: Buffer, raw = false): string {
+  return Ed25519PublicKey.fromBytes(buffer).toString(raw);
+}
