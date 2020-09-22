@@ -1,8 +1,8 @@
 import { isValidSeed as AlgoIsValidSeed } from 'algosdk';
 import * as stellar from 'stellar-sdk';
-import { Ed25519PrivateKey } from '@hashgraph/sdk';
 import * as _ from 'lodash';
 import { CoinFamily } from '@bitgo/statics';
+import { Hbar } from '@bitgo/account-lib';
 
 /**
  * This classes intention is to guess/verify what seeds come from where.
@@ -61,7 +61,7 @@ export class SeedValidator {
    */
   static isValidHbarSeedFormat(seed: string): boolean {
     try {
-      Ed25519PrivateKey.fromString(seed);
+      Hbar.Utils.createRawKey(seed);
     } catch {
       return false;
     }
