@@ -157,6 +157,7 @@ export interface BitGoOptions {
   validate?: boolean;
   proxy?: string;
   etherscanApiToken?: string;
+  skipHMACVerification?: boolean;
 }
 
 export interface User {
@@ -421,7 +422,7 @@ export class BitGo {
   private _blockchain?: any;
   private _travelRule?: any;
   private _pendingApprovals?: any;
-
+  private _skipHMACVerification?: boolean;
   /**
    * Constructor for BitGo Object
    */
@@ -514,6 +515,10 @@ export class BitGo {
     this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
     this._promise = Bluebird;
     this._reqId = undefined;
+    if (params.skipHMACVerification && (/prod/i).test(this._env)) {
+      throw new Error('HMAC Verification required in this environment.');
+    }
+    this._skipHMACVerification = params.skipHMACVerification || false;
 
     // whether to perform extra client-side validation for some things, such as
     // address validation or signature validation. defaults to true, but can be
@@ -1261,6 +1266,11 @@ export class BitGo {
    * Verify the HMAC for an HTTP response
    */
   verifyResponse({ url: urlPath, statusCode, text, timestamp, token, hmac }: VerifyResponseOptions) {
+    if (this._skipHMACVerification && !(/prod/i).test(this._env)) {
+      return {
+        isValid: true,
+      }
+    }
     const signatureSubject = this.calculateHMACSubject({
       urlPath,
       text,
