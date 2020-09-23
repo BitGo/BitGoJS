@@ -24,6 +24,8 @@ import {
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, InvalidMemoIdError, MethodNotImplementedError } from '../../errors';
+import * as stellar from 'stellar-sdk';
+import { SeedValidator } from '../internal/seedValidator';
 
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -350,6 +352,27 @@ export class Hbar extends BaseCoin {
       return false;
     }
     return true;
+  }
+
+  isStellarSeed(seed: string): boolean {
+    return SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM);
+  }
+
+  convertFromStellarSeed(seed: string): string | null {
+    // assume this is a trust custodial seed if its a valid ed25519 prv
+    if (!this.isStellarSeed(seed) || SeedValidator.hasCompetingSeedFormats(seed)) {
+      return null;
+    }
+
+    if (SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM)) {
+      const keyFromSeed = new bitgoAccountLib.Hbar.KeyPair({ seed: stellar.StrKey.decodeEd25519SecretSeed(seed) });
+      const keys = keyFromSeed.getKeys();
+      if (keys !== undefined && keys.prv) {
+        return keys.prv;
+      }
+    }
+
+    return null;
   }
 
   isValidPub(pub: string): boolean {

@@ -93,7 +93,7 @@ describe('ALGO:', function() {
       const halfSignedTransaction = yield wallet.signTransaction({
         txPrebuild: {
           txHex: fixtures.buildTxBase64,
-          keys: [ fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub ],
+          keys: [fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub],
           addressVersion: 1,
         },
         prv: fixtures.userKeychain.prv,
@@ -108,7 +108,7 @@ describe('ALGO:', function() {
           halfSigned: {
             txHex: fixtures.signedTxBase64,
           },
-          keys: [ fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub ],
+          keys: [fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub],
           addressVersion: 1,
         },
         prv: fixtures.backupKeychain.prv,
