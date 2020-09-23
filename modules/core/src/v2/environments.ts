@@ -32,6 +32,7 @@ interface EnvironmentTemplate {
     full: string;
     solidity: string;
   };
+  hmacVerificationEnforced: boolean;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -108,6 +109,7 @@ const mainnetBase: EnvironmentTemplate = {
     full: 'https://api.trongrid.io',
     solidity: 'https://api.trongrid.io',
   },
+  hmacVerificationEnforced: true,
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -137,10 +139,12 @@ const testnetBase: EnvironmentTemplate = {
     full: 'http://47.252.81.135:8090',
     solidity: 'http://47.252.81.135:8091',
   },
+  hmacVerificationEnforced: true,
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
   hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
+  hmacVerificationEnforced: false,
 });
 
 export const Environments: Environments = {
