@@ -77,6 +77,34 @@ describe('BitGo Prototype Methods', function() {
     });
   });
 
+  describe('HMAC request verification', () => {
+    it('throws if HMAC request verification is disabled for non-dev environments', co(function *() {
+      (() => new TestBitGo({ env: 'prod', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
+      (() => new TestBitGo({ env: 'test', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
+      (() => new TestBitGo({ env: 'adminProd', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
+      (() => new TestBitGo({ env: 'adminTest', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
+    }));
+
+    it('allows disabling of HMAC request verification only for dev environments', co(function *() {
+      (() => new TestBitGo({ env: 'dev', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'latest', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'adminDev', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'adminLatest', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'local', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'localNonSecure', hmacVerification: false }))
+        .should.not.throw();
+    }));
+  });
+
   describe('Authenticate in Microservices', () => {
     let bitgo;
     const microservicesUri = 'https://microservices.uri';
@@ -350,7 +378,7 @@ describe('BitGo Prototype Methods', function() {
     const token = 'v2x5b735fed2486593f8fea19113e5c717308f90a5fb00e740e46c7bfdcc078cfd0';
 
     before(() => {
-      bitgo = new TestBitGo({ env: 'mock' });
+      bitgo = new TestBitGo({ env: 'mock', accessToken: token });
     });
 
     it('should correctly calculate request headers', () => {
@@ -452,6 +480,25 @@ describe('BitGo Prototype Methods', function() {
       verificationDetails.expectedHmac.should.equal('51c6d024f261e166e8a323f8fa36a9bb8d4d02b076334c2a9ae0a49efc5724d4');
       verificationDetails.isValid.should.equal(false);
     });
+
+    it('should throw if hmac validation is enabled, and no valid hmac headers are returned', co(function *() {
+      const url = 'https://fakeurl.invalid';
+      const scope = nock(url).get('/').reply(200);
+
+      // test suite bitgo object has hmac verification enabled, so it should throw when the nock responds
+      yield bitgo.get(url).should.be.rejectedWith(/invalid response HMAC, possible man-in-the-middle-attack/);
+      scope.done();
+    }));
+
+    it('should not enforce hmac verification if hmac verification is disabled', co(function *() {
+      const bg = new TestBitGo({ env: 'mock', hmacVerification: false, accessToken: token });
+      const url = 'https://fakeurl.invalid';
+      const scope = nock(url).get('/').reply(200, { ok: 1 });
+
+      const res = yield bg.get(url);
+      res.body.should.have.property('ok', 1);
+      scope.done();
+    }));
   });
 
   describe('Token Definitions at Startup', function() {

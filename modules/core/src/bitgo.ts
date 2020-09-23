@@ -157,6 +157,7 @@ export interface BitGoOptions {
   validate?: boolean;
   proxy?: string;
   etherscanApiToken?: string;
+  hmacVerification?: boolean;
 }
 
 export interface User {
@@ -421,7 +422,7 @@ export class BitGo {
   private _blockchain?: any;
   private _travelRule?: any;
   private _pendingApprovals?: any;
-
+  private _hmacVerification: boolean = true;
   /**
    * Constructor for BitGo Object
    */
@@ -514,6 +515,14 @@ export class BitGo {
     this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
     this._promise = Bluebird;
     this._reqId = undefined;
+
+    if (!params.hmacVerification && params.hmacVerification !== undefined) {
+      if (common.Environments[env].hmacVerificationEnforced) {
+        throw new Error(`Cannot disable request HMAC verification in environment ${this.getEnv()}`);
+      }
+      debug('HMAC verification explicitly disabled by constructor option');
+      this._hmacVerification = params.hmacVerification;
+    }
 
     // whether to perform extra client-side validation for some things, such as
     // address validation or signature validation. defaults to true, but can be
@@ -662,6 +671,13 @@ export class BitGo {
       // right now, it is very permissive with the timestamp variance
       req.verifyResponse = function(response) {
         if (!req.isV2Authenticated || !req.authenticationToken) {
+          return response;
+        }
+
+        // HMAC verification is only allowed to be skipped in certain environments.
+        // This is checked in the constructor, but checking it again at request time
+        // will help prevent against tampering of this property after the object is created
+        if (!self._hmacVerification && !common.Environments[self.getEnv()].hmacVerificationEnforced) {
           return response;
         }
 

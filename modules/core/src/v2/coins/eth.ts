@@ -101,10 +101,12 @@ interface SignFinalOptions {
     halfSigned: {
       expireTime: number;
       contractSequenceId: number;
+      backupKeyNonce?: number;
       signature: string;
     };
     nextContractSequenceId?: number;
     hopTransaction?: string;
+    backupKeyNonce?: number;
   };
   signingKeyNonce: number;
   walletContractAddress: string;
@@ -112,7 +114,7 @@ interface SignFinalOptions {
   recipients: Recipient[];
 }
 
-interface SignTransactionOptions extends SignFinalOptions {
+export interface SignTransactionOptions extends SignFinalOptions {
   isLastSignature?: boolean;
   expireTime: number;
   sequenceId: number;
@@ -494,8 +496,10 @@ export class Eth extends BaseCoin {
   signFinal(params: SignFinalOptions): FullySignedTransaction {
     const txPrebuild = params.txPrebuild;
 
-    if (!_.isNumber(params.signingKeyNonce)) {
-      throw new Error('must have signingKeyNonce as a parameter, and it must be a number');
+    if (!_.isNumber(params.signingKeyNonce) && !_.isNumber(params.txPrebuild.halfSigned.backupKeyNonce)) {
+      throw new Error(
+        'must have at least one of signingKeyNonce and backupKeyNonce as a parameter, and it must be a number'
+      );
     }
     if (_.isUndefined(params.walletContractAddress)) {
       throw new Error('params must include walletContractAddress, but got undefined');
@@ -518,7 +522,7 @@ export class Eth extends BaseCoin {
 
     const ethTxParams = {
       to: params.walletContractAddress,
-      nonce: params.signingKeyNonce,
+      nonce: params.signingKeyNonce || params.txPrebuild.halfSigned.backupKeyNonce,
       value: 0,
       gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
       gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
@@ -597,6 +601,7 @@ export class Eth extends BaseCoin {
         gasLimit: params.gasLimit,
         gasPrice: params.gasPrice,
         hopTransaction: txPrebuild.hopTransaction,
+        backupKeyNonce: txPrebuild.backupKeyNonce,
       };
       return { halfSigned: txParams };
     })

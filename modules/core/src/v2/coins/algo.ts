@@ -4,6 +4,7 @@
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import * as stellar from 'stellar-sdk';
+import { CoinFamily } from '@bitgo/statics';
 import {
   NaclWrapper,
   Multisig,
@@ -30,6 +31,7 @@ import {
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
+import { SeedValidator } from '../internal/seedValidator';
 
 const co = Bluebird.coroutine;
 
@@ -304,15 +306,20 @@ export class Algo extends BaseCoin {
   }
 
   isStellarSeed(seed: string): boolean {
-    return stellar.StrKey.isValidEd25519SecretSeed(seed);
+    return SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM);
   }
 
   convertFromStellarSeed(seed: string): string | null {
     // assume this is a trust custodial seed if its a valid ed25519 prv
-    if (!this.isStellarSeed(seed)) {
+    if (!this.isStellarSeed(seed) || SeedValidator.hasCompetingSeedFormats(seed)) {
       return null;
     }
-    return Seed.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
+
+    if (SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM)) {
+      return Seed.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
+    }
+
+    return null;
   }
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
