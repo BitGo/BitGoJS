@@ -70,7 +70,8 @@ export type EnvironmentName =
   | 'adminTest'
   | 'adminDev'
   | 'adminLatest'
-  | 'custom';
+  | 'custom'
+  | 'branch';
 
 export type AliasEnvironmentName = 'production' | 'msProd' | 'msTest' | 'msDev' | 'msLatest';
 
@@ -256,5 +257,9 @@ export const Environments: Environments = {
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? hardcodedPublicKeys.serverXpub.test
         : hardcodedPublicKeys.serverXpub.prod,
+  }),
+  branch: Object.assign({}, devBase, {
+    uri: 'https://app.bitgo-dev.com',
+    stellarFederationServerUrl: 'https://app.bitgo-dev.com/api/v2/txlm/federation',
   }),
 };

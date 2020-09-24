@@ -451,21 +451,23 @@ export class BitGo {
       params.serverXpub ||
       process.env.BITGO_CUSTOM_ROOT_URI ||
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
-      env = 'custom';
+      // for branch deploys, we want to be able to specify custom endpoints while still
+      // maintaining the name of specified the environment
+      env =  params.env === 'branch' ? 'branch' : 'custom';
       if (params.customRootURI) {
-        common.Environments['custom'].uri = params.customRootURI;
+        common.Environments[env].uri = params.customRootURI;
       }
       if (params.customBitcoinNetwork) {
-        common.Environments['custom'].network = params.customBitcoinNetwork;
+        common.Environments[env].network = params.customBitcoinNetwork;
       }
       if (params.customSigningAddress) {
-        (common.Environments['custom'] as any).customSigningAddress = params.customSigningAddress;
+        (common.Environments[env] as any).customSigningAddress = params.customSigningAddress;
       }
       if (params.serverXpub) {
-        common.Environments['custom'].serverXpub = params.serverXpub;
+        common.Environments[env].serverXpub = params.serverXpub;
       }
       if (params.stellarFederationServerUrl) {
-        common.Environments['custom'].stellarFederationServerUrl = params.stellarFederationServerUrl;
+        common.Environments[env].stellarFederationServerUrl = params.stellarFederationServerUrl;
       }
     } else {
       env = params.env || process.env.BITGO_ENV as EnvironmentName;
