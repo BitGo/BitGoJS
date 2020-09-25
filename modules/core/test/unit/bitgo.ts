@@ -87,6 +87,8 @@ describe('BitGo Prototype Methods', function() {
         .should.throw(/Cannot disable request HMAC verification in environment/);
       (() => new TestBitGo({ env: 'adminTest', hmacVerification: false }))
         .should.throw(/Cannot disable request HMAC verification in environment/);
+      (() => new TestBitGo({ env: 'dev', customRootURI: 'http://rooturi.example', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
     }));
 
     it('allows disabling of HMAC request verification only for dev environments', co(function *() {
@@ -101,6 +103,8 @@ describe('BitGo Prototype Methods', function() {
       (() => new TestBitGo({ env: 'local', hmacVerification: false }))
         .should.not.throw();
       (() => new TestBitGo({ env: 'localNonSecure', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'branch', customRootURI: 'http://rooturi.example', hmacVerification: false }))
         .should.not.throw();
     }));
   });
