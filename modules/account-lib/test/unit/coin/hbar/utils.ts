@@ -1,6 +1,8 @@
 import should from 'should';
+import * as stellar from 'stellar-sdk';
 import * as Utils from '../../../../src/coin/hbar/utils';
 import * as testData from '../../../resources/hbar/hbar';
+import { isValidEd25519PublicKey } from '../../../../src/utils/crypto';
 
 describe('HBAR util library', function() {
   describe('address', function() {
@@ -67,6 +69,31 @@ describe('HBAR util library', function() {
     it('from a public key', function() {
       const rawPublicKey = Utils.removePrefix(testData.ed25519PubKeyPrefix, testData.ACCOUNT_1.pubKeyWithPrefix);
       should.deepEqual(rawPublicKey, '5a9111b5e6881ff20b9243a42ac1a9a67fa16cd4f01e58bab30c1fe611ea8cf9');
+    });
+  });
+
+  describe('should convert a stellar pub', function() {
+    it('and get back a valid ed pub', function() {
+      const stellarPub = 'GBVEZT27ZUCMJABF76XIPPO7M3KUABVR4GZNPBAD3YTPXUSDA57ANRLD';
+      const newPub = Utils.convertFromStellarPub(stellarPub);
+      should.equal(isValidEd25519PublicKey(newPub), true);
+    });
+
+    it('and get back a specific ed pub', function() {
+      const stellarPub = 'GBVEZT27ZUCMJABF76XIPPO7M3KUABVR4GZNPBAD3YTPXUSDA57ANRLD';
+      const newPub = Utils.convertFromStellarPub(stellarPub);
+      newPub.should.equal('6a4ccf5fcd04c48025ffae87bddf66d54006b1e1b2d78403de26fbd243077e06');
+    });
+
+    it('and create a valid ed pub that can be transformed back into a stellar pub', function() {
+      const stellarPub = 'GBVEZT27ZUCMJABF76XIPPO7M3KUABVR4GZNPBAD3YTPXUSDA57ANRLD';
+
+      const newPub = Utils.convertFromStellarPub(stellarPub);
+      const stellarDecoded = stellar.StrKey.encodeEd25519PublicKey(Buffer.from(newPub, 'hex'));
+      const beginStellarKeyPair = stellar.Keypair.fromPublicKey(stellarPub);
+      const endStellarKeyPair = stellar.Keypair.fromPublicKey(stellarDecoded);
+
+      should.equal(beginStellarKeyPair.publicKey(), endStellarKeyPair.publicKey());
     });
   });
 
