@@ -2,7 +2,7 @@ import should from 'should';
 import * as nacl from 'tweetnacl';
 import { KeyPair } from '../../../../src/coin/hbar';
 import * as testData from '../../../resources/hbar/hbar';
-import { toUint8Array } from '../../../../src/coin/hbar/utils';
+import { convertFromStellarPub, toUint8Array } from '../../../../src/coin/hbar/utils';
 
 const pub = testData.ACCOUNT_1.pubKeyWithPrefix;
 const prv = testData.ACCOUNT_1.prvKeyWithPrefix;
@@ -31,8 +31,19 @@ describe('Hedera Key Pair', () => {
     });
 
     it('from a public key with prefix', () => {
-      const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.pubKeyWithPrefix });
-      should.equal(keyPair.getKeys().pub, pub);
+      const stellarPubs = [
+        'GBVEZT27ZUCMJABF76XIPPO7M3KUABVR4GZNPBAD3YTPXUSDA57ANRLD',
+        'GDMQYYBRX3ZD34VHU4IJNSLASAQY6VZ7B6UJD5OFKSOW7XFJI5MZMETW',
+        'GAD2SVW5EZLCH6HDC3VK7UE4DZK7KCIUHVCY2PO7ZEUERSWU6QQ6QIHB',
+      ];
+
+      stellarPubs.forEach(stellarPub => {
+        const edPub = convertFromStellarPub(stellarPub);
+        const keyPair = new KeyPair({ pub: edPub });
+
+        should.exist(keyPair.getKeys().pub);
+        should.not.exist(keyPair.getKeys().prv);
+      });
     });
 
     it('from a private key', () => {

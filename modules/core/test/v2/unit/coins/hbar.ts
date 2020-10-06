@@ -2,6 +2,7 @@ import { Hbar } from '../../../../src/v2/coins/';
 import * as accountLib from '@bitgo/account-lib';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
+import { rawTransactionForExplain } from '../../fixtures/coins/hbar';
 
 describe('Hedera Hashgraph:', function() {
   let bitgo;
@@ -54,6 +55,21 @@ describe('Hedera Hashgraph:', function() {
     norm.should.equal('0.0.41098');
   });
 
+  it('should explain a transaction', async function() {
+    const tx = JSON.parse(rawTransactionForExplain);
+    const explain = await basecoin.explainTransaction(tx);
+
+    explain.id.should.equal('0.0.43285@1600529800.643093586');
+    explain.outputAmount.should.equal('2200000000');
+    explain.timestamp.should.equal('1600529800.643093586');
+    explain.expiration.should.equal('120');
+    explain.outputs[0].amount.should.equal('2200000000');
+    explain.outputs[0].address.should.equal('0.0.43283');
+    explain.outputs[0].memo.should.equal('1');
+    explain.fee.fee.should.equal(1160407);
+    explain.changeAmount.should.equal('0');
+  });
+
   describe('Keypairs:', () => {
     it('should generate a keypair from random seed', function() {
       const keyPair = basecoin.generateKeyPair();
@@ -70,6 +86,15 @@ describe('Hedera Hashgraph:', function() {
 
       keyPair.prv.should.equal('302e020100300506032b65700422042080350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f');
       keyPair.pub.should.equal('302a300506032b65700321009cc402b5c75214269c2826e3c6119377cab6c367601338661c87a4e07c6e0333');
+    });
+
+    it('should validate a stellar seed', function() {
+      basecoin.isStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX').should.ok();
+    });
+
+    it('should convert a stellar seed to an hbar prv', function() {
+      const seed = basecoin.convertFromStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX');
+      seed.should.equal('302e020100300506032b6570042204205965b6bfe85e8d543c36bf1b39800d633948bfdf742160d522f2391c57b0b055');
     });
   });
 

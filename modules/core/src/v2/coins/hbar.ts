@@ -24,9 +24,8 @@ import {
 import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import { InvalidAddressError, InvalidMemoIdError, MethodNotImplementedError } from '../../errors';
-import * as url from 'url';
-import * as querystring from 'querystring';
-import * as _ from 'lodash';
+import * as stellar from 'stellar-sdk';
+import { SeedValidator } from '../internal/seedValidator';
 
 export interface HbarSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -52,6 +51,11 @@ export interface ExplainTransactionOptions {
     txHex: string;
   };
   feeInfo: TransactionFee;
+  // TODO(BG-24809): get the memo from the toJson
+  memo?: {
+    type: string;
+    value: string;
+  };
 }
 
 interface AddressDetails {
@@ -196,7 +200,9 @@ export class Hbar extends BaseCoin {
    */
   signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
     return co<Buffer>(function* cosignMessage() {
-      throw new MethodNotImplementedError();
+      const msg = Buffer.isBuffer(message) ? message.toString('utf8') : message;
+      // reconstitute keys and sign
+      return new bitgoAccountLib.Hbar.KeyPair({ prv: key.prv }).signMessage(msg);
     })
       .call(this)
       .asCallback(callback);
@@ -216,7 +222,7 @@ export class Hbar extends BaseCoin {
   }
 
   /**
-   * Explain a Tezos transaction from txHex
+   * Explain a Hedera transaction from txHex
    * @param params
    * @param callback
    */
@@ -224,8 +230,66 @@ export class Hbar extends BaseCoin {
     params: ExplainTransactionOptions,
     callback?: NodeCallback<TransactionExplanation>
   ): Bluebird<TransactionExplanation> {
+    const self = this;
     return co<TransactionExplanation>(function*() {
-      throw new MethodNotImplementedError();
+      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+      if (!txHex) {
+        throw new Error('missing explain tx parameters');
+      }
+
+      if (!params.feeInfo) {
+        throw new Error('missing fee information');
+      }
+
+      const factory = bitgoAccountLib.register(self.getChain(), bitgoAccountLib.Hbar.TransactionBuilderFactory);
+      const txBuilder = factory.from(txHex);
+      const tx = yield txBuilder.build();
+      const txJson = tx.toJson();
+
+      if (tx._txBody.data !== 'cryptoTransfer') {
+        // don't explain this
+        throw new Error('Transaction format outside of cryptoTransfer not supported for explanation.');
+      }
+
+      const displayOrder = [
+        'id',
+        'outputAmount',
+        'changeAmount',
+        'outputs',
+        'changeOutputs',
+        'fee',
+        'timestamp',
+        'expiration',
+        'memo',
+      ];
+
+      // TODO(BG-24809): get the memo from the toJson
+      let memo = '';
+      if (params.memo) {
+        memo = params.memo.value;
+      }
+
+      const outputs = [
+        {
+          amount: txJson.amount.toString(),
+          address: txJson.to,
+          memo,
+        },
+      ];
+
+      const explanationResult: SignTransactionOptions = {
+        displayOrder,
+        id: txJson.id,
+        outputs,
+        outputAmount: outputs[0].amount,
+        changeOutputs: [], // account based does not use change outputs
+        changeAmount: '0', // account base does not make change
+        fee: params.feeInfo,
+        timestamp: txJson.startTime,
+        expiration: txJson.validDuration,
+      };
+
+      return explanationResult;
     })
       .call(this)
       .asCallback(callback);
@@ -288,6 +352,27 @@ export class Hbar extends BaseCoin {
       return false;
     }
     return true;
+  }
+
+  isStellarSeed(seed: string): boolean {
+    return SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM);
+  }
+
+  convertFromStellarSeed(seed: string): string | null {
+    // assume this is a trust custodial seed if its a valid ed25519 prv
+    if (!this.isStellarSeed(seed) || SeedValidator.hasCompetingSeedFormats(seed)) {
+      return null;
+    }
+
+    if (SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM)) {
+      const keyFromSeed = new bitgoAccountLib.Hbar.KeyPair({ seed: stellar.StrKey.decodeEd25519SecretSeed(seed) });
+      const keys = keyFromSeed.getKeys();
+      if (keys !== undefined && keys.prv) {
+        return keys.prv;
+      }
+    }
+
+    return null;
   }
 
   isValidPub(pub: string): boolean {

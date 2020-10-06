@@ -1,7 +1,8 @@
 import * as _ from 'lodash';
-import { Ed25519PublicKey, TransactionId, AccountId } from '@hashgraph/sdk';
+import { TransactionId, AccountId, Ed25519PublicKey, Ed25519PrivateKey } from '@hashgraph/sdk';
 import * as hex from '@stablelib/hex';
 import BigNumber from 'bignumber.js';
+import * as stellar from 'stellar-sdk';
 import { proto } from '../../../resources/hbar/protobuf/hedera';
 
 const MAX_TINYBARS_AMOUNT = new BigNumber(2).pow(63).minus(1);
@@ -192,4 +193,28 @@ export function isValidMemo(memo: string): boolean {
     return false;
   }
   return true;
+}
+
+/**
+ * Uses the native hashgraph SDK function to get a raw key.
+ *
+ * @param prv
+ */
+export function createRawKey(prv: string): Ed25519PrivateKey {
+  return Ed25519PrivateKey.fromString(prv);
+}
+
+/**
+ * Converts an stellar public key to a ed25519 hex format.
+ *
+ * @param stellarPub
+ * @param prv
+ */
+export function convertFromStellarPub(stellarPub: string): string {
+  if (!stellar.StrKey.isValidEd25519PublicKey(stellarPub)) {
+    throw new Error('Not a valid stellar pub.');
+  }
+
+  const rawKey: Buffer = stellar.StrKey.decodeEd25519PublicKey(stellarPub);
+  return rawKey.toString('hex');
 }

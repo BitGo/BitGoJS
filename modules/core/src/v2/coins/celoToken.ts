@@ -54,7 +54,7 @@ export class CeloToken extends Celo {
   }
 
   getChain() {
-    return this.tokenConfig.coin;
+    return this.tokenConfig.type;
   }
 
   getFullName() {
