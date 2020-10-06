@@ -232,6 +232,7 @@ export interface RecoverParams {
   bitgoKey: string;
   walletPassphrase?: string;
   apiKey?: string;
+  userKeyPath?: string;
 }
 
 export interface VerifyKeySignaturesOptions {
@@ -1664,6 +1665,38 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   protected abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Bluebird<AddressInfo>;
   protected abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Bluebird<UnspentInfo[]>;
 
+
+  /**
+   * Derive child keys based on bip32 paths (must start with "m")
+   * If no userKeyPath is provided, all derivation of three keys will use the path parameter
+   * Else, user key is derived with the userKeyPath, and backup and bitgo keys still use path.
+   * @param {bitcoin.HDNode[]} keyArray
+   * @param {string} path
+   * @param {string} userKeyPath
+   * @returns {bitcoin.HDNode[]}
+   */
+   deriveKeysByPaths(keyArray: bitcoin.HDNode[], path: string, userKeyPath?: string): bitcoin.HDNode[] {
+    if (userKeyPath) {
+      const derivedKeys: bitcoin.HDNode[] = [];
+      const userKey = keyArray.shift();
+      derivedKeys.push(userKey.derivePath(userKeyPath));
+      const keys = keyArray.map((k) => k.derivePath(path));
+      derivedKeys.concat(keys);
+      return derivedKeys;
+    }
+    return keyArray.map((k) => k.derivePath(path));
+  }
+
+  /**
+   * Derive child keys at specific index, from provided parent keys
+   * @param {bitcoin.HDNode[]} keyArray
+   * @param {number} index
+   * @returns {Ed25519PrivateKey[]}
+   */
+  deriveKeys(keyArray: bitcoin.HDNode[], index: number) {
+    return keyArray.map((k) => k.derive(index));
+  }
+
   /**
    * Builds a funds recovery transaction without BitGo
    * @param params
@@ -1682,10 +1715,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const self = this;
     return co(function *recover() {
       // ============================HELPER FUNCTIONS============================
-      function deriveKeys(keyArray: bitcoin.HDNode[], index: number) {
-        return keyArray.map((k) => k.derive(index));
-      }
-
       function queryBlockchainUnspentsPath(keyArray: bitcoin.HDNode[], basePath: string, addressesById) {
         return co(function* () {
           const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
@@ -1693,7 +1722,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
           // get unspents for these addresses
           const gatherUnspents = co(function* coGatherUnspents(addrIndex) {
-            const derivedKeys = deriveKeys(keyArray, addrIndex);
+            const derivedKeys = self.deriveKeys(keyArray, addrIndex);
 
             const chain = Number(basePath.split('/').pop()); // extracts the chain from the basePath
             const keys = derivedKeys.map(k => k.getPublicKeyBuffer());
@@ -1775,9 +1804,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error('specified key recovery service does not support recoveries for this coin');
       }
 
+      // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
       const keys = yield self.initiateRecovery(params);
 
-      const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
+      const defaultPrefix = 'm/0/0';
+      const baseKeyPath = self.deriveKeysByPaths(keys!, defaultPrefix, params.userKeyPath);
 
       const queries: any[] = [];
       const addressesById = {};
@@ -1806,8 +1837,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           }
           const externalChainCode = codes.external;
           const internalChainCode = codes.internal;
-          const externalKey = deriveKeys(baseKeyPath, externalChainCode);
-          const internalKey = deriveKeys(baseKeyPath, internalChainCode);
+          const externalKey = self.deriveKeys(baseKeyPath, externalChainCode);
+          const internalKey = self.deriveKeys(baseKeyPath, internalChainCode);
           queries.push(queryBlockchainUnspentsPath(externalKey, '/0/0/' + externalChainCode, addressesById));
           queries.push(queryBlockchainUnspentsPath(internalKey, '/0/0/' + internalChainCode, addressesById));
         }
