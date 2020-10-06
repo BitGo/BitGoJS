@@ -19,7 +19,7 @@ import { KeyPair } from './keyPair';
 /**
  * Tron transaction builder.
  */
-export class TransactionBuilder extends BaseTransactionBuilder {
+export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // transaction being built
   private _transaction: Transaction;
   /**
@@ -29,6 +29,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._transaction = new Transaction(_coinConfig); 
   }
 
   /**
@@ -84,6 +85,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       throw new BuildTransactionError('A valid transaction must have an id');
     }
     return Promise.resolve(this.transaction);
+  }
+
+  /**
+   * Initialize the transaction builder fields using the decoded transaction data
+   *
+   * @param {Transaction} tx the transaction data
+   */
+  initBuilder(tx: Transaction): void {
+    this._transaction = tx;
   }
 
   /**
