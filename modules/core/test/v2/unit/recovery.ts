@@ -14,6 +14,7 @@ import moment = require('moment');
 import * as sinon from 'sinon';
 import { Btc } from '../../../src/v2/coins/btc';
 import { Bsv } from '../../../src/v2/coins/bsv';
+import { Bch } from '../../../src/v2/coins/bch';
 import {
   addressInfos,
   addressUnspents,
@@ -329,9 +330,25 @@ describe('Recovery:', function() {
 
   describe('Recover Bitcoin Cash', function() {
     // Todo (kevin): fix test for other recovery source
-    it('should generate BCH recovery tx', co(function *() {
-      recoveryNocks.nockBchRecovery(bitgo, false);
+    let sandbox: sinon.SinonSandbox;
 
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+      recoveryNocks.nockbitcoinFees(600, 600, 100);
+      const callBack1 = sandbox.stub(Bch.prototype, 'getAddressInfoFromExplorer');
+      callBack1.resolves(emptyAddressInfo);
+      callBack1.withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN').resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
+      callBack1.withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT').resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
+      const callBack2 = sandbox.stub(Bch.prototype, 'getUnspentInfoFromExplorer');
+      callBack2.withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT').resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
+      callBack2.resolves([]);
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+  
+    it('should generate BCH recovery tx', co(function *() {
       const basecoin = bitgo.coin('tbch');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
@@ -357,8 +374,7 @@ describe('Recovery:', function() {
     }));
 
     it('should generate BCH recovery tx with KRS', co(function *() {
-      recoveryNocks.nockBchRecovery(bitgo, true);
-
+      nockCoingecko(1000,'bitcoin-cash');
       const basecoin = bitgo.coin('tbch');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',

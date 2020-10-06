@@ -5,7 +5,8 @@ import { BitGo } from '../../bitgo';
 
 const BlockchairCoin = [
   'bitcoin',
-  'bitcoin-sv'
+  'bitcoin-sv',
+  'bitcoin-cash',
 ];
 
 const devBase = ['dev', 'latest', 'local', 'localNonSecure', 'adminDev', 'adminLatest'];
