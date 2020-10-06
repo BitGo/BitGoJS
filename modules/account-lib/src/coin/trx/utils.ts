@@ -292,3 +292,20 @@ function createPermission(raw: { permissionName: string; threshold: number }): P
   }
   return { type: permissionType, threshold: raw.threshold };
 }
+
+/**
+ * Returns whether the provided raw transaction accommodates to bitgo's preferred format
+ *
+ * @param {any} rawTransaction - The raw transaction to be checked
+ * @returns {boolean} the validation result
+ */
+export function isValidRawTransactionFormat(rawTransaction: any): boolean {
+  if (
+    (typeof rawTransaction === 'string' && isValidHex(rawTransaction)) ||
+    (Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))
+  ) {
+    return true;
+  }
+  return false;
+}
+

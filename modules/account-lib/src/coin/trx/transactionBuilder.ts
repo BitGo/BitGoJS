@@ -19,7 +19,7 @@ import { KeyPair } from './keyPair';
 /**
  * Tron transaction builder.
  */
-export abstract class TransactionBuilder extends BaseTransactionBuilder {
+export class TransactionBuilder extends BaseTransactionBuilder {
   // transaction being built
   private _transaction: Transaction;
   /**

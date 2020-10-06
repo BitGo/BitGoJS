@@ -28,7 +28,7 @@ export abstract class BaseTransactionBuilderFactory {
   /**
    * Returns a proper builder for the given encoded transaction
    *
-   * @param {Uint8Array | string} raw - Encoded transaction in hex string or Uint8Array format
+   * @param {any} raw - Encoded transaction in hex string or Uint8Array format
    */
-  public abstract from(raw: Uint8Array | string);
+  public abstract from(raw: any);
 }

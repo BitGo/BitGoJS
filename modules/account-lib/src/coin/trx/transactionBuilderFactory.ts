@@ -1,13 +1,11 @@
-/**
- *  FEDE FILE
- */
-
-
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { BaseTransactionBuilderFactory } from "../baseCoin";
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
+import { isValidRawTransactionFormat } from './utils';
+import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
+import { ContractType } from './enum';
 
 
 
@@ -33,8 +31,41 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritDoc */
-  public from(raw: string | Uint8Array) {
-      throw new Error('Method not implemented.');
+  public from(raw: any) {
+    this.validateRawTransaction(raw);
+    const tx = this.parseTransaction(raw);
+    const txContractType = tx.toJson().raw_data.contractType;
+    switch (txContractType) {
+      case ContractType.Transfer:
+        return this.getTransferBuilder(tx);
+      default:
+        throw new InvalidTransactionError('Invalid transaction ' + txContractType);
+    }
+  }
+
+  /**
+   * Check the raw transaction has a valid format in the blockchain context, throw otherwise.
+   *
+   * @param {any} rawTransaction - Transaction in any format
+   */
+  private validateRawTransaction(rawTransaction: any) {
+    if (!isValidRawTransactionFormat(rawTransaction)) {
+      throw new ParseTransactionError('Invalid raw transaction');
+    }
+  }
+
+  /**
+   * Returns a transaction instance from the encoded value
+   *
+   * @param {any} rawTransaction - encoded transaction
+   * @returns {Transaction} the parsed transaction instance
+   */
+  private parseTransaction(rawTransaction: any): Transaction {
+    if (typeof rawTransaction === 'string') {
+      const transaction = JSON.parse(rawTransaction);
+      return new Transaction(this._coinConfig, transaction);
+    }
+    return new Transaction(this._coinConfig, rawTransaction);
   }
 
   /**
