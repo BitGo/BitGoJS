@@ -9,6 +9,8 @@ import {
   tstellarToken,
   erc20CompatibleAccountCoin,
   hederaCoin,
+  tronToken,
+  ttronToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -499,6 +501,9 @@ export const coins = CoinMap.fromCoins([
     '',
     'WXT'
   ),
+  // TODO Set correct contract addresses for WBTC and WETH on Tron main network
+  tronToken('trx:wbtc', 'Tron Wrapped Bitcoin', 8, 'WBTC contract address on Tron mainnet', UnderlyingAsset.WBTC),
+  tronToken('trx:weth', 'Tron Wrapped Ether', 18, 'WETH contract address on Tron mainnet', UnderlyingAsset.WETH),
   terc20('terc', 'ERC Test Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.ERC),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
@@ -529,6 +534,8 @@ export const coins = CoinMap.fromCoins([
     '',
     'TST'
   ),
+  ttronToken('ttrx:wbtc', 'Test Tron Wrapped Bitcoin', 8, 'TKynUzfhL682TKjiTR3NWYGq9DfyfXNEwg', UnderlyingAsset.WBTC),
+  ttronToken('ttrx:eth', 'Test Tron Wrapped Ether', 18, 'TW4Bg4V2DBJLHnJJ9cXJzRykSNvwq5nMbn', UnderlyingAsset.WETH),
   tofcerc20('ofcterc', 'ERC Test Token', 0, UnderlyingAsset.ERC),
   ofcerc20('ofcerc', 'ERC Token', 0, UnderlyingAsset.ERC),
 ]);
