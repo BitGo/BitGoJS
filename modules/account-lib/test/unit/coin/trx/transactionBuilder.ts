@@ -15,21 +15,30 @@ import {
   UnsignedBuildEmptyIDTransaction,
   UnsignedInvalidTimeStampBuildTransaction,
 } from '../../../resources/trx';
-import { getBuilder } from '../../../../src';
+// import { getBuilder } from '../../../../src';
+import { register } from '../../../../src/index';
 import * as Crypto from '../../../../src/utils/crypto';
+import { TransactionBuilderFactory } from '../../../../src/coin/trx/transactionBuilderFactory';
 
 describe('Tron TransactionBuilder', function() {
+  const factory = register('ttrx', TransactionBuilderFactory);
+
+  const initTxBuilder = () => {
+    const builder = factory.getTransferBuilder();
+    return builder;
+  };
+
   let txBuilder;
 
   beforeEach(() => {
-    txBuilder = getBuilder('ttrx');
+    txBuilder = initTxBuilder();
   });
 
   describe('Transaction builder from method', () => {
     describe('should succeed to parse', () => {
       it('a transfer contract for an unsigned tx', () => {
         const txJson = JSON.stringify(UnsignedBuildTransaction);
-        txBuilder.from(txJson);
+        txBuilder = factory.from(txJson);
       });
 
       it('a transfer contract for a half-signed tx', () => {
@@ -223,5 +232,10 @@ describe('Tron TransactionBuilder', function() {
       const key = 'jiraiya';
       should.throws(() => txBuilder.validateKey({ key }), 'The provided key is not valid');
     });
+
+    /* it('should throw an error when walletInitializationBuilder is created', () => {
+      let txWalletBuilder = txWalletBuilder = factory.getWalletInitializationBuilder();
+      should.throws(e => e.message === 'WalletInitializationBuilder is not implemented');
+    }); */
   });
 });

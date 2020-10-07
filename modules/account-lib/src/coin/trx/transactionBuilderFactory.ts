@@ -1,36 +1,33 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { BaseTransactionBuilderFactory } from "../baseCoin";
+import { BaseTransactionBuilderFactory } from '../baseCoin';
+import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { isValidRawTransactionFormat } from './utils';
-import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { ContractType } from './enum';
 
-
-
-
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
-  
   /**
    * Constructor
-   * @param _coinConfig - coin configuration data
+   *
+   * @param  {CoinConfig} _coinConfig - coin configuration data
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
-      super(_coinConfig);
+    super(_coinConfig);
   }
-  
-  /** @inheritDoc */
+
+  /** @inheritdoc */
   getTransferBuilder(tx?: Transaction): TransferBuilder {
     return this.initializeBuilder(tx, new TransferBuilder(this._coinConfig));
   }
 
-  /** @inheritDoc */
+  /** @inheritdoc */
   public getWalletInitializationBuilder() {
-      throw new Error('Method not implemented.');
+    throw new Error('Method not implemented.');
   }
 
-  /** @inheritDoc */
+  /** @inheritdoc */
   public from(raw: any) {
     this.validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);

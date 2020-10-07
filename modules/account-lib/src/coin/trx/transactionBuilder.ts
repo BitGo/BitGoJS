@@ -29,7 +29,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._transaction = new Transaction(_coinConfig); 
+    this._transaction = new Transaction(_coinConfig);
   }
 
   /**

@@ -13,31 +13,39 @@ export type TronBinaryLike = ByteArray | Buffer | Uint8Array | string;
 export type ByteArray = number[];
 
 /**
- * @param address
+ * @param {string} address - Base 58 address
+ * @returns {boolean} - the validation result
  */
 export function isBase58Address(address: string): boolean {
   return tronweb.utils.crypto.isAddressValid(address);
 }
 
 /**
- * @param str
+ * Convert string address to ByteArray.
+ *
+ * @param {string} str - Hex address
+ * @returns {ByteArray} - Address in ByteArray format
  */
 export function getByteArrayFromHexAddress(str: string): ByteArray {
   return tronweb.utils.code.hexStr2byteArray(str);
 }
 
 /**
- * @param arr
+ * Convert ByteArray address to string.
+ *
+ * @param {ByteArray} arr - Encoded address in ByteArray format
+ * @returns {string} - Decoded address
  */
 export function getHexAddressFromByteArray(arr: ByteArray): string {
   return tronweb.utils.code.byteArray2hexStr(arr);
 }
 
 /**
- * @param messageToVerify
- * @param base58Address
- * @param sigHex
- * @param useTronHeader
+ * @param {string} messageToVerify
+ * @param {string} base58Address
+ * @param {string} sigHex
+ * @param {boolean} useTronHeader
+ * @returns {boolean} - Signature validation result
  */
 export function verifySignature(
   messageToVerify: string,
@@ -61,7 +69,9 @@ export function verifySignature(
 }
 
 /**
- * @param base58
+ *
+ * @param {string} base58 - Base58 address
+ * @returns {string} - Hex address
  */
 export function getHexAddressFromBase58Address(base58: string): string {
   // pulled from: https://github.com/TRON-US/tronweb/blob/dcb8efa36a5ebb65c4dab3626e90256a453f3b0d/src/utils/help.js#L17
@@ -71,7 +81,8 @@ export function getHexAddressFromBase58Address(base58: string): string {
 }
 
 /**
- * @param privateKey
+ * @param {TronBinaryLike} privateKey - Private key
+ * @returns {ByteArray} - Public key
  */
 export function getPubKeyFromPriKey(privateKey: TronBinaryLike): ByteArray {
   return tronweb.utils.crypto.getPubKeyFromPriKey(privateKey);
@@ -276,6 +287,7 @@ export function decodeAccountPermissionUpdateContract(base64: string): AccountPe
 }
 
 /**
+ *
  * @param raw
  */
 function createPermission(raw: { permissionName: string; threshold: number }): Permission {
@@ -300,12 +312,8 @@ function createPermission(raw: { permissionName: string; threshold: number }): P
  * @returns {boolean} the validation result
  */
 export function isValidRawTransactionFormat(rawTransaction: any): boolean {
-  if (
-    (typeof rawTransaction === 'string' && isValidHex(rawTransaction)) ||
-    (Buffer.isBuffer(rawTransaction) && Uint8Array.from(rawTransaction))
-  ) {
+  if (typeof rawTransaction === 'string' && isValidHex(rawTransaction)) {
     return true;
   }
   return false;
 }
-
