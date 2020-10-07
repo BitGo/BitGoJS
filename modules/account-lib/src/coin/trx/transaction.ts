@@ -17,6 +17,7 @@ export class Transaction extends BaseTransaction {
   // Tron specific fields
   protected _validFrom: number;
   protected _validTo: number;
+  protected _type: TransactionType;
 
   private _decodedRawDataHex: RawData;
   private _transaction?: TransactionReceipt;
@@ -93,6 +94,7 @@ export class Transaction extends BaseTransaction {
     if (!this._transaction) {
       throw new ParseTransactionError('Empty transaction');
     }
+
     const hexBuffer = Buffer.from(this._transaction.raw_data_hex, 'hex');
     const newTxid = createHash('sha256')
       .update(hexBuffer)
@@ -104,7 +106,7 @@ export class Transaction extends BaseTransaction {
   /**
    * Extend the expiration date by the given number of milliseconds.
    *
-   * @param extensionMs The number of milliseconds to extend the expiration by
+   * @param {number} extensionMs The number of milliseconds to extend the expiration by
    */
   extendExpiration(extensionMs: number): void {
     if (extensionMs < 0) {
@@ -174,11 +176,30 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
+  /**
+   * Sets this transaction
+   *
+   * @param {Transaction} tx transaction
+   */
+  setTransactionReceipt(tx: TransactionReceipt) {
+    this._transaction = tx;
+  }
+
+  /**
+   * Set the transaction type
+   *
+   * @param {TransactionType} transactionType The transaction type to be set
+   */
+  setTransactionType(transactionType: TransactionType): void {
+    this._type = transactionType;
+  }
+
   /** @inheritdoc */
   toJson(): TransactionReceipt {
     if (!this._transaction) {
       throw new ParseTransactionError('Empty transaction');
     }
+
     return this._transaction;
   }
 

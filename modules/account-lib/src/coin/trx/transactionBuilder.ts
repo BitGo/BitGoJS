@@ -8,13 +8,13 @@ import {
   InvalidTransactionError,
   ParseTransactionError,
 } from '../baseCoin/errors';
-import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder } from '../baseCoin';
+import { BaseKey } from '../baseCoin/iface';
 import { TransactionReceipt } from './iface';
 import { Address } from './address';
-import { signTransaction, isBase58Address, decodeTransaction } from './utils';
-import { Transaction } from './transaction';
+import { isBase58Address, signTransaction, decodeTransaction } from './utils';
 import { KeyPair } from './keyPair';
+import { Transaction } from './transaction';
 
 /**
  * Tron transaction builder.
@@ -30,6 +30,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._transaction = new Transaction(_coinConfig);
+  }
+
+  /** @inheritdoc */
+  protected async buildImplementation(): Promise<Transaction> {
+    // This must be extended on child classes
+    if (!this.transaction.id) {
+      throw new BuildTransactionError('A valid transaction must have an id');
+    }
+    return Promise.resolve(this.transaction);
   }
 
   /**
@@ -78,44 +87,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return new Transaction(this._coinConfig, signedTransaction);
   }
 
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<Transaction> {
-    // This is a no-op since Tron transactions are built from
-    if (!this.transaction.id) {
-      throw new BuildTransactionError('A valid transaction must have an id');
-    }
-    return Promise.resolve(this.transaction);
-  }
-
   /**
    * Initialize the transaction builder fields using the decoded transaction data
    *
    * @param {Transaction} tx the transaction data
    */
   initBuilder(tx: Transaction): void {
+    // this method should extended on each child class
     this._transaction = tx;
-  }
-
-  /**
-   * Extend the validity of this transaction by the given amount of time
-   *
-   * @param {number} extensionMs The number of milliseconds to extend the validTo time
-   * @returns {undefined}
-   */
-  extendValidTo(extensionMs: number): void {
-    this.transaction.extendExpiration(extensionMs);
-  }
-
-  /** @inheritdoc */
-  validateValue(value: BigNumber): void {
-    if (value.isLessThanOrEqualTo(0)) {
-      throw new Error('Value cannot be below zero.');
-    }
-
-    // max long in Java - assumed upper limit for a TRX transaction
-    if (value.isGreaterThan(new BigNumber('9223372036854775807'))) {
-      throw new Error('Value cannot be greater than handled by the javatron node.');
-    }
   }
 
   /** @inheritdoc */
@@ -150,6 +129,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   validateRawTransaction(rawTransaction: TransactionReceipt | string): void {
     // TODO: Validation of signature
+    // TODO: Refactor with new implementation
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
@@ -206,6 +186,18 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
+  validateValue(value: BigNumber): void {
+    if (value.isLessThanOrEqualTo(0)) {
+      throw new Error('Value cannot be below zero.');
+    }
+
+    // max long in Java - assumed upper limit for a TRX transaction
+    if (value.isGreaterThan(new BigNumber('9223372036854775807'))) {
+      throw new Error('Value cannot be greater than handled by the javatron node.');
+    }
+  }
+
+  /** @inheritdoc */
   protected get transaction(): Transaction {
     return this._transaction;
   }
@@ -213,5 +205,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
+  }
+
+  /** //TODO: Remove this method from here, it should be a tx method
+   * Extend the validity of this transaction by the given amount of time
+   *
+   * @param {number} extensionMs The number of milliseconds to extend the validTo time
+   * @returns {undefined}
+   */
+  extendValidTo(extensionMs: number): void {
+    this.transaction.extendExpiration(extensionMs);
   }
 }

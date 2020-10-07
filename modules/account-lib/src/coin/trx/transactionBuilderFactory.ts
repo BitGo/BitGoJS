@@ -28,7 +28,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  public from(raw: any) {
+  public from(raw: any): TransactionBuilder {
     this.validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);
     const txContractType = tx.toJson().raw_data.contractType;
