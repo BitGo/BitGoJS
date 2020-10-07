@@ -1,5 +1,7 @@
 import assert from 'assert';
 import * as tronweb from 'tronweb';
+import * as hex from '@stablelib/hex';
+import BigNumber from 'bignumber.js';
 import { protocol } from '../../../resources/trx/protobuf/tron';
 
 import { UtilsError } from '../baseCoin/errors';
@@ -307,4 +309,36 @@ export function isValidRawTransactionFormat(rawTransaction: any): boolean {
     return true;
   }
   return false;
+}
+
+// TODO : fore sure there is some better tool with TronWeb to do this.
+/**
+ * Returns a Uint8Array of the given hex string
+ *
+ * @param {string} str - the hex string to be converted
+ * @returns {string} - the Uint8Array value
+ */
+export function toUint8Array(str: string): Uint8Array {
+  return hex.decode(str);
+}
+
+/**
+ * Returns an hex string of the given buffer
+ *
+ * @param {Buffer | Uint8Array} buffer - the buffer to be converted to hex
+ * @returns {string} - the hex value
+ */
+export function toHex(buffer: Buffer | Uint8Array): string {
+  return hex.encode(buffer, true);
+}
+
+/**
+ * Returns whether or not the string is a valid amount number
+ *
+ * @param {string} amount - the string to validate
+ * @returns {boolean} - the validation result
+ */
+export function isValidAmount(amount: string): boolean {
+  const bigNumberAmount = new BigNumber(amount);
+  return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThanOrEqualTo(0);
 }
