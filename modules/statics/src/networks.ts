@@ -196,6 +196,12 @@ class Kovan extends Testnet implements AccountNetwork {
   accountExplorerUrl = 'https://kovan.etherscan.io/address/';
 }
 
+class Goerli extends Testnet implements AccountNetwork {
+  family = CoinFamily.ETH;
+  explorerUrl = 'https://goerli.etherscan.io/tx/';
+  accountExplorerUrl = 'https://goerli.etherscan.io/address/';
+}
+
 class EthereumClassic extends Mainnet implements AccountNetwork {
   family = CoinFamily.ETC;
   explorerUrl = 'https://blockscout.com/etc/mainnet/tx/';
@@ -374,6 +380,7 @@ export const Networks = {
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     kovan: Object.freeze(new Kovan()),
+    goerli: Object.freeze(new Goerli()),
     litecoin: Object.freeze(new LitecoinTestnet()),
     ofc: Object.freeze(new OfcTestnet()),
     rbtc: Object.freeze(new RbtcTestnet()),

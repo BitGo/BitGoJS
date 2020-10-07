@@ -28,6 +28,7 @@ export { Tdash } from './tdash';
 export { Teos } from './teos';
 export { Tetc } from './tetc';
 export { Teth } from './teth';
+export { Gteth } from './gteth';
 export { Tltc } from './tltc';
 export { Trbtc } from './trbtc';
 export { Trmg } from './trmg';

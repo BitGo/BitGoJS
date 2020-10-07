@@ -37,6 +37,7 @@ const coinBuilderMap = {
   tetc: Etc.TransactionBuilder,
   eth: Eth.TransactionBuilder,
   teth: Eth.TransactionBuilder,
+  gteth: Eth.TransactionBuilder,
   rbtc: Rbtc.TransactionBuilder,
   trbtc: Rbtc.TransactionBuilder,
   celo: Celo.TransactionBuilder,
