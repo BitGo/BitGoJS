@@ -308,4 +308,3 @@ export function isValidRawTransactionFormat(rawTransaction: any): boolean {
   }
   return false;
 }
-
