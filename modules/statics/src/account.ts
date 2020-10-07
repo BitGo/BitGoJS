@@ -95,11 +95,35 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
   }
 }
 
+/** 
+ * ERC20 token addresses are Base58 formatted on some blockchains.
+ */
+export class Base58ContractAddressDefinedToken extends AccountCoinToken {
+  public contractAddress: ContractAddress;
+
+  constructor(options: Erc20ConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    if (!options.contractAddress.match(/[1-9A-HJ-NP-Za-km-z]{34}$/)) {
+      throw new InvalidContractAddressError(options.name, options.contractAddress);
+    }
+
+    this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
+  }
+}
+
 /**
  * ERC 20 is a token standard for the Ethereum blockchain. They are similar to other account coins, but have a
  * contract address property which identifies the smart contract which defines the token.
  */
 export class Erc20Coin extends ContractAddressDefinedToken {}
+
+/**
+ * The TRON blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
+ */
+export class TronErc20Coin extends Base58ContractAddressDefinedToken {}
 
 /**
  * Some blockchains have native coins which also support the ERC20 interface such as CELO.
@@ -483,7 +507,7 @@ export function tronToken(
   primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
-    new Erc20Coin({
+    new TronErc20Coin({
       name,
       fullName,
       network,
