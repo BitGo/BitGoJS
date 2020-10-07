@@ -38,6 +38,7 @@ export const coins = CoinMap.fromCoins([
   account('talgo', 'Testnet Algorand', Networks.test.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
+  account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('etc', 'Ethereum Classic', Networks.main.ethereum, 18, UnderlyingAsset.ETC, ETH_FEATURES),
   account('tetc', 'Testnet Ethereum Classic', Networks.test.kovan, 18, UnderlyingAsset.ETC, ETH_FEATURES),
   account('eos', 'Eos', Networks.main.eos, 4, UnderlyingAsset.EOS),

@@ -31,6 +31,7 @@ import {
   Teos,
   Tetc,
   Teth,
+  Gteth,
   Thbar,
   Tltc,
   Trbtc,
@@ -125,6 +126,7 @@ GlobalCoinFactory.registerCoinConstructor('eos', Eos.createInstance);
 GlobalCoinFactory.registerCoinConstructor('teos', Teos.createInstance);
 GlobalCoinFactory.registerCoinConstructor('eth', Eth.createInstance);
 GlobalCoinFactory.registerCoinConstructor('teth', Teth.createInstance);
+GlobalCoinFactory.registerCoinConstructor('gteth', Gteth.createInstance);
 GlobalCoinFactory.registerCoinConstructor('etc', Etc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tetc', Tetc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('rbtc', Rbtc.createInstance);
