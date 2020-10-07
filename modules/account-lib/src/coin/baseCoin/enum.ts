@@ -25,6 +25,14 @@ export enum TransactionType {
   StakingUnlock,
   // Withdraw
   StakingWithdraw,
+  // Confirm or Reject a Mint Request
+  MintRequest,
+  // Confirm or Reject a Burn Request
+  BurnRequest,
+  // Update a Custodian Custodian (e.g. Set Custodian Btc Deposit Address, add Merchant or remove Merchant for wrapped coins)
+  CustodianUpdate,
+  // Update a Merchant (e.g. set deposit Addres, add Mint Request, cancel Mint Request or burn for wrapped coins)
+  MerchantUpdate,
 }
 
 /**

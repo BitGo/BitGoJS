@@ -38,7 +38,7 @@ export interface RawData {
   expiration: number;
   timestamp: number;
   contractType?: ContractType;
-  contract: TransferContract[] | AccountPermissionUpdateContract[];
+  contract: TransferContract[] | AccountPermissionUpdateContract[] | CreateSmartContract[] | TriggerSmartContract[];
 }
 
 export interface Value {
@@ -54,6 +54,21 @@ export interface ValueFields {
 
 export interface TransferContract {
   parameter: Value;
+}
+
+export interface TriggerSmartContract {
+  ownerAddress?: Uint8Array | null;
+  contractAddress?: Uint8Array | null;
+  callValue?: number | Long | null;
+  data?: Uint8Array | null;
+  callTokenValue?: number | Long | null;
+  tokenId?: number | Long | null;
+}
+
+export interface CreateSmartContract {
+  ownerAddress?: Uint8Array | null;
+  callTokenValue?: number | Long | null;
+  tokenId?: number | Long | null;
 }
 
 export interface AccountPermissionUpdateContract {
