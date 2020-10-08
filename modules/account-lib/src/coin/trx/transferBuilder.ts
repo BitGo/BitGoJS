@@ -59,6 +59,7 @@ export class TransferBuilder extends TransactionBuilder {
       txID,
       raw_data,
       raw_data_hex: rawDataHex,
+      signature: this.transaction.signature,
     };
   }
 
