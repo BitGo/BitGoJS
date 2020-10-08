@@ -18,13 +18,13 @@ export class TransferBuilder extends TransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this.transaction.setTransactionType(TransactionType.Send);
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    this.transaction.setTransactionType(TransactionType.Send);
     this.transaction.setTransactionReceipt(this.buildTransactionReceipt());
-    return await super.buildImplementation();
+    return super.buildImplementation();
   }
 
   private buildTransactionReceipt(): TransactionReceipt {
@@ -83,11 +83,7 @@ export class TransferBuilder extends TransactionBuilder {
     this.transaction.setTransactionType(TransactionType.Send);
     const raw_data = tx.toJson().raw_data;
     const transferContract = raw_data.contract[0] as TransferContract;
-    const transferData = transferContract.parameter.value;
-
-    if (transferData && transferData.amount && transferData.owner_address && transferData.to_address) {
-      this.initTransfers(transferData);
-    }
+    this.initTransfers(transferContract);
   }
 
   /**
@@ -97,10 +93,17 @@ export class TransferBuilder extends TransactionBuilder {
    *
    * @param {ValueFields} transfer object with transfer data
    */
-  protected initTransfers(transfer: ValueFields): void {
-    this.amount(transfer.amount.toFixed());
-    this.to({ address: transfer.to_address });
-    this.source({ address: transfer.owner_address });
+  protected initTransfers(transfer: TransferContract): void {
+    const { amount, owner_address, to_address } = transfer.parameter.value;
+    if (amount) {
+      this.amount(amount.toFixed());
+    }
+    if (to_address) {
+      this.to({ address: to_address });
+    }
+    if (owner_address) {
+      this.source({ address: owner_address });
+    }
   }
 
   /** @inheritdoc */

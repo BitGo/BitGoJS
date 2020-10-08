@@ -22,6 +22,7 @@ import { Transaction } from './transaction';
 export class TransactionBuilder extends BaseTransactionBuilder {
   // transaction being built
   private _transaction: Transaction;
+  protected _signingKeys: BaseKey[];
   /**
    * Public constructor.
    *
@@ -29,12 +30,17 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._signingKeys = [];
     this._transaction = new Transaction(_coinConfig);
   }
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    // This must be extended on child classes
+    // This method must be extended on child classes
+    if (this._signingKeys.length > 0) {
+      this.applySignatures();
+    }
+
     if (!this.transaction.id) {
       throw new BuildTransactionError('A valid transaction must have an id');
     }
@@ -48,43 +54,26 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {Transaction} Tron transaction
    */
   protected fromImplementation(rawTransaction: TransactionReceipt | string): Transaction {
+    let receipt;
     if (typeof rawTransaction === 'string') {
-      const transaction = JSON.parse(rawTransaction);
-      return new Transaction(this._coinConfig, transaction);
+      receipt = JSON.parse(rawTransaction);
+    } else {
+      receipt = rawTransaction;
     }
-    return new Transaction(this._coinConfig, rawTransaction);
+    const transaction = new Transaction(this._coinConfig, receipt);
+    this.initBuilder(transaction);
+    return transaction;
   }
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
-    if (!this.transaction.inputs) {
-      throw new SigningError('Transaction has no sender');
+    if (this._signingKeys.includes(key)) {
+      throw new SigningError('Duplicated key');
     }
+    this._signingKeys.push(key);
 
-    if (!this.transaction.outputs) {
-      throw new SigningError('Transaction has no receiver');
-    }
-
-    const oldTransaction = this.transaction.toJson();
-    // Store the original signatures to compare them with the new ones in a later step. Signatures
-    // can be undefined if this is the first time the transaction is being signed
-    const oldSignatureCount = oldTransaction.signature ? oldTransaction.signature.length : 0;
-    let signedTransaction: TransactionReceipt;
-    try {
-      const keyPair = new KeyPair({ prv: key.key });
-      // Since the key pair was generated using a private key, it will always have a prv attribute,
-      // hence it is safe to use non-null operator
-      signedTransaction = signTransaction(keyPair.getKeys().prv!, this.transaction.toJson());
-    } catch (e) {
-      throw new SigningError('Failed to sign transaction via helper.');
-    }
-
-    // Ensure that we have more signatures than what we started with
-    if (!signedTransaction.signature || oldSignatureCount >= signedTransaction.signature.length) {
-      throw new SigningError('Transaction signing did not return an additional signature.');
-    }
-
-    return new Transaction(this._coinConfig, signedTransaction);
+    // We keep this return for compatibility but is not meant to be use
+    return this.transaction;
   }
 
   /**
@@ -95,8 +84,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   initBuilder(tx: Transaction): void {
     // this method should extended on each child class
     this._transaction = tx;
+    this._signingKeys = [];
   }
 
+  //region validations
   /** @inheritdoc */
   validateAddress(address: Address): void {
     // assumes a base 58 address for our addresses
@@ -196,6 +187,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
       throw new Error('Value cannot be greater than handled by the javatron node.');
     }
   }
+  //endregion
 
   /** @inheritdoc */
   protected get transaction(): Transaction {
@@ -205,6 +197,38 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
+  }
+
+  private applySignatures(): void {
+    if (!this.transaction.inputs) {
+      throw new SigningError('Transaction has no sender');
+    }
+
+    if (!this.transaction.outputs) {
+      throw new SigningError('Transaction has no receiver');
+    }
+    this._signingKeys.forEach(key => this.applySignature(key));
+  }
+
+  private applySignature(key: BaseKey): void {
+    const oldTransaction = this.transaction.toJson();
+    // Store the original signatures to compare them with the new ones in a later step. Signatures
+    // can be undefined if this is the first time the transaction is being signed
+    const oldSignatureCount = oldTransaction.signature ? oldTransaction.signature.length : 0;
+    let signedTransaction: TransactionReceipt;
+    try {
+      const keyPair = new KeyPair({ prv: key.key });
+      // Since the key pair was generated using a private key, it will always have a prv attribute,
+      // hence it is safe to use non-null operator
+      signedTransaction = signTransaction(keyPair.getKeys().prv!, this.transaction.toJson());
+    } catch (e) {
+      throw new SigningError('Failed to sign transaction via helper.');
+    }
+
+    // Ensure that we have more signatures than what we started with
+    if (!signedTransaction.signature || oldSignatureCount >= signedTransaction.signature.length) {
+      throw new SigningError('Transaction signing did not return an additional signature.');
+    }
   }
 
   /** //TODO: Remove this method from here, it should be a tx method

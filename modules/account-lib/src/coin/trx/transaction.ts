@@ -53,6 +53,10 @@ export class Transaction extends BaseTransaction {
     this._validFrom = rawData.timestamp;
     this._validTo = rawData.expiration;
 
+    if (this._transaction) {
+      this._transaction.raw_data = rawData;
+    }
+
     let output, input;
     // Contract-specific fields
     switch (rawData.contractType) {
