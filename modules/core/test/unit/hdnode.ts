@@ -52,14 +52,16 @@ describe('HDNode', function() {
 
     it('deriveKeyByPath should derive correct key', function() {
       const root = HDNode.fromSeedHex('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
-      let child = root.derivePath("m/0/1/0");
+      const basePath = 'm/0/1/0';
+      let baseKey = root.derivePath(basePath);
+      let greatGrandChild0 = root.derivePath(`${basePath}/9/8`);
       // greatGrandChild is derived using the tested utxolib function
-      let greatGrandChild = child
-        .derive(9).derive(8);
-      // deriveKeyByPath(child, '/9/8') should effectively mean calling derive() on the result of child twice,
+      let greatGrandChild1 = baseKey.derive(9).derive(8);
+      // deriveKeyByPath(baseKey, '/9/8') should effectively mean calling derive() on the result of baseKey twice,
       // first time with the index 9, the second time with the index 8:
-      let greatGrandChild2 = deriveKeyByPath(child, '/9/8');
-      greatGrandChild2.getAddress().should.equal(greatGrandChild.getAddress());
+      let greatGrandChild2 = deriveKeyByPath(baseKey, '/9/8');
+      greatGrandChild1.getAddress().should.equal(greatGrandChild0.getAddress());
+      greatGrandChild2.getAddress().should.equal(greatGrandChild1.getAddress());
     })
   });
 });

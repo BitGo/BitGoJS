@@ -8,7 +8,7 @@ import * as debugLib from 'debug';
 import * as _ from 'lodash';
 import * as request from 'superagent';
 
-import { hdPath } from '../../bitcoin';
+import { deriveKeyByPath, hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
 import * as config from '../../config';
 import * as errors from '../../errors';
@@ -1665,33 +1665,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   protected abstract getAddressInfoFromExplorer(address: string, apiKey?: string): Bluebird<AddressInfo>;
   protected abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Bluebird<UnspentInfo[]>;
 
-
-  /**
-   * Derive child keys based on bip32 paths (must start with "m")
-   * If no userKeyPath is provided, all derivation of three keys will use the path parameter
-   * Else, user key is derived with the userKeyPath, and backup and bitgo keys still use path.
-   * @param {bitcoin.HDNode[]} keyArray
-   * @param {string} path
-   * @param {string} userKeyPath
-   * @returns {bitcoin.HDNode[]}
-   */
-   deriveKeysByPaths(keyArray: bitcoin.HDNode[], path: string, userKeyPath?: string): bitcoin.HDNode[] {
-    if (userKeyPath) {
-      const derivedKeys: bitcoin.HDNode[] = [];
-      const userKey = keyArray.shift();
-      derivedKeys.push(userKey.derivePath(userKeyPath));
-      const keys = keyArray.map((k) => k.derivePath(path));
-      derivedKeys.concat(keys);
-      return derivedKeys;
-    }
-    return keyArray.map((k) => k.derivePath(path));
-  }
-
   /**
    * Derive child keys at specific index, from provided parent keys
    * @param {bitcoin.HDNode[]} keyArray
    * @param {number} index
-   * @returns {Ed25519PrivateKey[]}
+   * @returns {bitcoin.HDNode[]}
    */
   deriveKeys(keyArray: bitcoin.HDNode[], index: number) {
     return keyArray.map((k) => k.derive(index));
@@ -1807,8 +1785,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
       const keys = yield self.initiateRecovery(params);
 
-      const defaultPrefix = 'm/0/0';
-      const baseKeyPath = self.deriveKeysByPaths(keys!, defaultPrefix, params.userKeyPath);
+      const [userKey, backupKey, bitgoKey] = keys;
+      let derivedUserKey;
+      let baseKeyPath;
+      if (params.userKeyPath) {
+        derivedUserKey = deriveKeyByPath(userKey, params.userKeyPath);
+        const twoKeys = self.deriveKeys(self.deriveKeys([backupKey, bitgoKey], 0), 0);
+        baseKeyPath = [derivedUserKey, ...twoKeys];
+      } else {
+        baseKeyPath = self.deriveKeys(self.deriveKeys(keys, 0), 0);
+      }
 
       const queries: any[] = [];
       const addressesById = {};
