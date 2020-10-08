@@ -509,7 +509,7 @@ export const coins = CoinMap.fromCoins([
   terc20('terc20', 'Test ERC20 Token', 18, '0x731a10897d267e19b34503ad902d0a29173ba4b1', UnderlyingAsset.TERC20),
   terc20('tdai', 'Test DAI', 18, '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', UnderlyingAsset.TERC20),
   terc20('trif', 'Test RIF Token', 18, '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe', UnderlyingAsset.RIF),
-  tceloToken('tcusd', 'Test Celo USD Token', 18, '0xa561131a1c8ac25925fb848bca45a74af61e5a38', UnderlyingAsset.CUSD),
+  tceloToken('tcusd', 'Test Celo USD Token', 18, '0x874069fa1eb16d44d622f2e0ca25eea172369bc1', UnderlyingAsset.CUSD),
   tstellarToken(
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
     'BitGo Shield Token',
