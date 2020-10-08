@@ -172,6 +172,17 @@ export class Transaction extends BaseTransaction {
     return this._validTo;
   }
 
+  /** @inheritDoc */
+  get id(): string {
+    if (!this._transaction) {
+      throw new ParseTransactionError('Empty transaction');
+    }
+    if (!this._transaction.txID) {
+      throw new ParseTransactionError('No ID defined for the transaction');
+    }
+    return this._transaction.txID;
+  }
+
   /** @inheritdoc */
   canSign(key: BaseKey): boolean {
     // Tron transaction do not contain the owners account address so it is not possible to check the
@@ -187,6 +198,7 @@ export class Transaction extends BaseTransaction {
    */
   setTransactionReceipt(tx: TransactionReceipt) {
     this._transaction = tx;
+    this.updateId();
   }
 
   /**

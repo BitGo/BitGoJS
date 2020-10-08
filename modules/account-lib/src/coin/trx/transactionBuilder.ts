@@ -167,13 +167,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   // Specifically, checks hex underlying transaction hashes to correct transaction ID.
   validateTransaction(transaction: Transaction): void {
-    const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
+    /* const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
     const txId = createHash('sha256')
       .update(hexBuffer)
       .digest('hex');
     if (transaction.id !== txId) {
       throw new InvalidTransactionError(transaction.id + ' is not a valid transaction id. Expecting: ' + txId);
-    }
+    }*/
   }
 
   /** @inheritdoc */
