@@ -95,7 +95,7 @@ export class ContractAddressDefinedToken extends AccountCoinToken {
   }
 }
 
-/** 
+/**
  * ERC20 token addresses are Base58 formatted on some blockchains.
  */
 export class Base58ContractAddressDefinedToken extends AccountCoinToken {
