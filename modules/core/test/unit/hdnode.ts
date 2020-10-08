@@ -6,7 +6,7 @@
 
 import 'should';
 import { HDNode } from '@bitgo/utxo-lib';
-import { hdPath } from '../../src/bitcoin';
+import { deriveKeyByPath, hdPath } from '../../src/bitcoin';
 
 describe('HDNode', function() {
 
@@ -49,6 +49,17 @@ describe('HDNode', function() {
         path.derive('m/0/1/2/3').toBase58().should.equal('xpub6F46ySPYeyfcJzEZVS2zWVnx4ai5eSRbFXkdm3DCezF8jT1zE35L4SJbsMPyCSbyWppi9tuSH6PzAMxe5vWHPR8Bpstt3tyw5GBqeSXQLB5');
       }
     });
-  });
 
+    it('deriveKeyByPath should derive correct key', function() {
+      const root = HDNode.fromSeedHex('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
+      let child = root.derivePath("m/0/1/0");
+      // greatGrandChild is derived using the tested utxolib function
+      let greatGrandChild = child
+        .derive(9).derive(8);
+      // deriveKeyByPath(child, '/9/8') should effectively mean calling derive() on the result of child twice,
+      // first time with the index 9, the second time with the index 8:
+      let greatGrandChild2 = deriveKeyByPath(child, '/9/8');
+      greatGrandChild2.getAddress().should.equal(greatGrandChild.getAddress());
+    })
+  });
 });
