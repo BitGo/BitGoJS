@@ -2,7 +2,7 @@ import should from 'should';
 import { TransferContract, AccountPermissionUpdateContract } from '../../../../src/coin/trx/iface';
 import { Utils } from '../../../../src/coin/trx/index';
 
-import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../../../resources/trx';
+import { UnsignedTransferContractTx, SignedAccountPermissionUpdateContractTx } from '../../../resources/trx/trx';
 
 describe('Util library should', function() {
   // arbitrary text

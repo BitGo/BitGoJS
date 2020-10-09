@@ -1,6 +1,6 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { UnsignedBuildTransaction } from '../../../resources/trx';
+import { UnsignedBuildTransaction } from '../../../resources/trx/trx';
 import { Transaction } from '../../../../src/coin/trx';
 import { TransactionReceipt } from '../../../../src/coin/trx/iface';
 

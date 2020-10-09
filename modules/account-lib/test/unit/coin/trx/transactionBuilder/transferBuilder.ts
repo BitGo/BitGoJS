@@ -17,6 +17,7 @@ describe('HBAR Transfer Builder', () => {
     txBuilder.source({ address: 'TTsGwnTLQ4eryFJpDvJSfuGQxPXRCjXvZz' });
     txBuilder.to({ address: 'TDzm1tCXM2YS1PDa3GoXSvxdy4AgwVbBPE' });
     txBuilder.amount('10');
+    txBuilder.block({ number: 9800572, hash: '0000000000958b7c05af65adb6844cc773e741765bc78ee0be64214ca5ada9d9' });
     return txBuilder;
   };
 

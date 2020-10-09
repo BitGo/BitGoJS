@@ -14,7 +14,7 @@ import {
   UnsignedInvalidContractBuildTransaction,
   UnsignedBuildEmptyIDTransaction,
   UnsignedInvalidTimeStampBuildTransaction,
-} from '../../../resources/trx';
+} from '../../../resources/trx/trx';
 // import { getBuilder } from '../../../../src';
 import { register } from '../../../../src/index';
 import * as Crypto from '../../../../src/utils/crypto';

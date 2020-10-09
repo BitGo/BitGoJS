@@ -72,3 +72,8 @@ export interface PermissionKey {
   address: string;
   weight: number;
 }
+
+export interface Block {
+  number: number;
+  hash: string;
+}

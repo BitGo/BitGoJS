@@ -7,15 +7,17 @@ import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { protocol } from '../../../resources/trx/protobuf/tron';
 import { Address } from './address';
-import { TransferContract, TransactionReceipt } from './iface';
+import { TransferContract, TransactionReceipt, Block } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
-import { getHexAddressFromBase58Address } from './utils';
+import { getHexAddressFromBase58Address, toUint8Array, toHex } from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
   private _toAddress: string;
   private _amount: string;
   private _ownerAddress: string;
+  private _refBlockBytes: string;
+  private _refBlockHash: string;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -35,6 +37,8 @@ export class TransferBuilder extends TransactionBuilder {
 
     const timestamp = Date.now();
     const expiration = timestamp + 60000;
+    const ref_block_bytes = this._refBlockBytes;
+    const ref_block_hash = this._refBlockHash;
 
     const raw_data: any = {
       contract: [
@@ -50,6 +54,8 @@ export class TransferBuilder extends TransactionBuilder {
           type: 'TransferContract',
         },
       ],
+      ref_block_bytes,
+      ref_block_hash,
       expiration,
       timestamp,
     };
@@ -140,6 +146,27 @@ export class TransferBuilder extends TransactionBuilder {
   to(address: Address): this {
     this.validateAddress(address);
     this._toAddress = getHexAddressFromBase58Address(address.address);
+    return this;
+  }
+
+  /**
+   * Set the block values,
+   *
+   * @param {Block} block
+   * @returns {TransferBuilder} the builder with the new parameter set
+   */
+  block(block: Block): this {
+    // this.validateAddress(block); TODO : implement
+    const number = block.number;
+    const hash = block.hash;
+
+    this._refBlockHash = Buffer.from(hash, 'hex')
+      .slice(8, 16)
+      .toString('hex');
+
+    this._refBlockBytes = Buffer.from(number.toString(16), 'hex')
+      .slice(0, 2)
+      .toString('hex');
     return this;
   }
 
