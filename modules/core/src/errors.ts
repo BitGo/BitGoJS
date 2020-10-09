@@ -146,3 +146,10 @@ export class StellarFederationUserNotFoundError extends BitGoJsError {
     Object.setPrototypeOf(this, StellarFederationUserNotFoundError.prototype);
   }
 }
+
+export class ErrorNoInputToRecover extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'No input to recover - aborting!');
+    Object.setPrototypeOf(this, ErrorNoInputToRecover.prototype);
+  }
+}

@@ -1835,7 +1835,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const unspents: any[] = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
       const totalInputAmount = _.sumBy(unspents, 'amount');
       if (totalInputAmount <= 0) {
-        throw new Error('No input to recover - aborting!');
+        throw new errors.ErrorNoInputToRecover();
       }
 
       // Build the transaction
