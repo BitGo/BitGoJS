@@ -7,9 +7,10 @@ import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { protocol } from '../../../resources/trx/protobuf/tron';
 import { Address } from './address';
-import { TransferContract, ValueFields, TransactionReceipt } from './iface';
+import { TransferContract, TransactionReceipt } from './iface';
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
+import { getHexAddressFromBase58Address } from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
   private _toAddress: string;
@@ -32,22 +33,25 @@ export class TransferBuilder extends TransactionBuilder {
     const owner_address = this._ownerAddress;
     const to_address = this._toAddress;
 
+    const timestamp = Date.now();
+    const expiration = timestamp + 60000;
+
     const raw_data: any = {
-      raw_data: {
-        contract: [
-          {
-            parameter: {
-              value: {
-                amount: Number(amount),
-                owner_address,
-                to_address,
-              },
-              type_url: 'type.googleapis.com/protocol.TransferContract',
+      contract: [
+        {
+          parameter: {
+            value: {
+              amount: Number(amount),
+              owner_address,
+              to_address,
             },
-            type: 'TransferContract',
+            type_url: 'type.googleapis.com/protocol.TransferContract',
           },
-        ],
-      },
+          type: 'TransferContract',
+        },
+      ],
+      expiration,
+      timestamp,
     };
 
     const rawDataHex = Buffer.from(protocol.Transaction.raw.encode(raw_data).finish()).toString('hex');
@@ -55,6 +59,7 @@ export class TransferBuilder extends TransactionBuilder {
     const txID = createHash('sha256')
       .update(rawDataHex)
       .digest('hex');
+
     return {
       txID,
       raw_data,
@@ -122,7 +127,7 @@ export class TransferBuilder extends TransactionBuilder {
    */
   source(address: Address): this {
     this.validateAddress(address);
-    this._ownerAddress = address.address;
+    this._ownerAddress = getHexAddressFromBase58Address(address.address);
     return this;
   }
 
@@ -134,7 +139,7 @@ export class TransferBuilder extends TransactionBuilder {
    */
   to(address: Address): this {
     this.validateAddress(address);
-    this._toAddress = address.address;
+    this._toAddress = getHexAddressFromBase58Address(address.address);
     return this;
   }
 
@@ -156,17 +161,23 @@ export class TransferBuilder extends TransactionBuilder {
   //endregion
 
   //region Validators
-  // validateMandatoryFields(): void {
-  //   if (this._toAddress === undefined) {
-  //     throw new BuildTransactionError('Invalid transaction: missing to');
-  //   }
-  //   if (this._amount === undefined) {
-  //     throw new BuildTransactionError('Invalid transaction: missing amount');
-  //   }
-  //   if (this._ownerAddress === undefined) {
-  //     throw new BuildTransactionError('Invalid transaction: missing source');
-  //   }
-  //   super.validateMandatoryFields();
-  // }
+
+  /** @inheritdoc */
+  validateTransaction(transaction?: Transaction): void {
+    this.validateMandatoryFields();
+  }
+
+  validateMandatoryFields(): void {
+    if (this._toAddress === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing to');
+    }
+    if (this._amount === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing amount');
+    }
+    if (this._ownerAddress === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing source');
+    }
+    // super.validateMandatoryFields();
+  }
   //endregion
 }

@@ -7,6 +7,7 @@ import {
   BuildTransactionError,
   InvalidTransactionError,
   ParseTransactionError,
+  NotImplementedError,
 } from '../baseCoin/errors';
 import { BaseTransactionBuilder } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
@@ -167,6 +168,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   // Specifically, checks hex underlying transaction hashes to correct transaction ID.
   validateTransaction(transaction: Transaction): void {
+    throw new NotImplementedError('Validate transaction not implemented');
     /* const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
     const txId = createHash('sha256')
       .update(hexBuffer)

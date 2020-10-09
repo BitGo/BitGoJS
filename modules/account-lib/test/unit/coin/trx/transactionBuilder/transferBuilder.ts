@@ -22,7 +22,7 @@ describe('HBAR Transfer Builder', () => {
 
   describe('should build ', () => {
     describe('non serialized transactions', () => {
-      it('a signed transfer transaction 111111111111111111111111111111111111', async () => {
+      it('a signed transfer transaction', async () => {
         const builder = initTxBuilder();
         builder.sign({ key: '2DBEAC1C22849F47514445A56AEF2EF164528A502DE4BD289E23EA1E2D4C4B06' });
         const tx = await builder.build();
