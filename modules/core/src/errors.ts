@@ -146,3 +146,17 @@ export class StellarFederationUserNotFoundError extends BitGoJsError {
     Object.setPrototypeOf(this, StellarFederationUserNotFoundError.prototype);
   }
 }
+
+export class ErrorNoInputToRecover extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'No input to recover - aborting!');
+    Object.setPrototypeOf(this, ErrorNoInputToRecover.prototype);
+  }
+}
+
+export class InvalidKeyPathError extends BitGoJsError {
+  public constructor(keyPath: string) {
+    super(`invalid keypath: ${keyPath}`);
+    Object.setPrototypeOf(this, InvalidKeyPathError.prototype);
+  }
+}

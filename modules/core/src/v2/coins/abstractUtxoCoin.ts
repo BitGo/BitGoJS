@@ -8,7 +8,7 @@ import * as debugLib from 'debug';
 import * as _ from 'lodash';
 import * as request from 'superagent';
 
-import { hdPath } from '../../bitcoin';
+import { deriveKeyByPath, hdPath } from '../../bitcoin';
 import { BitGo } from '../../bitgo';
 import * as config from '../../config';
 import * as errors from '../../errors';
@@ -232,6 +232,7 @@ export interface RecoverParams {
   bitgoKey: string;
   walletPassphrase?: string;
   apiKey?: string;
+  userKeyPath?: string;
 }
 
 export interface VerifyKeySignaturesOptions {
@@ -1665,6 +1666,16 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
   protected abstract getUnspentInfoFromExplorer(address: string, apiKey?: string): Bluebird<UnspentInfo[]>;
 
   /**
+   * Derive child keys at specific index, from provided parent keys
+   * @param {bitcoin.HDNode[]} keyArray
+   * @param {number} index
+   * @returns {bitcoin.HDNode[]}
+   */
+  deriveKeys(keyArray: bitcoin.HDNode[], index: number) {
+    return keyArray.map((k) => k.derive(index));
+  }
+
+  /**
    * Builds a funds recovery transaction without BitGo
    * @param params
    * - userKey: [encrypted] xprv, or xpub
@@ -1682,10 +1693,6 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
     const self = this;
     return co(function *recover() {
       // ============================HELPER FUNCTIONS============================
-      function deriveKeys(keyArray: bitcoin.HDNode[], index: number) {
-        return keyArray.map((k) => k.derive(index));
-      }
-
       function queryBlockchainUnspentsPath(keyArray: bitcoin.HDNode[], basePath: string, addressesById) {
         return co(function* () {
           const MAX_SEQUENTIAL_ADDRESSES_WITHOUT_TXS = params.scan || 20;
@@ -1693,7 +1700,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
           // get unspents for these addresses
           const gatherUnspents = co(function* coGatherUnspents(addrIndex) {
-            const derivedKeys = deriveKeys(keyArray, addrIndex);
+            const derivedKeys = self.deriveKeys(keyArray, addrIndex);
 
             const chain = Number(basePath.split('/').pop()); // extracts the chain from the basePath
             const keys = derivedKeys.map(k => k.getPublicKeyBuffer());
@@ -1775,9 +1782,19 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         throw new Error('specified key recovery service does not support recoveries for this coin');
       }
 
+      // check whether key material and password authenticate the users and return parent keys of all three keys of the wallet
       const keys = yield self.initiateRecovery(params);
 
-      const baseKeyPath = deriveKeys(deriveKeys(keys, 0), 0);
+      const [userKey, backupKey, bitgoKey] = keys;
+      let derivedUserKey;
+      let baseKeyPath;
+      if (params.userKeyPath) {
+        derivedUserKey = deriveKeyByPath(userKey, params.userKeyPath);
+        const twoKeys = self.deriveKeys(self.deriveKeys([backupKey, bitgoKey], 0), 0);
+        baseKeyPath = [derivedUserKey, ...twoKeys];
+      } else {
+        baseKeyPath = self.deriveKeys(self.deriveKeys(keys, 0), 0);
+      }
 
       const queries: any[] = [];
       const addressesById = {};
@@ -1806,8 +1823,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
           }
           const externalChainCode = codes.external;
           const internalChainCode = codes.internal;
-          const externalKey = deriveKeys(baseKeyPath, externalChainCode);
-          const internalKey = deriveKeys(baseKeyPath, internalChainCode);
+          const externalKey = self.deriveKeys(baseKeyPath, externalChainCode);
+          const internalKey = self.deriveKeys(baseKeyPath, internalChainCode);
           queries.push(queryBlockchainUnspentsPath(externalKey, '/0/0/' + externalChainCode, addressesById));
           queries.push(queryBlockchainUnspentsPath(internalKey, '/0/0/' + internalChainCode, addressesById));
         }
@@ -1818,7 +1835,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       const unspents: any[] = _.flatten(queryResponses); // this flattens the array (turns an array of arrays into just one array)
       const totalInputAmount = _.sumBy(unspents, 'amount');
       if (totalInputAmount <= 0) {
-        throw new Error('No input to recover - aborting!');
+        throw new errors.ErrorNoInputToRecover();
       }
 
       // Build the transaction
