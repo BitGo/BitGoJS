@@ -72,3 +72,8 @@ export interface PermissionKey {
   address: string;
   weight: number;
 }
+
+export interface TxCreateData {
+  apiUrl: string;
+  data: ValueFields;
+}
