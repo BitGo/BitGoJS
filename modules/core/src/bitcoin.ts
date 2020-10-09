@@ -7,6 +7,7 @@
 import * as common from './common';
 import * as bitcoin from '@bitgo/utxo-lib';
 import { V1Network } from './v2/types';
+import { InvalidKeyPathError } from './errors';
 const ecurve = require('ecurve');
 const curve = ecurve.getCurveByName('secp256k1');
 const BigInteger = require('bigi');
@@ -62,6 +63,9 @@ export function deriveKeyByPath(userKey: bitcoin.HDNode, path: string): bitcoin.
     splitPath = splitPath.slice(1);
     for (const p of splitPath) {
       const index = parseInt(p, 10);
+      if (isNaN(index) || index.toString() != p) {
+        throw new InvalidKeyPathError(path);
+      }
       key = key.derive(index);
     }
   }

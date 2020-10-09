@@ -153,3 +153,10 @@ export class ErrorNoInputToRecover extends BitGoJsError {
     Object.setPrototypeOf(this, ErrorNoInputToRecover.prototype);
   }
 }
+
+export class InvalidKeyPathError extends BitGoJsError {
+  public constructor(keyPath: string) {
+    super(`invalid keypath: ${keyPath}`);
+    Object.setPrototypeOf(this, InvalidKeyPathError.prototype);
+  }
+}

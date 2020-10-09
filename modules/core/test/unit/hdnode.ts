@@ -50,18 +50,42 @@ describe('HDNode', function() {
       }
     });
 
-    it('deriveKeyByPath should derive correct key', function() {
+    describe('deriveKeyByPath', function() {
       const root = HDNode.fromSeedHex('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
       const basePath = 'm/0/1/0';
       let baseKey = root.derivePath(basePath);
-      let greatGrandChild0 = root.derivePath(`${basePath}/9/8`);
-      // greatGrandChild is derived using the tested utxolib function
-      let greatGrandChild1 = baseKey.derive(9).derive(8);
-      // deriveKeyByPath(baseKey, '/9/8') should effectively mean calling derive() on the result of baseKey twice,
-      // first time with the index 9, the second time with the index 8:
-      let greatGrandChild2 = deriveKeyByPath(baseKey, '/9/8');
-      greatGrandChild1.getAddress().should.equal(greatGrandChild0.getAddress());
-      greatGrandChild2.getAddress().should.equal(greatGrandChild1.getAddress());
-    })
+
+      it('deriveKeyByPath should derive correct key', function() {
+        let greatGrandChild0 = root.derivePath(`${basePath}/9/8`);
+        // greatGrandChild is derived using the tested utxolib function
+        let greatGrandChild1 = baseKey.derive(9).derive(8);
+        // deriveKeyByPath(baseKey, '/9/8') should effectively mean calling derive() on the result of baseKey twice,
+        // first time with the index 9, the second time with the index 8:
+        let greatGrandChild2 = deriveKeyByPath(baseKey, '/9/8');
+        greatGrandChild1.getAddress().should.equal(greatGrandChild0.getAddress());
+        greatGrandChild2.getAddress().should.equal(greatGrandChild1.getAddress());
+      });
+
+      it('should throw on invalid key path containing letters', function() {
+        try {
+          deriveKeyByPath(baseKey, '/9x/8')
+        } catch (e) {
+          e.message.should.equal('invalid keypath: /9x/8')
+        }
+      });
+
+      it('should throw on invalid key path', function() {
+        try {
+          deriveKeyByPath(baseKey, '//8')
+        } catch (e) {
+          e.message.should.equal('invalid keypath: //8')
+        }
+      });
+
+      it('should work for an emptry string as key path', function() {
+        const key =  deriveKeyByPath(baseKey, '');
+        key.getAddress().should.equal(baseKey.getAddress());
+      });
+    });
   });
 });
