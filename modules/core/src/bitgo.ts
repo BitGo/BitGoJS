@@ -152,7 +152,6 @@ export interface BitGoOptions {
   serverXpub?: string;
   stellarFederationServerUrl?: string;
   useProduction?: boolean;
-  microservicesUri?: string;
   refreshToken?: string;
   validate?: boolean;
   proxy?: string;
@@ -401,7 +400,6 @@ export class BitGo {
    */
   public readonly env: EnvironmentName;
   private readonly _baseUrl: string;
-  private readonly _microservicesUrl?: string;
   private readonly _baseApiUrl: string;
   private readonly _baseApiUrlV2: string;
   private _user?: User;
@@ -505,7 +503,6 @@ export class BitGo {
     common.setNetwork(common.Environments[env].network);
     common.setRmgNetwork(common.Environments[env].rmgNetwork);
 
-    this._microservicesUrl = params.microservicesUri;
     this._baseApiUrl = this._baseUrl + '/api/v1';
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
     this._keychains = null;
@@ -1362,9 +1359,7 @@ export class BitGo {
         return self.reject('already logged in', callback);
       }
 
-      const authUrl = self._microservicesUrl ?
-        self.microservicesUrl('/api/auth/v1/session') :
-        self.url('/user/login');
+      const authUrl = self.microservicesUrl('/api/auth/v1/session');
       const request = self.post(authUrl);
 
       if (forceV1Auth) {
@@ -1635,9 +1630,7 @@ export class BitGo {
         throw new Error('must specify scope for token');
       }
 
-      const authUrl = self._microservicesUrl ?
-        self.microservicesUrl('/api/auth/v1/accesstoken') :
-        self.url('/user/accesstoken');
+      const authUrl = self.microservicesUrl('/api/auth/v1/accesstoken');
       const request = self.post(authUrl);
 
       if (!self._ecdhXprv) {
@@ -2001,7 +1994,7 @@ export class BitGo {
    * Create a url for calling BitGo microservice APIs
    */
   microservicesUrl(path: string): string {
-    return this._microservicesUrl + path;
+    return this._baseUrl + path;
   }
 
   /**

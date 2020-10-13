@@ -5,9 +5,10 @@ import * as nock from 'nock';
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
+import { Environments } from '../../../../src/common';
 
 describe('Trading Accounts', function() {
-  const microservicesUri = 'https://bitgo-microservices.example';
+  const microservicesUri = Environments['mock'].uri;
   let bitgo;
   let basecoin;
   let enterprise;
