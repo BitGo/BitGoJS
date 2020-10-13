@@ -29,7 +29,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
       txJson.gasLimit.should.equal('12100000');
       txJson.gasPrice.should.equal('1000000000');
       should.equal(txJson.nonce, 2);
-      should.equal(txJson.chainId, 44786);
+      should.equal(txJson.chainId, 44787);
       should.equal(tx.toBroadcastFormat(), testData.TX_BROADCAST);
       should.equal(txJson.from, testData.KEYPAIR_PRV.getAddress());
     });
@@ -45,7 +45,7 @@ describe('Celo Transaction builder for wallet initialization', () => {
       txJson.gasLimit.should.equal('12100000');
       txJson.gasPrice.should.equal('1000000000');
       should.equal(txJson.nonce, 0);
-      should.equal(txJson.chainId, 44786);
+      should.equal(txJson.chainId, 44787);
       should.equal(txJson.from, testData.KEYPAIR_PRV.getAddress());
     });
 
