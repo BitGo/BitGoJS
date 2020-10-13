@@ -502,8 +502,8 @@ export const coins = CoinMap.fromCoins([
     'WXT'
   ),
   // TODO Set correct contract addresses for WBTC and WETH on Tron main network
-  tronToken('trx:wbtc', 'Tron Wrapped Bitcoin', 8, 'TPamvhorQcFpvtMtYb6qDDJNMsUM1doPty', UnderlyingAsset.WBTC),
-  tronToken('trx:weth', 'Tron Wrapped Ether', 18, 'TKUVp6i63pkDVYy5t1zZmdLreubHFRJsW7', UnderlyingAsset.WETH),
+  tronToken('trx:wbtc', 'Tron Wrapped Bitcoin', 8, 'WBTCTronExampAddressDontSendff1234', UnderlyingAsset.WBTC),
+  tronToken('trx:weth', 'Tron Wrapped Ether', 18, 'WETHTronExampAddressDontSendff1234', UnderlyingAsset.WETH),
   terc20('terc', 'ERC Test Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.ERC),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
