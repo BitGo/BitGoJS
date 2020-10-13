@@ -16,7 +16,7 @@ import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
 
 describe('Trade Payloads', function() {
-  const microservicesUri = 'https://bitgo-microservices.example';
+  const microservicesUri = common.Environments['mock'].uri;
   let bitgo;
   let basecoin;
   let enterprise;
