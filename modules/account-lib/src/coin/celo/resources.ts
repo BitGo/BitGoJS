@@ -7,8 +7,8 @@ export const testnetCommon = EthereumCommon.forCustomChain(
   'mainnet', // It's a test net based on the main ethereum net
   {
     name: 'alfajores',
-    networkId: 44786,
-    chainId: 44786,
+    networkId: 44787,
+    chainId: 44787,
   },
   'petersburg',
 );
