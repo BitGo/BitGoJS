@@ -9,9 +9,10 @@ import { Wallet } from '../../../../src/v2/wallet';
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
+import { Environments } from '../../../../src';
 
 describe('Affirmations', function() {
-  const microservicesUri = 'https://bitgo-microservices.example';
+  const microservicesUri = Environments['mock'].uri;
   let bitgo;
   let basecoin;
   let enterprise;

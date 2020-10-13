@@ -111,7 +111,6 @@ describe('BitGo Prototype Methods', function() {
 
   describe('Authenticate in Microservices', () => {
     let bitgo;
-    const microservicesUri = 'https://microservices.uri';
     const authenticateRequest = {
       username: 'test@bitgo.com',
       password: 'password',
@@ -122,8 +121,8 @@ describe('BitGo Prototype Methods', function() {
     };
 
     it('goes to microservices', co(function *() {
-      bitgo = new TestBitGo({ env: 'mock', microservicesUri });
-      const scope = nock(microservicesUri)
+      bitgo = new TestBitGo({ env: 'mock', microservicesUri: 'https://microservices.uri' });
+      const scope = nock(Environments[bitgo.getEnv()].uri)
         .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
@@ -131,10 +130,10 @@ describe('BitGo Prototype Methods', function() {
       scope.isDone().should.be.true();
     }));
 
-    it('goes to normal uri', co(function *() {
+    it('goes to microservices even when microservicesUri is not specified', co(function *() {
       bitgo = new TestBitGo({ env: 'mock' });
       const scope = nock(Environments[bitgo.getEnv()].uri)
-        .post('/api/v1/user/login')
+        .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
       yield bitgo.authenticate(authenticateRequest);
@@ -297,7 +296,7 @@ describe('BitGo Prototype Methods', function() {
 
     before(co(function *coBeforeChangePassword() {
       nock('https://bitgo.fakeurl')
-      .post('/api/v1/user/login')
+      .post('/api/auth/v1/session')
       .reply(200, {
         access_token: 'access_token',
         user: { username: 'update_pw_tester@bitgo.com' }
