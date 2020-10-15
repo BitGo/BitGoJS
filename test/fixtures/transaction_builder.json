@@ -1575,10 +1575,11 @@
         ],
         "txHex": "0100000001cff58855426469d0ef16442ee9c644c4fb13832467bcbc3173168a7916f0714900000000fd1c0100483045022100e37e33a4fe5fccfb87afb0e951e83fcea4820d73b327d21edc1adec3b916c437022061c5786908b674e323a1863cc2feeb60e1679f1892c10ee08ac21e51fd50ba9001483045022100aa0c323bc639d3d71591be98ccaf7b8cb8c86aa95f060aef5e36fc3f04c4d029022010e2b18de17e307a12ae7e0e88518fe814f18a0ca1ee4510ba23a65628b06576014c8752410479be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b84104c6047f9441ed7d6d3045406e95c07cd85c778e4b8cef3ca7abac09b95c709ee51ae168fea63dc339a3c58419466ceaeef7f632653266d0e1236431a950cfe52a52aeffffffff01e8030000000000001976a914aa4d7985c57e011a8b3dd8e0e5a73aaef41629c588ac00000000"
       }, {
-        "description": "Zcash Sapling P2SH 2-of-3 multisig, signed by key 3 and 1",
+        "description": "Zcash Heartwood P2SH 2-of-3 multisig, signed by key 3 and 1",
         "network": "zcashTest",
         "version": 4,
         "versionGroupId": "0x892F2085",
+        "consensusBranchId" : "0xf5b9230b",
         "expiryHeight": 289507,
         "inputs": [
           {
