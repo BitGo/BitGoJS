@@ -522,7 +522,8 @@ export class Eth extends BaseCoin {
 
     const ethTxParams = {
       to: params.walletContractAddress,
-      nonce: params.signingKeyNonce || params.txPrebuild.halfSigned.backupKeyNonce,
+      nonce:
+        params.signingKeyNonce !== undefined ? params.signingKeyNonce : params.txPrebuild.halfSigned.backupKeyNonce,
       value: 0,
       gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
       gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
