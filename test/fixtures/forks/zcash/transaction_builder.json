@@ -2,10 +2,11 @@
   "valid": {
     "multisig": [
       {
-        "description": "Zcash Sapling P2SH 2-of-3 multisig, signed by key 3 and 1",
+        "description": "Zcash Heartwood P2SH 2-of-3 multisig, signed by key 3 and 1",
         "network": "zcashTest",
         "version": 4,
         "versionGroupId": "0x892F2085",
+        "consensusBranchId" : "0xf5b9230b",
         "expiryHeight": 289507,
         "inputs": [
           {

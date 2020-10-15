@@ -529,6 +529,17 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
   this.tx.version = version
 }
 
+TransactionBuilder.prototype.setConsensusBranchId = function (consensusBranchId) {
+  if (!coins.isZcash(this.network)) {
+    throw new Error('consensusBranchId can only be set for Zcash transactions')
+  }
+  if (!this.inputs.every(function (input) { return input.signatures === undefined })) {
+    throw new Error('Changing the consensusBranchId for a partially signed transaction would invalidate signatures')
+  }
+  typeforce(types.UInt32, consensusBranchId)
+  this.tx.consensusBranchId = consensusBranchId
+}
+
 TransactionBuilder.prototype.setVersionGroupId = function (versionGroupId) {
   if (!(coins.isZcash(this.network) && this.tx.isOverwinterCompatible())) {
     throw new Error('expiryHeight can only be set for Zcash starting at overwinter version. Current network coin: ' +
@@ -599,6 +610,7 @@ TransactionBuilder.fromTransaction = function (transaction, network) {
     if (txb.tx.supportsJoinSplits()) {
       txb.setJoinSplits(transaction)
     }
+    txb.setConsensusBranchId(transaction.consensusBranchId)
   }
 
   // Copy Dash special transaction fields. Omitted if the transaction builder is not for Dash.

@@ -23,6 +23,7 @@ function construct (f, dontSign) {
   if (f.locktime !== undefined) txb.setLockTime(f.locktime)
   if (f.expiryHeight !== undefined) txb.setExpiryHeight(f.expiryHeight)
   if (f.versionGroupId !== undefined) txb.setVersionGroupId(parseInt(f.versionGroupId, 16))
+  if (f.consensusBranchId !== undefined) txb.setConsensusBranchId(parseInt(f.consensusBranchId, 16))
 
   f.inputs.forEach(function (input) {
     var prevTx
