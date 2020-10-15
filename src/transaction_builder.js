@@ -524,6 +524,7 @@ TransactionBuilder.prototype.setVersion = function (version, overwinter = true) 
       throw new Error('Unsupported Zcash transaction')
     }
     this.tx.overwintered = (overwinter ? 1 : 0)
+    this.tx.consensusBranchId = this.network.consensusBranchId[version]
   }
   this.tx.version = version
 }
