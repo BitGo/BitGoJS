@@ -19,7 +19,7 @@
   "scripts": {
     "coverage-report": "nyc report --reporter=lcov",
     "coverage-html": "nyc report --reporter=html",
-    "coverage": "BITGO_UTXO_LIB_TEST_EXPECTED_COUNT=3442 nyc --check-coverage --branches 90 --functions 90 mocha --recursive",
+    "coverage": "BITGO_UTXO_LIB_TEST_EXPECTED_COUNT=3443 nyc --check-coverage --branches 90 --functions 90 mocha --recursive",
     "integration": "mocha test/integration/",
     "standard": "standard",
     "test": "npm run standard && npm run coverage",

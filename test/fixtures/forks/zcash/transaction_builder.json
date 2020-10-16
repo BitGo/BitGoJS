@@ -2,6 +2,41 @@
   "valid": {
     "multisig": [
       {
+        "description": "Zcash Canopy P2SH 2-of-3 multisig, signed by key 3 and 1",
+        "network": "zcashTest",
+        "version": 4,
+        "versionGroupId": "0x892F2085",
+        "expiryHeight": 1150000,
+        "inputs": [
+          {
+            "txId": "1d7d9686ed5eeb7154c2fe659fd3eeea169057cb7bc996962945225139669b86",
+            "vout": 1,
+            "redeemScriptHex": "5221021dbb31392fa4857601d5ce2225429923688fede8c2d69e547542cbd88240903a2103c8249e0c474d95e09bb04254d342ef1177f8ca92d2a57356a16df25a4635a5382102fae89068c5c63426f83f0bd5492c4fd757e1f4b575b5d6d05592e8ba519bfd6e53ae",
+            "signs": [
+              {
+                "pubKeyIndex": 0,
+                "keyPair": "cVmRcxsNdhiCigzrBfpv51JtExBPehtMNzUs9CBvymu1B3ch7LLa",
+                "value": 200000000,
+                "scriptSig": "OP_0 3045022100adfaa8d95d01c66d9d5176e588a31c56e85eb0635c6a1891c713f1526b9029fa022017f5b00c15eab347c77534308100c027da9b5aad86ebb824ca9f1c9f3a5c755b01 OP_0 OP_0 5221021dbb31392fa4857601d5ce2225429923688fede8c2d69e547542cbd88240903a2103c8249e0c474d95e09bb04254d342ef1177f8ca92d2a57356a16df25a4635a5382102fae89068c5c63426f83f0bd5492c4fd757e1f4b575b5d6d05592e8ba519bfd6e53ae"
+              },
+              {
+                "pubKeyIndex": 1,
+                "keyPair": "cV2mApzXqoGcGzyoDy5aaiZqQtV5G1HeEuoM1cgpEoiGAeagPeV2",
+                "value": 200000000,
+                "scriptSig": "OP_0 3045022100adfaa8d95d01c66d9d5176e588a31c56e85eb0635c6a1891c713f1526b9029fa022017f5b00c15eab347c77534308100c027da9b5aad86ebb824ca9f1c9f3a5c755b01 30440220475d1a00d639a07ba6dc5fe0e15f5cfb7190b78322f80fcdb0603b8e7af5e61202202894684ec668187e81a873d53d4e367f38a002aa52f6aedcd685f07b94484a2901 OP_0 5221021dbb31392fa4857601d5ce2225429923688fede8c2d69e547542cbd88240903a2103c8249e0c474d95e09bb04254d342ef1177f8ca92d2a57356a16df25a4635a5382102fae89068c5c63426f83f0bd5492c4fd757e1f4b575b5d6d05592e8ba519bfd6e53ae"
+              }
+            ]
+          }
+        ],
+        "outputs": [
+          {
+            "address": "tmKBPqa8qqKA7vrGq1AaXHSAr9vqa3GczzK",
+            "value": 199999000
+          }
+        ],
+        "txHex": "0400008085202f8901869b6639512245299696c97bcb579016eaeed39f65fec25471eb5eed86967d1d01000000fdfd0000483045022100adfaa8d95d01c66d9d5176e588a31c56e85eb0635c6a1891c713f1526b9029fa022017f5b00c15eab347c77534308100c027da9b5aad86ebb824ca9f1c9f3a5c755b014730440220475d1a00d639a07ba6dc5fe0e15f5cfb7190b78322f80fcdb0603b8e7af5e61202202894684ec668187e81a873d53d4e367f38a002aa52f6aedcd685f07b94484a29014c695221021dbb31392fa4857601d5ce2225429923688fede8c2d69e547542cbd88240903a2103c8249e0c474d95e09bb04254d342ef1177f8ca92d2a57356a16df25a4635a5382102fae89068c5c63426f83f0bd5492c4fd757e1f4b575b5d6d05592e8ba519bfd6e53aeffffffff0118beeb0b000000001976a91467d674a78a010c82c168718ba42a6bbb1e124af088ac00000000308c11000000000000000000000000"
+      },
+      {
         "description": "Zcash Heartwood P2SH 2-of-3 multisig, signed by key 3 and 1",
         "network": "zcashTest",
         "version": 4,
