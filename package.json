@@ -36,7 +36,7 @@
     "gen-docs": "lerna run gen-docs --stream --parallel",
     "check-fmt-changed": "lerna run check-fmt --since ${DRONE_REPO_BRANCH:-master}^..${DRONE_COMMIT:-HEAD} --stream --parallel",
     "check-fmt": "lerna run check-fmt --stream --parallel",
-    "internal-publish": "lerna publish --canary -y --registry https://registry.npmjs.org/"
+    "check-commits": "yarn commitlint --from=${DRONE_REPO_BRANCH:-master}"
   },
   "husky": {
     "hooks": {
