@@ -38,7 +38,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lerna run --stream --parallel precommit"
+      "pre-commit": "lerna run --stream --parallel precommit",
+      "prepare-commit-msg": "exec < /dev/tty && cz --hook || true"
     }
   },
   "resolutions": {
