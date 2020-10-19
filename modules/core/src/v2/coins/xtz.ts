@@ -101,6 +101,13 @@ export class Xtz extends BaseCoin {
   }
 
   /**
+   * Xtz supports transfers to consolidate balance from receive address to the wallet contract
+   */
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
+  /**
    * Checks if this is a valid base58 or hex address
    * @param address
    */
