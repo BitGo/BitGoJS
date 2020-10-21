@@ -2060,7 +2060,7 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         bitgo: self.bitgo,
         sourceCoin: self,
         recoveryCoin: recoveryCoin,
-        logging: false,
+        logging: true,
       });
 
       yield recoveryTool.buildTransaction({
