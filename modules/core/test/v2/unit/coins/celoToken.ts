@@ -15,6 +15,7 @@ describe('Celo Token:', function() {
 
   it('should return constants', function() {
     celoTokenCoin.getChain().should.equal('tcusd');
+    celoTokenCoin.getBaseChain().should.equal('tcelo');
     celoTokenCoin.getFullName().should.equal('Celo Token');
     celoTokenCoin.getBaseFactor().should.equal(1e18);
     celoTokenCoin.type.should.equal(tokenName);

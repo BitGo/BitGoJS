@@ -91,6 +91,13 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
     return this._staticsCoin.name;
   }
 
+  /**
+   * Get the base chain that the coin exists on.
+   */
+  getBaseChain() {
+    return this.getChain();
+  }
+
   getFamily(): CoinFamily {
     return this._staticsCoin.family;
   }
@@ -239,6 +246,6 @@ export abstract class AbstractEthLikeCoin extends BaseCoin {
    * @return a new transaction builder
    */
   private getTransactionBuilder(): Eth.TransactionBuilder {
-    return getBuilder(this.getChain()) as Eth.TransactionBuilder;
+    return getBuilder(this.getBaseChain()) as Eth.TransactionBuilder;
   }
 }
