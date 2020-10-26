@@ -46,6 +46,8 @@ function Transaction (network = networks.bitcoin) {
     this.vShieldedSpend = []
     this.vShieldedOutput = []
     this.bindingSig = 0
+    // Must be updated along with version
+    this.consensusBranchId = network.consensusBranchId[this.version]
   }
   if (coins.isDash(network)) {
     // Dash version = 3
@@ -269,6 +271,7 @@ Transaction.fromBuffer = function (buffer, network = networks.bitcoin, __noStric
     if (!network.consensusBranchId.hasOwnProperty(tx.version)) {
       throw new Error('Unsupported Zcash transaction')
     }
+    tx.consensusBranchId = network.consensusBranchId[tx.version]
   }
 
   if (coins.isDash(network)) {
@@ -565,6 +568,9 @@ Transaction.prototype.clone = function () {
     newTx.extraPayload = this.extraPayload
   }
 
+  if (coins.isZcash(this.network)) {
+    newTx.consensusBranchId = this.consensusBranchId
+  }
   if (this.isOverwinterCompatible()) {
     newTx.overwintered = this.overwintered
     newTx.versionGroupId = this.versionGroupId
@@ -900,7 +906,7 @@ Transaction.prototype.hashForZcashSignature = function (inIndex, prevOutScript, 
     var personalization = Buffer.alloc(16)
     var prefix = 'ZcashSigHash'
     personalization.write(prefix)
-    personalization.writeUInt32LE(this.network.consensusBranchId[this.version], prefix.length)
+    personalization.writeUInt32LE(this.consensusBranchId, prefix.length)
 
     return this.getBlake2bHash(bufferWriter.getBuffer(), personalization)
   }
