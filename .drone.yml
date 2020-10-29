@@ -21,6 +21,11 @@ steps:
   - git fetch origin +refs/heads/$DRONE_REPO_BRANCH:$DRONE_REPO_BRANCH || true
   - yarn install
 
+- name: check-commits
+  image: node:10
+  commands:
+  - yarn run check-commits
+
 - name: audit
   image: node:10
   commands:
