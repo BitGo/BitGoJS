@@ -118,6 +118,10 @@ describe('ZEC:', function() {
         tx.overwintered = 1;
         tx.versionGroupId = 0x03C48270;
 
+        // Individual private keys derived from keychains above at chain=1 and index=113
+        // key0WIF:  cUkLnuyeKgsEaFjtXqK2yhZwzrstTftHHtqMtw4pts8iKqwj3wd8
+        // key2WIF:  cNGJM3pSFpCKvnXPa8RBx58BQdoUgQ5YkVP2mVyLSU5c5tNocY7k
+
         const prebuild = {
           txHex: tx.toHex(),
           txInfo: {
@@ -132,6 +136,10 @@ describe('ZEC:', function() {
           }
         };
 
+        // zcash testnet full node commands used with private keys and unspent above to generate test vectors:
+        // $ zcash-cli createrawtransaction '[{"txid":"8047839532dcfec617661120e1baa0e3b9135662ac8e1f97561e500d430dccb1","vout":0}]' '{"t2HPJLxLLXLbKkfQngpwhZCGKAhHuqyqPk4":2.9995}' 0 0
+        // $ zcash-cli  --conf=/data/zcashd.conf signrawtransaction 0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc32958347800000000000ffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000 '[{"txid":"8047839532dcfec617661120e1baa0e3b9135662ac8e1f97561e500d430dccb1", "vout":0,"scriptPubKey":"a91443457880e5e29555d6ad16bc82ef53891d6512b087","redeemScript":"522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae","amount":3}]' '["cUkLnuyeKgsEaFjtXqK2yhZwzrstTftHHtqMtw4pts8iKqwj3wd8"]'
+
         const wallet = new Wallet(bitgo, testCoin, {});
         const halfSigned = yield wallet.signTransaction({
           txPrebuild: prebuild,
@@ -144,6 +152,8 @@ describe('ZEC:', function() {
         halfSignedTx.overwintered.should.equal(1);
         halfSignedTx.expiryHeight.should.equal(0);
         halfSigned.txHex.should.equal('0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000b600473044022045a9e50e154fbd696fde1b422309b7d32d73f5bf5467c6ef1066e17de4a497bd0220593cecd9e91e545470d77ff7eb932449b42f61d1a10cad7d3d8c20b76da6e7ac0100004c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000');
+
+        // $ zcash-cli  --conf=/data/zcashd.conf signrawtransaction 0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000b400473044022045a9e50e154fbd696fde1b422309b7d32d73f5bf5467c6ef1066e17de4a497bd0220593cecd9e91e545470d77ff7eb932449b42f61d1a10cad7d3d8c20b76da6e7ac014c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000 '[{"txid":"8047839532dcfec617661120e1baa0e3b9135662ac8e1f97561e500d430dccb1", "vout":0,"scriptPubKey":"a91443457880e5e29555d6ad16bc82ef53891d6512b087","redeemScript":"522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae","amount":3}]' '["cNGJM3pSFpCKvnXPa8RBx58BQdoUgQ5YkVP2mVyLSU5c5tNocY7k"]'
 
         const halfSignedPrebuild = _.extend({}, prebuild, halfSigned);
         const fullySigned = yield wallet.signTransaction({

@@ -527,6 +527,13 @@ describe('Recovery:', function() {
       recoveryNocks.nockZecRecovery(bitgo);
 
       const basecoin = bitgo.coin('tzec');
+
+      // Decrypted private key values used to generate test vectors:
+      // userKey:  xprv9s21ZrQH143K3bnASnsbxBztKgNJxG1PKpUpvxoNqjk9rjJrG1QAotxv7EekcRK98TrKeB8T47PgpyhJMvvhDvoQ3D6njPVsFpEBiaBW6nY
+      // backupKey:  xprv9s21ZrQH143K2rE4L9Pptwk1ce4TxTTRBDfwp3zGyofUcbqKyfLyr1LRuFLKZGiUnZtHwzNSXVuYEEp4bKFCpbhufyRG27sBn4jpUX4yMsn
+      // userKeyWIF:  cVi36xVqAzqvmoDoKS8N219beXvf1xBH9yFcQexchiZYvC2ivQ2v
+      // backupKeyWIF:  cSKRtYTgwTL2hERx8H4KoiScFdeiYBPPf7TCfwsyryE2HLocy2h3
+
       const recovery = yield basecoin.recover({
         userKey: `{"iv":"in/0+5mRgyBD/NQM+rsKOQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"2zBGPsw0Yc4=","ct":"IqS/KsWCc117zVIu4VID6BB1UBBAOW3zeWiMsL4rm+HXMffHetaOCVwFVeoO1JG/dbcV/ApcqvbHXxNMY7L8FXeeBr3SMnZdpqIkGzfrvcADa9EcjTg+iLDGLRT1FwdavQ7X06DXro0Mx3O+CDnCFaf2vkxIfZ0="}`,
         backupKey: `{"iv":"ZGWK9woJAu020cXwvdfmuQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"6iCPz4FhZ6g=","ct":"8IwFVj2l7L6o6emjMF/G7WIDXeOmjGFoyNgofQwrvnk+ZsckQrKUSVxDzDUeZdJZsZE6fj+ZCVNh1Zfgxxg0rk5rh0bYJJ+WVsizK7jUE4DNJnS5RwBZNNFi9qilHI2bPbzXp+VAyOieSF5nJs9AQSc+rTxda30="}`,
@@ -536,6 +543,10 @@ describe('Recovery:', function() {
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       });
+
+      // zcash testnet full node commands used with private keys above and UTXO from recovery-nocks.ts to generate test vectors:
+      // $ zcash-cli createrawtransaction '[{"txid":"754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f","vout":0}]' '{"t2GnC5sFN5Km2UuYaYjHNBQRJBDAXVQqSfJ":0.299649}' 0 0
+      // $ zcash-cli signrawtransaction 0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f77549750000000000ffffffff01643ac9010000000017a91470391ef30163f580806ee8a5f0aacc724e7f68558700000000000000000000000000000000000000 '[{"txid":"754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f", "vout":0,"scriptPubKey":"a914b6dfccf23872e01a01d746dbf063730887d4457f87","redeemScript":"52210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153ae","amount":0.3}]' '["cVi36xVqAzqvmoDoKS8N219beXvf1xBH9yFcQexchiZYvC2ivQ2v","cSKRtYTgwTL2hERx8H4KoiScFdeiYBPPf7TCfwsyryE2HLocy2h3"]'
 
       recovery.transactionHex.should.equal('0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f775497500000000fdfd0000473044022067642465f65dc96654f615bc81fbd2ef6a1f7816e652e0800f08e0bbec6be62402202d516c5277ab2180a893c146b1593e64d252f208cd0ff5bea833c48fb523ea3f01483045022100b7e996e8cf64eb0dd8fe1143aa6fa4061d8085a00fdca83d90ce495851f3524302202edee5616aa9af6fbd86864731e086736ff99d41f44671bc38903563ca769fc7014c6952210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153aeffffffff01643ac9010000000017a91470391ef30163f580806ee8a5f0aacc724e7f68558700000000000000000000000000000000000000');
       recovery.should.have.property('inputs');
@@ -560,6 +571,10 @@ describe('Recovery:', function() {
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       });
+
+      // zcash testnet full node commands used with private keys above and UTXO from recovery-nocks.ts to generate test vectors:
+      // $ zcash-cli createrawtransaction '[{"txid":"754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f","vout":0}]' '{"t2GnC5sFN5Km2UuYaYjHNBQRJBDAXVQqSfJ":0.200606, "t2ATLAhBP1uTuyiWs5DY5CPH1VuYkGUindt":0.099}' 0 0
+      // $ zcash-cli signrawtransaction 0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f77549750000000000ffffffff02b81932010000000017a91470391ef30163f580806ee8a5f0aacc724e7f685587e00f97000000000017a9142ad735dfc86e2835100b9dc6476facddad6c87ec8700000000000000000000000000000000000000 '[{"txid":"754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f", "vout":0,"scriptPubKey":"a914b6dfccf23872e01a01d746dbf063730887d4457f87","redeemScript":"52210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153ae","amount":0.3}]' '["cVi36xVqAzqvmoDoKS8N219beXvf1xBH9yFcQexchiZYvC2ivQ2v"]'
 
       recovery.transactionHex.should.equal('0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f775497500000000b40047304402201e6e670c2bd17fe3d84f7d0680055d82b978d56cbd71d0eb4725989c94c6936202203bd6732077e4636d3d3989be5d45bfff992490481f55e2d5fc63ad2b07908a49014c6952210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153aeffffffff02b81932010000000017a91470391ef30163f580806ee8a5f0aacc724e7f685587e00f97000000000017a9142ad735dfc86e2835100b9dc6476facddad6c87ec8700000000000000000000000000000000000000');
       recovery.should.have.property('inputs');
