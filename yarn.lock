@@ -451,6 +451,31 @@
   optionalDependencies:
     secp256k1 "^3.5.2"
 
+"@bitgo/utxo-lib@^1.7.3":
+  version "1.7.3"
+  resolved "https://registry.yarnpkg.com/@bitgo/utxo-lib/-/utxo-lib-1.7.3.tgz#603c6ef72593f6b97cb635a4c9fd4598a3d86eb7"
+  integrity sha512-tJXtp2eYPpj2ZUP8qVzk8DeDw8oUwl9Slx1q4Dcmz6fygwE4sWLUHt1eY12jWmcPi/ulXP0EAYH36Uhx18O80w==
+  dependencies:
+    bech32 "0.0.3"
+    bigi "^1.4.0"
+    bip66 "^1.1.0"
+    bitcoin-ops "^1.3.0"
+    blake2b "https://github.com/BitGo/blake2b#6268e6dd678661e0acc4359e9171b97eb1ebf8ac"
+    bs58check "^2.0.0"
+    create-hash "^1.1.0"
+    create-hmac "^1.1.3"
+    debug "~3.1.0"
+    ecurve "^1.0.0"
+    merkle-lib "^2.0.10"
+    pushdata-bitcoin "^1.0.1"
+    randombytes "^2.0.1"
+    safe-buffer "^5.0.1"
+    typeforce "^1.11.3"
+    varuint-bitcoin "^1.0.4"
+    wif "^2.0.1"
+  optionalDependencies:
+    secp256k1 "^3.5.2"
+
 "@celo/contractkit@0.4.11":
   version "0.4.11"
   resolved "https://registry.yarnpkg.com/@celo/contractkit/-/contractkit-0.4.11.tgz#8fab94a5c9231af258ab5b393a530079c6ff8d7f"
