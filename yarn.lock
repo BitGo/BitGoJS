@@ -451,9 +451,10 @@
   optionalDependencies:
     secp256k1 "^3.5.2"
 
-"@bitgo/utxo-lib@git+https://github.com/BitGo/bitgo-utxo-lib.git#a08adf4478d8bace8a0e932158674e76ae463fca":
+"@bitgo/utxo-lib@^1.7.3":
   version "1.7.3"
-  resolved "git+https://github.com/BitGo/bitgo-utxo-lib.git#a08adf4478d8bace8a0e932158674e76ae463fca"
+  resolved "https://registry.yarnpkg.com/@bitgo/utxo-lib/-/utxo-lib-1.7.3.tgz#603c6ef72593f6b97cb635a4c9fd4598a3d86eb7"
+  integrity sha512-tJXtp2eYPpj2ZUP8qVzk8DeDw8oUwl9Slx1q4Dcmz6fygwE4sWLUHt1eY12jWmcPi/ulXP0EAYH36Uhx18O80w==
   dependencies:
     bech32 "0.0.3"
     bigi "^1.4.0"
