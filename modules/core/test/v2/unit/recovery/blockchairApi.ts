@@ -4,7 +4,7 @@ import { Environments } from '../../../../src/v2/environments';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { BlockchairApi } from '../../../../src/v2/recovery/blockchairApi';
 
-const coinNames = ['bitcoin', 'bitcoin-sv'];
+const coinNames = ['bitcoin', 'bitcoin-sv', 'bitcoin-abc'];
 
 function nockBlockchair(env, coinName) {
   const baseUrl = BlockchairApi.getBaseUrl(env, coinName);

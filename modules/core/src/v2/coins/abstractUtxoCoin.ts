@@ -1612,7 +1612,8 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         .set('BCH', 'bitcoin-cash')
         .set('ZEC', 'zcash')
         .set('DASH', 'dash')
-        .set('BSV', 'bitcoin-sv');
+        .set('BSV', 'bitcoin-sv')
+        .set('BCHA', 'bitcoin-cash-abc');
       const coinGeckoId = familyNamesToCoinGeckoIds.get(self.getFamily().toUpperCase());
       if (!coinGeckoId) {
         throw new Error(`There is no CoinGecko id for family name ${self.getFamily().toUpperCase()}.`);

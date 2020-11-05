@@ -17,6 +17,7 @@ export enum CoinKind {
 export enum CoinFamily {
   ALGO = 'algo',
   BCH = 'bch',
+  BCHA = 'bcha',
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',
@@ -132,6 +133,7 @@ export enum CoinFeature {
 export enum UnderlyingAsset {
   ALGO = 'algo',
   BCH = 'bch',
+  BCHA = 'bcha',
   BSV = 'bsv',
   BTC = 'btc',
   BTG = 'btg',

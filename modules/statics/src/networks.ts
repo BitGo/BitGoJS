@@ -131,6 +131,16 @@ class BitcoinCashTestnet extends BitcoinLikeTestnet {
   explorerUrl = 'https://tbch.blockdozer.com/tx/';
 }
 
+class BitcoinABC extends BitcoinLikeMainnet {
+  family = CoinFamily.BCHA;
+  explorerUrl = 'https://api.cryptoapis.io/v1/bc/bch/mainnet';
+}
+
+class BitcoinABCTestnet extends BitcoinLikeTestnet {
+  family = CoinFamily.BCHA;
+  explorerUrl = 'https://api.cryptoapis.io/v1/bc/bch/testnet';
+}
+
 // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp
 // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/chainparams.cpp
 class BitcoinSV extends BitcoinLikeMainnet {
@@ -351,6 +361,7 @@ export const Networks = {
     algorand: Object.freeze(new Algorand()),
     bitcoin: Object.freeze(new Bitcoin()),
     bitcoinCash: Object.freeze(new BitcoinCash()),
+    bitcoinABC: Object.freeze(new BitcoinABC()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
     celo: Object.freeze(new Celo()),
@@ -373,6 +384,7 @@ export const Networks = {
     algorand: Object.freeze(new AlgorandTestnet()),
     bitcoin: Object.freeze(new BitcoinTestnet()),
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
+    bitcoinABC: Object.freeze(new BitcoinABCTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),
