@@ -1602,6 +1602,14 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
 
   /**
    * Get the current market price from a third party to be used for recovery
+   * This function is only intended for non-bitgo recovery transactions, when it is necessary
+   * to calculate the rough fee needed to pay to Keyternal. We are okay with approximating,
+   * because the resulting price of this function only has less than 1 dollar influence on the
+   * fee that needs to be paid to Keyternal.
+   *
+   * See calculateFeeAmount function:  return Math.round(feeAmountUsd / currentPrice * self.getBaseFactor());
+   *
+   * This end function should not be used as an accurate endpoint, since some coins' prices are missing from the provider
    */
   getRecoveryMarketPrice(): Bluebird<string> {
     const self = this;
@@ -1612,7 +1620,11 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
         .set('BCH', 'bitcoin-cash')
         .set('ZEC', 'zcash')
         .set('DASH', 'dash')
-        .set('BSV', 'bitcoin-sv');
+        // note: we don't have a source for price data of BCHA and BSV, but we will use BCH as a proxy. We will substitute
+        // it out for a better source when it becomes available.  TODO BG-26359.
+        .set('BCHA', 'bitcoin-cash')
+        .set('BSV', 'bitcoin-cash')
+
       const coinGeckoId = familyNamesToCoinGeckoIds.get(self.getFamily().toUpperCase());
       if (!coinGeckoId) {
         throw new Error(`There is no CoinGecko id for family name ${self.getFamily().toUpperCase()}.`);

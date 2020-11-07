@@ -7,6 +7,7 @@ const BlockchairCoin = [
   'bitcoin',
   'bitcoin-sv',
   'bitcoin-cash',
+  'bitcoin-abc'
 ];
 
 const devBase = ['dev', 'latest', 'local', 'localNonSecure', 'adminDev', 'adminLatest'];
