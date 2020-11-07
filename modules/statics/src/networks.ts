@@ -133,12 +133,12 @@ class BitcoinCashTestnet extends BitcoinLikeTestnet {
 
 class BitcoinABC extends BitcoinLikeMainnet {
   family = CoinFamily.BCHA;
-  explorerUrl = 'https://api.cryptoapis.io/v1/bc/bch/mainnet';
+  explorerUrl = 'https://api.blockchair.com/bitcoin-abc';
 }
 
 class BitcoinABCTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.BCHA;
-  explorerUrl = 'https://api.cryptoapis.io/v1/bc/bch/testnet';
+  explorerUrl = 'https://api.blockchair.com/bitcoin-abc';
 }
 
 // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp

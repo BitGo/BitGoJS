@@ -306,7 +306,7 @@ describe('Recovery:', function() {
     }));
 
     it('should generate BSV recovery tx with KRS', co(function *() {
-      nockCoingecko(1000,'bitcoin-sv');
+      nockCoingecko(1000,'bitcoin-cash');
       const basecoin = bitgo.coin('tbsv');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
@@ -346,7 +346,7 @@ describe('Recovery:', function() {
           callBack2.withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT').resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
           callBack2.resolves([]);
         } else {
-          nockCoingecko(1000, 'bitcoin-cash-abc');
+          nockCoingecko(1000, 'bitcoin-cash');
           sandbox = sinon.createSandbox();
           const callBack1bcha = sandbox.stub(Bcha.prototype, 'getAddressInfoFromExplorer');
           callBack1bcha.resolves(emptyAddressInfo);
