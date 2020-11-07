@@ -138,7 +138,7 @@ class BitcoinABC extends BitcoinLikeMainnet {
 
 class BitcoinABCTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.BCHA;
-  explorerUrl = 'https://api.blockchair.com/bitcoin-abc';
+  explorerUrl = undefined;
 }
 
 // https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/validation.cpp
@@ -150,7 +150,7 @@ class BitcoinSV extends BitcoinLikeMainnet {
 
 class BitcoinSVTestnet extends BitcoinLikeTestnet {
   family = CoinFamily.BSV;
-  explorerUrl = 'https://testnet.bitcoincloud.net/tx/';
+  explorerUrl = undefined;
 }
 
 // https://github.com/BTCGPU/BTCGPU/blob/master/src/validation.cpp
