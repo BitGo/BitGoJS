@@ -15,7 +15,7 @@ export interface BaseKeyPair {
   /**
    * Build a set of keys from a pub
    *
-   * @param {string} prv A raw pub key
+   * @param {string} pub A raw pub key
    */
   recordKeysFromPublicKey(pub: string): void;
 
