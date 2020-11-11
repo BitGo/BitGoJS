@@ -529,6 +529,43 @@
     numeral "^2.0.6"
     web3-utils "1.2.4"
 
+"@chainsafe/bls-hd-key@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@chainsafe/bls-hd-key/-/bls-hd-key-0.1.0.tgz#5e51de16801f4b4b421e418f0d1ef0692df0c585"
+  integrity sha512-VZj+Ml4YTPz+d/K2n9q/9bLlIJnTr/xdAC5w1eCvIFtcQrZCY1Zw+bCcXKX1q6sbZpO9xhyuoepJzJX9VkMPqw==
+  dependencies:
+    assert "^2.0.0"
+    bcrypto "^5.0.4"
+    bn.js "^5.1.1"
+    buffer "^5.4.3"
+
+"@chainsafe/bls-keygen@^0.2.0":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@chainsafe/bls-keygen/-/bls-keygen-0.2.1.tgz#2ddbba1fdb79f893defb6b03a797e708e631d9a1"
+  integrity sha512-QEwFbkHUoEDKXbxJ7QObHAvvqfp31cYOQju3gXxGz4RxMDPSHCcUI+76IXrq0hxYHxN149eYGcEYM57Z2YxFuw==
+  dependencies:
+    "@chainsafe/bls-hd-key" "^0.1.0"
+    assert "^2.0.0"
+    bcrypto "^5.0.4"
+    bip39 "^3.0.2"
+    buffer "^5.4.3"
+
+"@chainsafe/bls@^4.0.0":
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/@chainsafe/bls/-/bls-4.0.0.tgz#889ba5a04ebfd2e687302be46d3ea92102c9b94d"
+  integrity sha512-X3uG2nYGtc3WIyOBgn/HFdCkEq6V80JBHyVc9MJry+y1Hcs3lvxzd3n3AXo5mSf3/iVWyrfvt8J6KgWkFKDNQA==
+  dependencies:
+    "@chainsafe/bls-keygen" "^0.2.0"
+    "@chainsafe/eth2-bls-wasm" "^0.5.0"
+    assert "^1.4.1"
+
+"@chainsafe/eth2-bls-wasm@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@chainsafe/eth2-bls-wasm/-/eth2-bls-wasm-0.5.0.tgz#45d0cb8807b569537d1e0099922a9617e0410b3a"
+  integrity sha512-7aHphmg504W4YTvAEvGscODrr1Fo5Mf9NxB72fuFv2BKUS/0BPgkoxG9tA+KxcFQq1hs/VUeLhq6qVdI5WfNNA==
+  dependencies:
+    buffer "^5.4.3"
+
 "@commitlint/cli@^11.0.0":
   version "11.0.0"
   resolved "https://registry.yarnpkg.com/@commitlint%2fcli/-/cli-11.0.0.tgz#698199bc52afed50aa28169237758fa14a67b5d3"
@@ -2895,7 +2932,7 @@ assert-plus@1.0.0, assert-plus@^1.0.0:
   resolved "https://registry.yarnpkg.com/assert-plus/-/assert-plus-1.0.0.tgz#f12e0f3c5d77b0b1cdd9146942e4e96c1e4dd525"
   integrity sha1-8S4PPF13sLHN2RRpQuTpbB5N1SU=
 
-assert@^1.1.1:
+assert@^1.1.1, assert@^1.4.1:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/assert/-/assert-1.5.0.tgz#55c109aaf6e0aefdb3dc4b71240c70bf574b18eb"
   integrity sha512-EDsgawzwoun2CZkCgtxJbv392v4nbk9XDD06zI+kQYoBM/3RBWLlEyJARDOmhAAosBjWACEkKL6S+lIZtcAubA==
@@ -3104,6 +3141,14 @@ bcrypt-pbkdf@^1.0.0:
   integrity sha1-pDAdOJtqQ/m2f/PKEaP2Y342Dp4=
   dependencies:
     tweetnacl "^0.14.3"
+
+bcrypto@^5.0.4:
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/bcrypto/-/bcrypto-5.3.0.tgz#d2d7d8a808b5efeb09fe529034a30bd772902d84"
+  integrity sha512-SP48cpoc4BkEPNOErdsZ1VjbtdXY/C0f5wAywWniLne/Fd/5oOBqLbC6ZavngLvk4oik76g4I7PO5KduJoqECQ==
+  dependencies:
+    bufio "~1.0.7"
+    loady "~0.0.5"
 
 bech32@0.0.3:
   version "0.0.3"
@@ -3636,6 +3681,11 @@ bufferutil@^3.0.5:
     bindings "~1.3.0"
     nan "~2.10.0"
     prebuild-install "~4.0.0"
+
+bufio@~1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/bufio/-/bufio-1.0.7.tgz#b7f63a1369a0829ed64cc14edf0573b3e382a33e"
+  integrity sha512-bd1dDQhiC+bEbEfg56IdBv7faWa6OipMs/AFFFvtFnB3wAYjlwQpQRZ0pm6ZkgtfL0pILRXhKxOiQj6UzoMR7A==
 
 builtin-status-codes@^3.0.0:
   version "3.0.0"
@@ -8920,6 +8970,11 @@ loader-utils@^1.1.0, loader-utils@^1.2.3:
     big.js "^5.2.2"
     emojis-list "^3.0.0"
     json5 "^1.0.1"
+
+loady@~0.0.5:
+  version "0.0.5"
+  resolved "https://registry.yarnpkg.com/loady/-/loady-0.0.5.tgz#b17adb52d2fb7e743f107b0928ba0b591da5d881"
+  integrity sha512-uxKD2HIj042/HBx77NBcmEPsD+hxCgAtjEWlYNScuUjIsh/62Uyu39GOR68TBR68v+jqDL9zfftCWoUo4y03sQ==
 
 locate-path@^2.0.0:
   version "2.0.0"
