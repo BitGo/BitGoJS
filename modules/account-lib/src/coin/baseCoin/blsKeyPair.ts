@@ -1,8 +1,17 @@
-import * as BLS from '@chainsafe/bls';
-import { KeyPairOptions, isPrivateKey } from './iface';
+import * as BLS from '@bitgo/bls';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { NotImplementedError } from './errors';
+
+let initialized = false;
+const initialize = async () => {
+  await BLS.initBLS();
+  initialized = true;
+};
+
+setImmediate(async () => {
+  await initialize();
+});
 
 /**
  * Base class for BLS keypairs.
@@ -15,7 +24,11 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    *
    */
   protected constructor() {
-    this.keyPair = BLS.generateKeyPair();
+    if (initialized) {
+      this.keyPair = BLS.generateKeyPair();
+    } else {
+      throw new Error('BLS has not completed initialization, initializing now');
+    }
   }
 
   /**

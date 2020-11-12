@@ -1,4 +1,4 @@
-import * as BLS from '@chainsafe/bls';
+import * as BLS from '@bitgo/bls';
 import { DefaultKeys } from '../baseCoin/iface';
 import { BlsKeyPair } from '../baseCoin/blsKeyPair';
 
