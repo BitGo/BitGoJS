@@ -11,6 +11,7 @@ export { Eos } from './eos';
 export { Erc20Token } from './erc20Token';
 export { Etc } from './etc';
 export { Eth } from './eth';
+export { Eth2 } from './eth2';
 export { Ltc } from './ltc';
 export { Ofc } from './ofc'; // TODO: SDKT-15: make abstract and remove from exported list
 export { OfcToken } from './ofcToken';
@@ -28,6 +29,7 @@ export { Tdash } from './tdash';
 export { Teos } from './teos';
 export { Tetc } from './tetc';
 export { Teth } from './teth';
+export { Teth2 } from './teth2';
 export { Gteth } from './gteth';
 export { Tltc } from './tltc';
 export { Trbtc } from './trbtc';
