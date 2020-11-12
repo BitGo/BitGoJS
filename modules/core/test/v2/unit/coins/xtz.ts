@@ -66,11 +66,16 @@ describe('Tezos:', function() {
 
   it('should sign an unsigned transaction with a Tezos private key', co(function *() {
     const signTxOptions = {
-      prv: 'spsk2cbiVsAvpGKmau9XcMscL3NRwjkyT575N5AyAofcoj41x6g6TL',
+      prv: 'xprv9s21ZrQH143K2EHDvGaG86MLjU9bW52eEoqMKakkEYc7rM8KDC28FPMcbiwDYX3jjh2mDjFE4Bm37QqMvm4icdW7CAH7LH8jKDF3LXNbRbz',
       txPrebuild: {
         txHex: unsignedHex,
-        source: 'tz2F2pwk4AKjVGf8aNsWmj5e3LZ8Wokf1gEs',
+        source: 'tz2HGMx8YxPSLguVP6usgf1D8UALPLchLoSX',
         dataToSign: dataToSign,
+        addressInfo: {
+          address: 'tz2HGMx8YxPSLguVP6usgf1D8UALPLchLoSX',
+          chain: 0,
+          index: 0,
+        },
       },
     };
     const tx = yield basecoin.signTransaction(signTxOptions);
@@ -79,11 +84,16 @@ describe('Tezos:', function() {
 
   it('should sign with a half signed transaction with a Tezos private key', co(function *() {
     const signTxOptions = {
-      prv: 'spsk2VW5XpNuELWK1E6rQCCiuwCGyN2zKoNqw4TW8bMkCjPBshMPxb',
+      prv: 'xprv9s21ZrQH143K2vpv9Z5GppJtVsT6nBFWDRnA2PKTHaJobNGbhC9MR7shQCQ79jJNZvcxw6YzFTEiwxg3E6Tjo5RR7nKb2dp8r1zdKDG3w1o',
       txPrebuild: {
         txHex: oneSignatureHex,
-        source: 'tz2F2pwk4AKjVGf8aNsWmj5e3LZ8Wokf1gEs',
+        source: 'tz28XZQ1dRm17RLKM9ayhhp2dVvCGvpPhVyB',
         dataToSign: dataToSign,
+        addressInfo: {
+          address: 'tz28XZQ1dRm17RLKM9ayhhp2dVvCGvpPhVyB',
+          chain: 0,
+          index: 0,
+        },
       },
     };
     const tx = yield basecoin.signTransaction(signTxOptions);
@@ -92,10 +102,15 @@ describe('Tezos:', function() {
 
   it('should sign with a fee account a fully signed transaction', co(function *() {
     const signTxOptions = {
-      prv: 'spsk2CMCo1Xk35Dt1Qu4fKtzUREyMbwtT3U1rVgrjiB1JbrQBs5juy',
+      prv: 'xprv9s21ZrQH143K2dseae8JccdEANb1jSfx7Pr8zpKq9uW1Nyh8LD8Uizn6CttWNwJ9S9xJtP3nWda2RoQjTp75HdSyTPnUgdANo2sgpPrcMwm',
       txPrebuild: {
         txHex: twoSignatureHex,
-        source: 'tz2F2pwk4AKjVGf8aNsWmj5e3LZ8Wokf1gEs',
+        source: 'tz2S9wKhTQK8JFh3j6Rd2dMPnNRmZ5C1Kxfe',
+        addressInfo: {
+          address: 'tz2S9wKhTQK8JFh3j6Rd2dMPnNRmZ5C1Kxfe',
+          chain: 0,
+          index: 0,
+        },
       },
     };
     const tx = yield basecoin.signTransaction(signTxOptions);

@@ -16,6 +16,9 @@ export { Xtz };
 import * as Eth from './coin/eth';
 export { Eth };
 
+import * as Eth2 from './coin/eth2';
+export { Eth2 };
+
 import * as Etc from './coin/etc';
 export { Etc };
 
