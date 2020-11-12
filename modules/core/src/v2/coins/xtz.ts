@@ -25,6 +25,8 @@ import { BitGo } from '../../bitgo';
 import { NodeCallback } from '../types';
 import BigNumber from 'bignumber.js';
 import { MethodNotImplementedError } from '../../errors';
+import { hdPath } from '../../bitcoin';
+import * as bitcoin from '@bitgo/utxo-lib';
 
 export interface XtzSignTransactionOptions extends SignTransactionOptions {
   txPrebuild: TransactionPrebuild;
@@ -37,9 +39,16 @@ export interface TxInfo {
   txid: string;
 }
 
+export interface AddressInfo {
+  address: string;
+  chain: number;
+  index: number;
+}
+
 export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txHex: string;
   txInfo: TxInfo;
+  addressInfo: AddressInfo;
   feeInfo: XtzTransactionFee;
   source: string;
   dataToSign: string;
@@ -154,6 +163,18 @@ export class Xtz extends BaseCoin {
   }
 
   /**
+   * Derive a user key using the chain path of the address
+   * @param key
+   * @param path
+   * @returns {string} derived private key
+   */
+  deriveKeyWithPath({ key, path }: { key: string; path: string }): string {
+    const keychain = bitcoin.HDNode.fromBase58(key);
+    const derivedKeyNode = hdPath(keychain).derive(path);
+    return derivedKeyNode.toBase58();
+  }
+
+  /**
    * Assemble keychain and half-sign prebuilt transaction
    *
    * @param params
@@ -175,7 +196,10 @@ export class Xtz extends BaseCoin {
       if (params.txPrebuild.dataToSign) {
         txBuilder.overrideDataToSign({ dataToSign: params.txPrebuild.dataToSign });
       }
-      txBuilder.sign({ key: params.prv });
+      const { chain, index } = params.txPrebuild.addressInfo;
+      const derivationPath = `/0/0/${chain}/${index}`;
+      const key = self.deriveKeyWithPath({ key: params.prv, path: derivationPath });
+      txBuilder.sign({ key });
 
       const transaction: any = yield txBuilder.build();
       if (!transaction) {
