@@ -51,12 +51,9 @@ export class Zec extends AbstractUtxoCoin {
   prepareTransactionBuilder(txBuilder: ZecTransactionBuilder): any {
     txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
     txBuilder.setVersionGroupId(0x892f2085);
-    // Use "Heartwood" consensus branch ID https://zips.z.cash/zip-0250
-    // Remove this after ZEC mainnet height 1046400 and
-    // utxo-lib will switch to default value of 0xe9ff75a6
-    // for "Canopy" consensus branch https://zips.z.cash/zip-0251
+    // Use "Canopy" consensus branch https://zips.z.cash/zip-0251
     // https://bitgoinc.atlassian.net/browse/BG-26072
-    txBuilder.setConsensusBranchId(0xf5b9230b);
+    txBuilder.setConsensusBranchId(0xe9ff75a6);
     return txBuilder;
   }
 
