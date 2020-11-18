@@ -423,7 +423,13 @@ export const coins = CoinMap.fromCoins([
   erc20('upt', 'Universal Protocol Token', 18, '0x6ca88cc8d9288f5cad825053b6a1b179b05c76fc', UnderlyingAsset.UPT),
   erc20('upusd', 'Universal US Dollar', 2, '0x86367c0e517622dacdab379f2de389c3c9524345', UnderlyingAsset.UPUSD),
   erc20('uqc', 'Uquid Coin', 18, '0xd01db73e047855efb414e6202098c4be4cd2423b', UnderlyingAsset.UQC),
-  erc20('urhd', 'Unicorn Tokenization Robinhood Shares', 0, '0xe1d24266ff2a981f886548cdb3fd4ac3b4a76167', UnderlyingAsset.URHD),
+  erc20(
+    'urhd',
+    'Unicorn Tokenization Robinhood Shares',
+    0,
+    '0xe1d24266ff2a981f886548cdb3fd4ac3b4a76167',
+    UnderlyingAsset.URHD
+  ),
   erc20('usdc', 'USD Coin', 6, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', UnderlyingAsset.USDC),
   erc20('usdt', 'Tether', 6, '0xdac17f958d2ee523a2206206994597c13d831ec7', UnderlyingAsset.USDT),
   erc20('usdx', 'eToro United States Dollar', 18, '0x4e3856c37b2fe7ff2fe34510cda82a1dffd63cd0', UnderlyingAsset.USDX),
