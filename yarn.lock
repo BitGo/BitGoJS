@@ -418,6 +418,22 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
+"@bitgo/bls@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/bls/-/bls-0.1.0.tgz#8fb1ecaeeeb776a6678d3e58067f83ef7a29aad7"
+  integrity sha512-+EIio+un5j+OqmxZNf5nWQaL9AcgJscfCnH48FAC+El5AISC/VRMzTLGVKo1Nib8LSRC81oMRChRRS1cL0J36A==
+  dependencies:
+    "@bitgo/eth2-bls-wasm" "^0.1.0"
+    "@chainsafe/bls-keygen" "^0.2.0"
+    assert "^1.4.1"
+
+"@bitgo/eth2-bls-wasm@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@bitgo/eth2-bls-wasm/-/eth2-bls-wasm-0.1.0.tgz#f9b38571e269175a71296423dbb972623372fba8"
+  integrity sha512-EKu69JBVLQpRb131SCNhES8U6OQNn/tgdEY68w15DdMzUIbxDb1TIXTy1FgDzos1CPlXmcE/zXit0Escz7qJ+Q==
+  dependencies:
+    buffer "^5.4.3"
+
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
@@ -548,22 +564,6 @@
     assert "^2.0.0"
     bcrypto "^5.0.4"
     bip39 "^3.0.2"
-    buffer "^5.4.3"
-
-"@chainsafe/bls@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@chainsafe/bls/-/bls-4.0.0.tgz#889ba5a04ebfd2e687302be46d3ea92102c9b94d"
-  integrity sha512-X3uG2nYGtc3WIyOBgn/HFdCkEq6V80JBHyVc9MJry+y1Hcs3lvxzd3n3AXo5mSf3/iVWyrfvt8J6KgWkFKDNQA==
-  dependencies:
-    "@chainsafe/bls-keygen" "^0.2.0"
-    "@chainsafe/eth2-bls-wasm" "^0.5.0"
-    assert "^1.4.1"
-
-"@chainsafe/eth2-bls-wasm@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@chainsafe/eth2-bls-wasm/-/eth2-bls-wasm-0.5.0.tgz#45d0cb8807b569537d1e0099922a9617e0410b3a"
-  integrity sha512-7aHphmg504W4YTvAEvGscODrr1Fo5Mf9NxB72fuFv2BKUS/0BPgkoxG9tA+KxcFQq1hs/VUeLhq6qVdI5WfNNA==
-  dependencies:
     buffer "^5.4.3"
 
 "@commitlint/cli@^11.0.0":

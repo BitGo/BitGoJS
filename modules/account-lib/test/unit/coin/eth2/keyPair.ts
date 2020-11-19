@@ -1,14 +1,9 @@
 import should from 'should';
-import * as BLS from '@chainsafe/bls';
 import { KeyPair } from '../../../../src/coin/eth2';
 import * as testData from '../../../resources/eth2/eth2';
 
 const pub = testData.ACCOUNT_1.publicKey;
 const prv = testData.ACCOUNT_1.privateKey;
-
-before(async function f() {
-  await BLS.initBLS();
-});
 
 describe('Eth2 Key Pair', () => {
   describe('should create a valid KeyPair', () => {
