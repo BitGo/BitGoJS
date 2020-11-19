@@ -9,42 +9,55 @@ describe('Eth2 Key Pair', () => {
   describe('should create a valid KeyPair', () => {
     it('from an empty value', () => {
       const keyPair = new KeyPair();
-      should.exists(keyPair.getKeys().privateKey);
-      should.exists(keyPair.getKeys().publicKey);
-      should.equal(
-        keyPair
-          .getKeys()
-          .privateKey.toHexString()
-          .slice(0, 2),
-        '0x',
-      );
-      should.equal(
-        keyPair
-          .getKeys()
-          .publicKey.toHexString()
-          .slice(0, 2),
-        '0x',
-      );
+      should.exists(keyPair.getKeys().pub);
+      should.exists(keyPair.getKeys().prv);
+      should.equal(keyPair.getKeys().pub.slice(0, 2), '0x');
     });
 
     it('without source', () => {
       const keyPair = new KeyPair();
-      should.exists(keyPair.getKeys().privateKey);
-      should.exists(keyPair.getKeys().publicKey);
+      should.exists(keyPair.getKeys().prv);
+      should.exists(keyPair.getKeys().pub);
     });
 
     it('from a private key', () => {
       const baseKeyPair = new KeyPair();
       const inheritKeyPair = new KeyPair();
-      inheritKeyPair.recordKeysFromPrivateKey(baseKeyPair.getKeys().privateKey.toHexString());
-      should.equal(inheritKeyPair.getKeys().privateKey.toHexString(), baseKeyPair.getKeys().privateKey.toHexString());
+      inheritKeyPair.recordKeysFromPrivateKey(baseKeyPair.getKeys().prv!);
+      should.equal(inheritKeyPair.getKeys().prv, baseKeyPair.getKeys().prv);
     });
 
-    it('from a byte array private key', () => {
+    it('from a byte array private key converted to string', () => {
       const privateKey = '0x' + Buffer.from(testData.ACCOUNT_1.privateKeyBytes).toString('hex');
       const keyPair = new KeyPair();
       keyPair.recordKeysFromPrivateKey(privateKey);
-      should.equal(keyPair.getKeys().privateKey.toHexString(), privateKey);
+      should.equal(keyPair.getKeys().prv, privateKey);
+    });
+
+    it('should recognize a valid public key', () => {
+      const keyPair = new KeyPair();
+      KeyPair.isValidPub(keyPair.getKeys().pub).should.be.true();
+    });
+
+    it('should recognize an invalid public key', () => {
+      const pubkey = 'abc';
+      KeyPair.isValidPub(pubkey).should.be.false();
+    });
+
+    it('should recognize a valid priv key', () => {
+      const prvBuff = Buffer.from(testData.ACCOUNT_1.privateKeyBytes);
+      KeyPair.isValidPrv(prvBuff).should.be.true();
+
+      const prvString = '0x' + prvBuff.toString('hex');
+      KeyPair.isValidPrv(prvString).should.be.true();
+    });
+
+    it('should recognize an invalid priv key', () => {
+      const prvBuff = Buffer.from('abc');
+      KeyPair.isValidPrv(prvBuff).should.be.false();
+
+      const prvString = '0x' + prvBuff.toString('hex');
+      KeyPair.isValidPrv(prvString).should.be.false();
     });
   });
 
