@@ -69,6 +69,9 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    * @returns {boolean} Whether the input is a valid private key or not
    */
   public static isValidBLSPrv(prv: string): boolean {
+    if (!initialized) {
+      throw new Error('BLS lib not yet initialized, please retry');
+    }
     try {
       BLS.PrivateKey.fromHexString(prv);
       return true;
@@ -84,6 +87,9 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    * @returns {boolean} is it valid?
    */
   public static isValidBLSPub(pub: string): boolean {
+    if (!initialized) {
+      throw new Error('BLS lib not yet initialized, please retry');
+    }
     try {
       BLS.PublicKey.fromHex(pub);
       return true;
@@ -93,6 +99,9 @@ export abstract class BlsKeyPair implements BaseKeyPair {
   }
 
   public static aggregatePubkeys(pubKeys: Uint8Array[]): Buffer {
+    if (!initialized) {
+      throw new Error('BLS lib not yet initialized, please retry');
+    }
     try {
       return BLS.aggregatePubkeys(pubKeys);
     } catch (e) {
