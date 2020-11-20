@@ -61,6 +61,25 @@ describe('Eth2 Key Pair', () => {
     });
   });
 
+  describe('should validly perform key aggregation', () => {
+    it('from a single valid pubkey', () => {
+      const keyPair = new KeyPair();
+      const pub = Uint8Array.from(Buffer.from(keyPair.getKeys().pub.slice(2), 'hex'));
+      const aggregatedKey = '0x' + KeyPair.aggregatePubkeys([pub]).toString('hex');
+      aggregatedKey.length.should.equal(98);
+    });
+
+    it('from a set of valid pubkeys', () => {
+      const keyPair1 = new KeyPair();
+      const pub1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().pub.slice(2), 'hex'));
+
+      const keyPair2 = new KeyPair();
+      const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
+      const aggregatedKey = '0x' + KeyPair.aggregatePubkeys([pub1, pub2]).toString('hex');
+      aggregatedKey.length.should.equal(98);
+    });
+  });
+
   describe('should fail to create a KeyPair', () => {
     it('from a public key', () => {
       should.throws(
@@ -84,6 +103,26 @@ describe('Eth2 Key Pair', () => {
         () => new KeyPair().recordKeysFromPrivateKey(prv + pub),
         e => e.message === testData.errorMessageInvalidPrivateKey,
       );
+    });
+  });
+
+  describe('should reject key aggregation', () => {
+    it('from a single invalid pubkey string', () => {
+      const pub = Buffer.from('abc');
+      should.throws(() => KeyPair.aggregatePubkeys([pub]));
+    });
+
+    it('from a single invalid pubkey buffer', () => {
+      const pub = Uint8Array.from(Buffer.from('abc', 'hex'));
+      should.throws(() => KeyPair.aggregatePubkeys([pub]));
+    });
+
+    it('from a set of invalid pubkeys', () => {
+      const pub1 = Uint8Array.from(Buffer.from('abd', 'hex'));
+
+      const keyPair2 = new KeyPair();
+      const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
+      should.throws(() => KeyPair.aggregatePubkeys([pub1, pub2]));
     });
   });
 });
