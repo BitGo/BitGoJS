@@ -91,4 +91,12 @@ export abstract class BlsKeyPair implements BaseKeyPair {
       return false;
     }
   }
+
+  public static aggregatePubkeys(pubKeys: Uint8Array[]): Buffer {
+    try {
+      return BLS.aggregatePubkeys(pubKeys);
+    } catch (e) {
+      throw new Error('Error aggregating pubkeys: ' + e);
+    }
+  }
 }
