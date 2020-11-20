@@ -13,6 +13,12 @@ setImmediate(async () => {
   await initialize();
 });
 
+function ensureInitialized() {
+  if (!initialized) {
+    throw new Error('BLS lib not yet initialized, please retry');
+  }
+}
+
 /**
  * Base class for BLS keypairs.
  */
@@ -24,11 +30,8 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    *
    */
   protected constructor() {
-    if (initialized) {
-      this.keyPair = BLS.generateKeyPair();
-    } else {
-      throw new Error('BLS has not completed initialization, initializing now');
-    }
+    ensureInitialized();
+    this.keyPair = BLS.generateKeyPair();
   }
 
   /**
@@ -69,6 +72,7 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    * @returns {boolean} Whether the input is a valid private key or not
    */
   public static isValidBLSPrv(prv: string): boolean {
+    ensureInitialized();
     try {
       BLS.PrivateKey.fromHexString(prv);
       return true;
@@ -84,11 +88,21 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    * @returns {boolean} is it valid?
    */
   public static isValidBLSPub(pub: string): boolean {
+    ensureInitialized();
     try {
       BLS.PublicKey.fromHex(pub);
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  public static aggregatePubkeys(pubKeys: Uint8Array[]): Buffer {
+    ensureInitialized();
+    try {
+      return BLS.aggregatePubkeys(pubKeys);
+    } catch (e) {
+      throw new Error('Error aggregating pubkeys: ' + e);
     }
   }
 }
