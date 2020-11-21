@@ -1,5 +1,6 @@
-FROM node:10 AS builder
+FROM node:10-alpine AS builder
 MAINTAINER Tyler Levine <tyler@bitgo.com>
+RUN apk add --no-cache git python make g++
 COPY --chown=node:node . /tmp/bitgo/
 WORKDIR /tmp/bitgo/modules/express
 RUN npm install npm@latest -g
