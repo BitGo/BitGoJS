@@ -1,8 +1,23 @@
-import * as BLS from '@chainsafe/bls';
-import { KeyPairOptions, isPrivateKey } from './iface';
+import * as BLS from '@bitgo/bls';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { NotImplementedError } from './errors';
+
+let initialized = false;
+const initialize = async () => {
+  await BLS.initBLS();
+  initialized = true;
+};
+
+setImmediate(async () => {
+  await initialize();
+});
+
+function ensureInitialized() {
+  if (!initialized) {
+    throw new Error('BLS lib not yet initialized, please retry');
+  }
+}
 
 /**
  * Base class for BLS keypairs.
@@ -15,6 +30,7 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    *
    */
   protected constructor() {
+    ensureInitialized();
     this.keyPair = BLS.generateKeyPair();
   }
 
@@ -24,7 +40,7 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    * @param {string} prv a hexadecimal private key
    */
   recordKeysFromPrivateKey(prv: string) {
-    if (this.isValidBLSPrv(prv)) {
+    if (BlsKeyPair.isValidBLSPrv(prv)) {
       const privateKey = BLS.PrivateKey.fromHexString(prv);
       this.keyPair = new BLS.Keypair(privateKey);
     } else {
@@ -55,12 +71,38 @@ export abstract class BlsKeyPair implements BaseKeyPair {
    * @param {string} prv A hexadecimal public key to validate
    * @returns {boolean} Whether the input is a valid private key or not
    */
-  isValidBLSPrv(prv: string): boolean {
+  public static isValidBLSPrv(prv: string): boolean {
+    ensureInitialized();
     try {
       BLS.PrivateKey.fromHexString(prv);
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  /**
+   * Return boolean indicating whether input is valid public key for the coin.
+   *
+   * @param {string} pub the pub to be checked
+   * @returns {boolean} is it valid?
+   */
+  public static isValidBLSPub(pub: string): boolean {
+    ensureInitialized();
+    try {
+      BLS.PublicKey.fromHex(pub);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public static aggregatePubkeys(pubKeys: Uint8Array[]): Buffer {
+    ensureInitialized();
+    try {
+      return BLS.aggregatePubkeys(pubKeys);
+    } catch (e) {
+      throw new Error('Error aggregating pubkeys: ' + e);
     }
   }
 }

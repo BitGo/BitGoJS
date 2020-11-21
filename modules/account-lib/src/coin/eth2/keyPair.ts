@@ -1,6 +1,6 @@
-import * as BLS from '@chainsafe/bls';
-import { DefaultKeys } from '../baseCoin/iface';
 import { BlsKeyPair } from '../baseCoin/blsKeyPair';
+import { DefaultKeys } from '../baseCoin/iface';
+import * as testData from '../../../test/resources/eth2/eth2';
 
 /**
  * Ethereum keys and address management.
@@ -19,11 +19,11 @@ export class KeyPair extends BlsKeyPair {
    *
    * @returns { DefaultKeys } The keys in the defined format
    */
-  getKeys(): BLS.Keypair {
+  getKeys(): DefaultKeys {
     if (this.keyPair) {
-      return this.keyPair;
+      return { prv: this.keyPair.privateKey.toHexString(), pub: this.keyPair.publicKey.toHexString() };
     }
-    throw new Error('KeyPair has not been specified');
+    throw new Error('Error geting keys. Check keyPair has been specified & privae key is valid');
   }
 
   /**
@@ -32,6 +32,22 @@ export class KeyPair extends BlsKeyPair {
    * @returns {string} The address derived from the public key
    */
   getAddress(): string {
-    return this.getKeys().publicKey.toHexString();
+    return this.getKeys().pub;
+  }
+
+  static isValidPub(pub: string): boolean {
+    return BlsKeyPair.isValidBLSPub(pub);
+  }
+
+  static isValidPrv(prv: string | Buffer) {
+    if (typeof prv === 'string') {
+      return BlsKeyPair.isValidBLSPrv(prv);
+    }
+    try {
+      prv = '0x' + Buffer.from(prv).toString('hex');
+      return BlsKeyPair.isValidBLSPrv(prv);
+    } catch (e) {
+      return false;
+    }
   }
 }
