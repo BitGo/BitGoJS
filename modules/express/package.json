@@ -44,7 +44,7 @@
     "debug": "^3.1.0",
     "express": "^4.16.4",
     "http-proxy": "^1.18.1",
-    "lodash": "^4.17.14",
+    "lodash": "^4.17.19",
     "morgan": "^1.9.1"
   },
   "devDependencies": {
