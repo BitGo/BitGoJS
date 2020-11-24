@@ -56,19 +56,24 @@ Promise.coroutine(function *() {
     throw new Error();
   }
 
+  // example of passing specific addresses
+  // const buildParams = { consolidateAddresses: ['X6VKIZG5RLZNCIMYXQAHM7G7DM5P65UQJRI7M74ZWYIPSY4CXFNTK3DCIE'] };
+
   // these are the transactions that will get built and signed locally
-  // - there is an optional fromAddresses parameter here - you would pass the receive addresses you want to consolidate from
+  // - there is an optional consolidateAddresses parameter here - if you want to pass specific
+  // addresses, pass buildParams above instead of ()
   const consolidationTxes = yield wallet.buildAccountConsolidations();
 
   // this will take all money off receive addresses in the wallet
-  // you can also specify which receive address by passing fromAddresses here:
-  // e.g. { walletPassphrase, fromAddresses: ['onchainReceiveAddress'] }
+  // you can also specify which receive address by passing consolidateAddresses here:
+  // e.g. { walletPassphrase, consolidateAddresses: ['onchainReceiveAddress'] }
+
   try {
     // this is one example of how you might send only the first consolidation from this group
     const unsignedConsolidation = consolidationTxes[0];
-    const sendConsolidations = yield wallet.sendAccountConsolidations({ walletPassphrase, prebuildTx: unsignedConsolidation });
+    const sendConsolidations = yield wallet.sendAccountConsolidation({ walletPassphrase, prebuildTx: unsignedConsolidation });
     console.dir(sendConsolidations, { depth: 6 });
   } catch (e) {
     console.error(e);
   }
-});
+})().catch(e => console.error(e));

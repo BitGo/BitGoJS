@@ -64,8 +64,12 @@ async function main() {
     throw new Error('We did not unlock.');
   }
 
+  // example of passing specific addresses
+  // const buildParams = { consolidateAddresses: ['X6VKIZG5RLZNCIMYXQAHM7G7DM5P65UQJRI7M74ZWYIPSY4CXFNTK3DCIE'] };
+
   // these are the transactions that will get built and signed locally
-  // - there is an optional fromAddresses parameter here - you would pass the receive addresses you want to consolidate from
+  // - there is an optional consolidateAddresses parameter here - if you want to pass specific
+  // addresses, pass buildParams above instead of ()
   const consolidationTxes = await wallet.buildAccountConsolidations();
 
   // this step might be used for some intermediate verification of the consolidation tx

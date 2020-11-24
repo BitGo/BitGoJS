@@ -63,7 +63,7 @@ export interface Memo {
  * - recipients
  */
 export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions {
-  fromAddresses?: string[];
+  consolidateAddresses?: string[];
 }
 
 export interface PrebuildTransactionOptions {
@@ -2310,7 +2310,7 @@ export class Wallet {
   /**
    * Builds a set of consolidation transactions for a wallet.
    * @param params
-   *     fromAddresses - these are the on-chain receive addresses we want to pick a consolidation amount from
+   *     consolidateAddresses - these are the on-chain receive addresses we want to pick a consolidation amount from
    * @param callback
    */
   buildAccountConsolidations(params: BuildConsolidationTransactionOptions = {}, callback?: NodeCallback<PrebuildTransactionResult[]>): Bluebird<PrebuildTransactionResult[]> {
@@ -2389,7 +2389,8 @@ export class Wallet {
 
   /**
    * Builds and sends a set of account consolidations. This is intended to flush many balances to the root wallet balance.
-   * @param params
+   * @param params -
+   *     consolidateAddresses - these are the on-chain receive addresses we want to pick a consolidation amount from
    * @param callback
    */
   sendAccountConsolidations(params: BuildConsolidationTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
@@ -2412,6 +2413,7 @@ export class Wallet {
             const sendTx = yield self.sendAccountConsolidation(unsignedBuildWithOptions);
             successfulTxs.push(sendTx);
           } catch (e) {
+            console.dir(e);
             failedTxs.push(e);
           }
         }
