@@ -5,7 +5,7 @@ import { BuildTransactionError, InvalidParameterValueError, NotImplementedError,
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidAddress, isValidAmount, stringifyAccountId } from './utils';
+// import { isValidAddress, isValidAmount, stringifyAccountId } from './utils';
 import { TransactionType } from '../baseCoin';
 
 export class TransferBuilder extends TransactionBuilder {
@@ -32,8 +32,6 @@ export class TransferBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     throw new NotImplementedError('signImplementation not implemented');
-
-    // return super.signImplementation(key);
   }
 
   //region Transfer fields
@@ -45,9 +43,9 @@ export class TransferBuilder extends TransactionBuilder {
    * @returns {TransferBuilder} the builder with the new parameter set
    */
   to(address: string): this {
-    if (!isValidAddress(address)) {
-      throw new InvalidParameterValueError('Invalid address');
-    }
+    // if (!isValidAddress(address)) {
+    //   throw new InvalidParameterValueError('Invalid address');
+    // }
     this._toAddress = address;
     return this;
   }
@@ -59,9 +57,9 @@ export class TransferBuilder extends TransactionBuilder {
    * @returns {TransferBuilder} the builder with the new parameter set
    */
   amount(amount: string): this {
-    if (!isValidAmount(amount)) {
-      throw new InvalidParameterValueError('Invalid amount');
-    }
+    // if (!isValidAmount(amount)) {
+    //   throw new InvalidParameterValueError('Invalid amount');
+    // }
     this._amount = amount;
     return this;
   }

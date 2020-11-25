@@ -5,7 +5,7 @@ import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isValidRawTransactionFormat } from './utils';
+// import { isValidRawTransactionFormat } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -56,8 +56,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {any} rawTransaction - Transaction in any format
    */
   private validateRawTransaction(rawTransaction: any) {
-    if (!isValidRawTransactionFormat(rawTransaction)) {
-      throw new ParseTransactionError('Invalid raw transaction');
-    }
+    // if (!isValidRawTransactionFormat(rawTransaction)) {
+    //   throw new ParseTransactionError('Invalid raw transaction');
+    // }
   }
 }

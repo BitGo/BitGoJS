@@ -11,10 +11,15 @@ import {
 } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
-import { isValidAddress, isValidRawTransactionFormat } from './utils';
+import {KeyPair} from './keyPair'
+// import { isValidAddress, isValidRawTransactionFormat } from './utils';
 
 export const DEFAULT_M = 3;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
+  private _source: BaseAddress;
+  private _fee: BaseFee;
+  private _transaction: Transaction;
+
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -24,6 +29,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    
     throw new NotImplementedError('buildImplementation not implemented');
 
     // return this.transaction;
@@ -37,7 +43,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
     throw new NotImplementedError('signImplementation not implemented');
-    return this.transaction;
   }
 
   /**
@@ -93,9 +98,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress, addressFormat?: string): void {
-    if (!isValidAddress(address.address)) {
-      throw new BuildTransactionError('Invalid address ' + address.address);
-    }
+    // if (!isValidAddress(address.address)) {
+    //   throw new BuildTransactionError('Invalid address ' + address.address);
+    // }
   }
 
   /** @inheritdoc */
@@ -107,9 +112,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
-    if (!isValidRawTransactionFormat(rawTransaction)) {
-      throw new ParseTransactionError('Invalid raw transaction');
-    }
+    // if (!isValidRawTransactionFormat(rawTransaction)) {
+    //   throw new ParseTransactionError('Invalid raw transaction');
+    // }
   }
 
   /** @inheritdoc */
@@ -148,4 +153,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     // });
   }
   // endregion
+
+    /** @inheritdoc */
+    protected get transaction(): Transaction {
+      return this._transaction;
+    }
+  
+    /** @inheritdoc */
+    protected set transaction(transaction: Transaction) {
+      this._transaction = transaction;
+    }
 }
