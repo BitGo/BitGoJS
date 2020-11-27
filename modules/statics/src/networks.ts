@@ -194,6 +194,20 @@ class CeloTestnet extends Testnet implements AccountNetwork {
   accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
 }
 
+// TODO Add explorer urls for mainet Ticket BGA-948
+class Casper extends Mainnet implements AccountNetwork {
+  family = CoinFamily.CSPR;
+  explorerUrl = '';
+  accountExplorerUrl = '';
+}
+
+// TODO Add explorer urls for testnet Ticket BGA-948
+class CasperTestnet extends Testnet implements AccountNetwork {
+  family = CoinFamily.CSPR;
+  explorerUrl = '';
+  accountExplorerUrl = '';
+}
+
 class Ethereum extends Mainnet implements AccountNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://etherscan.io/tx/';
@@ -364,6 +378,7 @@ export const Networks = {
     bitcoinABC: Object.freeze(new BitcoinABC()),
     bitcoinGold: Object.freeze(new BitcoinGold()),
     bitcoinSV: Object.freeze(new BitcoinSV()),
+    casper: Object.freeze(new Casper()),
     celo: Object.freeze(new Celo()),
     dash: Object.freeze(new Dash()),
     eos: Object.freeze(new Eos()),
@@ -386,6 +401,7 @@ export const Networks = {
     bitcoinCash: Object.freeze(new BitcoinCashTestnet()),
     bitcoinABC: Object.freeze(new BitcoinABCTestnet()),
     bitcoinSV: Object.freeze(new BitcoinSVTestnet()),
+    casper: Object.freeze(new CasperTestnet()),
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),
     eos: Object.freeze(new EosTestnet()),

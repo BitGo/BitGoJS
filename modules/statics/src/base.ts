@@ -22,6 +22,7 @@ export enum CoinFamily {
   BTC = 'btc',
   BTG = 'btg',
   CELO = 'celo',
+  CSPR = 'cspr',
   DASH = 'dash',
   ETH = 'eth',
   ETC = 'etc',
@@ -139,6 +140,7 @@ export enum UnderlyingAsset {
   BTG = 'btg',
   DASH = 'dash',
   CELO = 'celo', // Celo main coin
+  CSPR = 'cspr',
   USD = 'usd',
   ETH = 'eth',
   ETC = 'etc',
