@@ -1,4 +1,5 @@
 import should from 'should';
+import * as BLS from '@bitgo/bls';
 import { KeyPair } from '../../../../src/coin/eth2';
 import * as testData from '../../../resources/eth2/eth2';
 
@@ -123,6 +124,43 @@ describe('Eth2 Key Pair', () => {
       const keyPair2 = new KeyPair();
       const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
       should.throws(() => KeyPair.aggregatePubkeys([pub1, pub2]));
+    });
+  });
+
+  describe('Signatures', () => {
+    it('should accept 2-of-2 aggregated signature', () => {
+      const msg = Buffer.from('test message');
+      const keyPair1 = new KeyPair();
+      const pub1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().pub.slice(2), 'hex'));
+      const sec1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().prv!.slice(2), 'hex'));
+      const sig1 = BLS.sign(sec1, msg);
+
+      const keyPair2 = new KeyPair();
+      const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
+      const sec2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().prv!.slice(2), 'hex'));
+      const sig2 = BLS.sign(sec2, msg);
+
+      const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2]);
+      const aggregatedSig = BLS.aggregateSignatures([sig1, sig2]);
+
+      BLS.verify(aggregatedKey, msg, aggregatedSig).should.be.true();
+    });
+
+    it('should reject 1-of-2 aggregated signature', () => {
+      const msg = Buffer.from('test message');
+      const keyPair1 = new KeyPair();
+      const pub1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().pub.slice(2), 'hex'));
+      const sec1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().prv!.slice(2), 'hex'));
+      const sig1 = BLS.sign(sec1, msg);
+
+      const keyPair2 = new KeyPair();
+      const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
+
+      const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2]);
+      const aggregatedSig = BLS.aggregateSignatures([sig1]);
+
+      BLS.verify(aggregatedKey, msg, aggregatedSig).should.be.false();
+      BLS.verify(aggregatedKey, msg, sig1).should.be.false();
     });
   });
 });
