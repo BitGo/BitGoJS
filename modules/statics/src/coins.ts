@@ -17,6 +17,7 @@ import { ofc, ofcerc20, tofc, tofcerc20 } from './ofc';
 import { utxo } from './utxo';
 
 const ETH_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS, CoinFeature.ENTERPRISE_PAYS_FEES];
+const ETH2_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XLM_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.SUPPORTS_TOKENS];
 const XTZ_FEATURES = [...AccountCoin.DEFAULT_FEATURES, CoinFeature.ENTERPRISE_PAYS_FEES];
 
@@ -43,8 +44,16 @@ export const coins = CoinMap.fromCoins([
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.ETH, ETH_FEATURES),
-  account('eth2', 'Ethereum 2.0', Networks.main.ethereum2, 18, UnderlyingAsset.ETH2, ETH_FEATURES, KeyCurve.BLS),
-  account('teth2', 'Testnet Ethereum 2.0', Networks.test.pyrmont, 18, UnderlyingAsset.ETH2, ETH_FEATURES, KeyCurve.BLS),
+  account('eth2', 'Ethereum 2.0', Networks.main.ethereum2, 18, UnderlyingAsset.ETH2, ETH2_FEATURES, KeyCurve.BLS),
+  account(
+    'teth2',
+    'Testnet Ethereum 2.0',
+    Networks.test.pyrmont,
+    18,
+    UnderlyingAsset.ETH2,
+    ETH2_FEATURES,
+    KeyCurve.BLS
+  ),
   account('etc', 'Ethereum Classic', Networks.main.ethereum, 18, UnderlyingAsset.ETC, ETH_FEATURES),
   account('tetc', 'Testnet Ethereum Classic', Networks.test.kovan, 18, UnderlyingAsset.ETC, ETH_FEATURES),
   account('eos', 'Eos', Networks.main.eos, 4, UnderlyingAsset.EOS),
