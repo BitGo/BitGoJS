@@ -2,13 +2,13 @@ import {
   account,
   AccountCoin,
   celoToken,
-  tceloToken,
   erc20,
-  terc20,
-  stellarToken,
-  tstellarToken,
   erc20CompatibleAccountCoin,
   hederaCoin,
+  stellarToken,
+  tceloToken,
+  terc20,
+  tstellarToken,
 } from './account';
 import { CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { CoinMap } from './map';
@@ -43,6 +43,8 @@ export const coins = CoinMap.fromCoins([
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.ETH, ETH_FEATURES),
+  account('eth2', 'Ethereum 2.0', Networks.main.ethereum2, 18, UnderlyingAsset.ETH2, ETH_FEATURES),
+  account('teth2', 'Testnet Ethereum 2.0', Networks.test.pyrmont, 18, UnderlyingAsset.ETH2, ETH_FEATURES),
   account('etc', 'Ethereum Classic', Networks.main.ethereum, 18, UnderlyingAsset.ETC, ETH_FEATURES),
   account('tetc', 'Testnet Ethereum Classic', Networks.test.kovan, 18, UnderlyingAsset.ETC, ETH_FEATURES),
   account('eos', 'Eos', Networks.main.eos, 4, UnderlyingAsset.EOS),

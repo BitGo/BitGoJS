@@ -25,6 +25,7 @@ export enum CoinFamily {
   CSPR = 'cspr',
   DASH = 'dash',
   ETH = 'eth',
+  ETH2 = 'eth2',
   ETC = 'etc',
   EOS = 'eos',
   HBAR = 'hbar',
@@ -143,6 +144,7 @@ export enum UnderlyingAsset {
   CSPR = 'cspr',
   USD = 'usd',
   ETH = 'eth',
+  ETH2 = 'eth2',
   ETC = 'etc',
   EOS = 'eos',
   HBAR = 'hbar', // Hedera main coin

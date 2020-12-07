@@ -214,6 +214,18 @@ class Ethereum extends Mainnet implements AccountNetwork {
   accountExplorerUrl = 'https://etherscan.io/address/';
 }
 
+class Ethereum2 extends Mainnet implements AccountNetwork {
+  family = CoinFamily.ETH2;
+  explorerUrl = 'https://beaconscan.com/tx';
+  accountExplorerUrl = 'https://beaconscan.com/address';
+}
+
+class Pyrmont extends Testnet implements AccountNetwork {
+  family = CoinFamily.ETH2;
+  explorerUrl = 'https://beaconscan.com/pyrmont/tx';
+  accountExplorerUrl = 'https://beaconscan.com/pyrmont/address';
+}
+
 class Kovan extends Testnet implements AccountNetwork {
   family = CoinFamily.ETH;
   explorerUrl = 'https://kovan.etherscan.io/tx/';
@@ -383,6 +395,7 @@ export const Networks = {
     dash: Object.freeze(new Dash()),
     eos: Object.freeze(new Eos()),
     ethereum: Object.freeze(new Ethereum()),
+    ethereum2: Object.freeze(new Ethereum2()),
     ethereumClassic: Object.freeze(new EthereumClassic()),
     hedera: Object.freeze(new Hedera()),
     litecoin: Object.freeze(new Litecoin()),
@@ -405,6 +418,7 @@ export const Networks = {
     celo: Object.freeze(new CeloTestnet()),
     dash: Object.freeze(new DashTestnet()),
     eos: Object.freeze(new EosTestnet()),
+    pyrmont: Object.freeze(new Pyrmont()),
     ethereumClassicTestnet: Object.freeze(new EthereumClassicTestnet()),
     hedera: Object.freeze(new HederaTestnet()),
     kovan: Object.freeze(new Kovan()),
