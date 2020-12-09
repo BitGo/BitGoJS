@@ -66,7 +66,7 @@ describe('Tezos:', function() {
 
   it('should sign an unsigned transaction with a Tezos private key', co(function *() {
     const signTxOptions = {
-      prv: 'xprv9s21ZrQH143K2EHDvGaG86MLjU9bW52eEoqMKakkEYc7rM8KDC28FPMcbiwDYX3jjh2mDjFE4Bm37QqMvm4icdW7CAH7LH8jKDF3LXNbRbz',
+      prv: 'xprv9s21ZrQH143K2vpv9Z5GppJtVsT6nBFWDRnA2PKTHaJobNGbhC9MR7shQCQ79jJNZvcxw6YzFTEiwxg3E6Tjo5RR7nKb2dp8r1zdKDG3w1o',
       txPrebuild: {
         txHex: unsignedHex,
         source: 'tz2HGMx8YxPSLguVP6usgf1D8UALPLchLoSX',
@@ -84,7 +84,7 @@ describe('Tezos:', function() {
 
   it('should sign with a half signed transaction with a Tezos private key', co(function *() {
     const signTxOptions = {
-      prv: 'xprv9s21ZrQH143K2vpv9Z5GppJtVsT6nBFWDRnA2PKTHaJobNGbhC9MR7shQCQ79jJNZvcxw6YzFTEiwxg3E6Tjo5RR7nKb2dp8r1zdKDG3w1o',
+      prv: 'xprv9s21ZrQH143K2EHDvGaG86MLjU9bW52eEoqMKakkEYc7rM8KDC28FPMcbiwDYX3jjh2mDjFE4Bm37QqMvm4icdW7CAH7LH8jKDF3LXNbRbz',
       txPrebuild: {
         txHex: oneSignatureHex,
         source: 'tz28XZQ1dRm17RLKM9ayhhp2dVvCGvpPhVyB',
@@ -105,9 +105,9 @@ describe('Tezos:', function() {
       prv: 'xprv9s21ZrQH143K2dseae8JccdEANb1jSfx7Pr8zpKq9uW1Nyh8LD8Uizn6CttWNwJ9S9xJtP3nWda2RoQjTp75HdSyTPnUgdANo2sgpPrcMwm',
       txPrebuild: {
         txHex: twoSignatureHex,
-        source: 'tz2S9wKhTQK8JFh3j6Rd2dMPnNRmZ5C1Kxfe',
+        source: 'tz2SsfYjnEmm6E6eb6BxHNqsbGk4i9EsKSTE',
         addressInfo: {
-          address: 'tz2S9wKhTQK8JFh3j6Rd2dMPnNRmZ5C1Kxfe',
+          address: 'tz2SsfYjnEmm6E6eb6BxHNqsbGk4i9EsKSTE',
           chain: 0,
           index: 0,
         },

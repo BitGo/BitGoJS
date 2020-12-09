@@ -196,9 +196,16 @@ export class Xtz extends BaseCoin {
       if (params.txPrebuild.dataToSign) {
         txBuilder.overrideDataToSign({ dataToSign: params.txPrebuild.dataToSign });
       }
+      // The path /0/0/0/0 is used by the wallet base address
+      // Derive the user key only if the transaction is sent from a receive address
+      let key;
       const { chain, index } = params.txPrebuild.addressInfo;
-      const derivationPath = `/0/0/${chain}/${index}`;
-      const key = self.deriveKeyWithPath({ key: params.prv, path: derivationPath });
+      if (chain === 0 && index === 0) {
+        key = params.prv;
+      } else {
+        const derivationPath = `/0/0/${chain}/${index}`;
+        key = self.deriveKeyWithPath({ key: params.prv, path: derivationPath });
+      }
       txBuilder.sign({ key });
 
       const transaction: any = yield txBuilder.build();
