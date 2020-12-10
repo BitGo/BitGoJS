@@ -128,17 +128,15 @@ describe('Eth2 Key Pair', () => {
   });
 
   describe('Signatures', () => {
-    it('should accept 2-of-2 aggregated signature', () => {
+    it('should accept 2-of-2 aggregated signature', async () => {
       const msg = Buffer.from('test message');
       const keyPair1 = new KeyPair();
       const pub1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().pub.slice(2), 'hex'));
-      const sec1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().prv!.slice(2), 'hex'));
-      const sig1 = BLS.sign(sec1, msg);
+      const sig1 = keyPair1.sign(msg);
 
       const keyPair2 = new KeyPair();
       const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
-      const sec2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().prv!.slice(2), 'hex'));
-      const sig2 = BLS.sign(sec2, msg);
+      const sig2 = keyPair2.sign(msg);
 
       const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2]);
       const aggregatedSig = BLS.aggregateSignatures([sig1, sig2]);
@@ -146,12 +144,11 @@ describe('Eth2 Key Pair', () => {
       BLS.verify(aggregatedKey, msg, aggregatedSig).should.be.true();
     });
 
-    it('should reject 1-of-2 aggregated signature', () => {
+    it('should reject 1-of-2 aggregated signature', async () => {
       const msg = Buffer.from('test message');
       const keyPair1 = new KeyPair();
       const pub1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().pub.slice(2), 'hex'));
-      const sec1 = Uint8Array.from(Buffer.from(keyPair1.getKeys().prv!.slice(2), 'hex'));
-      const sig1 = BLS.sign(sec1, msg);
+      const sig1 = keyPair1.sign(msg);
 
       const keyPair2 = new KeyPair();
       const pub2 = Uint8Array.from(Buffer.from(keyPair2.getKeys().pub.slice(2), 'hex'));
@@ -159,8 +156,8 @@ describe('Eth2 Key Pair', () => {
       const aggregatedKey = KeyPair.aggregatePubkeys([pub1, pub2]);
       const aggregatedSig = BLS.aggregateSignatures([sig1]);
 
-      BLS.verify(aggregatedKey, msg, aggregatedSig).should.be.false();
-      BLS.verify(aggregatedKey, msg, sig1).should.be.false();
+      KeyPair.verifySignature(aggregatedKey.toString('hex'), msg, aggregatedSig).should.be.false();
+      KeyPair.verifySignature(aggregatedKey.toString('hex'), msg, sig1).should.be.false();
     });
   });
 });
