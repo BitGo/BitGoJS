@@ -1,9 +1,36 @@
 const path = require('path');
+const fs = require('fs');
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const glob = require('glob');
-const { exec } = require("child_process");
+
+function replaceUnsafeEval(file) {
+  const replacementRegex = /Function\("return this"\)\(\)/g;
+  const replaceWith = 'window';
+
+  if (!file) {
+    throw new Error('must specify webpack bundle file to replace unsafe evals');
+  }
+
+  // eslint-disable-next-line no-sync
+  if (!fs.existsSync(file)) {
+    throw new Error(`bundle file ${file} does not exist`);
+  }
+
+  let replacements = 0;
+
+  // eslint-disable-next-line no-sync
+  const bundle = fs.readFileSync(file).toString('utf8').replace(replacementRegex, () => {
+    replacements++;
+    return replaceWith;
+  });
+
+  // eslint-disable-next-line no-sync
+  fs.writeFileSync(file, bundle);
+
+  return replacements;
+}
 
 // Loaders handle certain extensions and apply transforms
 function setupRules(env) {
@@ -100,10 +127,19 @@ function setupPlugins(env) {
     {
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
-          exec(`sed -i \"\" 's/Function(\"return this\")()/window/g' ./dist/browser/${env.prod ? 'BitGoJS.min.js' : 'BitGoJS.js' }`)          
+          const file = env.prod ? 'BitGoJS.min.js' : 'BitGoJS.js';
+          try {
+            const replacements = replaceUnsafeEval(`./dist/browser/${file}`);
+            console.log();
+            console.log(`replace-unsafe-eval-plugin: successfully replaced ${replacements} unsafe evals in file ${file}`);
+          } catch (e) {
+            console.error();
+            console.error('replace-unsafe-eval-plugin error: failed to replace unsafe evals');
+            console.error(e);
+          }
         });
-      }
-    }
+      },
+    },
   ];
 
   if (!env.test) {
@@ -150,7 +186,7 @@ module.exports = function setupWebpack(env) {
       extensions: ['.js'],
       alias: {
         // make sure we use the browser bundle and not the NodeJS package
-        '@bitgo/account-lib' : path.resolve(`../account-lib/dist/browser/${env.prod ? 'bitgo-account-lib.min.js': 'bitgo-account-lib.js'}`)
+        '@bitgo/account-lib': path.resolve(`../account-lib/dist/browser/${env.prod ? 'bitgo-account-lib.min.js': 'bitgo-account-lib.js'}`)
       }
     },
     // Main project entry point
