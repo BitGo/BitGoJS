@@ -1,3 +1,5 @@
+import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
+
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Eth2, Teth2 } from '../../../../src/v2/coins';
 
@@ -56,5 +58,25 @@ describe('Ethereum 2.0', function() {
     const prv = Uint8Array.from(Buffer.from('', 'hex'));
     const localBaseCoin = bitgo.coin('teth2');
     (function() {localBaseCoin.generateKeyPair(prv);}).should.throw();
+  });
+
+  describe('Sign message:', () => {
+    it('should sign and validate a string message', async function() {
+      const keyPair = basecoin.generateKeyPair();
+      const message = 'hello world';
+      const signature = await basecoin.signMessage(keyPair, message);
+
+      Eth2AccountLib.KeyPair.verifySignature(keyPair.pub, Buffer.from(message), signature).should.be.true();
+    });
+
+    it('should fail to validate a string message with wrong public key', async function() {
+      const keyPair = basecoin.generateKeyPair();
+      const message = 'hello world';
+      const signature = await basecoin.signMessage(keyPair, message);
+
+      const otherKeyPair = basecoin.generateKeyPair();
+
+      Eth2AccountLib.KeyPair.verifySignature(otherKeyPair.pub, Buffer.from(message), signature).should.be.false();
+    });
   });
 });

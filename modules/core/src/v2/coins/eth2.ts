@@ -344,4 +344,21 @@ export class Eth2 extends BaseCoin {
   verifyTransaction(params: VerifyTransactionOptions, callback?: NodeCallback<boolean>): Bluebird<boolean> {
     return Bluebird.resolve(true).asCallback(callback);
   }
+
+  /**
+   * Sign message with private key
+   *
+   * @param key
+   * @param message
+   * @param callback
+   */
+  signMessage(key: { prv: string }, message: string, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    return co<Buffer>(function* cosignMessage() {
+      const keyPair = new Eth2AccountLib.KeyPair();
+      keyPair.recordKeysFromPrivateKey(key.prv);
+      return keyPair.sign(Buffer.from(message));
+    })
+      .call(this)
+      .asCallback(callback);
+  }
 }
