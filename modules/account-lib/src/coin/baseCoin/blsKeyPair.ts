@@ -1,4 +1,6 @@
+import assert from 'assert';
 import * as BLS from '@bitgo/bls';
+import { stripHexPrefix } from 'ethereumjs-util';
 import { BaseKeyPair } from './baseKeyPair';
 import { AddressFormat } from './enum';
 import { NotImplementedError } from './errors';
@@ -66,6 +68,15 @@ export abstract class BlsKeyPair implements BaseKeyPair {
   }
 
   /**
+   * Signs bytes using the key pair
+   * @param msg The message bytes to sign
+   * @return signature of the bytes using this keypair
+   */
+  sign(msg: Buffer): Buffer {
+    return BLS.sign(this.keyPair.privateKey.toBytes(), msg);
+  }
+
+  /**
    * Whether the input is a valid BLS private key
    *
    * @param {string} prv A hexadecimal public key to validate
@@ -104,5 +115,19 @@ export abstract class BlsKeyPair implements BaseKeyPair {
     } catch (e) {
       throw new Error('Error aggregating pubkeys: ' + e);
     }
+  }
+
+
+  /**
+   * Verifies the signature for this key pair
+   * @param pub The public key with which to verify the signature
+   * @param msg The message to verify the signature with
+   * @param signature the signature to verify
+   * @return true if the signature is valid, else false
+   */
+  public static verifySignature(pub: string, msg: Buffer, signature: Buffer): boolean {
+    ensureInitialized();
+    assert(BlsKeyPair.isValidBLSPub(pub), `Invalid public key: ${pub}`);
+    return BLS.verify(Buffer.from(stripHexPrefix(pub), 'hex'), msg, signature);
   }
 }
