@@ -434,6 +434,11 @@
   dependencies:
     buffer "^5.4.3"
 
+"@bitgo/statics@^6.1.0-rc.0":
+  version "6.1.0-rc.1"
+  resolved "https://registry.yarnpkg.com/@bitgo/statics/-/statics-6.1.0-rc.1.tgz#c36aac2de63f767f4437f6744d191596477c780e"
+  integrity sha512-41V2v/gtJb4ZXLpv88M7cxguMXQCOqBQq6ykVs7/9ik8Os2QhXBRYjh1ybrwOzbSpO/wcxgksQH4ufU94qDgIw==
+
 "@bitgo/unspents@^0.6.0":
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/@bitgo/unspents/-/unspents-0.6.2.tgz#e89ff8d4e19d68253e1dc99fec2bb30192054390"
@@ -7767,9 +7772,9 @@ inherits@2.0.3:
   integrity sha1-Yzwsg+PaQqUC9SRmAiSA9CCCYd4=
 
 ini@^1.3.2, ini@^1.3.4, ini@^1.3.5, ini@~1.3.0:
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
-  integrity sha512-RZY5huIKCMRWDUqZlEi72f/lmXKMvuszcMBduliQ3nnWbx9X/ZBQO7DijMEYS9EhHBb2qacRUMtC7svLwe0lcw==
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.7.tgz#a09363e1911972ea16d7a8851005d84cf09a9a84"
+  integrity sha512-iKpRpXP+CrP2jyrxvg1kMUpXDyRUFDWurxbnVT1vQPx+Wz9uCYsMIqYuSBLV+PAaZG/d7kRLKRFc9oDMsH+mFQ==
 
 init-package-json@^1.10.3:
   version "1.10.3"
