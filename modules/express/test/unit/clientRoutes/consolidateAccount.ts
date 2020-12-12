@@ -3,11 +3,11 @@ import * as sinon from 'sinon';
 
 import 'should-http';
 import 'should-sinon';
-import '../lib/asserts';
+import '../../lib/asserts';
 
 import * as express from 'express';
 
-import { handleV2ConsolidateAccount } from '../../src/clientRoutes';
+import { handleV2ConsolidateAccount } from '../../../src/clientRoutes';
 
 import { BitGo } from 'bitgo';
 
