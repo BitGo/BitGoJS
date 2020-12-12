@@ -358,9 +358,7 @@ function handleCanonicalAddress(req: express.Request) {
 async function handleV2GenerateWallet(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
-  const result = await coin.wallets().generateWallet(req.body);
-  // @ts-ignore
-  return result.wallet._wallet;
+  return await coin.wallets().generateWallet(req.body);
 }
 
 /**
