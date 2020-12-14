@@ -54,12 +54,12 @@ Promise.coroutine(function *() {
   }
 
   // this will take all money off receive addresses in the wallet
-  // you can also specify which receive address by passing fromAddresses here:
-  // e.g. { walletPassphrase, fromAddresses: ['onchainReceiveAddress'] }
+  // you can also specify which receive address by passing consolidateAddresses here:
+  // e.g. { walletPassphrase, consolidateAddresses: ['onchainReceiveAddress'] }
   try {
     const sendConsolidations = yield wallet.sendAccountConsolidations({ walletPassphrase });
     console.dir(sendConsolidations, { depth: 6 });
   } catch (e) {
     console.error(e);
   }
-});
+})().catch(e => console.error(e));

@@ -3,6 +3,7 @@
  */
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
+import { stripHexPrefix } from 'ethereumjs-util';
 import * as request from 'superagent';
 import { Eth2 as Eth2AccountLib } from '@bitgo/account-lib';
 import BigNumber from 'bignumber.js';
@@ -356,7 +357,14 @@ export class Eth2 extends BaseCoin {
     return co<Buffer>(function* cosignMessage() {
       const keyPair = new Eth2AccountLib.KeyPair();
       keyPair.recordKeysFromPrivateKey(key.prv);
-      return keyPair.sign(Buffer.from(message));
+
+      let messageToSign: Buffer = Buffer.from(message);
+      if (Eth2AccountLib.KeyPair.isValidPub(message)) {
+        // if we are doing a key signature, we should decode the message as a hex string
+        messageToSign = Buffer.from(stripHexPrefix(message), 'hex');
+      }
+
+      return keyPair.sign(messageToSign);
     })
       .call(this)
       .asCallback(callback);
