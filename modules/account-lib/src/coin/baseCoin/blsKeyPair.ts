@@ -11,9 +11,7 @@ const initialize = async () => {
   initialized = true;
 };
 
-setImmediate(async () => {
-  await initialize();
-});
+initialize();
 
 function ensureInitialized() {
   if (!initialized) {
