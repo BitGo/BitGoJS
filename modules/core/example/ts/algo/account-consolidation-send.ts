@@ -62,8 +62,8 @@ async function main() {
   }
 
   // this will take all money off receive addresses in the wallet
-  // you can also specify which receive address by passing fromAddresses here:
-  // e.g. { walletPassphrase, fromAddresses: ['onchainReceiveAddress'] }
+  // you can also specify which receive address by passing consolidateAddresses here:
+  // e.g. { walletPassphrase, consolidateAddresses: ['onchainReceiveAddress'] }
   const sendConsolidations = await wallet.sendAccountConsolidations({ walletPassphrase });
   console.dir(sendConsolidations, { depth: 6 });
 }
