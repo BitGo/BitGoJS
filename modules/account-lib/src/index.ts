@@ -31,6 +31,9 @@ export { Celo };
 import * as Hbar from './coin/hbar';
 export { Hbar };
 
+import * as Cspr from './coin/cspr';
+export { Cspr };
+
 const coinBuilderMap = {
   trx: Trx.TransactionBuilder,
   ttrx: Trx.TransactionBuilder,
@@ -47,6 +50,8 @@ const coinBuilderMap = {
   tcelo: Celo.TransactionBuilder,
   hbar: Hbar.TransactionBuilderFactory,
   thbar: Hbar.TransactionBuilderFactory,
+  cspr: Cspr.TransactionBuilderFactory,
+  tcspr: Cspr.TransactionBuilderFactory,
 };
 
 /**
