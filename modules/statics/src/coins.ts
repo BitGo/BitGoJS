@@ -40,7 +40,7 @@ export const coins = CoinMap.fromCoins([
   account('algo', 'Algorand', Networks.main.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
   account('talgo', 'Testnet Algorand', Networks.test.algorand, 6, UnderlyingAsset.ALGO, undefined, KeyCurve.Ed25519),
   account('cspr', 'Casper', Networks.main.casper, 9, UnderlyingAsset.CSPR),
-  account('tcspr', 'Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR),
+  account('tcspr', 'Testnet Casper', Networks.test.casper, 9, UnderlyingAsset.CSPR),
   account('eth', 'Ethereum', Networks.main.ethereum, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('teth', 'Testnet Ethereum', Networks.test.kovan, 18, UnderlyingAsset.ETH, ETH_FEATURES),
   account('gteth', 'Goerli Testnet Ethereum', Networks.test.goerli, 18, UnderlyingAsset.ETH, ETH_FEATURES),
