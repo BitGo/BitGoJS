@@ -13,7 +13,7 @@ const curve = ecurve.getCurveByName('secp256k1');
 const BigInteger = require('bigi');
 const createHmac = require('create-hmac');
 
-let secp256k1;
+let secp256k1: typeof import('secp256k1') | undefined;
 
 try {
   secp256k1 = require('secp256k1');
@@ -36,7 +36,7 @@ function getKey(network?: bitcoin.Network): bitcoin.ECPair {
   const result = new bitcoin.ECPair(k.d, k.d ? null : k.Q, { network: network, compressed: k.compressed });
   // Creating Q from d takes ~25ms, so if it's not created, use native bindings to pre-compute
   if (!result.__Q && secp256k1) {
-    result.__Q = ecurve.Point.decodeFrom(curve, secp256k1.publicKeyCreate(k.d.toBuffer(32), false));
+    result.__Q = ecurve.Point.decodeFrom(curve, Buffer.from(secp256k1.publicKeyCreate(k.d.toBuffer(32), false)));
   }
   return result;
 }
@@ -117,7 +117,7 @@ function deriveFast(hdnode: bitcoin.HDNode, index: number): bitcoin.HDNode {
   //    = G*IL + Kpar
 
   // The expensive op is the point multiply -- use secp256k1 lib to do that
-  const Ki = ecurve.Point.decodeFrom(curve, secp256k1.publicKeyCreate(IL, false)).add(hdnode.keyPair.Q);
+  const Ki = ecurve.Point.decodeFrom(curve, Buffer.from(secp256k1.publicKeyCreate(IL, false))).add(hdnode.keyPair.Q);
 
   // In case Ki is the point at infinity, proceed with the next value for i
   if (curve.isInfinity(Ki)) {
