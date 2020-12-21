@@ -1179,7 +1179,7 @@ export class Eth extends BaseCoin {
       ]);
 
       const userReqSig = optionalDeps.ethUtil.addHexPrefix(
-        secp256k1.sign(hopDigest, userPrvBuffer).signature.toString('hex')
+        Buffer.from(secp256k1.ecdsaSign(hopDigest, userPrvBuffer).signature).toString('hex')
       );
 
       const result: HopParams = {
@@ -1222,7 +1222,8 @@ export class Eth extends BaseCoin {
       const signatureBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(signature), 'hex');
       const messageBuffer: Buffer = Buffer.from(optionalDeps.ethUtil.stripHexPrefix(id), 'hex');
 
-      const isValidSignature: boolean = secp256k1.verify(messageBuffer, signatureBuffer.slice(1), serverPubkeyBuffer);
+      const sig = new Uint8Array(signatureBuffer.slice(1));
+      const isValidSignature: boolean = secp256k1.ecdsaVerify(sig, messageBuffer, serverPubkeyBuffer);
       if (!isValidSignature) {
         throw new Error(`Hop txid signature invalid`);
       }
