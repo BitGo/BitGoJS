@@ -433,6 +433,7 @@ export enum UnderlyingAsset {
   SGR = 'sgr',
   SHK = 'shk',
   SHR = 'shr',
+  SIH = 'sih',
   SKALE = 'skale',
   SLOT = 'slot',
   SLVX = 'slvx',

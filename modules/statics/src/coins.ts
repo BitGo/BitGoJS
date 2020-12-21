@@ -405,6 +405,7 @@ export const coins = CoinMap.fromCoins([
   erc20('sgr', 'Sogur', 18, '0xaea8e1b6cb5c05d1dac618551c76bcd578ea3524', UnderlyingAsset.SGR),
   erc20('shk', 'iShook', 18, '0xebe4a49df7885d015329c919bf43e6460a858f1e', UnderlyingAsset.SHK),
   erc20('shr', 'ShareToken', 2, '0xee5fe244406f35d9b4ddb488a64d51456630befc', UnderlyingAsset.SHR),
+  erc20('sih', 'Sih', 18, '0x6d728ff862bfe74be2aba30537e992a24f259a22', UnderlyingAsset.SIH),
   erc20('skale', 'SKALE Network', 18, '0x00c83aecc790e8a4453e5dd3b0b4b3680501a7a7', UnderlyingAsset.SKALE),
   erc20('slot', 'AlphaSlot', 18, '0xaee7474c3713ece228aa5ec43c89c708f2ec7ed2', UnderlyingAsset.SLOT),
   erc20('slvx', 'eToro Silver', 18, '0x8e4d222dbd4f8f9e7c175e77d6e71715c3da78e0', UnderlyingAsset.SLVX),
