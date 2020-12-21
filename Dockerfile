@@ -7,7 +7,7 @@ RUN npm install npm@latest -g
 USER node
 RUN npm ci && npm prune --production
 FROM node:10-alpine
-RUN apk add --no-cache tini gcompat
+RUN apk add --no-cache tini
 COPY --from=builder /tmp/bitgo/modules/express /var/bitgo-express
 ENV NODE_ENV production
 ENV BITGO_BIND 0.0.0.0
