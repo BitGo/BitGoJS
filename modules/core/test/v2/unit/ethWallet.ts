@@ -51,6 +51,32 @@ describe('Sign ETH Transaction', co(function *() {
     yield ethWallet.signTransaction({ txPrebuild: { recipients: 'not-array' }, prv: 'my_user_prv' }).should.be.rejectedWith('recipients missing or not array');
   }));
 
+  it('should set isBatch to false if single recipient', co(function *() {
+    sinon.stub(Util, 'xprvToEthPrivateKey');
+    sinon.stub(Util, 'ethSignMsgHash');
+    sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
+    const { halfSigned } = yield ethWallet.signTransaction({ txPrebuild: tx, prv: 'my_user_prv' });
+    halfSigned.should.have.property('recipients', recipients);
+    halfSigned.should.have.property('isBatch', false);
+    sinon.restore();
+  }));
+
+  it('should set isBatch to true if multiple recipients', co(function *() {
+    let multipleRecipients =  [{ address: '0x0c7f3bc5d2b2c0dbee1b45536b82569f41b54331',
+    amount: '200',
+    data:
+     '0xcf4c58e2000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000a00000000000000000000000000000000000000000000000000000000000000002000000000000000000000000431745b89e73230b3bc8a19e019194efb4b99efd000000000000000000000000431745b89e73230b3bc8a19e019194efb4b99efd000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000640000000000000000000000000000000000000000000000000000000000000064' }
+    ];
+
+    let multipleRecipientsTx = { recipients : multipleRecipients, nextContractSequenceId: 0, isBatch:true };
+
+    sinon.stub(Util, 'xprvToEthPrivateKey');
+    sinon.stub(Util, 'ethSignMsgHash');
+    sinon.stub(ethWallet.getOperationSha3ForExecuteAndConfirm);
+    const { halfSigned } = yield ethWallet.signTransaction({ txPrebuild: multipleRecipientsTx, prv: 'my_user_prv' });
+    halfSigned.should.have.property('isBatch', true);
+    sinon.restore();
+  }));
 }));
 
 describe('Ethereum Hop Transactions', co(function *() {
@@ -69,7 +95,7 @@ describe('Ethereum Hop Transactions', co(function *() {
     rawPub: '02c103ac74481874b5ef0f385d12725e4f14aedc9e00bc814ce96f47f62ce7adf2',
     rawPrv: '936c5af3f8af81f75cdad1b08f29e7d9c01e598e2db2d7be18b9e5a8646e87c6',
     path: 'm',
-    walletSubPath: '/0/0'
+    walletSubPath: '/0/0',
   };
 
   before(co(function *() {
@@ -239,31 +265,31 @@ describe('Ethereum Hop Transactions', co(function *() {
       };
     }));
 
-   it('should prebuild a hop transaction if given the correct args', co(function *() {
-     let error = undefined;
+    it('should prebuild a hop transaction if given the correct args', co(function *() {
+      let error = undefined;
 
-     nockUserKey();
-     const feeScope = nockFees();
-     nockBuild(ethWallet.id());
-     try {
-       const res = yield ethWallet.prebuildTransaction(buildParams);
-       should.exist(res.hopTransaction);
-       should.exist(res.hopTransaction.tx);
-       should.exist(res.hopTransaction.tx);
-       should.exist(res.hopTransaction.id);
-       should.exist(res.hopTransaction.signature);
-       should.not.exist(res.wallet);
-       should.not.exist(res.buildParams);
-     } catch (e) {
-       error = e.message;
-     }
-     should.not.exist(error);
-     feeScope.isDone().should.equal(true);
-     const feeReq = (feeScope as any).interceptors[0].req;
-     feeReq.path.should.containEql('hop=true');
-     feeReq.path.should.containEql('recipient=' + finalRecipient);
-     feeReq.path.should.containEql('amount=' + sendAmount);
-   }));
+      nockUserKey();
+      const feeScope = nockFees();
+      nockBuild(ethWallet.id());
+      try {
+        const res = yield ethWallet.prebuildTransaction(buildParams);
+        should.exist(res.hopTransaction);
+        should.exist(res.hopTransaction.tx);
+        should.exist(res.hopTransaction.tx);
+        should.exist(res.hopTransaction.id);
+        should.exist(res.hopTransaction.signature);
+        should.not.exist(res.wallet);
+        should.not.exist(res.buildParams);
+      } catch (e) {
+        error = e.message;
+      }
+      should.not.exist(error);
+      feeScope.isDone().should.equal(true);
+      const feeReq = (feeScope as any).interceptors[0].req;
+      feeReq.path.should.containEql('hop=true');
+      feeReq.path.should.containEql('recipient=' + finalRecipient);
+      feeReq.path.should.containEql('amount=' + sendAmount);
+    }));
   }));
 }));
 
@@ -310,7 +336,7 @@ describe('prebuildTransaction', function() {
     gasLimit = 2100000;
     recipients = [{
       address: '0xe59dfe5c67114b39a5662cc856be536c614124c0',
-      amount: '100000'
+      amount: '100000',
     }];
     bgUrl = common.Environments[bitgo.getEnv()].uri;
   });
@@ -322,6 +348,9 @@ describe('prebuildTransaction', function() {
         gasLimit,
       })
       .reply(200, { success: true });
+
+    console.log('id ' + ethWallet.id());
+
     const prebuild = yield ethWallet.prebuildTransaction({ recipients, gasLimit });
     scope.isDone().should.equal(true);
     prebuild.success.should.equal(true);
@@ -346,17 +375,17 @@ describe('prebuildTransaction', function() {
 });
 
 describe('final-sign transaction from WRW', function() {
-  it('should add a second signature to unsigned sweep', (async function () {
+  it('should add a second signature to unsigned sweep', (async function() {
     const bitgo = new TestBitGo({ env: 'test' });
     const basecoin = bitgo.coin('teth');
     const gasPrice = 200000000000;
-    const gasLimit =  500000;
+    const gasLimit = 500000;
     const prv = 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2'; // placeholder test prv
     const tx = {
       txPrebuild: fixtures.WRWUnsignedSweepETHTx,
       prv,
     };
-    ​// sign transaction once
+    // sign transaction once
     const halfSigned = await basecoin.signTransaction(tx);
 
     const wrapper = {} as SignTransactionOptions;
@@ -372,7 +401,7 @@ describe('final-sign transaction from WRW', function() {
     const finalSignedTx = await basecoin.signTransaction(wrapper);
     finalSignedTx.should.have.property('txHex');
     const txBuilder = getBuilder('eth') as Eth.TransactionBuilder;
-    txBuilder.from("0x" + finalSignedTx.txHex); // add a 0x in front of this txhex
+    txBuilder.from('0x' + finalSignedTx.txHex); // add a 0x in front of this txhex
     const rebuiltTx = await txBuilder.build();
     const outputs = rebuiltTx.outputs.map(output => {
       return {
