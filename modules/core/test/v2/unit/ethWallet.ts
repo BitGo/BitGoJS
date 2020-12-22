@@ -79,7 +79,7 @@ describe('Ethereum Hop Transactions', co(function *() {
     const bitgoKey = bitGoUtxoLib.HDNode.fromBase58(bitgoKeyXprv);
     const bitgoPrvBuffer = bitgoKey.getKey().getPrivateKeyBuffer();
     const bitgoXpub = bitgoKey.neutered().toBase58();
-    bitgoSignature = '0xaa' + secp256k1.sign(Buffer.from(txid.slice(2), 'hex'), bitgoPrvBuffer).signature.toString('hex');
+    bitgoSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(Buffer.from(txid.slice(2), 'hex'), bitgoPrvBuffer).signature).toString('hex');
 
     env = 'test';
     bitgo = new TestBitGo({ env });
@@ -172,7 +172,7 @@ describe('Ethereum Hop Transactions', co(function *() {
       const badTxidBuffer = Buffer.from(badTxid.slice(2), 'hex');
       const xprvNode = bitGoUtxoLib.HDNode.fromBase58(bitgoKeyXprv);
 
-      const badSignature = '0xaa' + secp256k1.sign(badTxidBuffer, xprvNode.getKey().getPrivateKeyBuffer()).signature.toString('hex');
+      const badSignature = '0xaa' + Buffer.from(secp256k1.ecdsaSign(badTxidBuffer, xprvNode.getKey().getPrivateKeyBuffer()).signature).toString('hex');
       const badPrebuild = JSON.parse(JSON.stringify(prebuild));
       badPrebuild.signature = badSignature;
 
