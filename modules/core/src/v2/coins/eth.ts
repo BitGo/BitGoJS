@@ -107,6 +107,7 @@ interface SignFinalOptions {
     nextContractSequenceId?: number;
     hopTransaction?: string;
     backupKeyNonce?: number;
+    isBatch?: boolean;
   };
   signingKeyNonce: number;
   walletContractAddress: string;
@@ -593,6 +594,7 @@ export class Eth extends BaseCoin {
       const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
       const txParams = {
+        isBatch: params.txPrebuild.isBatch,
         recipients: params.recipients,
         expireTime: expireTime,
         contractSequenceId: sequenceId,
