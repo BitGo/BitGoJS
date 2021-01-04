@@ -255,6 +255,7 @@ export interface CreateAddressOptions {
   count?: number;
   label?: string;
   lowPriority?: boolean;
+  forwarderVersion?: number;
 }
 
 export interface UpdateAddressOptions {
@@ -1204,7 +1205,9 @@ export class Wallet {
    * @param {Number} params.chain on which the new address should be created
    * @param {(Number|String)} params.gasPrice gas price for new address creation, if applicable
    * @param {String} params.label label for the new address(es)
+   * @param {String} params.label label for the new address(es)
    * @param {Number} params.count=1 number of new addresses which should be created (maximum 250)
+   * @param {Number} params.forwarderVersion The version of address to create, if applicable
    * @param {Boolean} params.lowPriority Ethereum-specific param to create address using low priority fee address
    * @param callback
    */
@@ -1219,6 +1222,7 @@ export class Wallet {
         gasPrice,
         label,
         lowPriority,
+        forwarderVersion,
         count = 1,
       } = params;
 
@@ -1234,6 +1238,13 @@ export class Wallet {
           throw new Error('gasPrice has to be an integer or numeric string');
         }
         addressParams.gasPrice = gasPrice;
+      }
+
+      if (!_.isUndefined(forwarderVersion)) {
+        if (!_.isInteger(forwarderVersion) || forwarderVersion < 0 || forwarderVersion > 1) {
+          throw new Error('forwarderVersion has to be an integer between 0 and 1');
+        }
+        addressParams.forwarderVersion = forwarderVersion;
       }
 
       if (!_.isUndefined(label)) {
