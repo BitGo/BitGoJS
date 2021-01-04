@@ -47,3 +47,5 @@ export { Tzec } from './tzec';
 export { Xlm } from './xlm';
 export { Xrp } from './xrp';
 export { Zec } from './zec';
+export { Cspr } from './cspr';
+export { Tcspr } from './tcspr';
