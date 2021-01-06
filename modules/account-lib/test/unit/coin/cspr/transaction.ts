@@ -1,6 +1,8 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
 import { Transaction } from '../../../../src/coin/cspr/transaction';
+import * as testData from '../../../resources/cspr/cspr';
+import { KeyPair } from '../../../../src/coin/cspr';
 
 describe('Cspr Transaction', () => {
   const coin = coins.get('tcspr');
@@ -21,21 +23,29 @@ describe('Cspr Transaction', () => {
 
   describe('should sign if transaction is', () => {
     it('invalid', function() {
-      // TODO
+      const tx = getTransaction();
+      return tx.sign(testData.INVALID_KEYPAIR_PRV).should.be.rejected();
     });
 
     it('valid', async () => {
-      // TODO
+      const tx = getTransaction();
+      // TODO tx.from()
+      const keypair = new KeyPair({ prv: testData.OWNER_1.privateKey });
+      // TODO Assert should equal
     });
 
     it('multiple valid', async () => {
-      // TODO
+      const tx = getTransaction();
+      const keypair = new KeyPair({ prv: testData.OWNER_1.privateKey });
+      const keypair2 = new KeyPair({ prv: testData.OWNER_2.privateKey });
+      // TODO ASSERTs
     });
   });
 
   describe('should return encoded tx', function() {
     it('valid sign', async function() {
-      // TODO
+      const tx = getTransaction();
+      // TODO STLX-1174: tx.from(testData.WALLET_TXDATA);
     });
   });
 });

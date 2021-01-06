@@ -1,10 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { InvalidTransactionError, ParseTransactionError, NotImplementedError } from '../baseCoin/errors';
+import { DeployUtil } from 'casper-client-sdk';
+import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { DeployTag } from './enum';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -22,8 +24,19 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritDoc */
-  from(raw: Uint8Array | string): TransactionBuilder {
-    throw new NotImplementedError('from not implemented');
+  from(raw: DeployUtil.Deploy): TransactionBuilder {
+    this.validateRawTransaction(raw);
+    const tx = new Transaction(this._coinConfig);
+    tx.casperTx = raw;
+
+    if (tx.casperTx.session.tag === DeployTag.transfer) {
+      return this.getTransferBuilder(tx);
+    } else if (tx.casperTx.session.tag === DeployTag.moduleBytes) {
+      // TODO , we have not parameter to absolute determite if is a walletInit contract
+      return this.getWalletInitializationBuilder(tx);
+    } else {
+      throw new InvalidTransactionError('Invalid transaction ' + tx.casperTx);
+    }
   }
 
   /**
@@ -34,18 +47,10 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @returns {TransactionBuilder} the builder initialized
    */
   private initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
-    throw new NotImplementedError('initializeBuilder not implemented');
-  }
-
-  /**
-   * Returns a transaction instance from the encoded value
-   *
-   * @param {Uint8Array | string} rawTransaction - encoded transaction
-   * @returns {Transaction} the parsed transaction instance
-   */
-  private parseTransaction(rawTransaction: Uint8Array | string): Transaction {
-    // we dont know if this this will be implemented yet
-    throw new NotImplementedError('parseTransaction not implemented');
+    if (tx) {
+      builder.initBuilder(tx);
+    }
+    return builder;
   }
 
   /**
@@ -54,6 +59,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    * @param {any} rawTransaction - Transaction in any format
    */
   private validateRawTransaction(rawTransaction: any) {
-    throw new NotImplementedError('parseTransaction not implemented');
+    if (!rawTransaction) {
+      throw new ParseTransactionError('Invalid raw transaction');
+    }
   }
 }
