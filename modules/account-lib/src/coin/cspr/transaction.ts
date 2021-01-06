@@ -1,13 +1,21 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { CasperClient, DeployUtil, Keys } from 'casper-client-sdk';
+import { Deploy } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
-import { NotImplementedError } from '../baseCoin/errors';
+import { NotImplementedError, SigningError } from '../baseCoin/errors';
+import { KeyPair } from './keyPair';
+
+const NODE_URL = 'http://bitgo-test.casperlabs.io:7777/rcp';
 
 export class Transaction extends BaseTransaction {
   protected _type: TransactionType;
+  protected _client: CasperClient;
+  protected _deploy: Deploy;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
+    this._client = new CasperClient(NODE_URL, null);
   }
 
   /** @inheritdoc */
@@ -15,8 +23,16 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  async sign(keyPair): Promise<void> {
-    throw new NotImplementedError('sign not implemented');
+  async sign(keyPair: KeyPair): Promise<void> {
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new SigningError('Missing private key');
+    }
+    const secpKeys = new Keys.Secp256K1(
+      Uint8Array.from(Buffer.from(keys.pub, 'hex')),
+      Uint8Array.from(Buffer.from(keys.prv, 'hex')),
+    );
+    DeployUtil.signDeploy(this._deploy, secpKeys);
   }
 
   /**
@@ -44,7 +60,7 @@ export class Transaction extends BaseTransaction {
    * @param {TransactionType} transactionType The transaction type to be set
    */
   setTransactionType(transactionType: TransactionType): void {
-    throw new NotImplementedError('getTransferData not implemented');
+    this._type = transactionType;
   }
 
   /**
@@ -62,6 +78,14 @@ export class Transaction extends BaseTransaction {
    */
   loadInputsAndOutputs(): void {
     throw new NotImplementedError('loadInputsAndOutputs not implemented');
+  }
+
+  get casperTx(): Deploy {
+    return this._deploy;
+  }
+
+  set casperTx(deploy: DeployUtil.Deploy) {
+    this._deploy = deploy;
   }
 
   //endregion

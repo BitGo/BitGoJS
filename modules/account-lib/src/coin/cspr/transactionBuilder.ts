@@ -1,17 +1,25 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { DeployUtil, PublicKey } from 'casper-client-sdk';
+import { parseInt } from 'lodash';
 import { BaseTransactionBuilder } from '../baseCoin';
 import { BuildTransactionError, NotImplementedError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
+import { GasFee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _source: BaseAddress;
-  private _fee: BaseFee;
+  protected _fee: GasFee;
   private _transaction: Transaction;
+  protected _startTime: Date;
+  protected _session: CasperTransferTransaction | CasperModuleBytesTransaction;
+  protected _duration: string;
+  protected _multiSignerKeyPairs: KeyPair[];
+  protected _signatures: SignatureData[];
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -21,7 +29,32 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    throw new NotImplementedError('buildImplementation not implemented');
+    const deployParams = new DeployUtil.DeployParams(PublicKey.fromHex(this._source.address), 'release-test-6');
+
+    const session =
+      'amount' in this._session
+        ? () => {
+            const transferSession = this._session as CasperTransferTransaction;
+            return new DeployUtil.Transfer(transferSession.amount, transferSession.target);
+          }
+        : () => {
+            const moduleBytesSession = this._session as CasperModuleBytesTransaction;
+            return new DeployUtil.ModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
+          };
+
+    // @ts-ignore
+    const payment = DeployUtil.standardPayment(parseInt(this._fee.gasLimit));
+
+    const cTransaction = this.transaction.casperTx || DeployUtil.makeDeploy(deployParams, session(), payment);
+    this.transaction.casperTx = cTransaction;
+
+    for (const kp of this._multiSignerKeyPairs) {
+      await this.transaction.sign(kp);
+    }
+    for (const { signature, keyPair } of this._signatures) {
+      this.transaction.addSignature(signature, keyPair);
+    }
+    return this.transaction;
   }
 
   /** @inheritdoc */
@@ -53,8 +86,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {BaseFee} fee The maximum gas to pay
    * @returns {TransactionBuilder} This transaction builder
    */
-  fee(fee: BaseFee): this {
-    this.validateValue(new BigNumber(fee.fee));
+  fee(fee: GasFee): this {
+    this.validateValue(new BigNumber(fee.gasLimit));
     this._fee = fee;
     return this;
   }

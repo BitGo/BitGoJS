@@ -12,11 +12,11 @@ const OWNER_WEIGHT = 1;
 const wasmPath = '../../../resources/cspr/contract/keys-manager.wasm';
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: Owner[] = [];
-  private _session: Uint8Array;
+  private _contract: Uint8Array;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._session = new Uint8Array(fs.readFileSync(wasmPath, null).buffer);
+    this._contract = new Uint8Array(fs.readFileSync(wasmPath, null).buffer);
   }
 
   // region Base Builder
@@ -43,8 +43,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       });
     }
 
-    const sessionModule = new DeployUtil.ModuleBytes(this._session, RuntimeArgs.fromMap(args).toBytes());
-    this.transaction.session = sessionModule;
+    this._session = { moduleBytes: this._contract, args: RuntimeArgs.fromMap(args).toBytes() };
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
     return await super.buildImplementation();
   }
