@@ -1,9 +1,8 @@
 import { randomBytes } from 'crypto';
 import { HDNode } from '@bitgo/utxo-lib';
-import { Keys } from 'casper-client-sdk';
-import { KeyPairOptions, DefaultKeys, isPrivateKey, isPublicKey, isSeed } from '../baseCoin/iface';
+import { KeyPairOptions, isPrivateKey, isPublicKey, isSeed } from '../baseCoin/iface';
 import { Secp256k1ExtendedKeyPair } from '../baseCoin/secp256k1ExtendedKeyPair';
-
+import { getAccountHash } from './utils';
 const DEFAULT_SEED_SIZE_BYTES = 16;
 
 export class KeyPair extends Secp256k1ExtendedKeyPair {
@@ -70,9 +69,7 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   /** @inheritdoc */
   getAddress(): string {
     const keys = this.getKeys();
-    const publicKey = Buffer.from(keys.pub); // first two characters identify a public key
-    const privateKey = keys.prv ? Buffer.from(keys.prv) : undefined;
-    const accountHashByArray = new Keys.Secp256K1(publicKey, privateKey!).accountHash();
+    const accountHashByArray = getAccountHash(keys);
     return Buffer.from(accountHashByArray).toString('hex');
   }
 }

@@ -7,6 +7,7 @@ import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 
 export const DEFAULT_M = 3;
+export const DEFAULT_N = 2;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _source: BaseAddress;
   private _fee: BaseFee;
