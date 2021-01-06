@@ -1,53 +1,48 @@
-import fs from 'fs';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { CLValue, PublicKey } from 'casper-client-sdk';
-import { BuildTransactionError, InvalidKey } from '../baseCoin/errors';
+import { CLTypedAndToBytesHelper, CLValue, PublicKey, RuntimeArgs } from 'casper-client-sdk';
+import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M, DEFAULT_N } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { Owner, RunTimeArg } from './ifaces';
-import { getAccountHash, isValidPublicKey } from './utils';
+import { Owner, ContractArgs } from './ifaces';
+import { isValidPublicKey, walletInitContractHexCode } from './utils';
+import { SECP256K1_PREFIX } from './constants';
 
-const OWNER_WEIGHT = 1;
-const wasmPath = '../../../resources/cspr/contract/keys-manager.wasm';
+const DEFAULT_OWNER_WEIGHT = 1;
 export class WalletInitializationBuilder extends TransactionBuilder {
   private _owners: Owner[] = [];
   private _contract: Uint8Array;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._contract = new Uint8Array(fs.readFileSync(wasmPath, null).buffer);
+    this._contract = Uint8Array.from(Buffer.from(walletInitContractHexCode, 'hex'));
   }
 
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    const args: RunTimeArg[] = [];
-    const thresholdMaxArgs = {
-      action: CLValue.string('set_key_management_threshold'),
-      weight: CLValue.u8(DEFAULT_M),
-    };
-    args.push(thresholdMaxArgs);
-    const thresholdMinArgs = {
-      action: CLValue.string('set_deployment_threshold'),
-      weight: CLValue.u8(DEFAULT_N),
-    };
-    args.push(thresholdMinArgs);
-
-    for (const _owner of this._owners) {
-      const ac = CLValue.fromBytes(getAccountHash({ pub: Buffer.from(_owner.address.rawPublicKey).toString('hex') }));
-      if (ac.hasError()) {
-        throw new InvalidKey('Failed to obtain public key');
-      }
-      args.push({
-        action: CLValue.string('set_key_weight'),
-        weight: CLValue.u8(OWNER_WEIGHT),
-        account: ac.value,
-      });
-    }
-
+    const args = this.buildWalletParameters();
+    this._session = { moduleBytes: this._contract, args: RuntimeArgs.fromMap(args) };
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
     return await super.buildImplementation();
+  }
+
+  /**
+   * Build args needed to create a session, then we can send this session with the contract
+   * @returns {ContractArgs} contracts args to create a session
+   */
+  private buildWalletParameters(): ContractArgs {
+    const accounts = this._owners.map(owner => CLTypedAndToBytesHelper.bytes(owner.address.toAccountHash()));
+    const weights = this._owners.map(owner => CLTypedAndToBytesHelper.u8(owner.weight));
+
+    return {
+      action: CLValue.string('set_all'),
+      // This typo is on purpose since the contract we use for multisig wallet initialization expect this argument to be written like this.
+      deployment_thereshold: CLValue.u8(DEFAULT_N),
+      key_management_threshold: CLValue.u8(DEFAULT_M),
+      accounts: CLValue.list(accounts),
+      weights: CLValue.list(weights),
+    };
   }
 
   /** @inheritdoc */
@@ -79,12 +74,16 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       throw new BuildTransactionError('Invalid address: ' + address);
     }
     for (const _owner of this._owners) {
-      if (Buffer.from(_owner.address.rawPublicKey).toString('hex') === address) {
-        throw new BuildTransactionError('Repeated owner address: ' + address);
+      if (
+        Buffer.from(_owner.address.rawPublicKey)
+          .toString('hex')
+          .toUpperCase() === address.toUpperCase()
+      ) {
+        throw new BuildTransactionError('Duplicated owner: ' + address);
       }
     }
 
-    this._owners.push({ address: PublicKey.fromHex(address), weight: OWNER_WEIGHT });
+    this._owners.push({ address: PublicKey.fromHex(SECP256K1_PREFIX + address), weight: DEFAULT_OWNER_WEIGHT });
     return this;
   }
   // endregion

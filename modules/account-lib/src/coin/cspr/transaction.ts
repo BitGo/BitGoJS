@@ -33,7 +33,8 @@ export class Transaction extends BaseTransaction {
       Uint8Array.from(Buffer.from(keys.pub, 'hex')),
       Uint8Array.from(Buffer.from(keys.prv, 'hex')),
     );
-    DeployUtil.signDeploy(this._deploy, secpKeys);
+    const signedDeploy = DeployUtil.signDeploy(this._deploy, secpKeys);
+    this.addSignature(signedDeploy.approvals[signedDeploy.approvals.length - 1].signature);
   }
 
   /**
