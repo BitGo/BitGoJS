@@ -14,7 +14,7 @@ describe('Casper Transfer Builder', () => {
   describe('Not yet implemented functionality', () => {
     const initTxBuilder = () => {
       const txBuilder = factory.getTransferBuilder();
-      txBuilder.fee({ fee: testData.FEE });
+      txBuilder.fee({ gasLimit: testData.GAS_LIMIT });
       txBuilder.source({ address: testData.ACCOUNT_1.accountHash });
       txBuilder.to(testData.ACCOUNT_2.accountHash);
       txBuilder.amount('10');

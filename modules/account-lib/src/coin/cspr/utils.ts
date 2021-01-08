@@ -28,3 +28,19 @@ export function isValidPublicKey(address: string): boolean {
   }
   return true;
 }
+
+/**
+ * validate public key
+ *
+ * @param {string} address public key address
+ * @returns {boolean} return a bool
+ */
+export function isValidAddress(address: string): boolean {
+  if (!address || address.trim().length === 0) {
+    return false;
+  }
+  if (!address.match(/^[0-9a-fA-F]{64}$/)) {
+    return false;
+  }
+  return true;
+}

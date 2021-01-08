@@ -8,6 +8,7 @@ import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { GasFee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData, CasperNode } from './ifaces';
+import { isValidAddress } from './utils';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
@@ -173,11 +174,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
 
   // region Validators
   /** @inheritdoc */
-  validateAddress(address: BaseAddress, addressFormat?: string): void {
-    throw new NotImplementedError('validateAddress not implemented');
-    // if (!isValidAddress(address.address)) {
-    //   throw new BuildTransactionError('Invalid address ' + address.address);
-    // }
+  validateAddress(address: BaseAddress): void {
+    if (!isValidAddress(address.address)) {
+      throw new BuildTransactionError('Invalid address ' + address.address);
+    }
   }
 
   /** @inheritdoc */
@@ -208,7 +208,12 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   validateMandatoryFields(): void {
-    throw new NotImplementedError('validateMandatoryFields not implemented');
+    if (this._fee === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing fee');
+    }
+    if (this._source === undefined) {
+      throw new BuildTransactionError('Invalid transaction: missing source');
+    }
   }
 
   // endregion

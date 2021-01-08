@@ -3,7 +3,7 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { RuntimeArgs, DeployUtil, CLValue } from 'casper-client-sdk';
 import { BuildTransactionError, NotImplementedError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
-import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
+import { TransactionBuilder, DEFAULT_M, DEFAULT_N } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { Owner, RunTimeArg } from './ifaces';
 import { getAccountHash, isValidPublicKey } from './utils';
@@ -22,7 +22,6 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   // region Base Builder
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
-    // let args : Array<Object>;
     const args: RunTimeArg[] = [];
     const thresholdMaxArgs = {
       action: CLValue.fromString('set_key_management_threshold'),
@@ -31,7 +30,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     args.push(thresholdMaxArgs);
     const thresholdMinArgs = {
       action: CLValue.fromString('set_deployment_threshold'),
-      weight: CLValue.fromU8(DEFAULT_M),
+      weight: CLValue.fromU8(DEFAULT_N),
     };
     args.push(thresholdMinArgs);
 
@@ -52,8 +51,12 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
-
-    throw new NotImplementedError('initBuilder not implemented');
+    if (tx.casperTx.approvals) {
+      const signers = tx.casperTx.approvals.map(ap => ap.signer);
+      for (const signer of signers) {
+        this.owner(signer); // TODO : it uses prefix 02
+      }
+    }
   }
 
   // endregion
