@@ -11,6 +11,7 @@ import {
   Btc,
   Btg,
   Celo,
+  Cspr,
   Dash,
   Eos,
   Etc,
@@ -28,6 +29,7 @@ import {
   Tbtc,
   Tbtg,
   Tcelo,
+  Tcspr,
   Tdash,
   Teos,
   Tetc,
@@ -162,7 +164,8 @@ GlobalCoinFactory.registerCoinConstructor('thbar', Thbar.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ofc', Ofc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('susd', Susd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsusd', Tsusd.createInstance);
-
+GlobalCoinFactory.registerCoinConstructor('cspr', Cspr.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tcspr', Tcspr.createInstance);
 for (const token of [...tokens.bitcoin.eth.tokens, ...tokens.testnet.eth.tokens]) {
   const tokenConstructor = Erc20Token.createTokenConstructor(token);
   GlobalCoinFactory.registerCoinConstructor(token.type, tokenConstructor);
