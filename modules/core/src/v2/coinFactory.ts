@@ -11,6 +11,7 @@ import {
   Btc,
   Btg,
   Celo,
+  Cspr,
   Dash,
   Eos,
   Etc,
@@ -28,6 +29,7 @@ import {
   Tbtc,
   Tbtg,
   Tcelo,
+  Tcspr,
   Tdash,
   Teos,
   Tetc,
@@ -53,8 +55,6 @@ import {
   StellarToken,
   OfcToken,
   Zec,
-  Cspr,
-  Tcspr,
 } from './coins';
 import { tokens } from '../config';
 
