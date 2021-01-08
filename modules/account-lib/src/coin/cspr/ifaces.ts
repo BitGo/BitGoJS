@@ -2,22 +2,21 @@ import { CLValue, PublicKey } from 'casper-client-sdk';
 import { BigNumberish } from '@ethersproject/bignumber';
 import { KeyPair } from '.';
 
-export interface TxData {
-  id: string;
-  hash?: string;
+export interface CasperTransaction {
+  hash: string;
   from: string;
   data: string;
   fee: number;
   startTime: string;
   validDuration: string;
   node: string;
-  memo?: string;
+  chainName: string;
   to?: string;
   amount?: string;
 }
 
 export interface CasperNode {
-  nodeId: string;
+  nodeUrl: string;
 }
 
 export interface SignatureData {

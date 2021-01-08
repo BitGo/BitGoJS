@@ -7,7 +7,7 @@ import { BuildTransactionError, NotImplementedError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { GasFee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
+import { GasFee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData, CasperNode } from './ifaces';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
@@ -16,6 +16,8 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _fee: GasFee;
   private _transaction: Transaction;
   protected _startTime: Date;
+  protected _node: CasperNode;
+  protected _chainName: string;
   protected _session: CasperTransferTransaction | CasperModuleBytesTransaction;
   protected _duration: string;
   protected _multiSignerKeyPairs: KeyPair[];
@@ -73,7 +75,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {Transaction} tx the transaction data
    */
   initBuilder(tx: Transaction): void {
-    throw new NotImplementedError('initBuilder not implemented');
+    this.transaction = tx;
+    this.transaction.loadPreviousSignatures();
+    const txData = tx.toJson();
+    this.fee({ gasLimit: txData.fee.toString() });
+    this.source({ address: txData.from });
+    this.startTime(txData.startTime);
+    this.node({ nodeUrl: txData.node });
+    this.chainName(txData.chainName);
+    this.duration(txData.validDuration);
   }
 
   // endregion
@@ -101,6 +111,50 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   source(address: BaseAddress): this {
     this.validateAddress(address);
     this._source = address;
+    return this;
+  }
+
+  /**
+   * Set the transaction startTime
+   *
+   * @param {string} startTime The transaction startTime
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  startTime(startTime: string): this {
+    this._startTime = new Date(startTime);
+    return this;
+  }
+
+  /**
+   * Set the transaction node
+   *
+   * @param {CasperNode} node The transaction node
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  node(node: CasperNode): this {
+    this._node = node;
+    return this;
+  }
+
+  /**
+   * Set the transaction chainName
+   *
+   * @param {string} chainName The transaction chainName
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  chainName(chainName: string): this {
+    this._chainName = chainName;
+    return this;
+  }
+
+  /**
+   * Set the transaction validDuration
+   *
+   * @param {string} validDuration The transaction validDuration
+   * @returns {TransactionBuilder} This transaction builder
+   */
+  duration(validDuration: string): this {
+    this._duration = validDuration;
     return this;
   }
 
