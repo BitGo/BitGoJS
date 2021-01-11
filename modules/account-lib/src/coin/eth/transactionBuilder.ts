@@ -17,6 +17,7 @@ import { KeyPair } from './keyPair';
 import { Fee, SignatureParts, TxData } from './iface';
 import {
   calculateForwarderAddress,
+  flushCoinsData,
   flushTokensData,
   getAddressInitializationData,
   getCommon,
@@ -98,6 +99,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         return this.buildAddressInitializationTransaction();
       case TransactionType.FlushTokens:
         return this.buildFlushTokensTransaction();
+      case TransactionType.FlushCoins:
+        return this.buildFlushCoinsTransaction();
       case TransactionType.SingleSigSend:
         return this.buildBase('0x');
       default:
@@ -152,6 +155,12 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         const { forwarderAddress, tokenAddress } = Utils.decodeFlushTokensData(transactionJson.data);
         this.forwarderAddress(forwarderAddress);
         this.tokenAddress(tokenAddress);
+        break;
+      case TransactionType.FlushCoins:
+        if (transactionJson.to === undefined) {
+          throw new BuildTransactionError('Undefined recipient address');
+        }
+        this.contract(transactionJson.to);
         break;
       case TransactionType.Send:
         if (transactionJson.to === undefined) {
@@ -259,6 +268,9 @@ export class TransactionBuilder extends BaseTransactionBuilder {
         this.validateContractAddress();
         break;
       case TransactionType.AddressInitialization:
+        this.validateContractAddress();
+        break;
+      case TransactionType.FlushCoins:
         this.validateContractAddress();
         break;
       case TransactionType.FlushTokens:
@@ -377,6 +389,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     this._value = value;
   }
 
+  // set args that are required for all types of eth transactions
   protected buildBase(data: string): TxData {
     return {
       gasLimit: this._fee.gasLimit,
@@ -542,6 +555,15 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    */
   private buildFlushTokensTransaction(): TxData {
     return this.buildBase(flushTokensData(this._forwarderAddress, this._tokenAddress));
+  }
+
+  /**
+   * Build a transaction to flush tokens from a forwarder.
+   *
+   * @returns {TxData} The Ethereum transaction data
+   */
+  private buildFlushCoinsTransaction(): TxData {
+    return this.buildBase(flushCoinsData());
   }
   //endregion
 
