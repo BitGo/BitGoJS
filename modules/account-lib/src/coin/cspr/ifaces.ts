@@ -7,10 +7,10 @@ export interface CasperTransaction {
   from: string;
   data: string;
   fee: number;
-  startTime: string;
-  validDuration: string;
-  node: string;
-  chainName: string;
+  startTime?: string;
+  validDuration?: string;
+  node?: string;
+  chainName?: string;
   to?: string;
   amount?: string;
 }

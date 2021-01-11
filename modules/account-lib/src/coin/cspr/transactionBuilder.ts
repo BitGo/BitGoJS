@@ -2,13 +2,14 @@ import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { DeployUtil, PublicKey } from 'casper-client-sdk';
 import { parseInt } from 'lodash';
-import { BaseTransactionBuilder } from '../baseCoin';
-import { BuildTransactionError, NotImplementedError } from '../baseCoin/errors';
+import { Deploy } from 'casper-client-sdk/dist/lib/DeployUtil';
+import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { BuildTransactionError, NotImplementedError, SigningError } from '../baseCoin/errors';
 import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { GasFee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData, CasperNode } from './ifaces';
-import { isValidAddress } from './utils';
+import { isValidPublicKey } from './utils';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
@@ -34,21 +35,24 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     const deployParams = new DeployUtil.DeployParams(PublicKey.fromHex(this._source.address), 'release-test-6');
 
-    const session =
-      'amount' in this._session
-        ? () => {
-            const transferSession = this._session as CasperTransferTransaction;
-            return new DeployUtil.Transfer(transferSession.amount, transferSession.target);
-          }
-        : () => {
-            const moduleBytesSession = this._session as CasperModuleBytesTransaction;
-            return new DeployUtil.ModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
-          };
+    let session;
+    switch (this.transaction.type) {
+      case TransactionType.Send:
+        const transferSession = this._session as CasperTransferTransaction;
+        session = new DeployUtil.Transfer(transferSession.amount, transferSession.target);
+        break;
+      case TransactionType.WalletInitialization:
+        const moduleBytesSession = this._session as CasperModuleBytesTransaction;
+        session = new DeployUtil.ModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
+        break;
+      default:
+        throw new BuildTransactionError('Transaction Type error');
+    }
 
     // @ts-ignore
     const payment = DeployUtil.standardPayment(parseInt(this._fee.gasLimit));
 
-    const cTransaction = this.transaction.casperTx || DeployUtil.makeDeploy(deployParams, session(), payment);
+    const cTransaction = this.transaction.casperTx || DeployUtil.makeDeploy(deployParams, session, payment);
     this.transaction.casperTx = cTransaction;
 
     for (const kp of this._multiSignerKeyPairs) {
@@ -61,13 +65,22 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: Uint8Array | string): Transaction {
-    throw new NotImplementedError('fromImplementation not implemented');
+  protected fromImplementation(rawTransaction: DeployUtil.Deploy): Transaction {
+    const tx = new Transaction(this._coinConfig);
+    tx.casperTx = rawTransaction;
+    this.initBuilder(tx);
+    return this.transaction;
   }
 
   /** @inheritdoc */
   protected signImplementation(key: BaseKey): Transaction {
-    throw new NotImplementedError('signImplementation not implemented');
+    this.checkDuplicatedKeys(key);
+    const signer = new KeyPair({ prv: key.key });
+
+    // Signing the transaction is an operation that relies on all the data being set,
+    // so we set the source here and leave the actual signing for the build step
+    this._multiSignerKeyPairs.push(signer);
+    return this.transaction;
   }
 
   /**
@@ -109,9 +122,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {BaseAddress} address The source account
    * @returns {TransactionBuilder} This transaction builder
    */
-  source(address: BaseAddress): this {
-    this.validateAddress(address);
-    this._source = address;
+  source(address: PublicKey): this {
+    const publicKey = { address: Buffer.from(address.rawPublicKey).toString('hex') };
+    this.validateAddress(publicKey);
+    this._source = publicKey;
     return this;
   }
 
@@ -175,7 +189,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress): void {
-    if (!isValidAddress(address.address)) {
+    if (!isValidPublicKey(address.address)) {
       throw new BuildTransactionError('Invalid address ' + address.address);
     }
   }
@@ -214,6 +228,19 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._source === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing source');
     }
+  }
+
+  /**
+   * Validates that the given key is not already in this._multiSignerKeyPairs
+   *
+   * @param {BaseKey} key - The key to check
+   */
+  private checkDuplicatedKeys(key: BaseKey) {
+    this._multiSignerKeyPairs.forEach(_sourceKeyPair => {
+      if (_sourceKeyPair.getKeys().prv === key.key) {
+        throw new SigningError('Repeated sign: ' + key.key);
+      }
+    });
   }
 
   // endregion

@@ -1,3 +1,4 @@
+import { PublicKey } from '@bitgo/bls';
 import { ByteArray, Keys } from 'casper-client-sdk';
 import { DefaultKeys } from '../baseCoin/iface';
 
@@ -20,7 +21,7 @@ export function getAccountHash(keys: DefaultKeys): ByteArray {
  * @returns {boolean} return a bool
  */
 export function isValidPublicKey(address: string): boolean {
-  if (address === '') {
+  if (!address || address.trim().length === 0) {
     return false;
   }
   if (address.match(/^[0-9a-fA-F]{66}$/)) {
