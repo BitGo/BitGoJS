@@ -1,22 +1,18 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { CasperClient, DeployUtil, Keys, Conversions, CLValue } from 'casper-client-sdk';
-import { Deploy, Transfer } from 'casper-client-sdk/dist/lib/DeployUtil';
+import { DeployUtil, Keys } from 'casper-client-sdk';
+import { Deploy } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { NotImplementedError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { CasperTransaction } from './ifaces';
 
-const NODE_URL = 'http://bitgo-test.casperlabs.io:7777/rcp';
-
 export class Transaction extends BaseTransaction {
   protected _type: TransactionType;
-  protected _client: CasperClient;
   protected _deploy: Deploy;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._client = new CasperClient(NODE_URL, null);
   }
 
   /** @inheritdoc */
@@ -59,8 +55,6 @@ export class Transaction extends BaseTransaction {
       from: Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex'),
       startTime: new Date(this._deploy.header.timestamp).toISOString(),
       validDuration: DeployUtil.humanizerTTL(this._deploy.header.ttl),
-      node: '', // TODO: Research on how to get this information from the deploy
-      chainName: this._deploy.header.chainName,
     };
 
     if (this._deploy.session instanceof DeployUtil.Transfer) {

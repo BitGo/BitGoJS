@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { RuntimeArgs, DeployUtil, CLValue } from 'casper-client-sdk';
-import { BuildTransactionError, NotImplementedError } from '../baseCoin/errors';
+import { RuntimeArgs, CLValue, PublicKey } from 'casper-client-sdk';
+import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M, DEFAULT_N } from './transactionBuilder';
 import { Transaction } from './transaction';
@@ -38,7 +38,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       args.push({
         action: CLValue.fromString('set_key_weight'),
         weight: CLValue.fromU8(OWNER_WEIGHT),
-        account: CLValue.fromBytes(getAccountHash({ pub: _owner.address })),
+        account: CLValue.fromBytes(getAccountHash({ pub: Buffer.from(_owner.address.rawPublicKey).toString('hex') })),
       });
     }
 
@@ -76,12 +76,12 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       throw new BuildTransactionError('Invalid address: ' + address);
     }
     for (const _owner of this._owners) {
-      if (_owner.address.includes(address)) {
+      if (Buffer.from(_owner.address.rawPublicKey).toString('hex') === address) {
         throw new BuildTransactionError('Repeated owner address: ' + address);
       }
     }
 
-    this._owners.push({ address: address, weight: OWNER_WEIGHT });
+    this._owners.push({ address: PublicKey.fromHex(address.slice(2)), weight: OWNER_WEIGHT });
     return this;
   }
   // endregion

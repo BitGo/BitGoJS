@@ -93,11 +93,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction.loadPreviousSignatures();
     const txData = tx.toJson();
     this.fee({ gasLimit: txData.fee.toString() });
-    this.source({ address: txData.from });
-    this.startTime(txData.startTime);
-    this.node({ nodeUrl: txData.node });
-    this.chainName(txData.chainName);
-    this.duration(txData.validDuration);
+    this.source(PublicKey.fromHex(txData.from));
+    this.startTime(txData.startTime || '0');    // TODO: Replace '0' with the correct default value
+    this.duration(txData.validDuration || '0'); // TODO: Replace '0' with the correct default value
   }
 
   // endregion
@@ -137,28 +135,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   startTime(startTime: string): this {
     this._startTime = new Date(startTime);
-    return this;
-  }
-
-  /**
-   * Set the transaction node
-   *
-   * @param {CasperNode} node The transaction node
-   * @returns {TransactionBuilder} This transaction builder
-   */
-  node(node: CasperNode): this {
-    this._node = node;
-    return this;
-  }
-
-  /**
-   * Set the transaction chainName
-   *
-   * @param {string} chainName The transaction chainName
-   * @returns {TransactionBuilder} This transaction builder
-   */
-  chainName(chainName: string): this {
-    this._chainName = chainName;
     return this;
   }
 

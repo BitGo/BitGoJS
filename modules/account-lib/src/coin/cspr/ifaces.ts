@@ -9,8 +9,6 @@ export interface CasperTransaction {
   fee: number;
   startTime?: string;
   validDuration?: string;
-  node?: string;
-  chainName?: string;
   to?: string;
   amount?: string;
 }
@@ -40,7 +38,7 @@ export interface CasperModuleBytesTransaction {
 }
 
 export interface Owner {
-  address: string;
+  address: PublicKey;
   weight: number;
 }
 
