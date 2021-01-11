@@ -18,8 +18,7 @@
     "prettier/@typescript-eslint"
   ],
   "parserOptions": {
-    "ecmaVersion": 6,
-    "project": "./tsconfig.json"
+    "ecmaVersion": 6
   },
   "rules": {
     "indent": ["warn", 2, {"SwitchCase": 1, "MemberExpression": 1}],
@@ -71,7 +70,7 @@
     "no-fallthrough": "error",
     "no-octal": "error",
     "no-multiple-empty-lines": ["error", { "max": 2, "maxEOF": 1 }],
-    "space-before-function-paren": ["error", "never"],
+    "space-before-function-paren": ["error", { "named": "never", "anonymous": "never", "asyncArrow": "always" }],
     "no-mixed-spaces-and-tabs": "error",
     "no-dupe-keys": "error",
     "no-redeclare": ["error", { "builtinGlobals": true }],

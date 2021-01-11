@@ -5,7 +5,7 @@
 //
 
 import * as superagent from 'superagent';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { makeRandomKey, hdPath } from './bitcoin';
 import bitcoinMessage = require('bitcoinjs-message');
 import sanitizeHtml = require('sanitize-html');
@@ -16,10 +16,9 @@ import shamir = require('secrets.js-grempe');
 import sjcl = require('./vendor/sjcl.min.js');
 import bs58 = require('bs58');
 import * as common from './common';
-import { EnvironmentName } from './v2/environments';
-import { NodeCallback, V1Network } from './v2/types';
-import { RequestTracer, Util } from './v2/internal/util';
-import { RequestTracer as IRequestTracer } from './v2/types';
+import { EnvironmentName, AliasEnvironments } from './v2/environments';
+import { NodeCallback, RequestTracer as IRequestTracer, V1Network } from './v2/types';
+import { Util } from './v2/internal/util';
 import * as Bluebird from 'bluebird';
 import co = Bluebird.coroutine;
 import pjson = require('../package.json');
@@ -28,7 +27,7 @@ import * as _ from 'lodash';
 import * as url from 'url';
 import * as querystring from 'querystring';
 import * as config from './config';
-import * as crypto from 'crypto';
+import { createHmac, randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import { bytesToWord } from './v2/internal/internal';
 
@@ -153,10 +152,11 @@ export interface BitGoOptions {
   serverXpub?: string;
   stellarFederationServerUrl?: string;
   useProduction?: boolean;
-  microservicesUri?: string;
   refreshToken?: string;
   validate?: boolean;
   proxy?: string;
+  etherscanApiToken?: string;
+  hmacVerification?: boolean;
 }
 
 export interface User {
@@ -400,7 +400,6 @@ export class BitGo {
    */
   public readonly env: EnvironmentName;
   private readonly _baseUrl: string;
-  private readonly _microservicesUrl?: string;
   private readonly _baseApiUrl: string;
   private readonly _baseApiUrlV2: string;
   private _user?: User;
@@ -421,7 +420,7 @@ export class BitGo {
   private _blockchain?: any;
   private _travelRule?: any;
   private _pendingApprovals?: any;
-
+  private _hmacVerification: boolean = true;
   /**
    * Constructor for BitGo Object
    */
@@ -450,28 +449,31 @@ export class BitGo {
       params.serverXpub ||
       process.env.BITGO_CUSTOM_ROOT_URI ||
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK) {
-      env = 'custom';
+      // for branch deploys, we want to be able to specify custom endpoints while still
+      // maintaining the name of specified the environment
+      env =  params.env === 'branch' ? 'branch' : 'custom';
       if (params.customRootURI) {
-        common.Environments['custom'].uri = params.customRootURI;
+        common.Environments[env].uri = params.customRootURI;
       }
       if (params.customBitcoinNetwork) {
-        common.Environments['custom'].network = params.customBitcoinNetwork;
+        common.Environments[env].network = params.customBitcoinNetwork;
       }
       if (params.customSigningAddress) {
-        (common.Environments['custom'] as any).customSigningAddress = params.customSigningAddress;
+        (common.Environments[env] as any).customSigningAddress = params.customSigningAddress;
       }
       if (params.serverXpub) {
-        common.Environments['custom'].serverXpub = params.serverXpub;
+        common.Environments[env].serverXpub = params.serverXpub;
       }
       if (params.stellarFederationServerUrl) {
-        common.Environments['custom'].stellarFederationServerUrl = params.stellarFederationServerUrl;
+        common.Environments[env].stellarFederationServerUrl = params.stellarFederationServerUrl;
       }
     } else {
       env = params.env || process.env.BITGO_ENV as EnvironmentName;
     }
 
-    if (env as string === 'production') {
-      env = 'prod'; // make life easier
+    // if this env is an alias, swap it out with the equivalent supported environment
+    if (env in AliasEnvironments) {
+      env = AliasEnvironments[env];
     }
 
     if (env === 'custom' && _.isUndefined(common.Environments[env].uri)) {
@@ -482,7 +484,7 @@ export class BitGo {
       if (common.Environments[env]) {
         this._baseUrl = common.Environments[env].uri;
       } else {
-        throw new Error('invalid environment ' + env + '. Supported environments: test, prod');
+        throw new Error('invalid environment ' + env + '. Supported environments: prod, test, dev, latest');
       }
     } else {
       env = 'test';
@@ -494,10 +496,13 @@ export class BitGo {
     }
     this._env = this.env = env;
 
+    if (params.etherscanApiToken) {
+      common.Environments[env].etherscanApiToken = params.etherscanApiToken;
+    }
+
     common.setNetwork(common.Environments[env].network);
     common.setRmgNetwork(common.Environments[env].rmgNetwork);
 
-    this._microservicesUrl = params.microservicesUri;
     this._baseApiUrl = this._baseUrl + '/api/v1';
     this._baseApiUrlV2 = this._baseUrl + '/api/v2';
     this._keychains = null;
@@ -509,6 +514,14 @@ export class BitGo {
     this._userAgent = params.userAgent || 'BitGoJS/' + this.version();
     this._promise = Bluebird;
     this._reqId = undefined;
+
+    if (!params.hmacVerification && params.hmacVerification !== undefined) {
+      if (common.Environments[env].hmacVerificationEnforced) {
+        throw new Error(`Cannot disable request HMAC verification in environment ${this.getEnv()}`);
+      }
+      debug('HMAC verification explicitly disabled by constructor option');
+      this._hmacVerification = params.hmacVerification;
+    }
 
     // whether to perform extra client-side validation for some things, such as
     // address validation or signature validation. defaults to true, but can be
@@ -660,6 +673,13 @@ export class BitGo {
           return response;
         }
 
+        // HMAC verification is only allowed to be skipped in certain environments.
+        // This is checked in the constructor, but checking it again at request time
+        // will help prevent against tampering of this property after the object is created
+        if (!self._hmacVerification && !common.Environments[self.getEnv()].hmacVerificationEnforced) {
+          return response;
+        }
+
         const verificationResponse = self.verifyResponse({
           url: req.url,
           hmac: response.header.hmac,
@@ -728,7 +748,7 @@ export class BitGo {
    * @returns {*} - the result of the HMAC operation
    */
   calculateHMAC(key: string, message: string): string {
-    return crypto.createHmac('sha256', key).update(message).digest('hex');
+    return createHmac('sha256', key).update(message).digest('hex');
   }
 
   /**
@@ -890,8 +910,8 @@ export class BitGo {
   encrypt(params: EncryptOptions = {}): string {
     common.validateParams(params, ['input', 'password'], []);
 
-    const randomSalt = crypto.randomBytes(8);
-    const randomIV = crypto.randomBytes(16);
+    const randomSalt = randomBytes(8);
+    const randomIV = randomBytes(16);
     const encryptOptions = {
       iter: 10000,
       ks: 256,
@@ -1085,10 +1105,10 @@ export class BitGo {
       throw new Error('eckey object required');
     }
 
-    const otherKeyPub = bitcoin.ECPair.fromPublicKeyBuffer(new Buffer(otherPubKeyHex, 'hex'));
+    const otherKeyPub = bitcoin.ECPair.fromPublicKeyBuffer(Buffer.from(otherPubKeyHex, 'hex'));
     const secretPoint = otherKeyPub.Q.multiply((eckey as bitcoin.ECPair).d);
     const secret = Util.bnToByteArrayUnsigned(secretPoint.affineX);
-    return new Buffer(secret).toString('hex');
+    return Buffer.from(secret).toString('hex');
   }
 
   /**
@@ -1275,14 +1295,15 @@ export class BitGo {
   }
 
   /**
-   *
+   * Process the username, password and otp into an object containing the username and hashed password, ready to
+   * send to bitgo for authentication.
    */
   preprocessAuthenticationParams({ username, password, otp, forceSMS, extensible, trust }: AuthenticateOptions): ProcessedAuthenticationOptions {
-    if (!_.isString('username')) {
+    if (!_.isString(username)) {
       throw new Error('expected string username');
     }
 
-    if (!_.isString('password')) {
+    if (!_.isString(password)) {
       throw new Error('expected string password');
     }
 
@@ -1338,9 +1359,7 @@ export class BitGo {
         return self.reject('already logged in', callback);
       }
 
-      const authUrl = self._microservicesUrl ?
-        self.microservicesUrl('/api/auth/v1/session') :
-        self.url('/user/login');
+      const authUrl = self.microservicesUrl('/api/auth/v1/session');
       const request = self.post(authUrl);
 
       if (forceV1Auth) {
@@ -1611,9 +1630,7 @@ export class BitGo {
         throw new Error('must specify scope for token');
       }
 
-      const authUrl = self._microservicesUrl ?
-        self.microservicesUrl('/api/auth/v1/accesstoken') :
-        self.url('/user/accesstoken');
+      const authUrl = self.microservicesUrl('/api/auth/v1/accesstoken');
       const request = self.post(authUrl);
 
       if (!self._ecdhXprv) {
@@ -1977,7 +1994,7 @@ export class BitGo {
    * Create a url for calling BitGo microservice APIs
    */
   microservicesUrl(path: string): string {
-    return this._microservicesUrl + path;
+    return this._baseUrl + path;
   }
 
   /**
@@ -2058,7 +2075,7 @@ export class BitGo {
         throw new Error('no signature found in guarantee response body');
       }
       const signingAddress = common.Environments[self.getEnv()].signingAddress;
-      const signatureBuffer = new Buffer(body.signature, 'hex');
+      const signatureBuffer = Buffer.from(body.signature, 'hex');
       const prefix = bitcoin.networks[common.Environments[self.getEnv()].network].messagePrefix;
       const isValidSignature = bitcoinMessage.verify(body.guarantee, signingAddress, signatureBuffer, prefix);
       if (!isValidSignature) {

@@ -8,9 +8,9 @@ import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { AddressGenerationError } from '../errors';
 import {
-    BaseCoin,
-    SignedTransaction, TransactionPrebuild,
-    VerificationOptions,
+  BaseCoin,
+  SignedTransaction, TransactionPrebuild,
+  VerificationOptions, VerifyAddressOptions,
 } from './baseCoin';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Eth } from './coins';
@@ -51,6 +51,21 @@ export interface Memo {
     type: string;
 }
 
+/**
+ * A small set of parameters should be used for building a consolidation transaction:
+ * - walletPassphrase - necessary for signing
+ * - feeRate
+ * - maxFeeRate
+ * - validFromBlock
+ * - validToBlock
+ *
+ * What shouldn't be passed (these will be ignored):
+ * - recipients
+ */
+export interface BuildConsolidationTransactionOptions extends PrebuildTransactionOptions {
+  fromAddresses?: string[];
+}
+
 export interface PrebuildTransactionOptions {
     reqId?: RequestTracer;
     recipients?: {
@@ -83,15 +98,20 @@ export interface PrebuildTransactionOptions {
       expireTime?: string;
       pendingApprovalId?: string;
     };
+    offlineVerification?: boolean;
+    walletContractAddress?: string;
 }
 
 export interface PrebuildAndSignTransactionOptions extends PrebuildTransactionOptions {
-    prebuildTx?: string;
+    prebuildTx?: string | PrebuildTransactionResult;
     verification?: VerificationOptions;
 }
 
 export interface PrebuildTransactionResult extends TransactionPrebuild {
     walletId: string;
+    // Consolidate ID is used for consolidate account transactions and indicates if this is
+    // a consolidation and what consolidate group it should be referenced by.
+    consolidateId?: string;
 }
 
 export interface WalletSignTransactionOptions {
@@ -112,6 +132,8 @@ export interface WalletCoinSpecific {
   tokenFlushThresholds?: any;
   addressVersion?: number;
   baseAddress?: string;
+  rootAddress?: string;
+  customChangeWalletId: string;
 }
 
 export interface PaginationOptions {
@@ -171,6 +193,7 @@ export interface ConsolidateUnspentsOptions {
   maxFeePercentage?: number;
   comment?: string;
   otp?: string;
+  targetAddress?: string;
 }
 
 export interface FanoutUnspentsOptions {
@@ -189,6 +212,7 @@ export interface FanoutUnspentsOptions {
   feeTxConfirmTarget?: number;
   comment?: string;
   otp?: string;
+  targetAddress?: string;
 }
 
 export interface SweepOptions {
@@ -199,6 +223,7 @@ export interface SweepOptions {
   feeRate?: number;
   maxFeeRate?: number;
   feeTxConfirmTarget?: number;
+  allowPartialSweep?: boolean;
 }
 
 export interface FreezeOptions {
@@ -359,6 +384,11 @@ interface WalletData {
   coinSpecific: WalletCoinSpecific;
   pendingApprovals: PendingApprovalData[];
   enterprise: string;
+  customChangeKeySignatures?: {
+    user?: string;
+    backup?: string;
+    bitgo?: string;
+  };
 }
 
 export interface RecoverTokenOptions {
@@ -452,6 +482,25 @@ export class Wallet {
    */
   balance(): number {
     return this._wallet.balance;
+  }
+
+  prebuildWhitelistedParams(): string[] {
+    return [
+      'addressType', 'changeAddress', 'consolidateAddresses', 'cpfpFeeRate', 'cpfpTxIds', 'enforceMinConfirmsForChange',
+      'feeRate', 'gasLimit', 'gasPrice', 'idfSignedTimestamp', 'idfUserId', 'idfVersion', 'instant',
+      'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'message', 'minConfirms',
+      'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
+      'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'validFromBlock', 'validToBlock',
+    ];
+  }
+
+  /**
+   * This is a strict sub-set of prebuildWhitelistedParams
+   */
+  prebuildConsolidateAccountParams(): string[] {
+    return [
+      'consolidateAddresses', 'feeRate', 'maxFeeRate', 'memo', 'validFromBlock', 'validToBlock',
+    ];
   }
 
   /**
@@ -794,8 +843,8 @@ export class Wallet {
     const self = this;
     return co<MaximumSpendable>(function *() {
       const filteredParams = _.pick(params, [
-        'minValue', 'maxValue', 'minHeight', 'target', 'plainTarget', 'limit', 'minConfirms',
-        'enforceMinConfirmsForChange', 'feeRate', 'maxFeeRate', 'recipientAddress'
+        'enforceMinConfirmsForChange', 'feeRate', 'limit', 'maxFeeRate', 'maxValue', 'minConfirms', 'minHeight',
+        'minValue', 'plainTarget', 'recipientAddress', 'target',
       ]);
 
       return self.bitgo.get(self.url('/maximumSpendable'))
@@ -811,7 +860,9 @@ export class Wallet {
    * @returns {*}
    */
   unspents(params: UnspentsOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
-    const query = _.pick(params, ['prevId', 'limit', 'minValue', 'maxValue', 'minHeight', 'minConfirms', 'target', 'segwit', 'chains']);
+    const query = _.pick(params, [
+        'chains', 'limit', 'maxValue', 'minConfirms', 'minHeight', 'minValue', 'prevId', 'segwit', 'target',
+    ]);
 
     return this.bitgo.get(this.url('/unspents'))
       .query(query)
@@ -843,7 +894,7 @@ export class Wallet {
    * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
    * @param {Boolean} params.enforceMinConfirmsForChange - if true, minConfirms also applies to change outputs
    * @param {Number} params.limit                for routeName === 'consolidate'
-   *                 params.maxNumUnspentsToUse  for routeName === 'fanout'
+   *                 params.maxNumInputsToUse    for routeName === 'fanout'
    *                  - maximum number of unspents you want to use in the transaction
    * Output parameters:
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
@@ -867,8 +918,9 @@ export class Wallet {
         'minHeight',
         'minConfirms',
         'enforceMinConfirmsForChange',
+        'targetAddress',
 
-        routeName === 'consolidate' ? 'limit' : 'maxNumUnspentsToUse',
+        routeName === 'consolidate' ? 'limit' : 'maxNumInputsToUse',
         'numUnspentsToMake',
       ]);
       self.bitgo.setRequestTracer(reqId);
@@ -905,7 +957,7 @@ export class Wallet {
    * @param {Number} params.minConfirms - all selected unspents will have at least this many confirmations
    * @param {Boolean} params.enforceMinConfirmsForChange - if true, minConfirms also applies to change outputs
    * @param {Number} params.limit                for routeName === 'consolidate'
-   *                 params.maxNumUnspentsToUse  for routeName === 'fanout'
+   *                 params.maxNumInputsToUse    for routeName === 'fanout'
    *                  - maximum number of unspents you want to use in the transaction
    * @param {Number} params.numUnspentsToMake - the number of new unspents to make
    * @param callback
@@ -966,6 +1018,7 @@ export class Wallet {
    * @param {Number} params.feeTxConfirmTarget - Estimate the fees to aim for first confirmation within this number of blocks
    * @param {Number} params.feeRate - The desired fee rate for the transaction in satoshis/kB
    * @param {Number} [params.maxFeeRate] - upper limit for feeRate in satoshis/kB
+   * @param {Boolean} [params.allowPartialSweep] - allows sweeping 200 unspents when the wallet has more than that
    * @param [callback]
    * @returns txHex {String} the txHex of the signed transaction
    */
@@ -994,12 +1047,12 @@ export class Wallet {
       // the following flow works for all UTXO coins
 
       const reqId = new RequestTracer();
-      const filteredParams = _.pick(params, ['address', 'feeRate', 'maxFeeRate', 'feeTxConfirmTarget']);
+      const filteredParams = _.pick(params, ['address', 'feeRate', 'maxFeeRate', 'feeTxConfirmTarget', 'allowPartialSweep']);
       self.bitgo.setRequestTracer(reqId);
       const response = yield self.bitgo.post(self.url('/sweepWallet'))
         .send(filteredParams)
         .result();
-      // TODO: add txHex validation to protect man in the middle attacks replacing the txHex, BG-3588
+      // TODO(BG-3588): add txHex validation to protect man in the middle attacks replacing the txHex
 
       const keychain = yield self.baseCoin.keychains().get({ id: self._wallet.keys[0], reqId });
       const transactionParams = _.extend({}, params, { txPrebuild: response, keychain: keychain, prv: params.xprv });
@@ -1221,13 +1274,16 @@ export class Wallet {
         }
 
         newAddress.keychains = keychains;
-        const verificationData = _.merge({}, newAddress, { rootAddress });
+        const verificationData: VerifyAddressOptions = _.merge({}, newAddress, { rootAddress });
 
         if (verificationData.error) {
           throw new AddressGenerationError(verificationData.error);
         }
 
-        self.baseCoin.verifyAddress(verificationData);
+        if (verificationData.coinSpecific && !verificationData.coinSpecific.pendingChainInitialization) {
+          // can't verify addresses which are pending chain initialization, as the address is hidden
+          self.baseCoin.verifyAddress(verificationData);
+        }
 
         return newAddress;
       }).bind(this));
@@ -1574,6 +1630,7 @@ export class Wallet {
    * @param {Boolean} params.hop - Build this as an Ethereum hop transaction
    * @param {Object} params.reservation - Object to reserve the unspents that this tx build uses. Format is reservation = { expireTime: ISODateString, pendingApprovalId: String }
    * @param {String} params.walletPassphrase The passphrase to the wallet user key, to sign commitment data for Ethereum hop transactions
+   * @param {String} params.walletContractAddress - The contract address used as the "to" field of a transaction
    * @param callback
    * @returns {*}
    */
@@ -1581,13 +1638,7 @@ export class Wallet {
     const self = this;
     return co<PrebuildTransactionResult>(function *() {
       // Whitelist params to build tx
-      const whitelistedParams = _.pick(params, [
-        'recipients', 'numBlocks', 'feeRate', 'maxFeeRate', 'minConfirms', 'enforceMinConfirmsForChange',
-        'targetWalletUnspents', 'message', 'minValue', 'maxValue', 'sequenceId', 'lastLedgerSequence',
-        'ledgerSequenceDelta', 'gasPrice', 'gasLimit', 'noSplitChange', 'unspents', 'changeAddress', 'instant', 'memo', 'addressType',
-        'cpfpTxIds', 'cpfpFeeRate', 'maxFee', 'idfVersion', 'idfSignedTimestamp', 'idfUserId', 'strategy',
-        'validFromBlock', 'validToBlock', 'type', 'trustlines', 'reservation',
-      ]);
+      const whitelistedParams = _.pick(params, self.prebuildWhitelistedParams());
       debug('prebuilding transaction: %O', whitelistedParams);
 
       if (params.reqId) {
@@ -1595,7 +1646,12 @@ export class Wallet {
       }
       const extraParams = yield self.baseCoin.getExtraPrebuildParams(Object.assign(params, { wallet: self }));
       Object.assign(whitelistedParams, extraParams);
+      const queryParams = {
+        offlineVerification: params.offlineVerification ? true : undefined,
+      };
+
       const buildQuery = self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/tx/build'))
+        .query(queryParams)
         .send(whitelistedParams)
         .result();
       const utxoCoin = self.baseCoin as AbstractUtxoCoin;
@@ -1614,6 +1670,9 @@ export class Wallet {
       delete prebuild.wallet;
       delete prebuild.buildParams;
       prebuild = _.extend({}, prebuild, { walletId: self.id() });
+      if (self._wallet && self._wallet.coinSpecific && !params.walletContractAddress) {
+        prebuild = _.extend({}, prebuild, { walletContractAddress: self._wallet.coinSpecific.baseAddress });
+      }
       debug('final transaction prebuild: %O', prebuild);
       return prebuild as PrebuildTransactionResult;
     }).call(this).asCallback(callback);
@@ -1813,6 +1872,7 @@ export class Wallet {
 
       // We must pass the build params through to submit in case the CPFP tx ever has to be rebuilt.
       const submitParams = Object.assign(params, yield self.prebuildAndSignTransaction(params));
+      delete submitParams.wallet;
       return yield self.submitTransaction(submitParams);
     }).call(this).asCallback(callback);
   }
@@ -2245,5 +2305,122 @@ export class Wallet {
 
     // Save the PDF on the user's browser
     doc.save(`BitGo Keycard for ${walletLabel}.pdf`);
+  }
+
+  /**
+   * Builds a set of consolidation transactions for a wallet.
+   * @param params
+   *     fromAddresses - these are the on-chain receive addresses we want to pick a consolidation amount from
+   * @param callback
+   */
+  buildAccountConsolidations(params: BuildConsolidationTransactionOptions = {}, callback?: NodeCallback<PrebuildTransactionResult[]>): Bluebird<PrebuildTransactionResult[]> {
+    const self = this;
+    return co<PrebuildTransactionResult[]>(function *() {
+      if (!self.baseCoin.allowsAccountConsolidations()) {
+        throw new Error(`${self.baseCoin.getFullName()} does not allow account consolidations.`);
+      }
+
+      // Whitelist params to build tx
+      const whitelistedParams = _.pick(params, self.prebuildConsolidateAccountParams());
+      debug('prebuilding consolidation transaction: %O', whitelistedParams);
+
+      if (params.reqId) {
+        self.bitgo.setRequestTracer(params.reqId);
+      }
+
+      // this could return 100 build transactions
+      const buildResponse = yield self.bitgo.post(self.baseCoin.url('/wallet/' + self.id() + '/consolidateAccount/build'))
+        .send(whitelistedParams)
+        .result();
+
+      // we need to step over each prebuild now - should be in an array in the body
+      const consolidations:TransactionPrebuild[] = [];
+      for (const consolidateAccountBuild of buildResponse) {
+        let prebuild: TransactionPrebuild = yield self.baseCoin.postProcessPrebuild(
+          Object.assign(consolidateAccountBuild, { wallet: self, buildParams: whitelistedParams })
+        );
+
+        delete prebuild.wallet;
+        delete prebuild.buildParams;
+
+        prebuild = _.extend({}, prebuild, { walletId: self.id() });
+        debug('final consolidation transaction prebuild: %O', prebuild);
+
+        consolidations.push(prebuild);
+      }
+
+      return consolidations;
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Builds and sends a set of consolidation transactions for a wallet.
+   * @param params
+   *     prebuildTx   - this is the pre-build consolidation tx. this is a normally built tx with
+   *                    an additional parameter of consolidateId.
+   *     verification - normal keychains, etc. for verification
+   */
+  sendAccountConsolidation(params: PrebuildAndSignTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co<any>(function *() {
+      if (!self.baseCoin.allowsAccountConsolidations()) {
+        throw new Error(`${self.baseCoin.getFullName()} does not allow account consolidations.`);
+      }
+
+      // one of a set of consolidation transactions
+      if (typeof params.prebuildTx === 'string' || params.prebuildTx === undefined) {
+        throw new Error('Invalid build of account consolidation.');
+      }
+
+      if (!params.prebuildTx.consolidateId) {
+        throw new Error('Failed to find consolidation id on consolidation transaction.');
+      }
+
+      const signedPrebuild = yield self.prebuildAndSignTransaction(params);
+
+      // decorate with our consolidation id
+      signedPrebuild.consolidateId = params.prebuildTx.consolidateId;
+
+      delete signedPrebuild.wallet;
+
+      return yield self.submitTransaction(signedPrebuild);
+    }).call(this).asCallback(callback);
+  }
+
+  /**
+   * Builds and sends a set of account consolidations. This is intended to flush many balances to the root wallet balance.
+   * @param params
+   * @param callback
+   */
+  sendAccountConsolidations(params: BuildConsolidationTransactionOptions = {}, callback?: NodeCallback<any>): Bluebird<any> {
+    const self = this;
+    return co<any>(function *() {
+      if (!self.baseCoin.allowsAccountConsolidations()) {
+        throw new Error(`${self.baseCoin.getFullName()} does not allow account consolidations.`);
+      }
+
+      // this gives us a set of account consolidation transactions
+      const unsignedBuilds = yield self.buildAccountConsolidations(params);
+      if (unsignedBuilds && unsignedBuilds.length > 0) {
+        const successfulTxs: any[] = [];
+        const failedTxs = new Array<Error>();
+        for (const unsignedBuild of unsignedBuilds) {
+          // fold any of the parameters we used to build this transaction into the unsignedBuild
+          const unsignedBuildWithOptions: PrebuildAndSignTransactionOptions = Object.assign({}, params);
+          unsignedBuildWithOptions.prebuildTx = unsignedBuild;
+          try {
+            const sendTx = yield self.sendAccountConsolidation(unsignedBuildWithOptions);
+            successfulTxs.push(sendTx);
+          } catch (e) {
+            failedTxs.push(e);
+          }
+        }
+
+        return {
+          success: successfulTxs,
+          failure: failedTxs,
+        };
+      }
+    }).call(this).asCallback(callback);
   }
 }

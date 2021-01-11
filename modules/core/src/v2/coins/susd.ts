@@ -75,7 +75,10 @@ export class Susd extends BaseCoin {
     return Bluebird.resolve(true).asCallback(callback);
   }
 
-  signTransaction(params: SignTransactionOptions = {}): SignedTransaction {
-    throw new MethodNotImplementedError();
+  signTransaction(
+    params: SignTransactionOptions = {},
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    return Bluebird.reject(new MethodNotImplementedError()).asCallback(callback);
   }
 }

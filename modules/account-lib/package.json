@@ -1,0 +1,107 @@
+{
+  "name": "@bitgo/account-lib",
+  "version": "2.4.0",
+  "description": "BitGo's account library functions",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "scripts": {
+    "webpack-dev": "webpack --progress --colors --env.dev",
+    "webpack-test": "webpack --progress --colors --env.test",
+    "webpack-prod": "webpack --progress --colors --env.prod",
+    "build": "npm run prepare",
+    "clean": "rm -rf dist/*",
+    "compile": "npm run webpack-prod",
+    "compile-dev": "npm run webpack-dev",
+    "compile-test": "npm run webpack-test",
+    "coverage": "npm run gen-coverage && npm run upload-coverage",
+    "gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/trx/protobuf/tron.js ./resources/trx/protobuf/Discover.proto ./resources/trx/protobuf/Contract.proto ./resources/trx/protobuf/tron.proto",
+    "gen-protobufts": "pbts -o ./resources/trx/protobuf/tron.d.ts ./resources/trx/protobuf/tron.js",
+    "hedera-gen-protobuf": "pbjs -t static-module -w commonjs -o ./resources/hbar/protobuf/hedera.js ./resources/hbar/protobuf/Timestamp.proto ./resources/hbar/protobuf/BasicTypes.proto ./resources/hbar/protobuf/Duration.proto ./resources/hbar/protobuf/CryptoCreate.proto ./resources/hbar/protobuf/CryptoTransfer.proto ./resources/hbar/protobuf/TransactionBody.proto ./resources/hbar/protobuf/Transaction.proto",
+    "hedera-gen-protobufts": "pbts -o ./resources/hbar/protobuf/hedera.d.ts ./resources/hbar/protobuf/hedera.js",
+    "lint": "eslint 'src/**/*.ts' && eslint 'test/**/*.ts' || true",
+    "lint-fix": "eslint 'src/**/*.ts' --fix && eslint 'test/**/*.ts' --fix || true",
+    "prepublishOnly": "npm run compile",
+    "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
+    "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
+    "test": "npm run unit-test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BitGo/bitgo-account-lib.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@bitgo/bls": "^0.1.0",
+    "@bitgo/statics": "^6.0.0",
+    "@bitgo/utxo-lib": "^1.7.1",
+    "@celo/contractkit": "0.4.11",
+    "@hashgraph/sdk": "^1.2.1",
+    "@stablelib/hex": "^1.0.0",
+    "@stablelib/sha384": "^1.0.0",
+    "@taquito/local-forging": "6.3.5-beta.0",
+    "@taquito/signer": "6.3.5-beta.0",
+    "@types/lodash": "^4.14.151",
+    "bignumber.js": "^9.0.0",
+    "blake2b": "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
+    "bs58check": "^2.1.2",
+    "elliptic": "^6.5.2",
+    "ethereumjs-abi": "^0.6.5",
+    "ethereumjs-tx": "2.1.2",
+    "ethereumjs-util": "5.2.0",
+    "libsodium-wrappers": "^0.7.6",
+    "lodash": "^4.17.15",
+    "protobufjs": "^6.8.9",
+    "stellar-sdk": "^0.11.0",
+    "tronweb": "^2.7.2",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/elliptic": "^6.4.12",
+    "@types/libsodium-wrappers": "^0.7.7",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.13.22",
+    "@types/sinon": "^7.5.0",
+    "@typescript-eslint/eslint-plugin": "^2.24.0",
+    "@typescript-eslint/parser": "^2.24.0",
+    "awesome-typescript-loader": "^5.2.1",
+    "eslint": "^6.7.2",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-jsdoc": "^21.0.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "glob": "^7.1.3",
+    "lint-staged": "^8.1.4",
+    "mocha": "^6.1.4",
+    "mochawesome": "^4.1.0",
+    "nyc": "^15.0.0",
+    "prettier": "^1.19.1",
+    "should": "^13.1.3",
+    "sinon": "^7.5.0",
+    "terser-webpack-plugin": "^1.2.3",
+    "ts-node": "^8.3.0",
+    "typescript": "~3.5.3",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.2.3"
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ]
+  },
+  "gitHead": "dbc467654354a3cb04094a0ad533aa601d50074d"
+}

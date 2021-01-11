@@ -1,10 +1,11 @@
 import { BitGo } from '../../bitgo';
-import { BaseCoin } from '../baseCoin';
+import {BaseCoin, VerifyRecoveryTransactionOptions} from '../baseCoin';
 import { Btc } from './btc';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as common from '../../common';
+import * as errors from "../../errors";
 const request = require('superagent');
 
 export class Btg extends Btc {
@@ -106,5 +107,9 @@ export class Btg extends Btc {
 
       return unspents;
     }).call(this);
+  }
+
+  verifyRecoveryTransaction(txInfo: VerifyRecoveryTransactionOptions): Bluebird<any> {
+    return Bluebird.reject(new errors.MethodNotImplementedError());
   }
 }

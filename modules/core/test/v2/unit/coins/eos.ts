@@ -2,7 +2,7 @@ import * as should from 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 import * as ecc from 'eosjs-ecc';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 
 import { TestBitGo } from '../../../lib/test_bitgo';
 
@@ -67,6 +67,13 @@ describe('EOS:', function() {
     }).should.throw();
   });
 
+  it('should generate valid random addresses', () => {
+    for (let i = 0; i < 100; i++) {
+      const address = basecoin.generateRandomAddress();
+      basecoin.isValidAddress(address).should.be.true();
+    }
+  });
+
   it('isValidMemoId should work', function() {
     basecoin.isValidMemo({ value: '1' }).should.equal(true);
     basecoin.isValidMemo({ value: 'uno' }).should.equal(true);
@@ -105,7 +112,7 @@ describe('EOS:', function() {
       eosWallet = basecoin.newWalletObject(bitgo, basecoin, {});
     });
 
-    it('should generate a valid transaction signature', function() {
+    it('should generate a valid transaction signature', co(function *() {
       const signatureData = 'abcd';
       const tx = {
         txHex: signatureData,
@@ -124,12 +131,12 @@ describe('EOS:', function() {
       const seed = Buffer.from('c3b09c24731be2851b624d9d5b3f60fa129695c24071768d15654bea207b7bb6', 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
 
-      const { halfSigned } = basecoin.signTransaction({ txPrebuild: tx, prv: keyPair.prv });
+      const { halfSigned } = yield basecoin.signTransaction({ txPrebuild: tx, prv: keyPair.prv });
       const signature = halfSigned.transaction.signatures[0];
       const hdNode = bitcoin.HDNode.fromBase58(keyPair.pub);
       const eosPubkey = ecc.PublicKey.fromBuffer(hdNode.getPublicKeyBuffer()).toString();
       ecc.verify(signature, Buffer.from(signatureData, 'hex'), eosPubkey).should.eql(true);
-    });
+    }));
 
     it('should explain an EOS transaction', co(function *() {
       const explainTransactionParams = {

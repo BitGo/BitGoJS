@@ -1,93 +1,110 @@
 import * as should from 'should';
-import { coroutine as co } from 'bluebird';
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 import * as sinon from 'sinon';
-import { Wallet } from '../../../../src/v2/wallet';
+import { BitGo, VerificationOptions } from '../../../../src';
+import { Wallet } from '../../../../src/v2';
+import { AbstractUtxoCoin } from '../../../../src/v2/coins';
 const recoveryNocks = require('../../lib/recovery-nocks');
-const fixtures = require('../../fixtures/coins/abstractUtxoCoin');
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
-const utxoLib = require('bitgo-utxo-lib');
+const utxoLib = require('@bitgo/utxo-lib');
 import * as errors from '../../../../src/errors';
+import { Btc } from '../../../../src/v2/coins/btc';
+import { 
+  addressUnspents, 
+  addressInfos, 
+  emptyAddressInfo, 
+  recoverBtcUnsignedFixtures, 
+  recoverBtcSegwitFixtures 
+} from '../../fixtures/coins/recovery';
 
 describe('Abstract UTXO Coin:', () => {
   describe('Parse Transaction:', () => {
-    let coin;
-    let bitgo;
+    const bitgo: BitGo = new TestBitGo({ env: 'mock' });
+    const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
 
     /*
      * mock objects which get passed into parse transaction.
      * These objects are structured to force parse transaction into a
      * particular execution path for these tests.
      */
-    const verification = {
+    const verification: VerificationOptions = {
       disableNetworking: true,
-      keychains: {}
+      keychains: {
+        user: { id: '0', pub: 'aaa' },
+        backup: { id: '1', pub: 'bbb' },
+        bitgo: { id: '2', pub: 'ccc' },
+      },
     };
 
     const wallet = sinon.createStubInstance(Wallet, {
-      migratedFrom: 'v1_wallet_base_address'
+      migratedFrom: 'v1_wallet_base_address',
     });
 
     const outputAmount = 0.01 * 1e8;
 
-    before(() => {
-      bitgo = new TestBitGo({ env: 'mock' });
-      coin = bitgo.coin('btc');
-    });
-
-    it('should classify outputs which spend change back to a v1 wallet base address as internal', co(function *() {
+    it('should classify outputs which spend change back to a v1 wallet base address as internal', co(function* () {
       sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [],
         changeOutputs: [{
           address: wallet.migratedFrom(),
-          amount: outputAmount
-        }]
-      });
+          amount: outputAmount,
+        }],
+      } as any);
 
       sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
 
-
-      const parsedTransaction = yield coin.parseTransaction({ txParams: {}, txPrebuild: { txHex: '' }, wallet, verification });
+      const parsedTransaction = yield coin.parseTransaction({
+        txParams: {},
+        txPrebuild: { txHex: '' },
+        wallet: wallet as any,
+        verification: verification as any
+      });
 
       should.exist(parsedTransaction.outputs[0]);
       parsedTransaction.outputs[0].should.deepEqual({
         address: wallet.migratedFrom(),
         amount: outputAmount,
-        external: false
+        external: false,
       });
 
-      coin.explainTransaction.restore();
-      coin.verifyAddress.restore();
+      (coin.explainTransaction as any).restore();
+      (coin.verifyAddress as any).restore();
     }));
 
-    it('should classify outputs which spend to addresses not on the wallet as external', co(function *() {
+    it('should classify outputs which spend to addresses not on the wallet as external', co(function* () {
       const externalAddress = 'external_address';
       sinon.stub(coin, 'explainTransaction').resolves({
         outputs: [{
           address: externalAddress,
-          amount: outputAmount
+          amount: outputAmount,
         }],
-        changeOutputs: []
-      });
+        changeOutputs: [],
+      } as any);
 
       sinon.stub(coin, 'verifyAddress').throws(new errors.UnexpectedAddressError('test error'));
 
-      const parsedTransaction = yield coin.parseTransaction({ txParams: {}, txPrebuild: { txHex: '' }, wallet, verification });
+      const parsedTransaction = yield coin.parseTransaction({
+        txParams: {},
+        txPrebuild: { txHex: '' },
+        wallet: wallet as any,
+        verification: verification as any
+      });
 
       should.exist(parsedTransaction.outputs[0]);
       parsedTransaction.outputs[0].should.deepEqual({
         address: externalAddress,
         amount: outputAmount,
-        external: true
+        external: true,
       });
 
-      coin.explainTransaction.restore();
-      coin.verifyAddress.restore();
+      (coin.explainTransaction as any).restore();
+      (coin.verifyAddress as any).restore();
     }));
 
-    it('should accept a custom change address', co(function *() {
-
-      const changeAddress = '33a9a4TTT47i2VSpNZA3YT7v3sKYaZFAYz';
+    it('should accept a custom change address', co(function* () {
+      const changeAddress = '2NAuziD75WnPPHJVwnd4ckgY4SuJaDVVbMD';
       const outputAmount = 10000;
       const recipients = [];
 
@@ -99,33 +116,317 @@ describe('Abstract UTXO Coin:', () => {
             amount: outputAmount,
           },
         ],
-      });
+      } as any);
 
-      const parsedTransaction = yield coin.parseTransaction({ txParams: { changeAddress, recipients }, txPrebuild: { txHex: '' }, wallet, verification });
+      const parsedTransaction = yield coin.parseTransaction({
+        txParams: { changeAddress, recipients },
+        txPrebuild: { txHex: '' },
+        wallet: wallet as any,
+        verification: verification as any
+      });
 
       should.exist(parsedTransaction.outputs[0]);
       parsedTransaction.outputs[0].should.deepEqual({
         address: changeAddress,
         amount: outputAmount,
-        external: false
+        external: false,
       });
 
-      coin.explainTransaction.restore();
+      (coin.explainTransaction as any).restore();
     }));
   });
 
+  describe('Custom Change Wallets', () => {
+    const bitgo: BitGo = new TestBitGo({ env: 'mock' });
+    const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
+
+    const keys = {
+      send: {
+        user: { id: '0', key: coin.keychains().create() },
+        backup: { id: '1', key: coin.keychains().create() },
+        bitgo: { id: '2', key: coin.keychains().create() },
+      },
+      change: {
+        user: { id: '3', key: coin.keychains().create() },
+        backup: { id: '4', key: coin.keychains().create() },
+        bitgo: { id: '5', key: coin.keychains().create() },
+      },
+    };
+
+    const customChangeKeySignatures = {
+      user: '',
+      backup: '',
+      bitgo: '',
+    };
+
+    const addressData = {
+      chain: 11,
+      index: 1,
+      addressType: 'p2shP2wsh',
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      keychains: [{ pub: keys.change.user.key.pub! }, { pub: keys.change.backup.key.pub! }, { pub: keys.change.bitgo.key.pub! }],
+      threshold: 2,
+    };
+
+    const { address: changeAddress, coinSpecific } = coin.generateAddress(addressData);
+
+    const changeWalletId = 'changeWalletId';
+    const stubData = {
+      signedSendingWallet: {
+        keyIds: sinon.stub().returns([keys.send.user.id, keys.send.backup.id, keys.send.bitgo.id]),
+        coinSpecific: sinon.stub().returns({ customChangeWalletId: changeWalletId }),
+      },
+      changeWallet: {
+        keyIds: sinon.stub().returns([keys.change.user.id, keys.change.backup.id, keys.change.bitgo.id]),
+        createAddress: sinon.stub().resolves(changeAddress),
+      },
+    };
+
+    before(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const sign = async ({ key }) => (await coin.signMessage({ prv: keys.send.user.key.prv }, key.pub!)).toString('hex');
+      customChangeKeySignatures.user = await sign(keys.change.user);
+      customChangeKeySignatures.backup = await sign(keys.change.backup);
+      customChangeKeySignatures.bitgo = await sign(keys.change.bitgo);
+    });
+
+    it('should consider addresses derived from the custom change keys as internal spends', async () => {
+      const signedSendingWallet = sinon.createStubInstance(Wallet, stubData.signedSendingWallet as any);
+      const changeWallet = sinon.createStubInstance(Wallet, stubData.changeWallet as any);
+
+      sinon.stub(coin, 'keychains').returns({
+        get: sinon.stub().callsFake(({ id }) => {
+          switch (id) {
+            case keys.send.user.id:
+              return Promise.resolve({ id, ...keys.send.user.key });
+            case keys.send.backup.id:
+              return Promise.resolve({ id, ...keys.send.backup.key });
+            case keys.send.bitgo.id:
+              return Promise.resolve({ id, ...keys.send.bitgo.key });
+            case keys.change.user.id:
+              return Promise.resolve({ id, ...keys.change.user.key });
+            case keys.change.backup.id:
+              return Promise.resolve({ id, ...keys.change.backup.key });
+            case keys.change.bitgo.id:
+              return Promise.resolve({ id, ...keys.change.bitgo.key });
+          }
+        }),
+      } as any);
+
+      sinon.stub(coin, 'wallets').returns({
+        get: sinon.stub().callsFake(() => Promise.resolve(changeWallet)),
+      } as any);
+
+      const outputAmount = 10000;
+      const recipients = [];
+
+      sinon.stub(coin, 'explainTransaction').resolves({
+        outputs: [],
+        changeOutputs: [
+          {
+            address: changeAddress,
+            amount: outputAmount,
+          },
+        ],
+      } as any);
+
+      const parsedTransaction = await coin.parseTransaction({
+        txParams: { changeAddress, recipients },
+        txPrebuild: { txHex: '' },
+        wallet: signedSendingWallet as any,
+        verification: {
+          addresses: {
+            [changeAddress]: {
+              coinSpecific,
+              chain: addressData.chain,
+              index: addressData.index,
+            },
+          },
+        },
+      });
+
+      should.exist(parsedTransaction.outputs[0]);
+      parsedTransaction.outputs[0].should.deepEqual({
+        address: changeAddress,
+        amount: outputAmount,
+        external: false,
+        needsCustomChangeKeySignatureVerification: true,
+      });
+
+      (coin.explainTransaction as any).restore();
+      (coin.wallets as any).restore();
+      (coin.keychains as any).restore();
+    });
+  });
+
+  describe('Verify Transaction', () => {
+    const bitgo: BitGo = new TestBitGo({ env: 'mock' });
+    const coin = bitgo.coin('tbtc') as AbstractUtxoCoin;
+
+    const userKeychain = coin.keychains().create();
+    const otherKeychain = coin.keychains().create();
+
+    const changeKeys = {
+      user: coin.keychains().create(),
+      backup: coin.keychains().create(),
+      bitgo: coin.keychains().create(),
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const sign = async (key, keychain) => (await coin.signMessage(keychain, key.pub!)).toString('hex');
+    const signUser = (key) => sign(key, userKeychain);
+    const signOther = (key) => sign(key, otherKeychain);
+    const passphrase = 'test_passphrase';
+
+    const stubData = {
+      unsignedSendingWallet: {
+        keyIds: sinon.stub().returns(['0', '1', '2']),
+      },
+      parseTransactionData: {
+        badKey: {
+          keychains: {
+            // user public key swapped out
+            user: { pub: otherKeychain.pub, encryptedPrv: bitgo.encrypt({ input: userKeychain.prv, password: passphrase }) },
+          },
+          needsCustomChangeKeySignatureVerification: true,
+        },
+        noCustomChange: {
+          keychains: { user: userKeychain },
+          needsCustomChangeKeySignatureVerification: true,
+        },
+        emptyCustomChange: {
+          keychains: { user: userKeychain },
+          needsCustomChangeKeySignatureVerification: true,
+          customChange: {},
+        },
+        // needs to be async function to create signatures
+        badSigs: async () => ({
+          keychains: { user: userKeychain },
+          needsCustomChangeKeySignatureVerification: true,
+          customChange: {
+            keys: [changeKeys.user, changeKeys.backup, changeKeys.bitgo],
+            signatures: [await signOther(changeKeys.user), await signOther(changeKeys.backup), await signOther(changeKeys.bitgo)],
+          },
+        }),
+        goodSigs: async () => ({
+          keychains: { user: userKeychain },
+          needsCustomChangeKeySignatureVerification: true,
+          customChange: {
+            keys: [changeKeys.user, changeKeys.backup, changeKeys.bitgo],
+            signatures: [await signUser(changeKeys.user), await signUser(changeKeys.backup), await signUser(changeKeys.bitgo)],
+          },
+          missingOutputs: 1,
+        }),
+      },
+    };
+
+    const unsignedSendingWallet = sinon.createStubInstance(Wallet, stubData.unsignedSendingWallet as any);
+
+    it('should fail if the user private key cannot be verified to match the user public key', async () => {
+      sinon.stub(coin, 'parseTransaction').resolves(stubData.parseTransactionData.badKey as any);
+      const verifyWallet = sinon.createStubInstance(Wallet, {});
+
+      await coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {},
+        wallet: verifyWallet as any,
+        verification: {},
+      }).should.be.rejectedWith(/transaction requires verification of user public key, but it was unable to be verified/);
+
+      (coin.parseTransaction as any).restore();
+    });
+
+    it('should fail if the custom change verification data is required but missing', async () => {
+      sinon.stub(coin, 'parseTransaction').resolves(stubData.parseTransactionData.noCustomChange as any);
+
+      await coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {},
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      }).should.be.rejectedWith(/parsed transaction is missing required custom change verification data/);
+
+      (coin.parseTransaction as any).restore();
+    });
+
+    it('should fail if the custom change keys or key signatures are missing', async () => {
+      sinon.stub(coin, 'parseTransaction').resolves(stubData.parseTransactionData.emptyCustomChange as any);
+
+      await coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {},
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      }).should.be.rejectedWith(/customChange property is missing keys or signatures/);
+
+      (coin.parseTransaction as any).restore();
+    });
+
+    it('should fail if the custom change key signatures cannot be verified', async () => {
+      sinon.stub(coin, 'parseTransaction').resolves(await stubData.parseTransactionData.badSigs() as any);
+
+      await coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {},
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      }).should.be.rejectedWith(/transaction requires verification of custom change key signatures, but they were unable to be verified/);
+
+      (coin.parseTransaction as any).restore();
+    });
+
+    it('should successfully verify a custom change transaction when change keys and signatures are valid', async () => {
+      sinon.stub(coin, 'parseTransaction').resolves(await stubData.parseTransactionData.goodSigs() as any);
+
+      // if verify transaction gets rejected with the outputs missing error message,
+      // then we know that the verification of the custom change key signatures was successful
+      await coin.verifyTransaction({
+        txParams: {
+          walletPassphrase: passphrase,
+        },
+        txPrebuild: {},
+        wallet: unsignedSendingWallet as any,
+        verification: {},
+      }).should.be.rejectedWith(/expected outputs missing in transaction prebuild/);
+
+      (coin.parseTransaction as any).restore();
+
+    });
+  });
+
   describe('Recover Wallet:', () => {
-
-    let coin, bitgo;
-
+    let coin, bitgo, sandbox;
     before(() => {
       bitgo = new TestBitGo({ env: 'mock' });
       coin = bitgo.coin('tbtc');
-      sinon.stub(coin, 'verifyRecoveryTransaction').resolvesArg(0);
+    });
+    beforeEach(()=>{
+      sandbox = sinon.createSandbox();
+      recoveryNocks.nockbitcoinFees(20, 20, 6);
+    })
+
+    afterEach(() => {
+      sandbox.restore();
     });
 
     it('should construct a recovery transaction with segwit unspents', co(function *() {
-      const { params, expectedTxHex } = fixtures.recoverBtcSegwitFixtures();
+      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
+      callBack1.resolves(emptyAddressInfo);
+      callBack1.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').resolves(addressInfos['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']);
+      callBack1.withArgs('2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp').resolves(addressInfos['2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp']);
+      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
+      callBack2.withArgs('2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws').resolves([addressUnspents['2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws']]);
+      callBack2.withArgs('2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp').resolves([addressUnspents['2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp']]);
+      callBack2.resolves([]);
+      const { params, expectedTxHex } = recoverBtcSegwitFixtures();
       recoveryNocks.nockBtcSegwitRecovery(bitgo);
       const tx = yield coin.recover(params);
       const transaction = utxoLib.Transaction.fromHex(tx.transactionHex);
@@ -136,7 +437,19 @@ describe('Abstract UTXO Coin:', () => {
     }));
 
     it('should construct an unsigned recovery transaction for the offline vault', co(function *() {
-      const { params, expectedTxHex } = fixtures.recoverBtcUnsignedFixtures();
+      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
+      callBack1.resolves(emptyAddressInfo);
+      callBack1.withArgs('2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx').resolves({txCount: 2, totalBalance: 0});
+      callBack1.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').resolves({txCount: 2, totalBalance: 100000});
+      callBack1.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').resolves({txCount: 2, totalBalance: 0});
+      callBack1.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').resolves({txCount: 2, totalBalance: 120000});
+
+      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
+      callBack2.withArgs('2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49').resolves([addressUnspents['2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49']]);
+      callBack2.withArgs('2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR').resolves([addressUnspents['2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR']]);
+      callBack2.withArgs('2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z').resolves([addressUnspents['2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z']]);
+      callBack2.resolves([]);
+      const { params, expectedTxHex } = recoverBtcUnsignedFixtures();
       recoveryNocks.nockBtcUnsignedRecovery(bitgo);
       const txPrebuild = yield coin.recover(params);
       txPrebuild.txHex.should.equal(expectedTxHex);
@@ -147,7 +460,6 @@ describe('Abstract UTXO Coin:', () => {
 
     after(function() {
       nock.cleanAll();
-      coin.verifyRecoveryTransaction.restore();
     });
 
   });

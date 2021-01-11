@@ -1,7 +1,7 @@
 import { BigNumber } from 'bignumber.js';
-import { HDNode, ECPair } from 'bitgo-utxo-lib';
+import { HDNode, ECPair } from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as _ from 'lodash';
 import * as url from 'url';
 import * as querystring from 'querystring';
@@ -81,6 +81,10 @@ interface HalfSignedTransaction {
   halfSigned: {
     txHex: string
   }
+}
+
+interface SupplementGenerateWalletOptions {
+  rootPrivateKey?: string;
 }
 
 export class Xrp extends BaseCoin {
@@ -222,30 +226,35 @@ export class Xrp extends BaseCoin {
    * @param params
    * - txPrebuild
    * - prv
-   * @returns {{txHex}}
+   * @param callback
+   * @returns Bluebird<HalfSignedTransaction>
    */
-  public signTransaction({ txPrebuild, prv }: SignTransactionOptions): HalfSignedTransaction {
-    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+  public signTransaction({ txPrebuild, prv }: SignTransactionOptions, callback?: NodeCallback<HalfSignedTransaction>): Bluebird<HalfSignedTransaction> {
+    return co<HalfSignedTransaction>(function *() {
+      if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+        if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+          throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+        }
+        throw new Error('missing txPrebuild parameter');
       }
-      throw new Error('missing txPrebuild parameter');
-    }
 
-    if (_.isUndefined(prv) || !_.isString(prv)) {
-      if (!_.isUndefined(prv) && !_.isString(prv)) {
-        throw new Error(`prv must be a string, got type ${typeof prv}`);
+      if (_.isUndefined(prv) || !_.isString(prv)) {
+        if (!_.isUndefined(prv) && !_.isString(prv)) {
+          throw new Error(`prv must be a string, got type ${typeof prv}`);
+        }
+        throw new Error('missing prv parameter to sign transaction');
       }
-      throw new Error('missing prv parameter to sign transaction');
-    }
 
-    const userKey = HDNode.fromBase58(prv).getKey();
-    const userPrivateKey: Buffer = userKey.getPrivateKeyBuffer();
-    const userAddress = rippleKeypairs.deriveAddress(userKey.getPublicKeyBuffer().toString('hex'));
+      const userKey = HDNode.fromBase58(prv).getKey();
+      const userPrivateKey: Buffer = userKey.getPrivateKeyBuffer();
+      const userAddress = rippleKeypairs.deriveAddress(userKey.getPublicKeyBuffer().toString('hex'));
 
-    const rippleLib = ripple();
-    const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), { signAs: userAddress });
-    return { halfSigned: { txHex: halfSigned.signedTransaction } };
+      const rippleLib = ripple();
+      const halfSigned = rippleLib.signWithPrivateKey(txPrebuild.txHex, userPrivateKey.toString('hex'), { signAs: userAddress });
+      return { halfSigned: { txHex: halfSigned.signedTransaction } };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -253,105 +262,17 @@ export class Xrp extends BaseCoin {
    * the root public key, which is the basis of the root address, two signed, and one half-signed initialization txs
    * @param walletParams
    * - rootPrivateKey: optional hex-encoded Ripple private key
-   * @param keychains
    */
-  supplementGenerateWallet(walletParams, keychains): Bluebird<any> {
-    return co(function *() {
-      const { userKeychain, backupKeychain, bitgoKeychain } = keychains;
-
-      const userKey = HDNode.fromBase58(userKeychain.pub).getKey();
-      const userAddress = rippleKeypairs.deriveAddress(userKey.getPublicKeyBuffer().toString('hex'));
-
-      const backupKey = HDNode.fromBase58(backupKeychain.pub).getKey();
-      const backupAddress = rippleKeypairs.deriveAddress(backupKey.getPublicKeyBuffer().toString('hex'));
-
-      const bitgoKey = HDNode.fromBase58(bitgoKeychain.pub).getKey();
-      const bitgoAddress = rippleKeypairs.deriveAddress(bitgoKey.getPublicKeyBuffer().toString('hex'));
-
-      // initially, we need to generate a random root address which has to be distinct from all three keychains
-      let keyPair = ECPair.makeRandom();
+  supplementGenerateWallet(walletParams: SupplementGenerateWalletOptions): Bluebird<SupplementGenerateWalletOptions> {
+    return co<SupplementGenerateWalletOptions>(function *() {
       if (walletParams.rootPrivateKey) {
-        const rootPrivateKey = walletParams.rootPrivateKey;
-        if (typeof rootPrivateKey !== 'string' || rootPrivateKey.length !== 64) {
+        if (walletParams.rootPrivateKey.length !== 64) {
           throw new Error('rootPrivateKey needs to be a hexadecimal private key string');
         }
-        keyPair = ECPair.fromPrivateKeyBuffer(Buffer.from(walletParams.rootPrivateKey, 'hex'));
+      } else {
+        const keyPair = ECPair.makeRandom();
+        walletParams.rootPrivateKey = keyPair.getPrivateKeyBuffer().toString('hex');
       }
-      const privateKey: Buffer = keyPair.getPrivateKeyBuffer();
-      const publicKey: Buffer = keyPair.getPublicKeyBuffer();
-      const rootAddress = rippleKeypairs.deriveAddress(publicKey.toString('hex'));
-
-      const self = this;
-      const rippleLib = ripple();
-
-      const feeInfo = yield self.getFeeInfo();
-      const openLedgerFee = new BigNumber(feeInfo.xrpOpenLedgerFee);
-      const medianFee = new BigNumber(feeInfo.xrpMedianFee);
-      const fee = BigNumber.max(openLedgerFee, medianFee).times(1.5).toFixed(0);
-
-      // configure multisigners
-      const multisigAssignmentTx = {
-        TransactionType: 'SignerListSet',
-        Account: rootAddress,
-        SignerQuorum: 2,
-        SignerEntries: [
-          {
-            SignerEntry: {
-              Account: userAddress,
-              SignerWeight: 1
-            }
-          },
-          {
-            SignerEntry: {
-              Account: backupAddress,
-              SignerWeight: 1
-            }
-          },
-          {
-            SignerEntry: {
-              Account: bitgoAddress,
-              SignerWeight: 1
-            }
-          }
-        ],
-        Flags: 2147483648,
-        // LastLedgerSequence: ledgerVersion + 10,
-        Fee: fee,
-        Sequence: 1
-      };
-      const signedMultisigAssignmentTx = rippleLib.signWithPrivateKey(JSON.stringify(multisigAssignmentTx), privateKey.toString('hex'));
-
-      // enforce destination tags
-      const destinationTagTx = {
-        TransactionType: 'AccountSet',
-        Account: rootAddress,
-        SetFlag: 1,
-        Flags: 2147483648,
-        // LastLedgerSequence: ledgerVersion + 10,
-        Fee: fee,
-        Sequence: 2
-      };
-      const signedDestinationTagTx = rippleLib.signWithPrivateKey(JSON.stringify(destinationTagTx), privateKey.toString('hex'));
-
-      // disable master key
-      const masterDeactivationTx = {
-        TransactionType: 'AccountSet',
-        Account: rootAddress,
-        SetFlag: 4,
-        Flags: 2147483648,
-        // LastLedgerSequence: ledgerVersion + 10,
-        Fee: fee,
-        Sequence: 3
-      };
-      const signedMasterDeactivationTx = rippleLib.signWithPrivateKey(JSON.stringify(masterDeactivationTx), privateKey.toString('hex'));
-
-      // extend the wallet initialization params
-      walletParams.rootPub = publicKey.toString('hex');
-      walletParams.initializationTxs = {
-        setMultisig: signedMultisigAssignmentTx.signedTransaction,
-        disableMasterKey: signedMasterDeactivationTx.signedTransaction,
-        forceDestinationTag: signedDestinationTagTx.signedTransaction
-      };
       return walletParams;
     }).call(this);
   }
@@ -703,7 +624,7 @@ export class Xrp extends BaseCoin {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the
       // maximum entropy and gives us maximum security against cracking.
-      seed = crypto.randomBytes(512 / 8);
+      seed = randomBytes(512 / 8);
     }
     const extendedKey = HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();

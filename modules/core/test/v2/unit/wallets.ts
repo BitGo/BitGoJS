@@ -46,6 +46,14 @@ describe('V2 Wallets:', function() {
       // Address is an invalid address
       yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, address: '$' })
         .should.be.rejectedWith('invalid argument for address - valid address string expected');
+
+      // signingKeyId is invalid
+      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, signingKeyId: 1243 })
+        .should.be.rejectedWith('invalid argument for signingKeyId - valid key id string expected');
+
+      // gasPrice is a number
+      yield wallets.add({ label: 'label', enterprise: 'enterprise', keys: [], m: 2, n: 3, gasPrice: '17' })
+        .should.be.rejectedWith('invalid argument for gasPrice - number expected')
     }));
 
     it('creates a paired custodial wallet', co(function *createPairedCustodialWallet() {
@@ -89,6 +97,23 @@ describe('V2 Wallets:', function() {
       })
       .reply(200, {});
       yield wallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial' });
+    }));
+
+    it('creates a wallet with custom gasPrice', co(function *createWalletCustomGasPrice() {
+      const ethBitGo = new TestBitGo({ env: 'mock' });
+      ethBitGo.initializeTestVars();
+      const ethWallets = ethBitGo.coin('teth').wallets();
+      nock(bgUrl)
+        .post('/api/v2/teth/wallet', function(body) {
+          body.type.should.equal('custodial');
+          body.gasPrice.should.equal(20000000000);
+          body.should.not.have.property('keys');
+          body.should.not.have.property('m');
+          body.should.not.have.property('n');
+          return true;
+        })
+        .reply(200, {});
+      yield ethWallets.add({ label: 'label', enterprise: 'enterprise', type: 'custodial', gasPrice: 20000000000 });
     }));
   });
 

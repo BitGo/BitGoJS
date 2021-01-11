@@ -13,11 +13,10 @@ import {
   VerifyTransactionOptions,
 } from '../baseCoin';
 import { BitGo } from '../../bitgo';
-import * as Bluebird from 'bluebird';
-import * as crypto from 'crypto';
-import * as bitGoUtxoLib from 'bitgo-utxo-lib';
-import * as errors from '../../errors';
 import { NodeCallback } from '../types';
+import * as Bluebird from 'bluebird';
+import { randomBytes } from 'crypto';
+import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 
 export class Ofc extends BaseCoin {
   static createInstance(bitgo: BitGo): BaseCoin {
@@ -39,7 +38,7 @@ export class Ofc extends BaseCoin {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the
       // maximum entropy and gives us maximum security against cracking.
-      seed = crypto.randomBytes(512 / 8);
+      seed = randomBytes(512 / 8);
     }
     const extendedKey = bitGoUtxoLib.HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();
@@ -80,7 +79,7 @@ export class Ofc extends BaseCoin {
   }
 
   isValidAddress(address: string): boolean {
-    throw new errors.MethodNotImplementedError();
+    throw new MethodNotImplementedError();
   }
 
   getBaseFactor(): number | string {
@@ -102,7 +101,10 @@ export class Ofc extends BaseCoin {
     return Bluebird.resolve(true).asCallback(callback);
   }
 
-  signTransaction(params: SignTransactionOptions): SignedTransaction {
-    throw new MethodNotImplementedError();
+  signTransaction(
+    params: SignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    return Bluebird.reject(new MethodNotImplementedError()).asCallback(callback);
   }
 }

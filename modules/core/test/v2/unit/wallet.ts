@@ -7,10 +7,8 @@ import * as sinon from 'sinon';
 require('should-sinon');
 import '../lib/asserts';
 import * as nock from 'nock';
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
 import * as _ from 'lodash';
-const bitcoin = require('bitgo-utxo-lib');
+const bitcoin = require('@bitgo/utxo-lib');
 import { Wallet } from '../../../src/v2/wallet';
 import * as common from '../../../src/common';
 
@@ -24,7 +22,7 @@ describe('V2 Wallet:', function() {
   let bgUrl;
   let basecoin;
 
-  before(co(function *() {
+  before(async function() {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('tbtc');
@@ -37,10 +35,10 @@ describe('V2 Wallet:', function() {
     };
     wallet = new Wallet(bitgo, basecoin, walletData);
     bgUrl = common.Environments[bitgo.getEnv()].uri;
-  }));
+  });
 
   describe('Wallet transfers', function() {
-    it('should search in wallet for a transfer', co(function *() {
+    it('should search in wallet for a transfer', async function() {
       const params = { limit: 1, searchLabel: 'test' };
 
       const scope =
@@ -58,15 +56,15 @@ describe('V2 Wallet:', function() {
         });
 
       try {
-        yield wallet.transfers(params);
+        await wallet.transfers(params);
       } catch (e) {
         // test is successful if nock is consumed, HMAC errors expected
       }
 
       scope.isDone().should.be.True();
-    }));
+    });
 
-    it('should forward all valid parameters', co(function *() {
+    it('should forward all valid parameters', async function() {
       const params = {
         limit: 1,
         address: ['address1', 'address2'],
@@ -90,11 +88,11 @@ describe('V2 Wallet:', function() {
         .query(_.matches(apiParams))
         .reply(200);
 
-      yield wallet.transfers(params);
+      await wallet.transfers(params);
       scope.isDone().should.be.True();
-    }));
+    });
 
-    it('should accept a string argument for address', co(function *() {
+    it('should accept a string argument for address', async function() {
       const params = {
         limit: 1,
         address: 'stringAddress'
@@ -112,15 +110,15 @@ describe('V2 Wallet:', function() {
         .reply(200);
 
       try {
-        yield wallet.transfers(params);
+        await wallet.transfers(params);
       } catch (e) {
         // test is successful if nock is consumed, HMAC errors expected
       }
 
       scope.isDone().should.be.True();
-    }));
+    });
 
-    it('should throw errors for invalid expected parameters', co(function *() {
+    it('should throw errors for invalid expected parameters', async function() {
       (() => {
         wallet.transfers({ address: 13375 });
       }).should.throw('invalid address argument, expecting string or array');
@@ -160,11 +158,11 @@ describe('V2 Wallet:', function() {
       (() => {
         wallet.transfers({ type: 123 });
       }).should.throw('invalid type argument, expecting string');
-    }));
+    });
   });
 
   describe('Wallet addresses', function() {
-    it('should search in wallet addresses', co(function *() {
+    it('should search in wallet addresses', async function() {
       const params = { limit: 1, labelContains: 'test' };
 
       const scope =
@@ -182,13 +180,13 @@ describe('V2 Wallet:', function() {
         });
 
       try {
-        yield wallet.addresses(params);
+        await wallet.addresses(params);
       } catch (e) {
         // test is successful if nock is consumed, HMAC errors expected
       }
 
       scope.isDone().should.be.True();
-    }));
+    });
   });
 
   describe('Transaction Signature Verification', function() {
@@ -238,7 +236,7 @@ describe('V2 Wallet:', function() {
     };
     const signedTxHex = '02000000010fef30ca07288fb78659253227b8514ae9397faf76e53530118712d240bfb10600000000fdfd00004730440220140811e76ad440c863164a1f9c0956b7a7db17a29f3fe543576dd6279f975243022006ec7def583d18e8ac2de5bb7bf9c647b67d510c07fc7bdc2487ab06f08e3a684147304402205aa8e8646bc5fad6fda5565f8af5e304a5b5b7aa96690dc1562191365ba38a3202205ce0c8a7cbb3448ea4f6f69a8f4a1accae65021a0acc2d90292226c4615bb75b41004c695221032c227d73891b33c45f5f02ab7eebdc4f4ed9ffb5565aedbfb478abb1bfd9d467210266824ac31b6a9d6568c3f7ced9aee1c720cd85994dd41d43dc63b0977195729e21037c07484a5d2d3831d38df1b7b45a2459df6fb40b204bbbf24e0f11763c79a50953aeffffffff02255df4240000000017a9149799c321e46a9c7bb11835495a96d6ae31af36c58780c3c9010000000017a9144394c8c16c50397285830b449ceca588f5f359e98700000000';
 
-    before(co(function *() {
+    before(async function() {
       basecoin = bitgo.coin('tbch');
       const walletData = {
         id: '5a78dd561c6258a907f1eeaee132f796',
@@ -300,25 +298,25 @@ describe('V2 Wallet:', function() {
         pendingApprovals: []
       };
       wallet = new Wallet(bitgo, basecoin, walletData);
-    }));
+    });
 
-    it('should sign a prebuild', co(function *() {
+    it('should sign a prebuild', async function() {
       // sign transaction
-      const halfSignedTransaction = yield wallet.signTransaction({
+      const halfSignedTransaction = await wallet.signTransaction({
         txPrebuild: prebuild,
         prv: userKeychain.prv
       });
       halfSignedTransaction.txHex.should.equal('02000000010fef30ca07288fb78659253227b8514ae9397faf76e53530118712d240bfb10600000000b6004730440220140811e76ad440c863164a1f9c0956b7a7db17a29f3fe543576dd6279f975243022006ec7def583d18e8ac2de5bb7bf9c647b67d510c07fc7bdc2487ab06f08e3a684100004c695221032c227d73891b33c45f5f02ab7eebdc4f4ed9ffb5565aedbfb478abb1bfd9d467210266824ac31b6a9d6568c3f7ced9aee1c720cd85994dd41d43dc63b0977195729e21037c07484a5d2d3831d38df1b7b45a2459df6fb40b204bbbf24e0f11763c79a50953aeffffffff02255df4240000000017a9149799c321e46a9c7bb11835495a96d6ae31af36c58780c3c9010000000017a9144394c8c16c50397285830b449ceca588f5f359e98700000000');
 
       prebuild.txHex = halfSignedTransaction.txHex;
-      const signedTransaction = yield wallet.signTransaction({
+      const signedTransaction = await wallet.signTransaction({
         txPrebuild: prebuild,
         prv: backupKeychain.prv
       });
       signedTransaction.txHex.should.equal(signedTxHex);
-    }));
+    });
 
-    it('should verify a signed transaction', co(function *() {
+    it('should verify a signed transaction', async function() {
       const unspent = prebuild.txInfo.unspents[0];
       const signedTransaction = bitcoin.Transaction.fromHex(signedTxHex);
       const areSignaturesValid = basecoin.verifySignature(signedTransaction, 0, unspent.value);
@@ -355,27 +353,27 @@ describe('V2 Wallet:', function() {
 
       const isMismappedPublicKeySignatureValid = basecoin.verifySignature(signedTransaction, 0, unspent.value, { publicKey: '0266824ac31b6a9d6568c3f7ced9aee1c720cd85994dd41d43dc63b0977195729e', signatureIndex: 0 });
       isMismappedPublicKeySignatureValid.should.equal(false);
-    }));
+    });
 
-    it('should error when amount is zero', co(function *() {
+    it('should error when amount is zero', async function() {
       const params = {
         amount: 0,
         address: TestBitGo.V2.TEST_WALLET1_ADDRESS,
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       };
       (() => wallet.send(params)).should.throw(Error);
-    }));
+    });
 
-    it('should error when amount is negative', co(function *() {
+    it('should error when amount is negative', async function() {
       const params = {
         amount: -1,
         address: TestBitGo.V2.TEST_WALLET1_ADDRESS,
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       };
       (() => wallet.send(params)).should.throw(Error);
-    }));
+    });
 
-    it('should error when send many and amount is zero', co(function *() {
+    it('should error when send many and amount is zero', async function() {
       const params = {
         recipients: [{
           address: TestBitGo.V2.TEST_WALLET1_ADDRESS,
@@ -386,11 +384,11 @@ describe('V2 Wallet:', function() {
         }],
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       };
-      const error = yield bitgo.getAsyncError(wallet.sendMany(params));
+      const error = await bitgo.getAsyncError(wallet.sendMany(params));
       should.exist(error);
-    }));
+    });
 
-    it('should error when send many and amount is negative', co(function *() {
+    it('should error when send many and amount is negative', async function() {
       const params = {
         recipients: [{
           address: TestBitGo.V2.TEST_WALLET1_ADDRESS,
@@ -401,15 +399,15 @@ describe('V2 Wallet:', function() {
         }],
         walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE
       };
-      const error = yield bitgo.getAsyncError(wallet.sendMany(params));
+      const error = await bitgo.getAsyncError(wallet.sendMany(params));
       should.exist(error);
-    }));
+    });
   });
 
   describe('Wallet Transactions', function() {
     let ethWallet;
 
-    before(co(function *() {
+    before(async function() {
       const walletData = {
         id: '598f606cd8fc24710d2ebadb1d9459bb',
         coin: 'teth',
@@ -420,9 +418,9 @@ describe('V2 Wallet:', function() {
         ]
       };
       ethWallet = new Wallet(bitgo, bitgo.coin('teth'), walletData);
-    }));
+    });
 
-    it('should search for pending transaction correctly', co(function *() {
+    it('should search for pending transaction correctly', async function() {
       const params = { walletId: wallet.id() };
 
       const scope =
@@ -431,15 +429,15 @@ describe('V2 Wallet:', function() {
         .query(params)
         .reply(200);
       try {
-        yield wallet.getFirstPendingTransaction();
+        await wallet.getFirstPendingTransaction();
         throw '';
       } catch (error) {
         // test is successful if nock is consumed, HMAC errors expected
       }
       scope.isDone().should.be.True();
-    }));
+    });
 
-    it('should try to change the fee correctly', co(function *() {
+    it('should try to change the fee correctly', async function() {
       const params = { txid: '0xffffffff', fee: '10000000' };
 
       const scope =
@@ -448,15 +446,15 @@ describe('V2 Wallet:', function() {
         .reply(200);
 
       try {
-        yield wallet.changeFee({ txid: '0xffffffff', fee: '10000000' });
+        await wallet.changeFee({ txid: '0xffffffff', fee: '10000000' });
         throw '';
       } catch (error) {
         // test is successful if nock is consumed, HMAC errors expected
       }
       scope.isDone().should.be.True();
-    }));
+    });
 
-    it('should pass data parameter and amount: 0 when using sendTransaction', co(function *() {
+    it('should pass data parameter and amount: 0 when using sendTransaction', async function() {
       const path = `/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`;
       const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
       const recipients = [{
@@ -469,14 +467,14 @@ describe('V2 Wallet:', function() {
       .reply(200);
 
       try {
-        yield ethWallet.send({ address: recipients[0].address, data: recipients[0].data, amount: recipients[0].amount });
+        await ethWallet.send({ address: recipients[0].address, data: recipients[0].data, amount: recipients[0].amount });
       } catch (e) {
         // test is successful if nock is consumed, HMAC errors expected
       }
       response.isDone().should.be.true();
-    }));
+    });
 
-    it('should pass data parameter and amount: 0 when using sendMany', co(function *() {
+    it('should pass data parameter and amount: 0 when using sendMany', async function() {
       const path = `/api/v2/${ethWallet.coin()}/wallet/${ethWallet.id()}/tx/build`;
       const recipientAddress = '0x7db562c4dd465cc895761c56f83b6af0e32689ba';
       const recipients = [{
@@ -489,85 +487,85 @@ describe('V2 Wallet:', function() {
       .reply(200);
 
       try {
-        yield ethWallet.sendMany({ recipients });
+        await ethWallet.sendMany({ recipients });
       } catch (e) {
         // test is successful if nock is consumed, HMAC errors expected
       }
       response.isDone().should.be.true();
-    }));
+    });
   });
 
   describe('Create Address', () => {
-    it('should correctly validate arguments to create address', co(function *() {
+    it('should correctly validate arguments to create address', async function() {
       let message = 'gasPrice has to be an integer or numeric string';
-      yield wallet.createAddress({ gasPrice: {} }).should.be.rejectedWith(message);
-      yield wallet.createAddress({ gasPrice: 'abc' }).should.be.rejectedWith(message);
-      yield wallet.createAddress({ gasPrice: null }).should.be.rejectedWith(message);
+      await wallet.createAddress({ gasPrice: {} }).should.be.rejectedWith(message);
+      await wallet.createAddress({ gasPrice: 'abc' }).should.be.rejectedWith(message);
+      await wallet.createAddress({ gasPrice: null }).should.be.rejectedWith(message);
 
       message = 'chain has to be an integer';
-      yield wallet.createAddress({ chain: {} }).should.be.rejectedWith(message);
-      yield wallet.createAddress({ chain: 'abc' }).should.be.rejectedWith(message);
-      yield wallet.createAddress({ chain: null }).should.be.rejectedWith(message);
+      await wallet.createAddress({ chain: {} }).should.be.rejectedWith(message);
+      await wallet.createAddress({ chain: 'abc' }).should.be.rejectedWith(message);
+      await wallet.createAddress({ chain: null }).should.be.rejectedWith(message);
 
       message = 'count has to be a number between 1 and 250';
-      yield wallet.createAddress({ count: {} }).should.be.rejectedWith(message);
-      yield wallet.createAddress({ count: 'abc' }).should.be.rejectedWith(message);
-      yield wallet.createAddress({ count: null }).should.be.rejectedWith(message);
-      yield wallet.createAddress({ count: -1 }).should.be.rejectedWith(message);
-      yield wallet.createAddress({ count: 0 }).should.be.rejectedWith(message);
-      yield wallet.createAddress({ count: 251 }).should.be.rejectedWith(message);
-    }));
+      await wallet.createAddress({ count: {} }).should.be.rejectedWith(message);
+      await wallet.createAddress({ count: 'abc' }).should.be.rejectedWith(message);
+      await wallet.createAddress({ count: null }).should.be.rejectedWith(message);
+      await wallet.createAddress({ count: -1 }).should.be.rejectedWith(message);
+      await wallet.createAddress({ count: 0 }).should.be.rejectedWith(message);
+      await wallet.createAddress({ count: 251 }).should.be.rejectedWith(message);
+    });
   });
 
   describe('Accelerate Transaction', function() {
-    it('fails if cpfpTxIds is not passed', co(function *() {
-      yield wallet.accelerateTransaction({})
+    it('fails if cpfpTxIds is not passed', async function() {
+      await wallet.accelerateTransaction({})
       .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
-    }));
+    });
 
-    it('fails if cpfpTxIds is not an array', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: {} })
+    it('fails if cpfpTxIds is not an array', async function() {
+      await wallet.accelerateTransaction({ cpfpTxIds: {} })
       .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
-    }));
+    });
 
-    it('fails if cpfpTxIds is not of length 1', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: [] })
+    it('fails if cpfpTxIds is not of length 1', async function() {
+      await wallet.accelerateTransaction({ cpfpTxIds: [] })
       .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id1', 'id2'] })
+      await wallet.accelerateTransaction({ cpfpTxIds: ['id1', 'id2'] })
       .should.be.rejectedWith({ code: 'cpfptxids_not_array' });
-    }));
+    });
 
-    it('fails if cpfpFeeRate is not passed and neither is noCpfpFeeRate', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'] })
+    it('fails if cpfpFeeRate is not passed and neither is noCpfpFeeRate', async function() {
+      await wallet.accelerateTransaction({ cpfpTxIds: ['id'] })
       .should.be.rejectedWith({ code: 'cpfpfeerate_not_set' });
-    }));
+    });
 
-    it('fails if cpfpFeeRate is not an integer', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' })
+    it('fails if cpfpFeeRate is not an integer', async function() {
+      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: 'one' })
       .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
-    }));
+    });
 
-    it('fails if cpfpFeeRate is negative', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: -1 })
+    it('fails if cpfpFeeRate is negative', async function() {
+      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], cpfpFeeRate: -1 })
       .should.be.rejectedWith({ code: 'cpfpfeerate_not_nonnegative_integer' });
-    }));
+    });
 
-    it('fails if maxFee is not passed and neither is noMaxFee', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true })
+    it('fails if maxFee is not passed and neither is noMaxFee', async function() {
+      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true })
       .should.be.rejectedWith({ code: 'maxfee_not_set' });
-    }));
+    });
 
-    it('fails if maxFee is not an integer', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' })
+    it('fails if maxFee is not an integer', async function() {
+      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: 'one' })
       .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
-    }));
+    });
 
-    it('fails if maxFee is negative', co(function *() {
-      yield wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: -1 })
+    it('fails if maxFee is negative', async function() {
+      await wallet.accelerateTransaction({ cpfpTxIds: ['id'], noCpfpFeeRate: true, maxFee: -1 })
       .should.be.rejectedWith({ code: 'maxfee_not_nonnegative_integer' });
-    }));
+    });
 
-    it('submits a transaction with all cpfp specific parameters', co(function *() {
+    it('submits a transaction with all cpfp specific parameters', async function() {
       const params = {
         cpfpTxIds: ['id'],
         cpfpFeeRate: 1,
@@ -582,12 +580,48 @@ describe('V2 Wallet:', function() {
       .post(path, _.matches(prebuildReturn))
       .reply(200);
 
-      yield wallet.accelerateTransaction(params);
+      await wallet.accelerateTransaction(params);
 
       prebuildStub.should.have.been.calledOnceWith(params);
 
       sinon.restore();
-    }));
+    });
+  });
+
+  describe('maxNumInputsToUse verification', function() {
+    const address = '5b34252f1bf349930e34020a';
+    const maxNumInputsToUse = 2;
+    let basecoin;
+    let wallet;
+
+    before(async function() {
+      basecoin = bitgo.coin('tbtc');
+      const walletData = {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: [
+          '5b3424f91bf349930e340175'
+        ]
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+
+    it('should pass maxNumInputsToUse parameter when calling fanout unspents', async function() {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
+      const response = nock(bgUrl)
+          .post(path, _.matches({ maxNumInputsToUse })) // use _.matches to do a partial match on request body object instead of strict matching
+          .reply(200);
+
+      try {
+        await wallet.fanoutUnspents({ address, maxNumInputsToUse });
+      } catch (e) {
+        // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
+        // we only care about /fanoutUnspents and whether maxNumInputsToUse is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    });
   });
 
   describe('maxFeeRate verification', function() {
@@ -600,7 +634,7 @@ describe('V2 Wallet:', function() {
     let basecoin;
     let wallet;
 
-    before(co(function *() {
+    before(async function() {
       basecoin = bitgo.coin('tbtc');
       const walletData = {
         id: '5b34252f1bf349930e34020a',
@@ -610,25 +644,25 @@ describe('V2 Wallet:', function() {
         ]
       };
       wallet = new Wallet(bitgo, basecoin, walletData);
-    }));
+    });
 
-    it('should pass maxFeeRate parameter when building transactions', co(function *() {
+    it('should pass maxFeeRate parameter when building transactions', async function() {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`;
       const response = nock(bgUrl)
       .post(path, _.matches({ recipients, maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
       .reply(200);
 
       try {
-        yield wallet.prebuildTransaction({ recipients, maxFeeRate });
+        await wallet.prebuildTransaction({ recipients, maxFeeRate });
       } catch (e) {
         // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
         // we only care about /tx/build and whether maxFeeRate is an allowed parameter
       }
 
       response.isDone().should.be.true();
-    }));
+    });
 
-    it('should pass maxFeeRate parameter when consolidating unspents', co(function *() {
+    it('should pass maxFeeRate parameter when consolidating unspents', async function() {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/consolidateUnspents`;
       const response = nock(bgUrl)
       .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
@@ -639,50 +673,124 @@ describe('V2 Wallet:', function() {
       .reply(200);
 
       try {
-        yield wallet.consolidateUnspents({ recipients, maxFeeRate });
+        await wallet.consolidateUnspents({ recipients, maxFeeRate });
       } catch (e) {
         // the consolidateUnspents method will probably throw an exception for not having all of the correct nocks
         // we only care about /consolidateUnspents and whether maxFeeRate is an allowed parameter
       }
 
       response.isDone().should.be.true();
-    }));
+    });
 
-    it('should pass maxFeeRate parameter when calling sweep wallets', co(function *() {
+    it('should pass maxFeeRate parameter when calling sweep wallets', async function() {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
       const response = nock(bgUrl)
       .post(path, _.matches({ address, maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
       .reply(200);
 
       try {
-        yield wallet.sweep({ address, maxFeeRate });
+        await wallet.sweep({ address, maxFeeRate });
       } catch (e) {
         // the sweep method will probably throw an exception for not having all of the correct nocks
         // we only care about /sweepWallet and whether maxFeeRate is an allowed parameter
       }
 
       response.isDone().should.be.true();
-    }));
+    });
 
-    it('should pass maxFeeRate parameter when calling fanout unspents', co(function *() {
+    it('should pass maxFeeRate parameter when calling fanout unspents', async function() {
       const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/fanoutUnspents`;
       const response = nock(bgUrl)
       .post(path, _.matches({ maxFeeRate })) // use _.matches to do a partial match on request body object instead of strict matching
       .reply(200);
 
       try {
-        yield wallet.fanoutUnspents({ address, maxFeeRate });
+        await wallet.fanoutUnspents({ address, maxFeeRate });
       } catch (e) {
         // the fanoutUnspents method will probably throw an exception for not having all of the correct nocks
         // we only care about /fanoutUnspents and whether maxFeeRate is an allowed parameter
       }
 
       response.isDone().should.be.true();
-    }));
+    });
+  });
+
+  describe('allowPartialSweep verification', function() {
+    const address = '5b34252f1bf349930e34020a';
+    const allowPartialSweep = true;
+    let basecoin;
+    let wallet;
+
+    before(async function() {
+      basecoin = bitgo.coin('tbtc');
+      const walletData = {
+        id: '5b34252f1bf349930e34020a',
+        coin: 'tbtc',
+        keys: ['5b3424f91bf349930e340175'],
+      };
+      wallet = new Wallet(bitgo, basecoin, walletData);
+    });
+
+    it('should pass allowPartialSweep parameter when calling sweep wallets', async function() {
+      const path = `/api/v2/${wallet.coin()}/wallet/${wallet.id()}/sweepWallet`;
+      const response = nock(bgUrl)
+          .post(path, _.matches({ address, allowPartialSweep })) // use _.matches to do a partial match on request body object instead of strict matching
+          .reply(200);
+
+      try {
+        await wallet.sweep({ address, allowPartialSweep });
+      } catch (e) {
+        // the sweep method will probably throw an exception for not having all of the correct nocks
+        // we only care about /sweepWallet and whether allowPartialSweep is an allowed parameter
+      }
+
+      response.isDone().should.be.true();
+    });
   });
 
   describe('Transaction prebuilds', function() {
-    it('prebuild should call build and getLatestBlockHeight for utxo coins', co(function *() {
+    it('should pass offlineVerification=true query param if passed truthy value', async function() {
+      const params = { offlineVerification: true };
+      const scope = nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+        .query(params)
+        .reply(200, {});
+      const blockHeight = 100;
+      const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
+      await wallet.prebuildTransaction(params);
+      blockHeightStub.should.have.been.calledOnce();
+      postProcessStub.should.have.been.calledOnceWith({
+        blockHeight: 100,
+        wallet: wallet,
+        buildParams: { },
+      });
+      scope.done();
+      blockHeightStub.restore();
+      postProcessStub.restore();
+    });
+
+    it('should not pass the offlineVerification query param if passed a falsey value', async function() {
+      const params = { offlineVerification: false };
+      nock(bgUrl)
+        .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
+        .query({})
+        .reply(200, {});
+      const blockHeight = 100;
+      const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
+      const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
+      await wallet.prebuildTransaction(params);
+      blockHeightStub.should.have.been.calledOnce();
+      postProcessStub.should.have.been.calledOnceWith({
+        blockHeight: 100,
+        wallet: wallet,
+        buildParams: { },
+      });
+      blockHeightStub.restore();
+      postProcessStub.restore();
+    });
+
+    it('prebuild should call build and getLatestBlockHeight for utxo coins', async function() {
       const params = {};
       nock(bgUrl)
       .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
@@ -691,17 +799,19 @@ describe('V2 Wallet:', function() {
       const blockHeight = 100;
       const blockHeightStub = sinon.stub(basecoin, 'getLatestBlockHeight').resolves(blockHeight);
       const postProcessStub = sinon.stub(basecoin, 'postProcessPrebuild').resolves({});
-      yield wallet.prebuildTransaction(params);
+      await wallet.prebuildTransaction(params);
       blockHeightStub.should.have.been.calledOnce();
       postProcessStub.should.have.been.calledOnceWith({
         blockHeight: 100,
         wallet: wallet,
         buildParams: { },
       });
-    }));
+      blockHeightStub.restore();
+      postProcessStub.restore();
+    });
 
-    it('prebuild should call build but not getLatestBlockHeight for account coins', co(function *() {
-      ['txrp', 'txlm', 'teth'].forEach(co(function *(coin) {
+    it('prebuild should call build but not getLatestBlockHeight for account coins', async function() {
+      ['txrp', 'txlm', 'teth'].forEach(async function(coin) {
         const accountcoin = bitgo.coin(coin);
         const walletData = {
           id: '5b34252f1bf349930e34021a',
@@ -717,15 +827,16 @@ describe('V2 Wallet:', function() {
         .query(params)
         .reply(200, {});
         const postProcessStub = sinon.stub(accountcoin, 'postProcessPrebuild').resolves({});
-        yield accountWallet.prebuildTransaction(params);
+        await accountWallet.prebuildTransaction(params);
         postProcessStub.should.have.been.calledOnceWith({
           wallet: accountWallet,
           buildParams: { },
         });
-      }));
-    }));
+        postProcessStub.restore();
+      });
+    });
 
-    it('should pass unspent reservation parameter through when building transactions', co(function *() {
+    it('should pass unspent reservation parameter through when building transactions', async function() {
       const reservation = {
         expireTime: '2029-08-12',
       };
@@ -738,25 +849,25 @@ describe('V2 Wallet:', function() {
         .post(path, _.matches({ recipients, reservation })) // use _.matches to do a partial match on request body object instead of strict matching
         .reply(200);
       try {
-        yield wallet.prebuildTransaction({ recipients, reservation });
+        await wallet.prebuildTransaction({ recipients, reservation });
       } catch (e) {
         // the prebuildTransaction method will probably throw an exception for not having all of the correct nocks
         // we only care about /tx/build and whether reservation is an allowed parameter
       }
 
       response.isDone().should.be.true();
-    }));
+    });
   });
 
   describe('Maximum Spendable', function maximumSpendable() {
     let bgUrl;
 
-    before(co(function *() {
+    before(async function() {
       nock.pendingMocks().should.be.empty();
       bgUrl = common.Environments[bitgo.getEnv()].uri;
-    }));
+    });
 
-    it('arguments', co(function *() {
+    it('arguments', async function() {
       const optionalParams = {
         limit: '25',
         minValue: '0',
@@ -779,17 +890,17 @@ describe('V2 Wallet:', function() {
         });
 
       try {
-        yield wallet.maximumSpendable(optionalParams);
+        await wallet.maximumSpendable(optionalParams);
       } catch (e) {
         // test is successful if nock is consumed
       }
 
       response.isDone().should.be.true();
-    }));
+    });
   });
 
   describe('Wallet Sharing', function() {
-    it('should share to cold wallet without passing skipKeychain', co(function *() {
+    it('should share to cold wallet without passing skipKeychain', async function() {
       const userId = '123';
       const email = 'shareto@sdktest.com';
       const permissions = 'view,spend';
@@ -806,11 +917,11 @@ describe('V2 Wallet:', function() {
       .post(`/api/v2/tbtc/wallet/${wallet._wallet.id}/share`, { user: userId, permissions, keychain: {} })
       .reply(200, {});
 
-      yield wallet.shareWallet({ email, permissions });
+      await wallet.shareWallet({ email, permissions });
 
       getSharingKeyNock.isDone().should.be.True();
       getKeyNock.isDone().should.be.True();
       createShareNock.isDone().should.be.True();
-    }));
+    });
   });
 });

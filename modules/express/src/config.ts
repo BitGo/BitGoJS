@@ -3,6 +3,19 @@ import { isNil, isNumber } from 'lodash';
 
 import { args } from './args';
 
+function readEnvVar(name, ...deprecatedAliases): string | undefined {
+  if (process.env[name] !== undefined) {
+    return process.env[name];
+  }
+
+  for (const deprecatedAlias of deprecatedAliases) {
+    if (process.env[deprecatedAlias] !== undefined) {
+      console.warn(`warning: using deprecated environment variable '${deprecatedAlias}'. Please use the '${name}' environment variable instead.`);
+      return process.env[deprecatedAlias];
+    }
+  }
+}
+
 export interface Config {
   port: number;
   bind: string;
@@ -19,7 +32,7 @@ export interface Config {
   customBitcoinNetwork?: V1Network;
 }
 
-export const ArgConfig = (args): Config => ({
+export const ArgConfig = (args): Partial<Config> => ({
   port: args.port,
   bind: args.bind,
   env: args.env,
@@ -35,20 +48,21 @@ export const ArgConfig = (args): Config => ({
   customBitcoinNetwork: args.custombitcoinnetwork,
 });
 
-export const EnvConfig = (): Config => ({
-  port: Number(process.env.BITGO_PORT),
-  bind: process.env.BITGO_BIND || DefaultConfig.bind,
-  env: (process.env.BITGO_ENV as EnvironmentName) || DefaultConfig.env,
-  debugNamespace: (process.env.BITGO_DEBUG_NAMESPACE || '').split(','),
-  keyPath: process.env.BITGO_KEYPATH,
-  crtPath: process.env.BITGO_CRTPATH,
-  logFile: process.env.BITGO_LOGFILE,
-  disableSSL: Boolean(process.env.DISABLE_SSL),
-  disableProxy: Boolean(process.env.DISABLE_PROXY),
-  disableEnvCheck: Boolean(process.env.DISABLE_ENV_CHECK),
-  timeout: Number(process.env.BITGO_TIMEOUT),
-  customRootUri: process.env.BITGO_CUSTOM_ROOT_URI,
-  customBitcoinNetwork: (process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network),
+export const EnvConfig = (): Partial<Config> => ({
+  port: Number(readEnvVar('BITGO_PORT')),
+  bind: readEnvVar('BITGO_BIND') || DefaultConfig.bind,
+  env: (readEnvVar('BITGO_ENV') as EnvironmentName) || DefaultConfig.env,
+  debugNamespace: (readEnvVar('BITGO_DEBUG_NAMESPACE') || '').split(','),
+  keyPath: readEnvVar('BITGO_KEYPATH'),
+  crtPath: readEnvVar('BITGO_CRTPATH'),
+  logFile: readEnvVar('BITGO_LOGFILE'),
+  disableSSL: readEnvVar('BITGO_DISABLE_SSL', 'BITGO_DISABLESSL', 'DISABLESSL', 'DISABLE_SSL') ?
+    true : undefined,
+  disableProxy: readEnvVar('BITGO_DISABLE_PROXY', 'DISABLE_PROXY') ? true : undefined,
+  disableEnvCheck: readEnvVar('BITGO_DISABLE_ENV_CHECK', 'DISABLE_ENV_CHECK') ? true : undefined,
+  timeout: Number(readEnvVar('BITGO_TIMEOUT')),
+  customRootUri: readEnvVar('BITGO_CUSTOM_ROOT_URI'),
+  customBitcoinNetwork: (readEnvVar('BITGO_CUSTOM_BITCOIN_NETWORK') as V1Network),
 });
 
 export const DefaultConfig: Config = {
@@ -68,7 +82,7 @@ export const DefaultConfig: Config = {
  *
  * Earlier configs have higher precedence over subsequent configs.
  */
-function mergeConfigs(...configs: Config[]): Config {
+function mergeConfigs(...configs: Partial<Config>[]): Config {
   function isNilOrNaN(val: unknown): val is null | undefined | number {
     return isNil(val) || (isNumber(val) && isNaN(val));
   }
@@ -77,7 +91,7 @@ function mergeConfigs(...configs: Config[]): Config {
   function get<T extends keyof Config>(k: T): Config[T] {
     return configs
       .reverse()
-      .reduce((entry: Config[T], config) => !isNilOrNaN(config[k]) ? config[k] : entry, DefaultConfig[k]);
+      .reduce((entry: Config[T], config) => !isNilOrNaN(config[k]) ? config[k] as Config[T] : entry, DefaultConfig[k]);
   }
 
   return {

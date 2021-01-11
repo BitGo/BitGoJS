@@ -1,4 +1,4 @@
-import { BaseCoin, CoinFeature, CoinKind, UnderlyingAsset } from './base';
+import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { InvalidContractAddressError, InvalidDomainError } from './errors';
 import { AccountNetwork, Networks } from './networks';
 
@@ -12,6 +12,7 @@ export interface AccountConstructorOptions {
   isToken: boolean;
   prefix?: string;
   suffix?: string;
+  primaryKeyCurve: KeyCurve;
 }
 
 /**
@@ -33,7 +34,6 @@ export class AccountCoin extends BaseCoin {
 
   constructor(options: AccountConstructorOptions) {
     super({
-      isToken: false,
       ...options,
       kind: CoinKind.CRYPTO,
     });
@@ -58,6 +58,10 @@ export interface StellarCoinConstructorOptions extends AccountConstructorOptions
   domain: string;
 }
 
+export interface HederaCoinConstructorOptions extends AccountConstructorOptions {
+  nodeAccountId: string;
+}
+
 export interface ContractAddress extends String {
   __contractaddress_phantom__: never;
 }
@@ -66,16 +70,15 @@ export class AccountCoinToken extends AccountCoin {
   constructor(options: AccountConstructorOptions) {
     super({
       ...options,
-      isToken: true,
     });
   }
 }
 
 /**
- * ERC 20 is a token standard for the Ethereum blockchain. They are similar to other account coins, but have a
- * contract address property which identifies the smart contract which defines the token.
+ * Some blockchains support tokens which are defined by an address at which they have a smart contract deployed.
+ * Examples are ERC20 tokens, and the equivalent on other chains.
  */
-export class Erc20Coin extends AccountCoinToken {
+export class ContractAddressDefinedToken extends AccountCoinToken {
   public contractAddress: ContractAddress;
 
   constructor(options: Erc20ConstructorOptions) {
@@ -91,6 +94,30 @@ export class Erc20Coin extends AccountCoinToken {
     this.contractAddress = (options.contractAddress as unknown) as ContractAddress;
   }
 }
+
+/**
+ * ERC 20 is a token standard for the Ethereum blockchain. They are similar to other account coins, but have a
+ * contract address property which identifies the smart contract which defines the token.
+ */
+export class Erc20Coin extends ContractAddressDefinedToken {}
+
+/**
+ * Some blockchains have native coins which also support the ERC20 interface such as CELO.
+ */
+export class Erc20CompatibleAccountCoin extends ContractAddressDefinedToken {
+  constructor(options: Erc20ConstructorOptions) {
+    super({
+      ...options,
+      // These coins should not be classified as tokens as they are not children of other coins
+      isToken: false,
+    });
+  }
+}
+
+/**
+ * The CELO blockchain supports tokens of the ERC20 standard similar to ETH ERC20 tokens.
+ */
+export class CeloCoin extends ContractAddressDefinedToken {}
 
 /**
  * The Stellar network supports tokens (non-native assets)
@@ -116,6 +143,23 @@ export class StellarCoin extends AccountCoinToken {
 }
 
 /**
+ * The Hedera coin needs a client set with the node account Id.
+ * It's an account based coin that needs the node account ID
+ * where the transaction will be sent.
+ */
+export class HederaCoin extends AccountCoinToken {
+  public nodeAccountId: string;
+
+  constructor(options: HederaCoinConstructorOptions) {
+    super({
+      ...options,
+    });
+
+    this.nodeAccountId = options.nodeAccountId;
+  }
+}
+
+/**
  * Factory function for account coin instances.
  *
  * @param name unique identifier of the coin
@@ -127,6 +171,7 @@ export class StellarCoin extends AccountCoinToken {
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function account(
   name: string,
@@ -135,6 +180,7 @@ export function account(
   decimalPlaces: number,
   asset: UnderlyingAsset,
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
   isToken: boolean = false
@@ -150,6 +196,7 @@ export function account(
       decimalPlaces,
       isToken,
       asset,
+      primaryKeyCurve,
     })
   );
 }
@@ -166,6 +213,7 @@ export function account(
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Ethereum main network.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function erc20(
   name: string,
@@ -176,7 +224,8 @@ export function erc20(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.ethereum
+  network: AccountNetwork = Networks.main.ethereum,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
     new Erc20Coin({
@@ -190,6 +239,7 @@ export function erc20(
       decimalPlaces,
       asset,
       isToken: true,
+      primaryKeyCurve,
     })
   );
 }
@@ -222,6 +272,119 @@ export function terc20(
 }
 
 /**
+ * Factory function for ERC20-compatible account coin instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param network Network object for this coin
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function erc20CompatibleAccountCoin(
+  name: string,
+  fullName: string,
+  network: AccountNetwork,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new Erc20CompatibleAccountCoin({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: false,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for celo token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to CELO main network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function celoToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.main.celo,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
+) {
+  return Object.freeze(
+    new CeloCoin({
+      name,
+      fullName,
+      network,
+      contractAddress,
+      prefix,
+      suffix,
+      features,
+      decimalPlaces,
+      asset,
+      isToken: true,
+      primaryKeyCurve,
+    })
+  );
+}
+
+/**
+ * Factory function for testnet celo token instances.
+ *
+ * @param name unique identifier of the token
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param contractAddress Contract address of this token
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to the testnet CELO network.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ */
+export function tceloToken(
+  name: string,
+  fullName: string,
+  decimalPlaces: number,
+  contractAddress: string,
+  asset: UnderlyingAsset,
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  network: AccountNetwork = Networks.test.celo
+) {
+  return celoToken(name, fullName, decimalPlaces, contractAddress, asset, features, prefix, suffix, network);
+}
+
+/**
  * Factory function for Stellar token instances.
  *
  * @param name unique identifier of the token
@@ -234,6 +397,7 @@ export function terc20(
  * @param suffix? Optional token suffix. Defaults to token name.
  * @param network? Optional token network. Defaults to Stellar mainnet.
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function stellarToken(
   name: string,
@@ -244,7 +408,8 @@ export function stellarToken(
   features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
   prefix: string = '',
   suffix: string = name.toUpperCase(),
-  network: AccountNetwork = Networks.main.stellar
+  network: AccountNetwork = Networks.main.stellar,
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
 ) {
   return Object.freeze(
     new StellarCoin({
@@ -258,6 +423,7 @@ export function stellarToken(
       suffix,
       network,
       isToken: true,
+      primaryKeyCurve,
     })
   );
 }
@@ -288,4 +454,47 @@ export function tstellarToken(
   network: AccountNetwork = Networks.test.stellar
 ) {
   return stellarToken(name, fullName, decimalPlaces, asset, domain, features, prefix, suffix, network);
+}
+
+/**
+ * Factory function for Hedera coin instances
+ *
+ * @param name unique identifier of the coin
+ * @param fullName Complete human-readable name of the token
+ * @param decimalPlaces Number of decimal places this token supports (divisibility exponent)
+ * @param asset Asset which this coin represents. This is the same for both mainnet and testnet variants of a coin.
+ * @param nodeAccountId node account Id from which the transaction will be sent
+ * @param prefix? Optional token prefix. Defaults to empty string
+ * @param suffix? Optional token suffix. Defaults to token name.
+ * @param network? Optional token network. Defaults to Hedera mainnet.
+ * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `AccountCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
+ */
+export function hederaCoin(
+  name: string,
+  fullName: string,
+  network: AccountNetwork,
+  decimalPlaces: number,
+  asset: UnderlyingAsset,
+  nodeAccountId: string = '0.0.3',
+  features: CoinFeature[] = AccountCoin.DEFAULT_FEATURES,
+  prefix: string = '',
+  suffix: string = name.toUpperCase(),
+  primaryKeyCurve: KeyCurve = KeyCurve.Ed25519
+) {
+  return Object.freeze(
+    new HederaCoin({
+      name,
+      fullName,
+      decimalPlaces,
+      asset,
+      nodeAccountId,
+      features,
+      prefix,
+      suffix,
+      network,
+      isToken: false,
+      primaryKeyCurve,
+    })
+  );
 }

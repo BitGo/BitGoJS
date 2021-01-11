@@ -5,10 +5,10 @@
 
 /**
  */
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import * as Big from 'big.js';
 import * as _ from 'lodash';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import { EthereumLibraryUnavailableError } from '../../errors';
 import { RequestTracer as IRequestTracer } from '../types';
@@ -37,7 +37,7 @@ export class RequestTracer implements IRequestTracer {
   private _seq = 0;
   private readonly _seed: Buffer;
   constructor() {
-    this._seed = crypto.randomBytes(10);
+    this._seed = randomBytes(10);
   }
 
   inc() {
@@ -156,8 +156,8 @@ export class Util {
       throw new EthereumLibraryUnavailableError(ethImport);
     }
     const signatureInParts = ethUtil.ecsign(
-      new Buffer(ethUtil.stripHexPrefix(msgHash), 'hex'),
-      new Buffer(privKey, 'hex')
+      Buffer.from(ethUtil.stripHexPrefix(msgHash), 'hex'),
+      Buffer.from(privKey, 'hex')
     );
 
     // Assemble strings from r, s and v
@@ -202,10 +202,10 @@ export class Util {
     signature = ethUtil.stripHexPrefix(signature);
 
     const v = parseInt(signature.slice(128, 130), 16);
-    const r = new Buffer(signature.slice(0, 64), 'hex');
-    const s = new Buffer(signature.slice(64, 128), 'hex');
+    const r = Buffer.from(signature.slice(0, 64), 'hex');
+    const s = Buffer.from(signature.slice(64, 128), 'hex');
 
-    const pubKey = ethUtil.ecrecover(new Buffer(msgHash, 'hex'), v, r, s);
+    const pubKey = ethUtil.ecrecover(Buffer.from(msgHash, 'hex'), v, r, s);
     return ethUtil.bufferToHex(ethUtil.pubToAddress(pubKey));
   }
 }

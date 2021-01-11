@@ -2,7 +2,7 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { hdPath } from '../bitcoin';
 const bitcoinMessage = require('bitcoinjs-message');
 import * as Bluebird from 'bluebird';
@@ -23,6 +23,7 @@ import { Enterprises } from './enterprises';
 export interface TransactionRecipient {
   address: string;
   amount: string | number;
+  memo?: string;
 }
 
 export interface TransactionFee {
@@ -39,6 +40,8 @@ export interface TransactionExplanation {
   changeOutputs: TransactionRecipient[];
   changeAmount: string;
   fee: TransactionFee;
+  proxy?: string;
+  producers?: string[];
 }
 
 export interface KeyPair {
@@ -52,6 +55,7 @@ export interface VerifyAddressOptions {
   keychains?: {
     pub: string;
   }[];
+  error?: string;
   coinSpecific?: AddressCoinSpecific;
 }
 
@@ -61,12 +65,20 @@ export interface TransactionParams {
   type?: string;
 }
 
+export interface AddressVerificationData {
+  coinSpecific?: AddressCoinSpecific;
+  chain?: number;
+  index?: number;
+}
+
 export interface VerificationOptions {
   disableNetworking?: boolean;
   keychains?: {
     user?: Keychain;
     backup?: Keychain;
+    bitgo?: Keychain;
   };
+  addresses?: { [address: string]: AddressVerificationData };
 }
 
 export interface VerifyTransactionOptions {
@@ -149,6 +161,7 @@ export interface TransactionPrebuild {
   txHex?: string;
   wallet?: Wallet;
   buildParams?: any;
+  consolidateId?: string;
 }
 
 export interface AddressCoinSpecific {
@@ -156,6 +169,7 @@ export interface AddressCoinSpecific {
   redeemScript?: string;
   witnessScript?: string;
   baseAddress?: string;
+  pendingChainInitialization?: boolean;
 }
 
 export interface FullySignedTransaction {
@@ -262,6 +276,15 @@ export abstract class BaseCoin {
   }
 
   /**
+   * Flag for determining whether this coin supports account consolidations
+   * from its receive addresses to the root address.
+   * @returns {boolean} True if okay to consolidate over this coin; false, otherwise
+   */
+  allowsAccountConsolidations(): boolean {
+    return false;
+  }
+
+  /**
    * Returns the factor between the base unit and its smallest subdivison
    * @return {number}
    */
@@ -298,13 +321,18 @@ export abstract class BaseCoin {
    *
    * @param key
    * @param message
+   * @param callback
    */
-  signMessage(key: { prv: string }, message: string): Buffer {
-    const privateKey = bitcoin.HDNode.fromBase58(key.prv).getKey();
-    const privateKeyBuffer = privateKey.d.toBuffer(32);
-    const isCompressed = privateKey.compressed;
-    const prefix = bitcoin.networks.bitcoin.messagePrefix;
-    return bitcoinMessage.sign(message, privateKeyBuffer, isCompressed, prefix);
+  signMessage(key: { prv: string }, message: string, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    return co<Buffer>(function* cosignMessage() {
+      const privateKey = bitcoin.HDNode.fromBase58(key.prv).getKey();
+      const privateKeyBuffer = privateKey.d.toBuffer(32);
+      const isCompressed = privateKey.compressed;
+      const prefix = bitcoin.networks.bitcoin.messagePrefix;
+      return bitcoinMessage.sign(message, privateKeyBuffer, isCompressed, prefix);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -546,5 +574,5 @@ export abstract class BaseCoin {
   /**
    * Sign a transaction
    */
-  abstract signTransaction(params: SignTransactionOptions): SignedTransaction;
+  abstract signTransaction(params: SignTransactionOptions): Bluebird<SignedTransaction>;
 }

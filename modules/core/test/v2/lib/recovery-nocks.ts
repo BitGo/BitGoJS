@@ -5,8 +5,378 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import * as nock from 'nock';
 import { Environment, Environments } from '../../../src/v2/environments';
+import { BlockchairApi } from '../../../src/v2/recovery/blockchairApi';
+const fixtures = require('../../../test/v2/fixtures/coins/recovery');
+const blockchairContext = fixtures.blockchairContext;
+const btcKrsRecoveryDecodedTx = fixtures.btcKrsRecoveryDecodedTx;
+const btcNonKrsRecoveryDecodedTx = fixtures.btcNonKrsRecoveryDecodedTx;
+const emptyBlockchairBtcAddressData = fixtures.emptyBlockchairBtcAddressData;
 
-export function nockBtcRecovery(bitgo, isKrsRecovery) {
+export function nockSmartbitDecodeTx(txHex, env, isKrsRecovery, smartbitOnline = true) {
+  const decodedTx = isKrsRecovery ? btcKrsRecoveryDecodedTx : btcNonKrsRecoveryDecodedTx;
+  const smartbitBaseUrl = `${env.smartbitBaseUrl}/blockchain`;
+  if (smartbitOnline) {
+    nock(smartbitBaseUrl)
+      .post('/decodetx', { hex: txHex })
+      .reply(200, decodedTx);
+  } else {
+    nock(smartbitBaseUrl)
+      .post('/decodetx', { hex: txHex })
+      .socketDelay(10000)
+      .replyWithError(503); // "server unavailable"
+  }
+}
+
+export function nockbitcoinFees(fastestFee: number, halfHourFee: number, hourFee: number) {
+  nock('https://bitcoinfees.earn.com')
+    .get('/api/v1/fees/recommended')
+    .reply(200, {
+      fastestFee,
+      halfHourFee,
+      hourFee,
+    });
+}
+
+export function nockbitcoinFeesOffline(fastestFee: number, halfHourFee: number, hourFee: number) {
+  nock('https://bitcoinfees.earn.com')
+    .get('/api/v1/fees/recommended')
+    .replyWithError('please wait while predictions are being generated');
+}
+
+export function nockCoingecko(usd: number, coinGeckoName: string) {
+  const body = {};
+  body[coinGeckoName] = { usd };
+  nock('https://api.coingecko.com')
+    .get(`/api/v3/simple/price?ids=${coinGeckoName}&vs_currencies=USD`)
+    .reply(200, body);
+}
+
+export function blockchairNockBtcRecovery(bitgo, isKrsRecovery, smartbitOnline = true, coin = 'bitcoin') {
+  const env = bitgo.getEnv() as any;
+  const blockchairURL = BlockchairApi.getBaseUrl(env, 'bitcoin');
+  nockbitcoinFees(600, 600, 100);
+  const txHex = isKrsRecovery
+    ? '010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000b500483045022100ca835086284cb84e9cbf96464057dcd58fa9b4b37cf4c51171c109dae13ec9ee02203ca1b77600820e670d7bd0c6bd8fbfc003c2a67ffedab7950a1c7f9d0fc17b4c014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff0230456c000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac787301b0f000000000017a9141b60c33def13c3eda4cf4835e11a633e4b3302ec8700000000'
+    : '010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000';
+
+  if (isKrsRecovery) {
+    // unnecessary market data removed
+    nockCoingecko(10000, 'bitcoin');
+  }
+  nock(blockchairURL)
+    .get('/dashboards/address/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg?key=my_______SecretApiKey')
+    .reply(200, {
+      data: { '2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg': emptyBlockchairBtcAddressData },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg')
+    .reply(200, {
+      data: { '2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg': emptyBlockchairBtcAddressData },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr')
+    .reply(200, {
+      data: { '2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr': emptyBlockchairBtcAddressData },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr?key=my_______SecretApiKey')
+    .reply(200, {
+      data: { '2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr': emptyBlockchairBtcAddressData },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj')
+    .reply(200, {
+      data: {
+        '2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2NFNu2LUvV98d5rkKobkt1JwtFe8eKpePxj': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
+    .reply(200, {
+      data: {
+        '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9144db7dbb57102a2e13e4474dbe38058431012e74587',
+            balance: 8125000,
+            balance_usd: 0,
+            received: 8125000,
+            received_usd: 0,
+            spent: 0,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 1,
+            first_seen_receiving: '2017-06-12 23:17:43',
+            last_seen_receiving: '2017-06-12 23:17:43',
+            first_seen_spending: null,
+            last_seen_spending: null,
+            scripthash_type: null,
+            transaction_count: 1,
+          },
+          transactions: ['e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74'],
+          utxo: [
+            {
+              block_id: 1128383,
+              transaction_hash: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
+              index: 0,
+              value: 8125000,
+            },
+          ],
+        },
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9144db7dbb57102a2e13e4474dbe38058431012e74587',
+            balance: 8125000,
+            balance_usd: 0,
+            received: 8125000,
+            received_usd: 0,
+            spent: 0,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 1,
+            first_seen_receiving: '2017-06-12 23:17:43',
+            last_seen_receiving: '2017-06-12 23:17:43',
+            first_seen_spending: null,
+            last_seen_spending: null,
+            scripthash_type: null,
+            transaction_count: 1,
+          },
+          transactions: ['e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74'],
+          utxo: [
+            {
+              block_id: 1128383,
+              transaction_hash: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
+              index: 0,
+              value: 8125000,
+            },
+          ],
+        },
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z')
+    .reply(200, {
+      data: {
+        '2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2NAY4N8bBCthmYDHKBab6gMnS2LwpbxdF2z': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA')
+    .reply(200, {
+      data: {
+        '2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2MsPSUv8yxy9SwFKWfaTSAGKwaGCBBbMuZA': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch')
+    .reply(200, {
+      data: {
+        '2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2N5txkg9k3pHe6zyyKV2dwztKdDPGdJdPch': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC')
+    .reply(200, {
+      data: {
+        '2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2MzU1ze7cKUFPoQgNnsAmn4Vj7GGrN8HPCC': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P')
+    .reply(200, {
+      data: {
+        '2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2N3AYt6Bzqne1jagNi6Lnu42PVPshtgVQ9P': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT')
+    .reply(200, {
+      data: {
+        '2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2N8pyHtgmrGrvndjteyDDrjQ2ogvUb6bqDT': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X')
+    .reply(200, {
+      data: {
+        '2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2MtruqBf39BiueH1pN34rk7Ti7FGxnKmu7X': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym')
+    .reply(200, {
+      data: {
+        '2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2N4F1557TjZVN15AxPRb6CbaX7quyh5n1ym': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba')
+    .reply(200, {
+      data: {
+        '2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2NB54XtZQcVBhQSCgVV8AqjiobXGbNDLkba': emptyBlockchairBtcAddressData,
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw?key=my_______SecretApiKey')
+    .reply(200, {
+      data: {
+        '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9144db7dbb57102a2e13e4474dbe38058431012e74587',
+            balance: 8125000,
+            balance_usd: 0,
+            received: 8125000,
+            received_usd: 0,
+            spent: 0,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 1,
+            first_seen_receiving: '2017-06-12 23:17:43',
+            last_seen_receiving: '2017-06-12 23:17:43',
+            first_seen_spending: null,
+            last_seen_spending: null,
+            scripthash_type: null,
+            transaction_count: 1,
+          },
+          transactions: ['e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74'],
+          utxo: [
+            {
+              block_id: 1128383,
+              transaction_hash: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
+              index: 0,
+              value: 8125000,
+            },
+          ],
+        },
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw')
+    .reply(200, {
+      data: {
+        '2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9144db7dbb57102a2e13e4474dbe38058431012e74587',
+            balance: 8125000,
+            balance_usd: 0,
+            received: 8125000,
+            received_usd: 0,
+            spent: 0,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 1,
+            first_seen_receiving: '2017-06-12 23:17:43',
+            last_seen_receiving: '2017-06-12 23:17:43',
+            first_seen_spending: null,
+            last_seen_spending: null,
+            scripthash_type: null,
+            transaction_count: 1,
+          },
+          transactions: ['e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74'],
+          utxo: [
+            {
+              block_id: 1128383,
+              transaction_hash: 'e18283471a9374ef9812757ac70cd6660c66265cac7b19a87354d64937a7ed74',
+              index: 0,
+              value: 8125000,
+            },
+          ],
+        },
+      },
+      blockchairContext,
+    });
+
+  nockSmartbitDecodeTx(txHex, env, isKrsRecovery, smartbitOnline);
+}
+
+// TODO: BG-23161 - replace smartbit block explorer which is now permanently down
+export function smartBitNockBtcRecovery(bitgo, isKrsRecovery) {
   nock('https://bitcoinfees.earn.com')
     .get('/api/v1/fees/recommended')
     .reply(200, {
@@ -103,10 +473,10 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
         },
       };
 
-  const env = Environments[bitgo.getEnv()] as Environment;
+  const env = Environments[bitgo.getEnv()] as any;
   const smartbitBaseUrl = `${env.smartBitApiBaseUrl}/blockchain`;
   nock(smartbitBaseUrl)
-    .get('/address/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg')
+    .get('/address/2MztRFcJWkDTYsZmNjLu9pBWWviJmWjJ4hg') // done
     .reply(200, {
       success: true,
       address: {
@@ -590,7 +960,7 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
         },
       },
     })
-    .get('/address/2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr')
+    .get('/address/2NB8Z1xr86m3sePYdFfJudNrrA8rKNkPEKr') // done
     .reply(200, {
       success: true,
       address: {
@@ -876,10 +1246,12 @@ export function nockBtcRecovery(bitgo, isKrsRecovery) {
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/BTCUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=bitcoin&vs_currencies=USD')
       .reply(200, {
-        last: 10000,
+        bitcoin: {
+          usd: 10000,
+        },
       });
   }
 }
@@ -1089,10 +1461,12 @@ module.exports.nockBchRecovery = function nockBchRecovery(bitgo, isKrsRecovery) 
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/BCHUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=bitcoin-cash&vs_currencies=USD')
       .reply(200, {
-        last: 1000,
+        'bitcoin-cash': {
+          usd: 1000,
+        },
       });
   }
 };
@@ -1243,8 +1617,8 @@ module.exports.nockXrpRecovery = function nockXrpRecovery() {
 
 module.exports.nockWrongChainRecoveries = function(bitgo) {
   const env = Environments[bitgo.getEnv()] as Environment;
-  nock(`${env.uri}/api/v2`)
-    .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e')
+  nock(env.uri)
+    .get('/api/v2/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e')
     .times(2)
     .reply(200, {
       id: '5abacebe28d72fbd07e0b8cbba0ff39e',
@@ -1303,7 +1677,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       },
       pendingApprovals: [],
     })
-    .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf')
+    .get('/api/v2/tbtc/wallet/5abace103cddfbb607d8239d806671bf')
     .times(3)
     .reply(200, {
       id: '5abace103cddfbb607d8239d806671bf',
@@ -1362,8 +1736,8 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       },
       pendingApprovals: [],
     })
-    .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
-    .times(2)
+    .get('/api/v2/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
+    .times(4)
     .reply(200, {
       id: '5abacebe28d72fbd07e0b8cf3d571ba8',
       address: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
@@ -1377,17 +1751,15 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       },
       balance: {
         updated: '2018-03-27T23:33:10.713Z',
-        numTx: 2,
-        numUnspents: 0,
         totalReceived: 60000000,
         totalSent: 60000000,
       },
     })
-    .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/QjpwWvj3Y82e3WChS3pcGkRYEBbniifdpn')
+    .get('/api/v2/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/QjpwWvj3Y82e3WChS3pcGkRYEBbniifdpn')
     .times(2)
     .reply(404)
-    .get('/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
-    .times(2)
+    .get('/api/v2/tltc/wallet/5abacebe28d72fbd07e0b8cbba0ff39e/address/Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V')
+    .times(4)
     .reply(200, {
       id: '5abacebe28d72fbd07e0b8cf3d571ba8',
       address: 'Qb3mLF6zy2frAAJmBcuVneJHUsmtk2Jo6V',
@@ -1407,10 +1779,10 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         totalSent: 60000000,
       },
     })
-    .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2N9jq7k8cvFhuucVhhbb8BdWTeEjYxKmSfy')
+    .get('/api/v2/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2N9jq7k8cvFhuucVhhbb8BdWTeEjYxKmSfy')
     .times(7)
     .reply(404)
-    .get('/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
+    .get('/api/v2/tbtc/wallet/5abace103cddfbb607d8239d806671bf/address/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
     .times(7)
     .reply(200, {
       id: '5abace113cddfbb607d823a192372c88',
@@ -1425,13 +1797,11 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       },
       balance: {
         updated: '2018-03-27T23:29:42.799Z',
-        numTx: 2,
-        numUnspents: 0,
         totalReceived: 65000000,
         totalSent: 65000000,
       },
     })
-    .get('/tltc/key/5abaceb63cddfbb607d8306521ddf445')
+    .get('/api/v2/tltc/key/5abaceb63cddfbb607d8306521ddf445')
     .reply(200, {
       id: '5abaceb63cddfbb607d8306521ddf445',
       users: ['543c11ed356d00cb7600000b98794503'],
@@ -1441,7 +1811,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
       encryptedPrv:
         '{"iv":"JmWw8SBtiQ80KNGvjHvknA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"+V24Zb2ZpiE=","ct":"JUDBx3xDRuWnlV7LH7Wbt+eUixifofSYjA3kVNUZwRXh+7JIrBfQeCWCvvWopTJi7YgWaM+aLjbXB8mZrrE+14xmFw4evg34De4Omd7vnnbbk2uxe/r+bL7hL3tCz+b6uv9wd/tMQmLyu5PJuIrj5n8gv8SmNn4="}',
     })
-    .get('/tbtc/key/5abacdffae0ec7c107c7d9cf6d60a886')
+    .get('/api/v2/tbtc/key/5abacdffae0ec7c107c7d9cf6d60a886')
     .times(4)
     .reply(200, {
       id: '5abacdffae0ec7c107c7d9cf6d60a886',
@@ -1454,8 +1824,8 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
     });
 
   // Nock explorer info
-  nock('https://test.bitgo.com/api/v2')
-    .get('/tbtc/public/tx/41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6')
+  nock(env.uri)
+    .get('/api/v2/tbtc/public/tx/41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6')
     .times(2)
     .reply(200, {
       id: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
@@ -1493,6 +1863,12 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
           value: 43998878,
           valueString: '43998878',
         },
+        {
+          id: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6:2',
+          address: '2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx',
+          value: 100000,
+          valueString: '100000',
+        },
       ],
       entries: [
         {
@@ -1518,8 +1894,8 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         },
       ],
     })
-    .get('/tbtc/public/addressUnspents/2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx')
-    .times(2)
+    .get('/api/v2/tbtc/public/addressUnspents/2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx')
+    .times(4)
     .reply(200, [
       {
         id: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6:0',
@@ -1529,8 +1905,16 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         blockHeight: 1289343,
         date: '2018-03-27T23:29:42.799Z',
       },
+      {
+        id: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6:2',
+        address: '2N7h1DEEkwvcm1yYiZWsUhwrrLVL4pKgjJx',
+        value: 100000,
+        valueString: '100000',
+        blockHeight: 1289343,
+        date: '2018-03-27T23:29:42.799Z',
+      },
     ])
-    .get('/tltc/public/tx/fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39')
+    .get('/api/v2/tltc/public/tx/fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39')
     .reply(200, {
       id: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39',
       normalizedTxHash: '1e3a0abd9bae70e9ca9021311076e6bbf7244dc0bc5ac8ac5ab6437cafa6a93a',
@@ -1592,7 +1976,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         },
       ],
     })
-    .get('/tltc/public/addressUnspents/QiSTRzBCS5UxVvdMiYVGfNn1wYkC9JrpmP')
+    .get('/api/v2/tltc/public/addressUnspents/QiSTRzBCS5UxVvdMiYVGfNn1wYkC9JrpmP')
     .reply(200, [
       {
         id: 'fe22e43e7894e91ec4b371bfbce02f49b2903cc535e4a2345eeda5271c81db39:1',
@@ -1603,7 +1987,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         date: '2018-03-27T23:33:10.713Z',
       },
     ])
-    .get('/tbch/public/tx/94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26')
+    .get('/api/v2/tbch/public/tx/94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26')
     .reply(200, {
       id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
       normalizedTxHash: '6346359162b9c42018b8e852e9e5a52ced224bf0c1d55393554472645e2c2dbe',
@@ -1665,7 +2049,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         },
       ],
     })
-    .get('/tbsv/public/tx/94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26')
+    .get('/api/v2/tbsv/public/tx/94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26')
     .reply(200, {
       id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26',
       normalizedTxHash: '6346359162b9c42018b8e852e9e5a52ced224bf0c1d55393554472645e2c2dbe',
@@ -1727,7 +2111,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         },
       ],
     })
-    .get('/tbch/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
+    .get('/api/v2/tbch/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
     .reply(200, [
       {
         id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26:0',
@@ -1738,7 +2122,7 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
         date: '2018-03-27T23:34:33.819Z',
       },
     ])
-    .get('/tbsv/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
+    .get('/api/v2/tbsv/public/addressUnspents/2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm')
     .reply(200, [
       {
         id: '94143c674bd194ea215143457808440aefa4780a2a81396a1f642d6edaa1ea26:0',
@@ -1751,109 +2135,134 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
     ]);
 };
 
-module.exports.nockEthRecovery = function() {
-  nock('https://kovan.etherscan.io')
-    .get('/api')
-    .query({
-      module: 'account',
-      action: 'txlist',
-      address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
-    })
-    .reply(200, {
-      status: '0',
-      message: 'No transactions found',
-      result: [],
-    })
-    .get('/api')
-    .query({
-      module: 'account',
-      action: 'balance',
-      address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
-    })
-    .reply(200, {
-      status: '1',
-      message: 'OK',
-      result: '100000000000000000',
-    })
-    .get('/api')
-    .query({
-      module: 'account',
-      action: 'balance',
-      address: '0x5df5a96b478bb1808140d87072143e60262e8670',
-    })
-    .reply(200, {
-      status: '1',
-      message: 'OK',
-      result: '2200000000000000000',
-    })
-    .get('/api')
-    .query({
-      module: 'account',
-      action: 'txlist',
-      address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6',
-    })
-    .reply(200, {
-      status: '0',
-      message: 'No transactions found',
-      result: [],
-    })
-    .get('/api')
-    .query({
-      module: 'account',
-      action: 'balance',
-      address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6',
-    })
-    .reply(200, {
-      status: '1',
-      message: 'OK',
-      result: '0',
-    })
-    .get('/api')
-    .query({
-      module: 'account',
-      action: 'txlist',
-      address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
-    })
-    .reply(200, {
-      status: '0',
-      message: 'No transactions found',
-      result: [],
-    })
-    .get('/api')
-    .query({
-      module: 'account',
-      action: 'balance',
-      address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
-    })
-    .reply(200, {
-      status: '1',
-      message: 'OK',
-      result: '100000000000000000',
-    })
-    .get('/api')
-    .query({
-      module: 'account',
-      action: 'balance',
-      address: '0x5df5a96b478bb1808140d87072143e60262e8670',
-    })
-    .reply(200, {
-      status: '1',
-      message: 'OK',
-      result: '2200000000000000000',
-    })
-    .get('/api')
-    .query({
-      module: 'proxy',
-      action: 'eth_call',
-      to: '0x5df5a96b478bb1808140d87072143e60262e8670',
-      data: 'a0b7967b',
-      tag: 'latest',
-    })
-    .reply(200, {
-      jsonrpc: '2.0',
-      result: '0x0000000000000000000000000000000000000000000000000000000000000001',
-      id: 1,
-    });
+module.exports.nockEthRecovery = function(bitgo) {
+  const nockData: any[] = [
+    {
+      params: {
+        module: 'account',
+        action: 'txlist',
+        address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+      },
+      response: {
+        status: '0',
+        message: 'No transactions found',
+        result: [],
+      },
+    },
+    {
+      params: {
+        module: 'account',
+        action: 'balance',
+        address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+      },
+      response: {
+        status: '1',
+        message: 'OK',
+        result: '100000000000000000',
+      },
+    },
+    {
+      params: {
+        module: 'account',
+        action: 'balance',
+        address: '0x5df5a96b478bb1808140d87072143e60262e8670',
+      },
+      response: {
+        status: '1',
+        message: 'OK',
+        result: '2200000000000000000',
+      },
+    },
+    {
+      params: {
+        module: 'account',
+        action: 'txlist',
+        address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6',
+      },
+      response: {
+        status: '0',
+        message: 'No transactions found',
+        result: [],
+      },
+    },
+    {
+      params: {
+        module: 'account',
+        action: 'balance',
+        address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6',
+      },
+      response: {
+        status: '1',
+        message: 'OK',
+        result: '0',
+      },
+    },
+    {
+      params: {
+        module: 'account',
+        action: 'txlist',
+        address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+      },
+      response: {
+        status: '0',
+        message: 'No transactions found',
+        result: [],
+      },
+    },
+    {
+      params: {
+        module: 'account',
+        action: 'balance',
+        address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+      },
+      response: {
+        status: '1',
+        message: 'OK',
+        result: '100000000000000000',
+      },
+    },
+    {
+      params: {
+        module: 'account',
+        action: 'balance',
+        address: '0x5df5a96b478bb1808140d87072143e60262e8670',
+      },
+      response: {
+        status: '1',
+        message: 'OK',
+        result: '2200000000000000000',
+      },
+    },
+    {
+      params: {
+        module: 'proxy',
+        action: 'eth_call',
+        to: '0x5df5a96b478bb1808140d87072143e60262e8670',
+        data: 'a0b7967b',
+        tag: 'latest',
+      },
+      response: {
+        jsonrpc: '2.0',
+        result: '0x0000000000000000000000000000000000000000000000000000000000000001',
+        id: 1,
+      },
+    },
+  ];
+
+  let apiKey;
+  if (Environments[bitgo.getEnv()].etherscanApiToken) {
+    apiKey = Environments[bitgo.getEnv()].etherscanApiToken;
+  }
+
+  nockData.forEach(data => {
+    if (apiKey) {
+      data.params.apiKey = apiKey;
+    }
+    nock('https://kovan.etherscan.io')
+      .get('/api')
+      .query(data.params)
+      .reply(200, data.response);
+  });
 };
 
 module.exports.nockLtcRecovery = function(isKrsRecovery) {
@@ -2039,10 +2448,12 @@ module.exports.nockLtcRecovery = function(isKrsRecovery) {
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/LTCUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=litecoin&vs_currencies=USD')
       .reply(200, {
-        last: 1000,
+        litecoin: {
+          usd: 1000,
+        },
       });
   }
 };
@@ -2231,10 +2642,12 @@ module.exports.nockZecRecovery = function(bitgo, isKrsRecovery) {
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/ZECUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=zcash&vs_currencies=USD')
       .reply(200, {
-        last: 1000,
+        zcash: {
+          usd: 1000,
+        },
       });
   }
 };
@@ -2363,10 +2776,12 @@ module.exports.nockDashRecovery = function(bitgo, isKrsRecovery) {
 
   if (isKrsRecovery) {
     // unnecessary market data removed
-    nock('https://apiv2.bitcoinaverage.com')
-      .get('/indices/local/ticker/DASHUSD')
+    nock('https://api.coingecko.com')
+      .get('/api/v3/simple/price?ids=dash&vs_currencies=USD')
       .reply(200, {
-        last: 1000,
+        dash: {
+          usd: 1000,
+        },
       });
   }
 };
@@ -2770,8 +3185,144 @@ module.exports.nockEosRecovery = function() {
     });
 };
 
+module.exports.nockEmptyAddressInfo = function(emptyAddrs: Array<string>, env: any) {
+  emptyAddrs.forEach(function(addr) {
+    const data = {};
+    data[addr] = {
+      address: {
+        type: null,
+        script_hex: '',
+        balance: 0,
+        balance_usd: 0,
+        received: 0,
+        received_usd: 0,
+        spent: 0,
+        spent_usd: 0,
+        output_count: 0,
+        unspent_output_count: 0,
+        first_seen_receiving: null,
+        last_seen_receiving: null,
+        first_seen_spending: null,
+        last_seen_spending: null,
+        scripthash_type: null,
+        transaction_count: 0,
+      },
+      transactions: [],
+      utxo: [],
+    };
+    nock(BlockchairApi.getBaseUrl(env, 'bitcoin'))
+      .get('/dashboards/address/' + addr)
+      .reply(200, {
+        data: data,
+        blockchairContext,
+      });
+  });
+};
+
 module.exports.nockBtcSegwitRecovery = function(bitgo) {
-  const env = Environments[bitgo.getEnv()] as Environment;
+  const env = bitgo.getEnv() as any;
+  const emptyAddrs = [
+    '2N42muVaEhvcyMRr7pmFPnrmprdmWCUvhy7',
+    '2N2b2yNryWVbMjvXFq7RbaQ2xbGhmAuBQM7',
+    '2NBs5i2APw3XSvfch7rHirYC6AxehYizCU9',
+    '2NEFHeSYnHVt4t2KqwKz1AZqhpcx2yGoe38',
+    '2N4iR1AweHV8wmc7VPBb3tRnweQs1fSW3dB',
+    '2N1ir7htudeFEWGhyfXGL7LNKzoFrDS62bQ',
+    '2NBpZak1Tz1cpLhg6ZapeTSHkhq91GwMYFo',
+    '2N93AW6R6eLan8rfB715oCse9P6pexfK3Tn',
+    '2NEZiLrBnTSrwNuVuKCXcAi9AL6YSr1FYqY',
+  ];
+  this.nockEmptyAddressInfo(emptyAddrs, env);
+  nock(BlockchairApi.getBaseUrl(env, 'bitcoin'))
+    .get('/dashboards/address/2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws') // unspent
+    .times(2)
+    .reply(200, {
+      data: {
+        '2N7kMMaUjmBYCiZqQV7GDJhBSnJuJoTuBws': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9149f13f940a9461ac6e5393859faca8c513f93cd6e87',
+            balance: 20000,
+            balance_usd: 0,
+            received: 20000,
+            received_usd: 0,
+            spent: 20000,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 0,
+            first_seen_receiving: '2019-01-16 23:52:45',
+            last_seen_receiving: '2019-01-16 23:52:45',
+            first_seen_spending: '2019-01-17 02:27:18',
+            last_seen_spending: '2019-01-17 02:27:18',
+            scripthash_type: 'multisig_2_of_3',
+            transaction_count: 2,
+          },
+          transactions: [
+            '0f58644f28726159e833c2b4dbf7a46be2c0eb7f8d36c244bca765b05113880a',
+            '9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0',
+          ],
+          utxo: [
+            {
+              block_id: 643436,
+              transaction_hash: '9a57cdf7a8ce94c1cdad90f639fd8dcab8d20f68a117a7c30dbf468652fbf7e0',
+              index: 0,
+              value: 20000,
+            },
+          ],
+        },
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp') // unspent
+    .times(2)
+    .reply(200, {
+      data: {
+        '2MwvWgPCe6Ev9ikkXzidYB5WQqmhdfWMyVp': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a914334ea8adc3423478229444603ab27f02de2550ef87',
+            balance: 20000,
+            balance_usd: 0,
+            received: 41000,
+            received_usd: 0,
+            spent: 41000,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 0,
+            first_seen_receiving: '2019-01-16 23:52:45',
+            last_seen_receiving: '2019-01-16 23:52:45',
+            first_seen_spending: '2019-01-17 02:27:18',
+            last_seen_spending: '2019-01-17 02:27:18',
+            scripthash_type: 'multisig_2_of_3',
+            transaction_count: 2,
+          },
+          transactions: [
+            '0f58644f28726159e833c2b4dbf7a46be2c0eb7f8d36c244bca765b05113880a',
+            '8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387',
+          ],
+          utxo: [
+            // I added this
+            {
+              block_id: -1, // TODO, this is not a real value but probably doesnt matter
+              transaction_hash: '8040382653ee766f6c82361c8a19b333702fbb3faabc87e7b5fa0d6c9b8aa387',
+              index: 1,
+              value: 41000,
+            },
+          ],
+        },
+      },
+      blockchairContext,
+    });
+
+  nock('https://bitcoinfees.earn.com')
+    .get('/api/v1/fees/recommended')
+    .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
+};
+
+// TODO: BG-23161 - replace smartbit block explorer which is now permanently down
+// eslint-disable-next-line no-unused-vars
+const smartBitNockBtcSegwitRecovery = function(bitgo) {
+  const env = Environments[bitgo.getEnv()] as any;
   // Nock all the external api calls that gather info about the wallet
   // We have lots of empty addresses, because the code queries for possible addresses in the wallet one by one
   const emptyAddrs = [
@@ -2832,7 +3383,177 @@ module.exports.nockBtcSegwitRecovery = function(bitgo) {
 };
 
 module.exports.nockBtcUnsignedRecovery = function(bitgo) {
-  const env = Environments[bitgo.getEnv()] as Environment;
+  const env = bitgo.getEnv() as any;
+  const emptyAddrs = [
+    '2NAmqGejm1YYiE8rUVanU8SsUkUxqJmKhT3',
+    '2MyVwQPE9sM16SCCRa2crUfC1t1bmk92aub',
+    '2N6iwcgjTmBZF9MXv32Fw2pkASmBxxPr4qB',
+    '2N2h5xreaUWTwqTZeeQ5wbWNhKTopRqKkSe',
+    '2NBRHTmnc1RCCnYeo6iS4SnBTVKnnf86vAV',
+    '2N6xcb27jLdCZSNegtZzUVKHHJynKiEfhQo',
+    '2N1jYERmv9Bpx9z123n3YF8Darepv8PU9tY',
+    '2N29zwEk5AbcCW2wUWZoxsqh8Tb39ymHGvu',
+    '2N2PppF9zw1jxM26VG89NjUA8bFWUPr8vjF',
+  ];
+  this.nockEmptyAddressInfo(emptyAddrs, env);
+
+  nock(BlockchairApi.getBaseUrl(env, 'bitcoin'))
+    .get('/dashboards/address/2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx')
+    .reply(200, {
+      data: {
+        '2N8cRxMypLRN3HV1ub3b9mu1bbBRYA4JTNx': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a914a88c9c8472b5facb5142062ec6b4d6a9fd5d2c7b87',
+            balance: 0,
+            balance_usd: 0,
+            received: 100000,
+            received_usd: 0,
+            spent: 100000,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 0,
+            first_seen_receiving: '2019-01-24 21:32:01',
+            last_seen_receiving: '2019-01-24 21:32:01',
+            first_seen_spending: '2019-01-24 22:59:05',
+            last_seen_spending: '2019-01-24 22:59:05',
+            scripthash_type: 'multisig_2_of_3',
+            transaction_count: 2,
+          },
+          transactions: [
+            'c4b15cf8d09a37d2361184cfa10678ea79a83f5455c78d69267238c8b351959e',
+            'a51944691864fdebd0af5fe0927cf15faeec4f99167dc4ed667939f39b182dfc',
+          ],
+          utxo: [],
+        },
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49')
+    .times(2)
+    .reply(200, {
+      data: {
+        '2MxZA7JFtNiQrET7JvywDisrZnKPEDAHf49': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9143a3ce0cea3510e6435823a7d3c5a7c3c27166f2d87',
+            balance: 100000,
+            balance_usd: 0,
+            received: 100000,
+            received_usd: 0,
+            spent: 100000,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 0,
+            first_seen_receiving: '2019-01-24 22:59:05',
+            last_seen_receiving: '2019-01-24 22:59:05',
+            first_seen_spending: '2019-01-24 23:46:50',
+            last_seen_spending: '2019-01-24 23:46:50',
+            scripthash_type: 'multisig_2_of_3',
+            transaction_count: 2,
+          },
+          transactions: [
+            'aec04f5ebdde076ea87d2ab320d95526ecc63590488f456b29c208001bc262f8',
+            '4bf4a792816cb4e25f0a4faea6ecb42ffd360bde293bfd8a4b6d2c255aa379f9',
+          ],
+          utxo: [
+            {
+              block_id: -1,
+              transaction_hash: '4bf4a792816cb4e25f0a4faea6ecb42ffd360bde293bfd8a4b6d2c255aa379f9',
+              index: 0,
+              value: 100000,
+            },
+          ],
+        },
+      },
+    })
+    .get('/dashboards/address/2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR')
+    .reply(200, {
+      data: {
+        '2MtHCVNaDed65jnq6YUN7qiHoef6xGDH4PR': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a9140b57b4f407249256f7b3fdf9450a94537664910687',
+            balance: 0,
+            balance_usd: 0,
+            received: 200000,
+            received_usd: 0,
+            spent: 200000,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 0,
+            first_seen_receiving: '2019-01-24 21:32:01',
+            last_seen_receiving: '2019-01-24 21:32:01',
+            first_seen_spending: '2019-01-24 22:59:05',
+            last_seen_spending: '2019-01-24 22:59:05',
+            scripthash_type: 'multisig_2_of_3',
+            transaction_count: 2,
+          },
+          transactions: [
+            'c4b15cf8d09a37d2361184cfa10678ea79a83f5455c78d69267238c8b351959e',
+            'ec4d4ea133a5c741fadc229a9df3734a2026ca40760e3d0af686ffdc647487e5',
+          ],
+          utxo: [
+            // fake value, this utxo doesn't reflect onchain state
+            {
+              block_id: -1,
+              transaction_hash: '4bf4a792816cb4e25f0a4faea6ecb42ffd360bde293bfd8a4b6d2c255aa379f9',
+              index: 0,
+              value: 100000,
+            },
+          ],
+        },
+      },
+      blockchairContext,
+    })
+    .get('/dashboards/address/2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z')
+    .times(2)
+    .reply(200, {
+      data: {
+        '2N6swovegiiYQZpDHR7yYxvoNj8WUBmau3z': {
+          address: {
+            type: 'scripthash',
+            script_hex: 'a914958b85440d676edba2e3262da080ad61252d1a0a87',
+            balance: 120000,
+            balance_usd: 0,
+            received: 120000,
+            received_usd: 0,
+            spent: 120000,
+            spent_usd: 0,
+            output_count: 1,
+            unspent_output_count: 0,
+            first_seen_receiving: '2019-01-24 22:59:05',
+            last_seen_receiving: '2019-01-24 22:59:05',
+            first_seen_spending: '2019-01-24 23:46:50',
+            last_seen_spending: '2019-01-24 23:46:50',
+            scripthash_type: 'multisig_2_of_3',
+            transaction_count: 2,
+          },
+          transactions: [
+            'aec04f5ebdde076ea87d2ab320d95526ecc63590488f456b29c208001bc262f8',
+            'a9192dea1de9c79f4b6d4a4eeaf70542bd4eaec37206aab799b893d61c76552e',
+          ],
+          utxo: [
+            {
+              block_id: -1,
+              transaction_hash: 'a9192dea1de9c79f4b6d4a4eeaf70542bd4eaec37206aab799b893d61c76552e',
+              index: 1,
+              value: 120000,
+            },
+          ],
+        },
+        blockchairContext,
+      },
+    });
+  nock('https://bitcoinfees.earn.com')
+    .get('/api/v1/fees/recommended')
+    .reply(200, { fastestFee: 20, halfHourFee: 20, hourFee: 6 });
+};
+
+// TODO: BG-23161 - replace smartbit block explorer which is now permanently down
+// eslint-disable-next-line no-unused-vars
+const smartBitNockBtcUnsignedRecovery = function(bitgo) {
+  const env = Environments[bitgo.getEnv()] as any;
   // Nock all the external api calls that gather info about the wallet
   // We have lots of empty addresses, because the code queries for possible addresses in the wallet one by one
   const emptyAddrs = [

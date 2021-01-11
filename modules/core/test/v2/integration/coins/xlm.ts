@@ -11,8 +11,8 @@ import * as nock from 'nock';
 describe('XLM:', function() {
   let bitgo: typeof TestBitGo;
   let basecoin: BaseCoin;
-  const uninitializedWallet = '5db9e854e6895ae1050ef414f9b8e0e9'; // wallet which has not been initialized on-chain
-  const initializedWallet = '5db9e8a736378852063fc715b5722751'; // wallet which has been correctly initialized on chain
+  const uninitializedWallet = '5f24525bf2501a0027c98eaa32ec62b3'; // wallet which has not been initialized on-chain
+  const initializedWallet = '5f24528f330faa0019763182d2e4f863'; // wallet which has been correctly initialized on chain
 
   before(co(function*() {
     nock.restore();

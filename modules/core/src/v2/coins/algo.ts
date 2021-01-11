@@ -4,6 +4,7 @@
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import * as stellar from 'stellar-sdk';
+import { CoinFamily } from '@bitgo/statics';
 import {
   NaclWrapper,
   Multisig,
@@ -20,7 +21,7 @@ import { BitGo } from '../../bitgo';
 
 import {
   BaseCoin,
-  TransactionExplanation,
+  TransactionExplanation as BaseTransactionExplanation,
   KeyPair,
   ParseTransactionOptions,
   ParsedTransaction,
@@ -30,11 +31,16 @@ import {
 } from '../baseCoin';
 import { KeyIndices } from '../keychains';
 import { NodeCallback } from '../types';
+import { SeedValidator } from '../internal/seedValidator';
 
 const co = Bluebird.coroutine;
 
-export interface TransactionExplanation extends TransactionExplanation {
+export interface TransactionExplanation extends BaseTransactionExplanation {
   memo: string;
+  type?: string;
+  senderAddress?: string;
+  voteKeyBase64?: string;
+  voteLastBlock?: number;
 }
 
 export interface SignTransactionOptions {
@@ -122,6 +128,14 @@ export class Algo extends BaseCoin {
   }
 
   /**
+   * Algorand supports account consolidations. These are transfers from the receive addresses
+   * to the main address.
+   */
+  allowsAccountConsolidations(): boolean {
+    return true;
+  }
+
+  /**
    * Generate ed25519 key pair
    *
    * @param seed
@@ -173,27 +187,32 @@ export class Algo extends BaseCoin {
    * @param key
    * @param message
    */
-  signMessage(key: KeyPair, message: string | Buffer): Buffer {
-    // key.prv actually holds the encoded seed, but we use the prv name to avoid breaking the keypair schema.
-    // See jsdoc comment in isValidPrv
-    let seed = key.prv;
-    if (!this.isValidPrv(seed)) {
-      throw new Error(`invalid seed: ${seed}`);
-    }
-    if (typeof seed === 'string') {
-      try {
-        seed = Seed.decode(seed).seed;
-      } catch (e) {
-        throw new Error(`could not decode seed: ${seed}`);
+  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    const self = this;
+    return co<Buffer>(function* cosignMessage() {
+      // key.prv actually holds the encoded seed, but we use the prv name to avoid breaking the keypair schema.
+      // See jsdoc comment in isValidPrv
+      let seed = key.prv;
+      if (!self.isValidPrv(seed)) {
+        throw new Error(`invalid seed: ${seed}`);
       }
-    }
-    const keyPair = generateAccountFromSeed(seed);
+      if (typeof seed === 'string') {
+        try {
+          seed = Seed.decode(seed).seed;
+        } catch (e) {
+          throw new Error(`could not decode seed: ${seed}`);
+        }
+      }
+      const keyPair = generateAccountFromSeed(seed);
 
-    if (!Buffer.isBuffer(message)) {
-      message = Buffer.from(message);
-    }
+      if (!Buffer.isBuffer(message)) {
+        message = Buffer.from(message);
+      }
 
-    return Buffer.from(NaclWrapper.sign(message, keyPair.sk));
+      return Buffer.from(NaclWrapper.sign(message, keyPair.sk));
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -219,7 +238,7 @@ export class Algo extends BaseCoin {
       if (!txHex) {
         throw new Error('missing required param txHex or halfSigned.txHex');
       }
-      let tx;
+      let tx, type, senderAddress, voteKeyBase64, voteLastBlock;
       try {
         const txToHex = Buffer.from(txHex, 'base64');
         const decodedTx = Encoding.decode(txToHex);
@@ -228,6 +247,12 @@ export class Algo extends BaseCoin {
         // if we are not signed, the decoded tx is the txn - refer to partialSignTxn and MultiSig constructor
         //   in algosdk for more information
         const txnForDecoding = decodedTx.txn || decodedTx;
+        if (!!txnForDecoding.votekey) {
+          type = txnForDecoding.type;
+          senderAddress = Address.encode(txnForDecoding.snd);
+          voteKeyBase64 = txnForDecoding.votekey.toString('base64');
+          voteLastBlock = txnForDecoding.votelst;
+        }
 
         tx = Multisig.MultiSigTransaction.from_obj_for_encoding(txnForDecoding);
       } catch (ex) {
@@ -250,7 +275,19 @@ export class Algo extends BaseCoin {
       const memo = tx.note;
 
       return {
-        displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'memo'],
+        displayOrder: [
+          'id',
+          'outputAmount',
+          'changeAmount',
+          'outputs',
+          'changeOutputs',
+          'fee',
+          'memo',
+          'type',
+          'senderAddress',
+          'voteKeyBase64',
+          'voteLastBlock',
+        ],
         id,
         outputs,
         outputAmount,
@@ -258,6 +295,10 @@ export class Algo extends BaseCoin {
         fee,
         changeOutputs: [],
         memo,
+        type,
+        senderAddress,
+        voteKeyBase64,
+        voteLastBlock,
       };
     })
       .call(this)
@@ -265,15 +306,20 @@ export class Algo extends BaseCoin {
   }
 
   isStellarSeed(seed: string): boolean {
-    return stellar.StrKey.isValidEd25519SecretSeed(seed);
+    return SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM);
   }
 
   convertFromStellarSeed(seed: string): string | null {
     // assume this is a trust custodial seed if its a valid ed25519 prv
-    if (!this.isStellarSeed(seed)) {
+    if (!this.isStellarSeed(seed) || SeedValidator.hasCompetingSeedFormats(seed)) {
       return null;
     }
-    return Seed.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
+
+    if (SeedValidator.isValidEd25519SeedForCoin(seed, CoinFamily.XLM)) {
+      return Seed.encode(stellar.StrKey.decodeEd25519SecretSeed(seed));
+    }
+
+    return null;
   }
 
   verifySignTransactionParams(params: SignTransactionOptions): VerifiedTransactionParameters {
@@ -332,44 +378,53 @@ export class Algo extends BaseCoin {
    * Assemble keychain and half-sign prebuilt transaction
    *
    * @param params
-   * @param params.txPrebuild {Object} prebuild object returned by platform
+   * @param params.txPrebuild {TransactionPrebuild} prebuild object returned by platform
    * @param params.prv {String} user prv
-   * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
+   * @param callback
+   * @returns {Bluebird<SignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions): SignedTransaction {
-    const { txHex, addressVersion, keys, sk, isHalfSigned } = this.verifySignTransactionParams(params);
-    const encodedPublicKeys = _.map(keys, k => Address.decode(k).publicKey);
+  signTransaction(
+    params: SignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    const self = this;
+    return co<SignedTransaction>(function*() {
+      const { txHex, addressVersion, keys, sk, isHalfSigned } = self.verifySignTransactionParams(params);
+      const encodedPublicKeys = _.map(keys, k => Address.decode(k).publicKey);
 
-    // decode our unsigned/half-signed tx
-    let transaction;
-    let txToHex;
-    try {
-      txToHex = Buffer.from(txHex, 'base64');
-      const initialDecodedTx = Encoding.decode(txToHex);
+      // decode our unsigned/half-signed tx
+      let transaction;
+      let txToHex;
+      try {
+        txToHex = Buffer.from(txHex, 'base64');
+        const initialDecodedTx = Encoding.decode(txToHex);
 
-      // we need to scrub the txn of sigs for half-signed
-      const decodedTx = isHalfSigned ? initialDecodedTx.txn : initialDecodedTx;
+        // we need to scrub the txn of sigs for half-signed
+        const decodedTx = isHalfSigned ? initialDecodedTx.txn : initialDecodedTx;
 
-      transaction = Multisig.MultiSigTransaction.from_obj_for_encoding(decodedTx);
-    } catch (e) {
-      throw new Error('transaction needs to be a valid tx encoded as base64 string');
-    }
+        transaction = Multisig.MultiSigTransaction.from_obj_for_encoding(decodedTx);
+      } catch (e) {
+        throw new Error('transaction needs to be a valid tx encoded as base64 string');
+      }
 
-    // sign our tx
-    let signed = transaction.partialSignTxn({ version: addressVersion, threshold: 2, pks: encodedPublicKeys }, sk);
+      // sign our tx
+      let signed = transaction.partialSignTxn({ version: addressVersion, threshold: 2, pks: encodedPublicKeys }, sk);
 
-    // if we have already signed it, we'll have to merge that with our previous tx
-    if (isHalfSigned) {
-      signed = mergeMultisigTransactions([Buffer.from(signed), txToHex]);
-    }
+      // if we have already signed it, we'll have to merge that with our previous tx
+      if (isHalfSigned) {
+        signed = mergeMultisigTransactions([Buffer.from(signed), txToHex]);
+      }
 
-    const signedBase64 = Buffer.from(signed).toString('base64');
+      const signedBase64 = Buffer.from(signed).toString('base64');
 
-    if (isHalfSigned) {
-      return { txHex: signedBase64 };
-    } else {
-      return { halfSigned: { txHex: signedBase64 } };
-    }
+      if (isHalfSigned) {
+        return { txHex: signedBase64 };
+      } else {
+        return { halfSigned: { txHex: signedBase64 } };
+      }
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   parseTransaction(

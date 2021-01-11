@@ -1,58 +1,61 @@
 export default {
-  validPayload: {
+  validPayloadWithFees: {
     payload: JSON.stringify({
-      version: '1.1.1',
+      version: '1.2.0',
       accountId: 'walletId',
-      currency: 'ofctbtc',
-      subtotal: '100000000',
-      fees: [
-        {
-          feeType: 'BITGO_SETTLEMENT_FEE',
-          feeAmount: '1000'
-        }
-      ],
-      amount: '100001000',
       nonceHold: 'bfrE8itPwYZB+ofDhblE6g==',
       nonceSettle: 'EymF2LXnRzn8acbcCFwgUA==',
-      otherParties: [
+      amounts: [
         {
-          accountId: 'test_counterparty_1',
-          currency: 'ofctusd',
-          amount: '10000'
+          accountId: 'walletId',
+          sendCurrency: 'ofctbtc',
+          sendSubtotal: '100000000',
+          sendAmount: '100500000',
+          receiveCurrency: 'ofctusd',
+          receiveAmount: '90000',
+          fees: [{
+            feeType: 'SETTLEMENT_FEE',
+            feeAmount: '500000',
+          }],
         },
         {
-          accountId: 'test_counterparty_2',
-          currency: 'ofctusd',
-          amount: '90000'
+          accountId: 'counterparty_account_id',
+          sendCurrency: 'ofctusd',
+          sendSubtotal: '90000',
+          sendAmount: '90000',
+          receiveCurrency: 'ofctbtc',
+          receiveAmount: '100000000',
         }
-      ]
+      ],
     })
   },
   invalidPayload: {
     payload: JSON.stringify({
-      version: '1.1.1',
+      version: '1.2.0',
       accountId: 'walletId',
-      currency: 'ofctbtc',
-      subtotal: '10000000000',
-      fees: [
-        {
-          feeType: 'BITGO_SETTLEMENT_FEE',
-          feeAmount: '1000'
-        }
-      ],
-      amount: '10000001000',
       nonceHold: 'bfrE8itPwYZB+ofDhblE6g==',
       nonceSettle: 'EymF2LXnRzn8acbcCFwgUA==',
-      otherParties: [
+      amounts: [
         {
-          accountId: 'test_counterparty_1',
-          currency: 'ofctusd',
-          amount: '0'
+          accountId: 'walletId',
+          sendCurrency: 'ofctbtc',
+          sendSubtotal: '100000010',
+          fees: [{
+            feeType: 'SETTLEMENT_FEE',
+            feeAmount: '500000',
+          }],
+          sendAmount: '100000000',
+          receiveCurrency: 'ofctusd',
+          receiveAmount: '90000',
+
         },
         {
-          accountId: 'test_counterparty_2',
-          currency: 'ofctusd',
-          amount: '0'
+          accountId: 'counterparty_account_id',
+          sendCurrency: 'ofctusd',
+          sendSubtotal: '90000',
+          sendAmount: '90000',
+          receiveCurrency: 'ofctbtc',
+          receiveAmount: '100000000',
         }
       ]
     })

@@ -8,7 +8,7 @@ import * as Bluebird from 'bluebird';
 const co = Bluebird.coroutine;
 import * as _ from 'lodash';
 import { BitGo } from '../bitgo';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { AbstractUtxoCoin } from './coins/abstractUtxoCoin';
 import { Ltc } from './coins/ltc';
 import { Wallet } from './wallet';
@@ -244,7 +244,7 @@ export class CrossChainRecoveryTool {
       self._log(`Finding unspents for these output addresses: ${outputAddresses.join(', ')}`);
 
       // Get unspents for addresses
-      const ADDRESS_UNSPENTS_URL = self.sourceCoin.url(`/public/addressUnspents/${outputAddresses.join(',')}`);
+      const ADDRESS_UNSPENTS_URL = self.sourceCoin.url(`/public/addressUnspents/${_.uniq(outputAddresses).join(',')}`);
       const addressRes = yield request.get(ADDRESS_UNSPENTS_URL);
       const unspents = addressRes.body;
 
@@ -317,8 +317,8 @@ export class CrossChainRecoveryTool {
 
         const [txHash, index] = unspent.id.split(':');
         const inputIndex = parseInt(index, 10);
-        let hash = new Buffer(txHash, 'hex');
-        hash = new Buffer(Array.prototype.reverse.call(hash));
+        let hash = Buffer.from(txHash, 'hex');
+        hash = Buffer.from(Array.prototype.reverse.call(hash));
 
         try {
           self.recoveryTx.addInput(hash, inputIndex);
@@ -476,7 +476,7 @@ export class CrossChainRecoveryTool {
       const prv: string = _.isString(params.prv) ? params.prv : yield self.getKeys(params.passphrase);
 
       const txPrebuild = { txHex: transactionHex, txInfo: self.txInfo };
-      self.halfSignedRecoveryTx = self.sourceCoin.signTransaction({ txPrebuild, prv });
+      self.halfSignedRecoveryTx = yield self.sourceCoin.signTransaction({ txPrebuild, prv });
 
       return self.halfSignedRecoveryTx;
     })

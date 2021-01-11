@@ -3,14 +3,15 @@
  */
 import { BitGo } from '../../bitgo';
 import { Bch } from './bch';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 const request = require('superagent');
 import * as Bluebird from 'bluebird';
 import { BaseCoin } from '../baseCoin';
-import { UtxoNetwork } from './abstractUtxoCoin';
+import { AddressInfo, UnspentInfo, UtxoNetwork } from './abstractUtxoCoin';
 const co = Bluebird.coroutine;
 import * as common from '../../common';
 import * as errors from '../../errors';
+import { BlockchairApi } from '../recovery/blockchairApi';
 
 export class Bsv extends Bch {
   constructor(bitgo: BitGo, network?: UtxoNetwork) {
@@ -47,31 +48,13 @@ export class Bsv extends Bch {
     return common.Environments[this.bitgo.getEnv()].bsvExplorerBaseUrl + url;
   }
 
-  getAddressInfoFromExplorer(addressBase58: string): Bluebird<any> {
-    const self = this;
-    return co(function* getAddressInfoFromExplorer() {
-      // TODO BG-9989: Update this method with the correct API route and parsing once we have one
-      const addrInfo = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}`)).result();
-
-      addrInfo.txCount = addrInfo.txApperances;
-      addrInfo.totalBalance = addrInfo.balanceSat;
-
-      return addrInfo;
-    }).call(this);
+  getAddressInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<AddressInfo> {
+    const explorer = new BlockchairApi(this.bitgo, 'bitcoin-sv', apiKey);
+    return Bluebird.resolve(explorer.getAccountInfo(addressBase58));
   }
 
-  getUnspentInfoFromExplorer(addressBase58: string): Bluebird<any> {
-    const self = this;
-    return co(function* getUnspentInfoFromExplorer() {
-      // TODO BG-9989: Update this method with the correct API route and parsing once we have one
-      const unspents = yield request.get(self.recoveryBlockchainExplorerUrl(`/addr/${addressBase58}/utxo`)).result();
-
-      unspents.forEach(function processUnspent(unspent) {
-        unspent.amount = unspent.satoshis;
-        unspent.n = unspent.vout;
-      });
-
-      return unspents;
-    }).call(this);
+  getUnspentInfoFromExplorer(addressBase58: string, apiKey?: string): Bluebird<UnspentInfo[]> {
+    const explorer = new BlockchairApi(this.bitgo, 'bitcoin-sv', apiKey);
+    return Bluebird.resolve(explorer.getUnspents(addressBase58));
   }
 }

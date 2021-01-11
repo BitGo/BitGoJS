@@ -7,7 +7,9 @@
 export class BitGoJsError extends Error {
   public constructor(message?: string) {
     super(message);
-    Error.captureStackTrace(this, this.constructor);
+    if (typeof Error.captureStackTrace === 'function') {
+      Error.captureStackTrace(this);
+    }
     Object.setPrototypeOf(this, BitGoJsError.prototype);
   }
 }
@@ -28,7 +30,7 @@ export class NodeEnvironmentError extends BitGoJsError {
 
 export class UnsupportedCoinError extends BitGoJsError {
   public constructor(coin: string) {
-    super(`Coin or token type ${coin} not supported or not compiled`);
+    super(`Coin or token type ${coin} not supported or not compiled. Please be sure that you are using the latest version of BitGoJS.`);
     Object.setPrototypeOf(this, UnsupportedCoinError.prototype);
   }
 }
@@ -103,6 +105,13 @@ export class MethodNotImplementedError extends BitGoJsError {
   }
 }
 
+export class BlockExplorerUnavailable extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'third-party blockexplorer not responding');
+    Object.setPrototypeOf(this, BlockExplorerUnavailable.prototype);
+  }
+}
+
 export class InvalidMemoIdError extends InvalidAddressError {
   public constructor(message?: string) {
     super(message || 'invalid memo id');
@@ -135,5 +144,19 @@ export class StellarFederationUserNotFoundError extends BitGoJsError {
   public constructor(message?: string) {
     super(message || 'account not found');
     Object.setPrototypeOf(this, StellarFederationUserNotFoundError.prototype);
+  }
+}
+
+export class ErrorNoInputToRecover extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'No input to recover - aborting!');
+    Object.setPrototypeOf(this, ErrorNoInputToRecover.prototype);
+  }
+}
+
+export class InvalidKeyPathError extends BitGoJsError {
+  public constructor(keyPath: string) {
+    super(`invalid keypath: ${keyPath}`);
+    Object.setPrototypeOf(this, InvalidKeyPathError.prototype);
   }
 }

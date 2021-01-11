@@ -1,6 +1,5 @@
 /**
  * @prettier
- * @hidden
  */
 /**
  * Represents a single trade to be settled as part of a settlement. Only off-chain (OFC) currencies are supported, and
@@ -17,6 +16,10 @@ export interface Trade {
   quoteAmount: string;
   baseCurrency: string;
   quoteCurrency: string;
+  baseReceiveAmount?: string;
+  quoteReceiveAmount?: string;
+  baseReceiveCurrency?: string;
+  quoteReceiveCurrency?: string;
   costBasis: string;
   costBasisCurrency: string;
 }

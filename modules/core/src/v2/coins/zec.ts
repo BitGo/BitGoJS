@@ -1,4 +1,4 @@
-import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
 import * as request from 'superagent';
 import { BitGo } from '../../bitgo';
@@ -11,6 +11,7 @@ const co = Bluebird.coroutine;
 export interface ZecTransactionBuilder {
   setVersion: (number) => void;
   setVersionGroupId: (number) => void;
+  setConsensusBranchId: (number) => void;
 }
 
 export class Zec extends AbstractUtxoCoin {
@@ -50,6 +51,9 @@ export class Zec extends AbstractUtxoCoin {
   prepareTransactionBuilder(txBuilder: ZecTransactionBuilder): any {
     txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
     txBuilder.setVersionGroupId(0x892f2085);
+    // Use "Canopy" consensus branch https://zips.z.cash/zip-0251
+    // https://bitgoinc.atlassian.net/browse/BG-26072
+    txBuilder.setConsensusBranchId(0xe9ff75a6);
     return txBuilder;
   }
 

@@ -8,7 +8,7 @@ if ! git diff-index --quiet HEAD; then
     git diff
     git add package-lock.json
     echo "=== PREPARE TO TAP YUBIKEY ==="
-    git commit -m "Update SDK to bitgo@$VERSION"
+    git commit -m "chore(express): update sdk to bitgo@$VERSION"
     npm ci
     npm run unit-test
     npm run integration-test

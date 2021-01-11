@@ -5,7 +5,7 @@ const co = Promise.coroutine;
 import * as _ from 'lodash';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import { Wallet } from '../../../../src/v2/wallet';
-const bitGoUtxoLib = require('bitgo-utxo-lib');
+const bitGoUtxoLib = require('@bitgo/utxo-lib');
 
 describe('ZEC:', function() {
   let bitgo;
@@ -118,6 +118,10 @@ describe('ZEC:', function() {
         tx.overwintered = 1;
         tx.versionGroupId = 0x03C48270;
 
+        // Individual private keys derived from keychains above at chain=1 and index=113
+        // key0WIF:  cUkLnuyeKgsEaFjtXqK2yhZwzrstTftHHtqMtw4pts8iKqwj3wd8
+        // key2WIF:  cNGJM3pSFpCKvnXPa8RBx58BQdoUgQ5YkVP2mVyLSU5c5tNocY7k
+
         const prebuild = {
           txHex: tx.toHex(),
           txInfo: {
@@ -132,6 +136,10 @@ describe('ZEC:', function() {
           }
         };
 
+        // zcash testnet full node commands used with private keys and unspent above to generate test vectors:
+        // $ zcash-cli createrawtransaction '[{"txid":"8047839532dcfec617661120e1baa0e3b9135662ac8e1f97561e500d430dccb1","vout":0}]' '{"t2HPJLxLLXLbKkfQngpwhZCGKAhHuqyqPk4":2.9995}' 0 0
+        // $ zcash-cli  --conf=/data/zcashd.conf signrawtransaction 0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc32958347800000000000ffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000 '[{"txid":"8047839532dcfec617661120e1baa0e3b9135662ac8e1f97561e500d430dccb1", "vout":0,"scriptPubKey":"a91443457880e5e29555d6ad16bc82ef53891d6512b087","redeemScript":"522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae","amount":3}]' '["cUkLnuyeKgsEaFjtXqK2yhZwzrstTftHHtqMtw4pts8iKqwj3wd8"]'
+
         const wallet = new Wallet(bitgo, testCoin, {});
         const halfSigned = yield wallet.signTransaction({
           txPrebuild: prebuild,
@@ -143,7 +151,9 @@ describe('ZEC:', function() {
         halfSignedTx.versionGroupId.should.equal(2301567109);
         halfSignedTx.overwintered.should.equal(1);
         halfSignedTx.expiryHeight.should.equal(0);
-        halfSigned.txHex.should.equal('0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000b60047304402204abc6d5d5be27e20015d23e0ba120a5c74f1a96c19eb57a2bb65aec5075735ac022027b5178fe72ffc2ad6b580bea8aa311c1042eb8f20e6bfb3663ce0adf47114a30100004c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000');
+        halfSigned.txHex.should.equal('0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000b600473044022045a9e50e154fbd696fde1b422309b7d32d73f5bf5467c6ef1066e17de4a497bd0220593cecd9e91e545470d77ff7eb932449b42f61d1a10cad7d3d8c20b76da6e7ac0100004c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000');
+
+        // $ zcash-cli  --conf=/data/zcashd.conf signrawtransaction 0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000b400473044022045a9e50e154fbd696fde1b422309b7d32d73f5bf5467c6ef1066e17de4a497bd0220593cecd9e91e545470d77ff7eb932449b42f61d1a10cad7d3d8c20b76da6e7ac014c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000 '[{"txid":"8047839532dcfec617661120e1baa0e3b9135662ac8e1f97561e500d430dccb1", "vout":0,"scriptPubKey":"a91443457880e5e29555d6ad16bc82ef53891d6512b087","redeemScript":"522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753ae","amount":3}]' '["cNGJM3pSFpCKvnXPa8RBx58BQdoUgQ5YkVP2mVyLSU5c5tNocY7k"]'
 
         const halfSignedPrebuild = _.extend({}, prebuild, halfSigned);
         const fullySigned = yield wallet.signTransaction({
@@ -157,9 +167,9 @@ describe('ZEC:', function() {
         fullySignedTx.versionGroupId.should.equal(2301567109);
         fullySignedTx.overwintered.should.equal(1);
         fullySignedTx.expiryHeight.should.equal(0);
-        fullySignedTx.getId().should.equal('d63de6739df4f8578b422a3b102eb7f132b917f939f5219736ac998c9c63ff86');
+        fullySignedTx.getId().should.equal('0e9563728f7595a664c02b305772898149c75c03ef462f2cbc4464476b4dcdc9');
 
-        fullySigned.txHex.should.equal('0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000fdfd000047304402204abc6d5d5be27e20015d23e0ba120a5c74f1a96c19eb57a2bb65aec5075735ac022027b5178fe72ffc2ad6b580bea8aa311c1042eb8f20e6bfb3663ce0adf47114a301483045022100bb46402ab190b79e8e701009713b875b06080997dff7e7564394faa1b625da17022058608341c3d10ece359226f6397f2e9f241cce01ba4395abd74cdf17556eaeae014c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000');
+        fullySigned.txHex.should.equal('0400008085202f8901b1cc0d430d501e56971f8eac625613b9e3a0bae120116617c6fedc329583478000000000fc00473044022045a9e50e154fbd696fde1b422309b7d32d73f5bf5467c6ef1066e17de4a497bd0220593cecd9e91e545470d77ff7eb932449b42f61d1a10cad7d3d8c20b76da6e7ac01473044022026b3ebe39a8866d10c4a349a1fb73893d434bf851af552136a98f5a969077c4102207f6d439d37ecefec3c98da1a4f1f9eaaf280243b90708f7043e463734169217f014c69522103dc94182103c93690c2bca3fe013c19c956b940645b11b0a752e0e56b156bf4e22103b5f4aa0348bf339400ed7e16c6e960a4a46a1ea4c4cbe21abf6d0403161dc4f22103706ff6b11a8d9e3d63a455788d5d96738929ca642f1f3d8f9acedb689e759f3753aeffffffff01b0dfe0110000000017a91476dce7beb23d0e0d53edf5895716d4c80dce60938700000000000000000000000000000000000000');
       }));
     });
   });

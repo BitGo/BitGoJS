@@ -1,5 +1,5 @@
 import * as Promise from 'bluebird';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as algosdk from 'algosdk';
 import 'should';
 
@@ -30,7 +30,7 @@ describe('ALGO:', function() {
   });
 
   it('should generate a keypair from seed', function() {
-    const seed = crypto.randomBytes(32);
+    const seed = randomBytes(32);
     const keyPair = basecoin.generateKeyPair(seed);
     keyPair.should.have.property('pub');
     keyPair.should.have.property('prv');
@@ -61,13 +61,13 @@ describe('ALGO:', function() {
     basecoin.isValidPrv('UMYEHZ2NNBYX43CU37LMINSHR362FT4GFVWL6V5IHPRCJVPZ46H6CBYLYX').should.equal(false);
   });
 
-  it('should sign message', function() {
+  it('should sign message', co(function *() {
     const keyPair = basecoin.generateKeyPair();
     const message = Buffer.from('message');
-    const signature = basecoin.signMessage(keyPair, message);
+    const signature = yield basecoin.signMessage(keyPair, message);
     const pub = algosdk.Address.decode(keyPair.pub).publicKey;
     algosdk.NaclWrapper.verify(message, signature, pub).should.equal(true);
-  });
+  }));
 
   it('should validate a stellar seed', function() {
     basecoin.isStellarSeed('SBMWLNV75BPI2VB4G27RWOMABVRTSSF7352CCYGVELZDSHCXWCYFKXIX').should.ok();
@@ -93,7 +93,7 @@ describe('ALGO:', function() {
       const halfSignedTransaction = yield wallet.signTransaction({
         txPrebuild: {
           txHex: fixtures.buildTxBase64,
-          keys: [ fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub ],
+          keys: [fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub],
           addressVersion: 1,
         },
         prv: fixtures.userKeychain.prv,
@@ -108,7 +108,7 @@ describe('ALGO:', function() {
           halfSigned: {
             txHex: fixtures.signedTxBase64,
           },
-          keys: [ fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub ],
+          keys: [fixtures.userKeychain.pub, fixtures.backupKeychain.pub, fixtures.bitgoKeychain.pub],
           addressVersion: 1,
         },
         prv: fixtures.backupKeychain.prv,

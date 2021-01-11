@@ -103,4 +103,13 @@ To build the project (from TypeScript to Javascript):
 $ npm run build
 ```
 
-This builds the Javascript and adds it to `dist/src/`. There aren't any tests, but you will receive compilation errors if you have invalid syntax.
+This builds the Javascript and adds it to `dist/src/`. You will receive compilation errors if you have invalid syntax.
+
+
+## Tests
+
+To run tests:
+
+```
+$ npm run test
+```

@@ -279,7 +279,8 @@ describe('BitGo', function() {
       });
     });
 
-    describe('labels', function() {
+    // TODO: BG-19631
+    xdescribe('labels', function() {
       // ensure that we have at least one label created on two of this user's wallets
       before(function() {
         return bitgo.wallets().get({ id: TestBitGo.TEST_WALLET1_ADDRESS })
@@ -291,7 +292,10 @@ describe('BitGo', function() {
         })
         .then(function(wallet3) {
           return wallet3.setLabel({ label: 'testLabel3', address: TestBitGo.TEST_WALLET3_ADDRESS2 });
-        });
+        })
+          .then(function(Res) {
+            console.log(Res);
+          });
       });
 
       it('success', function(done) {

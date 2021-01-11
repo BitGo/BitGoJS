@@ -5,10 +5,25 @@
 import * as should from 'should';
 import { coroutine as co } from 'bluebird';
 import * as nock from 'nock';
+import { Bcha } from '../../../src/v2/coins/bcha';
+import { RecoveryAccountData } from '../../../src/v2/recovery/types';
 
 import { TestBitGo } from '../../lib/test_bitgo';
 const recoveryNocks = require('../lib/recovery-nocks');
 import * as config from '../../../src/config';
+import moment = require('moment');
+import * as sinon from 'sinon';
+import { Btc } from '../../../src/v2/coins/btc';
+import { Bsv } from '../../../src/v2/coins/bsv';
+import { Bch } from '../../../src/v2/coins/bch';
+import {
+  addressInfos,
+  addressUnspents,
+  btcKrsRecoveryDecodedTx,
+  btcNonKrsRecoveryDecodedTx,
+  emptyAddressInfo,
+} from '../fixtures/coins/recovery';
+import { nockCoingecko } from '../lib/recovery-nocks';
 
 nock.disableNetConnect();
 
@@ -20,10 +35,12 @@ describe('Recovery:', function() {
     bitgo.initializeTestVars();
 
     // pretend that Keyternal accepts recoveries for all coins
-    config.krsProviders.keyternal.supportedCoins = ['btc', 'eth', 'xrp', 'bch', 'ltc', 'zec', 'dash', 'xlm'];
+    config.krsProviders.keyternal.supportedCoins = ['btc', 'eth', 'xrp', 'bch', 'bcha', 'ltc', 'zec', 'dash', 'xlm', 'bsv'];
     (config.krsProviders.keyternal.feeAddresses as any) = {
       tbtc: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
       tbch: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
+      tbsv: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
+      tbcha: '2Mujz9eicmgpPcdScRJTywVK3EQNHDJG3yN',
       tltc: 'QffXMViM8DYgPRf1Hoczjw7BS5CVdSWaBL',
       tzec: 't2ATLAhBP1uTuyiWs5DY5CPH1VuYkGUindt',
       tdash: '8euHug4dbmPy3CLawwWdeTjGLqPYEGz3Kt'
@@ -35,9 +52,26 @@ describe('Recovery:', function() {
   });
 
   describe('Recover Bitcoin', function() {
-    it('should generate BTC recovery tx', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, false);
+    let sandbox: sinon.SinonSandbox;
 
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+      recoveryNocks.nockbitcoinFees(600, 600, 100);
+      const callBack1 = sandbox.stub(Btc.prototype, 'getAddressInfoFromExplorer');
+      callBack1.resolves(emptyAddressInfo);
+      callBack1.withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw').resolves(addressInfos['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']);
+      const callBack2 = sandbox.stub(Btc.prototype, 'getUnspentInfoFromExplorer');
+      callBack2.withArgs('2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw').resolves([addressUnspents['2MzLAGkQVaDiW2Dbm22ETf4ePyLUcDroqdw']]);
+      callBack2.resolves([]);
+
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('should generate BTC recovery tx', co(function *() {
+      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
@@ -48,7 +82,6 @@ describe('Recovery:', function() {
         scan: 5,
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       });
-
       recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
       recovery.tx.TxId.should.equal('7cf7dc9e9abcb0bc4303332b128af4200b6b3730461a3bb579143b002739f51f');
       recovery.tx.Vin.length.should.equal(1);
@@ -67,9 +100,8 @@ describe('Recovery:', function() {
       recovery.tx.Vout[0].ScriptPubKey.Addresses[0].should.equal('2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw');
     }));
 
-    it('should generate BTC recovery tx with unencrypted keys', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, false);
-
+    it('should generate BTC recovery tx with unencrypted keys', co(function* () {
+      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcNonKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
         userKey: 'xprv9s21ZrQH143K44auQTYjyFpU8aGEpbsbcU5yGjbwfyKpbBpvHPhUHEu3QR6G74rLPyM9ucop7oyXtKYDrjNkU8YeSryQbKU476ijp2qWcBm',
@@ -99,8 +131,8 @@ describe('Recovery:', function() {
     }));
 
     it('should generate BTC recovery tx with KRS', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, true);
-
+      recoveryNocks.nockCoingecko(10000, 'bitcoin');
+      sandbox.stub(Btc.prototype, 'verifyRecoveryTransaction').resolves(btcKrsRecoveryDecodedTx.transaction);
       const basecoin = bitgo.coin('tbtc');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
@@ -140,8 +172,6 @@ describe('Recovery:', function() {
     }));
 
     it('should fail to generate a recovery tx if the KRS provider does not support the coin', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, true);
-
       const oldSupportedCoins = config.krsProviders.keyternal.supportedCoins;
       config.krsProviders.keyternal.supportedCoins = [];
 
@@ -161,8 +191,7 @@ describe('Recovery:', function() {
     }));
 
     it('should fail to generate a recovery tx if the fee address is not specified', co(function *() {
-      recoveryNocks.nockBtcRecovery(bitgo, true);
-
+      recoveryNocks.nockCoingecko(10000, 'bitcoin');
       const oldAddress = (config.krsProviders.keyternal.feeAddresses as any).tbtc;
       delete (config.krsProviders.keyternal.feeAddresses as any).tbtc;
 
@@ -180,20 +209,85 @@ describe('Recovery:', function() {
 
       (config.krsProviders.keyternal.feeAddresses as any).tbtc = oldAddress;
     }));
+
+    it('should not throw if smartbit fails to response to request to verifyreoverytransaction', co (function *() {
+      const basecoin = bitgo.coin('tbtc');
+      const recovery = yield basecoin.recover({
+        userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
+        backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
+        bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
+        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        scan: 5,
+        ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
+      });
+      recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
+    }));
+
+    it('should allow the provision of an API key while doing recovery', co (function *() {
+      const basecoin = bitgo.coin('tbtc');
+      const recovery = yield basecoin.recover({
+        userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
+        backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
+        bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
+        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        scan: 5,
+        ignoreAddressTypes: ['p2wsh', 'p2shP2wsh'],
+        apiKey: 'my_______SecretApiKey',
+      });
+      recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
+    }));
+
+    it('should not throw if earn.com (bitcoinfees) fails to response to request to verifyreoverytransaction', co(function* () {
+      nock.removeInterceptor({
+        hostname: 'bitcoinfees.earn.com',
+        path: '/api/v1/fees/recommended',
+        method: 'GET',
+        proto: 'https',
+      });
+      recoveryNocks.nockbitcoinFeesOffline();
+      const basecoin = bitgo.coin('tbtc');
+      const recovery = yield basecoin.recover({
+        userKey: '{"iv":"fTcRIg7nlCf9fPSR4ID8XQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"pkIS5jVDi0Y=","ct":"SJQgP+ZzfOMf2fWxyQ2jpoWYioq6Tqfcw1xiKS1WpWAxLvXfH059sZvPrrYMdijJEbqA8EEaYXWmdgYSkMXdwckRMyvM3uWl9H8iKw1ZJmHyy2eDSy5r/pCtWICkcO3oi2I492I/3Op2YLfIX6XqKWs2mztu/OY="}',
+        backupKey: '{"iv":"0WkLaOsnO3M7qnV2DbSvWw==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"lGxBnvlGAoM=","ct":"cBalT6MGZ3TYIYHt4jys0WDTZEKK9qIubltKEqfW4zXtxYd1dYLz9qLve/yXPl7NF5Cb1lBNGBBGsfqzvpr0Q5824xiy5i9IKzRBI/69HIt3fC2RjJKDfB1EZUjoozi2O5FH4K7L6Ejq7qZhvi8iOd1ULVpBgnE="}',
+        bitgoKey: 'xpub661MyMwAqRbcGsSbYgWmr9G1dFgPE8HEb1ASRShbw9S1Mmu1dTQ7QStNwpaYFESq3MeKivGidN8twMeJzqh1veuSP1t2XLENL3mwpatfTst',
+        walletPassphrase: TestBitGo.V2.TEST_WALLET1_PASSCODE,
+        recoveryDestination: '2NB5Ynem6iNvA6GBLZwRxwid3Kui33729Nw',
+        scan: 5,
+        ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
+      });
+      recovery.transactionHex.should.equal('010000000174eda73749d65473a8197bac5c26660c66d60cc77a751298ef74931a478382e100000000fdfd00004730440220513ff3a0a4d72230a7ca9b1285d5fa19669d7cccef6a9c8408b06da666f4c51f022058e8cc58b9f9ca585c37a8353d87d0ab042ac081ebfcea86fda0da1b33bf474701483045022100e27c00394553513803e56e6623e06614cf053834a27ca925ed9727071d4411380220399ab1a0269e84beb4e8602fea3d617ffb0b649515892d470061a64217bad613014c69522102f5ca5d074093abf996278d1e82b64497333254c786e9a69d34909a785aa9af32210239125d1a21ba8ae375cd37a92e48700cbb3bc1b1268d3c3f7e1d95f42155e1a821031ab00568ea1522a55f277699110649f3b8d08022494af2cc475c09e8a43b3a3a53aeffffffff012c717b000000000017a914c39dcc27823a8bd42cd3318a1dac8c25789b7ac78700000000');
+    }));
   });
+  describe('Recover Bitcoin SV', function() {
+    let sandbox: sinon.SinonSandbox;
 
-  describe('Recover Bitcoin Cash', function() {
-    // Todo (kevin): fix test for other recovery source
-    it('should generate BCH recovery tx', co(function *() {
-      recoveryNocks.nockBchRecovery(bitgo, false);
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+      recoveryNocks.nockbitcoinFees(600, 600, 100);
+      const callBack1 = sandbox.stub(Bsv.prototype, 'getAddressInfoFromExplorer');
+      callBack1.resolves(emptyAddressInfo);
+      callBack1.withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN').resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
+      callBack1.withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT').resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
+      const callBack2 = sandbox.stub(Bsv.prototype, 'getUnspentInfoFromExplorer');
+      callBack2.withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT').resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
+      callBack2.resolves([]);
 
-      const basecoin = bitgo.coin('tbch');
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it('should generate BSV recovery tx', co(function *() {
+      const basecoin = bitgo.coin('tbsv');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
         backupKey: '{"iv":"JG0lyUpjHs7k2UVN9ox31w==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-        ':"ccm","adata":"","cipher":"aes","salt":"kEdza1Fy82E=","ct":"54fBDIs7EWVUp1\n' +
-        '6slxuM6nQsLJCrwgxXB3lzS6GMbAptVtHSDPURUnZnbRYl0CN9LnNGZEqfl7w4GbCbDeCe2IvyZ\n' +
-        'dgeFCVPRYiAL/0VZeC97/pAkP4tuybqho0XELLyrYOgwgGAtoqYs5gqmfexu8R/9wEp2iI="}\n',
+          ':"ccm","adata":"","cipher":"aes","salt":"kEdza1Fy82E=","ct":"54fBDIs7EWVUp1\n' +
+          '6slxuM6nQsLJCrwgxXB3lzS6GMbAptVtHSDPURUnZnbRYl0CN9LnNGZEqfl7w4GbCbDeCe2IvyZ\n' +
+          'dgeFCVPRYiAL/0VZeC97/pAkP4tuybqho0XELLyrYOgwgGAtoqYs5gqmfexu8R/9wEp2iI="}\n',
         bitgoKey: 'xpub661MyMwAqRbcFwmW1HYESGP4x6tKWhYCgSK3J9T3y1eaLXkGszcbBSd4h4tM6Nt17JkcZV768RWHYrqjeEpyYabj2gv9XtdNJyww4LnJZVK',
         walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         recoveryDestination: '2MztSo6jqjLWcvH4g6QoMChbrWkJ3HHzQua',
@@ -211,10 +305,9 @@ describe('Recovery:', function() {
       recovery.inputs[0].redeemScript.should.equal('522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453ae');
     }));
 
-    it('should generate BCH recovery tx with KRS', co(function *() {
-      recoveryNocks.nockBchRecovery(bitgo, true);
-
-      const basecoin = bitgo.coin('tbch');
+    it('should generate BSV recovery tx with KRS', co(function *() {
+      nockCoingecko(1000,'bitcoin-cash');
+      const basecoin = bitgo.coin('tbsv');
       const recovery = yield basecoin.recover({
         userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
         backupKey: 'xpub661MyMwAqRbcGMSGJsrhpqUhvCQqMUvwshCLfPDXrweN15ce8g96WbfdrDbhKKDx9pwKz9yenwexTFx7ofDchmT2zJZW8eshGKWKwrJrkNp',
@@ -235,6 +328,93 @@ describe('Recovery:', function() {
       recovery.inputs[0].should.have.property('redeemScript');
       recovery.inputs[0].redeemScript.should.equal('522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453ae');
     }));
+  });
+
+  describe('Recover Bitcoin Cash And Bitcoin ABC (BCHA)', function() {
+    // Todo (kevin): fix test for other recovery source
+    for (const coinName of ['tbch', 'tbcha']) {
+      let sandbox: sinon.SinonSandbox;
+      beforeEach(() => {
+        if (coinName === 'tbch') {
+          nockCoingecko(1000,'bitcoin-cash');
+          sandbox = sinon.createSandbox();
+          const callBack1 = sandbox.stub(Bch.prototype, 'getAddressInfoFromExplorer');
+          callBack1.resolves(emptyAddressInfo);
+          callBack1.withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN').resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
+          callBack1.withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT').resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
+          const callBack2 = sandbox.stub(Bch.prototype, 'getUnspentInfoFromExplorer');
+          callBack2.withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT').resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
+          callBack2.resolves([]);
+        } else {
+          nockCoingecko(1000, 'bitcoin-cash');
+          sandbox = sinon.createSandbox();
+          const callBack1bcha = sandbox.stub(Bcha.prototype, 'getAddressInfoFromExplorer');
+          callBack1bcha.resolves(emptyAddressInfo);
+          callBack1bcha.withArgs('2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN', 'myKey').resolves(addressInfos['2NEXK4AjYnUCkdUDJQgbbEGGks5pjkfhcRN']);
+          callBack1bcha.withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT', 'myKey').resolves(addressInfos['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']);
+          const callBack2bcha = sandbox.stub(Bcha.prototype, 'getUnspentInfoFromExplorer');
+          callBack2bcha.withArgs('2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT', 'myKey').resolves([addressUnspents['2N3XcQGSrdZPDwj6z3tu3iaA3msrdzVoPXT']]);
+          callBack2bcha.resolves([]);
+        }
+      });
+
+      afterEach(() => {
+        sandbox.restore();
+      });
+
+      it(`should generate recovery tx for ${coinName}`, co(function *() {
+        const basecoin = bitgo.coin(coinName);
+        const recovery = yield basecoin.recover({
+          userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
+          backupKey: '{"iv":"JG0lyUpjHs7k2UVN9ox31w==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+            ':"ccm","adata":"","cipher":"aes","salt":"kEdza1Fy82E=","ct":"54fBDIs7EWVUp1\n' +
+            '6slxuM6nQsLJCrwgxXB3lzS6GMbAptVtHSDPURUnZnbRYl0CN9LnNGZEqfl7w4GbCbDeCe2IvyZ\n' +
+            'dgeFCVPRYiAL/0VZeC97/pAkP4tuybqho0XELLyrYOgwgGAtoqYs5gqmfexu8R/9wEp2iI="}\n',
+          bitgoKey: 'xpub661MyMwAqRbcFwmW1HYESGP4x6tKWhYCgSK3J9T3y1eaLXkGszcbBSd4h4tM6Nt17JkcZV768RWHYrqjeEpyYabj2gv9XtdNJyww4LnJZVK',
+          walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+          recoveryDestination: '2MztSo6jqjLWcvH4g6QoMChbrWkJ3HHzQua',
+          scan: 5,
+          ignoreAddressTypes: ['p2wsh', 'p2shP2wsh'],
+          apiKey: 'myKey',
+        });
+
+        should.exist(recovery);
+        recovery.transactionHex.should.equal('02000000015a3319949e2a3741bbb062f63543f4327db3ce47d26eb3adb4bcdc31fbe8a6df00000000fc004730440220228be29971b67a9f60191a59a417fdb05208d40611d6413d3ea36eaedf8cbd060220677b5cfed4f3cc5005f9e4310bff76c8b40aacba632e681527aaebad529debe04147304402202abe3f2b32da44e8103c6b0aef9c2506f7f4ecdbbca2529dc5c76b3976b1ba3202206141148c87b4a657b5a597de287ede78ea3d57b9425013230ef03966c9622412414c69522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453aeffffffff01faec85470000000017a91453d2f642f1e40f888ba0ef57c359983ccfd40f908700000000');
+        recovery.should.have.property('inputs');
+        recovery.inputs.length.should.equal(1);
+        recovery.inputs[0].should.have.property('chainPath');
+        recovery.inputs[0].chainPath.should.equal('/0/0/1/1');
+        recovery.inputs[0].should.have.property('redeemScript');
+        recovery.inputs[0].redeemScript.should.equal('522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453ae');
+      }));
+
+      it(`should generate ${coinName} recovery tx with KRS`, co(function *() {
+
+        const basecoin = bitgo.coin(coinName);
+        const recovery = yield basecoin.recover({
+          userKey: '{"iv":"A3HVSDow6/GjbU8ZUlq5GA==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"D1V4aD1HVto=","ct":"C5c0uFBH6BuB11ikKnso9zaTpZbdk1I7c3GwVHdoOj2iEMl2jfKq30K0fL3pKueyQ5S412a+kbeDC0/IiZAE2sDIZt4HQQ91ivGE6bRS/PJ9Pv4E2y44plH05YTNPdz9bZhf2NCvSve5+TPS4iZuptOeO2lXE1w="}',
+          backupKey: 'xpub661MyMwAqRbcGMSGJsrhpqUhvCQqMUvwshCLfPDXrweN15ce8g96WbfdrDbhKKDx9pwKz9yenwexTFx7ofDchmT2zJZW8eshGKWKwrJrkNp',
+          bitgoKey: 'xpub661MyMwAqRbcFwmW1HYESGP4x6tKWhYCgSK3J9T3y1eaLXkGszcbBSd4h4tM6Nt17JkcZV768RWHYrqjeEpyYabj2gv9XtdNJyww4LnJZVK',
+          walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+          krsProvider: 'keyternal',
+          recoveryDestination: '2MztSo6jqjLWcvH4g6QoMChbrWkJ3HHzQua',
+          scan: 5,
+          ignoreAddressTypes: ['p2wsh', 'p2shP2wsh'],
+          apiKey: "myKey",
+        });
+
+        should.exist(recovery);
+        recovery.transactionHex.should.equal('02000000015a3319949e2a3741bbb062f63543f4327db3ce47d26eb3adb4bcdc31fbe8a6df00000000b500483045022100c5b93fee72ecf0e8c918f9b847cbdf6d36b8b4ad2c8463c87b3c2e689027e42e02205e83b4c89b57651dc746f50416e86a48334b8f345511a9d1530ebdb5bb17bd5c414c69522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453aeffffffff024eccee460000000017a91453d2f642f1e40f888ba0ef57c359983ccfd40f9087e00f97000000000017a9141b60c33def13c3eda4cf4835e11a633e4b3302ec8700000000');
+        recovery.should.have.property('inputs');
+        recovery.inputs.length.should.equal(1);
+        recovery.inputs[0].should.have.property('chainPath');
+        recovery.inputs[0].chainPath.should.equal('/0/0/1/1');
+        recovery.inputs[0].should.have.property('redeemScript');
+        recovery.inputs[0].redeemScript.should.equal('522103b11db31fb294b8757cf6849631dc6b23e56db0ed4e55d14edf3a8cb8c0eebff42103129bdad9e9a954d2b8c4a375b020b012b634a3641c5f3a0404af4ce99fd23c9521023015ea25115d67e49424248552491cf6b5e47eddb387fad1d652811e02cd53f453ae');
+        console.log(recovery)
+      }));
+    }
+
   });
 
   describe('Recover Ripple', function() {
@@ -366,6 +546,13 @@ describe('Recovery:', function() {
       recoveryNocks.nockZecRecovery(bitgo);
 
       const basecoin = bitgo.coin('tzec');
+
+      // Decrypted private key values used to generate test vectors:
+      // userKey:  xprv9s21ZrQH143K3bnASnsbxBztKgNJxG1PKpUpvxoNqjk9rjJrG1QAotxv7EekcRK98TrKeB8T47PgpyhJMvvhDvoQ3D6njPVsFpEBiaBW6nY
+      // backupKey:  xprv9s21ZrQH143K2rE4L9Pptwk1ce4TxTTRBDfwp3zGyofUcbqKyfLyr1LRuFLKZGiUnZtHwzNSXVuYEEp4bKFCpbhufyRG27sBn4jpUX4yMsn
+      // userKeyWIF:  cVi36xVqAzqvmoDoKS8N219beXvf1xBH9yFcQexchiZYvC2ivQ2v
+      // backupKeyWIF:  cSKRtYTgwTL2hERx8H4KoiScFdeiYBPPf7TCfwsyryE2HLocy2h3
+
       const recovery = yield basecoin.recover({
         userKey: `{"iv":"in/0+5mRgyBD/NQM+rsKOQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"2zBGPsw0Yc4=","ct":"IqS/KsWCc117zVIu4VID6BB1UBBAOW3zeWiMsL4rm+HXMffHetaOCVwFVeoO1JG/dbcV/ApcqvbHXxNMY7L8FXeeBr3SMnZdpqIkGzfrvcADa9EcjTg+iLDGLRT1FwdavQ7X06DXro0Mx3O+CDnCFaf2vkxIfZ0="}`,
         backupKey: `{"iv":"ZGWK9woJAu020cXwvdfmuQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode":"ccm","adata":"","cipher":"aes","salt":"6iCPz4FhZ6g=","ct":"8IwFVj2l7L6o6emjMF/G7WIDXeOmjGFoyNgofQwrvnk+ZsckQrKUSVxDzDUeZdJZsZE6fj+ZCVNh1Zfgxxg0rk5rh0bYJJ+WVsizK7jUE4DNJnS5RwBZNNFi9qilHI2bPbzXp+VAyOieSF5nJs9AQSc+rTxda30="}`,
@@ -376,7 +563,11 @@ describe('Recovery:', function() {
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       });
 
-      recovery.transactionHex.should.equal('0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f775497500000000fc00473044022044987a5d3f578770d657b470c47e43cb00382efbf4b5f29674624ca663bb607d02202890d66cc5faaf08d3611c4e74f782b6672545bdca46f3558e677dbf76331b13014730440220355501261383de5883ba2c16fa2d73a271ea18ae95c2e0e3859c4800b771d16902204038507717d2c4e4fe7e06192555cda3fde18966f6b25e242973cab8b08e83ea014c6952210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153aeffffffff01643ac9010000000017a91470391ef30163f580806ee8a5f0aacc724e7f68558700000000000000000000000000000000000000');
+      // zcash testnet full node commands used with private keys above and UTXO from recovery-nocks.ts to generate test vectors:
+      // $ zcash-cli createrawtransaction '[{"txid":"754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f","vout":0}]' '{"t2GnC5sFN5Km2UuYaYjHNBQRJBDAXVQqSfJ":0.299649}' 0 0
+      // $ zcash-cli signrawtransaction 0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f77549750000000000ffffffff01643ac9010000000017a91470391ef30163f580806ee8a5f0aacc724e7f68558700000000000000000000000000000000000000 '[{"txid":"754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f", "vout":0,"scriptPubKey":"a914b6dfccf23872e01a01d746dbf063730887d4457f87","redeemScript":"52210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153ae","amount":0.3}]' '["cVi36xVqAzqvmoDoKS8N219beXvf1xBH9yFcQexchiZYvC2ivQ2v","cSKRtYTgwTL2hERx8H4KoiScFdeiYBPPf7TCfwsyryE2HLocy2h3"]'
+
+      recovery.transactionHex.should.equal('0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f775497500000000fdfd0000473044022067642465f65dc96654f615bc81fbd2ef6a1f7816e652e0800f08e0bbec6be62402202d516c5277ab2180a893c146b1593e64d252f208cd0ff5bea833c48fb523ea3f01483045022100b7e996e8cf64eb0dd8fe1143aa6fa4061d8085a00fdca83d90ce495851f3524302202edee5616aa9af6fbd86864731e086736ff99d41f44671bc38903563ca769fc7014c6952210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153aeffffffff01643ac9010000000017a91470391ef30163f580806ee8a5f0aacc724e7f68558700000000000000000000000000000000000000');
       recovery.should.have.property('inputs');
       recovery.inputs.length.should.equal(1);
       recovery.inputs[0].should.have.property('chainPath');
@@ -400,7 +591,11 @@ describe('Recovery:', function() {
         ignoreAddressTypes: ['p2wsh', 'p2shP2wsh']
       });
 
-      recovery.transactionHex.should.equal('0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f775497500000000b4004730440220143b8081786beb406b4ce7c046de84ed2233fb47762622b01215b37281e45cef02204abdd89c2abebaae10f5330dfc43ef636f42490d6e3df962dd634e605bcf4003014c6952210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153aeffffffff02b81932010000000017a91470391ef30163f580806ee8a5f0aacc724e7f685587e00f97000000000017a9142ad735dfc86e2835100b9dc6476facddad6c87ec8700000000000000000000000000000000000000');
+      // zcash testnet full node commands used with private keys above and UTXO from recovery-nocks.ts to generate test vectors:
+      // $ zcash-cli createrawtransaction '[{"txid":"754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f","vout":0}]' '{"t2GnC5sFN5Km2UuYaYjHNBQRJBDAXVQqSfJ":0.200606, "t2ATLAhBP1uTuyiWs5DY5CPH1VuYkGUindt":0.099}' 0 0
+      // $ zcash-cli signrawtransaction 0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f77549750000000000ffffffff02b81932010000000017a91470391ef30163f580806ee8a5f0aacc724e7f685587e00f97000000000017a9142ad735dfc86e2835100b9dc6476facddad6c87ec8700000000000000000000000000000000000000 '[{"txid":"754975f7a113e8fa5ae395a350b93514c2096cae4c16be2dd827d8a451e6890f", "vout":0,"scriptPubKey":"a914b6dfccf23872e01a01d746dbf063730887d4457f87","redeemScript":"52210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153ae","amount":0.3}]' '["cVi36xVqAzqvmoDoKS8N219beXvf1xBH9yFcQexchiZYvC2ivQ2v"]'
+
+      recovery.transactionHex.should.equal('0400008085202f89010f89e651a4d827d82dbe164cae6c09c21435b950a395e35afae813a1f775497500000000b40047304402201e6e670c2bd17fe3d84f7d0680055d82b978d56cbd71d0eb4725989c94c6936202203bd6732077e4636d3d3989be5d45bfff992490481f55e2d5fc63ad2b07908a49014c6952210222dba86781026f53d30be3bd2d07678c61926cb52c0de52b6ecef3d5c96e32fa2102b8a369ca2ef0d202b342fe3742585468813bebf821856fa4c2e90337bcee1d5e2102dcb29b842c2bb5e1efcab6483db61ab06bc08cb8c2667399bb1b5fb826a841a153aeffffffff02b81932010000000017a91470391ef30163f580806ee8a5f0aacc724e7f685587e00f97000000000017a9142ad735dfc86e2835100b9dc6476facddad6c87ec8700000000000000000000000000000000000000');
       recovery.should.have.property('inputs');
       recovery.inputs.length.should.equal(1);
       recovery.inputs[0].should.have.property('chainPath');
@@ -615,6 +810,8 @@ describe('Recovery:', function() {
 
   describe('Recover EOS', function() {
     let baseCoin;
+    const expectedPackedTrx = '7122315d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000';
+    const expectedTxId = '99c6a4eedf5cff246314bdc0a053c12d75488df3aa09474bad4ceca88d8b2498';
     before(function() {
       baseCoin = bitgo.coin('teos');
     });
@@ -622,7 +819,7 @@ describe('Recovery:', function() {
       recoveryNocks.nockEosRecovery();
     });
 
-    it('should generate EOS recovery tx', co(function *() {
+    it('should generate EOS recovery tx with correct expiration date', co(function *() {
       const recoveryTx = yield baseCoin.recover({
         userKey: '{\"iv\":\"jRBZi43c7t4tvx7SgP8h0g==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"TgZqHtZrmLU=\",\"ct\":\"hRntzrbcH81dOzlyr49nbAIJdHWqEKKVJx0s55kNV+fqUjKKoEuWqVGF1dPfQkkTkcIjFTNvuHsiGicVGSRf5RI3Q0ZD6YtCqO2bWX6t7HgBio5yYMaPy+cNJHmp6jHBQFZ9cCjqwAam/V+1mRvpJpn2dSWPotw=\"}',
         backupKey: '{\"iv\":\"qE+D+C6KXaZKFXXTM/AF5w==\",\"v\":1,\"iter\":10000,\"ks\":256,\"ts\":64,\"mode\":\"ccm\",\"adata\":\"\",\"cipher\":\"aes\",\"salt\":\"a/YD7/8gJFw=\",\"ct\":\"tc2c1PfSjDS9TshXEIKKlToDcdCeL45fpGUWEPIM2+6CrvIuaXZC6/Hx9bza7VIoEPhJWHmgvoeAouto4PUpnyKJUuz+T46RY09XJs2rcDvbfMKblRsh6lzUc8O7ubTzJRNgFOUqkZM6qGB22A0FtL8yNlFqc3c=\"}',
@@ -633,9 +830,20 @@ describe('Recovery:', function() {
 
       recoveryTx.should.have.property('transaction');
       recoveryTx.transaction.compression.should.equal('none');
-      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000');
+      recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
       recoveryTx.transaction.signatures.length.should.equal(2);
-      recoveryTx.txid.should.equal('60c2b010854a7f199648e5175df052f09d2da09d0d23a33f3c148c30a3099e8d');
+      recoveryTx.txid.should.equal(expectedTxId);
+
+      const deserializeTransactionParams = {
+        transaction: {
+          packed_trx: recoveryTx.transaction.packed_trx
+        }
+      };
+
+      const deserializedTx = yield baseCoin.deserializeTransaction(deserializeTransactionParams);
+      const mockedHeadBlockTime = '2019-07-18T17:52:49.000';
+      const hoursUntilExpiration = 8;
+      moment(deserializedTx.expiration).diff(mockedHeadBlockTime, 'hours').should.equal(hoursUntilExpiration);
     }));
 
     it('should generate EOS recovery tx with unencrypted keys', co(function *() {
@@ -648,9 +856,9 @@ describe('Recovery:', function() {
 
       recoveryTx.should.have.property('transaction');
       recoveryTx.transaction.compression.should.equal('none');
-      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000');
+      recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
       recoveryTx.transaction.signatures.length.should.equal(2);
-      recoveryTx.txid.should.equal('60c2b010854a7f199648e5175df052f09d2da09d0d23a33f3c148c30a3099e8d');
+      recoveryTx.txid.should.equal(expectedTxId);
     }));
 
     it('should generate an EOS unsigned sweep', co(function *() {
@@ -664,9 +872,9 @@ describe('Recovery:', function() {
 
       recoveryTx.should.have.property('transaction');
       recoveryTx.transaction.compression.should.equal('none');
-      recoveryTx.transaction.packed_trx.should.equal('01c0305d5e91d408e1b3000000000100a6823403ea3055000000572d3ccdcd0150f3ea2e4cf4bc8300000000a8ed32322150f3ea2e4cf4bc83e0f27c27cc0adf7f40420f000000000004454f53000000000000');
+      recoveryTx.transaction.packed_trx.should.equal(expectedPackedTrx);
       recoveryTx.transaction.signatures.length.should.equal(0);
-      recoveryTx.txid.should.equal('60c2b010854a7f199648e5175df052f09d2da09d0d23a33f3c148c30a3099e8d');
+      recoveryTx.txid.should.equal(expectedTxId);
     }));
   });
 
@@ -722,10 +930,10 @@ describe('Recovery:', function() {
 
       should.exist(recovery);
       recovery.recoveryAddress.should.equal('2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm');
-      recovery.recoveryAmount.should.equal(20972720);
+      recovery.recoveryAmount.should.equal(21048960);
       recovery.recoveryCoin.should.equal('tltc');
       recovery.sourceCoin.should.equal('tbtc');
-      recovery.txHex.should.equal('0100000001c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f54100000000b60047304402207215a1337d7d873ce6eed9bc7984fe69ca7c995a21745dc0a70e2c8afa6740a702204c3a164f817019f90c710fc25f351b3b0847ed155d031c5aeaa3c54b7a73cde10100004c69522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953aeffffffff01b00440010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
+      recovery.txHex.should.equal('0100000002c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f54100000000b60047304402202a6cc293695524de16f9d5e837745101dd5164f723e20f8241b65399e1c6070a02207e06d4580bf6723d3a4319d2e43472690a260ba6fb2a3d66c37ec115559b83e00100004c69522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953aeffffffffc61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f54102000000b60047304402200ab7e68ca154420ea175b773bef75555bb79878b9a9a37d38944f746e859c50702200dd36dd85df588d96f36649998d50998277ce150afcb552558cf4b86e1132e650100004c69522103b31347f19510acbc7f50822ac4093ca80554946c471b43eb937d0c9118d1122d2102cd3787d12af6eb87e7b9af00118a225e2ce663a5c94f555460ae131139a2afee2103bd558669de622fc57a8157f449c52254218dbc40dedf047891192bdd013cad8953aeffffffff01802e41010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
       recovery.walletId.should.equal('5abacebe28d72fbd07e0b8cbba0ff39e');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
@@ -801,14 +1009,14 @@ describe('Recovery:', function() {
         txid: '41f5974544068fe91ffa99275a5325ca503b87f11cc04ac74d2ec3390df51bc6',
         recoveryAddress: '2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm',
         wallet: '5abacebe28d72fbd07e0b8cbba0ff39e',
-        signed: false
+        signed: false,
       });
 
       should.exist(recovery);
-      recovery.txHex.should.equal('0100000001c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410000000000ffffffff01b00440010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
+      recovery.txHex.should.equal('0100000002c61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410000000000ffffffffc61bf50d39c32e4dc74ac01cf1873b50ca25535a2799fa1fe98f06444597f5410200000000ffffffff01802e41010000000017a914ef856a40c6dc109591b7d4fad170986d0bb404af8700000000');
       recovery.walletId.should.equal('5abacebe28d72fbd07e0b8cbba0ff39e');
       recovery.address.should.equal('2NF5hJyJxQyRsMjsK6STFagLaoAJNF9M4Zm');
-      recovery.amount.should.equal(20972720);
+      recovery.amount.should.equal(21048960);
       recovery.coin.should.equal('tbtc');
       recovery.should.have.property('txInfo');
       recovery.txInfo.should.have.property('unspents');
@@ -817,7 +1025,7 @@ describe('Recovery:', function() {
 
   describe('Recover Ethereum', function() {
     it('should construct a recovery transaction without BitGo', co(function *() {
-      recoveryNocks.nockEthRecovery();
+      recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
       const recovery = yield basecoin.recover({
@@ -841,7 +1049,7 @@ describe('Recovery:', function() {
     }));
 
     it('should construct a recovery transaction without BitGo and with KRS', co(function *() {
-      recoveryNocks.nockEthRecovery();
+      recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
       const recovery = yield basecoin.recover({
@@ -863,7 +1071,7 @@ describe('Recovery:', function() {
     }));
 
     it('should error when the backup key is unfunded (cannot pay gas)', co(function *() {
-      recoveryNocks.nockEthRecovery();
+      recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
       const error = yield bitgo.getAsyncError(basecoin.recover({

@@ -2,11 +2,11 @@
  * @prettier
  */
 import * as Bluebird from 'bluebird';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import { CoinFamily, BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 const co = Bluebird.coroutine;
 import * as bitgoAccountLib from '@bitgo/account-lib';
-import { HDNode, networks } from 'bitgo-utxo-lib';
+import { HDNode, networks } from '@bitgo/utxo-lib';
 import * as request from 'superagent';
 import * as common from '../../common';
 
@@ -162,7 +162,7 @@ export class Trx extends BaseCoin {
     if (!seed) {
       // An extended private key has both a normal 256 bit private key and a 256 bit chain code, both of which must be
       // random. 512 bits is therefore the maximum entropy and gives us maximum security against cracking.
-      seed = crypto.randomBytes(512 / 8);
+      seed = randomBytes(512 / 8);
     }
     const hd = HDNode.fromSeedBuffer(seed);
     return {
@@ -202,30 +202,43 @@ export class Trx extends BaseCoin {
     return Bluebird.resolve(true).asCallback(callback);
   }
 
-  signTransaction(params: TronSignTransactionOptions): SignedTransaction {
-    const coinName = this.getChain();
-    const txBuilder = new bitgoAccountLib.TransactionBuilder({ coinName });
-    txBuilder.from(params.txPrebuild.txHex);
-
-    let key = params.prv;
-    if (this.isValidXprv(params.prv)) {
-      key = HDNode.fromBase58(params.prv)
-        .getKey()
-        .getPrivateKeyBuffer();
-    }
-
-    txBuilder.sign({ key });
-    const transaction = txBuilder.build();
-    const response = {
-      txHex: JSON.stringify(transaction.toJson()),
-    };
-    if (transaction.toJson().signature.length >= 2) {
-      return response;
-    }
-    // Half signed transaction
-    return {
-      halfSigned: response,
-    };
+  /**
+   * Assemble keychain and half-sign prebuilt transaction
+   *
+   * @param params
+   * @param params.txPrebuild {Object} prebuild object returned by platform
+   * @param params.prv {String} user prv
+   * @param params.wallet.addressVersion {String} this is the version of the Algorand multisig address generation format
+   * @param callback
+   * @returns Bluebird<SignedTransaction>
+   */
+  signTransaction(
+    params: TronSignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    const self = this;
+    return co<SignedTransaction>(function*() {
+      const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
+      // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
+      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
+        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
+      }
+      txBuilder.from(params.txPrebuild.txHex);
+      txBuilder.sign({ key: params.prv });
+      const transaction = yield txBuilder.build();
+      const response = {
+        txHex: JSON.stringify(transaction.toJson()),
+      };
+      if (transaction.toJson().signature.length >= 2) {
+        return response;
+      }
+      // Half signed transaction
+      return {
+        halfSigned: response,
+      };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -263,23 +276,29 @@ export class Trx extends BaseCoin {
    *
    * @param key
    * @param message
+   * @param callback
    */
-  signMessage(key: KeyPair, message: string | Buffer): Buffer {
-    const toSign = this.toHexString(message);
+  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    const self = this;
+    return co<Buffer>(function* cosignMessage() {
+      const toSign = self.toHexString(message);
 
-    let prv = key.prv;
-    if (this.isValidXprv(prv)) {
-      prv = HDNode.fromBase58(prv)
-        .getKey()
-        .getPrivateKeyBuffer();
-    }
+      let prv = key.prv;
+      if (self.isValidXprv(prv)) {
+        prv = HDNode.fromBase58(prv)
+          .getKey()
+          .getPrivateKeyBuffer();
+      }
 
-    let sig = bitgoAccountLib.Trx.Utils.signString(toSign, prv, true);
+      let sig = bitgoAccountLib.Trx.Utils.signString(toSign, prv, true);
 
-    // remove the preceding 0x
-    sig = sig.replace(/^0x/, '');
+      // remove the preceding 0x
+      sig = sig.replace(/^0x/, '');
 
-    return Buffer.from(sig, 'hex');
+      return Buffer.from(sig, 'hex');
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -471,13 +490,17 @@ export class Trx extends BaseCoin {
       self.checkPermissions(account.active_permission[0].keys, keyHexAddresses);
 
       // construct our tx
-      const txBuilder = new bitgoAccountLib.TransactionBuilder({ coinName: this.getChain() });
+      const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
+      // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
+      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
+        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
+      }
       txBuilder.from(buildTx);
 
       // this tx should be enough to drop into a node
       if (isUnsignedSweep) {
         return {
-          tx: txBuilder.build().toJson(),
+          tx: (yield txBuilder.build()).toJson(),
           recoveryAmount: recoveryAmountMinusFees,
         };
       }
@@ -495,7 +518,7 @@ export class Trx extends BaseCoin {
       }
 
       return {
-        tx: txBuilder.build().toJson(),
+        tx: (yield txBuilder.build()).toJson(),
         recoveryAmount: recoveryAmountMinusFees,
       };
     })
@@ -512,19 +535,23 @@ export class Trx extends BaseCoin {
     params: ExplainTransactionOptions,
     callback?: NodeCallback<TronTransactionExplanation>
   ): Bluebird<TronTransactionExplanation> {
+    const self = this;
     return co<TronTransactionExplanation>(function*() {
       const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
       if (!txHex || !params.feeInfo) {
         throw new Error('missing explain tx parameters');
       }
-      const coinName = this.getChain();
-      const txBuilder = new bitgoAccountLib.TransactionBuilder({ coinName });
+      const txBuilder = bitgoAccountLib.getBuilder(self.getChain());
+      // Newer coins can return BaseTransactionBuilderFactory instead of BaseTransactionBuilder
+      if (!(txBuilder instanceof bitgoAccountLib.BaseCoin.BaseTransactionBuilder)) {
+        throw new Error('getBuilder() did not return an BaseTransactionBuilder object. Has it been updated?');
+      }
       txBuilder.from(txHex);
-      const tx = txBuilder.build();
+      const tx = yield txBuilder.build();
       const outputs = [
         {
-          amount: tx.destinations[0].value.toString(),
-          address: tx.destinations[0].address, // Should turn it into a readable format, aka base58
+          amount: tx.outputs[0].value.toString(),
+          address: tx.outputs[0].address, // Should turn it into a readable format, aka base58
         },
       ];
 

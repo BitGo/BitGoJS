@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import * as querystring from 'querystring';
 import * as url from 'url';
 import * as Bluebird from 'bluebird';
@@ -724,33 +724,39 @@ export class Xlm extends BaseCoin {
    * @param params
    * @param params.txPrebuild {Object} prebuild object returned by platform
    * @param params.prv {String} user prv
+   * @param callback
+   * @returns {Bluebird<HalfSignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions): HalfSignedTransaction {
-    const { txPrebuild, prv } = params;
+  signTransaction(params: SignTransactionOptions, callback?: NodeCallback<HalfSignedTransaction>): Bluebird<HalfSignedTransaction> {
+    return co<HalfSignedTransaction>(function *() {
+      const { txPrebuild, prv } = params;
 
-    if (_.isUndefined(txPrebuild)) {
-      throw new Error('missing txPrebuild parameter');
-    }
-    if (!_.isObject(txPrebuild)) {
-      throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
-    }
+      if (_.isUndefined(txPrebuild)) {
+        throw new Error('missing txPrebuild parameter');
+      }
+      if (!_.isObject(txPrebuild)) {
+        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+      }
 
-    if (_.isUndefined(prv)) {
-      throw new Error('missing prv parameter to sign transaction');
-    }
-    if (!_.isString(prv)) {
-      throw new Error(`prv must be a string, got type ${typeof prv}`);
-    }
+      if (_.isUndefined(prv)) {
+        throw new Error('missing prv parameter to sign transaction');
+      }
+      if (!_.isString(prv)) {
+        throw new Error(`prv must be a string, got type ${typeof prv}`);
+      }
 
-    const keyPair = stellar.Keypair.fromSecret(prv);
-    const tx = new stellar.Transaction(txPrebuild.txBase64);
-    tx.sign(keyPair);
+      const keyPair = stellar.Keypair.fromSecret(prv);
+      const tx = new stellar.Transaction(txPrebuild.txBase64);
+      tx.sign(keyPair);
 
-    return {
-      halfSigned: {
-        txBase64: Xlm.txToString(tx),
-      },
-    };
+      return {
+        halfSigned: {
+          txBase64: Xlm.txToString(tx),
+        },
+      };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -783,16 +789,22 @@ export class Xlm extends BaseCoin {
    *
    * @param key
    * @param message
+   * @param callback
    */
-  signMessage(key: KeyPair, message: string | Buffer): Buffer {
-    if (!this.isValidPrv(key.prv)) {
-      throw new Error(`invalid prv: ${key.prv}`);
-    }
-    if (!Buffer.isBuffer(message)) {
-      message = Buffer.from(message);
-    }
-    const keypair = stellar.Keypair.fromSecret(key.prv);
-    return keypair.sign(message);
+  signMessage(key: KeyPair, message: string | Buffer, callback?: NodeCallback<Buffer>): Bluebird<Buffer> {
+    const self = this;
+    return co<Buffer>(function* cosignMessage() {
+      if (!self.isValidPrv(key.prv)) {
+        throw new Error(`invalid prv: ${key.prv}`);
+      }
+      if (!Buffer.isBuffer(message)) {
+        message = Buffer.from(message);
+      }
+      const keypair = stellar.Keypair.fromSecret(key.prv);
+      return keypair.sign(message);
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**

@@ -2,14 +2,16 @@
 // Test for Keychains
 //
 
-import 'should';
+import * as should from 'should';
 import * as Promise from 'bluebird';
-const co = Promise.coroutine;
 import * as nock from 'nock';
 import * as common from '../../../src/common';
 import * as _ from 'lodash';
 import * as sinon from 'sinon';
-import { TestBitGo } from '../../lib/test_bitgo';
+import {TestBitGo} from '../../lib/test_bitgo';
+import {CoinKind, coins, KeyCurve, CoinFamily, UnderlyingAsset} from '@bitgo/statics';
+
+const co = Promise.coroutine;
 
 describe('V2 Keychains', function v2keychains() {
   let bitgo;
@@ -38,6 +40,38 @@ describe('V2 Keychains', function v2keychains() {
       .reply(200, {});
       yield keychains.add({ pub: 'pub', derivedFromParentWithSeed: 'derivedFromParentWithSeed' });
     }));
+  });
+
+  /**
+   * This section's intention is to provide some key generation sanity checking. generateKeyPair is a general surface
+   * for key generation but the keys are treated the same by BitGo down the line. Any SECP256K1 based coins key-pairs can
+   * be re-used so need to be the same.
+   **/
+  describe('Key generation enforcement for SECP256K1', function() {
+    // iterate over non-fiat crypto secp coins
+    const coinFamilyValues = Object.keys(CoinFamily).map(n => n.toLowerCase());
+    const cryptoSecpCoins = coins.filter(n => n.primaryKeyCurve === KeyCurve.Secp256k1
+      && n.kind === CoinKind.CRYPTO
+      && n.asset !== UnderlyingAsset.USD
+      && coinFamilyValues.includes(n.name));
+
+    const expectedXpub = 'xpub661MyMwAqRbcGpZf8mxNWhSPdWaLGvQzzage6vq2oQFzq8toVzmkjygYZ3HcZw6eCzAfn9ZdyGjKoKkcpKwackdgznVbiunpq7rkxDu7quS';
+    const expectedXprv = 'xprv9s21ZrQH143K4LVC2kRN9ZVf5UjqsTh9dMm3JYRRF4j1xLZexTTWCBN4hmdZUHeT3vCJPL181ErVaY489ArBKSWaB7Du7vyVS6XC43WtK7A';
+
+    const seed = Buffer.from('this is some random seed we will use', 'utf-8');
+
+    it('should create the same key with the same seed', function() {
+      cryptoSecpCoins.forEach(function(coinName) {
+        const currentCoin = bitgo.coin(coinName.name);
+        const keyPair = currentCoin.generateKeyPair(seed);
+
+        should.exist(keyPair.pub);
+        should.exist(keyPair.prv);
+
+        keyPair.pub.should.equal(expectedXpub);
+        keyPair.prv.should.equal(expectedXprv);
+      });
+    });
   });
 
   describe('Update Password', function updatePassword() {

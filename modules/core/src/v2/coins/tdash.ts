@@ -7,7 +7,7 @@ import { Dash } from './dash';
 
 export class Tdash extends Dash {
   constructor(bitgo: BitGo) {
-    // TODO: move to bitgo-utxo-lib (BG-6821)
+    // TODO: move to @bitgo/utxo-lib (BG-6821)
     super(bitgo, {
       messagePrefix: '\x19Dash Signed Message:\n',
       bip32: {

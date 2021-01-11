@@ -5,6 +5,7 @@
 import * as should from 'should';
 import * as nock from 'nock';
 import * as Bluebird from 'bluebird';
+import { Environments } from '../../src/index';
 const co = Bluebird.coroutine;
 
 import * as BitGoJS from '../../src/index';
@@ -12,7 +13,7 @@ import { TestBitGo } from '../lib/test_bitgo';
 import * as common from '../../src/common';
 const rp = require('request-promise');
 import * as _ from 'lodash';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 
 nock.disableNetConnect();
 
@@ -76,10 +77,40 @@ describe('BitGo Prototype Methods', function() {
     });
   });
 
+  describe('HMAC request verification', () => {
+    it('throws if HMAC request verification is disabled for non-dev environments', co(function *() {
+      (() => new TestBitGo({ env: 'prod', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
+      (() => new TestBitGo({ env: 'test', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
+      (() => new TestBitGo({ env: 'adminProd', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
+      (() => new TestBitGo({ env: 'adminTest', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
+      (() => new TestBitGo({ env: 'dev', customRootURI: 'http://rooturi.example', hmacVerification: false }))
+        .should.throw(/Cannot disable request HMAC verification in environment/);
+    }));
+
+    it('allows disabling of HMAC request verification only for dev environments', co(function *() {
+      (() => new TestBitGo({ env: 'dev', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'latest', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'adminDev', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'adminLatest', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'local', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'localNonSecure', hmacVerification: false }))
+        .should.not.throw();
+      (() => new TestBitGo({ env: 'branch', customRootURI: 'http://rooturi.example', hmacVerification: false }))
+        .should.not.throw();
+    }));
+  });
+
   describe('Authenticate in Microservices', () => {
     let bitgo;
-    const microservicesUri = 'https://microservices.uri';
-    const uri = 'https://test.bitgo.com';
     const authenticateRequest = {
       username: 'test@bitgo.com',
       password: 'password',
@@ -90,8 +121,8 @@ describe('BitGo Prototype Methods', function() {
     };
 
     it('goes to microservices', co(function *() {
-      bitgo = new TestBitGo({ env: 'custom', microservicesUri });
-      const scope = nock(microservicesUri)
+      bitgo = new TestBitGo({ env: 'mock', microservicesUri: 'https://microservices.uri' });
+      const scope = nock(Environments[bitgo.getEnv()].uri)
         .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
@@ -99,10 +130,10 @@ describe('BitGo Prototype Methods', function() {
       scope.isDone().should.be.true();
     }));
 
-    it('goes to normal uri', co(function *() {
-      bitgo = new TestBitGo();
-      const scope = nock(uri)
-        .post('/api/v1/user/login')
+    it('goes to microservices even when microservicesUri is not specified', co(function *() {
+      bitgo = new TestBitGo({ env: 'mock' });
+      const scope = nock(Environments[bitgo.getEnv()].uri)
+        .post('/api/auth/v1/session')
         .reply(200, { user: 'test@bitgo.com', access_token: 'token12356' });
 
       yield bitgo.authenticate(authenticateRequest);
@@ -257,7 +288,6 @@ describe('BitGo Prototype Methods', function() {
       const sharingKey2 = bitgo.getECDHSecret({ eckey: eckey2, otherPubKeyHex: eckey1.getPublicKeyBuffer().toString('hex') });
       sharingKey1.should.equal(sharingKey2);
     });
-
   });
 
   describe('change password', function() {
@@ -266,7 +296,7 @@ describe('BitGo Prototype Methods', function() {
 
     before(co(function *coBeforeChangePassword() {
       nock('https://bitgo.fakeurl')
-      .post('/api/v1/user/login')
+      .post('/api/auth/v1/session')
       .reply(200, {
         access_token: 'access_token',
         user: { username: 'update_pw_tester@bitgo.com' }
@@ -351,7 +381,7 @@ describe('BitGo Prototype Methods', function() {
     const token = 'v2x5b735fed2486593f8fea19113e5c717308f90a5fb00e740e46c7bfdcc078cfd0';
 
     before(() => {
-      bitgo = new TestBitGo({ env: 'mock' });
+      bitgo = new TestBitGo({ env: 'mock', accessToken: token });
     });
 
     it('should correctly calculate request headers', () => {
@@ -453,6 +483,25 @@ describe('BitGo Prototype Methods', function() {
       verificationDetails.expectedHmac.should.equal('51c6d024f261e166e8a323f8fa36a9bb8d4d02b076334c2a9ae0a49efc5724d4');
       verificationDetails.isValid.should.equal(false);
     });
+
+    it('should throw if hmac validation is enabled, and no valid hmac headers are returned', co(function *() {
+      const url = 'https://fakeurl.invalid';
+      const scope = nock(url).get('/').reply(200);
+
+      // test suite bitgo object has hmac verification enabled, so it should throw when the nock responds
+      yield bitgo.get(url).should.be.rejectedWith(/invalid response HMAC, possible man-in-the-middle-attack/);
+      scope.done();
+    }));
+
+    it('should not enforce hmac verification if hmac verification is disabled', co(function *() {
+      const bg = new TestBitGo({ env: 'mock', hmacVerification: false, accessToken: token });
+      const url = 'https://fakeurl.invalid';
+      const scope = nock(url).get('/').reply(200, { ok: 1 });
+
+      const res = yield bg.get(url);
+      res.body.should.have.property('ok', 1);
+      scope.done();
+    }));
   });
 
   describe('Token Definitions at Startup', function() {
@@ -460,11 +509,8 @@ describe('BitGo Prototype Methods', function() {
     it('Should return a non-empty list of tokens before the server responds', co(function *coTokenDefinitionsIt() {
       const bitgo = new TestBitGo({ env: 'mock' });
       bitgo.initializeTestVars();
-      const tokens = bitgo.getConstants().eth.tokens;
-
-      // currently four tokens are defined for non-production environments
-      should.exist(tokens);
-      tokens.length.should.equal(6);
+      const constants = bitgo.getConstants();
+      constants.should.have.propertyByPath('eth', 'tokens', 'length').greaterThan(0);
     }));
 
     after(function tokenDefinitionsAfter() {
@@ -496,5 +542,13 @@ describe('BitGo Prototype Methods', function() {
     after(function() {
       nock.pendingMocks().should.be.empty();
     });
+  });
+
+  describe('preprocessAuthenticationParams', () => {
+    const bitgo = new TestBitGo({ env: 'mock' });
+    it('should fail if passed non-string username or password', co(function *() {
+      (() => bitgo.preprocessAuthenticationParams({ username: 123 })).should.throw(/expected string username/);
+      (() => bitgo.preprocessAuthenticationParams({ username: 'abc', password: {} })).should.throw(/expected string password/);
+    }));
   });
 });

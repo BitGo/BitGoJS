@@ -1,4 +1,4 @@
-import { BaseCoin, CoinFeature, CoinKind, UnderlyingAsset } from './base';
+import { BaseCoin, CoinFeature, CoinKind, KeyCurve, UnderlyingAsset } from './base';
 import { BaseNetwork, Networks, OfcNetwork } from './networks';
 
 export interface OfcConstructorOptions {
@@ -13,6 +13,7 @@ export interface OfcConstructorOptions {
   prefix?: string;
   suffix?: string;
   addressCoin?: string;
+  primaryKeyCurve: KeyCurve;
 }
 
 /**
@@ -59,6 +60,7 @@ export class OfcCoin extends BaseCoin {
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function ofc(
   name: string,
@@ -70,7 +72,9 @@ export function ofc(
   prefix: string = '',
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.main.ofc,
-  isToken: boolean = true
+  isToken: boolean = true,
+  /** OFC tokens use SECP256K1 under the hood even if the chain doesn't **/
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
     new OfcCoin({
@@ -84,6 +88,7 @@ export function ofc(
       isToken,
       asset,
       kind,
+      primaryKeyCurve,
     })
   );
 }
@@ -101,6 +106,7 @@ export function ofc(
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tofc(
   name: string,
@@ -112,7 +118,8 @@ export function tofc(
   prefix: string = '',
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.test.ofc,
-  isToken: boolean = true
+  isToken: boolean = true,
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
     new OfcCoin({
@@ -126,6 +133,7 @@ export function tofc(
       isToken,
       asset,
       kind,
+      primaryKeyCurve,
     })
   );
 }
@@ -143,6 +151,7 @@ export function tofc(
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function ofcerc20(
   name: string,
@@ -155,7 +164,8 @@ export function ofcerc20(
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.main.ofc,
   isToken: boolean = true,
-  addressCoin: string = 'eth'
+  addressCoin: string = 'eth',
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
     new OfcCoin({
@@ -170,6 +180,7 @@ export function ofcerc20(
       asset,
       kind,
       addressCoin,
+      primaryKeyCurve,
     })
   );
 }
@@ -186,6 +197,7 @@ export function ofcerc20(
  * @param suffix? Optional coin suffix. Defaults to coin name.
  * @param isToken? Whether or not this account coin is a token of another coin
  * @param features? Features of this coin. Defaults to the DEFAULT_FEATURES defined in `OfcCoin`
+ * @param primaryKeyCurve The elliptic curve for this chain/token
  */
 export function tofcerc20(
   name: string,
@@ -198,7 +210,8 @@ export function tofcerc20(
   suffix: string = name.replace(/^ofc/, '').toUpperCase(),
   network: OfcNetwork = Networks.test.ofc,
   isToken: boolean = true,
-  addressCoin: string = 'teth'
+  addressCoin: string = 'teth',
+  primaryKeyCurve: KeyCurve = KeyCurve.Secp256k1
 ) {
   return Object.freeze(
     new OfcCoin({
@@ -213,6 +226,7 @@ export function tofcerc20(
       asset,
       kind,
       addressCoin,
+      primaryKeyCurve,
     })
   );
 }

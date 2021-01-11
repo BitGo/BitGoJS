@@ -1,0 +1,14 @@
+node_modules/
+npm-debug.log
+dist/
+.nyc_output/
+browser/
+mochawesome-report/
+.DS_STORE
+package/
+.idea/
+coverage.lcov
+resources/trx/protobuf/*.d.ts
+resources/trx/protobuf/*.js
+/resources/hbar/protobuf/hedera.d.ts
+/resources/hbar/protobuf/hedera.js

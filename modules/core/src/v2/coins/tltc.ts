@@ -4,11 +4,11 @@
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Ltc } from './ltc';
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 
 export class Tltc extends Ltc {
   constructor(bitgo: BitGo) {
-    // TODO: move to bitgo-utxo-lib (BG-6821)
+    // TODO: move to @bitgo/utxo-lib (BG-6821)
     super(bitgo, {
       magic: 0xd9b4bef9,
       messagePrefix: '\x19Litecoin Signed Message:\n',

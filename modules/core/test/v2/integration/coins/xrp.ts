@@ -4,7 +4,7 @@ import 'should';
 import * as Promise from 'bluebird';
 const co = Promise.coroutine;
 
-import { HDNode } from 'bitgo-utxo-lib';
+import { HDNode } from '@bitgo/utxo-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
 
 const nock = require('nock');

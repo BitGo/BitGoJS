@@ -6,7 +6,7 @@
  */
 import * as rippleKeypairs from 'ripple-keypairs';
 import * as ripple from 'ripple-lib';
-import { ECPair } from 'bitgo-utxo-lib';
+import { ECPair } from '@bitgo/utxo-lib';
 
 import * as binary from 'ripple-binary-codec';
 import { computeBinaryTransactionHash } from 'ripple-lib/dist/npm/common/hashes';
@@ -25,7 +25,7 @@ function computeSignature(tx, privateKey, signAs) {
  * @returns {{signedTransaction: *, id}}
  */
 const signWithPrivateKey = function(txHex, privateKey, options) {
-  let privateKeyBuffer = new Buffer(privateKey, 'hex');
+  let privateKeyBuffer = Buffer.from(privateKey, 'hex');
   if (privateKeyBuffer.length === 33 && privateKeyBuffer[0] === 0) {
     privateKeyBuffer = privateKeyBuffer.slice(1, 33);
   }

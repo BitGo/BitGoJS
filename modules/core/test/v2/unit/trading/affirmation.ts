@@ -9,9 +9,10 @@ import { Wallet } from '../../../../src/v2/wallet';
 import { Enterprise } from '../../../../src/v2/enterprise';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as common from '../../../../src/common';
+import { Environments } from '../../../../src';
 
 describe('Affirmations', function() {
-  const microservicesUri = 'https://bitgo-microservices.example';
+  const microservicesUri = Environments['mock'].uri;
   let bitgo;
   let basecoin;
   let enterprise;
@@ -96,12 +97,7 @@ describe('Affirmations', function() {
         encryptedPrv: bitgo.encrypt({ input: xprv, password: TestBitGo.OFC_TEST_PASSWORD })
       });
 
-    const payload = yield tradingAccount.buildPayload({
-      currency: 'ofctusd',
-      amount: '555',
-      otherParties: [{ accountId: '5cf940a49449412d00f53b8f7392f7c0', amount: '500', currency: 'ofctbtc' }]
-    });
-
+    const payload = yield tradingAccount.buildPayload(fixtures.affirmAffirmationPayloadRequest);
     const signature = yield tradingAccount.signPayload({ payload, walletPassphrase: TestBitGo.OFC_TEST_PASSWORD });
 
     yield affirmation.affirm(payload, signature);

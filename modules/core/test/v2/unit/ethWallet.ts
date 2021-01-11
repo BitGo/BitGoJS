@@ -2,7 +2,7 @@ import * as Bluebird from 'bluebird';
 import * as should from 'should';
 import * as secp256k1 from 'secp256k1';
 import * as nock from 'nock';
-import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 import * as sinon from 'sinon';
 import { Util } from '../../../src/v2/internal/util';
 import * as common from '../../../src/common';
@@ -10,8 +10,10 @@ import * as common from '../../../src/common';
 import { TestBitGo } from '../../lib/test_bitgo';
 const fixtures = require('../fixtures/coins/eth');
 const EthTx = require('ethereumjs-tx');
-
+import { SignTransactionOptions } from '../../../src/v2/coins/eth';
 const co = Bluebird.coroutine;
+
+import { getBuilder, Eth } from '@bitgo/account-lib';
 
 describe('Sign ETH Transaction', co(function *() {
 
@@ -276,8 +278,8 @@ describe('Add final signature to ETH tx from offline vault', function() {
     coin = bitgo.coin('teth');
   });
 
-  it('should successfully fully sign a half-signed transaction from the offline vault', function() {
-    const response = coin.signTransaction(paramsFromVault);
+  it('should successfully fully sign a half-signed transaction from the offline vault', co(function *() {
+    const response = yield coin.signTransaction(paramsFromVault);
     const expectedTx = new EthTx(expectedResult.txHex);
     const actualTx = new EthTx(response.txHex);
     actualTx.nonce.should.deepEqual(expectedTx.nonce);
@@ -290,7 +292,7 @@ describe('Add final signature to ETH tx from offline vault', function() {
     actualTx.gasPrice.should.deepEqual(expectedTx.gasPrice);
     actualTx.gasLimit.should.deepEqual(expectedTx.gasLimit);
     response.txHex.should.equal(expectedResult.txHex);
-  });
+  }));
 });
 
 describe('prebuildTransaction', function() {
@@ -340,5 +342,47 @@ describe('prebuildTransaction', function() {
     }
     should.exist(error);
     error.message.should.equal(`Hop transactions are not enabled for ERC-20 tokens, nor are they necessary. Please remove the 'hop' parameter and try again.`);
+  }));
+});
+
+describe('final-sign transaction from WRW', function() {
+  it('should add a second signature to unsigned sweep', (async function () {
+    const bitgo = new TestBitGo({ env: 'test' });
+    const basecoin = bitgo.coin('teth');
+    const gasPrice = 200000000000;
+    const gasLimit =  500000;
+    const prv = 'xprv9s21ZrQH143K3D8TXfvAJgHVfTEeQNW5Ys9wZtnUZkqPzFzSjbEJrWC1vZ4GnXCvR7rQL2UFX3RSuYeU9MrERm1XBvACow7c36vnz5iYyj2'; // placeholder test prv
+    const tx = {
+      txPrebuild: fixtures.WRWUnsignedSweepETHTx,
+      prv,
+    };
+    ​// sign transaction once
+    const halfSigned = await basecoin.signTransaction(tx);
+
+    const wrapper = {} as SignTransactionOptions;
+    wrapper.txPrebuild = halfSigned;
+    wrapper.txPrebuild.recipients = halfSigned.halfSigned.recipients;
+    wrapper.txPrebuild.gasPrice = gasPrice.toString();
+    wrapper.txPrebuild.gasLimit = gasLimit.toString();
+    wrapper.isLastSignature = true;
+    wrapper.walletContractAddress = fixtures.WRWUnsignedSweepETHTx.walletContractAddress;
+    wrapper.prv = prv;
+
+    // sign transaction twice with the "isLastSignature" flag
+    const finalSignedTx = await basecoin.signTransaction(wrapper);
+    finalSignedTx.should.have.property('txHex');
+    const txBuilder = getBuilder('eth') as Eth.TransactionBuilder;
+    txBuilder.from("0x" + finalSignedTx.txHex); // add a 0x in front of this txhex
+    const rebuiltTx = await txBuilder.build();
+    const outputs = rebuiltTx.outputs.map(output => {
+      return {
+        address: output.address,
+        amount: output.value,
+      };
+    });
+    rebuiltTx.signature.length.should.equal(2);
+    outputs.length.should.equal(1);
+    outputs[0].address.should.equal(fixtures.WRWUnsignedSweepETHTx.recipient.address);
+    outputs[0].amount.should.equal(fixtures.WRWUnsignedSweepETHTx.recipient.amount);
   }));
 });

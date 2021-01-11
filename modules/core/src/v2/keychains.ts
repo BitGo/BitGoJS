@@ -346,4 +346,3 @@ export class Keychains {
     }).call(this).asCallback(callback);
   }
 }
-

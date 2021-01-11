@@ -3,6 +3,7 @@ const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const glob = require('glob');
+const { exec } = require("child_process");
 
 // Loaders handle certain extensions and apply transforms
 function setupRules(env) {
@@ -90,7 +91,19 @@ function setupPlugins(env) {
     // By default, webpack will bundle _everything_ that could possibly match the expression
     // inside a dynamic 'require'. This changes Webpack so that it bundles nothing.
     new webpack.ContextReplacementPlugin(/.*$/, /$NEVER_MATCH^/),
-    ...excludeCoins
+    ...excludeCoins,
+    // This plugin uses webpack's hooks to perform a post processing step to find + replace unsafe code.
+    // currently, hashgraph protobufs generated code will attempt resolve the global object with: 
+    //   Function("return this")() 
+    // which is not permitted in strict CSP environments. This can safely just be replaced with the *actual* global
+    // object, i.e. window
+    {
+      apply: (compiler) => {
+        compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
+          exec(`sed -i \"\" 's/Function(\"return this\")()/window/g' ./dist/browser/${env.prod ? 'BitGoJS.min.js' : 'BitGoJS.js' }`)          
+        });
+      }
+    }
   ];
 
   if (!env.test) {
@@ -134,10 +147,14 @@ module.exports = function setupWebpack(env) {
   // Compile source code
   return {
     resolve: {
-      extensions: ['.js']
+      extensions: ['.js'],
+      alias: {
+        // make sure we use the browser bundle and not the NodeJS package
+        '@bitgo/account-lib' : path.resolve(`../account-lib/dist/browser/${env.prod ? 'bitgo-account-lib.min.js': 'bitgo-account-lib.js'}`)
+      }
     },
     // Main project entry point
-    entry: path.join(__dirname, 'dist', 'browserify', 'BitGoJS.browserify.js'),
+    entry: path.join(__dirname, 'dist', 'src', 'index.js'),
 
     // Output directory and filename
     // Library acts like 'standalone' for browserify, defines it globally if module system not found
@@ -170,7 +187,13 @@ module.exports = function setupWebpack(env) {
     },
 
     // Create a source map for the bundled code (dev and test only)
-    devtool: !env.prod && 'source-map',
-    mode: env.prod ? 'production' : 'development'
+    devtool: env.prod ? undefined : 'source-map',
+    mode: env.prod ? 'production' : 'development',
+    target: 'web',
+    node: {
+      util: true,
+      global: true,
+      child_process: 'empty',
+    },
   };
 };

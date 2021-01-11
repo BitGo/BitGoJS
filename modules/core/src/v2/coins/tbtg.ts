@@ -4,7 +4,7 @@ import { Btg } from './btg';
 
 export class Tbtg extends Btg {
   constructor(bitgo: BitGo) {
-    // TODO: move to bitgo-utxo-lib (BG-6821)
+    // TODO: move to @bitgo/utxo-lib (BG-6821)
     super(bitgo, {
       messagePrefix: '\x18Bitcoin Signed Message:\n',
       bech32: 'tb',

@@ -10,14 +10,14 @@ import * as should from 'should';
 const Q = require('q');
 
 const BitGoJS = require('../../src/index');
-const TestBitGo = require('../lib/test_bitgo');
+import { TestBitGo } from '../lib/test_bitgo';
 const TransactionBuilder = require('../../src/transactionBuilder');
 const crypto = require('crypto');
 import * as _ from 'lodash';
 const bitcoin = BitGoJS.bitcoin;
 const unspentData = require('./fixtures/largeunspents.json');
-import * as Promise from 'bluebird';
-const co = Promise.coroutine;
+import * as Bluebird from 'bluebird';
+const co = Bluebird.coroutine;
 const common = require('../../src/common');
 const request = require('superagent');
 const Wallet = require('../../src/wallet');
@@ -1812,7 +1812,7 @@ describe('Wallet API', function() {
           // parse tx to make sure the single key address was used to pay the fee
           const transaction = bitcoin.Transaction.fromHex(result.transactionHex);
           const singleKeyInput = transaction.ins[transaction.ins.length - 1];
-          const inputTxHash = bitcoin.bufferutils.reverse(singleKeyInput.hash).toString('hex');
+          const inputTxHash = Buffer.from(singleKeyInput.hash).reverse().toString('hex');
 
           // get the input tx to find the amount taken from the single key fee address
           return bitgo.get(bitgo.url('/tx/' + inputTxHash))
@@ -3007,6 +3007,7 @@ describe('Accelerate Transaction (test server)', function accelerateTxDescribe()
   let parentTxFeeRate;
 
   before(co(function *coAccelerateTxBefore() {
+    require('nock').restore();
     if (bitgo._token === undefined || bitgo._token === null) {
       yield bitgo.authenticateTestUser(bitgo.testUserOTP());
     }
@@ -3040,49 +3041,44 @@ describe('Accelerate Transaction (test server)', function accelerateTxDescribe()
     parentTx = _.merge(parentTx, _.pick(sendResult, ['hash']));
 
     // allow parent tx time to be indexed by smartbit
-    return Promise.delay(10000);
+    return Bluebird.delay(10000);
   }));
 
-  function verifyTargetFeeRate({ parentTx, childTx, targetRate }, callback) {
-    return co(function *coVerifyTargetRate() {
-      const SMARTBIT_API = common.Environments[bitgo.getEnv()].smartBitApiBaseUrl;
-      const req_url = SMARTBIT_API + '/blockchain/tx/';
-      const parent_req_url = req_url + parentTx.hash;
-      const child_req_url = req_url + childTx.hash;
+  async function verifyTargetFeeRate({ parentTx, childTx, targetRate }) {
+    const explorerBaseUrl = common.Environments[bitgo.getEnv()].btcExplorerBaseUrl;
+    const getTx = async (txId) => await request.get(`${explorerBaseUrl}/tx/${txId}`).send();
+    const parent = await getTx(parentTx.hash);
+    const child = await getTx(childTx.hash);
 
-      const parent = yield request.get(parent_req_url).send();
-      const child = yield request.get(child_req_url).send();
+    const childFee = child.body.fee;
+    const childVSize = Math.ceil(child.body.weight / 4);
+    const parentFee = parent.body.fee;
+    const parentVSize = Math.ceil(parent.body.weight / 4);
 
-      const childFee = child.body.transaction.fee_int;
-      const childVSize = child.body.transaction.vsize;
-      const parentFee = parent.body.transaction.fee_int;
-      const parentVSize = parent.body.transaction.vsize;
+    const combinedVSize = childVSize + parentVSize;
+    const combinedFee = childFee + parentFee;
+    const combinedRate = 1000 * combinedFee / combinedVSize;
 
-      const combinedVSize = childVSize + parentVSize;
-      const combinedFee = childFee + parentFee;
-      const combinedRate = 1000 * combinedFee / combinedVSize;
-
-      // ensure the actual combined rate is within 2% of the target rate.
-      // This inexact fee rate result is usually due to the child tx witness
-      // signatures being one byte less than was estimated when creating
-      // the child transaction. It is also possible to create a valid
-      // signature which is more than one byte less than was estimated, but
-      // this case should be sufficiently rare that it is not handled in this test.
-      const tolerance = 0.02 * targetRate;
-      combinedRate.should.be.within(targetRate - tolerance, targetRate + tolerance);
-    }).call(this).asCallback(callback);
+    // ensure the actual combined rate is within 2% of the target rate.
+    // This inexact fee rate result is usually due to the child tx witness
+    // signatures being one byte less than was estimated when creating
+    // the child transaction. It is also possible to create a valid
+    // signature which is more than one byte less than was estimated, but
+    // this case should be sufficiently rare that it is not handled in this test.
+    const tolerance = 0.02 * targetRate;
+    combinedRate.should.be.within(targetRate - tolerance, targetRate + tolerance);
   }
 
-  it('accelerates a stuck tx', co(function *coAcceleratesStuckTx() {
+  it('accelerates a stuck tx', async function() {
     // random fee rate at least 10% above the parentTxFeeRate,
     // but no more than the max fee rate
     const minCombinedTxFeeRate = parentTxFeeRate * 1.1;
     const combinedTxFeeRate = Math.floor(Math.random() * (maxFeeRate - minCombinedTxFeeRate) + minCombinedTxFeeRate);
 
-    const childTx = yield wallet.accelerateTransaction({
+    const childTx = await wallet.accelerateTransaction({
       transactionID: parentTx.hash,
       feeRate: combinedTxFeeRate,
-      xprv: userKeypair.xprv
+      xprv: userKeypair.xprv,
     });
 
     // verify childTx
@@ -3090,7 +3086,7 @@ describe('Accelerate Transaction (test server)', function accelerateTxDescribe()
     childTx.should.have.property('status', 'accepted');
 
     // allow child tx time to be indexed by smartbit
-    yield Promise.delay(10000);
-    return verifyTargetFeeRate({ parentTx, childTx, targetRate: combinedTxFeeRate }, undefined);
-  }));
+    await Bluebird.delay(10000);
+    return verifyTargetFeeRate({ parentTx, childTx, targetRate: combinedTxFeeRate });
+  });
 });

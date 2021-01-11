@@ -2,9 +2,9 @@
  * @prettier
  */
 import { BigNumber } from 'bignumber.js';
-import * as utxoLib from 'bitgo-utxo-lib';
+import * as utxoLib from '@bitgo/utxo-lib';
 import * as Bluebird from 'bluebird';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as debugLib from 'debug';
 import * as Keccak from 'keccak';
 import * as _ from 'lodash';
@@ -101,10 +101,12 @@ interface SignFinalOptions {
     halfSigned: {
       expireTime: number;
       contractSequenceId: number;
+      backupKeyNonce?: number;
       signature: string;
     };
     nextContractSequenceId?: number;
     hopTransaction?: string;
+    backupKeyNonce?: number;
   };
   signingKeyNonce: number;
   walletContractAddress: string;
@@ -112,7 +114,7 @@ interface SignFinalOptions {
   recipients: Recipient[];
 }
 
-interface SignTransactionOptions extends SignFinalOptions {
+export interface SignTransactionOptions extends SignFinalOptions {
   isLastSignature?: boolean;
   expireTime: number;
   sequenceId: number;
@@ -397,7 +399,7 @@ export class Eth extends BaseCoin {
         'ETHER',
         new optionalDeps.ethUtil.BN(optionalDeps.ethUtil.stripHexPrefix(recipient.address), 16),
         recipient.amount,
-        new Buffer(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
+        Buffer.from(optionalDeps.ethUtil.stripHexPrefix(recipient.data) || '', 'hex'),
         expireTime,
         contractSequenceId,
       ],
@@ -494,8 +496,10 @@ export class Eth extends BaseCoin {
   signFinal(params: SignFinalOptions): FullySignedTransaction {
     const txPrebuild = params.txPrebuild;
 
-    if (!_.isNumber(params.signingKeyNonce)) {
-      throw new Error('must have signingKeyNonce as a parameter, and it must be a number');
+    if (!_.isNumber(params.signingKeyNonce) && !_.isNumber(params.txPrebuild.halfSigned.backupKeyNonce)) {
+      throw new Error(
+        'must have at least one of signingKeyNonce and backupKeyNonce as a parameter, and it must be a number'
+      );
     }
     if (_.isUndefined(params.walletContractAddress)) {
       throw new Error('params must include walletContractAddress, but got undefined');
@@ -518,7 +522,8 @@ export class Eth extends BaseCoin {
 
     const ethTxParams = {
       to: params.walletContractAddress,
-      nonce: params.signingKeyNonce,
+      nonce:
+        params.signingKeyNonce !== undefined ? params.signingKeyNonce : params.txPrebuild.halfSigned.backupKeyNonce,
       value: 0,
       gasPrice: new optionalDeps.ethUtil.BN(txPrebuild.gasPrice),
       gasLimit: new optionalDeps.ethUtil.BN(txPrebuild.gasLimit),
@@ -536,63 +541,73 @@ export class Eth extends BaseCoin {
    * @param params
    * - txPrebuild
    * - prv
-   * @returns {{txHex}}
+   * @param callback
+   * @returns {Bluebird<SignedTransaction>}
    */
-  signTransaction(params: SignTransactionOptions): SignedTransaction {
-    const txPrebuild = params.txPrebuild;
-    const userPrv = params.prv;
-    const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
+  signTransaction(
+    params: SignTransactionOptions,
+    callback?: NodeCallback<SignedTransaction>
+  ): Bluebird<SignedTransaction> {
+    const self = this;
+    return co<SignedTransaction>(function*() {
+      const txPrebuild = params.txPrebuild;
+      const userPrv = params.prv;
+      const EXPIRETIME_DEFAULT = 60 * 60 * 24 * 7; // This signature will be valid for 1 week
 
-    if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
-      if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
-        throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+      if (_.isUndefined(txPrebuild) || !_.isObject(txPrebuild)) {
+        if (!_.isUndefined(txPrebuild) && !_.isObject(txPrebuild)) {
+          throw new Error(`txPrebuild must be an object, got type ${typeof txPrebuild}`);
+        }
+        throw new Error('missing txPrebuild parameter');
       }
-      throw new Error('missing txPrebuild parameter');
-    }
 
-    if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
-      if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
-        throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+      if (_.isUndefined(userPrv) || !_.isString(userPrv)) {
+        if (!_.isUndefined(userPrv) && !_.isString(userPrv)) {
+          throw new Error(`prv must be a string, got type ${typeof userPrv}`);
+        }
+        throw new Error('missing prv parameter to sign transaction');
       }
-      throw new Error('missing prv parameter to sign transaction');
-    }
 
-    params.recipients = txPrebuild.recipients || params.recipients;
+      params.recipients = txPrebuild.recipients || params.recipients;
 
-    // if no recipients in either params or txPrebuild, then throw an error
-    if (!params.recipients || !Array.isArray(params.recipients)) {
-      throw new Error('recipients missing or not array');
-    }
+      // if no recipients in either params or txPrebuild, then throw an error
+      if (!params.recipients || !Array.isArray(params.recipients)) {
+        throw new Error('recipients missing or not array');
+      }
 
-    // Normally the SDK provides the first signature for an ETH tx, but occasionally it provides the second and final one.
-    if (params.isLastSignature) {
-      // In this case when we're doing the second (final) signature, the logic is different.
-      return this.signFinal(params);
-    }
+      // Normally the SDK provides the first signature for an ETH tx, but occasionally it provides the second and final one.
+      if (params.isLastSignature) {
+        // In this case when we're doing the second (final) signature, the logic is different.
+        return self.signFinal(params);
+      }
 
-    const secondsSinceEpoch = Math.floor(new Date().getTime() / 1000);
-    const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
-    const sequenceId = txPrebuild.nextContractSequenceId;
+      const secondsSinceEpoch = Math.floor(new Date().getTime() / 1000);
+      const expireTime = params.expireTime || secondsSinceEpoch + EXPIRETIME_DEFAULT;
+      const sequenceId = txPrebuild.nextContractSequenceId;
 
-    if (_.isUndefined(sequenceId)) {
-      throw new Error('transaction prebuild missing required property nextContractSequenceId');
-    }
+      if (_.isUndefined(sequenceId)) {
+        throw new Error('transaction prebuild missing required property nextContractSequenceId');
+      }
 
-    const operationHash = this.getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, sequenceId);
-    const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
+      const operationHash = self.getOperationSha3ForExecuteAndConfirm(params.recipients, expireTime, sequenceId);
+      const signature = Util.ethSignMsgHash(operationHash, Util.xprvToEthPrivateKey(userPrv));
 
-    const txParams = {
-      recipients: params.recipients,
-      expireTime: expireTime,
-      contractSequenceId: sequenceId,
-      sequenceId: params.sequenceId,
-      operationHash: operationHash,
-      signature: signature,
-      gasLimit: params.gasLimit,
-      gasPrice: params.gasPrice,
-      hopTransaction: txPrebuild.hopTransaction,
-    };
-    return { halfSigned: txParams };
+      const txParams = {
+        recipients: params.recipients,
+        expireTime: expireTime,
+        contractSequenceId: sequenceId,
+        sequenceId: params.sequenceId,
+        operationHash: operationHash,
+        signature: signature,
+        gasLimit: params.gasLimit,
+        gasPrice: params.gasPrice,
+        hopTransaction: txPrebuild.hopTransaction,
+        backupKeyNonce: txPrebuild.backupKeyNonce,
+      };
+      return { halfSigned: txParams };
+    })
+      .call(this)
+      .asCallback(callback);
   }
 
   /**
@@ -1096,6 +1111,9 @@ export class Eth extends BaseCoin {
   recoveryBlockchainExplorerQuery(query: any, callback?: NodeCallback<any>): Bluebird<any> {
     const self = this;
     return co(function*() {
+      if (common.Environments[self.bitgo.getEnv()].etherscanApiToken) {
+        query.apikey = common.Environments[self.bitgo.getEnv()].etherscanApiToken;
+      }
       const response = yield request
         .get(common.Environments[self.bitgo.getEnv()].etherscanBaseUrl + '/api')
         .query(query);
@@ -1378,7 +1396,7 @@ export class Eth extends BaseCoin {
       // An extended private key has both a normal 256 bit private key and a 256
       // bit chain code, both of which must be random. 512 bits is therefore the
       // maximum entropy and gives us maximum security against cracking.
-      seed = crypto.randomBytes(512 / 8);
+      seed = randomBytes(512 / 8);
     }
     const extendedKey = utxoLib.HDNode.fromSeedBuffer(seed);
     const xpub = extendedKey.neutered().toBase58();

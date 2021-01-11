@@ -1,16 +1,15 @@
 /**
  * @prettier
  */
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { BitGo } from '../bitgo';
 import * as common from '../common';
 import { BaseCoin, KeychainsTriplet, SupplementGenerateWalletOptions } from './baseCoin';
-import { NodeCallback } from './types';
+import { NodeCallback, RequestTracer as IRequestTracer } from './types';
 import { PaginationOptions, Wallet } from './wallet';
 import * as Bluebird from 'bluebird';
 import * as _ from 'lodash';
 import { hdPath } from '../bitcoin';
-import { RequestTracer as IRequestTracer } from './types';
 import { RequestTracer } from './internal/util';
 
 const co = Bluebird.coroutine;
@@ -69,6 +68,7 @@ export interface AddWalletOptions {
   n?: number;
   tags?: string[];
   clientFlags?: string[];
+  signingKeyId?: string;
   isCold?: boolean;
   isCustodial?: boolean;
   address?: string;
@@ -76,6 +76,7 @@ export interface AddWalletOptions {
   rootPrivateKey?: string;
   initializationTxs?: any;
   disableTransactionNotifications?: boolean;
+  gasPrice?: number;
 }
 
 export interface ListWalletOptions extends PaginationOptions {
@@ -184,6 +185,10 @@ export class Wallets {
         }
       }
 
+      if (params.gasPrice && !_.isNumber(params.gasPrice)) {
+        throw new Error('invalid argument for gasPrice - number expected');
+      }
+
       if (params.tags && Array.isArray(params.tags) === false) {
         throw new Error('invalid argument for tags - array expected');
       }
@@ -204,6 +209,10 @@ export class Wallets {
         throw new Error('invalid argument for address - valid address string expected');
       }
 
+      if (params.signingKeyId && !_.isString(params.signingKeyId)) {
+        throw new Error('invalid argument for signingKeyId - valid key id string expected');
+      }
+
       const walletParams = _.pick(params, [
         'label',
         'm',
@@ -216,6 +225,8 @@ export class Wallets {
         'clientFlags',
         'type',
         'address',
+        'signingKeyId',
+        'gasPrice',
       ]);
 
       // Additional params needed for xrp
@@ -428,8 +439,8 @@ export class Wallets {
       const { prv } = userKeychain;
       if (_.isString(prv)) {
         walletParams.keySignatures = {
-          backup: self.baseCoin.signMessage({ prv }, backupKeychain.pub).toString('hex'),
-          bitgo: self.baseCoin.signMessage({ prv }, bitgoKeychain.pub).toString('hex'),
+          backup: (yield self.baseCoin.signMessage({ prv }, backupKeychain.pub)).toString('hex'),
+          bitgo: (yield self.baseCoin.signMessage({ prv }, bitgoKeychain.pub)).toString('hex'),
         };
       }
 

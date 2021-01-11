@@ -1,5 +1,9 @@
 # BitGo SDK Typescript Examples
 
+## Prerequisites
+
+You will need node and npm installed locally. You can find information on how to do this in the root README.md.
+
 ## Running the examples
 
 First, run `npm install` in the `modules/core` directory.

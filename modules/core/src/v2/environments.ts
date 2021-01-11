@@ -1,7 +1,7 @@
 /**
  * @prettier
  */
-import * as bitcoin from 'bitgo-utxo-lib';
+import * as bitcoin from '@bitgo/utxo-lib';
 import { V1Network, V1RmgNetwork } from './types';
 
 interface EnvironmentTemplate {
@@ -15,11 +15,15 @@ interface EnvironmentTemplate {
   signingAddress: string;
   serverXpub: string;
   hsmXpub: string;
-  smartBitApiBaseUrl: string;
+  blockstreamBaseUrl: string;
+  smartbitBaseUrl: string;
+  btcExplorerBaseUrl: string;
   bchExplorerBaseUrl: string;
   bsvExplorerBaseUrl?: string;
   btgExplorerBaseUrl?: string;
   etherscanBaseUrl: string;
+  etherscanApiToken?: string;
+  eth2ExplorerBaseUrl: string;
   ltcExplorerBaseUrl: string;
   zecExplorerBaseUrl: string;
   dashExplorerBaseUrl: string;
@@ -29,6 +33,7 @@ interface EnvironmentTemplate {
     full: string;
     solidity: string;
   };
+  hmacVerificationEnforced: boolean;
 }
 
 export interface Environment extends EnvironmentTemplate {
@@ -55,31 +60,32 @@ export const hardcodedPublicKeys = Object.freeze({
 
 export type EnvironmentName =
   | 'prod'
-  | 'rmgProd'
   | 'staging'
-  | 'rmgStaging'
   | 'test'
-  | 'rmgTest'
   | 'dev'
   | 'latest'
-  | 'rmgLatest'
-  | 'rmgDev'
   | 'local'
   | 'localNonSecure'
   | 'mock'
-  | 'rmgLocal'
-  | 'rmglocalNonSecure'
-  | 'msProd'
-  | 'msTest'
-  | 'msDev'
-  | 'msLatest'
   | 'adminProd'
   | 'adminTest'
   | 'adminDev'
   | 'adminLatest'
-  | 'custom';
+  | 'custom'
+  | 'branch';
+
+export type AliasEnvironmentName = 'production' | 'msProd' | 'msTest' | 'msDev' | 'msLatest';
 
 export type Environments = { [k in EnvironmentName]: Environment };
+
+// alias environments are environment names which are aliases of a supported environment
+export const AliasEnvironments: { [k in AliasEnvironmentName]: EnvironmentName } = {
+  production: 'prod',
+  msProd: 'prod',
+  msTest: 'test',
+  msDev: 'dev',
+  msLatest: 'latest',
+};
 
 const mainnetBase: EnvironmentTemplate = {
   networks: {
@@ -90,10 +96,14 @@ const mainnetBase: EnvironmentTemplate = {
   signingAddress: '1BitGo3gxRZ6mQSEH52dvCKSUgVCAH4Rja',
   serverXpub: hardcodedPublicKeys.serverXpub.prod,
   hsmXpub: hardcodedPublicKeys.hsmXpub.prod,
-  smartBitApiBaseUrl: 'https://api.smartbit.com.au/v1',
+  blockstreamBaseUrl: 'https://blockstream.info/api',
+  smartbitBaseUrl: 'https://api.smartbit.com.au/v1',
+  btcExplorerBaseUrl: 'https://blockstream.info/api',
   bchExplorerBaseUrl: 'https://blockdozer.com/insight-api',
   btgExplorerBaseUrl: 'https://btgexplorer.com/api',
   etherscanBaseUrl: 'https://api.etherscan.io',
+  etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
+  eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ltcExplorerBaseUrl: 'https://insight.litecore.io/api',
   zecExplorerBaseUrl: 'https://zcashnetwork.info/api',
   dashExplorerBaseUrl: 'https://insight.dash.org/insight-api',
@@ -102,6 +112,7 @@ const mainnetBase: EnvironmentTemplate = {
     full: 'https://api.trongrid.io',
     solidity: 'https://api.trongrid.io',
   },
+  hmacVerificationEnforced: true,
 };
 
 const testnetBase: EnvironmentTemplate = {
@@ -113,9 +124,13 @@ const testnetBase: EnvironmentTemplate = {
   signingAddress: 'msignBdFXteehDEgB6DNm7npRt7AcEZJP3',
   serverXpub: hardcodedPublicKeys.serverXpub.test,
   hsmXpub: hardcodedPublicKeys.hsmXpub.test,
-  smartBitApiBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
+  blockstreamBaseUrl: 'https://blockstream.info/testnet/api',
+  smartbitBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
+  btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
   bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
   etherscanBaseUrl: 'https://kovan.etherscan.io',
+  etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
+  eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
   zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
   dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api',
@@ -128,52 +143,34 @@ const testnetBase: EnvironmentTemplate = {
     full: 'http://47.252.81.135:8090',
     solidity: 'http://47.252.81.135:8091',
   },
+  hmacVerificationEnforced: true,
 };
 
 const devBase: EnvironmentTemplate = Object.assign({}, testnetBase, {
   hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
+  hmacVerificationEnforced: false,
 });
 
 export const Environments: Environments = {
   prod: Object.assign({}, mainnetBase, {
-    uri: 'https://www.bitgo.com',
-    stellarFederationServerUrl: 'https://www.bitgo.com/api/v2/xlm/federation',
+    uri: 'https://app.bitgo.com',
+    stellarFederationServerUrl: 'https://app.bitgo.com/api/v2/xlm/federation',
   }),
-  rmgProd: Object.assign({}, mainnetBase, {
-    uri: 'https://rmg.bitgo.com',
-    stellarFederationServerUrl: 'https://rmg.bitgo.com/api/v2/xlm/federation',
+  test: Object.assign({}, testnetBase, {
+    uri: 'https://app.bitgo-test.com',
+    stellarFederationServerUrl: 'https://app.bitgo-test.com/api/v2/txlm/federation',
+  }),
+  dev: Object.assign({}, devBase, {
+    uri: 'https://app.bitgo-dev.com',
+    stellarFederationServerUrl: 'https://app.bitgo-dev.com/api/v2/txlm/federation',
+  }),
+  latest: Object.assign({}, devBase, {
+    uri: 'https://app.bitgo-latest.com',
+    stellarFederationServerUrl: 'https://app.bitgo-latest.com/api/v2/xlm/federation',
   }),
   staging: Object.assign({}, mainnetBase, {
     uri: 'https://staging.bitgo.com',
     stellarFederationServerUrl: 'https://staging.bitgo.com/api/v2/xlm/federation',
-  }),
-  rmgStaging: Object.assign({}, mainnetBase, {
-    uri: 'https://rmgstaging.bitgo.com',
-    stellarFederationServerUrl: 'https://rmgstaging.bitgo.com/api/v2/xlm/federation',
-  }),
-  test: Object.assign({}, testnetBase, {
-    uri: 'https://test.bitgo.com',
-    stellarFederationServerUrl: 'https://test.bitgo.com/api/v2/txlm/federation',
-  }),
-  rmgTest: Object.assign({}, testnetBase, {
-    uri: 'https://rmgtest.bitgo.com',
-    stellarFederationServerUrl: 'https://rmgtest.bitgo.com/api/v2/txlm/federation',
-  }),
-  dev: Object.assign({}, devBase, {
-    uri: 'https://webdev.bitgo.com',
-    stellarFederationServerUrl: 'https://webdev.bitgo.com/api/v2/txlm/federation',
-  }),
-  latest: Object.assign({}, devBase, {
-    uri: 'https://latest.bitgo.com',
-    stellarFederationServerUrl: 'https://latest.bitgo.com/api/v2/txlm/federation',
-  }),
-  rmgLatest: Object.assign({}, devBase, {
-    uri: 'https://rmglatest.bitgo.com',
-    stellarFederationServerUrl: 'https://rmglatest.bitgo.com/api/v2/txlm/federation',
-  }),
-  rmgDev: Object.assign({}, devBase, {
-    uri: 'https://rmgwebdev.bitgo.com',
-    stellarFederationServerUrl: 'https://rmgwebdev.bitgo.com/api/v2/txlm/federation',
   }),
   local: Object.assign({}, devBase, {
     uri: 'https://localhost:3000',
@@ -185,53 +182,33 @@ export const Environments: Environments = {
   }),
   mock: Object.assign({}, devBase, {
     uri: 'https://bitgo.fakeurl',
-    smartBitApiBaseUrl: 'https://testnet-api.smartbit.fakeurl/v1',
+    blockstreamBaseUrl: 'https://blockstream.info.fakeurl/testnet/api',
+    smartbitBaseUrl: 'https://testnet-api.smartbit.fakeurl/v1',
+    btcExplorerBaseUrl: 'https://blockstream.fakeurl/testnet/api',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.fakeurl/api',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
     etherscanBaseUrl: 'https://kovan.etherscan.fakeurl',
+    etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
+    eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.fakeurl/api',
     zecExplorerBaseUrl: 'https://explorer.testnet.z.fakeurl/api',
     dashExplorerBaseUrl: 'https://testnet-insight.dashevo.fakeurl/insight-api',
   }),
-  rmgLocal: Object.assign({}, devBase, {
-    uri: 'https://rmglocalhost:3000',
-    stellarFederationServerUrl: 'https://rmglocalhost:3000/api/v2/txlm/federation',
-  }),
-  rmglocalNonSecure: Object.assign({}, devBase, {
-    uri: 'http://rmglocalhost:3000',
-    stellarFederationServerUrl: 'http://rmglocalhost:3000/api/v2/txlm/federation',
-  }),
-  msProd: Object.assign({}, mainnetBase, {
-    uri: 'https://app.bitgo.com',
-    stellarFederationServerUrl: 'http://app.bitgo.com/api/v2/xlm/federation',
-  }),
-  msTest: Object.assign({}, testnetBase, {
-    uri: 'https://app.bitgo-test.com',
-    stellarFederationServerUrl: 'http://app.bitgo-test.com/api/v2/txlm/federation',
-  }),
-  msDev: Object.assign({}, devBase, {
-    uri: 'https://app.bitgo-dev.com',
-    stellarFederationServerUrl: 'http://app.bitgo-dev.com/api/v2/txlm/federation',
-  }),
-  msLatest: Object.assign({}, devBase, {
-    uri: 'https://app.bitgo-latest.com',
-    stellarFederationServerUrl: 'http://app.bitgo-latest.com/api/v2/xlm/federation',
-  }),
   adminProd: Object.assign({}, mainnetBase, {
     uri: 'https://admin.bitgo.com',
-    stellarFederationServerUrl: 'http://admin.bitgo.com/api/v2/xlm/federation',
+    stellarFederationServerUrl: 'https://admin.bitgo.com/api/v2/xlm/federation',
   }),
   adminTest: Object.assign({}, testnetBase, {
     uri: 'https://admin.bitgo-test.com',
-    stellarFederationServerUrl: 'http://admin.bitgo-test.com/api/v2/txlm/federation',
+    stellarFederationServerUrl: 'https://admin.bitgo-test.com/api/v2/txlm/federation',
   }),
   adminDev: Object.assign({}, devBase, {
     uri: 'https://admin.bitgo-dev.com',
-    stellarFederationServerUrl: 'http://admin.bitgo-dev.com/api/v2/txlm/federation',
+    stellarFederationServerUrl: 'https://admin.bitgo-dev.com/api/v2/txlm/federation',
   }),
   adminLatest: Object.assign({}, devBase, {
     uri: 'https://admin.bitgo-latest.com',
-    stellarFederationServerUrl: 'http://admin.bitgo-latest.com/api/v2/xlm/federation',
+    stellarFederationServerUrl: 'https://admin.bitgo-latest.com/api/v2/xlm/federation',
   }),
   custom: Object.assign({}, mainnetBase, {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -243,10 +220,18 @@ export const Environments: Environments = {
     network: process.env.BITGO_CUSTOM_BITCOIN_NETWORK as V1Network,
     rmgNetwork: process.env.BITGO_CUSTOM_RMG_NETWORK as V1RmgNetwork,
     hsmXpub: hardcodedPublicKeys.hsmXpub.dev,
-    smartBitApiBaseUrl:
+    smartbitBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://testnet-api.smartbit.com.au/v1'
         : 'https://api.smartbit.com.au/v1',
+    blockstreamBaseUrl:
+      process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
+        ? 'https://blockstream.info/testnet/api'
+        : 'https://blockstream.info/api',
+    btcExplorerBaseUrl:
+      process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
+        ? 'https://blockstream.info/testnet/api'
+        : 'https://blockstream.info/api',
     bchExplorerBaseUrl:
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? 'https://test-bch-insight.bitpay.com/api'
@@ -276,5 +261,9 @@ export const Environments: Environments = {
       process.env.BITGO_CUSTOM_BITCOIN_NETWORK !== 'bitcoin'
         ? hardcodedPublicKeys.serverXpub.test
         : hardcodedPublicKeys.serverXpub.prod,
+  }),
+  branch: Object.assign({}, devBase, {
+    uri: 'https://app.bitgo-dev.com',
+    stellarFederationServerUrl: 'https://app.bitgo-dev.com/api/v2/txlm/federation',
   }),
 };

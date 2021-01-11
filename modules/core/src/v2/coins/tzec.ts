@@ -1,7 +1,7 @@
 import { BitGo } from '../../bitgo';
 import { BaseCoin } from '../baseCoin';
 import { Zec, ZecTransactionBuilder } from './zec';
-import * as bitGoUtxoLib from 'bitgo-utxo-lib';
+import * as bitGoUtxoLib from '@bitgo/utxo-lib';
 
 export class Tzec extends Zec {
   constructor(bitgo: BitGo) {
@@ -28,6 +28,8 @@ export class Tzec extends Zec {
   prepareTransactionBuilder(txBuilder: ZecTransactionBuilder): any {
     txBuilder.setVersion(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
     txBuilder.setVersionGroupId(0x892f2085);
+    // Use "Canopy" consensus branch ID https://zips.z.cash/zip-0251
+    txBuilder.setConsensusBranchId(0xe9ff75a6);
     return txBuilder;
   }
 }

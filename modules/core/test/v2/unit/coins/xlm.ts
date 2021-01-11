@@ -1,7 +1,8 @@
 import * as should from 'should';
-import * as crypto from 'crypto';
+import { randomBytes } from 'crypto';
 import * as stellar from 'stellar-sdk';
 import * as Bluebird from 'bluebird';
+import { Environments } from '../../../../src';
 const co = Bluebird.coroutine;
 
 import { Wallet } from '../../../../src/v2/wallet';
@@ -13,11 +14,13 @@ nock.enableNetConnect();
 describe('XLM:', function() {
   let bitgo;
   let basecoin;
+  let uri;
 
   before(function() {
     bitgo = new TestBitGo({ env: 'test' });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin('txlm');
+    uri = Environments[bitgo.getEnv()].uri;
   });
 
   after(function() {
@@ -168,7 +171,7 @@ describe('XLM:', function() {
   it('isValidMemoId should work', function() {
     basecoin.isValidMemo({ value: '1', type: 'id' }).should.equal(true);
     basecoin.isValidMemo({ value: 'uno', type: 'text' }).should.equal(true);
-    const buffer = new Buffer(32).fill(10);
+    const buffer = Buffer.alloc(32).fill(10);
     basecoin.isValidMemo({ value: buffer, type: 'hash' }).should.equal(true);
     basecoin.isValidMemo({ value: buffer.toString('hex'), type: 'hash' }).should.equal(true);
     basecoin.isValidMemo({ value: 1, type: 'id' }).should.equal(false);
@@ -468,7 +471,7 @@ describe('XLM:', function() {
           txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
         };
 
-        nock('https://test.bitgo.com')
+        nock(uri)
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
           .reply(200, buildResult);
 
@@ -498,7 +501,7 @@ describe('XLM:', function() {
           txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
         };
 
-        nock('https://test.bitgo.com')
+        nock(uri)
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
           .reply(200, buildResult);
 
@@ -529,7 +532,7 @@ describe('XLM:', function() {
           txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAABLAAM4aEAAAAHAAAAAAAAAAAAAAABAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAA=',
         };
 
-        nock('https://test.bitgo.com')
+        nock(uri)
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
           .reply(200, buildResult);
 
@@ -566,7 +569,7 @@ describe('XLM:', function() {
           txBase64: 'AAAAANsKrHV2BVjACFt2xlyhxYzP2MNBmb4IQ5E9/WiJiV3TAAAAyAAM4aEAAAAJAAAAAAAAAAAAAAACAAAAAAAAAAYAAAABQlNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAOjUpRAAAAAAAAAAAAYAAAABVFNUAAAAAABhNDpbuY4frrgwVQqkws7jxK+k4IMrJ6BaE0OFUva9vwAAAAAAAAAAAAAAAAAAAAA=',
         };
 
-        nock('https://test.bitgo.com')
+        nock(uri)
           .post(`/api/v2/${wallet.coin()}/wallet/${wallet.id()}/tx/build`)
           .reply(200, buildResult);
 
@@ -589,7 +592,7 @@ describe('XLM:', function() {
       it('should fail to loop up an invalid stellar address with a bitgo.com domain', co(function *() {
         const stellarAddress = 'invalid*bitgo.com';
 
-        nock('https://test.bitgo.com')
+        nock(uri)
           .get('/.well-known/stellar.toml')
           .reply(200, 'FEDERATION_SERVER="https://test.bitgo.com/api/v2/txlm/federation"')
           .get('/api/v2/txlm/federation')
@@ -610,7 +613,7 @@ describe('XLM:', function() {
         const stellarAddress = 'tester*bitgo.com';
         const accountId = 'GCBYY3S62QY43PMEKGJHRCBHEFJOHCLGSMWXREUZYDQHJHQ2LK4I42JA';
 
-        nock('https://test.bitgo.com')
+        nock(uri)
           .get('/.well-known/stellar.toml')
           .reply(200, 'FEDERATION_SERVER="https://test.bitgo.com/api/v2/txlm/federation"')
           .get('/api/v2/txlm/federation')
@@ -635,7 +638,7 @@ describe('XLM:', function() {
       it('should fail to look up an account if the account id is invalid', co(function *() {
         const accountId = '123';
 
-        nock('https://test.bitgo.com')
+        nock(uri)
           .get('/api/v2/txlm/federation')
           .query({
             q: accountId,
@@ -652,7 +655,7 @@ describe('XLM:', function() {
       it('should return only account_id for non-bitgo accounts', co(function *() {
         const accountId = 'GCROXHYJSTCS3CQQIU7GFC7YQIRIVGPYZQRZEM6PN7P7TAZ3PU4CHJRG';
 
-        nock('https://test.bitgo.com')
+        nock(uri)
           .get('/api/v2/txlm/federation')
           .query({
             q: accountId,
@@ -673,7 +676,7 @@ describe('XLM:', function() {
       it('should resolve a valid account id into an account', co(function *() {
         const accountId = 'GDDHCKMYYYCVXOSAVMSEIYGYNX74LIAV3ACXYQ6WPMDUF7W3KZNWTHTH';
 
-        nock('https://test.bitgo.com')
+        nock(uri)
           .get('/api/v2/txlm/federation')
           .query({
             q: accountId,
@@ -711,7 +714,7 @@ describe('XLM:', function() {
     });
 
     it('should generate a keypair from seed', function() {
-      const seed = crypto.randomBytes(32);
+      const seed = randomBytes(32);
       const keyPair = basecoin.generateKeyPair(seed);
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
