@@ -588,6 +588,10 @@ export const coins = CoinMap.fromCoins([
     '',
     'TST'
   ),
-  tofcerc20('ofcterc', 'ERC Test Token', 0, UnderlyingAsset.ERC),
   ofcerc20('ofcerc', 'ERC Token', 0, UnderlyingAsset.ERC),
+  ofcerc20('ofcusdt', 'Tether', 6, UnderlyingAsset.USDT),
+  ofcerc20('ofcusdc', 'USD Coin', 6, UnderlyingAsset.USDC),
+  tofcerc20('ofcterc', 'ERC Test Token', 0, UnderlyingAsset.ERC),
+  tofcerc20('ofctusdt', 'Test Tether', 6, UnderlyingAsset.USDT),
+  tofcerc20('ofctusdc', 'Test USD Coin', 6, UnderlyingAsset.USDC),
 ]);
