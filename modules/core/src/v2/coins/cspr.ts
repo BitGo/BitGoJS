@@ -7,8 +7,7 @@ import { BitGo } from '../../bitgo';
 import { Cspr as CsprAccountLib } from '@bitgo/account-lib';
 import { BaseCoin as StaticsBaseCoin } from '@bitgo/statics';
 
-import Bluebird = require('bluebird');
-
+import * as Bluebird from 'bluebird';
 export class Cspr extends BaseCoin {
   protected readonly _staticsCoin: Readonly<StaticsBaseCoin>;
 
