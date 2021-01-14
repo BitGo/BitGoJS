@@ -3,6 +3,7 @@ export const sendMultisigTokenMethodId = '0x0dcd7a6c';
 export const createForwarderMethodId = '0xa68a76cc';
 export const walletInitializationFirstBytes = '0x60606040';
 export const flushForwarderTokensMethodId = '0x2da03409';
+export const flushCoinsMethodId = '0x6b9f96ea';
 
 /*
   Steps to reproduce:
@@ -16,6 +17,7 @@ export const walletSimpleByteCode =
 
 export const walletSimpleConstructor = ['address[]'];
 export const flushTokensTypes = ['address', 'address'];
+export const flushCoinsTypes = [];
 
 export const walletSimpleAbi = [
   {
