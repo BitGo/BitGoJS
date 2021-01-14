@@ -96,6 +96,7 @@ export interface SupplementGenerateWalletOptions {
   enterprise?: string;
   disableTransactionNotifications?: boolean;
   gasPrice?: number;
+  walletVersion?: number;
   keys: string[];
   isCold: boolean;
   keySignatures?: {
