@@ -1,6 +1,9 @@
+import * as Promise from 'bluebird';
+const co = Promise.coroutine;
+
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { Tcspr } from '../../../../src/v2/coins/tcspr';
-import { Cspr } from '../../../../src/v2/coins/cspr';
+import { Tcspr } from '../../../../src/v2/coins';
+import { Cspr } from '../../../../src/v2/coins';
 
 describe('Casper', function () {
   let bitgo;
@@ -35,8 +38,6 @@ describe('Casper', function () {
       const keyPair = basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
-
-      basecoin.isValidPub(keyPair.pub).should.equal(true);
     });
 
     it('should generate a keypair from a seed', function () {
@@ -44,8 +45,37 @@ describe('Casper', function () {
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
 
-      keyPair.prv.should.equal('2B7A4A75B08922A29566A81CB7C391A7AA4D4664DC210A95EF3FA1AA8ED503AA');
-      keyPair.pub.should.equal('029DDE31A73F0D54B029425BE520B8FC6AC7939A5936F83D2B94FC7B7CA61A98F0');
+      keyPair.pub.should.equal('xpub661MyMwAqRbcFnJi3mvSpYNYyXUcjq7spqHg9GhpcWqs3wF4S8forUeJ3K8XfpUumpY4mLhaGPWAxAJETCnJM56w5f25g6kvLh5Bxb3ZEbD');
+      keyPair.prv.should.equal('xprv9s21ZrQH143K3JEEwkPSTQRpRVe8LNQ2TcN5LtJD4BJtB8uutbMZJgKpC3EPHMPGn97Y9aXFYeFegFsPdZXu6BF5XB7yXhZDUE5d6keTHyV');
     });
+
+    it('should validate a public key', function() {
+      const keyPair = basecoin.generateKeyPair();
+      keyPair.should.have.property('pub');
+      keyPair.should.have.property('prv');
+
+      basecoin.isValidPub(keyPair.pub).should.equal(true);
+    });
+
+    it('should validate a private key', function() {
+      const keyPair = basecoin.generateKeyPair();
+      keyPair.should.have.property('pub');
+      keyPair.should.have.property('prv');
+
+      basecoin.isValidPrv(keyPair.prv).should.equal(true);
+    });
+
+    it('Should supplement wallet generation', co(function *() {
+      const details = yield basecoin.supplementGenerateWallet({});
+      details.should.have.property('rootPrivateKey');
+      basecoin.isValidPrv(details.rootPrivateKey).should.equal(true);
+    }));
+
+    it('Should supplement wallet generation with provided private key', co(function *() {
+      const rootPrivateKey = 'e0c5c347fc67a46aa5104ece454882315fe5d70af286dbd3d2e04227ebd2927d';
+      const details = yield basecoin.supplementGenerateWallet({ rootPrivateKey });
+      details.should.have.property('rootPrivateKey');
+      details.rootPrivateKey.should.equal(rootPrivateKey);
+    }));
   });
 });
