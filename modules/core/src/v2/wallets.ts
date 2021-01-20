@@ -35,6 +35,7 @@ export interface GenerateWalletOptions {
   enterprise?: string;
   disableTransactionNotifications?: string;
   gasPrice?: string;
+  walletVersion?: number;
   disableKRSEmail?: boolean;
   krsSpecific?: {
     [index: string]: boolean | string | number;
@@ -77,6 +78,7 @@ export interface AddWalletOptions {
   initializationTxs?: any;
   disableTransactionNotifications?: boolean;
   gasPrice?: number;
+  walletVersion?: number;
 }
 
 export interface ListWalletOptions extends PaginationOptions {
@@ -189,6 +191,10 @@ export class Wallets {
         throw new Error('invalid argument for gasPrice - number expected');
       }
 
+      if (params.walletVersion && !_.isNumber(params.walletVersion)) {
+        throw new Error('invalid argument for walletVersion - number expected');
+      }
+
       if (params.tags && Array.isArray(params.tags) === false) {
         throw new Error('invalid argument for tags - array expected');
       }
@@ -227,6 +233,7 @@ export class Wallets {
         'address',
         'signingKeyId',
         'gasPrice',
+        'walletVersion',
       ]);
 
       // Additional params needed for xrp
@@ -280,6 +287,7 @@ export class Wallets {
    * @param params.coldDerivationSeed
    * @param params.gasPrice
    * @param params.disableKRSEmail
+   * @param params.walletVersion
    * @param callback
    * @returns {*}
    */
@@ -344,6 +352,13 @@ export class Wallets {
           throw new Error('invalid disableKRSEmail argument, expecting boolean');
         }
         walletParams.disableKRSEmail = params.disableKRSEmail;
+      }
+
+      if (!_.isUndefined(params.walletVersion)) {
+        if (!_.isNumber(params.walletVersion)) {
+          throw new Error('invalid walletVersion provided, expecting number');
+        }
+        walletParams.walletVersion = params.walletVersion;
       }
 
       // Ensure each krsSpecific param is either a string, boolean, or number
