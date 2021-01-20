@@ -34,6 +34,9 @@ export { Hbar };
 import * as Cspr from './coin/cspr';
 export { Cspr };
 
+import * as Xrp from './coin/xrp';
+export { Xrp };
+
 const coinBuilderMap = {
   trx: Trx.TransactionBuilder,
   ttrx: Trx.TransactionBuilder,
@@ -52,6 +55,8 @@ const coinBuilderMap = {
   thbar: Hbar.TransactionBuilderFactory,
   cspr: Cspr.TransactionBuilderFactory,
   tcspr: Cspr.TransactionBuilderFactory,
+  xrp: Xrp.TransactionBuilderFactory,
+  txrp: Xrp.TransactionBuilderFactory,
 };
 
 /**
@@ -62,8 +67,8 @@ export const supportedCoins = Object.keys(coinBuilderMap);
 /**
  * Get a transaction builder for the given coin.
  *
- * @param coinName One of the {@code supportedCoins}
- * @returns An instance of a {@code TransactionBuilder}
+ * @param {string} coinName One of the {@code supportedCoins}
+ * @returns {any} An instance of a {@code TransactionBuilder}
  */
 export function getBuilder(coinName: string): BaseCoin.Interface.BaseBuilder {
   const builderClass = coinBuilderMap[coinName];
