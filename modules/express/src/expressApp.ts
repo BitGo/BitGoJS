@@ -180,10 +180,14 @@ function createHttpServer(app: express.Application): http.Server {
  */
 export function startup(config: Config, baseUri: string): () => void {
   return function() {
-    const { env, customRootUri, customBitcoinNetwork } = config;
+    const { env, ipc, customRootUri, customBitcoinNetwork } = config;
     console.log('BitGo-Express running');
     console.log(`Environment: ${env}`);
-    console.log(`Base URI: ${baseUri}`);
+    if (ipc) {
+      console.log(`IPC path: ${ipc}`);
+    } else {
+      console.log(`Base URI: ${baseUri}`);
+    }
     if (customRootUri) {
       console.log(`Custom root URI: ${customRootUri}`);
     }
@@ -227,7 +231,7 @@ export function createBaseUri(config: Config): string {
  * @param config
  */
 function checkPreconditions(config: Config) {
-  const { env, disableEnvCheck, bind, disableSSL, keyPath, crtPath, customRootUri, customBitcoinNetwork } = config;
+  const { env, disableEnvCheck, bind, ipc, disableSSL, keyPath, crtPath, customRootUri, customBitcoinNetwork } = config;
 
   // warn or throw if the NODE_ENV is not production when BITGO_ENV is production - this can leak system info from express
   if (env === 'prod' && process.env.NODE_ENV !== 'production') {
@@ -242,7 +246,7 @@ function checkPreconditions(config: Config) {
     }
   }
 
-  const needsTLS = env === 'prod' && bind !== 'localhost' && !disableSSL;
+  const needsTLS = !ipc && env === 'prod' && bind !== 'localhost' && !disableSSL;
 
   // make sure keyPath and crtPath are set when running over TLS
   if (needsTLS && !(keyPath && crtPath)) {
@@ -299,9 +303,18 @@ export async function init(): Bluebird<void> {
 
   const server = await createServer(cfg, expressApp);
 
-  const { port, bind } = cfg;
+  const { port, bind, ipc } = cfg;
   const baseUri = createBaseUri(cfg);
 
-  server.listen(port, bind, startup(cfg, baseUri));
+  if (ipc) {
+    if (process.platform !== "win32" && fs.existsSync(ipc) && fs.statSync(ipc).isSocket()) {
+      fs.unlinkSync(ipc);
+    }
+
+    server.listen(ipc, startup(cfg, baseUri));
+  } else {
+    server.listen(port, bind, startup(cfg, baseUri));
+  }
+
   server.timeout = 300 * 1000; // 5 minutes
 }

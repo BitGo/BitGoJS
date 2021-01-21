@@ -18,6 +18,10 @@ parser.addArgument(['-b', '--bind'], {
   help: 'Bind to given address to listen for connections (default: localhost)',
 });
 
+parser.addArgument(['-i', '--ipc'], {
+  help: 'Bind to specified IPC path instead of TCP',
+});
+
 parser.addArgument(['-e', '--env'], {
   help: 'BitGo environment to proxy against (prod, test)',
 });
