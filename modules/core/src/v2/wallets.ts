@@ -241,8 +241,8 @@ export class Wallets {
         walletParams.rootPub = params.rootPub;
       }
 
-      // In XLM this private key is used only for wallet creation purposes, once the wallet is initialized then we
-      // update its weight to 0 making it an invalid key.
+      // In XRP, XLM and CSPR this private key is used only for wallet creation purposes,
+      // once the wallet is initialized then we update its weight to 0 making it an invalid key.
       // https://www.stellar.org/developers/guides/concepts/multi-sig.html#additional-signing-keys
       if (params.rootPrivateKey) {
         walletParams.rootPrivateKey = params.rootPrivateKey;
@@ -459,7 +459,7 @@ export class Wallets {
         };
       }
 
-      if (_.includes(['xrp', 'xlm'], self.baseCoin.getFamily()) && !_.isUndefined(params.rootPrivateKey)) {
+      if (_.includes(['xrp', 'xlm', 'cspr'], self.baseCoin.getFamily()) && !_.isUndefined(params.rootPrivateKey)) {
         walletParams.rootPrivateKey = params.rootPrivateKey;
       }
 
