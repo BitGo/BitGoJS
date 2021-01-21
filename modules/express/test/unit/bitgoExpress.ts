@@ -27,7 +27,8 @@ import {
   app as expressApp,
   startup,
   createServer,
-  createBaseUri
+  createBaseUri,
+  prepareIpc,
 } from '../../src/expressApp';
 
 describe('Bitgo Express', function() {
@@ -131,7 +132,7 @@ describe('Bitgo Express', function() {
 
     it('should create an https server when using TLS', co(function *() {
       const createServerStub = sinon.stub(https, 'createServer');
-      const readFileAsyncStub = sinon.stub(fs, 'readFileAsync' as any)
+      const readFileAsyncStub = sinon.stub(fs.promises, 'readFile' as any)
         .onFirstCall().resolves('key')
         .onSecondCall().resolves('cert');
 
@@ -394,6 +395,58 @@ describe('Bitgo Express', function() {
       setHeaderStub.should.have.been.calledWith('User-Agent');
 
       createProxyServerStub.restore();
+    });
+
+    it('should fail if IPC option is used on windows', async () => {
+      const platformStub = sinon.stub(process, 'platform').value('win32');
+      await prepareIpc('testipc').should.be.rejectedWith(/^IPC option is not supported on platform/);
+      platformStub.restore();
+    });
+
+    it('should not remove the IPC socket if it doesn\'t exist', async () => {
+      const statStub = sinon.stub(fs, 'statSync').throws({ code: 'ENOENT' });
+      const unlinkStub = sinon.stub(fs, 'unlinkSync');
+      await prepareIpc('testipc').should.be.resolved();
+      unlinkStub.notCalled.should.be.true();
+      statStub.restore();
+      unlinkStub.restore();
+    });
+
+    it('should remove the socket before binding if IPC socket exists and is a socket', async () => {
+      const statStub = sinon.stub(fs, 'statSync').returns(
+        { isSocket: () => true } as unknown as fs.Stats,
+      );
+      const unlinkStub = sinon.stub(fs, 'unlinkSync');
+      await prepareIpc('testipc').should.be.resolved();
+      unlinkStub.calledWithExactly('testipc').should.be.true();
+      unlinkStub.calledOnce.should.be.true();
+      statStub.restore();
+      unlinkStub.restore();
+    });
+
+    it('should fail if IPC socket is not actually a socket', async () => {
+      const statStub = sinon.stub(fs, 'statSync').returns(
+        { isSocket: () => false } as unknown as fs.Stats,
+      );
+      const unlinkStub = sinon.stub(fs, 'unlinkSync');
+      await prepareIpc('testipc').should.be.rejectedWith(/IPC socket is not actually a socket/);
+      unlinkStub.notCalled.should.be.true();
+      statStub.restore();
+      unlinkStub.restore();
+    });
+
+    it('should print the IPC socket path on startup', async () => {
+      const logStub = sinon.stub(console, 'log');
+
+      const args: any = {
+        env: 'test',
+        customRootUri: 'customuri',
+        ipc: 'expressIPC',
+      };
+
+      startup(args, 'base')();
+      logStub.should.have.been.calledWith('IPC path: expressIPC');
+      logStub.restore();
     });
   });
 });

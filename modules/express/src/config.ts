@@ -19,6 +19,7 @@ function readEnvVar(name, ...deprecatedAliases): string | undefined {
 export interface Config {
   port: number;
   bind: string;
+  ipc?: string;
   env: EnvironmentName;
   debugNamespace: string[];
   keyPath?: string;
@@ -35,6 +36,7 @@ export interface Config {
 export const ArgConfig = (args): Partial<Config> => ({
   port: args.port,
   bind: args.bind,
+  ipc: args.ipc,
   env: args.env,
   debugNamespace: args.debugnamespace,
   keyPath: args.keypath,
@@ -51,6 +53,7 @@ export const ArgConfig = (args): Partial<Config> => ({
 export const EnvConfig = (): Partial<Config> => ({
   port: Number(readEnvVar('BITGO_PORT')),
   bind: readEnvVar('BITGO_BIND') || DefaultConfig.bind,
+  ipc: readEnvVar('BITGO_IPC'),
   env: (readEnvVar('BITGO_ENV') as EnvironmentName) || DefaultConfig.env,
   debugNamespace: (readEnvVar('BITGO_DEBUG_NAMESPACE') || '').split(','),
   keyPath: readEnvVar('BITGO_KEYPATH'),
@@ -97,6 +100,7 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
   return {
     port: get('port'),
     bind: get('bind'),
+    ipc: get('ipc'),
     env: get('env'),
     debugNamespace: get('debugNamespace'),
     keyPath: get('keyPath'),

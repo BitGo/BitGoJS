@@ -31,3 +31,9 @@ export class ApiResponseError extends Errors.BitGoJsError {
   }
 }
 
+export class IpcError extends Errors.BitGoJsError {
+  public constructor(message: string) {
+    super(message);
+    Object.setPrototypeOf(this, IpcError.prototype);
+  }
+}

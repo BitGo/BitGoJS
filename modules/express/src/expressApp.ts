@@ -11,9 +11,8 @@ import * as debugLib from 'debug';
 import * as https from 'https';
 import * as http from 'http';
 import * as morgan from 'morgan';
+import * as fs from 'fs';
 import { Request as StaticRequest } from 'express-serve-static-core';
-
-const fs = Bluebird.promisifyAll(require('fs'));
 
 import { Config, config } from './config';
 
@@ -21,7 +20,7 @@ const debug = debugLib('bitgo:express');
 
 // eslint-disable-next-line @typescript-eslint/camelcase
 import { SSL_OP_NO_TLSv1 } from 'constants';
-import { NodeEnvironmentError, TlsConfigurationError } from './errors';
+import { IpcError, NodeEnvironmentError, TlsConfigurationError } from './errors';
 
 import { Environments } from 'bitgo';
 import { setupRoutes } from './clientRoutes';
@@ -150,10 +149,13 @@ function configureProxy(app: express.Application, config: Config): void {
  * @param app
  * @return {Server}
  */
-async function createHttpsServer(app: express.Application, config: Config): Promise<https.Server> {
+async function createHttpsServer(
+  app: express.Application,
+  config: Config & { keyPath: string; crtPath: string }
+): Promise<https.Server> {
   const { keyPath, crtPath } = config;
-  const privateKeyPromise = fs.readFileAsync(keyPath, 'utf8');
-  const certificatePromise = fs.readFileAsync(crtPath, 'utf8');
+  const privateKeyPromise = fs.promises.readFile(keyPath, 'utf8');
+  const certificatePromise = fs.promises.readFile(crtPath, 'utf8');
 
   const [key, cert] = await Promise.all([privateKeyPromise, certificatePromise]);
 
@@ -180,10 +182,14 @@ function createHttpServer(app: express.Application): http.Server {
  */
 export function startup(config: Config, baseUri: string): () => void {
   return function() {
-    const { env, customRootUri, customBitcoinNetwork } = config;
+    const { env, ipc, customRootUri, customBitcoinNetwork } = config;
     console.log('BitGo-Express running');
     console.log(`Environment: ${env}`);
-    console.log(`Base URI: ${baseUri}`);
+    if (ipc) {
+      console.log(`IPC path: ${ipc}`);
+    } else {
+      console.log(`Base URI: ${baseUri}`);
+    }
     if (customRootUri) {
       console.log(`Custom root URI: ${customRootUri}`);
     }
@@ -196,7 +202,7 @@ export function startup(config: Config, baseUri: string): () => void {
 /**
  * helper function to determine whether we should run the server over TLS or not
  */
-function isTLS(config: Config): boolean {
+function isTLS(config: Config): config is Config & { keyPath: string; crtPath: string } {
   const { keyPath, crtPath } = config;
   return Boolean(keyPath && crtPath);
 }
@@ -227,7 +233,7 @@ export function createBaseUri(config: Config): string {
  * @param config
  */
 function checkPreconditions(config: Config) {
-  const { env, disableEnvCheck, bind, disableSSL, keyPath, crtPath, customRootUri, customBitcoinNetwork } = config;
+  const { env, disableEnvCheck, bind, ipc, disableSSL, keyPath, crtPath, customRootUri, customBitcoinNetwork } = config;
 
   // warn or throw if the NODE_ENV is not production when BITGO_ENV is production - this can leak system info from express
   if (env === 'prod' && process.env.NODE_ENV !== 'production') {
@@ -242,7 +248,7 @@ function checkPreconditions(config: Config) {
     }
   }
 
-  const needsTLS = env === 'prod' && bind !== 'localhost' && !disableSSL;
+  const needsTLS = !ipc && env === 'prod' && bind !== 'localhost' && !disableSSL;
 
   // make sure keyPath and crtPath are set when running over TLS
   if (needsTLS && !(keyPath && crtPath)) {
@@ -293,15 +299,48 @@ export function app(cfg: Config): express.Application {
   return app;
 }
 
+/**
+ * Prepare to listen on an IPC (unix domain) socket instead of a normal TCP port.
+ * @param ipcSocketFilePath path to file where IPC socket should be created
+ */
+export async function prepareIpc(ipcSocketFilePath: string) {
+  if (process.platform === 'win32') {
+    throw new IpcError(`IPC option is not supported on platform ${process.platform}`);
+  }
+
+  try {
+    const stat = fs.statSync(ipcSocketFilePath);
+    if (!stat.isSocket()) {
+      throw new IpcError('IPC socket is not actually a socket');
+    }
+    // ipc socket does exist and is indeed a socket. However, the socket cannot already exist prior
+    // to being bound since it will be created by express internally when binding. If there's a stale
+    // socket from the last run, clean it up before attempting to bind to it again. Arguably, it would
+    // be better to do this before exiting, but that gets a bit more complicated when all exit paths
+    // need to clean up the socket file correctly.
+    fs.unlinkSync(ipcSocketFilePath);
+  } catch (e) {
+    if (e.code !== 'ENOENT') {
+      throw e;
+    }
+  }
+}
+
 export async function init(): Bluebird<void> {
   const cfg = config();
   const expressApp = app(cfg);
 
   const server = await createServer(cfg, expressApp);
 
-  const { port, bind } = cfg;
+  const { port, bind, ipc } = cfg;
   const baseUri = createBaseUri(cfg);
 
-  server.listen(port, bind, startup(cfg, baseUri));
+  if (ipc) {
+    await prepareIpc(ipc);
+    server.listen(ipc, startup(cfg, baseUri));
+  } else {
+    server.listen(port, bind, startup(cfg, baseUri));
+  }
+
   server.timeout = 300 * 1000; // 5 minutes
 }
