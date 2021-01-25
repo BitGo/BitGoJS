@@ -11,22 +11,37 @@ export const ACCOUNT_FROM_SEED = {
   privateKey: '353ED4C9DB2A13B8EB319618EAF7A61DC5AB74AF79020C9C21D06E768A6D3E24',
 };
 
+
+
+
+
+
+
 export const ACCOUNT_1 = {
-  accountHash: '019764f079d02768d704f286da630a1d3c7329330596c9561d403bed2d43c0e0c8',
-  publicKey: 'MCowBQYDK2VwAyEAl2TwedAnaNcE8obaYwodPHMpMwWWyVYdQDvtLUPA4Mg=',
-  privateKey: 'MC4CAQAwBQYDK2VwBCIEIG+yNyAN9sInKfXR2GOH5UN/f5a4bx/VL11lxW58wbRP',
+  accountHash:
+    'fbba1c5277d27546060925b80c780aa708cf12bcb8a4c0c34ce22af15de7ac9c',
+  publicKey:
+    '021a08bb34f8a5d978ac8dbecabd4b0e8edf2e1cf1800bade6de3baa4dddfe3449',
+  privateKey:
+    '06a8f3e2bf2d9104c61af9ea0d72e36bab0730ecccf94817e5b746332d849c0b'
 };
 
 export const ACCOUNT_2 = {
-  accountHash: '01e5c0f10bcc9197acc0567eb06de9ed6f1bf408194726bd2bcb603692b23b4817',
-  publicKey: 'MCowBQYDK2VwAyEA5cDxC8yRl6zAVn6wbentbxv0CBlHJr0ry2A2krI7SBc=',
-  privateKey: 'MC4CAQAwBQYDK2VwBCIEIKAsNy6nMQFjyM/h6+zf8bgfDZplwjRzLFYs1WWSf+UH',
+  accountHash:
+    '53eb4139304aa9c5087daaf252c8644a883e515f9bde9d0d65fa986537bcab95',
+  publicKey:
+    '03edf27fbbb5c6b42f3139b18933b47e9c6d3e0c3077ac41f4aa47bbb6eebc3dbc',
+  privateKey:
+    'cb519717178f4e7bd1e7625748f5294b43584703a93ebdb9718289d5f8ac343b'
 };
 
 export const OWNER_1 = {
-  accountHash: '3e33bcba4d8d9fb26c5196dcbad26d353235d49a79cd1160ad7f09cd4f94bffe',
-  publicKey: '03DC13CBBF29765C7745578D9E091280522F37684EF0E400B86B1C409BC454F1F3',
-  privateKey: '353ED4C9DB2A13B8EB319618EAF7A61DC5AB74AF79020C9C21D06E768A6D3E24',
+  accountHash:
+    'e3315d010f31cc3c682c091628fd6c1704d9ae7b6bc04846816baf83b1bb0f2b',
+  publicKey:
+    '03d5dadb76416f01b5df715b87aaf7ebf5b86f71b9d1d97d100f52bc4b113c05eb',
+  privateKey:
+    '5077327556cd716d1167f7cc513b38672a1a4edf94df846a790a7d4c26b7c2d5',
   xpub:
     'xpub661MyMwAqRbcFn97q1KxsbXyXJQ49bzPqcisB2YHoWShkJPXXexd12pdgRTczC6rDhFKNV7PAgMRWqGQtoh9tmgLgFdQGrjciEYKsNwfzt1',
   xprv:
@@ -34,9 +49,12 @@ export const OWNER_1 = {
 };
 
 export const OWNER_2 = {
-  accountHash: '608e43c3bb3f44200ec59d71d461d3e5aa4e823c595848a5d280f831ce8de302',
-  publicKey: '02FBA9E5705A8860FC1B5563B981A4C2C94AF03FC10916EB7819B183056C43D3B0',
-  privateKey: '23E736A7F132E556531EB78A26D23641023FDBB6FADBCACBF93A7C60C979E9D0',
+  accountHash:
+    'ed9ac139ff5cc4f76072e7086865bae8409a3944f3259a4dc4b05c99dba400a5',
+  publicKey:
+    '03c975dd4c0009d130c01e599736ed6e70e61c779923b62c3ddaff1c3038de3125',
+  privateKey:
+    'f38a76f2c99593cdf2edc7c2d80ed791c1b628837dbd14dd4d58ac8d4b8a16e2'
 };
 
 export const OWNER_3 = {
