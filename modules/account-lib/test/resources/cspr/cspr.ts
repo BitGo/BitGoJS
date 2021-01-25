@@ -93,3 +93,4 @@ export const KEYPAIR_PRV = new KeyPair({
 
 export const WALLET_SIGNED_TRANSACTION = '';
 
+export const SECP256K1_PREFIX = '02';

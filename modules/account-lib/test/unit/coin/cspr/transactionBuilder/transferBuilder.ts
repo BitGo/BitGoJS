@@ -34,20 +34,16 @@ describe('Casper Transfer Builder', () => {
         const builder = initTxBuilder();
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
         const tx = await builder.build();
-        const txJson = tx.toJson();
+        const txJson = JSON.parse(tx.toJson());
 
-        should.exist((tx as Transaction).casperTx.approvals);
+        should.exist((tx as Transaction).casperTx.approvals, "There are no approvals");
         should.deepEqual((tx as Transaction).casperTx.approvals.length, 1, "Error in the number of signatures");
-        should.deepEqual((tx as Transaction).casperTx.approvals[0].signer, "02" + testData.ACCOUNT_1.publicKey, "Error in the signature");
-        //should.deepEqual(txJson.to, testData.ACCOUNT_2.publicKey);
-        //should.deepEqual(txJson.amount, '10');
-        should.exist((tx as Transaction).casperTx.hash);
-        should.exists(txJson.from);
-        should.deepEqual(txJson.from, testData.ACCOUNT_1.publicKey);
-        should.exist((tx as Transaction).casperTx.header.gasPrice);
-        //should.deepEqual(txJson.fee.gasLimit.toString(), testData.FEE.gasLimit.toString());
-        //should.deepEqual(txJson.fee.gasPrice.toString(), testData.FEE.gasPrice.toString());
-        //should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        should.deepEqual((tx as Transaction).casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey, "Error in the signature");
+        should.exist((tx as Transaction).casperTx.hash, "There is no hash");
+        should.exist(txJson.from, "There is no from");
+        should.deepEqual(txJson.from, testData.ACCOUNT_1.publicKey, "The recipient does not match");
+        should.exist((tx as Transaction).casperTx.header.gasPrice, "There is no gasPrice");
+        //TODO (STLX-793) : Check the following fields. To, Amount, gasLimit. 
       });
 
       it('a transfer transaction signed multiple times', async () => {
@@ -55,57 +51,47 @@ describe('Casper Transfer Builder', () => {
         builder.sign({ key: testData.OWNER_1.privateKey });
         builder.sign({ key: testData.OWNER_2.privateKey });
         const tx = await builder.build();
-        const txJson = tx.toJson();
+        const txJson = JSON.parse(tx.toJson());
 
-        should.exist((tx as Transaction).casperTx.approvals);
+        should.exist((tx as Transaction).casperTx.approvals, "There are no approvals");
         should.deepEqual((tx as Transaction).casperTx.approvals.length, 2, "Error in the number of signatures");
-        should.deepEqual((tx as Transaction).casperTx.approvals[0].signer,"02" + testData.OWNER_1.publicKey, "Error in the signature");
-        should.deepEqual((tx as Transaction).casperTx.approvals[1].signer,"02" + testData.OWNER_2.publicKey, "Error in the signature");
-        //should.deepEqual(txJson.to, testData.ACCOUNT_2.publicKey);
-        //should.deepEqual(txJson.amount, '10');
-        should.exist((tx as Transaction).casperTx.hash);
-        should.exists(txJson.from);
-        should.deepEqual(txJson.from, testData.OWNER_2.publicKey);
-        should.exist((tx as Transaction).casperTx.header.gasPrice);
-        //should.deepEqual(txJson.fee.gasLimit.toString(), testData.FEE.gasLimit.toString());
-        //should.deepEqual(txJson.fee.gasPrice.toString(), testData.FEE.gasPrice.toString());
-        //should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSFER_TRANSACTION);
+        should.deepEqual((tx as Transaction).casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.OWNER_1.publicKey, "Error in the signature");
+        should.deepEqual((tx as Transaction).casperTx.approvals[1].signer, testData.SECP256K1_PREFIX + testData.OWNER_2.publicKey, "Error in the signature");
+        should.exist((tx as Transaction).casperTx.hash, "There is no hash");
+        should.exist(txJson.from, "There is no from");
+        should.deepEqual(txJson.from, testData.OWNER_2.publicKey, "The recipient does not match");
+        should.exist((tx as Transaction).casperTx.header.gasPrice, "There is no gasPrice");
+        //TODO (STLX-793) : Check the following fields. To, Amount, gasLimit. 
       });
 
       it('a transfer transaction with amount 0', async () => {
         const builder = initTxBuilder();
         builder.amount('0');
-        builder.sign({key: testData.ACCOUNT_1.privateKey});
+        builder.sign({ key: testData.ACCOUNT_1.privateKey });
         const tx = await builder.build();
-        const txJson = tx.toJson();
+        const txJson = JSON.parse(tx.toJson());
 
-        should.exist((tx as Transaction).casperTx.approvals);
+        should.exist((tx as Transaction).casperTx.approvals, "There are no approvals");
         should.deepEqual((tx as Transaction).casperTx.approvals.length, 1, "Error in the number of signatures");
-        should.deepEqual((tx as Transaction).casperTx.approvals[0].signer,"02" + testData.ACCOUNT_1.publicKey, "Error in the signature");
-        //should.deepEqual(txJson.to, testData.ACCOUNT_2.publicKey);
-        //should.deepEqual(txJson.amount, '0');
-        should.exist((tx as Transaction).casperTx.hash);
-        should.exists(txJson.from);
-        should.deepEqual(txJson.from, testData.ACCOUNT_1.publicKey);
-        should.exist((tx as Transaction).casperTx.header.gasPrice);
-        //should.deepEqual(txJson.fee.gasLimit.toString(), testData.FEE.gasLimit.toString());
-        //should.deepEqual(txJson.fee.gasPrice.toString(), testData.FEE.gasPrice.toString());
+        should.deepEqual((tx as Transaction).casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey, "Error in the signature");
+        should.exist((tx as Transaction).casperTx.hash, "There is no hash");
+        should.exist(txJson.from, "There is no from");
+        should.deepEqual(txJson.from, testData.ACCOUNT_1.publicKey, "The recipient does not match");
+        should.exist((tx as Transaction).casperTx.header.gasPrice, "There is no gasPrice");
+        //TODO (STLX-793) : Check the following fields. To, Amount, gasLimit. 
       });
 
       it('a non signed transfer transaction', async () => {
         const builder = initTxBuilder();
         const tx = await builder.build();
-        const txJson = tx.toJson();
+        const txJson = JSON.parse(tx.toJson());
 
         should.deepEqual((tx as Transaction).casperTx.approvals.length, 0, "Error in the number of signatures");
-        //should.deepEqual(txJson.to, testData.ACCOUNT_2.publicKey);
-        //should.deepEqual(txJson.amount, '10');
-        should.exist((tx as Transaction).casperTx.hash);
-        should.exists(txJson.from);
-        should.deepEqual(txJson.from, testData.ACCOUNT_1.publicKey);
-        should.exist((tx as Transaction).casperTx.header.gasPrice);
-        //should.deepEqual(txJson.fee.gasLimit.toString(), testData.FEE.gasLimit.toString());
-        //should.deepEqual(txJson.fee.gasPrice.toString(), testData.FEE.gasPrice.toString());
+        should.exist((tx as Transaction).casperTx.hash), "There is no hash";
+        should.exist(txJson.from, "There is no from");
+        should.deepEqual(txJson.from, testData.ACCOUNT_1.publicKey, "The recipient does not match");
+        should.exist((tx as Transaction).casperTx.header.gasPrice, "There is no gasPrice");
+        //TODO (STLX-793) : Check the following fields. To, Amount, gasLimit. 
       });
     });
 
