@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { DeployUtil, PublicKey } from 'casper-client-sdk';
+import { ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { parseInt } from 'lodash';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, NotImplementedError, SigningError } from '../baseCoin/errors';
@@ -259,7 +260,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     switch (this.transaction.type) {
       case TransactionType.Send:
         const transferSession = this._session as CasperTransferTransaction;
-        session = new DeployUtil.Transfer(
+        session = ExecutableDeployItem.newTransfer(
           transferSession.amount,
           transferSession.target,
           undefined,
@@ -268,7 +269,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         break;
       case TransactionType.WalletInitialization:
         const moduleBytesSession = this._session as CasperModuleBytesTransaction;
-        session = new DeployUtil.ModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
+        session = ExecutableDeployItem.newModuleBytes(moduleBytesSession.moduleBytes, moduleBytesSession.args);
         break;
       default:
         throw new BuildTransactionError('Transaction Type error');

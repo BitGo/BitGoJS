@@ -1,4 +1,4 @@
-import { CLValue, PublicKey } from 'casper-client-sdk';
+import { CLValue, PublicKey, RuntimeArgs } from 'casper-client-sdk';
 import { BigNumberish } from '@ethersproject/bignumber';
 import { KeyPair } from '.';
 
@@ -35,7 +35,7 @@ export interface CasperTransferTransaction {
 
 export interface CasperModuleBytesTransaction {
   moduleBytes: Uint8Array;
-  args: Uint8Array;
+  args: RuntimeArgs;
 }
 
 export interface Owner {

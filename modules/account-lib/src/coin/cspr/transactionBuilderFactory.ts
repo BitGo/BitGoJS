@@ -6,7 +6,6 @@ import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { DeployTag } from './enum';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -29,9 +28,9 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     const tx = new Transaction(this._coinConfig);
     tx.casperTx = raw;
 
-    if (tx.casperTx.session.tag === DeployTag.transfer) {
+    if (tx.casperTx.session.isTransfer()) {
       return this.getTransferBuilder(tx);
-    } else if (tx.casperTx.session.tag === DeployTag.moduleBytes) {
+    } else if (tx.casperTx.session.isModuleBytes()) {
       // TODO(stlx-1458), identify wallet initialization deploy
       return this.getWalletInitializationBuilder(tx);
     } else {
