@@ -4,18 +4,18 @@ import { DeployUtil, PublicKey } from 'casper-client-sdk';
 import { parseInt } from 'lodash';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BuildTransactionError, NotImplementedError, SigningError } from '../baseCoin/errors';
-import { BaseAddress, BaseFee, BaseKey } from '../baseCoin/iface';
+import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { GasFee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
+import { FEE, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
 import { isValidPublicKey } from './utils';
-import { SECP256K1_PREFIX, CHAIN_NAME, MAXIMUM_DURATION } from './constants';
+import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _source: BaseAddress;
-  protected _fee: GasFee;
+  protected _fee: FEE;
   private _transaction: Transaction;
   protected _session: CasperTransferTransaction | CasperModuleBytesTransaction;
   protected _duration: number;
@@ -73,7 +73,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   initBuilder(tx: Transaction): void {
     this.transaction = tx;
     this.transaction.loadPreviousSignatures();
-    const txData = tx.toJson();
+    const txData = JSON.parse(tx.toJson());
     this.fee({ gasLimit: txData.fee.toString() });
     this.source({ address: txData.from });
     // TODO: Instance optionals parameters or default parameters e.g startTime
@@ -90,7 +90,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {BaseFee} fee The maximum gas to pay
    * @returns {TransactionBuilder} This transaction builder
    */
-  fee(fee: GasFee): this {
+  fee(fee: FEE): this {
     this.validateValue(new BigNumber(fee.gasLimit));
     this._fee = fee;
     return this;
@@ -116,7 +116,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   duration(validDuration: string): this {
     const duration = new BigNumber(validDuration);
-    if (duration.isNaN() || duration.isGreaterThan(MAXIMUM_DURATION)) {
+    if (duration.isNaN() || duration.isGreaterThan(TRANSACTION_EXPIRATION)) {
       throw new BuildTransactionError('Invalid duration');
     }
     this.validateValue(duration);
@@ -246,7 +246,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       PublicKey.fromHex(SECP256K1_PREFIX + this._source.address),
       CHAIN_NAME,
       gasPrice,
-      this._duration || MAXIMUM_DURATION,
+      this._duration || TRANSACTION_EXPIRATION,
     );
   }
 

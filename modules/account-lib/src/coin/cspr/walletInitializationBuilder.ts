@@ -46,7 +46,6 @@ export class WalletInitializationBuilder extends TransactionBuilder {
       });
     }
 
-    // this._session = { moduleBytes: this._contract, args: RuntimeArgs.fromMap(args).toBytes() };
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
     return await super.buildImplementation();
   }

@@ -32,7 +32,7 @@ export class TransferBuilder extends TransactionBuilder {
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     this.transaction.setTransactionType(TransactionType.Send);
-    // TODO: init to and amount
+    // TODO(STLX-793): init to and amount
   }
 
   /** @inheritdoc */
@@ -73,7 +73,7 @@ export class TransferBuilder extends TransactionBuilder {
   }
 
   /**
-   * Set the transfer id, this acts like a memo id.
+   * Set transfer id that acts as a transaction identifier (similar to memo id for Stellar)
    *
    * @param {number} id transfer id
    * @returns {TransferBuilder} the builder with the new parameter set

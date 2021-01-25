@@ -45,15 +45,15 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  toBroadcastFormat(): Deploy {
+  toBroadcastFormat(): string {
     if (!this.casperTx) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    return this.casperTx;
+    return JSON.stringify(DeployUtil.deployToJson(this.casperTx));
   }
 
   /** @inheritdoc */
-  toJson(): CasperTransaction {
+  toJson(): string {
     const result: CasperTransaction = {
       hash: Buffer.from(this._deploy.hash).toString('hex'),
       data: Buffer.from(this._deploy.header.bodyHash).toString('hex'),
@@ -67,7 +67,7 @@ export class Transaction extends BaseTransaction {
       // TODO: Get target and amount
       // const [recipient, amount] = this.getTransferData();
     }
-    return result;
+    return JSON.stringify(result);
   }
 
   /**

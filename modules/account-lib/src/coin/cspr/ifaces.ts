@@ -22,7 +22,7 @@ export interface SignatureData {
   keyPair: KeyPair;
 }
 
-export interface GasFee {
+export interface FEE {
   gasLimit: string;
   gasPrice?: string;
 }
