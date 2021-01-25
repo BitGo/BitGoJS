@@ -32,7 +32,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     if (tx.casperTx.session.tag === DeployTag.transfer) {
       return this.getTransferBuilder(tx);
     } else if (tx.casperTx.session.tag === DeployTag.moduleBytes) {
-      // TODO , we have not parameter to absolute determite if is a walletInit contract
+      // TODO(stlx-1458), identify wallet initialization deploy
       return this.getWalletInitializationBuilder(tx);
     } else {
       throw new InvalidTransactionError('Invalid transaction ' + tx.casperTx);
