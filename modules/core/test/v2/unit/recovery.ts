@@ -24,7 +24,6 @@ import {
   emptyAddressInfo,
 } from '../fixtures/coins/recovery';
 import { nockCoingecko } from '../lib/recovery-nocks';
-
 nock.disableNetConnect();
 
 describe('Recovery:', function() {
@@ -1024,24 +1023,67 @@ describe('Recovery:', function() {
   });
 
   describe('Recover Ethereum', function() {
+    const recoveryParams = {
+      userKey: '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+      ':"ccm","adata":"","cipher":"aes","salt":"cCE20fGIobs=","ct":"NVIdYIh91J3aRI\n' +
+      '8GG0JE3DhXW3AUmz2G5RqMejdz1+t4/vovIP7lleegI7VYyWiiLvlM0OCFf3EVvV/RyXr8+2vsn\n' +
+      'Q0Vn8c2CV5FRZ80OjGYrW3A/6T/zpOz6E8CMvnD++iIpeO4r2eZJavejZxdzlxF0BRz7VI="}',
+      backupKey: '{"iv":"asB356ofC7nZtg4NBvQkiQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
+      ':"ccm","adata":"","cipher":"aes","salt":"1hr2HhBbBIk=","ct":"8CZc6upt+XNOto\n' +
+      'KDD38TUg3ZUjzW+DraZlkcku2bNp0JS2s1g/iC6YTGUGtPoxDxumDlXwlWQx+5WPjZu79M8DCrI\n' +
+      't9aZaOvHkGH9aFtMbavFX419TcrwDmpUeQFN0hRkfrIHXyHNbTpGSVAjHvHMtzDMaw+ACg="}',
+      walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
+      walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
+      recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054',
+    };
+
+    it('should throw on invalid gasLimit', async function(){
+      recoveryNocks.nockEthRecovery(bitgo);
+
+      const basecoin = bitgo.coin('teth');
+      await basecoin.recover({
+        ...recoveryParams,
+        gasLimit: -400000,
+        gasPrice: 25000000000,
+      })
+      .should.be.rejectedWith('Gas limit must be between 30000 and 20000000');
+      // id and tx will always be different because of expireTime
+    });
+
+    it('should throw on invalid gasPrice', async function(){
+      recoveryNocks.nockEthRecovery(bitgo);
+
+      const basecoin = bitgo.coin('teth');
+      await basecoin.recover({
+        ...recoveryParams,
+        gasLimit: 400000,
+        gasPrice: 2500000,
+      })
+      .should.be.rejectedWith('Gas price must be between 1000000000 and 2500000000000');
+      // id and tx will always be different because of expireTime
+    });
+
+    it('should successfully construct a tx with custom gas price and limit', async function(){
+      recoveryNocks.nockEthRecovery(bitgo);
+
+      const basecoin = bitgo.coin('teth');
+      const recovery = await basecoin.recover({
+        ...recoveryParams,
+        gasLimit: 400000,
+        gasPrice: 1000000000,
+      });
+      // id and tx will always be different because of expireTime
+      should.exist(recovery);
+      recovery.should.have.property('id');
+      recovery.should.have.property('tx');
+    });
+    
+    
     it('should construct a recovery transaction without BitGo', co(function *() {
       recoveryNocks.nockEthRecovery(bitgo);
 
       const basecoin = bitgo.coin('teth');
-      const recovery = yield basecoin.recover({
-        userKey: '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-        ':"ccm","adata":"","cipher":"aes","salt":"cCE20fGIobs=","ct":"NVIdYIh91J3aRI\n' +
-        '8GG0JE3DhXW3AUmz2G5RqMejdz1+t4/vovIP7lleegI7VYyWiiLvlM0OCFf3EVvV/RyXr8+2vsn\n' +
-        'Q0Vn8c2CV5FRZ80OjGYrW3A/6T/zpOz6E8CMvnD++iIpeO4r2eZJavejZxdzlxF0BRz7VI="}',
-        backupKey: '{"iv":"asB356ofC7nZtg4NBvQkiQ==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-        ':"ccm","adata":"","cipher":"aes","salt":"1hr2HhBbBIk=","ct":"8CZc6upt+XNOto\n' +
-        'KDD38TUg3ZUjzW+DraZlkcku2bNp0JS2s1g/iC6YTGUGtPoxDxumDlXwlWQx+5WPjZu79M8DCrI\n' +
-        't9aZaOvHkGH9aFtMbavFX419TcrwDmpUeQFN0hRkfrIHXyHNbTpGSVAjHvHMtzDMaw+ACg="}',
-        walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
-        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
-        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
-      });
-
+      const recovery = yield basecoin.recover(recoveryParams);
       // id and tx will always be different because of expireTime
       should.exist(recovery);
       recovery.should.have.property('id');
@@ -1053,15 +1095,9 @@ describe('Recovery:', function() {
 
       const basecoin = bitgo.coin('teth');
       const recovery = yield basecoin.recover({
-        userKey: '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
-          ':"ccm","adata":"","cipher":"aes","salt":"cCE20fGIobs=","ct":"NVIdYIh91J3aRI\n' +
-          '8GG0JE3DhXW3AUmz2G5RqMejdz1+t4/vovIP7lleegI7VYyWiiLvlM0OCFf3EVvV/RyXr8+2vsn\n' +
-          'Q0Vn8c2CV5FRZ80OjGYrW3A/6T/zpOz6E8CMvnD++iIpeO4r2eZJavejZxdzlxF0BRz7VI="}',
+        ...recoveryParams,
         backupKey: 'xpub661MyMwAqRbcGsCNiG4BzbxLmXnJFo4K5gVSE2b9AxufAtpuTun1SYwg9Uykqqf4DrKrDZ6KqPm9ehthWbCma7pnaMrtXY11nY7MeFbEDPm',
-        walletContractAddress: '0x5df5a96b478bb1808140d87072143e60262e8670',
-        walletPassphrase: TestBitGo.V2.TEST_RECOVERY_PASSCODE,
         krsProvider: 'keyternal',
-        recoveryDestination: '0xac05da78464520aa7c9d4c19bd7a440b111b3054'
       });
 
       // id and tx will always be different because of expireTime
