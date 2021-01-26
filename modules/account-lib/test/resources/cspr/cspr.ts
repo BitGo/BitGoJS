@@ -11,12 +11,6 @@ export const ACCOUNT_FROM_SEED = {
   privateKey: '353ED4C9DB2A13B8EB319618EAF7A61DC5AB74AF79020C9C21D06E768A6D3E24',
 };
 
-
-
-
-
-
-
 export const ACCOUNT_1 = {
   accountHash:
     'fbba1c5277d27546060925b80c780aa708cf12bcb8a4c0c34ce22af15de7ac9c',
