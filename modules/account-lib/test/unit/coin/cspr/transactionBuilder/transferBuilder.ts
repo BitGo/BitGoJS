@@ -34,7 +34,7 @@ describe('Casper Transfer Builder', () => {
         const builder = initTxBuilder();
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
         const tx = await builder.build();
-        const txJson = JSON.parse(tx.toJson());
+        const txJson = tx.toJson();
 
         should.exist((tx as Transaction).casperTx.approvals, "There are no approvals");
         should.deepEqual((tx as Transaction).casperTx.approvals.length, 1, "Error in the number of signatures");
@@ -51,7 +51,7 @@ describe('Casper Transfer Builder', () => {
         builder.sign({ key: testData.OWNER_1.privateKey });
         builder.sign({ key: testData.OWNER_2.privateKey });
         const tx = await builder.build();
-        const txJson = JSON.parse(tx.toJson());
+        const txJson = tx.toJson();
 
         should.exist((tx as Transaction).casperTx.approvals, "There are no approvals");
         should.deepEqual((tx as Transaction).casperTx.approvals.length, 2, "Error in the number of signatures");
@@ -69,7 +69,7 @@ describe('Casper Transfer Builder', () => {
         builder.amount('0');
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
         const tx = await builder.build();
-        const txJson = JSON.parse(tx.toJson());
+        const txJson = tx.toJson();
 
         should.exist((tx as Transaction).casperTx.approvals, "There are no approvals");
         should.deepEqual((tx as Transaction).casperTx.approvals.length, 1, "Error in the number of signatures");
@@ -84,7 +84,7 @@ describe('Casper Transfer Builder', () => {
       it('a non signed transfer transaction', async () => {
         const builder = initTxBuilder();
         const tx = await builder.build();
-        const txJson = JSON.parse(tx.toJson());
+        const txJson = tx.toJson();
 
         should.deepEqual((tx as Transaction).casperTx.approvals.length, 0, "Error in the number of signatures");
         should.exist((tx as Transaction).casperTx.hash), "There is no hash";

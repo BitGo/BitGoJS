@@ -8,9 +8,10 @@ export interface CasperTransaction {
   data: string;
   fee: number;
   startTime?: string;
-  validDuration?: string;
+  expiration?: string;
   to?: string;
   amount?: string;
+  transferId?: number;
 }
 
 export interface CasperNode {
@@ -22,7 +23,7 @@ export interface SignatureData {
   keyPair: KeyPair;
 }
 
-export interface FEE {
+export interface Fee {
   gasLimit: string;
   gasPrice?: string;
 }

@@ -8,7 +8,7 @@ import { BuildTransactionError, NotImplementedError, SigningError } from '../bas
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { FEE, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
+import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
 import { isValidPublicKey } from './utils';
 import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
 
@@ -16,10 +16,10 @@ export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private _source: BaseAddress;
-  protected _fee: FEE;
+  protected _fee: Fee;
   private _transaction: Transaction;
   protected _session: CasperTransferTransaction | CasperModuleBytesTransaction;
-  protected _duration: number;
+  protected _expiration: number;
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
 
@@ -36,7 +36,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const deployParams = this.getDeployParams();
     const session = this.getSession();
 
-    // @ts-ignore
+    // @ts-ignore Added because standardPayment expect an external library BigNumber implementation.
     const payment = DeployUtil.standardPayment(parseInt(this._fee.gasLimit));
 
     const cTransaction = this.transaction.casperTx || DeployUtil.makeDeploy(deployParams, session, payment);
@@ -74,11 +74,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   initBuilder(tx: Transaction): void {
     this.transaction = tx;
     this.transaction.loadPreviousSignatures();
-    const txData = JSON.parse(tx.toJson());
+    const txData = tx.toJson();
     this.fee({ gasLimit: txData.fee.toString() });
     this.source({ address: txData.from });
-    // TODO: Instance optionals parameters or default parameters e.g startTime
-    this.duration(txData.validDuration || '0'); // TODO: Replace '0' with the correct default value
+    this.duration(txData.expiration || TRANSACTION_EXPIRATION.toString());
   }
 
   // endregion
@@ -91,7 +90,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {BaseFee} fee The maximum gas to pay
    * @returns {TransactionBuilder} This transaction builder
    */
-  fee(fee: FEE): this {
+  fee(fee: Fee): this {
     this.validateValue(new BigNumber(fee.gasLimit));
     this._fee = fee;
     return this;
@@ -110,18 +109,18 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-   * Set the transaction validDuration
+   * Set the transaction expirationTime
    *
-   * @param {string} validDuration The transaction validDuration
+   * @param {string} expirationTime The transaction expirationTime
    * @returns {TransactionBuilder} This transaction builder
    */
-  duration(validDuration: string): this {
-    const duration = new BigNumber(validDuration);
+  duration(expirationTime: string): this {
+    const duration = new BigNumber(expirationTime);
     if (duration.isNaN() || duration.isGreaterThan(TRANSACTION_EXPIRATION)) {
       throw new BuildTransactionError('Invalid duration');
     }
     this.validateValue(duration);
-    this._duration = duration.toNumber();
+    this._expiration = duration.toNumber();
     return this;
   }
 
@@ -247,7 +246,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
       PublicKey.fromHex(SECP256K1_PREFIX + this._source.address),
       CHAIN_NAME,
       gasPrice,
-      this._duration || TRANSACTION_EXPIRATION,
+      this._expiration || TRANSACTION_EXPIRATION,
     );
   }
 

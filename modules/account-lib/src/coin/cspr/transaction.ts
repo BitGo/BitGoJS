@@ -53,21 +53,20 @@ export class Transaction extends BaseTransaction {
   }
 
   /** @inheritdoc */
-  toJson(): string {
+  toJson(): CasperTransaction {
     const result: CasperTransaction = {
       hash: Buffer.from(this._deploy.hash).toString('hex'),
       data: Buffer.from(this._deploy.header.bodyHash).toString('hex'),
-      fee: 0, // TODO: Research on how to get gasLimit from ExecutableDeployItem
+      fee: 0, // TODO(STLX-793): set to, amount and transferId.
       from: Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex'),
       startTime: new Date(this._deploy.header.timestamp).toISOString(),
-      validDuration: DeployUtil.humanizerTTL(this._deploy.header.ttl),
+      expiration: DeployUtil.humanizerTTL(this._deploy.header.ttl),
     };
 
-    if (this._deploy.session instanceof DeployUtil.Transfer) {
-      // TODO: Get target and amount
-      // const [recipient, amount] = this.getTransferData();
+    if (this._deploy.session.isTransfer()) {
+      // TODO(STLX-793): set to, amount and transferId.
     }
-    return JSON.stringify(result);
+    return result;
   }
 
   /**
