@@ -498,6 +498,8 @@ export const coins = CoinMap.fromCoins([
   erc20('zoom', 'CoinZoom', 18, '0x69cf3091c91eb72db05e45c76e58225177dea742', UnderlyingAsset.ZOOM),
   erc20('zrx', '0x Token', 18, '0xe41d2489571d322189246dafa5ebde1f4699f498', UnderlyingAsset.ZRX),
   celoToken('cusd', 'Celo USD', 18, '0x765de816845861e75a25fca122bb6898b8b1282a', UnderlyingAsset.CUSD),
+  ofcerc20('ofcusdt', 'Tether', 6, UnderlyingAsset.USDT),
+  ofcerc20('ofcusdc', 'USD Coin', 6, UnderlyingAsset.USDC),
   stellarToken(
     'xlm:BST-GADDFE4R72YUP2AOEL67OHZN3GJQYPC3VE734N2XFMEGRR2L32CZ3XYZ',
     'BitGo Shield Token',
@@ -558,7 +560,7 @@ export const coins = CoinMap.fromCoins([
     '',
     'WXT'
   ),
-  terc20('terc', 'ERC Test Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.ERC),
+  terc20('terc', 'Test ERC Token', 0, '0x945ac907cf021a6bcd07852bb3b8c087051706a9', UnderlyingAsset.TERC),
   terc20('test', 'Test Mintable ERC20 Token', 18, '0x1fb879581f31687b905653d4bbcbe3af507bed37', UnderlyingAsset.TEST),
   terc20('tbst', 'Test BitGo Shield Token', 0, '0xe5cdf77835ca2095881dd0803a77e844c87483cd', UnderlyingAsset.BST),
   terc20('schz', 'SchnauzerCoin', 18, '0x050e25a2630b2aee94546589fd39785254de112c', UnderlyingAsset.SCHZ),
@@ -568,6 +570,7 @@ export const coins = CoinMap.fromCoins([
   terc20('tdai', 'Test DAI', 18, '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa', UnderlyingAsset.TERC20),
   terc20('trif', 'Test RIF Token', 18, '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe', UnderlyingAsset.RIF),
   tceloToken('tcusd', 'Test Celo USD Token', 18, '0x874069fa1eb16d44d622f2e0ca25eea172369bc1', UnderlyingAsset.CUSD),
+  tofcerc20('ofcterc', 'Test ERC Token', 0, UnderlyingAsset.TERC),
   tstellarToken(
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
     'BitGo Shield Token',
@@ -588,10 +591,4 @@ export const coins = CoinMap.fromCoins([
     '',
     'TST'
   ),
-  ofcerc20('ofcerc', 'ERC Token', 0, UnderlyingAsset.ERC),
-  ofcerc20('ofcusdt', 'Tether', 6, UnderlyingAsset.USDT),
-  ofcerc20('ofcusdc', 'USD Coin', 6, UnderlyingAsset.USDC),
-  tofcerc20('ofcterc', 'ERC Test Token', 0, UnderlyingAsset.ERC),
-  tofcerc20('ofctusdt', 'Test Tether', 6, UnderlyingAsset.USDT),
-  tofcerc20('ofctusdc', 'Test USD Coin', 6, UnderlyingAsset.USDC),
 ]);
