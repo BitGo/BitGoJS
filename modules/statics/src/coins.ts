@@ -132,7 +132,7 @@ export const coins = CoinMap.fromCoins([
   tofc('ofctbtg', 'Test Bitcoin Gold', 8, UnderlyingAsset.BTG, CoinKind.CRYPTO),
   tofc('ofctbsv', 'Test Bitcoin SV', 8, UnderlyingAsset.BSV, CoinKind.CRYPTO),
   tofc('ofcteos', 'Test Eos', 4, UnderlyingAsset.EOS, CoinKind.CRYPTO),
-  erc20('1inch', '1inch Token', 18, '0x111111111117dc0aa78b770fa6a738034120c302', UnderlyingAsset['1inch']),
+  erc20('1inch', '1inch Token', 18, '0x111111111117dc0aa78b770fa6a738034120c302', UnderlyingAsset['1INCH']),
   erc20('1up', 'Uptrennd Token', 18, '0x07597255910a51509ca469568b048f2597e72504', UnderlyingAsset['1UP']),
   erc20('aave', 'Aave', 18, '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', UnderlyingAsset.AAVE),
   erc20('abt', 'ArcBlock', 18, '0xb98d4c97425d9908e66e53a6fdf673acca0be986', UnderlyingAsset.ABT),
