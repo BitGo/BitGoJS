@@ -1,4 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { DeployUtil } from 'casper-client-sdk';
 
 /**
  * Generic transaction builder factory to be extended with coin specific logic.
@@ -28,7 +29,7 @@ export abstract class BaseTransactionBuilderFactory {
   /**
    * Returns a proper builder for the given encoded transaction
    *
-   * @param {Uint8Array | string} raw - Encoded transaction in hex string or Uint8Array format
+   * @param {Uint8Array | string | DeployUtil.Deploy} raw - Encoded transaction in hex string or Uint8Array format
    */
-  public abstract from(raw: Uint8Array | string);
+  public abstract from(raw: Uint8Array | string | DeployUtil.Deploy);
 }

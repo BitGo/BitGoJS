@@ -1,10 +1,16 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
+import { DeployUtil, Keys } from 'casper-client-sdk';
+import { Deploy } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
-import { NotImplementedError } from '../baseCoin/errors';
+import { InvalidTransactionError, NotImplementedError, SigningError } from '../baseCoin/errors';
+import { KeyPair } from './keyPair';
+import { CasperTransaction } from './ifaces';
+import { SECP256K1_PREFIX } from './constants';
 
 export class Transaction extends BaseTransaction {
   protected _type: TransactionType;
+  protected _deploy: Deploy;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
@@ -15,27 +21,52 @@ export class Transaction extends BaseTransaction {
     return true;
   }
 
-  async sign(keyPair): Promise<void> {
-    throw new NotImplementedError('sign not implemented');
+  async sign(keyPair: KeyPair): Promise<void> {
+    const keys = keyPair.getKeys();
+    if (!keys.prv) {
+      throw new SigningError('Missing private key');
+    }
+    if (this._deploy.approvals.some(ap => !ap.signer.startsWith(SECP256K1_PREFIX))) {
+      throw new SigningError('Invalid deploy. Already signed with an invalid key');
+    }
+    const secpKeys = new Keys.Secp256K1(
+      Uint8Array.from(Buffer.from(keys.pub, 'hex')),
+      Uint8Array.from(Buffer.from(keys.prv, 'hex')),
+    );
+    DeployUtil.signDeploy(this._deploy, secpKeys);
   }
 
   /**
    * Add a signature to this transaction
-   * @param signature The signature to add, in string hex format
-   * @param key The key of the key that created the signature
+   * @param {string} signature The signature to add, in string hex format
    */
-  addSignature(signature: string, key): void {
-    throw new NotImplementedError('addSignature not implemented');
+  addSignature(signature: string): void {
+    this._signatures.push(signature);
   }
 
   /** @inheritdoc */
-  toBroadcastFormat() {
-    throw new NotImplementedError('toBroadcastFormat not implemented');
+  toBroadcastFormat(): string {
+    if (!this.casperTx) {
+      throw new InvalidTransactionError('Empty transaction');
+    }
+    return JSON.stringify(DeployUtil.deployToJson(this.casperTx));
   }
 
   /** @inheritdoc */
-  toJson() {
-    throw new NotImplementedError('toJson not implemented');
+  toJson(): CasperTransaction {
+    const result: CasperTransaction = {
+      hash: Buffer.from(this._deploy.hash).toString('hex'),
+      data: Buffer.from(this._deploy.header.bodyHash).toString('hex'),
+      fee: 0, // TODO(STLX-793): set to, amount and transferId.
+      from: Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex'),
+      startTime: new Date(this._deploy.header.timestamp).toISOString(),
+      expiration: DeployUtil.humanizerTTL(this._deploy.header.ttl),
+    };
+
+    if (this._deploy.session.isTransfer()) {
+      // TODO(STLX-793): set to, amount and transferId.
+    }
+    return result;
   }
 
   /**
@@ -44,7 +75,7 @@ export class Transaction extends BaseTransaction {
    * @param {TransactionType} transactionType The transaction type to be set
    */
   setTransactionType(transactionType: TransactionType): void {
-    throw new NotImplementedError('getTransferData not implemented');
+    this._type = transactionType;
   }
 
   /**
@@ -52,7 +83,11 @@ export class Transaction extends BaseTransaction {
    * and save them into the base transaction signature list.
    */
   loadPreviousSignatures(): void {
-    throw new NotImplementedError('getTransferData not implemented');
+    if (this._deploy.approvals && this._deploy.approvals.length > 0) {
+      this._deploy.approvals.forEach(approval => {
+        this._signatures.push(approval.signature);
+      });
+    }
   }
 
   /**
@@ -62,6 +97,14 @@ export class Transaction extends BaseTransaction {
    */
   loadInputsAndOutputs(): void {
     throw new NotImplementedError('loadInputsAndOutputs not implemented');
+  }
+
+  get casperTx(): Deploy {
+    return this._deploy;
+  }
+
+  set casperTx(deploy: DeployUtil.Deploy) {
+    this._deploy = deploy;
   }
 
   //endregion
