@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "2.6.0-rc.3",
+  "version": "2.6.0-rc.4",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -104,5 +104,5 @@
       "git add"
     ]
   },
-  "gitHead": "dbc467654354a3cb04094a0ad533aa601d50074d"
+  "gitHead": "6ffe520a2c9351d3544a52b5b908246d4903068b"
 }
