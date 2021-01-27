@@ -1,4 +1,4 @@
-import { KeyPair } from "../../../src/coin/cspr";
+import { KeyPair } from '../../../src/coin/cspr';
 
 export const ACCOUNT_FROM_SEED = {
   seed: 'cd1eac3bc52716f3177bc7f9c5d7de10b98c74c6c1ace2c874e0e09f47469023',
@@ -12,30 +12,27 @@ export const ACCOUNT_FROM_SEED = {
 };
 
 export const ACCOUNT_1 = {
-  accountHash:
-    'fbba1c5277d27546060925b80c780aa708cf12bcb8a4c0c34ce22af15de7ac9c',
-  publicKey:
-    '021a08bb34f8a5d978ac8dbecabd4b0e8edf2e1cf1800bade6de3baa4dddfe3449',
-  privateKey:
-    '06a8f3e2bf2d9104c61af9ea0d72e36bab0730ecccf94817e5b746332d849c0b'
+  accountHash: 'fa1e526fdfa0065c84ec3cf1f88ddcd05c5a22160332e99954891c4956fef6a5',
+  publicKey: '02DCAB323A8F9A31D3095FAAA611139A70DEE2D326C8DB8BD94FBDDAD202B6B740',
+  privateKey: 'D6EB5C34E5A4815513DB7A629A235B820762D56DC7BC0D06FB64ACB4120C5FA4',
 };
 
 export const ACCOUNT_2 = {
-  accountHash:
-    '53eb4139304aa9c5087daaf252c8644a883e515f9bde9d0d65fa986537bcab95',
-  publicKey:
-    '03edf27fbbb5c6b42f3139b18933b47e9c6d3e0c3077ac41f4aa47bbb6eebc3dbc',
-  privateKey:
-    'cb519717178f4e7bd1e7625748f5294b43584703a93ebdb9718289d5f8ac343b'
+  accountHash: '9884fd0a8a9dd71fe6820e2507bd847cbcae8003195120d472294b0ea77f4435',
+  publicKey: '022FC98A97E780944B08E365A27BC8F181770FE431181667128B604A541E1C9CC7',
+  privateKey: '61FEFC7C21737AF8081FEF8E377C3B4660C0520998DC6AFD79884770EE4CAE96',
+};
+
+export const ACCOUNT_3 = {
+  accountHash: 'fbba1c5277d27546060925b80c780aa708cf12bcb8a4c0c34ce22af15de7ac9c',
+  publicKey: '021a08bb34f8a5d978ac8dbecabd4b0e8edf2e1cf1800bade6de3baa4dddfe3449',
+  privateKey: '06a8f3e2bf2d9104c61af9ea0d72e36bab0730ecccf94817e5b746332d849c0b',
 };
 
 export const OWNER_1 = {
-  accountHash:
-    'e3315d010f31cc3c682c091628fd6c1704d9ae7b6bc04846816baf83b1bb0f2b',
-  publicKey:
-    '03d5dadb76416f01b5df715b87aaf7ebf5b86f71b9d1d97d100f52bc4b113c05eb',
-  privateKey:
-    '5077327556cd716d1167f7cc513b38672a1a4edf94df846a790a7d4c26b7c2d5',
+  accountHash: 'e3315d010f31cc3c682c091628fd6c1704d9ae7b6bc04846816baf83b1bb0f2b',
+  publicKey: '03d5dadb76416f01b5df715b87aaf7ebf5b86f71b9d1d97d100f52bc4b113c05eb',
+  privateKey: '5077327556cd716d1167f7cc513b38672a1a4edf94df846a790a7d4c26b7c2d5',
   xpub:
     'xpub661MyMwAqRbcFn97q1KxsbXyXJQ49bzPqcisB2YHoWShkJPXXexd12pdgRTczC6rDhFKNV7PAgMRWqGQtoh9tmgLgFdQGrjciEYKsNwfzt1',
   xprv:
@@ -43,12 +40,9 @@ export const OWNER_1 = {
 };
 
 export const OWNER_2 = {
-  accountHash:
-    'ed9ac139ff5cc4f76072e7086865bae8409a3944f3259a4dc4b05c99dba400a5',
-  publicKey:
-    '03c975dd4c0009d130c01e599736ed6e70e61c779923b62c3ddaff1c3038de3125',
-  privateKey:
-    'f38a76f2c99593cdf2edc7c2d80ed791c1b628837dbd14dd4d58ac8d4b8a16e2'
+  accountHash: 'ed9ac139ff5cc4f76072e7086865bae8409a3944f3259a4dc4b05c99dba400a5',
+  publicKey: '03c975dd4c0009d130c01e599736ed6e70e61c779923b62c3ddaff1c3038de3125',
+  privateKey: 'f38a76f2c99593cdf2edc7c2d80ed791c1b628837dbd14dd4d58ac8d4b8a16e2',
 };
 
 export const OWNER_3 = {
@@ -68,6 +62,16 @@ export const INVALID_LONG_KEYPAIR_PRV = ACCOUNT_FROM_SEED.privateKey + 'F1';
 export const INVALID_PRIVATE_KEY_ERROR_MESSAGE = 'Unsupported private key';
 
 export const INVALID_PUBLIC_KEY_ERROR_MESSAGE = 'Unsupported public key:';
+
+export const ERROR_INVALID_ADDRESS = 'Invalid address';
+
+export const ERROR_REPEATED_SIGNATURE = 'Repeated sign';
+
+export const ERROR_INVALID_AMOUNT = 'Invalid amount';
+
+export const ERROR_MISSING_TRANSFER_TARGET = 'Invalid transaction: missing to';
+
+export const ERROR_MISSING_TRANSFER_AMOUNT = 'Invalid transaction: missing amount';
 
 export const VALID_ADDRESS = '608e43c3bb3f44200ec59d71d461d3e5aa4e823c595848a5d280f831ce8de302';
 

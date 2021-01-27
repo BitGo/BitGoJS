@@ -77,7 +77,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     const txData = tx.toJson();
     this.fee({ gasLimit: txData.fee.toString() });
     this.source({ address: txData.from });
-    this.duration(txData.expiration || TRANSACTION_EXPIRATION.toString());
+    this.expiration(txData.expiration || TRANSACTION_EXPIRATION.toString());
   }
 
   // endregion
@@ -114,13 +114,13 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {string} expirationTime The transaction expirationTime
    * @returns {TransactionBuilder} This transaction builder
    */
-  duration(expirationTime: string): this {
-    const duration = new BigNumber(expirationTime);
-    if (duration.isNaN() || duration.isGreaterThan(TRANSACTION_EXPIRATION)) {
-      throw new BuildTransactionError('Invalid duration');
+  expiration(expirationTime: string): this {
+    const transactionExpiration = new BigNumber(expirationTime);
+    if (transactionExpiration.isNaN() || transactionExpiration.isGreaterThan(TRANSACTION_EXPIRATION)) {
+      throw new BuildTransactionError('Invalid transaction expiration');
     }
-    this.validateValue(duration);
-    this._expiration = duration.toNumber();
+    this.validateValue(transactionExpiration);
+    this._expiration = transactionExpiration.toNumber();
     return this;
   }
 
@@ -215,7 +215,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   private checkDuplicatedKeys(key: BaseKey) {
     this._multiSignerKeyPairs.forEach(_sourceKeyPair => {
-      if (_sourceKeyPair.getKeys().prv === key.key) {
+      if (_sourceKeyPair.getKeys().prv === key.key.toUpperCase()) {
         throw new SigningError('Repeated sign: ' + key.key);
       }
     });

@@ -46,7 +46,10 @@ describe('Cspr Transaction', () => {
       }
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
       await tx.sign(keypair).should.be.fulfilled();
-      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
+      );
     });
 
     it('multiple valid', async () => {
@@ -58,10 +61,19 @@ describe('Cspr Transaction', () => {
       const keypair = new KeyPair({ prv: testData.ACCOUNT_1.privateKey });
       const keypair2 = new KeyPair({ prv: testData.ACCOUNT_2.privateKey });
       await tx.sign(keypair).should.be.fulfilled();
-      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
+      );
       await tx.sign(keypair2).should.be.fulfilled();
-      should.equal(tx.casperTx.approvals[0].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey);
-      should.equal(tx.casperTx.approvals[1].signer, testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey);
+      should.equal(
+        tx.casperTx.approvals[0].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
+      );
+      should.equal(
+        tx.casperTx.approvals[1].signer.toUpperCase(),
+        testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey,
+      );
     });
   });
 
