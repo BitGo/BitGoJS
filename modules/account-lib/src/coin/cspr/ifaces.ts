@@ -44,8 +44,8 @@ export interface Owner {
   weight: number;
 }
 
-export interface RunTimeArg {
-  action: CLValue;
-  weight: CLValue;
-  account?: CLValue;
-}
+export type ContractArgs = Record<
+  // This typo is on purpose since the contract we use for multisig wallet initialization expect this argument to be written like this.
+  'action' | 'deployment_thereshold' | 'key_management_threshold' | 'accounts' | 'weights',
+  CLValue
+>;
