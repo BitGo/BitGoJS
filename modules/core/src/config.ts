@@ -52,6 +52,15 @@ const formattedErc20Tokens = coins.reduce((acc: Erc20TokenConfig[], coin) => {
   return acc;
 }, []);
 
+export const ethGasConfigs = {
+  minimumGasPrice: 1000000000, // minimum gas price a user can provide (1 Gwei)
+  defaultGasPrice: 20000000000, // default gas price if estimation fails (20 Gwei)
+  maximumGasPrice: 2500000000000, // minimum gas price a user can provide (2500 Gwei)
+  defaultGasLimit: 500000, // Default gas limit we set for contract send
+  defaultGasLimitTokenSend: 1000000, // Default gas limit we set for token send
+  minimumGasLimit: 30000,    // minimum gas limit a user can set for a send
+  maximumGasLimit: 20000000, // Customers cannot set gas limits beyond this amount
+};
 // Get the list of Stellar tokens from statics and format it properly
 const formattedStellarTokens = coins.reduce((acc: StellarTokenConfig[], coin) => {
   if (coin instanceof StellarCoin) {

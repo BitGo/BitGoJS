@@ -30,7 +30,9 @@ import { KeyPair } from './keyPair';
 import {
   createForwarderMethodId,
   flushForwarderTokensMethodId,
+  flushCoinsMethodId,
   flushTokensTypes,
+  flushCoinsTypes,
   sendMultisigMethodId,
   sendMultisigTokenMethodId,
   sendMultiSigTokenTypes,
@@ -151,6 +153,16 @@ export function flushTokensData(forwarderAddress, tokenAddress): string {
   const params = [forwarderAddress, tokenAddress];
   const method = EthereumAbi.methodID('flushForwarderTokens', flushTokensTypes);
   const args = EthereumAbi.rawEncode(flushTokensTypes, params);
+  return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
+}
+
+/**
+ * Get the data required to make a flush native coins contract call
+ */
+export function flushCoinsData(): string {
+  const params = [];
+  const method = EthereumAbi.methodID('flush', flushCoinsTypes);
+  const args = EthereumAbi.rawEncode(flushCoinsTypes, params);
   return addHexPrefix(Buffer.concat([method, args]).toString('hex'));
 }
 
@@ -337,6 +349,7 @@ const transactionTypesMap = {
   [createForwarderMethodId]: TransactionType.AddressInitialization,
   [sendMultisigMethodId]: TransactionType.Send,
   [flushForwarderTokensMethodId]: TransactionType.FlushTokens,
+  [flushCoinsMethodId]: TransactionType.FlushCoins,
   [sendMultisigTokenMethodId]: TransactionType.Send,
   [LockMethodId]: TransactionType.StakingLock,
   [VoteMethodId]: TransactionType.StakingVote,

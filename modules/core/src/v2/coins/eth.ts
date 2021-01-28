@@ -170,6 +170,8 @@ export interface RecoverOptions {
   walletContractAddress: string;
   recoveryDestination: string;
   krsProvider?: string;
+  gasPrice?: number;
+  gasLimit?: number;
 }
 
 export interface RecoveryInfo {
@@ -723,6 +725,42 @@ export class Eth extends BaseCoin {
   }
 
   /**
+   * Check whether the gas price passed in by user are within our max and min bounds
+   * If they are not set, set them to the defaults
+   * @param userGasPrice user defined gas price
+   * @returns the gas price to use for this transaction
+   */
+  setGasPrice(userGasPrice?: number): number {
+    if (!userGasPrice) {
+      return config.ethGasConfigs.defaultGasPrice;
+    }
+
+    const gasPriceMax = config.ethGasConfigs.maximumGasPrice;
+    const gasPriceMin = config.ethGasConfigs.minimumGasPrice;
+    if (userGasPrice < gasPriceMin || userGasPrice > gasPriceMax) {
+      throw new Error(`Gas price must be between ${gasPriceMin} and ${gasPriceMax}`);
+    }
+    return userGasPrice;
+  }
+  /**
+   * Check whether gas limit passed in by user are within our max and min bounds
+   * If they are not set, set them to the defaults
+   * @param userGasLimit user defined gas limit
+   * @returns the gas limit to use for this transaction
+   */
+  setGasLimit(userGasLimit?: number): number {
+    if (!userGasLimit) {
+      return config.ethGasConfigs.defaultGasLimit;
+    }
+    const gasLimitMax = config.ethGasConfigs.maximumGasLimit;
+    const gasLimitMin = config.ethGasConfigs.minimumGasLimit;
+    if (userGasLimit < gasLimitMin || userGasLimit > gasLimitMax) {
+      throw new Error(`Gas limit must be between ${gasLimitMin} and ${gasLimitMax}`);
+    }
+    return userGasLimit;
+  }
+
+  /**
    * Builds a funds recovery transaction without BitGo
    * @param params
    * @param params.userKey {String} [encrypted] xprv
@@ -771,10 +809,9 @@ export class Eth extends BaseCoin {
       const backupKey = params.backupKey.replace(/\s/g, '');
 
       // Set new eth tx fees (using default config values from platform)
-      const gasPrice = self.getRecoveryGasPrice();
-      const gasLimit = self.getRecoveryGasLimit();
 
-      // Decrypt private keys from KeyCard values if necessary
+      const gasLimit = new optionalDeps.ethUtil.BN(self.setGasLimit(params.gasLimit));
+      const gasPrice = new optionalDeps.ethUtil.BN(self.setGasPrice(params.gasPrice));
       if (!userKey.startsWith('xpub') && !userKey.startsWith('xprv')) {
         try {
           userKey = self.bitgo.decrypt({

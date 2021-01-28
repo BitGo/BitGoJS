@@ -1,6 +1,7 @@
 export { BaseTransaction } from './baseTransaction';
 export { BaseTransactionBuilder } from './baseTransactionBuilder';
 export { BaseTransactionBuilderFactory } from './baseTransactionBuilderFactory';
+export { BaseUtils } from './baseUtils';
 
 import { TransactionType, StakingOperationTypes } from './enum';
 import * as Error from './errors';

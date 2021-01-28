@@ -1,6 +1,6 @@
 {
   "name": "@bitgo/account-lib",
-  "version": "2.5.0-rc.2",
+  "version": "2.5.0",
   "description": "BitGo's account library functions",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -33,7 +33,7 @@
   "license": "ISC",
   "dependencies": {
     "@bitgo/bls": "^0.1.0",
-    "@bitgo/statics": "^6.1.0-rc.1",
+    "@bitgo/statics": "^6.1.0",
     "@bitgo/utxo-lib": "^1.7.1",
     "@celo/contractkit": "0.4.11",
     "@hashgraph/sdk": "^1.2.1",
@@ -45,7 +45,7 @@
     "bignumber.js": "^9.0.0",
     "blake2b": "git+https://github.com/BitGo/blake2b.git#6268e6dd678661e0acc4359e9171b97eb1ebf8ac",
     "bs58check": "^2.1.2",
-    "casper-client-sdk": "^1.0.7",
+    "casper-client-sdk": "^1.0.12",
     "elliptic": "^6.5.2",
     "ethereumjs-abi": "^0.6.5",
     "ethereumjs-tx": "2.1.2",
