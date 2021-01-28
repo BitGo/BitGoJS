@@ -246,8 +246,8 @@ class EthereumClassic extends Mainnet implements AccountNetwork {
 
 class EthereumClassicTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.ETC;
-  explorerUrl = 'https://blockscout.com/etc/kotti/tx';
-  accountExplorerUrl = 'https://blockscout.com/etc/kotti/address/';
+  explorerUrl = 'https://blockscout.com/etc/mordor/tx/';
+  accountExplorerUrl = 'https://blockscout.com/etc/mordor/address/';
 }
 
 class Eos extends Mainnet implements AccountNetwork {

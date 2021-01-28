@@ -54,8 +54,15 @@ export const coins = CoinMap.fromCoins([
     ETH2_FEATURES,
     KeyCurve.BLS
   ),
-  account('etc', 'Ethereum Classic', Networks.main.ethereum, 18, UnderlyingAsset.ETC, ETH_FEATURES),
-  account('tetc', 'Testnet Ethereum Classic', Networks.test.kovan, 18, UnderlyingAsset.ETC, ETH_FEATURES),
+  account('etc', 'Ethereum Classic', Networks.main.ethereumClassic, 18, UnderlyingAsset.ETC, ETH_FEATURES),
+  account(
+    'tetc',
+    'Testnet Ethereum Classic',
+    Networks.test.ethereumClassicTestnet,
+    18,
+    UnderlyingAsset.ETC,
+    ETH_FEATURES
+  ),
   account('eos', 'Eos', Networks.main.eos, 4, UnderlyingAsset.EOS),
   account('teos', 'Testnet Eos', Networks.test.eos, 4, UnderlyingAsset.EOS),
   account('rbtc', 'Rsk', Networks.main.rbtc, 18, UnderlyingAsset.RBTC, ETH_FEATURES),
