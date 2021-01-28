@@ -27,6 +27,8 @@ export enum TransactionType {
   StakingUnlock,
   // Withdraw
   StakingWithdraw,
+  // Create a token on-chain (e.g. Hedera Token Service)
+  TokenCreation,
 }
 
 /**

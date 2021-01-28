@@ -4,6 +4,7 @@ import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
+import { TokenCreateBuilder } from './tokenCreateBuilder';
 import { Transaction } from './transaction';
 import { isValidRawTransactionFormat, toUint8Array } from './utils';
 
@@ -23,6 +24,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritDoc */
+  getTokenCreateBuilder(tx?: Transaction): TokenCreateBuilder {
+    return this.initializeBuilder(tx, new TokenCreateBuilder(this._coinConfig));
+  }
+
+  /** @inheritDoc */
   from(raw: Uint8Array | string): TransactionBuilder {
     this.validateRawTransaction(raw);
     const tx = this.parseTransaction(raw);
@@ -31,6 +37,8 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
         return this.getTransferBuilder(tx);
       case 'cryptoCreateAccount':
         return this.getWalletInitializationBuilder(tx);
+      case 'tokenCreation':
+        return this.getTokenCreateBuilder(tx);
       default:
         throw new InvalidTransactionError('Invalid transaction ' + tx.txBody.data);
     }

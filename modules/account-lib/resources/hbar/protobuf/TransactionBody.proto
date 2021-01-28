@@ -7,6 +7,7 @@ import "CryptoTransfer.proto";
 import "Duration.proto";
 import "BasicTypes.proto";
 
+import "TokenCreate.proto";
 
 /* A single transaction. All transaction types are possible here. */
 message TransactionBody {
@@ -21,5 +22,6 @@ message TransactionBody {
     CryptoCreateTransactionBody cryptoCreateAccount = 11; // Create a new cryptocurrency account
     CryptoTransferTransactionBody cryptoTransfer = 14; // Transfer amount between accounts
 
+    TokenCreateTransactionBody tokenCreation = 29; // Creates a token instance
   }
 }
