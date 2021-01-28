@@ -745,8 +745,11 @@ function promiseWrapper(promiseRequestHandler: Function) {
         const message = err.message || 'local error';
         // use attached result, or make one
         let result = err.result || { error: message };
-        result = _.extend({}, result);
-        result.message = err.message;
+        result = _.extend({}, result, {
+          message: err.message,
+          bitgoJsVersion: version,
+          bitgoExpressVersion: pjson.version,
+        });
         const status = err.status || 500;
         if (!(status >= 200 && status < 300)) {
           console.log('error %s: %s', status, err.message);
