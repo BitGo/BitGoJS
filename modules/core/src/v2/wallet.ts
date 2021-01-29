@@ -366,7 +366,7 @@ export interface SendManyOptions {
   memo?: Memo;
 }
 
-interface WalletData {
+export interface WalletData {
   id: string;
   approvalsRequired: number;
   balance: number;
@@ -2210,6 +2210,13 @@ export class Wallet {
    */
   remove(params: {} = {}, callback?: NodeCallback<any>): Bluebird<any> {
     return this.bitgo.del(this.url()).result().asCallback(callback);
+  }
+
+  /**
+   * Extract a JSON representable version of this wallet
+   */
+  toJSON(): WalletData {
+    return this._wallet;
   }
 
   /**

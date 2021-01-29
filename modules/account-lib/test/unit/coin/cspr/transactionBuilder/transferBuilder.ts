@@ -12,15 +12,14 @@ describe('Casper Transfer Builder', () => {
     txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
     txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
     txBuilder.to(testData.ACCOUNT_2.publicKey);
-    txBuilder.amount('10');
     return txBuilder;
   };
 
   const initTxBuilderMultisig = () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
-    txBuilder.source({ address: testData.OWNER_2.publicKey });
-    txBuilder.to(testData.ACCOUNT_2.publicKey);
+    txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
+    txBuilder.to(testData.ACCOUNT_3.publicKey);
     txBuilder.amount('10');
     return txBuilder;
   };
@@ -28,7 +27,7 @@ describe('Casper Transfer Builder', () => {
   describe('should build ', () => {
     describe('non serialized transactions', () => {
       it('a signed transfer transaction', async () => {
-        const builder = initTxBuilder();
+        const builder = initTxBuilder().amount('10');
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
         const tx = await builder.build();
         const txJson = tx.toJson();
@@ -49,26 +48,26 @@ describe('Casper Transfer Builder', () => {
 
       it('a transfer transaction signed multiple times', async () => {
         const builder = initTxBuilderMultisig();
-        builder.sign({ key: testData.OWNER_1.privateKey });
-        builder.sign({ key: testData.OWNER_2.privateKey });
+        builder.sign({ key: testData.ACCOUNT_1.privateKey });
+        builder.sign({ key: testData.ACCOUNT_2.privateKey });
         const tx = await builder.build();
         const txJson = tx.toJson();
 
         should.exist((tx as Transaction).casperTx.approvals, 'There are no approvals');
         should.deepEqual((tx as Transaction).casperTx.approvals.length, 2, 'Error in the number of signatures');
         should.deepEqual(
-          (tx as Transaction).casperTx.approvals[0].signer,
-          testData.SECP256K1_PREFIX + testData.OWNER_1.publicKey,
+          (tx as Transaction).casperTx.approvals[0].signer.toUpperCase(),
+          testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
           'Error in the signature',
         );
         should.deepEqual(
-          (tx as Transaction).casperTx.approvals[1].signer,
-          testData.SECP256K1_PREFIX + testData.OWNER_2.publicKey,
+          (tx as Transaction).casperTx.approvals[1].signer.toUpperCase(),
+          testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey,
           'Error in the signature',
         );
         should.exist((tx as Transaction).casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
-        should.deepEqual(txJson.from, testData.OWNER_2.publicKey, 'The recipient does not match');
+        should.deepEqual(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey, 'The recipient does not match');
         should.exist((tx as Transaction).casperTx.header.gasPrice, 'There is no gasPrice');
         // TODO (STLX-793) : Check the following fields. To, Amount, gasLimit.
       });
@@ -95,7 +94,7 @@ describe('Casper Transfer Builder', () => {
       });
 
       it('a non signed transfer transaction', async () => {
-        const builder = initTxBuilder();
+        const builder = initTxBuilder().amount('10');
         const tx = await builder.build();
         const txJson = tx.toJson();
 
@@ -188,7 +187,7 @@ describe('Casper Transfer Builder', () => {
       txBuilder.fee(testData.FEE);
       txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
       txBuilder.to(testData.ACCOUNT_2.publicKey);
-      txBuilder.build().should.be.rejectedWith(testData.ERROR_INVALID_AMOUNT);
+      txBuilder.build().should.be.rejectedWith(testData.ERROR_MISSING_TRANSFER_AMOUNT);
     });
   });
 });

@@ -356,12 +356,14 @@ function handleCanonicalAddress(req: express.Request) {
  * handle new wallet creation
  * @param req
  */
-async function handleV2GenerateWallet(req: express.Request) {
+export async function handleV2GenerateWallet(req: express.Request) {
   const bitgo = req.bitgo;
   const coin = bitgo.coin(req.params.coin);
   const result = await coin.wallets().generateWallet(req.body);
-  // @ts-ignore
-  return result.wallet._wallet;
+  if (req.query.includeKeychains) {
+    return { ...result, wallet: result.wallet.toJSON() };
+  }
+  return result.wallet.toJSON();
 }
 
 /**
@@ -745,8 +747,11 @@ function promiseWrapper(promiseRequestHandler: Function) {
         const message = err.message || 'local error';
         // use attached result, or make one
         let result = err.result || { error: message };
-        result = _.extend({}, result);
-        result.message = err.message;
+        result = _.extend({}, result, {
+          message: err.message,
+          bitgoJsVersion: version,
+          bitgoExpressVersion: pjson.version,
+        });
         const status = err.status || 500;
         if (!(status >= 200 && status < 300)) {
           console.log('error %s: %s', status, err.message);

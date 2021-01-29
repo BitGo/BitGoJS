@@ -1,11 +1,13 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { DeployUtil } from 'casper-client-sdk';
+import { ModuleBytes } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { walletInitContractHexCode } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -31,8 +33,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     if (tx.casperTx.session.isTransfer()) {
       return this.getTransferBuilder(tx);
     } else if (tx.casperTx.session.isModuleBytes()) {
-      // TODO(stlx-1458), identify wallet initialization deploy
-      return this.getWalletInitializationBuilder(tx);
+      if (this.isWalletInitContract(tx.casperTx.session.asModuleBytes())) {
+        return this.getWalletInitializationBuilder(tx);
+      } else {
+        throw new InvalidTransactionError('Invalid transaction' + tx.casperTx);
+      }
     } else {
       throw new InvalidTransactionError('Invalid transaction ' + tx.casperTx);
     }
@@ -61,5 +66,20 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     if (!rawTransaction) {
       throw new ParseTransactionError('Invalid raw transaction');
     }
+  }
+
+  /**
+   * Check if a ModuleBytes session instance is related to a Wallet Initialization Contract
+   *
+   * @param {ModuleBytes} session - The session to be analyzed
+   * @returns {boolean} - true if session data is a Wallet Initialization Contract
+   */
+  private isWalletInitContract(session?: ModuleBytes): boolean {
+    if (!session) {
+      return false;
+    }
+    const moduleBytes = session.getArgByName('moduleBytes');
+    const contract = Uint8Array.from(Buffer.from(walletInitContractHexCode, 'hex'));
+    return moduleBytes !== undefined && moduleBytes.asBytesArray() === contract;
   }
 }
