@@ -37,6 +37,59 @@ describe('Config:', () => {
     envStub.restore();
   });
 
+  it('should correctly handle config precedence for a complete config', () => {
+    const argStub = sinon.stub(args, 'args').returns({
+      port: 23456,
+      bind: 'argbind',
+      ipc: 'argipc',
+      env: 'argenv',
+      debugnamespace: 'argdebug',
+      keypath: 'argkeypath',
+      crtpath: 'argcrtpath',
+      logfile: 'arglogfile',
+      disablessl: 'argdisableSSL',
+      disableproxy: 'argdisableProxy',
+      disableenvcheck: 'argdisableEnvCheck',
+      timeout: 'argtimeout',
+      customrooturi: 'argcustomRootUri',
+      custombitcoinnetwork: 'argcustomBitcoinNetwork',
+    });
+    const envStub = sinon.stub(process, 'env').value({
+      BITGO_PORT: 'env12345',
+      BITGO_BIND: 'envbind',
+      BITGO_IPC: 'envipc',
+      BITGO_ENV: 'envenv',
+      BITGO_DEBUG_NAMESPACE: 'envdebug',
+      BITGO_KEYPATH: 'envkeypath',
+      BITGO_CRTPATH: 'envcrtpath',
+      BITGO_LOGFILE: 'envlogfile',
+      BITGO_DISABLE_SSL: 'envdisableSSL',
+      BITGO_DISABLE_PROXY: 'envdisableProxy',
+      BITGO_DISABLE_ENV_CHECK: 'envdisableEnvCheck',
+      BITGO_TIMEOUT: 'envtimeout',
+      BITGO_CUSTOM_ROOT_URI: 'envcustomRootUri',
+      BITGO_CUSTOM_BITCOIN_NETWORK: 'envcustomBitcoinNetwork',
+    });
+    config().should.eql({
+      port: 23456,
+      bind: 'argbind',
+      ipc: 'argipc',
+      env: 'argenv',
+      debugNamespace: 'argdebug',
+      keyPath: 'argkeypath',
+      crtPath: 'argcrtpath',
+      logFile: 'arglogfile',
+      disableSSL: 'argdisableSSL',
+      disableProxy: 'argdisableProxy',
+      disableEnvCheck: 'argdisableEnvCheck',
+      timeout: 'argtimeout',
+      customRootUri: 'argcustomRootUri',
+      customBitcoinNetwork: 'argcustomBitcoinNetwork',
+    });
+    argStub.restore();
+    envStub.restore();
+  });
+
   it('should correctly handle boolean config precedence', () => {
     const argStub = sinon.stub(args, 'args').returns({ disablessl: true });
     const envStub = sinon.stub(process, 'env').value({ BITGO_DISABLE_SSL: undefined });
