@@ -27,7 +27,6 @@ import {
   Tbch,
   Tbsv,
   Tbtc,
-  Tbtg,
   Tcelo,
   Tcspr,
   Tdash,
@@ -127,7 +126,6 @@ GlobalCoinFactory.registerCoinConstructor('tbcha', Tbcha.createInstance);
 GlobalCoinFactory.registerCoinConstructor('bsv', Bsv.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tbsv', Tbsv.createInstance);
 GlobalCoinFactory.registerCoinConstructor('btg', Btg.createInstance);
-GlobalCoinFactory.registerCoinConstructor('tbtg', Tbtg.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ltc', Ltc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tltc', Tltc.createInstance);
 GlobalCoinFactory.registerCoinConstructor('eos', Eos.createInstance);

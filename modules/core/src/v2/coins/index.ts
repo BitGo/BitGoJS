@@ -23,7 +23,6 @@ export { Talgo } from './talgo';
 export { Tbch } from './tbch';
 export { Tbsv } from './tbsv';
 export { Tbtc } from './tbtc';
-export { Tbtg } from './tbtg';
 export { Tcelo } from './tcelo';
 export { Tdash } from './tdash';
 export { Teos } from './teos';
