@@ -52,9 +52,9 @@ export const ArgConfig = (args): Partial<Config> => ({
 
 export const EnvConfig = (): Partial<Config> => ({
   port: Number(readEnvVar('BITGO_PORT')),
-  bind: readEnvVar('BITGO_BIND') || DefaultConfig.bind,
+  bind: readEnvVar('BITGO_BIND'),
   ipc: readEnvVar('BITGO_IPC'),
-  env: (readEnvVar('BITGO_ENV') as EnvironmentName) || DefaultConfig.env,
+  env: (readEnvVar('BITGO_ENV') as EnvironmentName),
   debugNamespace: (readEnvVar('BITGO_DEBUG_NAMESPACE') || '').split(','),
   keyPath: readEnvVar('BITGO_KEYPATH'),
   crtPath: readEnvVar('BITGO_CRTPATH'),
@@ -83,18 +83,20 @@ export const DefaultConfig: Config = {
 /**
  * Helper function to merge config sources into a single config object.
  *
- * Earlier configs have higher precedence over subsequent configs.
+ * Later configs have higher precedence over earlier configs.
  */
 function mergeConfigs(...configs: Partial<Config>[]): Config {
   function isNilOrNaN(val: unknown): val is null | undefined | number {
     return isNil(val) || (isNumber(val) && isNaN(val));
   }
-  // helper to get the first defined value for a given config key
-  // from the config sources in a type safe manner
+
+  // helper to get the last defined value for a given config key
+  // from each of the config sources in a type safe manner.
   function get<T extends keyof Config>(k: T): Config[T] {
-    return configs
-      .reverse()
-      .reduce((entry: Config[T], config) => !isNilOrNaN(config[k]) ? config[k] as Config[T] : entry, DefaultConfig[k]);
+    return configs.reduce(
+      (entry: Config[T], config) => !isNilOrNaN(config[k]) ? config[k] as Config[T] : entry,
+      DefaultConfig[k],
+    );
   }
 
   return {
@@ -118,5 +120,5 @@ function mergeConfigs(...configs: Partial<Config>[]): Config {
 export const config = () => {
   const arg = ArgConfig(args());
   const env = EnvConfig();
-  return mergeConfigs(arg, env);
+  return mergeConfigs(env, arg);
 };
