@@ -147,7 +147,7 @@ describe('ZEC:', function() {
         });
         const halfSignedTx = bitGoUtxoLib.Transaction.fromHex(halfSigned.txHex, testCoin.network);
         halfSignedTx.network.coin.should.equal('zec');
-        halfSignedTx.version.should.equal(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
+        halfSignedTx.version.should.equal(4);
         halfSignedTx.versionGroupId.should.equal(2301567109);
         halfSignedTx.overwintered.should.equal(1);
         halfSignedTx.expiryHeight.should.equal(0);
@@ -163,7 +163,7 @@ describe('ZEC:', function() {
         });
         const fullySignedTx = bitGoUtxoLib.Transaction.fromHex(fullySigned.txHex, testCoin.network);
         fullySignedTx.network.coin.should.equal('zec');
-        fullySignedTx.version.should.equal(bitGoUtxoLib.Transaction.ZCASH_SAPLING_VERSION);
+        fullySignedTx.version.should.equal(4);
         fullySignedTx.versionGroupId.should.equal(2301567109);
         fullySignedTx.overwintered.should.equal(1);
         fullySignedTx.expiryHeight.should.equal(0);
