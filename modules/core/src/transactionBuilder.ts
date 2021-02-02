@@ -876,7 +876,7 @@ exports.signTransaction = function(params) {
 
   if (enableBCH) {
     debug('Enabling BCH…');
-    network = _.extend({}, network, { coin: 'bch' });
+    network = bitcoin.networks.bitcoincash;
     debug('New network: %O', network);
   }
 
