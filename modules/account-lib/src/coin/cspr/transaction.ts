@@ -1,6 +1,6 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { DeployUtil, Keys } from 'casper-client-sdk';
-import { Deploy } from 'casper-client-sdk/dist/lib/DeployUtil';
+import { CLValue, DeployUtil, Keys } from 'casper-client-sdk';
+import { Deploy, Transfer } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, NotImplementedError, SigningError } from '../baseCoin/errors';
@@ -55,17 +55,27 @@ export class Transaction extends BaseTransaction {
 
   /** @inheritdoc */
   toJson(): CasperTransaction {
+    const deployPayment = this._deploy.payment.asModuleBytes()!.getArgByName('amount');
+    if (!deployPayment) {
+      throw new InvalidTransactionError('Undefined fee');
+    }
+
     const result: CasperTransaction = {
       hash: Buffer.from(this._deploy.hash).toString('hex'),
       data: Buffer.from(this._deploy.header.bodyHash).toString('hex'),
-      fee: 0, // TODO(STLX-793): set to, amount and transferId.
+      fee: { gasLimit: deployPayment.asBigNumber().toString(), gasPrice: this._deploy.header.gasPrice.toString() },
       from: Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex'),
       startTime: new Date(this._deploy.header.timestamp).toISOString(),
-      expiration: DeployUtil.humanizerTTL(this._deploy.header.ttl),
+      expiration: this._deploy.header.ttl,
     };
 
     if (this._deploy.session.isTransfer()) {
-      // TODO(STLX-793): set to, amount and transferId.
+      result.to = Buffer.from(
+        ((this._deploy.session.asTransfer() as Transfer).getArgByName('target') as CLValue).asBytesArray(),
+      ).toString('hex');
+      result.amount = ((this._deploy.session.asTransfer() as Transfer).getArgByName('amount') as CLValue)
+        .asBigNumber()
+        .toString();
     }
     return result;
   }

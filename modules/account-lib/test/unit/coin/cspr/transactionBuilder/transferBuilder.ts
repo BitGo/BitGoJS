@@ -7,7 +7,7 @@ import { Transaction } from '../../../../../src/coin/cspr/transaction';
 describe('Casper Transfer Builder', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
 
-  const initTxBuilder = () => {
+  const initTxTransferBuilder = () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
     txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
@@ -27,97 +27,142 @@ describe('Casper Transfer Builder', () => {
   describe('should build ', () => {
     describe('non serialized transactions', () => {
       it('a signed transfer transaction', async () => {
-        const builder = initTxBuilder().amount('10');
+        const builder = initTxTransferBuilder().amount('10');
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
-        const tx = await builder.build();
+        const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.exist((tx as Transaction).casperTx.approvals, 'There are no approvals');
-        should.deepEqual((tx as Transaction).casperTx.approvals.length, 1, 'Error in the number of signatures');
+        should.exist(tx.casperTx.approvals, 'There are no approvals');
+        should.deepEqual(tx.casperTx.approvals.length, 1, 'Error in the number of signatures');
         should.deepEqual(
-          (tx as Transaction).casperTx.approvals[0].signer.toUpperCase(),
+          tx.casperTx.approvals[0].signer.toUpperCase(),
           testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
           'Error in the signature',
         );
-        should.exist((tx as Transaction).casperTx.hash, 'There is no hash');
+        should.exist(tx.casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
         should.deepEqual(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey, 'The recipient does not match');
-        should.exist((tx as Transaction).casperTx.header.gasPrice, 'There is no gasPrice');
-        // TODO (STLX-793) : Check the following fields. To, Amount, gasLimit.
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+        should.equal(
+          tx.casperTx.header.gasPrice.toString(),
+          testData.FEE.gasPrice,
+          'Gas price does not match expected',
+        );
+
+        should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
+        should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
+
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.accountHash, 'To address was not the expected one');
+        should.equal(txJson.amount, '10', 'Amount was not as expected');
       });
 
       it('a transfer transaction signed multiple times', async () => {
         const builder = initTxBuilderMultisig();
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
         builder.sign({ key: testData.ACCOUNT_2.privateKey });
-        const tx = await builder.build();
+        const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.exist((tx as Transaction).casperTx.approvals, 'There are no approvals');
-        should.deepEqual((tx as Transaction).casperTx.approvals.length, 2, 'Error in the number of signatures');
+        should.exist(tx.casperTx.approvals, 'There are no approvals');
+        should.deepEqual(tx.casperTx.approvals.length, 2, 'Error in the number of signatures');
         should.deepEqual(
-          (tx as Transaction).casperTx.approvals[0].signer.toUpperCase(),
+          tx.casperTx.approvals[0].signer.toUpperCase(),
           testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
           'Error in the signature',
         );
         should.deepEqual(
-          (tx as Transaction).casperTx.approvals[1].signer.toUpperCase(),
+          tx.casperTx.approvals[1].signer.toUpperCase(),
           testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey,
           'Error in the signature',
         );
-        should.exist((tx as Transaction).casperTx.hash, 'There is no hash');
+        should.exist(tx.casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
         should.deepEqual(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey, 'The recipient does not match');
-        should.exist((tx as Transaction).casperTx.header.gasPrice, 'There is no gasPrice');
-        // TODO (STLX-793) : Check the following fields. To, Amount, gasLimit.
+
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+        should.equal(
+          tx.casperTx.header.gasPrice.toString(),
+          testData.FEE.gasPrice,
+          'Gas price does not match expected',
+        );
+
+        should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
+        should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
+
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_3.accountHash, 'To address was not the expected one');
+        should.equal(txJson.amount, '10', 'Amount does not match expected');
       });
 
       it('a transfer transaction with amount 0', async () => {
-        const builder = initTxBuilder();
+        const builder = initTxTransferBuilder();
         builder.amount('0');
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
-        const tx = await builder.build();
+        const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.exist((tx as Transaction).casperTx.approvals, 'There are no approvals');
-        should.deepEqual((tx as Transaction).casperTx.approvals.length, 1, 'Error in the number of signatures');
+        should.exist(tx.casperTx.approvals, 'There are no approvals');
+        should.deepEqual(tx.casperTx.approvals.length, 1, 'Error in the number of signatures');
         should.deepEqual(
-          (tx as Transaction).casperTx.approvals[0].signer.toUpperCase(),
+          tx.casperTx.approvals[0].signer.toUpperCase(),
           testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
           'Error in the signature',
         );
-        should.exist((tx as Transaction).casperTx.hash, 'There is no hash');
+        should.exist(tx.casperTx.hash, 'There is no hash');
         should.exist(txJson.from, 'There is no from');
         should.deepEqual(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey, 'The recipient does not match');
-        should.exist((tx as Transaction).casperTx.header.gasPrice, 'There is no gasPrice');
-        // TODO (STLX-793) : Check the following fields. To, Amount, gasLimit.
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+        should.equal(
+          tx.casperTx.header.gasPrice.toString(),
+          testData.FEE.gasPrice,
+          'Gas price does not match expected',
+        );
+
+        should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
+        should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
+
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.accountHash, 'To address was not the expected one');
+        should.equal(txJson.amount, '0', 'Amount does not match expected');
       });
 
       it('a non signed transfer transaction', async () => {
-        const builder = initTxBuilder().amount('10');
-        const tx = await builder.build();
+        const builder = initTxTransferBuilder().amount('10');
+        const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
-        should.deepEqual((tx as Transaction).casperTx.approvals.length, 0, 'Error in the number of signatures');
-        should.exist((tx as Transaction).casperTx.hash), 'There is no hash';
+        should.deepEqual(tx.casperTx.approvals.length, 0, 'Error in the number of signatures');
+        should.exist(tx.casperTx.hash), 'There is no hash';
         should.exist(txJson.from, 'There is no from');
         should.deepEqual(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey, 'The recipient does not match');
-        should.exist((tx as Transaction).casperTx.header.gasPrice, 'There is no gasPrice');
-        // TODO (STLX-793) : Check the following fields. To, Amount, gasLimit.
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+        should.equal(
+          tx.casperTx.header.gasPrice.toString(),
+          testData.FEE.gasPrice,
+          'Gas price does not match expected',
+        );
+
+        should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
+        should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
+
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.accountHash, 'To address was not the expected one');
+        should.equal(txJson.amount, '10', 'Amount does not match expected');
       });
     });
 
     describe('serialized transactions', () => {
       it('a non signed transfer transaction from serialized', async () => {
-        // TODO(STLX-793): this will be done when fromImplementation is implemented
+        // TODO(STLX-663): this will be done when fromImplementation for transfer is implemented
       });
 
       it('a signed transfer transaction from serilaized', async () => {
-        // TODO(STLX-793): this will be done when fromImplementation is implemented
+        // TODO(STLX-663): this will be done when fromImplementation for transfer is implemented
       });
 
       it('an offline multisig transfer transaction', async () => {
-        // TODO(STLX-793): this will be done when fromImplementation is implemented
+        // TODO(STLX-663): this will be done when fromImplementation for transfer is implemented
       });
     });
   });
@@ -126,7 +171,7 @@ describe('Casper Transfer Builder', () => {
     it('a transfer transaction with an invalid source address', () => {
       should.throws(
         () => {
-          initTxBuilder().source({ address: testData.INVALID_ADDRESS });
+          initTxTransferBuilder().source({ address: testData.INVALID_ADDRESS });
         },
         e => e.message.startsWith(testData.ERROR_INVALID_ADDRESS),
       );
@@ -135,7 +180,7 @@ describe('Casper Transfer Builder', () => {
     it('a transfer transaction with an invalid destination address', () => {
       should.throws(
         () => {
-          initTxBuilder().to(testData.INVALID_ADDRESS);
+          initTxTransferBuilder().to(testData.INVALID_ADDRESS);
         },
         e => e.message === testData.ERROR_INVALID_ADDRESS,
       );
@@ -146,7 +191,7 @@ describe('Casper Transfer Builder', () => {
     });
 
     it('a transfer transaction with repeated sign', async () => {
-      const txBuilder = await initTxBuilder().amount('10');
+      const txBuilder = await initTxTransferBuilder().amount('10');
       should.throws(
         () => {
           txBuilder.sign({ key: testData.ACCOUNT_3.privateKey });
@@ -159,7 +204,7 @@ describe('Casper Transfer Builder', () => {
     it('a transfer transaction with an invalid amount: text value', () => {
       should.throws(
         () => {
-          initTxBuilder().amount('invalid_value');
+          initTxTransferBuilder().amount('invalid_value');
         },
         e => e.message === testData.ERROR_INVALID_AMOUNT,
       );
@@ -168,7 +213,7 @@ describe('Casper Transfer Builder', () => {
     it('a transfer transaction with an invalid amount: negative value', () => {
       should.throws(
         () => {
-          initTxBuilder().amount('-1');
+          initTxTransferBuilder().amount('-1');
         },
         e => e.message === testData.ERROR_INVALID_AMOUNT,
       );

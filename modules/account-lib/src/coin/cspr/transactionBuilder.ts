@@ -1,21 +1,26 @@
 import BigNumber from 'bignumber.js';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { DeployUtil, PublicKey } from 'casper-client-sdk';
-import { ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
+import { Deploy, ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { parseInt } from 'lodash';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
-import { BuildTransactionError, NotImplementedError, SigningError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
 import { isValidPublicKey } from './utils';
 import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
+import {
+  BuildTransactionError,
+  SigningError,
+  InvalidTransactionError,
+  ParseTransactionError,
+} from '../baseCoin/errors';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
 export abstract class TransactionBuilder extends BaseTransactionBuilder {
-  private _source: BaseAddress;
+  protected _source: BaseAddress;
   protected _fee: Fee;
   private _transaction: Transaction;
   protected _session: CasperTransferTransaction | CasperModuleBytesTransaction;
@@ -48,9 +53,10 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected fromImplementation(rawTransaction: DeployUtil.Deploy): Transaction {
+  protected fromImplementation(rawTransaction: string): Transaction {
     const tx = new Transaction(this._coinConfig);
-    tx.casperTx = rawTransaction;
+    const jsonTransaction = JSON.parse(rawTransaction);
+    tx.casperTx = DeployUtil.deployFromJson(jsonTransaction) as Deploy;
     this.initBuilder(tx);
     return this.transaction;
   }
@@ -75,9 +81,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this.transaction = tx;
     this.transaction.loadPreviousSignatures();
     const txData = tx.toJson();
-    this.fee({ gasLimit: txData.fee.toString() });
+    this.fee(txData.fee);
     this.source({ address: txData.from });
-    this.expiration(txData.expiration || TRANSACTION_EXPIRATION.toString());
+    this.expiration(txData.expiration || TRANSACTION_EXPIRATION);
   }
 
   // endregion
@@ -114,7 +120,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    * @param {string} expirationTime The transaction expirationTime
    * @returns {TransactionBuilder} This transaction builder
    */
-  expiration(expirationTime: string): this {
+  expiration(expirationTime: number): this {
     const transactionExpiration = new BigNumber(expirationTime);
     if (transactionExpiration.isNaN() || transactionExpiration.isGreaterThan(TRANSACTION_EXPIRATION)) {
       throw new BuildTransactionError('Invalid transaction expiration');
@@ -163,11 +169,15 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  validateRawTransaction(rawTransaction: any): void {
-    throw new NotImplementedError('validateRawTransaction not implemented');
-    // if (!isValidRawTransactionFormat(rawTransaction)) {
-    //   throw new ParseTransactionError('Invalid raw transaction');
-    // }
+  validateRawTransaction(rawTransaction: string): void {
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Raw transaction is empty');
+    }
+    try {
+      DeployUtil.deployFromJson(JSON.parse(rawTransaction));
+    } catch (e) {
+      throw new ParseTransactionError('There was an error parsing the JSON string');
+    }
   }
 
   /** @inheritdoc */

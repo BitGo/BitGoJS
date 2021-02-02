@@ -6,9 +6,9 @@ export interface CasperTransaction {
   hash: string;
   from: string;
   data: string;
-  fee: number;
+  fee: Fee;
   startTime?: string;
-  expiration?: string;
+  expiration?: number;
   to?: string;
   amount?: string;
   transferId?: number;
