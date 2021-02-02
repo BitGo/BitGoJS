@@ -590,6 +590,7 @@ export const coins = CoinMap.fromCoins([
   terc20('trif', 'Test RIF Token', 18, '0x19f64674d8a5b4e652319f5e239efd3bc969a1fe', UnderlyingAsset.RIF),
   tceloToken('tcusd', 'Test Celo USD Token', 18, '0x874069fa1eb16d44d622f2e0ca25eea172369bc1', UnderlyingAsset.CUSD),
   tofcerc20('ofcterc', 'Test ERC Token', 0, UnderlyingAsset.TERC),
+  tofcerc20('ofctest', 'Test Mintable ERC20 Token', 18, UnderlyingAsset.TEST),
   tstellarToken(
     'txlm:BST-GBQTIOS3XGHB7LVYGBKQVJGCZ3R4JL5E4CBSWJ5ALIJUHBKS6263644L',
     'BitGo Shield Token',
