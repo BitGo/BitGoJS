@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { ByteArray, Keys } from 'casper-client-sdk';
+import { Keys } from 'casper-client-sdk';
 import { DefaultKeys } from '../baseCoin/iface';
 
 const MAX_MOTES_AMOUNT = new BigNumber(10).pow(154).minus(1);
@@ -8,9 +8,9 @@ const MAX_MOTES_AMOUNT = new BigNumber(10).pow(154).minus(1);
  * Returns the account hash from a public key
  *
  * @param {DefaultKeys} keys keypair
- * @returns {ByteArray} account hash as ByteArray
+ * @returns {Uint8Array} account hash as Uint8Array
  */
-export function getAccountHash(keys: DefaultKeys): ByteArray {
+export function getAccountHash(keys: DefaultKeys): Uint8Array {
   const publicKey = Buffer.from(keys.pub); // first two characters identify a public key
   const privateKey = keys.prv ? Buffer.from(keys.prv) : undefined;
   return new Keys.Secp256K1(publicKey, privateKey!).accountHash();
