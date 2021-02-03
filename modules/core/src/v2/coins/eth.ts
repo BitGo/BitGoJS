@@ -1162,6 +1162,10 @@ export class Eth extends BaseCoin {
       if (!response.ok) {
         throw new Error('could not reach Etherscan');
       }
+
+      if (response.body.status === '0' && response.body.message === 'NOTOK') {
+        throw new Error('Etherscan rate limit reached');
+      }
       return response.body;
     })
       .call(this)
