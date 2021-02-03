@@ -873,6 +873,8 @@ export class Eth extends BaseCoin {
       ];
 
       // Get sequence ID using contract call
+      // we need to wait between making two etherscan calls to avoid getting banned
+      yield new Promise(resolve => setTimeout(resolve, 1000));
       const sequenceId = yield self.querySequenceId(params.walletContractAddress);
 
       let operationHash, signature;
