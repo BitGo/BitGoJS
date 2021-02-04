@@ -52,7 +52,7 @@ describe('Pending Approvals:', () => {
     (pendingApprovalData as any).wallet = wallet;
   });
 
-  it('should call consolidate instead of build when rebuilding consolidation pending approvals', async () => {
+  xit('should call consolidate instead of build when rebuilding consolidation pending approvals', async () => {
     const scope = nock(bgUrl)
       .post(`/api/v2/${coin}/wallet/${walletId}/consolidateUnspents`)
       .reply(200);

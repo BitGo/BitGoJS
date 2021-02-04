@@ -360,15 +360,6 @@ export class PendingApproval {
         prebuildParams.hop = true;
       }
 
-      if (!recipients.length) {
-        // no recipients - this is a consolidation transaction
-        prebuildParams.prebuildTx = yield self.bitgo
-          .post(self.wallet.url(`/consolidateUnspents`))
-          .send(params)
-          .result();
-        delete prebuildParams.recipients;
-      }
-
       const signedTransaction = yield self.wallet.prebuildAndSignTransaction(prebuildParams);
       // compare PAYGo fees
       const originalParsedTransaction = yield self.baseCoin.parseTransaction({
