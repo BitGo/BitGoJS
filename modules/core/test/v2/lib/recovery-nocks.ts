@@ -2265,6 +2265,25 @@ module.exports.nockEthRecovery = function(bitgo) {
   });
 };
 
+module.exports.nockEtherscanRateLimitError = function() {
+  const response = {
+    status: '0',
+    message: 'NOTOK',
+    result: 'Max rate limit reached, rate limit of 3/1sec applied"',
+  };
+
+  const params = {
+    module: 'account',
+    action: 'txlist',
+    address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+  };
+
+  nock('https://kovan.etherscan.io')
+    .get('/api')
+    .query(params)
+    .reply(200, response);
+};
+
 module.exports.nockLtcRecovery = function(isKrsRecovery) {
   nock('http://explorer.litecointools.com/api')
     .get('/addr/QPuiounBxPyL6hsMAjtNtCtjF99uN1Nh6d')
