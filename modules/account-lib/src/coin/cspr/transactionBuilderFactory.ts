@@ -25,10 +25,17 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritDoc */
-  from(raw: DeployUtil.Deploy): TransactionBuilder {
+  from(raw: string): TransactionBuilder {
     this.validateRawTransaction(raw);
     const tx = new Transaction(this._coinConfig);
-    tx.casperTx = raw;
+    const deployJson = JSON.parse(raw);
+    const deployObject = DeployUtil.deployFromJson(deployJson);
+
+    if (!deployObject) {
+      throw new InvalidTransactionError('Invalid transaction: ' + deployObject);
+    }
+
+    tx.casperTx = deployObject;
 
     if (tx.casperTx.session.isTransfer()) {
       return this.getTransferBuilder(tx);
@@ -78,8 +85,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     if (!session) {
       return false;
     }
-    const moduleBytes = session.getArgByName('moduleBytes');
-    const contract = Uint8Array.from(Buffer.from(walletInitContractHexCode, 'hex'));
-    return moduleBytes !== undefined && moduleBytes.asBytesArray() === contract;
+    const moduleBytes = Buffer.from(session.moduleBytes).toString('hex');
+    return moduleBytes !== undefined && moduleBytes === walletInitContractHexCode;
   }
 }

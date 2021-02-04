@@ -35,6 +35,12 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     const accounts = this._owners.map(owner => CLTypedAndToBytesHelper.bytes(owner.address.toAccountHash()));
     const weights = this._owners.map(owner => CLTypedAndToBytesHelper.u8(owner.weight));
 
+    // set source address weight to zero to disable the master private key from signing.
+    accounts.push(
+      CLTypedAndToBytesHelper.bytes(PublicKey.fromHex(SECP256K1_PREFIX + this._source.address).toAccountHash()),
+    );
+    weights.push(CLTypedAndToBytesHelper.u8(0));
+
     return {
       action: CLValue.string('set_all'),
       // This typo is on purpose since the contract we use for multisig wallet initialization expect this argument to be written like this.
