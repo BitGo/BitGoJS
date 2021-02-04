@@ -194,17 +194,17 @@ class CeloTestnet extends Testnet implements AccountNetwork {
   accountExplorerUrl = 'https://alfajores-blockscout.celo-testnet.org/address/';
 }
 
-// TODO Add explorer urls for mainet Ticket BGA-948
+//TODO update explorerUrl STLX-1657
 class Casper extends Mainnet implements AccountNetwork {
   family = CoinFamily.CSPR;
-  explorerUrl = '';
+  explorerUrl = 'https://clarity.casperlabs.io/#/deploys/';
   accountExplorerUrl = '';
 }
 
-// TODO Add explorer urls for testnet Ticket BGA-948
+//TODO update explorerUrl STLX-1657
 class CasperTestnet extends Testnet implements AccountNetwork {
   family = CoinFamily.CSPR;
-  explorerUrl = '';
+  explorerUrl = 'https://clarity.casperlabs.io/#/deploys/';
   accountExplorerUrl = '';
 }
 
