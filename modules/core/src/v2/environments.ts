@@ -134,10 +134,11 @@ const testnetBase: EnvironmentTemplate = {
   ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
   zecExplorerBaseUrl: 'https://explorer.testnet.z.cash/api',
   dashExplorerBaseUrl: 'https://testnet-insight.dashevo.org/insight-api',
+  // https://monitor.jungletestnet.io/#apiendpoints for more endpoints
   eosNodeUrls: [
-    'https://jungle2.cryptolions.io',
-    'https://eos-jungle.eosblocksmith.io',
-    'https://api.jungle.alohaeos.com',
+    'https://jungle3.cryptolions.io:443',
+    'https://jungle3.eosdac.io:443',
+    'https://jungleapi.nodeone.io:443',
   ],
   tronNodes: {
     full: 'http://47.252.81.135:8090',
