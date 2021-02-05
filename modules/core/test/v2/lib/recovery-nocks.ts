@@ -2265,6 +2265,25 @@ module.exports.nockEthRecovery = function(bitgo) {
   });
 };
 
+module.exports.nockEtherscanRateLimitError = function() {
+  const response = {
+    status: '0',
+    message: 'NOTOK',
+    result: 'Max rate limit reached, rate limit of 3/1sec applied"',
+  };
+
+  const params = {
+    module: 'account',
+    action: 'txlist',
+    address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+  };
+
+  nock('https://kovan.etherscan.io')
+    .get('/api')
+    .query(params)
+    .reply(200, response);
+};
+
 module.exports.nockLtcRecovery = function(isKrsRecovery) {
   nock('http://explorer.litecointools.com/api')
     .get('/addr/QPuiounBxPyL6hsMAjtNtCtjF99uN1Nh6d')
@@ -2980,10 +2999,10 @@ module.exports.nockTronRecovery = function() {
 };
 
 module.exports.nockEosRecovery = function() {
-  nock('https://jungle2.cryptolions.io')
+  nock('https://jungle3.cryptolions.io:443')
     .post('*')
     .reply(502);
-  nock('https://eos-jungle.eosblocksmith.io')
+  nock('https://jungle3.eosdac.io:443')
     .post('/v1/chain/get_info')
     .reply(200, {
       server_version: '14185431',

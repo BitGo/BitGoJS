@@ -873,6 +873,8 @@ export class Eth extends BaseCoin {
       ];
 
       // Get sequence ID using contract call
+      // we need to wait between making two etherscan calls to avoid getting banned
+      yield new Promise(resolve => setTimeout(resolve, 1000));
       const sequenceId = yield self.querySequenceId(params.walletContractAddress);
 
       let operationHash, signature;
@@ -1159,6 +1161,10 @@ export class Eth extends BaseCoin {
 
       if (!response.ok) {
         throw new Error('could not reach Etherscan');
+      }
+
+      if (response.body.status === '0' && response.body.message === 'NOTOK') {
+        throw new Error('Etherscan rate limit reached');
       }
       return response.body;
     })

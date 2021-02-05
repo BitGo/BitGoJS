@@ -1023,6 +1023,7 @@ describe('Recovery:', function() {
   });
 
   describe('Recover Ethereum', function() {
+
     const recoveryParams = {
       userKey: '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
       ':"ccm","adata":"","cipher":"aes","salt":"cCE20fGIobs=","ct":"NVIdYIh91J3aRI\n' +
@@ -1127,5 +1128,12 @@ describe('Recovery:', function() {
       should.exist(error);
       error.message.should.equal('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.');
     }));
+
+    it('should throw error when the etherscan rate limit is reached', async function() {
+      nock.cleanAll()
+      const basecoin = bitgo.coin('teth');
+      recoveryNocks.nockEtherscanRateLimitError();
+      await basecoin.recover(recoveryParams).should.be.rejectedWith('Etherscan rate limit reached');
+    });
   });
 });

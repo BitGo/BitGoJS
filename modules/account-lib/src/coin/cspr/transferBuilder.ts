@@ -32,7 +32,7 @@ export class TransferBuilder extends TransactionBuilder {
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     this.transaction.setTransactionType(TransactionType.Send);
-    // TODO(STLX-793): init to and amount
+    // TODO(STLX-663): init to and amount
   }
 
   /** @inheritdoc */
