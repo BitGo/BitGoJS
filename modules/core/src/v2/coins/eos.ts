@@ -842,6 +842,13 @@ export class Eos extends BaseCoin {
 
       const account = yield self.getAccountFromNode({ address: params.rootAddress });
 
+      if (!account.core_liquid_balance) {
+        throw new Error('Could not find any balance to recovery for ' + params.rootAddress);
+      }
+
+      if (!account.permissions) {
+        throw new Error('Could not find permissions for ' + params.rootAddress);
+      }
       const userPub = ecc.PublicKey.fromBuffer(keys[0].getPublicKeyBuffer()).toString();
       const backupPub = ecc.PublicKey.fromBuffer(keys[1].getPublicKeyBuffer()).toString();
 

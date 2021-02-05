@@ -2999,10 +2999,10 @@ module.exports.nockTronRecovery = function() {
 };
 
 module.exports.nockEosRecovery = function() {
-  nock('https://jungle2.cryptolions.io')
+  nock('https://jungle3.cryptolions.io:443')
     .post('*')
     .reply(502);
-  nock('https://eos-jungle.eosblocksmith.io')
+  nock('https://jungle3.eosdac.io:443')
     .post('/v1/chain/get_info')
     .reply(200, {
       server_version: '14185431',
