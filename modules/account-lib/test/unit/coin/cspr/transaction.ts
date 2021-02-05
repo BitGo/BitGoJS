@@ -77,10 +77,15 @@ describe('Cspr Transaction', () => {
     });
   });
 
-  describe('should reject sign if transaction is', () => {
-    it('invalid', function() {
+  describe('should reject sign if transaction signer is', () => {
+    it('invalid private key', function() {
       const tx = getTransaction();
       return tx.sign(testData.INVALID_KEYPAIR_PRV).should.be.rejected();
+    });
+    it('public key', function() {
+      const tx = getTransaction();
+      const keypair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
+      return tx.sign(keypair).should.be.rejected();
     });
   });
 

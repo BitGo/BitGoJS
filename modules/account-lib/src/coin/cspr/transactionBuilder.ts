@@ -5,17 +5,17 @@ import { Deploy, ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployU
 import { parseInt } from 'lodash';
 import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
-import { Transaction } from './transaction';
-import { KeyPair } from './keyPair';
-import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
-import { isValidPublicKey } from './utils';
-import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
 import {
   BuildTransactionError,
   SigningError,
   InvalidTransactionError,
   ParseTransactionError,
 } from '../baseCoin/errors';
+import { Transaction } from './transaction';
+import { KeyPair } from './keyPair';
+import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
+import { isValidPublicKey } from './utils';
+import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
@@ -44,7 +44,17 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     // @ts-ignore Added because standardPayment expect an external library BigNumber implementation.
     const payment = DeployUtil.standardPayment(parseInt(this._fee.gasLimit));
 
-    const cTransaction = this.transaction.casperTx || DeployUtil.makeDeploy(deployParams, session, payment);
+    let cTransaction = this.transaction.casperTx || DeployUtil.makeDeploy(deployParams, session, payment);
+
+    // Cannot add arguments to an already signed deploy.
+    if (cTransaction.approvals.length === 0) {
+      this._session.extraArguments.forEach((extraArgument, extraArgumentName) => {
+        if (!cTransaction.session.getArgByName(extraArgumentName)) {
+          cTransaction = DeployUtil.addArgToDeploy(cTransaction, extraArgumentName, extraArgument);
+        }
+      });
+    }
+
     this.transaction.casperTx = cTransaction;
 
     await this.processSigning();
@@ -289,9 +299,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   private async processSigning(): Promise<void> {
     for (const keyPair of this._multiSignerKeyPairs) {
       await this.transaction.sign(keyPair);
-    }
-    for (const { signature } of this._signatures) {
-      this.transaction.addSignature(signature);
     }
   }
   // endregion
