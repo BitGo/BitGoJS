@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { Keys } from 'casper-client-sdk';
 import { DefaultKeys } from '../baseCoin/iface';
+import * as Crypto from './../../utils/crypto';
 
 const MAX_MOTES_AMOUNT = new BigNumber(10).pow(154).minus(1);
 
@@ -19,17 +20,21 @@ export function getAccountHash(keys: DefaultKeys): Uint8Array {
 /**
  * validate public key
  *
- * @param {string} address public key address
- * @returns {boolean} return a bool
+ * @param {string} pub public key
+ * @returns {boolean} true if pub is a valid public key
  */
-export function isValidPublicKey(address: string): boolean {
-  if (!address || address.trim().length === 0) {
-    return false;
-  }
-  if (!address.match(/^[0-9a-fA-F]{66}$/)) {
-    return false;
-  }
-  return true;
+export function isValidPublicKey(pub: string): boolean {
+  return Crypto.isValidXpub(pub) || Crypto.isValidPub(pub);
+}
+
+/**
+ * validate address
+ *
+ * @param {string} address public key
+ * @returns {boolean} true if address is a valid public key
+ */
+export function isValidAddress(address: string): boolean {
+  return Crypto.isValidPub(address);
 }
 
 /**
