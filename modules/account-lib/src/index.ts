@@ -38,8 +38,8 @@ import * as Xrp from './coin/xrp';
 export { Xrp };
 
 const coinBuilderMap = {
-  trx: Trx.TransactionBuilder,
-  ttrx: Trx.TransactionBuilder,
+  trx: Trx.WrappedBuilder,
+  ttrx: Trx.WrappedBuilder,
   xtz: Xtz.TransactionBuilder,
   txtz: Xtz.TransactionBuilder,
   etc: Etc.TransactionBuilder,
