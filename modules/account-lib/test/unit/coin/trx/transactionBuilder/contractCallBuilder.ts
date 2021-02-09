@@ -1,6 +1,7 @@
 import should from 'should';
-import { WrappedBuilder } from '../../../../../src/coin/trx';
+import { Transaction, WrappedBuilder } from '../../../../../src/coin/trx';
 import { getBuilder } from '../../../../../src/index';
+import { TransactionType } from '../../../../../src/coin/baseCoin/';
 import {
   PARTICIPANTS,
   CONTRACTS,
@@ -11,6 +12,7 @@ import {
   EXPIRATION,
   TX_CONTRACT,
 } from '../../../../resources/trx/trx';
+import { MAX_FEE } from '../../../../../src/coin/trx/contractCallBuilder';
 
 describe('Trx Contract call Builder', () => {
   const initTxBuilder = () => {
@@ -71,6 +73,18 @@ describe('Trx Contract call Builder', () => {
           txBuilder4.sign({ key: PARTICIPANTS.multisig.pk });
           const tx4 = await txBuilder4.build();
 
+          tx4.inputs.length.should.equal(1);
+          tx4.inputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+          if (tx4.inputs[0].contractAddress) {
+            tx4.inputs[0].contractAddress.should.equal(CONTRACTS.factory);
+          }
+          if (tx4.inputs[0].data) {
+            tx4.inputs[0].data.should.equal('K/kLqhJzFAw+G1dWskLMiM18TdimG/hctcHdX1C6YeBmtToV');
+          }
+          tx4.inputs[0].value.should.equal('0');
+          tx4.outputs[0].value.should.equal('0');
+          tx4.outputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+
           txJson = tx4.toJson();
           rawData = txJson.raw_data;
           should.deepEqual(rawData.contract, TX_CONTRACT);
@@ -114,8 +128,42 @@ describe('Trx Contract call Builder', () => {
           txBuilder2.sign({ key: PARTICIPANTS.custodian.pk });
           const tx2 = await txBuilder2.build();
 
+          tx2.inputs.length.should.equal(1);
+          tx2.inputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+          if (tx2.inputs[0].contractAddress) {
+            tx2.inputs[0].contractAddress.should.equal(CONTRACTS.factory);
+          }
+          if (tx2.inputs[0].data) {
+            tx2.inputs[0].data.should.equal('K/kLqhJzFAw+G1dWskLMiM18TdimG/hctcHdX1C6YeBmtToV');
+          }
+          tx2.inputs[0].value.should.equal('0');
+          tx2.outputs[0].value.should.equal('0');
+          tx2.outputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+
           const txJson = tx2.toJson();
           should.equal(txJson.raw_data.expiration, expiration + extension);
+        });
+
+        it('a transaction with correct inputs', async () => {
+          const timestamp = Date.now();
+          const txBuilder = initTxBuilder();
+          txBuilder.data(MINT_CONFIRM_DATA);
+          txBuilder.timestamp(timestamp);
+          txBuilder.expiration(timestamp + 40000);
+          const tx = (await txBuilder.build()) as Transaction;
+
+          tx.type.should.equal(TransactionType.ContractCall);
+          tx.inputs.length.should.equal(1);
+          tx.inputs[0].address.should.equal(PARTICIPANTS.custodian.address);
+          if (tx.inputs[0].contractAddress) {
+            tx.inputs[0].contractAddress.should.equal(CONTRACTS.factory);
+          }
+          if (tx.inputs[0].data) {
+            tx.inputs[0].data.should.equal('K/kLqhJzFAw+G1dWskLMiM18TdimG/hctcHdX1C6YeBmtToV');
+          }
+          tx.inputs[0].value.should.equal('0');
+          tx.outputs[0].value.should.equal('0');
+          tx.outputs[0].address.should.equal(PARTICIPANTS.custodian.address);
         });
       });
     });
@@ -160,7 +208,7 @@ describe('Trx Contract call Builder', () => {
   });
 
   describe('Should validate ', () => {
-    it('expiration', async () => {
+    it('a valid expiration', async () => {
       const now = Date.now();
       const expiration = now + EXPIRATION;
       const txBuilder = initTxBuilder();
@@ -168,33 +216,80 @@ describe('Trx Contract call Builder', () => {
       txBuilder.timestamp(now);
       txBuilder.expiration(expiration + 1000);
       txBuilder.expiration(expiration);
+      const tx = await txBuilder.build();
+      const txJson = tx.toJson();
+      should.equal(txJson.raw_data.expiration, expiration);
+    });
+
+    it('an expiration greater than one year', async () => {
+      const now = Date.now();
+      const txBuilder = initTxBuilder();
+      txBuilder.data(MINT_CONFIRM_DATA);
+      txBuilder.timestamp(now);
       should.throws(
         () => {
           txBuilder.expiration(now + 31536000001);
         },
         e => e.message === 'Expiration must not be greater than one year',
       );
-      const tx = await txBuilder.build();
-      should.throws(
-        () => {
-          txBuilder.expiration(expiration + 20000);
-        },
-        e => e.message === 'Expiration is already set, it can only be extended',
-      );
-      const txJson = tx.toJson();
-      should.equal(txJson.raw_data.expiration, expiration);
+    });
 
-      const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+    it('an expiration less than the current date', async () => {
+      const now = Date.now();
+      const txBuilder = initTxBuilder();
+      txBuilder.timestamp(now - 2000);
+      txBuilder.data(MINT_CONFIRM_DATA);
       should.throws(
         () => {
-          txBuilder2.expiration(expiration + 20000);
+          txBuilder.expiration(now - 1000);
+        },
+        e => e.message === 'Expiration must be greater than current time',
+      );
+    });
+
+    it('an expiration less than the timestamp', async () => {
+      const now = Date.now();
+      const txBuilder = initTxBuilder();
+      txBuilder.data(MINT_CONFIRM_DATA);
+      txBuilder.timestamp(now + 2000);
+      should.throws(
+        () => {
+          txBuilder.expiration(now + 1000);
+        },
+        e => e.message === 'Expiration must be greater than timestamp',
+      );
+    });
+
+    it('an expiration set after build', async () => {
+      const now = Date.now();
+      const expiration = now + EXPIRATION;
+      const txBuilder = initTxBuilder();
+      txBuilder.data(MINT_CONFIRM_DATA);
+      await txBuilder.build();
+      should.throws(
+        () => {
+          txBuilder.expiration(expiration);
         },
         e => e.message === 'Expiration is already set, it can only be extended',
       );
     });
 
-    it('valid duration extension', async () => {
-      const expiration = Date.now() + EXPIRATION;
+    it('an expiration set after deserializing', async () => {
+      const now = Date.now();
+      const expiration = now + EXPIRATION;
+      const txBuilder = initTxBuilder();
+      txBuilder.data(MINT_CONFIRM_DATA);
+      const tx = await txBuilder.build();
+      const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
+      should.throws(
+        () => {
+          txBuilder2.expiration(expiration);
+        },
+        e => e.message === 'Expiration is already set, it can only be extended',
+      );
+    });
+
+    it('an extension without a set expiration', async () => {
       const txBuilder = initTxBuilder();
       txBuilder.data(MINT_CONFIRM_DATA);
       should.throws(
@@ -203,6 +298,12 @@ describe('Trx Contract call Builder', () => {
         },
         e => e.message === 'There is not expiration to extend',
       );
+    });
+
+    it('a zero millisecond extension', async () => {
+      const txBuilder = initTxBuilder();
+      txBuilder.data(MINT_CONFIRM_DATA);
+      const expiration = Date.now() + EXPIRATION;
       txBuilder.expiration(expiration);
       const tx = await txBuilder.build();
 
@@ -213,19 +314,34 @@ describe('Trx Contract call Builder', () => {
         },
         e => e.message === 'Value cannot be below zero',
       );
+    });
+
+    it('an extension grater than one year', async () => {
+      const txBuilder = initTxBuilder();
+      txBuilder.data(MINT_CONFIRM_DATA);
+      const expiration = Date.now() + EXPIRATION;
+      txBuilder.expiration(expiration);
+      const tx = await txBuilder.build();
+
+      const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
       should.throws(
         () => {
           txBuilder2.extendValidTo(31536000001);
         },
         e => e.message === 'The expiration cannot be extended more than one year',
       );
-      txBuilder2.sign({ key: PARTICIPANTS.custodian.pk });
-      const tx2 = await txBuilder2.build();
+    });
 
-      const txBuilder3 = getBuilder('ttrx').from(tx2.toJson());
+    it('an extension after signing', async () => {
+      const txBuilder = initTxBuilder();
+      txBuilder.data(MINT_CONFIRM_DATA);
+      txBuilder.sign({ key: PARTICIPANTS.custodian.pk });
+      const tx = await txBuilder.build();
+
+      const txBuilder2 = getBuilder('ttrx').from(tx.toBroadcastFormat());
       should.throws(
         () => {
-          txBuilder3.extendValidTo(20000);
+          txBuilder2.extendValidTo(20000);
         },
         e => e.message === 'Cannot extend a signed transaction',
       );
@@ -244,6 +360,13 @@ describe('Trx Contract call Builder', () => {
       should.throws(
         () => {
           txBuilder.fee({ feeLimit: '-15000' });
+        },
+        e => e.message === 'Invalid fee limit value',
+      );
+
+      should.throws(
+        () => {
+          txBuilder.fee({ feeLimit: (MAX_FEE + 1).toString() });
         },
         e => e.message === 'Invalid fee limit value',
       );

@@ -39,11 +39,14 @@ export class TransactionBuilder extends BaseTransactionBuilder {
    * @returns {Transaction} Tron transaction
    */
   protected fromImplementation(rawTransaction: TransactionReceipt | string): Transaction {
+    let tx;
     if (typeof rawTransaction === 'string') {
       const transaction = JSON.parse(rawTransaction);
-      return new Transaction(this._coinConfig, transaction);
+      tx = new Transaction(this._coinConfig, transaction);
+    } else {
+      tx = new Transaction(this._coinConfig, rawTransaction);
     }
-    return new Transaction(this._coinConfig, rawTransaction);
+    return tx;
   }
 
   /** @inheritdoc */
@@ -55,7 +58,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (!this.transaction.outputs) {
       throw new SigningError('Transaction has no receiver');
     }
+    return this.applySignature(key);
+  }
 
+  protected applySignature(key: BaseKey): Transaction {
     const oldTransaction = this.transaction.toJson();
     // Store the original signatures to compare them with the new ones in a later step. Signatures
     // can be undefined if this is the first time the transaction is being signed

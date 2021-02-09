@@ -14,13 +14,11 @@ import { TransactionBuilder } from './transactionBuilder';
 import { Address } from './address';
 import { Transaction } from './transaction';
 import { Block, Fee, TransactionReceipt, TriggerSmartContract } from './iface';
-import { KeyPair } from './keyPair';
 import {
   decodeTransaction,
   getBase58AddressFromHex,
   getByteArrayFromHexAddress,
   getHexAddressFromBase58Address,
-  signTransaction,
   isValidHex,
 } from './utils';
 
@@ -28,6 +26,7 @@ import ContractType = protocol.Transaction.Contract.ContractType;
 
 const DEFAULT_EXPIRATION = 3600000; // one hour
 const MAX_DURATION = 31536000000; // one year
+export const MAX_FEE = 1000000000; // 1e9 = 1000 TRX acording https://developers.tron.network/docs/setting-a-fee-limit-on-deployexecution
 
 export class ContractCallBuilder extends TransactionBuilder {
   protected _signingKeys: BaseKey[];
@@ -80,13 +79,7 @@ export class ContractCallBuilder extends TransactionBuilder {
    */
   initBuilder(rawTransaction: any): this {
     this.validateRawTransaction(rawTransaction);
-    let tx;
-    if (typeof rawTransaction === 'string') {
-      const transaction = JSON.parse(rawTransaction);
-      tx = new Transaction(this._coinConfig, transaction);
-    } else {
-      tx = new Transaction(this._coinConfig, rawTransaction);
-    }
+    const tx = this.fromImplementation(rawTransaction);
     this.transaction = tx;
     this._signingKeys = [];
     const rawData = tx.toJson().raw_data;
@@ -94,7 +87,7 @@ export class ContractCallBuilder extends TransactionBuilder {
     this._refBlockHash = rawData.ref_block_hash;
     this._expiration = rawData.expiration;
     this._timestamp = rawData.timestamp;
-    this._fee = { feeLimit: rawData.fee_limit };
+    this._fee = { feeLimit: rawData.fee_limit!.toString() };
     this.transaction.setTransactionType(TransactionType.ContractCall);
     const contractCall = rawData.contract[0] as TriggerSmartContract;
     this.initContractCall(contractCall);
@@ -232,7 +225,7 @@ export class ContractCallBuilder extends TransactionBuilder {
    */
   fee(fee: Fee): this {
     const feeLimit = new BigNumber(fee.feeLimit);
-    if (feeLimit.isNaN() || feeLimit.isLessThan(0)) {
+    if (feeLimit.isNaN() || feeLimit.isLessThan(0) || feeLimit.isGreaterThan(MAX_FEE)) {
       throw new InvalidParameterValueError('Invalid fee limit value');
     }
     this._fee = fee;
@@ -296,27 +289,6 @@ export class ContractCallBuilder extends TransactionBuilder {
       throw new SigningError('Transaction has no inputs');
     }
     this._signingKeys.forEach(key => this.applySignature(key));
-  }
-
-  private applySignature(key: BaseKey): void {
-    const oldTransaction = this.transaction.toJson();
-    // Store the original signatures to compare them with the new ones in a later step. Signatures
-    // can be undefined if this is the first time the transaction is being signed
-    const oldSignatureCount = oldTransaction.signature ? oldTransaction.signature.length : 0;
-    let signedTransaction: TransactionReceipt;
-    try {
-      const keyPair = new KeyPair({ prv: key.key });
-      // Since the key pair was generated using a private key, it will always have a prv attribute,
-      // hence it is safe to use non-null operator
-      signedTransaction = signTransaction(keyPair.getKeys().prv!, this.transaction.toJson());
-    } catch (e) {
-      throw new SigningError('Failed to sign transaction via helper.');
-    }
-
-    // Ensure that we have more signatures than what we started with
-    if (!signedTransaction.signature || oldSignatureCount >= signedTransaction.signature.length) {
-      throw new SigningError('Transaction signing did not return an additional signature.');
-    }
   }
 
   /** @inheritdoc */
