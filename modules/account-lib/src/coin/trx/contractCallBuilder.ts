@@ -77,7 +77,7 @@ export class ContractCallBuilder extends TransactionBuilder {
    * @param {any} rawTransaction the transaction data in a string or JSON format
    * @returns {ContractCallBuilder} the builder with the transaction data set
    */
-  initBuilder(rawTransaction: any): this {
+  initBuilder(rawTransaction: TransactionReceipt | string): this {
     this.validateRawTransaction(rawTransaction);
     const tx = this.fromImplementation(rawTransaction);
     this.transaction = tx;

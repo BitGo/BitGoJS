@@ -93,8 +93,8 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return Promise.resolve(this.transaction);
   }
 
-  initBuilder(tx: Transaction) {
-    throw new NotImplementedError('init builder not implemented for this builder type');
+  initBuilder(tx: TransactionReceipt | string) {
+    this.transaction = this.fromImplementation(tx);
   }
 
   /**
