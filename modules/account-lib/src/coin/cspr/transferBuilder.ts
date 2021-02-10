@@ -1,5 +1,5 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { PublicKey } from 'casper-client-sdk';
+import { CLValue, PublicKey } from 'casper-client-sdk';
 import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionType } from '../baseCoin';
@@ -23,6 +23,7 @@ export class TransferBuilder extends TransactionBuilder {
       amount: this._amount,
       target: PublicKey.fromHex(SECP256K1_PREFIX + this._toAddress),
       id: this._transferId,
+      extraArguments: new Map<string, CLValue>(),
     };
     this.transaction.setTransactionType(TransactionType.Send);
     return await super.buildImplementation();

@@ -7,6 +7,7 @@ import { InvalidTransactionError, NotImplementedError, SigningError } from '../b
 import { KeyPair } from './keyPair';
 import { CasperTransaction } from './ifaces';
 import { SECP256K1_PREFIX } from './constants';
+import { isValidPublicKey } from './utils';
 
 export class Transaction extends BaseTransaction {
   protected _type: TransactionType;
@@ -26,7 +27,8 @@ export class Transaction extends BaseTransaction {
     if (!keys.prv) {
       throw new SigningError('Missing private key');
     }
-    if (this._deploy.approvals.some(ap => !ap.signer.startsWith(SECP256K1_PREFIX))) {
+    if (this._deploy.approvals.some(ap => !ap.signer.startsWith(SECP256K1_PREFIX) || 
+      !isValidPublicKey(ap.signer.slice(2)))) {
       throw new SigningError('Invalid deploy. Already signed with an invalid key');
     }
     const secpKeys = new Keys.Secp256K1(
@@ -62,7 +64,6 @@ export class Transaction extends BaseTransaction {
 
     const result: CasperTransaction = {
       hash: Buffer.from(this._deploy.hash).toString('hex'),
-      data: Buffer.from(this._deploy.header.bodyHash).toString('hex'),
       fee: { gasLimit: deployPayment.asBigNumber().toString(), gasPrice: this._deploy.header.gasPrice.toString() },
       from: Buffer.from(this._deploy.header.account.rawPublicKey).toString('hex'),
       startTime: new Date(this._deploy.header.timestamp).toISOString(),

@@ -37,8 +37,18 @@ describe('Casper Transaction Builder', () => {
       );
     });
 
-    it('an invalid raw transaction', () => {
+    it('an invalid raw transfer transaction', () => {
       const txBuilder = factory.getTransferBuilder();
+      should.throws(
+        () => {
+          txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
+        },
+        e => e.message === testData.ERROR_JSON_PARSING,
+      );
+    });
+
+    it('an invalid raw wallet init transaction', () => {
+      const txBuilder = factory.getWalletInitializationBuilder();
       should.throws(
         () => {
           txBuilder.validateRawTransaction(testData.INVALID_RAW_TRANSACTION);
@@ -65,6 +75,14 @@ describe('Casper Transaction Builder', () => {
       should.doesNotThrow(() => {
         builder.validateRawTransaction(JSON.stringify(txJson));
       });
+    });
+
+    it('an invalid expiration time', async () => {
+      const builder = initWalletBuilder();
+      should.throws(
+        () => builder.expiration(testData.MAX_TRANSACTION_EXPIRATION + 1),
+        e => e.message === testData.INVALID_TRANSACTION_EXPIRATION_MESSAGE,
+      );
     });
   });
 });

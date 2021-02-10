@@ -5,7 +5,6 @@ import { KeyPair } from '.';
 export interface CasperTransaction {
   hash: string;
   from: string;
-  data: string;
   fee: Fee;
   startTime?: string;
   expiration?: number;
@@ -32,11 +31,13 @@ export interface CasperTransferTransaction {
   amount: BigNumberish;
   target: PublicKey;
   id?: number;
+  extraArguments: Map<string, CLValue>;
 }
 
 export interface CasperModuleBytesTransaction {
   moduleBytes: Uint8Array;
   args: RuntimeArgs;
+  extraArguments: Map<string, CLValue>;
 }
 
 export interface Owner {
