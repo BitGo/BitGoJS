@@ -18,6 +18,16 @@ export function getAccountHash(keys: DefaultKeys): Uint8Array {
 }
 
 /**
+ * validate private key
+ *
+ * @param {string} prv private key
+ * @returns {boolean} true if prv is a valid private key
+ */
+export function isValidPrivateKey(prv: string): boolean {
+  return Crypto.isValidXprv(prv) || Crypto.isValidPrv(prv);
+}
+
+/**
  * validate public key
  *
  * @param {string} pub public key
