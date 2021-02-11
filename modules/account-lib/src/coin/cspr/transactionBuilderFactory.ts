@@ -71,7 +71,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
    */
   private validateRawTransaction(rawTransaction: any) {
     if (!rawTransaction) {
-      throw new ParseTransactionError('Invalid raw transaction');
+      throw new ParseTransactionError('Invalid raw transaction: Undefined');
+    }
+    try {
+      JSON.parse(rawTransaction);
+    } catch (e) {
+      throw new ParseTransactionError('Invalid raw transaction format');
     }
   }
 

@@ -14,7 +14,7 @@ import {
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
 import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
-import { isValidPublicKey } from './utils';
+import { isValidAddress } from './utils';
 import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
 
 export const DEFAULT_M = 3;
@@ -166,7 +166,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   // region Validators
   /** @inheritdoc */
   validateAddress(address: BaseAddress): void {
-    if (!isValidPublicKey(address.address)) {
+    if (!isValidAddress(address.address)) {
       throw new BuildTransactionError('Invalid address ' + address.address);
     }
   }
@@ -217,6 +217,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._fee === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing fee');
     }
+    if (!this._fee.gasLimit) {
+      throw new BuildTransactionError('Invalid transaction: missing gas limit');
+    }
+    try {
+      this.validateValue(new BigNumber(this._fee.gasLimit));
+    } catch (e) {
+      throw new BuildTransactionError('Invalid gas limit');
+    }
   }
 
   /**
@@ -226,6 +234,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     if (this._source === undefined) {
       throw new BuildTransactionError('Invalid transaction: missing source');
     }
+    this.validateAddress(this._source);
   }
 
   /**

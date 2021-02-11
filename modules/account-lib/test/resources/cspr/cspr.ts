@@ -32,7 +32,7 @@ export const ACCOUNT_3 = {
 export const ACCOUNT_4 = {
   accountHash: '468f5e33c352efaaa0329a1972a632e1c3e430d4e4a8ab73c2d67c4bacb3fb65',
   publicKey: '02a4aab08ab149897be95cdc072e700d5b437555cfa5db3c55d5f2161ecb70feef',
-  privateKey: '858a53148528ddd424864dfd1774006b9d545291746bbf75cf41606ef9268464'
+  privateKey: '858a53148528ddd424864dfd1774006b9d545291746bbf75cf41606ef9268464',
 };
 
 export const ROOT_ACCOUNT = {
@@ -58,6 +58,8 @@ export const ERROR_INVALID_ADDRESS = 'Invalid address';
 export const ERROR_REPEATED_SIGNATURE = 'Repeated sign';
 
 export const ERROR_INVALID_AMOUNT = 'Invalid amount';
+
+export const ERROR_INVALID_TRANSFER_ID = 'Invalid transfer id';
 
 export const ERROR_MISSING_TRANSFER_TARGET = 'Invalid transaction: missing to';
 
@@ -113,3 +115,9 @@ export const INVALID_NUMBER_OF_OWNERS_TWO_OF_THREE =
 export const INVALID_TRANSACTION_MISSING_FEE = 'Invalid transaction: missing fee';
 
 export const INVALID_TRANSACTION_MISSING_SOURCE = 'Invalid transaction: missing source';
+
+export const ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED = 'A maximum of 3 can sign the transaction.';
+
+export const ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM = 'Transfer does not have a destination address defined';
+
+export const ERROR_INVALID_TRANSFER_ID_ON_FROM = 'Transfer does not have an id defined';
