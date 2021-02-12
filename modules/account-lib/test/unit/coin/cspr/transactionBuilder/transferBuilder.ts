@@ -1,4 +1,5 @@
 import should from 'should';
+import { CLTypeHelper, CLValue, DeployUtil } from 'casper-client-sdk';
 import { register } from '../../../../../src/index';
 import { TransactionBuilderFactory } from '../../../../../src/coin/cspr/';
 import * as testData from '../../../../resources/cspr/cspr';
@@ -12,15 +13,7 @@ describe('Casper Transfer Builder', () => {
     txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
     txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
     txBuilder.to(testData.ACCOUNT_2.publicKey);
-    return txBuilder;
-  };
-
-  const initTxBuilderMultisig = () => {
-    const txBuilder = factory.getTransferBuilder();
-    txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
-    txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
-    txBuilder.to(testData.ACCOUNT_3.publicKey);
-    txBuilder.amount('10');
+    txBuilder.transferId(255);
     return txBuilder;
   };
 
@@ -57,7 +50,7 @@ describe('Casper Transfer Builder', () => {
       });
 
       it('a transfer transaction signed multiple times', async () => {
-        const builder = initTxBuilderMultisig();
+        const builder = initTxTransferBuilder().amount('10');
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
         builder.sign({ key: testData.ACCOUNT_2.privateKey });
         const tx = (await builder.build()) as Transaction;
@@ -89,7 +82,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_3.accountHash, 'To address was not the expected one');
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.accountHash, 'To address was not the expected one');
         should.equal(txJson.amount, '10', 'Amount does not match expected');
       });
 
@@ -152,18 +145,107 @@ describe('Casper Transfer Builder', () => {
       });
     });
 
-    describe('serialized transactions', () => {
-      it('a non signed transfer transaction from serialized', async () => {
-        // TODO(STLX-663): this will be done when fromImplementation for transfer is implemented
-      });
+    describe('should build from', () => {
+      describe('serialized transactions', () => {
+        it('a non signed transfer transaction from serialized', async () => {
+          const builder = initTxTransferBuilder().amount('10');
+          const tx = (await builder.build()) as Transaction;
+          const txJson = tx.toJson();
 
-      it('a signed transfer transaction from serilaized', async () => {
-        // TODO(STLX-663): this will be done when fromImplementation for transfer is implemented
-      });
+          const builder2 = factory.getTransferBuilder();
+          builder2.from(tx.toBroadcastFormat());
+          const tx2 = (await builder2.build()) as Transaction;
+          const tx2Json = tx2.toJson();
 
-      it('an offline multisig transfer transaction', async () => {
-        // TODO(STLX-663): this will be done when fromImplementation for transfer is implemented
+          should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
+        });
+
+        it('a signed transfer transaction from serialized', async () => {
+          const builder = initTxTransferBuilder().amount('10');
+          builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
+          const tx = (await builder.build()) as Transaction;
+          const txJson = tx.toJson();
+
+          const builder2 = factory.getTransferBuilder();
+          builder2.from(tx.toBroadcastFormat());
+          const tx2 = (await builder2.build()) as Transaction;
+          const tx2Json = tx2.toJson();
+
+          should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
+          should.deepEqual(
+            tx2.casperTx.approvals,
+            tx.casperTx.approvals,
+            'from implementation from factory should get approvals correctly',
+          );
+        });
+
+        it('an offline multisig transfer transaction', async () => {
+          const builder = initTxTransferBuilder().amount('10');
+          builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
+          builder.sign({ key: testData.ACCOUNT_1.privateKey });
+          const tx = (await builder.build()) as Transaction;
+          const txJson = tx.toJson();
+
+          const builder2 = factory.getTransferBuilder();
+          builder2.from(tx.toBroadcastFormat());
+          const tx2 = (await builder2.build()) as Transaction;
+          const tx2Json = tx2.toJson();
+
+          should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
+          should.deepEqual(
+            tx2.casperTx.approvals,
+            tx.casperTx.approvals,
+            'from implementation from factory should get approvals correctly',
+          );
+        });
       });
+    });
+  });
+
+  describe('should fail rebuild from', () => {
+    it('a serialized transaction with invalid destination address', async () => {
+      const builder = initTxTransferBuilder().amount('10');
+      const tx = (await builder.build()) as Transaction;
+
+      tx.casperTx = DeployUtil.addArgToDeploy(tx.casperTx, 'to_address', CLValue.byteArray(Uint8Array.from([])));
+
+      const builder2 = factory.getTransferBuilder();
+      should.throws(
+        () => {
+          builder2.from(tx.toBroadcastFormat());
+        },
+        e => e.message === testData.ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM,
+      );
+    });
+
+    it('a serialized transaction with invalid transfer id type', async () => {
+      const builder = initTxTransferBuilder().amount('10');
+      const tx = (await builder.build()) as Transaction;
+
+      tx.casperTx = DeployUtil.addArgToDeploy(tx.casperTx, 'id', CLValue.byteArray(Uint8Array.from([])));
+
+      const builder2 = factory.getTransferBuilder();
+      should.throws(
+        () => {
+          builder2.from(tx.toBroadcastFormat());
+        },
+        e => e.message === testData.ERROR_INVALID_TRANSFER_ID_ON_FROM,
+      );
+    });
+
+    it('a serialized transaction with empty transfer id value', async () => {
+      const builder = initTxTransferBuilder().amount('10');
+      const tx = (await builder.build()) as Transaction;
+
+      tx.casperTx = DeployUtil.addArgToDeploy(tx.casperTx, 'id', CLValue.option(null, CLTypeHelper.u64()));
+
+      const builder2 = factory.getTransferBuilder();
+      should.throws(
+        () => {
+          builder2.from(tx.toBroadcastFormat());
+        },
+        e => e.message === testData.ERROR_INVALID_TRANSFER_ID_ON_FROM,
+      );
     });
   });
 
@@ -227,12 +309,58 @@ describe('Casper Transfer Builder', () => {
       txBuilder.build().should.be.rejectedWith(testData.ERROR_MISSING_TRANSFER_TARGET);
     });
 
+    it('a transfer transaction with invalid destination param', () => {
+      const txBuilder = factory.getTransferBuilder();
+      should.throws(
+        () => {
+          txBuilder.to(testData.INVALID_ADDRESS);
+        },
+        e => e.message === testData.ERROR_INVALID_ADDRESS,
+      );
+    });
+
     it('a transfer transaction without amount', () => {
       const txBuilder = factory.getTransferBuilder();
       txBuilder.fee(testData.FEE);
       txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
       txBuilder.to(testData.ACCOUNT_2.publicKey);
       txBuilder.build().should.be.rejectedWith(testData.ERROR_MISSING_TRANSFER_AMOUNT);
+    });
+
+    it('a transfer transaction with invalid amount', async () => {
+      const txBuilder = factory.getTransferBuilder();
+      txBuilder.fee(testData.FEE);
+      txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
+      txBuilder.to(testData.ACCOUNT_2.publicKey);
+      should.throws(
+        () => {
+          txBuilder.amount('');
+        },
+        e => e.message === testData.ERROR_INVALID_AMOUNT,
+      );
+    });
+
+    it('a transfer transaction with invalid transfer id', () => {
+      const txBuilder = factory.getTransferBuilder();
+      should.throws(
+        () => {
+          txBuilder.transferId(-1);
+        },
+        e => e.message === testData.ERROR_INVALID_TRANSFER_ID,
+      );
+    });
+
+    it('a transfer transaction with more than 3 signatures', () => {
+      const builder = initTxTransferBuilder().amount('10');
+      builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
+      builder.sign({ key: testData.ACCOUNT_1.privateKey });
+      builder.sign({ key: testData.ACCOUNT_2.privateKey });
+      should.throws(
+        () => {
+          builder.sign({ key: testData.ACCOUNT_2.privateKey });
+        },
+        e => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
+      );
     });
   });
 });
