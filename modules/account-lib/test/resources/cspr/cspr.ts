@@ -29,6 +29,12 @@ export const ACCOUNT_3 = {
   privateKey: 'F0C28B8C2FA28A0CC398BB91FFA0CF1436D0CD3FF563BC1C40210FA6730DB546',
 };
 
+export const ACCOUNT_4 = {
+  accountHash: '468f5e33c352efaaa0329a1972a632e1c3e430d4e4a8ab73c2d67c4bacb3fb65',
+  publicKey: '02a4aab08ab149897be95cdc072e700d5b437555cfa5db3c55d5f2161ecb70feef',
+  privateKey: '858a53148528ddd424864dfd1774006b9d545291746bbf75cf41606ef9268464',
+};
+
 export const ROOT_ACCOUNT = {
   accountHash: 'd632e4ed12fd838e361bcd1982da9a43b903631be38b3ed698559603c2e9faf6',
   publicKey: '025360ED570343B858C860801354EAAE4CDCD390EB3215A1C8C623CC55B63E442B',
@@ -52,6 +58,8 @@ export const ERROR_INVALID_ADDRESS = 'Invalid address';
 export const ERROR_REPEATED_SIGNATURE = 'Repeated sign';
 
 export const ERROR_INVALID_AMOUNT = 'Invalid amount';
+
+export const ERROR_INVALID_TRANSFER_ID = 'Invalid transfer id';
 
 export const ERROR_MISSING_TRANSFER_TARGET = 'Invalid transaction: missing to';
 
@@ -88,3 +96,28 @@ export const EXTERNAL_SIGNATURE = {
   signature:
     '0208437432526364c9fc59313c9eec1e7070de68d96922b66c56a9f97503574ac56b1807d7bf580d1f9d2461a4fe6314c6e2e037b1457ad2a5590bf2398fb9d936',
 };
+
+export const MAX_TRANSACTION_EXPIRATION = 86400000; // 1 day
+
+export const INVALID_TRANSACTION_EXPIRATION_MESSAGE = 'Invalid transaction expiration';
+
+export const INVALID_TRANSACTION_ERROR = 'Invalid transaction';
+
+export const INVALID_WALLET_INIT_CONTRACT = '0ABCD';
+
+export const INVALID_RAW_TRANSACTION_ERROR = 'Invalid raw transaction';
+
+export const INVALID_TRANSACTION_MISSING_OWNERS = 'Invalid transaction: missing wallet owners';
+
+export const INVALID_NUMBER_OF_OWNERS_TWO_OF_THREE =
+  'Invalid transaction: wrong number of owners -- required: 3, found: 2';
+
+export const INVALID_TRANSACTION_MISSING_FEE = 'Invalid transaction: missing fee';
+
+export const INVALID_TRANSACTION_MISSING_SOURCE = 'Invalid transaction: missing source';
+
+export const ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED = 'A maximum of 3 can sign the transaction.';
+
+export const ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM = 'Transfer does not have a destination address defined';
+
+export const ERROR_INVALID_TRANSFER_ID_ON_FROM = 'Transfer does not have an id defined';

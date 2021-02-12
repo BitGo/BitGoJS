@@ -1,12 +1,18 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { PublicKey } from 'casper-client-sdk';
-import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
+import { CLValue, PublicKey } from 'casper-client-sdk';
+import { ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
+import {
+  BuildTransactionError,
+  InvalidParameterValueError,
+  InvalidTransactionError,
+  SigningError,
+} from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { SECP256K1_PREFIX } from './constants';
-import { isValidPublicKey, isValidAmount, isValidTransferId } from './utils';
+import { SECP256K1_PREFIX, TRANSFER_TO_ADDRESS } from './constants';
+import { isValidAmount, isValidTransferId, isValidAddress } from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
   private _toAddress: string;
@@ -19,10 +25,17 @@ export class TransferBuilder extends TransactionBuilder {
 
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
+    const extraArguments = new Map<string, CLValue>();
+    if (this._toAddress) {
+      // TODO(STLX-1691): We are sending the destination address as string until impediment STLX-1691 is fixed.
+      // After that we will change this to send an instance of PublicKey instead.
+      extraArguments.set(TRANSFER_TO_ADDRESS, CLValue.string(this._toAddress));
+    }
     this._session = {
       amount: this._amount,
       target: PublicKey.fromHex(SECP256K1_PREFIX + this._toAddress),
       id: this._transferId,
+      extraArguments: extraArguments,
     };
     this.transaction.setTransactionType(TransactionType.Send);
     return await super.buildImplementation();
@@ -32,7 +45,9 @@ export class TransferBuilder extends TransactionBuilder {
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     this.transaction.setTransactionType(TransactionType.Send);
-    // TODO(STLX-663): init to and amount
+    this.to(this.getTransferDestinationAddress(tx.casperTx.session));
+    this.amount(this.getTransferAmount(tx.casperTx.session));
+    this.transferId(this.getTransferId(tx.casperTx.session));
   }
 
   /** @inheritdoc */
@@ -51,7 +66,7 @@ export class TransferBuilder extends TransactionBuilder {
    * @returns {TransferBuilder} the builder with the new parameter set
    */
   to(address: string): this {
-    if (!isValidPublicKey(address)) {
+    if (!isValidAddress(address)) {
       throw new InvalidParameterValueError('Invalid address');
     }
     this._toAddress = address;
@@ -80,21 +95,81 @@ export class TransferBuilder extends TransactionBuilder {
    */
   transferId(id: number): this {
     if (!isValidTransferId(id)) {
-      throw new InvalidParameterValueError('Invalid amount');
+      throw new InvalidParameterValueError('Invalid transfer id');
     }
     this._transferId = id;
     return this;
+  }
+
+  /**
+   * Get destination address from deploy transfer session
+   *
+   * @param {ExecutableDeployItem} transferTx transfer session
+   * @returns {string} the hex destination address of the transfer
+   */
+  private getTransferDestinationAddress(transferTx: ExecutableDeployItem): string {
+    const toAddress = transferTx.getArgByName(TRANSFER_TO_ADDRESS);
+
+    if (!toAddress || !toAddress.isString()) {
+      throw new InvalidTransactionError('Transfer does not have a destination address defined');
+    }
+
+    return toAddress.asString();
+  }
+
+  /**
+   * Get transfer amount from deploy transfer session
+   *
+   * @param {ExecutableDeployItem} transferTx transfer session
+   * @returns {string} the transfer amount
+   */
+  private getTransferAmount(transferTx: ExecutableDeployItem): string {
+    const amount = transferTx.getArgByName('amount');
+
+    if (!amount || !amount.isBigNumber()) {
+      throw new InvalidTransactionError('Transfer does not have an amount defined');
+    }
+
+    return amount.asBigNumber().toString();
+  }
+
+  /**
+   * Get transfer id from deploy transfer session
+   *
+   * @param {ExecutableDeployItem} transferTx transfer session
+   * @returns {number} the transfer id
+   */
+  private getTransferId(transferTx: ExecutableDeployItem): number {
+    const transferId = transferTx.getArgByName('id');
+
+    if (!transferId || !transferId.isOption()) {
+      throw new InvalidTransactionError('Transfer does not have an id defined');
+    }
+    const transferIdOption = transferId.asOption();
+    if (transferIdOption.isNone()) {
+      throw new InvalidTransactionError('Transfer does not have an id defined');
+    }
+    return transferIdOption
+      .getSome()
+      .asBigNumber()
+      .toNumber();
   }
 
   //endregion
 
   //region Validators
   validateMandatoryFields(): void {
-    if (this._toAddress === undefined) {
+    if (!this._toAddress) {
       throw new BuildTransactionError('Invalid transaction: missing to');
     }
-    if (this._amount === undefined) {
+    if (!isValidAddress(this._toAddress)) {
+      throw new InvalidParameterValueError('Invalid to address');
+    }
+    if (!this._amount) {
       throw new BuildTransactionError('Invalid transaction: missing amount');
+    }
+    if (!isValidAmount(this._amount)) {
+      throw new InvalidParameterValueError('Invalid amount');
     }
     super.validateMandatoryFields();
   }

@@ -1,12 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { CLTypedAndToBytesHelper, CLValue, PublicKey, RuntimeArgs } from 'casper-client-sdk';
-import { BuildTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M, DEFAULT_N } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { Owner, ContractArgs } from './ifaces';
-import { isValidPublicKey, walletInitContractHexCode } from './utils';
-import { SECP256K1_PREFIX } from './constants';
+import { walletInitContractHexCode } from './utils';
+import { OWNER_PREFIX, SECP256K1_PREFIX } from './constants';
 
 const DEFAULT_OWNER_WEIGHT = 1;
 export class WalletInitializationBuilder extends TransactionBuilder {
@@ -22,7 +22,16 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   /** @inheritdoc */
   protected async buildImplementation(): Promise<Transaction> {
     const args = this.buildWalletParameters();
-    this._session = { moduleBytes: this._contract, args: RuntimeArgs.fromMap(args) };
+    const extraArguments = new Map<string, CLValue>();
+
+    for (let index = 0; index < this._owners.length; index++) {
+      extraArguments.set(
+        OWNER_PREFIX + index,
+        CLValue.string(Buffer.from(this._owners[index].address.rawPublicKey).toString('hex')),
+      );
+    }
+
+    this._session = { moduleBytes: this._contract, args: RuntimeArgs.fromMap(args), extraArguments: extraArguments };
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
     return await super.buildImplementation();
   }
@@ -55,11 +64,9 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     this.transaction.setTransactionType(TransactionType.WalletInitialization);
-    if (tx.casperTx.approvals) {
-      const signers = tx.casperTx.approvals.map(ap => ap.signer);
-      for (const signer of signers) {
-        this.owner(signer);
-      }
+    for (let ownerIndex = 0; ownerIndex < DEFAULT_M; ownerIndex++) {
+      const ownerCLValue = tx.casperTx.session.getArgByName(OWNER_PREFIX + ownerIndex) as CLValue;
+      this.owner(ownerCLValue.asString());
     }
   }
 
@@ -76,9 +83,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     if (this._owners.length >= DEFAULT_M) {
       throw new BuildTransactionError('A maximum of ' + DEFAULT_M + ' owners can be set for a multisig wallet');
     }
-    if (!isValidPublicKey(address)) {
-      throw new BuildTransactionError('Invalid address: ' + address);
-    }
+    this.validateAddress({ address: address });
     for (const _owner of this._owners) {
       if (
         Buffer.from(_owner.address.rawPublicKey)
@@ -96,7 +101,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   // region Validators
   validateMandatoryFields(): void {
-    if (this._owners === undefined) {
+    if (this._owners.length === 0) {
       throw new BuildTransactionError('Invalid transaction: missing wallet owners');
     }
 
