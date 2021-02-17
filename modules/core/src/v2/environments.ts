@@ -128,7 +128,7 @@ const testnetBase: EnvironmentTemplate = {
   smartbitBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
   bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-  etherscanBaseUrl: 'https://kovan.etherscan.io',
+  etherscanBaseUrl: 'https://api-kovan.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',

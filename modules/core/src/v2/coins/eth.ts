@@ -30,6 +30,7 @@ import * as common from '../../common';
 import * as config from '../../config';
 import { Util } from '../internal/util';
 import { EthereumLibraryUnavailableError } from '../../errors';
+import { assert } from 'sinon';
 
 const co = Bluebird.coroutine;
 const debug = debugLib('bitgo:v2:eth');
@@ -347,6 +348,9 @@ export class Eth extends BaseCoin {
         action: 'balance',
         address: address,
       });
+      if (!result || !_.isNumber(result.result)) {
+        throw new Error('Could not obtain address balance from Etherscan, got: ' + result.result);
+      }
       return new optionalDeps.ethUtil.BN(result.result, 10);
     })
       .call(this)
@@ -382,6 +386,9 @@ export class Eth extends BaseCoin {
         tag: 'latest',
       });
 
+      if (!result || !_.isNumber(result.result)) {
+        throw new Error('Could not obtain token address balance from Etherscan, got: ' + result.result);
+      }
       return new optionalDeps.ethUtil.BN(result.result, 10);
     })
       .call(this)
@@ -480,6 +487,9 @@ export class Eth extends BaseCoin {
         data: sequenceIdData,
         tag: 'latest',
       });
+      if (!result || !_.isNumber(result.result)) {
+        throw new Error('Could not obtain sequence ID from Etherscan, got: ' + result.result);
+      }
       const sequenceIdHex = result.result;
       return new optionalDeps.ethUtil.BN(sequenceIdHex.slice(2), 16).toNumber();
     })
@@ -665,6 +675,10 @@ export class Eth extends BaseCoin {
         action: 'txlist',
         address,
       });
+
+      if (!result || !Array.isArray(result.result)) {
+        throw new Error('Unable to find next nonce from Etherscan, got: ' + JSON.stringify(result));
+      }
       const backupKeyTxList = result.result;
       if (backupKeyTxList.length > 0) {
         // Calculate last nonce used
