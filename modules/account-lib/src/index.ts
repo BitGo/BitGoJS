@@ -40,7 +40,10 @@ export { Xrp };
 import * as Stacks from './coin/stacks';
 export { Stacks };
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8839b2aa... feat(account-lib): add stacks to statics and account-lib base
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,

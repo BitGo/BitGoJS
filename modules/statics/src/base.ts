@@ -33,6 +33,7 @@ export enum CoinFamily {
   OFC = 'ofc',
   RMG = 'rmg',
   RBTC = 'rbtc',
+  STACKS = 'stacks',
   SUSD = 'susd',
   TRX = 'trx',
   XLM = 'xlm',
@@ -155,6 +156,7 @@ export enum UnderlyingAsset {
   XLM = 'xlm',
   XTZ = 'xtz',
   ZEC = 'zec',
+  STACKS = 'stacks',
 
   // ERC 20 tokens
   '1INCH' = '1inch',
