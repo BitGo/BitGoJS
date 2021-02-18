@@ -868,11 +868,13 @@ export class Eth extends BaseCoin {
       // get balance of backupKey to ensure funds are available to pay fees
       const backupKeyBalance = yield self.queryAddressBalance(backupKeyAddress);
 
-      if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
+      const totalGasNeeded = gasPrice.mul(gasLimit);
+      const weiToGwei = 10 ** 8;
+      if (backupKeyBalance.lt(totalGasNeeded)) {
         throw new Error(
-          `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(
-            10
-          )}. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.`
+          `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
+            `This address must have a balance of at least ${(totalGasNeeded / weiToGwei).toString()}` +
+            ` Gwei to perform recoveries. Try sending some ETH to this address then retry.`
         );
       }
 

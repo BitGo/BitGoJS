@@ -1023,7 +1023,9 @@ describe('Recovery:', function() {
   });
 
   describe('Recover Ethereum', function() {
-
+    beforeEach(() => {
+      nock.cleanAll();
+    })
     const recoveryParams = {
       userKey: '{"iv":"+TkmT3GJ5msVWQjBrt3lsw==","v":1,"iter":10000,"ks":256,"ts":64,"mode"\n' +
       ':"ccm","adata":"","cipher":"aes","salt":"cCE20fGIobs=","ct":"NVIdYIh91J3aRI\n' +
@@ -1082,6 +1084,45 @@ describe('Recovery:', function() {
       const basecoin = bitgo.coin('teth');
       await basecoin.recover(recoveryParams)
         .should.be.rejectedWith('Could not obtain address balance for 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 from Etherscan, got: Rate limit exceeded');
+    });
+
+    it('should throw if backup key address has insufficient balance', async function(){
+      const insufficientFeeData: any[] = [
+        {
+          params: {
+            module: 'account',
+            action: 'txlist',
+            address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+          },
+          response: {
+            status: '0',
+            message: 'No transactions found',
+            result: [],
+          },
+        },
+        {
+          params: {
+            module: 'account',
+            action: 'balance',
+            address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+          },
+          response: {
+            status: '1',
+            message: 'OK',
+            result: '1234',
+          },
+        }, 
+      ];
+      recoveryNocks.nockEthRecovery(bitgo, insufficientFeeData);
+
+      const basecoin = bitgo.coin('teth');
+      await basecoin.recover({
+        ...recoveryParams,
+        gasLimit: 300000,
+        gasPrice: 1000000000,
+      })
+        .should.be.rejectedWith('Backup key address 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 has balance 0.00001234 Gwei.' +
+        'This address must have a balance of at least 3000000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
     });
 
     it('should throw on invalid gasPrice', async function(){
@@ -1158,11 +1199,10 @@ describe('Recovery:', function() {
       }));
 
       should.exist(error);
-      error.message.should.equal('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.');
+      error.message.should.equal('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0 Gwei.This address must have a balance of at least 100000000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
     }));
 
     it('should throw error when the etherscan rate limit is reached', async function() {
-      nock.cleanAll()
       const basecoin = bitgo.coin('teth');
       recoveryNocks.nockEtherscanRateLimitError();
       await basecoin.recover(recoveryParams).should.be.rejectedWith('Etherscan rate limit reached');
