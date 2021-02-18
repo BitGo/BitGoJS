@@ -128,7 +128,7 @@ const testnetBase: EnvironmentTemplate = {
   smartbitBaseUrl: 'https://testnet-api.smartbit.com.au/v1',
   btcExplorerBaseUrl: 'https://blockstream.info/testnet/api',
   bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.com/api',
-  etherscanBaseUrl: 'https://kovan.etherscan.io',
+  etherscanBaseUrl: 'https://api-kovan.etherscan.io',
   etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
   eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
   ltcExplorerBaseUrl: 'http://explorer.litecointools.com/api',
@@ -188,7 +188,7 @@ export const Environments: Environments = {
     btcExplorerBaseUrl: 'https://blockstream.fakeurl/testnet/api',
     bchExplorerBaseUrl: 'https://test-bch-insight.bitpay.fakeurl/api',
     stellarFederationServerUrl: 'https://bitgo.fakeurl/api/v2/txlm/federation',
-    etherscanBaseUrl: 'https://kovan.etherscan.fakeurl',
+    etherscanBaseUrl: 'https://api-kovan.etherscan.fakeurl',
     etherscanApiToken: process.env.ETHERSCAN_API_TOKEN,
     eth2ExplorerBaseUrl: 'https://beaconscan.com/api',
     ltcExplorerBaseUrl: 'http://explorer.litecointools.fakeurl/api',
@@ -244,7 +244,7 @@ export const Environments: Environments = {
         : 'https://insight.litecore.io/api',
     etherscanBaseUrl:
       process.env.BITGO_CUSTOM_ETHEREUM_NETWORK !== 'ethereum'
-        ? 'https://kovan.etherscan.io'
+        ? 'https://api-kovan.etherscan.io'
         : 'https://api.etherscan.io',
     zecExplorerBaseUrl:
       process.env.BITGO_CUSTOM_ZCASH_NETWORK !== 'zcash'
