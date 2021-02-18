@@ -1048,7 +1048,40 @@ describe('Recovery:', function() {
         gasPrice: 25000000000,
       })
       .should.be.rejectedWith('Gas limit must be between 30000 and 20000000');
-      // id and tx will always be different because of expireTime
+    });
+
+    it('should throw if etherscan errs', async function(){
+      const nockUnsuccessfulEtherscanData: any[] = [
+        {
+          params: {
+            module: 'account',
+            action: 'txlist',
+            address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+          },
+          response: {
+            status: '0',
+            message: 'No transactions found',
+            result: [],
+          },
+        },
+        {
+          params: {
+            module: 'account',
+            action: 'balance',
+            address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+          },
+          response: {
+            status: '1',
+            message: 'NOTOK',
+            result: 'Rate limit exceeded',
+          },
+        }, 
+      ];
+      recoveryNocks.nockEthRecovery(bitgo, nockUnsuccessfulEtherscanData);
+
+      const basecoin = bitgo.coin('teth');
+      await basecoin.recover(recoveryParams)
+        .should.be.rejectedWith('Could not obtain address balance for 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 from Etherscan, got: Rate limit exceeded');
     });
 
     it('should throw on invalid gasPrice', async function(){
@@ -1061,7 +1094,6 @@ describe('Recovery:', function() {
         gasPrice: 2500000,
       })
       .should.be.rejectedWith('Gas price must be between 1000000000 and 2500000000000');
-      // id and tx will always be different because of expireTime
     });
 
     it('should successfully construct a tx with custom gas price and limit', async function(){
