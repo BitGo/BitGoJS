@@ -348,7 +348,7 @@ export class Eth extends BaseCoin {
         action: 'balance',
         address: address,
       });
-      if (!result || !_.isNumber(result.result)) {
+      if (!result || !result.result) {
         throw new Error('Could not obtain address balance from Etherscan, got: ' + result.result);
       }
       return new optionalDeps.ethUtil.BN(result.result, 10);
@@ -487,7 +487,7 @@ export class Eth extends BaseCoin {
         data: sequenceIdData,
         tag: 'latest',
       });
-      if (!result || !_.isNumber(result.result)) {
+      if (!result || !result.result) {
         throw new Error('Could not obtain sequence ID from Etherscan, got: ' + result.result);
       }
       const sequenceIdHex = result.result;
@@ -869,9 +869,9 @@ export class Eth extends BaseCoin {
 
       if (backupKeyBalance.lt(gasPrice.mul(gasLimit))) {
         throw new Error(
-          `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance.toString(
-            10
-          )}. This address must have a balance of at least 0.01 ETH to perform recoveries. Try sending some ETH to this address then retry.`
+          `Backup key address ${backupKeyAddress} has balance ${backupKeyBalance /
+            1000000000} Gwei. This address must have a balance of at least ${gasPrice.mul(gasLimit) /
+            1000000000} Gwei to perform recoveries. Try sending some ETH to this address then retry.`
         );
       }
 

@@ -1063,6 +1063,18 @@ describe('Recovery:', function() {
       // id and tx will always be different because of expireTime
     });
 
+    it('should throw if backup key address has insufficient balance', async function(){
+      recoveryNocks.nockEthInsufficientAddressFee(bitgo);
+
+      const basecoin = bitgo.coin('teth');
+      await basecoin.recover({
+        ...recoveryParams,
+        gasLimit: 300000,
+        gasPrice: 25000000000,
+      })
+      .should.be.rejectedWith('Backup key address 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 has balance 1e-8 Gwei. This address must have a balance of at least 7500000 Gwei to perform recoveries. Try sending some ETH to this address then retry');
+    });
+
     it('should successfully construct a tx with custom gas price and limit', async function(){
       recoveryNocks.nockEthRecovery(bitgo);
 
