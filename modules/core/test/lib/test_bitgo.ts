@@ -443,7 +443,7 @@ BitGo.prototype.nockEthWallet = function() {
   }
 
   // Nock tokens stuck on the wallet
-  nock('https://kovan.etherscan.io')
+  nock('https://api-kovan.etherscan.io')
   .get('/api')
   .query(params)
   .reply(200, { status: '1', message: 'OK', result: '2400' });
