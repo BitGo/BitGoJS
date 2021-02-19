@@ -1121,8 +1121,8 @@ describe('Recovery:', function() {
         gasLimit: 300000,
         gasPrice: 1000000000,
       })
-        .should.be.rejectedWith('Backup key address 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 has balance 0.00001234 Gwei.' +
-        'This address must have a balance of at least 3000000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
+        .should.be.rejectedWith('Backup key address 0x74c2137d54b0fc9f907e13f14e0dd18485fee924 has balance 0.000001234 Gwei.' +
+        'This address must have a balance of at least 300000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
     });
 
     it('should throw on invalid gasPrice', async function(){
@@ -1199,7 +1199,7 @@ describe('Recovery:', function() {
       }));
 
       should.exist(error);
-      error.message.should.equal('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0 Gwei.This address must have a balance of at least 100000000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
+      error.message.should.equal('Backup key address 0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6 has balance 0 Gwei.This address must have a balance of at least 10000000 Gwei to perform recoveries. Try sending some ETH to this address then retry.');
     }));
 
     it('should throw error when the etherscan rate limit is reached', async function() {
