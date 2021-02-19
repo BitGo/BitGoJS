@@ -2135,120 +2135,120 @@ module.exports.nockWrongChainRecoveries = function(bitgo) {
     ]);
 };
 
-module.exports.nockEthRecovery = function(bitgo) {
-  const nockData: any[] = [
-    {
-      params: {
-        module: 'account',
-        action: 'txlist',
-        address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
-      },
-      response: {
-        status: '0',
-        message: 'No transactions found',
-        result: [],
-      },
+const nockEthData: any[] = [
+  {
+    params: {
+      module: 'account',
+      action: 'txlist',
+      address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
     },
-    {
-      params: {
-        module: 'account',
-        action: 'balance',
-        address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
-      },
-      response: {
-        status: '1',
-        message: 'OK',
-        result: '100000000000000000',
-      },
+    response: {
+      status: '0',
+      message: 'No transactions found',
+      result: [],
     },
-    {
-      params: {
-        module: 'account',
-        action: 'balance',
-        address: '0x5df5a96b478bb1808140d87072143e60262e8670',
-      },
-      response: {
-        status: '1',
-        message: 'OK',
-        result: '2200000000000000000',
-      },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'balance',
+      address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
     },
-    {
-      params: {
-        module: 'account',
-        action: 'txlist',
-        address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6',
-      },
-      response: {
-        status: '0',
-        message: 'No transactions found',
-        result: [],
-      },
+    response: {
+      status: '1',
+      message: 'OK',
+      result: '100000000000000000',
     },
-    {
-      params: {
-        module: 'account',
-        action: 'balance',
-        address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6',
-      },
-      response: {
-        status: '1',
-        message: 'OK',
-        result: '0',
-      },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'balance',
+      address: '0x5df5a96b478bb1808140d87072143e60262e8670',
     },
-    {
-      params: {
-        module: 'account',
-        action: 'txlist',
-        address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
-      },
-      response: {
-        status: '0',
-        message: 'No transactions found',
-        result: [],
-      },
+    response: {
+      status: '1',
+      message: 'OK',
+      result: '2200000000000000000',
     },
-    {
-      params: {
-        module: 'account',
-        action: 'balance',
-        address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
-      },
-      response: {
-        status: '1',
-        message: 'OK',
-        result: '100000000000000000',
-      },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'txlist',
+      address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6',
     },
-    {
-      params: {
-        module: 'account',
-        action: 'balance',
-        address: '0x5df5a96b478bb1808140d87072143e60262e8670',
-      },
-      response: {
-        status: '1',
-        message: 'OK',
-        result: '2200000000000000000',
-      },
+    response: {
+      status: '0',
+      message: 'No transactions found',
+      result: [],
     },
-    {
-      params: {
-        module: 'proxy',
-        action: 'eth_call',
-        to: '0x5df5a96b478bb1808140d87072143e60262e8670',
-        data: 'a0b7967b',
-        tag: 'latest',
-      },
-      response: {
-        jsonrpc: '2.0',
-        result: '0x0000000000000000000000000000000000000000000000000000000000000001',
-        id: 1,
-      },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'balance',
+      address: '0xba6d9d82cf2920c544b834b72f4c6d11a3ef3de6',
     },
-  ];
+    response: {
+      status: '1',
+      message: 'OK',
+      result: '0',
+    },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'txlist',
+      address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+    },
+    response: {
+      status: '0',
+      message: 'No transactions found',
+      result: [],
+    },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'balance',
+      address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
+    },
+    response: {
+      status: '1',
+      message: 'OK',
+      result: '100000000000000000',
+    },
+  },
+  {
+    params: {
+      module: 'account',
+      action: 'balance',
+      address: '0x5df5a96b478bb1808140d87072143e60262e8670',
+    },
+    response: {
+      status: '1',
+      message: 'OK',
+      result: '2200000000000000000',
+    },
+  },
+  {
+    params: {
+      module: 'proxy',
+      action: 'eth_call',
+      to: '0x5df5a96b478bb1808140d87072143e60262e8670',
+      data: 'a0b7967b',
+      tag: 'latest',
+    },
+    response: {
+      jsonrpc: '2.0',
+      result: '0x0000000000000000000000000000000000000000000000000000000000000001',
+      id: 1,
+    },
+  },
+];
 
+module.exports.nockEthRecovery = function(bitgo, nockData = nockEthData) {
   let apiKey;
   if (Environments[bitgo.getEnv()].etherscanApiToken) {
     apiKey = Environments[bitgo.getEnv()].etherscanApiToken;
@@ -2258,7 +2258,7 @@ module.exports.nockEthRecovery = function(bitgo) {
     if (apiKey) {
       data.params.apiKey = apiKey;
     }
-    nock('https://kovan.etherscan.io')
+    nock('https://api-kovan.etherscan.io')
       .get('/api')
       .query(data.params)
       .reply(200, data.response);
@@ -2278,7 +2278,7 @@ module.exports.nockEtherscanRateLimitError = function() {
     address: '0x74c2137d54b0fc9f907e13f14e0dd18485fee924',
   };
 
-  nock('https://kovan.etherscan.io')
+  nock('https://api-kovan.etherscan.io')
     .get('/api')
     .query(params)
     .reply(200, response);

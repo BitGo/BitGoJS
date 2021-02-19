@@ -228,8 +228,8 @@ class Pyrmont extends Testnet implements AccountNetwork {
 
 class Kovan extends Testnet implements AccountNetwork {
   family = CoinFamily.ETH;
-  explorerUrl = 'https://kovan.etherscan.io/tx/';
-  accountExplorerUrl = 'https://kovan.etherscan.io/address/';
+  explorerUrl = 'https://api-kovan.etherscan.io/tx/';
+  accountExplorerUrl = 'https://api-kovan.etherscan.io/address/';
 }
 
 class Goerli extends Testnet implements AccountNetwork {
