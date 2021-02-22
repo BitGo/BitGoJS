@@ -8,6 +8,9 @@ const co = Promise.coroutine;
 import { Wallet } from '../../../../src/v2/wallet';
 import { TestBitGo } from '../../../lib/test_bitgo';
 import * as nock from 'nock';
+import * as _ from 'lodash';
+import * as should from 'should';
+import * as common from '../../../../src/common';
 
 describe('ALGO:', function() {
   let bitgo;
@@ -135,5 +138,57 @@ describe('ALGO:', function() {
       explanation.outputs[0].address.should.equal(fixtures.txData.to);
       explanation.id.should.equal(fixtures.signedTxId);
     }));
+  });
+
+  it('should create algo non participating key reg transaction', function *() {
+
+    const algocoin = bitgo.coin('talgo');
+    const algoWalletData = {
+      id: '5b34252f1bf349930e34020a',
+      coin: algocoin.getChain(),
+      keys: [
+        '5b3424f91bf349930e340175'
+      ]
+    };
+    const algoWallet = new Wallet(bitgo, algocoin, algoWalletData);
+
+    const path = `/api/v2/${ algocoin.getChain() }/wallet/${ algoWallet.id() }/tx/build`;
+    const payload = { type: 'keyreg', nonParticipation: true };
+    const responseData = {
+      txHex: 'iKNmZWXNBBqiZnbOACwynaNnZW6sdGVzdG5ldC12MS4womdoxCBIY7UYpLPITsgQ8i1PEIHLD3HwWaesIN7GL39w5Qk6IqJsds4ALDaFp25vbnBhcnTDo3NuZMQg5VBd35KVAsMISMq7a7/h62H5QMfX1Ry4oQt4lnJQqwSkdHlwZaZrZXlyZWc=',
+      txInfo: {
+        type: 'keyreg',
+        from: '4VIF3X4SSUBMGCCIZK5WXP7B5NQ7SQGH27KRZOFBBN4JM4SQVMCJASAFCI',
+        firstRound: 2896541,
+        lastRound: 2897541,
+        genesisID: 'testnet-v1.0',
+        genesisHash: 'SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=',
+        nonParticipation: true,
+        fee: 5,
+      },
+      txHash: 'IT6LBFKXOSIGLACKP74UEVIMOWHBYVZNU4HALJQWUWOPXF3GYPPA',
+      feeInfo: {
+        size: 212,
+        fee: 1000,
+        feeRate: 5,
+      },
+      keys: [
+        'HP3TY4ZUTEGF4SDCVULYYS6E4R6JBBS3AHLKULWLI723AURDOEQ5ZKEQE4',
+        'K74EJHPWE45BNWCZHNQOI6OI4NZJWPO7RPP3LQDNAD4ST2GKQJDWTDW76E',
+        'JMP4WWMDVBFU257PTVI6J47BQGFAS6KK3NDIMCCUH7TPMEDC77ARHM5JQA',
+      ],
+      addressVersion: 1,
+      walletId: '5b34252f1bf349930e34020a',
+    };
+
+    const bgUrl = common.Environments[bitgo.getEnv()].uri;
+    const response = nock(bgUrl)
+      .post(path, _.matches(payload))
+      .reply(200, responseData);
+
+    const preBuiltData = yield algoWallet.prebuildTransaction(payload);
+
+    response.isDone().should.be.true();
+    should.deepEqual(preBuiltData, responseData);
   });
 });
