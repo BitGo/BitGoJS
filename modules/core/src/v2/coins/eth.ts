@@ -869,7 +869,7 @@ export class Eth extends BaseCoin {
       const backupKeyBalance = yield self.queryAddressBalance(backupKeyAddress);
 
       const totalGasNeeded = gasPrice.mul(gasLimit);
-      const weiToGwei = 10 ** 8;
+      const weiToGwei = 10 ** 9;
       if (backupKeyBalance.lt(totalGasNeeded)) {
         throw new Error(
           `Backup key address ${backupKeyAddress} has balance ${(backupKeyBalance / weiToGwei).toString()} Gwei.` +
