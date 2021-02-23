@@ -1,0 +1,17 @@
+{
+  "name": "bls-dkg",
+  "version": "1.0.0",
+  "description": "A simple implementation of BLS + DKG",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "John Driscoll <john@bitgo.com>",
+  "license": "ISC",
+  "dependencies": {
+    "noble-bls12-381": "^0.7.2"
+  },
+  "devDependencies": {
+    "mocha": "^8.3.0"
+  }
+}
