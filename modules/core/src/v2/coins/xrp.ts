@@ -301,6 +301,26 @@ export class Xrp extends BaseCoin {
         }
       }
       const id = computeBinaryTransactionHash(txHex);
+
+      if (transaction.TransactionType == 'AccountSet') {
+        return {
+          displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee', 'accountSet'],
+          id: id,
+          changeOutputs: [],
+          outputAmount: 0,
+          changeAmount: 0,
+          outputs: [],
+          fee: {
+            fee: transaction.Fee,
+            feeRate: null,
+            size: txHex.length / 2,
+          },
+          accountSet: {
+            messageKey: transaction.MessageKey
+          },
+        };
+      }
+
       const address = transaction.Destination + ((transaction.DestinationTag >= 0) ? '?dt=' + transaction.DestinationTag : '');
       return {
         displayOrder: ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'fee'],
@@ -311,14 +331,14 @@ export class Xrp extends BaseCoin {
         outputs: [
           {
             address,
-            amount: transaction.Amount
-          }
+            amount: transaction.Amount,
+          },
         ],
         fee: {
           fee: transaction.Fee,
           feeRate: null,
-          size: txHex.length / 2
-        }
+          size: txHex.length / 2,
+        },
       };
     }).call(this).asCallback(callback);
   }
@@ -335,7 +355,7 @@ export class Xrp extends BaseCoin {
     const self = this;
     return co<boolean>(function *() {
       const explanation = yield self.explainTransaction({
-        txHex: txPrebuild.txHex
+        txHex: txPrebuild.txHex,
       });
 
       const output = [...explanation.outputs, ...explanation.changeOutputs][0];
