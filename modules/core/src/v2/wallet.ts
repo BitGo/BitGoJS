@@ -1792,8 +1792,10 @@ export class Wallet {
           reqId: params.reqId,
         });
       } catch (e) {
-        debug('Transaction prebuild failure:', e);
-        console.error('transaction prebuild failed local validation:');
+        console.error('transaction prebuild failed local validation:', e.message);
+        console.error('transaction params:', _.omit(params, ['keychain', 'prv', 'passphrase', 'walletPassphrase', 'key']));
+        console.error('transaction prebuild:', txPrebuild);
+        console.trace(e);
         throw e;
       }
 

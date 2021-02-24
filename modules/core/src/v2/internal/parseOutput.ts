@@ -134,7 +134,8 @@ function handleVerifyAddressError({
     return { external: false };
   }
 
-  debug('Address %s verification failed', currentAddress);
+  console.error('Address classification failed for address', currentAddress);
+  console.trace(e);
   /**
    * It might be a completely invalid address or a bad validation attempt or something else completely, in
    * which case we do not proceed and rather rethrow the error, which is safer than assuming that the address
