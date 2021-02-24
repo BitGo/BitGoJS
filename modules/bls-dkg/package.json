@@ -1,10 +1,11 @@
 {
-  "name": "bls-dkg",
+  "name": "@bitgo/bls-dkg",
   "version": "1.0.0",
   "description": "A simple implementation of BLS + DKG",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "unit-test": "mocha",
+    "test": "npm run unit-test"
   },
   "author": "John Driscoll <john@bitgo.com>",
   "license": "ISC",

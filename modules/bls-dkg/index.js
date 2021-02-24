@@ -45,15 +45,18 @@ function bigIntToBuffer(bigint) {
 
 /** Return a random field element as a native BigInt. */
 function randomFieldElement() {
-  const buf = Buffer.alloc(32)
-  for (let i = 0; i < buf.length; i++) {
-    buf[i] = Math.floor(Math.random() * 256)
+  const buf = new Uint8Array(32)
+  if (typeof(crypto) !== 'undefined' && crypto.getRandomValues) {
+    crypto.getRandomValues(buf)
+  } else {
+    for (let i = 0; i < buf.length; i++) {
+      buf[i] = Math.floor(Math.random() * 256)
+    }
   }
-  // Can replace above with crypto.randomBytes or similar.
   return new math.Fr(bufferToBigInt(buf)).value
 }
 
-/** Genereta a polynomial of order m. */
+/** Generate a polynomial of order m. */
 function generatePolynomial(m) {
   const poly = Array(m)
   for (let i = 0; i < m; i++) {
@@ -149,13 +152,15 @@ async function verify(sig, message, key) {
   return await bls.verify(sig, message, key)
 }
 
-module.exports = {
-  generatePolynomial,
-  secretShares,
-  publicShare,
-  mergeSecretShares,
-  mergePublicShares,
-  mergeSignatures,
-  sign,
-  verify,
+if (typeof(module) !== 'undefined') {
+  module.exports = {
+    generatePolynomial,
+    secretShares,
+    publicShare,
+    mergeSecretShares,
+    mergePublicShares,
+    mergeSignatures,
+    sign,
+    verify,
+  }
 }
