@@ -10,6 +10,10 @@ export enum ContractType {
    * This is the multi-sig initialization contract.
    */
   AccountPermissionUpdate,
+  /**
+   * This is a smart contract type.
+   */
+  TriggerSmartContract,
 }
 
 export enum PermissionType {
