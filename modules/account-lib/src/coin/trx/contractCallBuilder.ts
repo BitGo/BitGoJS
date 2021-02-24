@@ -244,14 +244,13 @@ export class ContractCallBuilder extends TransactionBuilder {
   private createTransaction(): void {
     const rawDataHex = this.getRawDataHex();
     const rawData = decodeTransaction(rawDataHex);
-    (rawData
-      .contract[0] as TriggerSmartContract).parameter.value.contract_address = this._toContractAddress.toLocaleLowerCase();
-    (rawData
-      .contract[0] as TriggerSmartContract).parameter.value.owner_address = this._ownerAddress.toLocaleLowerCase();
-    (rawData.contract[0] as TriggerSmartContract).parameter.value.data = this._data.toLocaleLowerCase();
-    (rawData.contract[0] as TriggerSmartContract).parameter.type_url =
-      'type.googleapis.com/protocol.TriggerSmartContract';
-    (rawData.contract[0] as TriggerSmartContract).type = 'TriggerSmartContract';
+    const contract = rawData.contract[0] as TriggerSmartContract;
+    const contractParameter = contract.parameter;
+    contractParameter.value.contract_address = this._toContractAddress.toLocaleLowerCase();
+    contractParameter.value.owner_address = this._ownerAddress.toLocaleLowerCase();
+    contractParameter.value.data = this._data.toLocaleLowerCase();
+    contractParameter.type_url = 'type.googleapis.com/protocol.TriggerSmartContract';
+    contract.type = 'TriggerSmartContract';
     const hexBuffer = Buffer.from(rawDataHex, 'hex');
     const id = createHash('sha256')
       .update(hexBuffer)
