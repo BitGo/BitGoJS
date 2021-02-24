@@ -87,6 +87,8 @@ export interface PrebuildTransactionOptions {
     noSplitChange?: boolean;
     unspents?: any[];
     changeAddress?: string;
+    type?: string;
+    nonParticipation?: boolean;
     validFromBlock?: number;
     validToBlock?: number;
     instant?: boolean;
@@ -491,7 +493,7 @@ export class Wallet {
       'feeRate', 'gasLimit', 'gasPrice', 'idfSignedTimestamp', 'idfUserId', 'idfVersion', 'instant',
       'lastLedgerSequence', 'ledgerSequenceDelta', 'maxFee', 'maxFeeRate', 'maxValue', 'memo', 'message', 'minConfirms',
       'minValue', 'noSplitChange', 'numBlocks', 'recipients', 'reservation', 'sequenceId', 'strategy',
-      'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'validFromBlock', 'validToBlock', 'messageKey',
+      'targetWalletUnspents', 'trustlines', 'type', 'unspents', 'nonParticipation', 'validFromBlock', 'validToBlock', 'messageKey',
     ];
   }
 
@@ -1633,6 +1635,7 @@ export class Wallet {
    * @param {Boolean} params.noSplitChange - Set to true to disable automatic change splitting for purposes of unspent management
    * @param {Array} params.unspents - The unspents to use in the transaction. Each unspent should be in the form prevTxId:nOutput
    * @param {String} params.changeAddress - Specifies the destination of the change output
+   * @param {Boolean} params.nonParticipation - (Algorand) Non participating key reg transaction
    * @param {Number} params.validFromBlock - (Algorand) The minimum round this will run on
    * @param {Number} params.validToBlock - (Algorand) The maximum round this will run on
    * @param {Boolean} params.instant - Build this transaction to conform with instant sending coin-specific method (if available)
