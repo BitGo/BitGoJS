@@ -37,11 +37,15 @@ export interface TransactionReceipt {
 export interface RawData {
   expiration: number;
   timestamp: number;
+  ref_block_bytes: string;
+  ref_block_hash: string;
+  fee_limit?: number;
   contractType?: ContractType;
-  contract: TransferContract[] | AccountPermissionUpdateContract[];
+  contract: TransferContract[] | AccountPermissionUpdateContract[] | TriggerSmartContract[];
 }
 
 export interface Value {
+  type_url?: string;
   value: ValueFields;
 }
 
@@ -54,6 +58,19 @@ export interface ValueFields {
 
 export interface TransferContract {
   parameter: Value;
+}
+export interface TriggerSmartContract {
+  parameter: ContractCallValue;
+  type?: string;
+}
+export interface ContractCallValue {
+  type_url?: string;
+  value: ContractCallValueFields;
+}
+export interface ContractCallValueFields {
+  data: string;
+  contract_address: string;
+  owner_address: string;
 }
 
 export interface AccountPermissionUpdateContract {
@@ -71,4 +88,13 @@ export interface Permission {
 export interface PermissionKey {
   address: string;
   weight: number;
+}
+
+export interface Block {
+  number: number;
+  hash: string;
+}
+
+export interface Fee {
+  feeLimit: string;
 }

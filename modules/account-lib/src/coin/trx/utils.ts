@@ -1,9 +1,17 @@
 import assert from 'assert';
+import * as hex from '@stablelib/hex';
 import * as tronweb from 'tronweb';
 import { protocol } from '../../../resources/trx/protobuf/tron';
 
 import { UtilsError } from '../baseCoin/errors';
-import { TransferContract, RawData, AccountPermissionUpdateContract, TransactionReceipt, Permission } from './iface';
+import {
+  TransferContract,
+  RawData,
+  AccountPermissionUpdateContract,
+  TransactionReceipt,
+  Permission,
+  TriggerSmartContract,
+} from './iface';
 import { ContractType, PermissionType } from './enum';
 
 /**
@@ -136,7 +144,7 @@ export function decodeTransaction(hexString: string): RawData {
     throw new UtilsError('Number of contracts is greater than 1.');
   }
 
-  let contract: TransferContract[] | AccountPermissionUpdateContract[];
+  let contract: TransferContract[] | AccountPermissionUpdateContract[] | TriggerSmartContract[];
   let contractType: ContractType;
   // ensure the contract type is supported
   switch (rawTransaction.contracts[0].parameter.type_url) {
@@ -148,6 +156,10 @@ export function decodeTransaction(hexString: string): RawData {
       contractType = ContractType.AccountPermissionUpdate;
       contract = exports.decodeAccountPermissionUpdateContract(rawTransaction.contracts[0].parameter.value);
       break;
+    case 'type.googleapis.com/protocol.TriggerSmartContract':
+      contractType = ContractType.TriggerSmartContract;
+      contract = exports.decodeTriggerSmartContract(rawTransaction.contracts[0].parameter.value);
+      break;
     default:
       throw new UtilsError('Unsupported contract type');
   }
@@ -157,6 +169,9 @@ export function decodeTransaction(hexString: string): RawData {
     contract,
     expiration: rawTransaction.expiration,
     timestamp: rawTransaction.timestamp,
+    ref_block_bytes: rawTransaction.blockBytes,
+    ref_block_hash: rawTransaction.blockHash,
+    fee_limit: +rawTransaction.feeLimit,
   };
 }
 
@@ -169,7 +184,14 @@ export function decodeTransaction(hexString: string): RawData {
  */
 export function decodeRawTransaction(
   hexString: string,
-): { expiration: number; timestamp: number; contracts: Array<any> } {
+): {
+  expiration: number;
+  timestamp: number;
+  contracts: Array<any>;
+  blockBytes: string;
+  blockHash: string;
+  feeLimit: string;
+} {
   const bytes = Buffer.from(hexString, 'hex');
 
   let raw;
@@ -184,6 +206,9 @@ export function decodeRawTransaction(
     expiration: Number(raw.expiration),
     timestamp: Number(raw.timestamp),
     contracts: raw.contract,
+    blockBytes: toHex(raw.refBlockBytes),
+    feeLimit: raw.feeLimit,
+    blockHash: toHex(raw.refBlockHash),
   };
 }
 
@@ -245,6 +270,53 @@ export function decodeTransferContract(transferHex: string): TransferContract[] 
 }
 
 /**
+ * Deserialize the segment of the txHex corresponding with trigger smart contract
+ *
+ * @param {string} base64
+ * @returns {AccountPermissionUpdateContract}
+ */
+export function decodeTriggerSmartContract(base64: string): TriggerSmartContract[] {
+  let contractCallDecoded;
+  try {
+    contractCallDecoded = protocol.TriggerSmartContract.decode(Buffer.from(base64, 'base64')).toJSON();
+  } catch (e) {
+    throw new UtilsError('There was an error decoding the contract call in the transaction.');
+  }
+
+  if (!contractCallDecoded.ownerAddress) {
+    throw new UtilsError('Owner address does not exist in this contract call.');
+  }
+
+  if (!contractCallDecoded.contractAddress) {
+    throw new UtilsError('Destination contract address does not exist in this contract call.');
+  }
+
+  if (!contractCallDecoded.data) {
+    throw new UtilsError('Data does not exist in this contract call.');
+  }
+
+  // deserialize attributes
+  const owner_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(contractCallDecoded.ownerAddress, 'base64').toString('hex')),
+  );
+  const contract_address = getBase58AddressFromByteArray(
+    getByteArrayFromHexAddress(Buffer.from(contractCallDecoded.contractAddress, 'base64').toString('hex')),
+  );
+  const data = contractCallDecoded.data;
+  return [
+    {
+      parameter: {
+        value: {
+          data: data,
+          owner_address,
+          contract_address,
+        },
+      },
+    },
+  ];
+}
+
+/**
  * Deserialize the segment of the txHex corresponding with the details of the contract which updates
  * account permission
  *
@@ -291,4 +363,35 @@ function createPermission(raw: { permissionName: string; threshold: number }): P
     throw new UtilsError('Permission type not parseable.');
   }
   return { type: permissionType, threshold: raw.threshold };
+}
+
+/**
+ * @param rawTransaction
+ */
+export function isValidTxJsonString(rawTransaction: string): boolean {
+  const transaction = JSON.parse(rawTransaction);
+  return transaction.hasOwnProperty('txID');
+}
+
+/**
+ * Returns whether the provided raw transaction accommodates to bitgo's preferred format
+ *
+ * @param {any} rawTransaction - The raw transaction to be checked
+ * @returns {boolean} the validation result
+ */
+export function isValidRawTransactionFormat(rawTransaction: any): boolean {
+  if (typeof rawTransaction === 'string' && (isValidHex(rawTransaction) || isValidTxJsonString(rawTransaction))) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Returns an hex string of the given buffer
+ *
+ * @param {Buffer | Uint8Array} buffer - the buffer to be converted to hex
+ * @returns {string} - the hex value
+ */
+export function toHex(buffer: Buffer | Uint8Array): string {
+  return hex.encode(buffer, true);
 }

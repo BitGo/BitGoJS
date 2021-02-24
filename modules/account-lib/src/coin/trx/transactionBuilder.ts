@@ -7,6 +7,7 @@ import {
   BuildTransactionError,
   InvalidTransactionError,
   ParseTransactionError,
+  NotImplementedError,
 } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { BaseTransactionBuilder } from '../baseCoin';
@@ -86,6 +87,10 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     return Promise.resolve(this.transaction);
   }
 
+  initBuilder(tx: Transaction) {
+    throw new NotImplementedError('init builder not implemented for this builder type');
+  }
+
   /**
    * Extend the validity of this transaction by the given amount of time
    *
@@ -112,7 +117,7 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   validateAddress(address: Address): void {
     // assumes a base 58 address for our addresses
     if (!isBase58Address(address.address)) {
-      throw new Error(address + ' is not a valid base58 address.');
+      throw new Error(address.address + ' is not a valid base58 address.');
     }
   }
 
@@ -184,7 +189,6 @@ export class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /** @inheritdoc */
-  // Specifically, checks hex underlying transaction hashes to correct transaction ID.
   validateTransaction(transaction: Transaction): void {
     const hexBuffer = Buffer.from(transaction.toJson().raw_data_hex, 'hex');
     const txId = createHash('sha256')
