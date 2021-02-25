@@ -10,6 +10,7 @@ import { KeyPair } from './keyPair';
 import { decodeTransaction } from './utils';
 import { ContractType } from './enum';
 import { ContractCallBuilder } from './contractCallBuilder';
+import { TransactionReceipt } from './iface';
 
 /**
  * Wrapped Builder class
@@ -31,11 +32,15 @@ export class WrappedBuilder extends TransactionBuilder {
    * @param {Transaction} [tx] The transaction to initialize builder
    * @returns {ContractCallBuilder} The specific contract call builder
    */
-  getContractCallBuilder(tx?: Transaction): ContractCallBuilder {
+  getContractCallBuilder(tx?: TransactionReceipt | string): ContractCallBuilder {
     return this.initializeBuilder(tx, new ContractCallBuilder(this._coinConfig));
   }
 
-  private initializeBuilder<T extends TransactionBuilder>(tx: Transaction | undefined, builder: T): T {
+  getTransactionBuilder(tx?: TransactionReceipt | string): TransactionBuilder {
+    return this.initializeBuilder(tx, new TransactionBuilder(this._coinConfig));
+  }
+
+  private initializeBuilder<T extends TransactionBuilder>(tx: TransactionReceipt | string | undefined, builder: T): T {
     if (tx) {
       builder.initBuilder(tx);
     }
@@ -66,8 +71,7 @@ export class WrappedBuilder extends TransactionBuilder {
     switch (contractType) {
       case ContractType.Transfer:
       case ContractType.AccountPermissionUpdate:
-        this._builder = new TransactionBuilder(this._coinConfig);
-        this._builder.from(raw);
+        this._builder = this.getTransactionBuilder(raw);
         return this._builder;
       case ContractType.TriggerSmartContract:
         return this.getContractCallBuilder(raw);

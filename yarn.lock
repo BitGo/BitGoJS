@@ -3877,10 +3877,10 @@ cashaddress@^1.1.0:
   dependencies:
     bigi "^1.4.2"
 
-casper-client-sdk@1.0.16:
-  version "1.0.16"
-  resolved "https://registry.yarnpkg.com/casper-client-sdk/-/casper-client-sdk-1.0.16.tgz#9647339fe80813d37de55481d12f1069e19149a5"
-  integrity sha512-6MOfr4lzwm+NFEFOjTtaqrtnGRjqZp0voemB0XXl6mv2oWedw9HQe0M+Ydjd2SHdnfG9ylADN3sqSFCzGfhktA==
+casper-client-sdk@1.0.19:
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/casper-client-sdk/-/casper-client-sdk-1.0.19.tgz#e9df6f2b604697a471bf9175285ace72d1499ef9"
+  integrity sha512-QnD+edau+Ou6VRzbJpcxX9tnxJW7Zoe9WsYzdHB527L3ovQ58IM0hu4Hd8zJJMtldQx/dyuL5pj2zgnZCJmJnQ==
   dependencies:
     "@ethersproject/bignumber" "^5.0.8"
     "@ethersproject/bytes" "^5.0.5"
