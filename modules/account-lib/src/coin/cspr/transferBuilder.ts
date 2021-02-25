@@ -1,18 +1,19 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { CLValue, PublicKey } from 'casper-client-sdk';
-import { ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
-import {
-  BuildTransactionError,
-  InvalidParameterValueError,
-  InvalidTransactionError,
-  SigningError,
-} from '../baseCoin/errors';
+import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { SECP256K1_PREFIX, TRANSFER_TO_ADDRESS } from './constants';
-import { isValidAmount, isValidTransferId, isValidAddress } from './utils';
+import {
+  isValidAmount,
+  isValidTransferId,
+  isValidAddress,
+  getTransferDestinationAddress,
+  getTransferAmount,
+  getTransferId,
+} from './utils';
 
 export class TransferBuilder extends TransactionBuilder {
   private _toAddress: string;
@@ -45,9 +46,9 @@ export class TransferBuilder extends TransactionBuilder {
   initBuilder(tx: Transaction): void {
     super.initBuilder(tx);
     this.transaction.setTransactionType(TransactionType.Send);
-    this.to(this.getTransferDestinationAddress(tx.casperTx.session));
-    this.amount(this.getTransferAmount(tx.casperTx.session));
-    this.transferId(this.getTransferId(tx.casperTx.session));
+    this.to(getTransferDestinationAddress(tx.casperTx.session));
+    this.amount(getTransferAmount(tx.casperTx.session));
+    this.transferId(getTransferId(tx.casperTx.session));
   }
 
   /** @inheritdoc */
@@ -99,60 +100,6 @@ export class TransferBuilder extends TransactionBuilder {
     }
     this._transferId = id;
     return this;
-  }
-
-  /**
-   * Get destination address from deploy transfer session
-   *
-   * @param {ExecutableDeployItem} transferTx transfer session
-   * @returns {string} the hex destination address of the transfer
-   */
-  private getTransferDestinationAddress(transferTx: ExecutableDeployItem): string {
-    const toAddress = transferTx.getArgByName(TRANSFER_TO_ADDRESS);
-
-    if (!toAddress || !toAddress.isString()) {
-      throw new InvalidTransactionError('Transfer does not have a destination address defined');
-    }
-
-    return toAddress.asString();
-  }
-
-  /**
-   * Get transfer amount from deploy transfer session
-   *
-   * @param {ExecutableDeployItem} transferTx transfer session
-   * @returns {string} the transfer amount
-   */
-  private getTransferAmount(transferTx: ExecutableDeployItem): string {
-    const amount = transferTx.getArgByName('amount');
-
-    if (!amount || !amount.isBigNumber()) {
-      throw new InvalidTransactionError('Transfer does not have an amount defined');
-    }
-
-    return amount.asBigNumber().toString();
-  }
-
-  /**
-   * Get transfer id from deploy transfer session
-   *
-   * @param {ExecutableDeployItem} transferTx transfer session
-   * @returns {number} the transfer id
-   */
-  private getTransferId(transferTx: ExecutableDeployItem): number {
-    const transferId = transferTx.getArgByName('id');
-
-    if (!transferId || !transferId.isOption()) {
-      throw new InvalidTransactionError('Transfer does not have an id defined');
-    }
-    const transferIdOption = transferId.asOption();
-    if (transferIdOption.isNone()) {
-      throw new InvalidTransactionError('Transfer does not have an id defined');
-    }
-    return transferIdOption
-      .getSome()
-      .asBigNumber()
-      .toNumber();
   }
 
   //endregion
