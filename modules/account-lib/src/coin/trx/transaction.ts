@@ -8,7 +8,7 @@ import { TransactionType } from '../baseCoin/';
 import { BaseKey } from '../baseCoin/iface';
 import { ContractType } from './enum';
 import { decodeTransaction } from './utils';
-import { RawData, TransactionReceipt, TransferContract, TriggerSmartContract } from './iface';
+import { ContractEntry, RawData, TransactionReceipt, TransferContract, TriggerSmartContract } from './iface';
 
 /**
  * Tron transaction model.
@@ -17,6 +17,8 @@ export class Transaction extends BaseTransaction {
   // Tron specific fields
   protected _validFrom: number;
   protected _validTo: number;
+  protected _inputs: ContractEntry[];
+  protected _outputs: ContractEntry[];
 
   private _decodedRawDataHex: RawData;
   private _transaction?: TransactionReceipt;
@@ -52,7 +54,7 @@ export class Transaction extends BaseTransaction {
     this._validFrom = rawData.timestamp;
     this._validTo = rawData.expiration;
 
-    let output, input;
+    let output: ContractEntry, input: ContractEntry;
     // Contract-specific fields
     switch (rawData.contractType) {
       case ContractType.Transfer:
@@ -81,10 +83,13 @@ export class Transaction extends BaseTransaction {
       case ContractType.TriggerSmartContract:
         this._type = TransactionType.ContractCall;
         const contractCallValues = (rawData.contract[0] as TriggerSmartContract).parameter.value;
-        output = {};
+        output = {
+          address: contractCallValues.owner_address,
+          value: '0',
+        };
         input = {
           address: contractCallValues.owner_address,
-          contractAdress: contractCallValues.contract_address,
+          contractAddress: contractCallValues.contract_address,
           data: contractCallValues.data,
           value: '0',
         };
@@ -171,6 +176,16 @@ export class Transaction extends BaseTransaction {
    */
   get validTo(): number {
     return this._validTo;
+  }
+
+  /** @inheritdoc */
+  get outputs(): ContractEntry[] {
+    return this._outputs;
+  }
+
+  /** @inheritdoc */
+  get inputs(): ContractEntry[] {
+    return this._inputs;
   }
 
   /** @inheritdoc */

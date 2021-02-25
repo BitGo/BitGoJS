@@ -1,3 +1,4 @@
+import { Entry } from '../baseCoin/iface';
 import { ContractType, PermissionType } from './enum';
 
 export interface Account {
@@ -59,14 +60,17 @@ export interface ValueFields {
 export interface TransferContract {
   parameter: Value;
 }
+
 export interface TriggerSmartContract {
   parameter: ContractCallValue;
   type?: string;
 }
+
 export interface ContractCallValue {
   type_url?: string;
   value: ContractCallValueFields;
 }
+
 export interface ContractCallValueFields {
   data: string;
   contract_address: string;
@@ -97,4 +101,9 @@ export interface Block {
 
 export interface Fee {
   feeLimit: string;
+}
+
+export interface ContractEntry extends Entry {
+  data?: string;
+  contractAddress?: string;
 }
