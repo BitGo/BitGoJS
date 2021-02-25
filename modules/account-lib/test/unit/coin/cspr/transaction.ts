@@ -1,17 +1,41 @@
 import should from 'should';
 import { coins } from '@bitgo/statics';
-import { DeployUtil, PublicKey } from 'casper-client-sdk';
+import { CLValue, DeployUtil, PublicKey } from 'casper-client-sdk';
 import { ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { Transaction } from '../../../../src/coin/cspr/transaction';
 import * as testData from '../../../resources/cspr/cspr';
-import { KeyPair } from '../../../../src/coin/cspr';
-import { CHAIN_NAME } from '../../../../src/coin/cspr/constants';
+import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/cspr';
+import { CHAIN_NAME, OWNER_PREFIX } from '../../../../src/coin/cspr/constants';
+import { register } from '../../../../src';
+import { getTransferAmount, getTransferDestinationAddress, getTransferId } from '../../../../src/coin/cspr/utils';
 
 describe('Cspr Transaction', () => {
+  const factory = register('tcspr', TransactionBuilderFactory);
   const coin = coins.get('tcspr');
 
   const getTransaction = (): Transaction => {
     return new Transaction(coin);
+  };
+
+  const getWalletInitTransaction = async (): Promise<Transaction> => {
+    const txBuilder = factory.getWalletInitializationBuilder();
+    txBuilder.fee(testData.FEE);
+    txBuilder.owner(testData.ACCOUNT_1.publicKey);
+    txBuilder.owner(testData.ACCOUNT_2.publicKey);
+    txBuilder.owner(testData.ACCOUNT_3.publicKey);
+    txBuilder.source({ address: testData.ROOT_ACCOUNT.publicKey });
+    txBuilder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
+    return (await txBuilder.build()) as Transaction;
+  };
+
+  const getTransferTransaction = async (): Promise<Transaction> => {
+    const txBuilder = factory.getTransferBuilder();
+    txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
+    txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
+    txBuilder.to(testData.ACCOUNT_2.publicKey);
+    txBuilder.amount('10');
+    txBuilder.transferId(255);
+    return (await txBuilder.build()) as Transaction;
   };
 
   // Creates a deploy instance, required to test signing.
@@ -90,6 +114,60 @@ describe('Cspr Transaction', () => {
   });
 
   describe('should return encoded tx', function() {
+    it('wallet initialization', async function() {
+      const walletInitTx = await getWalletInitTransaction();
+      const encodedTx = walletInitTx.toBroadcastFormat();
+      const walletInitJsonTx = JSON.parse(encodedTx);
+
+      const argName = 0;
+      const argValue = 1;
+      const owner0 = 0;
+      const owner1 = 1;
+      const owner2 = 2;
+
+      const ownersValues = new Map();
+
+      [owner0, owner1, owner2].forEach(index => {
+        ownersValues.set(
+          OWNER_PREFIX + index,
+          (walletInitTx.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLValue).asString(),
+        );
+      });
+
+      const jsonOwnerArgs = walletInitJsonTx['deploy']['session']['ModuleBytes']['args'].filter(arg =>
+        ownersValues.has(arg[argName]),
+      );
+      jsonOwnerArgs.length.should.equal(ownersValues.size);
+
+      jsonOwnerArgs.forEach(arg => {
+        arg[argValue]['parsed'].should.be.equal(ownersValues.get(arg[argName]));
+      });
+    });
+
+    it('transfer', async function() {
+      const transferTx = await getTransferTransaction();
+      const encodedTx = transferTx.toBroadcastFormat();
+      const transferJsonTx = JSON.parse(encodedTx);
+
+      const argName = 0;
+      const argValue = 1;
+
+      const transferValues = new Map();
+
+      transferValues.set('amount', getTransferAmount(transferTx.casperTx.session));
+      transferValues.set('to_address', getTransferDestinationAddress(transferTx.casperTx.session));
+      transferValues.set('id', getTransferId(transferTx.casperTx.session).toString());
+
+      const jsonOwnerArgs = transferJsonTx['deploy']['session']['Transfer']['args'].filter(arg =>
+        transferValues.has(arg[argName]),
+      );
+      jsonOwnerArgs.length.should.equal(transferValues.size);
+
+      jsonOwnerArgs.forEach(arg => {
+        arg[argValue]['parsed'].should.be.equal(transferValues.get(arg[argName]));
+      });
+    });
+
     it('valid sign', async function() {
       const tx = getTransaction();
       // TODO STLX-1174: get and decode encoded transaction

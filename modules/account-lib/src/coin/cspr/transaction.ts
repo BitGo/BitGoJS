@@ -3,11 +3,11 @@ import { CLValue, DeployUtil, Keys } from 'casper-client-sdk';
 import { Deploy, Transfer } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
-import { InvalidTransactionError, NotImplementedError, SigningError } from '../baseCoin/errors';
+import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { CasperTransaction } from './ifaces';
-import { SECP256K1_PREFIX } from './constants';
-import { isValidPublicKey } from './utils';
+import { OWNER_PREFIX, SECP256K1_PREFIX } from './constants';
+import { getTransferAmount, getTransferDestinationAddress, getTransferId, isValidPublicKey } from './utils';
 
 export class Transaction extends BaseTransaction {
   protected _type: TransactionType;
@@ -52,7 +52,10 @@ export class Transaction extends BaseTransaction {
     if (!this.casperTx) {
       throw new InvalidTransactionError('Empty transaction');
     }
-    return JSON.stringify(DeployUtil.deployToJson(this.casperTx));
+    const txJson = DeployUtil.deployToJson(this.casperTx);
+    this.setOwnersInJson(txJson);
+    this.setTransfersFieldsInJson(txJson);
+    return JSON.stringify(txJson);
   }
 
   /** @inheritdoc */
@@ -102,13 +105,47 @@ export class Transaction extends BaseTransaction {
     }
   }
 
-  /**
-   * Load the input and output data on this transaction using the transaction json
-   * if there are outputs. For transactions without outputs (e.g. wallet initializations),
-   * this function will not do anything
-   */
-  loadInputsAndOutputs(): void {
-    throw new NotImplementedError('loadInputsAndOutputs not implemented');
+  setOwnersInJson(txJson: Record<string, any>): void {
+    if (this.casperTx.session.isModuleBytes()) {
+      const argName = 0;
+      const argValue = 1;
+      const owner0 = 0;
+      const owner1 = 1;
+      const owner2 = 2;
+
+      const ownersValues = new Map();
+
+      [owner0, owner1, owner2].forEach(index => {
+        ownersValues.set(
+          OWNER_PREFIX + index,
+          (this.casperTx.session.getArgByName(OWNER_PREFIX + index) as CLValue).asString(),
+        );
+      });
+
+      txJson['deploy']!['session']['ModuleBytes']['args'].forEach(arg => {
+        if (ownersValues.has(arg[argName])) {
+          arg[argValue]['parsed'] = ownersValues.get(arg[argName]);
+        }
+      });
+    }
+  }
+
+  setTransfersFieldsInJson(txJson: Record<string, any>): void {
+    if (this.casperTx.session.isTransfer()) {
+      const argName = 0;
+      const argValue = 1;
+
+      const transferValues = new Map();
+      transferValues.set('amount', getTransferAmount(this.casperTx.session));
+      transferValues.set('to_address', getTransferDestinationAddress(this.casperTx.session));
+      transferValues.set('id', getTransferId(this.casperTx.session).toString());
+
+      txJson['deploy']!['session']['Transfer']['args'].forEach(arg => {
+        if (transferValues.has(arg[argName])) {
+          arg[argValue]['parsed'] = transferValues.get(arg[argName]);
+        }
+      });
+    }
   }
 
   get casperTx(): Deploy {

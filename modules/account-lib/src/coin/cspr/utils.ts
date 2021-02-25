@@ -1,7 +1,10 @@
 import BigNumber from 'bignumber.js';
 import { Keys } from 'casper-client-sdk';
+import { ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
+import { InvalidTransactionError } from '../baseCoin/errors';
 import { DefaultKeys } from '../baseCoin/iface';
 import * as Crypto from './../../utils/crypto';
+import { TRANSFER_TO_ADDRESS } from './constants';
 
 const MAX_MOTES_AMOUNT = new BigNumber(10).pow(154).minus(1);
 
@@ -71,6 +74,60 @@ export function isValidAmount(amount: string): boolean {
 export function isValidTransferId(id: number): boolean {
   const bigNumberAmount = new BigNumber(id);
   return bigNumberAmount.isInteger() && bigNumberAmount.isGreaterThanOrEqualTo(0);
+}
+
+/**
+ * Get destination address from deploy transfer session
+ *
+ * @param {ExecutableDeployItem} transferTx transfer session
+ * @returns {string} the hex destination address of the transfer
+ */
+export function getTransferDestinationAddress(transferTx: ExecutableDeployItem): string {
+  const toAddress = transferTx.getArgByName(TRANSFER_TO_ADDRESS);
+
+  if (!toAddress || !toAddress.isString()) {
+    throw new InvalidTransactionError('Transfer does not have a destination address defined');
+  }
+
+  return toAddress.asString();
+}
+
+/**
+ * Get transfer amount from deploy transfer session
+ *
+ * @param {ExecutableDeployItem} transferTx transfer session
+ * @returns {string} the transfer amount
+ */
+export function getTransferAmount(transferTx: ExecutableDeployItem): string {
+  const amount = transferTx.getArgByName('amount');
+
+  if (!amount || !amount.isBigNumber()) {
+    throw new InvalidTransactionError('Transfer does not have an amount defined');
+  }
+
+  return amount.asBigNumber().toString();
+}
+
+/**
+ * Get transfer id from deploy transfer session
+ *
+ * @param {ExecutableDeployItem} transferTx transfer session
+ * @returns {number} the transfer id
+ */
+export function getTransferId(transferTx: ExecutableDeployItem): number {
+  const transferId = transferTx.getArgByName('id');
+
+  if (!transferId || !transferId.isOption()) {
+    throw new InvalidTransactionError('Transfer does not have an id defined');
+  }
+  const transferIdOption = transferId.asOption();
+  if (transferIdOption.isNone()) {
+    throw new InvalidTransactionError('Transfer does not have an id defined');
+  }
+  return transferIdOption
+    .getSome()
+    .asBigNumber()
+    .toNumber();
 }
 
 /**
