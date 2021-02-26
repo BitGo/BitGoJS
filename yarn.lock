@@ -3877,10 +3877,10 @@ cashaddress@^1.1.0:
   dependencies:
     bigi "^1.4.2"
 
-casper-client-sdk@1.0.19:
-  version "1.0.19"
-  resolved "https://registry.yarnpkg.com/casper-client-sdk/-/casper-client-sdk-1.0.19.tgz#e9df6f2b604697a471bf9175285ace72d1499ef9"
-  integrity sha512-QnD+edau+Ou6VRzbJpcxX9tnxJW7Zoe9WsYzdHB527L3ovQ58IM0hu4Hd8zJJMtldQx/dyuL5pj2zgnZCJmJnQ==
+casper-client-sdk@1.0.20:
+  version "1.0.20"
+  resolved "https://registry.yarnpkg.com/casper-client-sdk/-/casper-client-sdk-1.0.20.tgz#ee3743681c177c78e7cfa0a97dfd2202568d0dfe"
+  integrity sha512-r1n+xzNMiu0nt173GudTlnbMMTIbqQ9h5WnyYl3aFA1qt4nBpwfKurTu2tEeskU2rse3RdOl4Gs0JNI454Srgg==
   dependencies:
     "@ethersproject/bignumber" "^5.0.8"
     "@ethersproject/bytes" "^5.0.5"
@@ -14063,6 +14063,11 @@ typescript@^3.4.0, typescript@^3.6.4:
   version "3.9.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.3.tgz#d3ac8883a97c26139e42df5e93eeece33d610b8a"
   integrity sha512-D/wqnB2xzNFIcoBG9FG8cXRDjiqSTbG2wd8DMZeQyJlP1vfTkIxH4GKveWaEBYySKIg+USu+E+EDIR47SqnaMQ==
+
+typescript@^4.2.2:
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.2.2.tgz#1450f020618f872db0ea17317d16d8da8ddb8c4c"
+  integrity sha512-tbb+NVrLfnsJy3M59lsDgrzWIflR4d4TIUjz+heUnHZwdF7YsrMTKoRERiIvI2lvBG95dfpLxB21WZhys1bgaQ==
 
 typescript@~3.5.3:
   version "3.5.3"
