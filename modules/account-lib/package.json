@@ -36,7 +36,7 @@
     "@bitgo/statics": "^6.2.1",
     "@bitgo/utxo-lib": "^1.7.1",
     "@celo/contractkit": "0.4.11",
-    "@hashgraph/sdk": "^1.2.1",
+    "@hashgraph/sdk": "1.4.6",
     "@stablelib/hex": "^1.0.0",
     "@stablelib/sha384": "^1.0.0",
     "@taquito/local-forging": "6.3.5-beta.0",
