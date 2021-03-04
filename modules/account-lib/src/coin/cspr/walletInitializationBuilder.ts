@@ -6,7 +6,7 @@ import { TransactionBuilder, DEFAULT_M, DEFAULT_N } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { Owner, ContractArgs } from './ifaces';
 import { walletInitContractHexCode } from './utils';
-import { OWNER_PREFIX, SECP256K1_PREFIX } from './constants';
+import { OWNER_PREFIX, SECP256K1_PREFIX, TRANSACTION_TYPE } from './constants';
 
 const DEFAULT_OWNER_WEIGHT = 1;
 export class WalletInitializationBuilder extends TransactionBuilder {
@@ -24,6 +24,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     const args = this.buildWalletParameters();
     const extraArguments = new Map<string, CLValue>();
 
+    extraArguments.set(TRANSACTION_TYPE, CLValue.string(TransactionType[TransactionType.WalletInitialization]));
     for (let index = 0; index < this._owners.length; index++) {
       extraArguments.set(
         OWNER_PREFIX + index,

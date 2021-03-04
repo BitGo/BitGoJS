@@ -168,10 +168,56 @@ describe('CSPR Wallet initialization', () => {
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
+        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
+
         const builder2 = factory.getWalletInitializationBuilder();
         builder2.from(tx.toBroadcastFormat());
         const tx2 = (await builder2.build()) as Transaction;
         const tx2Json = tx2.toJson();
+
+        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
 
         should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
       });
@@ -182,10 +228,56 @@ describe('CSPR Wallet initialization', () => {
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
+        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
+
         const builder2 = factory.getWalletInitializationBuilder();
         builder2.from(tx.toBroadcastFormat());
         const tx2 = (await builder2.build()) as Transaction;
         const tx2Json = tx2.toJson();
+
+        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
 
         should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
         should.deepEqual(
@@ -202,10 +294,56 @@ describe('CSPR Wallet initialization', () => {
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
+        should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
+
         const builder2 = factory.getWalletInitializationBuilder();
         builder2.from(tx.toBroadcastFormat());
         const tx2 = (await builder2.build()) as Transaction;
         const tx2Json = tx2.toJson();
+
+        should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'WalletInitialization');
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_0')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_1.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_1')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_2.publicKey,
+        );
+        should.equal(
+          tx2.casperTx.session
+            .getArgByName('owner_2')!
+            .asString()
+            .toUpperCase(),
+          testData.ACCOUNT_3.publicKey,
+        );
 
         should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
         should.deepEqual(
@@ -214,6 +352,22 @@ describe('CSPR Wallet initialization', () => {
           'from implementation from factory should get approvals correctly',
         );
       });
+    });
+  });
+
+  describe('txJson validation', () => {
+    it('contains all required fields for Wallet Initialization', async () => {
+      const txBuilder = initSignedTxBuilder();
+      const tx = (await txBuilder.build()) as Transaction;
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.fee, testData.FEE);
+      should.equal(txJson.deployType, 'WalletInitialization');
+      should.equal(txJson.from.toUpperCase(), testData.ROOT_ACCOUNT.publicKey);
+      should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
+
+      should.equal(txJson.owner1!.toUpperCase(), testData.ACCOUNT_1.publicKey);
+      should.equal(txJson.owner2!.toUpperCase(), testData.ACCOUNT_2.publicKey);
+      should.equal(txJson.owner3!.toUpperCase(), testData.ACCOUNT_3.publicKey);
     });
   });
 });
