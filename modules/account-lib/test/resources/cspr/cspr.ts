@@ -69,6 +69,8 @@ export const ERROR_EMPTY_RAW_TRANSACTION = 'Raw transaction is empty';
 
 export const ERROR_JSON_PARSING = 'There was an error parsing the JSON string';
 
+export const ERROR_MISSING_PRIVATE_KEY = 'Missing private key';
+
 export const INVALID_RAW_TRANSACTION = 'This is an invalid raw transaction';
 
 export const VALID_ADDRESS = '025360ED570343B858C860801354EAAE4CDCD390EB3215A1C8C623CC55B63E442B';

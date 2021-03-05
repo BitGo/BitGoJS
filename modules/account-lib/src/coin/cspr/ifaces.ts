@@ -50,3 +50,11 @@ export type ContractArgs = Record<
   'action' | 'deployment_thereshold' | 'key_management_threshold' | 'accounts' | 'weights',
   CLValue
 >;
+
+/**
+ * Secp256k1 return type for sign operations
+ */
+export interface SignResponse {
+  signature: Uint8Array;
+  recid: number;
+}

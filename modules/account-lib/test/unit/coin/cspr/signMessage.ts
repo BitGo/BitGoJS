@@ -1,0 +1,25 @@
+import { randomBytes } from 'crypto';
+import should from 'should';
+import { KeyPair } from '../../../../src/coin/cspr/keyPair';
+import { isValidMessageSignature, signMessage } from '../../../../src/coin/cspr/utils';
+import * as testData from '../../../resources/cspr/cspr';
+
+describe('Sign Message', () => {
+  it('should be performed', async () => {
+    const keyPair = new KeyPair();
+    const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
+    const { signature } = signMessage(keyPair, messageToSign);
+    isValidMessageSignature(Buffer.from(signature).toString('hex'), messageToSign, keyPair.getKeys().pub).should.equals(
+      true,
+    );
+  });
+
+  it('should fail with missing private key', async () => {
+    const keyPair = new KeyPair({ pub: testData.ACCOUNT_1.publicKey });
+    const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
+    should.throws(
+      () => signMessage(keyPair, messageToSign),
+      e => e.message === testData.ERROR_MISSING_PRIVATE_KEY,
+    );
+  });
+});
