@@ -7,7 +7,12 @@ import * as testData from '../../../resources/cspr/cspr';
 import { KeyPair, TransactionBuilderFactory } from '../../../../src/coin/cspr';
 import { CHAIN_NAME, OWNER_PREFIX } from '../../../../src/coin/cspr/constants';
 import { register } from '../../../../src';
-import { getTransferAmount, getTransferDestinationAddress, getTransferId } from '../../../../src/coin/cspr/utils';
+import {
+  getTransferAmount,
+  getTransferDestinationAddress,
+  getTransferId,
+  isValidTransactionSignature,
+} from '../../../../src/coin/cspr/utils';
 
 describe('Cspr Transaction', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
@@ -74,6 +79,14 @@ describe('Cspr Transaction', () => {
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
       );
+      should.equal(
+        isValidTransactionSignature(
+          tx.casperTx.approvals[0].signature,
+          tx.casperTx.hash,
+          Buffer.from(tx.casperTx.header.account.rawPublicKey).toString('hex'),
+        ),
+        true,
+      );
     });
 
     it('multiple valid', async () => {
@@ -89,6 +102,11 @@ describe('Cspr Transaction', () => {
         tx.casperTx.approvals[0].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
       );
+      should.equal(
+        isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
+        true,
+      );
+
       await tx.sign(keypair2).should.be.fulfilled();
       should.equal(
         tx.casperTx.approvals[0].signer.toUpperCase(),
@@ -97,6 +115,14 @@ describe('Cspr Transaction', () => {
       should.equal(
         tx.casperTx.approvals[1].signer.toUpperCase(),
         testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey,
+      );
+      should.equal(
+        isValidTransactionSignature(tx.casperTx.approvals[0].signature, tx.casperTx.hash, testData.ACCOUNT_1.publicKey),
+        true,
+      );
+      should.equal(
+        isValidTransactionSignature(tx.casperTx.approvals[1].signature, tx.casperTx.hash, testData.ACCOUNT_2.publicKey),
+        true,
       );
     });
   });

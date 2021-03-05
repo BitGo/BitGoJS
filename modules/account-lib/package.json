@@ -55,7 +55,8 @@
     "protobufjs": "^6.8.9",
     "stellar-sdk": "^0.11.0",
     "tronweb": "^2.7.2",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "secp256k1": "4.0.2"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",
