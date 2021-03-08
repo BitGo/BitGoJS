@@ -39,6 +39,7 @@
     "@hashgraph/sdk": "1.4.6",
     "@stablelib/hex": "^1.0.0",
     "@stablelib/sha384": "^1.0.0",
+    "@stacks/transactions": "1.2.4",
     "@taquito/local-forging": "6.3.5-beta.0",
     "@taquito/signer": "6.3.5-beta.0",
     "@types/lodash": "^4.14.151",
@@ -53,10 +54,10 @@
     "libsodium-wrappers": "^0.7.6",
     "lodash": "^4.17.15",
     "protobufjs": "^6.8.9",
+    "secp256k1": "4.0.2",
     "stellar-sdk": "^0.11.0",
     "tronweb": "^2.7.2",
-    "tweetnacl": "^1.0.3",
-    "secp256k1": "4.0.2"
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/elliptic": "^6.4.12",
