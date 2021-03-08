@@ -8,7 +8,13 @@ import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { CasperTransaction } from './ifaces';
 import { OWNER_PREFIX, SECP256K1_PREFIX } from './constants';
-import { getTransferAmount, getTransferDestinationAddress, getTransferId, isValidPublicKey } from './utils';
+import {
+  getTransferAmount,
+  getTransferDestinationAddress,
+  getTransferId,
+  isValidPublicKey,
+  removeAlgoPrefixFromHexValue,
+} from './utils';
 
 export class Transaction extends BaseTransaction {
   protected _type: TransactionType;
@@ -51,12 +57,12 @@ export class Transaction extends BaseTransaction {
     const pubKeyBuffer = Uint8Array.from(Buffer.from(pub, 'hex'));
     const parsedPublicKey = Keys.Secp256K1.parsePublicKey(pubKeyBuffer, 'raw');
     const pubKeyHex = Keys.Secp256K1.accountHex(parsedPublicKey);
-    if (pubKeyHex.slice(2) !== _.toLower(pub)) {
+    if (removeAlgoPrefixFromHexValue(pubKeyHex).toUpperCase() !== pub) {
       throw new SigningError('Signer does not match signature');
     }
-    const signedDeploy = DeployUtil.setSignature(this._deploy, signatureBuffer, PublicKey.fromSecp256K1(parsedPublicKey))
+    const signedDeploy = DeployUtil.setSignature(this._deploy, signatureBuffer, PublicKey.fromSecp256K1(parsedPublicKey));
     const approval = _.last(signedDeploy.approvals) as Approval;
-    if (approval.signature.slice(2) !== signature) {
+    if (removeAlgoPrefixFromHexValue(approval.signature) !== signature) {
       throw new SigningError('Invalid signature');
     }
     this._signatures.push(signature);

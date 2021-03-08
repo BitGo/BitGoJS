@@ -4,6 +4,7 @@ import * as testData from '../../../../resources/cspr/cspr';
 import { register } from '../../../../../src';
 import { KeyPair, TransactionBuilderFactory } from '../../../../../src/coin/cspr/';
 import { Transaction } from "../../../../../src/coin/cspr/transaction";
+import { removeAlgoPrefixFromHexValue } from '../../../../../src/coin/cspr/utils';
 
 describe('Casper Transaction Builder', () => {
   const factory = register('tcspr', TransactionBuilderFactory);
@@ -111,8 +112,8 @@ describe('Casper Transaction Builder', () => {
       const signer = tx.casperTx.approvals[0].signer;
       const signature = tx.casperTx.approvals[0].signature;
 
-      signer.slice(2).should.equal(pub);
-      signature.slice(2).should.equal(_.toLower(sig));
+      removeAlgoPrefixFromHexValue(signer).should.equal(pub);
+      removeAlgoPrefixFromHexValue(signature).should.equal(_.toLower(sig));
 
       const txJson = tx.toJson();
       should.doesNotThrow(() => {
