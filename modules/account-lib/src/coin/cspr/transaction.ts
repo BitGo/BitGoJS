@@ -1,13 +1,20 @@
+import * as _ from 'lodash';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import { CLValue, DeployUtil, Keys } from 'casper-client-sdk';
-import { Deploy, Transfer } from 'casper-client-sdk/dist/lib/DeployUtil';
+import { CLValue, PublicKey, DeployUtil, Keys } from 'casper-client-sdk';
+import { Approval, Deploy, Transfer } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { CasperTransaction } from './ifaces';
 import { OWNER_PREFIX, SECP256K1_PREFIX } from './constants';
-import { getTransferAmount, getTransferDestinationAddress, getTransferId, isValidPublicKey } from './utils';
+import {
+  getTransferAmount,
+  getTransferDestinationAddress,
+  getTransferId,
+  isValidPublicKey,
+  removeAlgoPrefixFromHexValue,
+} from './utils';
 
 export class Transaction extends BaseTransaction {
   protected _type: TransactionType;
@@ -27,7 +34,7 @@ export class Transaction extends BaseTransaction {
     if (!keys.prv) {
       throw new SigningError('Missing private key');
     }
-    if (this._deploy.approvals.some(ap => !ap.signer.startsWith(SECP256K1_PREFIX) || 
+    if (this._deploy.approvals.some(ap => !ap.signer.startsWith(SECP256K1_PREFIX) ||
       !isValidPublicKey(ap.signer.slice(2)))) {
       throw new SigningError('Invalid deploy. Already signed with an invalid key');
     }
@@ -36,14 +43,28 @@ export class Transaction extends BaseTransaction {
       Uint8Array.from(Buffer.from(keys.prv, 'hex')),
     );
     const signedDeploy = DeployUtil.signDeploy(this._deploy, secpKeys);
-    this.addSignature(signedDeploy.approvals[signedDeploy.approvals.length - 1].signature);
+    this._signatures.push(signedDeploy.approvals[signedDeploy.approvals.length - 1].signature);
   }
 
   /**
-   * Add a signature to this transaction
+   * Add a signature to this transaction and to and its deploy
    * @param {string} signature The signature to add, in string hex format
+   * @param {KeyPair} keyPair The key pair that created the signature
    */
-  addSignature(signature: string): void {
+  addSignature(signature: string, keyPair: KeyPair): void {
+    const pub = keyPair.getKeys().pub;
+    const signatureBuffer = Uint8Array.from(Buffer.from(signature, 'hex'));
+    const pubKeyBuffer = Uint8Array.from(Buffer.from(pub, 'hex'));
+    const parsedPublicKey = Keys.Secp256K1.parsePublicKey(pubKeyBuffer, 'raw');
+    const pubKeyHex = Keys.Secp256K1.accountHex(parsedPublicKey);
+    if (removeAlgoPrefixFromHexValue(pubKeyHex).toUpperCase() !== pub) {
+      throw new SigningError('Signer does not match signature');
+    }
+    const signedDeploy = DeployUtil.setSignature(this._deploy, signatureBuffer, PublicKey.fromSecp256K1(parsedPublicKey));
+    const approval = _.last(signedDeploy.approvals) as Approval;
+    if (removeAlgoPrefixFromHexValue(approval.signature) !== signature) {
+      throw new SigningError('Invalid signature');
+    }
     this._signatures.push(signature);
   }
 
@@ -138,7 +159,10 @@ export class Transaction extends BaseTransaction {
       const transferValues = new Map();
       transferValues.set('amount', getTransferAmount(this.casperTx.session));
       transferValues.set('to_address', getTransferDestinationAddress(this.casperTx.session));
-      transferValues.set('id', getTransferId(this.casperTx.session).toString());
+      const transferId = getTransferId(this.casperTx.session);
+      if (transferId !== undefined) {
+        transferValues.set('id', transferId.toString());
+      }
 
       txJson['deploy']!['session']['Transfer']['args'].forEach(arg => {
         if (transferValues.has(arg[argName])) {

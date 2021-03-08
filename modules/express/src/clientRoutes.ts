@@ -756,7 +756,10 @@ function promiseWrapper(promiseRequestHandler: Function) {
         if (!(status >= 200 && status < 300)) {
           console.log('error %s: %s', status, err.message);
         }
-        if (status === 500) {
+        if (status >= 500 && status <= 599) {
+          if (err.response && err.response.request) {
+            console.log(`failed to make ${err.response.request.method} request to ${err.response.request.url}`);
+          }
           console.log(err.stack);
         }
         res.status(status).send(result);

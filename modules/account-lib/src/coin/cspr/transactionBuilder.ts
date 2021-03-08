@@ -16,6 +16,7 @@ import { KeyPair } from './keyPair';
 import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
 import { isValidAddress } from './utils';
 import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
+import * as _ from "lodash";
 
 export const DEFAULT_M = 3;
 export const DEFAULT_N = 2;
@@ -305,9 +306,35 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     return session;
   }
 
+  /**
+   * Checks whether the transaction has the owner signature
+   * @param {string} pub - public key of the signer
+   * @returns {boolean} true if the pub key already signed th transaction
+   * @private
+   */
+  private isTransactionSignedByPub(pub: string): boolean {
+    return _.findIndex(this.transaction.casperTx.approvals, approval => {
+      const approvalSigner = approval.signer.slice(2).toUpperCase();
+      return approvalSigner === pub;
+    }) !== -1;
+  }
+
+  /**
+   * Add signatures to the transaction
+   * @private
+   */
   private async processSigning(): Promise<void> {
     for (const keyPair of this._multiSignerKeyPairs) {
-      await this.transaction.sign(keyPair);
+      // Add signature if it's not already in the deploy
+      if (!this.isTransactionSignedByPub(keyPair.getKeys().pub)) {
+        await this.transaction.sign(keyPair);
+      }
+    }
+    for (const { signature, keyPair } of this._signatures) {
+      // Add signature if it's not already in the deploy
+      if (!this.isTransactionSignedByPub(keyPair.getKeys().pub)) {
+        this.transaction.addSignature(signature, keyPair);
+      }
     }
   }
   // endregion

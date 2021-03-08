@@ -1,10 +1,15 @@
+import { createHash, randomBytes } from 'crypto';
 import BigNumber from 'bignumber.js';
-import { Keys } from 'casper-client-sdk';
+import { Keys, PublicKey } from 'casper-client-sdk';
 import { ExecutableDeployItem } from 'casper-client-sdk/dist/lib/DeployUtil';
-import { InvalidTransactionError } from '../baseCoin/errors';
+import * as hex from '@stablelib/hex';
+import { ecdsaSign, ecdsaVerify } from 'secp256k1';
+import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { DefaultKeys } from '../baseCoin/iface';
 import * as Crypto from './../../utils/crypto';
-import { TRANSFER_TO_ADDRESS } from './constants';
+import { SECP256K1_PREFIX, TRANSFER_TO_ADDRESS } from './constants';
+import { SignResponse } from './ifaces';
+import { KeyPair } from '.';
 
 const MAX_MOTES_AMOUNT = new BigNumber(10).pow(154).minus(1);
 
@@ -112,22 +117,98 @@ export function getTransferAmount(transferTx: ExecutableDeployItem): string {
  * Get transfer id from deploy transfer session
  *
  * @param {ExecutableDeployItem} transferTx transfer session
- * @returns {number} the transfer id
+ * @returns {number | undefined} the transferId if exists or undefined
  */
-export function getTransferId(transferTx: ExecutableDeployItem): number {
+export function getTransferId(transferTx: ExecutableDeployItem): number | undefined {
   const transferId = transferTx.getArgByName('id');
 
   if (!transferId || !transferId.isOption()) {
-    throw new InvalidTransactionError('Transfer does not have an id defined');
+    return; // no-op
   }
   const transferIdOption = transferId.asOption();
   if (transferIdOption.isNone()) {
-    throw new InvalidTransactionError('Transfer does not have an id defined');
+    return; // no-op
   }
   return transferIdOption
     .getSome()
     .asBigNumber()
     .toNumber();
+}
+
+/**
+ * Data signing using secp256k1 library.
+ *
+ * @param {KeyPair} keyPair A Key Pair with a private key set
+ * @param {string} data The data in hexadecimal to sign
+ * @returns {SignResponse}
+ */
+export function signMessage(keyPair: KeyPair, data: string): SignResponse {
+  const prv = keyPair.getKeys().prv;
+  if (!prv) {
+    throw new SigningError('Missing private key');
+  }
+  const encodedData = createHash('sha256')
+    .update(hex.decode(data))
+    .digest('hex');
+  return ecdsaSign(hex.decode(encodedData), hex.decode(prv));
+}
+
+/**
+ * Signature verification using secp256k1 library.
+ *
+ * @param {string} signature Signature to verify.
+ * @param {Uint8Array | string} data Data to verify the signature on. Either as bytes array or hex string.
+ * @param {string} publicKey Public Key as hex string used to verify the signature.
+ * @returns {boolean} true if the signature is valid on data
+ */
+function isValidSignature(signature: string, data: Uint8Array | string, publicKey: string): boolean {
+  const signatureBytes = hex.decode(signature);
+  const rawPublicKey = PublicKey.fromHex(SECP256K1_PREFIX + publicKey).rawPublicKey;
+  if (typeof data === 'string') {
+    data = hex.decode(data);
+  }
+  data = hex.decode(
+    createHash('sha256')
+      .update(data)
+      .digest('hex'),
+  );
+  return ecdsaVerify(signatureBytes, data, rawPublicKey);
+}
+
+/**
+ * Signature verification for message using secp256k1 library.
+ *
+ * @param {string} signature Signature to verify.
+ * @param {Uint8Array | string} data Data to verify the signature on. Either as bytes array or hex string.
+ * @param {string} publicKey Public Key as hex string used to verify the signature.
+ * @returns {boolean} true if the signature is valid on data
+ */
+export function isValidMessageSignature(signature: string, data: Uint8Array | string, publicKey: string): boolean {
+  return isValidSignature(signature, data, publicKey);
+}
+
+/**
+ * Signature verification for transaction using secp256k1 library.
+ *
+ * @param {string} signature Signature to verify.
+ * @param {Uint8Array | string} data Data to verify the signature on. Either as bytes array or hex string.
+ * @param {string} publicKey Public Key as hex string used to verify the signature.
+ * @returns {boolean} true if the signature is valid on data
+ */
+export function isValidTransactionSignature(signature: string, data: Uint8Array | string, publicKey: string): boolean {
+  const signatureWithoutPrefix = signature.slice(2);
+  return isValidSignature(signatureWithoutPrefix, data, publicKey);
+}
+
+/**
+ * Remove signature algo prefix added to hex values by the casper sdk
+ * @param {string} hexValue - hex value to remove prefix from
+ */
+export function removeAlgoPrefixFromHexValue(hexValue: string): string {
+  if (hexValue.substring(0,2) !== SECP256K1_PREFIX) {
+    throw new SigningError('Signer does not match signature');
+  }
+  return hexValue.slice(2);
 }
 
 /**
