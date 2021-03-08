@@ -4139,10 +4139,10 @@ cashaddress@^1.1.0:
   dependencies:
     bigi "^1.4.2"
 
-casper-client-sdk@1.0.19:
-  version "1.0.19"
-  resolved "https://registry.yarnpkg.com/casper-client-sdk/-/casper-client-sdk-1.0.19.tgz#e9df6f2b604697a471bf9175285ace72d1499ef9"
-  integrity sha512-QnD+edau+Ou6VRzbJpcxX9tnxJW7Zoe9WsYzdHB527L3ovQ58IM0hu4Hd8zJJMtldQx/dyuL5pj2zgnZCJmJnQ==
+casper-client-sdk@1.0.20:
+  version "1.0.20"
+  resolved "https://registry.yarnpkg.com/casper-client-sdk/-/casper-client-sdk-1.0.20.tgz#ee3743681c177c78e7cfa0a97dfd2202568d0dfe"
+  integrity sha512-r1n+xzNMiu0nt173GudTlnbMMTIbqQ9h5WnyYl3aFA1qt4nBpwfKurTu2tEeskU2rse3RdOl4Gs0JNI454Srgg==
   dependencies:
     "@ethersproject/bignumber" "^5.0.8"
     "@ethersproject/bytes" "^5.0.5"
