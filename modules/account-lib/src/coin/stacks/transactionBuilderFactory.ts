@@ -1,10 +1,18 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
-import { NotImplementedError } from '../baseCoin/errors';
+import {
+  ParseTransactionError,
+  InvalidTransactionError,
+} from '../baseCoin/errors';
 import { TransferBuilder } from './transferBuilder';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import {
+  BufferReader,
+  deserializeTransaction,
+  PayloadType,
+} from '@stacks/transactions';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -12,8 +20,30 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   }
 
   /** @inheritdoc */
-  from(raw: Uint8Array | string): TransactionBuilder {
-    throw new NotImplementedError('from not implemented');
+  from(raw: string): TransactionBuilder {
+    this.validateRawTransaction(raw);
+    try {
+      const tx = this.parseTransaction(raw);
+      switch (tx.stxTransaction.payload.payloadType) {
+        case PayloadType.TokenTransfer:
+          return this.getTransferBuilder(tx);
+        // TODO: add case of wallet
+        default:
+          throw new InvalidTransactionError('Invalid transaction');
+      }
+    } catch (e) {
+      console.error(e);
+      throw new ParseTransactionError('There was an error parsing the raw transaction');
+    }
+  }
+
+  private parseTransaction(rawTransaction: string): Transaction {
+    const tx = new Transaction(this._coinConfig);
+    const stackstransaction = deserializeTransaction(
+      BufferReader.fromBuffer(Buffer.from(rawTransaction.substring(2), 'hex')),
+    );
+    tx.stxTransaction = stackstransaction;
+    return tx;
   }
 
   /** @inheritdoc */
@@ -38,5 +68,12 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
       builder.initBuilder(tx);
     }
     return builder;
+  }
+
+  /** @inheritdoc */
+  validateRawTransaction(rawTransaction: any): void {
+    if (!rawTransaction) {
+      throw new InvalidTransactionError('Raw transaction is empty');
+    }
   }
 }

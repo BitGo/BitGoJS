@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import {
   AddressHashMode,
   StacksTransaction,
@@ -7,7 +8,6 @@ import {
   addressToString,
   validateStacksAddress,
 } from '@stacks/transactions';
-import BigNumber from 'bignumber.js';
 
 /**
  * Encodes a buffer as a `0x` prefixed lower-case hex string.
@@ -159,5 +159,3 @@ export function hexPrefixString(hex: string): string {
     return '0x' + hex;
   }
 }
-
-
