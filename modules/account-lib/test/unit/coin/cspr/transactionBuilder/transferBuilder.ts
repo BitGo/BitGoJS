@@ -217,36 +217,6 @@ describe('Casper Transfer Builder', () => {
         e => e.message === testData.ERROR_INVALID_DESTINATION_ADDRESS_ON_FROM,
       );
     });
-
-    it('a serialized transaction with invalid transfer id type', async () => {
-      const builder = initTxTransferBuilder().amount('10');
-      const tx = (await builder.build()) as Transaction;
-
-      tx.casperTx = DeployUtil.addArgToDeploy(tx.casperTx, 'id', CLValue.byteArray(Uint8Array.from([])));
-
-      const builder2 = factory.getTransferBuilder();
-      should.throws(
-        () => {
-          builder2.from(tx.toBroadcastFormat());
-        },
-        e => e.message === testData.ERROR_INVALID_TRANSFER_ID_ON_FROM,
-      );
-    });
-
-    it('a serialized transaction with empty transfer id value', async () => {
-      const builder = initTxTransferBuilder().amount('10');
-      const tx = (await builder.build()) as Transaction;
-
-      tx.casperTx = DeployUtil.addArgToDeploy(tx.casperTx, 'id', CLValue.option(null, CLTypeHelper.u64()));
-
-      const builder2 = factory.getTransferBuilder();
-      should.throws(
-        () => {
-          builder2.from(tx.toBroadcastFormat());
-        },
-        e => e.message === testData.ERROR_INVALID_TRANSFER_ID_ON_FROM,
-      );
-    });
   });
 
   describe('should fail', () => {

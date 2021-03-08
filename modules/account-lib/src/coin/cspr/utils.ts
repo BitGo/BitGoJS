@@ -117,17 +117,17 @@ export function getTransferAmount(transferTx: ExecutableDeployItem): string {
  * Get transfer id from deploy transfer session
  *
  * @param {ExecutableDeployItem} transferTx transfer session
- * @returns {number} the transfer id
+ * @returns {number | undefined} the transferId if exists or undefined
  */
-export function getTransferId(transferTx: ExecutableDeployItem): number {
+export function getTransferId(transferTx: ExecutableDeployItem): number | undefined {
   const transferId = transferTx.getArgByName('id');
 
   if (!transferId || !transferId.isOption()) {
-    throw new InvalidTransactionError('Transfer does not have an id defined');
+    return; // no-op
   }
   const transferIdOption = transferId.asOption();
   if (transferIdOption.isNone()) {
-    throw new InvalidTransactionError('Transfer does not have an id defined');
+    return; // no-op
   }
   return transferIdOption
     .getSome()

@@ -182,7 +182,10 @@ describe('Cspr Transaction', () => {
 
       transferValues.set('amount', getTransferAmount(transferTx.casperTx.session));
       transferValues.set('to_address', getTransferDestinationAddress(transferTx.casperTx.session));
-      transferValues.set('id', getTransferId(transferTx.casperTx.session).toString());
+      const transferId = getTransferId(transferTx.casperTx.session);
+      if (transferId !== undefined) {
+        transferValues.set('id', transferId.toString());
+      }
 
       const jsonOwnerArgs = transferJsonTx['deploy']['session']['Transfer']['args'].filter(arg =>
         transferValues.has(arg[argName]),

@@ -159,7 +159,10 @@ export class Transaction extends BaseTransaction {
       const transferValues = new Map();
       transferValues.set('amount', getTransferAmount(this.casperTx.session));
       transferValues.set('to_address', getTransferDestinationAddress(this.casperTx.session));
-      transferValues.set('id', getTransferId(this.casperTx.session).toString());
+      const transferId = getTransferId(this.casperTx.session);
+      if (transferId !== undefined) {
+        transferValues.set('id', transferId.toString());
+      }
 
       txJson['deploy']!['session']['Transfer']['args'].forEach(arg => {
         if (transferValues.has(arg[argName])) {
