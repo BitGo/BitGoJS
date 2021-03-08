@@ -102,6 +102,16 @@ describe('Casper Transaction Builder', () => {
       });
     });
 
+    it('should process signing only once per signer', async function() {
+      const builder = initWalletBuilder();
+      builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
+      let tx = (await builder.build()) as Transaction;
+      tx.casperTx.approvals.length.should.equal(1);
+
+      tx = (await builder.build()) as Transaction;
+      tx.casperTx.approvals.length.should.equal(1);
+    });
+
     it('should add a signature to a transaction', async function() {
       const builder = initWalletBuilder();
       const sig = '0072f40621663fd03c5e13b413d5c354cdf4c7e76672aa61fd8ede0f1ac09f5de107d725eb40e1efb9037940d74ef9b2efaa1d66d0991a5322639481c2d4280775';
@@ -119,6 +129,19 @@ describe('Casper Transaction Builder', () => {
       should.doesNotThrow(() => {
         builder.validateRawTransaction(JSON.stringify(txJson));
       });
+    });
+
+    it('should process signing only once per signature added', async function() {
+      const builder = initWalletBuilder();
+      const sig = '0072f40621663fd03c5e13b413d5c354cdf4c7e76672aa61fd8ede0f1ac09f5de107d725eb40e1efb9037940d74ef9b2efaa1d66d0991a5322639481c2d4280775';
+      const pub = '03dca7d5d68fba12a604e992a47504d10e6795cdc6db438abb741788c71c4b7428';
+      const signingKeyPair = new KeyPair({ pub });
+      builder.signature(sig, signingKeyPair);
+      let tx = (await builder.build()) as Transaction;
+      tx.casperTx.approvals.length.should.equal(1);
+
+      tx = (await builder.build()) as Transaction;
+      tx.casperTx.approvals.length.should.equal(1);
     });
   });
 });
