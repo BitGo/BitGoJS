@@ -48,7 +48,10 @@ export class TransferBuilder extends TransactionBuilder {
     this.transaction.setTransactionType(TransactionType.Send);
     this.to(getTransferDestinationAddress(tx.casperTx.session));
     this.amount(getTransferAmount(tx.casperTx.session));
-    this.transferId(getTransferId(tx.casperTx.session));
+    const transferId = getTransferId(tx.casperTx.session);
+    if (transferId !== undefined) {
+      this.transferId(transferId);
+    }
   }
 
   /** @inheritdoc */
