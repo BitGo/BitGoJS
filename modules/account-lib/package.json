@@ -23,7 +23,9 @@
     "prepublishOnly": "npm run compile",
     "prepare": "npm run gen-protobuf && npm run gen-protobufts &&  npm run hedera-gen-protobuf && npm run hedera-gen-protobufts && tsc && cp -r ./resources ./dist",
     "unit-test": "nyc -- mocha --opts test/mocha.opts \"test/unit/**/*.ts\"",
-    "test": "npm run unit-test"
+    "test": "npm run unit-test",
+    "unit-test:stacks": "nyc -- mocha --opts test/mocha.opts \"test/unit/coin/stacks/*.ts\" \"test/unit/coin/stacks/transactionBuilder/*.ts\"",
+    "test:stacks": "npm run unit-test:stacks"
   },
   "repository": {
     "type": "git",
