@@ -154,6 +154,28 @@ export function signMessage(keyPair: KeyPair, data: string): SignResponse {
 }
 
 /**
+ * Signature verification using secp256k1 library.
+ *
+ * @param {string} signature Signature to verify.
+ * @param {Uint8Array | string} data Data to verify the signature on. Either as bytes array or hex string.
+ * @param {string} publicKey Public Key as hex string used to verify the signature.
+ * @returns {boolean} true if the signature is valid on data
+ */
+function isValidSignature(signature: string, data: Uint8Array | string, publicKey: string): boolean {
+  const signatureBytes = hex.decode(signature);
+  const rawPublicKey = PublicKey.fromHex(SECP256K1_PREFIX + publicKey).rawPublicKey;
+  if (typeof data === 'string') {
+    data = hex.decode(data);
+  }
+  data = hex.decode(
+    createHash('sha256')
+      .update(data)
+      .digest('hex'),
+  );
+  return ecdsaVerify(signatureBytes, data, rawPublicKey);
+}
+
+/**
  * Signature verification for message using secp256k1 library.
  *
  * @param {string} signature Signature to verify.
@@ -179,25 +201,14 @@ export function isValidTransactionSignature(signature: string, data: Uint8Array 
 }
 
 /**
- * Signature verification using secp256k1 library.
- *
- * @param {string} signature Signature to verify.
- * @param {Uint8Array | string} data Data to verify the signature on. Either as bytes array or hex string.
- * @param {string} publicKey Public Key as hex string used to verify the signature.
- * @returns {boolean} true if the signature is valid on data
+ * Remove signature algo prefix added to hex values by the casper sdk
+ * @param {string} hexValue - hex value to remove prefix from
  */
-function isValidSignature(signature: string, data: Uint8Array | string, publicKey: string): boolean {
-  const signatureBytes = hex.decode(signature);
-  const rawPublicKey = PublicKey.fromHex(SECP256K1_PREFIX + publicKey).rawPublicKey;
-  if (typeof data === 'string') {
-    data = hex.decode(data);
+export function removeAlgoPrefixFromHexValue(hexValue: string): string {
+  if (hexValue.substring(0,2) !== SECP256K1_PREFIX) {
+    throw new SigningError('Signer does not match signature');
   }
-  data = hex.decode(
-    createHash('sha256')
-      .update(data)
-      .digest('hex'),
-  );
-  return ecdsaVerify(signatureBytes, data, rawPublicKey);
+  return hexValue.slice(2);
 }
 
 /**

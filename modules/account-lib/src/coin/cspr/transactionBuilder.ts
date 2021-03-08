@@ -309,6 +309,9 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     for (const keyPair of this._multiSignerKeyPairs) {
       await this.transaction.sign(keyPair);
     }
+    for (const { signature, keyPair } of this._signatures) {
+      this.transaction.addSignature(signature, keyPair);
+    }
   }
   // endregion
 }
