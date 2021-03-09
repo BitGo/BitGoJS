@@ -1,13 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { DeployUtil } from 'casper-client-sdk';
-import { ModuleBytes } from 'casper-client-sdk/dist/lib/DeployUtil';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
 import { BaseTransactionBuilderFactory } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { walletInitContractHexCode } from './utils';
+import { isWalletInitContract } from './utils';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -40,7 +39,7 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     if (tx.casperTx.session.isTransfer()) {
       return this.getTransferBuilder(tx);
     } else if (tx.casperTx.session.isModuleBytes()) {
-      if (this.isWalletInitContract(tx.casperTx.session.asModuleBytes())) {
+      if (isWalletInitContract(tx.casperTx.session.asModuleBytes())) {
         return this.getWalletInitializationBuilder(tx);
       } else {
         throw new InvalidTransactionError('Invalid transaction' + tx.casperTx);
@@ -78,19 +77,5 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
     } catch (e) {
       throw new ParseTransactionError('Invalid raw transaction format');
     }
-  }
-
-  /**
-   * Check if a ModuleBytes session instance is related to a Wallet Initialization Contract
-   *
-   * @param {ModuleBytes} session - The session to be analyzed
-   * @returns {boolean} - true if session data is a Wallet Initialization Contract
-   */
-  private isWalletInitContract(session?: ModuleBytes): boolean {
-    if (!session) {
-      return false;
-    }
-    const moduleBytes = Buffer.from(session.moduleBytes).toString('hex');
-    return moduleBytes !== undefined && moduleBytes === walletInitContractHexCode;
   }
 }

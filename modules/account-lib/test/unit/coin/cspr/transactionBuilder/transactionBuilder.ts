@@ -14,6 +14,7 @@ describe('Casper Transaction Builder', () => {
     txBuilder.fee({ gasLimit: testData.FEE.gasLimit, gasPrice: testData.FEE.gasPrice });
     txBuilder.source({ address: testData.ACCOUNT_1.publicKey });
     txBuilder.to(testData.ACCOUNT_2.publicKey);
+    txBuilder.transferId(255);
     txBuilder.amount('10');
     return txBuilder;
   };

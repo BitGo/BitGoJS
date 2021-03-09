@@ -5,7 +5,7 @@ import { BaseKey } from '../baseCoin/iface';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { SECP256K1_PREFIX, TRANSFER_TO_ADDRESS } from './constants';
+import { SECP256K1_PREFIX, TRANSACTION_TYPE, TRANSFER_TO_ADDRESS } from './constants';
 import {
   isValidAmount,
   isValidTransferId,
@@ -28,6 +28,7 @@ export class TransferBuilder extends TransactionBuilder {
   protected async buildImplementation(): Promise<Transaction> {
     const extraArguments = new Map<string, CLValue>();
     if (this._toAddress) {
+      extraArguments.set(TRANSACTION_TYPE, CLValue.string(TransactionType[TransactionType.Send]));
       // TODO(STLX-1691): We are sending the destination address as string until impediment STLX-1691 is fixed.
       // After that we will change this to send an instance of PublicKey instead.
       extraArguments.set(TRANSFER_TO_ADDRESS, CLValue.string(this._toAddress));
