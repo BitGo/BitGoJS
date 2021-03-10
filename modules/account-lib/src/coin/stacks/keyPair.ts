@@ -55,13 +55,11 @@ export class KeyPair extends Secp256k1ExtendedKeyPair {
   /**
    * Build an ECPair from a public key.
    *
-   * The public key is either 33 or 65 bytes long (66 or 130 characters in hex),
-   * depending on the compression.
+   * The public key is either 32 bytes or 64 bytes long, with a one-byte prefix
+   * (a total of 66 or 130 characters in hex).  If the prefix is 0x02 or 0x03, it is a
+   * compressed public key.  A prefix of 0x04 denotes an uncompressed public key.
    *
-   * If it is 32 bytes long, set the keypair's "compressed" field to false.
-   * A 33 byte key has 0x01 as the last byte.
-   *
-   * @param {string} pub A raw private key
+   * @param {string} pub A raw public key
    */
   recordKeysFromPublicKey(pub: string): void {
     if (!isValidPublicKey(pub)) {

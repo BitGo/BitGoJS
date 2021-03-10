@@ -83,7 +83,10 @@ export function isValidAddress(address: string): boolean {
 }
 
 /**
- * Returns whether or not the string is a valid protocol transaction id or not
+ * Returns whether or not the string is a valid protocol transaction id or not.
+ *
+ * A valid transaction id is a SHA-512/256 hash of a serialized transaction; see
+ * "txidFromData()" in @stacks/transaction.
  *
  * @param {string} txId - the transaction id to be validated
  * @returns {boolean} - the validation result
