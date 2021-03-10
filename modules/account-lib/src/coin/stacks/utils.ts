@@ -37,10 +37,11 @@ function getAddressFromPublicKeyHash(
   hashMode: AddressHashMode,
   transactionVersion: TransactionVersion,
 ): string {
-  const addrVer = addressHashModeToVersion(hashMode, transactionVersion);
   if (publicKeyHash.length !== 20) {
     throw new Error('expected 20-byte pubkeyhash');
   }
+
+  const addrVer = addressHashModeToVersion(hashMode, transactionVersion);
   const addr = addressFromVersionHash(addrVer, publicKeyHash.toString('hex'));
   const addrString = addressToString(addr);
   return addrString;
@@ -110,14 +111,13 @@ export function isValidPublicKey(pub: string): boolean {
 
   const firstByte = pub.slice(0, 2);
 
-  if (pub.length === 130) {
-    if (firstByte === '04') return allHexChars(pub);
-    else return false;
-  }
+  // uncompressed public key
+  if (pub.length === 130 && firstByte === '04') return allHexChars(pub);
 
-  if (firstByte !== '02' && firstByte !== '03') return false;
+  // compressed public key
+  if (firstByte === '02' || firstByte === '03') return allHexChars(pub);
 
-  return allHexChars(pub);
+  return false;
 }
 
 /**
