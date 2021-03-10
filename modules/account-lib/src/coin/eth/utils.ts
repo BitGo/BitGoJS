@@ -1,4 +1,4 @@
-import { Buffer } from 'buffer';
+import {Buffer} from 'buffer';
 import assert from 'assert';
 import {
   addHexPrefix,
@@ -10,39 +10,38 @@ import {
   stripHexPrefix,
   toBuffer,
 } from 'ethereumjs-util';
-import { coins, BaseCoin, Erc20Coin, CeloCoin, NetworkType, ContractAddressDefinedToken } from '@bitgo/statics';
+import {BaseCoin, coins, ContractAddressDefinedToken, NetworkType} from '@bitgo/statics';
 import EthereumAbi from 'ethereumjs-abi';
 import EthereumCommon from 'ethereumjs-common';
 import * as BN from 'bn.js';
 import BigNumber from 'bignumber.js';
-import { BuildTransactionError, InvalidTransactionError, SigningError } from '../baseCoin/errors';
-import { TransactionType } from '../baseCoin';
+import {BuildTransactionError, InvalidTransactionError, SigningError} from '../baseCoin/errors';
+import {TransactionType} from '../baseCoin';
 import {
-  LockMethodId,
-  VoteMethodId,
-  UnlockMethodId,
   ActivateMethodId,
-  WithdrawMethodId,
+  LockMethodId,
+  UnlockMethodId,
   UnvoteMethodId,
+  VoteMethodId,
+  WithdrawMethodId,
 } from '../celo/stakingUtils';
-import { FlushTokensData, NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData } from './iface';
-import { KeyPair } from './keyPair';
+import {FlushTokensData, NativeTransferData, SignatureParts, TokenTransferData, TransferData, TxData} from './iface';
+import {KeyPair} from './keyPair';
 import {
   createForwarderMethodId,
-  flushForwarderTokensMethodId,
   flushCoinsMethodId,
-  flushTokensTypes,
   flushCoinsTypes,
+  flushForwarderTokensMethodId,
+  flushTokensTypes,
   sendMultisigMethodId,
   sendMultisigTokenMethodId,
   sendMultiSigTokenTypes,
   sendMultiSigTypes,
   walletInitializationFirstBytes,
-  walletSimpleByteCode,
   walletSimpleConstructor,
 } from './walletUtil';
-import { testnetCommon, mainnetCommon } from './resources';
-import { EthTransactionData } from './types';
+import {mainnetCommon, testnetCommon} from './resources';
+import {EthTransactionData} from './types';
 
 const commons: Map<NetworkType, EthereumCommon> = new Map<NetworkType, EthereumCommon>([
   [NetworkType.MAINNET, mainnetCommon],
@@ -333,9 +332,10 @@ export function classifyTransaction(data: string): TransactionType {
     return TransactionType.SingleSigSend;
   }
 
-  const transactionType = transactionTypesMap[data.slice(0, 10).toLowerCase()];
+  // TODO(STLX-1970): validate if we are going to constraint to some methods allowed
+  let transactionType = transactionTypesMap[data.slice(0, 10).toLowerCase()];
   if (transactionType === undefined) {
-    throw new BuildTransactionError(`Unrecognized transaction type: ${data}`);
+    transactionType = TransactionType.ContractCall;
   }
 
   return transactionType;
