@@ -58,3 +58,4 @@ manager.
 
 See [DEVELOPERS.md](https://github.com/BitGo/BitGoJS/blob/master/DEVELOPERS.md)
 
+<!-- testing PR builds from forks -->
