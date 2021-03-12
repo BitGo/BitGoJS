@@ -195,4 +195,8 @@ trigger:
   - rel/*
   - prod/production
 
+---
+kind: signature
+hmac: 920945bf8d2430c6c143f716593bf9aa023c35b954eab19a282c768373066c4a
+
 ...
