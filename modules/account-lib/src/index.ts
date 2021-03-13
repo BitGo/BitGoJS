@@ -13,6 +13,9 @@ export { Trx };
 import * as Xtz from './coin/xtz';
 export { Xtz };
 
+import * as Eos from './coin/eos';
+export { Eos }
+
 import * as Eth from './coin/eth';
 export { Eth };
 

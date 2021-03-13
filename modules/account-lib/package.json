@@ -47,6 +47,8 @@
     "bs58check": "^2.1.2",
     "casper-client-sdk": "1.0.20",
     "elliptic": "^6.5.2",
+    "eosjs": "^16.0.8",
+    "eosjs-ecc": "^4.0.4",
     "ethereumjs-abi": "^0.6.5",
     "ethereumjs-tx": "2.1.2",
     "ethereumjs-util": "5.2.0",
