@@ -3,18 +3,25 @@ import { BigNumberish } from '@ethersproject/bignumber';
 import { KeyPair } from '.';
 
 export interface CasperTransaction {
+  // mandatory fields
   hash: string;
   from: string;
   fee: Fee;
   deployType: string;
+  // optional fields
   startTime?: string;
   expiration?: number;
+  // transfer fields
   to?: string;
-  amount?: string;
+  amount?: string; // also used for delegate/undelegate
   transferId?: number;
+  // wallet init fields
   owner1?: string;
   owner2?: string;
   owner3?: string;
+  // delegate / undelegate fields
+  fromDelegate?: string;
+  validator?: string;
 }
 
 export interface CasperNode {
@@ -38,6 +45,17 @@ export interface CasperTransferTransaction {
   extraArguments: Map<string, CLValue>;
 }
 
+/**
+ * Delegate Session Required Data
+ */
+export interface CasperDelegateTransaction {
+  action: string;
+  delegator: PublicKey;
+  validator: PublicKey;
+  amount: BigNumberish;
+  extraArguments: Map<string, CLValue>;
+}
+
 export interface CasperModuleBytesTransaction {
   moduleBytes: Uint8Array;
   args: RuntimeArgs;
@@ -49,11 +67,13 @@ export interface Owner {
   weight: number;
 }
 
-export type ContractArgs = Record<
+export type WalletInitContractArgs = Record<
   // This typo is on purpose since the contract we use for multisig wallet initialization expect this argument to be written like this.
   'action' | 'deployment_thereshold' | 'key_management_threshold' | 'accounts' | 'weights',
   CLValue
 >;
+
+export type DelegateUndelegateContractArgs = Record<'action' | 'delegator' | 'validator' | 'amount', CLValue>;
 
 /**
  * Secp256k1 return type for sign operations

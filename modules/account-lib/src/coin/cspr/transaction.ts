@@ -7,14 +7,23 @@ import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { CasperTransaction } from './ifaces';
-import { OWNER_PREFIX, SECP256K1_PREFIX, TRANSACTION_TYPE } from './constants';
+import {
+  DELEGATE_FROM_ADDRESS,
+  DELEGATE_VALIDATOR,
+  OWNER_PREFIX,
+  SECP256K1_PREFIX,
+  TRANSACTION_TYPE,
+} from './constants';
 import {
   getTransferAmount,
   getTransferDestinationAddress,
   getTransferId,
   isValidPublicKey,
-  isWalletInitContract,
   removeAlgoPrefixFromHexValue,
+  getDeployType,
+  getDelegatorAddress,
+  getValidatorAddress,
+  getDelegateAmount,
 } from './utils';
 
 export class Transaction extends BaseTransaction {
@@ -35,8 +44,11 @@ export class Transaction extends BaseTransaction {
     if (!keys.prv) {
       throw new SigningError('Missing private key');
     }
-    if (this._deploy.approvals.some(ap => !ap.signer.startsWith(SECP256K1_PREFIX) ||
-      !isValidPublicKey(ap.signer.slice(2)))) {
+    if (
+      this._deploy.approvals.some(
+        ap => !ap.signer.startsWith(SECP256K1_PREFIX) || !isValidPublicKey(removeAlgoPrefixFromHexValue(ap.signer)),
+      )
+    ) {
       throw new SigningError('Invalid deploy. Already signed with an invalid key');
     }
     const secpKeys = new Keys.Secp256K1(
@@ -49,6 +61,7 @@ export class Transaction extends BaseTransaction {
 
   /**
    * Add a signature to this transaction and to and its deploy
+   *
    * @param {string} signature The signature to add, in string hex format
    * @param {KeyPair} keyPair The key pair that created the signature
    */
@@ -61,7 +74,11 @@ export class Transaction extends BaseTransaction {
     if (removeAlgoPrefixFromHexValue(pubKeyHex).toUpperCase() !== pub) {
       throw new SigningError('Signer does not match signature');
     }
-    const signedDeploy = DeployUtil.setSignature(this._deploy, signatureBuffer, PublicKey.fromSecp256K1(parsedPublicKey));
+    const signedDeploy = DeployUtil.setSignature(
+      this._deploy,
+      signatureBuffer,
+      PublicKey.fromSecp256K1(parsedPublicKey),
+    );
     const approval = _.last(signedDeploy.approvals) as Approval;
     if (removeAlgoPrefixFromHexValue(approval.signature) !== signature) {
       throw new SigningError('Invalid signature');
@@ -77,6 +94,7 @@ export class Transaction extends BaseTransaction {
     const txJson = DeployUtil.deployToJson(this.casperTx);
     this.setOwnersInJson(txJson);
     this.setTransfersFieldsInJson(txJson);
+    this.setDelegateFieldsInJson(txJson);
     return JSON.stringify(txJson);
   }
 
@@ -100,15 +118,29 @@ export class Transaction extends BaseTransaction {
       deployType: (this._deploy.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),
     };
 
-    if (this._deploy.session.isTransfer()) {
-      result.to = getTransferDestinationAddress(this._deploy.session);
-      result.amount = getTransferAmount(this._deploy.session);
-      result.transferId = getTransferId(this._deploy.session);
-    }
-    if (this._deploy.session.isModuleBytes() && isWalletInitContract(this._deploy.session.asModuleBytes())) {
-      result.owner1 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner1Index) as CLValue).asString();
-      result.owner2 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner2Index) as CLValue).asString();
-      result.owner3 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner3Index) as CLValue).asString();
+    const transactionType = getDeployType(this._deploy.session);
+
+    switch (transactionType) {
+      case TransactionType.Send:
+        result.to = getTransferDestinationAddress(this._deploy.session);
+        result.amount = getTransferAmount(this._deploy.session);
+        result.transferId = getTransferId(this._deploy.session);
+        break;
+      case TransactionType.WalletInitialization:
+        result.owner1 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner1Index) as CLValue).asString();
+        result.owner2 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner2Index) as CLValue).asString();
+        result.owner3 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner3Index) as CLValue).asString();
+        break;
+      case TransactionType.StakingLock:
+        result.fromDelegate = getDelegatorAddress(this.casperTx.session);
+        result.validator = getValidatorAddress(this.casperTx.session);
+        result.amount = getDelegateAmount(this.casperTx.session);
+        break;
+      case TransactionType.StakingUnlock:
+        result.fromDelegate = getDelegatorAddress(this.casperTx.session);
+        result.validator = getValidatorAddress(this.casperTx.session);
+        result.amount = getDelegateAmount(this.casperTx.session);
+        break;
     }
     return result;
   }
@@ -134,8 +166,13 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Set owners inside a json representing a wallet initialization tx.
+   *
+   * @param {Record<string, any>} txJson json to modify
+   */
   setOwnersInJson(txJson: Record<string, any>): void {
-    if (this.casperTx.session.isModuleBytes()) {
+    if (getDeployType(this.casperTx.session) === TransactionType.WalletInitialization) {
       const argName = 0;
       const argValue = 1;
       const owner0 = 0;
@@ -161,13 +198,21 @@ export class Transaction extends BaseTransaction {
     }
   }
 
+  /**
+   * Set transfer fields inside a json representing a transfer tx.
+   *
+   * @param {Record<string, any>} txJson json to modify
+   */
   setTransfersFieldsInJson(txJson: Record<string, any>): void {
-    if (this.casperTx.session.isTransfer()) {
+    if (getDeployType(this.casperTx.session) === TransactionType.Send) {
       const argName = 0;
       const argValue = 1;
 
       const transferValues = new Map();
-      transferValues.set(TRANSACTION_TYPE, (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString());
+      transferValues.set(
+        TRANSACTION_TYPE,
+        (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),
+      );
       transferValues.set('amount', getTransferAmount(this.casperTx.session));
       transferValues.set('to_address', getTransferDestinationAddress(this.casperTx.session));
       const transferId = getTransferId(this.casperTx.session);
@@ -178,6 +223,36 @@ export class Transaction extends BaseTransaction {
       txJson['deploy']!['session']['Transfer']['args'].forEach(arg => {
         if (transferValues.has(arg[argName])) {
           arg[argValue]['parsed'] = transferValues.get(arg[argName]);
+        }
+      });
+    }
+  }
+
+  /**
+   * Set delegate / undelegate fields inside a json representing the tx.
+   *
+   * @param {Record<string, any>} txJson json to modify
+   */
+  setDelegateFieldsInJson(txJson: Record<string, any>): void {
+    if (
+      getDeployType(this.casperTx.session) === TransactionType.StakingLock ||
+      getDeployType(this.casperTx.session) === TransactionType.StakingUnlock
+    ) {
+      const argName = 0;
+      const argValue = 1;
+
+      const delegateValues = new Map();
+      delegateValues.set(
+        TRANSACTION_TYPE,
+        (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),
+      );
+      delegateValues.set('amount', getDelegateAmount(this.casperTx.session));
+      delegateValues.set(DELEGATE_FROM_ADDRESS, getDelegatorAddress(this.casperTx.session));
+      delegateValues.set(DELEGATE_VALIDATOR, getValidatorAddress(this.casperTx.session));
+
+      txJson.deploy.session.moduleBytes.args.forEach(arg => {
+        if (delegateValues.has(arg[argName])) {
+          arg[argValue]['parsed'] = delegateValues.get(arg[argName]);
         }
       });
     }

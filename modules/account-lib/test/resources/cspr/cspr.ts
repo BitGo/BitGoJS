@@ -138,6 +138,8 @@ export const INVALID_NUMBER_OF_OWNERS_TWO_OF_THREE =
 
 export const INVALID_TRANSACTION_MISSING_FEE = 'Invalid transaction: missing fee';
 
+export const INVALID_TRANSACTION_MISSING_AMOUNT = 'Invalid transaction: missing amount';
+
 export const INVALID_TRANSACTION_MISSING_SOURCE = 'Invalid transaction: missing source';
 
 export const ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED = 'A maximum of 3 can sign the transaction.';

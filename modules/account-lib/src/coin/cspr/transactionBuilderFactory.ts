@@ -1,12 +1,14 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { DeployUtil } from 'casper-client-sdk';
 import { InvalidTransactionError, ParseTransactionError } from '../baseCoin/errors';
-import { BaseTransactionBuilderFactory } from '../baseCoin';
+import { BaseTransactionBuilderFactory, TransactionType } from '../baseCoin';
 import { WalletInitializationBuilder } from './walletInitializationBuilder';
 import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { isWalletInitContract } from './utils';
+import { getDeployType } from './utils';
+import { DelegateBuilder } from './delegateBuilder';
+import { UndelegateBuilder } from './undelegateBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -16,6 +18,26 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getWalletInitializationBuilder(tx?: Transaction): WalletInitializationBuilder {
     return this.initializeBuilder(tx, new WalletInitializationBuilder(this._coinConfig));
+  }
+
+  /**
+   * Initialize an undelegate builder
+   *
+   * @param {Transaction | undefined} tx - the transaction used to initialize the builder
+   * @returns {UndelegateBuilder} the builder initialized
+   */
+  getUndelegateBuilder(tx?: Transaction): UndelegateBuilder {
+    return this.initializeBuilder(tx, new UndelegateBuilder(this._coinConfig));
+  }
+
+  /**
+   * Initialize an delegate builder
+   *
+   * @param {Transaction | undefined} tx - the transaction used to initialize the builder
+   * @returns {DelegateBuilder} the builder initialized
+   */
+  getDelegateBuilder(tx?: Transaction): DelegateBuilder {
+    return this.initializeBuilder(tx, new DelegateBuilder(this._coinConfig));
   }
 
   /** @inheritDoc */
@@ -36,16 +58,18 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
 
     tx.casperTx = deployObject;
 
-    if (tx.casperTx.session.isTransfer()) {
-      return this.getTransferBuilder(tx);
-    } else if (tx.casperTx.session.isModuleBytes()) {
-      if (isWalletInitContract(tx.casperTx.session.asModuleBytes())) {
+    const casperDeployType = getDeployType(tx.casperTx.session);
+    switch (casperDeployType) {
+      case TransactionType.Send:
+        return this.getTransferBuilder(tx);
+      case TransactionType.WalletInitialization:
         return this.getWalletInitializationBuilder(tx);
-      } else {
-        throw new InvalidTransactionError('Invalid transaction' + tx.casperTx);
-      }
-    } else {
-      throw new InvalidTransactionError('Invalid transaction ' + tx.casperTx);
+      case TransactionType.StakingLock:
+        return this.getDelegateBuilder(tx);
+      case TransactionType.StakingUnlock:
+        return this.getUndelegateBuilder(tx);
+      default:
+        throw new InvalidTransactionError('Invalid transaction ' + tx.casperTx);
     }
   }
 
