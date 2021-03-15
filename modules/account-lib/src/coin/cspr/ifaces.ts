@@ -38,6 +38,14 @@ export interface CasperTransferTransaction {
   extraArguments: Map<string, CLValue>;
 }
 
+export interface CasperDelegateTransaction {
+  action: String;
+  delegator: PublicKey;
+  validator: PublicKey;
+  amount: BigNumberish;
+  extraArguments: Map<string, CLValue>;
+}
+
 export interface CasperModuleBytesTransaction {
   moduleBytes: Uint8Array;
   args: RuntimeArgs;

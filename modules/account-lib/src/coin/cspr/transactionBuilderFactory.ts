@@ -7,6 +7,7 @@ import { TransferBuilder } from './transferBuilder';
 import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
 import { isWalletInitContract } from './utils';
+import { DelegateBuilder } from './delegateBuilder';
 
 export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -16,6 +17,11 @@ export class TransactionBuilderFactory extends BaseTransactionBuilderFactory {
   /** @inheritdoc */
   getWalletInitializationBuilder(tx?: Transaction): WalletInitializationBuilder {
     return this.initializeBuilder(tx, new WalletInitializationBuilder(this._coinConfig));
+  }
+
+  /** @inheritdoc */
+  getDelegateBuilder(tx?: Transaction): DelegateBuilder {
+    return this.initializeBuilder(tx, new DelegateBuilder(this._coinConfig));
   }
 
   /** @inheritDoc */

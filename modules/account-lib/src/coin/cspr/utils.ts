@@ -7,7 +7,7 @@ import { ecdsaSign, ecdsaVerify } from 'secp256k1';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { DefaultKeys } from '../baseCoin/iface';
 import * as Crypto from './../../utils/crypto';
-import { SECP256K1_PREFIX, TRANSFER_TO_ADDRESS } from './constants';
+import { SECP256K1_PREFIX, TRANSFER_TO_ADDRESS, DELEGATE_VALIDATOR, DELEGATE_FROM_ADDRESS } from './constants';
 import { SignResponse } from './ifaces';
 import { KeyPair } from '.';
 
@@ -95,6 +95,38 @@ export function getTransferDestinationAddress(transferTx: ExecutableDeployItem):
   }
 
   return toAddress.asString();
+}
+
+/**
+ * Get destination address from deploy transfer session
+ *
+ * @param {ExecutableDeployItem} delegateTx transfer session
+ * @returns {string} the hex destination address of the transfer
+ */
+ export function getDelegatorAddress(delegateTx: ExecutableDeployItem): string {
+  const fromAddress = delegateTx.getArgByName(DELEGATE_FROM_ADDRESS);
+
+  if (!fromAddress || !fromAddress.isString()) {
+    throw new InvalidTransactionError('Transfer does not have a destination address defined');
+  }
+
+  return fromAddress.asString();
+}
+
+/**
+ * Get destination address from deploy transfer session
+ *
+ * @param {ExecutableDeployItem} delegateTx transfer session
+ * @returns {string} the hex destination address of the transfer
+ */
+ export function getValidatorAddress(delegateTx: ExecutableDeployItem): string {
+  const validatorAddress = delegateTx.getArgByName(DELEGATE_VALIDATOR);
+
+  if (!validatorAddress || !validatorAddress.isString()) {
+    throw new InvalidTransactionError('Transfer does not have a destination address defined');
+  }
+
+  return validatorAddress.asString();
 }
 
 /**

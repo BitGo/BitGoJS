@@ -13,7 +13,7 @@ import {
 } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, SignatureData } from './ifaces';
+import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, CasperDelegateTransaction, SignatureData } from './ifaces';
 import { isValidAddress } from './utils';
 import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
 import * as _ from "lodash";
@@ -24,7 +24,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _source: BaseAddress;
   protected _fee: Fee;
   private _transaction: Transaction;
-  protected _session: CasperTransferTransaction | CasperModuleBytesTransaction;
+  protected _session: CasperTransferTransaction | CasperModuleBytesTransaction | CasperDelegateTransaction;
   protected _expiration: number;
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
