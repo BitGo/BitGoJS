@@ -37,6 +37,9 @@ export { Cspr };
 import * as Xrp from './coin/xrp';
 export { Xrp };
 
+import * as Stx from './coin/stx';
+export { Stx };
+
 const coinBuilderMap = {
   trx: Trx.WrappedBuilder,
   ttrx: Trx.WrappedBuilder,
