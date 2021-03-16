@@ -38,6 +38,9 @@ export interface CasperTransferTransaction {
   extraArguments: Map<string, CLValue>;
 }
 
+/**
+ * Delegate Session Required Data 
+ */
 export interface CasperDelegateTransaction {
   action: string;
   delegator: PublicKey;

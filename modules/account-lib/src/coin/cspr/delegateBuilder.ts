@@ -20,6 +20,11 @@ export class DelegateBuilder extends TransactionBuilder {
   private _action: string;
   private _amount: string;
 
+  /**
+   * Public constructor.
+   *
+   * @param {CoinConfig} _coinConfig Coin configuration object
+   */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
     this._action = 'delegate';
@@ -110,6 +115,12 @@ export class DelegateBuilder extends TransactionBuilder {
   //endregion
 
   //region Validators
+
+  /**
+   * Validate mandatory fields in the class
+   * 
+   * @throws {Error} In case of missing or invalid fields
+   */
   validateMandatoryFields(): void {
     if (!this._validator) {
       throw new BuildTransactionError('Invalid transaction: missing validator');
