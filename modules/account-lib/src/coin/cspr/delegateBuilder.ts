@@ -2,10 +2,16 @@ import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { CLValue, PublicKey } from 'casper-client-sdk';
 import { BuildTransactionError, InvalidParameterValueError, SigningError } from '../baseCoin/errors';
 import { BaseKey } from '../baseCoin/iface';
-import { TransactionType } from '../baseCoin';
+import { TransactionType, StakingOperationTypes } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { SECP256K1_PREFIX, TRANSACTION_TYPE, DELEGATE_VALIDATOR, DELEGATE_FROM_ADDRESS } from './constants';
+import {
+  SECP256K1_PREFIX,
+  TRANSACTION_TYPE,
+  DELEGATE_VALIDATOR,
+  DELEGATE_FROM_ADDRESS,
+  STAKING_TYPE,
+} from './constants';
 import { isValidAmount, isValidAddress, getTransferAmount, getDelegatorAddress, getValidatorAddress } from './utils';
 
 export class DelegateBuilder extends TransactionBuilder {
@@ -24,6 +30,7 @@ export class DelegateBuilder extends TransactionBuilder {
     const extraArguments = new Map<string, CLValue>();
     if (this._delegator && this._validator) {
       extraArguments.set(TRANSACTION_TYPE, CLValue.string(TransactionType[TransactionType.StakingLock]));
+      extraArguments.set(STAKING_TYPE, CLValue.string(StakingOperationTypes[StakingOperationTypes.LOCK]));
       // TODO(STLX-1691): We are send the destination address as string until impediment STLX-1691 is fixed.
       // After that we will change this to send an instance of PublicKey instead.
       extraArguments.set(DELEGATE_FROM_ADDRESS, CLValue.string(this._delegator));

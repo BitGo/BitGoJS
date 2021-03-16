@@ -22,6 +22,11 @@ export abstract class BaseTransactionBuilderFactory {
   public abstract getWalletInitializationBuilder();
 
   /**
+   * Returns an specific builder to create a staking transaction for delegate
+   */
+  public abstract getDelegateBuilder();
+
+  /**
    * Returns a specific builder to create a funds transfer transaction
    */
   public abstract getTransferBuilder();

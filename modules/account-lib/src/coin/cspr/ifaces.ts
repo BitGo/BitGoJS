@@ -39,7 +39,7 @@ export interface CasperTransferTransaction {
 }
 
 export interface CasperDelegateTransaction {
-  action: String;
+  action: string;
   delegator: PublicKey;
   validator: PublicKey;
   amount: BigNumberish;

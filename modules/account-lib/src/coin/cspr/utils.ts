@@ -98,28 +98,28 @@ export function getTransferDestinationAddress(transferTx: ExecutableDeployItem):
 }
 
 /**
- * Get destination address from deploy transfer session
+ * Get delegator address from deploy delegate or undelegate session
  *
  * @param {ExecutableDeployItem} delegateTx transfer session
  * @returns {string} the hex destination address of the transfer
  */
- export function getDelegatorAddress(delegateTx: ExecutableDeployItem): string {
-  const fromAddress = delegateTx.getArgByName(DELEGATE_FROM_ADDRESS);
+export function getDelegatorAddress(delegateTx: ExecutableDeployItem): string {
+  const delegatorAddress = delegateTx.getArgByName(DELEGATE_FROM_ADDRESS);
 
-  if (!fromAddress || !fromAddress.isString()) {
+  if (!delegatorAddress || !delegatorAddress.isString()) {
     throw new InvalidTransactionError('Transfer does not have a destination address defined');
   }
 
-  return fromAddress.asString();
+  return delegatorAddress.asString();
 }
 
 /**
- * Get destination address from deploy transfer session
+ * Get validator address from deploy delegate or undelegate session
  *
  * @param {ExecutableDeployItem} delegateTx transfer session
  * @returns {string} the hex destination address of the transfer
  */
- export function getValidatorAddress(delegateTx: ExecutableDeployItem): string {
+export function getValidatorAddress(delegateTx: ExecutableDeployItem): string {
   const validatorAddress = delegateTx.getArgByName(DELEGATE_VALIDATOR);
 
   if (!validatorAddress || !validatorAddress.isString()) {

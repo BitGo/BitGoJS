@@ -13,7 +13,13 @@ import {
 } from '../baseCoin/errors';
 import { Transaction } from './transaction';
 import { KeyPair } from './keyPair';
-import { Fee, CasperModuleBytesTransaction, CasperTransferTransaction, CasperDelegateTransaction, SignatureData } from './ifaces';
+import {
+  Fee,
+  CasperModuleBytesTransaction,
+  CasperTransferTransaction,
+  CasperDelegateTransaction,
+  SignatureData,
+} from './ifaces';
 import { isValidAddress } from './utils';
 import { SECP256K1_PREFIX, CHAIN_NAME, TRANSACTION_EXPIRATION } from './constants';
 import * as _ from "lodash";

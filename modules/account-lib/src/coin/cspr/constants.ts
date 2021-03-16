@@ -8,4 +8,5 @@ export const TRANSFER_TO_ADDRESS = 'to_address';
 export const DELEGATE_FROM_ADDRESS = 'from_address';
 export const TRANSACTION_TYPE = 'deploy_type';
 export const DELEGATE_VALIDATOR = 'validator';
+export const STAKING_TYPE = 'staking_type';
 // #endregion
