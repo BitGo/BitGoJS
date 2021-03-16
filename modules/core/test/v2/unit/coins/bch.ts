@@ -291,5 +291,27 @@ describe('BCH:', function() {
       const { pub } = tbch.keychains().create();
       tbch.isValidPub(pub).should.equal(true);
     });
+
+    it('should fail to sign a prebuilt transaction with only a public key', co(function *() {
+      const tbch = bitgo.coin('tbch');
+
+        yield tbch.signTransaction({
+          txPrebuild: {
+            txHex: '010000000144dea5cb05425f94976e887ccba5686a9a12a3f49710b021508d3d9cd8de16b80100000000ffffffff02e803000000000000116a0f426974476f2070327368207465737440a107000000000017a914d039cb3344294a5a384a5508a006444c420cbc118700000000',
+            txInfo: {
+              unspents: [{
+                address: '2NCEDmmKNNnqKvnWw7pE3RLzuFe5aHHVy1X',
+                chain: 0,
+                index: 13,
+                value: 504422,
+                txid: 'b816ded89c3d8d5021b01097f4a3129a6a68a5cb7c886e97945f4205cba5de44',
+                redeemScript: '5221031cd227e40ad61b4e137109cb2845eb6f5a584ed5c67d9d3135cdaa5045a842ea2103a2e7b54c7b2da0992555353b8e26c6acff4248f4351f08787bf3e2efc94b658321025c2a6cde33c2d73ccf12eecf64c54f08f722c2f073824498950695e9883b141253ae'
+              }]
+            }
+          },
+          prv: "xpub661MyMwAqRbcGpyL5QvWah4XZYHuTK21mSQ4NVwYaX67A35Kzb42nmTdf2WArW4tettXrWpfpwFbEFdEVqcSvnHLB8F6p1D41ssmbnRMXpc",
+        }).should.be.rejectedWith('expected user private key but received public key');
+    }));
+
   });
 });

@@ -45,7 +45,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.accountHash, 'To address was not the expected one');
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey, 'To address was not the expected one');
         should.equal(txJson.amount, '10', 'Amount was not as expected');
       });
 
@@ -82,7 +82,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.accountHash, 'To address was not the expected one');
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey, 'To address was not the expected one');
         should.equal(txJson.amount, '10', 'Amount does not match expected');
       });
 
@@ -115,7 +115,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.accountHash, 'To address was not the expected one');
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey, 'To address was not the expected one');
         should.equal(txJson.amount, '0', 'Amount does not match expected');
       });
 
@@ -140,7 +140,7 @@ describe('Casper Transfer Builder', () => {
         should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
         should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
 
-        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.accountHash, 'To address was not the expected one');
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey, 'To address was not the expected one');
         should.equal(txJson.amount, '10', 'Amount does not match expected');
       });
     });
@@ -152,10 +152,60 @@ describe('Casper Transfer Builder', () => {
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
 
+          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
+
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
           const tx2 = (await builder2.build()) as Transaction;
           const tx2Json = tx2.toJson();
+
+          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
 
           should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
         });
@@ -166,10 +216,60 @@ describe('Casper Transfer Builder', () => {
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
 
+          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
+
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
           const tx2 = (await builder2.build()) as Transaction;
           const tx2Json = tx2.toJson();
+
+          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
 
           should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
           should.deepEqual(
@@ -186,10 +286,60 @@ describe('Casper Transfer Builder', () => {
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
 
+          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
+
           const builder2 = factory.getTransferBuilder();
           builder2.from(tx.toBroadcastFormat());
           const tx2 = (await builder2.build()) as Transaction;
           const tx2Json = tx2.toJson();
+
+          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
 
           should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
           should.deepEqual(
@@ -331,6 +481,25 @@ describe('Casper Transfer Builder', () => {
         },
         e => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
       );
+    });
+  });
+
+  describe('txJson validation', () => {
+    it('contains all required fields for Transfer', async () => {
+      const txBuilder = initTxTransferBuilder();
+      txBuilder.amount('10');
+      txBuilder.sign({ key: testData.ACCOUNT_1.privateKey });
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.fee, testData.FEE);
+      should.equal(txJson.deployType, 'Send');
+      should.equal(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey);
+      should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
+
+      should.equal(txJson.amount, '10');
+      should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey);
+      should.equal(txJson.transferId, 255);
     });
   });
 });

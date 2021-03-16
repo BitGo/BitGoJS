@@ -160,3 +160,10 @@ export class InvalidKeyPathError extends BitGoJsError {
     Object.setPrototypeOf(this, InvalidKeyPathError.prototype);
   }
 }
+
+export class InvalidTransactionError extends BitGoJsError {
+  public constructor(message?: string) {
+    super(message || 'Invalid transaction');
+    Object.setPrototypeOf(this, InvalidTransactionError.prototype);
+  }
+}

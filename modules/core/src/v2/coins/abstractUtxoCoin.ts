@@ -1064,6 +1064,12 @@ export abstract class AbstractUtxoCoin extends BaseCoin {
       }
 
       const keychain = bitcoin.HDNode.fromBase58(userPrv);
+
+      if (keychain.toBase58() === keychain.neutered().toBase58()) {
+        throw new Error('expected user private key but received public key');
+      }
+      debug(`Here is the public key of the xprv you used to sign: ${keychain.neutered().toBase58()}`);
+
       const keychainHdPath = hdPath(keychain);
       const txb = bitcoin.TransactionBuilder.fromTransaction(transaction, self.network);
       self.prepareTransactionBuilder(txb);

@@ -6,11 +6,15 @@ export interface CasperTransaction {
   hash: string;
   from: string;
   fee: Fee;
+  deployType: string;
   startTime?: string;
   expiration?: number;
   to?: string;
   amount?: string;
   transferId?: number;
+  owner1?: string;
+  owner2?: string;
+  owner3?: string;
 }
 
 export interface CasperNode {
