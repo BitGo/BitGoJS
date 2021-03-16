@@ -1,27 +1,27 @@
-import { Promise as BluebirdPromise } from 'bluebird'; 
+import { Promise as BluebirdPromise } from 'bluebird';
 import { Cspr as CsprAccountLib, register } from '@bitgo/account-lib';
 import { TestBitGo } from '../../../lib/test_bitgo';
-import { Tcspr } from '../../../../src/v2/coins';
-import { Cspr } from '../../../../src/v2/coins';
+import { Cspr, Tcspr } from '../../../../src/v2/coins';
+import { ExplainTransactionOptions, TransactionFee } from '../../../../src/v2/coins/cspr';
 import { Transaction } from '@bitgo/account-lib/dist/src/coin/cspr/transaction';
 import { randomBytes } from 'crypto';
 
 const co = BluebirdPromise.coroutine;
 
-describe('Casper', function () {
+describe('Casper', function() {
   const coinName = 'tcspr';
   let bitgo;
   let basecoin;
 
   before(function() {
     bitgo = new TestBitGo({
-      env: 'mock'
+      env: 'mock',
     });
     bitgo.initializeTestVars();
     basecoin = bitgo.coin(coinName);
   });
 
-  it('should instantiate the coin', function () {
+  it('should instantiate the coin', function() {
     let localBasecoin = bitgo.coin('tcspr');
     localBasecoin.should.be.an.instanceof(Tcspr);
 
@@ -29,22 +29,22 @@ describe('Casper', function () {
     localBasecoin.should.be.an.instanceof(Cspr);
   });
 
-  it('should return tcspr', function () {
+  it('should return tcspr', function() {
     basecoin.getChain().should.equal('tcspr');
   });
 
-  it('should return full name', function () {
+  it('should return full name', function() {
     basecoin.getFullName().should.equal('Testnet Casper');
   });
 
   describe('Keypairs:', () => {
-    it('should generate a keypair from random seed', function () {
+    it('should generate a keypair from random seed', function() {
       const keyPair = basecoin.generateKeyPair();
       keyPair.should.have.property('pub');
       keyPair.should.have.property('prv');
     });
 
-    it('should generate a keypair from a seed', function () {
+    it('should generate a keypair from a seed', function() {
       const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f';
       const seed = Buffer.from(seedText, 'hex');
       const keyPair = basecoin.generateKeyPair(seed);
@@ -226,11 +226,83 @@ describe('Casper', function () {
         true,
       );
     });
-  
+
     it('should fail with missing private key', async () => {
       const keyPair = new CsprAccountLib.KeyPair({ pub: '029F697A02355839A02157E87721F7C44EE45DE9B891266BE065FD7F9B4EB31B88' }).getKeys();
       const messageToSign = Buffer.from(randomBytes(32)).toString('hex');
       basecoin.signMessage(keyPair, messageToSign).should.be.rejectedWith('Invalid key pair options');
+    });
+  });
+
+  describe('Explain Transaction', () => {
+    const factory = register(coinName, CsprAccountLib.TransactionBuilderFactory);
+    const sourceKeyPairObject = new CsprAccountLib.KeyPair();
+    const sourceKeyPair = sourceKeyPairObject.getKeys();
+    const targetKeyPair = new CsprAccountLib.KeyPair().getKeys();
+    let txBuilder;
+    const transferAmount = '25000000';
+    const transferId = 123;
+
+    before(function() {
+      txBuilder = factory.getTransferBuilder();
+      txBuilder
+        .fee({ gasLimit: '10000', gasPrice: '10' })
+        .source({ address: sourceKeyPair.pub })
+        .to(targetKeyPair.pub)
+        .amount(transferAmount)
+        .transferId(transferId);
+    });
+
+    it('should explain a half signed transaction', async () => {
+      const tx = (await txBuilder.build()) as Transaction;
+      const signTxparams = {
+        txPrebuild: {
+          txJson: tx.toBroadcastFormat(),
+        },
+        prv: sourceKeyPair.prv,
+      };
+      const { halfSigned } = await basecoin.signTransaction(signTxparams, () => {});
+
+      const feeInfo: TransactionFee = {
+        gasLimit: '1',
+        gasPrice: '11000',
+      };
+      const explainTxParams: ExplainTransactionOptions = {
+        halfSigned: {
+          txHex: halfSigned.txJson,
+        },
+        fee: feeInfo,
+      };
+      const explainedTx = await basecoin.explainTransaction(explainTxParams, () => {});
+      explainedTx.should.have.properties([
+        'displayOrder',
+        'id',
+        'outputs',
+        'outputAmount',
+        'transferId',
+        'fee',
+        'changeOutputs',
+        'changeAmount',
+      ]);
+      explainedTx.fee.should.equal(feeInfo);
+      explainedTx.outputs.length.should.equal(1);
+      explainedTx.outputs.forEach(output => {
+        output.amount.should.equal(transferAmount);
+        output.address.should.equal(targetKeyPair.pub);
+        output.coin.should.equal(basecoin.getChain());
+      });
+      explainedTx.outputAmount.should.equal(transferAmount);
+      explainedTx.transferId.should.equal(transferId);
+    });
+
+    it('should fail when a tx is not passed as parameter', async () => {
+      const explainTxParams = {
+        fee: {
+          gasLimit: '1',
+          gasPrice: '11000',
+        },
+      };
+      await basecoin.explainTransaction(explainTxParams, () => {}).should.be.rejectedWith('missing explain tx parameters');
     });
   });
 });

@@ -4,6 +4,7 @@
 import * as Bluebird from 'bluebird';
 import * as accountLib from '@bitgo/account-lib';
 import { ECPair } from '@bitgo/utxo-lib';
+import BigNumber from 'bignumber.js';
 
 import {
   BaseCoin,
@@ -13,6 +14,7 @@ import {
   VerifyTransactionOptions,
   SignTransactionOptions as BaseSignTransactionOptions,
   TransactionPrebuild as BaseTransactionPrebuild,
+  TransactionExplanation,
 } from '../baseCoin';
 
 import { NodeCallback } from '../types';
@@ -31,8 +33,27 @@ export interface TransactionPrebuild extends BaseTransactionPrebuild {
   txJson: string;
 }
 
+export interface TransactionFee {
+  gasLimit: string;
+  gasPrice: string;
+}
+
+export interface ExplainTransactionOptions {
+  txHex?: string;
+  halfSigned?: {
+    txHex: string;
+  };
+  fee: TransactionFee;
+}
+
 interface SupplementGenerateWalletOptions {
   rootPrivateKey?: string;
+}
+
+interface TransactionOutput {
+  address: string;
+  amount: string;
+  coin: string;
 }
 
 export class Cspr extends BaseCoin {
@@ -197,6 +218,69 @@ export class Cspr extends BaseCoin {
       const messageHex = message instanceof Buffer ? message.toString('hex') : message;
       const signatureData = accountLib.Cspr.Utils.signMessage(keyPair, messageHex);
       return Buffer.from(signatureData.signature).toString('hex');
+    })
+      .call(this)
+      .asCallback(callback);
+  }
+
+  /**
+   * Explain a Casper transaction from Raw Tx
+   *
+   * @param {ExplainTransactionOptions} params given explain transaction params
+   * @param {String} params.txHex raw transaction
+   * @param {String} params.halfSigned.txHex raw half signed transaction
+   * @param {TransactionFee} fee fee information
+   * @param {Function} callback
+   * @returns Bluebird<TransactionExplanation>
+   */
+  explainTransaction(
+    params: ExplainTransactionOptions,
+    callback?: NodeCallback<TransactionExplanation>
+  ): Bluebird<TransactionExplanation> {
+    const self = this;
+    return co<TransactionExplanation>(function*() {
+      const txHex = params.txHex || (params.halfSigned && params.halfSigned.txHex);
+      if (!txHex || !params.fee) {
+        throw new Error('missing explain tx parameters');
+      }
+      const txBuilder = accountLib.getBuilder(self.getChain()).from(txHex);
+
+      const tx: any = yield txBuilder.build();
+      if (!tx) {
+        throw new InvalidTransactionError('Error while trying to build transaction');
+      }
+      const id = Buffer.from(tx.casperTx.hash).toString('hex');
+      const transferId = accountLib.Cspr.Utils.getTransferId(tx.casperTx.session);
+      const amount = accountLib.Cspr.Utils.getTransferAmount(tx.casperTx.session);
+      const toAddress = accountLib.Cspr.Utils.getTransferDestinationAddress(tx._deploy.session);
+      const outputs: TransactionOutput[] = [];
+      // TODO(https://bitgoinc.atlassian.net/browse/STLX-677): define outputs for different types of tx
+      if (tx.type === accountLib.BaseCoin.TransactionType.Send) {
+        outputs.push({
+          address: toAddress,
+          amount,
+          coin: self.getChain(),
+        });
+      }
+      const outputAmount = outputs
+        .reduce((acumulator, output) => {
+          const currentValue = new BigNumber(output.amount);
+          return acumulator.plus(currentValue);
+        }, new BigNumber(0))
+        .toFixed(0);
+
+      const displayOrder = ['id', 'outputAmount', 'changeAmount', 'outputs', 'changeOutputs', 'transferId', 'fee'];
+
+      return {
+        displayOrder,
+        id,
+        outputs,
+        outputAmount,
+        changeOutputs: [], // account based does not use change outputs
+        changeAmount: '0', // account base does not make change
+        transferId,
+        fee: params.fee,
+      };
     })
       .call(this)
       .asCallback(callback);
