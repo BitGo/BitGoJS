@@ -1,12 +1,12 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import { CLTypedAndToBytesHelper, CLValue, PublicKey, RuntimeArgs } from 'casper-client-sdk';
-import { BuildTransactionError, InvalidTransactionError } from '../baseCoin/errors';
+import { BuildTransactionError } from '../baseCoin/errors';
 import { TransactionType } from '../baseCoin';
 import { TransactionBuilder, DEFAULT_M, DEFAULT_N } from './transactionBuilder';
 import { Transaction } from './transaction';
-import { Owner, ContractArgs } from './ifaces';
-import { walletInitContractHexCode } from './utils';
-import { OWNER_PREFIX, SECP256K1_PREFIX, TRANSACTION_TYPE } from './constants';
+import { Owner, WalletInitContractArgs } from './ifaces';
+import { casperContractHexCode } from './utils';
+import { OWNER_PREFIX, SECP256K1_PREFIX, TRANSACTION_TYPE, WALLET_INITIALIZATION_CONTRACT_ACTION } from './constants';
 
 const DEFAULT_OWNER_WEIGHT = 1;
 export class WalletInitializationBuilder extends TransactionBuilder {
@@ -15,7 +15,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._contract = Uint8Array.from(Buffer.from(walletInitContractHexCode, 'hex'));
+    this._contract = Uint8Array.from(Buffer.from(casperContractHexCode, 'hex'));
   }
 
   // region Base Builder
@@ -39,9 +39,9 @@ export class WalletInitializationBuilder extends TransactionBuilder {
 
   /**
    * Build args needed to create a session, then we can send this session with the contract
-   * @returns {ContractArgs} contracts args to create a session
+   * @returns {WalletInitContractArgs} contracts args to create a session
    */
-  private buildWalletParameters(): ContractArgs {
+  private buildWalletParameters(): WalletInitContractArgs {
     const accounts = this._owners.map(owner => CLTypedAndToBytesHelper.bytes(owner.address.toAccountHash()));
     const weights = this._owners.map(owner => CLTypedAndToBytesHelper.u8(owner.weight));
 
@@ -52,7 +52,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
     weights.push(CLTypedAndToBytesHelper.u8(0));
 
     return {
-      action: CLValue.string('set_all'),
+      action: CLValue.string(WALLET_INITIALIZATION_CONTRACT_ACTION),
       // This typo is on purpose since the contract we use for multisig wallet initialization expect this argument to be written like this.
       deployment_thereshold: CLValue.u8(DEFAULT_N),
       key_management_threshold: CLValue.u8(DEFAULT_M),

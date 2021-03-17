@@ -39,7 +39,7 @@ export interface CasperTransferTransaction {
 }
 
 /**
- * Delegate Session Required Data 
+ * Delegate Session Required Data
  */
 export interface CasperDelegateTransaction {
   action: string;
@@ -60,9 +60,15 @@ export interface Owner {
   weight: number;
 }
 
-export type ContractArgs = Record<
+export type WalletInitContractArgs = Record<
   // This typo is on purpose since the contract we use for multisig wallet initialization expect this argument to be written like this.
   'action' | 'deployment_thereshold' | 'key_management_threshold' | 'accounts' | 'weights',
+  CLValue
+>;
+
+export type DelegateUndelegateContractArgs = Record<
+  // This typo is on purpose since the contract we use for multisig wallet initialization expect this argument to be written like this.
+  'action' | 'delegator' | 'validator' | 'amount',
   CLValue
 >;
 

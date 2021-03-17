@@ -13,8 +13,8 @@ import {
   getTransferDestinationAddress,
   getTransferId,
   isValidPublicKey,
-  isWalletInitContract,
   removeAlgoPrefixFromHexValue,
+  getDeployType,
 } from './utils';
 
 export class Transaction extends BaseTransaction {
@@ -100,15 +100,19 @@ export class Transaction extends BaseTransaction {
       deployType: (this._deploy.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),
     };
 
-    if (this._deploy.session.isTransfer()) {
-      result.to = getTransferDestinationAddress(this._deploy.session);
-      result.amount = getTransferAmount(this._deploy.session);
-      result.transferId = getTransferId(this._deploy.session);
-    }
-    if (this._deploy.session.isModuleBytes() && isWalletInitContract(this._deploy.session.asModuleBytes())) {
-      result.owner1 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner1Index) as CLValue).asString();
-      result.owner2 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner2Index) as CLValue).asString();
-      result.owner3 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner3Index) as CLValue).asString();
+    const transactionType = getDeployType(this._deploy.session);
+
+    switch (transactionType) {
+      case TransactionType.Send:
+        result.to = getTransferDestinationAddress(this._deploy.session);
+        result.amount = getTransferAmount(this._deploy.session);
+        result.transferId = getTransferId(this._deploy.session);
+        break;
+      case TransactionType.WalletInitialization:
+        result.owner1 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner1Index) as CLValue).asString();
+        result.owner2 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner2Index) as CLValue).asString();
+        result.owner3 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner3Index) as CLValue).asString();
+        break;
     }
     return result;
   }
