@@ -1,10 +1,10 @@
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { BaseKey } from '../baseCoin/iface';
 import { NotImplementedError } from '../baseCoin/errors';
-import { TransactionBuilder } from './transactionBuilder';
 import { Transaction } from './transaction';
+import { TransactionBuilder } from './transactionBuilder';
 
-export class TransferBuilder extends TransactionBuilder {
+export class WalletInitializationBuilder extends TransactionBuilder {
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
   }

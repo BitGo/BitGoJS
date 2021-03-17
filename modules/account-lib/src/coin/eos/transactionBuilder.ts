@@ -1,608 +1,132 @@
-import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
-import EthereumCommon from 'ethereumjs-common';
-import EthereumAbi from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
-import { RLP } from 'ethers/utils';
-import * as Crypto from '../../utils/crypto';
-import { BaseTransaction, BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { BaseCoin as CoinConfig } from '@bitgo/statics';
+import { BaseTransactionBuilder, TransactionType } from '../baseCoin';
+import { BuildTransactionError, InvalidTransactionError, ParseTransactionError, SigningError, NotImplementedError } from '../baseCoin/errors';
 import { BaseAddress, BaseKey } from '../baseCoin/iface';
-import { Transaction, TransferBuilder, Utils } from '../eth';
-import {
-  BuildTransactionError,
-  InvalidTransactionError,
-  ParseTransactionError,
-  SigningError,
-} from '../baseCoin/errors';
-import { KeyPair } from './keyPair';
-import { Fee, SignatureParts, TxData } from './iface';
-import {
-  calculateForwarderAddress,
-  flushCoinsData,
-  flushTokensData,
-  getAddressInitializationData,
-  getCommon,
-  hasSignature,
-  isValidEthAddress,
-} from './utils';
-import { walletSimpleByteCode, walletSimpleConstructor } from './walletUtil';
+import { Transaction } from './transaction';
+import { promises } from 'dns';
+import { Key } from './iface';
+import * as EosJs from 'eosjs';
+import { Buffer } from 'buffer';
 
-const DEFAULT_M = 3;
-
-/**
- * Ethereum transaction builder.
- */
 export class TransactionBuilder extends BaseTransactionBuilder {
-  protected _type: TransactionType;
-  protected _common: EthereumCommon;
   private _transaction: Transaction;
-  private _sourceKeyPair: KeyPair;
-  private _counter: number;
-  private _fee: Fee;
-  private _value: string;
+  private _serializedTransaction: string;
+  private _type: TransactionType;
 
-  // the signature on the external ETH transaction
-  private _txSignature: SignatureParts;
-
-  // Wallet initialization transaction parameters
-  private _walletOwnerAddresses: string[];
-
-  // flush tokens parameters
-  private _forwarderAddress: string;
-  private _tokenAddress: string;
-
-  // Send and AddressInitialization transaction specific parameters
-  protected _transfer: TransferBuilder;
-  private _contractAddress: string;
-  private _contractCounter: number;
-
-  // generic contract call builder
-  // encoded contract call hex
-  private _data: string;
-
-  /**
-   * Public constructor.
-   *
-   * @param _coinConfig
-   */
   constructor(_coinConfig: Readonly<CoinConfig>) {
     super(_coinConfig);
-    this._common = getCommon(this._coinConfig.network.type);
     this._type = TransactionType.Send;
-    this._counter = 0;
-    this._value = '0';
-    this._walletOwnerAddresses = [];
-    this.transaction = new Transaction(this._coinConfig, this._common);
-  }
-
-  /** @inheritdoc */
-  protected async buildImplementation(): Promise<BaseTransaction> {
-    const transactionData = this.getTransactionData();
-
-    if (this._txSignature) {
-      Object.assign(transactionData, this._txSignature);
-    }
-
-    this.transaction.setTransactionType(this._type);
-    transactionData.from = this._sourceKeyPair ? this._sourceKeyPair.getAddress() : undefined;
-    this.transaction.setTransactionData(transactionData);
-
-    // Build and sign a new transaction based on the latest changes
-    if (this._sourceKeyPair && this._sourceKeyPair.getKeys().prv) {
-      await this.transaction.sign(this._sourceKeyPair);
-    }
-    return this.transaction;
-  }
-
-  protected getTransactionData(): TxData {
-    switch (this._type) {
-      case TransactionType.WalletInitialization:
-        return this.buildWalletInitializationTransaction();
-      case TransactionType.Send:
-        return this.buildSendTransaction();
-      case TransactionType.AddressInitialization:
-        return this.buildAddressInitializationTransaction();
-      case TransactionType.FlushTokens:
-        return this.buildFlushTokensTransaction();
-      case TransactionType.FlushCoins:
-        return this.buildFlushCoinsTransaction();
-      case TransactionType.SingleSigSend:
-        return this.buildBase('0x');
-      case TransactionType.ContractCall:
-        return this.buildGenericContractCallTransaction();
-      default:
-        throw new BuildTransactionError('Unsupported transaction type');
-    }
-  }
-
-  /** @inheritdoc */
-  protected fromImplementation(rawTransaction: string): Transaction {
-    let tx: Transaction;
-    if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
-      tx = Transaction.fromSerialized(this._coinConfig, this._common, rawTransaction);
-      this.loadBuilderInput(tx.toJson());
-    } else {
-      const txData = JSON.parse(rawTransaction);
-      tx = new Transaction(this._coinConfig, txData);
-    }
-    return tx;
+    // this._transaction = new Transaction(_coinConfig);
   }
 
   /**
-   * Load the builder data using the deserialized transaction
+   * Initialize the transaction builder fields using the decoded transaction data
    *
-   * @param {TxData} transactionJson the deserialized transaction json
+   * @param {Transaction} tx the transaction data
    */
-  protected loadBuilderInput(transactionJson: TxData): void {
-    const decodedType = Utils.classifyTransaction(transactionJson.data);
-    this.type(decodedType);
-    this.fee({ fee: transactionJson.gasPrice, gasLimit: transactionJson.gasLimit });
-    this.counter(transactionJson.nonce);
-    this.value(transactionJson.value);
-    if (hasSignature(transactionJson)) {
-      this._txSignature = { v: transactionJson.v!, r: transactionJson.r!, s: transactionJson.s! };
-    }
-    this.setTransactionTypeFields(decodedType, transactionJson);
+  initBuilder(tx: Transaction): void {
+    throw new NotImplementedError('initBuilder not implemented');
   }
 
-  protected setTransactionTypeFields(decodedType: TransactionType, transactionJson: TxData): void {
-    switch (decodedType) {
-      case TransactionType.WalletInitialization:
-        const owners = Utils.decodeWalletCreationData(transactionJson.data);
-        owners.forEach(element => {
-          this.owner(element);
-        });
-        break;
-      case TransactionType.FlushTokens:
-        this.setContract(transactionJson.to);
-        const { forwarderAddress, tokenAddress } = Utils.decodeFlushTokensData(transactionJson.data);
-        this.forwarderAddress(forwarderAddress);
-        this.tokenAddress(tokenAddress);
-        break;
-      case TransactionType.FlushCoins:
-        this.setContract(transactionJson.to);
-        break;
-      case TransactionType.Send:
-        this.setContract(transactionJson.to);
-        this._transfer = this.transfer(transactionJson.data);
-        break;
-      case TransactionType.AddressInitialization:
-        this.setContract(transactionJson.to);
-        break;
-      case TransactionType.SingleSigSend:
-        this.setContract(transactionJson.to);
-        break;
-      case TransactionType.ContractCall:
-        this.setContract(transactionJson.to);
-        this.data(transactionJson.data);
-        break;
-      default:
-        throw new BuildTransactionError('Unsupported transaction type');
-      // TODO: Add other cases of deserialization
-    }
+  protected fromImplementation(rawTransaction: string): Transaction {
+    // Decoding the transaction is an async operation, so save it and leave the decoding for the
+    // build step
+    this._serializedTransaction = rawTransaction;
+    return new Transaction(this._coinConfig);
   }
 
-  /** @inheritdoc */
-  protected signImplementation(key: BaseKey): BaseTransaction {
-    const signer = new KeyPair({ prv: key.key });
-    if (this._type === TransactionType.WalletInitialization && this._walletOwnerAddresses.length === 0) {
-      throw new SigningError('Cannot sign an wallet initialization transaction without owners');
+
+
+  protected async buildImplementation(): Promise<Transaction> {
+    // const eosClient = new EosJs({ });
+
+    // If the from() method was called, use the serialized transaction as a base
+    if (this._serializedTransaction) {
+      console.log('SERIALIZED', this._serializedTransaction)
+
+        const eosClient = new EosJs({ });
+        const eosTxStruct = eosClient.fc.structs.transaction;
+        const serializedBuffer = Buffer.from(this._serializedTransaction, 'hex');
+        const finalTransaction =  EosJs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedBuffer);
+        return finalTransaction;
+
+    } else {
+
+      return Promise.resolve(new Transaction(this._coinConfig));
     }
-    if (this._sourceKeyPair) {
-      throw new SigningError('Cannot sign multiple times a non send-type transaction');
-    }
-    // Signing the transaction is an async operation, so save the source and leave the actual
-    // signing for the build step
-    this._sourceKeyPair = signer;
+    this.transaction = new Transaction(this._coinConfig);
     return this.transaction;
   }
 
+  protected signImplementation(key: Key): Transaction {
+    // const signer = new KeyPair({ prv: key.key });
+    // // Currently public key revelation is the only type of account update tx supported in Tezos
+    // if (this._type === TransactionType.AccountUpdate && !this._publicKeyToReveal) {
+    //   throw new SigningError('Cannot sign a public key revelation transaction without public key');
+    // }
+    return new Transaction(this._coinConfig);
+  }
+  // region Getters and Setters
   /** @inheritdoc */
-  validateAddress(address: BaseAddress): void {
-    if (!isValidEthAddress(address.address)) {
-      throw new BuildTransactionError('Invalid address ' + address.address);
-    }
+  protected get transaction(): Transaction {
+    return this._transaction;
+  }
+  // endregion
+
+  // region Validators
+  /** @inheritdoc */
+  validateAddress(address: BaseAddress, addressFormat?: string): void {
+    throw new NotImplementedError('validateAddress not implemented');
   }
 
   /** @inheritdoc */
   validateKey(key: BaseKey): void {
-    if (!(Crypto.isValidXprv(key.key) || Crypto.isValidPrv(key.key))) {
-      throw new BuildTransactionError('Invalid key');
-    }
+    throw new NotImplementedError('validateKey not implemented');
   }
 
-  /**
-   * Validate the raw transaction is either a JSON or
-   * a hex encoded transaction
-   *
-   * @param {any} rawTransaction The raw transaction to be validated
-   */
+  /** @inheritdoc */
   validateRawTransaction(rawTransaction: any): void {
     if (!rawTransaction) {
       throw new InvalidTransactionError('Raw transaction is empty');
     }
-    if (typeof rawTransaction === 'string') {
-      if (/^0x?[0-9a-f]{1,}$/.test(rawTransaction.toLowerCase())) {
-        try {
-          RLP.decode(rawTransaction);
-        } catch (e) {
-          throw new ParseTransactionError('There was error in decoding the hex string');
-        }
-      } else {
-        try {
-          JSON.parse(rawTransaction);
-        } catch (e) {
-          throw new ParseTransactionError('There was error in parsing the JSON string');
-        }
-      }
-    } else {
-      throw new InvalidTransactionError('Transaction is not a hex string or stringified json');
-    }
-  }
-
-  protected validateBaseTransactionFields(): void {
-    if (this._fee === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing fee');
-    }
-    if (this._common === undefined) {
-      throw new BuildTransactionError('Invalid transaction: network common');
-    }
-    if (this._counter === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing address counter');
-    }
+    if (typeof rawTransaction !== 'string' || /^[0-9a-fA-F]+$/.test(rawTransaction) === false) {
+      throw new InvalidTransactionError('Transaction is not a hex string');
+    } 
   }
 
   /** @inheritdoc */
-  validateTransaction(transaction: BaseTransaction): void {
-    this.validateBaseTransactionFields();
+  validateTransaction(transaction?: Transaction): void {
+    //MAYBE NEED THIS
+    // if(!Transaction) {
+    //   throw new NotImplementedError('validateTransaction not implemented'); // CHANGE
+    // }
+    // TODO: validate all required fields are present in the builder before buildImplementation
     switch (this._type) {
       case TransactionType.WalletInitialization:
-        this.validateWalletInitializationFields();
         break;
       case TransactionType.Send:
-        this.validateContractAddress();
-        break;
-      case TransactionType.AddressInitialization:
-        this.validateContractAddress();
-        break;
-      case TransactionType.FlushCoins:
-        this.validateContractAddress();
-        break;
-      case TransactionType.FlushTokens:
-        this.validateContractAddress();
-        this.validateForwarderAddress();
-        this.validateTokenAddress();
         break;
       case TransactionType.SingleSigSend:
-        // for single sig sends, the contract address is actually the recipient
-        this.validateContractAddress();
         break;
-      case TransactionType.StakingLock:
-      case TransactionType.StakingUnlock:
-      case TransactionType.StakingVote:
-      case TransactionType.StakingUnvote:
-      case TransactionType.StakingActivate:
-      case TransactionType.StakingWithdraw:
+      case TransactionType.AccountUpdate:
         break;
-      case TransactionType.ContractCall:
-        this.validateContractAddress();
-        this.validateDataField();
+      case TransactionType.AddressInitialization:
         break;
       default:
-        throw new BuildTransactionError('Unsupported transaction type');
-    }
-  }
-
-  /**
-   * Check wallet owner addresses for wallet initialization transactions are valid or throw.
-   */
-  private validateWalletInitializationFields(): void {
-    if (this._walletOwnerAddresses === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing wallet owners');
+        throw new BuildTransactionError('Transaction type not supported');
     }
 
-    if (this._walletOwnerAddresses.length !== 3) {
-      throw new BuildTransactionError(
-        `Invalid transaction: wrong number of owners -- required: 3, found: ${this._walletOwnerAddresses.length}`,
-      );
-    }
   }
-
-  /**
-   * Check if a token address for the tx was defined or throw.
-   */
-  private validateTokenAddress(): void {
-    if (this._tokenAddress === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing token address');
-    }
-  }
-
-  /**
-   * Check if a forwarder address for the tx was defined or throw.
-   */
-  private validateForwarderAddress(): void {
-    if (this._forwarderAddress === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing forwarder address');
-    }
-  }
-
-  /**
-   * Check if a contract address for the wallet was defined or throw.
-   */
-  private validateContractAddress(): void {
-    if (this._contractAddress === undefined) {
-      throw new BuildTransactionError('Invalid transaction: missing contract address');
-    }
-  }
-
-  /**
-   * Checks if a contract call data field was defined or throws otherwise
-   */
-  private validateDataField(): void {
-    if (!this._data) {
-      throw new BuildTransactionError('Invalid transaction: missing contract call data field');
-    }
-  }
-
-  private setContract(address: string | undefined): void {
-    if (address === undefined) {
-      throw new BuildTransactionError('Undefined recipient address');
-    }
-    this.contract(address);
-  }
-
-  validateValue(value: BigNumber): void {
-    if (value.isLessThan(0)) {
-      throw new BuildTransactionError('Value cannot be below less than zero');
-    }
-    // TODO: validate the amount is not bigger than the max amount in each Eth family coin
-  }
-
-  //region Common builder methods
-
-  /**
-   * The type of transaction being built.
-   *
-   * @param {TransactionType} type
-   */
-  type(type: TransactionType): void {
-    this._type = type;
-  }
-
-  /**
-   * Set the transaction fees. Low fees may get a transaction rejected or never picked up by bakers.
-   *
-   * @param {Fee} fee Baker fees. May also include the maximum gas to pay
-   */
-  fee(fee: Fee): void {
-    this.validateValue(new BigNumber(fee.fee));
-    if (fee.gasLimit) {
-      this.validateValue(new BigNumber(fee.gasLimit));
-    }
-    this._fee = fee;
-  }
-
-  /**
-   * Set the transaction counter to prevent submitting repeated transactions.
-   *
-   * @param {number} counter The counter to use
-   */
-  counter(counter: number): void {
-    if (counter < 0) {
-      throw new BuildTransactionError(`Invalid counter: ${counter}`);
-    }
-
-    this._counter = counter;
-  }
-
-  /**
-   * The value to send along with this transaction. 0 by default
-   *
-   * @param {string} value The value to send along with this transaction
-   */
-  value(value: string): void {
-    this._value = value;
-  }
-
-  // set args that are required for all types of eth transactions
-  protected buildBase(data: string): TxData {
-    return {
-      gasLimit: this._fee.gasLimit,
-      gasPrice: this._fee.fee,
-      nonce: this._counter,
-      data: data,
-      chainId: this._common.chainId().toString(),
-      value: this._value,
-      to: this._contractAddress,
-    };
-  }
-  //endregion
-
-  //region WalletInitialization builder methods
-  /**
-   * Set one of the owners of the multisig wallet.
-   *
-   * @param {string} address An Ethereum address
-   */
-  owner(address: string): void {
-    if (this._type !== TransactionType.WalletInitialization) {
-      throw new BuildTransactionError('Multisig wallet owner can only be set for initialization transactions');
-    }
-    if (this._walletOwnerAddresses.length >= DEFAULT_M) {
-      throw new BuildTransactionError('A maximum of ' + DEFAULT_M + ' owners can be set for a multisig wallet');
-    }
-    if (!isValidEthAddress(address)) {
-      throw new BuildTransactionError('Invalid address: ' + address);
-    }
-    if (this._walletOwnerAddresses.includes(address)) {
-      throw new BuildTransactionError('Repeated owner address: ' + address);
-    }
-    this._walletOwnerAddresses.push(address);
-  }
-
-  /**
-   * Build a transaction for a generic multisig contract.
-   *
-   * @returns {TxData} The Ethereum transaction data
-   */
-  protected buildWalletInitializationTransaction(): TxData {
-    return this.buildBase(this.getContractData(this._walletOwnerAddresses));
-  }
-
-  /**
-   * Returns the smart contract encoded data
-   *
-   * @param {string[]} addresses - the contract signers
-   * @returns {string} - the smart contract encoded data
-   */
-  protected getContractData(addresses: string[]): string {
-    const params = [addresses];
-    const resultEncodedParameters = EthereumAbi.rawEncode(walletSimpleConstructor, params)
-      .toString('hex')
-      .replace('0x', '');
-    return walletSimpleByteCode + resultEncodedParameters;
-  }
-  //endregion
-
-  //region Send builder methods
-
-  contract(address: string): void {
-    if (!isValidEthAddress(address)) {
-      throw new BuildTransactionError('Invalid address: ' + address);
-    }
-    this._contractAddress = address;
-  }
-
-  /**
-   * Gets the transfer funds builder if exist, or creates a new one for this transaction and returns it
-   *
-   * @param [data] transfer data to initialize the transfer builder with, empty if none given
-   * @returns {TransferBuilder} the transfer builder
-   */
-  transfer(data?: string): TransferBuilder {
-    if (this._type !== TransactionType.Send) {
-      throw new BuildTransactionError('Transfers can only be set for send transactions');
-    }
-    if (!this._transfer) {
-      this._transfer = new TransferBuilder(data);
-    }
-    return this._transfer;
-  }
-
-  /**
-   * Returns the serialized sendMultiSig contract method data
-   *
-   * @returns {string} serialized sendMultiSig data
-   */
-  private getSendData(): string {
-    if (!this._transfer) {
-      throw new BuildTransactionError('Missing transfer information');
-    }
-    return this._transfer.signAndBuild();
-  }
-
-  private buildSendTransaction(): TxData {
-    const sendData = this.getSendData();
-    const tx: TxData = this.buildBase(sendData);
-    tx.to = this._contractAddress;
-    return tx;
-  }
-  //endregion
-
-  //region AddressInitialization builder methods
-
-  /**
-   * Set the contract transaction nonce to calculate the forwarder address.
-   *
-   * @param {number} contractCounter The counter to use
-   */
-  contractCounter(contractCounter: number): void {
-    if (contractCounter < 0) {
-      throw new BuildTransactionError(`Invalid contract counter: ${contractCounter}`);
-    }
-
-    this._contractCounter = contractCounter;
-  }
-
-  /**
-   * Build a transaction to create a forwarder.
-   *
-   * @returns {TxData} The Ethereum transaction data
-   */
-  private buildAddressInitializationTransaction(): TxData {
-    const addressInitData = getAddressInitializationData();
-    const tx: TxData = this.buildBase(addressInitData);
-    tx.to = this._contractAddress;
-    if (this._contractCounter) {
-      tx.deployedAddress = calculateForwarderAddress(this._contractAddress, this._contractCounter);
-    }
-    return tx;
-  }
-  //endregion
-
-  //region flush methods
-  /**
-   * Set the forwarder address to flush
-   *
-   * @param {string} address The address to flush
-   */
-  forwarderAddress(address: string): void {
-    if (!isValidEthAddress(address)) {
-      throw new BuildTransactionError('Invalid address: ' + address);
-    }
-    this._forwarderAddress = address;
-  }
-
-  /**
-   * Set the address of the ERC20 token contract that we are flushing tokens for
-   *
-   * @param {string} address the contract address of the token to flush
-   */
-  tokenAddress(address: string): void {
-    if (!isValidEthAddress(address)) {
-      throw new BuildTransactionError('Invalid address: ' + address);
-    }
-    this._tokenAddress = address;
-  }
-
-  /**
-   * Build a transaction to flush tokens from a forwarder.
-   *
-   * @returns {TxData} The Ethereum transaction data
-   */
-  private buildFlushTokensTransaction(): TxData {
-    return this.buildBase(flushTokensData(this._forwarderAddress, this._tokenAddress));
-  }
-
-  /**
-   * Build a transaction to flush tokens from a forwarder.
-   *
-   * @returns {TxData} The Ethereum transaction data
-   */
-  private buildFlushCoinsTransaction(): TxData {
-    return this.buildBase(flushCoinsData());
-  }
-  //endregion
-
-  //region generic contract call
-  data(encodedCall: string): void {
-    if (this._type !== TransactionType.ContractCall) {
-      throw new BuildTransactionError('data can only be set for contract call transaction types');
-    }
-    this._data = encodedCall;
-  }
-
-  private buildGenericContractCallTransaction(): TxData {
-    return this.buildBase(this._data);
-  }
-  //endregion
 
   /** @inheritdoc */
-  protected get transaction(): Transaction {
-    return this._transaction;
+  validateValue(value: BigNumber): void {
+    throw new NotImplementedError('validateValue not implemented');
   }
 
   /** @inheritdoc */
   protected set transaction(transaction: Transaction) {
     this._transaction = transaction;
   }
+  // endregion
 }

@@ -1,4 +1,4 @@
-import { BaseFee } from '../baseCoin/iface';
+import { BaseFee, BaseKey } from '../baseCoin/iface';
 import { KeyPair } from './keyPair';
 
 export interface Fee extends BaseFee {
@@ -96,3 +96,5 @@ export interface FlushTokensData {
 export interface NativeTransferData extends TransferData {
   data: string;
 }
+
+export interface Key extends BaseKey {}
