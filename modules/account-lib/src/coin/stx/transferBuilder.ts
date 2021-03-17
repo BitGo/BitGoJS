@@ -13,7 +13,6 @@ import { InvalidParameterValueError, InvalidTransactionError } from '../baseCoin
 import { Transaction } from './transaction';
 import { TransactionBuilder } from './transactionBuilder';
 import { isValidAddress, isValidAmount, removeHexPrefix } from './utils';
-import { KeyPair } from './keyPair';
 
 export class TransferBuilder extends TransactionBuilder {
   private _options: UnsignedTokenTransferOptions | UnsignedMultiSigTokenTransferOptions;
@@ -26,7 +25,7 @@ export class TransferBuilder extends TransactionBuilder {
 
   initBuilder(tx: Transaction): void {
     const txData = tx.toJson();
-    if (txData.payload == undefined) {
+    if (txData.payload === undefined) {
       throw new InvalidTransactionError('payload must not be undefined');
     }
     this.to(txData.payload.to!);
@@ -49,12 +48,12 @@ export class TransferBuilder extends TransactionBuilder {
       memo: this._memo,
       network: this._network,
       fee: new BigNum(this._fee.fee),
-      nonce: new BigNum(this._nonce)
+      nonce: new BigNum(this._nonce),
     };
-    if (this._multiSignerKeyPairs.length == 0) {
+    if (this._multiSignerKeyPairs.length === 0) {
       throw new InvalidParameterValueError('supply at least 1 public key');
     }
-    if (this._multiSignerKeyPairs.length == 1) {
+    if (this._multiSignerKeyPairs.length === 1) {
       return {
         ...defaultOpts,
         publicKey: this._multiSignerKeyPairs[0].getKeys(true).pub,

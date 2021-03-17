@@ -16,7 +16,7 @@ import { BaseKey } from '../baseCoin/iface';
 import { BaseTransaction, TransactionType } from '../baseCoin';
 import { SignatureData, TxData } from './iface';
 import { getTxSenderAddress, bufferToHexPrefixString, removeHexPrefix } from './utils';
-import { KeyPair } from './';
+import { KeyPair } from './keyPair';
 
 export class Transaction extends BaseTransaction {
   private _stxTransaction: StacksTransaction;
@@ -33,9 +33,9 @@ export class Transaction extends BaseTransaction {
   }
 
   async sign(keyPair: KeyPair[] | KeyPair): Promise<void> {
-    let keyPairs = (keyPair instanceof Array) ? keyPair : [keyPair]
+    const keyPairs = keyPair instanceof Array ? keyPair : [keyPair];
     const signer = new TransactionSigner(this._stxTransaction);
-    for (var kp of keyPairs) {
+    for (const kp of keyPairs) {
       const keys = kp.getKeys(true);
       if (!keys.prv) {
         throw new SigningError('Missing private key');
@@ -43,7 +43,6 @@ export class Transaction extends BaseTransaction {
       const privKey = createStacksPrivateKey(keys.prv);
       signer.signOrigin(privKey);
     }
-
   }
 
   async appendOrigin(keyPair: KeyPair): Promise<void> {
@@ -51,9 +50,9 @@ export class Transaction extends BaseTransaction {
     if (!keys.pub) {
       throw new SigningError('Missing public key');
     }
-    const pubKey = createStacksPublicKey(keys.pub)
+    const pubKey = createStacksPublicKey(keys.pub);
     const signer = new TransactionSigner(this._stxTransaction);
-    signer.appendOrigin(pubKey)
+    signer.appendOrigin(pubKey);
   }
 
   async signWithSignatures(signature: SignatureData): Promise<void> {
@@ -72,7 +71,7 @@ export class Transaction extends BaseTransaction {
       payload: { payloadType: this._stxTransaction.payload.payloadType },
     };
 
-    if (this._stxTransaction.payload.payloadType == PayloadType.TokenTransfer) {
+    if (this._stxTransaction.payload.payloadType === PayloadType.TokenTransfer) {
       const payload = this._stxTransaction.payload;
       result.payload.memo = payload.memo.content;
       result.payload.to = addressToString({

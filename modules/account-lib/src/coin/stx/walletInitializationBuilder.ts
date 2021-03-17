@@ -20,7 +20,7 @@ export class WalletInitializationBuilder extends TransactionBuilder {
   }
 
   /** @inheritdoc */
-  protected signImplementation(key: BaseKey): Transaction {
+  protected signImplementation(_key: BaseKey): Transaction {
     throw new NotImplementedError('method not implemented');
   }
 }

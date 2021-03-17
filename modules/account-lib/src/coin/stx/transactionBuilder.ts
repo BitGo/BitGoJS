@@ -1,7 +1,5 @@
-import { runInThisContext } from 'vm';
 import BigNumber from 'bignumber.js';
 import BigNum from 'bn.js';
-import { ECPair } from '@bitgo/utxo-lib';
 import { BaseCoin as CoinConfig } from '@bitgo/statics/dist/src/base';
 import {
   BufferReader,
@@ -9,7 +7,7 @@ import {
   emptyMessageSignature,
   isSingleSig,
   makeSigHashPreSign,
-  publicKeyFromSignature
+  publicKeyFromSignature,
 } from '@stacks/transactions';
 import { StacksNetwork, StacksTestnet } from '@stacks/network';
 import { BaseTransactionBuilder } from '../baseCoin';
@@ -62,7 +60,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     }
     // check if it is signed or unsigned tx
     if (isSingleSig(tx.stxTransaction.auth.spendingCondition!)) {
-      if (tx.stxTransaction.auth.spendingCondition.signature.data == emptyMessageSignature().data) {
+      if (tx.stxTransaction.auth.spendingCondition.signature.data === emptyMessageSignature().data) {
         // unsigned transaction
       } else {
         const sigHashPreSign = makeSigHashPreSign(
@@ -73,7 +71,7 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
         );
         this._signatures.push(tx.stxTransaction.auth.spendingCondition.signature);
         const signer = new KeyPair({ pub: publicKeyFromSignature(sigHashPreSign, this._signatures[0]) });
-        this._multiSignerKeyPairs.push(signer)
+        this._multiSignerKeyPairs.push(signer);
       }
     }
   }
@@ -95,17 +93,16 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     for (const sig of this._signatures) {
       await this.transaction.signWithSignatures(sig);
     }
-    if (this._signatures.length == 0) {
+    if (this._signatures.length === 0) {
       if (this._numberSignatures > 1 && this._multiSignerKeyPairs.length !== this._numberSignatures + 1) {
-        throw new SigningError("Invalid number of signers for multi-sig")
+        throw new SigningError('Invalid number of signers for multi-sig');
       }
       await this.transaction.sign(this._multiSignerKeyPairs.slice(0, this._numberSignatures));
       if (this._numberSignatures > 1) {
         // multi-sig
-        await this.transaction.appendOrigin(this._multiSignerKeyPairs[this._numberSignatures])
+        await this.transaction.appendOrigin(this._multiSignerKeyPairs[this._numberSignatures]);
       }
     }
-
 
     this._transaction.loadInputsAndOutputs();
     return this._transaction;
@@ -184,14 +181,14 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   }
 
   /**
-    *  Set the number of signatures for multi-sig
-    *
-    * @param {number} numSigns
-    * @returns {TransactionBuilder} This transaction builder
-    */
+   *  Set the number of signatures for multi-sig
+   *
+   * @param {number} numSigns
+   * @returns {TransactionBuilder} This transaction builder
+   */
   numberSignatures(numSigns: number): this {
-    this.validateValue(new BigNumber(numSigns))
-    this._numberSignatures = numSigns
+    this.validateValue(new BigNumber(numSigns));
+    this._numberSignatures = numSigns;
     return this;
   }
 

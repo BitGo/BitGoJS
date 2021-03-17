@@ -1,17 +1,17 @@
 import should from 'should';
+import { StacksTestnet } from '@stacks/network';
 import { register } from '../../../../../src/index';
-import { TransactionBuilderFactory } from '../../../../../src/coin/stacks';
-import * as testData from '../../../../resources/stacks/stacks';
+import { TransactionBuilderFactory } from '../../../../../src/coin/stx';
+import * as testData from '../../../../resources/stx/stx';
 import { TransactionType } from '../../../../../src/coin/baseCoin';
-import { StacksNetwork, StacksTestnet } from '@stacks/network';
 
-describe('STACKS Transfer Builder', () => {
+describe('Stx Transfer Builder', () => {
   const factory = register('stx', TransactionBuilderFactory);
 
   const initTxBuilder = () => {
     const txBuilder = factory.getTransferBuilder();
     txBuilder.fee({ fee: '180' });
-    txBuilder.nonce(0)
+    txBuilder.nonce(0);
     txBuilder.source({ address: testData.TX_SENDER.address });
     // txBuilder.senderPubKey([testData.TX_SENDER.pub])
     txBuilder.to(testData.TX_RECIEVER.address);
@@ -20,7 +20,6 @@ describe('STACKS Transfer Builder', () => {
   };
 
   describe('should build ', () => {
-
     // it('a signed transfer transaction', async () => {
     //   const builder = initTxBuilder();
     //   builder.sign({ key: testData.TX_SENDER.prv });
@@ -58,8 +57,8 @@ describe('STACKS Transfer Builder', () => {
 
     it('a multisig transfer transaction', async () => {
       const builder = initTxBuilder();
-      builder.network(new StacksTestnet())
-      builder.memo("test memo")
+      builder.network(new StacksTestnet());
+      builder.memo('test memo');
       builder.numberSignatures(2);
       builder.sign({ key: testData.prv1 });
       builder.sign({ key: testData.prv2 });
@@ -71,7 +70,7 @@ describe('STACKS Transfer Builder', () => {
     it('a transfer transaction with amount 0', async () => {
       const builder = initTxBuilder();
       builder.amount('0');
-      builder.sign({ key: testData.TX_SENDER.prv })
+      builder.sign({ key: testData.TX_SENDER.prv });
       const tx = await builder.build();
       const txJson = tx.toJson();
       should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
