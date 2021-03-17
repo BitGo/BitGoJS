@@ -22,6 +22,7 @@ import {
   Ofc,
   Rbtc,
   Rmg,
+  Stx,
   Susd,
   Talgo,
   Tbch,
@@ -39,6 +40,7 @@ import {
   Tltc,
   Trbtc,
   Trmg,
+  Tstx,
   Tsusd,
   Trx,
   Ttrx,
@@ -160,6 +162,8 @@ GlobalCoinFactory.registerCoinConstructor('txtz', Txtz.createInstance);
 GlobalCoinFactory.registerCoinConstructor('hbar', Hbar.createInstance);
 GlobalCoinFactory.registerCoinConstructor('thbar', Thbar.createInstance);
 GlobalCoinFactory.registerCoinConstructor('ofc', Ofc.createInstance);
+GlobalCoinFactory.registerCoinConstructor('stx', Stx.createInstance);
+GlobalCoinFactory.registerCoinConstructor('tstx', Tstx.createInstance);
 GlobalCoinFactory.registerCoinConstructor('susd', Susd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('tsusd', Tsusd.createInstance);
 GlobalCoinFactory.registerCoinConstructor('cspr', Cspr.createInstance);
