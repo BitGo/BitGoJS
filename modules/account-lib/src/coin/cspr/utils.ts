@@ -92,6 +92,23 @@ export function isValidTransferId(id: number): boolean {
 }
 
 /**
+ * Get amount argument from deploy session
+ * Used for transfers, delegate and undelegate transactions
+ *
+ * @param {ExecutableDeployItem} transferTx transfer session
+ * @returns {string} the transfer amount
+ */
+function getAmountArgValue(transferTx: ExecutableDeployItem): string {
+  const amount = transferTx.getArgByName('amount');
+
+  if (!amount || !amount.isBigNumber()) {
+    throw new InvalidTransactionError('Transfer does not have an amount defined');
+  }
+
+  return amount.asBigNumber().toString();
+}
+
+/**
  * Get destination address from deploy transfer session
  *
  * @param {ExecutableDeployItem} transferTx transfer session
@@ -108,51 +125,13 @@ export function getTransferDestinationAddress(transferTx: ExecutableDeployItem):
 }
 
 /**
- * Get delegator address from deploy delegate or undelegate session
- *
- * @param {ExecutableDeployItem} delegateTx transfer session
- * @returns {string} the hex destination address of the transfer
- */
-export function getDelegatorAddress(delegateTx: ExecutableDeployItem): string {
-  const delegatorAddress = delegateTx.getArgByName(DELEGATE_FROM_ADDRESS);
-
-  if (!delegatorAddress || !delegatorAddress.isString()) {
-    throw new InvalidTransactionError('Transfer does not have a destination address defined');
-  }
-
-  return delegatorAddress.asString();
-}
-
-/**
- * Get validator address from deploy delegate or undelegate session
- *
- * @param {ExecutableDeployItem} delegateTx transfer session
- * @returns {string} the hex destination address of the transfer
- */
-export function getValidatorAddress(delegateTx: ExecutableDeployItem): string {
-  const validatorAddress = delegateTx.getArgByName(DELEGATE_VALIDATOR);
-
-  if (!validatorAddress || !validatorAddress.isString()) {
-    throw new InvalidTransactionError('Transfer does not have a destination address defined');
-  }
-
-  return validatorAddress.asString();
-}
-
-/**
  * Get transfer amount from deploy transfer session
  *
  * @param {ExecutableDeployItem} transferTx transfer session
  * @returns {string} the transfer amount
  */
 export function getTransferAmount(transferTx: ExecutableDeployItem): string {
-  const amount = transferTx.getArgByName('amount');
-
-  if (!amount || !amount.isBigNumber()) {
-    throw new InvalidTransactionError('Transfer does not have an amount defined');
-  }
-
-  return amount.asBigNumber().toString();
+  return getAmountArgValue(transferTx);
 }
 
 /**
@@ -175,6 +154,48 @@ export function getTransferId(transferTx: ExecutableDeployItem): number | undefi
     .getSome()
     .asBigNumber()
     .toNumber();
+}
+
+/**
+ * Get delegator address from deploy delegate or undelegate session
+ *
+ * @param {ExecutableDeployItem} delegateTx delegate or undelegate session
+ * @returns {string} the hex destination address of the delegate / undelegate
+ */
+export function getDelegatorAddress(delegateTx: ExecutableDeployItem): string {
+  const delegatorAddress = delegateTx.getArgByName(DELEGATE_FROM_ADDRESS);
+
+  if (!delegatorAddress || !delegatorAddress.isString()) {
+    throw new InvalidTransactionError('Delegate / Undelegate does not have an address defined');
+  }
+
+  return delegatorAddress.asString();
+}
+
+/**
+ * Get validator address from deploy delegate or undelegate session
+ *
+ * @param {ExecutableDeployItem} delegateTx delegate or undelegate session
+ * @returns {string} the hex destination address of the delegate / undelegate
+ */
+export function getValidatorAddress(delegateTx: ExecutableDeployItem): string {
+  const validatorAddress = delegateTx.getArgByName(DELEGATE_VALIDATOR);
+
+  if (!validatorAddress || !validatorAddress.isString()) {
+    throw new InvalidTransactionError('Delegate / Undelegate does not have an address defined');
+  }
+
+  return validatorAddress.asString();
+}
+
+/**
+ * Get amount from deploy delegate or undelegate session
+ *
+ * @param {ExecutableDeployItem} delegateTx delegate or undelegate session
+ * @returns {string} the delegate / undelegate amount
+ */
+export function getDelegateAmount(delegateTx: ExecutableDeployItem): string {
+  return getAmountArgValue(delegateTx);
 }
 
 /**

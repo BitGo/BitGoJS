@@ -7,7 +7,13 @@ import { BaseKey } from '../baseCoin/iface';
 import { InvalidTransactionError, SigningError } from '../baseCoin/errors';
 import { KeyPair } from './keyPair';
 import { CasperTransaction } from './ifaces';
-import { OWNER_PREFIX, SECP256K1_PREFIX, TRANSACTION_TYPE } from './constants';
+import {
+  DELEGATE_FROM_ADDRESS,
+  DELEGATE_VALIDATOR,
+  OWNER_PREFIX,
+  SECP256K1_PREFIX,
+  TRANSACTION_TYPE,
+} from './constants';
 import {
   getTransferAmount,
   getTransferDestinationAddress,
@@ -15,6 +21,9 @@ import {
   isValidPublicKey,
   removeAlgoPrefixFromHexValue,
   getDeployType,
+  getDelegatorAddress,
+  getValidatorAddress,
+  getDelegateAmount,
 } from './utils';
 
 export class Transaction extends BaseTransaction {
@@ -77,6 +86,7 @@ export class Transaction extends BaseTransaction {
     const txJson = DeployUtil.deployToJson(this.casperTx);
     this.setOwnersInJson(txJson);
     this.setTransfersFieldsInJson(txJson);
+    this.setDelegateFieldsInJson(txJson);
     return JSON.stringify(txJson);
   }
 
@@ -113,6 +123,12 @@ export class Transaction extends BaseTransaction {
         result.owner2 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner2Index) as CLValue).asString();
         result.owner3 = (this.casperTx.session.getArgByName(OWNER_PREFIX + owner3Index) as CLValue).asString();
         break;
+      case TransactionType.StakingLock:
+      case TransactionType.StakingUnlock:
+        result.fromDelegate = getDelegatorAddress(this.casperTx.session);
+        result.validator = getValidatorAddress(this.casperTx.session);
+        result.amount = getDelegateAmount(this.casperTx.session);
+        break;
     }
     return result;
   }
@@ -139,7 +155,7 @@ export class Transaction extends BaseTransaction {
   }
 
   setOwnersInJson(txJson: Record<string, any>): void {
-    if (this.casperTx.session.isModuleBytes()) {
+    if (getDeployType(this.casperTx.session) === TransactionType.WalletInitialization) {
       const argName = 0;
       const argValue = 1;
       const owner0 = 0;
@@ -166,7 +182,7 @@ export class Transaction extends BaseTransaction {
   }
 
   setTransfersFieldsInJson(txJson: Record<string, any>): void {
-    if (this.casperTx.session.isTransfer()) {
+    if (getDeployType(this.casperTx.session) === TransactionType.Send) {
       const argName = 0;
       const argValue = 1;
 
@@ -182,6 +198,31 @@ export class Transaction extends BaseTransaction {
       txJson['deploy']!['session']['Transfer']['args'].forEach(arg => {
         if (transferValues.has(arg[argName])) {
           arg[argValue]['parsed'] = transferValues.get(arg[argName]);
+        }
+      });
+    }
+  }
+
+  setDelegateFieldsInJson(txJson: Record<string, any>): void {
+    if (
+      getDeployType(this.casperTx.session) === TransactionType.StakingLock ||
+      getDeployType(this.casperTx.session) === TransactionType.StakingUnlock
+    ) {
+      const argName = 0;
+      const argValue = 1;
+
+      const delegateValues = new Map();
+      delegateValues.set(
+        TRANSACTION_TYPE,
+        (this.casperTx.session.getArgByName(TRANSACTION_TYPE) as CLValue).asString(),
+      );
+      delegateValues.set('amount', getDelegateAmount(this.casperTx.session));
+      delegateValues.set(DELEGATE_FROM_ADDRESS, getDelegatorAddress(this.casperTx.session));
+      delegateValues.set(DELEGATE_VALIDATOR, getValidatorAddress(this.casperTx.session));
+
+      txJson['deploy']!['session']['ModuleBytes']['args'].forEach(arg => {
+        if (delegateValues.has(arg[argName])) {
+          arg[argValue]['parsed'] = delegateValues.get(arg[argName]);
         }
       });
     }

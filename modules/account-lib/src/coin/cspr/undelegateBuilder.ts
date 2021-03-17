@@ -49,8 +49,6 @@ export class UndelegateBuilder extends TransactionBuilder {
     if (this._delegator && this._validator) {
       extraArguments.set(TRANSACTION_TYPE, CLValue.string(TransactionType[TransactionType.StakingUnlock]));
       extraArguments.set(STAKING_TYPE, CLValue.string(StakingOperationTypes[StakingOperationTypes.UNLOCK]));
-      // TODO(STLX-1691): We are send the destination address as string until impediment STLX-1691 is fixed.
-      // After that we will change this to send an instance of PublicKey instead.
       extraArguments.set(DELEGATE_FROM_ADDRESS, CLValue.string(this._delegator));
       extraArguments.set(DELEGATE_VALIDATOR, CLValue.string(this._validator));
     }

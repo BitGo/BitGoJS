@@ -3,18 +3,25 @@ import { BigNumberish } from '@ethersproject/bignumber';
 import { KeyPair } from '.';
 
 export interface CasperTransaction {
+  // mandatory fields
   hash: string;
   from: string;
   fee: Fee;
   deployType: string;
+  // optional fields
   startTime?: string;
   expiration?: number;
+  // transfer fields
   to?: string;
-  amount?: string;
+  amount?: string; // also used for delegate/undelegate
   transferId?: number;
+  // wallet init fields
   owner1?: string;
   owner2?: string;
   owner3?: string;
+  // delegate / undelegate fields
+  fromDelegate?: string;
+  validator?: string;
 }
 
 export interface CasperNode {
