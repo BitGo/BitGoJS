@@ -11,7 +11,6 @@ const accountHash = testData.ACCOUNT_FROM_SEED.accountHash;
 const accountSeed = testData.ACCOUNT_FROM_SEED.seed;
 
 describe('Casper Key Pair', () => {
-
   describe('should create a valid KeyPair', () => {
     it('from an empty value', () => {
       const keyPair = new KeyPair();

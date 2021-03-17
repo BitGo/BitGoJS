@@ -49,9 +49,113 @@ describe('Casper Transfer Builder', () => {
         should.equal(txJson.amount, '10', 'Amount was not as expected');
       });
 
+      it('a signed transfer transaction using extended key', async () => {
+        const builder = initTxTransferBuilder().amount('10');
+        builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.exist(tx.casperTx.approvals, 'There are no approvals');
+        should.deepEqual(tx.casperTx.approvals.length, 1, 'Error in the number of signatures');
+        should.deepEqual(
+          tx.casperTx.approvals[0].signer.toUpperCase(),
+          testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
+          'Error in the signature',
+        );
+        should.exist(tx.casperTx.hash, 'There is no hash');
+        should.exist(txJson.from, 'There is no from');
+        should.deepEqual(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey, 'The recipient does not match');
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+        should.equal(
+          tx.casperTx.header.gasPrice.toString(),
+          testData.FEE.gasPrice,
+          'Gas price does not match expected',
+        );
+
+        should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
+        should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
+
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey, 'To address was not the expected one');
+        should.equal(txJson.amount, '10', 'Amount was not as expected');
+      });
+
       it('a transfer transaction signed multiple times', async () => {
         const builder = initTxTransferBuilder().amount('10');
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
+        builder.sign({ key: testData.ACCOUNT_2.privateKey });
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.exist(tx.casperTx.approvals, 'There are no approvals');
+        should.deepEqual(tx.casperTx.approvals.length, 2, 'Error in the number of signatures');
+        should.deepEqual(
+          tx.casperTx.approvals[0].signer.toUpperCase(),
+          testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
+          'Error in the signature',
+        );
+        should.deepEqual(
+          tx.casperTx.approvals[1].signer.toUpperCase(),
+          testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey,
+          'Error in the signature',
+        );
+        should.exist(tx.casperTx.hash, 'There is no hash');
+        should.exist(txJson.from, 'There is no from');
+        should.deepEqual(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey, 'The recipient does not match');
+
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+        should.equal(
+          tx.casperTx.header.gasPrice.toString(),
+          testData.FEE.gasPrice,
+          'Gas price does not match expected',
+        );
+
+        should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
+        should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
+
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey, 'To address was not the expected one');
+        should.equal(txJson.amount, '10', 'Amount does not match expected');
+      });
+
+      it('a transfer transaction signed multiple times using extended keys', async () => {
+        const builder = initTxTransferBuilder().amount('10');
+        builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
+        builder.sign({ key: testData.ACCOUNT_2.xPrivateKey });
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.exist(tx.casperTx.approvals, 'There are no approvals');
+        should.deepEqual(tx.casperTx.approvals.length, 2, 'Error in the number of signatures');
+        should.deepEqual(
+          tx.casperTx.approvals[0].signer.toUpperCase(),
+          testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
+          'Error in the signature',
+        );
+        should.deepEqual(
+          tx.casperTx.approvals[1].signer.toUpperCase(),
+          testData.SECP256K1_PREFIX + testData.ACCOUNT_2.publicKey,
+          'Error in the signature',
+        );
+        should.exist(tx.casperTx.hash, 'There is no hash');
+        should.exist(txJson.from, 'There is no from');
+        should.deepEqual(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey, 'The recipient does not match');
+
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+        should.equal(
+          tx.casperTx.header.gasPrice.toString(),
+          testData.FEE.gasPrice,
+          'Gas price does not match expected',
+        );
+
+        should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
+        should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
+
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey, 'To address was not the expected one');
+        should.equal(txJson.amount, '10', 'Amount does not match expected');
+      });
+
+      it('a transfer transaction signed multiple times using one extended key', async () => {
+        const builder = initTxTransferBuilder().amount('10');
+        builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
         builder.sign({ key: testData.ACCOUNT_2.privateKey });
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
@@ -90,6 +194,39 @@ describe('Casper Transfer Builder', () => {
         const builder = initTxTransferBuilder();
         builder.amount('0');
         builder.sign({ key: testData.ACCOUNT_1.privateKey });
+        const tx = (await builder.build()) as Transaction;
+        const txJson = tx.toJson();
+
+        should.exist(tx.casperTx.approvals, 'There are no approvals');
+        should.deepEqual(tx.casperTx.approvals.length, 1, 'Error in the number of signatures');
+        should.deepEqual(
+          tx.casperTx.approvals[0].signer.toUpperCase(),
+          testData.SECP256K1_PREFIX + testData.ACCOUNT_1.publicKey,
+          'Error in the signature',
+        );
+        should.exist(tx.casperTx.hash, 'There is no hash');
+        should.exist(txJson.from, 'There is no from');
+        should.deepEqual(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey, 'The recipient does not match');
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+
+        should.exist(tx.casperTx.header.gasPrice, 'There is no gasPrice');
+        should.equal(
+          tx.casperTx.header.gasPrice.toString(),
+          testData.FEE.gasPrice,
+          'Gas price does not match expected',
+        );
+
+        should.exist(txJson.fee.gasLimit, 'Gas Limit is not defined');
+        should.equal(txJson.fee.gasLimit, testData.FEE.gasLimit);
+
+        should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey, 'To address was not the expected one');
+        should.equal(txJson.amount, '0', 'Amount does not match expected');
+      });
+
+      it('a transfer transaction with amount 0 using extended key', async () => {
+        const builder = initTxTransferBuilder();
+        builder.amount('0');
+        builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
         const tx = (await builder.build()) as Transaction;
         const txJson = tx.toJson();
 
@@ -279,10 +416,219 @@ describe('Casper Transfer Builder', () => {
           );
         });
 
+        it('a signed transfer transaction from serialized with extended key ', async () => {
+          const builder = initTxTransferBuilder().amount('10');
+          builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
+          const tx = (await builder.build()) as Transaction;
+          const txJson = tx.toJson();
+
+          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
+
+          const builder2 = factory.getTransferBuilder();
+          builder2.from(tx.toBroadcastFormat());
+          const tx2 = (await builder2.build()) as Transaction;
+          const tx2Json = tx2.toJson();
+
+          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
+
+          should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
+          should.deepEqual(
+            tx2.casperTx.approvals,
+            tx.casperTx.approvals,
+            'from implementation from factory should get approvals correctly',
+          );
+        });
+
         it('an offline multisig transfer transaction', async () => {
           const builder = initTxTransferBuilder().amount('10');
           builder.sign({ key: testData.ROOT_ACCOUNT.privateKey });
           builder.sign({ key: testData.ACCOUNT_1.privateKey });
+          const tx = (await builder.build()) as Transaction;
+          const txJson = tx.toJson();
+
+          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
+
+          const builder2 = factory.getTransferBuilder();
+          builder2.from(tx.toBroadcastFormat());
+          const tx2 = (await builder2.build()) as Transaction;
+          const tx2Json = tx2.toJson();
+
+          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
+
+          should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
+          should.deepEqual(
+            tx2.casperTx.approvals,
+            tx.casperTx.approvals,
+            'from implementation from factory should get approvals correctly',
+          );
+        });
+
+        it('an offline multisig transfer transaction with one extended key', async () => {
+          const builder = initTxTransferBuilder().amount('10');
+          builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
+          builder.sign({ key: testData.ACCOUNT_1.privateKey });
+          const tx = (await builder.build()) as Transaction;
+          const txJson = tx.toJson();
+
+          should.equal(tx.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
+
+          const builder2 = factory.getTransferBuilder();
+          builder2.from(tx.toBroadcastFormat());
+          const tx2 = (await builder2.build()) as Transaction;
+          const tx2Json = tx2.toJson();
+
+          should.equal(tx2.casperTx.session.getArgByName('deploy_type')!.asString(), 'Send');
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('to_address')!
+              .asString()
+              .toUpperCase(),
+            testData.ACCOUNT_2.publicKey,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('id')!
+              .asOption()
+              .getSome()
+              .asBigNumber()
+              .toNumber(),
+            255,
+          );
+          should.equal(
+            tx2.casperTx.session
+              .getArgByName('amount')!
+              .asBigNumber()
+              .toString(),
+            '10',
+          );
+
+          should.deepEqual(tx2Json, txJson, 'from implementation from factory should recreate original transaction');
+          should.deepEqual(
+            tx2.casperTx.approvals,
+            tx.casperTx.approvals,
+            'from implementation from factory should get approvals correctly',
+          );
+        });
+
+        it('an offline multisig transfer transaction with extended keys', async () => {
+          const builder = initTxTransferBuilder().amount('10');
+          builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
+          builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
           const tx = (await builder.build()) as Transaction;
           const txJson = tx.toJson();
 
@@ -403,6 +749,17 @@ describe('Casper Transfer Builder', () => {
       );
     });
 
+    it('a transfer transaction with repeated sign using extended keys', async () => {
+      const txBuilder = await initTxTransferBuilder().amount('10');
+      should.throws(
+        () => {
+          txBuilder.sign({ key: testData.ACCOUNT_3.xPrivateKey });
+          txBuilder.sign({ key: testData.ACCOUNT_3.xPrivateKey });
+        },
+        e => e.message.startsWith(testData.ERROR_REPEATED_SIGNATURE),
+      );
+    });
+
     it('a transfer transaction with an invalid amount: text value', () => {
       should.throws(
         () => {
@@ -482,6 +839,19 @@ describe('Casper Transfer Builder', () => {
         e => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
       );
     });
+
+    it('a transfer transaction with more than 3 signatures with extended keys', () => {
+      const builder = initTxTransferBuilder().amount('10');
+      builder.sign({ key: testData.ROOT_ACCOUNT.xPrivateKey });
+      builder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
+      builder.sign({ key: testData.ACCOUNT_2.xPrivateKey });
+      should.throws(
+        () => {
+          builder.sign({ key: testData.ACCOUNT_2.xPrivateKey });
+        },
+        e => e.message === testData.ERROR_MAX_AMOUNT_OF_SIGNERS_REACHED,
+      );
+    });
   });
 
   describe('txJson validation', () => {
@@ -489,6 +859,23 @@ describe('Casper Transfer Builder', () => {
       const txBuilder = initTxTransferBuilder();
       txBuilder.amount('10');
       txBuilder.sign({ key: testData.ACCOUNT_1.privateKey });
+
+      const tx = (await txBuilder.build()) as Transaction;
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.fee, testData.FEE);
+      should.equal(txJson.deployType, 'Send');
+      should.equal(txJson.from.toUpperCase(), testData.ACCOUNT_1.publicKey);
+      should.equal(txJson.hash, Buffer.from(tx.casperTx.hash).toString('hex'));
+
+      should.equal(txJson.amount, '10');
+      should.equal(txJson.to!.toUpperCase(), testData.ACCOUNT_2.publicKey);
+      should.equal(txJson.transferId, 255);
+    });
+
+    it('contains all required fields for Transfer signed with extended key', async () => {
+      const txBuilder = initTxTransferBuilder();
+      txBuilder.amount('10');
+      txBuilder.sign({ key: testData.ACCOUNT_1.xPrivateKey });
 
       const tx = (await txBuilder.build()) as Transaction;
       const txJson = tx.toJson();
