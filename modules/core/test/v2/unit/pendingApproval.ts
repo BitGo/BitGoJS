@@ -29,6 +29,7 @@ describe('Pending Approvals:', () => {
         recipients: [],
         buildParams: {},
         sourceWallet: walletId,
+        type: 'consolidate',
       },
     },
     state: State.PENDING,

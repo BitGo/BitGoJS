@@ -935,7 +935,7 @@ export class Wallet {
       const transactionParams = _.extend({}, params, { txPrebuild: response, keychain });
       const signedTransaction = yield self.signTransaction(transactionParams);
       const selectParams = _.pick(params, ['comment', 'otp']);
-      const finalTxParams = _.extend({}, signedTransaction, selectParams);
+      const finalTxParams = _.extend({}, signedTransaction, selectParams, { type: routeName });
 
       self.bitgo.setRequestTracer(reqId);
       return self.bitgo.post(self.baseCoin.url('/wallet/' + self._wallet.id + '/tx/send'))

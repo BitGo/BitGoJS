@@ -19,6 +19,7 @@ export interface PendingApprovalInfo {
     coinSpecific: { [key: string]: any };
     recipients: any;
     buildParams: any;
+    type?: 'fanout' | 'consolidate';
     sourceWallet?: string;
   };
 }
@@ -360,7 +361,7 @@ export class PendingApproval {
         prebuildParams.hop = true;
       }
 
-      if (!recipients.length) {
+      if (!recipients.length && transactionRequest.type === 'consolidate') {
         // no recipients - this is a consolidation transaction
         prebuildParams.prebuildTx = yield self.bitgo
           .post(self.wallet.url(`/consolidateUnspents`))
