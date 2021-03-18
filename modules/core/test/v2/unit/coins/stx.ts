@@ -42,8 +42,17 @@ describe('STX:', function() {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   }));
 
-  /*
+
   describe('Keypairs:', () => {
+    // TODO: is this necessary?
+    let basecoin;
+
+    before(function() {
+      bitgo = new TestBitGo({ env: 'mock' });
+      bitgo.initializeTestVars();
+      basecoin = bitgo.coin('tstx');
+    });
+
     it('should generate a keypair from random seed', function() {
       const keyPair = basecoin.generateKeyPair();
       keyPair.should.have.property('xpub');
@@ -59,5 +68,5 @@ describe('STX:', function() {
       keyPair.xprv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
     });
   });
-  */
+
 });
