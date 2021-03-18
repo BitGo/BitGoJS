@@ -1,5 +1,5 @@
 import * as Promise from 'bluebird';
-import { Stx } from '../../../../src/v2/coins/';
+import { Stx, Tstx } from '../../../../src/v2/coins/';
 
 const co = Promise.coroutine;
 import { TestBitGo } from '../../../lib/test_bitgo';
@@ -11,12 +11,15 @@ describe('STX:', function() {
   before(function() {
     bitgo = new TestBitGo({ env: 'mock' });
     bitgo.initializeTestVars();
-    basecoin = bitgo.coin('tstx');
+    basecoin = bitgo.coin('stx');
   });
 
   it('should instantiate the coin', function() {
-    const basecoin = bitgo.coin('stx');
-    basecoin.should.be.an.instanceof(Stx);
+    let localBasecoin = bitgo.coin('tstx');
+    localBasecoin.should.be.an.instanceof(Tstx);
+
+    localBasecoin = bitgo.coin('stx');
+    localBasecoin.should.be.an.instanceof(Stx);
   });
 
 
