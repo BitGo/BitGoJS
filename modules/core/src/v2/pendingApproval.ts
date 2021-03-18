@@ -18,7 +18,10 @@ export interface PendingApprovalInfo {
   transactionRequest?: {
     coinSpecific: { [key: string]: any };
     recipients: any;
-    buildParams: any;
+    buildParams: {
+      type?: 'fanout' | 'consolidate';
+      [index: string]: any;
+    };
     sourceWallet?: string;
   };
 }
@@ -360,11 +363,12 @@ export class PendingApproval {
         prebuildParams.hop = true;
       }
 
-      if (!recipients.length) {
-        // no recipients - this is a consolidation transaction
+      if (transactionRequest.buildParams && transactionRequest.buildParams.type === 'consolidate') {
+        // consolidate tag is in the build params - this is a consolidation transaction, so
+        // it needs to be rebuilt using the special consolidation build route
         prebuildParams.prebuildTx = yield self.bitgo
           .post(self.wallet.url(`/consolidateUnspents`))
-          .send(params)
+          .send(prebuildParams)
           .result();
         delete prebuildParams.recipients;
       }
