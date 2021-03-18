@@ -42,22 +42,20 @@ describe('STX:', function() {
     goodAddresses.map(addr => { basecoin.isValidAddress(addr).should.equal(true); });
   }));
 
-  // describe('Keypairs:', () => {
-  it('should generate a keypair from random seed', function() {
-    console.log(basecoin);
-    const keyPair = basecoin.generateKeyPair();
-    console.log(keyPair);
-    keyPair.should.have.property('xpub');
-    keyPair.should.have.property('xprv');
-    basecoin.isValidPub(keyPair.pub).should.equal(true);
-  });
+  describe('Keypairs:', () => {
+    it('should generate a keypair from random seed', function() {
+      const keyPair = basecoin.generateKeyPair();
+      keyPair.should.have.property('pub');
+      keyPair.should.have.property('prv');
+      basecoin.isValidPub(keyPair.pub).should.equal(true);
+    });
 
-  it('should generate a keypair from a seed', function() {
-    const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
-    const seed = Buffer.from(seedText, 'hex');
-    const keyPair = basecoin.generateKeyPair(seed);
-    keyPair.xpub.should.equal('xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws');
-    keyPair.xprv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
+    it('should generate a keypair from a seed', function() {
+      const seedText = '80350b4208d381fbfe2276a326603049fe500731c46d3c9936b5ce036b51377f24bab7dd0c2af7f107416ef858ff79b0670c72406dad064e72bb17fc0a9038bb';
+      const seed = Buffer.from(seedText, 'hex');
+      const keyPair = basecoin.generateKeyPair(seed);
+      keyPair.pub.should.equal('xpub661MyMwAqRbcFAwqvSGbk35kJf7CQqdN1w4CMUBBTqH5e3ivjU6D8ugv9hRSgRbRenC4w3ahXdLVahwjgjXhSuQKMdNdn55Y9TNSagBktws');
+      keyPair.prv.should.equal('xprv9s21ZrQH143K2gsNpQjbNu91kdGi1NuWei8bZ5mZuVk6mFPnBvmxb7NSJQdbZW3FGpK3Ycn7jorAXcEzMvviGtbyBz5tBrjfnWyQp3g75FK');
+    });
   });
-  // });
 });
