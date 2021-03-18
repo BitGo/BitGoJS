@@ -6,8 +6,10 @@ import { BaseAddress, BaseKey } from '../baseCoin/iface';
 import { Transaction } from './transaction';
 import { promises } from 'dns';
 import { Key } from './iface';
-import * as EosJs from 'eosjs';
+// import * as EosJs from 'eosjs';
 import { Buffer } from 'buffer';
+
+import eosjs = require('eosjs');
 
 export class TransactionBuilder extends BaseTransactionBuilder {
   private _transaction: Transaction;
@@ -45,10 +47,13 @@ export class TransactionBuilder extends BaseTransactionBuilder {
     if (this._serializedTransaction) {
       console.log('SERIALIZED', this._serializedTransaction)
 
-        const eosClient = new EosJs({ });
+        const eosClient = new eosjs({ });
         const eosTxStruct = eosClient.fc.structs.transaction;
         const serializedBuffer = Buffer.from(this._serializedTransaction, 'hex');
-        const finalTransaction =  EosJs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedBuffer);
+        const finalTransaction =  eosjs.modules.Fcbuffer.fromBuffer(eosTxStruct, serializedBuffer);
+        console.log('FINAL', finalTransaction)
+        // const txid = finalTransaction.transaction.transaction_id;
+        // console.log('ID', txid)
         return finalTransaction;
 
     } else {
