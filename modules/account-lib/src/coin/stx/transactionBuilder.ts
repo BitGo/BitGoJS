@@ -32,7 +32,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
   protected _numberSignatures: number;
   protected _multiSignerKeyPairs: KeyPair[];
   protected _signatures: SignatureData[];
-  // protected _senderPubKey: string[];
   protected _network: StacksNetwork;
 
   constructor(_coinConfig: Readonly<CoinConfig>) {
@@ -51,7 +50,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
    */
   initBuilder(tx: Transaction): void {
     this.transaction = tx;
-    // this.transaction.loadPreviousSignatures();
     const txData = tx.toJson();
     this.fee({ fee: txData.fee.toString() });
     this.source({ address: txData.from });
@@ -153,11 +151,6 @@ export abstract class TransactionBuilder extends BaseTransactionBuilder {
     this._fee = fee;
     return this;
   }
-
-  // senderPubKey(pubKey: string[]): this {
-  //   this._senderPubKey = pubKey;
-  //   return this;
-  // }
 
   network(stacksNetwork: StacksNetwork): this {
     this._network = stacksNetwork;

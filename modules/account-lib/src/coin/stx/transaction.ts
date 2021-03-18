@@ -9,6 +9,10 @@ import {
   addressToString,
   StacksMessageType,
   createStacksPublicKey,
+  SingleSigSpendingCondition,
+  isSingleSig,
+  StacksPublicKey,
+  TransactionAuthField
 } from '@stacks/transactions';
 import { BaseCoin as CoinConfig } from '@bitgo/statics';
 import { SigningError } from '../baseCoin/errors';
@@ -60,6 +64,29 @@ export class Transaction extends BaseTransaction {
       throw new SigningError('Missing signatures');
     }
     this._stxTransaction = this._stxTransaction.createTxWithSignature(signature.data);
+  }
+
+  /**
+  * Get the signatures associated with this transaction.
+  */
+  get signature(): string[] {
+    if (this._stxTransaction && this._stxTransaction.auth.spendingCondition) {
+      if (isSingleSig(this._stxTransaction.auth.spendingCondition)) {
+        return [this._stxTransaction.auth.spendingCondition.signature.data]
+      } else {
+        return this._stxTransaction.auth.spendingCondition.fields.map(this.getSignatureFromField)
+      }
+    }
+    return [];
+  }
+
+  private getSignatureFromField(field: TransactionAuthField): string {
+    switch (field.contents.type) {
+      case StacksMessageType.PublicKey:
+        return field.contents.data.toString('hex')
+      case StacksMessageType.MessageSignature:
+        return field.contents.data
+    }
   }
 
   /** @inheritdoc */

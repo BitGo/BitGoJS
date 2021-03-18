@@ -20,40 +20,40 @@ describe('Stx Transfer Builder', () => {
   };
 
   describe('should build ', () => {
-    // it('a signed transfer transaction', async () => {
-    //   const builder = initTxBuilder();
-    //   builder.sign({ key: testData.TX_SENDER.prv });
-    //   const tx = await builder.build();
+    it('a signed transfer transaction', async () => {
+      const builder = initTxBuilder();
+      builder.sign({ key: testData.TX_SENDER.prv });
+      const tx = await builder.build();
 
-    //   const txJson = tx.toJson();
-    //   // should.deepEqual(tx.signature.length, 1);
-    //   should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
-    //   should.deepEqual(txJson.payload.amount, '1000');
-    //   should.deepEqual(txJson.from, testData.TX_SENDER.address);
-    //   should.deepEqual(txJson.fee.toString(), '180');
-    //   should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSACTION);
-    //   tx.type.should.equal(TransactionType.Send);
+      const txJson = tx.toJson();
+      // should.deepEqual(tx.signature.length, 1);
+      should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
+      should.deepEqual(txJson.payload.amount, '1000');
+      should.deepEqual(txJson.from, testData.TX_SENDER.address);
+      should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(tx.toBroadcastFormat(), testData.SIGNED_TRANSACTION);
+      tx.type.should.equal(TransactionType.Send);
 
-    //   tx.outputs.length.should.equal(1);
-    //   tx.outputs[0].address.should.equal(testData.TX_RECIEVER.address);
-    //   tx.outputs[0].value.should.equal('1000');
-    //   tx.inputs.length.should.equal(1);
-    //   tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
-    //   tx.inputs[0].value.should.equal('1000');
-    // });
+      tx.outputs.length.should.equal(1);
+      tx.outputs[0].address.should.equal(testData.TX_RECIEVER.address);
+      tx.outputs[0].value.should.equal('1000');
+      tx.inputs.length.should.equal(1);
+      tx.inputs[0].address.should.equal(testData.TX_SENDER.address);
+      tx.inputs[0].value.should.equal('1000');
+    });
 
-    // it('a transfer transaction with memo', async () => {
-    //   const builder = initTxBuilder();
-    //   builder.memo('This is an example');
-    //   builder.sign({ key: testData.TX_SENDER.prv })
-    //   const tx = await builder.build();
-    //   const txJson = tx.toJson();
-    //   should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
-    //   should.deepEqual(txJson.payload.amount, '1000');
-    //   should.deepEqual(txJson.payload.memo, 'This is an example');
-    //   should.deepEqual(txJson.from, testData.TX_SENDER.address);
-    //   should.deepEqual(txJson.fee.toString(), '180');
-    // });
+    it('a transfer transaction with memo', async () => {
+      const builder = initTxBuilder();
+      builder.memo('This is an example');
+      builder.sign({ key: testData.TX_SENDER.prv })
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
+      should.deepEqual(txJson.payload.amount, '1000');
+      should.deepEqual(txJson.payload.memo, 'This is an example');
+      should.deepEqual(txJson.from, testData.TX_SENDER.address);
+      should.deepEqual(txJson.fee.toString(), '180');
+    });
 
     it('a multisig transfer transaction', async () => {
       const builder = initTxBuilder();
@@ -65,6 +65,22 @@ describe('Stx Transfer Builder', () => {
       builder.sign({ key: testData.prv3 });
       const tx = await builder.build();
       should.deepEqual(tx.toBroadcastFormat(), testData.MULTI_SIG_SINGED_TRANSACTION);
+    });
+
+    it('a transfer transaction signed multiple times', async () => {
+      const builder = initTxBuilder();
+      builder.memo('test memo');
+      builder.numberSignatures(2);
+      builder.sign({ key: testData.prv1 });
+      builder.sign({ key: testData.prv2 });
+      builder.sign({ key: testData.prv3 });
+      const tx = await builder.build();
+      const txJson = tx.toJson();
+      should.deepEqual(tx.signature.length, 3);
+      should.deepEqual(txJson.fee.toString(), '180');
+      should.deepEqual(txJson.payload.to, testData.TX_RECIEVER.address);
+      should.deepEqual(txJson.payload.memo, 'test memo');
+      should.deepEqual(txJson.payload.amount, '1000');
     });
 
     it('a transfer transaction with amount 0', async () => {
@@ -95,6 +111,7 @@ describe('Stx Transfer Builder', () => {
         tx.type.should.equal(TransactionType.Send);
       });
     });
+
 
     describe('should fail', () => {
       it('a transfer transaction with an invalid key', () => {
